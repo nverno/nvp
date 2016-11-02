@@ -28,10 +28,35 @@
 ;; [![Build Status](https://travis-ci.org/nverno/nvp.svg?branch=master)](https://travis-ci.org/nverno/nvp)
 
 ;;; Code:
+(eval-when-compile
+  (require 'cl-lib)
+  (defvar nvp-snippet-dir)
+  (defvar nvp-abbrev-local-file)
+  (defvar nvp-abbrev-local-table))
 
 (defvar nvp--dir nil)
 (when load-file-name
   (setq nvp--dir (file-name-directory load-file-name)))
+
+;; ------------------------------------------------------------
+
+;;; Setup
+
+(cl-defun nvp-utils-setup-local
+    (name
+     &key
+     (mode (concat name "-mode"))
+     (dir (symbol-value (intern (concat name "-utils--dir"))))
+     (snippets (concat "snippets/" mode))
+     (abbr-table mode)
+     (abbr-file (concat name "-abbrev-table"))
+     (fn nil))
+  "Setup local variables for utils."
+  (setq-local nvp-snippet-dir (expand-file-name snippets dir))
+  (setq-local nvp-abbrev-local-table abbr-table)
+  (setq-local nvp-abbrev-local-file (expand-file-name abbr-file dir))
+  (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file))
+  (when fn (funcall fn)))
 
 (provide 'nvp)
 ;;; nvp.el ends here

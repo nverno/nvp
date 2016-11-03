@@ -42,6 +42,7 @@
 
 ;;; Setup
 
+;;;###autoload
 (cl-defun nvp-utils-setup-local
     (name
      &key

@@ -69,10 +69,10 @@
                      (newline-and-indent)))))
            (indent-according-to-mode)))))))
 
-(defmacro nvp-bindings (mode &rest bindings)
+(defmacro nvp-bindings (mode &optional feature &rest bindings)
   (declare (indent defun))
   (let ((modemap (intern (concat mode "-map"))))
-    `(eval-after-load ',(intern mode)
+    `(eval-after-load ,(or feature `',(intern mode))
        '(progn
           ,@(cl-loop for (k . b) in bindings
                collect `(define-key ,modemap (kbd ,k) ',b))))))

@@ -42,13 +42,14 @@
 
 ;;; Setup
 
+;;;###autoload (defalias 'nvp-utils-setup-local 'nvp-tools-setup-local)
 ;;;###autoload
-(cl-defun nvp-utils-setup-local
+(cl-defun nvp-tools-setup-local
     (name
      &key
      (mode (concat name "-mode"))
-     (dir (symbol-value (intern (concat name "-utils--dir"))))
-     (snippets (concat "snippets/" mode))
+     (dir (symbol-value (intern (concat name "-tools--dir"))))
+     (snippets (concat "snippets/" (or mode (symbol-name major-mode))))
      (abbr-table mode)
      (abbr-file (concat name "-abbrev-table"))
      (fn nil))

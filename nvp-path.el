@@ -46,6 +46,28 @@
     (setenv "PATH" (mapconcat 'identity path path-separator))
     (setq exec-path path)))
 
+;; move path entries matching regex to front of path and return
+;; new path, preserve existing order of entries otherwise
+(defun nvp-path-rearrange-path (regex &optional case-fold)
+  (let ((parts (split-string (getenv "PATH") path-separator))
+        (case-fold-search case-fold)
+        hits misses)
+    (mapc (lambda (s)
+            (if (string-match-p regex s)
+                (push s hits)
+              (push s misses)))
+          parts)
+    (nconc (nreverse hits) (nreverse misses))))
+
+;; rearrange process environmen path and return process-environment
+;; with new value tacked onto front (first gets used)
+(defun nvp-path-rearrange-process-path (regex &optional case-fold)
+  (cons (concat "PATH="
+                (mapconcat 'identity
+                           (nvp-path-rearrange-path regex case-fold)
+                           path-separator))
+        process-environment))
+
 ;; update registry value on windows
 (defun nvp-path-w32-setenv! (env-var value &optional exec clobber)
   (let* ((ps (expand-file-name "tools/Set-Env.ps1" nvp--dir))

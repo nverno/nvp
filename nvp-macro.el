@@ -27,6 +27,33 @@
 ;;; Code:
 (require 'cl-lib)
 
+;;; Install ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro nvp-program (name)
+  `(eval-when-compile
+     (if (eq system-type 'windows-nt)
+         (intern (concat "nvp-" ,name "-program"))
+       ,name)))
+
+;;; Config ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro nvp-bindings (mode &optional feature &rest bindings)
+  (declare (indent defun))
+  (let ((modemap (intern (concat mode "-map"))))
+    `(eval-after-load ,(or feature `',(intern mode))
+       '(progn
+          ,@(cl-loop for (k . b) in bindings
+               collect `(define-key ,modemap (kbd ,k) ',b))))))
+
+;; FIXME: eval
+(defmacro nvp-common-bindings (modes &rest bindings)
+  (declare (indent defun))
+  (macroexp-progn
+   (cl-loop for mode in (eval modes)
+      collect `(nvp-bindings ,mode ,@bindings))))
+
+;;; Interactive Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; Newline and indents for PAIRS, extends comment region with
 ;; COMMENT-START when inside COMMENT-RE.
 (cl-defmacro nvp-newline (name &optional description
@@ -68,21 +95,6 @@
                    (save-excursion
                      (newline-and-indent)))))
            (indent-according-to-mode)))))))
-
-(defmacro nvp-bindings (mode &optional feature &rest bindings)
-  (declare (indent defun))
-  (let ((modemap (intern (concat mode "-map"))))
-    `(eval-after-load ,(or feature `',(intern mode))
-       '(progn
-          ,@(cl-loop for (k . b) in bindings
-               collect `(define-key ,modemap (kbd ,k) ',b))))))
-
-;; FIXME: eval
-(defmacro nvp-common-bindings (modes &rest bindings)
-  (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for mode in (eval modes)
-      collect `(nvp-bindings ,mode ,@bindings))))
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

@@ -32,7 +32,8 @@
 (defmacro nvp-program (name)
   `(eval-when-compile
      (if (eq system-type 'windows-nt)
-         (intern (concat "nvp-" ,name "-program"))
+         (bound-and-true-p
+          ,(intern (concat "nvp-" name "-program")))
        ,name)))
 
 ;;; Config ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

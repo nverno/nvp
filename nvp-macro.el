@@ -97,5 +97,16 @@
                      (newline-and-indent)))))
            (indent-according-to-mode)))))))
 
+;;; Time ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Measure and return the running time of the code block.
+;; https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el#L83
+(defmacro nvp-measure-time (&rest body)
+  (declare (indent defun))
+  (let ((start (make-symbol "start")))
+    `(let ((,start (float-time)))
+       ,@body
+       (- (float-time) ,start))))
+
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

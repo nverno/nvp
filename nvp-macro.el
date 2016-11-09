@@ -36,6 +36,22 @@
           ,(intern (concat "nvp-" name "-program")))
        ,name)))
 
+(defmacro nvp-with-w32 (&rest body)
+  (declare (indent 0) (debug t))
+  (when (eq system-type 'windows-nt)
+    `(progn ,@body)))
+
+(defmacro nvp-with-gnu (&rest body)
+  (declare (indent 0) (debug t))
+  (when (not (eq system-type 'windows-nt))
+    `(progn ,@body)))
+
+(defmacro nvp-with-gnu/w32 (gnu w32)
+  (declare (indent 2) (indent 1) (debug t))
+  (if (eq system-type 'windows-nt)
+      `,@w32
+    `,@gnu))
+
 ;;; Config ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro nvp-bindings (mode &optional feature &rest bindings)

@@ -45,6 +45,7 @@
                   #'(lambda ()
                       (delete-overlay nvp-indicate--region-overlay))))
 
+;; ------------------------------------------------------------
 ;;; Temporarily change modeline color
 
 ;; make modeline green for a sec
@@ -61,6 +62,22 @@
 (defun nvp-indicate-modeline-revert (&optional color)
   (remove-hook 'post-command-hook #'nvp-indicate-modeline-revert t)
   (set-face-background 'mode-line color))
+
+;; ------------------------------------------------------------
+;;; Toggle font-locking for long lines
+
+(defvar-local nvp-indicate--add-font t)
+;;;###autoload
+(defun nvp-indicate-long-lines (arg)
+  (interactive "P")
+  (if (setq nvp-indicate--add-font (not nvp-indicate--add-font))
+      (font-lock-refresh-defaults)
+    (let ((len (if arg (read-number "Length: ") 75)))
+      (font-lock-add-keywords
+       nil `((,(format "^[^\n]\\{%d\\}\\(.*\\)$" len)
+              1 font-lock-warning-face t)))
+      (font-lock-flush)
+      (font-lock-ensure))))
 
 (provide 'nvp-indicate)
 ;;; nvp-indicate.el ends here

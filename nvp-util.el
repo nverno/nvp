@@ -25,6 +25,8 @@
 
 ;;; Commentary:
 ;;; Code:
+(eval-when-compile
+  (require 'cl-lib))
 
 ;; convert selected bindings to macro form and align
 ;;;###autoload
@@ -49,6 +51,45 @@
         (goto-char start)
         (mark-sexp)
         (align-regexp (region-beginning) (region-end) "\\(\\s-*\\)\\. ")))))
+
+;; https://gist.github.com/haxney/3055728
+;; non-nil if monospaced font
+(defun nvp-font-is-mono-p (font-family)
+  (let ((wind (selected-window))
+        m-width l-width)
+   (with-temp-buffer
+     (set-window-buffer (selected-window) (current-buffer))
+     (text-scale-set 4)
+     (insert (propertize "l l l l l" 'face `((:family ,font-family))))
+     (goto-char (line-end-position))
+     (setq l-width (car (posn-x-y (posn-at-point))))
+     (newline)
+     (forward-line)
+     (insert (propertize "m m m m m" 'face `((:family ,font-family) italic)))
+     (goto-char (line-end-position))
+     (setq m-width (car (posn-x-y (posn-at-point))))
+     (eq l-width m-width))))
+
+;; Display various available fonts
+;; https://www.emacswiki.org/emacs/GoodFonts
+;;;###autoload
+(defun nvp-font-list ()
+  (interactive)
+  (let ((str "The quick brown fox jumps over the lazy dog ´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
+        (font-families (cl-remove-duplicates 
+                        (sort (font-family-list) 
+                              #'(lambda (x y) (string< (upcase x) (upcase y))))
+                        :test 'string=))
+        (buff (get-buffer-create "*fonts*"))
+        (inhibit-read-only t))
+    (with-current-buffer buff
+      (erase-buffer)
+      (font-lock-mode)
+      (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
+        (insert 
+         (propertize str 'font-lock-face `(:family ,ff))               ff "\n"
+         (propertize str 'font-lock-face `(:family ,ff :slant italic)) ff "\n"))
+      (pop-to-buffer (current-buffer)))))
 
 (provide 'nvp-util)
 ;;; nvp-util.el ends here

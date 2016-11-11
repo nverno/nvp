@@ -1,9 +1,10 @@
 ;;; nvp-util --- 
 
+;; This is free and unencumbered software released into the public domain.
+
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
-;; Copyright (C) 2016, Noah Peart, all rights reserved.
 ;; Created:  2 November 2016
 
 ;; This file is not part of GNU Emacs.

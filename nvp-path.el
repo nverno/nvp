@@ -1,9 +1,10 @@
 ;;; nvp-path --- 
 
+;; This is free and unencumbered software released into the public domain.
+
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
-;; Copyright (C) 2016, Noah Peart, all rights reserved.
 ;; Created:  1 November 2016
 
 ;; This file is not part of GNU Emacs.
@@ -111,6 +112,10 @@
   (nvp-log (format "%s: %s" (process-name p) m))
   (when (zerop (process-exit-status p))
     (nvp-log "DB Update completed")))
+
+;; ------------------------------------------------------------
+
+(declare-function w32-shell-execute "w32")
 
 (provide 'nvp-path)
 ;;; nvp-path.el ends here

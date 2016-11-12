@@ -116,6 +116,14 @@
 
 ;;; Time ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defmacro nvp-file-older-than-days (file days)
+  "non-nil if FILE last modification was more than DAYS ago."
+  (declare (indent defun) (debug t))
+  `(< (time-to-seconds
+       (time-subtract (current-time)
+                      (nth 5 (file-attributes ,file))))
+      (* 60 60 24 ,days)))
+
 ;; Measure and return the running time of the code block.
 ;; https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el#L83
 (defmacro nvp-measure-time (&rest body)
@@ -124,6 +132,12 @@
     `(let ((,start (float-time)))
        ,@body
        (- (float-time) ,start))))
+
+;;; regexp ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro nvp-re-opt (opts)
+  `(eval-when-compile
+     (concat "\\_<" (regexp-opt ,opts t) "\\_>")))
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

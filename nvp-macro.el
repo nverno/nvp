@@ -77,7 +77,7 @@
 (cl-defmacro nvp-newline (name &optional description
                                &key pairs comment-re comment-start)
   (declare (indent defun))
-  (let ((fn (intern name))
+  (let ((fn (if (symbolp name) name (intern name)))
         (conds
          (cons 'or
                (cl-loop

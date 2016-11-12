@@ -139,5 +139,61 @@
   `(eval-when-compile
      (concat "\\_<" (regexp-opt ,opts t) "\\_>")))
 
+;;; Process ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro nvp-with-process-log (process &optional pop-on-error &rest body)
+  (declare (indent defun))
+  `(set-process-sentinel
+    ,process
+    #'(lambda (p m)
+        (nvp-log "%s: %s" nil (process-name p) m)
+        (if (not (zerop (process-exit-status p)))
+            ,(if pop-on-error '(pop-to-buffer "*nvp-install*"))
+          ,@body))))
+
+;;; Compile ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Create compile function, check for makefiles/cmake first, otherwise
+;; execute BODY. Prefix argument executes PROMPT-ACTION, and its
+;; result is bound to ARGS, which can be used in the body.
+(cl-defmacro nvp-make-or-compile-fn
+    (name 
+     (&key
+      (doc "Compile using make or cmake if found, otherwise execute body.")
+      (make-action
+       '(let ((compile-command (or args "make -k")))
+          (nvp-compile-basic)))
+      (cmake-action
+       '(nvp-compile-cmake args))
+      (default-prompt
+        '(read-from-minibuffer "Compile args: "))
+      (prompt-action
+       `((cond
+          ,@(and cmake-action
+                 '((have-cmake
+                    (read-from-minibuffer "CMake args: "))))
+          ,@(and make-action
+                 '((have-make
+                    (format "make %s" (read-from-minibuffer "Make args: ")))))
+          (t ,default-prompt)))))
+     &rest body)
+  (declare (indent defun))
+  (let ((fn (if (symbolp name) name (intern name))))
+    `(defun ,fn (&optional arg)
+       ,doc
+       (interactive "P")
+       (let* (,@(and make-action
+                     '((have-make
+                        (memq t (mapcar #'file-exists-p
+                                        '("Makefile" "makefile" "GNUMakefile"))))))
+              ,@(and cmake-action
+                     '((have-cmake (file-exists-p "CMakeLists.txt"))))
+              (args (and arg ,@(or prompt-action
+                                   '((read-from-minibuffer "Compile args: "))))))
+         (cond
+          ,@(and cmake-action `((have-cmake ,cmake-action)))
+          ,@(and make-action `((have-make ,make-action)))
+          (t ,@body))))))
+
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

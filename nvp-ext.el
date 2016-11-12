@@ -1,4 +1,4 @@
-;;; nvp-ext --- 
+;;; nvp-ext --- -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -41,7 +41,6 @@
       (process-send-string proc "\r")
       (process-send-eof proc)
       proc)))
-
 
 (provide 'nvp-ext)
 ;;; nvp-ext.el ends here

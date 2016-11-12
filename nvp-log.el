@@ -47,6 +47,7 @@
 
 ;; ------------------------------------------------------------
 ;;; Mode
+
 (require 'compile)
 
 (defvar nvp-log-font-lock

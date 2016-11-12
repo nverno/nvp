@@ -141,15 +141,21 @@
 
 ;;; Process ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro nvp-with-process-log (process &optional pop-on-error &rest body)
+(defmacro nvp-with-process-log (process &optional on-error &rest body)
+  "Log output in log buffer, if on-error is :pop-on-error, pop to log
+if process exit status isn't 0."
   (declare (indent defun))
-  `(set-process-sentinel
-    ,process
-    #'(lambda (p m)
-        (nvp-log "%s: %s" nil (process-name p) m)
-        (if (not (zerop (process-exit-status p)))
-            ,(if pop-on-error '(pop-to-buffer "*nvp-install*"))
-          ,@body))))
+  (let ((err (if (and (symbolp on-error)
+                      (equal on-error :pop-on-error))
+                 '(pop-to-buffer "*nvp-install*")
+               on-error)))
+    `(set-process-sentinel
+      ,process
+      #'(lambda (p m)
+          (nvp-log "%s: %s" nil (process-name p) m)
+          (if (not (zerop (process-exit-status p)))
+              ,err
+            ,@body)))))
 
 ;;; Compile ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

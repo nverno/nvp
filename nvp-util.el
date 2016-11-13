@@ -40,7 +40,7 @@
     (when map
       (let (binds)
         (while (re-search-forward
-                "\\(\"[^\"]+\"\\))[\n\t ]*[#']*\\([a-zA-Z0-9-]+\\)" end t)
+                "\\(\"[^\"]+\"\\))?[\n\t ]*[#']*\\([a-zA-Z0-9-]+\\)" end t)
           (push (format "(%s . %s)"
                         (match-string-no-properties 1)
                         (match-string-no-properties 2))

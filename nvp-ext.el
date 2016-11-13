@@ -41,7 +41,7 @@
            (cmd (or command (read-shell-command "Command: ")))
            (proc (start-process-shell-command
                   "bash" (or buffer "*nvp-install*")
-                  (concat "sudo bash " cmd))))
+                  (concat "sudo bash -l " cmd))))
       (process-send-string proc password)
       (process-send-string proc "\r")
       (process-send-eof proc)

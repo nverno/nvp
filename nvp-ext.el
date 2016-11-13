@@ -29,18 +29,30 @@
 (eval-when-compile
   (require 'nvp-macro))
 
+(defmacro nvp-ext-read-passwd ()
+  '(or (bound-and-true-p nvp-sudo-passwd)
+       (read-passwd "Password: ")))
+
 (nvp-with-gnu
   ;; do sudo command and return process object
-  (defun nvp-ext-sudo-command (password &optional command buffer)
-    (interactive (list (read-passwd "Password: ")))
-    (let* ((cmd (or command (read-shell-command "Command: ")))
+  (defun nvp-ext-sudo-command (&optional password command buffer)
+    (interactive)
+    (let* ((password (or password (nvp-ext-read-passwd)))
+           (cmd (or command (read-shell-command "Command: ")))
            (proc (start-process-shell-command
                   "bash" (or buffer "*nvp-install*")
                   (concat "sudo bash " cmd))))
       (process-send-string proc password)
       (process-send-string proc "\r")
       (process-send-eof proc)
-      proc)))
+      proc))
+
+  (defun nvp-ext-sudo-install (packages &optional buffer)
+    (interactive (list (read-shell-command "Packages: ")))
+    (nvp-ext-sudo-command
+     nil
+     (format "-l -c \"apt-get install -y %s\"" packages)
+     buffer)))
 
 (provide 'nvp-ext)
 ;;; nvp-ext.el ends here

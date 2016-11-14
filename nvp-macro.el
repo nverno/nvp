@@ -70,6 +70,10 @@
    (cl-loop for mode in (eval modes)
       collect `(nvp-bindings ,mode ,@bindings))))
 
+(defmacro nvp-mode (mode)
+  `(expand-file-name (concat "nvp-" ,mode)
+                     (bound-and-true-p nvp/mode)))
+
 ;;--- Time -----------------------------------------------------------
 
 (defmacro nvp-file-older-than-days (file days)

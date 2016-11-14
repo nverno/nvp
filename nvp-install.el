@@ -139,7 +139,7 @@
 ;;;###autoload
 (cl-defmacro nvp-install-on-demand
     (&key libs optional git bit env env! script sudo choco msys
-          cygwin)
+          cygwin depends)
   (declare (indent defun) (debug t))
   (when load-file-name
     (let ((file (file-name-sans-extension load-file-name)))
@@ -147,6 +147,9 @@
          (unless
              (file-exists-p
               (expand-file-name (concat ,file ".elc")))
+           ;;--- Dependencies ----------------------------------------
+           (cl-loop for dep in ,depends
+              do (nvp-install-mode dep))
            ;;--- Packages --------------------------------------------
            (cl-loop for pkg in ,libs
               if (and (package-installed-p (intern pkg))
@@ -229,53 +232,10 @@
                (byte-compile-file tmp-file)
                (delete-file tmp-file))))))))
 
-;;--- Old version ----------------------------------------------------
-;; Install any dependencies listed in config for MODE. With prefix,
-;; remake all site-lisp packges after installing git repos.
 ;;;###autoload
 (defun nvp-install-mode (mode)
   (interactive (list (nvp-install-list-modes)))
-  (let* ((pkgs (nvp-install-get-packages mode))
-         (libs (cdr (assoc-string "libs:" pkgs)))
-         (git-pkgs (cdr (assoc-string "git:" pkgs)))
-         (bit-pkgs (cdr (assoc-string "bit:" pkgs)))
-         (choco-pkgs (cdr (assoc-string "choco:" pkgs)))
-         (scripts (cdr (assoc-string "scripts:" pkgs)))
-         (env-vars (cdr (assoc-string "env:" pkgs)))
-         proc repos)
-    ;; emacs package-install
-    (cl-loop for pkg in libs
-       if (and (package-installed-p (intern pkg))
-               (locate-library pkg))
-       do (nvp-log (format "Already have %s" pkg) "*nvp-install*")
-       else do
-         (nvp-log (format "Installing %s" pkg) "*nvp-install*")
-         (package-install (intern pkg) t))
-    (setq nvp-install-pending-dirs (append git-pkgs bit-pkgs))
-    ;; github
-    (cl-loop for pkg in git-pkgs
-       do (let ((proc (nvp-install-git pkg)))
-            (push proc nvp-install-active-procs)
-            (set-process-sentinel proc #'nvp-install-git-sentinel)))
-    ;; bitbucket
-    (cl-loop for pkg in bit-pkgs
-       do (let ((proc (nvp-install-git pkg "https://bitbucket.org")))
-            (push proc nvp-install-active-procs)
-            (set-process-sentinel proc #'nvp-install-git-sentinel)))
-    ;; chocolatey
-    (cl-loop for pkg in choco-pkgs
-       do (w32-shell-execute "runas" "cmd.exe"
-                             (format " /c cinst -y %s" pkg)))
-    ;; scripts
-    (cl-loop for script in scripts
-       if (eq system-type 'windows-nt)
-       do (w32-shell-execute
-           "runas" "cmd.exe"
-           (format " /c %s" (expand-file-name script nvp/binw)))
-       else
-       do (async-shell-command script "*nvp-install*"))
-    ;; env-vars
-    ))
+  (load (nvp-mode mode)))
 
 ;;;###autoload
 (defun nvp-install-modes (modes)

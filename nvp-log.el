@@ -40,9 +40,8 @@
       (nvp-log-mode)
       (goto-char (point-max))
       (insert-before-markers
-       (apply 'format (if (string-match-p ".*\n$" text)
-                          (substring text 0 (1- (length text)))
-                        text)
+       (apply 'format 
+              (replace-regexp-in-string "\n+" "\n" text)
               args)))))
 
 ;; ------------------------------------------------------------

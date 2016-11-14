@@ -28,7 +28,7 @@
 ;;; Code:
 (require 'cl-lib)
 
-;;; Install ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--- OS -------------------------------------------------------------
 
 (defmacro nvp-program (name)
   `(eval-when-compile
@@ -53,7 +53,7 @@
       `,@w32
     `,@gnu))
 
-;;; Config ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--- Config ---------------------------------------------------------
 
 (defmacro nvp-bindings (mode &optional feature &rest bindings)
   (declare (indent defun))
@@ -70,7 +70,53 @@
    (cl-loop for mode in (eval modes)
       collect `(nvp-bindings ,mode ,@bindings))))
 
-;;; Interactive Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;--- Time -----------------------------------------------------------
+
+(defmacro nvp-file-older-than-days (file days)
+  "non-nil if FILE last modification was more than DAYS ago."
+  (declare (indent defun) (debug t))
+  `(< (time-to-seconds
+       (time-subtract (current-time)
+                      (nth 5 (file-attributes ,file))))
+      (* 60 60 24 ,days)))
+
+;; Measure and return the running time of the code block.
+;; https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el#L83
+(defmacro nvp-measure-time (&rest body)
+  (declare (indent defun))
+  (let ((start (make-symbol "start")))
+    `(let ((,start (float-time)))
+       ,@body
+       (- (float-time) ,start))))
+
+;;--- Regexp ---------------------------------------------------------
+
+(defmacro nvp-re-opt (opts)
+  `(eval-when-compile
+     (concat "\\_<" (regexp-opt ,opts t) "\\_>")))
+
+;;--- Process --------------------------------------------------------
+
+(defmacro nvp-with-process-log (process &optional on-error &rest body)
+  "Log output in log buffer, if on-error is :pop-on-error, pop to log
+if process exit status isn't 0."
+  (declare (indent defun))
+  (let ((err (if (and (symbolp on-error)
+                      (equal on-error :pop-on-error))
+                 '(pop-to-buffer "*nvp-install*")
+               on-error)))
+    `(set-process-sentinel
+      ,process
+      #'(lambda (p m)
+          (nvp-log "%s: %s" nil (process-name p) m)
+          (if (not (zerop (process-exit-status p)))
+              ,err
+            ,@body)))))
+
+
+;;--- Interactive Functions ------------------------------------------
+
+;;; Newline
 
 ;; Newline and indents for PAIRS, extends comment region with
 ;; COMMENT-START when inside COMMENT-RE.
@@ -114,50 +160,7 @@
                      (newline-and-indent)))))
            (indent-according-to-mode)))))))
 
-;;; Time ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmacro nvp-file-older-than-days (file days)
-  "non-nil if FILE last modification was more than DAYS ago."
-  (declare (indent defun) (debug t))
-  `(< (time-to-seconds
-       (time-subtract (current-time)
-                      (nth 5 (file-attributes ,file))))
-      (* 60 60 24 ,days)))
-
-;; Measure and return the running time of the code block.
-;; https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el#L83
-(defmacro nvp-measure-time (&rest body)
-  (declare (indent defun))
-  (let ((start (make-symbol "start")))
-    `(let ((,start (float-time)))
-       ,@body
-       (- (float-time) ,start))))
-
-;;; regexp ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmacro nvp-re-opt (opts)
-  `(eval-when-compile
-     (concat "\\_<" (regexp-opt ,opts t) "\\_>")))
-
-;;; Process ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmacro nvp-with-process-log (process &optional on-error &rest body)
-  "Log output in log buffer, if on-error is :pop-on-error, pop to log
-if process exit status isn't 0."
-  (declare (indent defun))
-  (let ((err (if (and (symbolp on-error)
-                      (equal on-error :pop-on-error))
-                 '(pop-to-buffer "*nvp-install*")
-               on-error)))
-    `(set-process-sentinel
-      ,process
-      #'(lambda (p m)
-          (nvp-log "%s: %s" nil (process-name p) m)
-          (if (not (zerop (process-exit-status p)))
-              ,err
-            ,@body)))))
-
-;;; Compile ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Compile
 
 ;; Create compile function, check for makefiles/cmake first, otherwise
 ;; execute BODY. Prefix argument executes PROMPT-ACTION, and its

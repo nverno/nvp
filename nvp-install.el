@@ -138,91 +138,100 @@
 ;;; Install dependencies on demand - when mode is first autoloaded
 ;;;###autoload
 (cl-defmacro nvp-install-on-demand-1
-    (&key libs optional git bit env env! script sudo choco msys cygwin)
+    (&key libs optional git bit env env! script sudo choco msys
+          cygwin)
   (declare (indent defun) (debug t))
-  (let ((file (file-name-sans-extension buffer-file-name)))
-    `(eval-when-compile
-       (unless
-           (file-exists-p
-            (expand-file-name (concat ,file ".elc")))
-         ;;--- Packages ----------------------------------------------
-         (cl-loop for pkg in ,libs
-            if (and (package-installed-p (intern pkg))
-                    (locate-library pkg))
-            do (nvp-log "%s already installed" nil pkg)
-            else do (nvp-log "Installing %s" nil pkg)
-              (package-install (intern pkg) t))
-         (cl-loop for pkg in ,optional
-            do (message "Package %s" pkg)
-            if (and (not (and (package-installed-p (intern pkg))
-                              (locate-library pkg)))
-                    (y-or-n-p (format "Install optional package: %s? " pkg)))
-            do (package-install (intern pkg) t))
-         ;;--- Git Installs ------------------------------------------
-         ;; github / bitbucket
-         (setq nvp-install-pending-dirs (append ,git ,bit))
-         (cl-loop for pkg in ,git
-            do (let ((proc (nvp-install-git pkg)))
-                 (push proc nvp-install-active-procs)
-                 (set-process-sentinel proc 'nvp-install-git-sentinel)))
-         (cl-loop for pkg in ,bit
-            do (let ((proc (nvp-install-git pkg "https://bitbucket.org")))
-                 (push proc nvp-install-active-procs)
-                 (set-process-sentinel proc 'nvp-install-git-sentinel)))
-         ;;--- Environment -------------------------------------------
-         ;;; Permanent
-         (cl-loop for (var val exec clobber) in ,env!
-            do
-              (nvp-log "Setting %s to %s%s" nil var val
-                       (if clobber " (clobbering)"))
-              (nvp-env-setenv! var val exec clobber))
-         ;;; FIXME: handle more than just PATH
-         ;; Just adds to PATH currently 
-         (cl-loop for dir in ,env
-            do
-              (nvp-log "Adding %s to PATH" dir)
-              (nvp-env-exec-add dir))
-         ;;--- Scripts -----------------------------------------------
-         (cl-loop for (prog args) in ,script
-            do
-              (nvp-log "Running %s %S" nil prog args)
-              (nvp-with-process-log
-                (apply 'start-process prog "*nvp-install*" prog args)
-                :pop-on-error))
-         (nvp-with-gnu
-           ;; sudo commands
-           (cl-loop for (action cmd) in ,sudo
-              do (if (eq 'install action)
-                     (nvp-ext-sudo-install cmd)
-                   (nvp-ext-sudo-command nil cmd)))
-           )
-         (nvp-with-w32
-           ;; chocolatey
-           (cl-loop for pkg in ,choco
-              do (w32-shell-execute
-                  "runas" "cmd.exe" (format " /c cinst -y %s" pkg)))
-           ;; FIXME: msys / cygwin
-           )
-         ;;--- Compile -----------------------------------------------
-         ;; Removes macro+contents from compiled file
-         (let ((outfile (concat ,file ".elc"))
-               (infile (concat ,file ".el"))
-               (tmp-file (make-temp-name (file-name-nondirectory ,file))))
-           (with-temp-file tmp-file
-             ;; ,@body
-             (goto-char (point-max))
-             (insert-file-contents infile)
-             (goto-char (point-min))
-             (while (search-forward "(nvp-install-on-demand" nil t)
-               (goto-char (match-beginning 0))
-               (kill-sexp 1)))
-           (let ((byte-compile-dest-file-function #'(lambda (_f) outfile)))
-             (byte-compile-file tmp-file)
-             (delete-file tmp-file)))))))
+  (when load-file-name
+    (let ((file (file-name-sans-extension load-file-name)))
+      `(eval-when-compile
+         (unless
+             (file-exists-p
+              (expand-file-name (concat ,file ".elc")))
+           ;;--- Packages --------------------------------------------
+           (cl-loop for pkg in ,libs
+              if (and (package-installed-p (intern pkg))
+                      (locate-library pkg))
+              do (nvp-log "%s already installed" nil pkg)
+              else do (nvp-log "Installing %s" nil pkg)
+                (package-install (intern pkg) t))
+           (cl-loop for pkg in ,optional
+              do (message "Package %s" pkg)
+              if (and (not (and (package-installed-p (intern pkg))
+                                (locate-library pkg)))
+                      (y-or-n-p
+                       (format "Install optional package: %s? " pkg)))
+              do (package-install (intern pkg) t))
+           ;;--- Git Installs ----------------------------------------
+           ;; github / bitbucket
+           (setq nvp-install-pending-dirs (append ,git ,bit))
+           (cl-loop for pkg in ,git
+              do (let ((proc (nvp-install-git pkg)))
+                   (push proc nvp-install-active-procs)
+                   (set-process-sentinel proc
+                                         'nvp-install-git-sentinel)))
+           (cl-loop for pkg in ,bit
+              do (let ((proc
+                        (nvp-install-git pkg
+                                         "https://bitbucket.org")))
+                   (push proc nvp-install-active-procs)
+                   (set-process-sentinel proc
+                                         'nvp-install-git-sentinel)))
+           ;;--- Environment ----------------------------------------
+           ;; Permanent
+           (cl-loop for (var val exec clobber) in ,env!
+              do
+                (nvp-log "Setting %s to %s%s" nil var val
+                         (if clobber " (clobbering)"))
+                (nvp-env-setenv! var val exec clobber))
+           ;; FIXME: handle more than just PATH
+           ;; Just adds to PATH currently 
+           (cl-loop for dir in ,env
+              do
+                (nvp-log "Adding %s to PATH" dir)
+                (nvp-env-exec-add dir))
+           ;;--- Scripts ---------------------------------------------
+           (cl-loop for (prog args) in ,script
+              do
+                (nvp-log "Running %s %S" nil prog args)
+                (nvp-with-process-log
+                  (apply 'start-process
+                         prog "*nvp-install*" prog args)
+                  :pop-on-error))
+           (nvp-with-gnu
+             ;; sudo commands
+             (cl-loop for (action cmd) in ,sudo
+                do (if (eq 'install action)
+                       (nvp-ext-sudo-install cmd)
+                     (nvp-ext-sudo-command nil cmd))))
+           (nvp-with-w32
+             ;; chocolatey
+             (cl-loop for pkg in ,choco
+                do (w32-shell-execute
+                    "runas" "cmd.exe" (format " /c cinst -y %s" pkg)))
+             ;; FIXME: msys / cygwin
+             )
+           ;;--- Compile ---------------------------------------------
+           ;; Removes macro+contents from compiled file
+           (let ((outfile (concat ,file ".elc"))
+                 (infile (concat ,file ".el"))
+                 (tmp-file (make-temp-name
+                            (file-name-nondirectory ,file))))
+             (with-temp-file tmp-file
+               ;; ,@body
+               (goto-char (point-max))
+               (insert-file-contents infile)
+               (goto-char (point-min))
+               (while (search-forward "(nvp-install-on-demand" nil t)
+                 (goto-char (match-beginning 0))
+                 (kill-sexp 1)))
+             (let ((byte-compile-dest-file-function
+                    #'(lambda (_f) outfile)))
+               (byte-compile-file tmp-file)
+               (delete-file tmp-file))))))))
 
-;;--- Old ------------------------------------------------------------
-;; Install any dependencies listed in config for MODE. With prefix, remake
-;; all site-lisp packges after installing git repos.
+;;--- Old version ----------------------------------------------------
+;; Install any dependencies listed in config for MODE. With prefix,
+;; remake all site-lisp packges after installing git repos.
 ;;;###autoload
 (defun nvp-install-mode (mode)
   (interactive (list (nvp-install-list-modes)))

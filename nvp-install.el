@@ -137,7 +137,7 @@
 
 ;;; Install dependencies on demand - when mode is first autoloaded
 ;;;###autoload
-(cl-defmacro nvp-install-on-demand-1
+(cl-defmacro nvp-install-on-demand
     (&key libs optional git bit env env! script sudo choco msys
           cygwin)
   (declare (indent defun) (debug t))

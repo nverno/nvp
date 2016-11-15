@@ -1,4 +1,4 @@
-;;; nvp-install --- 
+;;; nvp-install --- -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -135,6 +135,44 @@
 
 ;;--- On Demand ------------------------------------------------------
 
+;; number of processes to wait for before compiling
+(defvar nvp-install--total-proc 0)
+
+;; push process onto active process list, log it, and delete if
+;; when finished. When all active process are done, compile
+(defmacro nvp-with-finished-process (process file &rest body)
+  (declare (indent 1) (debug t))
+  `(progn
+     (push ,process nvp-install-active-procs)
+     (cl-incf nvp-install--total-proc)
+     (nvp-with-process-log ,process :pop-on-error
+       (setq nvp-install-active-procs
+             (delq p nvp-install-active-procs))
+       (cl-decf nvp-install--total-proc)
+       ,@body
+       (when (zerop nvp-install--total-proc)
+         ;; build site-lisp packages
+         (nvp-install-pending-dirs)
+         ;; compile mode
+         (nvp-install-compile ,file)))))
+
+;; compile the file, removing macro+contents
+(defun nvp-install-compile (file)
+  (let ((outfile (concat file ".elc"))
+        (infile (concat file ".el"))
+        (tmp-file (make-temp-name (file-name-nondirectory file))))
+    (with-temp-file tmp-file
+      (goto-char (point-max))
+      (insert-file-contents infile)
+      (goto-char (point-min))
+      (while (search-forward "(nvp-install-on-demand" nil t)
+        (goto-char (match-beginning 0))
+        (kill-sexp 1)))
+    (let ((byte-compile-dest-file-function
+           #'(lambda (_f) outfile)))
+      (byte-compile-file tmp-file)
+      (delete-file tmp-file))))
+
 ;;; Install dependencies on demand - when mode is first autoloaded
 ;;;###autoload
 (cl-defmacro nvp-install-on-demand
@@ -147,6 +185,8 @@
          (unless
              (file-exists-p
               (expand-file-name (concat ,file ".elc")))
+           ;; process counter
+           (setq nvp-install--total-proc 0)
            ;;--- Dependencies ----------------------------------------
            (cl-loop for dep in ,depends
               do (nvp-install-mode dep))
@@ -169,16 +209,12 @@
            (setq nvp-install-pending-dirs (append ,git ,bit))
            (cl-loop for pkg in ,git
               do (let ((proc (nvp-install-git pkg)))
-                   (push proc nvp-install-active-procs)
-                   (set-process-sentinel proc
-                                         'nvp-install-git-sentinel)))
+                   (nvp-with-finished-process proc file)))
            (cl-loop for pkg in ,bit
               do (let ((proc
-                        (nvp-install-git pkg
-                                         "https://bitbucket.org")))
-                   (push proc nvp-install-active-procs)
-                   (set-process-sentinel proc
-                                         'nvp-install-git-sentinel)))
+                        (nvp-install-git
+                         pkg "https://bitbucket.org")))
+                   (nvp-with-finished-process proc file)))
            ;;--- Environment ----------------------------------------
            ;; Permanent
            (cl-loop for (var val exec clobber) in ,env!
@@ -196,41 +232,48 @@
            (cl-loop for (prog args) in ,script
               do
                 (nvp-log "Running %s %S" nil prog args)
-                (nvp-with-process-log
-                  (apply 'start-process
-                         prog "*nvp-install*" prog args)
-                  :pop-on-error))
+                (let ((proc (apply 'start-process prog "*nvp-install*"
+                                   prog args)))
+                  (nvp-with-finished-process proc file)))
            (nvp-with-gnu
              ;; sudo commands
              (cl-loop for (action cmd) in ,sudo
-                do (if (eq 'install action)
-                       (nvp-ext-sudo-install cmd)
-                     (nvp-ext-sudo-command nil cmd))))
+                do
+                  (nvp-log "Running %s %S" nil action cmd)
+                  (let ((proc (if (eq 'install action)
+                                  (nvp-ext-sudo-install cmd)
+                                (nvp-ext-sudo-command nil cmd))))
+                    (nvp-with-finished-process proc file))))
            (nvp-with-w32
              ;; chocolatey
              (cl-loop for pkg in ,choco
+                ;; FIXME: can't have process sentinel with this
                 do (w32-shell-execute
                     "runas" "cmd.exe" (format " /c cinst -y %s" pkg)))
              ;; FIXME: msys / cygwin
-             )
+             (cl-loop for pkg in ,msys
+                do (message "FIXME"))
+             (cl-loop for pkg in ,cygwin
+                do (message "FIXME")))
            ;;--- Compile ---------------------------------------------
            ;; Removes macro+contents from compiled file
-           (let ((outfile (concat ,file ".elc"))
-                 (infile (concat ,file ".el"))
-                 (tmp-file (make-temp-name
-                            (file-name-nondirectory ,file))))
-             (with-temp-file tmp-file
-               ;; ,@body
-               (goto-char (point-max))
-               (insert-file-contents infile)
-               (goto-char (point-min))
-               (while (search-forward "(nvp-install-on-demand" nil t)
-                 (goto-char (match-beginning 0))
-                 (kill-sexp 1)))
-             (let ((byte-compile-dest-file-function
-                    #'(lambda (_f) outfile)))
-               (byte-compile-file tmp-file)
-               (delete-file tmp-file))))))))
+           ;; (let ((outfile (concat ,file ".elc"))
+           ;;       (infile (concat ,file ".el"))
+           ;;       (tmp-file (make-temp-name
+           ;;                  (file-name-nondirectory ,file))))
+           ;;   (with-temp-file tmp-file
+           ;;     ;; ,@body
+           ;;     (goto-char (point-max))
+           ;;     (insert-file-contents infile)
+           ;;     (goto-char (point-min))
+           ;;     (while (search-forward "(nvp-install-on-demand" nil t)
+           ;;       (goto-char (match-beginning 0))
+           ;;       (kill-sexp 1)))
+           ;;   (let ((byte-compile-dest-file-function
+           ;;          #'(lambda (_f) outfile)))
+           ;;     (byte-compile-file tmp-file)
+           ;;     (delete-file tmp-file)))
+           )))))
 
 ;;;###autoload
 (defun nvp-install-mode (mode)

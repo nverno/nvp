@@ -253,24 +253,10 @@
              (cl-loop for pkg in ,cygwin
                 do (message "FIXME")))
            ;;--- Compile ---------------------------------------------
-           ;; Removes macro+contents from compiled file
-           ;; (let ((outfile (concat ,file ".elc"))
-           ;;       (infile (concat ,file ".el"))
-           ;;       (tmp-file (make-temp-name
-           ;;                  (file-name-nondirectory ,file))))
-           ;;   (with-temp-file tmp-file
-           ;;     ;; ,@body
-           ;;     (goto-char (point-max))
-           ;;     (insert-file-contents infile)
-           ;;     (goto-char (point-min))
-           ;;     (while (search-forward "(nvp-install-on-demand" nil t)
-           ;;       (goto-char (match-beginning 0))
-           ;;       (kill-sexp 1)))
-           ;;   (let ((byte-compile-dest-file-function
-           ;;          #'(lambda (_f) outfile)))
-           ;;     (byte-compile-file tmp-file)
-           ;;     (delete-file tmp-file)))
-           )))))
+           ;; If not processes were spawned, then do the compile
+           ;; here since no sentinels will get called
+           (when (zerop nvp-install--total-proc)
+             (nvp-install-compile ,file)))))))
 
 ;;;###autoload
 (defun nvp-install-mode (mode)

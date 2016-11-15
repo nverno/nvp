@@ -143,11 +143,8 @@
 (defmacro nvp-with-finished-process (process file &rest body)
   (declare (indent 1) (debug t))
   `(progn
-     (push ,process nvp-install-active-procs)
      (cl-incf nvp-install--total-proc)
      (nvp-with-process-log ,process :pop-on-error
-       (setq nvp-install-active-procs
-             (delq p nvp-install-active-procs))
        (cl-decf nvp-install--total-proc)
        ,@body
        (when (zerop nvp-install--total-proc)
@@ -209,12 +206,12 @@
            (setq nvp-install-pending-dirs (append ,git ,bit))
            (cl-loop for pkg in ,git
               do (let ((proc (nvp-install-git pkg)))
-                   (nvp-with-finished-process proc file)))
+                   (nvp-with-finished-process proc ,file)))
            (cl-loop for pkg in ,bit
               do (let ((proc
                         (nvp-install-git
                          pkg "https://bitbucket.org")))
-                   (nvp-with-finished-process proc file)))
+                   (nvp-with-finished-process proc ,file)))
            ;;--- Environment ----------------------------------------
            ;; Permanent
            (cl-loop for (var val exec clobber) in ,env!
@@ -234,7 +231,7 @@
                 (nvp-log "Running %s %S" nil prog args)
                 (let ((proc (apply 'start-process prog "*nvp-install*"
                                    prog args)))
-                  (nvp-with-finished-process proc file)))
+                  (nvp-with-finished-process proc ,file)))
            (nvp-with-gnu
              ;; sudo commands
              (cl-loop for (action cmd) in ,sudo
@@ -243,7 +240,7 @@
                   (let ((proc (if (eq 'install action)
                                   (nvp-ext-sudo-install cmd)
                                 (nvp-ext-sudo-command nil cmd))))
-                    (nvp-with-finished-process proc file))))
+                    (nvp-with-finished-process proc ,file))))
            (nvp-with-w32
              ;; chocolatey
              (cl-loop for pkg in ,choco

@@ -35,7 +35,8 @@
      (if (eq system-type 'windows-nt)
          (bound-and-true-p
           ,(intern (concat "nvp-" name "-program")))
-       ,name)))
+       (let ((local (expand-file-name ,name "/usr/local/bin")))
+         (if (file-exists-p local) local ,name)))))
 
 (defmacro nvp-with-w32 (&rest body)
   (declare (indent 0) (debug t))

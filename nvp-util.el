@@ -79,7 +79,8 @@
   (let ((str "The quick brown fox jumps over the lazy dog ´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
         (font-families (cl-remove-duplicates 
                         (sort (font-family-list) 
-                              #'(lambda (x y) (string< (upcase x) (upcase y))))
+                              #'(lambda (x y) (string< (upcase x)
+                                                  (upcase y))))
                         :test 'string=))
         (buff (get-buffer-create "*fonts*"))
         (inhibit-read-only t))
@@ -88,8 +89,10 @@
       (font-lock-mode)
       (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
         (insert 
-         (propertize str 'font-lock-face `(:family ,ff))               ff "\n"
-         (propertize str 'font-lock-face `(:family ,ff :slant italic)) ff "\n"))
+         (propertize str 'font-lock-face
+                     `(:family ,ff)) ff "\n"
+         (propertize str 'font-lock-face
+                     `(:family ,ff :slant italic)) ff "\n"))
       (pop-to-buffer (current-buffer)))))
 
 (provide 'nvp-util)

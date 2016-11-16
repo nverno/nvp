@@ -27,7 +27,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-local)
+  (require 'nvp-local nil t)
   (require 'cl-lib))
 (require 'nvp-macro)
 (autoload 'nvp-log "nvp-log")

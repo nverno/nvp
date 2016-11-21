@@ -28,10 +28,12 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-local nil t)
-  (require 'cl-lib))
-(require 'nvp-macro)
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-package-directory-dwim "nvp-package")
+(nvp-with-gnu
+  (autoload 'nvp-ext-sudo-command "nvp-ext"))
 
 ;; completing read for mode configs
 (defun nvp-install-list-modes ()
@@ -40,6 +42,33 @@
    (mapcar (lambda (x)
              (replace-regexp-in-string "\\(nvp-\\|\\.el\\)" "" x))
            (directory-files nvp/mode nil "^[^\\.].*\\.el$"))))
+
+;;--- Shell Script ---------------------------------------------------
+
+;; return list of functions in FILE
+(defun nvp-install-script-functions (file)
+  (with-current-buffer (find-file-noselect file)
+    (mapcar 'car (cdr (imenu--make-index-alist)))))
+
+;; run install script, prompting for function
+(defun nvp-install-script (&optional file funcs)
+  (interactive)
+  (let* ((file (or file (read-file-name "File: ")))
+         (funcs (or funcs
+                    (and current-prefix-arg
+                         (cons
+                          (ido-completing-read
+                           "Function: "
+                           (nvp-install-script-functions file))
+                          nil))))
+         (cmd (format
+               "%s%s" file
+               (when funcs
+                 (concat
+                  " && " (mapconcat 'identity funcs " && "))))))
+    (nvp-with-gnu/w32
+        (nvp-ext-sudo-command nil cmd)
+      (start-process "bash" "*nvp-install*" "bash" cmd))))
 
 ;;--- Parse ----------------------------------------------------------
 

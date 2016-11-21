@@ -52,20 +52,19 @@
 
 ;; run install script, prompting for function
 (defun nvp-install-script (&optional file funcs)
-  (interactive)
-  (let* ((file (or file (read-file-name "File: ")))
-         (funcs (or funcs
-                    (and current-prefix-arg
-                         (cons
-                          (ido-completing-read
-                           "Function: "
-                           (nvp-install-script-functions file))
-                          nil))))
-         (cmd (format
-               "%s%s" file
-               (when funcs
-                 (concat
-                  " && " (mapconcat 'identity funcs " && "))))))
+  (interactive
+   (let* ((file (or file (read-file-name "File: ")))
+          (funcs (or funcs (cons
+                            (ido-completing-read
+                             "Function: "
+                             (nvp-install-script-functions file))
+                            nil))))
+     (list file funcs)))
+  (let ((cmd (format
+              "%s"
+              (if funcs
+                  (mapconcat (lambda (f) (concat file " " f)) funcs " && ")
+                file))))
     (nvp-with-gnu/w32
         (nvp-ext-sudo-command nil cmd)
       (start-process "bash" "*nvp-install*" "bash" cmd))))

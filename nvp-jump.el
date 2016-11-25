@@ -149,24 +149,5 @@
           (ido-find-file-in-dir (expand-file-name mode dirname))
         (ido-find-file-in-dir dirname)))))
 
-;;--- Bookmarks ------------------------------------------------------
-
-;;;###autoload
-(defun nvp-bookmark-local (file)
-  (interactive
-   (list (or
-          (bound-and-true-p file)
-          (and current-prefix-arg
-               (read-file-name "Location of bookmark file: "))
-          (and (bound-and-true-p local-bookmarks)
-               (expand-file-name
-                local-bookmarks
-                (locate-dominating-file default-directory dir-locals-file)))
-          bookmark-default-file)))
-  (message "Current bookmarks file is: %s" file)
-  (when (not (string= bookmark-default-file file))
-    (bmk-to-bmk-handler (bmk-to-bmk-make-record file)))
-  (call-interactively 'bookmark-bmenu-list))
-
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

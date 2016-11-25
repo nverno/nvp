@@ -28,6 +28,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))
+(autoload 'nvp-log "nvp-log")
 
 (defmacro nvp-ext-read-passwd ()
   '(or (bound-and-true-p nvp-sudo-passwd)
@@ -53,6 +54,84 @@
      nil
      (format "-l -c \"apt-get install -y %s\"" packages)
      buffer)))
+
+;;--- Terminal -------------------------------------------------------
+
+(declare-function tramp-dissect-file-name "tramp")
+
+;; Switch to a terminal or launch one, if remote use bash. 
+;; With prefix, create a shell in the current `default-directory'. 
+;; On remote hosts, ensure that the shell is created properly
+;; (windows).
+;;;###autoload
+(define-obsolete-function-alias 'nvp-terminal 'nvp-ext-terminal)
+;;;###autoload
+(defun nvp-ext-terminal (&optional buffer)
+  (interactive)
+  (let* ((prog "shell")
+         (rem (file-remote-p default-directory))
+         (explicit-shell-file-name
+          (if rem "/bin/bash" (getenv "SHELL")))
+         (buffname (or buffer
+                       (concat "*" prog
+                               (or (and rem
+                                        (concat
+                                         ":"
+                                         (aref (tramp-dissect-file-name
+                                                default-directory)
+                                               2)))
+                                   (and current-prefix-arg
+                                        (concat
+                                         ":"
+                                         (substring
+                                          default-directory
+                                          0
+                                          (1-
+                                           (length
+                                            default-directory))))))
+                               "*")))
+         (buffer (get-buffer-create buffname)))
+    ;; (if (eq system-type 'windows-nt)
+    ;;     (shell buffer)
+    ;;   (ansi-term "/bin/bash" buffer))
+    (shell buffer)))
+
+;;--- Vagrant --------------------------------------------------------
+
+;;;###autoload
+(defun nvp-ext-vagrant-halt (&optional arg)
+  "Halt all running vagrant boxes in `vms'.  With prefix, show output
+in buffer *vagrant-status*."
+  (interactive "P")
+  (let* ((buff (if arg (get-buffer-create "*vagrant-status*") nil))
+         (proc (start-process
+                "bash" buff "bash"
+                (expand-file-name "vagrant-tools.sh" nvp/bin) "-l"
+                nvp/vms "-K")))
+    (when (not arg)
+      (message "Running vagrant-halt...")
+      (nvp-with-process-log proc :pop-on-error))))
+
+;;--- Other ----------------------------------------------------------
+
+;; Return the number of logical processors on this system.
+(defun nvp-ext-sys-numcores ()
+  (or ;; Linux
+   (when (file-exists-p "/proc/cpuinfo")
+     (with-temp-buffer
+       (insert-file-contents "/proc/cpuinfo")
+       (how-many "^processor[[:space:]]+:")))
+   ;; Windows
+   (let ((number-of-processors (getenv "NUMBER_OF_PROCESSORS")))
+     (when number-of-processors
+       (string-to-number number-of-processors)))
+   ;; BSD+OSX
+   (with-temp-buffer
+     (ignore-errors
+       (when (zerop (call-process "sysctl" nil t nil "-n" "hw.ncpu"))
+         (string-to-number (buffer-string)))))
+   ;; Default
+   1))
 
 (provide 'nvp-ext)
 ;;; nvp-ext.el ends here

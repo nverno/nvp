@@ -209,5 +209,85 @@ if process exit status isn't 0."
           ,@(and make-action `((have-make ,make-action)))
           (t ,@body))))))
 
+;;; Align
+
+;; Create alignment functions
+(defmacro nvp-align-fn (name doc regex &optional ignore-string)
+  (declare (indent defun))
+  (let ((fn (intern (if (symbolp name)
+                        (symbol-name name)
+                      name))))
+    `(progn
+       ,(and (buffer-file-name)
+             `(autoload ',name ,(buffer-file-name)))
+       (defun ,fn (start end)
+         ,doc
+         (interactive "r")
+         (align-regexp start end ,regex)))))
+
+;;; Wrap
+
+;; Create function to wrap region, inserting BEGIN at beginning,
+;; AFTER at the end.
+(defmacro nvp-wrap-fn (name doc begin end &optional interact-p)
+  (declare (indent defun))
+  (let ((fn (intern (if (symbolp name)
+                        (symbol-name name)
+                      name))))
+    `(defun ,fn (start end)
+       ,doc
+       ,@(when interact-p
+           '(interactive "r"))
+       (save-excursion
+         (goto-char (region-beginning))
+         (insert ,begin))
+       (goto-char (region-end))
+       (insert ,end))))
+
+
+;; Wrap items in list between DELIM, default wrapping with WRAP
+;; Create list wrapping functions, wrapping items between DELIMS with
+;; WRAP by default, prompting for wrapping string with prefix.  IGNORE
+;; is regexp to ignore in list, ie commas and spaces and MATCH is regex
+;; to capture items.
+(cl-defmacro nvp-wrap-list-items (name
+                                  &key
+                                  (delims '("(" . ")"))
+                                  (match "[^)(, \n\t\r]+")
+                                  (ignore "[, \n\t\r]*")
+                                  (wrap '("\"" . "\"")))
+  (declare (debug defun)
+           (indent defun))
+  (let ((fn (intern (concat "nvp-list-wrap-" (symbol-name name))))
+        (doc (format
+              (concat "Wrap items of list in selected region between "
+                      "%s...%s with items with %s..%s by default or "
+                      "string ARG, prompting with prefix.")
+              (car delims) (cdr delims) (car wrap) (cdr wrap)))
+        (delim-re (concat ignore "\\(" match "\\)")))
+    `(defun ,fn (start end &optional arg)
+       ,doc
+       (interactive "r\nP")
+       (let* ((wrap (or (and arg
+                             (car
+                              (read-from-string
+                               (read-from-minibuffer
+                                "Wrap items with(a . b): "))))
+                        ',wrap))
+              (str (buffer-substring-no-properties start end))
+              res)
+         (delete-region start end)
+         (insert
+          (with-temp-buffer
+            (insert str)
+            (goto-char (point-min))
+            (re-search-forward ,(regexp-quote (car delims)) nil t)
+            (while (re-search-forward ,delim-re nil t)
+              (replace-match (concat (car wrap)
+                                     (match-string-no-properties 1)
+                                     (cdr wrap))
+                             t nil nil 1))
+            (buffer-string)))))))
+
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

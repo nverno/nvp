@@ -66,6 +66,7 @@
         (forward-line 1))
     (line-move (- arg))))
 
+
 ;;--- Duplicate Line -------------------------------------------------
 
 (declare-function paredit-kill "paredit")

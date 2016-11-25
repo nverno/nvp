@@ -165,5 +165,16 @@
    shell-command-switch
    (format "nohup 1>/dev/null 2>/dev/null %s" cmd)))
 
+;;--- Tables ---------------------------------------------------------
+
+;; Format alist DAT as an org table.  This alist assumes :head and
+;; :rows lists. It splits :rows into number of sublists matching
+;; number of colums (:head).
+(defun nvp-table-alist-to-org (dat)
+  (let* ((head (cdr (assoc-string "head" dat)))
+         (rows (append (cdr (assoc-string "rows" dat)) ()))
+         (cols (length head)))
+    (append head (cons 'hline nil) (nvp-list-split rows cols) nil)))
+
 (provide 'nvp-util)
 ;;; nvp-util.el ends here

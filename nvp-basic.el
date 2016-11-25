@@ -26,6 +26,9 @@
 
 ;;; Commentary:
 ;;; Code:
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'cl-lib))
 
 ;;--- Movement -------------------------------------------------------
 
@@ -63,9 +66,87 @@
         (forward-line 1))
     (line-move (- arg))))
 
+;;--- Duplicate Line -------------------------------------------------
+
+(declare-function paredit-kill "paredit")
+
+;; Duplicates the current line or region arg times.
+;; if there's no region, the current line will be duplicated
+;; (or last non-empty).
+(defun nvp-basic-duplicate-line-or-region (arg)
+  (interactive "p")
+  (if (region-active-p)
+      (let ((beg (region-beginning))
+            (end (region-end)))
+        (nvp-basic--duplicate-region arg beg end))
+  (nvp-basic--duplicate-last-nonempty-line arg)
+  (nvp-basic-temp-binding "d" #'nvp-basic--back-and-dupe)))
+
+(defun nvp-basic--back-and-dupe ()
+  (interactive)
+  (forward-line -1)
+  (nvp-basic--duplicate-current-line))
+
+;; duplicates the region bounded by start and end num times.
+;; if no start and end is provided, the current region-beginning and
+;; region-end is used.
+(defun nvp-basic--duplicate-region (&optional num start end)
+  (interactive "p")
+  (save-excursion
+    (let* ((start (or start (region-beginning)))
+	   (end (or end (region-end)))
+	   (region (buffer-substring start end)))
+      (goto-char end)
+      (dotimes (_i num)
+	(insert region)))))
+
+;; Duplicate the current of previous line that isn't blank.
+(defun nvp-basic--duplicate-last-nonempty-line (&optional num)
+  (interactive "p")
+  (let ((back 0))
+    (while (and (nvp--line-empty-p)
+                (> (line-number-at-pos) 1))
+      (forward-line -1)
+      (setq back (1+ back)))
+    (when (eq (point-at-eol) (point-max))
+      (goto-char (point-max))
+      (newline)
+      (forward-char -1))
+    (let ((region (buffer-substring (point-at-bol)
+                                    (1+ (point-at-eol)))))
+      (forward-line back)
+      (dotimes (_i num)
+        (insert region))))
+  (goto-char (point-at-eol)))
+
+(defun nvp-basic--paredit-duplicate-current-line ()
+  (back-to-indentation)
+  (let (kill-ring kill-ring-yank-pointer)
+    (paredit-kill)
+    (yank)
+    (newline-and-indent)
+    (yank)))
+
+;; duplicate the current line num times.
+(defun nvp-basic--duplicate-current-line (&optional num)
+  (interactive "p")
+  (if (bound-and-true-p paredit-mode)
+      (nvp-basic--paredit-duplicate-current-line)
+    (save-excursion
+      (when (eq (point-at-eol) (point-max))
+        (goto-char (point-max))
+        (newline)
+        (forward-char -1))
+      (nvp-basic--duplicate-region num (point-at-bol)
+                             (1+ (point-at-eol))))))
+
+;;--- Newline --------------------------------------------------------
+
+(nvp-newline nvp-basic-newline-dwim nil
+  :pairs (("{" "}") ("(" ")") ("\\[" "\\]")))
+
 ;;--- Keys -----------------------------------------------------------
 
-;; make a fleeting keybinding
 (defun nvp-basic-temp-binding (key cmd &optional keep exit)
   (set-transient-map
    (let ((tmap (make-sparse-keymap)))

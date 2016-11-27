@@ -52,14 +52,14 @@
 
 ;; run install script, prompting for function
 (defun nvp-install-script (&optional file funcs)
-  (interactive
-   (let* ((file (or file (read-file-name "File: ")))
-          (funcs (or funcs (cons
-                            (ido-completing-read
-                             "Function: "
-                             (nvp-install-script-functions file))
-                            nil))))
-     (list file funcs)))
+  (interactive)
+  (let* ((file (or file (read-file-name "File: ")))
+         (funcs (or funcs (cons
+                           (ido-completing-read
+                            "Function: "
+                            (nvp-install-script-functions file))
+                           nil))))
+    (list file funcs))
   (let ((cmd (format
               "%s"
               (if funcs
@@ -204,6 +204,7 @@
     (&key libs optional git bit env env! script sudo choco msys
           cygwin depends)
   (declare (indent defun) (debug t))
+  (require 'nvp-macro)
   (when load-file-name
     (let ((file (file-name-sans-extension load-file-name)))
       `(eval-when-compile
@@ -299,6 +300,7 @@
 ;; -------------------------------------------------------------------
 
 (declare-function w32-shell-execute "w32")
+(declare-function imenu--make-index-alist "imenu")
 
 (provide 'nvp-install)
 ;;; nvp-install.el ends here

@@ -41,7 +41,8 @@
       (goto-char (point-max))
       (insert-before-markers
        (apply 'format 
-              (replace-regexp-in-string "\n+" "\n" text)
+              (replace-regexp-in-string
+               "\n+" "\n" (concat text "\n"))
               args)))))
 
 ;; ------------------------------------------------------------

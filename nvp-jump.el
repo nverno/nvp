@@ -131,19 +131,18 @@
 ;;;###autoload
 (defun nvp-jump-to-book (dirname)
   (interactive
-   (list (or
-          (bound-and-true-p dirname)
-          (and current-prefix-arg
-               (expand-file-name
-                (read-from-minibuffer
-                 "Directory Name (default book root): ")
-                nvp/books))
-          (and (bound-and-true-p books-directory)
-               (expand-file-name books-directory nvp/books))
-          nvp/books)))
+   (list
+    (or (bound-and-true-p dirname)
+        (and current-prefix-arg
+             (expand-file-name
+              (read-from-minibuffer
+               "Directory Name (default book root): ")
+              nvp/books))
+        (and (bound-and-true-p books-directory)
+             (expand-file-name books-directory nvp/books))
+        nvp/books)))
   (let* ((files (directory-files dirname t "^[^.]"))
-         (mode (substring-no-properties (symbol-name major-mode)
-                                        0 -5))
+         (mode (substring-no-properties (symbol-name major-mode) 0 -5))
          (case-fold-search t))
     (when files
       (let ((file (ido-completing-read
@@ -157,13 +156,16 @@
                       dirname) t "^[^.]"))))
         (if (not (string-match-p "\\.epub$" file))
             (find-file file)
-          (if (executable-find "calibre")
-              (call-process "calibre" nil 0 nil file)
-            (set-process-sentinel
-             (nvp-ext-sudo-install "calibre")
-             #'(lambda (p _m)
-                 (when (zerop (process-exit-status p))
-                   (call-process "calibre" nil 0 nil file))))))))))
+          (nvp-with-gnu/w32
+              (if (executable-find "calibre")
+                  (call-process "calibre" nil 0 nil file)
+                (set-process-sentinel
+                 (nvp-ext-sudo-install "calibre")
+                 #'(lambda (p _m)
+                     (when (zerop (process-exit-status p))
+                       (call-process "calibre"
+                                     nil 0 nil file)))))
+            (call-process "sumatrapdf" nil 0 nil file)))))))
 
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

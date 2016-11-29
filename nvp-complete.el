@@ -75,5 +75,30 @@
      (read-from-minibuffer prompt initial-contents
                            read-expression-map nil
                            'read-expression-history))))
+
+;;--- Switch Macros --------------------------------------------------
+
+(defmacro nvp-complete-with-switch-completion (program args cache
+                                                       &rest body)
+  (declare (indent 1) (indent 1) (indent 2) (debug t))
+  `(let ((nvp-complete--switch-program ,program)
+          (nvp-complete--switch-args ,args)
+          (nvp-complete--switch-cache ,cache))
+     ,@body))
+
+(defmacro nvp-complete-compile-with-completion (program args cache
+                                                        cmd prompt
+                                                        &rest body)
+  (declare (indent defun) (debug t))
+  `(nvp-complete-with-switch-completion ,program ,args ,cache
+     (let ((compile-command
+            (format
+             (concat ,cmd " %s %s")
+             (nvp-complete-read-switch ,prompt) " "
+             buffer-file-name))
+           (compilation-read-command))
+       ,@body
+       (call-interactively 'compile))))
+
 (provide 'nvp-complete)
 ;;; nvp-complete.el ends here

@@ -1,4 +1,4 @@
-;;; nvp-jump --- 
+;;; nvp-jump ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -32,6 +32,8 @@
   (require 'nvp-local nil t)
   (defvar recentf-list))
 (autoload 'elisp-utils-elisp-follow "elisp-utils")
+(nvp-with-gnu
+  (autoload 'nvp-ext-sudo-install "nvp-ext"))
 
 ;;--- Modes ----------------------------------------------------------
 
@@ -144,10 +146,24 @@
                                         0 -5))
          (case-fold-search t))
     (when files
-      (if (and mode
-               (member mode (mapcar #'file-name-nondirectory files)))
-          (ido-find-file-in-dir (expand-file-name mode dirname))
-        (ido-find-file-in-dir dirname)))))
+      (let ((file (ido-completing-read
+                   "Book: "
+                   (directory-files
+                    (if (and mode
+                             (member mode
+                                     (mapcar #'file-name-nondirectory
+                                             files)))
+                        (expand-file-name mode dirname)
+                      dirname) t "^[^.]"))))
+        (if (not (string-match-p "\\.epub$" file))
+            (find-file file)
+          (if (executable-find "calibre")
+              (call-process "calibre" nil 0 nil file)
+            (set-process-sentinel
+             (nvp-ext-sudo-install "calibre")
+             #'(lambda (p _m)
+                 (when (zerop (process-exit-status p))
+                   (call-process "calibre" nil 0 nil file))))))))))
 
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

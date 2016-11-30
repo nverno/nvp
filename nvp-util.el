@@ -44,50 +44,6 @@
   (cl-loop for i from 0 to (1- (length lst)) by n
      collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
 
-;;--- Fonts ----------------------------------------------------------
-
-;; https://gist.github.com/haxney/3055728
-;; non-nil if monospaced font
-(defun nvp-font-is-mono-p (font-family)
-  (let ((wind (selected-window))
-        m-width l-width)
-   (with-temp-buffer
-     (set-window-buffer (selected-window) (current-buffer))
-     (text-scale-set 4)
-     (insert (propertize "l l l l l" 'face `((:family ,font-family))))
-     (goto-char (line-end-position))
-     (setq l-width (car (posn-x-y (posn-at-point))))
-     (newline)
-     (forward-line)
-     (insert (propertize "m m m m m" 'face `((:family ,font-family) italic)))
-     (goto-char (line-end-position))
-     (setq m-width (car (posn-x-y (posn-at-point))))
-     (eq l-width m-width))))
-
-;; Display various available fonts
-;; https://www.emacswiki.org/emacs/GoodFonts
-;;;###autoload
-(defun nvp-font-list ()
-  (interactive)
-  (let ((str "The quick brown fox jumps over the lazy dog ´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
-        (font-families (cl-remove-duplicates 
-                        (sort (font-family-list) 
-                              #'(lambda (x y) (string< (upcase x)
-                                                  (upcase y))))
-                        :test 'string=))
-        (buff (get-buffer-create "*fonts*"))
-        (inhibit-read-only t))
-    (with-current-buffer buff
-      (erase-buffer)
-      (font-lock-mode)
-      (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
-        (insert 
-         (propertize str 'font-lock-face
-                     `(:family ,ff)) ff "\n"
-         (propertize str 'font-lock-face
-                     `(:family ,ff :slant italic)) ff "\n"))
-      (pop-to-buffer (current-buffer)))))
-
 ;;--- Conversion -----------------------------------------------------
 
 (declare-function hexl-hex-char-to-integer "hexl")
@@ -119,6 +75,7 @@
     (message "%d" oct-num)))
 
 ;;--- Save Data ------------------------------------------------------
+
 ;; recentf.el
 (defun nvp-save-variable (var file &optional header coding)
   "Save the `VAR' into `FILE' with `HEADER' and `CODING'."
@@ -175,6 +132,65 @@
          (rows (append (cdr (assoc-string "rows" dat)) ()))
          (cols (length head)))
     (append head (cons 'hline nil) (nvp-list-split rows cols) nil)))
+
+;;--- Strings --------------------------------------------------------
+
+;; Remove string suffix if it is at the end of the string `s'.
+(defun chop-suffix (suffix s)
+  (let ((pos (- (length suffix))))
+    (if (and (>= (length s) (length suffix))
+             (string= suffix (substring s pos)))
+        (substring s 0 pos)
+      s)))
+
+;; Remove string prefix if is is at the start of `s'.
+(defun chop-prefix (prefix s)
+  (let ((pos (length prefix)))
+    (if (and (>= (length s) (length prefix))
+             (string= prefix (substring s 0 pos)))
+        s)))
+
+;; Remove trailing whitespace from `STR'.
+(defun nvp-string-rtrim (str)
+  (replace-regexp-in-string "[ \t\n]+$" "" str))
+
+;; Find all matches for `REGEX' within `STR', returning the full match
+;; string or group `GROUP'.
+(defun nvp-string-all-matches (regex str &optional group)
+  (let ((result nil)
+        (pos 0)
+        (group (or group 0)))
+    (while (string-match regex str pos)
+      (push (match-string group str) result)
+      (setq pos (match-end group)))
+    result))
+
+;; Match `REGEXP' positions in `STR'.
+(defun nvp-string-match-positions (regexp str)
+  (let ((res '()) (pos 0))
+    (while (and (string-match regexp str pos)
+		(< pos (length str) ) )
+      (let ((m (match-end 0)))
+	(push m res)
+	(setq pos m)))
+    (nreverse res)))
+
+;;--- RE -------------------------------------------------------------
+
+(defun nvp-line-empty-p ()
+  (save-excursion
+    (beginning-of-line)
+    (looking-at "[[:space:]]*$")))
+
+;; Skip back across `backwards' chars, then look for `forward',
+;; returning cons of start and end of match.
+(defun nvp-back-chars-then-look (backwards &optional forward)
+  (let ((forward (or forward (format "[%s]+" backwards))))
+    (save-excursion
+      (skip-chars-backward backwards)
+      (if (looking-at forward)
+          (cons (point) (match-end 0))
+        nil))))
 
 (provide 'nvp-util)
 ;;; nvp-util.el ends here

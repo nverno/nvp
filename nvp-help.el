@@ -1,4 +1,4 @@
-;;; nvp-help --- 
+;;; nvp-help ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -47,6 +47,16 @@
 (defun nvp-help-lookup-word (word)
   (interactive (list (save-excursion (car (ispell-get-word nil)))))
   (browse-url (format "http://en.wiktionary.org/wiki/%s" word)))
+
+;;--- Faces ----------------------------------------------------------
+
+;; Show the name of face under point.
+;;;###autoload
+(defun nvp-help-font-face (pos)
+  (interactive "d")
+  (let ((face (or (get-char-property (point) 'read-face-name)
+                  (get-char-property (point) 'face))))
+    (if face (message "Face: %s" face) (message "No face at %d" pos))))
 
 (provide 'nvp-help)
 ;;; nvp-help.el ends here

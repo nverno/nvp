@@ -94,7 +94,7 @@
      (let ((compile-command
             (format
              (concat ,cmd " %s %s")
-             (nvp-complete-read-switch ,prompt) " "
+             (nvp-complete-read-switch ,prompt)
              buffer-file-name))
            (compilation-read-command))
        ,@body

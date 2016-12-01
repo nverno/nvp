@@ -66,7 +66,6 @@
         (forward-line 1))
     (line-move (- arg))))
 
-
 ;;--- Duplicate Line -------------------------------------------------
 
 (declare-function paredit-kill "paredit")
@@ -83,10 +82,23 @@
   (nvp-basic--duplicate-last-nonempty-line arg)
   (nvp-basic-temp-binding "d" #'nvp-basic--back-and-dupe)))
 
+;; duplicate the current line num times.
+(defun nvp-basic-duplicate-current-line (&optional num)
+  (interactive "p")
+  (if (bound-and-true-p paredit-mode)
+      (nvp-basic--paredit-duplicate-current-line)
+    (save-excursion
+      (when (eq (point-at-eol) (point-max))
+        (goto-char (point-max))
+        (newline)
+        (forward-char -1))
+      (nvp-basic--duplicate-region num (point-at-bol)
+                             (1+ (point-at-eol))))))
+
 (defun nvp-basic--back-and-dupe ()
   (interactive)
   (forward-line -1)
-  (nvp-basic--duplicate-current-line))
+  (nvp-basic-duplicate-current-line))
 
 ;; duplicates the region bounded by start and end num times.
 ;; if no start and end is provided, the current region-beginning and
@@ -105,7 +117,9 @@
 (defun nvp-basic--duplicate-last-nonempty-line (&optional num)
   (interactive "p")
   (let ((back 0))
-    (while (and (nvp--line-empty-p)
+    (while (and (save-excursion
+                  (beginning-of-line)
+                  (looking-at-p "[[:space:]]*$"))
                 (> (line-number-at-pos) 1))
       (forward-line -1)
       (setq back (1+ back)))
@@ -127,19 +141,6 @@
     (yank)
     (newline-and-indent)
     (yank)))
-
-;; duplicate the current line num times.
-(defun nvp-basic--duplicate-current-line (&optional num)
-  (interactive "p")
-  (if (bound-and-true-p paredit-mode)
-      (nvp-basic--paredit-duplicate-current-line)
-    (save-excursion
-      (when (eq (point-at-eol) (point-max))
-        (goto-char (point-max))
-        (newline)
-        (forward-char -1))
-      (nvp-basic--duplicate-region num (point-at-bol)
-                             (1+ (point-at-eol))))))
 
 ;;--- Newline --------------------------------------------------------
 

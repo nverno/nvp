@@ -40,7 +40,6 @@
   (setq nvp--dir (file-name-directory load-file-name)))
 
 ;; ------------------------------------------------------------
-
 ;;; Setup
 
 ;;;###autoload (defalias 'nvp-utils-setup-local 'nvp-tools-setup-local)
@@ -60,6 +59,13 @@
   (setq-local nvp-abbrev-local-file (expand-file-name abbr-file dir))
   (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file))
   (when fn (funcall fn)))
+
+;;--- Install Buffer -------------------------------------------------
+
+;; (defun nvp-install-buffer (&optional name)
+;;   (let ((buff (get-buffer-create (or name "*nvp-install*"))))
+;;     (with-current-buffer buff
+;;       (set-process-filter))))
 
 (provide 'nvp)
 ;;; nvp.el ends here

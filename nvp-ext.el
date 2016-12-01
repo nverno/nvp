@@ -35,6 +35,11 @@
        (read-passwd "Password: ")))
 
 (nvp-with-gnu
+  (defun nvp-ext-process-filter (proc string)
+    (replace-regexp-in-string "\r+$" "" string)
+    (with-current-buffer (process-buffer proc)
+      (insert string)))
+  
   ;; do sudo command and return process object
   (defun nvp-ext-sudo-command (&optional password command buffer)
     (interactive)
@@ -43,6 +48,7 @@
            (proc (start-process-shell-command
                   "bash" (or buffer "*nvp-install*")
                   (concat "sudo bash -l " cmd))))
+      (set-process-filter proc 'nvp-ext-process-filter)
       (process-send-string proc password)
       (process-send-string proc "\r")
       (process-send-eof proc)

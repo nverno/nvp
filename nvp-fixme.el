@@ -30,9 +30,9 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 
-(defvar nvp-fixme-keywords "\\_<\\(?:TODO\\|FIXME\\)\:\\_>")
+(defvar nvp-fixme-keywords "\\<\\(TODO\\|FIXME\\):")
 (defvar nvp-fixme-font-lock-words
-  `((,nvp-fixme-keywords (1 font-lock-warning-face))))
+  `((,nvp-fixme-keywords 1 'font-lock-warning-face prepend)))
 
 ;; collect occurences of fixme keywords in buffer
 (defvar-local fixme--occurences nil)
@@ -53,23 +53,27 @@
 
 (defun fixme-next ()
   (interactive)
-  (when (re-search-forward nvp-fixme-keywords)))
+  (condition-case nil
+      (re-search-forward nvp-fixme-keywords)
+    (error (user-error "No more fixmes"))))
 
 (defun fixme-previous ()
   (interactive)
-  (when (re-search-backward nvp-fixme-keywords)))
+  (condition-case nil
+      (re-search-backward nvp-fixme-keywords)
+    (error (user-error "No previous fixmes"))))
 
 (defun fixme-occur ()
   (interactive)
   (occur nvp-fixme-keywords))
 
 ;;--- Mode -----------------------------------------------------------
-;; FIXME:
 
 (defvar fixme-mode-map
   (let ((km (make-sparse-keymap)))
-    (define-key km (kbd "S-M-n") 'fixme-next)
-    (define-key km (kbd "S-M-p") 'fixme-previous)
+    (define-key km (kbd "M-s-n") 'fixme-next)
+    (define-key km (kbd "M-s-p") 'fixme-previous)
+    (define-key km (kbd "M-s-o") 'fixme-occur)
     km))
 
 ;;;###autoload
@@ -78,7 +82,7 @@
   :lighter " Fix"
   :keymap fixme-mode-map
   (if fixme-mode
-      (font-lock-add-keywords nil nvp-fixme-font-lock-words 'append)
+      (font-lock-add-keywords nil nvp-fixme-font-lock-words)
     (font-lock-remove-keywords nil nvp-fixme-font-lock-words))
   (font-lock-flush)
   (font-lock-ensure))

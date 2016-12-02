@@ -128,6 +128,9 @@
 ;; 2. Prompt for directory with prefix arg (appends `nvp/books')
 ;; 3. Check for variable 'books-directory'
 ;; 4. Default to 'nvp/books'.
+;; Opens epubs in external program - calibre / sumatrapdf
+;; FIXME: when opening in calibre, import is annoying - alternative
+;;        to calibre?
 ;;;###autoload
 (defun nvp-jump-to-book (dirname)
   (interactive
@@ -145,27 +148,35 @@
          (mode (substring-no-properties (symbol-name major-mode) 0 -5))
          (case-fold-search t))
     (when files
-      (let ((file (ido-completing-read
-                   "Book: "
-                   (directory-files
-                    (if (and mode
-                             (member mode
-                                     (mapcar #'file-name-nondirectory
-                                             files)))
-                        (expand-file-name mode dirname)
-                      dirname) t "^[^.]"))))
-        (if (not (string-match-p "\\.epub$" file))
-            (find-file file)
+      (let* ((file (ido-completing-read
+                    "Book: "
+                    (directory-files
+                     (if (and mode
+                              (member mode
+                                      (mapcar #'file-name-nondirectory
+                                              files)))
+                         (expand-file-name mode dirname)
+                       dirname) nil "^[^.]")))
+             (fullname (expand-file-name file dirname)))
+        (cond
+         ;; epubs
+         ((string-match-p "\\.epub$" file)
           (nvp-with-gnu/w32
               (if (executable-find "calibre")
-                  (call-process "calibre" nil 0 nil file)
+                  (call-process "calibre" nil 0 nil fullname)
                 (set-process-sentinel
                  (nvp-ext-sudo-install "calibre")
                  #'(lambda (p _m)
                      (when (zerop (process-exit-status p))
                        (call-process "calibre"
-                                     nil 0 nil file)))))
-            (call-process "sumatrapdf" nil 0 nil file)))))))
+                                     nil 0 nil fullname)))))
+            (call-process "sumatrapdf" nil 0 nil fullname)))
+         ;; open if non-directory
+         ((file-name-extension file)
+          (find-file fullname))
+         ;; otherwise assume its a directory
+         (t
+          (nvp-jump-to-book fullname)))))))
 
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

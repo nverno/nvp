@@ -41,15 +41,15 @@
   (nvp-basic-temp-binding
    char (lambda () (interactive) (nvp-basic-char-this-line char)) t))
 
-(defun nvp-basic-next5()
+(defsubst nvp-basic-next5()
   (interactive)
   (forward-line 5))
 
-(defun nvp-basic-prev5()
+(defsubst nvp-basic-prev5()
   (interactive)
   (forward-line -5))
 
-(defun nvp-basic-down-paragraph (arg)
+(defsubst nvp-basic-down-paragraph (arg)
   (interactive "p")
   (if (bolp)
       (progn
@@ -57,7 +57,7 @@
         (forward-line 1))
     (line-move arg)))
 
-(defun nvp-basic-up-paragraph (arg)
+(defsubst nvp-basic-up-paragraph (arg)
   (interactive "p")
   (if (bolp)
       (progn
@@ -65,6 +65,36 @@
         (backward-paragraph arg)
         (forward-line 1))
     (line-move (- arg))))
+
+(defsubst nvp-basic-next-defun ()
+  (interactive)
+  (beginning-of-defun -1))
+
+(defsubst nvp-basic-next-heading ()
+  (interactive)
+  (let ((str (format "^\\s-*%s%s\\(?:---\\|\*\\|%s\\)"
+                     comment-start comment-start comment-start)))
+    (condition-case nil
+        (progn
+          (forward-line 1)
+          (re-search-forward str)
+          (beginning-of-line))
+      (error
+       (forward-line -1)
+       (user-error "No more headings")))))
+
+(defsubst nvp-basic-previous-heading ()
+  (interactive)
+  (let ((str (format "^\\s-*%s%s\\(?:---\\|\*\\|%s\\)"
+                     comment-start comment-start comment-start)))
+    (condition-case nil
+        (progn
+          (forward-line -1)
+          (re-search-backward str)
+          (beginning-of-line))
+      (error
+       (forward-line 1)
+       (user-error "No previous headings")))))
 
 ;;--- Duplicate Line -------------------------------------------------
 

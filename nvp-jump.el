@@ -32,6 +32,7 @@
   (require 'nvp-local nil t)
   (defvar recentf-list))
 (autoload 'elisp-utils-elisp-follow "elisp-utils")
+(autoload 'nvp-chop-prefix "nvp-util")
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-install "nvp-ext"))
 
@@ -132,31 +133,42 @@
 ;; FIXME: when opening in calibre, import is annoying - alternative
 ;;        to calibre?
 ;;;###autoload
-(defun nvp-jump-to-book (dirname)
+(defun nvp-jump-to-book (dirname &optional recurse)
   (interactive
    (list
     (or (bound-and-true-p dirname)
-        (and current-prefix-arg
+        ;; select root directory
+        (and (member current-prefix-arg '((16) (64)))
              (expand-file-name
-              (read-from-minibuffer
-               "Directory Name (default book root): ")
-              nvp/books))
+              (read-directory-name
+               "Book Directory (default book root): "
+               nvp/books)))
+        ;; local variable
         (and (bound-and-true-p books-directory)
-             (expand-file-name books-directory nvp/books))
-        nvp/books)))
-  (let* ((files (directory-files dirname t "^[^.]"))
+             (expand-file-name books-directory))
+        ;; default
+        nvp/books)
+    (and (member current-prefix-arg '((4) (64))))))
+  (let* ((files (if recurse
+                    ;; exclude directories
+                    (directory-files-recursively
+                     dirname "^[^.].*[^/]$")
+                  (directory-files dirname t "^[^.]")))
+         (shortnames
+          ;; if recursing, use name after DIRNAME for completing-read
+          ;; otherwise, just use short name
+          (mapcar (if recurse
+                      #'(lambda (s)
+                          (nvp-chop-prefix dirname s))
+                    'file-name-nondirectory)
+                  files))
          (mode (substring-no-properties (symbol-name major-mode) 0 -5))
          (case-fold-search t))
-    (when files
-      (let* ((file (ido-completing-read
-                    "Book: "
-                    (directory-files
-                     (if (and mode
-                              (member mode
-                                      (mapcar #'file-name-nondirectory
-                                              files)))
-                         (expand-file-name mode dirname)
-                       dirname) nil "^[^.]")))
+    (when (and mode (member mode shortnames))
+      (setq dirname (expand-file-name mode dirname))
+      (setq shortnames (directory-files dirname nil "^[^.]")))
+    (when shortnames
+      (let* ((file (ido-completing-read "Book: " shortnames))
              (fullname (expand-file-name file dirname)))
         (cond
          ;; epubs
@@ -175,8 +187,7 @@
          ((file-name-extension file)
           (find-file fullname))
          ;; otherwise assume its a directory
-         (t
-          (nvp-jump-to-book fullname)))))))
+         (t (nvp-jump-to-book fullname)))))))
 
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

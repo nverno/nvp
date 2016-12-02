@@ -136,7 +136,7 @@
 ;;--- Strings --------------------------------------------------------
 
 ;; Remove string suffix if it is at the end of the string `s'.
-(defun chop-suffix (suffix s)
+(defsubst nvp-chop-suffix (suffix s)
   (let ((pos (- (length suffix))))
     (if (and (>= (length s) (length suffix))
              (string= suffix (substring s pos)))
@@ -144,19 +144,20 @@
       s)))
 
 ;; Remove string prefix if is is at the start of `s'.
-(defun chop-prefix (prefix s)
+(defsubst nvp-chop-prefix (prefix s)
   (let ((pos (length prefix)))
     (if (and (>= (length s) (length prefix))
              (string= prefix (substring s 0 pos)))
-        s)))
+        (substring s pos)
+      s)))
 
 ;; Remove trailing whitespace from `STR'.
-(defun nvp-string-rtrim (str)
+(defsubst nvp-string-rtrim (str)
   (replace-regexp-in-string "[ \t\n]+$" "" str))
 
 ;; Find all matches for `REGEX' within `STR', returning the full match
 ;; string or group `GROUP'.
-(defun nvp-string-all-matches (regex str &optional group)
+(defsubst nvp-string-all-matches (regex str &optional group)
   (let ((result nil)
         (pos 0)
         (group (or group 0)))
@@ -166,7 +167,7 @@
     result))
 
 ;; Match `REGEXP' positions in `STR'.
-(defun nvp-string-match-positions (regexp str)
+(defsubst nvp-string-match-positions (regexp str)
   (let ((res '()) (pos 0))
     (while (and (string-match regexp str pos)
 		(< pos (length str) ) )
@@ -177,14 +178,14 @@
 
 ;;--- RE -------------------------------------------------------------
 
-(defun nvp-line-empty-p ()
+(defsubst nvp-line-empty-p ()
   (save-excursion
     (beginning-of-line)
     (looking-at "[[:space:]]*$")))
 
 ;; Skip back across `backwards' chars, then look for `forward',
 ;; returning cons of start and end of match.
-(defun nvp-back-chars-then-look (backwards &optional forward)
+(defsubst nvp-back-chars-then-look (backwards &optional forward)
   (let ((forward (or forward (format "[%s]+" backwards))))
     (save-excursion
       (skip-chars-backward backwards)

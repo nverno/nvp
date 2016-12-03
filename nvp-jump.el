@@ -199,5 +199,12 @@
          ;; otherwise assume its a directory
          (t (nvp-jump-to-book fullname)))))))
 
+;;--- Dirs -----------------------------------------------------------
+
+;;;###autoload
+(defun nvp-jump-to-dir (arg)
+  (interactive "P")
+  (ido-find-file-in-dir (if arg nvp/project nvp/class)))
+
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

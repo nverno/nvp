@@ -100,5 +100,18 @@
        ,@body
        (call-interactively 'compile))))
 
+(defmacro nvp-complete-compile (program default args cache cmd prompt
+                                        &rest body)
+  "Defines body of compile command. With prefix, prompts for additional
+arguments, providing completion for command line switches (determined
+from PROGRAM ARGS)."
+  (declare (indent defun))
+  `(if current-prefix-arg
+       (nvp-complete-compile-with-completion ,program ,args ,cache
+         ,cmd ,prompt ,body)
+     (let ((compile-command (format ,default buffer-file-name))
+           (compilation-read-command))
+       (call-interactively 'compile))))
+
 (provide 'nvp-complete)
 ;;; nvp-complete.el ends here

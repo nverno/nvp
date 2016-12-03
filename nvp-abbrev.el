@@ -33,7 +33,7 @@
 (defvar-local nvp-abbrev-local-table nil)
 
 ;; insert starter abbrev table template
-(defun nvp-abbrev--insert-template (table)
+(defsubst nvp-abbrev--insert-template (table)
   (insert
    (concat
     (when (zerop (buffer-size))
@@ -46,7 +46,7 @@
       (replace-regexp-in-string "-abbrev-table" "" table)))
     "  :parents (list prog-mode-abbrev-table))")))
 
-(defun nvp-abbrev--get-table (table file)
+(defsubst nvp-abbrev--get-table (table file)
   ;; if (file-exists-p file)
   ;; (find-file-other-window file)
   (find-file-other-window file)
@@ -56,17 +56,17 @@
     (nvp-abbrev--insert-template table)))
 
 ;; grab preceding characters to match agains in abbrev table
-(defun nvp-abbrev--grab-prev (arg)
+(defsubst nvp-abbrev--grab-prev (arg)
   (save-excursion
     (let ((end (point))
-         (_ (skip-chars-backward "A-Za-z0-9#." (- (point) arg)))
-         (start (point)))
-     (buffer-substring-no-properties start end))))
+          (_ (skip-chars-backward "A-Za-z0-9#." (- (point) arg)))
+          (start (point)))
+      (buffer-substring-no-properties start end))))
 
 ;; Jump to abbrev file, search to position to insert (by length, then
 ;; lex).  Prefix length to look back.
 ;;;###autoload
-(defun nvp-jump-to-mode-abbrev (arg)
+(defun nvp-abbrev-jump-to-file (arg)
   (interactive "p")
   (let* ((file-abbr (bound-and-true-p nvp-abbrev-local-table))
          (table (regexp-quote (format "%s-abbrev-table"
@@ -91,6 +91,38 @@
     (add-hook 'after-save-hook
               #'(lambda () (quietly-read-abbrev-file buffer-file-name))
               t 'local)))
+
+;; return list of currently loaded and non-empty abbrev tables
+(defsubst nvp-abbrev--abbrev-list ()
+  (cl-remove-if
+   #'(lambda (table)
+       (abbrev-table-empty-p (symbol-value table)))
+   abbrev-table-name-list))
+
+;; write abbrev table
+;; temporarily rebind `abbrev--write' to write :system abbrevs
+;;;###autoload
+(defun nvp-abbrev-write-abbrev-table (table file)
+  (interactive
+   (list
+    (if current-prefix-arg
+        (abbrev-table-name local-abbrev-table)
+      (ido-completing-read
+       "Abbrev table: " (mapcar 'symbol-name
+                                (nvp-abbrev--abbrev-list))))
+    (read-file-name "Write abbrevs to: ")))
+  (let ((abbrev-table-name-list (list (intern table))))
+    (cl-letf (((symbol-function 'abbrev--write)
+               (lambda (sym)
+                 (unless (null (symbol-value sym))
+                   (insert "    (")
+                   (prin1 (symbol-name sym))
+                   (insert " ")
+                   (prin1 (symbol-value sym))
+                   (insert " ")
+                   (prin1 (symbol-function sym))
+                   (insert " :system t)\n")))))
+      (write-abbrev-file file ))))
 
 (provide 'nvp-abbrev)
 ;;; nvp-abbrev.el ends here

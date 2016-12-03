@@ -123,7 +123,8 @@ in buffer *vagrant-status*."
 ;;--- GPG ------------------------------------------------------------
 
 ;; export keys
-(defun nvp-install-old-gpg-export (dir)
+;;;###autoload
+(defun nvp-ext-gpg-export (dir)
   (interactive "DExport public key to directory: ")
   (unless (file-exists-p (nvp-program "gpg"))
     (user-error "gpg program not set"))
@@ -135,7 +136,8 @@ in buffer *vagrant-status*."
                      "public_key.txt" "--export" "Noah Peart"))))
 
 ;; copy gpg files to directory for backup/export
-(defun nvp-install-old-gpg-backup (dir)
+;;;###autoload
+(defun nvp-ext-gpg-backup (dir)
   (interactive "DExport gpg files to directory: ")
   (unless (file-exists-p (nvp-program "gpg"))
     (user-error "gpg program not set."))

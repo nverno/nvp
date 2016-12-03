@@ -94,6 +94,17 @@
        ,@body
        (- (float-time) ,start))))
 
+;;--- Tooltips -------------------------------------------------------
+
+(declare-function pos-tip-show "pos-tip")
+(defmacro nvp-with-toggled-tip (popup &optional use-gtk)
+  "Toggle POPUP in pos-tip."
+  (declare (indent defun))
+  `(let ((x-gtk-use-system-tooltips ,use-gtk))
+     (or (x-hide-tip)
+         (let ((str ,popup))
+           (pos-tip-show str nil nil nil 10)))))
+
 ;;--- Regexp ---------------------------------------------------------
 
 (defmacro nvp-re-opt (opts)

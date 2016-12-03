@@ -164,7 +164,7 @@
 
 ;; Adds commas after numbers in list, like matlab -> R.
 ;;;###autoload
-(defun nvp-insert-commas (str &optional from to)
+(defun nvp-list-insert-commas (str &optional from to)
   (interactive
    (if (region-active-p)
        (list nil (region-beginning) (region-end))
@@ -209,8 +209,17 @@
   (sp-wrap-with-pair "\""))
 
 ;; wrap items in list b/w "("..")", defaulting to wrapping with quotes
-;;;###autoload (autoload 'nvp-list-wrap-parens "nvp-list")
-(nvp-wrap-list-items parens :wrap ("\"" . "\""))
+;;;###autoload (autoload 'nvp-list-wrap-quotes "nvp-edit")
+(nvp-wrap-list-items quotes :wrap ("\"" . "\""))
+
+;;;###autoload (autoload 'nvp-list-wrap-parens "nvp-edit")
+(nvp-wrap-list-items parens :wrap ("(" . ")"))
+
+;;;###autoload (autoload 'nvp-list-wrap-brackets "nvp-edit")
+(nvp-wrap-list-items brackets :wrap ("[" . "]"))
+
+;;;###autoload (autoload 'nvp-list-wrap-squiggles "nvp-edit")
+(nvp-wrap-list-items squiggles :wrap ("{" . "}"))
 
 ;;--- Charset --------------------------------------------------------
 

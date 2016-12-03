@@ -42,7 +42,9 @@
 ;; ------------------------------------------------------------
 ;;; Setup
 
-;;;###autoload (defalias 'nvp-utils-setup-local 'nvp-tools-setup-local)
+;;;###autoload
+(define-obsolete-function-alias 'nvp-utils-setup-local
+  'nvp-tools-setup-local)
 ;;;###autoload
 (cl-defun nvp-tools-setup-local
     (name
@@ -60,12 +62,20 @@
   (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file))
   (when fn (funcall fn)))
 
-;;--- Install Buffer -------------------------------------------------
+;;--- Process Buffer -------------------------------------------------
 
-;; (defun nvp-install-buffer (&optional name)
-;;   (let ((buff (get-buffer-create (or name "*nvp-install*"))))
-;;     (with-current-buffer buff
-;;       (set-process-filter))))
+;; strip ctrl-m, multiple newlines
+(defun nvp-process-buffer-filter (proc string)
+  (replace-regexp-in-string "[\r\n]+$" "\n" string)
+  (with-current-buffer (process-buffer proc)
+    (insert string)))
+
+(defsubst nvp-process-buffer (&rest _ignored)
+  "*nvp-install*"
+  ;; (let ((buff (get-buffer-create (or name "*nvp-install*"))))
+  ;;   (with-current-buffer buff
+  ;;     (set-process-filter)))
+  )
 
 (provide 'nvp)
 ;;; nvp.el ends here

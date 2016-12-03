@@ -102,6 +102,13 @@
 
 ;;--- Process --------------------------------------------------------
 
+(defmacro nvp-with-process-filter (process)
+  "Run processs with `nvp-process-buffer-filter'. Return process object."
+  (declare (indent defun))
+  `(let ((proc ,process))
+     (set-process-filter proc 'nvp-process-buffer-filter)
+     proc))
+
 (defmacro nvp-with-process-log (process &optional on-error &rest body)
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
@@ -111,13 +118,12 @@ if process exit status isn't 0."
                  '(pop-to-buffer "*nvp-install*")
                on-error)))
     `(set-process-sentinel
-      ,process
+      (nvp-with-process-filter ,process)
       #'(lambda (p m)
           (nvp-log "%s: %s" nil (process-name p) m)
           (if (not (zerop (process-exit-status p)))
               ,err
             ,@body)))))
-
 
 ;;--- Interactive Functions ------------------------------------------
 

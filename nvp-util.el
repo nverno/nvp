@@ -193,5 +193,15 @@
           (cons (point) (match-end 0))
         nil))))
 
+;;--- Bindings -------------------------------------------------------
+
+;; Overrides a minor mode keybinding for the local buffer by creating
+;; or altering keymaps stored in buffer-local variable 
+;; `minor-mode-overriding-map-alist'.
+(defun nvp-local-minor-mode-key (mode key def)
+  (let ((map (make-sparse-keymap)))
+    (define-key map key def)
+    (push (cons mode map) minor-mode-overriding-map-alist)))
+
 (provide 'nvp-util)
 ;;; nvp-util.el ends here

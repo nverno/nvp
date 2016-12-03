@@ -27,7 +27,10 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (defvar nvp/bin)
+  (defvar nvp/vms)
+  (defvar explicit-shell-file-name))
 (autoload 'nvp-log "nvp-log")
 
 (defmacro nvp-ext-read-passwd ()
@@ -117,6 +120,47 @@ in buffer *vagrant-status*."
     (when (not arg)
       (message "Running vagrant-halt...")
       (nvp-with-process-log proc :pop-on-error))))
+
+;;--- GPG ------------------------------------------------------------
+
+;; export keys
+(defun nvp-install-old-gpg-export (dir)
+  (interactive "DExport public key to directory: ")
+  (unless (file-exists-p (nvp-program "gpg"))
+    (user-error "gpg program not set"))
+  (let ((default-directory dir))
+    ;; export public key
+    (nvp-with-process-log
+      (start-process "gpg" (nvp-process-buffer) (nvp-program "gpg")
+                     "--armor" "--output"
+                     "public_key.txt" "--export" "Noah Peart"))))
+
+;; copy gpg files to directory for backup/export
+(defun nvp-install-old-gpg-backup (dir)
+  (interactive "DExport gpg files to directory: ")
+  (unless (file-exists-p (nvp-program "gpg"))
+    (user-error "gpg program not set."))
+  (let ((default-directory epg-gpg-home-directory))
+    (mapc (lambda (f)
+            (copy-file f dir t))
+          '("pubring.gpg" "secring.gpg" "trustdb.gpg"))))
+
+;;--- Bash -----------------------------------------------------------
+
+(nvp-with-w32
+  ;; FIXME: move to w32-tools, also doesn't work
+  (defun nvp-ext-bashw ()
+    (interactive)
+    (if current-prefix-arg
+        (w32-shell-execute "runas" (nvp-program "bashw"))
+      (let ((shell-file-name "bash")
+            (explicit-shell-file-name (nvp-program "bashw"))
+            (explicit-shell-args
+             '("--login" "-i"))
+            (w32-quote-process-args ?\")
+            (buff "WindowsBash")
+            (binary-process-input))
+        (shell buff)))))
 
 ;;--- Other ----------------------------------------------------------
 

@@ -30,7 +30,12 @@
   (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-local nil t)
-  (defvar recentf-list))
+  (defvar recentf-list)
+  (defvar nvp/mode)
+  (defvar nvp/test)
+  (defvar nvp/lisp)
+  (defvar nvp/org)
+  (defvar nvp/books))
 (autoload 'elisp-utils-elisp-follow "elisp-utils")
 (autoload 'nvp-chop-prefix "nvp-util")
 (nvp-with-gnu
@@ -176,13 +181,18 @@
           (nvp-with-gnu/w32
               (if (executable-find "calibre")
                   (call-process "calibre" nil 0 nil fullname)
-                (set-process-sentinel
-                 (nvp-ext-sudo-install "calibre")
-                 #'(lambda (p _m)
-                     (when (zerop (process-exit-status p))
-                       (call-process "calibre"
-                                     nil 0 nil fullname)))))
-            (call-process "sumatrapdf" nil 0 nil fullname)))
+                (if (y-or-n-p "Install calibre? ")
+                    (set-process-sentinel
+                     (nvp-ext-sudo-install "calibre")
+                     #'(lambda (p _m)
+                         (when (zerop (process-exit-status p))
+                           (call-process "calibre"
+                                         nil 0 nil fullname))))
+                  (call-process "firefox" nil 0 nil fullname)))
+            (if (executable-find "sumatrapdf")
+                (call-process "sumatrapdf" nil 0 nil fullname)
+              (call-process (nvp-program "firefox") nil 0 nil
+                            fullname))))
          ;; open if non-directory
          ((file-name-extension file)
           (find-file fullname))

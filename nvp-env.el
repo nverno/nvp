@@ -35,6 +35,8 @@
 ;; ------------------------------------------------------------
 ;;; PATH
 
+;;;###autoload
+(define-obsolete-function-alias 'nvp-add-exec-path 'nvp-env-exec-add)
 ;; Append DIR to environment variable PATH and EXEC-PATH.
 ;;;###autoload
 (defun nvp-env-exec-add (dir)

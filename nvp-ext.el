@@ -72,8 +72,7 @@
 ;; With prefix, create a shell in the current `default-directory'. 
 ;; On remote hosts, ensure that the shell is created properly
 ;; (windows).
-;; ;;;###autoload
-;; (define-obsolete-function-alias 'nvp-terminal 'nvp-ext-terminal)
+
 ;;;###autoload
 (defun nvp-ext-terminal (&optional buffer)
   (interactive)

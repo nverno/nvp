@@ -69,6 +69,9 @@
                    "www.stackoverflow.com/search?q=" ""])
     ("Dzone" . "www.dzone.com/search")
     ("Unblocked" . "unblocked-pw.github.io/")
+    ("Ubuntu" .
+     [simple-query "packages.ubuntu.com"
+                   "packages.ubuntu.com/search?keywords=" ""])
     ("Amazon" .
      [simple-query "www.amazon.com"
                    "www.amazon.com/s/ref=nb_sb_noss_2?url=search-alias%3Daps&field-keywords=" ""])

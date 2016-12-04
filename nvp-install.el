@@ -52,14 +52,14 @@
 
 ;; run install script, prompting for function
 (defun nvp-install-script (&optional file funcs)
-  (interactive)
-  (let* ((file (or file (read-file-name "File: ")))
-         (funcs (or funcs (cons
-                           (ido-completing-read
-                            "Function: "
-                            (nvp-install-script-functions file))
-                           nil))))
-    (list file funcs))
+  (interactive
+   (let* ((file (read-file-name "File: "))
+          (funcs (cons
+                  (ido-completing-read
+                   "Function: "
+                   (nvp-install-script-functions file))
+                  nil)))
+     (list file funcs)))
   (let ((cmd (format
               "%s"
               (if funcs

@@ -34,13 +34,15 @@
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-process-buffer "nvp")
 
+;;--- Sudo -----------------------------------------------------------
+
 (defmacro nvp-ext-read-passwd ()
   '(or (bound-and-true-p nvp-sudo-passwd)
        (read-passwd "Password: ")))
 
 (nvp-with-gnu
   (defun nvp-ext-process-filter (proc string)
-    (replace-regexp-in-string "\r+" "\n" string)
+    (replace-regexp-in-string "[\n\r]+" "\n" string)
     (with-current-buffer (process-buffer proc)
       (insert string)))
   
@@ -65,6 +67,39 @@
      (format "-l -c \"apt-get install -y %s\"" packages)
      buffer)))
 
+;;--- Bash Script ----------------------------------------------------
+
+(defun nvp-ext--script-functions (file)
+  (with-current-buffer (find-file-noselect file)
+    (mapcar 'car (cdr (imenu--make-index-alist)))))
+
+;; run bash script. If FUNCTIONS is non-nil call those functions
+;; from script, as SUDO if non-nil.
+;; Interactively, prompts for file and functions
+(defun nvp-ext-run-script (file &optional functions sudo passwd)
+  (interactive
+   (let* ((file (read-file-name "File: "))
+          (funcs (ido-completing-read
+                  "Function: " (cons (nvp-ext--script-functions file)
+                                     nil)))
+          (sudo (nvp-with-gnu (y-or-n-p "Sudo? "))))
+     (list file funcs sudo nil)))
+  (let ((cmd
+         (format
+          "%s" (if functions
+                   (mapconcat
+                    (lambda (f) (concat file " " f)) functions " && ")
+                 file))))
+    (nvp-with-process-log
+      (nvp-with-gnu/w32
+          (if sudo
+              (nvp-ext-sudo-command passwd cmd)
+            (start-process-shell-command
+             "bash" (nvp-process-buffer) (concat "bash -l " cmd)))
+        (start-process-shell-command
+         "bash" (nvp-process-buffer) "bash -l " cmd))
+      :pop-on-error)))
+
 ;;--- Terminal -------------------------------------------------------
 
 (declare-function tramp-dissect-file-name "tramp")
@@ -74,7 +109,7 @@
 ;; On remote hosts, ensure that the shell is created properly
 ;; (windows).
 
-;;;###autoload
+;;;###autoload(autoload 'nvp-ext-terminal "nvp-ext")
 (defun nvp-ext-terminal (&optional buffer)
   (interactive)
   (let* ((prog "shell")

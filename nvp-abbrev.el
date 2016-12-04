@@ -124,5 +124,15 @@
                    (insert " :system t)\n")))))
       (write-abbrev-file file ))))
 
+;; add unicode abbrevs to local table parents
+;;;###autoload
+(defun nvp-abbrev-load-unicode ()
+  (quietly-read-abbrev-file
+   (expand-file-name "unicode-abbrev-table" nvp--dir))
+  (let ((parents (abbrev-table-get local-abbrev-table :parents)))
+    (abbrev-table-put
+     local-abbrev-table
+     :parents (cons unicode-abbrev-table parents))))
+
 (provide 'nvp-abbrev)
 ;;; nvp-abbrev.el ends here

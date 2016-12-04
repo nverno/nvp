@@ -93,7 +93,8 @@
 ;; font-lock markers: #<marker at [point or fn-name] in [filename]>
 ;;;###autoload
 (font-lock-add-keywords
- 'emacs-lisp-mode
+ nil
+ ;; 'emacs-lisp-mode
  '(("#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
     (0 (prog1 ()
          (let* ((place (match-string-no-properties 1))

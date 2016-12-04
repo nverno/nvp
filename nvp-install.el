@@ -65,9 +65,11 @@
               (if funcs
                   (mapconcat (lambda (f) (concat file " " f)) funcs " && ")
                 file))))
-    (nvp-with-gnu/w32
-        (nvp-ext-sudo-command nil cmd)
-      (start-process "bash" "*nvp-install*" "bash" cmd))))
+    (nvp-with-process-log
+      (nvp-with-gnu/w32
+          (nvp-ext-sudo-command nil cmd)
+        (start-process "bash" "*nvp-install*" "bash" cmd))
+      :pop-on-error)))
 
 ;;--- Parse ----------------------------------------------------------
 

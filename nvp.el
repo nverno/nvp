@@ -66,7 +66,7 @@
 
 ;; strip ctrl-m, multiple newlines
 (defun nvp-process-buffer-filter (proc string)
-  (replace-regexp-in-string "[\r\n]+$" "\n" string)
+  (replace-regexp-in-string "[\r\n]+" "\n" string)
   (with-current-buffer (process-buffer proc)
     (insert string)))
 

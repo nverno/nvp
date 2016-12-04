@@ -32,6 +32,7 @@
   (defvar nvp/vms)
   (defvar explicit-shell-file-name))
 (autoload 'nvp-log "nvp-log")
+(autoload 'nvp-process-buffer "nvp")
 
 (defmacro nvp-ext-read-passwd ()
   '(or (bound-and-true-p nvp-sudo-passwd)
@@ -39,7 +40,7 @@
 
 (nvp-with-gnu
   (defun nvp-ext-process-filter (proc string)
-    (replace-regexp-in-string "\r+$" "" string)
+    (replace-regexp-in-string "\r+" "\n" string)
     (with-current-buffer (process-buffer proc)
       (insert string)))
   
@@ -49,7 +50,7 @@
     (let* ((password (or password (nvp-ext-read-passwd)))
            (cmd (or command (read-shell-command "Command: ")))
            (proc (start-process-shell-command
-                  "bash" (or buffer "*nvp-install*")
+                  "bash" (or buffer (nvp-process-buffer))
                   (concat "sudo bash -l " cmd))))
       (set-process-filter proc 'nvp-ext-process-filter)
       (process-send-string proc password)

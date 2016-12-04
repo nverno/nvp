@@ -182,12 +182,10 @@
               (if (executable-find "calibre")
                   (call-process "calibre" nil 0 nil fullname)
                 (if (y-or-n-p "Install calibre? ")
-                    (set-process-sentinel
-                     (nvp-ext-sudo-install "calibre")
-                     #'(lambda (p _m)
-                         (when (zerop (process-exit-status p))
-                           (call-process "calibre"
-                                         nil 0 nil fullname))))
+                    (nvp-with-process-log
+                      (nvp-ext-sudo-install "calibre")
+                      :pop-on-error
+                      (call-process "calibre" nil 0 nil fullname))
                   (call-process "firefox" nil 0 nil fullname)))
             (if (executable-find "sumatrapdf")
                 (call-process "sumatrapdf" nil 0 nil fullname)

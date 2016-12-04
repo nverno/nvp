@@ -32,6 +32,15 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(autoload 'nvp-abbrev-add-parent "nvp-abbrev")
+
+;; add unicode abbrevs to local table
+;;;###autoload
+(defsubst nvp-unicode-load-abbrevs ()
+  (interactive)
+  (nvp-abbrev-add-parent
+   "unicode-abbrev-table"
+   (expand-file-name "unicode-abbrev-table" nvp--dir)))
 
 ;; print julia latex
 (defun nvp-unicode-julia-latex ()

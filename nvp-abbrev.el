@@ -126,13 +126,17 @@
 
 ;; add unicode abbrevs to local table parents
 ;;;###autoload
-(defun nvp-abbrev-load-unicode ()
-  (quietly-read-abbrev-file
-   (expand-file-name "unicode-abbrev-table" nvp--dir))
+(defun nvp-abbrev-add-parent (table &optional file)
+  (interactive
+   (list (ido-completing-read
+          "Abbrev table: "
+          (mapcar 'symbol-name abbrev-table-name-list) nil nil)))
+  (when file
+    (quietly-read-abbrev-file file))
   (let ((parents (abbrev-table-get local-abbrev-table :parents)))
     (abbrev-table-put
      local-abbrev-table
-     :parents (cons unicode-abbrev-table parents))))
+     :parents (cons (symbol-value (intern table)) parents))))
 
 (provide 'nvp-abbrev)
 ;;; nvp-abbrev.el ends here

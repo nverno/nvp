@@ -43,34 +43,6 @@
              (replace-regexp-in-string "\\(nvp-\\|\\.el\\)" "" x))
            (directory-files nvp/mode nil "^[^\\.].*\\.el$"))))
 
-;;--- Shell Script ---------------------------------------------------
-
-;; return list of functions in FILE
-(defun nvp-install-script-functions (file)
-  (with-current-buffer (find-file-noselect file)
-    (mapcar 'car (cdr (imenu--make-index-alist)))))
-
-;; run install script, prompting for function
-(defun nvp-install-script (&optional file funcs)
-  (interactive
-   (let* ((file (read-file-name "File: "))
-          (funcs (cons
-                  (ido-completing-read
-                   "Function: "
-                   (nvp-install-script-functions file))
-                  nil)))
-     (list file funcs)))
-  (let ((cmd (format
-              "%s"
-              (if funcs
-                  (mapconcat (lambda (f) (concat file " " f)) funcs " && ")
-                file))))
-    (nvp-with-process-log
-      (nvp-with-gnu/w32
-          (nvp-ext-sudo-command nil cmd)
-        (start-process "bash" "*nvp-install*" "bash" cmd))
-      :pop-on-error)))
-
 ;;--- Parse ----------------------------------------------------------
 
 (defvar nvp-install-mode-patterns

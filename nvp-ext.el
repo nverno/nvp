@@ -100,6 +100,13 @@
          "bash" (nvp-process-buffer) "bash -l " cmd))
       :pop-on-error)))
 
+;;;###autoload
+(define-obsolete-function-alias 'nvp-install-script
+  'nvp-ext-run-script)
+;;;###autoload
+(define-obsolete-function-alias 'nvp-install-script-functions
+  'nvp-ext--script-functions)
+
 ;;--- Terminal -------------------------------------------------------
 
 (declare-function tramp-dissect-file-name "tramp")

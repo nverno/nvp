@@ -107,10 +107,10 @@
 
 ;;--- Regex / Strings ------------------------------------------------
 
-(defmacro nvp-re-opt (opts &optional symbol)
+(defmacro nvp-re-opt (opts &optional no-symbol)
   `(eval-when-compile
-     (concat ,(if symbol "\\_<") (regexp-opt ,opts t)
-             ,(if symbol "\\_>"))))
+     (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
+             ,(and (not no-symbol) "\\_>"))))
 
 (defmacro nvp-concat (&rest body)
   `(eval-when-compile (concat ,@body)))

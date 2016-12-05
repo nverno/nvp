@@ -105,12 +105,15 @@
          (let ((str ,popup))
            (pos-tip-show str nil nil nil 10)))))
 
-;;--- Regexp ---------------------------------------------------------
+;;--- Regex / Strings ------------------------------------------------
 
 (defmacro nvp-re-opt (opts &optional symbol)
   `(eval-when-compile
      (concat ,(if symbol "\\_<") (regexp-opt ,opts t)
              ,(if symbol "\\_>"))))
+
+(defmacro nvp-concat (&rest body)
+  `(eval-when-compile (concat ,@body)))
 
 ;;--- Process --------------------------------------------------------
 

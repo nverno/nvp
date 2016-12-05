@@ -93,11 +93,16 @@
               t 'local)))
 
 ;; return list of currently loaded and non-empty abbrev tables
-(defsubst nvp-abbrev--abbrev-list ()
+(defsubst nvp-abbrev--abbrev-list (&optional tables)
   (cl-remove-if
    #'(lambda (table)
        (abbrev-table-empty-p (symbol-value table)))
-   abbrev-table-name-list))
+   (or tables abbrev-table-name-list)))
+
+;; list of active and non-empty abbrev tables
+(defsubst nvp-abbrev--active-tables ()
+  (nvp-abbrev--abbrev-list
+   (mapcar 'abbrev-table-name (abbrev--active-tables))))
 
 ;; write abbrev table
 ;; temporarily rebind `abbrev--write' to write :system abbrevs
@@ -137,6 +142,34 @@
     (abbrev-table-put
      local-abbrev-table
      :parents (cons (symbol-value (intern table)) parents))))
+
+;;--- Completion -----------------------------------------------------
+;; `company-abbrev' doesn't account for :regexp properties, so doesnt
+;; work properly when abbrev tables define their own :regexp,
+;; ie "\\degree" or "#inc"
+
+(declare-function company-grab-symbol "company")
+
+;; Return completion candidates
+;; take into account per-table :regexp. If not defined, default to
+;; `company-grab-symbol'
+(defun nvp-abbrev--complete-candidates ()
+  (interactive)
+  (let ((tables (nvp-abbrev--active-tables))
+        prefix re comps)
+    (dolist (table tables)
+      (setq re (abbrev-table-get (symbol-value table) :regexp))
+      (setq prefix
+            (if re
+                (and (looking-back re (line-beginning-position))
+                     (match-string 1))
+              (company-grab-symbol)))
+      (and prefix
+           (setq comps
+                 (nconc
+                  (delete "" (all-completions prefix (symbol-value table)))
+                  comps))))
+    comps))
 
 (provide 'nvp-abbrev)
 ;;; nvp-abbrev.el ends here

@@ -29,6 +29,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(autoload 'string-trim "subr-x")
 
 ;;--- Movement -------------------------------------------------------
 
@@ -70,31 +71,33 @@
   (interactive)
   (beginning-of-defun -1))
 
+(defvar-local nvp-basic-header-re nil)
+(defsubst nvp-basic-header-re ()
+  (or nvp-basic-header-re
+      (let ((cs (string-trim comment-start)))
+        (format "^\\s-*%s%s\\(?:---\\|\*\\|%s\\)" cs cs cs))))
+
 (defsubst nvp-basic-next-heading ()
   (interactive)
-  (let ((str (format "^\\s-*%s%s\\(?:---\\|\*\\|%s\\)"
-                     comment-start comment-start comment-start)))
-    (condition-case nil
-        (progn
-          (forward-line 1)
-          (re-search-forward str)
-          (beginning-of-line))
-      (error
-       (forward-line -1)
-       (user-error "No more headings")))))
+  (condition-case nil
+      (progn
+        (forward-line 1)
+        (re-search-forward (nvp-basic-header-re))
+        (beginning-of-line))
+    (error
+     (forward-line -1)
+     (user-error "No more headings"))))
 
 (defsubst nvp-basic-previous-heading ()
   (interactive)
-  (let ((str (format "^\\s-*%s%s\\(?:---\\|\*\\|%s\\)"
-                     comment-start comment-start comment-start)))
-    (condition-case nil
-        (progn
-          (forward-line -1)
-          (re-search-backward str)
-          (beginning-of-line))
-      (error
-       (forward-line 1)
-       (user-error "No previous headings")))))
+  (condition-case nil
+      (progn
+        (forward-line -1)
+        (re-search-backward (nvp-basic-header-re))
+        (beginning-of-line))
+    (error
+     (forward-line 1)
+     (user-error "No previous headings"))))
 
 ;;--- Duplicate Line -------------------------------------------------
 

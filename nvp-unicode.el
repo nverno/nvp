@@ -1,4 +1,4 @@
-;;; nvp-unicode --- 
+;;; nvp-unicode ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -31,12 +31,14 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (defvar nvp--dir))
 (autoload 'nvp-abbrev-add-parent "nvp-abbrev")
+(autoload 'nvp-process-buffer "nvp")
 
 ;; add unicode abbrevs to local table
 ;;;###autoload
-(defsubst nvp-unicode-load-abbrevs ()
+(defun nvp-unicode-load-abbrevs ()
   (interactive)
   (nvp-abbrev-add-parent
    "unicode-abbrev-table"

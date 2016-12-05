@@ -28,7 +28,8 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (defvar nvp/abbrevs))
 
 (defvar-local nvp-abbrev-local-table nil)
 

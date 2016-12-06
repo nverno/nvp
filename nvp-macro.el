@@ -1,4 +1,4 @@
-;;; nvp-macro --- 
+;;; nvp-macro ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -97,13 +97,28 @@
 ;;--- Tooltips -------------------------------------------------------
 
 (declare-function pos-tip-show "pos-tip")
-(defmacro nvp-with-toggled-tip (popup &optional use-gtk)
+(declare-function nvp-basic-temp-binding "nvp-basic")
+
+(cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn)
   "Toggle POPUP in pos-tip."
   (declare (indent defun))
   `(let ((x-gtk-use-system-tooltips ,use-gtk))
      (or (x-hide-tip)
          (let ((str ,popup))
-           (pos-tip-show str nil nil nil 10)))))
+           (pos-tip-show str nil nil nil 10)
+           (nvp-basic-temp-binding
+            "h"
+            ,(or help-fn
+                #'(lambda ()
+                    (interactive)
+                    (x-hide-tip)
+                    (with-current-buffer (get-buffer-create
+                                          "*nvp-help*")
+                      `(insert ,str)
+                      (view-mode-enter)
+                      (pop-to-buffer (current-buffer))))))
+           (nvp-basic-temp-binding
+            "q" #'(lambda () (interactive) (x-hide-tip)))))))
 
 ;;--- Regex / Strings ------------------------------------------------
 
@@ -233,7 +248,7 @@ if process exit status isn't 0."
 ;;; Align
 
 ;; Create alignment functions
-(defmacro nvp-align-fn (name doc regex &optional ignore-string)
+(defmacro nvp-align-fn (name doc regex &optional _ignore-string)
   (declare (indent defun))
   (let ((fn (intern (if (symbolp name)
                         (symbol-name name)

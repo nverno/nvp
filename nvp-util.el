@@ -178,6 +178,15 @@
 
 ;;--- RE -------------------------------------------------------------
 
+;; make indentation based regexp
+(defsubst nvp-re-indent-re ()
+  (concat "^\\(?:[ \t]*$\\|"
+          (buffer-substring
+           (point)
+           (save-excursion
+             (progn (back-to-indentation) (point))))
+          "\\)"))
+
 (defsubst nvp-line-empty-p ()
   (save-excursion
     (beginning-of-line)

@@ -94,7 +94,7 @@
 (nvp-with-gnu
   (defun nvp-env-setenv! (env-var value &optional exec clobber)
     ;; FIXME: todo
-    (user-error "TODO")))
+    (ignore (message "not implemented"))))
 
 ;; ------------------------------------------------------------
 ;;; Search Path

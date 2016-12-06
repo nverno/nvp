@@ -29,6 +29,9 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(require 'nvp)
+(nvp-with-gnu
+  (autoload 'nvp-ext-sudo-install "nvp-ext"))
 (autoload 'ispell-get-word "ispell")
 
 ;;--- Lookup Words ---------------------------------------------------
@@ -57,6 +60,28 @@
   (let ((face (or (get-char-property (point) 'read-face-name)
                   (get-char-property (point) 'face))))
     (if face (message "Face: %s" face) (message "No face at %d" pos))))
+
+;;--- Docset ---------------------------------------------------------
+
+(defun nvp-help-zeal-run-search (search)
+  (if zeal-at-point-exe
+      (if (version< "0.2.0" (zeal-at-point-get-version))
+          (start-process "Zeal" nil zeal-at-point-exe search)
+        (start-process "Zeal" nil zeal-at-point-exe "--query" search))
+    (nvp-with-gnu/w32
+        (and (y-or-n-p "Install zeal? ")
+             (nvp-ext-run-script
+              (expand-file-name "tools/install.sh" nvp--dir)
+              '("install_zeal") 'sudo))
+      (and (y-or-n-p "Zeal not found, goto http://zealdocs.org? ")
+           (browse-url "http://zealdocs.org")))))
+
+;;;###autoload
+(defun nvp-help-zeal-at-point (&optional edit-search)
+  (interactive "P")
+  (cl-letf (((symbol-function 'zeal-at-point-run-search)
+             'nvp-help-zeal-run-search))
+    (zeal-at-point edit-search)))
 
 (provide 'nvp-help)
 ;;; nvp-help.el ends here

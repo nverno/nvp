@@ -94,20 +94,35 @@
 (defun nvp-unfill-paragraph ()
   (interactive)
   (let ((fill-column (point-max)))
-    (fill-paragraph nil)))
+    (call-interactively 'fill-paragraph)))
 
 ;; Remove newlines in list, leaving single spaces.
 ;;;###autoload
-(defun nvp-unfill-list (begin end)
+(defun nvp-unfill-list (begin end &optional regexp)
   (interactive "r")
+  (setq regexp
+        (if current-prefix-arg
+            (read-regexp "Unfill regexp: " "[ \n\t\r]+")
+          "[ \n\t\r]+"))
   (save-excursion
     (narrow-to-region begin end)
     (goto-char begin)
-    (while (search-forward-regexp "[ \n\t\r]+" end t)
+    (while (search-forward-regexp regexp end t)
       (replace-match " " nil t))
     (widen)
     (let ((fill-column 75))
       (fill-paragraph))))
+
+;;;###autoload
+(defun nvp-fill-paragraph-toggle ()
+  (interactive)
+  (let (deactivate-mark
+        (fill-column
+         (if (not (eq last-command this-command))
+             fill-column
+           (setq this-command nil)
+           most-positive-fixnum)))
+    (call-interactively 'fill-paragraph)))
 
 ;;--- Align ----------------------------------------------------------
 

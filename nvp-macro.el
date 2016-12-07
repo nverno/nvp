@@ -155,6 +155,18 @@ if process exit status isn't 0."
               ,err
             ,@body)))))
 
+(defmacro nvp-with-process (process &optional on-error &rest body)
+  "Log output in log buffer, do ON-ERROR and BODY in process buffer."
+  (declare (indent defun))
+  `(set-process-sentinel
+    (nvp-with-process-filter ,process)
+    #'(lambda (p m)
+        (nvp-log "%s: %s" nil (process-name p) m)
+        (with-current-buffer (process-buffer p)
+          (if (not (zerop (process-exit-status p)))
+              ,@on-error
+            ,@body)))))
+
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment
 where WRAPPER has effect, eg. `cl-letf' will have effect. 

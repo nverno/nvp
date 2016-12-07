@@ -108,8 +108,10 @@
          (el (concat (file-name-sans-extension file) ".el"))
          (elgz (concat el ".gz")))
     ;; if no .el, on linux, jump to .el.gz instead
-    (find-file-other-window
-     (if (file-exists-p el) el elgz))))
+    (if current-prefix-arg
+        (dired (file-name-directory file))
+      (find-file-other-window
+       (if (file-exists-p el) el elgz)))))
 
 ;;--- Org ------------------------------------------------------------
 

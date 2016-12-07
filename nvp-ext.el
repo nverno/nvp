@@ -30,7 +30,8 @@
   (require 'nvp-macro)
   (defvar nvp/bin)
   (defvar nvp/vms)
-  (defvar explicit-shell-file-name))
+  (defvar explicit-shell-file-name)
+  (defvar epg-gpg-home-directory))
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-process-buffer "nvp")
 
@@ -176,7 +177,8 @@ in buffer *vagrant-status*."
     (nvp-with-process-log
       (start-process "gpg" (nvp-process-buffer) (nvp-program "gpg")
                      "--armor" "--output"
-                     "public_key.txt" "--export" "Noah Peart"))))
+                     "public_key.txt" "--export" "Noah Peart")
+      :pop-on-error)))
 
 ;; copy gpg files to directory for backup/export
 ;;;###autoload
@@ -226,6 +228,9 @@ in buffer *vagrant-status*."
          (string-to-number (buffer-string)))))
    ;; Default
    1))
+
+;; -------------------------------------------------------------------
+(declare-function imenu--make-index-alist "imenu")
 
 (provide 'nvp-ext)
 ;;; nvp-ext.el ends here

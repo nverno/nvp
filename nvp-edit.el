@@ -30,6 +30,7 @@
   (require 'nvp-macro)
   (require 'smartparens)
   (require 'cl-lib))
+(autoload 'sp-wrap-with-pair "smartparens")
 
 ;; convert selected bindings to macro form and align
 ;;;###autoload

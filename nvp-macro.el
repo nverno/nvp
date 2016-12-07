@@ -155,6 +155,19 @@ if process exit status isn't 0."
               ,err
             ,@body)))))
 
+(defmacro nvp-with-process-wrapper (wrapper &rest body)
+  "Wrap `set-process-sentinel' to so BODY is executed in environment
+where WRAPPER has effect, eg. `cl-letf' will have effect. 
+Note: use lexical-binding."
+  (let ((sps (cl-gensym))
+        (proc (cl-gensym))
+        (fn (cl-gensym)))
+    `(let ((,sps (symbol-function 'set-process-sentinel)))
+       (cl-letf (((symbol-function 'set-process-sentinel))
+                 (lambda (,proc ,fn)
+                   (funcall ,sps ,proc (funcall ,wrapper ,fn))))
+         ,@body))))
+
 ;;--- Interactive Functions ------------------------------------------
 
 ;;; Newline

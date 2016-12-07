@@ -100,7 +100,7 @@
   (goto-char (point-min))
   (when (re-search-forward section-re)
     (forward-line)
-    (let* ((indent-re (sh-help--indent-re))
+    (let* ((indent-re (nvp-read--man-indent-re))
            (flag-re (concat indent-re nvp-read--man-subentry-re))
            (cont-re "\t[ \t]*\\|^$")
            res key start)

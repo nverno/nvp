@@ -90,15 +90,15 @@
                    (mapconcat
                     (lambda (f) (concat file " " f)) functions " && ")
                  file))))
-    (nvp-with-process-log
+    (nvp-with-process-filter
       (nvp-with-gnu/w32
           (if sudo
               (nvp-ext-sudo-command passwd cmd)
             (start-process-shell-command
-             "bash" (nvp-process-buffer) (concat "bash -l " cmd)))
+             "bash" (nvp-process-buffer)
+             (concat "bash -l " cmd)))
         (start-process-shell-command
-         "bash" (nvp-process-buffer) "bash -l " cmd))
-      :pop-on-error)))
+         "bash" (nvp-process-buffer) "bash -l " cmd)))))
 
 ;;;###autoload
 (define-obsolete-function-alias 'nvp-install-script

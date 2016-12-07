@@ -109,14 +109,15 @@
            (nvp-basic-temp-binding
             "h"
             ,(or help-fn
-                #'(lambda ()
-                    (interactive)
-                    (x-hide-tip)
-                    (with-current-buffer (get-buffer-create
-                                          "*nvp-help*")
-                      `(insert ,str)
-                      (view-mode-enter)
-                      (pop-to-buffer (current-buffer))))))
+                 '(function
+                   (lambda ()
+                     (interactive)
+                     (x-hide-tip)
+                     (with-current-buffer (get-buffer-create
+                                           "*nvp-help*")
+                       (insert str)
+                       (view-mode-enter)
+                       (pop-to-buffer (current-buffer)))))))
            (nvp-basic-temp-binding
             "q" #'(lambda () (interactive) (x-hide-tip)))))))
 
@@ -139,6 +140,15 @@
      (set-process-filter proc 'nvp-process-buffer-filter)
      proc))
 
+(defmacro nvp-with-sentinel (&optional on-error &rest body)
+  (declare (indent 2) (indent 1) (debug t))
+  `(function
+    (lambda (p m)
+      (nvp-log "%s: %s" nil (process-name p) m)
+      (if (not (zerop (process-exit-status p)))
+          ,(or on-error '(pop-to-buffer (process-buffer p)))
+        ,@body))))
+
 (defmacro nvp-with-process-log (process &optional on-error &rest body)
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
@@ -155,7 +165,8 @@ if process exit status isn't 0."
               ,err
             ,@body)))))
 
-(defmacro nvp-with-process (process &optional on-error &rest body)
+(defmacro nvp-with-process-buffer (process &optional on-error
+                                           &rest body)
   "Log output in log buffer, do ON-ERROR and BODY in process buffer."
   (declare (indent defun))
   `(set-process-sentinel

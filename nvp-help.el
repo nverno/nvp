@@ -28,11 +28,14 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (defvar zeal-at-point-exe))
 (require 'nvp)
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-install "nvp-ext"))
 (autoload 'ispell-get-word "ispell")
+(autoload 'define-word "define-word")
+(autoload 'nvp-ext-run-script "nvp-ext")
 
 ;;--- Lookup Words ---------------------------------------------------
 
@@ -82,6 +85,9 @@
   (cl-letf (((symbol-function 'zeal-at-point-run-search)
              'nvp-help-zeal-run-search))
     (zeal-at-point edit-search)))
+
+;; -------------------------------------------------------------------
+(declare-function zeal-at-point-get-version "zeal-at-point")
 
 (provide 'nvp-help)
 ;;; nvp-help.el ends here

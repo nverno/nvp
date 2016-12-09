@@ -30,14 +30,6 @@
 
 ;;--- OS -------------------------------------------------------------
 
-(defmacro nvp-program (name)
-  `(eval-when-compile
-     (if (eq system-type 'windows-nt)
-         (bound-and-true-p
-          ,(intern (concat "nvp-" name "-program")))
-       (let ((local (expand-file-name ,name "/usr/local/bin")))
-         (if (file-exists-p local) local ,name)))))
-
 (defmacro nvp-with-w32 (&rest body)
   (declare (indent 0) (debug t))
   (when (eq system-type 'windows-nt)
@@ -56,6 +48,20 @@
 
 ;;--- Config ---------------------------------------------------------
 
+(defmacro nvp-program (name)
+  `(eval-when-compile
+     (if (eq system-type 'windows-nt)
+         (bound-and-true-p
+          ,(intern (concat "nvp-" name "-program")))
+       (let ((local (expand-file-name ,name "/usr/local/bin")))
+         (if (file-exists-p local) local ,name)))))
+
+(defmacro nvp-mode (mode)
+  `(expand-file-name
+    (concat "nvp-" ,mode) (bound-and-true-p nvp/mode)))
+
+;;--- Bindings -------------------------------------------------------
+
 (defmacro nvp-bindings (mode &optional feature &rest bindings)
   (declare (indent defun))
   (let ((modemap (intern (concat mode "-map"))))
@@ -64,6 +70,18 @@
           ,@(cl-loop for (k . b) in bindings
                collect `(define-key ,modemap (kbd ,k) ',b))))))
 
+;; do BODY with BINDINGS set in transient map
+(cl-defmacro nvp-with-temp-bindings ((&key (keep t)
+                                           exit bindings)
+                                     &rest body)
+  (declare (indent 0))
+  (let ((tmap (cl-gensym)))
+    `(let ((,tmap (make-sparse-keymap)))
+       ,@(cl-loop for (k . b) in bindings
+            collect `(define-key ,tmap (kbd ,k) ',b))
+       (set-transient-map ,tmap ,keep ,exit)
+       ,@body)))
+
 ;; FIXME: eval
 (defmacro nvp-common-bindings (modes &rest bindings)
   (declare (indent defun))
@@ -71,9 +89,28 @@
    (cl-loop for mode in (eval modes)
       collect `(nvp-bindings ,mode ,@bindings))))
 
-(defmacro nvp-mode (mode)
-  `(expand-file-name (concat "nvp-" ,mode)
-                     (bound-and-true-p nvp/mode)))
+;;; vim like
+(defmacro nvp-bindings-vim ()
+  '(quote (("j" . forward-line)
+           ("k" . previous-line)
+           ("h" . backward-char)
+           ("l" . forward-char))))
+
+(defmacro nvp-bindings-with-vim (mode &optional feature &rest bindings)
+  (declare (indent defun))
+  (let ((bs `(,@(nvp-bindings-vim) ,@bindings)))
+    `(nvp-bindings ,mode ,feature ,@bs)))
+
+(defmacro nvp-bindings-add-vim (mode &optional feature)
+  `(progn
+     (nvp-bindings ,mode ,feature ,@(nvp-bindings-vim))))
+
+(defmacro nvp-with-vim-bindings (&rest body)
+  `(nvp-with-temp-bindings
+     (:bindings ,(nvp-bindings-vim)
+                :keep t
+                :exit (lambda () (message "vim out")))
+     ,@body))
 
 ;;--- Time -----------------------------------------------------------
 

@@ -62,8 +62,7 @@ _d_ebugger
   ("q" toggle-debug-on-quit)
   ("SPC" nil)
   ("t" nvp-debug-tramp-toggle-debug)
-  ("y" debug-on-entry :color blue)
-  )
+  ("y" debug-on-entry :color blue))
 
 (defun nvp-debug-launch-new-debug ()
   "Start new emacs in debug mode."

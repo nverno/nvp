@@ -75,7 +75,7 @@
 (defsubst nvp-basic-header-re ()
   (or nvp-basic-header-re
       (let ((cs (string-trim comment-start)))
-        (format "^\\s-*%s%s\\(?:---\\|\*\\|%s\\)" cs cs cs))))
+        (format "^\\s-*%s%s\\(?:---\\|\*\\| |\\|%s\\)" cs cs cs))))
 
 (defsubst nvp-basic-next-heading ()
   (interactive)

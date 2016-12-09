@@ -270,6 +270,18 @@ Note: use lexical-binding."
                    (funcall ,sps ,proc (funcall ,wrapper ,fn))))
          ,@body))))
 
+(defmacro nvp-with-async-override (orig-fn new-fn &rest body)
+  "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of 
+BODY."
+  (declare (indent defun))
+  `(with-sentinel-wrapper
+    (lambda (fn)
+      (let ((fun fn))
+        (lambda (p m)
+          (cl-letf (((symbol-function ,orig-fn) ,new-fn))
+            (funcall fun p m)))))
+    ,@body))
+
 ;;--- Interactive Functions ------------------------------------------
 
 ;;; Newline

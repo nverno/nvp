@@ -89,25 +89,33 @@
    (cl-loop for mode in (eval modes)
       collect `(nvp-bindings ,mode ,@bindings))))
 
-;;; vim like
-(defmacro nvp-bindings-vim ()
-  '(quote (("j" . forward-line)
-           ("k" . previous-line)
-           ("h" . backward-char)
-           ("l" . forward-char))))
+;;; general movement bindings for non-insert modes
+(defmacro nvp-bindings-view ()
+  ''(("j"    . forward-line)
+     ("k"    . previous-line)
+     ("h"    . backward-char)
+     ("l"    . forward-char)
+     ("e"    . end-of-line)
+     ("a"    . beginning-of-line)
+     ("A"    . beginning-of-buffer)
+     ("E"    . end-of-buffer)
+     ("M-n"  . nil)
+     ("M-p"  . nil)
+     ("M-N"  . nvp-basic-down-paragraph)
+     ("M-P"  . nvp-basic-up-paragraph)))
 
-(defmacro nvp-bindings-with-vim (mode &optional feature &rest bindings)
+(defmacro nvp-bindings-with-view (mode &optional feature &rest bindings)
   (declare (indent defun))
-  (let ((bs `(,@(nvp-bindings-vim) ,@bindings)))
+  (let ((bs `(,@(nvp-bindings-view) ,@bindings)))
     `(nvp-bindings ,mode ,feature ,@bs)))
 
-(defmacro nvp-bindings-add-vim (mode &optional feature)
+(defmacro nvp-bindings-add-view (mode &optional feature)
   `(progn
-     (nvp-bindings ,mode ,feature ,@(nvp-bindings-vim))))
+     (nvp-bindings ,mode ,feature ,@(nvp-bindings-view))))
 
-(defmacro nvp-with-vim-bindings (&rest body)
+(defmacro nvp-with-view-bindings (&rest body)
   `(nvp-with-temp-bindings
-     (:bindings ,(nvp-bindings-vim)
+     (:bindings ,@(nvp-bindings-view)
                 :keep t
                 :exit (lambda () (message "vim out")))
      ,@body))

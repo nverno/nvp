@@ -72,13 +72,14 @@
 ;;; Man
 
 ;; make indentation based regexp
+(defsubst nvp-read--man-indent ()
+  (buffer-substring (point) (+ (point) (current-indentation))))
+
 (defsubst nvp-read--man-indent-re ()
-  (concat "^\\(?:[ \t]*$\\|"
-          (buffer-substring
-           (point)
-           (save-excursion
-             (progn (back-to-indentation) (point))))
-          "\\)"))
+  (concat "^\\(?:[ \t]*$\\|" (nvp-read--man-indent) "\\)"))
+
+(defsubst nvp-read--man-section-re ()
+  (concat "^" (nvp-read--man-indent) "[^ \t\n\r]"))
 
 ;; regex to match man subentry
 (defvar nvp-read--man-subentry-re
@@ -88,10 +89,12 @@
 (defsubst nvp-read-man-string (section-re)
   (goto-char (point-min))
   (when (re-search-forward section-re nil 'move)
-    (forward-line)
-    (let ((start (point))
-          (indent-re (nvp-read--man-indent-re)))
-      (while (looking-at-p indent-re)
+    ;; (forward-line)
+    (beginning-of-line)
+    (let* ((start (point))
+           (section-re (nvp-read--man-section-re)))
+      (forward-line)
+      (while (not (or (eobp) (looking-at-p section-re)))
         (forward-line))
       (buffer-substring start (1- (point))))))
 

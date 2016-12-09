@@ -90,6 +90,8 @@
       collect `(nvp-bindings ,mode ,@bindings))))
 
 ;;; general movement bindings for non-insert modes
+(declare-function nvp-basic-up-paragraph "nvp-basic")
+(declare-function nvp-basic-down-paragraph "nvp-basic")
 (defmacro nvp-bindings-view ()
   ''(("j"    . forward-line)
      ("k"    . previous-line)
@@ -110,8 +112,7 @@
     `(nvp-bindings ,mode ,feature ,@bs)))
 
 (defmacro nvp-bindings-add-view (mode &optional feature)
-  `(progn
-     (nvp-bindings ,mode ,feature ,@(nvp-bindings-view))))
+  `(progn (nvp-bindings ,mode ,feature ,@(nvp-bindings-view))))
 
 (defmacro nvp-with-view-bindings (&rest body)
   `(nvp-with-temp-bindings
@@ -119,6 +120,39 @@
                 :keep t
                 :exit (lambda () (message "vim out")))
      ,@body))
+
+;;--- Input ----------------------------------------------------------
+
+;; read input in various ways
+(defmacro nvp-read (prompt &optional thing &rest args)
+  (declare (indent defun))
+  (pcase thing
+    ((pred stringp)
+     `(read-from-minibuffer ,prompt ,thing))
+    (`(quote ,sym)
+     (cond
+      ((consp sym)
+       `(ido-completing-read ,prompt ,thing))
+      ((vectorp sym)
+       `(completing-read ,prompt ,thing))
+      ((symbol-function sym)
+       (if args
+           `(funcall-interactively ',sym ,@args)
+         `(call-interactively ',sym)))
+      (t `(ido-completing-read ,prompt ,sym))))
+    ((pred symbolp)
+     (cond
+      ((string= ":library" (symbol-name thing))
+       `(completing-read ,prompt
+                         (apply-partially
+                          'locate-file-completion-table
+                          load-path (get-load-suffixes))))
+      ((vectorp (symbol-value (intern-soft thing)))
+       `(completing-read ,prompt ,thing))
+      (t `(ido-completing-read ,prompt (symbol-value ,thing)))))
+    ((pred consp)
+     `(ido-completing-read ,prompt ,thing))
+    (_ `(read-from-minibuffer ,prompt))))
 
 ;;--- Time -----------------------------------------------------------
 

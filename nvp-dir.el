@@ -32,7 +32,7 @@
   (require 'cl-lib))
 (require 'dired)
 (require 'dired-x)
-(autoload 'nvp-ext-terminal "nvp-ext-terminal")
+(autoload 'nvp-ext-terminal "nvp-ext")
 
 ;;--- Dired ----------------------------------------------------------
 
@@ -60,11 +60,44 @@
 (defsubst nvp-dired-jump-to-bottom ()
   (interactive)
   (goto-char (point-max))
-  (dired-next-line -1))
+  (dired-next-line -1)
+  (recenter-top-bottom))
 
 (defsubst nvp-dired-find-alternate-file ()
   (interactive)
   (find-alternate-file ".."))
+
+(defsubst nvp-dired-next5 ()
+  (interactive)
+  (forward-line 5)
+  (dired-move-to-filename))
+
+(defsubst nvp-dired-prev5 ()
+  (interactive)
+  (forward-line -5)
+  (dired-move-to-filename))
+
+(defsubst nvp-dired-scroll-up ()
+  (interactive)
+  (scroll-up-command)
+  (dired-move-to-filename))
+
+(defsubst nvp-dired-scroll-down ()
+  (interactive)
+  (scroll-down-command)
+  (dired-move-to-filename))
+
+(when (require 'hydra nil t)
+  (defhydra nvp-dired-hydra (:color red :hint nil)
+    "move"
+    ("M-n" nvp-dired-next5)
+    ("M-p" nvp-dired-prev5)
+    ("n" nvp-dired-next5)
+    ("p" nvp-dired-prev5)
+    ("i" nvp-dired-scroll-down)
+    ("k" nvp-dired-scroll-up)
+    ("l" dired-prev-dirline)
+    ("j" dired-next-dirline)))
 
 ;;; Kill
 ;; copy absolute filenames as string to kill ring

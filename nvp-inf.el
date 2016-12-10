@@ -93,6 +93,13 @@
       (pop-to-buffer (process-buffer proc))
     (message "No processes")))
 
+;; -------------------------------------------------------------------
+;;; Buffer Process
+
+(defsubst nvp-inf-process-status ()
+  (interactive)
+  (process-status (current-buffer)))
+
 ;; ------------------------------------------------------------
 ;;* Prompts
 

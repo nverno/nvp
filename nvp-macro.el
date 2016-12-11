@@ -48,13 +48,23 @@
 
 ;;--- Config ---------------------------------------------------------
 
-(defmacro nvp-program (name)
-  `(eval-when-compile
-     (if (eq system-type 'windows-nt)
-         (bound-and-true-p
-          ,(intern (concat "nvp-" name "-program")))
-       (let ((local (expand-file-name ,name "/usr/local/bin")))
-         (if (file-exists-p local) local ,name)))))
+(defmacro nvp-program (name &optional no-compile)
+  (let ((name (cond
+               ((symbolp name) (symbol-name name))
+               ((consp name)
+                (pcase name
+                  (`(quote ,sym)
+                   (symbol-name sym))
+                  (_ (eval name))))
+               ((stringp name) name)
+               (t (user-error "%S unmatched")))))
+    `(,(if no-compile 'progn 'eval-when-compile)
+      (if (eq system-type 'windows-nt)
+          (bound-and-true-p
+           ,(intern (concat "nvp-" name "-program")))
+        (let ((local (expand-file-name ,name "/usr/local/bin")))
+          (if (file-exists-p local) local
+            (executable-find ,name)))))))
 
 (defmacro nvp-mode (mode)
   `(expand-file-name

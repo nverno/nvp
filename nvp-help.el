@@ -51,6 +51,7 @@
 
 ;; Lookup definintion of word at point online.
 (defun nvp-help-lookup-word (word)
+
   (interactive (list (save-excursion (car (ispell-get-word nil)))))
   (browse-url (format "http://en.wiktionary.org/wiki/%s" word)))
 
@@ -62,7 +63,8 @@
   (interactive "d")
   (let ((face (or (get-char-property (point) 'read-face-name)
                   (get-char-property (point) 'face))))
-    (if face (message "Face: %s" face) (message "No face at %d" pos))))
+    (if face (message "Face: %s" face)
+      (message "No face at %d" pos))))
 
 ;;--- Docset ---------------------------------------------------------
 
@@ -73,9 +75,17 @@
         (start-process "Zeal" nil zeal-at-point-exe "--query" search))
     (nvp-with-gnu/w32
         (and (y-or-n-p "Install zeal? ")
-             (nvp-ext-run-script
-              (expand-file-name "tools/install.sh" nvp--dir)
-              '("install_zeal") 'sudo))
+             (set-process-sentinel
+              (nvp-ext-run-script
+               (expand-file-name "tools/install.sh" nvp--dir)
+               '("install_zeal") 'sudo)
+              ;; reset global key / zeal exe
+              #'(lambda (p _m)
+                  (when (zerop (process-exit-status p))
+                    (global-set-key
+                     (kbd "C-c d") 'zeal-at-point-search)
+                    (setq zeal-at-point-exe
+                          (executable-find "zeal"))))))
       (and (y-or-n-p "Zeal not found, goto http://zealdocs.org? ")
            (browse-url "http://zealdocs.org")))))
 

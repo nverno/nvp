@@ -80,9 +80,10 @@
 (defun nvp-ext-run-script (file &optional functions sudo passwd)
   (interactive
    (let* ((file (read-file-name "File: "))
-          (funcs (ido-completing-read
-                  "Function: " (cons (nvp-ext--script-functions file)
-                                     nil)))
+          (funcs (cons (ido-completing-read
+                        "Function: "
+                        (nvp-ext--script-functions file))
+                       nil))
           (sudo (nvp-with-gnu (y-or-n-p "Sudo? "))))
      (list file funcs sudo nil)))
   (let ((cmd

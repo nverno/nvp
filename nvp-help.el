@@ -51,7 +51,6 @@
 
 ;; Lookup definintion of word at point online.
 (defun nvp-help-lookup-word (word)
-
   (interactive (list (save-excursion (car (ispell-get-word nil)))))
   (browse-url (format "http://en.wiktionary.org/wiki/%s" word)))
 

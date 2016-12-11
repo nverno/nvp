@@ -55,7 +55,7 @@
                 (pcase name
                   (`(quote ,sym)
                    (symbol-name sym))
-                  (_ (eval name))))
+                  (_ name)))
                ((stringp name) name)
                (t (user-error "%S unmatched")))))
     `(,(if no-compile 'progn 'eval-when-compile)

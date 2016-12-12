@@ -32,9 +32,13 @@
 ;;;###autoload
 (defun nvp-apropos-init ()
   (interactive)
-  (nvp-apropos-hydra/body))
+  (nvp-apropos/body))
 
-(global-set-key (kbd "<f2> h a") #'nvp-help-apropos/body)
+(global-set-key (kbd "<f2> h a") #'nvp-apropos/body)
+
+(defadvice nvp-apropos/body (around show-help activate)
+  (let ((hydra-is-helpful t))
+    ad-do-it))
 
 (defhydra nvp-apropos (:color blue)
   "Apropos"

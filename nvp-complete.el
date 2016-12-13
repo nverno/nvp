@@ -81,10 +81,12 @@
 (defmacro nvp-complete-with-switch-completion (program args cache
                                                        &rest body)
   (declare (indent 1) (indent 1) (indent 2) (debug t))
-  `(let ((nvp-complete--switch-program ,program)
+  `(progn
+     (require 'nvp-complete)
+     (let ((nvp-complete--switch-program ,program)
           (nvp-complete--switch-args ,args)
           (nvp-complete--switch-cache ,cache))
-     ,@body))
+      ,@body)))
 
 (defmacro nvp-complete-compile-with-completion (program args cache
                                                         cmd prompt

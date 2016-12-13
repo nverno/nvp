@@ -74,8 +74,15 @@
 (defvar-local nvp-basic-header-re nil)
 (defsubst nvp-basic-header-re ()
   (or nvp-basic-header-re
-      (let ((cs (string-trim comment-start)))
-        (format "^\\s-*%s%s\\(?:---\\|\*\\| |\\|%s\\)" cs cs cs))))
+      (setq nvp-basic-header-re
+            (let* ((comment (string-trim comment-start))
+                   (cs (regexp-quote comment))
+                   (multi (> (string-width comment) 1)))
+              (if (not multi)
+                  (format "^\\s-*%s%s\\(?:---\\|\*\\| |\\|%s\\)"
+                          cs cs cs)
+                (format "^\\s-*%s%s" cs
+                        (regexp-quote (substring comment 1 2))))))))
 
 (defsubst nvp-basic-next-heading ()
   (interactive)

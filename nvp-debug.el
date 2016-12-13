@@ -32,14 +32,18 @@
   (defvar tramp-verbose))
 (require 'hydra)
 
-(global-set-key (kbd "<f2> d") #'hydra-debug/body)
+(global-set-key (kbd "<f2> d e") #'nvp-debug-emacs/body)
 
 ;;;###autoload
-(defun nvp-debug-init ()
+(defun nvp-debug-emacs ()
   (interactive)
-  (hydra-debug/body))
+  (nvp-debug-emacs/body))
 
-(defhydra hydra-debug (:color red :hint nil)
+(defadvice nvp-debug-emacs/body (around show-help activate)
+  (let ((hydra-is-helpful t))
+    ad-do-it))
+
+(defhydra nvp-debug-emacs (:color red :hint nil)
   "
 Toggle debugging functions:
 

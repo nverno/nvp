@@ -115,6 +115,8 @@
 
 ;;--- Org ------------------------------------------------------------
 
+(defvar-local notes-file nil)
+
 ;;;###autoload
 (defun nvp-jump-to-org (arg)
   (interactive "P")
@@ -123,11 +125,13 @@
                         "Org file: "
                         (directory-files nvp/org nil "^[^.]")))
                   "gtd.org"))
-         (file (expand-file-name org nvp/org)))
+         (file (or (and (not arg) (bound-and-true-p notes-file))
+                   (expand-file-name org nvp/org))))
     (when (file-exists-p file)
       (find-file-other-window file)
-      (goto-char (point-min))
-      (search-forward "* Notes" nil 'move))))
+      (unless (bound-and-true-p notes-file)
+        (goto-char (point-min))
+        (search-forward "* Notes" nil 'move)))))
 
 ;;--- Book -----------------------------------------------------------
 

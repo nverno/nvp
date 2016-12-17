@@ -96,6 +96,7 @@
 ;; -------------------------------------------------------------------
 ;;; Buffer Process
 
+;;;###autoload
 (defsubst nvp-inf-process-status ()
   (interactive)
   (message "Process status: %s" (process-status (current-buffer))))

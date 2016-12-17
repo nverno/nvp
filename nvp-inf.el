@@ -98,10 +98,10 @@
 
 (defsubst nvp-inf-process-status ()
   (interactive)
-  (process-status (current-buffer)))
+  (message "Process status: %s" (process-status (current-buffer))))
 
 ;; ------------------------------------------------------------
-;;* Prompts
+;;; Prompts
 
 (defvar inferior-ess-prompt)
 (defvar comint-use-prompt-regexp)
@@ -130,7 +130,7 @@
      (t nil))))
 
 ;; ------------------------------------------------------------
-;;* Process Attributes
+;;; Process Attributes
 
 ;; For processes with prompt regexp (from ess):
 ;;
@@ -173,7 +173,7 @@
       (process-put proc 'last-eval (current-time)))))
 
 ;; ------------------------------------------------------------
-;;* Accept output / interrupt processes
+;;; Accept output / interrupt processes
 
 ;; #<marker at 50722 in ess-inf.el>
 ;; If there is a prompt, wait until process isn't busy by checking
@@ -242,7 +242,7 @@
       (set-process-filter proc og-filt))))
 
 ;; ------------------------------------------------------------
-;;* Filters
+;;; Filters
 ;;
 ;; - preinput, input, preoutput, output, redirect
 
@@ -264,7 +264,7 @@
     (insert string)))
 
 ;; ------------------------------------------------------------
-;;* Callbacks
+;;; Callbacks
 ;;
 ;; Do special things with certain strings, ie '?' or ';'
 ;; callback is stored in 'callbacks proc property. Callbacks is a list
@@ -289,7 +289,7 @@
           (error (message "%s" (error-message-string err))))))))
 
 ;; ------------------------------------------------------------
-;;* Redirect process output
+;;; Redirect process output
 
 ;; temporarily redirect PROC process output from command CMD to
 ;; OUT-BUFFER

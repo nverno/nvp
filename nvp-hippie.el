@@ -169,7 +169,7 @@ string).  It returns t if a new completion is found, nil otherwise."
         t))))
 
 ;;;###autoload
-(defun hippie-expand-lines ()
+(defun nvp-hippie-expand-lines ()
   (interactive)
   (let ((hippie-expand-try-functions-list 
 	 '(try-expand-line-closest-first
@@ -178,7 +178,7 @@ string).  It returns t if a new completion is found, nil otherwise."
     (hippie-expand nil)))
 
 ;;;###autoload
-(defun hippie-expand-no-case-fold ()
+(defun nvp-hippie-expand-no-case-fold ()
   (interactive)
   (let ((case-fold-search nil))
     (hippie-expand nil)))

@@ -1,8 +1,7 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
 
 (define-abbrev-table 'unicode-abbrev-table
-  '(
-    ;; general
+  '(;; general
     ("\\degree" "°" nil :system t)
     ("\\heartsuit" "♡" nil :system t)
     ("\\eighthnote" "♪" nil :system t)
@@ -10,7 +9,7 @@
     ("\\flat" "♭" nil :system t)
     ("\\natural" "♮" nil :system t)
     ("\\sharp" "♯" nil :system t)
-
+    ("\\checkmark" "✓" nil :system t)
     ;; math
     ("\\Pi" "Π" nil :system t)
     ("\\pi" "π" nil :system t)

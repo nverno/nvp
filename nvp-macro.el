@@ -28,7 +28,8 @@
 ;;; Code:
 (require 'cl-lib)
 
-;;--- OS -------------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; OS
 
 (defmacro nvp-with-w32 (&rest body)
   (declare (indent 0) (debug t))
@@ -46,7 +47,8 @@
       `,@w32
     `,@gnu))
 
-;;--- Config ---------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Config
 
 (defmacro nvp-program (name &optional no-compile)
   (let ((name (cond
@@ -70,7 +72,8 @@
   `(expand-file-name
     (concat "nvp-" ,mode) (bound-and-true-p nvp/mode)))
 
-;;--- Bindings -------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Bindings
 
 (defmacro nvp-bindings (mode &optional feature &rest bindings)
   (declare (indent defun))
@@ -131,7 +134,8 @@
                 :exit (lambda () (message "vim out")))
      ,@body))
 
-;;--- Input ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Input
 
 ;; read input in various ways
 (defmacro nvp-read (prompt &optional thing &rest args)
@@ -164,7 +168,8 @@
      `(ido-completing-read ,prompt ,thing))
     (_ `(read-from-minibuffer ,prompt))))
 
-;;--- Time -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Time
 
 (defmacro nvp-file-older-than-days (file days)
   "non-nil if FILE last modification was more than DAYS ago."
@@ -183,7 +188,8 @@
        ,@body
        (- (float-time) ,start))))
 
-;;--- Tooltips -------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Tooltips
 
 (declare-function pos-tip-show "pos-tip")
 (declare-function nvp-basic-temp-binding "nvp-basic")
@@ -210,7 +216,8 @@
            (nvp-basic-temp-binding
             "q" #'(lambda () (interactive) (x-hide-tip)))))))
 
-;;--- Regex / Strings ------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Regex / Strings
 
 (defmacro nvp-re-opt (opts &optional no-symbol)
   `(eval-when-compile
@@ -220,7 +227,8 @@
 (defmacro nvp-concat (&rest body)
   `(eval-when-compile (concat ,@body)))
 
-;;--- Process --------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Processes
 
 (defmacro nvp-with-process-filter (process)
   "Run processs with `nvp-process-buffer-filter'. Return process object."
@@ -301,13 +309,14 @@ BODY."
      (let ((script (expand-file-name "tools/install.sh" ,dir)))
        (nvp-with-process-log
          (funcall-interactively 'nvp-ext-run-script script
-                                ,(if (stringp funcs) (list funcs)
+                                ,(if (stringp funcs) `(cons ,funcs nil)
                                    funcs)
                                 ,sudo)
          :pop-on-error
          ,@body))))
 
-;;--- Interactive Functions ------------------------------------------
+;; -------------------------------------------------------------------
+;;; Interactive Functions
 
 ;;; Newline
 

@@ -294,13 +294,16 @@ BODY."
 
 (defmacro nvp-with-install-script (dir &optional funcs sudo &rest body)
   "Run installation script."
-  (declare (indent defun))
+  (declare (indent defun) (debug defun))
   `(progn
      (require 'nvp-ext)
      (require 'nvp)
      (let ((script (expand-file-name "tools/install.sh" ,dir)))
        (nvp-with-process-log
-         (funcall-interactively 'nvp-ext-run-script script ,@funcs ,sudo)
+         (funcall-interactively 'nvp-ext-run-script script
+                                ,(if (stringp funcs) (list funcs)
+                                   funcs)
+                                ,sudo)
          :pop-on-error
          ,@body))))
 

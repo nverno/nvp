@@ -29,15 +29,15 @@
 (eval-when-compile
   (require 'nvp-local nil t)
   (require 'nvp-macro)
-  (defvar nvp/snippet)
-  (defvar yas-text))
+  (defvar nvp/snippet))
+(require 'yasnippet)
 (autoload 'string-trim "subr-x")
 
 (defvar-local nvp-snippet-dir nil)
 
 ;; compile snippets when installing mode
 (defun nvp-yas-snippet-install ()
-  (let ((yas-snippet-dir nvp/snippet))
+  (let ((yas-snippet-dirs nvp/snippet))
     (yas-recompile-all)))
 
 ;; Initialize a directory of snippets.

@@ -28,6 +28,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'hydra)
   (defvar rectangle-mark-mode))
 
 ;;;###autoload

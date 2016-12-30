@@ -41,7 +41,8 @@
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-install "nvp-ext"))
 
-;;--- Modes ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Modes
 
 ;;;###autoload
 (defun nvp-jump-to-mode-config (mode)
@@ -93,7 +94,8 @@
       (goto-char (point-min))
       (search-forward str-mode-hook nil t))))
 
-;;--- Libraries ------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Libraries
 
 ;;;###autoload
 (defun nvp-jump-to-library (library)
@@ -113,7 +115,8 @@
       (find-file-other-window
        (if (file-exists-p el) el elgz)))))
 
-;;--- Org ------------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Org
 
 (defvar-local notes-file nil)
 
@@ -133,7 +136,18 @@
         (goto-char (point-min))
         (search-forward "* Notes" nil 'move)))))
 
-;;--- Book -----------------------------------------------------------
+;;;###autoload
+(defun nvp-jump-to-info ()
+  (interactive)
+  (let* ((org (ido-completing-read
+               "Info file: "
+               (directory-files (expand-file-name "org" nvp/info) nil "\.org")))
+         (file (expand-file-name org (expand-file-name "org" nvp/info))))
+    (when (file-exists-p file)
+      (find-file-other-window file))))
+
+;; -------------------------------------------------------------------
+;;; Books / PDFs
 
 ;; Jump to book in directory:
 ;; 1. `nvp/books'/DIRNAME if non-nil.

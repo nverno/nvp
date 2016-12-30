@@ -34,7 +34,8 @@
 (require 'dired-x)
 (autoload 'nvp-ext-terminal "nvp-ext")
 
-;;--- Dired ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Dired
 
 ;;;###autoload
 (defun nvp-dired-jump (&optional other-window file-name)
@@ -115,35 +116,14 @@
           (kill-append string nil)
         (kill-new string)))))
 
-;;; Compress
-
-(defun nvp-dired-zip ()
-  (interactive)
-  (let* ((files (dired-get-marked-files))
-         (out-file (if (or current-prefix-arg (> (length files) 1))
-                       (read-from-minibuffer "Archive name: ")
-                     (concat (file-name-nondirectory (car files))
-                             ".zip")))
-         (in-files (mapconcat #'(lambda (x)
-                                  (let ((file
-                                         (file-name-nondirectory x)))
-                                    (if (file-directory-p x)
-                                        (concat file "/*")
-                                      file)))
-                              files " ")))
-    (if  (= 1 (length files))
-        (let* ((file (file-name-nondirectory (car files))))
-          (start-process "compress" "*compress*" "7za" "a" "-tzip"
-                         out-file in-files))
-      (start-process-shell-command
-       "compress" "*compress*" (format "7za a -tzip %s %s"
-                                       out-file in-files)))))
-
+;; -------------------------------------------------------------------
 ;;; External
 
 (eval-when-compile
   (defvar nvp-dired-external-filelist-cmd)
   (defvar nvp-dired-external-program))
+
+;;; Open externally
 
 ;; Open current or marked dired files in external app.
 (defun nvp-dired-external-open ()
@@ -181,6 +161,48 @@
           (nvp-with-gnu/w32
               (start-process cmd nil cmd file)
             (w32-shell-execute (cdr (assoc 'cmd prog)) file)))))))
+
+;;; Install info
+
+;; install files in current directory, or prompt with prefix
+(defun nvp-dired-install-info (arg)
+  (interactive "P")
+  (let ((info-dir
+         (replace-regexp-in-string
+          "/+$" ""
+          (expand-file-name
+           (if arg (read-directory-name
+                    "Install info to directory: ")
+             default-directory)))))
+    (mapc #'(lambda (f)
+              (call-process "install-info" nil (nvp-process-buffer) nil
+                            (concat "--info-dir=" info-dir)
+                            (concat "--info-file=" f)))
+          (dired-get-marked-files))))
+
+;;; Compress
+
+(defun nvp-dired-zip ()
+  (interactive)
+  (let* ((files (dired-get-marked-files))
+         (out-file (if (or current-prefix-arg (> (length files) 1))
+                       (read-from-minibuffer "Archive name: ")
+                     (concat (file-name-nondirectory (car files))
+                             ".zip")))
+         (in-files (mapconcat #'(lambda (x)
+                                  (let ((file
+                                         (file-name-nondirectory x)))
+                                    (if (file-directory-p x)
+                                        (concat file "/*")
+                                      file)))
+                              files " ")))
+    (if  (= 1 (length files))
+        (let* ((file (file-name-nondirectory (car files))))
+          (start-process "compress" "*compress*" "7za" "a" "-tzip"
+                         out-file in-files))
+      (start-process-shell-command
+       "compress" "*compress*" (format "7za a -tzip %s %s"
+                                       out-file in-files)))))
 
 ;;; Shell
 
@@ -240,6 +262,7 @@
 ;;         ()
 ;;         )))
 
+;; -------------------------------------------------------------------
 ;;; Imenu
 
 ;; Find the previous file in the buffer.

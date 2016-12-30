@@ -230,6 +230,8 @@
 ;; -------------------------------------------------------------------
 ;;; Processes
 
+(defmacro nvp-process-buffer () "*nvp-install*")
+
 (defmacro nvp-with-process-filter (process)
   "Run processs with `nvp-process-buffer-filter'. Return process object."
   (declare (indent defun))

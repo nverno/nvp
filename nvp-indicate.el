@@ -73,7 +73,7 @@
   (interactive "P")
   (if (setq nvp-indicate--add-font (not nvp-indicate--add-font))
       (font-lock-refresh-defaults)
-    (let ((len (if arg (read-number "Length: ") 75)))
+    (let ((len (if arg (read-number "Length: ") 80)))
       (font-lock-add-keywords
        nil `((,(format "^[^\n]\\{%d\\}\\(.*\\)$" len)
               1 font-lock-warning-face t)))

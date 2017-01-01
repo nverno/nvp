@@ -50,10 +50,10 @@
 (defun nvp-code-hs-init (&optional arg)
   (interactive "P")
   (hs-minor-mode 1)
-  (global-set-key (kbd "<f2> c f") 'nil)
-  (global-set-key (kbd "<f2> c f") #'nvp-code-hs-toggle)
-  (global-set-key (kbd "<f2> c h") #'hs-hide-all)
-  (global-set-key (kbd "<f2> c u") #'hs-show-all)
+  (global-set-key (kbd "<f2> c f")   'nil)
+  (global-set-key (kbd "<f2> c f f") 'nvp-code-hs-toggle)
+  (global-set-key (kbd "<f2> c f a") 'hs-hide-all)
+  (global-set-key (kbd "<f2> c f s") 'hs-show-all)
   (nvp-code-hs-toggle arg))
 
 ;; -------------------------------------------------------------------

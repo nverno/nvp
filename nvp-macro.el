@@ -306,8 +306,9 @@ BODY."
   "Run installation script."
   (declare (indent defun) (debug defun))
   `(progn
-     (require 'nvp-ext)
      (require 'nvp)
+     (require 'nvp-log)
+     (require 'nvp-ext)
      (let ((script (expand-file-name "tools/install.sh" ,dir)))
        (nvp-with-process-log
          (funcall-interactively 'nvp-ext-run-script script

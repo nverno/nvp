@@ -29,6 +29,12 @@
 (require 'cl-lib)
 
 ;; -------------------------------------------------------------------
+;;; Misc
+
+(defmacro nvp-listify (args)
+  `(if (stringp ,args) (cons ,args nil) ,args))
+
+;; -------------------------------------------------------------------
 ;;; OS
 
 (defmacro nvp-with-w32 (&rest body)
@@ -135,7 +141,7 @@
      ,@body))
 
 ;; -------------------------------------------------------------------
-;;; Input
+;;; Read / Input
 
 ;; read input in various ways
 (defmacro nvp-read (prompt &optional thing &rest args)
@@ -167,6 +173,19 @@
     ((pred consp)
      `(ido-completing-read ,prompt ,thing))
     (_ `(read-from-minibuffer ,prompt))))
+
+(defmacro nvp-read-obarray (prompt &optional regexp)
+  "Completing read for obarray with optional REGEXP filter."
+  `(ido-completing-read
+    ,prompt
+    (let (r)
+      (mapatoms
+       (lambda (x)
+         ,(if regexp
+              `(when (string-match-p ,regexp (symbol-name x))
+                 (push x r))
+            `(push x r))))
+      (mapcar 'symbol-name r))))
 
 ;; -------------------------------------------------------------------
 ;;; Time
@@ -317,22 +336,6 @@ BODY."
                                 ,sudo)
          :pop-on-error
          ,@body))))
-
-;; -------------------------------------------------------------------
-;;; Completing Read
-
-(defmacro nvp-read-obarray (prompt &optional regexp)
-  "Completing read for obarray with optional REGEXP filter."
-  `(ido-completing-read
-    ,prompt
-    (let (r)
-      (mapatoms
-       (lambda (x)
-         ,(if regexp
-              `(when (string-match-p ,regexp (symbol-name x))
-                 (push x r))
-            `(push x r))))
-      (mapcar 'symbol-name r))))
 
 ;; -------------------------------------------------------------------
 ;;; Interactive Functions

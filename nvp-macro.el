@@ -319,6 +319,22 @@ BODY."
          ,@body))))
 
 ;; -------------------------------------------------------------------
+;;; Completing Read
+
+(defmacro nvp-read-obarray (prompt &optional regexp)
+  "Completing read for obarray with optional REGEXP filter."
+  `(ido-completing-read
+    ,prompt
+    (let (r)
+      (mapatoms
+       (lambda (x)
+         ,(if regexp
+              `(when (string-match-p ,regexp (symbol-name x))
+                 (push x r))
+            `(push x r))))
+      (mapcar 'symbol-name r))))
+
+;; -------------------------------------------------------------------
 ;;; Interactive Functions
 
 ;;; Newline

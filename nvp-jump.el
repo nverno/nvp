@@ -147,6 +147,20 @@
       (find-file-other-window file))))
 
 ;; -------------------------------------------------------------------
+;;; Scratch
+
+;;;###autoload
+(defun nvp-jump-to-scratch (mode)
+  (interactive
+   (list (if current-prefix-arg
+             (nvp-read-obarray "Major mode: " "-mode\\'")
+           (symbol-name major-mode))))
+  (if (string= mode "emacs-lisp-mode")
+      (switch-to-buffer (get-buffer-create "*scratch*"))
+    (switch-to-buffer (get-buffer-create (concat "*scratch-" mode)) "*")
+    (call-interactively (intern mode))))
+
+;; -------------------------------------------------------------------
 ;;; Books / PDFs
 
 ;; Jump to book in directory:

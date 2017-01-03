@@ -219,7 +219,7 @@
   `(let ((x-gtk-use-system-tooltips ,use-gtk))
      (or (x-hide-tip)
          (let ((str ,popup))
-           (pos-tip-show str nil nil nil 10)
+           (pos-tip-show str nil nil nil 20)
            (nvp-basic-temp-binding
             "h"
             ,(or help-fn

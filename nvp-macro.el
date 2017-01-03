@@ -337,6 +337,27 @@ BODY."
          :pop-on-error
          ,@body))))
 
+(defmacro nvp-with-asdf-install (prefix dir plugin &optional config-defaults
+                                        error-callback success-callback
+                                        script-fn sudo &rest body)
+  "Run install script, with prefix prompt for extra arguments to configure
+and install PLUGIN with asdf."
+  `(progn
+     (require 'asdf)
+     (if ,prefix
+         (let ((ver (ido-completing-read
+                     ,(concat (capitalize plugin) " version: ")
+                     (asdf--versions ,plugin)))
+               (process-environment
+                (cons (concat
+                       ,(concat (upcase plugin) "_EXTRA_CONFIGURE_OPTIONS=")
+                       (read-from-minibuffer
+                        ,(concat (capitalize plugin) " configure options: ")
+                        ,config-defaults))
+                      process-environment)))
+           (asdf-install ,plugin ver ,error-callback ,success-callback))
+       (nvp-with-install-script ,dir ,(or script-fn "install") ,sudo ,@body))))
+
 ;; -------------------------------------------------------------------
 ;;; Interactive Functions
 

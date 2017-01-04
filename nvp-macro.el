@@ -34,6 +34,15 @@
 (defmacro nvp-listify (args)
   `(if (stringp ,args) (cons ,args nil) ,args))
 
+(defmacro nvp-bfn ()
+  `(file-name-nondirectory (file-name-sans-extension (buffer-file-name))))
+
+(defmacro nvp-dfn ()
+  `(file-name-nondirectory
+    (directory-file-name
+     (file-name-directory
+      (file-name-sans-extension (buffer-file-name))))))
+
 ;; -------------------------------------------------------------------
 ;;; OS
 

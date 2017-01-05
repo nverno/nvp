@@ -43,6 +43,9 @@
      (file-name-directory
       (file-name-sans-extension (buffer-file-name))))))
 
+(defmacro nvp-string-or-symbol (sym)
+  `(if (stringp ,sym) (intern ,sym) ,sym))
+
 ;; -------------------------------------------------------------------
 ;;; OS
 
@@ -86,6 +89,22 @@
 (defmacro nvp-mode (mode)
   `(expand-file-name
     (concat "nvp-" ,mode) (bound-and-true-p nvp/mode)))
+
+;; -------------------------------------------------------------------
+;;; REPLs
+
+(defmacro nvp-hippie-shell-fn (name history &optional size ring bol-fn)
+  "Setup comint history ring read/write and hippie-expand for it."
+  (let ((fn (nvp-string-or-symbol name)))
+    `(defun ,fn ()
+       (setq comint-input-ring-file-name
+             (expand-file-name ,history nvp/cache))
+       (setq comint-input-ring-size ,(or size 2000))
+       (comint-read-input-ring)
+       (add-hook 'kill-buffer-hook 'comint-write-input-ring 'local)
+       (hippie-expand-shell-setup
+        ,(or ring ''comint-input-ring)
+        ,(or bol-fn ''comint-line-beginning-position)))))
 
 ;; -------------------------------------------------------------------
 ;;; Bindings

@@ -27,8 +27,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-local nil t)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (nvp-local-vars))
 (require 'yasnippet)
 (autoload 'string-trim "subr-x")
 

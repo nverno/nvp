@@ -32,7 +32,8 @@
 
 (eval-when-compile
   (require 'autoload)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (nvp-local-vars))
 
 ;; Update the main loaddefs.el file from directories with autoloads
 ;; as well as the subdirs that need autoloads and compilation.

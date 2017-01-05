@@ -29,8 +29,10 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
+  (nvp-local-vars)
   (defvar recentf-list))
 (autoload 'elisp-utils-elisp-follow "elisp-utils")
+(autoload 'nvp-log "nvp-log")
 (autoload 'nvp-chop-prefix "nvp-util")
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-install "nvp-ext"))

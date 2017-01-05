@@ -31,18 +31,14 @@
   (require 'subr-x))
 (autoload 'find-library-name "find-func")
 
-;;;###autoload
-(defadvice pop-to-mark-command (around ensure-new-position activate)
-  (let ((p (point)))
-    (when (eq last-command 'save-region-or-current-line)
-      ad-do-it
-      ad-do-it
-      ad-do-it)
-    (dotimes (i 10)
-      (when (= p (point)) ad-do-it))))
+(defvar-local nvp-mark--fontified-p nil
+  "Non-nil if marks in buffer are currently fontified")
+
+;; -------------------------------------------------------------------
+;;; Util
 
 ;; thing-at-point 'marker
-(defun nvp-mark-bounds-of-marker-at-point ()
+(defsubst nvp-mark-bounds-of-marker-at-point ()
   (save-excursion
     (skip-chars-backward "^#" (line-beginning-position))
     (when (eq ?< (char-after (point)))
@@ -52,8 +48,10 @@
                    (1+ (point)))))
         (cons start end)))))
 
-(put 'marker 'bounds-of-thing-at-point
-     'nvp-mark-bounds-of-marker-at-point)
+(put 'marker 'bounds-of-thing-at-point 'nvp-mark-bounds-of-marker-at-point)
+
+;; -------------------------------------------------------------------
+;; Commands
 
 ;; jump to marker at point
 ;; markers: #<marker at [point or fn-name] in [library/relative filename]>
@@ -90,18 +88,54 @@
   (interactive)
   (kill-new (format "%s" (point-marker))))
 
-;; font-lock markers: #<marker at [point or fn-name] in [filename]>
+;; -------------------------------------------------------------------
+;;; Font-lock
+
+(eval-when-compile
+  ;; Do mark fontification
+  (defmacro nvp-mark--add-fl ()
+    `'(("#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
+       (0 (prog1 ()
+            (let* ((place (match-string-no-properties 1))
+                   (file (match-string-no-properties 2)))
+              (put-text-property (1+ (match-beginning 0)) (match-end 0)
+                                 'display (format "%s<%s>" file place)))))
+       (0 'font-lock-constant-face t)))))
+
 ;;;###autoload
-(font-lock-add-keywords
- nil
- ;; 'emacs-lisp-mode
- '(("#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
-    (0 (prog1 ()
-         (let* ((place (match-string-no-properties 1))
-                (file (match-string-no-properties 2)))
-           (put-text-property (1+ (match-beginning 0)) (match-end 0)
-                              'display (format "%s<%s>" file place)))))
-    (0 'font-lock-constant-face t))))
+(defun nvp-mark-fontify-marks (arg)
+  (interactive "P")
+  (if (setq nvp-mark--fontified-p (not nvp-mark--fontified-p))
+      (font-lock-refresh-defaults)
+    (font-lock-add-keywords nil (nvp-mark--add-fl))
+    (font-lock-flush)
+    (font-lock-ensure)))
+
+;; font-lock markers: #<marker at [point or fn-name] in [filename]>
+;; (font-lock-add-keywords
+;;  'emacs-lisp-mode
+;;  ;; 'emacs-lisp-mode
+;;  '(("#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
+;;     (0 (prog1 ()
+;;          (let* ((place (match-string-no-properties 1))
+;;                 (file (match-string-no-properties 2)))
+;;            (put-text-property (1+ (match-beginning 0)) (match-end 0)
+;;                               'display (format "%s<%s>" file place)))))
+;;     (0 'font-lock-constant-face t))))
+
+;; -------------------------------------------------------------------
+;;; Advices
+
+;;;###autoload
+(defadvice pop-to-mark-command (around ensure-new-position activate)
+  (let ((p (point)))
+    (when (eq last-command 'save-region-or-current-line)
+      ad-do-it
+      ad-do-it
+      ad-do-it)
+    (dotimes (i 10)
+      (when (= p (point)) ad-do-it))))
+
 
 (provide 'nvp-mark)
 ;;; nvp-mark.el ends here

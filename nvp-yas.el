@@ -130,6 +130,8 @@
 ;; ------------------------------------------------------------
 ;;;  Snippet-mode
 
+;; replace macros in snippet-mode with expansions
+;; #<marker at 21701 in macrostep.el>
 ;; Reload directory after saving
 (defun nvp-yas-snippet-reload (&optional dir compile)
   (let* ((ddir (file-name-directory

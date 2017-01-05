@@ -231,7 +231,8 @@
          ;; otherwise assume its a directory
          (t (nvp-jump-to-book fullname)))))))
 
-;;--- Dirs -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Dirs
 
 ;;;###autoload
 (defun nvp-jump-to-dir (arg)

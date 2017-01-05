@@ -59,7 +59,7 @@
 ;; file, and if there are multiple matches offer ido choice.
 ;;;###autoload
 (defun nvp-jump-to-mode-test (str)
-  (interactive "sExtension:")
+  (interactive "sExtension: ")
   (let* ((test-files (directory-files nvp/test
                                       t (concat "\\." str "$")))
          (alt-files (or (and (or (not test-files))

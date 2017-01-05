@@ -284,13 +284,15 @@ if process exit status isn't 0."
                       (equal on-error :pop-on-error))
                  '(pop-to-buffer "*nvp-install*")
                on-error)))
-    `(set-process-sentinel
-      (nvp-with-process-filter ,process)
-      #'(lambda (p m)
-          (nvp-log "%s: %s" nil (process-name p) m)
-          (if (not (zerop (process-exit-status p)))
-              ,err
-            ,@body)))))
+    `(progn
+       (set-process-sentinel
+        (nvp-with-process-filter ,process)
+        #'(lambda (p m)
+            (nvp-log "%s: %s" nil (process-name p) m)
+            (if (not (zerop (process-exit-status p)))
+                ,err
+              ,@body)))
+       (display-buffer (nvp-process-buffer)))))
 
 (defmacro nvp-with-process-buffer (process &optional on-error
                                            &rest body)

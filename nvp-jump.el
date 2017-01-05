@@ -29,13 +29,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-local nil t)
-  (defvar recentf-list)
-  (defvar nvp/mode)
-  (defvar nvp/test)
-  (defvar nvp/lisp)
-  (defvar nvp/org)
-  (defvar nvp/books))
+  (defvar recentf-list))
 (autoload 'elisp-utils-elisp-follow "elisp-utils")
 (autoload 'nvp-chop-prefix "nvp-util")
 (nvp-with-gnu

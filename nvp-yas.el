@@ -28,8 +28,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-local nil t)
-  (require 'nvp-macro)
-  (defvar nvp/snippet))
+  (require 'nvp-macro))
 (require 'yasnippet)
 (autoload 'string-trim "subr-x")
 
@@ -182,6 +181,10 @@
         (add-hook 'after-save-hook (lambda () (nvp-yas-snippet-reload nil t))
                   nil 'local)
       (add-hook 'after-save-hook 'nvp-yas-snippet-reload nil 'local))))
+
+;; -------------------------------------------------------------------
+(declare-function company-abort "company")
+(declare-function company-complete-common "company")
 
 (provide 'nvp-yas)
 ;;; nvp-yas.el ends here

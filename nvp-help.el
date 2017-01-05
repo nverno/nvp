@@ -35,6 +35,7 @@
   (autoload 'nvp-ext-sudo-install "nvp-ext"))
 (autoload 'ispell-get-word "ispell")
 (autoload 'define-word "define-word")
+(autoload 'define-word-at-point "define-word")
 (autoload 'nvp-ext-run-script "nvp-ext")
 
 ;;--- Lookup Words ---------------------------------------------------
@@ -97,6 +98,7 @@
 
 ;; -------------------------------------------------------------------
 (declare-function zeal-at-point-get-version "zeal-at-point")
+(declare-function zeal-at-point "zeal-at-point")
 
 (provide 'nvp-help)
 ;;; nvp-help.el ends here

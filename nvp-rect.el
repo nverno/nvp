@@ -30,6 +30,7 @@
   (require 'nvp-macro)
   (require 'hydra)
   (defvar rectangle-mark-mode))
+(require 'rect)
 
 ;;;###autoload
 (defun nvp-rect-load ()

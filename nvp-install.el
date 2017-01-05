@@ -29,7 +29,12 @@
 (eval-when-compile
   (require 'nvp-local nil t)
   (require 'cl-lib)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (defvar nvp/mode)
+  (defvar nvp/site)
+  (defvar nvp/auto-site)
+  (defvar nvp/project)
+  (defvar nvp/class))
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-package-directory-dwim "nvp-package")
 (nvp-with-gnu

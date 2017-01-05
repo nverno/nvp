@@ -30,6 +30,9 @@
   (require 'nvp-macro)
   (require 'hydra))
 (require 'windmove)
+(autoload 'ace-window "ace-window")
+(autoload 'winner-undo "winner")
+(autoload 'winner-redo "winner")
 
 ;;;###autoload
 (defun nvp-winmove-init ()

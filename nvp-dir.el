@@ -31,8 +31,8 @@
   (require 'subr-x)
   (require 'cl-lib))
 (require 'dired)
-(require 'dired-x)
 (autoload 'nvp-ext-terminal "nvp-ext")
+(autoload 'dired-filename-at-point "dired-x")
 
 ;; -------------------------------------------------------------------
 ;;; Dired

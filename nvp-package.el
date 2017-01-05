@@ -32,9 +32,7 @@
 
 (eval-when-compile
   (require 'autoload)
-  (require 'nvp-macro)
-  (require 'nvp-local nil t))
-(declare-function package-installed-p "package")
+  (require 'nvp-macro))
 
 ;; Update the main loaddefs.el file from directories with autoloads
 ;; as well as the subdirs that need autoloads and compilation.
@@ -166,6 +164,9 @@ R=recompile, F=force, P=if prefix.
         (save-silently inhibit-message)
         (load-path load-path))
     (byte-recompile-directory pkg-dir arg force)))
+
+;; -------------------------------------------------------------------
+(declare-function package-installed-p "package")
 
 (provide 'nvp-package)
 ;;; nvp-package.el ends here

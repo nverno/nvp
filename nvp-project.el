@@ -36,7 +36,8 @@
 (defvar-local nvp-project--root ".git")
 (defvar-local nvp-project--test-dir '("test" "tests" "t"))
 
-;;--- Util -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Util
 
 (cl-defmacro nvp-with-project ((&key (test-re nvp-project--test-re)
                                      (root nvp-project--root)

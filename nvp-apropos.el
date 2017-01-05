@@ -26,8 +26,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'hydra))
+(require 'hydra)
 
 ;;;###autoload
 (defun nvp-apropos-init ()

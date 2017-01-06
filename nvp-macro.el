@@ -32,19 +32,47 @@
 ;;; Misc
 
 (defmacro nvp-listify (args)
+  "If ARGS are string, convert to list."
   `(if (stringp ,args) (cons ,args nil) ,args))
 
+(defmacro nvp-string-or-symbol (sym)
+  "If SYM is string convert to symbol."
+  `(if (stringp ,sym) (intern ,sym) ,sym))
+
 (defmacro nvp-bfn ()
+  "Short buffer file name"
   `(file-name-nondirectory (file-name-sans-extension (buffer-file-name))))
 
 (defmacro nvp-dfn ()
+  "Short directory file name."
   `(file-name-nondirectory
     (directory-file-name
      (file-name-directory
       (file-name-sans-extension (buffer-file-name))))))
 
-(defmacro nvp-string-or-symbol (sym)
-  `(if (stringp ,sym) (intern ,sym) ,sym))
+(defmacro nvp-search-and-go (regexp &optional back &rest body)
+  "Search forward or backward for REGEXP, and move point to beginning of 
+line at match (default) or do BODY at point if non-nil."
+  `(let ((start (point)))
+     (condition-case nil
+         (progn
+           (forward-line ,(if back -1 1))
+           (,(if back 're-search-backward 're-search-forward) ,regexp)
+           ,@(or body (list '(beginning-of-line))))
+       (error (goto-char start)))))
+
+(defmacro nvp-mark-defun (&optional first-time &rest rest)
+  "Mark blocks, expanding successively."
+  `(if (or (and (eq last-command this-command) (mark t))
+           (and transient-mark-mode mark-active))
+       (set-mark
+        (save-excursion
+          (goto-char (mark))
+          ,@(or rest
+                (list
+                 '(smie-forward-sexp 'halfsexp)
+                 '(point)))))
+     ,(or first-time '(mark-defun))))
 
 ;; -------------------------------------------------------------------
 ;;; OS

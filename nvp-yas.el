@@ -97,9 +97,9 @@
 ;; create comment string of length LENGTH, accounting for
 ;; multi-character comments by recycling the second char
 (defalias 'yas-comment-string 'nvp-yas-comment)
-(defsubst nvp-yas-comment (length)
+(defsubst nvp-yas-comment (length &optional start)
   (ignore-errors
-    (let* ((comment (string-trim comment-start))
+    (let* ((comment (string-trim (or start comment-start)))
            (cont (if (> (length comment) 1)
                      (substring comment 1 2) comment)))
       (concat comment (make-string (max 0 (- length (length comment)))
@@ -115,11 +115,14 @@
          (extra (max padmin (- padmax sw))))
     (make-string (/ (max 0 extra) 2) char)))
 
-;; continuation comment: if `comment-end' is defined, just make a
-;; blank string
+;; continuation comment: if `comment-end' is defined,
+;; make blank string concated with last char in comment-end
 (defsubst nvp-yas-comment-cont (length)
   (if (and comment-end (not (string= "" comment-end)))
-      (make-string length ? )
+      (if (> (length comment-start) 1)
+          (concat (make-string (1- length) ? )
+                  (substring comment-start 1 2))
+        (make-string length ? ))
     (nvp-yas-comment length)))
 
 ;; `comment-end' or default to ""

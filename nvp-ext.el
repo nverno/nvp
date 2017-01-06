@@ -109,7 +109,8 @@
 (define-obsolete-function-alias 'nvp-install-script-functions
   'nvp-ext--script-functions)
 
-;;--- Terminal -------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Terminal
 
 (declare-function tramp-dissect-file-name "tramp")
 
@@ -149,7 +150,14 @@
     ;;   (ansi-term "/bin/bash" buffer))
     (shell buffer)))
 
-;;--- Vagrant --------------------------------------------------------
+;;;###autoload
+(defun nvp-ext-launch-terminal ()
+  (interactive)
+  (nvp-with-gnu
+    (call-process "gnome-terminal" nil nil nil)))
+
+;; -------------------------------------------------------------------
+;;; Vagrant
 
 ;;;###autoload
 (defun nvp-ext-vagrant-halt (&optional arg)
@@ -165,7 +173,8 @@ in buffer *vagrant-status*."
       (message "Running vagrant-halt...")
       (nvp-with-process-log proc :pop-on-error))))
 
-;;--- GPG ------------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; GPG
 
 ;; export keys
 ;;;###autoload
@@ -192,7 +201,8 @@ in buffer *vagrant-status*."
             (copy-file f dir t))
           '("pubring.gpg" "secring.gpg" "trustdb.gpg"))))
 
-;;--- Bash -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Bash
 
 (nvp-with-w32
   ;; FIXME: move to w32-tools, also doesn't work
@@ -209,7 +219,8 @@ in buffer *vagrant-status*."
             (binary-process-input))
         (shell buff)))))
 
-;;--- Other ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Other
 
 ;; Return the number of logical processors on this system.
 (defun nvp-ext-sys-numcores ()

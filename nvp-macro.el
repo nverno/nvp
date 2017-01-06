@@ -74,6 +74,33 @@ line at match (default) or do BODY at point if non-nil."
                  '(point)))))
      ,(or first-time '(mark-defun))))
 
+;; code folding
+(defmacro nvp-hs-blocks (start end)
+  `(progn
+     (setq hs-block-start-regexp ,start)
+     (setq hs-block-end-regexp ,end)))
+
+(defmacro nvp-with-hs-block (start end &rest body)
+  "Do hideshow with START and END regexps."
+  (declare (indent defun))
+  `(progn
+     (unless hs-minor-mode (hs-minor-mode))
+     (let ((hs-block-start-regexp ,start)
+           (hs-block-end-regexp ,end))
+       ,@(or body (list '(hs-toggle-hiding))))))
+
+;; -------------------------------------------------------------------
+;;; Regex / Strings
+
+(defmacro nvp-re-opt (opts &optional no-symbol)
+  `(eval-when-compile
+     (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
+             ,(and (not no-symbol) "\\_>"))))
+
+(defmacro nvp-concat (&rest body)
+  `(eval-when-compile (concat ,@body)))
+
+
 ;; -------------------------------------------------------------------
 ;;; OS
 
@@ -290,17 +317,6 @@ line at match (default) or do BODY at point if non-nil."
                        (pop-to-buffer (current-buffer)))))))
            (nvp-basic-temp-binding
             "q" #'(lambda () (interactive) (x-hide-tip)))))))
-
-;; -------------------------------------------------------------------
-;;; Regex / Strings
-
-(defmacro nvp-re-opt (opts &optional no-symbol)
-  `(eval-when-compile
-     (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
-             ,(and (not no-symbol) "\\_>"))))
-
-(defmacro nvp-concat (&rest body)
-  `(eval-when-compile (concat ,@body)))
 
 ;; -------------------------------------------------------------------
 ;;; Processes

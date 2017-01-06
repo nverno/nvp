@@ -32,7 +32,8 @@
   (require 'smartparens))
 (defvar hs-minor-mode)
 
-;;--- Code Folding ---------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Code Fold
 
 (defvar nvp-code--hs-hidden nil)
 

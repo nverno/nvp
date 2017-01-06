@@ -50,17 +50,7 @@
      (file-name-directory
       (file-name-sans-extension (buffer-file-name))))))
 
-(defmacro nvp-search-and-go (regexp &optional back &rest body)
-  "Search forward or backward for REGEXP, and move point to beginning of 
-line at match (default) or do BODY at point if non-nil."
-  `(let ((start (point)))
-     (condition-case nil
-         (progn
-           (forward-line ,(if back -1 1))
-           (,(if back 're-search-backward 're-search-forward) ,regexp)
-           ,@(or body (list '(beginning-of-line))))
-       (error (goto-char start)))))
-
+;; Marks
 (defmacro nvp-mark-defun (&optional first-time &rest rest)
   "Mark blocks, expanding successively."
   `(if (or (and (eq last-command this-command) (mark t))
@@ -90,7 +80,28 @@ line at match (default) or do BODY at point if non-nil."
        ,@(or body (list '(hs-toggle-hiding))))))
 
 ;; -------------------------------------------------------------------
+;;; Package
+
+(defmacro nvp-package-dir (dir)
+  "Package local directory"
+  `(progn
+     (defvar ,dir nil)
+     (when load-file-name
+       (setq ,dir (file-name-directory load-file-name)))))
+
+;; -------------------------------------------------------------------
 ;;; Regex / Strings
+
+(defmacro nvp-search-and-go (regexp &optional back &rest body)
+  "Search forward or backward for REGEXP, and move point to beginning of 
+line at match (default) or do BODY at point if non-nil."
+  `(let ((start (point)))
+     (condition-case nil
+         (progn
+           (forward-line ,(if back -1 1))
+           (,(if back 're-search-backward 're-search-forward) ,regexp)
+           ,@(or body (list '(beginning-of-line))))
+       (error (goto-char start)))))
 
 (defmacro nvp-re-opt (opts &optional no-symbol)
   `(eval-when-compile
@@ -321,7 +332,12 @@ line at match (default) or do BODY at point if non-nil."
 ;; -------------------------------------------------------------------
 ;;; Processes
 
-(defmacro nvp-process-buffer () "*nvp-install*")
+(defmacro nvp-process-buffer (&optional comint &rest body)
+  (if (not (or comint body))
+      '"*nvp-install*"
+    `(progn (with-current-buffer (get-buffer-create "*nvp-install*")
+              ,@(or body (list '(comint-mode)
+                               '(current-buffer)))))))
 
 (defmacro nvp-with-process-filter (process)
   "Run processs with `nvp-process-buffer-filter'. Return process object."
@@ -345,7 +361,7 @@ if process exit status isn't 0."
   (declare (indent defun))
   (let ((err (if (and (symbolp on-error)
                       (equal on-error :pop-on-error))
-                 '(pop-to-buffer "*nvp-install*")
+                 '(pop-to-buffer (nvp-process-buffer))
                on-error)))
     `(progn
        (set-process-sentinel

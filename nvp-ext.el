@@ -28,14 +28,14 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (defvar nvp/bin)
-  (defvar nvp/vms)
+  (nvp-local-vars)
   (defvar explicit-shell-file-name)
   (defvar epg-gpg-home-directory))
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-process-buffer "nvp")
 
-;;--- Sudo -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Sudo
 
 (defmacro nvp-ext-read-passwd ()
   '(or (bound-and-true-p nvp-sudo-passwd)
@@ -53,7 +53,7 @@
     (let* ((password (or password (nvp-ext-read-passwd)))
            (cmd (or command (read-shell-command "Command: ")))
            (proc (start-process-shell-command
-                  "bash" (or buffer (nvp-process-buffer))
+                  "bash" (or buffer (nvp-process-buffer 'comint))
                   (concat "sudo bash -l " cmd))))
       (set-process-filter proc 'nvp-ext-process-filter)
       (process-send-string proc password)
@@ -97,10 +97,10 @@
           (if sudo
               (nvp-ext-sudo-command passwd cmd)
             (start-process-shell-command
-             "bash" (nvp-process-buffer)
+             "bash" (nvp-process-buffer 'comint)
              (concat "bash -l " cmd)))
         (start-process-shell-command
-         "bash" (nvp-process-buffer) "bash -l " cmd)))))
+         "bash" (nvp-process-buffer 'comint) "bash -l " cmd)))))
 
 ;;;###autoload
 (define-obsolete-function-alias 'nvp-install-script

@@ -30,7 +30,8 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 
-;;--- Lists ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Lists
 
 ;; Intersection of multiple lists.
 (defun nvp-list-multiple-intersection (l)
@@ -44,7 +45,8 @@
   (cl-loop for i from 0 to (1- (length lst)) by n
      collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
 
-;;--- Conversion -----------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Conversion
 
 (declare-function hexl-hex-char-to-integer "hexl")
 (declare-function hexl-oct-char-to-integer "hexl")
@@ -74,7 +76,8 @@
       (setq octal-string (substring octal-string 1)))
     (message "%d" oct-num)))
 
-;;--- Save Data ------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Save data
 
 ;; recentf.el
 (defun nvp-save-variable (var file &optional header coding)
@@ -114,7 +117,8 @@
         (insert (format "\n        %S" e)))
       (insert "\n        ))\n"))))
 
-;;--- Processes ------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Procs
 
 (defun nvp-start-process (cmd)
   (start-process
@@ -122,7 +126,8 @@
    shell-command-switch
    (format "nohup 1>/dev/null 2>/dev/null %s" cmd)))
 
-;;--- Tables ---------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Tables
 
 ;; Format alist DAT as an org table.  This alist assumes :head and
 ;; :rows lists. It splits :rows into number of sublists matching
@@ -133,7 +138,8 @@
          (cols (length head)))
     (append head (cons 'hline nil) (nvp-list-split rows cols) nil)))
 
-;;--- Strings --------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Strings / Regexp
 
 ;; Remove string suffix if it is at the end of the string `s'.
 (defsubst nvp-chop-suffix (suffix s)
@@ -176,8 +182,6 @@
 	(setq pos m)))
     (nreverse res)))
 
-;;--- RE -------------------------------------------------------------
-
 ;; make indentation based regexp
 (defsubst nvp-re-indent-re ()
   (concat "^\\(?:[ \t]*$\\|"
@@ -202,7 +206,8 @@
           (cons (point) (match-end 0))
         nil))))
 
-;;--- Bindings -------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Bindings
 
 ;; Overrides a minor mode keybinding for the local buffer by creating
 ;; or altering keymaps stored in buffer-local variable 

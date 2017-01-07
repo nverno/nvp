@@ -456,6 +456,8 @@ BODY."
 and install PLUGIN with asdf."
   `(progn
      (require 'asdf)
+     (declare-function asdf--versions "asdf")
+     (declare-function asdf-install "asdf")
      (if ,prefix
          (let ((ver (ido-completing-read
                      ,(concat (capitalize plugin) " version: ")

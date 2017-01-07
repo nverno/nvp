@@ -34,51 +34,24 @@
 
 (defvar-local nvp-snippet-dir nil)
 
+;; -------------------------------------------------------------------
+;;; Setup 
+
 ;; compile snippets when installing mode
 (defun nvp-yas-snippet-install ()
   (let ((yas-snippet-dirs nvp/snippet))
     (yas-recompile-all)))
 
-;; Initialize a directory of snippets.
-(defun nvp-yas-snippets-initialize (dir)
-  (interactive)
-  (when (and (fboundp 'yas-load-directory)
-	     (file-directory-p dir))
-    (yas-load-directory (expand-file-name dir nvp/snippet))))
-
-(defun nvp-yas-goto-end-of-active-field ()
-  (interactive)
-  (let* ((snippet (car (yas-active-snippets)))
-	 (position (yas--field-end (yas--snippet-active-field snippet))))
-    (if (= (point) position)
-        (move-end-of-line 1)
-      (goto-char position))))
-
-(defun nvp-yas-goto-start-of-active-field ()
-  (interactive)
-  (let* ((snippet (car-safe (yas-active-snippets)))
-	 (position (yas--field-start
-                    (yas--snippet-active-field snippet))))
-    (if (= (point) position)
-	(move-beginning-of-line 1)
-      (goto-char position))))
-
-;; Expand yasnippet if possible, otherwise complete.
-;; FIXME: remove?
-(defun nvp-yas-company-or-snippet ()
-  (interactive)
-  (if (car (yas--templates-for-key-at-point))
-      (progn
-        (company-abort)
-        (yas-expand))
-    (company-complete-common)))
-
-(defun nvp-yas-snippet-help ()
-  (interactive)
-  (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
-
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
+
+;; trimmed filename
+(defsubst nvp-yas-bfn ()
+  (nvp-bfn))
+
+;; directory name
+(defsubst nvp-yas-dfn ()
+  (nvp-dfn))
 
 (defsubst nvp-yas-with-comment (str)
   (let ((comment (if (or (memq major-mode
@@ -128,6 +101,47 @@
 ;; `comment-end' or default to ""
 (defsubst nvp-yas-comment-end ()
   (or (bound-and-true-p comment-end) ""))
+
+;; -------------------------------------------------------------------
+;;; Commands 
+
+;; Initialize a directory of snippets.
+(defun nvp-yas-snippets-initialize (dir)
+  (interactive)
+  (when (and (fboundp 'yas-load-directory)
+	     (file-directory-p dir))
+    (yas-load-directory (expand-file-name dir nvp/snippet))))
+
+(defun nvp-yas-goto-end-of-active-field ()
+  (interactive)
+  (let* ((snippet (car (yas-active-snippets)))
+	 (position (yas--field-end (yas--snippet-active-field snippet))))
+    (if (= (point) position)
+        (move-end-of-line 1)
+      (goto-char position))))
+
+(defun nvp-yas-goto-start-of-active-field ()
+  (interactive)
+  (let* ((snippet (car-safe (yas-active-snippets)))
+	 (position (yas--field-start
+                    (yas--snippet-active-field snippet))))
+    (if (= (point) position)
+	(move-beginning-of-line 1)
+      (goto-char position))))
+
+;; Expand yasnippet if possible, otherwise complete.
+;; FIXME: remove?
+(defun nvp-yas-company-or-snippet ()
+  (interactive)
+  (if (car (yas--templates-for-key-at-point))
+      (progn
+        (company-abort)
+        (yas-expand))
+    (company-complete-common)))
+
+(defun nvp-yas-snippet-help ()
+  (interactive)
+  (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
 
 ;; ------------------------------------------------------------
 ;;;  Snippet-mode

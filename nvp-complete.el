@@ -82,7 +82,7 @@
                                                        &rest body)
   (declare (indent 1) (indent 1) (indent 2) (debug t))
   `(progn
-     (require 'nvp-complete)
+     (eval-when-compile (require 'nvp-complete))
      (let ((nvp-complete--switch-program ,program)
           (nvp-complete--switch-args ,args)
           (nvp-complete--switch-cache ,cache))

@@ -74,6 +74,7 @@
   "Do hideshow with START and END regexps."
   (declare (indent defun))
   `(progn
+     (require 'hideshow)
      (unless hs-minor-mode (hs-minor-mode))
      (let ((hs-block-start-regexp ,start)
            (hs-block-end-regexp ,end))
@@ -88,6 +89,20 @@
      (defvar ,dir nil)
      (when load-file-name
        (setq ,dir (file-name-directory load-file-name)))))
+
+(defmacro nvp-package-load-snippets (dir)
+  "Add packages snippet directory to `yas-snippet-dirs' after loading
+`yasnippet'."
+  `(progn
+     (eval-when-compile (defvar yas-snippet-dirs))
+     (declare-function yas-load-directory "yasnippet")
+     (eval-after-load 'yasnippet
+      '(let ((dir (expand-file-name "snippets" ,dir))
+             (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
+                       (cons yas-snippet-dirs ()))))
+         (unless (member dir dirs)
+           (setq yas-snippet-dirs (delq nil (cons dir dirs))))
+         (yas-load-directory dir)))))
 
 ;; -------------------------------------------------------------------
 ;;; Regex / Strings
@@ -162,15 +177,22 @@ line at match (default) or do BODY at point if non-nil."
 (defmacro nvp-hippie-shell-fn (name history &optional size ring bol-fn)
   "Setup comint history ring read/write and hippie-expand for it."
   (let ((fn (nvp-string-or-symbol name)))
-    `(defun ,fn ()
-       (setq comint-input-ring-file-name
-             (expand-file-name ,history nvp/cache))
-       (setq comint-input-ring-size ,(or size 2000))
-       (comint-read-input-ring)
-       (add-hook 'kill-buffer-hook 'comint-write-input-ring 'local)
-       (hippie-expand-shell-setup
-        ,(or ring ''comint-input-ring)
-        ,(or bol-fn ''comint-line-beginning-position)))))
+    `(progn
+       (eval-when-compile
+         (defvar comint-input-ring-file-name)
+         (defvar comint-input-ring-size))
+       (declare-function comint-read-input-ring "comint")
+       (declare-function comint-write-input-ring "comint")
+       (autoload 'hippie-expand-shell-setup "hippie-expand-shell")
+       (defun ,fn ()
+        (setq comint-input-ring-file-name
+              (expand-file-name ,history nvp/cache))
+        (setq comint-input-ring-size ,(or size 2000))
+        (comint-read-input-ring)
+        (add-hook 'kill-buffer-hook 'comint-write-input-ring 'local)
+        (hippie-expand-shell-setup
+         ,(or ring ''comint-input-ring)
+         ,(or bol-fn ''comint-line-beginning-position))))))
 
 ;; -------------------------------------------------------------------
 ;;; Bindings

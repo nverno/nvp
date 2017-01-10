@@ -31,10 +31,12 @@
   (require 'cl-lib))
 
 ;;;###autoload
-(defun nvp-expand-range ()
+(defun nvp-expand-range (&optional sep)
   "Expand range before point, eg. to make 0:10 by 1 could be 
 either m:10, m0:10, m0:1:10 or m:1:10. So, a missing start assumes starts from 0."
-  (interactive)
+  (interactive
+   (list (if current-prefix-arg (read-from-minibuffer "Separator: " ", ")
+           " ")))
   (when (looking-back (nvp-concat "\\bm\\(-?[0-9.]*\\)\:"
                                   ;; either end of range or increment
                                   "\\(-?[0-9.]+\\)"
@@ -49,7 +51,7 @@ either m:10, m0:10, m0:1:10 or m:1:10. So, a missing start assumes starts from 0
                                  (string-to-number start)
                                  (string-to-number (or end inc))
                                  (and end (string-to-number inc)))
-                                " ")))
+                                (or sep " "))))
             (delete-region (match-beginning 0) (point))
             (insert res))
         (error)))))
@@ -62,13 +64,11 @@ for string to wrap."
   (interactive "P")
   (cond
    ((eq (car-safe arg) 4)
-    (progn
-      (tiny-expand)
-      (nvp-list-wrap-quotes tiny-beg (point))))
+    (tiny-expand)
+    (nvp-list-wrap-quotes tiny-beg (point)))
    ((eq (car-safe arg) 16)
-    (progn
-      (tiny-expand)
-      (nvp-list-wrap-quotes tiny-beg (point) 'prompt)))
+    (tiny-expand)
+    (nvp-list-wrap-quotes tiny-beg (point) 'prompt))
    (t (tiny-expand))))
 
 (provide 'nvp-expand)

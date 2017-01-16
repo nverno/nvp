@@ -52,7 +52,5 @@
     (nvp-theme-light)
     (setq this-command nil)))
 
-(global-set-key (kbd "<f2> t s") 'nvp-theme-switch)
-
 (provide 'nvp-theme)
 ;;; nvp-theme.el ends here

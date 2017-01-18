@@ -53,13 +53,14 @@
 (defun nvp-test-select-test ()
   (let ((files (nvp-test--test-files)))
     (and files
-         (or (and (> 1 (length files))
-                  (ido-completing-read "Test file: " files))
+         (or (and (> (length files) 1)
+                  (funcall-interactively 'ido-completing-read "Test file: " files))
              (car files)))))
 
 (defmacro nvp-with-test (&optional no-test &rest body)
   "Do BODY in project test file, prompting if more than one is found.
 Do NO-TEST if no tests are found, default to user-error."
+  (declare (indent defun))
   `(let ((test-file (nvp-test-select-test)))
      (if (not test-file)
          ,(or no-test '(user-error "No test files found."))

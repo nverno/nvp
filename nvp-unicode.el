@@ -25,9 +25,6 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-
-;; [![Build Status](https://travis-ci.org/nverno/nvp.svg?branch=master)](https://travis-ci.org/nverno/nvp)
-
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

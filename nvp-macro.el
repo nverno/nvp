@@ -256,6 +256,16 @@ line at match (default) or do BODY at point if non-nil."
                 :exit (lambda () (message "vim out")))
      ,@body))
 
+(defmacro nvp-with-local-bindings (&rest bindings)
+  "Set buffer local bindings."
+  (declare (indent defun))
+  `(let ((oldmap (current-local-map))
+         (newmap (make-sparse-keymap)))
+     (when oldmap (set-keymap-parent newmap oldmap))
+     ,@(cl-loop for (k . b) in bindings
+          collect `(define-key newmap (kbd ,k) ',b))
+     (use-local-map newmap)))
+
 ;; -------------------------------------------------------------------
 ;;; Read / Input
 

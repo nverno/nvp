@@ -84,11 +84,10 @@
             (and
              (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)"
                                 nil t)
-             (progn
-               (let ((str (buffer-substring-no-properties
-                           (match-beginning 1) (match-end 1))))
-                 (if (> (length pref) (length str)) t
-                   (string> pref str)))))))
+             (let ((str (buffer-substring-no-properties
+                         (match-beginning 1) (match-end 1))))
+               (if (> (length pref) (length str)) t
+                 (string> pref str))))))
     (add-hook 'after-save-hook
               #'(lambda () (quietly-read-abbrev-file buffer-file-name))
               t 'local)))

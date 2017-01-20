@@ -347,24 +347,27 @@ line at match (default) or do BODY at point if non-nil."
 (cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn)
   "Toggle POPUP in pos-tip."
   (declare (indent defun))
-  `(let ((x-gtk-use-system-tooltips ,use-gtk))
-     (or (x-hide-tip)
-         (let ((str ,popup))
-           (pos-tip-show str nil nil nil 20)
-           (nvp-basic-temp-binding
-            "h"
-            ,(or help-fn
-                 '(function
-                   (lambda ()
-                     (interactive)
-                     (x-hide-tip)
-                     (with-current-buffer (get-buffer-create
-                                           "*nvp-help*")
-                       (insert str)
-                       (view-mode-enter)
-                       (pop-to-buffer (current-buffer)))))))
-           (nvp-basic-temp-binding
-            "q" #'(lambda () (interactive) (x-hide-tip)))))))
+  `(progn
+     (declare-function pos-tip-show "pos-tip")
+     (declare-function nvp-basic-temp-binding "nvp-basic")
+     (let ((x-gtk-use-system-tooltips ,use-gtk))
+      (or (x-hide-tip)
+          (let ((str ,popup))
+            (pos-tip-show str nil nil nil 20)
+            (nvp-basic-temp-binding
+             "h"
+             ,(or help-fn
+                  '(function
+                    (lambda ()
+                      (interactive)
+                      (x-hide-tip)
+                      (with-current-buffer (get-buffer-create
+                                            "*nvp-help*")
+                        (insert str)
+                        (view-mode-enter)
+                        (pop-to-buffer (current-buffer)))))))
+            (nvp-basic-temp-binding
+             "q" #'(lambda () (interactive) (x-hide-tip))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Processes

@@ -30,11 +30,7 @@
   (require 'nvp-local nil t)
   (require 'cl-lib)
   (require 'nvp-macro)
-  (defvar nvp/mode)
-  (defvar nvp/site)
-  (defvar nvp/auto-site)
-  (defvar nvp/project)
-  (defvar nvp/class))
+  (nvp-local-vars))
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-package-directory-dwim "nvp-package")
 (nvp-with-gnu
@@ -104,7 +100,7 @@
   (let* ((git-uri (format "%s/%s" (or root "https://github.com") repo))
          (pkg (car (last (split-string repo "/"))))
          (default-directory nvp/site)
-         (buff (get-buffer-create "*nvp-install*")))
+         (buff (nvp-process-buffer)))
     (if (file-exists-p pkg)
         (progn
           (cd pkg)
@@ -126,7 +122,7 @@
         (nvp-install-pending-dirs))
     ;; something wrong
     (nvp-log "Not rebuilding site-lisp")
-    (pop-to-buffer "*nvp-install*")))
+    (pop-to-buffer (nvp-process-buffer))))
 
 ;; build installed / updated git packages
 (defun nvp-install-pending-dirs ()
@@ -138,7 +134,7 @@
   (setq nvp-install-pending-dirs nil)
   (load-file nvp/auto-site)
   (nvp-log "Finished installing site-lisp.")
-  (pop-to-buffer "*nvp-install*"))
+  (pop-to-buffer (nvp-process-buffer)))
 
 ;;--- On Demand ------------------------------------------------------
 
@@ -237,7 +233,7 @@
            (cl-loop for (prog args) in ,script
               do
                 (nvp-log "Running %s %S" nil prog args)
-                (let ((proc (apply 'start-process prog "*nvp-install*"
+                (let ((proc (apply 'start-process prog (nvp-process-buffer)
                                    prog args)))
                   (nvp-with-finished-process proc ,file)))
            (nvp-with-gnu

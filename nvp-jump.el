@@ -139,8 +139,7 @@
                "Info file: "
                (directory-files (expand-file-name "org" nvp/info) nil "\.org")))
          (file (expand-file-name org (expand-file-name "org" nvp/info))))
-    (when (file-exists-p file)
-      (find-file-other-window file))))
+    (find-file-other-window file)))
 
 ;; -------------------------------------------------------------------
 ;;; Scratch

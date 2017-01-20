@@ -163,21 +163,43 @@
             (w32-shell-execute (cdr (assoc 'cmd prog)) file)))))))
 
 ;;; Install info
+(autoload 'org-texinfo-export-to-info "ox-texinfo")
 
-;; install files in current directory, or prompt with prefix
-(defun nvp-dired-install-info (arg)
+;; Convert marked .org files to .info and install.  If marked files
+;; are already .info files, just install.
+;; installs files in current directory, or prompts with prefix
+(defun nvp-dired-convert-and-install-info (arg)
   (interactive "P")
-  (let ((info-dir
-         (replace-regexp-in-string
-          "/+$" ""
-          (expand-file-name
-           (if arg (read-directory-name
-                    "Install info to directory: ")
-             default-directory)))))
-    (mapc #'(lambda (f)
-              (call-process "install-info" nil (nvp-process-buffer) nil
-                            (concat "--info-dir=" info-dir)
-                            (concat "--info-file=" f)))
+  (let* ((info-dir
+          (replace-regexp-in-string
+           "/+$" ""
+           (expand-file-name
+            (if arg (read-directory-name
+                     "Install info to directory: ")
+              default-directory))))
+         (keep (or (not arg)
+                   (string= info-dir default-directory))))
+    ;; convert org files to .info
+    (mapc (lambda (f)
+            (when (string= "org" (file-name-extension f))
+              (with-current-buffer (find-file-noselect f)
+                (org-texinfo-export-to-info)
+                (kill-buffer (current-buffer))))
+            (let* ((base (file-name-nondirectory (file-name-sans-extension f)))
+                   (info (concat base ".info"))
+                   (dest (expand-file-name info info-dir)))
+              ;; install .info files, delete intermediates, copy to destination
+              (when (file-exists-p info)
+                (delete-file (concat base ".texi"))
+                (copy-file info dest t)
+                ;; delete .info file if .org exists and moving to different
+                ;; info directory
+                (and (not keep) 
+                     (file-exists-p (concat base ".org"))
+                     (delete-file info))
+                (call-process "install-info" nil (nvp-process-buffer) nil
+                              (concat "--info-dir=" info-dir)
+                              (concat "--info-file=" dest)))))
           (dired-get-marked-files))))
 
 ;;; Compress

@@ -30,10 +30,11 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'subr-x))
+(autoload 'projectile-root-top-down "projectile")
 
 ;; dynamic local variables
 (defvar-local nvp-project--test-re ".*tests?")
-(defvar-local nvp-project--root ".git")
+(defvar-local nvp-project--root '(".git" ".projectile" "test" "tests"))
 (defvar-local nvp-project--test-dir '("test" "tests" "t"))
 
 ;; -------------------------------------------------------------------
@@ -45,13 +46,14 @@
                                &rest body)
   (declare (indent defun) (debug t))
   `(let ((nvp-project--test-re ,test-re)
-         (nvp-project--root ,root)
+         (nvp-project--root (nvp-listify ,root))
          (nvp-project--test-dir ',test-dir))
      ,@body))
 
 (defun nvp-project-locate-root ()
-  (locate-dominating-file
-   (or buffer-file-name default-directory) nvp-project--root))
+  (projectile-root-top-down
+   (or buffer-file-name default-directory)
+   (nvp-listify nvp-project--root)))
 
 (defun nvp-project-name (&optional arg)
   (let* ((project (or arg (nvp-project-locate-root)))

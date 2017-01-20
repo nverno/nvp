@@ -32,8 +32,13 @@
 ;;; Misc
 
 (defmacro nvp-listify (args)
-  "If ARGS are string, convert to list."
-  `(if (stringp ,args) (cons ,args nil) ,args))
+  "If ARGS are string or symbol, output as a list."
+  (cond
+   ((stringp args)
+    `(cons ,args nil))
+   ((symbolp args)
+    `(if (consp ,args) ,args (cons ,args nil)))
+   (t args)))
 
 (defmacro nvp-string-or-symbol (sym)
   "If SYM is string convert to symbol."

@@ -167,6 +167,16 @@ R=recompile, F=force, P=if prefix.
     (byte-recompile-directory pkg-dir arg force)))
 
 ;; -------------------------------------------------------------------
+;;; Recompile library
+
+(defun nvp-package-recompile (lib)
+  "Force compile files in package directory."
+  (interactive (list (nvp-read "Recompile library: " :library)))
+  (let ((default-directory
+          (file-name-directory (locate-file lib load-path (get-load-suffixes)))))
+    (byte-recompile-directory default-directory 0 t)))
+
+;; -------------------------------------------------------------------
 (declare-function package-installed-p "package")
 
 (provide 'nvp-package)

@@ -344,7 +344,7 @@ line at match (default) or do BODY at point if non-nil."
 (declare-function pos-tip-show "pos-tip")
 (declare-function nvp-basic-temp-binding "nvp-basic")
 
-(cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn)
+(cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn bindings)
   "Toggle POPUP in pos-tip."
   (declare (indent defun))
   `(progn
@@ -367,7 +367,9 @@ line at match (default) or do BODY at point if non-nil."
                         (view-mode-enter)
                         (pop-to-buffer (current-buffer)))))))
             (nvp-basic-temp-binding
-             "q" #'(lambda () (interactive) (x-hide-tip))))))))
+             "q" #'(lambda () (interactive) (x-hide-tip)))
+            ,@(cl-loop for (k . b) in bindings
+                 collect `(nvp-basic-temp-binding (kbd ,k) ,b)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Processes

@@ -88,17 +88,18 @@
   (scroll-down-command)
   (dired-move-to-filename))
 
-(when (require 'hydra nil t)
-  (defhydra nvp-dired-hydra (:color red :hint nil)
-    "move"
-    ("M-n" nvp-dired-next5)
-    ("M-p" nvp-dired-prev5)
-    ("n" nvp-dired-next5)
-    ("p" nvp-dired-prev5)
-    ("i" nvp-dired-scroll-down)
-    ("k" nvp-dired-scroll-up)
-    ("l" dired-prev-dirline)
-    ("j" dired-next-dirline)))
+(eval-when-compile
+  (require 'hydra))
+(defhydra nvp-dired-hydra (:color red :hint nil)
+  "move"
+  ("M-n" nvp-dired-next5)
+  ("M-p" nvp-dired-prev5)
+  ("n" nvp-dired-next5)
+  ("p" nvp-dired-prev5)
+  ("i" nvp-dired-scroll-down)
+  ("k" nvp-dired-scroll-up)
+  ("l" dired-prev-dirline)
+  ("j" dired-next-dirline))
 
 ;;; Kill
 ;; copy absolute filenames as string to kill ring

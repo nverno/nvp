@@ -169,6 +169,7 @@ R=recompile, F=force, P=if prefix.
 ;; -------------------------------------------------------------------
 ;;; Recompile library
 
+;;;###autoload
 (defun nvp-package-recompile (lib)
   "Force compile files in package directory."
   (interactive (list (nvp-read "Recompile library: " :library)))

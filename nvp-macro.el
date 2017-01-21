@@ -374,7 +374,7 @@ line at match (default) or do BODY at point if non-nil."
 
 (defmacro nvp-process-buffer (&optional comint &rest body)
   (if (not (or comint body))
-      '"*nvp-install*"
+      '(get-buffer-create "*nvp-install*")
     `(progn (with-current-buffer (get-buffer-create "*nvp-install*")
               ,@(or body (list '(comint-mode)
                                '(current-buffer)))))))

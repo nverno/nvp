@@ -227,12 +227,17 @@
          (t (nvp-jump-to-book fullname)))))))
 
 ;; -------------------------------------------------------------------
-;;; Dirs
+;;; Other
 
 ;;;###autoload
 (defun nvp-jump-to-dir (arg)
   (interactive "P")
   (ido-find-file-in-dir (if arg nvp/project nvp/class)))
+
+;;;###autoload
+(defun nvp-jump-to-template ()
+  (interactive)
+  (ido-find-file-in-dir nvp/template))
 
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

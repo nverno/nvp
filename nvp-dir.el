@@ -1,4 +1,4 @@
-;;; nvp-dir --- 
+;;; nvp-dir ---  -*- -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,8 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'subr-x)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'hydra nil t))
 (require 'dired)
 (autoload 'nvp-ext-terminal "nvp-ext")
 (autoload 'dired-filename-at-point "dired-x")
@@ -88,8 +89,6 @@
   (scroll-down-command)
   (dired-move-to-filename))
 
-(eval-when-compile
-  (require 'hydra))
 (defhydra nvp-dired-hydra (:color red :hint nil)
   "move"
   ("M-n" nvp-dired-next5)
@@ -308,6 +307,12 @@
 (declare-function tramp-dissect-file-name "tramp")
 (declare-function dired-read-shell-command "dired-aux")
 (declare-function w32-shell-execute "w32")
+
+(declare-function hydra-default-pre "hydra")
+(declare-function hydra-keyboard-quit "hydra")
+(declare-function hydra--call-interactively-remap-maybe "hydra")
+(declare-function hydra-show-hint "hydra")
+(declare-function hydra-set-transient-map "hydra")
 
 (provide 'nvp-dir)
 ;;; nvp-dir.el ends here

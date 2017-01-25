@@ -68,11 +68,23 @@
      (format "-l -c \"apt-get install -y %s\"" packages)
      buffer)))
 
-;;--- Bash Script ----------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Bash Script
 
 (defun nvp-ext--script-functions (file)
   (with-current-buffer (find-file-noselect file)
     (mapcar 'car (cdr (imenu--make-index-alist)))))
+
+;; create command to run. If function is cons, first element is function and the
+;; rest are its args
+(defun nvp-ext--script-command (file &optional functions)
+  (let ((funcs (mapcar (lambda (f) (if (listp f)
+                                  (mapconcat 'identity f " ")
+                                f))
+                       functions)))
+    (if functions
+        (mapconcat (lambda (f) (concat file " " f)) funcs " && ")
+      file)))
 
 ;; run bash script. If FUNCTIONS is non-nil call those functions
 ;; from script, as SUDO if non-nil.
@@ -86,19 +98,13 @@
                        nil))
           (sudo (nvp-with-gnu (y-or-n-p "Sudo? "))))
      (list file funcs sudo nil)))
-  (let ((cmd
-         (format
-          "%s" (if functions
-                   (mapconcat
-                    (lambda (f) (concat file " " f)) functions " && ")
-                 file))))
+  (let ((cmd (nvp-ext--script-command file functions)))
     (nvp-with-process-filter
       (nvp-with-gnu/w32
           (if sudo
               (nvp-ext-sudo-command passwd cmd)
             (start-process-shell-command
-             "bash" (nvp-process-buffer 'comint)
-             (concat "bash -l " cmd)))
+             "bash" (nvp-process-buffer 'comint) (concat "bash -l " cmd)))
         (start-process-shell-command
          "bash" (nvp-process-buffer 'comint) "bash -l " cmd)))))
 

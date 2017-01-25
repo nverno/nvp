@@ -469,6 +469,21 @@ BODY."
          :pop-on-error
          ,@body))))
 
+(defmacro nvp-with-script (script &optional funcs sudo &rest body)
+  "Run FUNCS in SCRIPT."
+  (declare (indent defun) (debug defun))
+  `(progn
+     (require 'nvp)
+     (require 'nvp-log)
+     (require 'nvp-ext)
+     (nvp-with-process-log
+       (funcall-interactively 'nvp-ext-run-script ,script
+                              ,(if (stringp funcs) `(cons ,funcs nil)
+                                 funcs)
+                              ,sudo)
+       :pop-on-error
+       ,@body)))
+
 (defmacro nvp-with-asdf-install (prefix dir plugin &optional config-defaults
                                         error-callback success-callback
                                         script-fn sudo &rest body)

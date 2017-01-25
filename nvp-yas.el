@@ -53,6 +53,14 @@
 (defsubst nvp-yas-dfn ()
   (nvp-dfn))
 
+;; current indentation
+(defsubst nvp-yas-indent ()
+  (save-excursion
+    (back-to-indentation)
+    (current-column)))
+
+;;--- Comments and Helpers -------------------------------------------
+
 (defsubst nvp-yas-with-comment (str)
   (let ((comment (if (or (memq major-mode
                                '(python-mode c-mode c++-mode flex-mode))
@@ -60,12 +68,6 @@
                      comment-start
                    (concat comment-start comment-start))))
     (format "%s%s%s" comment str comment-end)))
-
-;; current indentation
-(defsubst nvp-yas-indent ()
-  (save-excursion
-    (back-to-indentation)
-    (current-column)))
 
 ;; create comment string of length LENGTH, accounting for
 ;; multi-character comments by recycling the second char
@@ -101,6 +103,21 @@
 ;; `comment-end' or default to ""
 (defsubst nvp-yas-comment-end ()
   (or (bound-and-true-p comment-end) ""))
+
+;;--- Args -----------------------------------------------------------
+
+;; split argument STR by SEPS, eg. "a,b" => '("a" "b"). Strings are trimmed and
+;; nulls are dropped.
+;; if DEFAULTS is non-nil, split by "=" as well, eg.
+;; "a,b=1," => '("a" ("b" "1"))
+(defsubst nvp-yas-split-args (str &optional seps defaults)
+  (let ((args (split-string str (or seps "[ \t]*,[ \t]*") t " ")))
+    (if defaults
+        (mapcar (lambda (s)
+                  (let ((defs (split-string s "[ \t]*=[ \t]*" t " ")))
+                    (if (= (length defs) 1) (car defs) defs)))
+                args)
+      args)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands 

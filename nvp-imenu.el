@@ -1,4 +1,4 @@
-;;; nvp-imenu ---   
+;;; nvp-imenu ---  
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -47,6 +47,7 @@
 ;;; Hook
 
 ;; make header from comment
+;;;###autoload
 (cl-defun nvp-imenu-setup (&key headers headers-1 headers-2)
   (setq nvp-imenu-comment-headers-re
         (or headers 
@@ -60,7 +61,9 @@
         (or headers-2
             `(("Sub-Headers"
                ,(concat "^" (nvp-yas-comment 2) "-+\\s-*\\(.*\\)[ -]*$")
-               1)))))
+               1))))
+  (setq-local imenu-generic-expression
+              (append nvp-imenu-comment-headers-re-1 imenu-generic-expression)))
 
 ;; -------------------------------------------------------------------
 ;;; Util
@@ -77,18 +80,20 @@
   (interactive "P")
   (pcase arg
     (`(4)
-     ;; headers + sub-headers
-     (let ((imenu-generic-expression
-            (append nvp-imenu-comment-headers-re-1
-                    nvp-imenu-comment-headers-re-2
-                    imenu-generic-expression)))
-       (ido/imenu)))
-    (`(16)
-     (let ((imenu-generic-expression nvp-imenu-comment-headers-re))
+     ;; headers only
+     (let ((imenu-generic-expression nvp-imenu-comment-headers-re)
+           (imenu-create-index-function 'imenu-default-create-index-function))
        (condition-case nil
            (ido/imenu)
          (error message "nvp-imenu-comment-headers-re: %s"
                 nvp-imenu-comment-headers-re))))
+    (`(16)
+     ;; headers + sub-headers
+     (let ((imenu-generic-expression
+            (append nvp-imenu-comment-headers-re-1
+                    nvp-imenu-comment-headers-re-2))
+           (imenu-create-index-function 'imenu-default-create-index-function))
+       (ido/imenu)))
     (_ (ido/imenu))))
 
 ;; -------------------------------------------------------------------

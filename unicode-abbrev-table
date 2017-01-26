@@ -10,6 +10,7 @@
     ("\\natural" "♮" nil :system t)
     ("\\sharp" "♯" nil :system t)
     ("\\checkmark" "✓" nil :system t)
+
     ;; math
     ("\\Pi" "Π" nil :system t)
     ("\\pi" "π" nil :system t)
@@ -19,6 +20,8 @@
     ("\\in" "∈" nil :system t)
     ("\\notin" "∉" nil :system t)
     ("\\infty" "∞" nil :system t)
+    ("\\O" "Ø" nil :system t)
+    ("\\ne" "≠" nil :system t)
 
     ;; ops
     ("\\pm" "±" nil :system t)

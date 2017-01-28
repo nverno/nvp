@@ -125,7 +125,8 @@
            most-positive-fixnum)))
     (call-interactively 'fill-paragraph)))
 
-;;--- Align ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Align 
 
 ;;;###autoload
 (defadvice align-regexp (around align-regexp-with-spaces)

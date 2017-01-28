@@ -101,8 +101,10 @@
     (nvp-yas-comment length)))
 
 ;; `comment-end' or default to ""
-(defsubst nvp-yas-comment-end ()
-  (or (bound-and-true-p comment-end) ""))
+(defsubst nvp-yas-comment-end (&optional trim)
+  (or (if trim (string-trim (bound-and-true-p comment-end))
+        (bound-and-true-p comment-end))
+      ""))
 
 ;;--- Args -----------------------------------------------------------
 

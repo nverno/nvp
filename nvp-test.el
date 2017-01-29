@@ -48,14 +48,22 @@
   (when-let ((test (nvp-test--locate-tests)))
     (directory-files test t nvp-project--test-re)))
 
-;; return test file if only one in directory, otherwise prompt with
-;; completing read
+;; If test file found that matches buffer-file-name, return that,
+;; otherwise prompt with completing-read 
 (defun nvp-test-select-test ()
   (let ((files (nvp-test--test-files)))
-    (and files
-         (or (and (> (length files) 1)
-                  (funcall-interactively 'ido-completing-read "Test file: " files))
-             (car files)))))
+    (when files
+      (or 
+       (cl-find-if
+        (lambda (f)
+          (cl-member
+           (file-name-nondirectory f)
+           (mapcar (lambda (prefix)
+                     (concat prefix
+                             (file-name-nondirectory (buffer-file-name))))
+                   '("test-" "test_"))))
+        files)
+       (funcall-interactively 'ido-completing-read "Test file: " files)))))
 
 (defmacro nvp-with-test (&optional no-test &rest body)
   "Do BODY in project test file, prompting if more than one is found.

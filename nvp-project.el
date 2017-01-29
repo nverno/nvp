@@ -30,7 +30,7 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'subr-x))
-(autoload 'projectile-root-top-down "projectile")
+(require 'projectile)
 
 ;; dynamic local variables
 (defvar-local nvp-project--test-re ".*tests?")
@@ -48,6 +48,12 @@
   `(let ((nvp-project--test-re ,test-re)
          (nvp-project--root (nvp-listify ,root))
          (nvp-project--test-dir ',test-dir))
+     ,@body))
+
+(defmacro nvp-with-project-root (&optional local &rest body)
+  (declare (indent defun) (debug t))
+  `(let ((default-directory ,(if local '(nvp-project-locate-root)
+                               '(projectile-project-root))))
      ,@body))
 
 (defun nvp-project-locate-root ()
@@ -69,11 +75,24 @@
 ;;; Commands 
 
 ;;;###autoload
+(defun nvp-project-projectile ()
+  (interactive)
+  (unless projectile-mode
+    (projectile-mode))
+  (global-set-key (kbd "<f2> p p") #'projectile-commander)
+  (call-interactively 'projectile-commander))
+
+;;;###autoload
 (defun nvp-project-jump-to-git (arg)
   (interactive "P")
   (let ((name (nvp-project-name arg)))
-    (and name (browse-url (concat "https://github.com/nverno/"
-                                  name)))))
+    (and name (browse-url (concat "https://github.com/nverno/" name)))))
+
+;;;###autoload
+(defun nvp-project-jump-to-projectile ()
+  (interactive)
+  (nvp-with-project-root 'local
+    (find-file-other-window ".projectile")))
 
 (provide 'nvp-project)
 ;;; nvp-project.el ends here

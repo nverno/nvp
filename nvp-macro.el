@@ -538,11 +538,12 @@ and install PLUGIN with asdf."
                       (save-excursion
                         (forward-line 0)
                         (looking-at-p ,start-re)))
-                 (when (save-excursion
-                         (end-of-line)
-                         (looking-back ,end-re (line-beginning-position)))
-                   (save-excursion
-                     (newline-and-indent)))
+                 ,@(when end-re
+                     `(when (save-excursion
+                              (end-of-line)
+                              (looking-back ,end-re (line-beginning-position)))
+                        (save-excursion
+                          (newline-and-indent))))
                  (newline)
                  (insert ,comment-start)
                  (indent-according-to-mode))))

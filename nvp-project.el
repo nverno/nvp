@@ -33,9 +33,10 @@
 (require 'projectile)
 
 ;; dynamic local variables
-(defvar-local nvp-project--test-re ".*tests?")
 (defvar-local nvp-project--root '(".git" ".projectile" "test" "tests"))
+(defvar-local nvp-project--test-re ".*tests?")
 (defvar-local nvp-project--test-dir '("test" "tests" "t"))
+(defvar-local nvp-project--test-fmt "test-%s")
 
 ;; -------------------------------------------------------------------
 ;;; Util
@@ -75,14 +76,15 @@
     (type
      &key
      (project-root nvp-project--root)
-     (test-dir nvp-project--test-dir)
-     (test-re nvp-project--test-re)
      ;; projectile stuff
      marker-files
      compile-cmd
      test-cmd
      run-cmd
      ;; tests
+     (test-dir nvp-project--test-dir)
+     (test-re nvp-project--test-re)
+     (test-fmt nvp-project--test-fmt)
      test-init-function
      test-buffer-function
      projectile-test-prefix-function
@@ -99,6 +101,7 @@
         (setq-local nvp-project--root ',project-root)
         (setq-local nvp-project--test-dir ',test-dir)
         (setq-local nvp-project--test-re ,test-re)
+        (setq-local nvp-project--test-fmt ,test-fmt)
         ,(and test-init-function
               `(setq-local nvp-test-init-function ,test-init-function))
         ,(and test-buffer-function

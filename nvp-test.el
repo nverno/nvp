@@ -66,7 +66,9 @@
   (directory-files dir t (or test-re nvp-project--test-re)))
 
 (defsubst nvp-test-default-test-name (file)
-  (concat "test-" (file-name-nondirectory file)))
+  (format (or (bound-and-true-p nvp-project--test-fmt)
+              "test-%s")
+          (file-name-nondirectory file)))
 
 ;; If test file found that matches buffer-file-name, return that,
 ;; otherwise prompt with completing-read 

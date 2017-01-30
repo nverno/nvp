@@ -52,14 +52,14 @@
 
 (defmacro nvp-with-project-root (&optional local &rest body)
   (declare (indent defun) (debug t))
-  `(let ((default-directory ,(if local '(nvp-project-locate-root)
-                               '(projectile-project-root))))
+  `(let ((default-directory (nvp-project-locate-root ,local)))
      ,@body))
 
-(defun nvp-project-locate-root ()
-  (projectile-root-top-down
-   (or buffer-file-name default-directory)
-   (nvp-listify nvp-project--root)))
+(defun nvp-project-locate-root (&optional local)
+  (if local (projectile-root-top-down
+             (or buffer-file-name default-directory)
+             (nvp-listify nvp-project--root))
+    (projectile-project-root)))
 
 (defun nvp-project-name (&optional arg)
   (let* ((project (or arg (nvp-project-locate-root)))

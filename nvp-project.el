@@ -83,7 +83,8 @@
      test-cmd
      run-cmd
      ;; tests
-     setup-function
+     test-init-function
+     test-buffer-function
      projectile-test-prefix-function
      projectile-test-suffix-function)
   "Register project type and create hook to set local variables."
@@ -97,7 +98,15 @@
       (defun ,hook ()
         (setq-local nvp-project--root ',project-root)
         (setq-local nvp-project--test-dir ',test-dir)
-        (setq-local nvp-project--test-re ,test-re)))))
+        (setq-local nvp-project--test-re ,test-re)
+        ,(and test-init-function
+              `(setq-local nvp-test-init-function ,test-init-function))
+        ,(and test-buffer-function
+              `(setq-local nvp-test-init-buffer-function ,test-buffer-function))
+        ,(and projectile-test-suffix-function
+              `(setq-local ,projectile-test-suffix-function))
+        ,(and projectile-test-prefix-function
+              `(setq-local ,projectile-test-prefix-function))))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands 

@@ -65,6 +65,9 @@
 (defun nvp-test--test-files (dir &optional test-re)
   (directory-files dir t (or test-re nvp-project--test-re)))
 
+(defsubst nvp-test-default-test-name (file)
+  (concat "test-" (file-name-nondirectory file)))
+
 ;; If test file found that matches buffer-file-name, return that,
 ;; otherwise prompt with completing-read 
 (defun nvp-test-find-matching-test (file test-dir &optional prefixes suffixes)
@@ -87,24 +90,29 @@
      ;; read name of new test
      (expand-file-name
       (funcall-interactively 'ido-completing-read "Test file: "
-                             (mapcar 'file-name-nondirectory files))
+                             (mapcar 'file-name-nondirectory files)
+                             nil nil (nvp-test-default-test-name file))
       default-directory))))
 
 (defmacro nvp-with-test (&optional local create no-test prefixes suffixes &rest body)
   "Do BODY in project test file, prompting if more than one is found.
 Do NO-TEST if no tests are found, default to user-error."
   (declare (indent defun))
-  `(let* ((test-file
-           (nvp-test-find-matching-test (buffer-file-name)
-                                        (nvp-test-dir ,local ,create)
-                                        ,prefixes ,suffixes))
-          (new-file (not (file-exists-p test-file))))
-     (if (not test-file)
-         ,(or no-test '(user-error "No test files found."))
-       (with-current-buffer (find-file-noselect test-file)
-         (and new-file (funcall nvp-test-init-function))
-         (funcall nvp-test-init-buffer-function)
-         ,@body))))
+  `(let ((test-dir (nvp-test-dir ,local ,create)))
+     (unless test-dir
+       (user-error "No test directory found."))
+     (let* ((test-file
+             (nvp-test-find-matching-test
+              (buffer-file-name) test-dir ,prefixes ,suffixes))
+            (new-file (not (file-exists-p test-file)))
+            (init-function nvp-test-init-function)
+            (buffer-function nvp-test-init-buffer-function))
+       (if (not test-file)
+           ,(or no-test '(user-error "No test files found."))
+         (with-current-buffer (find-file-noselect test-file)
+           (and new-file (funcall-interactively init-function))
+           (funcall-interactively buffer-function)
+           ,@body)))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands 
@@ -113,7 +121,8 @@ Do NO-TEST if no tests are found, default to user-error."
 ;;;###autoload
 (defun nvp-test-jump-to-test (arg)
   (interactive "P")
-  (nvp-with-test 'local arg nil nil nil (pop-to-buffer (current-buffer))))
+  (nvp-with-test 'local arg nil nil nil
+    (pop-to-buffer (current-buffer))))
 
 (provide 'nvp-test)
 ;;; nvp-test.el ends here

@@ -35,7 +35,7 @@
 ;; -------------------------------------------------------------------
 ;;; Find test files 
 
-;; called when visiting new test buffer with no arguments
+;; called when visiting new test buffer, passed name of matching source file
 (defvar nvp-test-init-function 'ignore)
 
 ;; called when visiting test buffer with no arguments
@@ -106,16 +106,16 @@ Do NO-TEST if no tests are found, default to user-error."
   `(let ((test-dir (nvp-test-dir ,local ,create)))
      (unless test-dir
        (user-error "No test directory found."))
-     (let* ((test-file
-             (nvp-test-find-matching-test
-              (buffer-file-name) test-dir ,prefixes ,suffixes))
+     (let* ((source-file (buffer-file-name))
+            (test-file
+             (nvp-test-find-matching-test source-file test-dir ,prefixes ,suffixes))
             (new-file (not (file-exists-p test-file)))
             (init-function nvp-test-init-function)
             (buffer-function nvp-test-init-buffer-function))
        (if (not test-file)
            ,(or no-test '(user-error "No test files found."))
          (with-current-buffer (find-file-noselect test-file)
-           (and new-file (funcall-interactively init-function))
+           (and new-file (funcall-interactively init-function source-file))
            (funcall-interactively buffer-function)
            ,@body)))))
 

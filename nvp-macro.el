@@ -40,6 +40,12 @@
     `(if (consp ,args) ,args (cons ,args nil)))
    (t args)))
 
+(defmacro nvp-stringify (sym)
+  (if (symbolp sym) `(symbol-name ,sym) `,sym))
+
+(defmacro nvp-symbolify (sym)
+  (if (symbolp sym) `,sym `(intern ,sym)))
+
 (defmacro nvp-string-or-symbol (sym)
   "If SYM is string convert to symbol."
   `(if (stringp ,sym) (intern ,sym) ,sym))

@@ -71,6 +71,34 @@
                    (user-error "No project found.")))))
     (or name (nvp-project-name t))))
 
+(cl-defmacro nvp-define-project
+    (type
+     &key
+     (project-root nvp-project--root)
+     (test-dir nvp-project--test-dir)
+     (test-re nvp-project--test-re)
+     ;; projectile stuff
+     marker-files
+     compile-cmd
+     test-cmd
+     run-cmd
+     ;; tests
+     setup-function
+     projectile-test-prefix-function
+     projectile-test-suffix-function)
+  "Register project type and create hook to set local variables."
+  (declare (indent defun))
+  (let ((hook (intern (concat "nvp-project-" (nvp-stringify type) "-setup"))))
+   `(progn
+      ,(and marker-files
+            `(projectile-register-project-type
+              ',type ,marker-files ,compile-cmd ,test-cmd ,run-cmd))
+
+      (defun ,hook ()
+        (setq-local nvp-project--root ',project-root)
+        (setq-local nvp-project--test-dir ',test-dir)
+        (setq-local nvp-project--test-re ,test-re)))))
+
 ;; -------------------------------------------------------------------
 ;;; Commands 
 

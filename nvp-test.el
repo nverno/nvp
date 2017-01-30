@@ -33,11 +33,11 @@
 (require 'nvp-project)
 
 ;; -------------------------------------------------------------------
-;;; Util
+;;; Find test files 
 
 ;; possible test directories (choose first found):
 ;; - test tests t
-(defun nvp-test--locate-tests ()
+(defun nvp-test--locate-test-dir ()
   (when-let ((root (nvp-project-locate-root)))
     (let* ((default-directory root)
            (dir (cl-find-if #'file-exists-p nvp-project--test-dir)))
@@ -45,8 +45,13 @@
 
 ;; list of elisp test files in project test folder
 (defun nvp-test--test-files ()
-  (when-let ((test (nvp-test--locate-tests)))
+  (when-let ((test (nvp-test--locate-test-dir)))
     (directory-files test t nvp-project--test-re)))
+
+(let ((projectile-test-prefix-function '(lambda (&rest _ignore) "test-"))
+      (projectile-test-suffix-function '(lambda (&rest _ignore) "-test")))
+  (projectile-test-file-p buffer-file-name))
+(projectile-find-matching-test (buffer-file-name))
 
 ;; If test file found that matches buffer-file-name, return that,
 ;; otherwise prompt with completing-read 

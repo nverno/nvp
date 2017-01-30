@@ -41,6 +41,9 @@
 ;; called when visiting test buffer with no arguments
 (defvar nvp-test-init-buffer-function 'ignore)
 
+(defvar nvp-test-prefixes '("test-" "test_" "t-" "t_" "Test"))
+(defvar nvp-test-suffixes '("-test" "_test"))
+
 ;; create test directory in project root or local root if doesn't exist
 (defun nvp-test-create-test-dir (&optional local dir)
   (let ((test-dir (expand-file-name
@@ -84,9 +87,9 @@
          (file-name-sans-extension (file-name-nondirectory f))
          (append
           (mapcar (lambda (prefix) (concat prefix basename))
-                  (or prefixes '("t-" "t_" "test-" "test_")))
+                  (or prefixes nvp-test-prefixes))
           (mapcar (lambda (suffix) (concat basename suffix))
-                  (or suffixes '("-test" "_test"))))
+                  (or suffixes nvp-test-suffixes)))
          :test 'string=))
       files)
      ;; read name of new test

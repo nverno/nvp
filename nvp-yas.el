@@ -202,20 +202,19 @@
                                       (region-beginning) (region-end))))))
     (when (not (file-exists-p default-directory))
       (make-directory default-directory))
-    ;; don't clobber current snippet if in snippet-mode
-    (switch-to-buffer-other-window (if (eq major-mode 'snippet-mode)
-                                       "**new snippet*"
-                                     "*new snippet*"))
-    (erase-buffer)
-    (kill-all-local-variables)
-    (snippet-mode)
-    (yas-minor-mode 1)
-    (yas-expand-snippet yas-new-snippet-default)
+    ;; with prefix dired the snippet directory
+    (if arg (dired default-directory)
+      ;; don't clobber current snippet if in snippet-mode
+      (switch-to-buffer-other-window (if (eq major-mode 'snippet-mode)
+                                         "**new snippet*"
+                                       "*new snippet*"))
+      (erase-buffer)
+      (kill-all-local-variables)
+      (snippet-mode)
+      (yas-minor-mode 1)
+      (yas-expand-snippet yas-new-snippet-default)
 
-    ;; reload / compile after save
-    (if arg
-        (add-hook 'after-save-hook (lambda () (nvp-yas-snippet-reload nil t))
-                  nil 'local)
+      ;; reload / compile after save
       (add-hook 'after-save-hook 'nvp-yas-snippet-reload nil 'local))))
 
 ;; -------------------------------------------------------------------

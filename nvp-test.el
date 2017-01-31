@@ -41,8 +41,10 @@
 ;; called when visiting test buffer with no arguments
 (defvar nvp-test-init-buffer-function 'ignore)
 
+;; filter test files
 (defvar nvp-test-prefixes '("test-" "test_" "t-" "t_" "Test"))
 (defvar nvp-test-suffixes '("-test" "_test"))
+(defvar nvp-test-extension-re nil)
 
 ;; create test directory in project root or local root if doesn't exist
 (defun nvp-test-create-test-dir (&optional local dir)
@@ -64,7 +66,7 @@
              (dir (cl-find-if #'file-exists-p test-dirs)))
         (and dir (expand-file-name dir))))))
 
-;; list of elisp test files in project test folder
+;; list of test files in project test folder
 (defun nvp-test--test-files (dir &optional test-re)
   (directory-files dir t (or test-re nvp-project--test-re)))
 
@@ -76,9 +78,10 @@
 ;; If test file found that matches buffer-file-name, return that,
 ;; otherwise prompt with completing-read 
 (defun nvp-test-find-matching-test (file test-dir &optional prefixes suffixes)
-  (let ((default-directory test-dir)
-        (files (directory-files test-dir t "^[^.]"))
-        (basename (file-name-nondirectory (file-name-sans-extension file))))
+  (let* ((default-directory test-dir)
+         (file-ext (or nvp-test-extension-re (file-name-extension file)))
+         (files (directory-files test-dir t (concat "^[^.]" (regexp-quote file-ext))))
+         (basename (file-name-nondirectory (file-name-sans-extension file))))
     (or 
      ;; try to find test matching current buffer's name with test prefix/suffixes
      (cl-find-if

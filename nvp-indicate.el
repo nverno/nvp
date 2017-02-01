@@ -27,6 +27,20 @@
 ;;; Commentary:
 ;;; Code:
 
+;; time to display overlay
+(defvar nvp-indicate--blink-delay 0.3)
+
+;; store indicators
+(defvar nvp-indicate--cache (make-hash-table))
+
+;;;###autoload
+(defun nvp-indicate-cache (key &optional value overwrite)
+  (if value
+      (if overwrite (puthash key value nvp-indicate--cache)
+        (or (gethash key nvp-indicate--cache)
+            (puthash key value nvp-indicate--cache)))
+    (gethash key nvp-indicate--cache)))
+
 ;;; Temporarily highlight region
 
 ;; #<marker at 49961 in ess-utils.el>
@@ -36,15 +50,20 @@
     (overlay-put overlay 'face 'highlight)
     overlay))
 
-;; time to display overlay
-(defvar nvp-indicate--blink-delay 0.3)
-
 ;;;###autoload
 (defun nvp-indicate-blink-region (start end)
   (move-overlay nvp-indicate--region-overlay start end)
   (run-with-timer nvp-indicate--blink-delay nil
                   #'(lambda ()
                       (delete-overlay nvp-indicate--region-overlay))))
+
+;;; Hydra pre/post change cursor color
+(defun nvp-indicate-hydra-pre ()
+  (nvp-indicate-cache 'cursor-color (face-attribute 'cursor :background))
+  (set-cursor-color "#e31422"))
+
+(defun nvp-indicate-hydra-post ()
+  (set-cursor-color (nvp-indicate-cache 'cursor-color)))
 
 ;; ------------------------------------------------------------
 ;;; Temporarily change modeline color

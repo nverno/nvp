@@ -80,7 +80,8 @@
 (defun nvp-test-find-matching-test (file test-dir &optional prefixes suffixes)
   (let* ((default-directory test-dir)
          (file-ext (or nvp-test-extension-re (file-name-extension file)))
-         (files (directory-files test-dir t (concat "^[^.]" (regexp-quote file-ext))))
+         (files (directory-files
+                 test-dir t (concat "^[^.].*" (regexp-quote file-ext) "$")))
          (basename (file-name-nondirectory (file-name-sans-extension file))))
     (or 
      ;; try to find test matching current buffer's name with test prefix/suffixes

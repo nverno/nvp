@@ -34,6 +34,8 @@
 
 ;; dynamic local variables
 (defvar-local nvp-project--root '(".git" ".projectile" "test" "tests"))
+
+;; FIXME: relocate to `nvp-test'
 (defvar-local nvp-project--test-re ".*tests?")
 (defvar-local nvp-project--test-dir '("test" "tests" "t"))
 (defvar-local nvp-project--test-fmt "test-%s")
@@ -41,6 +43,7 @@
 ;; -------------------------------------------------------------------
 ;;; Util
 
+;; FIXME: make obsolete
 (cl-defmacro nvp-with-project ((&key (test-re nvp-project--test-re)
                                      (root nvp-project--root)
                                      (test-dir nvp-project--test-dir))
@@ -87,6 +90,7 @@
      (test-fmt nvp-project--test-fmt)
      test-init-function
      test-buffer-function
+     test-run-unit-function
      projectile-test-prefix-function
      projectile-test-suffix-function)
   "Register project type and create hook to set local variables."
@@ -99,6 +103,7 @@
 
       (defun ,hook ()
         (setq-local nvp-project--root ',project-root)
+        ;; tests
         (setq-local nvp-project--test-dir ',test-dir)
         (setq-local nvp-project--test-re ,test-re)
         (setq-local nvp-project--test-fmt ,test-fmt)
@@ -106,6 +111,9 @@
               `(setq-local nvp-test-init-function ,test-init-function))
         ,(and test-buffer-function
               `(setq-local nvp-test-init-buffer-function ,test-buffer-function))
+        ,(and test-run-unit-function
+              `(setq-local nvp-test-run-unit-function ,test-run-unit-function))
+        ;; projectile tests
         ,(and projectile-test-suffix-function
               `(setq-local ,projectile-test-suffix-function))
         ,(and projectile-test-prefix-function

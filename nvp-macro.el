@@ -31,6 +31,29 @@
 ;; -------------------------------------------------------------------
 ;;; Misc
 
+(defmacro nvp-bfn (&optional or-buffer)
+  "Short buffer file name"
+  `(file-name-nondirectory
+    (file-name-sans-extension ,(if or-buffer
+                                   '(or (buffer-file-name) (buffer-name))
+                                 '(buffer-file-name)))))
+
+(defmacro nvp-dfn (&optional with-default)
+  "Short directory file name."
+  (if with-default
+      `(if buffer-file-name
+           (file-name-nondirectory
+            (directory-file-name
+             (file-name-directory
+              (file-name-sans-extension (buffer-file-name)))))
+         (file-name-nondirectory (directory-file-name default-directory)))
+    `(file-name-nondirectory
+      (directory-file-name
+       (file-name-directory
+        (file-name-sans-extension (buffer-file-name)))))))
+
+;;; Conversions
+
 (defmacro nvp-listify (args)
   "If ARGS are string or symbol, output as a list."
   (cond
@@ -49,17 +72,6 @@
 (defmacro nvp-string-or-symbol (sym)
   "If SYM is string convert to symbol."
   `(if (stringp ,sym) (intern ,sym) ,sym))
-
-(defmacro nvp-bfn ()
-  "Short buffer file name"
-  `(file-name-nondirectory (file-name-sans-extension (buffer-file-name))))
-
-(defmacro nvp-dfn ()
-  "Short directory file name."
-  `(file-name-nondirectory
-    (directory-file-name
-     (file-name-directory
-      (file-name-sans-extension (buffer-file-name))))))
 
 ;; Marks
 (defmacro nvp-mark-defun (&optional first-time &rest rest)

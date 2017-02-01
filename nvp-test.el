@@ -32,9 +32,6 @@
   (require 'subr-x))
 (require 'nvp-project)
 
-;; -------------------------------------------------------------------
-;;; Find test files 
-
 ;; called when visiting new test buffer, passed name of matching source file
 (defvar nvp-test-init-function 'ignore)
 
@@ -46,11 +43,14 @@
 
 ;; filter test files
 (defvar nvp-test-prefixes '("test-" "test_" "t-" "t_" "Test"))
-(defvar nvp-test-suffixes '("-test" "_test"))
+(defvar nvp-test-suffixes '("-test" "-tests" "_test"))
 (defvar nvp-test-extension-re nil)
 
+;; -------------------------------------------------------------------
+;;; Find test files 
+
 ;; create test directory in project root or local root if doesn't exist
-(defun nvp-test-create-test-dir (&optional local dir)
+(defsubst nvp-test-create-test-dir (&optional local dir)
   (let ((test-dir (expand-file-name
                    (or dir "test") (nvp-project-locate-root local))))
     (unless (file-exists-p test-dir)
@@ -70,7 +70,7 @@
         (and dir (expand-file-name dir))))))
 
 ;; list of test files in project test folder
-(defun nvp-test--test-files (dir &optional test-re)
+(defsubst nvp-test--test-files (dir &optional test-re)
   (directory-files dir t (or test-re nvp-project--test-re)))
 
 ;; provide a default name for either a new test or history of buffer-local
@@ -80,6 +80,29 @@
   (or (car-safe nvp-test-file-history)
       (format (or (bound-and-true-p nvp-project--test-fmt) "test-%s")
               (file-name-nondirectory file))))
+
+;; non-nil if FILE is a test file matching SOURCE-FILE, use
+;; basename for SOURCE-FILE
+(defsubst nvp-test-matching-test-p (file source-file &optional prefixes suffixes)
+  (cl-member
+   (file-name-sans-extension (file-name-nondirectory file))
+   (append
+    (mapcar (lambda (prefix) (concat prefix source-file))
+            (or prefixes nvp-test-prefixes))
+    (mapcar (lambda (suffix) (concat source-file suffix))
+            (or suffixes nvp-test-suffixes)))
+   :test 'string=))
+
+;; non-nil if current buffer is a test file
+(defsubst nvp-test-file-p ()
+  (and (cl-member (nvp-dfn 'with-default) nvp-project--test-dir :test 'string=)
+       (let ((buff-name (nvp-bfn 'or-buffer)))
+         (or (cl-some (lambda (prefix)
+                        (string-prefix-p (regexp-quote prefix) buff-name))
+                      nvp-test-prefixes)
+             (cl-some (lambda (suffix)
+                        (string-suffix-p (regexp-quote suffix) buff-name))
+                      nvp-test-suffixes)))))
 
 ;; If test file found that matches buffer-file-name, return that,
 ;; otherwise prompt with completing-read 
@@ -93,17 +116,9 @@
           (or 
            ;; try to find test matching current buffer's name with test
            ;; prefix/suffixes
-           (cl-find-if
-            (lambda (f)
-              (cl-member
-               (file-name-sans-extension (file-name-nondirectory f))
-               (append
-                (mapcar (lambda (prefix) (concat prefix basename))
-                        (or prefixes nvp-test-prefixes))
-                (mapcar (lambda (suffix) (concat basename suffix))
-                        (or suffixes nvp-test-suffixes)))
-               :test 'string=))
-            files)
+           (cl-find-if (lambda (file)
+                         (nvp-test-matching-test-p file basename prefixes suffixes))
+                       files)
            ;; read name of new test
            (expand-file-name
             (funcall-interactively
@@ -138,20 +153,27 @@ Do NO-TEST if no tests are found, default to user-error."
 ;; -------------------------------------------------------------------
 ;;; Commands 
 
-;; jump to test file associated with current source file
+;; jump to test file associated with current source file, create one if 
+;; CREATE is non-nil
 ;;;###autoload
-(defun nvp-test-jump-to-test (arg)
+(defun nvp-test-jump-to-test (create)
   (interactive "P")
-  (nvp-with-test 'local arg nil nil nil
-    (pop-to-buffer (current-buffer))))
+  (nvp-with-test 'local create nil nil nil (pop-to-buffer (current-buffer))))
 
-;; Run or create test matching current source file
+;; Run or create unit tests. If in test file, call `nvp-test-run-unit-function'
+;; with `buffer-file-name'. If in source file, run associated test file,
+;; or create one if necessary. Test runner function is passed the test file
+;; name and prefix arg, ARG
 ;;;###autoload
-(defun nvp-test-run-matching-test (create)
+(defun nvp-test-run-unit-test (arg)
   (interactive "P")
-  (let ((test-file (nvp-test-find-matching-test (buffer-file-name)
-                                                (nvp-test-dir 'local create))))
-    (funcall-interactively nvp-test-run-unit-function test-file)))
+  (funcall-interactively
+   nvp-test-run-unit-function
+   (if (nvp-test-file-p)
+       (buffer-file-name)
+     (nvp-test-find-matching-test (buffer-file-name)
+                                  (nvp-test-dir 'local 'create)))
+   arg))
 
 (provide 'nvp-test)
 ;;; nvp-test.el ends here

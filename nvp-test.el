@@ -41,6 +41,9 @@
 ;; called when visiting test buffer with no arguments
 (defvar nvp-test-init-buffer-function 'ignore)
 
+;; function to run unit file. Passed current buffer-file-name
+(defvar nvp-test-run-unit-function 'ignore)
+
 ;; filter test files
 (defvar nvp-test-prefixes '("test-" "test_" "t-" "t_" "Test"))
 (defvar nvp-test-suffixes '("-test" "_test"))
@@ -70,10 +73,13 @@
 (defun nvp-test--test-files (dir &optional test-re)
   (directory-files dir t (or test-re nvp-project--test-re)))
 
+;; provide a default name for either a new test or history of buffer-local
+;; previous test files
+(defvar-local nvp-test-file-history nil)
 (defsubst nvp-test-default-test-name (file)
-  (format (or (bound-and-true-p nvp-project--test-fmt)
-              "test-%s")
-          (file-name-nondirectory file)))
+  (or (car-safe nvp-test-file-history)
+      (format (or (bound-and-true-p nvp-project--test-fmt) "test-%s")
+              (file-name-nondirectory file))))
 
 ;; If test file found that matches buffer-file-name, return that,
 ;; otherwise prompt with completing-read 
@@ -82,26 +88,32 @@
          (file-ext (or nvp-test-extension-re (file-name-extension file)))
          (files (directory-files
                  test-dir t (concat "^[^.].*" (regexp-quote file-ext) "$")))
-         (basename (file-name-nondirectory (file-name-sans-extension file))))
-    (or 
-     ;; try to find test matching current buffer's name with test prefix/suffixes
-     (cl-find-if
-      (lambda (f)
-        (cl-member
-         (file-name-sans-extension (file-name-nondirectory f))
-         (append
-          (mapcar (lambda (prefix) (concat prefix basename))
-                  (or prefixes nvp-test-prefixes))
-          (mapcar (lambda (suffix) (concat basename suffix))
-                  (or suffixes nvp-test-suffixes)))
-         :test 'string=))
-      files)
-     ;; read name of new test
-     (expand-file-name
-      (funcall-interactively 'ido-completing-read "Test file: "
-                             (mapcar 'file-name-nondirectory files)
-                             nil nil (nvp-test-default-test-name file))
-      default-directory))))
+         (basename (file-name-nondirectory (file-name-sans-extension file)))
+         (test-file
+          (or 
+           ;; try to find test matching current buffer's name with test
+           ;; prefix/suffixes
+           (cl-find-if
+            (lambda (f)
+              (cl-member
+               (file-name-sans-extension (file-name-nondirectory f))
+               (append
+                (mapcar (lambda (prefix) (concat prefix basename))
+                        (or prefixes nvp-test-prefixes))
+                (mapcar (lambda (suffix) (concat basename suffix))
+                        (or suffixes nvp-test-suffixes)))
+               :test 'string=))
+            files)
+           ;; read name of new test
+           (expand-file-name
+            (funcall-interactively
+             'ido-completing-read "Name of (new) test file: "
+             (mapcar 'file-name-nondirectory files)
+             nil nil (nvp-test-default-test-name file))
+            default-directory))))
+    ;; keep history
+    (cl-pushnew (file-name-nondirectory test-file) nvp-test-file-history)
+    test-file))
 
 (defmacro nvp-with-test (&optional local create no-test prefixes suffixes &rest body)
   "Do BODY in project test file, prompting if more than one is found.
@@ -126,12 +138,20 @@ Do NO-TEST if no tests are found, default to user-error."
 ;; -------------------------------------------------------------------
 ;;; Commands 
 
-;; jump to project test file
+;; jump to test file associated with current source file
 ;;;###autoload
 (defun nvp-test-jump-to-test (arg)
   (interactive "P")
   (nvp-with-test 'local arg nil nil nil
     (pop-to-buffer (current-buffer))))
+
+;; Run or create test matching current source file
+;;;###autoload
+(defun nvp-test-run-matching-test (create)
+  (interactive "P")
+  (let ((test-file (nvp-test-find-matching-test (buffer-file-name)
+                                                (nvp-test-dir 'local create))))
+    (funcall-interactively nvp-test-run-unit-function test-file)))
 
 (provide 'nvp-test)
 ;;; nvp-test.el ends here

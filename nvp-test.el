@@ -106,28 +106,31 @@
                         (string-suffix-p (regexp-quote suffix) buff-name))
                       nvp-test-suffixes)))))
 
-;; If test file found that matches buffer-file-name, return that,
-;; otherwise prompt with completing-read 
-(defun nvp-test-find-matching-test (file test-dir &optional prefixes suffixes)
+;; return test-file matching current source-file if it exists
+(defun nvp-test-find-matching-test (source-file test-dir &optional prefixes suffixes)
   (let* ((default-directory test-dir)
-         (file-ext (or nvp-test-extension-re (file-name-extension file)))
+         (file-ext (or nvp-test-extension-re (file-name-extension source-file)))
          (files (directory-files
                  test-dir t (concat "^[^.].*" (regexp-quote file-ext) "$")))
-         (basename (file-name-nondirectory (file-name-sans-extension file)))
+         (basename (file-name-nondirectory (file-name-sans-extension source-file))))
+    (cl-find-if (lambda (file)
+                  (nvp-test-matching-test-p file basename prefixes suffixes))
+                files)))
+
+;; If test file found that matches buffer-file-name, return that,
+;; otherwise prompt with completing-read 
+(defun nvp-test-find-or-create-matching-test (source-file test-dir &optional
+                                                          prefixes suffixes)
+  (let* ((default-directory test-dir)
          (test-file
-          (or 
-           ;; try to find test matching current buffer's name with test
-           ;; prefix/suffixes
-           (cl-find-if (lambda (file)
-                         (nvp-test-matching-test-p file basename prefixes suffixes))
-                       files)
-           ;; read name of new test
-           (expand-file-name
-            (funcall-interactively
-             'ido-completing-read "Name of (new) test file: "
-             (mapcar 'file-name-nondirectory files)
-             nil nil (nvp-test-default-test-name file))
-            default-directory))))
+          (or (nvp-test-find-matching-test source-file test-dir prefixes suffixes)
+              ;; read name of new test
+              (expand-file-name
+               (funcall-interactively
+                'ido-completing-read "Name of (new) test file: "
+                (directory-files test-dir nil "^[^.]")
+                nil nil (nvp-test-default-test-name source-file))
+               default-directory))))
     ;; keep history
     (cl-pushnew (file-name-nondirectory test-file) nvp-test-file-history)
     test-file))
@@ -141,7 +144,8 @@ Do NO-TEST if no tests are found, default to user-error."
        (user-error "No test directory found."))
      (let* ((source-file (buffer-file-name))
             (test-file
-             (nvp-test-find-matching-test source-file test-dir ,prefixes ,suffixes))
+             (nvp-test-find-or-create-matching-test source-file test-dir
+                                                    ,prefixes ,suffixes))
             (new-file (not (file-exists-p test-file)))
             (init-function nvp-test-init-function)
             (buffer-function nvp-test-init-buffer-function))
@@ -167,15 +171,14 @@ Do NO-TEST if no tests are found, default to user-error."
 ;; or create one if necessary. Test runner function is passed the test file
 ;; name and prefix arg, ARG
 ;;;###autoload
-(defun nvp-test-run-unit-test (arg)
-  (interactive "P")
+(defun nvp-test-run-unit-test ()
+  (interactive)
   (funcall-interactively
    nvp-test-run-unit-function
    (if (nvp-test-file-p)
        (buffer-file-name)
-     (nvp-test-find-matching-test
-      (buffer-file-name) (nvp-test-dir 'local 'create)))
-   arg))
+     (nvp-test-find-or-create-matching-test
+      (buffer-file-name) (nvp-test-dir 'local 'create)))))
 
 (provide 'nvp-test)
 ;;; nvp-test.el ends here

@@ -50,24 +50,26 @@
 ;;; Find test files 
 
 ;; create test directory in project root or local root if doesn't exist
-(defsubst nvp-test-create-test-dir (&optional local dir)
-  (let ((test-dir (expand-file-name
-                   (or dir "test") (nvp-project-locate-root local))))
-    (unless (file-exists-p test-dir)
-      (make-directory test-dir 'create-parents))
+(defsubst nvp-test-create-test-dir (root &optional dir)
+  (let ((test-dir
+         (expand-file-name
+          (or dir (car-safe nvp-project--test-dir) "test") root)))
+    (make-directory test-dir :create-parents)
     test-dir))
 
 ;; possible test directories (choose first found):
 ;; - test tests t
 (defun nvp-test-dir (&optional local create test-dirs)
-  (if create
-      (nvp-test-create-test-dir
-       local (car (or test-dirs nvp-project--test-dir)))
-    (when-let ((root (nvp-project-locate-root local)))
-      (let* ((default-directory root)
-             (test-dirs (or test-dirs nvp-project--test-dir))
-             (dir (cl-find-if #'file-exists-p test-dirs)))
-        (and dir (expand-file-name dir))))))
+  (let* ((default-directory (nvp-project-locate-root local))
+         (test-dir (cl-find-if (lambda (d)
+                                 (and (file-exists-p d)
+                                      (file-directory-p d)
+                                      d))
+                               (or test-dirs nvp-project--test-dir))))
+    (if (and create (not test-dir))
+        (nvp-test-create-test-dir
+         default-directory (or test-dirs nvp-project--test-dir))
+      (and test-dir (expand-file-name test-dir)))))
 
 ;; list of test files in project test folder
 (defsubst nvp-test--test-files (dir &optional test-re)
@@ -171,8 +173,8 @@ Do NO-TEST if no tests are found, default to user-error."
    nvp-test-run-unit-function
    (if (nvp-test-file-p)
        (buffer-file-name)
-     (nvp-test-find-matching-test (buffer-file-name)
-                                  (nvp-test-dir 'local 'create)))
+     (nvp-test-find-matching-test
+      (buffer-file-name) (nvp-test-dir 'local 'create)))
    arg))
 
 (provide 'nvp-test)

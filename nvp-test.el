@@ -53,7 +53,7 @@
 (defsubst nvp-test-create-test-dir (root &optional dir)
   (let ((test-dir
          (expand-file-name
-          (or dir (car-safe nvp-project--test-dir) "test") root)))
+          (or (car-safe (or dir nvp-project--test-dir)) "test") root)))
     (make-directory test-dir :create-parents)
     test-dir))
 

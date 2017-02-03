@@ -142,5 +142,11 @@
   (nvp-with-project-root 'local
     (find-file-other-window ".projectile")))
 
+;;;###autoload
+(defun nvp-project-jump-to-notes ()
+  (interactive)
+  (nvp-with-project-root 'local
+    (find-file-other-window "notes.org")))
+
 (provide 'nvp-project)
 ;;; nvp-project.el ends here

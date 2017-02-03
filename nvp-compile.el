@@ -43,9 +43,9 @@
 (defun nvp-compile-basic (&optional recomp)
   (interactive)
   (setq-local compilation-read-command nil)
-  (when recomp
-    (and (car-safe compile-history)
-         (setq-local compile-command (car compile-history))))
+  ;; (when recomp
+  ;;   (and (car-safe compile-history)
+  ;;        (setq-local compile-command (car compile-history))))
   (call-interactively 'compile))
 
 ;;;###autoload (defalias 'nvp-basic-compile 'nvp-compile-basic)

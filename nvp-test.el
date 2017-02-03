@@ -119,7 +119,7 @@
 
 ;; If test file found that matches buffer-file-name, return that,
 ;; otherwise prompt with completing-read 
-(defun nvp-test-find-or-create-matching-test (source-file test-dir &optional
+(defun nvp-test-find-or-read-matching-test (source-file test-dir &optional
                                                           prefixes suffixes)
   (let* ((default-directory test-dir)
          (test-file
@@ -144,7 +144,7 @@ Do NO-TEST if no tests are found, default to user-error."
        (user-error "No test directory found."))
      (let* ((source-file (buffer-file-name))
             (test-file
-             (nvp-test-find-or-create-matching-test source-file test-dir
+             (nvp-test-find-or-read-matching-test source-file test-dir
                                                     ,prefixes ,suffixes))
             (new-file (not (file-exists-p test-file)))
             (init-function nvp-test-init-function)
@@ -173,12 +173,13 @@ Do NO-TEST if no tests are found, default to user-error."
 ;;;###autoload
 (defun nvp-test-run-unit-test ()
   (interactive)
-  (funcall-interactively
-   nvp-test-run-unit-function
-   (if (nvp-test-file-p)
-       (buffer-file-name)
-     (nvp-test-find-or-create-matching-test
-      (buffer-file-name) (nvp-test-dir 'local 'create)))))
+  (let ((file (if (nvp-test-file-p) (buffer-file-name)
+                (nvp-test-find-matching-test
+                 (buffer-file-name) (nvp-test-dir 'local)))))
+    (if file
+        (funcall-interactively nvp-test-run-unit-function file)
+      (and (y-or-n-p "No matching unit test found, jump to new one?")
+           (nvp-test-jump-to-test 'create)))))
 
 (provide 'nvp-test)
 ;;; nvp-test.el ends here

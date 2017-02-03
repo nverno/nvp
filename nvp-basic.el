@@ -31,7 +31,7 @@
   (require 'cl-lib))
 (autoload 'string-trim "subr-x")
 
-;;--- Movement -------------------------------------------------------
+;;——— Movement ———————————————————————————————————————————————————————
 
 ;; jump to next char on this line. if matching char,
 ;; pressing the same key again jumps to the next one, etc.
@@ -79,7 +79,7 @@
                    (cs (regexp-quote comment))
                    (multi (> (string-width comment) 1)))
               (if (not multi)
-                  (format "^\\s-*%s%s\\(?:---\\|\*\\| |\\|%s\\)"
+                  (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)"
                           cs cs cs)
                 (format "^\\s-*%s%s" cs
                         (regexp-quote (substring comment 1 2))))))))
@@ -106,7 +106,7 @@
      (forward-line 1)
      (user-error "No previous headings"))))
 
-;;--- Duplicate Line -------------------------------------------------
+;;——— Duplicate Lines ————————————————————————————————————————————————
 
 (declare-function paredit-kill "paredit")
 
@@ -182,12 +182,12 @@
     (newline-and-indent)
     (yank)))
 
-;;--- Newline --------------------------------------------------------
+;;——— Newline ————————————————————————————————————————————————————————
 
 (nvp-newline nvp-basic-newline-dwim nil
   :pairs (("{" "}") ("(" ")") ("\\[" "\\]")))
 
-;;--- Keys -----------------------------------------------------------
+;;——— Keys ———————————————————————————————————————————————————————————
 
 (defun nvp-basic-temp-binding (key cmd &optional keep exit)
   (set-transient-map

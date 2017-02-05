@@ -81,7 +81,7 @@
               (if (not multi)
                   (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)"
                           cs cs cs)
-                (format "^\\s-*%s%s" cs
+                (format "^\\s-*%s\\(?:—\\|%s\\)" cs
                         (regexp-quote (substring comment 1 2))))))))
 
 (defsubst nvp-basic-next-heading ()

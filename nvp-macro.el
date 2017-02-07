@@ -251,7 +251,7 @@ line at match (default) or do BODY at point if non-nil."
 (declare-function nvp-basic-up-paragraph "nvp-basic")
 (declare-function nvp-basic-down-paragraph "nvp-basic")
 (defmacro nvp-bindings-view ()
-  ''(("j"    . forward-line)
+  ''(("j"    . next-line)
      ("k"    . previous-line)
      ("h"    . backward-char)
      ("l"    . forward-char)

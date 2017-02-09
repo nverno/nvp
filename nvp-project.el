@@ -95,7 +95,7 @@
      projectile-test-suffix-function)
   "Register project type and create hook to set local variables."
   (declare (indent defun))
-  (let ((hook (intern (concat "nvp-project-" (nvp-stringify type) "-setup"))))
+  (let ((hook (intern (concat "nvp-project-" (symbol-name type) "-setup"))))
    `(progn
       ,(and marker-files
             `(projectile-register-project-type

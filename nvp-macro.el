@@ -31,6 +31,9 @@
 ;; -------------------------------------------------------------------
 ;;; Misc
 
+(defmacro eieio-declare-slot (name)
+  (cl-pushnew name eieio--known-slot-names) nil)
+
 (defmacro nvp-bfn (&optional or-buffer)
   "Short buffer file name"
   `(file-name-nondirectory
@@ -478,6 +481,7 @@ BODY."
      (require 'nvp)
      (require 'nvp-log)
      (require 'nvp-ext)
+     (declare-function nvp-log "nvp-log")
      (let ((script (expand-file-name "tools/install.sh" ,dir)))
        (nvp-with-process-log
          (funcall-interactively 'nvp-ext-run-script script
@@ -494,6 +498,7 @@ BODY."
      (require 'nvp)
      (require 'nvp-log)
      (require 'nvp-ext)
+     (declare-function nvp-log "nvp-log")
      (nvp-with-process-log
        (funcall-interactively 'nvp-ext-run-script ,script
                               ,(if (stringp funcs) `(cons ,funcs nil)

@@ -189,9 +189,12 @@ line at match (default) or do BODY at point if non-nil."
       (if (eq system-type 'windows-nt)
           (bound-and-true-p
            ,(intern (concat "nvp-" name "-program")))
-        (let ((local (expand-file-name ,name "/usr/local/bin")))
-          (if (file-exists-p local) local
-            (executable-find ,name)))))))
+        (let ((dotlocal (expand-file-name ,name "~/.local/bin"))
+              (local (expand-file-name ,name "/usr/local/bin")))
+          (or
+           (and (file-exists-p dotlocal) dotlocal)
+           (and (file-exists-p local) local)
+           (executable-find ,name)))))))
 
 (defmacro nvp-mode (mode)
   `(expand-file-name

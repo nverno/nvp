@@ -79,7 +79,7 @@
   ;; Update registry value ENV-VAR by setting/appending VALUE (user).
   ;; add to exec-path if EXEC is non-nil. If CLOBBER is non-nil,
   ;; overwrite variable if it already exists.
-  (defun nvp-env-setenv! (env-var value &optional exec clobber)
+  (defun nvp-env-setenv! (env-var value &optional exec clobber &rest ignore)
     (let* ((ps (expand-file-name "tools/Set-Env.ps1" nvp--dir))
            (val (replace-regexp-in-string "/" "\\\\" value)))
       (w32-shell-execute "runas" "powershell"
@@ -92,9 +92,18 @@
           (setenv env-var val))))))
 
 (nvp-with-gnu
-  (defun nvp-env-setenv! (env-var value &optional exec clobber)
-    ;; FIXME: todo
-    (ignore (message "not implemented"))))
+  (defun nvp-env-setenv! (env-var value &optional exec clobber append)
+    (let ((current (getenv env-var)))
+      (when (or clobber append (not current))
+        ;; when appending, check it is already present first
+        (if append
+            (and (not (string-match-p (regexp-quote value) current))
+                 (setenv env-var (concat current path-separator value)))
+          ;; either no current value or clobbering it
+          (setenv env-var value))))
+    (when exec
+      (if (string= (upcase env-var) "PATH")
+          (nvp-env-exec-add value)))))
 
 ;; ------------------------------------------------------------
 ;;; Search Path

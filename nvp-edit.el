@@ -167,12 +167,12 @@
                                       (regexp-quote comment-start)))
       (align-regexp beg end (concat "\\(\\s-*\\)\\(?://\\|/\\*\\)")))))
 
-;;;###autoload (autoload 'nvp-align-backslash "nvp-align")
+;;;###autoload (autoload 'nvp-align-backslash "nvp-edit")
 (nvp-align-fn nvp-align-backslash
   "Align backslashes at end of line in region."
   "\\(\\s-*\\)\\\\$")
 
-;;;###autoload (autoload 'nvp-align-hash "nvp-align")
+;;;###autoload (autoload 'nvp-align-hash "nvp-edit")
 (nvp-align-fn nvp-align-hash
   "Align '#' in region."
   "\\(\\s-*\\)#")

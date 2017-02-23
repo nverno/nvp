@@ -1,4 +1,4 @@
-;;; nvp-abbrev --- 
+;;; nvp-abbrev ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -141,9 +141,10 @@
   (let ((parents (abbrev-table-get local-abbrev-table :parents)))
     (abbrev-table-put
      local-abbrev-table
-     :parents (cons (symbol-value (intern table)) parents))))
+     :parents (cons (symbol-value (intern table)) parents)))
+  (message "loaded %s" table))
 
-;;--- Completion -----------------------------------------------------
+;;——— Completion —————————————————————————————————————————————————————
 ;; `company-abbrev' doesn't account for :regexp properties, so doesnt
 ;; work properly when abbrev tables define their own :regexp,
 ;; ie "\\degree" or "#inc"

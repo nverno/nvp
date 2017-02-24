@@ -93,7 +93,8 @@
     ("Omniref" .
      [simple-query "https://docs.omniref.com/"
                    "https://docs.omniref.com/?q=" ""])
-    ("Travis" . "https://travis-ci.org/nverno")))
+    ("Travis" . "https://travis-ci.org/nverno")
+    ("TestGenerator" . "http://spojtoolkit.com/TestCaseGenerator/")))
 
 ;; Webjump interface
 ;;;###autoload

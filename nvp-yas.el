@@ -59,8 +59,6 @@
     (back-to-indentation)
     (current-column)))
 
-;;--- Comments and Helpers -------------------------------------------
-
 (defsubst nvp-yas-with-comment (str)
   (let ((comment (if (or (memq major-mode
                                '(python-mode c-mode c++-mode flex-mode))
@@ -123,6 +121,16 @@
 
 ;; -------------------------------------------------------------------
 ;;; Commands 
+
+;; de/in-crement snippet expansion numbers in selected region
+(defun nvp-yas-increment-count (start end)
+  (interactive "r")
+  (goto-char start)
+  (while (re-search-forward "\$\{\\([[:digit:]]\\):" end 'move)
+    (replace-match (number-to-string
+                    (+ (if current-prefix-arg -1 1)
+                       (string-to-number (match-string 1))))
+                   nil nil nil 1)))
 
 ;; Initialize a directory of snippets.
 (defun nvp-yas-snippets-initialize (dir)

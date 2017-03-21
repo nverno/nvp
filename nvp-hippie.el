@@ -30,6 +30,29 @@
   (require 'nvp-macro))
 (require 'hippie-exp)
 
+;; expand word before point according to local abbrev tables
+;; #<marker at 30147 in hippie-exp.el.gz>
+;;;###autoload
+(defun try-expand-local-abbrevs (old)
+  (if (not old)
+      (progn
+        (he-init-string (he-dabbrev-beg) (point))
+        (setq he-expand-list            ;expansion candidates
+              (and (not (equal he-search-string ""))
+                   (mapcar (function (lambda (sym)
+                                       (if (and (boundp sym) (vectorp (eval sym)))
+                                           (abbrev-expansion (downcase he-search-string)
+                                                             (eval sym)))))
+                           '(local-abbrev-table global-abbrev-table))))))
+  (while (and he-expand-list
+              (or (not (car he-expand-list))
+                  (he-string-member (car he-expand-list) he-tried-table t)))
+    (setq he-expand-list (cdr he-expand-list)))
+  (prog1 (not (null he-expand-list))
+    (if (null he-expand-list)
+        (and old (he-reset-string))
+      (he-substitute-string (pop he-expand-list) t))))
+
 ;; https://github.com/magnars/.emacs.d/blob/master/settings/setup-hippie.el
 (defvar he-search-loc-backward (make-marker))
 (defvar he-search-loc-forward (make-marker))

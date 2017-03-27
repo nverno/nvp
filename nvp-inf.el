@@ -57,7 +57,7 @@
     (nvp-inf-redirect-output proc content)))
 
 ;; ------------------------------------------------------------
-;;* Finding procs
+;;; Finding procs
 
 ;; find process started by command NAME
 (defun nvp-inf-find-process (name)
@@ -96,10 +96,18 @@
 ;; -------------------------------------------------------------------
 ;;; Buffer Process
 
+;; print message with current buffer's process status
 ;;;###autoload
-(defsubst nvp-inf-process-status ()
+(defun nvp-inf-process-status ()
   (interactive)
   (message "Process status: %s" (process-status (current-buffer))))
+
+;; kill process before killing buffer
+;;;###autoload
+(defun nvp-inf-kill-proc-before-buffer ()
+  (let ((proc (get-buffer-process (current-buffer))))
+    (when (processp proc)
+      (delete-process proc))))
 
 ;; ------------------------------------------------------------
 ;;; Prompts
@@ -148,7 +156,7 @@
 ;;   or cons cell of form (func . suppress), where if SUPPRESS is non-nil
 ;;   then next output will be suppressed
 
-(defun nvp-inf-mark-as-busy (proc)
+(defsubst nvp-inf-mark-as-busy (proc)
   (process-put proc 'busy t)
   (process-put proc 'sec-prompt nil))
 

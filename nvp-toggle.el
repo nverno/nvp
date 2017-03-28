@@ -32,6 +32,7 @@
 
 ;; In/De-crement numbers in region
 ;; decremnent with prefix argument
+;;;###autoload
 (defun nvp-toggle-increment-numbers (start end)
   (interactive "r")
   (goto-char start)

@@ -27,6 +27,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'cl-lib)
+;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
 
 ;; -------------------------------------------------------------------
 ;;; Misc
@@ -704,6 +705,23 @@ and install PLUGIN with asdf."
                                      (cdr wrap))
                              t nil nil 1))
             (buffer-string)))))))
+
+;; -------------------------------------------------------------------
+;;; Advice
+
+;; from prelude
+(defmacro advise-commands (advice-name commands class &rest body)
+  "Apply advice named ADVICE-NAME to multiple COMMANDS. The body of the advice
+is in BODY."
+  `(progn
+     ,@(mapcar (lambda (command)
+                 `(defadvice
+                      ,command
+                      (,class
+                       ,(intern (concat (symbol-name command) "-" advice-name))
+                       activate)
+                    ,@body))
+               commands)))
 
 ;; -------------------------------------------------------------------
 ;;; Variables / Declares

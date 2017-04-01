@@ -271,7 +271,8 @@ line at match (default) or do BODY at point if non-nil."
      ("M-N"  . nvp-basic-down-paragraph)
      ("M-P"  . nvp-basic-up-paragraph)))
 
-(defmacro nvp-bindings-with-view (mode &optional feature &rest bindings)
+(defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
+(defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
   (declare (indent defun))
   (let ((bs `(,@(nvp-bindings-view) ,@bindings)))
     `(nvp-bindings ,mode ,feature ,@bs)))

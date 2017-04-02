@@ -85,8 +85,8 @@
            (imenu-create-index-function 'imenu-default-create-index-function))
        (condition-case nil
            (ido/imenu)
-         (error message "nvp-imenu-comment-headers-re: %s"
-                nvp-imenu-comment-headers-re))))
+         (error (message "nvp-imenu-comment-headers-re: %s"
+                         nvp-imenu-comment-headers-re)))))
     (`(16)
      ;; headers + sub-headers
      (let ((imenu-generic-expression

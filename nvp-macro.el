@@ -27,7 +27,14 @@
 ;;; Commentary:
 ;;; Code:
 (require 'cl-lib)
+(eval-when-compile
+  (defvar eieio--known-slot-names))
+
+;; Doesn't work
 ;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
+(when (assoc '(t byte-compile-file-form-require ((require 'nvp-macro)) nil)
+             (backtrace-frames))
+  (message "Warning: package 'nvp-macro required at runtime"))
 
 ;; -------------------------------------------------------------------
 ;;; Misc

@@ -168,7 +168,8 @@ string).  It returns t if a new completion is found, nil otherwise."
               ;; choose depending on distance
               (setq chosen (cond
                             ((and forward-point backward-point)
-                             (if (< forward-distance backward-distance) :forward :backward))
+                             (if (< forward-distance backward-distance)
+                                 :forward :backward))
 
                             (forward-point :forward)
                             (backward-point :backward)))

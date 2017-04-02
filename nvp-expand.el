@@ -28,7 +28,8 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (defvar tiny-beg))
 
 ;;;###autoload
 (defun nvp-expand-range (&optional sep)
@@ -41,11 +42,12 @@ either m:10, m0:10, m0:1:10 or m:1:10. So, a missing start assumes starts from 0
                                   ;; either end of range or increment
                                   "\\(-?[0-9.]+\\)"
                                   ;; optional end of range
-                                  "\\(?::\\(-?[0-9.]+\\)\\)?"))
+                                  "\\(?::\\(-?[0-9.]+\\)\\)?")
+                      (line-beginning-position))
     (let ((start (match-string 1))
           (inc (match-string 2))
           (end (match-string 3)))
-      (condition-case str
+      (condition-case nil
           (let ((res (mapconcat 'number-to-string
                                 (number-sequence
                                  (string-to-number start)
@@ -70,6 +72,11 @@ for string to wrap."
     (tiny-expand)
     (nvp-list-wrap-quotes tiny-beg (point) 'prompt))
    (t (tiny-expand))))
+
+;; -------------------------------------------------------------------
+
+(declare-function tiny-expand "tiny")
+(declare-function nvp-list-wrap-quotes "nvp-edit")
 
 (provide 'nvp-expand)
 ;;; nvp-expand.el ends here

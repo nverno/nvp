@@ -397,6 +397,17 @@ could be either 'major or 'minor."
           collect `(define-key newmap (kbd ,k) ',b))
      (use-local-map newmap)))
 
+(defmacro nvp-with-local-keymap (keymap &rest bindings)
+  "Use a local version of keymap."
+  (declare (indent defun))
+  `(progn
+     (make-local-variable ',keymap)
+     (let ((newmap (make-sparse-keymap)))
+       (set-keymap-parent newmap ,keymap)
+       ,@(cl-loop for (k . b) in bindings
+            collect `(define-key newmap (kbd ,k) ',b))
+       (set ',keymap newmap))))
+
 ;; -------------------------------------------------------------------
 ;;; Read / Input
 

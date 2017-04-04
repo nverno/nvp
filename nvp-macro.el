@@ -316,12 +316,16 @@ line at match (default) or do BODY at point if non-nil."
 could be either 'major or 'minor."
   (cl-destructuring-bind (_ cat) category
     (mapconcat 'identity
-               (list (pcase mode-type
-                       (`'major (nvp--bind 'major cat))
-                       (`'minor (nvp--bind 'minor))
-                       (_ (nvp--bind cat)))
-                     key)
+               (delq nil
+                     (list (pcase mode-type
+                             (`'major (nvp--bind 'major cat))
+                             (`'minor (nvp--bind 'minor))
+                             (_ (nvp--bind cat)))
+                           key))
                " ")))
+
+(defmacro nvp-define-key (keymap key category mode-type func)
+  `(define-key ,keymap (kbd (nvp-bind ,key ,category ,mode-type)) ,func))
 
 (defmacro nvp-bindings (mode &optional feature &rest bindings)
   (declare (indent defun))

@@ -49,7 +49,7 @@
     (when proc
       (set-process-sentinel proc 'nvp-comint-history-sentinel)))
   ;; make sure the buffer exists before calling the process sentinel
-  (add-hook 'kill-buffer-hook 'nvp-inf-kill-proc-before-buffer))
+  (add-hook 'kill-buffer-hook 'nvp-inf-kill-proc-before-buffer 'local))
 
 (defun nvp-comint-history-sentinel (proc _m)
   (with-current-buffer (process-buffer proc)

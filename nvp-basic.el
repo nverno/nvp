@@ -106,6 +106,16 @@
      (forward-line 1)
      (user-error "No previous headings"))))
 
+;;——— Smooth scrolling ———————————————————————————————————————————————
+(autoload 'do-smooth-scroll "smooth-scrolling")
+(autoload 'enable-smooth-scroll-for-function "smooth-scrolling")
+
+(when (featurep 'smooth-scrolling)
+  (with-no-warnings
+    (enable-smooth-scroll-for-function nvp-basic-next5)
+    (enable-smooth-scroll-for-function nvp-basic-prev5)
+    (enable-smooth-scroll-for-function nvp-basic-next-defun)))
+
 ;;——— Duplicate Lines ————————————————————————————————————————————————
 
 (declare-function paredit-kill "paredit")

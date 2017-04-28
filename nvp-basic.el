@@ -114,7 +114,9 @@
   (with-no-warnings
     (enable-smooth-scroll-for-function nvp-basic-next5)
     (enable-smooth-scroll-for-function nvp-basic-prev5)
-    (enable-smooth-scroll-for-function nvp-basic-next-defun)))
+    (enable-smooth-scroll-for-function nvp-basic-next-defun)
+    (enable-smooth-scroll-for-function nvp-basic-down-paragraph)
+    (enable-smooth-scroll-for-function nvp-basic-up-paragraph)))
 
 ;;——— Duplicate Lines ————————————————————————————————————————————————
 

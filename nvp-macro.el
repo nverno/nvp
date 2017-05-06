@@ -589,6 +589,12 @@ BODY."
             (funcall fun p m)))))
     ,@body))
 
+(defmacro nvp-install--script (directory)
+  "Find installation script."
+  `(cl-loop for dir in '("script" "tools")
+          if (file-exists-p (expand-file-name dir ,directory))
+          return (expand-file-name (concat dir "/install.sh") ,directory)))
+
 (defmacro nvp-with-install-script (dir &optional funcs sudo &rest body)
   "Run installation script."
   (declare (indent defun) (debug defun))
@@ -597,7 +603,7 @@ BODY."
      (require 'nvp-log)
      (require 'nvp-ext)
      (declare-function nvp-log "nvp-log")
-     (let ((script (expand-file-name "tools/install.sh" ,dir)))
+     (let ((script (nvp-install--script ,dir)))
        (nvp-with-process-log
          (funcall-interactively 'nvp-ext-run-script script
                                 ,(if (stringp funcs) `(cons ,funcs nil)

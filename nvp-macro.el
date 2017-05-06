@@ -819,6 +819,26 @@ and install PLUGIN with asdf."
             (buffer-string)))))))
 
 ;; -------------------------------------------------------------------
+;;; URL
+
+(defmacro with-url-buffer (url &rest body)
+  "Do BODY in buffer with contents from URL."
+  (declare (indent defun)
+           (debug (symbolp &rest form)))
+  `(with-current-buffer (url-retrieve-synchronously ,url)
+     ,@body))
+
+(defmacro scan-url (url regex &rest body)
+  "Do BODY in buffer with URL contents at position of REGEX."
+  (declare (indent defun)
+           (debug (symbolp symbolp &rest form)))
+  `(with-url-buffer ,url
+     (goto-char (point-min))
+     (while (re-search-forward ,regex nil t)
+       ,@body)
+     (kill-buffer)))
+
+;; -------------------------------------------------------------------
 ;;; Advice
 
 ;; from prelude

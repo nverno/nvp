@@ -160,7 +160,6 @@ line at match (default) or do BODY at point if non-nil."
 (defmacro nvp-concat (&rest body)
   `(eval-when-compile (concat ,@body)))
 
-
 ;; -------------------------------------------------------------------
 ;;; OS
 
@@ -854,6 +853,13 @@ is in BODY."
                        activate)
                     ,@body))
                commands)))
+
+;; -------------------------------------------------------------------
+;;; Compat
+
+(unless (fboundp 'ignore-errors)
+  (defmacro ignore-errors (&rest body)
+    `(condition-case nil (progn ,@body) (error nil))))
 
 ;; -------------------------------------------------------------------
 ;;; Variables / Declares

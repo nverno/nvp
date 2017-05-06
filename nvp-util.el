@@ -31,6 +31,15 @@
   (require 'cl-lib))
 
 ;; -------------------------------------------------------------------
+;;; Date / Time
+
+;; insert date
+;;;###autoload
+(defun nvp-insert-date ()
+  (interactive)
+  (insert (format-time-string "%e %B %Y")))
+
+;; -------------------------------------------------------------------
 ;;; Lists
 
 ;; Intersection of multiple lists.

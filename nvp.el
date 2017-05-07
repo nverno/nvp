@@ -34,6 +34,7 @@
   (defvar nvp-snippet-dir)
   (defvar nvp-abbrev-local-file)
   (defvar nvp-abbrev-local-table))
+(require 'nvp-basic)
 
 (defvar nvp--dir nil)
 (when load-file-name

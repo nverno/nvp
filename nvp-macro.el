@@ -32,9 +32,12 @@
 
 ;; Doesn't work
 ;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
-(when (assoc '(t byte-compile-file-form-require ((require 'nvp-macro)) nil)
-             (backtrace-frames))
-  (message "Warning: package 'nvp-macro required at runtime"))
+(when (functionp 'backtrace-frames)
+  (when (assoc '(t byte-compile-file-form-require
+                   ((require 'nvp-macro))
+                   nil)
+               (backtrace-frames))
+    (message "Warning: package 'nvp-macro required at runtime")))
 
 ;; -------------------------------------------------------------------
 ;;; Misc

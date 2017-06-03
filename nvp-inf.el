@@ -75,6 +75,13 @@
         (setq found proc)))
     found))
 
+;; non-nil if process NAME is running and alive
+(defun nvp-inf-process-running-p (name)
+  (cl-loop for proc in (process-list)
+     if (and (string= name (process-name proc))
+             (process-live-p proc))
+     return t))
+
 ;; choose process by name, return process
 (defun nvp-inf-choose-process ()
   (let ((procs (mapcar #'(lambda (p) (cons (process-name p) p))

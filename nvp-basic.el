@@ -42,11 +42,11 @@
   (nvp-basic-temp-binding
    char (lambda () (interactive) (nvp-basic-char-this-line char)) t))
 
-(defsubst nvp-basic-next5()
+(defun nvp-basic-next5()
   (interactive)
   (forward-line 5))
 
-(defsubst nvp-basic-prev5()
+(defun nvp-basic-prev5()
   (interactive)
   (forward-line -5))
 

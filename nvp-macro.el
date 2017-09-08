@@ -368,6 +368,7 @@ could be either 'major or 'minor."
      ("a"    . beginning-of-line)
      ("A"    . beginning-of-buffer)
      ("E"    . end-of-buffer)
+     ("/"    . isearch-forward)
      ("M-n"  . nil)
      ("M-p"  . nil)
      ("M-N"  . nvp-basic-down-paragraph)

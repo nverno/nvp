@@ -60,7 +60,7 @@
                    "www.bitbucket.org/nverno/" ""])
     ("Github" .
      [simple-query "www.github.com"
-                   "www.github.com/" ""])
+                   "https://github.com/search?utf8=%E2%9C%93&q=" "&type=repo"])
     ("Bookfi".
      [simple-query "en.bookfi.net"
                    "en.bookfi.net/s/?q=" "&t=0"])

@@ -172,5 +172,14 @@
                   comps))))
     comps))
 
+;; -------------------------------------------------------------------
+;;; Expansion predicates
+
+;; dont expand in strings/comments
+;;;###autoload
+(defun nvp-abbrev-expand-p ()
+  (let ((ppss (syntax-ppss)))
+    (not (or (elt ppss 3) (elt ppss 4)))))
+
 (provide 'nvp-abbrev)
 ;;; nvp-abbrev.el ends here

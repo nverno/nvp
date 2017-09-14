@@ -38,6 +38,7 @@
 
 ;;; History
 
+;;;###autoload
 (defun nvp-comint-setup-history (filename &optional size)
   ;; setup read/write for history file
   (setq comint-input-ring-file-name

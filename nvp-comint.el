@@ -56,5 +56,15 @@
   (with-current-buffer (process-buffer proc)
     (comint-write-input-ring)))
 
+;; comint redirect output silently (to temp buffer)
+;;;###autoload
+(defun nvp-inf-comint-redirect-silently (proc string)
+  (let (comint-redirect-perform-sanity-check)
+    (with-temp-buffer
+      (comint-redirect-send-command-to-process
+       string (current-buffer) proc nil 'no-display)))
+  (with-current-buffer (process-buffer proc)
+    (comint-redirect-cleanup)))
+
 (provide 'nvp-comint)
 ;;; nvp-comint.el ends here

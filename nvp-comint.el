@@ -58,7 +58,7 @@
 
 ;; comint redirect output silently (to temp buffer)
 ;;;###autoload
-(defun nvp-inf-comint-redirect-silently (proc string)
+(defun nvp-comint-redirect-silently (proc string)
   (let (comint-redirect-perform-sanity-check)
     (with-temp-buffer
       (comint-redirect-send-command-to-process

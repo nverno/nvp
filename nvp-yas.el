@@ -88,6 +88,10 @@
          (extra (max padmin (- padmax sw))))
     (make-string (/ (max 0 extra) 2) char)))
 
+;; fill after yas-text with CHAR until PADMAX
+(defsubst nvp-yas-pad-right (char padmax)
+  (make-string (max 0 (- padmax (string-width yas-text))) char))
+
 ;; continuation comment: if `comment-end' is defined,
 ;; make blank string concated with last char in comment-end
 (defsubst nvp-yas-comment-cont (length)

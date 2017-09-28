@@ -41,30 +41,34 @@
 (global-set-key (kbd "<f2> [") #'nvp-rect-hydra/body)
 
 (defhydra nvp-rect-hydra (:body-pre (rectangle-mark-mode 1)
-                           :color pink
-                           :post (deactivate-mark))
+                                    :color pink
+                                    :post (deactivate-mark))
   "
-  ^_i_^     _d_elete    _s_tring
-_j_   _l_   _o_k        _y_ank
-  ^_k_^     _c_opy      _r_eset
-^^^^        _e_xchange  _u_ndo
-^^^^        ^ ^         _p_aste
+  ^_k_^     _d_elete    _t_ype    _N_umber-lines
+_h_   _l_   _y_ank      _o_pen    _e_xchange-point
+  ^_j_^     _w_ copy    _r_eset   _r_eset-region-mark
+^^^^        _K_ill      _c_lear   _g_ quit
+^^^^        _u_ndo      ^ ^        ^ ^
 "
-  ("j" rectangle-backward-char nil)
+  ("h" rectangle-backward-char nil)
   ("l" rectangle-forward-char nil)
-  ("i" rectangle-previous-line nil)
-  ("k" rectangle-next-line nil)
+  ("k" rectangle-previous-line nil)
+  ("j" rectangle-next-line nil)
+  ("w" copy-rectangle-as-kill nil)      ;C-x r M-w
+  ("K" kill-rectangle)                  ;C-x r k
+  ("d" delete-rectangle nil)            ;C-x r d
+  ("c" clear-rectangle)                 ;C-x r c
+  ("y" yank-rectangle nil)              ;C-x r y
+  ("t" string-rectangle nil)            ;C-x r t
+  ("o" open-rectangle nil)              ;C-x r o
+  ("N" rectangle-number-lines)          ;C-x r N
   ("e" nvp-rect-ex-point-mark nil)
-  ("c" copy-rectangle-as-kill nil)
-  ("d" delete-rectangle nil)
   ("r" (if (region-active-p)
            (deactivate-mark)
          (rectangle-mark-mode 1)) nil)
-  ("y" yank-rectangle nil)
   ("u" undo nil)
-  ("s" string-rectangle nil)
-  ("p" kill-rectangle nil)
-  ("o" nil nil))
+  ("g" nil))
+(hydra-set-property 'nvp-rect-hydra :verbosity 1)
 
 ;; Exchange point and mark.
 (defun nvp-rect-ex-point-mark ()

@@ -40,7 +40,7 @@
   (nvp-window/body))
 
 ;; bindings
-(global-set-key (kbd "<f2> `") #'nvp-window/body)
+(global-set-key (kbd "<f2> Q") #'nvp-window/body)
 
 (defhydra nvp-window (:color red :hint nil)
    "
@@ -64,7 +64,8 @@ _q_ quit       _o_nly this     _d_elete
           (interactive)
           (ace-window 1)
           (add-hook 'ace-window-end-once-hook
-                    'nvp-window/body)))
+                    'nvp-window/body))
+    :exit t)
    ("v" (lambda ()
           (interactive)
           (split-window-right)
@@ -92,6 +93,7 @@ _q_ quit       _o_nly this     _d_elete
    )
    ("Z" winner-redo)
    ("q" nil))
+(hydra-set-property 'nvp-window :verbosity 1)
 
 (defhydra nvp-window-resize (:color red)
   "resize"
@@ -101,6 +103,7 @@ _q_ quit       _o_nly this     _d_elete
    ("l" nvp-window-move-splitter-right "→")
    ("b" nvp-window/body "back" :exit t)
    ("q" nil "quit"))
+(hydra-set-property 'nvp-window-resize :verbosity 1)
 
 ;; ------------------------------------------------------------
 ;;; Functions

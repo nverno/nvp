@@ -55,37 +55,6 @@
      collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
 
 ;; -------------------------------------------------------------------
-;;; Conversion
-
-(declare-function hexl-hex-char-to-integer "hexl")
-(declare-function hexl-oct-char-to-integer "hexl")
-
-;; from hexl.el
-;;;###autoload
-(defun nvp-hex-string-to-integer (hex-string)
-  "Return decimal integer for HEX-STRING."
-  (interactive "sHex number: ")
-  (let ((hex-num 0))
-    (while (not (equal hex-string ""))
-      (setq hex-num (+ (* hex-num 16)
-		       (hexl-hex-char-to-integer
-                        (string-to-char hex-string))))
-      (setq hex-string (substring hex-string 1)))
-    (message "%d" hex-num)))
-
-;;;###autoload
-(defun nvp-octal-string-to-integer (octal-string)
-  "Return decimal integer for OCTAL-STRING."
-  (interactive "sOctal number: ")
-  (let ((oct-num 0))
-    (while (not (equal octal-string ""))
-      (setq oct-num (+ (* oct-num 8)
-		       (hexl-oct-char-to-integer
-			(string-to-char octal-string))))
-      (setq octal-string (substring octal-string 1)))
-    (message "%d" oct-num)))
-
-;; -------------------------------------------------------------------
 ;;; Save data
 
 ;; recentf.el

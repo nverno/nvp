@@ -30,22 +30,42 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 
+;; (defun nvp-toggle-increment-numbers (start end)
+;;   "Increment numbers in region. Temporarily sets 'i' to replay command.
+;; Decrement with prefix."
+;;   (interactive "r")
+;;   (let (deactivate-mark)
+;;     (goto-char start)
+;;     (while (re-search-forward "\\([[:digit:]]+\\)" end 'move)
+;;       (replace-match (number-to-string
+;;                       (+ (if current-prefix-arg -1 1)
+;;                          (string-to-number (match-string 1))))
+;;                      nil nil nil 1))
+;;     ;; FIXME: what is good way to reused the current-prefix-argument value when
+;;     ;; calling this-command?
+;;     (nvp-basic-temp-binding "i" this-command)))
+
 ;; In/De-crement numbers in region,  decremnent with prefix argument
 ;;;###autoload
-(defun nvp-toggle-increment-numbers (start end)
-  "Increment numbers in region. Temporarily sets 'i' to replay command.
-Decrement with prefix."
-  (interactive "r")
+(defun nvp-toggle-increment-numbers (start end &optional decrement)
+  "Simple function to increment numbers in region. Decrement with prefix."
+  (interactive "r\nP")
   (let (deactivate-mark)
+    (setq start  (copy-marker start)
+          end    (copy-marker end))
     (goto-char start)
-    (while (re-search-forward "\\([[:digit:]]+\\)" end 'move)
-      (replace-match (number-to-string
-                      (+ (if current-prefix-arg -1 1)
-                         (string-to-number (match-string 1))))
+    (while (re-search-forward "\\([-]?[[:digit:]]+\\)" end 'move)
+      (replace-match (number-to-string (+ (if decrement -1 1)
+                                          (string-to-number (match-string 1))))
                      nil nil nil 1))
-    ;; FIXME: what is good way to reused the current-prefix-argument value when
-    ;; calling this-command?
-    (nvp-basic-temp-binding "i" this-command)))
+    (set-transient-map
+     (let ((km  (make-sparse-keymap)))
+       (define-key km "i"
+         (lambda ()
+           (interactive)
+           (nvp-toggle-increment-numbers start end decrement)))
+       km)
+     t)))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

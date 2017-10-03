@@ -47,23 +47,21 @@
 
 ;; In/De-crement numbers in region,  decremnent with prefix argument
 ;;;###autoload
-(defun nvp-toggle-increment-numbers (start end &optional decrement)
+(defun nvp-toggle-increment-numbers (start end)
   "Simple function to increment numbers in region. Decrement with prefix."
-  (interactive "r\nP")
+  (interactive "r")
   (let (deactivate-mark)
     (setq start  (copy-marker start)
           end    (copy-marker end))
     (goto-char start)
     (while (re-search-forward "\\([-]?[[:digit:]]+\\)" end 'move)
-      (replace-match (number-to-string (+ (if decrement -1 1)
+      (replace-match (number-to-string (+ (if current-prefix-arg -1 1)
                                           (string-to-number (match-string 1))))
                      nil nil nil 1))
+    (setq prefix-arg current-prefix-arg)
     (set-transient-map
-     (let ((km  (make-sparse-keymap)))
-       (define-key km "i"
-         (lambda ()
-           (interactive)
-           (nvp-toggle-increment-numbers start end decrement)))
+     (let ((km (make-sparse-keymap)))
+       (define-key km "i" this-command)
        km)
      t)))
 

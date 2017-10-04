@@ -44,13 +44,14 @@
 (defun nvp-jump-to-mode-config (mode)
   (interactive
    (list 
-    (ido-completing-read
+    (completing-read
      "Mode: "
      (mapcar
       #'(lambda (x)
           (replace-regexp-in-string "\\(nvp-\\|\\.el\\)" ""
                                     x))
-      (directory-files nvp/mode nil "^[^\\.].*\\.el$")))))
+      (directory-files nvp/mode nil "^[^\\.].*\\.el$"))
+     nil nil (and major-mode (substring (symbol-name major-mode) 0 -5)))))
   (let ((src (format "nvp-%s.el" mode)))
     (find-file-other-window (expand-file-name src nvp/mode))))
 
@@ -99,7 +100,8 @@
    (list (completing-read "Locate library: "
                           (apply-partially
                            'locate-file-completion-table
-                           load-path (get-load-suffixes)))))
+                           load-path (get-load-suffixes))
+                          (lambda (f) (not (directory-name-p f))))))
   (let* ((file (locate-file library load-path
                             (append (get-load-suffixes)
                                     load-file-rep-suffixes)))

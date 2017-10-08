@@ -55,6 +55,7 @@
 ;;;###autoload
 (defun nvp-session-load (&optional dirname name)
   (interactive (nvp-session--read "Load session: "))
+  (call-interactively 'nvp-session-kill-all-buffers)
   (with-desktop-vars dirname name
     (desktop-read dirname)))
 

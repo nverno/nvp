@@ -225,6 +225,13 @@
   (interactive "P")
   (sp-wrap-with-pair "\""))
 
+;;;###autoload
+(defun nvp-wrap-with-squiggles (&optional arg)
+  (interactive "P")
+  ;; don't want it in the normal pair list
+  (let ((sp-pair-list '(("~" . "~"))))
+    (sp-wrap-with-pair "~")))
+
 ;; wrap items in list b/w "("..")", defaulting to wrapping with quotes
 ;;;###autoload (autoload 'nvp-list-wrap-quotes "nvp-edit")
 (nvp-wrap-list-items quotes :wrap ("\"" . "\""))

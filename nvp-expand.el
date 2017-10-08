@@ -73,6 +73,21 @@ for string to wrap."
     (nvp-list-wrap-quotes tiny-beg (point) 'prompt))
    (t (tiny-expand))))
 
+;;;###autoload
+(defun nvp-expand-or-pattern ()
+  "Expand blah.[a|b|c] on current line into blah.a\nblah.b\nblah.c"
+  (interactive)
+  (beginning-of-line)
+  (when (and (re-search-forward "\\([^\[]*\\)\\[\\([^\]]+\\)\\]"
+                                (point-at-eol) 'noerror)
+             (match-string 2))
+    (replace-match
+     (mapconcat (lambda (s) (concat (match-string 1) s))
+                (save-match-data
+                  (split-string (match-string 2) "|" 'omit " "))
+                "\n")
+     nil nil nil 0)))
+
 ;; -------------------------------------------------------------------
 
 (declare-function tiny-expand "tiny")

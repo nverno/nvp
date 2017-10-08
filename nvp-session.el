@@ -63,5 +63,12 @@
   (interactive (nvp-session--read "Delete session: "))
   (delete-file (expand-file-name name dirname)))
 
+;;;###autoload
+(defun nvp-session-kill-all-buffers ()
+  (interactive)
+  (save-some-buffers)
+  (mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
+  (kill-buffer))
+
 (provide 'nvp-session)
 ;;; nvp-session.el ends here

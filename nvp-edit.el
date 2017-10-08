@@ -229,8 +229,12 @@
 (defun nvp-wrap-with-squiggles (&optional arg)
   (interactive "P")
   ;; don't want it in the normal pair list
-  (let ((sp-pair-list '(("~" . "~"))))
-    (sp-wrap-with-pair "~")))
+  (let ((st (make-syntax-table))
+        (sp-pair-list '(("~" . "~"))))
+    ;; wrap files with suffixes
+    (modify-syntax-entry ?. "w" st)
+    (with-syntax-table st
+      (sp-wrap-with-pair "~"))))
 
 ;; wrap items in list b/w "("..")", defaulting to wrapping with quotes
 ;;;###autoload (autoload 'nvp-list-wrap-quotes "nvp-edit")

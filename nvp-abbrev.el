@@ -79,15 +79,22 @@
        table (expand-file-name table nvp/abbrevs)))
     (goto-char (point-min))
     (search-forward-regexp (concat "'" table "\\>") nil t)
-    (if pref
-        (while
-            (and
-             (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)"
-                                nil t)
-             (let ((str (buffer-substring-no-properties
-                         (match-beginning 1) (match-end 1))))
-               (if (> (length pref) (length str)) t
-                 (string> pref str))))))
+    (when pref
+      (while
+          (and
+           (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)"
+                              nil t)
+           (let ((str (buffer-substring-no-properties
+                       (match-beginning 1) (match-end 1))))
+             (if (> (length pref) (length str))
+                 t
+               (string> pref str)))))
+      ;; insert default template for prefix
+      (back-to-indentation)
+      (insert (format "(\"%s\" \"\" nil :system t)\n" pref))
+      (indent-according-to-mode)
+      (backward-char (+ (current-indentation) 17)))
+    ;; reload abbrev table after modification
     (add-hook 'after-save-hook
               #'(lambda () (quietly-read-abbrev-file buffer-file-name))
               t 'local)))

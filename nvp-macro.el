@@ -514,6 +514,13 @@ could be either 'major or 'minor."
 ;; -------------------------------------------------------------------
 ;;; Processes
 
+;; get a comint buffer, run body, return buffer
+(defmacro nvp-comint-buffer (name &rest body)
+  `(progn (with-current-buffer (get-buffer-create ,name)
+            (comint-mode)
+            ,@body
+            (current-buffer))))
+
 (defmacro nvp-process-buffer (&optional comint &rest body)
   (if (not (or comint body))
       '(get-buffer-create "*nvp-install*")

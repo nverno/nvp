@@ -132,8 +132,15 @@
                    (dired-file-name-at-point))))
     (nvp-with-gnu/w32
         (mapc (lambda (path)
-                (let ((process-connection-type nil))
-                  (start-process "" nil "xdg-open" path)))
+                (let ((process-connection-type nil)
+                      (ext (file-name-extension path)))
+                  (pcase ext
+                    ('"ipynb";; (pred (string= "ipynb"))
+                     (start-process-shell-command
+                      "jupyter-notebook"
+                      (nvp-comint-buffer "*jupyter-notebook*")
+                      "source activate sci && jupyter-notebook"))
+                    (_ (start-process "" nil "xdg-open" path)))))
               files)  
       (mapc (lambda (path)
               (w32-shell-execute "open" (w32-long-file-name path)))
@@ -155,7 +162,7 @@
   (interactive)
   (let ((files (dired-get-marked-files)))
     (dolist (file files)
-      (when-let ((prog (assoc (file-name-extension file)
+      (when-let* ((prog (assoc (file-name-extension file)
                               nvp-dired-external-program)))
         (let ((cmd (cdr (assoc 'cmd prog))))
           (nvp-with-gnu/w32

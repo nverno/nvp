@@ -59,7 +59,8 @@
         (align-regexp (region-beginning) (region-end)
                       "\\(\\s-*\\)\\. ")))))
 
-;;--- Sort -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Sort
 
 ;; Sort region by first character of each line. With prefix, reverse
 ;; the sort
@@ -88,7 +89,8 @@
   (interactive "r\nP")
   (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end))
 
-;;--- Fill -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Fill 
 
 ;; Convert multiple line paragraph into one line.
 ;;;###autoload
@@ -177,7 +179,8 @@
   "Align '#' in region."
   "\\(\\s-*\\)#")
 
-;;--- Insert ---------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Insert 
 
 ;; Adds commas after numbers in list, like matlab -> R.
 ;;;###autoload
@@ -213,7 +216,8 @@
    "pariatur. excepteur sint occaecat cupidatat non proident, sunt in "
    "culpa qui officia deserunt mollit anim id est laborum."))
 
-;;--- Wrap -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Wrap 
 
 ;;;###autoload
 (defun nvp-wrap-parens (&optional arg)
@@ -249,7 +253,8 @@
 ;;;###autoload (autoload 'nvp-list-wrap-squiggles "nvp-edit")
 (nvp-wrap-list-items squiggles :wrap ("{" . "}"))
 
-;;--- Charset --------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Charset 
 
 ;; https://www.emacswiki.org/emacs/UnicodeEncoding
 ;; Read a unicode code point and insert said character.  Input uses

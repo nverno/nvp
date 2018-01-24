@@ -77,7 +77,7 @@
         (and (y-or-n-p "Install zeal? ")
              (set-process-sentinel
               (nvp-ext-run-script
-               (expand-file-name "tools/install.sh" nvp--dir)
+               (expand-file-name "script/install.sh" nvp--dir)
                '("install_zeal") 'sudo)
               ;; reset global key / zeal exe
               #'(lambda (p _m)

@@ -48,7 +48,7 @@
        (set-process-sentinel
         (start-process
          "julia" (nvp-process-buffer) "julia"
-         (expand-file-name "tools/julia_latex.jl" nvp--dir))
+         (expand-file-name "script/julia_latex.jl" nvp--dir))
         #'(lambda (p _m)
             (when (zerop (process-exit-status p))
               (pop-to-buffer (nvp-process-buffer)))))))

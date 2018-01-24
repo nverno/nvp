@@ -80,7 +80,7 @@
   ;; add to exec-path if EXEC is non-nil. If CLOBBER is non-nil,
   ;; overwrite variable if it already exists.
   (defun nvp-env-setenv! (env-var value &optional exec clobber &rest ignore)
-    (let* ((ps (expand-file-name "tools/Set-Env.ps1" nvp--dir))
+    (let* ((ps (expand-file-name "script/Set-Env.ps1" nvp--dir))
            (val (replace-regexp-in-string "/" "\\\\" value)))
       (w32-shell-execute "runas" "powershell"
                          (format " -File %s \"%s\" \"%s\" %s"

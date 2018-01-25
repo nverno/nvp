@@ -69,8 +69,17 @@
 
 ;;--- Mode -----------------------------------------------------------
 
+(defvar fixme-menu
+  '("Fixme"
+    ["Next" fixme-next t]
+    ["Previous" fixme-previous t]
+    ["Occur" fixme-occur t]
+    "---"
+    ["Turn off" fixme-mode t]))
+
 (defvar fixme-mode-map
   (let ((km (make-sparse-keymap)))
+    (easy-menu-define nil km nil fixme-menu)
     (define-key km (kbd "M-s-n") 'fixme-next)
     (define-key km (kbd "M-s-p") 'fixme-previous)
     (define-key km (kbd "M-s-o") 'fixme-occur)
@@ -79,7 +88,7 @@
 ;;;###autoload
 (define-minor-mode fixme-mode "Fixme"
   nil
-  :lighter " Fix"
+  :lighter " Fixme"
   :keymap fixme-mode-map
   (if fixme-mode
       (font-lock-add-keywords nil nvp-fixme-font-lock-words)

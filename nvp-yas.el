@@ -114,7 +114,7 @@
 ;; nulls are dropped.
 ;; if DEFAULTS is non-nil, split by "=" as well, eg.
 ;; "a,b=1," => '("a" ("b" "1"))
-(defsubst nvp-yas-split-args (str &optional seps defaults)
+(defun nvp-yas-split-args (str &optional seps defaults)
   (let ((args (split-string str (or seps "[ \t]*,[ \t]*") t " ")))
     (if defaults
         (mapcar (lambda (s)
@@ -122,6 +122,14 @@
                     (if (= (length defs) 1) (car defs) defs)))
                 args)
       args)))
+
+;; get variable name from string of form "i = 1" or "int i = 1"
+(defun nvp-yas-varname (str)
+  (if (< (length str) 1)
+      ""
+   (let* ((str (car (split-string str "=" t " ")))
+          (strs (split-string str nil t " ")))
+     (or (cadr strs) (car strs)))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands 

@@ -137,9 +137,9 @@
                                (or (and rem
                                         (concat
                                          ":"
-                                         (aref (tramp-dissect-file-name
-                                                default-directory)
-                                               2)))
+                                         (nth 2
+                                              (tramp-dissect-file-name
+                                               default-directory))))
                                    (and current-prefix-arg
                                         (concat
                                          ":"

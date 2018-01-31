@@ -68,7 +68,7 @@
 ;; lex).  Prefix length to look back.
 ;;;###autoload
 (defun nvp-abbrev-jump-to-file (arg)
-  (interactive "p")
+  (interactive "P")
   (let* ((file-abbr (bound-and-true-p nvp-abbrev-local-table))
          (table (regexp-quote (format "%s-abbrev-table"
                                       (or file-abbr major-mode))))

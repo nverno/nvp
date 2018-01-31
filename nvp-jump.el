@@ -35,7 +35,7 @@
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-chop-prefix "nvp-util")
 (nvp-with-gnu
-  (autoload 'nvp-ext-sudo-install "nvp-ext"))
+ (autoload 'nvp-ext-sudo-install "nvp-ext"))
 
 ;; -------------------------------------------------------------------
 ;;; Modes
@@ -210,18 +210,18 @@
          ;; epubs
          ((string-match-p "\\.epub$" file)
           (nvp-with-gnu/w32
-              (if (executable-find "calibre")
-                  (call-process "calibre" nil 0 nil fullname)
-                (if (y-or-n-p "Install calibre? ")
-                    (nvp-with-process-log
-                      (nvp-ext-sudo-install "calibre")
-                      :pop-on-error
-                      (call-process "calibre" nil 0 nil fullname))
-                  (call-process "firefox" nil 0 nil fullname)))
-            (if (executable-find "sumatrapdf")
-                (call-process "sumatrapdf" nil 0 nil fullname)
-              (call-process (nvp-program "firefox") nil 0 nil
-                            fullname))))
+           (if (executable-find "calibre")
+               (call-process "calibre" nil 0 nil fullname)
+             (if (y-or-n-p "Install calibre? ")
+                 (nvp-with-process-log
+                  (nvp-ext-sudo-install "calibre")
+                  :pop-on-error
+                  (call-process "calibre" nil 0 nil fullname))
+               (call-process "firefox" nil 0 nil fullname)))
+           (if (executable-find "sumatrapdf")
+               (call-process "sumatrapdf" nil 0 nil fullname)
+             (call-process (nvp-program "firefox") nil 0 nil
+                           fullname))))
          ;; open if non-directory
          ((file-name-extension file)
           (find-file fullname))

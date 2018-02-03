@@ -175,9 +175,10 @@
   "\\(\\s-*\\)\\\\$")
 
 ;;;###autoload (autoload 'nvp-align-hash "nvp-edit")
-(nvp-align-fn nvp-align-hash
-  "Align '#' in region."
-  "\\(\\s-*\\)#")
+(nvp-align-fn nvp-align-hash nil "\\(\\s-*\\)#")
+
+;;;###autoload (autoload 'nvp-aligh-= "nvp-edit")
+(nvp-align-fn nvp-align-= nil "\\(\\s-*\\)=")
 
 ;; -------------------------------------------------------------------
 ;;; Insert 

@@ -177,7 +177,7 @@
 ;;;###autoload (autoload 'nvp-align-hash "nvp-edit")
 (nvp-align-fn nvp-align-hash nil "\\(\\s-*\\)#")
 
-;;;###autoload (autoload 'nvp-aligh-= "nvp-edit")
+;;;###autoload (autoload 'nvp-align-= "nvp-edit")
 (nvp-align-fn nvp-align-= nil "\\(\\s-*\\)=")
 
 ;; -------------------------------------------------------------------

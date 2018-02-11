@@ -485,31 +485,32 @@ could be either 'major or 'minor."
 (declare-function nvp-basic-temp-binding "nvp-basic")
 
 (cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn bindings)
-  "Toggle POPUP in pos-tip."
+  "Toggle POPUP in pos-tip. If HELP-FN is :none, 'h' is not bound by default."
   (declare (indent defun))
-  `(progn
-     (declare-function pos-tip-show "pos-tip")
-     (declare-function nvp-basic-temp-binding "nvp-basic")
-     (let ((x-gtk-use-system-tooltips ,use-gtk))
-      (or (x-hide-tip)
-          (let ((str ,popup))
-            (pos-tip-show str nil nil nil 20)
-            (nvp-basic-temp-binding
-             "h"
-             ,(or help-fn
-                  '(function
-                    (lambda ()
-                      (interactive)
-                      (x-hide-tip)
-                      (with-current-buffer (get-buffer-create
-                                            "*nvp-help*")
-                        (insert str)
-                        (view-mode-enter)
-                        (pop-to-buffer (current-buffer)))))))
-            (nvp-basic-temp-binding
-             "q" #'(lambda () (interactive) (x-hide-tip)))
-            ,@(cl-loop for (k . b) in bindings
-                 collect `(nvp-basic-temp-binding (kbd ,k) ,b)))))))
+  (let ((str (make-symbol "str")))
+    `(progn
+       (declare-function pos-tip-show "pos-tip")
+       (declare-function nvp-basic-temp-binding "nvp-basic")
+       (let ((x-gtk-use-system-tooltips ,use-gtk))
+         (or (x-hide-tip)
+             (let ((,str ,popup))
+               (pos-tip-show ,str nil nil nil 20)
+               (nvp-basic-temp-binding
+                "h" ,(cond
+                      ((eq :none help-fn) nil)
+                      (help-fn help-fn)
+                      (t `(lambda ()
+                            (interactive)
+                            (x-hide-tip)
+                            (with-current-buffer (get-buffer-create "*nvp-help*")
+                              (insert ,str)
+                              (view-mode-enter)
+                              (pop-to-buffer (current-buffer)))))))
+               (nvp-basic-temp-binding
+                "q" #'(lambda () (interactive) (let ((x-gtk-use-system-tooltips nil))
+                                            (x-hide-tip))))
+               ,@(cl-loop for (k . b) in bindings
+                    collect `(nvp-basic-temp-binding (kbd ,k) ,b))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Processes

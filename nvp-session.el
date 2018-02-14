@@ -71,5 +71,6 @@
   (mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
   (kill-buffer))
 
+
 (provide 'nvp-session)
 ;;; nvp-session.el ends here

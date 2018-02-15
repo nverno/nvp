@@ -1,4 +1,4 @@
-;;; nvp-toggle ---  -*- lexical-binding: t; -*-
+;;; nvp-toggle ---   -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -64,6 +64,29 @@
        (define-key km "i" this-command)
        km)
      t)))
+
+;;;###autoload
+(defun nvp-toggle-local-binding (local-var)
+  (interactive (list (read-string "Binding: " "mode: ")))
+  (let ((parts (split-string local-var ":" 'omit " ")))
+    (save-excursion
+      (goto-char (point-min))
+      (cond
+       ((not (looking-at-p comment-start)) ;no starting comment
+        (insert (format "%s -*- %s -*- %s\n" comment-start local-var comment-end)))
+       ((and (car parts)                   ;already defined -- update or toggle off
+             (looking-at-p (concat ".*" (regexp-quote (car parts)) ".*$")))
+        (when (re-search-forward
+               (concat "\\(" (regexp-quote (car parts))
+                       "\\s-*:\\s-*\\([A-Za-z0-9-]*\\s-*\\);?\\)")
+               (line-end-position))
+          (if (not (cadr parts))
+              (replace-match "" nil nil nil 1)                         ;toggle off
+            (replace-match (concat (cadr parts) " ") nil nil nil 2)))) ;update
+       (:else
+        (if (not (search-forward "-*-" (line-end-position) 'move))
+            (insert (format " -*- %s -*- " local-var))
+          (insert (format " %s; " local-var))))))))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

@@ -51,7 +51,9 @@
           (replace-regexp-in-string "\\(nvp-\\|\\.el\\)" ""
                                     x))
       (directory-files nvp/mode nil "^[^\\.].*\\.el$"))
-     nil nil (and major-mode (substring (symbol-name major-mode) 0 -5)))))
+     nil nil
+     (and current-prefix-arg major-mode
+          (substring (symbol-name major-mode) 0 -5)))))
   (let ((src (format "nvp-%s.el" mode)))
     (find-file-other-window (expand-file-name src nvp/mode))))
 

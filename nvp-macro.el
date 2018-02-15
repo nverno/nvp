@@ -326,6 +326,26 @@ could be either 'major or 'minor."
                            key))
                " ")))
 
+(defmacro nvp-create-keymaps (leader &rest maps)
+  "Create submaps from LEADER map. Optionally give name of keymap for 
+menu entry."
+  (declare (indent defun))
+  `(progn
+     ,@(cl-loop for (key . args) in maps
+          as map = (pop args)
+          as name = (and args (pop args))
+          collect `(progn
+                     (defvar ,map)      ;compiler warnings
+                     (define-prefix-command ',map nil ,name)
+                     (define-key ,leader (kbd ,key) ',map)))))
+
+(defmacro nvp-bind-keys (map &rest bindings)
+  "Bind keys to MAP"
+  (declare (indent defun))
+  `(progn
+     ,@(cl-loop for (k . b) in bindings
+          collect `(define-key ,map (kbd ,k) ',b))))
+
 (defmacro nvp-define-key (keymap key category mode-type func)
   `(define-key ,keymap (kbd (nvp-bind ,key ,category ,mode-type)) ,func))
 

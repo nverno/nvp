@@ -66,14 +66,17 @@
      t)))
 
 ;;;###autoload
-(defun nvp-toggle-local-binding (local-var)
-  (interactive (list (read-string "Binding: " "mode: ")))
+(defun nvp-toggle-local-binding (local-var com-start com-end)
+  (interactive
+   (list (read-string "Binding: " "mode: ")
+         (or comment-start (read-string "Comment start: " ""))
+         (or (and comment-start comment-end) (read-string "Comment end: " ""))))
   (let ((parts (split-string local-var ":" 'omit " ")))
     (save-excursion
       (goto-char (point-min))
       (cond
-       ((not (looking-at-p comment-start)) ;no starting comment
-        (insert (format "%s -*- %s -*- %s\n" comment-start local-var comment-end)))
+       ((not (looking-at-p (regexp-quote com-start))) ;no starting comment
+        (insert (format "%s -*- %s -*- %s\n" com-start local-var com-end)))
        ((and (car parts)                   ;already defined -- update or toggle off
              (looking-at-p (concat ".*" (regexp-quote (car parts)) ".*$")))
         (when (re-search-forward

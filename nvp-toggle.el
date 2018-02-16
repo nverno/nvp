@@ -69,8 +69,8 @@
 (defun nvp-toggle-local-binding (local-var com-start com-end)
   (interactive
    (list (read-string "Binding: " "mode: ")
-         (or comment-start (read-string "Comment start: " ""))
-         (or (and comment-start comment-end) (read-string "Comment end: " ""))))
+         (or comment-start (read-string "Comment start: " "/* "))
+         (or (and comment-start comment-end) (read-string "Comment end: " " */"))))
   (let ((parts (split-string local-var ":" 'omit " ")))
     (save-excursion
       (goto-char (point-min))

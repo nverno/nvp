@@ -136,7 +136,7 @@
 ;;;###autoload
 (defun nvp-buffer-rename-file (new-name)
   (interactive
-   (read-string "New name: " (file-name-nondirectory (buffer-file-name))))
+   (list (read-string "New name: " (file-name-nondirectory (buffer-file-name)))))
   (let ((name (buffer-name))
 	(filename (buffer-file-name)))
     (unless filename

@@ -94,7 +94,10 @@
      [simple-query "https://docs.omniref.com/"
                    "https://docs.omniref.com/?q=" ""])
     ("Travis" . "https://travis-ci.org/nverno")
-    ("TestGenerator" . "http://spojtoolkit.com/TestCaseGenerator/")))
+    ("TestGenerator" . "http://spojtoolkit.com/TestCaseGenerator/")
+    ("gradle" .
+     [simple-query "https://plugins.gradle.org"
+                   "https://plugins.gradle.org/search?term=" ""])))
 
 ;; Webjump interface
 ;;;###autoload

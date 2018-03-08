@@ -116,6 +116,11 @@
           (kill-append string nil)
         (kill-new string)))))
 
+(defun nvp-dired-touch (filename)
+  (interactive (list (read-string "Filename: " ".gitkeep")))
+  (with-temp-buffer
+    (write-file filename)))
+
 ;; -------------------------------------------------------------------
 ;;; External
 

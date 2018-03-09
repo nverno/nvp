@@ -29,8 +29,10 @@
 (eval-when-compile
   (require 'nvp-macro)
   (nvp-local-vars)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (yas-snippet-dirs))
 (require 'desktop)
+(declare-function yas-load-directory "yasnippet")
 
 (defsubst nvp-session--read (prompt)
   (list
@@ -70,7 +72,6 @@
   (save-some-buffers)
   (mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
   (kill-buffer))
-
 
 (provide 'nvp-session)
 ;;; nvp-session.el ends here

@@ -211,6 +211,11 @@ line at match (default) or do BODY at point if non-nil."
            (and (file-exists-p local) local)
            (executable-find ,name)))))))
 
+(defmacro nvp-path (path &optional no-compile)
+  `(,(if no-compile 'progn 'eval-when-compile)
+    (let ((path (substitute-env-in-file-name ,path)))
+      (and path (file-exists-p path) path))))
+
 (defmacro nvp-mode (mode)
   `(expand-file-name
     (concat "nvp-" ,mode) (bound-and-true-p nvp/mode)))

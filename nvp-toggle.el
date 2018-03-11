@@ -1,4 +1,4 @@
-;;; nvp-toggle ---   -*- lexical-binding: t; -*-
+;;; nvp-toggle-*--*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -64,6 +64,61 @@
        (define-key km "i" this-command)
        km)
      t)))
+
+;; -------------------------------------------------------------------
+;;; Local variables
+
+;; return non-nil on match
+(defsubst nvp-toggle-local-goto-or-insert ()
+  (goto-char (point-min))
+  (let ((start (search-forward "-*-" (line-end-position) 'move)))
+    (if (not start)
+        (nvp-toggle-local-insert-delm)
+      (search-forward "-*-" (line-end-position) 'move)
+      (prog1 (list :start start :end (- (point) 3))
+        (goto-char start)))))
+
+;; insert new local delimeter, put point at first position
+(defsubst nvp-toggle-local-insert-delm ()
+  (insert "-*-  -*-")
+  (forward-char -4)
+  (list :start (1- (point)) :end (1+ (point))))
+
+;; -*- a b: 1 -*-
+;; get local vars -- which may be key-value pairs
+(defun nvp-toggle-local-vars ()
+  (let ((p (point))
+        (end (progn (and (search-forward "-*-" (line-end-position) 'move)
+                         (- (point) 3))))
+        lst)
+    (when end
+      (goto-char p)
+      (while (re-search-forward
+              (nvp-concat "\\s-*\\([-a-zA-Z0-9]+\\)\\s-*"
+                          "\\(:\\s-*\\([-a-zA-Z0-9]+\\)\\)?")
+              end 'move)
+        (if (match-string 3)
+            (push (cons (match-string 1) (match-string 3)) lst)
+          (and (match-string 1)
+               (push (cons (match-string 1) nil) lst)))))
+    lst))
+
+;; insert key val combo into local header
+(defun nvp-toggle-local-add (input &optional remove)
+  (interactive (list (read-string "Key-val(sep [ :]): ")
+                     current-prefix-arg))
+  (let* ((pos (nvp-toggle-local-goto-or-insert))
+         (vars (nvp-toggle-local-vars))
+         (vals (split-string input "[: ]" 'omit " "))
+         (res (cl-delete-if (lambda (x) (string= (car x) (car vals))) vars)))
+    (delete-region (plist-get pos :start) (plist-get pos :end))
+    (nvp-toggle-local-insert
+     (if remove res (cons (cons (car vals) (cdr vals)) res)))))
+
+;; write the vars to the buffer
+(defsubst nvp-toggle-local-insert (vars)
+  (insert
+   (mapconcat (lambda (x) (concat (car x) (and (cdr x) ": ") (cadr x))) vars "; ")))
 
 ;;;###autoload
 (defun nvp-toggle-local-binding (local-var com-start com-end)

@@ -127,6 +127,17 @@
      (when load-file-name
        (setq ,dir (file-name-directory load-file-name)))))
 
+(defmacro nvp-package-var (var &rest init)
+  (declare (indent 1))
+  `(progn
+     (defvar ,var nil)
+     (when load-file-name
+       (setq ,var ,@init))))
+
+(defmacro nvp-package-after-compile (&rest body)
+  `(when load-file-name
+     ,@body))
+
 (defmacro nvp-package-load-snippets (dir)
   "Add packages snippet directory to `yas-snippet-dirs' after loading
 `yasnippet'."

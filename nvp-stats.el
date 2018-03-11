@@ -56,7 +56,7 @@
 
 ;; Print counts of strings in region, with prefix dump at point
 ;;;###autoload
-(defun nvp-stats-uniq (beg end &optional arg)
+(defun nvp-stats-uniq (beg end &optional _unused)
   (interactive "r\nP")
   (let ((h (make-hash-table :test 'case-fold))
         (strs (split-string (buffer-substring-no-properties beg end) "\n"

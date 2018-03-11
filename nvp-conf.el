@@ -43,7 +43,7 @@
 
 ;; browse download location of target
 (defun nvp-conf-visit-location (conf target)
-  (when-let ((loc (nvp-conf-value conf target "loc")))
+  (when-let* ((loc (nvp-conf-value conf target "loc")))
     (browse-url loc)))
 
 (provide 'nvp-conf)

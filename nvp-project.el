@@ -50,7 +50,7 @@
                                &rest body)
   (declare (indent defun) (debug t))
   `(let ((nvp-project--test-re ,test-re)
-         (nvp-project--root ,(nvp-listify `,root))
+         (nvp-project--root ',(nvp-listify `,root))
          (nvp-project--test-dir ',test-dir))
      ,@body))
 

@@ -58,29 +58,29 @@
 ;;;###autoload
 (defun nvp-mark-goto-marker-at-point ()
   (interactive)
-  (when-let ((bnds (bounds-of-thing-at-point 'marker)))
-            (save-excursion
-              (goto-char (car bnds))
-              (save-match-data
-                (when (re-search-forward
-                       "<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
-                       (line-end-position) t)
-                  (let* ((fn-or-place (match-string-no-properties 1))
-                         (place (string-to-number fn-or-place))
-                         (name (match-string 2))
-                         (file (condition-case nil
-                                   (find-library-name name)
-                                 (expand-file-name
-                                  name default-directory))))
-                    (when (file-exists-p file)
-                      (switch-to-buffer-other-window
-                       (find-file-noselect file))
-                      (goto-char (or place 1))
-                      (when (zerop place)
-                        (re-search-forward
-                         (format "^(\\(?:cl-\\)?def[-a-z]+ %s"
-                                 fn-or-place)
-                         nil t)))))))))
+  (when-let* ((bnds (bounds-of-thing-at-point 'marker)))
+    (save-excursion
+      (goto-char (car bnds))
+      (save-match-data
+        (when (re-search-forward
+               "<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
+               (line-end-position) t)
+          (let* ((fn-or-place (match-string-no-properties 1))
+                 (place (string-to-number fn-or-place))
+                 (name (match-string 2))
+                 (file (condition-case nil
+                           (find-library-name name)
+                         (expand-file-name
+                          name default-directory))))
+            (when (file-exists-p file)
+              (switch-to-buffer-other-window
+               (find-file-noselect file))
+              (goto-char (or place 1))
+              (when (zerop place)
+                (re-search-forward
+                 (format "^(\\(?:cl-\\)?def[-a-z]+ %s"
+                         fn-or-place)
+                 nil t)))))))))
 
 ;; insert `point-marker' in kill-ring
 ;;;###autoload
@@ -95,12 +95,12 @@
   ;; Do mark fontification
   (defmacro nvp-mark--add-fl ()
     `'(("#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
-       (0 (prog1 ()
-            (let* ((place (match-string-no-properties 1))
-                   (file (match-string-no-properties 2)))
-              (put-text-property (1+ (match-beginning 0)) (match-end 0)
-                                 'display (format "%s<%s>" file place)))))
-       (0 'font-lock-constant-face t)))))
+        (0 (prog1 ()
+             (let* ((place (match-string-no-properties 1))
+                    (file (match-string-no-properties 2)))
+               (put-text-property (1+ (match-beginning 0)) (match-end 0)
+                                  'display (format "%s<%s>" file place)))))
+        (0 'font-lock-constant-face t)))))
 
 ;;;###autoload
 (defun nvp-mark-fontify-marks (arg)

@@ -66,7 +66,18 @@
      t)))
 
 ;; -------------------------------------------------------------------
-;;; Local variables
+;;; Toggle local variables
+
+;; insert new local delimeter, put point at first position
+(defsubst nvp-toggle-local-insert-delm ()
+  (insert "-*-  -*-")
+  (forward-char -4)
+  (list :start (1- (point)) :end (1+ (point))))
+
+;; write the vars to the buffer
+(defsubst nvp-toggle-local-insert (vars)
+  (insert
+   (mapconcat (lambda (x) (concat (car x) (and (cdr x) ": ") (cadr x))) vars "; ")))
 
 ;; return non-nil on match
 (defsubst nvp-toggle-local-goto-or-insert ()
@@ -77,12 +88,6 @@
       (search-forward "-*-" (line-end-position) 'move)
       (prog1 (list :start start :end (- (point) 3))
         (goto-char start)))))
-
-;; insert new local delimeter, put point at first position
-(defsubst nvp-toggle-local-insert-delm ()
-  (insert "-*-  -*-")
-  (forward-char -4)
-  (list :start (1- (point)) :end (1+ (point))))
 
 ;; -*- a b: 1 -*-
 ;; get local vars -- which may be key-value pairs
@@ -114,11 +119,6 @@
     (delete-region (plist-get pos :start) (plist-get pos :end))
     (nvp-toggle-local-insert
      (if remove res (cons (cons (car vals) (cdr vals)) res)))))
-
-;; write the vars to the buffer
-(defsubst nvp-toggle-local-insert (vars)
-  (insert
-   (mapconcat (lambda (x) (concat (car x) (and (cdr x) ": ") (cadr x))) vars "; ")))
 
 ;;;###autoload
 (defun nvp-toggle-local-binding (local-var com-start com-end)

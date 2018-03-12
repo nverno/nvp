@@ -6,6 +6,24 @@
 
 (autoload 'substitute-env-vars "env")
 
+(defsubst nvp-conf-targets (conf)
+  (cl-mapcar 'car conf))
+
+(defsubst nvp-conf-default-targets (conf)
+  (split-string (nvp-conf-value conf "default" "targets") "[ \t,]" 'omit " "))
+
+(defsubst nvp-conf-location-protocol (loc)
+  (pcase (car (split-string loc ":"))
+    (`"http" :http)
+    (`"https" :http)
+    (`"git" :git)
+    (_ :unknown)))
+
+;; browse download location of target
+(defsubst nvp-conf-visit-location (conf target)
+  (when-let* ((loc (nvp-conf-value conf target "loc")))
+    (and (eq :http (nvp-conf-location-protocol)) (browse-url loc))))
+
 ;; Convert config of form:
 ;; [target]
 ;; key=value
@@ -37,14 +55,6 @@
     (if (not value)
         res
       (cdr (cl-assoc value res :test 'string=)))))
-
-(defun nvp-conf-default-targets (conf)
-  (split-string (nvp-conf-value conf "default" "targets") "[ \t,]" 'omit " "))
-
-;; browse download location of target
-(defun nvp-conf-visit-location (conf target)
-  (when-let* ((loc (nvp-conf-value conf target "loc")))
-    (browse-url loc)))
 
 (provide 'nvp-conf)
 ;;; nvp-conf.el ends here

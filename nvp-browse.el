@@ -97,7 +97,10 @@
     ("TestGenerator" . "http://spojtoolkit.com/TestCaseGenerator/")
     ("gradle" .
      [simple-query "https://plugins.gradle.org"
-                   "https://plugins.gradle.org/search?term=" ""])))
+                   "https://plugins.gradle.org/search?term=" ""])
+    ("scaladex".
+     [simple-query "https://index.scala-lang.org/search"
+                   "https://index.scala-lang.org/search?q=" ""])))
 
 ;; Webjump interface
 ;;;###autoload

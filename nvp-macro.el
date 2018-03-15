@@ -42,9 +42,8 @@
 ;; -------------------------------------------------------------------
 ;;; Misc
 
-(unless (bound-and-true-p current-buffer-process)
-  (defmacro current-buffer-proccess ()
-    `(get-buffer-process (current-buffer))))
+(defmacro current-buffer-process ()
+  `(get-buffer-process (current-buffer)))
 
 (defmacro eieio-declare-slot (name)
   (cl-pushnew name eieio--known-slot-names) nil)
@@ -899,19 +898,18 @@ and install PLUGIN with asdf."
            ;; in REPL buffer, switch back to source
            (switch-to-buffer-other-window
             ;; switch to set source buffer or the most recent other buffer
-            (or (process-get (get-current-process) :src-buffer)
+            (or (process-get (current-buffer-process) :src-buffer)
                 (other-buffer)))
          ;; in source buffer, try to go to a REPL
          (let ((src-buffer (current-buffer))
                (repl-buffer
+                ;; Should there be a default?
                 (or ,(and repl-buffer-name
-                          `(,(or repl-live-p repl-live-p 'buffer-live-p)
-                            (get-buffer ,repl-buffer-name))
                           `(get-buffer ,repl-buffer-name))
                     ,(and repl-find-fn
                           `(ignore-errors (funcall ,repl-find-fn))))))
            ;; there is a REPL buffer, but is it alive?
-           (when (not (comint-check-proc repl-buffer))
+           (when (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
              ;; no, so we need to start one somehow -- this should return the
              ;; buffer object
              (setq repl-buffer (progn ,@repl-init))
@@ -926,7 +924,7 @@ and install PLUGIN with asdf."
            (if (not (comint-check-proc repl-buffer))
                (error (message "The fucking REPL didnt start")))
            (funcall ,(or switch-fn ''switch-to-buffer-other-window) repl-buffer)
-           (process-put (get-current-process) :src-buffer src-buffer))))))
+           (process-put (current-buffer-process) :src-buffer src-buffer))))))
 
 ;; -------------------------------------------------------------------
 ;;; URL

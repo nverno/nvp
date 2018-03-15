@@ -101,13 +101,36 @@
     (message "No processes")))
 
 ;; -------------------------------------------------------------------
-;;; Buffer Process
+;;; Buffer Process Info
 
 ;; print message with current buffer's process status
 ;;;###autoload
 (defun nvp-inf-process-status ()
   (interactive)
   (message "Process status: %s" (process-status (current-buffer))))
+
+;;;###autoload
+(defun nvp-inf-process-attributes (var)
+  (interactive
+   (list (completing-read "Process attr: "
+                          '(filter plist coding exit command id name sentinel)
+                          nil nil "plist")))
+  (when-let* ((proc (get-buffer-process (current-buffer))))
+    (princ (pcase var
+             (`"filter" (process-filter proc))
+             (`"plist" (process-plist proc))
+             (`"coding" (process-coding-system proc))
+             (`"exit" (process-exit-status proc))
+             (`"command" (process-command proc))
+             (`"id" (process-id proc))
+             (`"name" (process-name proc))
+             (`"sentinel" (process-sentinel proc))
+             (_ (condition-case var
+                    (process-get proc var)
+                  (error (format "Process attribute %s not found" var))))))))
+
+;; -------------------------------------------------------------------
+;;; Hooks
 
 ;; kill process before killing buffer
 ;;;###autoload

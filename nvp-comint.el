@@ -39,18 +39,24 @@
 ;;; History
 
 ;;;###autoload
-(defun nvp-comint-setup-history (filename &optional size)
+(defun nvp-comint-setup-history (filename &optional size write-history)
   ;; setup read/write for history file
+  (setq comint-input-ignoredups t)
   (setq comint-input-ring-file-name
         (expand-file-name filename nvp/cache))
   (setq-local comint-input-ring-size
               (or size nvp-comint-history-size))
   (comint-read-input-ring 'silent)
-  (let ((proc (get-buffer-process (current-buffer))))
-    (when proc
-      (set-process-sentinel proc 'nvp-comint-history-sentinel)))
+  (when-let* ((proc (get-buffer-process (current-buffer))))
+    (and write-history
+         (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
   ;; make sure the buffer exists before calling the process sentinel
   (add-hook 'kill-buffer-hook 'nvp-inf-kill-proc-before-buffer nil 'local))
+
+;; to be called in a hook
+(defun nvp-comint-add-history-sentinel ()
+  (when-let* ((proc (current-buffer-proccess)))
+    (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
 
 (defun nvp-comint-history-sentinel (proc _m)
   (with-current-buffer (process-buffer proc)

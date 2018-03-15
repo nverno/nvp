@@ -42,6 +42,10 @@
 ;; -------------------------------------------------------------------
 ;;; Misc
 
+(unless (bound-and-true-p current-buffer-process)
+  (defmacro current-buffer-proccess ()
+    `(get-buffer-process (current-buffer))))
+
 (defmacro eieio-declare-slot (name)
   (cl-pushnew name eieio--known-slot-names) nil)
 
@@ -875,6 +879,54 @@ and install PLUGIN with asdf."
                                      (cdr wrap))
                              t nil nil 1))
             (buffer-string)))))))
+
+;;; REPLS
+
+;; switching between REPLs and source buffers -- maintain the name of the
+;; source buffer as a property of the process running the REPL. Uses REPL-FUNCTION
+;; to find/create the REPL buffer to jump to from a source file
+(cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
+                                         repl-live-p switch-fn repl-history)
+                                   &rest repl-init)
+  (declare (indent defun))
+  (declare-function nvp-comint-add-history-sentinel "nvp-comint")
+  (let ((fn (intern (format "nvp-%s-repl-switch" name))))
+    `(defun ,fn ()
+       "Switch between source and REPL buffers"
+       (interactive)
+       (if ,(or (and repl-mode `(eq major-mode ,repl-mode))
+                (and repl-buffer-name `(equal ,repl-buffer-name (buffer-name))))
+           ;; in REPL buffer, switch back to source
+           (switch-to-buffer-other-window
+            ;; switch to set source buffer or the most recent other buffer
+            (or (process-get (get-current-process) :src-buffer)
+                (other-buffer)))
+         ;; in source buffer, try to go to a REPL
+         (let ((src-buffer (current-buffer))
+               (repl-buffer
+                (or ,(and repl-buffer-name
+                          `(,(or repl-live-p repl-live-p 'buffer-live-p)
+                            (get-buffer ,repl-buffer-name))
+                          `(get-buffer ,repl-buffer-name))
+                    ,(and repl-find-fn
+                          `(ignore-errors (funcall ,repl-find-fn))))))
+           ;; there is a REPL buffer, but is it alive?
+           (when (not (comint-check-proc repl-buffer))
+             ;; no, so we need to start one somehow -- this should return the
+             ;; buffer object
+             (setq repl-buffer (progn ,@repl-init))
+             (and (processp repl-buffer)
+                  (setq repl-buffer (process-buffer repl-buffer))
+                  ;; add a sentinel to write comint history before other
+                  ;; sentinels that may be set by the mode
+                  ,(and repl-history
+                        '(nvp-comint-add-history-sentinel))))
+           ;; Now switch to REPL and set its properties to point back to the source
+           ;; buffer from when we came
+           (if (not (comint-check-proc repl-buffer))
+               (error (message "The fucking REPL didnt start")))
+           (funcall ,(or switch-fn ''switch-to-buffer-other-window) repl-buffer)
+           (process-put (get-current-process) :src-buffer src-buffer))))))
 
 ;; -------------------------------------------------------------------
 ;;; URL

@@ -893,7 +893,7 @@ and install PLUGIN with asdf."
                                          repl-config)
                                    &rest repl-init)
   (declare (indent defun))
-  (declare-function nvp-comint-add-history-sentinel "nvp-comint")
+  (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
   (let ((fn (intern (format "nvp-%s-repl-switch" name))))
     `(defun ,fn ()
        "Switch between source and REPL buffers"

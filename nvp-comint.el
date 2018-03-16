@@ -55,7 +55,7 @@
 
 ;; to be called in a hook
 (defun nvp-comint-add-history-sentinel ()
-  (when-let* ((proc (current-buffer-proccess)))
+  (when-let* ((proc (current-buffer-process)))
     (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
 
 (defun nvp-comint-history-sentinel (proc _m)

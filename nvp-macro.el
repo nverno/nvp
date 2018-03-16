@@ -882,10 +882,15 @@ and install PLUGIN with asdf."
 ;;; REPLS
 
 ;; switching between REPLs and source buffers -- maintain the name of the
-;; source buffer as a property of the process running the REPL. Uses REPL-FUNCTION
-;; to find/create the REPL buffer to jump to from a source file
+;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
+;; if supplied to find/create the REPL buffer, REPL-LIVE-P is called to check
+;; if it is alive (defaults to `buffer-live-p'
+;; if REPL-HISTORY is non-nil `nvp-comint-add-history-sentinel' is added before the
+;; buffers process-filter. REPL-INIT is called to create and return a new REPL
+;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
 (cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
-                                         repl-live-p switch-fn repl-history)
+                                         repl-live-p switch-fn repl-history
+                                         repl-config)
                                    &rest repl-init)
   (declare (indent defun))
   (declare-function nvp-comint-add-history-sentinel "nvp-comint")
@@ -924,7 +929,8 @@ and install PLUGIN with asdf."
            (if (not (comint-check-proc repl-buffer))
                (error (message "The fucking REPL didnt start")))
            (funcall ,(or switch-fn ''switch-to-buffer-other-window) repl-buffer)
-           (process-put (current-buffer-process) :src-buffer src-buffer))))))
+           (process-put (current-buffer-process) :src-buffer src-buffer)
+           ,(and repl-config `(funcall ,repl-config)))))))
 
 ;; -------------------------------------------------------------------
 ;;; URL

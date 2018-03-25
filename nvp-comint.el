@@ -29,7 +29,8 @@
 (eval-when-compile
   (require 'nvp-macro)
   (nvp-local-vars)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'subr-x))
 (require 'comint)
 (autoload 'nvp-inf-kill-proc-before-buffer "nvp-inf")
 

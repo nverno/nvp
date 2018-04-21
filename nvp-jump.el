@@ -97,23 +97,27 @@
 ;;; Libraries
 
 ;;;###autoload
-(defun nvp-jump-to-library (library)
+(defun nvp-jump-to-library (library &optional arg)
   (interactive
    (list (completing-read "Locate library: "
                           (apply-partially
                            'locate-file-completion-table
                            load-path (get-load-suffixes))
-                          (lambda (f) (not (directory-name-p f))))))
+                          (lambda (f) (not (directory-name-p f))))
+         current-prefix-arg))
   (let* ((file (locate-file library load-path
                             (append (get-load-suffixes)
                                     load-file-rep-suffixes)))
          (el (concat (file-name-sans-extension file) ".el"))
          (elgz (concat el ".gz")))
     ;; if no .el, on linux, jump to .el.gz instead
-    (if current-prefix-arg
-        (dired (file-name-directory file))
-      (find-file-other-window
-       (if (file-exists-p el) el elgz)))))
+    (pcase arg
+      (`(4) (dired (file-name-directory file)))
+      (`(16) (let ((scripts (nvp-install--script (file-name-directory el))))
+               (when (file-exists-p scripts)
+                 (find-file-other-window scripts))))
+      (_ (find-file-other-window
+          (if (file-exists-p el) el elgz))))))
 
 ;; -------------------------------------------------------------------
 ;;; Org

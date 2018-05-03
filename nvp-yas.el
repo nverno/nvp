@@ -233,7 +233,7 @@
       (snippet-mode)
       (yas-minor-mode 1)
       (yas-expand-snippet yas-new-snippet-default)
-
+      
       ;; reload / compile after save
       (add-hook 'after-save-hook 'nvp-yas-snippet-reload nil 'local))))
 

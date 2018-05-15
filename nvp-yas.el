@@ -182,6 +182,13 @@
   (interactive)
   (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
 
+;; reload all `yas-snippet-dirs'
+;;;###autoload
+(defun nvp-yas-reload-all ()
+  (interactive)
+  (cl-loop for dir in yas-snippet-dirs
+     do (yas-load-directory dir)))
+
 ;; ------------------------------------------------------------
 ;;;  Snippet-mode
 

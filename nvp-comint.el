@@ -63,15 +63,22 @@
   (with-current-buffer (process-buffer proc)
     (comint-write-input-ring)))
 
-;; comint redirect output silently (to temp buffer)
+;;; https://stackoverflow.com/questions/46631920/silently-send-command-to-comint-without-printing-prompt/51236317#51236317
 ;;;###autoload
 (defun nvp-comint-redirect-silently (proc string)
-  (let (comint-redirect-perform-sanity-check)
-    (with-temp-buffer
+  (let* ((comint-redirect-perform-sanity-check))
+    (with-temp-buffer 
       (comint-redirect-send-command-to-process
-       string (current-buffer) proc nil 'no-display)))
-  (with-current-buffer (process-buffer proc)
-    (comint-redirect-cleanup)))
+       string (current-buffer) proc nil 'no-display)
+      ;; wait for process to complete
+      (set-buffer (process-buffer proc))
+      (while (and (null comint-redirect-completed) ;ignore output
+                  (accept-process-output proc))))
+    (with-current-buffer (process-buffer proc)
+      (comint-redirect-cleanup)
+      (while (and (null comint-redirect-completed) ;wait for cleanup to finish
+                  (accept-process-output proc)))
+      (comint-send-string proc "\n"))))            ;print new prompt
 
 (provide 'nvp-comint)
 ;;; nvp-comint.el ends here

@@ -31,7 +31,8 @@
   (require 'cl-lib))
 (autoload 'string-trim "subr-x")
 
-;;——— Movement ———————————————————————————————————————————————————————
+;; -------------------------------------------------------------------
+;;; Movement 
 
 ;; jump to next char on this line. if matching char,
 ;; pressing the same key again jumps to the next one, etc.
@@ -106,7 +107,8 @@
      (forward-line 1)
      (user-error "No previous headings"))))
 
-;;——— Smooth scrolling ———————————————————————————————————————————————
+;; -------------------------------------------------------------------
+;;; Scrolling 
 (autoload 'do-smooth-scroll "smooth-scrolling")
 (autoload 'enable-smooth-scroll-for-function "smooth-scrolling")
 
@@ -118,7 +120,8 @@
     (enable-smooth-scroll-for-function nvp-basic-down-paragraph)
     (enable-smooth-scroll-for-function nvp-basic-up-paragraph)))
 
-;;——— Duplicate Lines ————————————————————————————————————————————————
+;; -------------------------------------------------------------------
+;;; Duplicate lines 
 
 (declare-function paredit-kill "paredit")
 
@@ -194,12 +197,14 @@
     (newline-and-indent)
     (yank)))
 
-;;——— Newline ————————————————————————————————————————————————————————
+;; -------------------------------------------------------------------
+;;; Newline 
 
 (nvp-newline nvp-basic-newline-dwim nil
   :pairs (("{" "}") ("(" ")") ("\\[" "\\]")))
 
-;;——— Keys ———————————————————————————————————————————————————————————
+;; -------------------------------------------------------------------
+;;; Key bindings 
 
 (defun nvp-basic-temp-binding (key cmd &optional keep exit)
   (set-transient-map

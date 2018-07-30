@@ -119,6 +119,29 @@
       (_ (find-file-other-window
           (if (file-exists-p el) el elgz))))))
 
+;; Lookup up library URL
+;;;###autoload
+(defun nvp-jump-to-library-url (library)
+  (interactive
+   (list (completing-read "Library: "
+                          (apply-partially
+                           'locate-file-completion-table
+                           load-path (get-load-suffixes))
+                          (lambda (f) (not (directory-name-p f))))))
+  (let* ((file (locate-file library load-path
+                            (append (get-load-suffixes)
+                                    load-file-rep-suffixes)))
+         (el (concat (file-name-sans-extension file) ".el"))
+         (elgz (concat el ".gz")))
+    (with-temp-buffer
+      (insert-file-contents (if (file-exists-p el) el elgz))
+      (goto-char (point-min))
+      (condition-case nil
+          (progn
+            (search-forward "URL: ")
+            (browse-url (buffer-substring (point) (point-at-eol))))
+        (error (message "No URL found for library"))))))
+
 ;; -------------------------------------------------------------------
 ;;; Org
 

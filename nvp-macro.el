@@ -378,6 +378,7 @@ menu entry."
   (let ((modemap (intern (concat mode "-map"))))
     `(eval-after-load ,(or feature `',(intern mode))
        '(progn
+          (eval-when-compile (defvar ,modemap))
          ,@(cl-loop for (k . b) in bindings
               collect `(define-key ,modemap (kbd ,k) ',b))))))
 

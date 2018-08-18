@@ -648,8 +648,12 @@ BODY."
 (defmacro nvp-install--script (directory)
   "Find installation script."
   `(cl-loop for dir in '("script" "tools")
-      if (file-exists-p (expand-file-name dir ,directory))
-      return (expand-file-name (concat dir "/install.sh") ,directory)))
+      for dirname = (expand-file-name dir ,directory)
+      when (file-exists-p dirname)
+      return (cl-loop for file in '("install.sh" "install")
+                for fname = (expand-file-name file dirname)
+                if (file-exists-p fname)
+                return fname)))
 
 (defmacro nvp-with-install-script (dir &optional funcs sudo &rest body)
   "Run installation script."

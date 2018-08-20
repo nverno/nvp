@@ -895,7 +895,7 @@ and install PLUGIN with asdf."
 ;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
 (cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
                                          repl-live-p switch-fn repl-history
-                                         repl-config)
+                                         repl-config repl-wait)
                                    &rest repl-init)
   (declare (indent defun))
   (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
@@ -923,6 +923,7 @@ and install PLUGIN with asdf."
              ;; no, so we need to start one somehow -- this should return the
              ;; buffer object
              (setq repl-buffer (progn ,@repl-init))
+             ,@(and repl-wait `((sit-for ,repl-wait)))
              (and (processp repl-buffer)
                   (setq repl-buffer (process-buffer repl-buffer))
                   ;; add a sentinel to write comint history before other
@@ -930,11 +931,13 @@ and install PLUGIN with asdf."
                   ,(and repl-history
                         '(nvp-comint-add-history-sentinel))))
            ;; Now switch to REPL and set its properties to point back to the source
-           ;; buffer from when we came
+           ;; buffer from whence we came
            (if (not (comint-check-proc repl-buffer))
                (error (message "The fucking REPL didnt start")))
-           (funcall ,(or switch-fn ''switch-to-buffer-other-window) repl-buffer)
-           (process-put (current-buffer-process) :src-buffer src-buffer)
+           ,@(when (and switch-fn (not (eq 'none switch-fn)))
+               `((funcall ,(or switch-fn ''switch-to-buffer-other-window)
+                          repl-buffer)))
+           (process-put (get-buffer-process repl-buffer) :src-buffer src-buffer)
            ,(and repl-config `(funcall ,repl-config)))))))
 
 ;; -------------------------------------------------------------------

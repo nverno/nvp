@@ -909,7 +909,7 @@ and install PLUGIN with asdf."
            (switch-to-buffer-other-window
             ;; switch to set source buffer or the most recent other buffer
             (or (process-get (current-buffer-process) :src-buffer)
-                (other-buffer)))
+                (other-buffer (current-buffer) 'visible)))
          ;; in source buffer, try to go to a REPL
          (let ((src-buffer (current-buffer))
                (repl-buffer

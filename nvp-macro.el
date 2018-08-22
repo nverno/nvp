@@ -367,6 +367,7 @@ menu entry."
   "Bind keys to MAP"
   (declare (indent defun))
   `(progn
+     (eval-when-compile (defvar ,map))
      ,@(cl-loop for (k . b) in bindings
           collect `(define-key ,map (kbd ,k) ',b))))
 

@@ -1,4 +1,4 @@
-;;; nvp-font --- 
+;;; nvp-font ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -113,8 +113,7 @@
 ;; https://gist.github.com/haxney/3055728
 ;; non-nil if monospaced font
 (defun nvp-font-is-mono-p (font-family)
-  (let ((wind (selected-window))
-        m-width l-width)
+  (let (m-width l-width)
    (with-temp-buffer
      (set-window-buffer (selected-window) (current-buffer))
      (text-scale-set 4)

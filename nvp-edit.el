@@ -1,4 +1,4 @@
-;;; nvp-edit --- 
+;;; nvp-edit ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -29,7 +29,9 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'smartparens)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (defvar sort-fold-case))
+
 (autoload 'sp-wrap-with-pair "smartparens")
 
 ;; convert selected bindings to macro form and align
@@ -220,18 +222,25 @@
 ;; -------------------------------------------------------------------
 ;;; Wrap 
 
+;; from prelude
+(defun nvp-wrap-with (s)
+  "Create wrapper function for smarparens using S."
+  `(lambda (&optional arg)
+     (interactive "P")
+     (sp-wrap-with-pair ,s)))
+
 ;;;###autoload
-(defun nvp-wrap-parens (&optional arg)
+(defun nvp-wrap-parens ()
   (interactive "P")
   (sp-wrap-with-pair "("))
 
 ;;;###autoload
-(defun nvp-wrap-quotes (&optional arg)
+(defun nvp-wrap-quotes ()
   (interactive "P")
   (sp-wrap-with-pair "\""))
 
 ;;;###autoload
-(defun nvp-wrap-with-squiggles (&optional arg)
+(defun nvp-wrap-with-squiggles ()
   (interactive "P")
   ;; don't want it in the normal pair list
   (let ((st (make-syntax-table))

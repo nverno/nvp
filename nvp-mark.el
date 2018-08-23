@@ -1,4 +1,4 @@
-;;; nvp-mark --- 
+;;; nvp-mark ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -103,8 +103,8 @@
         (0 'font-lock-constant-face t)))))
 
 ;;;###autoload
-(defun nvp-mark-fontify-marks (arg)
-  (interactive "P")
+(defun nvp-mark-fontify-marks ()
+  (interactive)
   (if (setq nvp-mark--fontified-p (not nvp-mark--fontified-p))
       (font-lock-refresh-defaults)
     (font-lock-add-keywords nil (nvp-mark--add-fl))

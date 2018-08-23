@@ -870,8 +870,7 @@ and install PLUGIN with asdf."
                                (read-from-minibuffer
                                 "Wrap items with(a . b): "))))
                         ',wrap))
-              (str (buffer-substring-no-properties start end))
-              res)
+              (str (buffer-substring-no-properties start end)))
          (delete-region start end)
          (insert
           (with-temp-buffer

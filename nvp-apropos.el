@@ -1,4 +1,4 @@
-;;; nvp-apropos --- 
+;;; nvp-apropos ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

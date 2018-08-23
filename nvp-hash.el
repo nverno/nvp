@@ -1,4 +1,4 @@
-;;; nvp-hash --- 
+;;; nvp-hash ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

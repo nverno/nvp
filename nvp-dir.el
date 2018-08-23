@@ -1,4 +1,4 @@
-;;; nvp-dir ---
+;;; nvp-dir --- -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -231,9 +231,9 @@
                                       file)))
                               files " ")))
     (if  (= 1 (length files))
-        (let* ((file (file-name-nondirectory (car files))))
-          (start-process "compress" "*compress*" "7za" "a" "-tzip"
-                         out-file in-files))
+        ;; let* ((file (file-name-nondirectory (car files))))
+        (start-process "compress" "*compress*" "7za" "a" "-tzip"
+                       out-file in-files)
       (start-process-shell-command
        "compress" "*compress*" (format "7za a -tzip %s %s"
                                        out-file in-files)))))

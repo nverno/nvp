@@ -1,4 +1,4 @@
-;;; nvp-inf --- 
+;;; nvp-inf ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -405,7 +405,7 @@
 ;; same as nvp-inf-redirect-output, only do it asynchronously
 ;; #<marker at 65432 in ess-inf.el>
 (defun nvp-inf-async-redirect-output (proc cmd &optional
-                                           out-buffer out-filter
+                                           out-buffer _out-filter
                                            callback interrupt-callback)
   (interactive
    (list (nvp-inf-choose-process)
@@ -424,7 +424,7 @@
            (process-name proc)))
    (t
     (when (eq interrupt-callback t)
-      (setq interrupt-callback (lambda (proc))))
+      (setq interrupt-callback (lambda (_proc))))
     (process-put proc 'callbacks (list (cons callback 'suppress-output)
                                        interrupt-callback))
     (process-put proc 'interruptable? (and interrupt-callback t))

@@ -30,7 +30,8 @@
   (require 'nvp-macro)
   (require 'smartparens)
   (require 'cl-lib)
-  (defvar sort-fold-case))
+  (defvar sort-fold-case)
+  (defvar align-to-tab-stop))
 
 (autoload 'sp-wrap-with-pair "smartparens")
 
@@ -230,17 +231,17 @@
      (sp-wrap-with-pair ,s)))
 
 ;;;###autoload
-(defun nvp-wrap-parens ()
+(defun nvp-wrap-parens (&optional _arg)
   (interactive "P")
   (sp-wrap-with-pair "("))
 
 ;;;###autoload
-(defun nvp-wrap-quotes ()
+(defun nvp-wrap-quotes (&optional _arg)
   (interactive "P")
   (sp-wrap-with-pair "\""))
 
 ;;;###autoload
-(defun nvp-wrap-with-squiggles ()
+(defun nvp-wrap-with-squiggles (&optional _arg)
   (interactive "P")
   ;; don't want it in the normal pair list
   (let ((st (make-syntax-table))

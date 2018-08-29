@@ -31,6 +31,8 @@
   (require 'cl-lib)
   (require 's))
 
+(declare-function s-suffix? "s")
+
 ;;;###autoload
 (defun nvp-buffer-kill-other-buffers () 
   (interactive)
@@ -150,8 +152,20 @@
 	(set-visited-file-name new-name)))))
 
 ;; -------------------------------------------------------------------
+;;; Encoding 
 
-(declare-function s-suffix? "s")
+;; convert buffer coding to utf-8 and removing all trailing '\r'
+;;;###autoload
+(defun nvp-buffer-convert-to-utf-8 ()
+  (interactive)
+  (if (not (buffer-file-name))
+      (message "Buffer not associated with file")
+    (revert-buffer-with-coding-system 'utf-8-unix)
+    (save-excursion
+      (goto-char (point-min))
+      (save-match-data
+        (while (search-forward "" nil 'move)
+          (replace-match ""))))))
 
 (provide 'nvp-buffer)
 ;;; nvp-buffer.el ends here

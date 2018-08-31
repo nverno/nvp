@@ -151,7 +151,9 @@
      :parents (cons (symbol-value (intern table)) parents)))
   (message "loaded %s" table))
 
-;;——— Completion —————————————————————————————————————————————————————
+;; -------------------------------------------------------------------
+;;; Completion
+
 ;; `company-abbrev' doesn't account for :regexp properties, so doesnt
 ;; work properly when abbrev tables define their own :regexp,
 ;; ie "\\degree" or "#inc"

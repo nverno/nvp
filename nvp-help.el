@@ -68,6 +68,7 @@
 
 ;;--- Docset ---------------------------------------------------------
 (autoload 'zeal-at-point-run-search "zeal-at-point")
+
 (defun nvp-help-zeal-run-search (search)
   (if zeal-at-point-exe
       (if (version< "0.2.0" (zeal-at-point-get-version))

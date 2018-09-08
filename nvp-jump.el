@@ -123,14 +123,18 @@
 ;;;###autoload
 (defun nvp-jump-to-library-url (library)
   (interactive
-   (list (completing-read "Library: "
-                          (apply-partially
-                           'locate-file-completion-table
-                           load-path (get-load-suffixes))
-                          (lambda (f) (not (directory-name-p f))))))
-  (let* ((file (locate-file library load-path
-                            (append (get-load-suffixes)
-                                    load-file-rep-suffixes)))
+   (list (if current-prefix-arg
+             (buffer-file-name)
+           (completing-read "Library: "
+                            (apply-partially
+                             'locate-file-completion-table
+                             load-path (get-load-suffixes))
+                            (lambda (f) (not (directory-name-p f)))))))
+  (let* ((file (if current-prefix-arg
+                   library
+                 (locate-file library load-path
+                              (append (get-load-suffixes)
+                                      load-file-rep-suffixes))))
          (el (concat (file-name-sans-extension file) ".el"))
          (elgz (concat el ".gz")))
     (with-temp-buffer

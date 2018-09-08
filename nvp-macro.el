@@ -567,6 +567,10 @@ menu entry."
             ,@body
             (current-buffer))))
 
+(defmacro nvp-with-comint-buffer (name &rest body)
+  (declare (indent defun))
+  `(nvp-comint-buffer ,name ,@body))
+
 (defmacro nvp-process-buffer (&optional comint &rest body)
   (if (not (or comint body))
       '(get-buffer-create "*nvp-install*")

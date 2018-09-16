@@ -144,7 +144,7 @@
                      (start-process-shell-command
                       "jupyter-notebook"
                       (nvp-comint-buffer "*jupyter-notebook*")
-                      "source activate sci && jupyter-notebook"))
+                      "source activate sci && jupyter-notebook &"))
                     (_ (start-process "" nil "xdg-open" path)))))
               files)  
       (mapc (lambda (path)

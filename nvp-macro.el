@@ -900,13 +900,13 @@ and install PLUGIN with asdf."
 (cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
                                          repl-live-p repl-history
                                          repl-config repl-wait
-                                         (repl-switch-fn ''pop-to-buffer))
+                                         repl-doc (repl-switch-fn ''pop-to-buffer))
                                    &rest repl-init)
   (declare (indent defun))
   (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
   (let ((fn (intern (format "nvp-%s-repl-switch" name))))
     `(defun ,fn ()
-       "Switch between source and REPL buffers"
+       ,(or repl-doc "Switch between source and REPL buffers")
        (interactive)
        (if ,(or (and repl-mode `(eq major-mode ,repl-mode))
                 (and repl-buffer-name `(equal ,repl-buffer-name (buffer-name))))

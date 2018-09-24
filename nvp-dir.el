@@ -136,20 +136,22 @@
   (let ((files (or (dired-get-marked-files)
                    (dired-file-name-at-point))))
     (nvp-with-gnu/w32
-        (mapc (lambda (path)
-                (let ((process-connection-type nil)
-                      (ext (file-name-extension path)))
-                  (pcase ext
-                    ('"ipynb";; (pred (string= "ipynb"))
-                     (start-process-shell-command
-                      "jupyter-notebook"
-                      (nvp-comint-buffer "*jupyter-notebook*")
-                      "source activate sci && jupyter-notebook &"))
-                    (_ (start-process "" nil "xdg-open" path)))))
-              files)  
-      (mapc (lambda (path)
-              (w32-shell-execute "open" (w32-long-file-name path)))
-            files))))
+     (mapc (lambda (path)
+             (let ((process-connection-type nil)
+                   (ext (file-name-extension path)))
+               (pcase ext
+                 ('"ipynb";; (pred (string= "ipynb"))
+                  (require 'conda-env)
+                  (let ((env (conda-env-read-env)))
+                    (start-process-shell-command
+                     "jupyter-notebook"
+                     (nvp-comint-buffer "*jupyter-notebook*")
+                     (format "source activate %s && jupyter-notebook &" env))))
+                 (_ (start-process "" nil "xdg-open" path)))))
+           files)  
+     (mapc (lambda (path)
+             (w32-shell-execute "open" (w32-long-file-name path)))
+           files))))
 
 ;; Open directory in gui
 (defun nvp-dired-external-explorer ()

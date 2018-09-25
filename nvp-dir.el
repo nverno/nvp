@@ -127,6 +127,7 @@
 (eval-when-compile
   (defvar nvp-dired-external-filelist-cmd)
   (defvar nvp-dired-external-program))
+(declare-function conda-env-read-env "conda-env")
 
 ;;; Open externally
 

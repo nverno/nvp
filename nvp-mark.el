@@ -29,16 +29,21 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x))
+
 (autoload 'find-library-name "find-func")
+
+(defvar nvp-mark--regex "#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>")
 
 (defvar-local nvp-mark--fontified-p nil
   "Non-nil if marks in buffer are currently fontified")
+
+(defvar-local nvp-mark--marks () "Position of marks in buffer.")
 
 ;; -------------------------------------------------------------------
 ;;; Util
 
 ;; thing-at-point 'marker
-(defsubst nvp-mark-bounds-of-marker-at-point ()
+(defun nvp-mark-bounds-of-marker-at-point ()
   (save-excursion
     (skip-chars-backward "^#" (line-beginning-position))
     (when (eq ?< (char-after (point)))
@@ -50,37 +55,38 @@
 
 (put 'marker 'bounds-of-thing-at-point 'nvp-mark-bounds-of-marker-at-point)
 
+(defun nvp-mark--collect-marks ()
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward nvp-mark--regex nil 'move)
+      (push (cons (match-beginning 0) (match-end 0)) nvp-mark--marks))))
+
 ;; -------------------------------------------------------------------
 ;; Commands
 
-;; jump to marker at point
-;; markers: #<marker at [point or fn-name] in [library/relative filename]>
 ;;;###autoload
 (defun nvp-mark-goto-marker-at-point ()
+  "Jump to the marker at point.
+A marker is of the form \
+'#<marker at [point/function-name] in [library/relative filename]>'."
   (interactive)
   (when-let* ((bnds (bounds-of-thing-at-point 'marker)))
     (save-excursion
       (goto-char (car bnds))
       (save-match-data
-        (when (re-search-forward
-               "<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
-               (line-end-position) t)
+        (when (re-search-forward nvp-mark--regex (line-end-position) t)
           (let* ((fn-or-place (match-string-no-properties 1))
                  (place (string-to-number fn-or-place))
                  (name (match-string 2))
                  (file (condition-case nil
                            (find-library-name name)
-                         (expand-file-name
-                          name default-directory))))
+                         (expand-file-name name default-directory))))
             (when (file-exists-p file)
-              (switch-to-buffer-other-window
-               (find-file-noselect file))
+              (switch-to-buffer-other-window (find-file-noselect file))
               (goto-char (or place 1))
               (when (zerop place)
                 (re-search-forward
-                 (format "^(\\(?:cl-\\)?def[-a-z]+ %s"
-                         fn-or-place)
-                 nil t)))))))))
+                 (format "^(\\(?:cl-\\)?def[-a-z]+ %s" fn-or-place) nil t)))))))))
 
 ;; insert `point-marker' in kill-ring
 ;;;###autoload
@@ -89,12 +95,36 @@
   (kill-new (format "%s" (point-marker))))
 
 ;; -------------------------------------------------------------------
-;;; Font-lock
+;;; Font-lock / Mode
+
+(defun nvp-mark-next (&optional previous)
+  "Move to the next nvp-mark.
+If PREVIOUS is non-nil, move to the previous nvp-mark."
+  (interactive)
+  (let ((curr (point)))
+    (beginning-of-line)
+    (skip-syntax-forward " <")
+    (and (looking-at-p nvp-mark--regex)
+         (ignore-errors (forward-line (if previous -1 1))))
+    (condition-case nil  ;if no match return point
+        (progn
+          (funcall
+           (if previous 're-search-backward 're-search-forward) nvp-mark--regex)
+          (goto-char (match-beginning 0)))
+      (error (progn (message
+                     (format "No %s marks" (if previous "previous" "next")))
+                    (goto-char curr))))))
+
+;; #<marker at 3312 in nvp-mark.el>
+(defun nvp-mark-previous ()
+  "Move to the previous nvp-mark."
+  (interactive)
+  (nvp-mark-next 'previous))
 
 (eval-when-compile
   ;; Do mark fontification
-  (defmacro nvp-mark--add-fl ()
-    `'(("#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
+  (defmacro nvp-mark--apply-font-lock ()
+    `'((,nvp-mark--regex
         (0 (prog1 ()
              (let* ((place (match-string-no-properties 1))
                     (file (match-string-no-properties 2)))
@@ -102,26 +132,47 @@
                                   'display (format "%s<%s>" file place)))))
         (0 'font-lock-constant-face t)))))
 
+;; remove special mark display when disabling fontification
+(defun nvp-mark--remove-display ()
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward nvp-mark--regex nil 'move)
+      (set-text-properties (match-beginning 0) (match-end 0) nil))))
+
 ;;;###autoload
-(defun nvp-mark-fontify-marks ()
+(defun nvp-mark-toggle-fontification ()
+  "Toggle fontification of nvp-marks in buffer."
   (interactive)
   (if (setq nvp-mark--fontified-p (not nvp-mark--fontified-p))
-      (font-lock-refresh-defaults)
-    (font-lock-add-keywords nil (nvp-mark--add-fl))
+      (progn
+        (nvp-mark--remove-display)
+        (font-lock-refresh-defaults))
+    (font-lock-add-keywords nil (nvp-mark--apply-font-lock))
     (font-lock-flush)
     (font-lock-ensure)))
 
-;; font-lock markers: #<marker at [point or fn-name] in [filename]>
-;; (font-lock-add-keywords
-;;  'emacs-lisp-mode
-;;  ;; 'emacs-lisp-mode
-;;  '(("#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"
-;;     (0 (prog1 ()
-;;          (let* ((place (match-string-no-properties 1))
-;;                 (file (match-string-no-properties 2)))
-;;            (put-text-property (1+ (match-beginning 0)) (match-end 0)
-;;                               'display (format "%s<%s>" file place)))))
-;;     (0 'font-lock-constant-face t))))
+(defvar nvp-mark-mode-map
+  (let ((km (make-sparse-keymap)))
+    (define-key km (kbd "M-s-p") #'nvp-mark-previous)
+    (define-key km (kbd "M-s-n") #'nvp-mark-next)
+    (easy-menu-define nil km nil
+      '("NMark"
+        ["Previous" nvp-mark-previous t]
+        ["Next" nvp-mark-next t]))
+    km)
+  "Keymap used in `nvp-mark-mode'.")
+
+;;;###autoload
+(define-minor-mode nvp-mark-mode "NvpMark"
+  nil
+  :lighter " NMark"
+  :keymap nvp-mark-mode-map
+  (if nvp-mark-mode
+      (font-lock-add-keywords nil (nvp-mark--apply-font-lock))
+    (nvp-mark--remove-display)
+    (font-lock-remove-keywords nil (nvp-mark--apply-font-lock)))
+  (font-lock-flush)
+  (font-lock-ensure))
 
 ;; -------------------------------------------------------------------
 ;;; Advices
@@ -135,7 +186,6 @@
       ad-do-it)
     (dotimes (i 10)
       (when (= p (point)) ad-do-it))))
-
 
 (provide 'nvp-mark)
 ;;; nvp-mark.el ends here

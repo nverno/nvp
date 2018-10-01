@@ -137,7 +137,7 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
   (save-excursion
     (goto-char (point-min))
     (while (re-search-forward nvp-mark--regex nil 'move)
-      (set-text-properties (match-beginning 0) (match-end 0) nil))))
+      (remove-text-properties (match-beginning 0) (match-end 0) '(display)))))
 
 ;;;###autoload
 (defun nvp-mark-toggle-fontification ()

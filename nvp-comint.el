@@ -43,27 +43,33 @@
 (defun nvp-comint-setup-history (filename &optional size write-history)
   ;; setup read/write for history file
   (setq comint-input-ignoredups t)
-  (setq comint-input-ring-file-name
-        (expand-file-name filename nvp/cache))
-  (setq-local comint-input-ring-size
-              (or size nvp-comint-history-size))
+  (setq comint-input-ring-file-name (expand-file-name filename nvp/cache))
+  (setq-local comint-input-ring-size (or size nvp-comint-history-size))
   (comint-read-input-ring 'silent)
   (when-let* ((proc (get-buffer-process (current-buffer))))
     (and write-history
-         (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
-  ;; make sure the buffer exists before calling the process sentinel
-  (add-hook 'kill-buffer-hook 'nvp-inf-kill-proc-before-buffer nil 'local))
+         (add-function :before (process-filter proc) #'nvp-comint-history-sentinel))))
 
 ;; to be called in a hook
 (defun nvp-comint-add-history-sentinel ()
   (when-let* ((proc (current-buffer-process)))
     (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
 
+;; write comint-input-ring when buffer is killed: in kill-buffer-hook
+(defun nvp-comint-write-history-on-kill ()
+  ;; make sure the buffer exists before calling the process sentinel
+  (add-hook 'kill-buffer-hook 'nvp-inf-kill-proc-before-buffer nil 'local)
+  (advice-add 'nvp-inf-kill-proc-before-buffer :before 'comint-write-input-ring))
+
+(defun nvp-comint-history-process-sentinel (proc _m)
+  (when (not (comint-check-proc proc))
+    (comint-write-input-ring)))
+
+;;;###autoload
 (defun nvp-comint-history-sentinel (proc _m)
   (with-current-buffer (process-buffer proc)
     (comint-write-input-ring)))
 
-;;; https://stackoverflow.com/questions/46631920/silently-send-command-to-comint-without-printing-prompt/51236317#51236317
 ;;;###autoload
 (defun nvp-comint-redirect-silently (proc string &optional prompt)
   (let* ((comint-redirect-perform-sanity-check))

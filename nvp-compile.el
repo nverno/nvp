@@ -40,9 +40,9 @@
     (ansi-color-apply-on-region compilation-filter-start (point-max))))
 
 ;;;###autoload
-(defun nvp-compile-basic (&optional comint)
+(defun nvp-compile-basic (&optional comint read-command)
   (interactive)
-  (setq-local compilation-read-command nil)
+  (setq-local compilation-read-command read-command)
   ;; (when recomp
   ;;   (and (car-safe compile-history)
   ;;        (setq-local compile-command (car compile-history))))

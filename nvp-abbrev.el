@@ -190,5 +190,12 @@
   (let ((ppss (syntax-ppss)))
     (not (or (elt ppss 3) (elt ppss 4)))))
 
+;; don't expand in strings/comments or after [_.-]
+;;;###autoload
+(defun nvp-abbrev-expand-not-after-punct-p ()
+  (and (not (memq last-input-event '(?_ ?. ?-)))
+       (let ((ppss (syntax-ppss)))
+         (not (or (elt ppss 3) (elt ppss 4))))))
+
 (provide 'nvp-abbrev)
 ;;; nvp-abbrev.el ends here

@@ -124,14 +124,14 @@
 ;; With prefix, create a shell in the current `default-directory'. 
 ;; On remote hosts, ensure that the shell is created properly
 ;; (windows).
-(defun nvp-ext-terminal-cwd-p (&optional name)
-  "Return a terminal running in the current directory."
-  (let ((cwd default-directory))
+(defun nvp-ext-terminal-in-dir-p (&optional name directory)
+  "Return a terminal running in the directory, current directory by default."
+  (let ((dir (file-name-directory (or directory default-directory))))
     (cl-loop for proc in (process-list)
        when (and (string= "shell" (process-name proc))
                  (process-live-p proc)
                  (and (with-current-buffer (process-buffer proc)
-                        (string= cwd default-directory))))
+                        (string= dir default-directory))))
        return (if name (buffer-name (process-buffer proc)) proc))))
 
 (defun nvp-ext-find-terminal (&optional name)
@@ -166,7 +166,7 @@
           (shell (format "*shell:%s*"
                          (nth 2 (tramp-dissect-file-name default-directory))))
         (if current-prefix-arg    ;want a terminal in current directory
-            (let ((buffname (or (nvp-ext-terminal-cwd-p 'name)
+            (let ((buffname (or (nvp-ext-terminal-in-dir-p 'name)
                                 (nvp-ext-terminal-unique-name))))
               (shell buffname))
           (shell (nvp-ext-find-terminal 'name)))))))

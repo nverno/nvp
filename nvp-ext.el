@@ -124,37 +124,52 @@
 ;; With prefix, create a shell in the current `default-directory'. 
 ;; On remote hosts, ensure that the shell is created properly
 ;; (windows).
+(defun nvp-ext-terminal-cwd-p (&optional name)
+  "Return a terminal running in the current directory."
+  (let ((cwd default-directory))
+    (cl-loop for proc in (process-list)
+       when (and (string= "shell" (process-name proc))
+                 (process-live-p proc)
+                 (and (with-current-buffer (process-buffer proc)
+                        (string= cwd default-directory))))
+       return (if name (buffer-name (process-buffer proc)) proc))))
+
+(defun nvp-ext-find-terminal (&optional name)
+  "Return a running terminal that may be under a weird buffer name."
+  (cl-loop for proc in (process-list)
+     when (and (string= "shell" (process-name proc))
+               (process-live-p proc))
+     return (if name (buffer-name (process-buffer proc)) proc)))
+
+(defun nvp-ext-find-all-terminals (&optional names)
+  "Collect list of all terminals."
+  (cl-loop for proc in (process-list)
+     if (and (string= "shell" (process-name proc))
+             (process-live-p proc))
+     collect (if names (buffer-name (process-buffer proc)) proc)))
+
+(defun nvp-ext-terminal-unique-name ()
+  "Create unique name for new terminal."
+  (let ((names (nvp-ext-find-all-terminals 'names))
+        (name "*shell*"))
+    (while (member-ignore-case name names)
+      (concat "*" name))
+    name))
 
 ;;;###autoload(autoload 'nvp-ext-terminal "nvp-ext")
 (defun nvp-ext-terminal (&optional buffer)
   (interactive)
-  (let* ((prog "shell")
-         (rem (file-remote-p default-directory))
-         (explicit-shell-file-name
-          (if rem "/bin/bash" (getenv "SHELL")))
-         (buffname (or buffer
-                       (concat "*" prog
-                               (or (and rem
-                                        (concat
-                                         ":"
-                                         (nth 2
-                                              (tramp-dissect-file-name
-                                               default-directory))))
-                                   (and current-prefix-arg
-                                        (concat
-                                         ":"
-                                         (substring
-                                          default-directory
-                                          0
-                                          (1-
-                                           (length
-                                            default-directory))))))
-                               "*")))
-         (buffer (get-buffer-create buffname)))
-    ;; (if (eq system-type 'windows-nt)
-    ;;     (shell buffer)
-    ;;   (ansi-term "/bin/bash" buffer))
-    (shell buffer)))
+  (let* ((remote (file-remote-p default-directory))
+         (explicit-shell-file-name (if remote "/bin/bash" (getenv "SHELL"))))
+    (if buffer (shell buffer)
+      (if remote
+          (shell (format "*shell:%s*"
+                         (nth 2 (tramp-dissect-file-name default-directory))))
+        (if current-prefix-arg    ;want a terminal in current directory
+            (let ((buffname (or (nvp-ext-terminal-cwd-p 'name)
+                                (nvp-ext-terminal-unique-name))))
+              (shell buffname))
+          (shell (nvp-ext-find-terminal 'name)))))))
 
 ;;;###autoload
 (defun nvp-ext-launch-terminal ()

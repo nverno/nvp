@@ -233,13 +233,20 @@
                                         (concat file "/*")
                                       file)))
                               files " ")))
-    (if  (= 1 (length files))
+    (if (= 1 (length files))
         ;; let* ((file (file-name-nondirectory (car files))))
         (start-process "compress" "*compress*" "7za" "a" "-tzip"
                        out-file in-files)
       (start-process-shell-command
        "compress" "*compress*" (format "7za a -tzip %s %s"
                                        out-file in-files)))))
+
+(defun nvp-dired-unzip ()
+  (interactive)
+  (let ((file (dired-get-marked-files)))
+    (if (> 1 (length file))
+        (user-error "TODO: unzip multiple files")
+      (start-process-shell-command "unzip" nil (format "unzip %s" (car-safe file))))))
 
 ;;; Shell
 

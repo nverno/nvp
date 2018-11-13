@@ -32,7 +32,8 @@
 
 (autoload 'find-library-name "find-func")
 
-(defvar nvp-mark--regex "#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>")
+(eval-and-compile
+  (defvar nvp-mark--regex "#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"))
 
 (defvar-local nvp-mark--fontified-p nil
   "Non-nil if marks in buffer are currently fontified")

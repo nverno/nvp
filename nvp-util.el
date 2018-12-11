@@ -43,11 +43,10 @@
 ;;; Lists
 
 ;; Intersection of multiple lists.
-(defun nvp-list-multiple-intersection (l)
+(defun nvp-list-intersection (l)
   (cond ((null l) nil)
 	((null (cdr l)) (car l))
-	(t (cl-intersection (car l) (nvp-list-multiple-intersection
-                                     (cdr l))))))
+	(t (cl-intersection (car l) (nvp-list-intersection (cdr l))))))
 
 ;; Split list LST into N sublists.
 (defun nvp-list-split (lst n)
@@ -141,7 +140,7 @@
 
 ;; Find all matches for `REGEX' within `STR', returning the full match
 ;; string or group `GROUP'.
-(defsubst nvp-string-all-matches (regex str &optional group)
+(defun nvp-string-all-matches (regex str &optional group)
   (let ((result nil)
         (pos 0)
         (group (or group 0)))
@@ -151,7 +150,7 @@
     result))
 
 ;; Match `REGEXP' positions in `STR'.
-(defsubst nvp-string-match-positions (regexp str)
+(defun nvp-string-match-positions (regexp str)
   (let ((res '()) (pos 0))
     (while (and (string-match regexp str pos)
 		(< pos (length str) ) )

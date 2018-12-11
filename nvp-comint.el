@@ -56,6 +56,7 @@
     (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
 
 ;; write comint-input-ring when buffer is killed: in kill-buffer-hook
+;;;###autoload
 (defun nvp-comint-write-history-on-kill ()
   ;; make sure the buffer exists before calling the process sentinel
   (add-hook 'kill-buffer-hook 'nvp-inf-kill-proc-before-buffer nil 'local)

@@ -32,6 +32,11 @@
   (require 'smartparens))
 (defvar hs-minor-mode)
 
+(declare-function hs-minor-mode "hideshow")
+(declare-function hs-toggle-hiding "hideshow")
+(declare-function hs-show-all "hideshow")
+(declare-function hs-hide-all "hideshow")
+
 ;; -------------------------------------------------------------------
 ;;; Code Fold
 
@@ -56,14 +61,6 @@
   (global-set-key (kbd "<f2> c f a") 'hs-hide-all)
   (global-set-key (kbd "<f2> c f s") 'hs-show-all)
   (nvp-code-hs-toggle arg))
-
-;; -------------------------------------------------------------------
-
-(declare-function hs-minor-mode "hideshow")
-(declare-function hs-toggle-hiding "hideshow")
-(declare-function hs-show-all "hideshow")
-(declare-function hs-hide-all "hideshow")
-
 
 (provide 'nvp-code)
 ;;; nvp-code.el ends here

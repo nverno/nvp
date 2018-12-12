@@ -124,52 +124,68 @@
 ;; With prefix, create a shell in the current `default-directory'. 
 ;; On remote hosts, ensure that the shell is created properly
 ;; (windows).
-(defun nvp-ext-terminal-in-dir-p (&optional name directory)
-  "Return a terminal running in the directory, current directory by default."
-  (let ((dir (file-name-directory (or directory default-directory))))
-    (cl-loop for proc in (process-list)
-       when (and (string= "shell" (process-name proc))
-                 (process-live-p proc)
-                 (and (with-current-buffer (process-buffer proc)
-                        (string= dir default-directory))))
-       return (if name (buffer-name (process-buffer proc)) proc))))
-
-(defun nvp-ext-find-terminal (&optional name)
-  "Return a running terminal that may be under a weird buffer name."
+(defun nvp-ext-terminal-in-dir-maybe (&optional directory proc-name)
+  "Return a terminal buffer running in DIRECTORY (default-directory by default).
+If none found, return list of all terminal buffers."
+  (setq proc-name (or proc-name "shell"))
+  (setq directory (file-name-directory (or directory default-directory)))
   (cl-loop for proc in (process-list)
-     when (and (string= "shell" (process-name proc))
+     when (and (string-prefix-p proc-name (process-name proc))
                (process-live-p proc))
-     return (if name (buffer-name (process-buffer proc)) proc)))
+     if (and (with-current-buffer (process-buffer proc)
+               (string= directory default-directory)))
+     return (process-buffer proc)
+     else collect (process-buffer proc)))
 
-(defun nvp-ext-find-all-terminals (&optional names)
-  "Collect list of all terminals."
+(defun nvp-ext-find-terminal (&optional proc-name)
+  "Return the first running terminal buffer that may be under a weird buffer name."
+  (setq proc-name (or proc-name "shell"))
   (cl-loop for proc in (process-list)
-     if (and (string= "shell" (process-name proc))
-             (process-live-p proc))
-     collect (if names (buffer-name (process-buffer proc)) proc)))
+     when (and (string-prefix-p proc-name (process-name proc))
+               (process-live-p proc))
+     return proc))
 
-(defun nvp-ext-terminal-unique-name ()
+(defun nvp-ext-all-terminals (&optional proc-name)
+  "Collect list of all terminal buffers."
+  (setq proc-name (or proc-name "shell"))
+  (cl-loop for proc in (process-list)
+     if (and (string-prefix-p proc-name (process-name proc))
+             (process-live-p proc))
+     collect (process-buffer proc)))
+
+(defun nvp-ext-terminal-unique-name (&optional terminal-buffers proc-name)
   "Create unique name for new terminal."
-  (let ((names (nvp-ext-find-all-terminals 'names))
-        (name "*shell*"))
+  (setq terminal-buffers (or terminal-buffers (nvp-ext-all-terminals proc-name)))
+  (setq proc-name (or proc-name "shell"))
+  (let* ((names (mapcar #'buffer-name terminal-buffers))
+         (name (concat "*" proc-name "*"))
+         (len (1+ (length proc-name)))
+         (n 0))
     (while (member-ignore-case name names)
-      (concat "*" name))
+      (setq name (format "*%s:%d*" (substring name 1 len) (cl-incf n)))
+      (pop names))
     name))
 
-;;;###autoload(autoload 'nvp-ext-terminal "nvp-ext")
-(defun nvp-ext-terminal (&optional buffer)
-  (interactive)
+;;;###autoload
+(defun nvp-ext-terminal (arg &optional buffer shell-name proc-name)
+  (interactive "P")
   (let* ((remote (file-remote-p default-directory))
-         (explicit-shell-file-name (if remote "/bin/bash" (getenv "SHELL"))))
+         (explicit-shell-file-name (if remote "/bin/bash"
+                                     (or shell-name (getenv "SHELL")))))
     (if buffer (shell buffer)
       (if remote
           (shell (format "*shell:%s*"
                          (nth 2 (tramp-dissect-file-name default-directory))))
-        (if current-prefix-arg    ;want a terminal in current directory
-            (let ((buffname (or (nvp-ext-terminal-in-dir-p 'name)
-                                (nvp-ext-terminal-unique-name))))
+        ;; want a terminal in the current directory
+        (if arg
+            (let* ((terms (nvp-ext-terminal-in-dir-maybe nil proc-name))
+                   (buffname (or (and terms (not (listp terms)) (buffer-name terms))
+                                 ;; didn't find one -- create unique name
+                                 (nvp-ext-terminal-unique-name terms proc-name))))
               (shell buffname))
-          (shell (nvp-ext-find-terminal 'name)))))))
+          ;; otherwise, any terminal will do, but prefer current directory
+          (let ((terms (nvp-ext-terminal-in-dir-maybe nil proc-name)))
+            (shell (or (and (listp terms) (car terms)) terms))))))))
 
 ;;;###autoload
 (defun nvp-ext-launch-terminal ()

@@ -28,9 +28,20 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'subr-x))
 (require 'nvp)
 (require 'nvp-log)
+(autoload 'substitute-env-vars "env")
+
+(defun nvp-substitute-env-vars (string &optional unquote)
+  "Substitute environment variables in STRING.
+If UNQUOTE is non-nil remove surrounding quotes.  Result is trimmed of surrounding
+whitespace either way."
+  (setq string (substitute-env-vars string 'leave-undefined))
+  (if unquote
+      (string-trim string "[\" \t\n\r]+" "[\" \t\n\r]+")
+    (string-trim string)))
 
 ;; ------------------------------------------------------------
 ;;; PATH
@@ -106,7 +117,7 @@
           (nvp-env-exec-add value)))))
 
 ;; ------------------------------------------------------------
-;;; Search Path
+;;; Windows Search Path
 
 ;;;###autoload (autoload 'nvp-env-update-path-db "nvp-env")
 (nvp-with-w32

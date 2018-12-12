@@ -1,28 +1,34 @@
-;;; nvp-conf --- parse config file -*- lexical-binding: t; -*-
+;;; nvp-conf --- parse config files -*- lexical-binding: t; -*-
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x))
 
-(autoload 'substitute-env-vars "env")
+(autoload 'nvp-substitute-env-vars "nvp-env")
 
-(defsubst nvp-conf-targets (conf)
+;; return the keys parsed from config file
+(defsubst nvp-conf-keys (conf)
   (cl-mapcar 'car conf))
 
-(defsubst nvp-conf-default-targets (conf)
-  (split-string (nvp-conf-value conf "default" "targets") "[ \t,]" 'omit " "))
+;; return keys for default target, eg.
+;; [default]
+;; targets=...
+(defsubst nvp-conf-default-keys (conf &optional default-name key-name)
+  (split-string
+   (nvp-conf-value conf (or default-name "default") (or key-name "targets"))
+   "[ \t,]" 'omit " "))
 
 (defsubst nvp-conf-location-protocol (loc)
   (pcase (car (split-string loc ":"))
-    (`"http" :http)
-    (`"https" :http)
-    (`"git" :git)
-    (_ :unknown)))
+    ("http" 'http)
+    ("https" 'http)
+    ("git" 'git)
+    (_ 'unknown)))
 
 ;; browse download location of target
 (defsubst nvp-conf-visit-location (conf target)
   (when-let* ((loc (nvp-conf-value conf target "loc")))
-    (and (eq :http (nvp-conf-location-protocol)) (browse-url loc))))
+    (and (eq 'http (nvp-conf-location-protocol)) (browse-url loc))))
 
 ;; Convert config of form:
 ;; [target]

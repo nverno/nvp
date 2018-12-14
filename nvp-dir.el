@@ -38,12 +38,13 @@
 ;; -------------------------------------------------------------------
 ;;; Dired
 
-(defun nvp-dired-ignore-local-mode (orig-fun &rest args)
-  (if (memq 'mode dir-local-variables-alist)
-      (let ((enable-dir-local-variables nil))
-        (apply orig-fun args))
-    (apply orig-fun args)))
-(advice-add 'dired-jump :around 'nvp-dired-ignore-local-mode)
+;; (defun nvp-dired-ignore-local-mode (orig-fun &rest args)
+;;   (hack-dir-local-variables)
+;;   (if (memq 'mode dir-local-variables-alist)
+;;       (let ((enable-dir-local-variables nil))
+;;         (apply orig-fun args))
+;;     (apply orig-fun args)))
+;; (advice-add 'dired-jump :around 'nvp-dired-ignore-local-mode)
 
 ;;;###autoload
 (defun nvp-dired-jump (&optional other-window file-name)

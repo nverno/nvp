@@ -38,6 +38,10 @@
 ;; -------------------------------------------------------------------
 ;;; Dired
 
+(defun nvp-dired-ignore-local-mode ()
+  (setq dir-local-variables-alist (remq 'mode dir-local-variables-alist)))
+(advice-add 'dired-jump :before 'nvp-dired-ignore-local-mode)
+
 ;;;###autoload
 (defun nvp-dired-jump (&optional other-window file-name)
   (interactive
@@ -253,16 +257,7 @@
 (defun nvp-dired-shell-here ()
   "Open an `shell' in current directory."
   (interactive)
-  (let* ((current-dir (dired-current-directory))
-        (str
-         (if (file-remote-p current-dir)
-             (let ((v (tramp-dissect-file-name current-dir t)))
-               (format "ssh %s@%s\n"
-                       (aref v 1) (aref v 2)))
-           (format "cd \"%s\"\n" current-dir))))
-    (process-send-string
-     (nvp-ext-terminal) str)
-    (setq default-directory current-dir)))
+  (nvp-ext-terminal 'current-dir))
 
 ;;; Process
 

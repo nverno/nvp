@@ -29,15 +29,16 @@
 (eval-when-compile
   (require 'nvp-macro))
 (require 'compile)
+(declare-function xterm-color-colorize-buffer "xterm-color")
 (autoload 'ansi-color-apply-on-region "ansi-color")
 
-;; http://stackoverflow.com/a/3072831/355252
-;; Colorize a compilation buffer.
 ;;;###autoload
 (defun nvp-compile-colorize ()
   (interactive)
   (let ((inhibit-read-only t))
-    (ansi-color-apply-on-region compilation-filter-start (point-max))))
+    (if (boundp 'xterm-color-colorize-buffer)
+        (xterm-color-colorize-buffer)
+     (ansi-color-apply-on-region compilation-filter-start (point-max)))))
 
 ;;;###autoload
 (defun nvp-compile-basic (&optional comint read-command)

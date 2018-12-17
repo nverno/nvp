@@ -31,14 +31,13 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
+  (require 'nvp-macro)
   (defvar nvp-snippet-dir)
   (defvar nvp-abbrev-local-file)
   (defvar nvp-abbrev-local-table))
 (require 'nvp-basic)
 
-(defvar nvp--dir nil)
-(when load-file-name
-  (setq nvp--dir (file-name-directory load-file-name)))
+(nvp-package-dir nvp--dir)
 
 ;; ------------------------------------------------------------
 ;;; Setup
@@ -47,7 +46,9 @@
 (define-obsolete-function-alias 'nvp-utils-setup-local
   'nvp-tools-setup-local)
 ;;;###autoload
-(cl-defun nvp-tools-setup-local
+(define-obsolete-function-alias 'nvp-tools-setup-local 'nvp-setup-local)
+;;;###autoload
+(cl-defun nvp-setup-local
     (name
      &key
      (mode (concat name "-mode"))

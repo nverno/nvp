@@ -30,6 +30,8 @@
   (require 'nvp-macro)
   (nvp-local-vars))
 (require 'yasnippet)
+(declare-function company-abort "company")
+(declare-function company-complete-common "company")
 (autoload 'string-trim "subr-x")
 
 (defvar-local nvp-snippet-dir nil)
@@ -243,10 +245,6 @@
       
       ;; reload / compile after save
       (add-hook 'after-save-hook 'nvp-yas-snippet-reload nil 'local))))
-
-;; -------------------------------------------------------------------
-(declare-function company-abort "company")
-(declare-function company-complete-common "company")
 
 (provide 'nvp-yas)
 ;;; nvp-yas.el ends here

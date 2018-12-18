@@ -198,23 +198,28 @@ line at match (default) or do BODY at point if non-nil."
 
 ;; -------------------------------------------------------------------
 ;;; Programs / Paths
-(require 'nvp-program)
 
 ;; PATH can contain environment variables to expand
 ;; if NO-COMPILE is defined the name is determined at runtime
 (defmacro nvp-program (name &optional no-compile path)
-  (let ((name (cond
-               ((symbolp name) (symbol-name name))
-               ((consp name)
-                (pcase name
-                  (`(quote ,sym)
-                   (symbol-name sym))
-                  (_ name)))
-               ((stringp name) name)
-               (t (user-error "%S unmatched"))))
-        (path (and path (substitute-env-in-file-name path))))
+  (let* ((name (cond
+                ((symbolp name) (symbol-name name))
+                ((consp name)
+                 (pcase name
+                   (`(quote ,sym)
+                    (symbol-name sym))
+                   (_ name)))
+                ((stringp name) name)
+                (t (user-error "%S unmatched"))))
+         (path (and path (substitute-env-in-file-name path))))
     `(,(if no-compile 'progn 'eval-when-compile)
-      (or (nvp-install-find-local-program ,name ,path)
+      (or (nvp-with-gnu/w32
+              (cl-loop for p in
+                   (delq nil (cons ,path '("~/.local/bin/" "/usr/local/bin")))
+                 do (let ((f (expand-file-name ,name p)))
+                      (and (file-exists-p f)
+                           (cl-return f))))
+            (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
           (executable-find ,name)))))
 
 (defmacro nvp-path (path &optional no-compile)

@@ -74,15 +74,12 @@
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
 
-;; Return list of buffers where `major-mode' matches MODE.
 ;;;###autoload
 (defun nvp-buffer-matching-mode (mode)
-  (let ((buffer-mode-matches '()))
-    (dolist (buf (buffer-list))
-      (with-current-buffer buf
-        (when (eq mode major-mode)
-          (push buf buffer-mode-matches))))
-    buffer-mode-matches))
+  "Retun list of buffer with `major-mode' matching MODE."
+  (cl-loop for buff in (buffer-list)
+     when (eq mode (buffer-local-value 'major-mode (get-buffer buff)))
+     collect buff))
 
 ;; -------------------------------------------------------------------
 ;;; Scratch buffers 
@@ -118,7 +115,8 @@
   (interactive)
   (nvp-buffer-scratch major-mode))
 
-;;--- Buffer Files ---------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Buffer files 
 
 ;; Delete the current file, and kill the buffer.
 ;;;###autoload

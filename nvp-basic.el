@@ -51,7 +51,7 @@
   (interactive)
   (forward-line -5))
 
-(defsubst nvp-basic-down-paragraph (arg)
+(defun nvp-basic-down-paragraph (arg)
   (interactive "p")
   (if (bolp)
       (progn
@@ -59,7 +59,7 @@
         (forward-line 1))
     (line-move arg)))
 
-(defsubst nvp-basic-up-paragraph (arg)
+(defun nvp-basic-up-paragraph (arg)
   (interactive "p")
   (if (bolp)
       (progn
@@ -68,24 +68,25 @@
         (forward-line 1))
     (line-move (- arg))))
 
-(defsubst nvp-basic-next-defun ()
+(defun nvp-basic-next-defun ()
   (interactive)
   (beginning-of-defun -1))
 
 (defvar-local nvp-basic-header-re nil)
-(defsubst nvp-basic-header-re ()
+(defun nvp-basic-header-re ()
   (or nvp-basic-header-re
       (setq nvp-basic-header-re
             (let* ((comment (string-trim comment-start))
                    (cs (regexp-quote comment))
                    (multi (> (string-width comment) 1)))
               (if (not multi)
-                  (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)"
+                  ;; ignore things like ';;;###autoload'
+                  (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s[ \t]\\)"
                           cs cs cs)
                 (format "^\\s-*%s\\(?:—\\|---\\|%s\\)" cs
                         (regexp-quote (substring comment 1 2))))))))
 
-(defsubst nvp-basic-next-heading ()
+(defun nvp-basic-next-heading ()
   (interactive)
   (condition-case nil
       (progn
@@ -96,7 +97,7 @@
      (forward-line -1)
      (user-error "No more headings"))))
 
-(defsubst nvp-basic-previous-heading ()
+(defun nvp-basic-previous-heading ()
   (interactive)
   (condition-case nil
       (progn
@@ -109,6 +110,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Scrolling 
+
 (autoload 'do-smooth-scroll "smooth-scrolling")
 (autoload 'enable-smooth-scroll-for-function "smooth-scrolling")
 

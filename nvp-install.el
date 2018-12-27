@@ -36,6 +36,8 @@
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-command "nvp-ext"))
 
+(defvar nvp-install-makefile "~/bin/install/Makefile")
+
 ;; completing read for mode configs
 (defun nvp-install-list-modes ()
   (ido-completing-read
@@ -43,6 +45,20 @@
    (mapcar (lambda (x)
              (replace-regexp-in-string "\\(nvp-\\|\\.el\\)" "" x))
            (directory-files nvp/mode nil "^[^\\.].*\\.el$"))))
+
+(defun nvp-install-list-make-targets (&optional makefile)
+  "List available targets in MAKEFILE, defaulting to `nvp-install-makefile'."
+  (setq makefile (or makefile nvp-install-makefile))
+  (with-temp-buffer
+    (insert-file-contents (or makefile nvp-install-makefile))
+    (makefile-pickup-targets)
+    makefile-target-table))
+
+(defun nvp-install-make-target (&optional makefile target)
+  (interactive
+   (let ((makefile (and makefile )))
+    (list ())))
+)
 
 ;;--- Parse ----------------------------------------------------------
 

@@ -211,9 +211,7 @@
       (make-directory default-directory))
     ;; with prefix dired the snippet directory
     (if arg (dired default-directory)
-      ;; don't clobber current snippet if in snippet-mode
-      (switch-to-buffer-other-window (and (eq major-mode 'snippet-mode)
-                                          (rename-uniquely)))
+      (switch-to-buffer-other-window (generate-new-buffer-name "*snippet*"))
       (erase-buffer)
       (kill-all-local-variables)
       (snippet-mode)

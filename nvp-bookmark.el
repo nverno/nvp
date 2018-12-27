@@ -31,6 +31,9 @@
   (require 'cl-lib))
 (require 'bookmark)
 
+(declare-function bmk-to-bmk-handler "bmk-to-bmk")
+(declare-function bmk-to-bmk-make-record "bmk-to-bmk")
+
 ;;;###autoload
 (defun nvp-bookmark-local (file)
   (interactive
@@ -48,11 +51,6 @@
   (when (not (string= bookmark-default-file file))
     (bmk-to-bmk-handler (bmk-to-bmk-make-record file)))
   (call-interactively 'bookmark-bmenu-list))
-
-;; -------------------------------------------------------------------
-
-(declare-function bmk-to-bmk-handler "bmk-to-bmk")
-(declare-function bmk-to-bmk-make-record "bmk-to-bmk")
 
 (provide 'nvp-bookmark)
 ;;; nvp-bookmark.el ends here

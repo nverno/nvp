@@ -73,12 +73,5 @@
     (goto-char (point-max))
     (insert (replace-regexp-in-string "[\r\n]+" "\n" string))))
 
-;; (defsubst nvp-process-buffer (&rest _ignored)
-;;   "*nvp-install*"
-;;   (let ((buff (get-buffer-create (or name "*nvp-install*"))))
-;;     (with-current-buffer buff
-;;       (set-process-filter)))
-;;   )
-
 (provide 'nvp)
 ;;; nvp.el ends here

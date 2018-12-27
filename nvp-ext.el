@@ -153,6 +153,7 @@ If none found, return list of all terminal buffers."
              (process-live-p proc))
      collect (process-buffer proc)))
 
+;;; TODO: replace with `rename-uniquely'?
 (defun nvp-ext-terminal-unique-name (&optional terminal-buffers proc-name)
   "Create unique name for new terminal."
   (setq terminal-buffers (or terminal-buffers (nvp-ext-all-terminals proc-name)))

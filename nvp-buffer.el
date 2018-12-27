@@ -28,10 +28,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
-  (require 's))
-
-(declare-function s-suffix? "s")
+  (require 'cl-lib))
 
 ;;;###autoload
 (defun nvp-buffer-kill-other-buffers () 
@@ -87,7 +84,8 @@
           (push buf buffer-mode-matches))))
     buffer-mode-matches))
 
-;;--- Scratch Buffer -------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Scratch buffers 
 
 ;; Create a new scratch buffer in given mode.
 ;;;###autoload
@@ -99,8 +97,7 @@
                            (let (r)
                              (mapatoms
                               (lambda (x)
-                                (when (s-suffix? "-mode"
-                                                 (symbol-name x))
+                                (when (string-suffix-p "-mode" (symbol-name x))
                                   (push x r))))
                              (mapcar 'symbol-name r))))
                        'emacs-lisp-mode)))

@@ -47,6 +47,21 @@
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
 
+;;; Comments
+(autoload 'nvp-comment-string "nvp-comment")
+(define-obsolete-function-alias 'nvp-yas-with-comment 'nvp-comment-string)
+
+(autoload 'nvp-comment-make-comment "nvp-comment")
+(define-obsolete-function-alias 'nvp-yas-comment 'nvp-comment-make-comment)
+(defalias 'yas-comment-string 'nvp-yas-comment)
+
+(autoload 'nvp-comment-continued "nvp-comment")
+(define-obsolete-function-alias 'nvp-yas-comment-cont 'nvp-comment-continued)
+
+;; `comment-end' or default to ""
+(autoload 'nvp-comment-end "nvp-comment")
+(define-obsolete-function-alias 'nvp-yas-comment-end 'nvp-comment-end)
+
 ;; trimmed filename
 (defsubst nvp-yas-bfn ()
   (nvp-bfn))
@@ -57,28 +72,7 @@
 
 ;; current indentation
 (defsubst nvp-yas-indent ()
-  (save-excursion
-    (back-to-indentation)
-    (current-column)))
-
-(defsubst nvp-yas-with-comment (str)
-  (let ((comment (if (or (memq major-mode
-                               '(python-mode c-mode c++-mode flex-mode))
-                         (string= comment-end ""))
-                     comment-start
-                   (concat comment-start comment-start))))
-    (format "%s%s%s" comment str comment-end)))
-
-;; create comment string of length LENGTH, accounting for
-;; multi-character comments by recycling the second char
-(defalias 'yas-comment-string 'nvp-yas-comment)
-(defsubst nvp-yas-comment (length &optional start)
-  (ignore-errors
-    (let* ((comment (string-trim (or start comment-start)))
-           (cont (if (> (length comment) 1)
-                     (substring comment 1 2) comment)))
-      (concat comment (make-string (max 0 (- length (length comment)))
-                                   (string-to-char cont))))))
+  (current-indentation))
 
 (defsubst nvp-yas-header (char &optional extra max)
   (let ((sw (string-width yas-text)))
@@ -93,22 +87,6 @@
 ;; fill after yas-text with CHAR until PADMAX
 (defsubst nvp-yas-pad-right (char padmax)
   (make-string (max 0 (- padmax (string-width yas-text))) char))
-
-;; continuation comment: if `comment-end' is defined,
-;; make blank string concated with last char in comment-end
-(defsubst nvp-yas-comment-cont (length)
-  (if (and comment-end (not (string= "" comment-end)))
-      (if (> (length comment-start) 1)
-          (concat (make-string (1- length) ? )
-                  (substring comment-start 1 2))
-        (make-string length ? ))
-    (nvp-yas-comment length)))
-
-;; `comment-end' or default to ""
-(defsubst nvp-yas-comment-end (&optional trim)
-  (or (if trim (string-trim (bound-and-true-p comment-end))
-        (bound-and-true-p comment-end))
-      ""))
 
 ;;--- Args -----------------------------------------------------------
 
@@ -234,9 +212,8 @@
     ;; with prefix dired the snippet directory
     (if arg (dired default-directory)
       ;; don't clobber current snippet if in snippet-mode
-      (switch-to-buffer-other-window (if (eq major-mode 'snippet-mode)
-                                         "**new snippet*"
-                                       "*new snippet*"))
+      (switch-to-buffer-other-window (and (eq major-mode 'snippet-mode)
+                                          (rename-uniquely)))
       (erase-buffer)
       (kill-all-local-variables)
       (snippet-mode)

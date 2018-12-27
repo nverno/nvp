@@ -30,28 +30,38 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'idomenu nil t)
-(require 'nvp-yas)
 
-;;; Dynamic variables
+(declare-function nvp-comment-make-comment "nvp-comment")
+(declare-function idomenu "idomenu")
+
+;;; Local variables
 
 ;; top-level header regexp
-(defvar-local nvp-imenu-comment-headers-re nil)
+(defvar-local nvp-imenu-comment-headers-re nil "Imenu top-level header regexp.")
 
 ;; header regexp nested under "Headers"
-(defvar-local nvp-imenu-comment-headers-re-1 nil)
+(defvar-local nvp-imenu-comment-headers-re-1 nil
+  "Imenu header regexp nested under 'Headers'")
 
 ;; sub-headers
-(defvar-local nvp-imenu-comment-headers-re-2 nil)
+(defvar-local nvp-imenu-comment-headers-re-2 nil "Imenu sub-header regexp.")
+
+(eval-when-compile
+  (defmacro ido/imenu ()
+    (if (featurep 'idomenu) '(idomenu) '(imenu))))
 
 ;; -------------------------------------------------------------------
 ;;; Hook
 
 ;; make header from comment
 ;;;###autoload
-(cl-defun nvp-imenu-setup (&key headers headers-1 headers-2)
+(cl-defun nvp-imenu-setup (&key headers headers-1 headers-2 extra)
+  "Sets up imenu regexps including those to recognize HEADERS and any \
+EXTRA regexps to add to `imenu-generic-expression'.
+Any extra regexps should be an alist formatted as `imenu-generic-expression'."
   (setq nvp-imenu-comment-headers-re
         (or headers 
-            `((nil ,(concat "^" (regexp-quote (nvp-yas-comment 3))
+            `((nil ,(concat "^" (regexp-quote (nvp-comment-make-comment 3))
                             "\\s-*\\(.*\\)\\s-*$")
                    1))))
   (setq nvp-imenu-comment-headers-re-1
@@ -60,17 +70,10 @@
   (setq nvp-imenu-comment-headers-re-2
         (or headers-2
             `(("Sub-Headers"
-               ,(concat "^" (nvp-yas-comment 2) "-+\\s-*\\(.*\\)[ -]*$")
+               ,(concat "^" (nvp-comment-make-comment 2) "-+\\s-*\\(.*\\)[ -]*$")
                1))))
-  (setq-local imenu-generic-expression
-              (append nvp-imenu-comment-headers-re-1 imenu-generic-expression)))
-
-;; -------------------------------------------------------------------
-;;; Util
-
-(eval-when-compile
-  (defmacro ido/imenu ()
-    (if (featurep 'idomenu) '(idomenu) '(imenu))))
+  (setq-local imenu-generic-expression (append nvp-imenu-comment-headers-re-1
+                                               imenu-generic-expression extra)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -95,10 +98,6 @@
            (imenu-create-index-function 'imenu-default-create-index-function))
        (ido/imenu)))
     (_ (ido/imenu))))
-
-;; -------------------------------------------------------------------
-
-(declare-function idomenu "idomenu")
 
 (provide 'nvp-imenu)
 ;;; nvp-imenu.el ends here

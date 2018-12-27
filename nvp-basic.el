@@ -72,6 +72,9 @@
   (interactive)
   (beginning-of-defun -1))
 
+;;; Headings
+;; these may vary by mode
+
 (defvar-local nvp-basic-header-re nil)
 (defun nvp-basic-header-re ()
   (or nvp-basic-header-re
@@ -81,9 +84,9 @@
                    (multi (> (string-width comment) 1)))
               (if (not multi)
                   ;; ignore things like ';;;###autoload'
-                  (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s[ \t]\\)"
+                  (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-"
                           cs cs cs)
-                (format "^\\s-*%s\\(?:—\\|---\\|%s\\)" cs
+                (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" cs
                         (regexp-quote (substring comment 1 2))))))))
 
 (defun nvp-basic-next-heading ()

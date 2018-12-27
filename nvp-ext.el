@@ -153,7 +153,7 @@ If none found, return list of all terminal buffers."
              (process-live-p proc))
      collect (process-buffer proc)))
 
-;;; TODO: replace with `rename-uniquely'?
+;;; Replaced with `generate-new-buffer-name'
 (defun nvp-ext-terminal-unique-name (&optional terminal-buffers proc-name)
   "Create unique name for new terminal."
   (setq terminal-buffers (or terminal-buffers (nvp-ext-all-terminals proc-name)))
@@ -171,6 +171,7 @@ If none found, return list of all terminal buffers."
 (defun nvp-ext-terminal (arg &optional buffer shell-name proc-name)
   (interactive "P")
   (let* ((remote (file-remote-p default-directory))
+         (default-name (if buffer (buffer-name buffer) "*shell*"))
          (explicit-shell-file-name (if remote "/bin/bash"
                                      (or shell-name (getenv "SHELL")))))
     (if buffer (shell buffer)
@@ -182,7 +183,7 @@ If none found, return list of all terminal buffers."
             (let* ((terms (nvp-ext-terminal-in-dir-maybe nil proc-name))
                    (buffname (or (and terms (not (listp terms)) (buffer-name terms))
                                  ;; didn't find one -- create unique name
-                                 (nvp-ext-terminal-unique-name terms proc-name))))
+                                 (generate-new-buffer-name default-name))))
               (shell buffname))
           ;; otherwise, any terminal will do, but prefer current directory
           (let ((terms (nvp-ext-terminal-in-dir-maybe nil proc-name)))

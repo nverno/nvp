@@ -31,6 +31,8 @@
   (require 'cl-lib)
   (defvar zeal-at-point-exe))
 (require 'nvp)
+(declare-function zeal-at-point-get-version "zeal-at-point")
+(declare-function zeal-at-point "zeal-at-point")
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-install "nvp-ext"))
 (autoload 'ispell-get-word "ispell")
@@ -38,7 +40,8 @@
 (autoload 'define-word-at-point "define-word")
 (autoload 'nvp-ext-run-script "nvp-ext")
 
-;;--- Lookup Words ---------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Lookup Words
 
 ;; Define word at point, with single prefix prompt for word, 
 ;; with two prefix use lookup-word.
@@ -55,7 +58,8 @@
   (interactive (list (save-excursion (car (ispell-get-word nil)))))
   (browse-url (format "http://en.wiktionary.org/wiki/%s" word)))
 
-;;--- Faces ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Faces 
 
 ;; Show the name of face under point.
 ;;;###autoload
@@ -66,7 +70,9 @@
     (if face (message "Face: %s" face)
       (message "No face at %d" pos))))
 
-;;--- Docset ---------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Docsets 
+
 (autoload 'zeal-at-point-run-search "zeal-at-point")
 
 (defun nvp-help-zeal-run-search (search)
@@ -96,10 +102,6 @@
   (cl-letf (((symbol-function 'zeal-at-point-run-search)
              'nvp-help-zeal-run-search))
     (zeal-at-point edit-search)))
-
-;; -------------------------------------------------------------------
-(declare-function zeal-at-point-get-version "zeal-at-point")
-(declare-function zeal-at-point "zeal-at-point")
 
 (provide 'nvp-help)
 ;;; nvp-help.el ends here

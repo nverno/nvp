@@ -162,14 +162,17 @@
   (nvp-align-repeat start end "\\(\"[^\"]+\"\\|\'[^\']+'\\|[^ ]+\\)")
   (indent-region start end))
 
-;; Align comments within marked regions.
+;; Align single end-of-line comments within marked regions. 
+;; Doesn't align if double-quote is found before end-of-line. Not robust,
+;; better to use `align-mode-rules-list' to account for comments/strings
 ;;;###autoload
 (defun nvp-align-comments (beg end)
   (interactive "*r")
-  (let (indent-tabs-mode align-to-tab-stop)
+  (let ((start (regexp-quote (string-trim comment-start)))
+        indent-tabs-mode align-to-tab-stop)
     (if (not (eq major-mode 'c-mode))
-        (align-regexp beg end (concat "\\(\\s-*\\)"
-                                      (regexp-quote comment-start)))
+        (align-regexp beg end (concat "\\(\\s-+\\)" start "[^" start "\"][^\"\n]*")
+                      nil 2)
       (align-regexp beg end (concat "\\(\\s-*\\)\\(?://\\|/\\*\\)")))))
 
 ;;;###autoload (autoload 'nvp-align-backslash "nvp-edit")

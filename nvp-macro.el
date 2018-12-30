@@ -69,6 +69,15 @@
        (file-name-directory
         (file-name-sans-extension (buffer-file-name)))))))
 
+(defmacro nvp-unless-in-comment-or-string (&rest body)
+  "Execute BODY unless currently in a string or comment."
+  (declare (indent defun))
+  `(unless (let ((ppss (syntax-ppss)))
+             (or (car (setq ppss (nthcdr 3 ppss)))
+                 (car (setq ppss (cdr ppss)))
+                 (nth 3 ppss)))
+     ,@body))
+
 ;;; Conversions
 
 (defmacro nvp-listify (args)

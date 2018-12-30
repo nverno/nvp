@@ -72,8 +72,9 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
             `(("Sub-Headers"
                ,(concat "^" (nvp-comment-make-comment 2) "-+\\s-*\\(.*\\)[ -]*$")
                1))))
-  (setq-local imenu-generic-expression (append nvp-imenu-comment-headers-re-1
-                                               imenu-generic-expression extra)))
+  (setq-local imenu-generic-expression
+              (append imenu-generic-expression
+                      extra nvp-imenu-comment-headers-re-1)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

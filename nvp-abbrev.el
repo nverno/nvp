@@ -30,11 +30,13 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (defvar nvp/abbrevs))
+(require 'expand)
+(require 'abbrev)
 
 (defvar-local nvp-abbrev-local-table nil)
 
 ;; insert starter abbrev table template
-(defsubst nvp-abbrev--insert-template (table)
+(defun nvp-abbrev--insert-template (table)
   (insert
    (concat
     (when (zerop (buffer-size))
@@ -47,9 +49,7 @@
       (replace-regexp-in-string "-abbrev-table" "" table)))
     "  :parents (list prog-mode-abbrev-table))")))
 
-(defsubst nvp-abbrev--get-table (table file)
-  ;; if (file-exists-p file)
-  ;; (find-file-other-window file)
+(defun nvp-abbrev--get-table (table file)
   (find-file-other-window file)
   (goto-char (point-min))
   (unless (search-forward-regexp (concat "'" table "\\>") nil t)
@@ -180,6 +180,16 @@
                   (delete "" (all-completions prefix (symbol-value table)))
                   comps))))
     comps))
+
+;; -------------------------------------------------------------------
+;;; Expand Hooks
+
+;; allow abbrevs to expand inside parens
+;;;###autoload
+(defun nvp-abbrev-expand-hook ()
+  (cl-letf (((symbol-function 'eolp)
+             #'(lambda () (not (eq (char-syntax (char-after)) ?w)))))
+    (expand-abbrev-hook)))
 
 ;; -------------------------------------------------------------------
 ;;; Expansion predicates

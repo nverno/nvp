@@ -568,6 +568,7 @@ menu entry."
 
 ;; get a comint buffer, run body, return buffer
 (defmacro nvp-comint-buffer (name &rest body)
+  (declare (indent 2) (indent 1))
   `(progn (with-current-buffer (get-buffer-create ,name)
             (comint-mode)
             ,@body
@@ -578,6 +579,7 @@ menu entry."
   `(nvp-comint-buffer ,name ,@body))
 
 (defmacro nvp-process-buffer (&optional comint &rest body)
+  (declare (indent 2) (indent 1))
   (if (not (or comint body))
       '(get-buffer-create "*nvp-install*")
     `(progn (with-current-buffer (get-buffer-create "*nvp-install*")

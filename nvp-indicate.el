@@ -71,11 +71,15 @@
 ;; make modeline green for a sec
 ;;;###autoload
 (defun nvp-indicate-modeline-success (&optional msg)
-  (let ((color (face-background 'mode-line)))
+  (let* ((power-p (memq 'powerline-active0 (face-list)))
+         (pcolor (and power-p (face-background 'powerline-active0)))
+         (color (face-background 'mode-line)))
     (when msg (message msg))
     (set-face-background 'mode-line "#44de11")
+    (and power-p (set-face-background 'powerline-active0 "#44de11"))
     (sit-for 1.5)
     (set-face-background 'mode-line color)
+    (and power-p (set-face-background 'powerline-active0 pcolor))
     ;; (add-hook 'post-command-hook #'nvp-indicate-modeline-revert nil t)
     ))
 

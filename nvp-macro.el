@@ -34,8 +34,8 @@
 ;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
 (when (functionp 'backtrace-frames)
   (when (assoc '(t byte-compile-file-form-require
-                 ((require 'nvp-macro))
-                 nil)
+                   ((require 'nvp-macro))
+                   nil)
                (backtrace-frames))
     (message "Warning: package 'nvp-macro required at runtime")))
 
@@ -83,11 +83,11 @@
 (defmacro nvp-listify (args)
   "If ARGS are string or symbol, output as a list."
   (cond
-    ((stringp args)
-     `(cons ,args nil))
-    ((symbolp args)
-     `(if (consp ,args) ,args (cons ,args nil)))
-    (t args)))
+   ((stringp args)
+    `(cons ,args nil))
+   ((symbolp args)
+    `(if (consp ,args) ,args (cons ,args nil)))
+   (t args)))
 
 (defmacro nvp-stringify (sym)
   (if (symbolp sym) `(symbol-name ,sym) `,sym))
@@ -160,9 +160,9 @@
        '(let ((dir (expand-file-name "snippets" ,dir))
               (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
                         (cons yas-snippet-dirs ()))))
-         (unless (member dir dirs)
-           (setq yas-snippet-dirs (delq nil (cons dir dirs))))
-         (yas-load-directory dir)))))
+          (unless (member dir dirs)
+            (setq yas-snippet-dirs (delq nil (cons dir dirs))))
+          (yas-load-directory dir)))))
 
 ;; -------------------------------------------------------------------
 ;;; Regex / Strings
@@ -233,8 +233,8 @@ line at match (default) or do BODY at point if non-nil."
 
 (defmacro nvp-path (path &optional no-compile)
   `(,(if no-compile 'progn 'eval-when-compile)
-     (let ((path (substitute-env-in-file-name ,path)))
-       (and path (file-exists-p path) path))))
+    (let ((path (substitute-env-in-file-name ,path)))
+      (and path (file-exists-p path) path))))
 
 (defmacro nvp-mode (mode)
   `(expand-file-name
@@ -386,8 +386,8 @@ menu entry."
     `(eval-after-load ,(or feature `',(intern mode))
        '(progn
           (eval-when-compile (defvar ,modemap))
-         ,@(cl-loop for (k . b) in bindings
-              collect `(define-key ,modemap (kbd ,k) ',b))))))
+          ,@(cl-loop for (k . b) in bindings
+               collect `(define-key ,modemap (kbd ,k) ',b))))))
 
 ;; do BODY with BINDINGS set in transient map
 (cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
@@ -436,10 +436,10 @@ menu entry."
 
 (defmacro nvp-with-view-bindings (&rest body)
   `(nvp-with-temp-bindings
-       (:bindings ,@(nvp-bindings-view)
-                  :keep t
-                  :exit (lambda () (message "vim out")))
-       ,@body))
+     (:bindings ,@(nvp-bindings-view)
+                :keep t
+                :exit (lambda () (message "vim out")))
+     ,@body))
 
 (defmacro nvp-with-local-bindings (&rest bindings)
   "Set buffer local bindings."
@@ -472,26 +472,26 @@ menu entry."
     ((pred stringp)
      `(read-from-minibuffer ,prompt ,thing))
     (`(quote ,sym)
-      (cond
-        ((consp sym)
-         `(ido-completing-read ,prompt ,thing))
-        ((vectorp sym)
-         `(completing-read ,prompt ,thing))
-        ((symbol-function sym)
-         (if args
-             `(funcall-interactively ',sym ,@args)
-           `(call-interactively ',sym)))
-        (t `(ido-completing-read ,prompt ,sym))))
+     (cond
+      ((consp sym)
+       `(ido-completing-read ,prompt ,thing))
+      ((vectorp sym)
+       `(completing-read ,prompt ,thing))
+      ((symbol-function sym)
+       (if args
+           `(funcall-interactively ',sym ,@args)
+         `(call-interactively ',sym)))
+      (t `(ido-completing-read ,prompt ,sym))))
     ((pred symbolp)
      (cond
-       ((string= ":library" (symbol-name thing))
-        `(completing-read ,prompt
-                          (apply-partially
-                           'locate-file-completion-table
-                           load-path (get-load-suffixes))))
-       ((vectorp (symbol-value (intern-soft thing)))
-        `(completing-read ,prompt ,thing))
-       (t `(ido-completing-read ,prompt (symbol-value ,thing)))))
+      ((string= ":library" (symbol-name thing))
+       `(completing-read ,prompt
+                         (apply-partially
+                          'locate-file-completion-table
+                          load-path (get-load-suffixes))))
+      ((vectorp (symbol-value (intern-soft thing)))
+       `(completing-read ,prompt ,thing))
+      (t `(ido-completing-read ,prompt (symbol-value ,thing)))))
     ((pred consp)
      `(ido-completing-read ,prompt ,thing))
     (_ `(read-from-minibuffer ,prompt))))
@@ -548,18 +548,18 @@ menu entry."
                (pos-tip-show ,str nil nil nil 20)
                (nvp-basic-temp-binding
                 "h" ,(cond
-                       ((eq :none help-fn) nil)
-                       (help-fn help-fn)
-                       (t `(lambda ()
-                             (interactive)
-                             (x-hide-tip)
-                             (with-current-buffer (get-buffer-create "*nvp-help*")
-                               (insert ,str)
-                               (view-mode-enter)
-                               (pop-to-buffer (current-buffer)))))))
+                      ((eq :none help-fn) nil)
+                      (help-fn help-fn)
+                      (t `(lambda ()
+                            (interactive)
+                            (x-hide-tip)
+                            (with-current-buffer (get-buffer-create "*nvp-help*")
+                              (insert ,str)
+                              (view-mode-enter)
+                              (pop-to-buffer (current-buffer)))))))
                (nvp-basic-temp-binding
                 "q" #'(lambda () (interactive) (let ((x-gtk-use-system-tooltips nil))
-                                            (x-hide-tip))))
+                                                 (x-hide-tip))))
                ,@(cl-loop for (k . b) in bindings
                     collect `(nvp-basic-temp-binding (kbd ,k) ,b))))))))
 
@@ -597,10 +597,10 @@ menu entry."
   (declare (indent 2) (indent 1) (debug t))
   `(function
     (lambda (p m)
-     (nvp-log "%s: %s" nil (process-name p) m)
-     (if (not (zerop (process-exit-status p)))
-         ,(or on-error '(pop-to-buffer (process-buffer p)))
-       ,@body))))
+      (nvp-log "%s: %s" nil (process-name p) m)
+      (if (not (zerop (process-exit-status p)))
+          ,(or on-error '(pop-to-buffer (process-buffer p)))
+        ,@body))))
 
 (defmacro nvp-with-process-log (process &optional on-error &rest body)
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
@@ -621,7 +621,7 @@ if process exit status isn't 0."
        (display-buffer (nvp-process-buffer)))))
 
 (defmacro nvp-with-process-buffer (process &optional on-error
-                                   &rest body)
+                                           &rest body)
   "Log output in log buffer, do ON-ERROR and BODY in process buffer."
   (declare (indent defun))
   `(set-process-sentinel
@@ -632,6 +632,28 @@ if process exit status isn't 0."
           (if (not (zerop (process-exit-status p)))
               ,@on-error
             ,@body)))))
+
+(cl-defmacro nvp-with-process 
+    (process (&key (on-success '(nvp-indicate-modeline-success
+                                 (concat process " success")))
+                   (proc-buff '(concat "*" process "*"))
+                   (proc-args nil))
+             &rest on-failure)
+  "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE."
+  (declare (indent defun))
+  `(set-process-sentinel
+    (start-process
+     ,process
+     (with-current-buffer (get-buffer-create ,proc-buff)
+       (setq buffer-read-only nil)
+       (erase-buffer)
+       (current-buffer))
+     ,process ,@proc-args)
+    #'(lambda p m)
+    (nvp-log "%s: %s" nil (process-name p) m)
+    (if (zerop (process-exit-status p))
+        (progn ,on-success)
+      ,@on-failure)))
 
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment
@@ -651,12 +673,12 @@ Note: use lexical-binding."
 BODY."
   (declare (indent defun))
   `(with-sentinel-wrapper
-       (lambda (fn)
-         (let ((fun fn))
-           (lambda (p m)
-             (cl-letf (((symbol-function ,orig-fn) ,new-fn))
-               (funcall fun p m)))))
-     ,@body))
+    (lambda (fn)
+      (let ((fun fn))
+        (lambda (p m)
+          (cl-letf (((symbol-function ,orig-fn) ,new-fn))
+            (funcall fun p m)))))
+    ,@body))
 
 (defmacro nvp-install--script (directory)
   "Find installation script."
@@ -702,9 +724,9 @@ BODY."
        ,@body)))
 
 (defmacro nvp-with-asdf-install (prefix dir plugin
-                                 &optional config-defaults error-callback
-                                   success-callback script-fn sudo
-                                 &rest body)
+                                        &optional config-defaults error-callback
+                                        success-callback script-fn sudo
+                                        &rest body)
   "Run install script, with prefix prompt for extra arguments to configure
 and install PLUGIN with asdf."
   `(progn
@@ -733,7 +755,7 @@ and install PLUGIN with asdf."
 ;; Newline and indents for PAIRS, extends comment region with
 ;; COMMENT-START when inside COMMENT-RE.
 (cl-defmacro nvp-newline (name &optional description
-                          &key pairs comment-re comment-start)
+                               &key pairs comment-re comment-start)
   (declare (indent defun))
   (let ((fn (if (symbolp name) name (intern name)))
         (conds
@@ -784,20 +806,20 @@ and install PLUGIN with asdf."
       (doc "Compile using make or cmake if found, otherwise execute body.")
       (make-action
        '(let ((compile-command (or args "make -k")))
-         (nvp-compile-basic)))
+          (nvp-compile-basic)))
       (cmake-action
        '(nvp-compile-cmake args))
       (default-prompt
-          '(read-from-minibuffer "Compile args: "))
+        '(read-from-minibuffer "Compile args: "))
       (prompt-action
        `((cond
-           ,@(and cmake-action
-                  '((have-cmake
-                     (read-from-minibuffer "CMake args: "))))
-           ,@(and make-action
-                  '((have-make
-                     (format "make %s" (read-from-minibuffer "Make args: ")))))
-           (t ,default-prompt)))))
+          ,@(and cmake-action
+                 '((have-cmake
+                    (read-from-minibuffer "CMake args: "))))
+          ,@(and make-action
+                 '((have-make
+                    (format "make %s" (read-from-minibuffer "Make args: ")))))
+          (t ,default-prompt)))))
      &rest body)
   (declare (indent defun))
   (let ((fn (if (symbolp name) name (intern name))))
@@ -810,12 +832,12 @@ and install PLUGIN with asdf."
                                         '("Makefile" "makefile" "GNUMakefile"))))))
               ,@(and cmake-action
                      '((have-cmake (file-exists-p "CMakeLists.txt"))))
-                (args (and arg ,@(or prompt-action
-                                     '((read-from-minibuffer "Compile args: "))))))
+              (args (and arg ,@(or prompt-action
+                                   '((read-from-minibuffer "Compile args: "))))))
          (cond
-           ,@(and cmake-action `((have-cmake ,cmake-action)))
-           ,@(and make-action `((have-make ,make-action)))
-           (t ,@body))))))
+          ,@(and cmake-action `((have-cmake ,cmake-action)))
+          ,@(and make-action `((have-make ,make-action)))
+          (t ,@body))))))
 
 ;;; Align
 
@@ -860,10 +882,10 @@ and install PLUGIN with asdf."
 ;; to capture items.
 (cl-defmacro nvp-wrap-list-items (name
                                   &key
-                                    (delims '("(" . ")"))
-                                    (match "[^)(, \n\t\r]+")
-                                    (ignore "[, \n\t\r]*")
-                                    (wrap '("\"" . "\"")))
+                                  (delims '("(" . ")"))
+                                  (match "[^)(, \n\t\r]+")
+                                  (ignore "[, \n\t\r]*")
+                                  (wrap '("\"" . "\"")))
   (declare (debug defun)
            (indent defun))
   (let ((fn (intern (concat "nvp-list-wrap-" (symbol-name name))))

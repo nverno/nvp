@@ -633,12 +633,13 @@ if process exit status isn't 0."
               ,@on-error
             ,@body)))))
 
-(cl-defmacro nvp-with-process 
-    (process (&key (on-success '(nvp-indicate-modeline-success
-                                 (concat process " success")))
-                   (proc-buff '(concat "*" process "*"))
-                   (proc-args nil))
-             &rest on-failure)
+(cl-defmacro nvp-with-process (process
+                               (&key
+                                (on-success `(nvp-indicate-modeline-success
+                                              ,(concat process " success")))
+                                (proc-buff `,(concat "*" process "*"))
+                                (proc-args nil))
+                               &rest on-failure)
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE."
   (declare (indent defun))
   `(set-process-sentinel
@@ -649,11 +650,11 @@ if process exit status isn't 0."
        (erase-buffer)
        (current-buffer))
      ,process ,@proc-args)
-    #'(lambda p m)
-    (nvp-log "%s: %s" nil (process-name p) m)
-    (if (zerop (process-exit-status p))
-        (progn ,on-success)
-      ,@on-failure)))
+    #'(lambda (p m)
+        (nvp-log "%s: %s" nil (process-name p) m)
+        (if (zerop (process-exit-status p))
+            ,on-success
+          ,@on-failure))))
 
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment

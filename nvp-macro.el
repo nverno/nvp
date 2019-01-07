@@ -929,7 +929,7 @@ and install PLUGIN with asdf."
 ;; buffers process-filter. REPL-INIT is called to create and return a new REPL
 ;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
 (cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
-                                         repl-live-p repl-history
+                                         repl-live-p repl-history repl-process
                                          repl-config repl-wait
                                          repl-doc (repl-switch-fn ''pop-to-buffer))
                                    &rest repl-init)
@@ -944,7 +944,8 @@ and install PLUGIN with asdf."
            ;; in REPL buffer, switch back to source
            (switch-to-buffer-other-window
             ;; switch to set source buffer or the most recent other buffer
-            (or (process-get (current-buffer-process) :src-buffer)
+            (or (process-get
+                 ,(or repl-process '(current-buffer-process)) :src-buffer)
                 (other-buffer (current-buffer) 'visible)))
          ;; in source buffer, try to go to a REPL
          (let ((src-buffer (current-buffer))
@@ -968,14 +969,18 @@ and install PLUGIN with asdf."
                         '(nvp-comint-add-history-sentinel))))
            ;; Now switch to REPL and set its properties to point back to the source
            ;; buffer from whence we came
-           (if (not (comint-check-proc repl-buffer))
+           (if (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
                (error (message "The REPL didnt start!!!")))
            ,@(when repl-switch-fn
                `((funcall ,repl-switch-fn repl-buffer)))
            ;; only config first time through
-           (when (not (process-get (get-buffer-process repl-buffer) :src-buffer))
+           (when (not (process-get ,(or repl-process
+                                        '(get-buffer-process repl-buffer))
+                                   :src-buffer))
              ,(and repl-config `(funcall ,repl-config)))
-           (process-put (get-buffer-process repl-buffer) :src-buffer src-buffer))))))
+           (process-put ,(or repl-process
+                             '(get-buffer-process repl-buffer))
+                        :src-buffer src-buffer))))))
 
 ;; -------------------------------------------------------------------
 ;;; URL

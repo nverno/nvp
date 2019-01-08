@@ -30,6 +30,7 @@
   (require 'nvp-macro))
 (require 'compile)
 (declare-function xterm-color-colorize-buffer "xterm-color")
+(declare-function nvp-basic-use-local-bindings "nvp-basic")
 (autoload 'ansi-color-apply-on-region "ansi-color")
 
 ;;;###autoload
@@ -48,18 +49,8 @@
   (interactive)
   (setq-local compilation-read-command read-command)
   (and compilation-read-command
-       (setq-local compile-command
-                   (compilation-read-command compile-command)))
+       (setq-local compile-command (compilation-read-command compile-command)))
   (funcall-interactively 'compile compile-command comint))
-
-;;;###autoload
-(defun nvp-compile-with-bindings (bindings &rest args)
-  "Basic compile with local BINDINGS in compilation buffer."
-  (let ((compilation-finish-functions
-         `(lambda (buff _stat)
-            (with-current-buffer buff
-              ,(nvp-use-local-bindings bindings)))))
-    (funcall 'nvp-compile-basic args)))
 
 ;; ------------------------------------------------------------
 ;;; Cmake

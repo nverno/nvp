@@ -441,7 +441,7 @@ menu entry."
                 :exit (lambda () (message "vim out")))
      ,@body))
 
-(defmacro nvp-with-local-bindings (&rest bindings)
+(defmacro nvp-use-local-bindings (&rest bindings)
   "Set buffer local bindings."
   (declare (indent defun))
   `(let ((oldmap (current-local-map))
@@ -451,7 +451,7 @@ menu entry."
           collect `(define-key newmap (kbd ,k) ',b))
      (use-local-map newmap)))
 
-(defmacro nvp-with-local-keymap (keymap &rest bindings)
+(defmacro nvp-use-local-keymap (keymap &rest bindings)
   "Use a local version of keymap."
   (declare (indent defun))
   `(progn

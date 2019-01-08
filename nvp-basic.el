@@ -219,5 +219,17 @@
    (or keep t)
    (or exit nil)))
 
+(defun nvp-basic-use-local-bindings (bindings &optional buffer)
+  "Use buffer local BINDINGS.
+Optionally use them in BUFFER instead of current buffer."
+  (let ((lmap (make-sparse-keymap)))
+    (set-keymap-parent lmap (current-local-map))
+    (dolist (b bindings)
+      (define-key lmap (kbd (car b)) (cadr b)))
+    (if buffer
+        (with-current-buffer buffer
+          (use-local-map lmap))
+      (use-local-map lmap))))
+
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

@@ -132,12 +132,14 @@
 ;; -------------------------------------------------------------------
 ;;; Package
 
-(defmacro nvp-package-dir (dir)
+(defmacro nvp-package-dir (dir &optional snippets)
   "Package local directory"
   `(progn
      (defvar ,dir nil)
      (when load-file-name
-       (setq ,dir (file-name-directory load-file-name)))))
+       (setq ,dir (file-name-directory load-file-name))
+       ,(when snippets
+          `(nvp-package-load-snippets ,dir)))))
 
 (defmacro nvp-package-var (var &rest init)
   (declare (indent 1))
@@ -157,12 +159,12 @@
      (eval-when-compile (defvar yas-snippet-dirs))
      (declare-function yas-load-directory "yasnippet")
      (eval-after-load 'yasnippet
-       '(let ((dir (expand-file-name "snippets" ,dir))
+       '(let ((snippet-dir (expand-file-name "snippets" ,dir))
               (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
                         (cons yas-snippet-dirs ()))))
-          (unless (member dir dirs)
-            (setq yas-snippet-dirs (delq nil (cons dir dirs))))
-          (yas-load-directory dir)))))
+          (unless (member snippet-dir dirs)
+            (setq yas-snippet-dirs (delq nil (cons snippet-dir dirs))))
+          (yas-load-directory snippet-dir)))))
 
 ;; -------------------------------------------------------------------
 ;;; Regex / Strings

@@ -54,11 +54,11 @@
     (makefile-pickup-targets)
     makefile-target-table))
 
-(defun nvp-install-make-target (&optional makefile target)
-  (interactive
-   (let ((makefile (and makefile )))
-    (list ())))
-)
+;; (defun nvp-install-make-target (&optional makefile target)
+;;   (interactive
+;;    (let ((makefile (and makefile )))
+;;     (list ())))
+;; )
 
 ;;--- Parse ----------------------------------------------------------
 

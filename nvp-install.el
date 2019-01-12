@@ -31,6 +31,10 @@
   (require 'cl-lib)
   (require 'nvp-macro)
   (nvp-local-vars))
+(eval-when-compile
+  (defvar makefile-target-table))
+(declare-function makefile-pickup-targets "make-mode")
+
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-package-directory-dwim "nvp-package")
 (nvp-with-gnu

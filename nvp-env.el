@@ -107,12 +107,12 @@ If ENV-VAR is nil, set with new VALUE."
 ;;; PATH
 
 ;;;###autoload
-(define-obsolete-function-alias 'nvp-add-exec-path 'nvp-env-path-append)
+(define-obsolete-function-alias 'nvp-add-exec-path 'nvp-env-path-add)
 ;;;###autoload
-(define-obsolete-function-alias 'nvp-env-exec-add 'nvp-env-path-append)
+(define-obsolete-function-alias 'nvp-env-exec-add 'nvp-env-path-add)
 ;; Append DIR to environment variable PATH and EXEC-PATH.
 ;;;###autoload
-(defun nvp-env-path-append (dir)
+(defun nvp-env-path-add (dir)
   "Append DIR to PATH and `exec-path'."
   (let ((path (nvp-env-uniq (cons dir (nvp-env-split-var "PATH")))))
     (setenv "PATH" (nvp-env-join path))
@@ -141,7 +141,7 @@ Return `process-environment' with new value tacked on front (first is used)."
       ;; update env for current session as well
       (when exec
         (if (string= (upcase env-var) "PATH")
-            (nvp-env-path-append val)
+            (nvp-env-path-add val)
           (setenv env-var val))))))
 
 (nvp-with-gnu
@@ -156,7 +156,7 @@ Return `process-environment' with new value tacked on front (first is used)."
           (setenv env-var value))))
     (when exec
       (if (string= (upcase env-var) "PATH")
-          (nvp-env-path-append value)))))
+          (nvp-env-path-add value)))))
 
 ;; ------------------------------------------------------------
 ;;; Windows Search Path

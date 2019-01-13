@@ -1,5 +1,5 @@
 emacs ?= emacs
-wget ?= wget
+wget  ?= wget
 
 .PHONY: test
 all: test
@@ -15,4 +15,4 @@ el2markdown.el:
 	$(wget) -q -O $@ "https://github.com/Lindydancer/el2markdown/raw/master/el2markdown.el"
 
 clean:
-	$(RM) *~
+	$(RM) *~ dist

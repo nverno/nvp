@@ -1,11 +1,13 @@
-;;; nvp-package ---  -*- lexical-binding: t; -*-
+;;; nvp-package.el --- Install site pkgs -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
+;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 29 November 2016
+;; Version: 1.0.0
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -25,11 +27,9 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-;;; Code:
-
 ;; Manage autoloads and compilation of site-lisp/modes etc. Follows
 ;; package.el conventions, most of the code is based off package.el
-
+;;; Code:
 (eval-when-compile
   (require 'autoload)
   (require 'nvp-macro)
@@ -51,7 +51,6 @@
       (with-current-buffer 
           (find-file-noselect generated-autoload-file)
         (package-autoload-ensure-default-file generated-autoload-file)
-        ;; (nvp-package-subdir-autoload-ensure-default-file generated-autoload-file)
         (save-buffer)))
 
     ;; (re)compile modes

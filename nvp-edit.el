@@ -65,32 +65,45 @@
 ;; -------------------------------------------------------------------
 ;;; Sort
 
-;; Sort region by first character of each line. With prefix, reverse
-;; the sort
-;;;###autoload
-(defun nvp-sort-lines-first-char (start end &optional reverse)
-  (interactive "r\nP")
-  (let ((sort-fold-case t))
-    (sort-regexp-fields reverse "^.*$" "\\([a-zA-Z]\\)" start end)))
+(defmacro nvp-sort-with-defaults (start end &rest body)
+  "Sort region between START and END by BODY, using defaults and indent region \
+afterward."
+  (declare (indent defun))
+  `(let ((sort-fold-case t))
+     ,@body
+     (indent-region ,start ,end)))
 
-;; Sort list by first character, with prefix do reverse.
+;;;###autoload
+(defun nvp-sort-lines-first-word (start end &optional reverse)
+  "Sort lines b/w START and END by first alphanumeric characters.
+With prefix sort in REVERSE."
+  (interactive "r\nP")
+  (nvp-sort-with-defaults start end
+    (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
+
 ;;;###autoload
 (defun nvp-sort-list (start end &optional reverse)
+  "Sort list b/w START and END by words/symbols.
+With prefix sort in REVERSE."
   (interactive "r\nP")
-  (let ((sort-fold-case t))
-    (sort-regexp-fields reverse "[^ \t\n]+" "\\([a-zA-Z]\\)"
-                        start end)))
+  (nvp-sort-with-defaults start end
+    (sort-regexp-fields reverse (nvp-concat "\\(?:"
+                                            "\\s\"\\S\"*\\s\"" ;quoted
+                                            "\\|\\sw+\\|\\s_+" ;word/symbol
+                                            "\\)")
+                        "\\(\\sw\\|\\s_\\)+" start end)))
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)
   (interactive "r\nP")
-  (let ((sort-fold-case t))
-    (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
+  (nvp-sort-with-defaults start end
+   (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
 
 ;;;###autoload
 (defun nvp-sort-symbols (start end &optional reverse)
   (interactive "r\nP")
-  (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end))
+  (nvp-sort-with-defaults start end
+    (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
 
 ;; -------------------------------------------------------------------
 ;;; Fill 
@@ -241,7 +254,8 @@
 ;;;###autoload
 (defun nvp-wrap-quotes (&optional _arg)
   (interactive "P")
-  (sp-wrap-with-pair "\""))
+  (let ((sp-pair-list '(("\"". "\""))))
+    (sp-wrap-with-pair "\"")))
 
 ;;;###autoload
 (defun nvp-wrap-with-squiggles (&optional _arg)

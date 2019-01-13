@@ -36,10 +36,13 @@
 (defun nvp-compile-colorize ()
   (interactive)
   (let ((inhibit-read-only t))
+    ;; prefer xterm when available
     (if (boundp 'xterm-color-colorize-buffer)
         (xterm-color-colorize-buffer)
      (ansi-color-apply-on-region compilation-filter-start (point-max)))))
 
+;;;###autoload
+(define-obsolete-function-alias 'nvp-basic-compile 'nvp-compile-basic)
 ;;;###autoload
 (defun nvp-compile-basic (&optional comint read-command)
   (interactive)
@@ -49,7 +52,18 @@
                    (compilation-read-command compile-command)))
   (funcall-interactively 'compile compile-command comint))
 
-;;;###autoload (defalias 'nvp-basic-compile 'nvp-compile-basic)
+(defun nvp-compile-add-local-bindings (buff _stat bindings)
+  (with-current-buffer buff
+    (dolist (b bindings)
+      (local-set-key (kbd (car b)) (cadr b)))))
+
+;;;###autoload
+(defun nvp-compile-basic-with-bindings (bindings &rest args)
+  "Run basic compile with local BINDINGS in output buffer.
+ARGS are passed to `nvp-basic-compile'."
+  (let ((compilation-finish-functions
+         `(nvp-compile-add-local-bindings buff stat ,bindings)))
+    (funcall 'nvp-compile-basic args)))
 
 ;; ------------------------------------------------------------
 ;;; Cmake

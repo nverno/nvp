@@ -124,6 +124,7 @@
 
 ;;;###autoload
 (defun nvp-project-projectile ()
+  "Load and remap keys for projectile."
   (interactive)
   (unless projectile-mode
     (projectile-mode))
@@ -131,19 +132,28 @@
   (call-interactively 'projectile-commander))
 
 ;;;###autoload
-(defun nvp-project-jump-to-git (arg)
+(defun nvp-project-jump-to-gitpage (arg)
+  "Jump to project's git page.
+With prefix ARG 4 or 64 prompt for project name, with prefix 16 or 64 prompt \
+for base URI."
   (interactive "P")
-  (let ((name (nvp-project-name arg)))
-    (and name (browse-url (concat "https://github.com/nverno/" name)))))
+  (let ((uri (if (cl-member arg '((16) (64)) :test 'equal)
+                 (read-string "URI: " "https://")
+               "https://github.com/nverno/"))
+        (name (nvp-project-name (cl-member arg '((4) (64)) :test 'equal))))
+    (and (not (string-suffix-p "/" uri)) (setq uri (concat uri "/")))
+    (and name (browse-url (concat uri name)))))
 
 ;;;###autoload
 (defun nvp-project-jump-to-projectile ()
+  "Jump to project's projectile file."
   (interactive)
   (nvp-with-project-root 'local
     (find-file-other-window ".projectile")))
 
 ;;;###autoload
 (defun nvp-project-jump-to-notes ()
+  "Jump to project's notes.org file."
   (interactive)
   (nvp-with-project-root 'local
     (find-file-other-window "notes.org")))

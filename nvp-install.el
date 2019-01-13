@@ -31,6 +31,10 @@
   (require 'cl-lib)
   (require 'nvp-macro)
   (nvp-local-vars))
+(eval-when-compile
+  (defvar makefile-target-table))
+(declare-function makefile-pickup-targets "make-mode")
+
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-package-directory-dwim "nvp-package")
 (nvp-with-gnu
@@ -54,11 +58,11 @@
     (makefile-pickup-targets)
     makefile-target-table))
 
-(defun nvp-install-make-target (&optional makefile target)
-  (interactive
-   (let ((makefile (and makefile )))
-    (list ())))
-)
+;; (defun nvp-install-make-target (&optional makefile target)
+;;   (interactive
+;;    (let ((makefile (and makefile )))
+;;     (list ())))
+;; )
 
 ;;--- Parse ----------------------------------------------------------
 

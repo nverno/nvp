@@ -74,7 +74,7 @@
   (let* ((power-p (memq 'powerline-active0 (face-list)))
          (pcolor (and power-p (face-background 'powerline-active0)))
          (color (face-background 'mode-line)))
-    (when msg (message msg))
+    (when msg (message (concat "[SUCCESS]" msg)))
     (set-face-background 'mode-line "#44de11")
     (and power-p (set-face-background 'powerline-active0 "#44de11"))
     (sit-for 1.5)

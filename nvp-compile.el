@@ -30,6 +30,7 @@
   (require 'nvp-macro))
 (require 'compile)
 (declare-function xterm-color-colorize-buffer "xterm-color")
+(declare-function nvp-basic-use-local-bindings "nvp-basic")
 (autoload 'ansi-color-apply-on-region "ansi-color")
 
 ;;;###autoload
@@ -48,8 +49,7 @@
   (interactive)
   (setq-local compilation-read-command read-command)
   (and compilation-read-command
-       (setq-local compile-command
-                   (compilation-read-command compile-command)))
+       (setq-local compile-command (compilation-read-command compile-command)))
   (funcall-interactively 'compile compile-command comint))
 
 (defun nvp-compile-add-local-bindings (buff _stat bindings)

@@ -44,25 +44,11 @@
        (time-stamp)))
     (_ (time-stamp))))
 
-;; (defun nvp-toggle-increment-numbers (start end)
-;;   "Increment numbers in region. Temporarily sets 'i' to replay command.
-;; Decrement with prefix."
-;;   (interactive "r")
-;;   (let (deactivate-mark)
-;;     (goto-char start)
-;;     (while (re-search-forward "\\([[:digit:]]+\\)" end 'move)
-;;       (replace-match (number-to-string
-;;                       (+ (if current-prefix-arg -1 1)
-;;                          (string-to-number (match-string 1))))
-;;                      nil nil nil 1))
-;;     ;; FIXME: what is good way to reused the current-prefix-argument value when
-;;     ;; calling this-command?
-;;     (nvp-basic-temp-binding "i" this-command)))
-
 ;; In/De-crement numbers in region,  decremnent with prefix argument
 ;;;###autoload
 (defun nvp-toggle-increment-numbers (start end)
-  "Simple function to increment numbers in region. Decrement with prefix."
+  "Simple function to increment numbers in region. Decrement with prefix.
+Call repeatedly with 'i'."
   (interactive "r")
   (let (deactivate-mark)
     (setq start  (copy-marker start)

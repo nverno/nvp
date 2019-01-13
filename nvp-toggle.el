@@ -28,7 +28,21 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'time-stamp))
+(declare-function time-stamp "time-stamp")
+
+;;;###autoload
+(defun nvp-toggle-timestamp ()
+  "Insert/update timestamp for current buffer."
+  (interactive)
+  (pcase major-mode
+    (`org-mode
+     (let ((time-stamp-format "%04y-%02m-%02d")
+           (time-stamp-start "#\\+DATE:[ \t]*")
+           (time-stamp-end "$"))
+       (time-stamp)))
+    (_ (time-stamp))))
 
 ;; (defun nvp-toggle-increment-numbers (start end)
 ;;   "Increment numbers in region. Temporarily sets 'i' to replay command.

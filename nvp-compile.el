@@ -52,6 +52,19 @@
        (setq-local compile-command (compilation-read-command compile-command)))
   (funcall-interactively 'compile compile-command comint))
 
+(defun nvp-compile-add-local-bindings (buff _stat bindings)
+  (with-current-buffer buff
+    (dolist (b bindings)
+      (local-set-key (kbd (car b)) (cadr b)))))
+
+;;;###autoload
+(defun nvp-compile-basic-with-bindings (bindings &rest args)
+  "Run basic compile with local BINDINGS in output buffer.
+ARGS are passed to `nvp-basic-compile'."
+  (let ((compilation-finish-functions
+         `(nvp-compile-add-local-bindings buff stat ,bindings)))
+    (funcall 'nvp-compile-basic args)))
+
 ;; ------------------------------------------------------------
 ;;; Cmake
 

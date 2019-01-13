@@ -48,12 +48,16 @@
 (defmacro eieio-declare-slot (name)
   (cl-pushnew name eieio--known-slot-names) nil)
 
-(defmacro nvp-bfn (&optional or-buffer)
-  "Short buffer file name"
-  `(file-name-nondirectory
-    (file-name-sans-extension ,(if or-buffer
-                                   '(or (buffer-file-name) (buffer-name))
-                                 '(buffer-file-name)))))
+(defmacro nvp-bfn (&optional no-ext or-buffer)
+  "Short buffer file name.
+If NO-EXT is non-nil, remove file extension.  If OR-BUFFER is non-nil
+use either `buffer-file-name' or `buffer-name'."
+  (let ((buff (if or-buffer
+                  '(or (buffer-file-name) (buffer-name))
+                '(buffer-file-name))))
+    `(file-name-nondirectory
+      ,(if no-ext `(file-name-sans-extension ,buff)
+        buff))))
 
 (defmacro nvp-dfn (&optional with-default)
   "Short directory file name."
@@ -133,13 +137,19 @@
 ;;; Package
 
 (defmacro nvp-package-dir (dir &optional snippets)
-  "Package local directory"
+  "Define package directory DIR.
+If SNIPPETS is non-nil, setup snippet loading."
   `(progn
-     (defvar ,dir nil)
-     (when load-file-name
-       (setq ,dir (file-name-directory load-file-name))
-       ,(when snippets
-          `(nvp-package-load-snippets ,dir)))))
+     (eval-and-compile
+      (defconst ,dir
+        (file-name-directory
+         (cond
+          (load-in-progress load-file-name)
+          ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+           byte-compile-current-file)
+          (:else (buffer-file-name))))))
+     ,(when snippets
+        `(nvp-package-load-snippets ,dir))))
 
 (defmacro nvp-package-var (var &rest init)
   (declare (indent 1))
@@ -571,7 +581,7 @@ menu entry."
 ;; get a comint buffer, run body, return buffer
 (defmacro nvp-comint-buffer (name &rest body)
   (declare (indent 2) (indent 1))
-  `(progn (with-current-buffer (get-buffer-create ,name)
+  `(progn (with-current-buffer (generate-new-buffer-name ,name)
             (comint-mode)
             ,@body
             (current-buffer))))
@@ -580,16 +590,23 @@ menu entry."
   (declare (indent defun))
   `(nvp-comint-buffer ,name ,@body))
 
-(defmacro nvp-process-buffer (&optional comint &rest body)
+(defmacro nvp-process-buffer (&optional name reuse comint &rest body)
+  "Return a process buffer name NAME.
+REUSE previous buffer if non-nil.  Optionally initialize buffer in
+COMINT mode or with BODY."
   (declare (indent 2) (indent 1))
-  (if (not (or comint body))
-      '(get-buffer-create "*nvp-install*")
-    `(progn (with-current-buffer (get-buffer-create "*nvp-install*")
-              ,@(or body (list '(comint-mode)
-                               '(current-buffer)))))))
+  (let ((get-buffer-function (if reuse 'get-buffer-create
+                               'generate-new-buffer-name))
+        (name (or name "*nvp-install*")))
+    (if (not (or comint body))
+        `(,get-buffer-function ,name)
+      `(progn (with-current-buffer (,get-buffer-function ,name)
+                ,@(or body (list '(comint-mode)))
+                (current-buffer))))))
 
 (defmacro nvp-with-process-filter (process)
-  "Run processs with `nvp-process-buffer-filter'. Return process object."
+  "Run processs with `nvp-process-buffer-filter'.
+Return process object."
   (declare (indent defun))
   `(let ((proc ,process))
      (set-process-filter proc 'nvp-process-buffer-filter)
@@ -610,21 +627,20 @@ if process exit status isn't 0."
   (declare (indent 0))
   (let ((err (if (and (symbolp on-error)
                       (equal on-error :pop-on-error))
-                 '(pop-to-buffer (nvp-process-buffer))
+                 `(pop-to-buffer (process-buffer ,process))
                on-error)))
-    `(progn
+    `(let ((proc (nvp-with-process-filter ,process)))
        (set-process-sentinel
-        (nvp-with-process-filter ,process)
+        proc
         #'(lambda (p m)
             (nvp-log "%s: %s" nil (process-name p) m)
             (if (not (zerop (process-exit-status p)))
                 ,err
               ,@body)))
-       (display-buffer (nvp-process-buffer)))))
+       (display-buffer (process-buffer proc)))))
 
-(defmacro nvp-with-process-buffer (process &optional on-error
-                                           &rest body)
-  "Log output in log buffer, do ON-ERROR and BODY in process buffer."
+(defmacro nvp-with-process-buffer (process &optional on-error &rest body)
+  "Log PROCESS output in log buffer, do ON-ERROR and BODY in process buffer."
   (declare (indent defun))
   `(set-process-sentinel
     (nvp-with-process-filter ,process)
@@ -637,26 +653,30 @@ if process exit status isn't 0."
 
 (cl-defmacro nvp-with-process (process
                                (&key
+                                (proc-name process)
                                 (on-success `(nvp-indicate-modeline-success
-                                              ,(concat process " success")))
-                                (proc-buff `,(concat "*" process "*"))
-                                (proc-args nil))
+                                              ,(concat proc-name " success")))
+                                (proc-buff `,(concat "*" proc-name "*"))
+                                (proc-args nil)
+                                (proc-filter nil)
+                                (get-buff-function 'generate-new-buffer-name))
                                &rest on-failure)
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE."
   (declare (indent defun))
-  `(set-process-sentinel
-    (start-process
-     ,process
-     (with-current-buffer (get-buffer-create ,proc-buff)
-       (setq buffer-read-only nil)
-       (erase-buffer)
-       (current-buffer))
-     ,process ,@proc-args)
-    #'(lambda (p m)
-        (nvp-log "%s: %s" nil (process-name p) m)
-        (if (zerop (process-exit-status p))
-            ,on-success
-          ,@on-failure))))
+  `(let ((proc (start-process
+                ,(or proc-name process)
+                (with-current-buffer (,get-buff-function ,proc-buff)
+                  (setq buffer-read-only nil)
+                  (erase-buffer)
+                  (current-buffer))
+                ,process ,@proc-args)))
+     (set-process-filter proc ,(or proc-filter ''nvp-process-buffer-filter))
+     (set-process-sentinel proc
+                           #'(lambda (p m)
+                               (nvp-log "%s: %s" nil (process-name p) m)
+                               (if (zerop (process-exit-status p))
+                                   ,on-success
+                                 ,@on-failure)))))
 
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment
@@ -994,7 +1014,7 @@ and install PLUGIN with asdf."
   `(with-current-buffer (url-retrieve-synchronously ,url)
      ,@body))
 
-(defmacro scan-url (url regex &rest body)
+(defmacro while-scanning-url (url regex &rest body)
   "Do BODY in buffer with URL contents at position of REGEX."
   (declare (indent defun)
            (debug (symbolp symbolp &rest form)))

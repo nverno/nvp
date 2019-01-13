@@ -22,7 +22,7 @@ install:
   - $EMACS --version
   
 script:
-  - $EMACS --batch --eval '(progn (push "." load-path) (byte-compile-file "nvp.el"))'
+  - $EMACS --batch -L . -f batch-byte-compile nvp.el
   - $EMACS -batch -L . -l ert -l test/nvp-tests.el -f  ert-run-tests-batch-and-exit
 
 notifications:

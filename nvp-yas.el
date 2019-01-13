@@ -66,6 +66,9 @@
 (defsubst nvp-yas-bfn ()
   (nvp-bfn))
 
+(defsubst nvp-yas-bfn-no-ext ()
+  (nvp-bfn 'no-ext))
+
 ;; directory name
 (defsubst nvp-yas-dfn ()
   (nvp-dfn))

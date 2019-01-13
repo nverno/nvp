@@ -237,14 +237,7 @@ With prefix sort in REVERSE."
    "culpa qui officia deserunt mollit anim id est laborum."))
 
 ;; -------------------------------------------------------------------
-;;; Wrap 
-
-;; from prelude
-(defun nvp-wrap-with (s)
-  "Create wrapper function for smarparens using S."
-  `(lambda (&optional arg)
-     (interactive "P")
-     (sp-wrap-with-pair ,s)))
+;;; Wrap text
 
 ;;;###autoload
 (defun nvp-wrap-parens (&optional _arg)
@@ -267,6 +260,15 @@ With prefix sort in REVERSE."
     (modify-syntax-entry ?. "w" st)
     (with-syntax-table st
       (sp-wrap-with-pair "~"))))
+
+;;;###autoload
+(defun nvp-wrap-with (char &optional _arg)
+  "Wrap next sexp with CHAR, where CHAR is the last key pressed."
+  (interactive
+   (list (kbd (substring (edmacro-format-keys (vector last-input-event)) -1))
+         current-prefix-arg))
+  (let ((sp-pair-list `((,char . ,char))))
+    (sp-wrap-with-pair char)))
 
 ;; wrap items in list b/w "("..")", defaulting to wrapping with quotes
 ;;;###autoload (autoload 'nvp-list-wrap-quotes "nvp-edit")

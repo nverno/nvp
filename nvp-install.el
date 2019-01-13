@@ -120,7 +120,7 @@
   (let* ((git-uri (format "%s/%s" (or root "https://github.com") repo))
          (pkg (car (last (split-string repo "/"))))
          (default-directory nvp/site)
-         (buff (nvp-process-buffer)))
+         (buff (nvp-process-buffer repo)))
     (if (file-exists-p pkg)
         (progn
           (cd pkg)

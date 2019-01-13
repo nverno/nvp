@@ -34,6 +34,12 @@
   (require 'autoload)
   (require 'nvp-macro)
   (nvp-local-vars))
+(require 'package)
+
+(defvar generated-autoload-file)
+(defvar version-control)
+(defvar autoload-timestamps)
+(defvar warning-minimum-level)
 
 ;; Update the main loaddefs.el file from directories with autoloads
 ;; as well as the subdirs that need autoloads and compilation.
@@ -44,8 +50,8 @@
     (when (not (file-exists-p generated-autoload-file))
       (with-current-buffer 
           (find-file-noselect generated-autoload-file)
-        (nvp-package-subdir-autoload-ensure-default-file
-         generated-autoload-file)
+        (package-autoload-ensure-default-file generated-autoload-file)
+        ;; (nvp-package-subdir-autoload-ensure-default-file generated-autoload-file)
         (save-buffer)))
 
     ;; (re)compile modes
@@ -63,8 +69,7 @@
   (dolist (dir (directory-files nvp/modedefs t))
      (when (file-directory-p dir)
        (unless (member (file-name-nondirectory dir) '("." ".."))
-         (nvp-package-subdir-generate-autoloads
-          (file-name-nondirectory dir) dir)
+         (package-generate-autoloads (file-name-nondirectory dir) dir)
          ;; add to load-path for compilation
          (add-to-list 'load-path dir)
          (nvp-package-subdir-compile dir arg force))))
@@ -75,7 +80,7 @@
 ;; Update autoloads and compile dir.
 ;;;###autoload
 (defun nvp-package-update-dir (name pkg-dir &optional arg force)
-  (nvp-package-subdir-generate-autoloads name pkg-dir)
+  (package-generate-autoloads name pkg-dir)
   (add-to-list 'load-path pkg-dir)
   (nvp-package-subdir-compile pkg-dir arg force))
 
@@ -117,45 +122,6 @@ R=recompile, F=force, P=if prefix.
            (update-directory-autoloads dir)
            (nvp-package-subdir-compile dir do-compile nil))))))
 
-;;; from package.el --- update mode-specific directories
-;; Make sure that the autoload file FILE exists and if not create it.
-(defun nvp-package-subdir-autoload-ensure-default-file (file)
-  (unless (file-exists-p file)
-    (write-region
-     (concat ";;; " (file-name-nondirectory file)
-             " --- automatically extracted autoloads\n"
-             ";;\n"
-             ";;; Code:\n"
-             ;; `load-path' should contain only directory names
-             "(add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))\n"
-             "\n;; Local Variables:\n"
-             ";; version-control: never\n"
-             ";; no-byte-compile: t\n"
-             ";; no-update-autoloads: t\n"
-             ";; End:\n"
-             ";;; " (file-name-nondirectory file)
-             " ends here\n")
-     nil file nil 'silent))
-  file)
-
-(defvar generated-autoload-file)
-(defvar version-control)
-
-;; Generate the subdir autoloads.
-(defun nvp-package-subdir-generate-autoloads (name pkg-dir)
-  (let* ((auto-name (format "%s-autoloads.el" name))
-         (generated-autoload-file (expand-file-name auto-name pkg-dir))
-         (noninteractive inhibit-message)
-         (backup-inhibited t)
-         (version-control 'never))
-    (nvp-package-subdir-autoload-ensure-default-file
-     generated-autoload-file)
-    (update-directory-autoloads pkg-dir)
-    (let ((buf (find-buffer-visiting generated-autoload-file)))
-      (when buf (kill-buffer buf)))
-    auto-name))
-
-(defvar warning-minimum-level)
 ;; Byte compile PKG-DIR and its subdirectories.  Just a wrapper around
 ;; `byte-recompile-directory'.  If ARG is 0, compile all '.el' files,
 ;; else if it is non-nil query the user.
@@ -176,9 +142,6 @@ R=recompile, F=force, P=if prefix.
   (let ((default-directory
           (file-name-directory (locate-file lib load-path (get-load-suffixes)))))
     (byte-recompile-directory default-directory 0 t)))
-
-;; -------------------------------------------------------------------
-(declare-function package-installed-p "package")
 
 (provide 'nvp-package)
 ;;; nvp-package.el ends here

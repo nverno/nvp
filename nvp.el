@@ -1,4 +1,4 @@
-;;; nvp ---  -*- lexical-binding: t; -*-
+;;; nvp.el --- base configs -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -6,6 +6,7 @@
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  2 November 2016
+;; Version: 1.0.0
 
 ;; This file is not part of GNU Emacs.
 ;;

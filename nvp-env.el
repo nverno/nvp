@@ -32,6 +32,8 @@
   (require 'subr-x))
 (require 'nvp)
 (require 'nvp-log)
+(declare-function w32-shell-execute "w32")
+
 (autoload 'substitute-env-vars "env")
 
 (defun nvp-substitute-env-vars (string &optional unquote)
@@ -43,43 +45,83 @@ whitespace either way."
       (string-trim string "[\" \t\n\r]+" "[\" \t\n\r]+")
     (string-trim string)))
 
+;; split environment variable, remove duplicates maintaining ordering
+(defsubst nvp-env-split-var (var)
+  (when-let ((env (getenv var)))
+    (split-string env path-separator)))
+
+;; remove duplicate entries, maintaining ordering
+(defsubst nvp-env-uniq (parts)
+  (cl-remove-duplicates
+   parts
+   :test (nvp-with-gnu/w32 'string=
+           '(lambda (x y) (string= (downcase x) (downcase y))))
+   :from-end t))
+
+;; join env var with path-separator
+(defsubst nvp-env-join (parts)
+  (mapconcat 'identity parts path-separator))
+
+;; move entries in environment VAR matching REGEX to front of list
+(defun nvp-env-rearrange (var regex &optional case-fold)
+  "Move entries in env VAR matching REGEX to front of list and return new list.
+Optionally ignore case with CASE-FOLD.  Preserve existing order of entries."
+  (let ((parts (nvp-env-split-var var))
+        (case-fold-search case-fold)
+        hits misses)
+    (when parts
+      (mapc (lambda (s)
+              (if (string-match-p regex s)
+                  (push s hits)
+                (push s misses)))
+            parts)
+      (nconc (nreverse hits) (nreverse misses)))))
+
+(defun nvp-env-merge (var1 var2)
+  "Merge entries of two environment variables."
+  (nvp-env-join
+   (nvp-env-uniq (append (nvp-env-split-var var1) (nvp-env-split-var var2)))))
+
+(defun nvp-env-setenv (env-var value &optional append)
+  "Set ENV-VAR to VALUE or APPEND the new VALUE."
+  (if (not append)
+      (setenv env-var value)
+    (setenv env-var
+            (nvp-env-join
+             (nvp-env-uniq (cons value (nvp-env-split-var env-var)))))))
+
+(defun nvp-env-append (env-var value)
+  "Append VALUE to ENV-VAR."
+  (nvp-env-setenv env-var value 'append))
+
+(defun nvp-env-add (env-var value &optional test-string)
+  "Add VALUE to ENV-VAR if it isn't present already.
+Check if TEST-STRING is present in ENV-VAR if non-nil.
+If ENV-VAR is nil, set with new VALUE."
+  (if-let ((env (getenv env-var)))
+      (and (not (string-match-p (regexp-quote (or test-string value)) env))
+           (setenv env-var (nvp-env-join (list value env))))
+    (setenv env-var value)))
+
 ;; ------------------------------------------------------------
 ;;; PATH
 
 ;;;###autoload
-(define-obsolete-function-alias 'nvp-add-exec-path 'nvp-env-exec-add)
+(define-obsolete-function-alias 'nvp-add-exec-path 'nvp-env-path-append)
+;;;###autoload
+(define-obsolete-function-alias 'nvp-env-exec-add 'nvp-env-path-append)
 ;; Append DIR to environment variable PATH and EXEC-PATH.
 ;;;###autoload
-(defun nvp-env-exec-add (dir)
-  (let ((path (cl-remove-duplicates
-               (cons dir (split-string (getenv "PATH") path-separator))
-               :test (lambda (x y)
-                       (nvp-with-gnu/w32
-                           (string= x y)
-                         (string= (downcase x) (downcase y)))))))
-    (setenv "PATH" (mapconcat 'identity path path-separator))
+(defun nvp-env-path-append (dir)
+  "Append DIR to PATH and `exec-path'."
+  (let ((path (nvp-env-uniq (cons dir (nvp-env-split-var "PATH")))))
+    (setenv "PATH" (nvp-env-join path))
     (setq exec-path path)))
 
-;; move path entries matching regex to front of path and return
-;; new path, preserve existing order of entries otherwise
-(defun nvp-env-rearrange-path (regex &optional case-fold)
-  (let ((parts (split-string (getenv "PATH") path-separator))
-        (case-fold-search case-fold)
-        hits misses)
-    (mapc (lambda (s)
-            (if (string-match-p regex s)
-                (push s hits)
-              (push s misses)))
-          parts)
-    (nconc (nreverse hits) (nreverse misses))))
-
-;; rearrange process environmen path and return process-environment
-;; with new value tacked onto front (first gets used)
 (defun nvp-env-rearrange-process-path (regex &optional case-fold)
-  (cons (concat "PATH="
-                (mapconcat 'identity
-                           (nvp-env-rearrange-path regex case-fold)
-                           path-separator))
+  "Rearrange process environment path by REGEX.
+Return `process-environment' with new value tacked on front (first is used)."
+  (cons (concat "PATH=" (nvp-env-uniq (nvp-env-rearrange "PATH" regex case-fold)))
         process-environment))
 
 ;; ------------------------------------------------------------
@@ -99,7 +141,7 @@ whitespace either way."
       ;; update env for current session as well
       (when exec
         (if (string= (upcase env-var) "PATH")
-            (nvp-env-exec-add val)
+            (nvp-env-path-append val)
           (setenv env-var val))))))
 
 (nvp-with-gnu
@@ -114,7 +156,7 @@ whitespace either way."
           (setenv env-var value))))
     (when exec
       (if (string= (upcase env-var) "PATH")
-          (nvp-env-exec-add value)))))
+          (nvp-env-path-append value)))))
 
 ;; ------------------------------------------------------------
 ;;; Windows Search Path
@@ -138,10 +180,6 @@ whitespace either way."
     (nvp-log (format "%s: %s" (process-name p) m))
     (when (zerop (process-exit-status p))
       (nvp-log "DB Update completed"))))
-
-;; ------------------------------------------------------------
-
-(declare-function w32-shell-execute "w32")
 
 (provide 'nvp-env)
 ;;; nvp-env.el ends here

@@ -3,6 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
+;; Last modified: 2019-01-14 11:23:55 noah
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 20 March 2017
@@ -36,13 +37,15 @@
 (defun nvp-toggle-timestamp ()
   "Insert/update timestamp for current buffer."
   (interactive)
-  (pcase major-mode
-    (`org-mode
-     (let ((time-stamp-format "%04y-%02m-%02d")
-           (time-stamp-start "#\\+DATE:[ \t]*")
-           (time-stamp-end "$"))
-       (time-stamp)))
-    (_ (time-stamp))))
+  (let ((time-stamp-active t)
+        (time-stamp-pattern "15/Last modified: %%$"))
+    (pcase major-mode
+      (`org-mode
+       (let ((time-stamp-format "%04y-%02m-%02d")
+             (time-stamp-start "#\\+DATE:[ \t]*")
+             (time-stamp-end "$"))
+         (time-stamp)))
+      (_ (time-stamp)))))
 
 ;; In/De-crement numbers in region,  decremnent with prefix argument
 ;;;###autoload

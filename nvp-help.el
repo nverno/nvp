@@ -1,4 +1,4 @@
-;;; nvp-help ---  -*- lexical-binding: t; -*-
+;;; nvp-help.el --- help functions -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -6,6 +6,7 @@
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 24 November 2016
+;; Last modified: 2019-01-14 11:38:12 noah
 
 ;; This file is not part of GNU Emacs.
 ;;

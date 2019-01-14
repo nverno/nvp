@@ -1,4 +1,4 @@
-;;; nvp-jump ---  -*- lexical-binding: t; -*-
+;;; nvp-jump.el --- jumping places -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -263,6 +263,15 @@
 
 ;; -------------------------------------------------------------------
 ;;; Other
+
+;; jump to register in other window
+;;;###autoload
+(defun nvp-jump-to-register (&rest _args)
+  (interactive "P")
+  (cl-letf (((symbol-function 'switch-to-buffer) 'switch-to-buffer-other-window)
+            ((symbol-function 'pop-to-buffer-same-window) 'pop-to-buffer))
+    (setq prefix-arg current-prefix-arg)
+    (call-interactively 'jump-to-register)))
 
 ;;;###autoload
 (defun nvp-jump-to-dir (arg)

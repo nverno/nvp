@@ -2,8 +2,8 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-01-14 14:58:50>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: 2019-01-14 12:04:31 noah
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 20 March 2017
@@ -38,16 +38,12 @@
   "Insert/update timestamp for current buffer."
   (interactive "P")
   (let ((time-stamp-active t)
-        ;; search first 15 lines
-        (time-stamp-count )
-        (time-stamp-pattern "15/Last modified: %%$"))
-    (pcase major-mode
-      (`org-mode
-       (let ((time-stamp-format "%04y-%02m-%02d")
-             (time-stamp-start "#\\+DATE:[ \t]*")
-             (time-stamp-end "$"))
-         (time-stamp)))
-      (_ (time-stamp)))))
+        (time-stamp-count (if arg (read-number "Max time stamps: ") 1))
+        (time-stamp-pattern (or time-stamp-pattern
+                                (pcase major-mode
+                                  (`org-mode "#\\+DATE: <%%>$")
+                                  (_ "15/Last modified: <%%>$")))))
+    (time-stamp)))
 
 ;; In/De-crement numbers in region,  decremnent with prefix argument
 ;;;###autoload

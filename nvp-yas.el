@@ -222,7 +222,8 @@
       (yas-expand-snippet yas-new-snippet-default)
       
       ;; reload / compile after save
-      (add-hook 'after-save-hook 'nvp-yas-snippet-reload nil 'local))))
+      ;; (add-hook 'after-save-hook 'nvp-yas-snippet-reload nil 'local)
+      )))
 
 (provide 'nvp-yas)
 ;;; nvp-yas.el ends here

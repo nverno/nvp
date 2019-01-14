@@ -1,9 +1,9 @@
-;;; nvp-toggle-*- lexical-binding: t;-*-
+;;; nvp-toggle.el --- toggle/insert stuff -*- lexical-binding: t;-*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: 2019-01-14 11:23:55 noah
+;; Last modified: 2019-01-14 12:04:31 noah
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 20 March 2017
@@ -34,10 +34,12 @@
 (declare-function time-stamp "time-stamp")
 
 ;;;###autoload
-(defun nvp-toggle-timestamp ()
+(defun nvp-toggle-timestamp (&optional arg)
   "Insert/update timestamp for current buffer."
-  (interactive)
+  (interactive "P")
   (let ((time-stamp-active t)
+        ;; search first 15 lines
+        (time-stamp-count )
         (time-stamp-pattern "15/Last modified: %%$"))
     (pcase major-mode
       (`org-mode

@@ -1,9 +1,10 @@
-;;; nvp-install --- -*- lexical-binding: t; -*-
+;;; nvp-install.el --- -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-15 01:29:57>
 ;; Package-Requires: 
 ;; Created: 13 November 2016
 
@@ -120,7 +121,7 @@
   (let* ((git-uri (format "%s/%s" (or root "https://github.com") repo))
          (pkg (car (last (split-string repo "/"))))
          (default-directory nvp/site)
-         (buff (nvp-process-buffer (concat "*install:" repo "*"))))
+         (buff (nvp-process-buffer "*git-installs*" 'reuse)))
     (if (file-exists-p pkg)
         (progn
           (cd pkg)

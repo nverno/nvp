@@ -1,9 +1,10 @@
-;;; nvp-comment ---  -*- lexical-binding: t; -*-
+;;; nvp-comment --- comment helpers -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-14 19:15:18>
 ;; Package-Requires: 
 ;; Created: 26 December 2018
 
@@ -41,7 +42,7 @@
                    (concat comment-start comment-start))))
     (format "%s%s%s" comment str comment-end)))
 
-(defun nvp-comment-make-comment (length &optional start)
+(defun nvp-comment-start (length &optional start)
   "Create comment string of LENGTH starting with `comment-start' or START.
 Accounts for multi-character comments by recycling the second character."
   (ignore-errors
@@ -58,7 +59,7 @@ Accounts for multi-character comments by recycling the second character."
           (concat (make-string (1- length) ? )
                   (substring comment-start 1 2))
         (make-string length ? ))
-    (nvp-comment-make-comment length)))
+    (nvp-comment-start length)))
 
 (defun nvp-comment-end (&optional trim)
   "Return a TRIMmed version `comment-end' or \"\" if not defined."

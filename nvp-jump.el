@@ -4,6 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-14 23:21:08>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -31,7 +32,7 @@
   (require 'nvp-macro)
   (nvp-local-vars)
   (defvar recentf-list))
-(autoload 'elisp-utils-elisp-follow "elisp-utils")
+(autoload 'find-function-other-window "find-func")
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-chop-prefix "nvp-util")
 (nvp-with-gnu
@@ -84,67 +85,12 @@
   (interactive)
   (let* ((str-mode-hook (format "%s-hook" major-mode))
          (hook-fn-name
-          (format "nvp-%s-hook" (substring (symbol-name major-mode)
-                                           0 -5)))
+          (format "nvp-%s-hook" (substring (symbol-name major-mode) 0 -5)))
          (hook-fn (intern-soft hook-fn-name)))
-    (if hook-fn
-        (elisp-utils-elisp-follow hook-fn-name)
+    (if hook-fn (find-function-other-window hook-fn)
       (find-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
       (goto-char (point-min))
       (search-forward str-mode-hook nil t))))
-
-;; -------------------------------------------------------------------
-;;; Libraries
-
-;;;###autoload
-(defun nvp-jump-to-library (library &optional arg)
-  (interactive
-   (list (completing-read "Locate library: "
-                          (apply-partially
-                           'locate-file-completion-table
-                           load-path (get-load-suffixes))
-                          (lambda (f) (not (directory-name-p f))))
-         current-prefix-arg))
-  (let* ((file (locate-file library load-path
-                            (append (get-load-suffixes)
-                                    load-file-rep-suffixes)))
-         (el (concat (file-name-sans-extension file) ".el"))
-         (elgz (concat el ".gz")))
-    ;; if no .el, on linux, jump to .el.gz instead
-    (pcase arg
-      (`(4) (dired (file-name-directory file)))
-      (`(16) (let ((scripts (nvp-install--script (file-name-directory el))))
-               (when (file-exists-p scripts)
-                 (find-file-other-window scripts))))
-      (_ (find-file-other-window
-          (if (file-exists-p el) el elgz))))))
-
-;; Lookup up library URL
-;;;###autoload
-(defun nvp-jump-to-library-url (library)
-  (interactive
-   (list (if current-prefix-arg
-             (buffer-file-name)
-           (completing-read "Library: "
-                            (apply-partially
-                             'locate-file-completion-table
-                             load-path (get-load-suffixes))
-                            (lambda (f) (not (directory-name-p f)))))))
-  (let* ((file (if current-prefix-arg
-                   library
-                 (locate-file library load-path
-                              (append (get-load-suffixes)
-                                      load-file-rep-suffixes))))
-         (el (concat (file-name-sans-extension file) ".el"))
-         (elgz (concat el ".gz")))
-    (with-temp-buffer
-      (insert-file-contents (if (file-exists-p el) el elgz))
-      (goto-char (point-min))
-      (condition-case nil
-          (progn
-            (search-forward "URL: ")
-            (browse-url (buffer-substring (point) (point-at-eol))))
-        (error (message "No URL found for library"))))))
 
 ;; -------------------------------------------------------------------
 ;;; Org
@@ -245,16 +191,10 @@
           (nvp-with-gnu/w32
            (if (executable-find "calibre")
                (call-process "calibre" nil 0 nil fullname)
-             (if (y-or-n-p "Install calibre? ")
-                 (nvp-with-process-log
-                  (nvp-ext-sudo-install "calibre")
-                  :pop-on-error
-                  (call-process "calibre" nil 0 nil fullname))
-               (call-process "firefox" nil 0 nil fullname)))
+             (call-process "firefox" nil 0 nil fullname))
            (if (executable-find "sumatrapdf")
                (call-process "sumatrapdf" nil 0 nil fullname)
-             (call-process (nvp-program "firefox") nil 0 nil
-                           fullname))))
+             (call-process (nvp-program "firefox") nil 0 nil fullname))))
          ;; open if non-directory
          ((file-name-extension file)
           (find-file fullname))

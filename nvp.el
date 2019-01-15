@@ -53,7 +53,7 @@
     (name
      &key
      (mode (concat name "-mode"))
-     (dir (symbol-value (intern (concat name "-tools--dir"))))
+     (dir (symbol-value (intern (concat "nvp-" name "--dir"))))
      (snippets (concat "snippets/" (or mode (symbol-name major-mode))))
      (abbr-table mode)
      (abbr-file (concat name "-abbrev-table"))

@@ -1,9 +1,10 @@
-;;; nvp-imenu ---   -*- lexical-binding: t; -*-
+;;; nvp-imenu.el --- imenu helpers  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-14 21:02:39>
 ;; Package-Requires: 
 ;; Created: 25 January 2017
 
@@ -30,9 +31,8 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'idomenu nil t)
-
-(declare-function nvp-comment-make-comment "nvp-comment")
 (declare-function idomenu "idomenu")
+(autoload 'nvp-comment-start "nvp-comment")
 
 ;;; Local variables
 
@@ -61,7 +61,7 @@ EXTRA regexps to add to `imenu-generic-expression'.
 Any extra regexps should be an alist formatted as `imenu-generic-expression'."
   (setq nvp-imenu-comment-headers-re
         (or headers 
-            `((nil ,(concat "^" (regexp-quote (nvp-comment-make-comment 3))
+            `((nil ,(concat "^" (regexp-quote (nvp-comment-start 3))
                             "\\s-*\\(.*\\)\\s-*$")
                    1))))
   (setq nvp-imenu-comment-headers-re-1
@@ -70,7 +70,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
   (setq nvp-imenu-comment-headers-re-2
         (or headers-2
             `(("Sub-Headers"
-               ,(concat "^" (nvp-comment-make-comment 2) "-+\\s-*\\(.*\\)[ -]*$")
+               ,(concat "^" (nvp-comment-start 2) "-+\\s-*\\(.*\\)[ -]*$")
                1))))
   (setq-local imenu-generic-expression
               (append imenu-generic-expression

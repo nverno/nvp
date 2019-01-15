@@ -1,9 +1,10 @@
-;;; nvp-yas ---  -*- lexical-binding: t; -*-
+;;; nvp-yas.el --- snippet helpers -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-14 19:22:27>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -30,6 +31,7 @@
   (require 'nvp-macro)
   (nvp-local-vars))
 (require 'yasnippet)
+(require 'nvp-comment)
 (declare-function company-abort "company")
 (declare-function company-complete-common "company")
 (autoload 'string-trim "subr-x")
@@ -48,18 +50,10 @@
 ;;; Snippet helpers
 
 ;;; Comments
-(autoload 'nvp-comment-string "nvp-comment")
 (define-obsolete-function-alias 'nvp-yas-with-comment 'nvp-comment-string)
-
-(autoload 'nvp-comment-make-comment "nvp-comment")
-(define-obsolete-function-alias 'nvp-yas-comment 'nvp-comment-make-comment)
+(define-obsolete-function-alias 'nvp-yas-comment 'nvp-comment-start)
 (defalias 'yas-comment-string 'nvp-yas-comment)
-
-(autoload 'nvp-comment-continued "nvp-comment")
 (define-obsolete-function-alias 'nvp-yas-comment-cont 'nvp-comment-continued)
-
-;; `comment-end' or default to ""
-(autoload 'nvp-comment-end "nvp-comment")
 (define-obsolete-function-alias 'nvp-yas-comment-end 'nvp-comment-end)
 
 ;; trimmed filename
@@ -204,7 +198,8 @@
   (when (not (fboundp 'yas-new-snippet))
     (require 'yasnippet))
   (let* ((mm (symbol-name major-mode))
-         (default-directory (or nvp-snippet-dir
+         (default-directory (or (and arg (equal arg '(16)) nvp/snippet)
+                                nvp-snippet-dir
                                 (expand-file-name mm nvp/snippet)))
          (yas-selected-text (or yas-selected-text
                                 (and (region-active-p)
@@ -213,7 +208,7 @@
     (when (not (file-exists-p default-directory))
       (make-directory default-directory))
     ;; with prefix dired the snippet directory
-    (if arg (dired default-directory)
+    (if (equal arg '(4)) (dired default-directory)
       (switch-to-buffer-other-window (generate-new-buffer-name "*snippet*"))
       (erase-buffer)
       (kill-all-local-variables)

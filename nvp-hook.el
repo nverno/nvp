@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-14 18:51:52>
+;; Last modified: <2019-01-15 21:01:43>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -32,7 +32,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'time-stamp))
-(declare-function 'time-stamp "time-stamp")
+(autoload 'time-stamp "time-stamp")
 
 ;;;###autoload
 (defun nvp-hook-update-timestamp ()

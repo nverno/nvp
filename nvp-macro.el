@@ -1,4 +1,4 @@
-;;; nvp-macro ---  -*- lexical-binding: t; -*-
+;;; nvp-macro.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -135,6 +135,42 @@ use either `buffer-file-name' or `buffer-name'."
 
 ;; -------------------------------------------------------------------
 ;;; Package
+
+(defmacro nvp-load-file-name ()
+  "Expand to the file's name."
+  '(cond
+    (load-in-progress load-file-name)
+    ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+     byte-compile-current-file)
+    (:else (buffer-file-name))))
+
+(defmacro nvp-package-root (&optional name)
+  "Expand to the default package directory with default prefix or NAME."
+  (let ((prefix
+         (if name
+             (if (symbolp name) (symbol-name name) name)
+           (file-name-nondirectory
+            (directory-file-name
+             (file-name-directory (nvp-load-file-name)))))))
+    (intern (concat prefix "--dir"))))
+
+(cl-defmacro nvp-package-define-root (&key name snippets)
+  "Define package root directory with default prefix as directory name or NAME.
+If SNIPPETS is non-nil, setup snippet loading for directory."
+  (let* ((file (cond
+                (load-in-progress load-file-name)
+                ((and (boundp 'byte-compile-current-file)
+                      byte-compile-current-file)
+                 byte-compile-current-file)
+                (:else (buffer-file-name))))
+         (dir (file-name-directory file))
+         (base (file-name-nondirectory (directory-file-name dir)))
+         (prefix (if name (if (symbolp name) (symbol-name name) name) base))
+         (sym (intern (concat prefix "--dir"))))
+    `(progn
+       (eval-and-compile
+         (defconst ,sym ,dir))
+       ,(when snippets `(nvp-package-load-snippets ,sym)))))
 
 (defmacro nvp-package-dir (dir &optional snippets)
   "Define package directory DIR.
@@ -415,9 +451,9 @@ menu entry."
 ;; FIXME: eval
 (defmacro nvp-common-bindings (modes &rest bindings)
   (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for mode in (eval modes)
-      collect `(nvp-bindings ,mode ,@bindings))))
+  `(progn
+     ,@(cl-loop for (mode . feature) in (eval modes)
+          collect `(nvp-bindings ,mode ,feature ,@bindings))))
 
 ;;; general movement bindings for non-insert modes
 (declare-function nvp-basic-up-paragraph "nvp-basic")
@@ -508,19 +544,6 @@ menu entry."
      `(ido-completing-read ,prompt ,thing))
     (_ `(read-from-minibuffer ,prompt))))
 
-(defmacro nvp-read-obarray (prompt &optional regexp)
-  "Completing read for obarray with optional REGEXP filter."
-  `(ido-completing-read
-    ,prompt
-    (let (r)
-      (mapatoms
-       (lambda (x)
-         ,(if regexp
-              `(when (string-match-p ,regexp (symbol-name x))
-                 (push x r))
-            `(push x r))))
-      (mapcar 'symbol-name r))))
-
 ;; -------------------------------------------------------------------
 ;;; Time
 
@@ -547,8 +570,18 @@ menu entry."
 (declare-function pos-tip-show "pos-tip")
 (declare-function nvp-basic-temp-binding "nvp-basic")
 
-(cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn bindings)
-  "Toggle POPUP in pos-tip. If HELP-FN is :none, 'h' is not bound by default."
+(cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn bindings (timeout 45)
+                                         (help-buffer
+                                          '(get-buffer-create "*nvp-help*")))
+  "Toggle POPUP, a help string, in pos-tip. 
+If HELP-FN is :none, 'h' is not bound by default. Normally, 'h' triggers a function
+to jump to a buffer displaying the full help doc for the popup.
+If USE-GTK is non-nil use gtk tooltips.
+BINDINGS are an alist of (key . function) of additional keys to bind during the
+active popup.
+TIMEOUT is passed to `pos-tip-show'.
+HELP-BUFFER is buffer with full help documentation. This is only applicable to the
+default help function."
   (declare (indent defun))
   (let ((str (make-symbol "str")))
     `(progn
@@ -557,7 +590,7 @@ menu entry."
        (let ((x-gtk-use-system-tooltips ,use-gtk))
          (or (x-hide-tip)
              (let ((,str ,popup))
-               (pos-tip-show ,str nil nil nil 20)
+               (pos-tip-show ,str nil nil nil ,timeout)
                (nvp-basic-temp-binding
                 "h" ,(cond
                       ((eq :none help-fn) nil)
@@ -565,7 +598,9 @@ menu entry."
                       (t `(lambda ()
                             (interactive)
                             (x-hide-tip)
-                            (with-current-buffer (get-buffer-create "*nvp-help*")
+                            (with-current-buffer
+                                ,(or help-buffer
+                                     '(get-buffer-create "*nvp-help*"))
                               (insert ,str)
                               (view-mode-enter)
                               (pop-to-buffer (current-buffer)))))))
@@ -1052,7 +1087,7 @@ is in BODY."
 ;;; Variables / Declares
 
 (defmacro nvp-local-vars ()
-  `(progn
+  '(progn
      (defvar nvp/abbrevs)
      (defvar nvp/auto)
      (defvar nvp/auto-site)
@@ -1082,7 +1117,9 @@ is in BODY."
      (defvar nvp/cache)
      (defvar nvp/backup)
      (defvar nvp/org)
-     (defvar nvp/books)))
+     (defvar nvp/books)
+     (defvar nvp/install)
+     (defvar nvp/private)))
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

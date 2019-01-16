@@ -1,9 +1,10 @@
-;;; nvp-window ---  -*- lexical-binding: t; -*-
+;;; nvp-window.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-16 02:13:17>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -30,6 +31,8 @@
   (require 'nvp-macro)
   (require 'hydra))
 (require 'windmove)
+(declare-function helm-mini "helm")
+(declare-function helm-find-files "helm")
 (autoload 'ace-window "ace-window")
 (autoload 'winner-undo "winner")
 (autoload 'winner-redo "winner")
@@ -139,10 +142,6 @@ _q_ quit       _o_nly this     _d_elete
         (windmove-find-other-window 'up))
       (shrink-window arg)
     (enlarge-window arg)))
-
-;; -------------------------------------------------------------------
-(declare-function helm-mini "helm")
-(declare-function helm-find-files "helm")
 
 (provide 'nvp-window)
 ;;; nvp-window.el ends here

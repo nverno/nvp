@@ -1,9 +1,10 @@
-;;; nvp-hash ---  -*- lexical-binding: t; -*-
+;;; nvp-hash.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-16 02:10:41>
 ;; Package-Requires: 
 ;; Created: 25 November 2016
 
@@ -32,14 +33,6 @@
 
 (defun nvp-hash-cache-init (&optional test)
   (make-hash-table :test (or test 'equal)))
-
-(defun nvp-hash-cache-get (key cache)
-  (gethash key cache))
-
-(defun nvp-hash-cache-put (key value cache)
-  (when value
-    (puthash key value cache))
-  value)
 
 (defun nvp-hash-to-alist (hash)
   "Convert hashtable to association list."

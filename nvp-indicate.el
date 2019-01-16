@@ -1,9 +1,10 @@
-;;; nvp-indicate --- indicators -*- lexical-binding: t; -*-
+;;; nvp-indicate.el --- indicators -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-16 02:05:02>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 

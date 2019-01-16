@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-14 23:21:08>
+;; Last modified: <2019-01-16 04:18:07>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -124,6 +124,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Scratch
+(autoload 'nvp-read-obarray "nvp-read")
 
 ;;;###autoload
 (defun nvp-jump-to-scratch (mode)

@@ -4,6 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-16 04:02:23>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -38,10 +39,33 @@
   (defvar nvp-abbrev-local-table))
 (require 'nvp-basic)
 
-(nvp-package-dir nvp--dir)
+(nvp-package-define-root)
 
 ;; ------------------------------------------------------------
 ;;; Setup
+;;;###autoload
+(defun nvp-setup-package-root (pkg)
+  "Return a guess for the package root directory."
+  (let* ((sym (and pkg (if (stringp pkg) (intern-soft pkg) pkg)))
+         (str (and pkg (if (stringp pkg) pkg (symbol-name pkg))))
+         (path                          ;path to package
+          (cond
+           ;; should be able to find features and autoloads
+           ((and sym (featurep sym) (locate-library str)))
+           ((and sym                    ;autoload / already loaded
+                 (ignore-errors (locate-library (symbol-file sym)))))
+           ;; check if pkg exists or is on load-path
+           ((and (stringp str)
+                 (if (file-exists-p pkg) pkg
+                   ;; look for package directory
+                   (locate-file str load-path nil
+                                (lambda (f) (if (file-directory-p f) 'dir-ok))))))
+           (:else nil))))
+    ;; return directory
+    (if path
+      (if (file-directory-p path) path
+        (directory-file-name (file-name-directory path)))
+      )))
 
 ;;;###autoload
 (define-obsolete-function-alias 'nvp-utils-setup-local
@@ -52,17 +76,24 @@
 (cl-defun nvp-setup-local
     (name
      &key
-     (mode (concat name "-mode"))
-     (dir (symbol-value (intern (concat "nvp-" name "--dir"))))
+     mode
+     abbr-file
+     (dir (nvp-setup-package-root name))
      (snippets (concat "snippets/" (or mode (symbol-name major-mode))))
-     (abbr-table mode)
-     (abbr-file (concat name "-abbrev-table"))
+     (abbr-table (or mode (symbol-name major-mode)))
      (fn nil))
-  "Setup local variables for utils."
-  (setq-local nvp-snippet-dir (expand-file-name snippets dir))
-  (setq-local nvp-abbrev-local-table abbr-table)
-  (setq-local nvp-abbrev-local-file (expand-file-name abbr-file dir))
-  (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file))
+  "Setup local variables for helper package - abbrevs, snippets, root dir."
+  (if (not (file-exists-p dir))
+      (user-error "Setup for '%s' failed to find package root"
+                  (if (symbolp name) (symbol-value name) name))
+    (or abbr-file
+        (setq abbr-file (ignore-errors
+                          (car (directory-files dir nil "abbrev-table")))))
+    (setq-local nvp-snippet-dir (expand-file-name snippets dir))
+    (setq-local nvp-abbrev-local-table abbr-table)
+    (and abbr-file
+         (setq-local nvp-abbrev-local-file (expand-file-name abbr-file dir))
+         (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file))))
   (when fn (funcall fn)))
 
 ;; -------------------------------------------------------------------

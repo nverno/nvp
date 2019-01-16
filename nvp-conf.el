@@ -1,4 +1,5 @@
-;;; nvp-conf --- parse config files -*- lexical-binding: t; -*-
+;;; nvp-conf.el --- parse config files -*- lexical-binding: t; -*-
+;; Last modified: <2019-01-16 02:16:36>
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -61,6 +62,45 @@
     (if (not value)
         res
       (cdr (cl-assoc value res :test 'string=)))))
+
+;; -------------------------------------------------------------------
+;;; Netrc -- FIXME: outdated, all encrypted 
+
+;; Regex to match machine name
+(defvar nvp-netrc-machine-regex
+  "\\(?:machine\\)\\s-+\\([^\n]+\\)")
+
+;; Regex to match login and password.
+(defvar nvp-netrc-login/pwd-regex
+  (eval-when-compile
+    (concat
+     "\\(?:login\\)\\s-+\\([^\n]+\\)\n"
+     "\\s-*\\(?:password\\)\\s-+\\([^\n]+\\)")))
+
+;; Check .netrc file for login/password for machine.
+;;;###autoload
+(defun nvp-netrc (machine &optional location)
+  (let ((netrc (or location
+                   (expand-file-name ".netrc" "~")
+                   (expand-file-name "_netrc" "~")))
+        res)
+    (if (file-exists-p netrc)
+        (progn
+          (with-temp-buffer
+            (insert-file-contents netrc)
+            (goto-char (point-min))
+            (while (re-search-forward nvp-netrc-machine-regex
+                                      nil t)
+              (when (string= (match-string-no-properties 1) machine)
+                (forward-line 1)
+                (re-search-forward nvp-netrc-login/pwd-regex
+                                   nil t)
+                (when (and (match-string-no-properties 1)
+                           (match-string-no-properties 2))
+                  (setq res `(,(match-string-no-properties 1)
+                              ,(match-string-no-properties 2))))))))
+      (user-error "File %s doesn't exist." netrc))
+    res))
 
 (provide 'nvp-conf)
 ;;; nvp-conf.el ends here

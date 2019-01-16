@@ -33,7 +33,7 @@
 (require 'nvp)
 (require 'nvp-log)
 (declare-function w32-shell-execute "w32")
-
+(declare-function nvp-read-with-message "nvp-read")
 (autoload 'substitute-env-vars "env")
 
 (defun nvp-substitute-env-vars (string &optional unquote)
@@ -94,6 +94,7 @@ Optionally ignore case with CASE-FOLD.  Preserve existing order of entries."
   "Append VALUE to ENV-VAR."
   (nvp-env-setenv env-var value 'append))
 
+;;;###autoload
 (defun nvp-env-add (env-var value &optional test-string)
   "Add VALUE to ENV-VAR if it isn't present already.
 Check if TEST-STRING is present in ENV-VAR if non-nil.
@@ -102,6 +103,33 @@ If ENV-VAR is nil, set with new VALUE."
       (and (not (string-match-p (regexp-quote (or test-string value)) env))
            (setenv env-var (nvp-env-join (list value env))))
     (setenv env-var value)))
+
+(defsubst nvp-env-list-vars ()
+  "Return alist of (env-var value) defined in `process-environment'."
+  (mapcar (lambda (e) (split-string e "=" 'omit)) process-environment))
+
+;; -------------------------------------------------------------------
+;;; Interactive
+
+;;;###autoload
+(defun nvp-env-set-var (env-var value &optional clobber)
+  "Add VALUE to ENV-VAR interactively.
+With prefix, overwrite value instead of appending by default."
+  (interactive
+   (let ((var (ido-completing-read "Env var: " (nvp-env-list-vars))))
+     (list
+      var (nvp-read-with-message "Value: " "Current: %s" (getenv var))
+      (and current-prefix-arg
+           (y-or-n-p "Clobber current value? ")))))
+  (if clobber (setenv env-var value)
+    (nvp-env-add env-var value)))
+
+;;;###autoload
+(defun nvp-env-lookup ()
+  "Lookup value of environment variable."
+  (interactive)
+  (getenv (ido-completing-read
+           "Lookup environment variable: " (nvp-env-list-vars) nil 'match)))
 
 ;; ------------------------------------------------------------
 ;;; PATH

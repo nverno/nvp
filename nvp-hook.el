@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-15 21:01:43>
+;; Last modified: <2019-01-16 17:26:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -31,8 +31,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'time-stamp))
-(autoload 'time-stamp "time-stamp")
+  (require 'nvp-macro))
+(require 'time-stamp)
 
 ;;;###autoload
 (defun nvp-hook-update-timestamp ()

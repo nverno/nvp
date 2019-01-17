@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 04:18:07>
+;; Last modified: <2019-01-16 21:00:39>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -34,7 +34,7 @@
   (defvar recentf-list))
 (autoload 'find-function-other-window "find-func")
 (autoload 'nvp-log "nvp-log")
-(autoload 'nvp-chop-prefix "nvp-util")
+(autoload 'string-remove-prefix "subr-x")
 (nvp-with-gnu
  (autoload 'nvp-ext-sudo-install "nvp-ext"))
 
@@ -175,7 +175,7 @@
           ;; otherwise, just use short name
           (mapcar (if recurse
                       #'(lambda (s)
-                          (nvp-chop-prefix dirname s))
+                          (string-remove-prefix dirname s))
                     'file-name-nondirectory)
                   files))
          (mode (substring-no-properties (symbol-name major-mode) 0 -5))

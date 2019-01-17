@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-15 01:29:57>
+;; Last modified: <2019-01-16 20:36:10>
 ;; Package-Requires: 
 ;; Created: 13 November 2016
 
@@ -64,6 +64,20 @@
 ;;    (let ((makefile (and makefile )))
 ;;     (list ())))
 ;; )
+
+;; possible local locations
+(defvar nvp-install-local-locations '("~/.local/bin/" "/usr/local/bin/"))
+
+;; locate program in local locations
+;;;###autoload
+(defun nvp-install-find-local-program (program &optional path)
+  (nvp-with-gnu/w32
+      (cl-loop for p in (if path (cons path nvp-install-local-locations)
+                          nvp-install-local-locations)
+         do (let ((f (expand-file-name program p)))
+              (and (file-exists-p f)
+                   (cl-return f))))
+    (bound-and-true-p (intern (concat "nvp-" program "-program")))))
 
 ;;--- Parse ----------------------------------------------------------
 

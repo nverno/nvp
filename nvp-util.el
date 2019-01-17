@@ -1,8 +1,9 @@
-;;; nvp-util ---  -*- lexical-binding: t; -*-
+;;; nvp-util.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
+;; Last modified: <2019-01-16 21:10:32>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  2 November 2016
@@ -29,9 +30,15 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(declare-function advice-mapc "nadvice")
+(declare-function advice-remove "nadvice")
 
-;; -------------------------------------------------------------------
-;;; Date / Time
+;; https://emacs.stackexchange.com/questions/24657/unadvise-a-function-remove-all-advice-from-it
+;;;###autoload
+(defun nvp-advice-remove-all (sym)
+  "Remove all advice from SYM."
+  (interactive "aFunction: ")
+  (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
 
 ;; insert date
 (defun nvp-insert-date ()
@@ -94,48 +101,7 @@
       (insert "\n        ))\n"))))
 
 ;; -------------------------------------------------------------------
-;;; Procs
-
-(defun nvp-start-process (cmd)
-  (start-process
-   cmd nil shell-file-name
-   shell-command-switch
-   (format "nohup 1>/dev/null 2>/dev/null %s" cmd)))
-
-;; -------------------------------------------------------------------
-;;; Tables
-
-;; Format alist DAT as an org table.  This alist assumes :head and
-;; :rows lists. It splits :rows into number of sublists matching
-;; number of colums (:head).
-(defun nvp-table-alist-to-org (dat)
-  (let* ((head (cdr (assoc-string "head" dat)))
-         (rows (append (cdr (assoc-string "rows" dat)) ()))
-         (cols (length head)))
-    (append head (cons 'hline nil) (nvp-list-split rows cols) nil)))
-
-;; -------------------------------------------------------------------
 ;;; Strings / Regexp
-
-;; Remove string suffix if it is at the end of the string `s'.
-(defsubst nvp-chop-suffix (suffix s)
-  (let ((pos (- (length suffix))))
-    (if (and (>= (length s) (length suffix))
-             (string= suffix (substring s pos)))
-        (substring s 0 pos)
-      s)))
-
-;; Remove string prefix if is is at the start of `s'.
-(defsubst nvp-chop-prefix (prefix s)
-  (let ((pos (length prefix)))
-    (if (and (>= (length s) (length prefix))
-             (string= prefix (substring s 0 pos)))
-        (substring s pos)
-      s)))
-
-;; Remove trailing whitespace from `STR'.
-(defsubst nvp-string-rtrim (str)
-  (replace-regexp-in-string "[ \t\n]+$" "" str))
 
 ;; Find all matches for `REGEX' within `STR', returning the full match
 ;; string or group `GROUP'.
@@ -166,11 +132,6 @@
            (save-excursion
              (progn (back-to-indentation) (point))))
           "\\)"))
-
-(defsubst nvp-line-empty-p ()
-  (save-excursion
-    (beginning-of-line)
-    (looking-at "[[:space:]]*$")))
 
 ;; Skip back across `backwards' chars, then look for `forward',
 ;; returning cons of start and end of match.

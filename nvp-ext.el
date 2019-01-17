@@ -1,8 +1,9 @@
-;;; nvp-ext --- -*- lexical-binding: t; -*-
+;;; nvp-ext.el --- External programs -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
+;; Last modified: <2019-01-16 20:55:10>
 ;; URL: https://github.com/nverno/
 ;; Package-Requires: 
 ;; Created: 11 November 2016
@@ -31,6 +32,7 @@
   (nvp-local-vars)
   (defvar explicit-shell-file-name)
   (defvar epg-gpg-home-directory))
+(declare-function imenu--make-index-alist "imenu")
 (autoload 'nvp-log "nvp-log")
 (autoload 'nvp-process-buffer "nvp")
 
@@ -241,25 +243,13 @@ in buffer *vagrant-status*."
           '("pubring.gpg" "secring.gpg" "trustdb.gpg"))))
 
 ;; -------------------------------------------------------------------
-;;; Bash
-
-(nvp-with-w32
-  ;; FIXME: move to w32-tools, also doesn't work
-  (defun nvp-ext-bashw ()
-    (interactive)
-    (if current-prefix-arg
-        (w32-shell-execute "runas" (nvp-program "bashw"))
-      (let ((shell-file-name "bash")
-            (explicit-shell-file-name (nvp-program "bashw"))
-            (explicit-shell-args
-             '("--login" "-i"))
-            (w32-quote-process-args ?\")
-            (buff "WindowsBash")
-            (binary-process-input))
-        (shell buff)))))
-
-;; -------------------------------------------------------------------
 ;;; Other
+
+(defun nvp-ext-start-process (cmd)
+  (start-process
+   cmd nil shell-file-name
+   shell-command-switch
+   (format "nohup 1>/dev/null 2>/dev/null %s" cmd)))
 
 ;; Return the number of logical processors on this system.
 (defun nvp-ext-sys-numcores ()
@@ -279,9 +269,6 @@ in buffer *vagrant-status*."
          (string-to-number (buffer-string)))))
    ;; Default
    1))
-
-;; -------------------------------------------------------------------
-(declare-function imenu--make-index-alist "imenu")
 
 (provide 'nvp-ext)
 ;;; nvp-ext.el ends here

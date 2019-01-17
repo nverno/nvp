@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 20:17:36>
+;; Last modified: <2019-01-16 23:08:20>
 ;; Package-Requires: 
 ;; Created: 25 November 2016
 
@@ -33,13 +33,15 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 
-(cl-defstruct (nvp-cache (:constructor nvp-cache--create))
+(cl-defstruct (nvp-cache (:constructor nvp-cache--create)
+                         (:copier nil))
   "Hash table to store cache."
-  table default)
+  table)
 
-(defun nvp-cache-create (&rest args)
+(cl-defun nvp-cache-create (&rest args)
   "Create cache table, ARGS passed to `make-hash-table'."
-  (nvp-cache--create :table (apply #'make-hash-table args)))
+  (let
+   (nvp-cache--create :table (apply #'make-hash-table args))))
 
 (defun nvp-cache-get (key cache &optional default)
   "Retrieve KEY value from CACHE."

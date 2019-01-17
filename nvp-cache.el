@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 23:08:20>
+;; Last modified: <2019-01-16 23:43:46>
 ;; Package-Requires: 
 ;; Created: 25 November 2016
 
@@ -40,21 +40,19 @@
 
 (cl-defun nvp-cache-create (&rest args)
   "Create cache table, ARGS passed to `make-hash-table'."
-  (let
-   (nvp-cache--create :table (apply #'make-hash-table args))))
+  (nvp-cache--create :table (apply #'make-hash-table args)))
 
 (defun nvp-cache-get (key cache &optional default)
   "Retrieve KEY value from CACHE."
-  (cdr (gethash key (nvp-cache-table cache) (or (nvp-cache-default cache)
-                                                default))))
+  (gethash key (nvp-cache-table cache) default))
 
 (gv-define-setter nvp-cache-get (val key cache)
   "Add KEY-VAL pair to CACHE using `setf'."
-  (progn (puthash key val) (nvp-cache-table cache)))
+  `(puthash ,key ,val (nvp-cache-table ,cache)))
 
 (defun nvp-cache-map (f cache)
   "Apply function F to elements of CACHE ala `maphash'."
-  (maphash (lambda (k v) (funcall f k (cdr v))) (nvp-cache-table cache)))
+  (maphash (lambda (k v) (funcall f k v)) (nvp-cache-table cache)))
 
 (defun nvp-cache-count (cache)
   "Return number of CACHE entries."
@@ -64,30 +62,28 @@
   "Return cache as alist."
   (cl-loop with cache = (nvp-cache-table cache)
      for k being the hash-keys of cache using (hash-value v)
-     collect (k . v)))
+     collect (cons k v)))
 
-(defun nvp-cache-from-alist (alist &rest options)
-  "Build hashtable from values in association list ALIST."
-  (let ((ht (apply 'make-hash-table options)))
-    (mapc
-     (lambda (item) (puthash (car item) (cdr item) ht))
-     alist)
-    ht))
+(defun nvp-cache-from-alist (alist &rest cache-args)
+  "Build cache using CACHE-ARGS from values in ALIST."
+  (let ((cache (apply #'nvp-cache-create cache-args)))
+    (pcase-dolist (`(,k . ,v) alist)
+      (setf (nvp-cache-get k cache) v))
+    cache))
 
-(defun nvp-cache-save (hash file)
-  "Save hashtable HASH as association list to FILE."
+(defun nvp-cache-save (cache file)
+  "Save cache to file."
   (with-temp-buffer
     (let (print-level print-length)
-      (insert (pp-to-string (nvp-cache-to-alist hash)))
-      (write-region (point-min) (point-max) file))))
+      (insert ";; -*- no-byte-compile: t -*-\n")
+      (prin1 cache (current-buffer))
+      (write-file file))))
 
-(defun nvp-cache-load (file &optional test)
-  (nvp-cache-from-alist
-   (with-temp-buffer
-     (insert-file-contents file)
-     (car (read-from-string (buffer-substring-no-properties
-                             (point-min) (point-max)))))
-   :test (or test 'equal)))
+(defun nvp-cache-load (file)
+  "Load saved cache."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (car (read-from-string (buffer-string)))))
 
 (provide 'nvp-cache)
 ;;; nvp-cache.el ends here

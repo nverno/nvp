@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-14 14:58:50>
+;; Last modified: <2019-01-18 14:24:14>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -124,9 +124,12 @@ Call repeatedly with 'i'."
 ;;;###autoload
 (defun nvp-toggle-local-binding (local-var com-start com-end)
   (interactive
-   (list (read-string "Binding: " "mode: ")
-         (or comment-start (read-string "Comment start: " "/* "))
-         (or (and comment-start comment-end) (read-string "Comment end: " " */"))))
+   (let* ((var (read-string "Binding: " "mode: "))
+          (start (or comment-start (read-string "Comment start: ")))
+          (end (or (and comment-start comment-end)
+                   (read-string "Comment end: "
+                                (if (string-prefix-p "/\*" start " */") "")))))
+     (list var start end)))
   (let ((parts (split-string local-var ":" 'omit " ")))
     (save-excursion
       (goto-char (point-min))

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 02:05:02>
+;; Last modified: <2019-01-24 15:56:17>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -72,6 +72,7 @@
 ;; make modeline green for a sec
 ;;;###autoload
 (defun nvp-indicate-modeline-success (&optional msg)
+  "Flash success in modeline with optional MSG."
   (let* ((power-p (memq 'powerline-active0 (face-list)))
          (pcolor (and power-p (face-background 'powerline-active0)))
          (color (face-background 'mode-line)))

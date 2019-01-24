@@ -46,6 +46,7 @@
 (define-obsolete-function-alias 'nvp-basic-compile 'nvp-compile-basic)
 ;;;###autoload
 (defun nvp-compile-basic (&optional comint read-command)
+  "Basic compilation."
   (interactive)
   (setq-local compilation-read-command read-command)
   (and compilation-read-command

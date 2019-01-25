@@ -247,7 +247,9 @@ With prefix sort in REVERSE."
 ;;;###autoload
 (defun nvp-wrap-quotes (&optional _arg)
   (interactive "P")
-  (let ((sp-pair-list '(("\"". "\""))))
+  (if (not (assoc "\"" sp-pair-list))
+      (let ((sp-pair-list '(("\"". "\""))))
+        (sp-wrap-with-pair "\""))
     (sp-wrap-with-pair "\"")))
 
 ;;;###autoload

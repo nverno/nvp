@@ -82,6 +82,18 @@ use either `buffer-file-name' or `buffer-name'."
                  (nth 3 ppss)))
      ,@body))
 
+(defmacro nvp-unless-in-comment (&rest body)
+  "Execute BODY unless in comment."
+  (declare (indent defun) (debug t))
+  `(unless (nth 4 (syntax-ppss))
+     ,@body))
+
+(defmacro nvp-unless-in-string (&rest body)
+  "Execute BODY unless in string."
+  (declare (indent defun))
+  `(unless (nth 3 (syntax-ppss))
+     ,@body))
+
 ;;; Conversions
 
 (defmacro nvp-listify (args)

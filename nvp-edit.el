@@ -262,11 +262,16 @@ With prefix sort in REVERSE."
       (sp-wrap-with-pair "~"))))
 
 ;;;###autoload
+(defun nvp-wrap-with-defaults (char &optional _arg)
+  "Wrap next sexp with CHAR, where CHAR is the last key pressed.
+Uses default vaules for `sp-pair-list'."
+  (interactive (list (nvp-last-input-char) current-prefix-arg))
+  (sp-wrap-with-pair char))
+
+;;;###autoload
 (defun nvp-wrap-with (char &optional _arg)
-  "Wrap next sexp with CHAR, where CHAR is the last key pressed."
-  (interactive
-   (list (kbd (substring (edmacro-format-keys (vector last-input-event)) -1))
-         current-prefix-arg))
+  "Wrap next sexp with CHAR (last key pressed), overriding default `sp-pair-list'."
+  (interactive (list (nvp-last-input-char) current-prefix-arg))
   (let ((sp-pair-list `((,char . ,char))))
     (sp-wrap-with-pair char)))
 

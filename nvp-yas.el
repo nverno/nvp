@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-14 19:22:27>
+;; Last modified: <2019-01-24 22:17:47>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -41,9 +41,14 @@
 ;; -------------------------------------------------------------------
 ;;; Setup 
 
-;; compile snippets when installing mode
-(defun nvp-yas-snippet-install ()
-  (let ((yas-snippet-dirs nvp/snippet))
+;; compile snippets, optionally compile all snippet subdirs in site-lisp addons
+(defun nvp-yas-snippet-compile (&optional all)
+  "Compile snippets in default location.
+Optionally, compile ALL snippets including subdirs in site-lisp packages."
+  (interactive "P")
+  (let ((yas-snippet-dirs
+         (cons nvp/snippet
+               (and all (directory-files-recursively nvp/site "snippets" 'dirs)))))
     (yas-recompile-all)))
 
 ;; -------------------------------------------------------------------

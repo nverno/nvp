@@ -513,6 +513,10 @@ menu entry."
 ;; -------------------------------------------------------------------
 ;;; Read / Input
 
+(defmacro nvp-last-input-char ()
+  "Return the last character input."
+  '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
+
 ;; read input in various ways
 (defmacro nvp-read (prompt &optional thing &rest args)
   (declare (indent defun))

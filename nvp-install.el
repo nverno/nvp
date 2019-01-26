@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 20:36:10>
+;; Last modified: <2019-01-25 23:13:45>
 ;; Package-Requires: 
 ;; Created: 13 November 2016
 
@@ -263,7 +263,7 @@
            (cl-loop for dir in ,env
               do
                 (nvp-log "Adding %s to PATH" dir)
-                (nvp-env-exec-add dir))
+                (nvp-env-path-add dir))
            ;;--- Scripts ---------------------------------------------
            (cl-loop for (prog args) in ,script
               do

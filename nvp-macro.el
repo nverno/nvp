@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-25 20:21:55>
+;; Last modified: <2019-01-25 22:45:44>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -308,7 +308,8 @@ line at match (default) or do BODY at point if non-nil."
 ;; -------------------------------------------------------------------
 ;;; REPLs
 
-(defmacro nvp-hippie-shell-fn (name history &optional size ring bol-fn)
+(cl-defmacro nvp-hippie-shell-fn (name histfile &key (size 5000) history bol-fn
+                                       history-fn expand-fn)
   "Setup comint history ring read/write and hippie-expand for it."
   (let ((fn (nvp-string-or-symbol name)))
     `(progn
@@ -319,14 +320,15 @@ line at match (default) or do BODY at point if non-nil."
        (declare-function comint-write-input-ring "comint")
        (autoload 'hippie-expand-shell-setup "hippie-expand-shell")
        (defun ,fn ()
-         (setq comint-input-ring-file-name
-               (expand-file-name ,history nvp/cache))
-         (setq comint-input-ring-size ,(or size 2000))
+         (setq comint-input-ring-file-name (expand-file-name ,histfile nvp/cache))
+         (setq comint-input-ring-size ,size)
          (comint-read-input-ring)
-         (add-hook 'kill-buffer-hook 'comint-write-input-ring 'local)
+         (add-hook 'kill-buffer-hook 'comint-write-input-ring nil 'local)
          (hippie-expand-shell-setup
-          ,(or ring ''comint-input-ring)
-          ,(or bol-fn ''comint-line-beginning-position))))))
+          :history ,(or history ''comint-input-ring)
+          :bol-fn ,(or bol-fn ''comint-line-beginning-position)
+          :history-fn ,history-fn
+          :expand-fn ,expand-fn)))))
 
 ;; switching between REPLs and source buffers -- maintain the name of the
 ;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
@@ -370,7 +372,7 @@ line at match (default) or do BODY at point if non-nil."
              ,@(and repl-wait `((sit-for ,repl-wait)))
              (and (processp repl-buffer)
                   (setq repl-buffer (process-buffer repl-buffer))
-                  ;; add a sentinel to write comint history before other
+                  ;; add a sentinel to write comint histfile before other
                   ;; sentinels that may be set by the mode
                   ,(and repl-history
                         '(nvp-comint-add-history-sentinel))))

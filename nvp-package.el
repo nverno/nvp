@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-25 21:05:19>
+;; Last modified: <2019-01-25 22:34:59>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 29 November 2016
@@ -41,33 +41,43 @@
 (defvar autoload-timestamps)
 (defvar warning-minimum-level)
 
+(defun nvp-package-update-modedefs (&optional arg force)
+  "Update autoloads/compile modedefs."
+  (interactive "P")
+  ;; FIXME: don't use anything in nvp/modedefs
+  ;; These don't get added to load-path, but instead need to be
+  ;; required when a specific mode is loaded
+  (dolist (dir (directory-files nvp/modedefs t))
+    (when (file-directory-p dir)
+      (unless (member (file-name-nondirectory dir) '("." ".."))
+        (package-generate-autoloads (file-name-nondirectory dir) dir)
+        ;; add to load-path for compilation
+        (add-to-list 'load-path dir)
+        (nvp-package-subdir-compile dir arg force))))
+  ;; Compile this directory as well
+  (nvp-package-subdir-compile nvp/modedefs arg force))
+
 ;; Update the main loaddefs files from directories with autoloads
 ;; as well as the subdirs that need autoloads and compilation.
 ;;;###autoload
 (defun nvp-update-all-autoloads (&optional arg force)
-  (interactive)
-  (cl-loop for (defs . dirs) in `((,nvp/auto ,nvp/defs ,nvp/mode ,nvp/modedefs)
-                                  (,nvp/auto-site ,nvp/site))
+  "Update loaddef files.
+With prefix ARG recompile files. With double prefix, FORCE compile all .el files."
+  (interactive "P")
+  (cl-loop for (defs . dirs) in `(,(cons nvp/auto
+                                         (list nvp/defs nvp/mode nvp/modedefs))
+                                  ,(cons nvp/auto-site (list nvp/site)))
      for generated-autoload-file = defs
      do
        (package-autoload-ensure-default-file defs)
        (mapc #'update-directory-autoloads dirs)
        (let ((buf (find-buffer-visiting defs)))
-         (when buf (kill-buffer buf))))
-
-  ;; FIXME: don't use anything in nvp/modedefs
-  ;; These don't get added to load-path, but instead need to be
-  ;; required when a specific mode is loaded
-  (dolist (dir (directory-files nvp/modedefs t))
-     (when (file-directory-p dir)
-       (unless (member (file-name-nondirectory dir) '("." ".."))
-         (package-generate-autoloads (file-name-nondirectory dir) dir)
-         ;; add to load-path for compilation
-         (add-to-list 'load-path dir)
-         (nvp-package-subdir-compile dir arg force))))
-
-  ;; Compile this directory as well
-  (nvp-package-subdir-compile nvp/modedefs arg force))
+         (when buf (kill-buffer buf)))
+     when arg                           ;byte-compile as well
+     do (dolist (dir dirs)
+          ;; compile all .el files in site-lisp with prefix
+          (nvp-package-subdir-compile dir (and (string= dir nvp/auto-site) arg 0)
+                                      (or force (equal arg '(16)))))))
 
 ;; Update autoloads and compile dir.
 ;;;###autoload

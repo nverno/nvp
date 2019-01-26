@@ -1,9 +1,10 @@
-;;; nvp-comint ---  -*- lexical-binding: t; -*-
+;;; nvp-comint.el --- Comint helpers -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-25 23:15:50>
 ;; Package-Requires: 
 ;; Created: 31 March 2017
 

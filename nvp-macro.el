@@ -4,6 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-25 20:21:55>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -45,9 +46,6 @@
 (defmacro current-buffer-process ()
   `(get-buffer-process (current-buffer)))
 
-(defmacro eieio-declare-slot (name)
-  (cl-pushnew name eieio--known-slot-names) nil)
-
 (defmacro nvp-bfn (&optional no-ext or-buffer)
   "Short buffer file name.
 If NO-EXT is non-nil, remove file extension.  If OR-BUFFER is non-nil
@@ -73,6 +71,9 @@ use either `buffer-file-name' or `buffer-name'."
        (file-name-directory
         (file-name-sans-extension (buffer-file-name)))))))
 
+;; -------------------------------------------------------------------
+;;; Syntax
+
 (defmacro nvp-unless-in-comment-or-string (&rest body)
   "Execute BODY unless currently in a string or comment."
   (declare (indent defun))
@@ -94,6 +95,7 @@ use either `buffer-file-name' or `buffer-name'."
   `(unless (nth 3 (syntax-ppss))
      ,@body))
 
+;; -------------------------------------------------------------------
 ;;; Conversions
 
 (defmacro nvp-listify (args)
@@ -114,6 +116,9 @@ use either `buffer-file-name' or `buffer-name'."
 (defmacro nvp-string-or-symbol (sym)
   "If SYM is string convert to symbol."
   `(if (stringp ,sym) (intern ,sym) ,sym))
+
+;; -------------------------------------------------------------------
+;;; Code 
 
 ;; Marks
 (defmacro nvp-mark-defun (&optional first-time &rest rest)
@@ -322,6 +327,67 @@ line at match (default) or do BODY at point if non-nil."
          (hippie-expand-shell-setup
           ,(or ring ''comint-input-ring)
           ,(or bol-fn ''comint-line-beginning-position))))))
+
+;; switching between REPLs and source buffers -- maintain the name of the
+;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
+;; if supplied to find/create the REPL buffer, REPL-LIVE-P is called to check
+;; if it is alive (defaults to `buffer-live-p'
+;; if REPL-HISTORY is non-nil `nvp-comint-add-history-sentinel' is added before the
+;; buffers process-filter. REPL-INIT is called to create and return a new REPL
+;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
+(cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
+                                         repl-live-p repl-history repl-process
+                                         repl-config repl-wait
+                                         repl-doc (repl-switch-fn ''pop-to-buffer))
+                                   &rest repl-init)
+  (declare (indent defun))
+  (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
+  (let ((fn (intern (format "nvp-%s-repl-switch" name))))
+    `(defun ,fn ()
+       ,(or repl-doc "Switch between source and REPL buffers")
+       (interactive)
+       (if ,(or (and repl-mode `(eq major-mode ,repl-mode))
+                (and repl-buffer-name `(equal ,repl-buffer-name (buffer-name))))
+           ;; in REPL buffer, switch back to source
+           (switch-to-buffer-other-window
+            ;; switch to set source buffer or the most recent other buffer
+            (or (process-get
+                 ,(or repl-process '(current-buffer-process)) :src-buffer)
+                (other-buffer (current-buffer) 'visible)))
+         ;; in source buffer, try to go to a REPL
+         (let ((src-buffer (current-buffer))
+               (repl-buffer
+                ;; Should there be a default?
+                (or ,(and repl-buffer-name
+                          `(get-buffer ,repl-buffer-name))
+                    ,(and repl-find-fn
+                          `(ignore-errors (funcall ,repl-find-fn))))))
+           ;; there is a REPL buffer, but is it alive?
+           (when (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
+             ;; no, so we need to start one somehow -- this should return the
+             ;; buffer object
+             (setq repl-buffer (progn ,@repl-init))
+             ,@(and repl-wait `((sit-for ,repl-wait)))
+             (and (processp repl-buffer)
+                  (setq repl-buffer (process-buffer repl-buffer))
+                  ;; add a sentinel to write comint history before other
+                  ;; sentinels that may be set by the mode
+                  ,(and repl-history
+                        '(nvp-comint-add-history-sentinel))))
+           ;; Now switch to REPL and set its properties to point back to the source
+           ;; buffer from whence we came
+           (if (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
+               (error (message "The REPL didnt start!!!")))
+           ,@(when repl-switch-fn
+               `((funcall ,repl-switch-fn repl-buffer)))
+           ;; only config first time through
+           (when (not (process-get ,(or repl-process
+                                        '(get-buffer-process repl-buffer))
+                                   :src-buffer))
+             ,(and repl-config `(funcall ,repl-config)))
+           (process-put ,(or repl-process
+                             '(get-buffer-process repl-buffer))
+                        :src-buffer src-buffer))))))
 
 ;; -------------------------------------------------------------------
 ;;; Bindings
@@ -992,69 +1058,6 @@ and install PLUGIN with asdf."
                              t nil nil 1))
             (buffer-string)))))))
 
-;;; REPLS
-
-;; switching between REPLs and source buffers -- maintain the name of the
-;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
-;; if supplied to find/create the REPL buffer, REPL-LIVE-P is called to check
-;; if it is alive (defaults to `buffer-live-p'
-;; if REPL-HISTORY is non-nil `nvp-comint-add-history-sentinel' is added before the
-;; buffers process-filter. REPL-INIT is called to create and return a new REPL
-;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
-(cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
-                                         repl-live-p repl-history repl-process
-                                         repl-config repl-wait
-                                         repl-doc (repl-switch-fn ''pop-to-buffer))
-                                   &rest repl-init)
-  (declare (indent defun))
-  (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
-  (let ((fn (intern (format "nvp-%s-repl-switch" name))))
-    `(defun ,fn ()
-       ,(or repl-doc "Switch between source and REPL buffers")
-       (interactive)
-       (if ,(or (and repl-mode `(eq major-mode ,repl-mode))
-                (and repl-buffer-name `(equal ,repl-buffer-name (buffer-name))))
-           ;; in REPL buffer, switch back to source
-           (switch-to-buffer-other-window
-            ;; switch to set source buffer or the most recent other buffer
-            (or (process-get
-                 ,(or repl-process '(current-buffer-process)) :src-buffer)
-                (other-buffer (current-buffer) 'visible)))
-         ;; in source buffer, try to go to a REPL
-         (let ((src-buffer (current-buffer))
-               (repl-buffer
-                ;; Should there be a default?
-                (or ,(and repl-buffer-name
-                          `(get-buffer ,repl-buffer-name))
-                    ,(and repl-find-fn
-                          `(ignore-errors (funcall ,repl-find-fn))))))
-           ;; there is a REPL buffer, but is it alive?
-           (when (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
-             ;; no, so we need to start one somehow -- this should return the
-             ;; buffer object
-             (setq repl-buffer (progn ,@repl-init))
-             ,@(and repl-wait `((sit-for ,repl-wait)))
-             (and (processp repl-buffer)
-                  (setq repl-buffer (process-buffer repl-buffer))
-                  ;; add a sentinel to write comint history before other
-                  ;; sentinels that may be set by the mode
-                  ,(and repl-history
-                        '(nvp-comint-add-history-sentinel))))
-           ;; Now switch to REPL and set its properties to point back to the source
-           ;; buffer from whence we came
-           (if (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
-               (error (message "The REPL didnt start!!!")))
-           ,@(when repl-switch-fn
-               `((funcall ,repl-switch-fn repl-buffer)))
-           ;; only config first time through
-           (when (not (process-get ,(or repl-process
-                                        '(get-buffer-process repl-buffer))
-                                   :src-buffer))
-             ,(and repl-config `(funcall ,repl-config)))
-           (process-put ,(or repl-process
-                             '(get-buffer-process repl-buffer))
-                        :src-buffer src-buffer))))))
-
 ;; -------------------------------------------------------------------
 ;;; URL
 
@@ -1092,15 +1095,21 @@ is in BODY."
                     ,@body))
                commands)))
 
+(defmacro nvp-eldoc-function (func &optional no-init)
+  "Set local eldoc function."
+  `(progn
+     (add-function :before-until (local 'eldoc-documentation-function) #',func)
+     ,(unless no-init '(eldoc-mode))))
+
 ;; -------------------------------------------------------------------
-;;; Compat
+;;; Warnings / Compat / Variables
 
 (unless (fboundp 'ignore-errors)
   (defmacro ignore-errors (&rest body)
     `(condition-case nil (progn ,@body) (error nil))))
 
-;; -------------------------------------------------------------------
-;;; Variables / Declares
+(defmacro eieio-declare-slot (name)
+  (cl-pushnew name eieio--known-slot-names) nil)
 
 (defmacro nvp-local-vars ()
   '(progn

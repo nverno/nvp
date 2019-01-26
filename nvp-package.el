@@ -1,14 +1,13 @@
-;;; nvp-package.el --- Install site pkgs -*- lexical-binding: t; -*-
+;;; nvp-package.el --- Manage package compile/autloads -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-16 04:11:54>
+;; Last modified: <2019-01-25 21:05:19>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 29 November 2016
-;; Version: 1.0.0
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -42,28 +41,21 @@
 (defvar autoload-timestamps)
 (defvar warning-minimum-level)
 
-;; Update the main loaddefs.el file from directories with autoloads
+;; Update the main loaddefs files from directories with autoloads
 ;; as well as the subdirs that need autoloads and compilation.
 ;;;###autoload
-(defun update-all-autoloads (&optional arg force)
+(defun nvp-update-all-autoloads (&optional arg force)
   (interactive)
-  (let ((generated-autoload-file nvp/auto))
-    (when (not (file-exists-p generated-autoload-file))
-      (with-current-buffer 
-          (find-file-noselect generated-autoload-file)
-        (package-autoload-ensure-default-file generated-autoload-file)
-        (save-buffer)))
+  (cl-loop for (defs . dirs) in `((,nvp/auto ,nvp/defs ,nvp/mode ,nvp/modedefs)
+                                  (,nvp/auto-site ,nvp/site))
+     for generated-autoload-file = defs
+     do
+       (package-autoload-ensure-default-file defs)
+       (mapc #'update-directory-autoloads dirs)
+       (let ((buf (find-buffer-visiting defs)))
+         (when buf (kill-buffer buf))))
 
-    ;; (re)compile modes
-    (nvp-package-subdir-compile nvp/mode arg force)
-
-    ;; Autoloads from these directories are grouped into ../loaddefs.el
-    ;; generate autoloads
-    (mapc #'update-directory-autoloads
-          `(,nvp/defs
-            ,nvp/mode 
-            ,nvp/modedefs)))
-
+  ;; FIXME: don't use anything in nvp/modedefs
   ;; These don't get added to load-path, but instead need to be
   ;; required when a specific mode is loaded
   (dolist (dir (directory-files nvp/modedefs t))

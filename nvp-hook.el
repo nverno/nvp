@@ -2,14 +2,12 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-16 17:26:39>
+;; Last modified: <2019-01-27 01:29:21>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 14 January 2019
-;; Version: 0.0.1
-;; Keywords:
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -43,6 +41,35 @@
                (`org-mode "#\\+DATE: <%%>$")
                (_ "15/Last modified: <%%>$")))))
     (time-stamp)))
+
+;; -------------------------------------------------------------------
+;;; Remove lsp stuff
+
+(eval-when-compile
+  (defvar eglot--saved-bindings))
+(declare-function flymake-mode "flymake")
+(declare-function eglot-completion-at-point "eglot")
+(declare-function eglot--eldoc-message "eglot")
+(declare-function eglot-imenu "eglot")
+(declare-function eglot-xref-backend "eglot")
+
+;;;###autoload
+(cl-defun nvp-hook-eglot-shutup (&key (completion t) (eldoc t) (flymake t) (imenu t)
+                                      xref)
+  "Remove eglot hooks/advices that clobber stuff.
+By default remove all but XREF."
+  (and completion
+       (remove-hook 'completion-at-point-functions 'eglot-completion-at-point t))
+  (and flymake (flymake-mode -1))
+  (and xref (remove-hook 'xref-backend-functions 'eglot-xref-backend t))
+  (when eldoc
+    (remove-function (local 'eldoc-message-function) #'eglot--eldoc-message)
+    (and (bound-and-true-p eglot--saved-bindings)
+         (eval
+           `(nvp-eldoc-function
+             ,(cdr (assoc 'eldoc-documentation-function eglot--saved-bindings))
+             'no-init))))
+  (and imenu (remove-function (local 'imenu-create-index-function) #'eglot-imenu)))
 
 (provide 'nvp-hook)
 ;;; nvp-hook.el ends here

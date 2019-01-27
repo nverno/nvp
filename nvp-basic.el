@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-15 18:28:41>
+;; Last modified: <2019-01-27 04:55:07>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -44,11 +44,11 @@
   (nvp-basic-temp-binding
    char (lambda () (interactive) (nvp-basic-char-this-line char)) t))
 
-(defun nvp-basic-next5()
+(defun nvp-basic-next5(&rest _ignored)
   (interactive)
   (forward-line 5))
 
-(defun nvp-basic-prev5()
+(defun nvp-basic-prev5(&rest _ignored)
   (interactive)
   (forward-line -5))
 
@@ -69,7 +69,7 @@
         (forward-line 1))
     (line-move (- arg))))
 
-(defun nvp-basic-next-defun ()
+(defun nvp-basic-next-defun (&rest _ignored)
   (interactive)
   (beginning-of-defun -1))
 
@@ -90,7 +90,7 @@
                 (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" cs
                         (regexp-quote (substring comment 1 2))))))))
 
-(defun nvp-basic-next-heading ()
+(defun nvp-basic-next-heading (&rest _ignored)
   (interactive)
   (condition-case nil
       (progn
@@ -101,7 +101,7 @@
      (forward-line -1)
      (user-error "No more headings"))))
 
-(defun nvp-basic-previous-heading ()
+(defun nvp-basic-previous-heading (&rest _ignored)
   (interactive)
   (condition-case nil
       (progn
@@ -114,17 +114,12 @@
 
 ;; -------------------------------------------------------------------
 ;;; Scrolling 
+(declare-function do-smooth-scroll "smooth-scrolling")
 
-(autoload 'do-smooth-scroll "smooth-scrolling")
-(autoload 'enable-smooth-scroll-for-function "smooth-scrolling")
-
-(when (featurep 'smooth-scrolling)
-  (with-no-warnings
-    (enable-smooth-scroll-for-function nvp-basic-next5)
-    (enable-smooth-scroll-for-function nvp-basic-prev5)
-    (enable-smooth-scroll-for-function nvp-basic-next-defun)
-    (enable-smooth-scroll-for-function nvp-basic-down-paragraph)
-    (enable-smooth-scroll-for-function nvp-basic-up-paragraph)))
+(nvp-advise-commands
+  'do-smooth-scroll :after
+  (nvp-basic-next5 nvp-basic-prev5 nvp-basic-next-defun
+                   nvp-basic-down-paragraph nvp-basic-up-paragraph))
 
 ;; -------------------------------------------------------------------
 ;;; Duplicate lines 

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-25 22:45:44>
+;; Last modified: <2019-01-27 07:05:50>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -70,6 +70,9 @@ use either `buffer-file-name' or `buffer-name'."
       (directory-file-name
        (file-name-directory
         (file-name-sans-extension (buffer-file-name)))))))
+
+(defmacro nvp-indent-cl (fn)
+  `(put ,fn 'lisp-indent-function 'common-lisp-indent-function))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -690,9 +693,13 @@ default help function."
                               (pop-to-buffer (current-buffer)))))))
                (nvp-basic-temp-binding
                 "q" #'(lambda () (interactive) (let ((x-gtk-use-system-tooltips nil))
-                                                 (x-hide-tip))))
+                                            (x-hide-tip))))
                ,@(cl-loop for (k . b) in bindings
-                    collect `(nvp-basic-temp-binding (kbd ,k) ,b))))))))
+                    collect `(nvp-basic-temp-binding (kbd ,k) ,b))
+               ;; (cl-labels
+               ;;     ((untoggle-tip () (x-hide-tip)))
+               ;;   (add-hook 'focus-out-hook #'untoggle-tip nil t))
+               ))))))
 
 ;; -------------------------------------------------------------------
 ;;; Processes
@@ -1063,6 +1070,19 @@ and install PLUGIN with asdf."
 ;; -------------------------------------------------------------------
 ;;; URL
 
+(defmacro nvp-path-to-uri (path)
+  "Convert PATH to URI."
+  `(url-hexify-string
+    (concat "file://" (nvp-with-w32 "/") (file-truename ,path))
+    url-path-allowed-chars))
+
+(defmacro nvp-uri-to-path (uri)
+  "Convert URI to file path."
+  `(progn
+     (when (keywordp ,uri) (setq ,uri (substring (symbol-name ,uri) 1)))
+     (let ((retval (url-filename (url-generic-parse-url (url-unhex-string ,uri)))))
+       (nvp-with-gnu/w32 retval (substring retval 1)))))
+
 (defmacro with-url-buffer (url &rest body)
   "Do BODY in buffer with contents from URL."
   (declare (indent defun)
@@ -1083,19 +1103,19 @@ and install PLUGIN with asdf."
 ;; -------------------------------------------------------------------
 ;;; Advice
 
-;; from prelude
-(defmacro advise-commands (advice-name commands class &rest body)
-  "Apply advice named ADVICE-NAME to multiple COMMANDS. The body of the advice
-is in BODY."
+(defmacro nvp-advise-commands (advice where funcs &optional props)
+  "Apply ADVICE at location WHERE to funcs."
+  (declare (indent 0))
   `(progn
-     ,@(mapcar (lambda (command)
-                 `(defadvice
-                      ,command
-                      (,class
-                       ,(intern (concat (symbol-name command) "-" advice-name))
-                       activate)
-                    ,@body))
-               commands)))
+     ,@(mapcar (lambda (fn) `(advice-add ',fn ,where ,advice ,props)) funcs)))
+
+(defmacro nvp-remove-all-advice (funcs)
+  "Remove all advice from list of FUNCS."
+  (declare (indent 0))
+  `(progn
+     ,@(cl-loop for fn in funcs
+          collect `(advice-mapc (lambda (advice _props) (advice-remove ',fn advice))
+                                ',fn))))
 
 (defmacro nvp-eldoc-function (func &optional no-init)
   "Set local eldoc function."

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-28 05:24:16>
+;; Last modified: <2019-01-28 05:44:15>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -762,14 +762,14 @@ Return process object."
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
   (declare (indent 0))
-  (let ((err (if (and (symbolp on-error)
-                      (equal on-error :pop-on-error))
-                 `(pop-to-buffer (process-buffer ,process))
-               on-error))
-        (proc (make-symbol "proc")))
+  (let* ((proc (make-symbol "proc"))
+         (err (if (and (symbolp on-error)
+                       (equal on-error :pop-on-error))
+                 `(pop-to-buffer (process-buffer ,proc))
+               on-error)))
     `(let ((,proc (nvp-with-process-filter ,process)))
        (set-process-sentinel
-        proc
+        ,proc
         #'(lambda (p m)
             (nvp-log "%s: %s" nil (process-name p) m)
             (if (not (zerop (process-exit-status p)))

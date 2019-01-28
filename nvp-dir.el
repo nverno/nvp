@@ -1,9 +1,10 @@
-;;; nvp-dir --- -*- lexical-binding: t; -*-
+;;; nvp-dired.el --- dired helpers -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-01-28 05:27:16>
 ;; Package-Requires: 
 ;; Created:  2 December 2016
 
@@ -29,18 +30,12 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'subr-x)
-  (require 'cl-lib)
-  (require 'hydra nil t))
+  (require 'cl-lib))
 (require 'dired)
 
 (declare-function tramp-dissect-file-name "tramp")
 (declare-function dired-read-shell-command "dired-aux")
 (declare-function w32-shell-execute "w32")
-(declare-function hydra-default-pre "hydra")
-(declare-function hydra-keyboard-quit "hydra")
-(declare-function hydra--call-interactively-remap-maybe "hydra")
-(declare-function hydra-show-hint "hydra")
-(declare-function hydra-set-transient-map "hydra")
 
 (autoload 'nvp-ext-terminal "nvp-ext")
 (autoload 'dired-filename-at-point "dired-x")
@@ -333,5 +328,5 @@
   (set (make-local-variable 'imenu-extract-index-name-function)
        #'nvp-dired-imenu-extract-index-name))
 
-(provide 'nvp-dir)
-;;; nvp-dir.el ends here
+(provide 'nvp-dired)
+;;; nvp-dired.el ends here

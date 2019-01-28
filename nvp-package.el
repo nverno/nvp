@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-27 17:41:12>
+;; Last modified: <2019-01-28 05:31:10>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 29 November 2016
@@ -29,6 +29,7 @@
 ;;; Commentary:
 
 ;; TODO: remove nvp/defs and nvp/modedefs and associated functions
+;; https://github.com/tttuuu888/.emacs.d/blob/master/install.el
 
 ;;; Code:
 (eval-when-compile
@@ -145,7 +146,5 @@ R=recompile, F=force, P=if prefix.
           (file-name-directory (locate-file lib load-path (get-load-suffixes)))))
     (byte-recompile-directory default-directory 0 t)))
 
-;; -------------------------------------------------------------------
-;;;  
 (provide 'nvp-package)
 ;;; nvp-package.el ends here

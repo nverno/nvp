@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-27 07:05:50>
+;; Last modified: <2019-01-27 21:02:55>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -72,7 +72,14 @@ use either `buffer-file-name' or `buffer-name'."
         (file-name-sans-extension (buffer-file-name)))))))
 
 (defmacro nvp-indent-cl (fn)
+  "Generally doesn't work."
   `(put ,fn 'lisp-indent-function 'common-lisp-indent-function))
+
+(defmacro nvp-defvar (var value)
+  "Define VAR and eval VALUE during compile."
+  (declare (indent 0))
+  `(progn
+     (defvar ,var (eval-when-compile ,value))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -1138,6 +1145,7 @@ and install PLUGIN with asdf."
      (defvar nvp/abbrevs)
      (defvar nvp/auto)
      (defvar nvp/auto-site)
+     (defvar nvp/devel)
      (defvar nvp/site)
      (defvar nvp/home)
      (defvar nvp/project)
@@ -1149,7 +1157,6 @@ and install PLUGIN with asdf."
      (defvar nvp/vms)
      (defvar nvp/git)
      (defvar nvp/test)
-     (defvar nvp/config)
      (defvar nvp/lisp)
      (defvar nvp/mode)
      (defvar nvp/defs)

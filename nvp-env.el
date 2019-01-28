@@ -112,24 +112,29 @@ If ENV-VAR is nil, set with new VALUE."
 ;;; Interactive
 
 ;;;###autoload
+(defun nvp-env-lookup (&optional interactive-p)
+  "Lookup value of environment variable."
+  (interactive (list t))
+  (let* ((lst (nvp-env-list-vars))
+         (var (ido-completing-read "Environment variable: " lst nil 'match))
+         (val (car (alist-get var lst))))
+    (if interactive-p
+        (prog1 val (message "%s=%s" var val))
+      (cons var val))))
+
+;;;###autoload
 (defun nvp-env-set-var (env-var value &optional clobber)
   "Add VALUE to ENV-VAR interactively.
 With prefix, overwrite value instead of appending by default."
   (interactive
-   (let ((var (ido-completing-read "Env var: " (nvp-env-list-vars))))
+   (pcase-let ((`(,var . ,val) (nvp-env-lookup)))
      (list
-      var (nvp-read-with-message "Value: " "Current: %s" (getenv var))
+      var (nvp-read-with-message "Value: " "Current: %s" val)
       (and current-prefix-arg
            (y-or-n-p "Clobber current value? ")))))
   (if clobber (setenv env-var value)
-    (nvp-env-add env-var value)))
-
-;;;###autoload
-(defun nvp-env-lookup ()
-  "Lookup value of environment variable."
-  (interactive)
-  (getenv (ido-completing-read
-           "Lookup environment variable: " (nvp-env-list-vars) nil 'match)))
+    (nvp-env-add env-var value))
+  (message "%s=%s" env-var (getenv env-var)))
 
 ;; ------------------------------------------------------------
 ;;; PATH
@@ -195,14 +200,12 @@ Return `process-environment' with new value tacked on front (first is used)."
   ;; defaults to $APPDATA/exe-index on windows
   (defun nvp-env-update-path-db (&optional path)
     (nvp-log "Updating executable database")
-    (cond
-     ((eq system-type 'windows-nt)
-      (set-process-sentinel
-       (apply #'start-process
-              "updatedb" nvp-log-buffer "powershell"
-              `("-f" ,(expand-file-name "Update-ExecDB.ps1" nvp/binw)
-                ,@path))
-       #'nvp-env-update-path-db-sentinel))))
+    (set-process-sentinel
+     (apply #'start-process
+            "updatedb" nvp-log-buffer "powershell"
+            `("-f" ,(expand-file-name "Update-ExecDB.ps1" nvp/binw)
+              ,@path))
+     #'nvp-env-update-path-db-sentinel))
 
   (defun nvp-env-update-path-db-sentinel (p m)
     (nvp-log (format "%s: %s" (process-name p) m))

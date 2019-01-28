@@ -1,8 +1,8 @@
-;;; nvp-toggle.el --- toggle/insert stuff -*- lexical-binding: t;-*-
+;;; nvp-toggle.el --- toggle/insert stuff  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-18 14:24:14>
+;; Last modified: <2019-01-28 04:27:03>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -31,6 +31,7 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'time-stamp))
+(require 'files-x)
 (declare-function time-stamp "time-stamp")
 
 ;;;###autoload
@@ -69,86 +70,82 @@ Call repeatedly with 'i'."
 ;; -------------------------------------------------------------------
 ;;; Toggle local variables
 
-;; insert new local delimeter, put point at first position
-(defsubst nvp-toggle-local-insert-delm ()
-  (insert "-*-  -*-")
-  (forward-char -4)
-  (list :start (1- (point)) :end (1+ (point))))
+;; remove empty prop-line -- point should be in -*- -*-
+(defun nvp-toggle--cleanup-prop-line ()
+  "Remove empty prop-line."
+  (when (and (looking-at-p "[ \t]*-\\*-")
+             (looking-back "-\\*-[ \t]*" (line-beginning-position)))
+    (skip-chars-backward " \t\\*-" (line-beginning-position))
+    (delete-region (point) (line-end-position))))
 
-;; write the vars to the buffer
-(defsubst nvp-toggle-local-insert (vars)
-  (insert
-   (mapconcat (lambda (x) (concat (car x) (and (cdr x) ": ") (cadr x))) vars "; ")))
+;; get value corresponding to variable which may be shortened, eg. `mode'
+(defun nvp-toggle--normalize-var (var)
+  (pcase var
+    (`mode major-mode)
+    (`coding buffer-file-coding-system)
+    (_ (if (and (symbolp var)
+                (boundp var))
+           (symbol-value var)))))
 
-;; return non-nil on match
-(defsubst nvp-toggle-local-goto-or-insert ()
-  (goto-char (point-min))
-  (let ((start (search-forward "-*-" (line-end-position) 'move)))
-    (if (not start)
-        (nvp-toggle-local-insert-delm)
-      (search-forward "-*-" (line-end-position) 'move)
-      (prog1 (list :start start :end (- (point) 3))
-        (goto-char start)))))
+;; normalize possible shortened mode names
+(defun nvp-toggle--normalize-mode (val)
+  (let ((str (if (stringp val) val (symbol-name val))))
+    (if (string-match-p "-mode\\'" str)
+        val
+      (intern (concat str "-mode")))))
 
-;; -*- a b: 1 -*-
-;; get local vars -- which may be key-value pairs
-(defun nvp-toggle-local-vars ()
-  (let ((p (point))
-        (end (progn (and (search-forward "-*-" (line-end-position) 'move)
-                         (- (point) 3))))
-        lst)
-    (when end
-      (goto-char p)
-      (while (re-search-forward
-              (nvp-concat "\\s-*\\([-a-zA-Z0-9]+\\)\\s-*"
-                          "\\(:\\s-*\\([-a-zA-Z0-9]+\\)\\)?")
-              end 'move)
-        (if (match-string 3)
-            (push (cons (match-string 1) (match-string 3)) lst)
-          (and (match-string 1)
-               (push (cons (match-string 1) nil) lst)))))
-    lst))
-
-;; insert key val combo into local header
-(defun nvp-toggle-local-add (input &optional remove)
-  (interactive (list (read-string "Key-val(sep [ :]): ")
-                     current-prefix-arg))
-  (let* ((pos (nvp-toggle-local-goto-or-insert))
-         (vars (nvp-toggle-local-vars))
-         (vals (split-string input "[: ]" 'omit " "))
-         (res (cl-delete-if (lambda (x) (string= (car x) (car vals))) vars)))
-    (delete-region (plist-get pos :start) (plist-get pos :end))
-    (nvp-toggle-local-insert
-     (if remove res (cons (cons (car vals) (cdr vals)) res)))))
+(defun nvp-toggle--local-variable (var &optional val dir footer)
+  "Toggle file/dir-local binding of VAR with VAL.
+If DIR is non-nil toggle dir-local variable.
+If FOOTER is non-nil toggle value in file's Local Variables."
+  (and (stringp var) (setq var (intern var)))
+  (let* ((curr (nvp-toggle--normalize-var var))
+         (op (if (or (not curr)
+                     (and val (not (equal curr (if (eq var 'mode)
+                                                   (nvp-toggle--normalize-mode val)
+                                                 val)))))
+                 'add-or-replace
+               'delete))
+         (val (and (not (eq op 'delete)) (or val t)))
+         (prop (or (member var '(mode lexical-binding))
+                   (not (or dir footer))))
+         (fn (cond
+              (prop #'modify-file-local-variable-prop-line)
+              (dir  #'modify-dir-local-variable)
+              (t    #'modify-file-local-variable)))
+         (dir-mode (and (not prop) dir (read-file-local-variable-mode)))
+         (start-state (buffer-chars-modified-tick)))
+    (save-excursion
+      (apply fn (if dir-mode (list dir-mode var val op) (list var val op)))
+      (when (and prop (eq op 'delete))
+        (nvp-toggle--cleanup-prop-line)))
+    ;; save/revert buffer if changes were made
+    (unless (eq start-state (buffer-chars-modified-tick))
+      (unless (eq fn 'modify-dir-local-variable)
+        (save-buffer))
+      (revert-buffer 'ignore-auto 'no-confirm)
+      (message "%s %s%s in the %s"
+               (if (eq op 'delete) "Deleted" "Updated")
+               (symbol-name var)
+               (if val (concat " => " (if (stringp val) val (symbol-name val))) "")
+               (if prop "prop-line" (if dir "dir-locals" "local vars"))))))
 
 ;;;###autoload
-(defun nvp-toggle-local-binding (local-var com-start com-end)
+(defun nvp-toggle-file-local-binding (&optional footer)
+  "Toggle file local binding.
+If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
+  (interactive "P")
+  (let ((var (read-file-local-variable "Toggle file-local variable")))
+    (nvp-toggle--local-variable
+     var (read-file-local-variable-value var) nil footer)))
+
+;;;###autoload
+(defun nvp-toggle-dir-local-binding (var val)
+  "Toggle dir-local binding of VAR to VAL."
   (interactive
-   (let* ((var (read-string "Binding: " "mode: "))
-          (start (or comment-start (read-string "Comment start: ")))
-          (end (or (and comment-start comment-end)
-                   (read-string "Comment end: "
-                                (if (string-prefix-p "/\*" start " */") "")))))
-     (list var start end)))
-  (let ((parts (split-string local-var ":" 'omit " ")))
-    (save-excursion
-      (goto-char (point-min))
-      (cond
-       ((not (looking-at-p (regexp-quote com-start))) ;no starting comment
-        (insert (format "%s -*- %s -*- %s\n" com-start local-var com-end)))
-       ((and (car parts)                   ;already defined -- update or toggle off
-             (looking-at-p (concat ".*" (regexp-quote (car parts)) ".*$")))
-        (when (re-search-forward
-               (concat "\\(" (regexp-quote (car parts))
-                       "\\s-*:\\s-*\\([A-Za-z0-9-]*\\s-*\\);?\\)")
-               (line-end-position))
-          (if (not (cadr parts))
-              (replace-match "" nil nil nil 1)                         ;toggle off
-            (replace-match (concat (cadr parts) " ") nil nil nil 2)))) ;update
-       (:else
-        (if (not (search-forward "-*-" (line-end-position) 'move))
-            (insert (format " -*- %s -*- " local-var))
-          (insert (format " %s; " local-var))))))))
+   (let ((var (read-file-local-variable "Add dir-local variable")))
+     (list var (read-file-local-variable-value var))))
+  (nvp-toggle--local-variable var val 'dir))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

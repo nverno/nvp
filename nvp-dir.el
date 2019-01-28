@@ -32,6 +32,16 @@
   (require 'cl-lib)
   (require 'hydra nil t))
 (require 'dired)
+
+(declare-function tramp-dissect-file-name "tramp")
+(declare-function dired-read-shell-command "dired-aux")
+(declare-function w32-shell-execute "w32")
+(declare-function hydra-default-pre "hydra")
+(declare-function hydra-keyboard-quit "hydra")
+(declare-function hydra--call-interactively-remap-maybe "hydra")
+(declare-function hydra-show-hint "hydra")
+(declare-function hydra-set-transient-map "hydra")
+
 (autoload 'nvp-ext-terminal "nvp-ext")
 (autoload 'dired-filename-at-point "dired-x")
 
@@ -322,18 +332,6 @@
        #'nvp-dired-imenu-prev-index-position)
   (set (make-local-variable 'imenu-extract-index-name-function)
        #'nvp-dired-imenu-extract-index-name))
-
-;; -------------------------------------------------------------------
-
-(declare-function tramp-dissect-file-name "tramp")
-(declare-function dired-read-shell-command "dired-aux")
-(declare-function w32-shell-execute "w32")
-
-(declare-function hydra-default-pre "hydra")
-(declare-function hydra-keyboard-quit "hydra")
-(declare-function hydra--call-interactively-remap-maybe "hydra")
-(declare-function hydra-show-hint "hydra")
-(declare-function hydra-set-transient-map "hydra")
 
 (provide 'nvp-dir)
 ;;; nvp-dir.el ends here

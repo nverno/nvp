@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-16 20:55:10>
+;; Last modified: <2019-01-27 21:39:16>
 ;; URL: https://github.com/nverno/
 ;; Package-Requires: 
 ;; Created: 11 November 2016
@@ -171,6 +171,10 @@ If none found, return list of all terminal buffers."
 
 ;;;###autoload
 (defun nvp-ext-terminal (arg &optional buffer shell-name proc-name)
+  "Launch a shell using SHELL-NAME or env var SHELL, or bash if remote.
+Use BUFFER if specified or create a unique remote name. If ARG, find or start
+shell in current directory using PROC-NAME or default shell. When ARG isn't
+specified, prefer shell in current directory if available."
   (interactive "P")
   (let* ((remote (file-remote-p default-directory))
          (default-name (if buffer (buffer-name buffer) "*shell*"))
@@ -193,6 +197,7 @@ If none found, return list of all terminal buffers."
 
 ;;;###autoload
 (defun nvp-ext-launch-terminal ()
+  "Launch external terminal."
   (interactive)
   (nvp-with-gnu
     (call-process "gnome-terminal" nil nil nil)))

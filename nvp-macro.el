@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-27 21:02:55>
+;; Last modified: <2019-01-28 05:24:16>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -78,8 +78,12 @@ use either `buffer-file-name' or `buffer-name'."
 (defmacro nvp-defvar (var value)
   "Define VAR and eval VALUE during compile."
   (declare (indent 0))
-  `(progn
-     (defvar ,var (eval-when-compile ,value))))
+  `(progn (defvar ,var (eval-when-compile ,value))))
+
+(defmacro nvp-setq (var value)
+  "Define VAR and eval VALUE during compile."
+  (declare (indent 0))
+  `(progn (setq ,var (eval-when-compile ,value))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -729,7 +733,7 @@ REUSE previous buffer if non-nil.  Optionally initialize buffer in
 COMINT mode or with BODY."
   (declare (indent 2) (indent 1))
   (let ((get-buffer-function (if reuse 'get-buffer-create
-                               'generate-new-buffer-name))
+                               'generate-new-buffer))
         (name (or name "*nvp-install*")))
     (if (not (or comint body))
         `(,get-buffer-function ,name)
@@ -761,8 +765,9 @@ if process exit status isn't 0."
   (let ((err (if (and (symbolp on-error)
                       (equal on-error :pop-on-error))
                  `(pop-to-buffer (process-buffer ,process))
-               on-error)))
-    `(let ((proc (nvp-with-process-filter ,process)))
+               on-error))
+        (proc (make-symbol "proc")))
+    `(let ((,proc (nvp-with-process-filter ,process)))
        (set-process-sentinel
         proc
         #'(lambda (p m)
@@ -770,7 +775,7 @@ if process exit status isn't 0."
             (if (not (zerop (process-exit-status p)))
                 ,err
               ,@body)))
-       (display-buffer (process-buffer proc)))))
+       (display-buffer (process-buffer ,proc)))))
 
 (defmacro nvp-with-process-buffer (process &optional on-error &rest body)
   "Log PROCESS output in log buffer, do ON-ERROR and BODY in process buffer."
@@ -785,31 +790,28 @@ if process exit status isn't 0."
             ,@body)))))
 
 (cl-defmacro nvp-with-process (process
-                               (&key
-                                (proc-name process)
-                                (on-success `(nvp-indicate-modeline-success
-                                              ,(concat proc-name " success")))
-                                (proc-buff `,(concat "*" proc-name "*"))
-                                (proc-args nil)
-                                (proc-filter nil)
-                                (get-buff-function 'generate-new-buffer-name))
-                               &rest on-failure)
+                               &key
+                               (proc-name process)
+                               (on-success `(nvp-indicate-modeline-success
+                                             ,(concat proc-name " success")))
+                               (proc-buff `,(concat "*" proc-name "*"))
+                               (proc-args nil)
+                               (proc-filter nil)
+                               (get-buff-function 'generate-new-buffer)
+                               on-failure)
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE."
   (declare (indent defun))
   `(let ((proc (start-process
                 ,(or proc-name process)
-                (with-current-buffer (,get-buff-function ,proc-buff)
-                  (setq buffer-read-only nil)
-                  (erase-buffer)
-                  (current-buffer))
+                (,get-buff-function ,proc-buff)
                 ,process ,@proc-args)))
      (set-process-filter proc ,(or proc-filter ''nvp-process-buffer-filter))
      (set-process-sentinel proc
-                           #'(lambda (p m)
-                               (nvp-log "%s: %s" nil (process-name p) m)
-                               (if (zerop (process-exit-status p))
-                                   ,on-success
-                                 ,@on-failure)))))
+                           (lambda (p m)
+                             (nvp-log "%s: %s" nil (process-name p) m)
+                             (if (zerop (process-exit-status p))
+                                 ,on-success
+                               ,on-failure)))))
 
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment

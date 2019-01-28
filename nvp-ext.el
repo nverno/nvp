@@ -3,9 +3,9 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-27 21:39:16>
+;; Last modified: <2019-01-28 05:24:03>
 ;; URL: https://github.com/nverno/
-;; Package-Requires: 
+;; Package-Requires:
 ;; Created: 11 November 2016
 
 ;; This file is not part of GNU Emacs.
@@ -122,8 +122,8 @@
 
 (declare-function tramp-dissect-file-name "tramp")
 
-;; Switch to a terminal or launch one, if remote use bash. 
-;; With prefix, create a shell in the current `default-directory'. 
+;; Switch to a terminal or launch one, if remote use bash.
+;; With prefix, create a shell in the current `default-directory'.
 ;; On remote hosts, ensure that the shell is created properly
 ;; (windows).
 (defun nvp-ext-terminal-in-dir-maybe (&optional directory proc-name)
@@ -222,19 +222,19 @@ in buffer *vagrant-status*."
 ;; -------------------------------------------------------------------
 ;;; GPG
 
-;; export keys
 ;;;###autoload
-(defun nvp-ext-gpg-export (dir)
-  (interactive "DExport public key to directory: ")
-  (unless (file-exists-p (nvp-program "gpg"))
-    (user-error "gpg program not set"))
+(defun nvp-ext-gpg-export (dir &optional name prog)
+  "Export GPG public keys matching NAME (default NVP) to DIR using PROG (gpg/2)."
+  (interactive "DExport public key to directory: \nsKey name (NVP): ")
+  (or prog (setq prog (or (nvp-program "gpg2") (nvp-program "gpg"))))
+  (and (equal name "") (setq name "NVP"))
+  (unless (and prog (file-exists-p prog))
+    (error (if prog "%s not found" "No gpg found") prog))
   (let ((default-directory dir))
-    ;; export public key
-    (nvp-with-process-log
-      (start-process "gpg" (nvp-process-buffer) (nvp-program "gpg")
-                     "--armor" "--output"
-                     "public_key.txt" "--export" "Noah Peart")
-      :pop-on-error)))
+    (nvp-with-process prog
+      :proc-name "gpg"
+      :get-buff-function get-buffer-create
+      :proc-args ("--armor" "--output" "public_key.asc" "--export" name))))
 
 ;; copy gpg files to directory for backup/export
 ;;;###autoload

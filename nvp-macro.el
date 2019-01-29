@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-28 22:35:01>
+;; Last modified: <2019-01-29 00:06:11>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -820,7 +820,7 @@ if process exit status isn't 0."
                                              ,(concat proc-name " success")))
                                (proc-buff `,(concat "*" proc-name "*"))
                                (proc-args nil)
-                               (proc-filter nil)
+                               (proc-filter t)
                                (get-buff-function 'generate-new-buffer)
                                on-failure)
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE."
@@ -829,7 +829,12 @@ if process exit status isn't 0."
                 ,(or proc-name process)
                 (,get-buff-function ,proc-buff)
                 ,process ,@proc-args)))
-     (set-process-filter proc ,(or proc-filter ''nvp-process-buffer-filter))
+     ,(cond
+       ((eq proc-filter t)
+        '(set-process-filter proc 'nvp-process-buffer-filter))
+       (proc-filter
+        `(set-process-filter proc ,proc-filter))
+       (t nil))
      (set-process-sentinel proc
                            (lambda (p m)
                              (nvp-log "%s: %s" nil (process-name p) m)

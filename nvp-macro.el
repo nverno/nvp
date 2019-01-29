@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-28 05:44:15>
+;; Last modified: <2019-01-28 22:35:01>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -28,6 +28,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'cl-lib)
+(require 'subr-x)
 (eval-when-compile
   (defvar eieio--known-slot-names))
 
@@ -185,49 +186,43 @@ use either `buffer-file-name' or `buffer-name'."
              (file-name-directory (nvp-load-file-name)))))))
     (intern (concat prefix "--dir"))))
 
-(cl-defmacro nvp-package-define-root (&key name snippets)
+(cl-defmacro nvp-package-define-root (&key name snippets dirs after-load)
   "Define package root directory with default prefix as directory name or NAME.
-If SNIPPETS is non-nil, setup snippet loading for directory."
+If SNIPPETS is non-nil, setup snippet loading for directory.
+If DIRS is non-nil it should be a list of variables to define as directories
+relative to the project root directory as symbols 'prefix--dir'.
+AFTER-LOAD is a form to execute after file is loaded during which the root
+directory is bound to `root' and all `dirs' are let-bound to their symbols."
+  (declare (indent 0) (debug t))
   (let* ((file (cond
                 (load-in-progress load-file-name)
                 ((and (boundp 'byte-compile-current-file)
                       byte-compile-current-file)
                  byte-compile-current-file)
-                (:else (buffer-file-name))))
-         (dir (file-name-directory file))
-         (base (file-name-nondirectory (directory-file-name dir)))
+                (t (buffer-file-name))))
+         (root-val (file-name-directory file))
+         (base (file-name-nondirectory (directory-file-name root-val)))
          (prefix (if name (if (symbolp name) (symbol-name name) name) base))
-         (sym (intern (concat prefix "--dir"))))
+         (root (intern (concat prefix "--dir")))
+         (dirs (mapcar (lambda (d)
+                         (and (symbolp d) (setq d (symbol-name d)))
+                         (list (intern d)
+                               (intern (concat prefix "--" d))
+                               (expand-file-name d root-val)))
+                       dirs))
+         (mappings (cons `(root ,root) (mapcar 'butlast dirs))))
     `(progn
        (eval-and-compile
-         (defconst ,sym ,dir))
-       ,(when snippets `(nvp-package-load-snippets ,sym)))))
-
-(defmacro nvp-package-dir (dir &optional snippets)
-  "Define package directory DIR.
-If SNIPPETS is non-nil, setup snippet loading."
-  `(progn
-     (eval-and-compile
-      (defconst ,dir
-        (file-name-directory
-         (cond
-          (load-in-progress load-file-name)
-          ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
-           byte-compile-current-file)
-          (:else (buffer-file-name))))))
-     ,(when snippets
-        `(nvp-package-load-snippets ,dir))))
-
-(defmacro nvp-package-var (var &rest init)
-  (declare (indent 1))
-  `(progn
-     (defvar ,var nil)
-     (when load-file-name
-       (setq ,var ,@init))))
-
-(defmacro nvp-package-after-compile (&rest body)
-  `(when load-file-name
-     ,@body))
+         (defconst ,root ,root-val))
+       ,(when snippets `(nvp-package-load-snippets ,root))
+       ,(when dirs
+          `(progn
+             ,@(cl-loop for (_orig-sym dir-sym dir-val) in dirs
+                  collect `(defconst ,dir-sym ,dir-val))))
+       ,(when after-load
+          `(with-eval-after-load ,file
+             (let ,mappings
+               ,after-load))))))
 
 (defmacro nvp-package-load-snippets (dir)
   "Add packages snippet directory to `yas-snippet-dirs' after loading
@@ -239,9 +234,25 @@ If SNIPPETS is non-nil, setup snippet loading."
        '(let ((snippet-dir (expand-file-name "snippets" ,dir))
               (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
                         (cons yas-snippet-dirs ()))))
-          (unless (member snippet-dir dirs)
-            (setq yas-snippet-dirs (delq nil (cons snippet-dir dirs))))
-          (yas-load-directory snippet-dir)))))
+         (unless (member snippet-dir dirs)
+           (setq yas-snippet-dirs (delq nil (cons snippet-dir dirs))))
+         (yas-load-directory snippet-dir)))))
+
+(make-obsolete 'nvp-package-dir 'nvp-package-define-root nil)
+(defmacro nvp-package-dir (dir &optional snippets)
+  "Define package directory DIR.
+If SNIPPETS is non-nil, setup snippet loading."
+  `(progn
+     (eval-and-compile
+       (defconst ,dir
+         (file-name-directory
+          (cond
+            (load-in-progress load-file-name)
+            ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+             byte-compile-current-file)
+            (:else (buffer-file-name))))))
+     ,(when snippets
+        `(nvp-package-load-snippets ,dir))))
 
 ;; -------------------------------------------------------------------
 ;;; Regex / Strings
@@ -291,29 +302,29 @@ line at match (default) or do BODY at point if non-nil."
 ;; if NO-COMPILE is defined the name is determined at runtime
 (defmacro nvp-program (name &optional no-compile path)
   (let* ((name (cond
-                ((symbolp name) (symbol-name name))
-                ((consp name)
-                 (pcase name
-                   (`(quote ,sym)
-                    (symbol-name sym))
-                   (_ name)))
-                ((stringp name) name)
-                (t (user-error "%S unmatched"))))
+                 ((symbolp name) (symbol-name name))
+                 ((consp name)
+                  (pcase name
+                    (`(quote ,sym)
+                      (symbol-name sym))
+                    (_ name)))
+                 ((stringp name) name)
+                 (t (user-error "%S unmatched"))))
          (path (and path (substitute-env-in-file-name path))))
     `(,(if no-compile 'progn 'eval-when-compile)
-      (or (nvp-with-gnu/w32
-              (cl-loop for p in
-                   (delq nil (cons ,path '("~/.local/bin/" "/usr/local/bin")))
-                 do (let ((f (expand-file-name ,name p)))
-                      (and (file-exists-p f)
-                           (cl-return f))))
-            (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
-          (executable-find ,name)))))
+       (or (nvp-with-gnu/w32
+               (cl-loop for p in
+                    (delq nil (cons ,path '("~/.local/bin/" "/usr/local/bin")))
+                  do (let ((f (expand-file-name ,name p)))
+                       (and (file-exists-p f)
+                            (cl-return f))))
+             (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
+           (executable-find ,name)))))
 
 (defmacro nvp-path (path &optional no-compile)
   `(,(if no-compile 'progn 'eval-when-compile)
-    (let ((path (substitute-env-in-file-name ,path)))
-      (and path (file-exists-p path) path))))
+     (let ((path (substitute-env-in-file-name ,path)))
+       (and path (file-exists-p path) path))))
 
 (defmacro nvp-mode (mode)
   `(expand-file-name
@@ -323,7 +334,7 @@ line at match (default) or do BODY at point if non-nil."
 ;;; REPLs
 
 (cl-defmacro nvp-hippie-shell-fn (name histfile &key (size 5000) history bol-fn
-                                       history-fn expand-fn)
+                                                  history-fn expand-fn)
   "Setup comint history ring read/write and hippie-expand for it."
   (let ((fn (nvp-string-or-symbol name)))
     `(progn
@@ -355,7 +366,7 @@ line at match (default) or do BODY at point if non-nil."
                                          repl-live-p repl-history repl-process
                                          repl-config repl-wait
                                          repl-doc (repl-switch-fn ''pop-to-buffer))
-                                   &rest repl-init)
+                              &rest repl-init)
   (declare (indent defun))
   (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
   (let ((fn (intern (format "nvp-%s-repl-switch" name))))
@@ -498,6 +509,14 @@ could be either 'major or 'minor."
                            key))
                " ")))
 
+(defun nvp--normalize-modemap (mode)
+  "Convert MODE to keymap symbol if necessary."
+  (and (symbolp mode) (setq mode (symbol-name mode)))
+  (if (not (or (string-match-p "-map\\'" mode)
+               (string-match-p "-keymap\\'" mode)))
+      (intern (concat (string-remove-suffix "-mode" mode) "-mode-map"))
+    (intern mode)))
+
 (defmacro nvp-create-keymaps (leader &rest maps)
   "Create submaps from LEADER map. Optionally give name of keymap for 
 menu entry."
@@ -514,22 +533,23 @@ menu entry."
 (defmacro nvp-bind-keys (map &rest bindings)
   "Bind keys to MAP"
   (declare (indent defun))
-  `(progn
-     (eval-when-compile (defvar ,map))
-     ,@(cl-loop for (k . b) in bindings
-          collect `(define-key ,map (kbd ,k) ',b))))
+  (let ((map (nvp--normalize-modemap map)))
+    `(progn
+       (eval-when-compile (defvar ,map))
+       ,@(cl-loop for (k . b) in bindings
+            collect `(define-key ,map (kbd ,k) ',b)))))
 
 (defmacro nvp-define-key (keymap key category mode-type func)
   `(define-key ,keymap (kbd (nvp-bind ,key ,category ,mode-type)) ,func))
 
 (defmacro nvp-bindings (mode &optional feature &rest bindings)
   (declare (indent defun))
-  (let ((modemap (intern (concat mode "-map"))))
-    `(eval-after-load ,(or feature `',(intern mode))
-       '(progn
-          (eval-when-compile (defvar ,modemap))
-          ,@(cl-loop for (k . b) in bindings
-               collect `(define-key ,modemap (kbd ,k) ',b))))))
+  (let ((modemap (nvp--normalize-modemap mode)))
+    `(progn
+       (eval-when-compile (defvar ,modemap))
+       (with-eval-after-load ,(or feature `',(intern mode))
+         ,@(cl-loop for (k . b) in bindings
+              collect `(define-key ,modemap (kbd ,k) ',b))))))
 
 ;; do BODY with BINDINGS set in transient map
 (cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
@@ -542,12 +562,16 @@ menu entry."
        (set-transient-map ,tmap ,keep ,exit)
        ,@body)))
 
-;; FIXME: eval
-(defmacro nvp-common-bindings (modes &rest bindings)
-  (declare (indent defun))
+(defmacro nvp-bindings-multiple-modes (modes &optional local &rest bindings)
+  "Add shared BINDINGS to multiple MODES keymaps.
+MODES is of the form ((mode-name . feature) ...).
+If LOCAL is non-nil, make the mappings buffer-local."
+  (declare (indent 1))
   `(progn
-     ,@(cl-loop for (mode . feature) in (eval modes)
-          collect `(nvp-bindings ,mode ,feature ,@bindings))))
+     ,@(cl-loop for (mode . feature) in modes
+          when local
+          collect `(make-local-variable ',(nvp--normalize-modemap mode))
+          collect `(nvp-bindings ,mode ',feature ,@bindings))))
 
 ;;; general movement bindings for non-insert modes
 (declare-function nvp-basic-up-paragraph "nvp-basic")
@@ -618,26 +642,26 @@ menu entry."
     ((pred stringp)
      `(read-from-minibuffer ,prompt ,thing))
     (`(quote ,sym)
-     (cond
-      ((consp sym)
-       `(ido-completing-read ,prompt ,thing))
-      ((vectorp sym)
-       `(completing-read ,prompt ,thing))
-      ((symbol-function sym)
-       (if args
-           `(funcall-interactively ',sym ,@args)
-         `(call-interactively ',sym)))
-      (t `(ido-completing-read ,prompt ,sym))))
+      (cond
+        ((consp sym)
+         `(ido-completing-read ,prompt ,thing))
+        ((vectorp sym)
+         `(completing-read ,prompt ,thing))
+        ((symbol-function sym)
+         (if args
+             `(funcall-interactively ',sym ,@args)
+           `(call-interactively ',sym)))
+        (t `(ido-completing-read ,prompt ,sym))))
     ((pred symbolp)
      (cond
-      ((string= ":library" (symbol-name thing))
-       `(completing-read ,prompt
-                         (apply-partially
-                          'locate-file-completion-table
-                          load-path (get-load-suffixes))))
-      ((vectorp (symbol-value (intern-soft thing)))
-       `(completing-read ,prompt ,thing))
-      (t `(ido-completing-read ,prompt (symbol-value ,thing)))))
+       ((string= ":library" (symbol-name thing))
+        `(completing-read ,prompt
+                          (apply-partially
+                           'locate-file-completion-table
+                           load-path (get-load-suffixes))))
+       ((vectorp (symbol-value (intern-soft thing)))
+        `(completing-read ,prompt ,thing))
+       (t `(ido-completing-read ,prompt (symbol-value ,thing)))))
     ((pred consp)
      `(ido-completing-read ,prompt ,thing))
     (_ `(read-from-minibuffer ,prompt))))
@@ -669,8 +693,8 @@ menu entry."
 (declare-function nvp-basic-temp-binding "nvp-basic")
 
 (cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn bindings (timeout 45)
-                                         (help-buffer
-                                          '(get-buffer-create "*nvp-help*")))
+                                           (help-buffer
+                                            '(get-buffer-create "*nvp-help*")))
   "Toggle POPUP, a help string, in pos-tip. 
 If HELP-FN is :none, 'h' is not bound by default. Normally, 'h' triggers a function
 to jump to a buffer displaying the full help doc for the popup.
@@ -691,20 +715,20 @@ default help function."
                (pos-tip-show ,str nil nil nil ,timeout)
                (nvp-basic-temp-binding
                 "h" ,(cond
-                      ((eq :none help-fn) nil)
-                      (help-fn help-fn)
-                      (t `(lambda ()
-                            (interactive)
-                            (x-hide-tip)
-                            (with-current-buffer
-                                ,(or help-buffer
-                                     '(get-buffer-create "*nvp-help*"))
-                              (insert ,str)
-                              (view-mode-enter)
-                              (pop-to-buffer (current-buffer)))))))
+                       ((eq :none help-fn) nil)
+                       (help-fn help-fn)
+                       (t `(lambda ()
+                             (interactive)
+                             (x-hide-tip)
+                             (with-current-buffer
+                                 ,(or help-buffer
+                                      '(get-buffer-create "*nvp-help*"))
+                               (insert ,str)
+                               (view-mode-enter)
+                               (pop-to-buffer (current-buffer)))))))
                (nvp-basic-temp-binding
                 "q" #'(lambda () (interactive) (let ((x-gtk-use-system-tooltips nil))
-                                            (x-hide-tip))))
+                                                 (x-hide-tip))))
                ,@(cl-loop for (k . b) in bindings
                     collect `(nvp-basic-temp-binding (kbd ,k) ,b))
                ;; (cl-labels
@@ -753,10 +777,10 @@ Return process object."
   (declare (indent 2) (indent 1) (debug t))
   `(function
     (lambda (p m)
-      (nvp-log "%s: %s" nil (process-name p) m)
-      (if (not (zerop (process-exit-status p)))
-          ,(or on-error '(pop-to-buffer (process-buffer p)))
-        ,@body))))
+     (nvp-log "%s: %s" nil (process-name p) m)
+     (if (not (zerop (process-exit-status p)))
+         ,(or on-error '(pop-to-buffer (process-buffer p)))
+       ,@body))))
 
 (defmacro nvp-with-process-log (process &optional on-error &rest body)
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
@@ -765,8 +789,8 @@ if process exit status isn't 0."
   (let* ((proc (make-symbol "proc"))
          (err (if (and (symbolp on-error)
                        (equal on-error :pop-on-error))
-                 `(pop-to-buffer (process-buffer ,proc))
-               on-error)))
+                  `(pop-to-buffer (process-buffer ,proc))
+                on-error)))
     `(let ((,proc (nvp-with-process-filter ,process)))
        (set-process-sentinel
         ,proc

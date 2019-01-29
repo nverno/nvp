@@ -36,7 +36,7 @@
 (declare-function nvp-read-with-message "nvp-read")
 (autoload 'substitute-env-vars "env")
 
-(defun nvp-substitute-env-vars (string &optional unquote)
+(defun nvp-env-substitute-vars (string &optional unquote)
   "Substitute environment variables in STRING.
 If UNQUOTE is non-nil remove surrounding quotes.  Result is trimmed of surrounding
 whitespace either way."

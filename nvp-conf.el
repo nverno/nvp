@@ -1,11 +1,11 @@
 ;;; nvp-conf.el --- parse config files -*- lexical-binding: t; -*-
-;; Last modified: <2019-01-16 02:16:36>
+;; Last modified: <2019-01-28 20:40:50>
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x))
 
-(autoload 'nvp-substitute-env-vars "nvp-env")
+(autoload 'nvp-env-substitute-vars "nvp-env")
 
 ;; return the keys parsed from config file
 (defsubst nvp-conf-keys (conf)

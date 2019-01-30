@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 04:02:23>
+;; Last modified: <2019-01-30 18:11:17>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -104,6 +104,17 @@
   (with-current-buffer (process-buffer proc)
     (goto-char (point-max))
     (insert (replace-regexp-in-string "[\r\n]+" "\n" string))))
+
+;; -------------------------------------------------------------------
+;;; Utils
+
+(defun nvp--normalize-modemap (mode)
+  "Convert MODE to keymap symbol if necessary."
+  (and (symbolp mode) (setq mode (symbol-name mode)))
+  (if (not (or (string-match-p "-map\\'" mode)
+               (string-match-p "-keymap\\'" mode)))
+      (intern (concat (string-remove-suffix "-mode" mode) "-mode-map"))
+    (intern mode)))
 
 (provide 'nvp)
 ;;; nvp.el ends here

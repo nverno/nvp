@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-29 00:06:11>
+;; Last modified: <2019-01-30 18:22:44>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -29,6 +29,7 @@
 ;;; Code:
 (require 'cl-lib)
 (require 'subr-x)
+(require 'nvp)
 (eval-when-compile
   (defvar eieio--known-slot-names))
 
@@ -509,14 +510,6 @@ could be either 'major or 'minor."
                            key))
                " ")))
 
-(defun nvp--normalize-modemap (mode)
-  "Convert MODE to keymap symbol if necessary."
-  (and (symbolp mode) (setq mode (symbol-name mode)))
-  (if (not (or (string-match-p "-map\\'" mode)
-               (string-match-p "-keymap\\'" mode)))
-      (intern (concat (string-remove-suffix "-mode" mode) "-mode-map"))
-    (intern mode)))
-
 (defmacro nvp-create-keymaps (leader &rest maps)
   "Create submaps from LEADER map. Optionally give name of keymap for 
 menu entry."
@@ -542,18 +535,9 @@ menu entry."
 (defmacro nvp-define-key (keymap key category mode-type func)
   `(define-key ,keymap (kbd (nvp-bind ,key ,category ,mode-type)) ,func))
 
-(defmacro nvp-bindings (mode &optional feature &rest bindings)
-  (declare (indent defun))
-  (let ((modemap (nvp--normalize-modemap mode)))
-    `(progn
-       (eval-when-compile (defvar ,modemap))
-       (with-eval-after-load ,(or feature `',(intern mode))
-         ,@(cl-loop for (k . b) in bindings
-              collect `(define-key ,modemap (kbd ,k) ',b))))))
-
-;; do BODY with BINDINGS set in transient map
 (cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
                                      &rest body)
+  "Execute BODY with BINDINGS set in transient map."
   (declare (indent 0))
   (let ((tmap (cl-gensym)))
     `(let ((,tmap (make-sparse-keymap)))
@@ -562,15 +546,29 @@ menu entry."
        (set-transient-map ,tmap ,keep ,exit)
        ,@body)))
 
-(defmacro nvp-bindings-multiple-modes (modes &optional local &rest bindings)
+(cl-defmacro nvp-bindings (mode &optional feature &rest bindings
+                                &key local &allow-other-keys)
+  "Set MODE BINDINGS after FEATURE is loaded.
+If LOCAL is non-nil, make map buffer local."
+  (declare (indent defun))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  (let ((modemap (nvp--normalize-modemap mode)))
+    `(progn
+       (eval-when-compile (defvar ,modemap))
+       ,(when local
+          `(make-local-variable ',(nvp--normalize-modemap mode)))
+       (with-eval-after-load ,(or feature `',(intern mode))
+         ,@(cl-loop for (k . b) in bindings
+              collect `(define-key ,modemap (kbd ,k) ',b))))))
+
+(cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings &allow-other-keys)
   "Add shared BINDINGS to multiple MODES keymaps.
 MODES is of the form ((mode-name . feature) ...).
-If LOCAL is non-nil, make the mappings buffer-local."
+Optional :local key can be set to make the mappings buffer-local."
   (declare (indent 1))
   `(progn
      ,@(cl-loop for (mode . feature) in modes
-          when local
-          collect `(make-local-variable ',(nvp--normalize-modemap mode))
           collect `(nvp-bindings ,mode ',feature ,@bindings))))
 
 ;;; general movement bindings for non-insert modes

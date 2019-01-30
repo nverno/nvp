@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-30 18:22:44>
+;; Last modified: <2019-01-30 18:41:34>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -175,7 +175,7 @@ use either `buffer-file-name' or `buffer-name'."
     (load-in-progress load-file-name)
     ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
      byte-compile-current-file)
-    (:else (buffer-file-name))))
+    (t (buffer-file-name))))
 
 (defmacro nvp-package-root (&optional name)
   "Expand to the default package directory with default prefix or NAME."
@@ -231,10 +231,10 @@ directory is bound to `root' and all `dirs' are let-bound to their symbols."
   `(progn
      (eval-when-compile (defvar yas-snippet-dirs))
      (declare-function yas-load-directory "yasnippet")
-     (eval-after-load 'yasnippet
-       '(let ((snippet-dir (expand-file-name "snippets" ,dir))
-              (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
-                        (cons yas-snippet-dirs ()))))
+     (with-eval-after-load 'yasnippet
+       (let ((snippet-dir (expand-file-name "snippets" ,dir))
+             (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
+                       (cons yas-snippet-dirs ()))))
          (unless (member snippet-dir dirs)
            (setq yas-snippet-dirs (delq nil (cons snippet-dir dirs))))
          (yas-load-directory snippet-dir)))))

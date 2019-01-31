@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-31 14:43:04>
+;; Last modified: <2019-01-31 16:25:00>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -64,8 +64,9 @@
             "Mode to kill: " (cl-delete-duplicates
                               (mapcar (lambda (s) (symbol-name (car s))) buffs)))
            buffs)))
-  (cl-loop for buff in (or buffs (nvp-buffer-matching-mode mode))
-     when (eq mode (car buff))
+  (cl-loop for (buff-mode . buff) in (or buffs (nvp-buffer-matching-mode mode))
+     with mode = (intern mode)
+     when (eq mode buff-mode)
      do (kill-buffer buff)))
 
 ;; ------------------------------------------------------------

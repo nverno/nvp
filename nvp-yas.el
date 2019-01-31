@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-24 22:17:47>
+;; Last modified: <2019-01-30 19:40:37>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -42,7 +42,7 @@
 ;;; Setup 
 
 ;; compile snippets, optionally compile all snippet subdirs in site-lisp addons
-(defun nvp-yas-snippet-compile (&optional all)
+(defun nvp-yas-compile (&optional all)
   "Compile snippets in default location.
 Optionally, compile ALL snippets including subdirs in site-lisp packages."
   (interactive "P")
@@ -160,7 +160,7 @@ Optionally, compile ALL snippets including subdirs in site-lisp packages."
         (yas-expand))
     (company-complete-common)))
 
-(defun nvp-yas-snippet-help ()
+(defun nvp-yas-snippet-help-at-point ()
   (interactive)
   (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
 

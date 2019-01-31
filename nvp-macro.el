@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-30 18:41:34>
+;; Last modified: <2019-01-30 23:13:16>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -45,6 +45,16 @@
 ;; -------------------------------------------------------------------
 ;;; Misc
 
+(defmacro nvp-defvar (var value)
+  "Define VAR and eval VALUE during compile."
+  (declare (indent 0))
+  `(progn (defvar ,var (eval-when-compile ,value))))
+
+(defmacro nvp-setq (var value)
+  "Define VAR and eval VALUE during compile."
+  (declare (indent 0))
+  `(progn (setq ,var (eval-when-compile ,value))))
+
 (defmacro current-buffer-process ()
   `(get-buffer-process (current-buffer)))
 
@@ -76,16 +86,6 @@ use either `buffer-file-name' or `buffer-name'."
 (defmacro nvp-indent-cl (fn)
   "Generally doesn't work."
   `(put ,fn 'lisp-indent-function 'common-lisp-indent-function))
-
-(defmacro nvp-defvar (var value)
-  "Define VAR and eval VALUE during compile."
-  (declare (indent 0))
-  `(progn (defvar ,var (eval-when-compile ,value))))
-
-(defmacro nvp-setq (var value)
-  "Define VAR and eval VALUE during compile."
-  (declare (indent 0))
-  `(progn (setq ,var (eval-when-compile ,value))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -334,8 +334,12 @@ line at match (default) or do BODY at point if non-nil."
 ;; -------------------------------------------------------------------
 ;;; REPLs
 
-(cl-defmacro nvp-hippie-shell-fn (name histfile &key (size 5000) history bol-fn
-                                                  history-fn expand-fn)
+(cl-defmacro nvp-hippie-shell-fn (name histfile
+                                       &key
+                                       (size 5000)
+                                       (history ''comint-input-ring)
+                                       (bol-fn ''comint-line-beginning-position)
+                                       history-fn expand-fn)
   "Setup comint history ring read/write and hippie-expand for it."
   (let ((fn (nvp-string-or-symbol name)))
     `(progn
@@ -351,8 +355,8 @@ line at match (default) or do BODY at point if non-nil."
          (comint-read-input-ring)
          (add-hook 'kill-buffer-hook 'comint-write-input-ring nil 'local)
          (hippie-expand-shell-setup
-          :history ,(or history ''comint-input-ring)
-          :bol-fn ,(or bol-fn ''comint-line-beginning-position)
+          :history ,history
+          :bol-fn ,bol-fn
           :history-fn ,history-fn
           :expand-fn ,expand-fn)))))
 
@@ -523,14 +527,18 @@ menu entry."
                      (define-prefix-command ',map nil ,name)
                      (define-key ,leader (kbd ,key) ',map)))))
 
-(defmacro nvp-bind-keys (map &rest bindings)
-  "Bind keys to MAP"
+(cl-defmacro nvp-bind-keys (map &rest bindings &key pred-form &allow-other-keys)
+  "Add BINDINGS to MAP.
+If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
   (declare (indent defun))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
   (let ((map (nvp--normalize-modemap map)))
     `(progn
        (eval-when-compile (defvar ,map))
-       ,@(cl-loop for (k . b) in bindings
-            collect `(define-key ,map (kbd ,k) ',b)))))
+       (,@(if pred-form `(when ,pred-form) '(progn))
+        ,@(cl-loop for (k . b) in bindings
+             collect `(define-key ,map (kbd ,k) ',b))))))
 
 (defmacro nvp-define-key (keymap key category mode-type func)
   `(define-key ,keymap (kbd (nvp-bind ,key ,category ,mode-type)) ,func))
@@ -885,7 +893,7 @@ BODY."
      (declare-function nvp-log "nvp-log")
      (let ((script (nvp-install--script ,dir)))
        (nvp-with-process-log
-         (funcall-interactively 'nvp-ext-run-script script
+         (funcall-interactively #'nvp-ext-run-script script
                                 ,(if (stringp funcs) `(cons ,funcs nil)
                                    funcs)
                                 ,sudo)
@@ -901,7 +909,7 @@ BODY."
      (require 'nvp-ext)
      (declare-function nvp-log "nvp-log")
      (nvp-with-process-log
-       (funcall-interactively 'nvp-ext-run-script ,script
+       (funcall-interactively #'nvp-ext-run-script ,script
                               ,(if (stringp funcs) `(cons ,funcs nil)
                                  funcs)
                               ,sudo)
@@ -947,8 +955,7 @@ and install PLUGIN with asdf."
          (cons 'or
                (cl-loop
                   for (open close) in pairs
-                  collect `(and (looking-back ,open
-                                              (line-beginning-position))
+                  collect `(and (looking-back ,open (line-beginning-position))
                                 (looking-at ,close)))))
         (start-re (when comment-re (car comment-re)))
         (end-re (when comment-re (cdr comment-re))))
@@ -1122,14 +1129,14 @@ and install PLUGIN with asdf."
 (defmacro with-url-buffer (url &rest body)
   "Do BODY in buffer with contents from URL."
   (declare (indent defun)
-           (debug (symbolp &rest form)))
+           (debug (sexp &rest form)))
   `(with-current-buffer (url-retrieve-synchronously ,url)
      ,@body))
 
 (defmacro while-scanning-url (url regex &rest body)
   "Do BODY in buffer with URL contents at position of REGEX."
   (declare (indent defun)
-           (debug (symbolp symbolp &rest form)))
+           (debug (sexp sexp &rest form)))
   `(with-url-buffer ,url
      (goto-char (point-min))
      (while (re-search-forward ,regex nil t)
@@ -1153,11 +1160,87 @@ and install PLUGIN with asdf."
           collect `(advice-mapc (lambda (advice _props) (advice-remove ',fn advice))
                                 ',fn))))
 
-(defmacro nvp-eldoc-function (func &optional no-init)
+(defmacro nvp-eldoc-function (func &optional init)
   "Set local eldoc function."
   `(progn
      (add-function :before-until (local 'eldoc-documentation-function) #',func)
-     ,(unless no-init '(eldoc-mode))))
+     ,(when init '(eldoc-mode))))
+
+;; -------------------------------------------------------------------
+;;; Setup
+
+(defmacro nvp-setup-diminish (&rest modes)
+  "Diminish MODES in modeline."
+  (declare (indent 0))
+  (macroexp-progn
+   (cl-loop for (feat . mode) in modes
+      collect `(eval-after-load ',feat '(diminish ',mode)))))
+
+;; Find locations for init constants
+(defun nvp--normalize-locs (locs &optional defaults)
+  "Ensure LOCS is a list.
+If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s)."
+  (if (null locs)
+      (or defaults (nvp-with-gnu/w32 '("~/") '("~/" "d:/" "c:/")))
+    (if (and (consp locs) (functionp (car locs)))
+        (list (eval locs))
+      (and (not (listp locs)) (setq locs (cons locs nil)))
+      (mapcar (lambda (l)
+                (cond
+                 ((consp l) l)
+                 ((symbolp l) (symbol-value l))
+                 (t l)))
+              locs))))
+
+(defun nvp--setup-find-loc (locs &optional places file)
+  "Find first existing location in LOCS."
+  (let ((locs (nvp--normalize-locs locs nil))
+        (places (nvp--normalize-locs places)))
+    (cl-loop for loc in locs
+       return (cl-loop for place in places
+                 as root = (if (symbolp place) (symbol-value place) place)
+                 as loc-name = (expand-file-name loc root)
+                 when (file-exists-p loc-name)
+                 return (if file (directory-file-name loc-name)
+                          (file-name-as-directory loc-name))))))
+
+(defmacro nvp-setup-consts (&rest vars)
+  "Define consts in init."
+  (declare (indent 0) (debug t))
+  (macroexp-progn
+   (cl-loop for (v dir places file) in vars
+      as loc = (nvp--setup-find-loc dir places file)
+      do (eval `(defconst ,v ,loc)) ;so subsequent vars can use
+      collect `(defconst ,v ,loc))))
+
+(defmacro nvp-setup-load-files (&rest files)
+  (declare (indent 0))
+  (macroexp-progn
+   (cl-loop for f in files
+      collect `(load ,f 'noerror 'nomessage))))
+
+(defmacro nvp-setup-load-paths (&rest paths)
+  (declare (indent 0))
+  (macroexp-progn
+   (cl-loop for p in paths
+      collect `(add-to-list 'load-path ,p))))
+
+(defun nvp--setup-subdirs (root &optional ignored)
+  (and (symbolp root) (setq root (symbol-value root)))
+  (cl-remove-if
+   (lambda (f)
+     (or (not (file-directory-p f))
+         (cl-member (file-name-nondirectory f) ignored :test 'string=)))
+   (directory-files root t "^[^.]")))
+
+(defmacro nvp-setup-add-subdir-load-paths (root &optional ignored)
+  "Add subdirs under ROOT to `load-path', ingnoring those listed in IGNORED."
+  (declare (indent defun))
+  (let* ((ignored (or ignored '("." ".." "unused" "ignored" "old")))
+         (dirs (nvp--setup-subdirs root ignored)))
+    (macroexp-progn
+     (cl-loop for d in dirs
+        collect `(add-to-list 'load-path ,d)))))
 
 ;; -------------------------------------------------------------------
 ;;; Warnings / Compat / Variables

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-27 01:29:21>
+;; Last modified: <2019-01-30 20:16:48>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -67,8 +67,7 @@ By default remove all but XREF."
     (and (bound-and-true-p eglot--saved-bindings)
          (eval
            `(nvp-eldoc-function
-             ,(cdr (assoc 'eldoc-documentation-function eglot--saved-bindings))
-             'no-init))))
+             ,(cdr (assoc 'eldoc-documentation-function eglot--saved-bindings))))))
   (and imenu (remove-function (local 'imenu-create-index-function) #'eglot-imenu)))
 
 (provide 'nvp-hook)

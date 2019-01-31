@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-30 19:40:37>
+;; Last modified: <2019-01-31 04:29:42>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -214,13 +214,11 @@ Optionally, compile ALL snippets including subdirs in site-lisp packages."
       (make-directory default-directory))
     ;; with prefix dired the snippet directory
     (if (equal arg '(4)) (dired default-directory)
-      (switch-to-buffer-other-window (generate-new-buffer-name "*snippet*"))
+      (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
       (erase-buffer)
       (kill-all-local-variables)
       (snippet-mode)
-      (yas-minor-mode 1)
       (yas-expand-snippet yas-new-snippet-default)
-      
       ;; reload / compile after save
       ;; (add-hook 'after-save-hook 'nvp-yas-snippet-reload nil 'local)
       )))

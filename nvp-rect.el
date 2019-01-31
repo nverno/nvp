@@ -1,4 +1,4 @@
-;;; nvp-rect ---  -*- lexical-binding: t; -*-
+;;; nvp-rect.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

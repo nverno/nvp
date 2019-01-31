@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 02:05:40>
+;; Last modified: <2019-01-31 14:43:04>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -31,10 +31,45 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 
+;; ------------------------------------------------------------
+;;; Utils
+
+(defun nvp-buffer-major-modes ()
+  "Return aList of (buffer . `major-mode') for active buffers."
+  (cl-loop for buff in (buffer-list)
+     collect (cons (buffer-local-value 'major-mode buff) buff)))
+
+;;;###autoload
+(defun nvp-buffer-matching-mode (mode)
+  "Retun list of buffer with `major-mode' matching MODE."
+  (cl-loop for buff in (buffer-list)
+     when (eq mode (buffer-local-value 'major-mode (get-buffer buff)))
+     collect buff))
+
+;; ------------------------------------------------------------
+;;; Kill buffers
+
 ;;;###autoload
 (defun nvp-buffer-kill-other-buffers () 
+  "Kill all other buffers."
   (interactive)
     (mapc #'kill-buffer (cdr (buffer-list (current-buffer)))))
+
+;;;###autoload
+(defun nvp-buffer-kill-mode-buffers (mode &optional buffs)
+  "Kill all MODE buffers."
+  (interactive
+   (let ((buffs (nvp-buffer-major-modes)))
+     (list (ido-completing-read
+            "Mode to kill: " (cl-delete-duplicates
+                              (mapcar (lambda (s) (symbol-name (car s))) buffs)))
+           buffs)))
+  (cl-loop for buff in (or buffs (nvp-buffer-matching-mode mode))
+     when (eq mode (car buff))
+     do (kill-buffer buff)))
+
+;; ------------------------------------------------------------
+;;; Rearrange buffer windows
 
 ;; Transpose the buffers shown in two windows.
 ;;;###autoload
@@ -74,13 +109,6 @@
           (set-window-buffer (next-window) next-win)
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
-
-;;;###autoload
-(defun nvp-buffer-matching-mode (mode)
-  "Retun list of buffer with `major-mode' matching MODE."
-  (cl-loop for buff in (buffer-list)
-     when (eq mode (buffer-local-value 'major-mode (get-buffer buff)))
-     collect buff))
 
 ;; -------------------------------------------------------------------
 ;;; Scratch buffers 

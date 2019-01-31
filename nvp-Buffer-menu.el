@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-31 05:05:00>
+;; Last modified: <2019-01-31 12:26:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -32,11 +32,11 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'hydra))
+(require 'hydra)
 
-;;;###autoload(nvp-hydra-buffer-menu/body "nvp-Buffer-menu")
+;;;###autoload(autoload 'nvp-hydra-buffer-menu/body "nvp-Buffer-menu")
 
-(defhydra hydra-buffer-menu (:color pink
-			     :hint nil)
+(defhydra nvp-hydra-buffer-menu (:color pink :hint nil :pre (Buffer-menu-mode))
   "
 ^Mark^             ^Unmark^           ^Actions^          ^Search
 ^^^^^^^^-----------------------------------------------------------------                        (__)
@@ -64,6 +64,7 @@ _~_: modified      ^ ^                ^ ^                ^^                     
   ("v" Buffer-menu-select "select" :color blue)
   ("o" Buffer-menu-other-window "other-window" :color blue)
   ("q" quit-window "quit" :color blue))
+(hydra-set-property 'nvp-hydra-buffer-menu :verbosity 1)
 
 (provide 'nvp-Buffer-menu)
 ;;; nvp-Buffer-menu.el ends here

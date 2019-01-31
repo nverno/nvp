@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-31 03:26:49>
+;; Last modified: <2019-01-31 14:34:07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -32,6 +32,7 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'replace))
+(autoload 'nvp-buffer-matching-mode "nvp-buffer")
 
 ;; Return the contents of the region or symbol.
 (defun nvp-occur-region-str-or-symbol ()

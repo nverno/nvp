@@ -60,16 +60,14 @@
                    ;; look for package directory
                    (locate-file str load-path nil
                                 (lambda (f) (if (file-directory-p f) 'dir-ok))))))
-           (:else nil))))
+           (t nil))))
     ;; return directory
     (if path
       (if (file-directory-p path) path
-        (directory-file-name (file-name-directory path)))
-      )))
+        (directory-file-name (file-name-directory path))))))
 
 ;;;###autoload
-(define-obsolete-function-alias 'nvp-utils-setup-local
-  'nvp-tools-setup-local)
+(define-obsolete-function-alias 'nvp-utils-setup-local 'nvp-tools-setup-local)
 ;;;###autoload
 (define-obsolete-function-alias 'nvp-tools-setup-local 'nvp-setup-local)
 ;;;###autoload

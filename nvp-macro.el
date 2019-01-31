@@ -29,7 +29,7 @@
 ;;; Code:
 (require 'cl-lib)
 (require 'subr-x)
-(require 'nvp)
+(autoload 'nvp--normalize-modemap "nvp")
 (eval-when-compile
   (defvar eieio--known-slot-names))
 

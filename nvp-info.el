@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-31 14:45:28>
+;; Last modified: <2019-01-31 16:13:48>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -31,9 +31,11 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib)
+  (nvp-local-vars)
   (defvar nvp-info-nodes))
 (require 'info)
 
+;;;###autoload
 (defun nvp-info-open (topic &optional bname)
   "Open info on TOPIC in BNAME."
   (interactive (list (ido-completing-read "Topic: " nvp-info-nodes)))
@@ -45,21 +47,18 @@
             (Info-goto-node (format "(%s)" topic))))
       (info topic buff))))
 
-;; (when (require 'hydra nil t)
-;;   (defhydra nvp-info-hydra-to (:hint nil :color red)
-;;     "
-;; _m_e _o_rg e_l_isp _e_macs _h_yperspec"
-;;     ("m" (nvp-info-open "myshit" "*myshit info*"))
-;;     ("c" (nvp-info-open ))
-;;     ("o" (nvp-info-open "org" "*org info*"))
-;;     ("l" (nvp-info-open "elisp" "*elisp info*"))
-;;     ("e" (nvp-info-open "emacs" "*emacs info*"))
-;;     ("h" (nvp-info-open "gcl" "*hyperspec*")))
-
-;;   ;; cant remember this shit
-;;   (defadvice nvp-info-hydra-to/body (around gimme-help activate)
-;;     (let ((hydra-is-helpful t))
-;;       ad-do-it)))
+;;;###autoload
+(defun nvp-info-install (file)
+  "Install FILE into info directory."
+  (interactive
+   (list (ido-read-file-name "File: " (expand-file-name "org" nvp/info))))
+  (let ((default-directory (expand-file-name "org" nvp/info))
+        (target
+         (concat "install-"
+                 (file-name-nondirectory (file-name-sans-extension file)))))
+    (nvp-with-process "make"
+      :proc-name "install-info"
+      :proc-args (target))))
 
 (provide 'nvp-info)
 ;;; nvp-info.el ends here

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-25 23:13:45>
+;; Last modified: <2019-01-31 00:11:57>
 ;; Package-Requires: 
 ;; Created: 13 November 2016
 
@@ -34,6 +34,8 @@
   (nvp-local-vars))
 (eval-when-compile
   (defvar makefile-target-table))
+(declare-function w32-shell-execute "w32")
+(declare-function imenu--make-index-alist "imenu")
 (declare-function makefile-pickup-targets "make-mode")
 
 (autoload 'nvp-log "nvp-log")
@@ -48,7 +50,7 @@
   (ido-completing-read
    "Mode: "
    (mapcar (lambda (x)
-             (replace-regexp-in-string "\\(nvp-\\|\\.el\\)" "" x))
+             (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)\\.el\\)" "" x))
            (directory-files nvp/mode nil "^[^\\.].*\\.el$"))))
 
 (defun nvp-install-list-make-targets (&optional makefile)
@@ -300,17 +302,12 @@
 ;;;###autoload
 (defun nvp-install-mode (mode)
   (interactive (list (nvp-install-list-modes)))
-  (load (nvp-mode mode)))
+  (load (nvp-mode-config mode)))
 
 ;;;###autoload
 (defun nvp-install-modes (modes)
   "Install packages for list of MODES."
   (mapc #'nvp-install-mode modes))
-
-;; -------------------------------------------------------------------
-
-(declare-function w32-shell-execute "w32")
-(declare-function imenu--make-index-alist "imenu")
 
 (provide 'nvp-install)
 ;;; nvp-install.el ends here

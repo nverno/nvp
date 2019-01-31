@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-30 23:13:16>
+;; Last modified: <2019-01-31 00:40:49>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -327,9 +327,9 @@ line at match (default) or do BODY at point if non-nil."
      (let ((path (substitute-env-in-file-name ,path)))
        (and path (file-exists-p path) path))))
 
-(defmacro nvp-mode (mode)
+(defmacro nvp-mode-config (mode)
   `(expand-file-name
-    (concat "nvp-" ,mode) (bound-and-true-p nvp/mode)))
+    (concat "nvp-" ,mode "-config.el") (bound-and-true-p nvp/mode)))
 
 ;; -------------------------------------------------------------------
 ;;; REPLs
@@ -1169,15 +1169,8 @@ and install PLUGIN with asdf."
 ;; -------------------------------------------------------------------
 ;;; Setup
 
-(defmacro nvp-setup-diminish (&rest modes)
-  "Diminish MODES in modeline."
-  (declare (indent 0))
-  (macroexp-progn
-   (cl-loop for (feat . mode) in modes
-      collect `(eval-after-load ',feat '(diminish ',mode)))))
-
 ;; Find locations for init constants
-(defun nvp--normalize-locs (locs &optional defaults)
+(defun nvp--setup-normalize-locs (locs &optional defaults)
   "Ensure LOCS is a list.
 If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s)."
   (if (null locs)
@@ -1194,8 +1187,8 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
 
 (defun nvp--setup-find-loc (locs &optional places file)
   "Find first existing location in LOCS."
-  (let ((locs (nvp--normalize-locs locs nil))
-        (places (nvp--normalize-locs places)))
+  (let ((locs (nvp--setup-normalize-locs locs nil))
+        (places (nvp--setup-normalize-locs places)))
     (cl-loop for loc in locs
        return (cl-loop for place in places
                  as root = (if (symbolp place) (symbol-value place) place)
@@ -1203,6 +1196,26 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
                  when (file-exists-p loc-name)
                  return (if file (directory-file-name loc-name)
                           (file-name-as-directory loc-name))))))
+
+(defun nvp--setup-subdirs (root &optional ignored)
+  (and (symbolp root) (setq root (symbol-value root)))
+  (cl-remove-if
+   (lambda (f)
+     (or (not (file-directory-p f))
+         (cl-member (file-name-nondirectory f) ignored :test 'string=)))
+   (directory-files root t "^[^.]")))
+
+(defun nvp--setup-normalize-hook (mode)
+  (and (symbolp mode) (setq mode (symbol-name mode)))
+  (intern (replace-regexp-in-string
+           "\\(?:-mode\\)?\\(?:-hook\\)?\\'" "-mode-hook" mode)))
+
+(defmacro nvp-setup-diminish (&rest modes)
+  "Diminish MODES in modeline."
+  (declare (indent 0))
+  (macroexp-progn
+   (cl-loop for (feat . mode) in modes
+      collect `(eval-after-load ',feat '(diminish ',mode)))))
 
 (defmacro nvp-setup-consts (&rest vars)
   "Define consts in init."
@@ -1225,13 +1238,13 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
    (cl-loop for p in paths
       collect `(add-to-list 'load-path ,p))))
 
-(defun nvp--setup-subdirs (root &optional ignored)
-  (and (symbolp root) (setq root (symbol-value root)))
-  (cl-remove-if
-   (lambda (f)
-     (or (not (file-directory-p f))
-         (cl-member (file-name-nondirectory f) ignored :test 'string=)))
-   (directory-files root t "^[^.]")))
+(defmacro nvp-setup-hooks (hook &rest modes)
+  "Add HOOK to all MODES hooks."
+  (declare (indent 1))
+  (macroexp-progn
+   (cl-loop for mode in modes
+      as mode-hook = (nvp--setup-normalize-hook mode)
+      collect `(add-hook ',mode-hook #',hook))))
 
 (defmacro nvp-setup-add-subdir-load-paths (root &optional ignored)
   "Add subdirs under ROOT to `load-path', ingnoring those listed in IGNORED."

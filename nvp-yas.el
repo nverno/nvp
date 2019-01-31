@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-31 04:29:42>
+;; Last modified: <2019-01-31 17:08:01>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -42,6 +42,7 @@
 ;;; Setup 
 
 ;; compile snippets, optionally compile all snippet subdirs in site-lisp addons
+;;;###autoload
 (defun nvp-yas-compile (&optional all)
   "Compile snippets in default location.
 Optionally, compile ALL snippets including subdirs in site-lisp packages."
@@ -49,7 +50,7 @@ Optionally, compile ALL snippets including subdirs in site-lisp packages."
   (let ((yas-snippet-dirs
          (cons nvp/snippet
                (and all (directory-files-recursively nvp/site "snippets" 'dirs)))))
-    (yas-recompile-all)))
+    (mapc #'yas-recompile-all yas-snippet-dirs)))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
@@ -164,10 +165,12 @@ Optionally, compile ALL snippets including subdirs in site-lisp packages."
   (interactive)
   (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
 
-;; reload all `yas-snippet-dirs'
 ;;;###autoload
 (defun nvp-yas-reload-all ()
+  "Reload modes' snippet tables."
   (interactive)
+  (unless (member nvp-snippet-dir yas-snippet-dirs)
+    (push nvp-snippet-dir yas-snippet-dirs))
   (cl-loop for dir in yas-snippet-dirs
      do (yas-load-directory dir)))
 

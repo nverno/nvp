@@ -1,4 +1,4 @@
-;;; nvp-test ---  -*- lexical-binding: t; -*-
+;;; nvp-test.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -45,6 +45,9 @@
 (defvar nvp-test-prefixes '("test-" "test_" "t-" "t_" "Test"))
 (defvar nvp-test-suffixes '("-test" "-tests" "_test"))
 (defvar nvp-test-extension-re nil)
+
+;; -------------------------------------------------------------------
+;;; Default unit test runner
 
 ;; -------------------------------------------------------------------
 ;;; Find test files 

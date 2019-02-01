@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-01 00:19:03>
+;; Last modified: <2019-02-01 13:07:39>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -115,19 +115,9 @@ use either `buffer-file-name' or `buffer-name'."
 ;;; Conversions
 
 (defmacro nvp-listify (args)
-  "If ARGS are string or symbol, output as a list."
-  (cond
-   ((stringp args)
-    `(cons ,args nil))
-   ((symbolp args)
-    `(if (consp ,args) ,args (cons ,args nil)))
-   (t args)))
-
-(defmacro nvp-stringify (sym)
-  (if (symbolp sym) `(symbol-name ,sym) `,sym))
-
-(defmacro nvp-symbolify (sym)
-  (if (symbolp sym) `,sym `(intern ,sym)))
+  "Ensure ARGS is a list."
+  (let ((args (if (stringp args) (intern args) args)))
+    `(unless (consp ,args) (setq ,args (cons ,args nil)))))
 
 (defmacro nvp-string-or-symbol (sym)
   "If SYM is string convert to symbol."

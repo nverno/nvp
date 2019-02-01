@@ -32,8 +32,6 @@
   (require 'cl-lib)
   (defvar zeal-at-point-exe))
 (require 'nvp)
-(declare-function zeal-at-point-get-version "zeal-at-point")
-(declare-function zeal-at-point "zeal-at-point")
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-install "nvp-ext"))
 (autoload 'ispell-get-word "ispell")
@@ -73,7 +71,10 @@
 
 ;; -------------------------------------------------------------------
 ;;; Docsets 
-
+(eval-when-compile
+  (defvar zeal-at-po))
+(declare-function zeal-at-point-get-version "zeal-at-point")
+(declare-function zeal-at-point "zeal-at-point")
 (autoload 'zeal-at-point-run-search "zeal-at-point")
 
 (defun nvp-help-zeal-run-search (search)

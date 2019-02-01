@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-28 05:24:03>
+;; Last modified: <2019-01-31 18:55:09>
 ;; URL: https://github.com/nverno/
 ;; Package-Requires:
 ;; Created: 11 November 2016
@@ -111,8 +111,7 @@
          "bash" (nvp-process-buffer 'comint) "bash -l " cmd)))))
 
 ;;;###autoload
-(define-obsolete-function-alias 'nvp-install-script
-  'nvp-ext-run-script)
+(define-obsolete-function-alias 'nvp-install-script 'nvp-ext-run-script)
 ;;;###autoload
 (define-obsolete-function-alias 'nvp-install-script-functions
   'nvp-ext--script-functions)
@@ -154,20 +153,6 @@ If none found, return list of all terminal buffers."
      if (and (string-prefix-p proc-name (process-name proc))
              (process-live-p proc))
      collect (process-buffer proc)))
-
-;;; Replaced with `generate-new-buffer-name'
-(defun nvp-ext-terminal-unique-name (&optional terminal-buffers proc-name)
-  "Create unique name for new terminal."
-  (setq terminal-buffers (or terminal-buffers (nvp-ext-all-terminals proc-name)))
-  (setq proc-name (or proc-name "shell"))
-  (let* ((names (mapcar #'buffer-name terminal-buffers))
-         (name (concat "*" proc-name "*"))
-         (len (1+ (length proc-name)))
-         (n 0))
-    (while (member-ignore-case name names)
-      (setq name (format "*%s:%d*" (substring name 1 len) (cl-incf n)))
-      (pop names))
-    name))
 
 ;;;###autoload
 (defun nvp-ext-terminal (arg &optional buffer shell-name proc-name)

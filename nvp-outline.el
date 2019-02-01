@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-31 03:36:44>
+;; Last modified: <2019-01-31 20:01:27>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -31,6 +31,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'hydra))
+(require 'hydra)
 (require 'outline)
 
 ;;;###autoload
@@ -47,12 +48,8 @@
               (regexp-quote ";;\\*\\|;;;\\*\\|(\\(?:cl-\\)?def[cuvm]\\|(setq"))
       ";;; End:"))))
 
-(defun nvp-outline-hydra-main ()
-  (interactive)
-  (let ((hydra-is-helpful t))
-    (nvp-outline-hydra/body)))
-
-(defhydra nvp-outline-hydra (:color red :hint nil)
+;;;###autoload(autoload 'nvp-outline-hydra/body "nvp-outline")
+(defhydra nvp-outline-hydra (:color red :hint t)
   "
 ^Hide^             ^Show^           ^Move
 ^^^^^^------------------------------------------------------
@@ -80,7 +77,13 @@ _d_: subtree       _s_: subtree     _b_: backward same level
   ("p" outline-previous-visible-heading)  ; Previous
   ("f" outline-forward-same-level)        ; Forward - same level
   ("b" outline-backward-same-level)       ; Backward - same level
-  ("z" nil "leave"))
+  ("q" nil "quit"))
+(hydra-set-property 'nvp-outline-hydra :verbosity 1)
 
 (provide 'nvp-outline)
 ;;; nvp-outline.el ends here
+
+;;; Local variables:
+;;; outline-minor-mode: t
+;;; outline-regexp: ";;\\\*\\|;;;\\\*\\|(\\(\?:cl-\\)\?def\[cuvm]\\|(setq"
+;;; End:

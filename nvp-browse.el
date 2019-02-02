@@ -1,4 +1,4 @@
-;;; nvp-browse ---  -*- lexical-binding: t; -*-
+;;; nvp-browse.el --- web -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -30,6 +30,10 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (defvar webjump-sites))
+(declare-function thing-at-point-url-at-point "thingatpt")
+(declare-function webjump-url-fix "webjump")
+(declare-function webjump-builtin "webjump")
+(declare-function web-mode "web-mode")
 
 ;; local uris to jump to
 (defvar nvp-local-uris nil)
@@ -37,7 +41,7 @@
 ;;;###autoload
 (defun nvp-browse-start ()
   (interactive)
-  (call-process (nvp-program "firefox") nil 0 nil))
+  (call-process browse-url-browser-function nil 0 nil))
 
 ;;;###autoload
 (defun nvp-browse-url-contents ()
@@ -50,7 +54,8 @@
     (cond ((search-forward "<?xml" nil t) (xml-mode))
 	  ((search-forward "<html" nil t) (web-mode)))))
 
-;;--- Webjump --------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Webjump
 
 (defvar nvp-webjump-sites
   '(
@@ -133,13 +138,6 @@
                                  expr)))
                        (t (error "WebJump URL expression for \"%s\" invalid"
                                  name)))))))
-
-;; -------------------------------------------------------------------
-
-(declare-function thing-at-point-url-at-point "thingatpt")
-(declare-function webjump-url-fix "webjump")
-(declare-function webjump-builtin "webjump")
-(declare-function web-mode "web-mode")
 
 (provide 'nvp-browse)
 ;;; nvp-browse.el ends here

@@ -30,7 +30,6 @@
   (require 'nvp-macro))
 (require 'compile)
 (declare-function xterm-color-colorize-buffer "xterm-color")
-(declare-function nvp-basic-use-local-bindings "nvp-basic")
 (autoload 'ansi-color-apply-on-region "ansi-color")
 
 ;;;###autoload

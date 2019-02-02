@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-30 18:11:17>
+;; Last modified: <2019-02-01 21:53:42>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -76,8 +76,9 @@
      &key
      mode
      abbr-file
+     snippets-dir
      (dir (nvp-setup-package-root name))
-     (snippets (concat "snippets/" (or mode (symbol-name major-mode))))
+     (snippets (concat "snippets/" (or snippets-dir mode (symbol-name major-mode))))
      (abbr-table (or mode (symbol-name major-mode)))
      (fn nil))
   "Setup local variables for helper package - abbrevs, snippets, root dir."

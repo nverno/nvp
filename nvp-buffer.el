@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-31 16:25:00>
+;; Last modified: <2019-02-01 21:17:55>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -53,7 +53,7 @@
 (defun nvp-buffer-kill-other-buffers () 
   "Kill all other buffers."
   (interactive)
-    (mapc #'kill-buffer (cdr (buffer-list (current-buffer)))))
+  (mapc #'kill-buffer (cdr (buffer-list (current-buffer)))))
 
 ;;;###autoload
 (defun nvp-buffer-kill-mode-buffers (mode &optional buffs)

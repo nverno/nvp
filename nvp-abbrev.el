@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-31 21:39:00>
+;; Last modified: <2019-02-01 21:38:59>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -34,7 +34,11 @@
 (require 'expand)
 (require 'abbrev)
 
+;; abbrev table read in mode hooks
 (defvar-local nvp-abbrev-local-table nil)
+
+;; abbrev prefixes
+(defvar nvp-abbrev-prefix-chars "A-Za-z0-9#.")
 
 ;; insert starter abbrev table template
 (defun nvp-abbrev--insert-template (table)
@@ -50,6 +54,8 @@
       (replace-regexp-in-string "-abbrev-table" "" table)))
     "  :parents (list prog-mode-abbrev-table))")))
 
+;; open abbrev file and search for the specified table
+;; if it doesn't exist insert starter template
 (defun nvp-abbrev--get-table (table file)
   (find-file-other-window file)
   (goto-char (point-min))
@@ -61,44 +67,9 @@
 (defsubst nvp-abbrev--grab-prev (arg)
   (save-excursion
     (let ((end (point))
-          (_ (skip-chars-backward "A-Za-z0-9#." (- (point) arg)))
+          (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) arg)))
           (start (point)))
       (buffer-substring-no-properties start end))))
-
-;; Jump to abbrev file, search to position to insert (by length, then
-;; lex).  Prefix length to look back.
-;;;###autoload
-(defun nvp-abbrev-jump-to-file (arg)
-  (interactive "P")
-  (let* ((file-abbr (bound-and-true-p nvp-abbrev-local-table))
-         (table (regexp-quote (format "%s-abbrev-table"
-                                      (or file-abbr major-mode))))
-         (pref (if arg (nvp-abbrev--grab-prev arg))))
-    (if (bound-and-true-p nvp-abbrev-local-file)
-        (nvp-abbrev--get-table table nvp-abbrev-local-file)
-      (nvp-abbrev--get-table
-       table (expand-file-name table nvp/abbrevs)))
-    (goto-char (point-min))
-    (search-forward-regexp (concat "'" table "\\>") nil t)
-    (when pref
-      (while
-          (and
-           (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)"
-                              nil t)
-           (let ((str (buffer-substring-no-properties
-                       (match-beginning 1) (match-end 1))))
-             (if (> (length pref) (length str))
-                 t
-               (string> pref str)))))
-      ;; insert default template for prefix
-      (back-to-indentation)
-      (insert (format "(\"%s\" \"\" nil :system t)\n" pref))
-      (indent-according-to-mode)
-      (backward-char (+ (current-indentation) 17)))
-    ;; reload abbrev table after modification
-    (add-hook 'after-save-hook
-              #'(lambda () (quietly-read-abbrev-file buffer-file-name))
-              t 'local)))
 
 ;; return list of currently loaded and non-empty abbrev tables
 (defsubst nvp-abbrev--abbrev-list (&optional tables)
@@ -111,31 +82,6 @@
 (defsubst nvp-abbrev--active-tables ()
   (nvp-abbrev--abbrev-list
    (mapcar 'abbrev-table-name (abbrev--active-tables))))
-
-;; write abbrev table
-;; temporarily rebind `abbrev--write' to write :system abbrevs
-;;;###autoload
-(defun nvp-abbrev-write-abbrev-table (table file)
-  (interactive
-   (list
-    (if current-prefix-arg
-        (abbrev-table-name local-abbrev-table)
-      (ido-completing-read
-       "Abbrev table: " (mapcar 'symbol-name
-                                (nvp-abbrev--abbrev-list))))
-    (read-file-name "Write abbrevs to: ")))
-  (let ((abbrev-table-name-list (list (intern table))))
-    (cl-letf (((symbol-function 'abbrev--write)
-               (lambda (sym)
-                 (unless (null (symbol-value sym))
-                   (insert "    (")
-                   (prin1 (symbol-name sym))
-                   (insert " ")
-                   (prin1 (symbol-value sym))
-                   (insert " ")
-                   (prin1 (symbol-function sym))
-                   (insert " :system t)\n")))))
-      (write-abbrev-file file ))))
 
 ;; add unicode abbrevs to local table parents
 ;;;###autoload

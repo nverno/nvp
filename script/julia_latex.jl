@@ -1,12 +1,21 @@
 #!/usr/bin/env julia
 
-# #<marker at 29340 in julia-mode.el>
+# https://github.com/JuliaEditorSupport/julia-emacs/blob/master/make-julia-latexsubs.jl
+@assert VERSION >= v"1"
+
+import REPL
+
+"""
+Create latex symbols formatted for elisp as either abbrev or hash table.
+- output : elisp output format - either "abbrev" or "hash"
+- hash   : name of hashtable if "hash" output
+"""
 function generate_unicode(output, hash)
 
-  if output == "abbrev"
-    println("(define-abbrev-table 'julia-latex-abbrev-table")
-    println("  '(")
-  end
+    if output == "abbrev"
+        println("(define-abbrev-table 'julia-latex-abbrev-table")
+        println("  '(")
+    end
 
   for (k,v) in sort!(collect(Base.REPLCompletions.latex_symbols), by=x->x[2])
     ks = escape_string(k)

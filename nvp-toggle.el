@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-28 04:27:03>
+;; Last modified: <2019-02-01 19:22:16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -114,21 +114,26 @@ If FOOTER is non-nil toggle value in file's Local Variables."
               (dir  #'modify-dir-local-variable)
               (t    #'modify-file-local-variable)))
          (dir-mode (and (not prop) dir (read-file-local-variable-mode)))
-         (start-state (buffer-chars-modified-tick)))
-    (save-excursion
-      (apply fn (if dir-mode (list dir-mode var val op) (list var val op)))
-      (when (and prop (eq op 'delete))
-        (nvp-toggle--cleanup-prop-line)))
-    ;; save/revert buffer if changes were made
-    (unless (eq start-state (buffer-chars-modified-tick))
-      (unless (eq fn 'modify-dir-local-variable)
-        (save-buffer))
-      (revert-buffer 'ignore-auto 'no-confirm)
-      (message "%s %s%s in the %s"
-               (if (eq op 'delete) "Deleted" "Updated")
-               (symbol-name var)
-               (if val (concat " => " (if (stringp val) val (symbol-name val))) "")
-               (if prop "prop-line" (if dir "dir-locals" "local vars"))))))
+         (start-state (buffer-chars-modified-tick))
+         changed)
+    (let ((orig-buff (current-buffer)))
+      (save-excursion                   ;modify-file... moves point
+        (apply fn (if dir-mode (list dir-mode var val op) (list var val op)))
+        (when (and prop (eq op 'delete))
+          (nvp-toggle--cleanup-prop-line)))
+      (setq changed (not (or (eq fn 'modify-dir-local-variable)
+                             (eq start-state (buffer-chars-modified-tick)))))
+      ;; save/revert buffer if changes were made
+      (and changed (save-buffer))
+      (if (not (or changed (eq fn 'modify-dir-local-variable)))
+          (message "No changes local variables changed.")
+        (with-current-buffer orig-buff ;dir-local modification changes buffer
+          (revert-buffer 'ignore-auto 'no-confirm))
+        (message "%s %s%s in the %s"
+                 (if (eq op 'delete) "Deleted" "Updated")
+                 (symbol-name var)
+                 (if val (concat " => " (if (stringp val) val (symbol-name val))) "")
+                 (if prop "prop-line" (if dir "dir-locals" "local vars")))))))
 
 ;;;###autoload
 (defun nvp-toggle-file-local-binding (&optional footer)

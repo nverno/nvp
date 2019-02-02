@@ -45,32 +45,32 @@
 ;; -------------------------------------------------------------------
 ;;; Tabulate strings in region
 
-;; See the emacs manual for creating a hash table test
-;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Defining-Hash.html
-(defun case-fold-string= (a b)
-  (eq t (compare-strings a nil nil b nil nil t)))
-(defun case-fold-string-hash (a)
-  (sxhash (upcase a)))
-
-(define-hash-table-test 'case-fold 'case-fold-string= 'case-fold-string-hash)
-
 ;; Print counts of strings in region, with prefix dump at point
 ;;;###autoload
-(defun nvp-stats-uniq (beg end &optional _unused)
+(defun nvp-stats-uniq (beg end &optional count-lines)
+  "Print counts (case-insensitive) of unique words in region BEG to END.
+With prefix COUNT-LINES count unique lines."
   (interactive "r\nP")
-  (let ((h (make-hash-table :test 'case-fold))
-        (strs (split-string (buffer-substring-no-properties beg end) "\n"
-                           'omit-nulls " "))
+  (require 'nvp-hash)
+  (let ((ht (make-hash-table :test 'case-fold))
+        (lines (split-string
+                (buffer-substring-no-properties beg end) "\n" 'omit-nulls " "))
         lst)
-    (dolist (str strs) 
-      (puthash str (1+ (gethash str h 0)) h))
-    (maphash (lambda (key val) (push (cons val key) lst)) h)
+    (if count-lines
+        (dolist (line lines)
+          (puthash line (1+ (gethash line ht 0)) ht))
+      ;; strip punctuation for words
+      (cl-loop for line in lines
+         as words = (split-string line "[[:punct:] \t]" 'omit " ")
+         when words
+         do (cl-loop for word in words
+               do (puthash word (1+ (gethash word ht 0)) ht))))
+    (maphash (lambda (key val) (push (cons val key) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
-    (with-stats-buffer
-      (erase-buffer)
-      (dolist (pair lst)
-        (insert (format "%d: %s\n" (car pair) (cdr pair))))
-      (display-buffer (current-buffer)))))
+    (nvp-with-results-buffer nil
+      (pcase-dolist (`(,k . ,v) lst)
+        (princ (format "%d: %s\n" k v)))
+      (view-mode-enter nil 'kill-buffer))))
 
 (provide 'nvp-stats)
 ;;; nvp-stats.el ends here

@@ -1,5 +1,6 @@
-emacs ?= emacs
-wget  ?= wget
+emacs  ?= emacs
+wget   ?= wget
+SCRIPT = script
 
 .PHONY: test
 all: test
@@ -14,5 +15,7 @@ README.md : el2markdown.el nvp.el
 el2markdown.el:
 	$(wget) -q -O $@ "https://github.com/Lindydancer/el2markdown/raw/master/el2markdown.el"
 
+unicode:
+	@
 clean:
 	$(RM) *~ dist

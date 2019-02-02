@@ -1,12 +1,13 @@
-;;; nvp-unicode.el ---  -*- lexical-binding: t; -*-
+;;; nvp-hash.el --- hash table -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-01 19:35:03>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
+;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-01 21:43:05>
 ;; Package-Requires: 
-;; Created:  4 December 2016
+;; Created:  1 February 2019
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -26,25 +27,21 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+;; See the emacs manual for creating a hash table test
+;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Defining-Hash.html
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib)
-  (defvar nvp--dir))
-(autoload 'nvp-abbrev-add-parent "nvp-abbrev")
-(autoload 'nvp-process-buffer "nvp")
 
-;; print julia latex
-(defun nvp-unicode-julia-latex ()
-  (interactive)
-  (and (executable-find "julia")
-       (set-process-sentinel
-        (start-process
-         "julia" (nvp-process-buffer) "julia"
-         (expand-file-name "script/julia_latex.jl" nvp--dir))
-        #'(lambda (p _m)
-            (when (zerop (process-exit-status p))
-              (pop-to-buffer (nvp-process-buffer)))))))
+;; -------------------------------------------------------------------
+;;; Hash tests
 
-(provide 'nvp-unicode)
-;;; nvp-unicode.el ends here
+(defsubst case-fold-string= (a b)
+  (eq t (compare-strings a nil nil b nil nil t)))
+
+(defsubst case-fold-string-hash (a)
+  (sxhash (upcase a)))
+
+;; case-insensitive hash-table
+(define-hash-table-test 'case-fold #'case-fold-string= #'case-fold-string-hash)
+
+(provide 'nvp-hash)
+;;; nvp-hash.el ends here

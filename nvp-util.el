@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-16 21:10:32>
+;; Last modified: <2019-02-01 21:21:03>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  2 November 2016
@@ -78,7 +78,7 @@
                      (current-time-string))))
         (nvp-dump-variable var)
         (insert (concat
-                 "\n;; Local " "Variables:\n"
+                 "\n;; Local\sVariables:\n"
                  ";; no-update-autoloads: t\n"
                  ";; coding: " (or coding 'emacs-mule) "\n"
                  ";; End:\n"
@@ -142,17 +142,6 @@
       (if (looking-at forward)
           (cons (point) (match-end 0))
         nil))))
-
-;; -------------------------------------------------------------------
-;;; Bindings
-
-;; Overrides a minor mode keybinding for the local buffer by creating
-;; or altering keymaps stored in buffer-local variable 
-;; `minor-mode-overriding-map-alist'.
-(defun nvp-local-minor-mode-key (mode key def)
-  (let ((map (make-sparse-keymap)))
-    (define-key map key def)
-    (push (cons mode map) minor-mode-overriding-map-alist)))
 
 (provide 'nvp-util)
 ;;; nvp-util.el ends here

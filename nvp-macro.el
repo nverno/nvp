@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-01 13:07:39>
+;; Last modified: <2019-02-01 21:15:05>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -569,7 +569,7 @@ Optional :local key can be set to make the mappings buffer-local."
      ,@(cl-loop for (mode . feature) in modes
           collect `(nvp-bindings ,mode ',feature ,@bindings))))
 
-;;; general movement bindings for non-insert modes
+;; general movement bindings for non-insert modes
 (declare-function nvp-basic-up-paragraph "nvp-basic")
 (declare-function nvp-basic-down-paragraph "nvp-basic")
 (defmacro nvp-bindings-view ()
@@ -625,7 +625,7 @@ Optional :local key can be set to make the mappings buffer-local."
        (set ',keymap newmap))))
 
 ;; -------------------------------------------------------------------
-;;; Read / Input
+;;; Buffers / IO
 
 (defmacro nvp-last-input-char ()
   "Return the last character input."
@@ -661,6 +661,19 @@ Optional :local key can be set to make the mappings buffer-local."
     ((pred consp)
      `(ido-completing-read ,prompt ,thing))
     (_ `(read-from-minibuffer ,prompt))))
+
+(defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
+  "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
+Make the temp buffer scrollable and kill when finished."
+  (declare (indent defun))
+  `(let (other-window-scroll-buffer)
+     (with-temp-buffer-window
+      ,(or buffer-or-name "*results*")
+      t
+      nil
+      (with-current-buffer standard-output
+        (setq other-window-scroll-buffer (current-buffer))
+        ,@body))))
 
 ;; -------------------------------------------------------------------
 ;;; Time
@@ -1259,6 +1272,12 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
 
 (defmacro eieio-declare-slot (name)
   (cl-pushnew name eieio--known-slot-names) nil)
+
+(defmacro nvp-declare (package &rest funcs)
+  (declare (indent 1))
+  (macroexp-progn
+   (cl-loop for func in funcs
+      collect `(declare-function ,func ,package))))
 
 (defmacro nvp-local-vars ()
   '(progn

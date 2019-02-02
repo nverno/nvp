@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-27 04:55:07>
+;; Last modified: <2019-02-01 21:15:08>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -26,6 +26,7 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+;; Required in init
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -40,15 +41,15 @@
 (defun nvp-basic-char-this-line (&optional char)
   (interactive (list (char-to-string (read-char "Char: " t))))
   (let ((case-fold-search t))
-    (search-forward char (point-at-eol) t))
+    (unless (search-forward char (point-at-eol) t)))
   (nvp-basic-temp-binding
    char (lambda () (interactive) (nvp-basic-char-this-line char)) t))
 
-(defun nvp-basic-next5(&rest _ignored)
+(defun nvp-basic-next5 (&rest _ignored)
   (interactive)
   (forward-line 5))
 
-(defun nvp-basic-prev5(&rest _ignored)
+(defun nvp-basic-prev5 (&rest _ignored)
   (interactive)
   (forward-line -5))
 
@@ -199,6 +200,48 @@
     (yank)))
 
 ;; -------------------------------------------------------------------
+;;; Paredit
+(nvp-declare "paredit"
+  paredit-close-round paredit-find-comment-on-line paredit-move-past-close)
+
+(defun nvp-paredit-close-round (&optional arg)
+  "Close paren skipping over possible comments.
+With ARG use default behaviour."
+  (interactive "P")
+  (if arg (paredit-close-round)
+    (let ((beg (point)) ;keep comment on same line
+          (cmt (paredit-find-comment-on-line)))
+      (paredit-move-past-close ?\))
+      (and cmt (save-excursion
+                 (unless (eq (line-number-at-pos) (line-number-at-pos beg))
+                   (goto-char beg))
+                 (insert (car cmt)))))))
+
+;; https://www.emacswiki.org/emacs/ParEdit
+(defun nvp-paredit-delete-indentation (&optional arg)
+  "Handle joining lines that end in a comment."
+  (interactive "P")
+  (let (comt)
+    (save-excursion
+      (move-beginning-of-line (if arg 1 0))
+      (when (skip-syntax-forward "^<" (point-at-eol))
+        (setq comt (delete-and-extract-region (point) (point-at-eol))))
+      (delete-indentation arg)
+      (when comt
+        (save-excursion
+          (move-end-of-line 1)
+          (insert " ")
+          (insert comt))))))
+
+(defun nvp-paredit-remove-newlines ()
+  "Removes extra whitespace and newlines from current point to the next paren."
+  (interactive)
+  (let ((up-to (point)))
+    (backward-char)
+    (while (> (point) up-to)
+      (nvp-paredit-delete-indentation))))
+
+;; -------------------------------------------------------------------
 ;;; Newline 
 
 (nvp-newline nvp-basic-newline-dwim nil
@@ -214,18 +257,6 @@
      tmap)
    (or keep t)
    (or exit nil)))
-
-(defun nvp-basic-use-local-bindings (bindings &optional buffer)
-  "Use buffer local BINDINGS.
-Optionally use them in BUFFER instead of current buffer."
-  (let ((lmap (make-sparse-keymap)))
-    (set-keymap-parent lmap (current-local-map))
-    (dolist (b bindings)
-      (define-key lmap (kbd (car b)) (cadr b)))
-    (if buffer
-        (with-current-buffer buffer
-          (use-local-map lmap))
-      (use-local-map lmap))))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

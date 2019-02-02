@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-01 21:15:05>
+;; Last modified: <2019-02-02 02:41:22>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -569,6 +569,22 @@ Optional :local key can be set to make the mappings buffer-local."
      ,@(cl-loop for (mode . feature) in modes
           collect `(nvp-bindings ,mode ',feature ,@bindings))))
 
+(cl-defmacro nvp-bindings-transient (bindings
+                                     &key (keep t)
+                                     (pre '(nvp-indicate-cursor-pre))         
+                                     (exit '(nvp-indicate-cursor-post)))
+  "Set multiple BINDINGS in transient map.
+Run PRE form prior to setting commands."
+  `(progn
+     (nvp-declare "nvp-indicate" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
+     ,pre
+     (set-transient-map
+      (let ((tmap (make-sparse-keymap)))
+        (pcase-dolist (`(,key . ,cmd) ,bindings)
+          (define-key tmap (kbd key) (function cmd))))
+      ,keep
+      ,exit)))
+
 ;; general movement bindings for non-insert modes
 (declare-function nvp-basic-up-paragraph "nvp-basic")
 (declare-function nvp-basic-down-paragraph "nvp-basic")
@@ -664,7 +680,7 @@ Optional :local key can be set to make the mappings buffer-local."
 
 (defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
-Make the temp buffer scrollable and kill when finished."
+Make the temp buffer scrollable, in `view-mode' and kill when finished."
   (declare (indent defun))
   `(let (other-window-scroll-buffer)
      (with-temp-buffer-window
@@ -673,7 +689,8 @@ Make the temp buffer scrollable and kill when finished."
       nil
       (with-current-buffer standard-output
         (setq other-window-scroll-buffer (current-buffer))
-        ,@body))))
+        ,@body
+        (view-mode-enter nil 'kill-buffer)))))
 
 ;; -------------------------------------------------------------------
 ;;; Time
@@ -699,7 +716,7 @@ Make the temp buffer scrollable and kill when finished."
 ;;; Tooltips
 
 (declare-function pos-tip-show "pos-tip")
-(declare-function nvp-basic-temp-binding "nvp-basic")
+(declare-function nvp-bind-transient-key "nvp-bind")
 
 (cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn bindings (timeout 45)
                                            (help-buffer
@@ -717,12 +734,12 @@ default help function."
   (let ((str (make-symbol "str")))
     `(progn
        (declare-function pos-tip-show "pos-tip")
-       (declare-function nvp-basic-temp-binding "nvp-basic")
+       (declare-function nvp-bind-transient-key "nvp-bind")
        (let ((x-gtk-use-system-tooltips ,use-gtk))
          (or (x-hide-tip)
              (let ((,str ,popup))
                (pos-tip-show ,str nil nil nil ,timeout)
-               (nvp-basic-temp-binding
+               (nvp-bind-transient-key
                 "h" ,(cond
                        ((eq :none help-fn) nil)
                        (help-fn help-fn)
@@ -735,11 +752,11 @@ default help function."
                                (insert ,str)
                                (view-mode-enter)
                                (pop-to-buffer (current-buffer)))))))
-               (nvp-basic-temp-binding
+               (nvp-bind-transient-key
                 "q" #'(lambda () (interactive) (let ((x-gtk-use-system-tooltips nil))
                                                  (x-hide-tip))))
                ,@(cl-loop for (k . b) in bindings
-                    collect `(nvp-basic-temp-binding (kbd ,k) ,b))
+                    collect `(nvp-bind-transient-key (kbd ,k) ,b))
                ;; (cl-labels
                ;;     ((untoggle-tip () (x-hide-tip)))
                ;;   (add-hook 'focus-out-hook #'untoggle-tip nil t))

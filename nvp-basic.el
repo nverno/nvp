@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-01 21:15:08>
+;; Last modified: <2019-02-02 02:37:25>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -32,6 +32,7 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (autoload 'string-trim "subr-x")
+(declare-function nvp-bind-transient-key "nvp-bind")
 
 ;; -------------------------------------------------------------------
 ;;; Movement 
@@ -41,8 +42,13 @@
 (defun nvp-basic-char-this-line (&optional char)
   (interactive (list (char-to-string (read-char "Char: " t))))
   (let ((case-fold-search t))
-    (unless (search-forward char (point-at-eol) t)))
-  (nvp-basic-temp-binding
+    (condition-case nil
+        (search-forward char (point-at-eol))
+      (error (let ((pt (point)))
+               (beginning-of-line)
+               (or (search-forward char (point-at-eol))
+                   (goto-char pt))))))
+  (nvp-bind-transient-key
    char (lambda () (interactive) (nvp-basic-char-this-line char)) t))
 
 (defun nvp-basic-next5 (&rest _ignored)
@@ -137,7 +143,7 @@
             (end (region-end)))
         (nvp-basic--duplicate-region arg beg end))
   (nvp-basic--duplicate-last-nonempty-line arg)
-  (nvp-basic-temp-binding "d" #'nvp-basic--back-and-dupe)))
+  (nvp-bind-transient-key "d" #'nvp-basic--back-and-dupe)))
 
 ;; duplicate the current line num times.
 (defun nvp-basic-duplicate-current-line (&optional num)
@@ -246,17 +252,6 @@ With ARG use default behaviour."
 
 (nvp-newline nvp-basic-newline-dwim nil
   :pairs (("{" "}") ("(" ")") ("\\[" "\\]")))
-
-;; -------------------------------------------------------------------
-;;; Key bindings 
-
-(defun nvp-basic-temp-binding (key cmd &optional keep exit)
-  (set-transient-map
-   (let ((tmap (make-sparse-keymap)))
-     (define-key tmap (kbd key) cmd)
-     tmap)
-   (or keep t)
-   (or exit nil)))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

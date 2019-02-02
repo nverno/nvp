@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-24 15:56:17>
+;; Last modified: <2019-02-02 02:19:57>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -58,12 +58,14 @@
                   #'(lambda ()
                       (delete-overlay nvp-indicate--region-overlay))))
 
-;;; Hydra pre/post change cursor color
-(defun nvp-indicate-hydra-pre ()
+;;; pre/post change cursor color, eg. for hydra or transient state
+;;;###autoload
+(defun nvp-indicate-cursor-pre ()
   (nvp-indicate-cache 'cursor-color (face-attribute 'cursor :background))
   (set-cursor-color "#e31422"))
 
-(defun nvp-indicate-hydra-post ()
+;;;###autoload
+(defun nvp-indicate-cursor-post ()
   (set-cursor-color (nvp-indicate-cache 'cursor-color)))
 
 ;; ------------------------------------------------------------

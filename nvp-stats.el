@@ -32,17 +32,6 @@
   (require 'cl-lib))
 
 ;; -------------------------------------------------------------------
-;;; Util
-
-(eval-when-compile
-  (defmacro with-stats-buffer (&rest body)
-    (declare (indent defun))
-    `(with-current-buffer (get-buffer-create "*nvp-stats*")
-       (setq-local buffer-read-only nil)
-       ,@body
-       (view-mode-enter))))
-
-;; -------------------------------------------------------------------
 ;;; Tabulate strings in region
 
 ;; Print counts of strings in region, with prefix dump at point
@@ -69,8 +58,7 @@ With prefix COUNT-LINES count unique lines."
     (setq lst (cl-sort lst #'> :key #'car))
     (nvp-with-results-buffer nil
       (pcase-dolist (`(,k . ,v) lst)
-        (princ (format "%d: %s\n" k v)))
-      (view-mode-enter nil 'kill-buffer))))
+        (princ (format "%d: %s\n" k v))))))
 
 (provide 'nvp-stats)
 ;;; nvp-stats.el ends here

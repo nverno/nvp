@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-01 21:23:10>
+;; Last modified: <2019-02-02 02:32:45>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -33,6 +33,17 @@
   (require 'subr-x)
   (require 'nvp-macro))
 
+;;;###autoload
+(defun nvp-bind-transient-key (key cmd &optional keep exit)
+  "Bind KEY to CMD in transient map."
+  (set-transient-map
+   (let ((tmap (make-sparse-keymap)))
+     (define-key tmap (kbd key) cmd)
+     tmap)
+   (or keep t)
+   (or exit nil)))
+
+;;;###autoload
 (defun nvp-bind-local-bindings (bindings &optional buffer)
   "Use buffer local BINDINGS.
 Optionally use them in BUFFER instead of current buffer."
@@ -48,6 +59,7 @@ Optionally use them in BUFFER instead of current buffer."
 ;; Overrides a minor mode keybinding for the local buffer by creating
 ;; or altering keymaps stored in buffer-local variable 
 ;; `minor-mode-overriding-map-alist'.
+;;;###autoload
 (defun nvp-bind-minor-mode-override-key (mode key def)
   "Override a minor MODE KEY DEF using `minor-mode-overriding-map-alist'."
   (let ((map (make-sparse-keymap)))

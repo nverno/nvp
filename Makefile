@@ -15,7 +15,9 @@ README.md : el2markdown.el nvp.el
 el2markdown.el:
 	$(wget) -q -O $@ "https://github.com/Lindydancer/el2markdown/raw/master/el2markdown.el"
 
+.PHONY: unicode
 unicode:
-	@
+	@julia ${SCRIPT}/latex_abbrevs.jl abbrev nil unicode-latex-abbrev-table
+
 clean:
 	$(RM) *~ dist

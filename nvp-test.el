@@ -47,7 +47,7 @@
 (defvar nvp-test-extension-re nil)
 
 ;; -------------------------------------------------------------------
-;;; Default unit test runner
+;;; TODO: Default unit test runner
 
 ;; -------------------------------------------------------------------
 ;;; Find test files 

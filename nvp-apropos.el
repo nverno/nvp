@@ -28,18 +28,14 @@
 ;;; Code:
 (require 'hydra)
 
+(global-set-key (kbd "<f2> h a") #'nvp-apropos-hydra/body)
+
 ;;;###autoload
 (defun nvp-apropos-init ()
   (interactive)
-  (nvp-apropos/body))
+  (nvp-apropos-hydra/body))
 
-(global-set-key (kbd "<f2> h a") #'nvp-apropos/body)
-
-(defadvice nvp-apropos/body (around show-help activate)
-  (let ((hydra-is-helpful t))
-    ad-do-it))
-
-(defhydra nvp-apropos (:color blue)
+(defhydra nvp-apropos-hydra (:color blue)
   "Apropos"
   ("a" apropos "apropos")
   ("c" apropos-command "cmd")
@@ -51,14 +47,16 @@
   ("v" apropos-variable "var")
   ("i" info-apropos "info")
   ("t" xref-find-apropos "tags")
-  ("z" nvp-apropos-customize/body "customize"))
+  ("z" nvp-apropos-hydra-customize/body "customize"))
+(hydra-set-property 'nvp-apropos-hydra :verbosity 1)
 
-(defhydra nvp-apropos-customize (:color blue)
+(defhydra nvp-apropos-hydra-customize (:color blue)
   "Apropos (customize)"
   ("a" customize-apropos "apropos")
   ("f" customize-apropos-faces "faces")
   ("g" customize-apropos-groups "groups")
   ("o" customize-apropos-options "options"))
+(hydra-set-property 'nvp-apropos-hydra-customize :verbosity 1)
 
 (provide 'nvp-apropos)
 ;;; nvp-apropos.el ends here

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-03 00:33:29>
+;; Last modified: <2019-02-03 01:08:20>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -1270,19 +1270,20 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
 
 
 (cl-defmacro nvp-add-to-alist (&rest items
-                                  &key
-                                  (alist auto-mode-alist)
-                                  (test 'string=)
-                                  &allow-other-keys)
-  "Add ITEMS, a list of cons cells, to ALIST using TEST to check if the car \
-of each item is already present."
-  (declare (indent defun))
+                                     &key
+                                     (alist 'auto-mode-alist)
+                                     (test 'equal)
+                                     &allow-other-keys)
+  "Add ITEMS, a list of cons cells, to ALIST using TEST to check if item \
+is already present."
+  (declare (indent defun) (debug t))
   (while (keywordp (car items))
     (setq items (cdr (cdr items))))
   (macroexp-progn
-   (cl-loop for (k . v) in alist
-      unless (cl-assoc k alist :test test)
-      collect `(push '(,k . ,v) ,alist))))
+   (cl-loop for (k . v) in items
+      with lst = (if (consp alist) alist (symbol-value alist))
+      unless (cl-member (cons k (quote v)) lst :test test)
+      collect `(push (cons ,k ',v) ,alist))))
 
 (defmacro nvp-setup-diminish (&rest modes)
   "Diminish MODES in modeline."

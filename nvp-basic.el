@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-02 22:28:25>
+;; Last modified: <2019-02-02 22:48:37>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -233,6 +233,27 @@ With ARG use default behaviour."
 
 (nvp-newline nvp-basic-newline-dwim nil
   :pairs (("{" "}") ("(" ")") ("\\[" "\\]")))
+
+;; -------------------------------------------------------------------
+;;; Company
+(declare-function company-quickhelp-manual-begin "company-quickhelp")
+
+;;; FIXME: toggle off pops back up
+(defun nvp-company-quickhelp-toggle ()
+  "Toggle pos-tip help on/off."
+  (interactive)
+  (let ((x-gtk-use-system-tooltips nil))
+    (or (x-hide-tip)
+        ;;   (add-hook 'pre-command-hook #'company-pre-command nil t)
+        ;; (remove-hook 'pre-command-hook #'company-pre-command t)
+        ;; (cl-letf (((symbol-function 'company--electric-restore-window-configuration)
+        ;;            #'ignore)))
+        (company-quickhelp-manual-begin))))
+
+(defun nvp-company-local (backend)
+  "Make a buffer-local company backend."
+  (set (make-local-variable 'company-backends)
+       (push backend company-backends)))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

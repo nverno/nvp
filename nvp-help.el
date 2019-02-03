@@ -39,35 +39,6 @@
 (autoload 'define-word-at-point "define-word")
 (autoload 'nvp-ext-run-script "nvp-ext")
 
-;; -------------------------------------------------------------------
-;;; Lookup Words
-
-;; Define word at point, with single prefix prompt for word, 
-;; with two prefix use lookup-word.
-;;;###autoload
-(defun nvp-help-define-word (arg)
-  (interactive "p")
-  (cond
-   ((eq arg 4) (call-interactively  #'define-word))
-   ((eq arg 16) (call-interactively #'nvp-help-lookup-word))
-   (t (call-interactively           #'define-word-at-point))))
-
-;; Lookup definintion of word at point online.
-(defun nvp-help-lookup-word (word)
-  (interactive (list (save-excursion (car (ispell-get-word nil)))))
-  (browse-url (format "http://en.wiktionary.org/wiki/%s" word)))
-
-;; -------------------------------------------------------------------
-;;; Faces 
-
-;; Show the name of face under point.
-;;;###autoload
-(defun nvp-help-font-face (pos)
-  (interactive "d")
-  (let ((face (or (get-char-property (point) 'read-face-name)
-                  (get-char-property (point) 'face))))
-    (if face (message "Face: %s" face)
-      (message "No face at %d" pos))))
 
 ;; -------------------------------------------------------------------
 ;;; Docsets 

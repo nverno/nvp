@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-02 02:37:25>
+;; Last modified: <2019-02-02 21:49:17>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -26,13 +26,16 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-;; Required in init
+;; Stuff required during init
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
 (autoload 'string-trim "subr-x")
 (declare-function nvp-bind-transient-key "nvp-bind")
+
+;; mode-dependent regex to move between headers
+(defvar-local nvp-move-header-re nil)
 
 ;; -------------------------------------------------------------------
 ;;; Movement 
@@ -59,34 +62,16 @@
   (interactive)
   (forward-line -5))
 
-(defun nvp-basic-down-paragraph (arg)
-  (interactive "p")
-  (if (bolp)
-      (progn
-        (forward-paragraph arg)
-        (forward-line 1))
-    (line-move arg)))
-
-(defun nvp-basic-up-paragraph (arg)
-  (interactive "p")
-  (if (bolp)
-      (progn
-        (forward-line -1)
-        (backward-paragraph arg)
-        (forward-line 1))
-    (line-move (- arg))))
-
 (defun nvp-basic-next-defun (&rest _ignored)
   (interactive)
   (beginning-of-defun -1))
 
 ;;; Headings
 ;; these may vary by mode
-
-(defvar-local nvp-basic-header-re nil)
-(defun nvp-basic-header-re ()
-  (or nvp-basic-header-re
-      (setq nvp-basic-header-re
+(defun nvp-move-header-re ()
+  "Get or create header regex based on comment syntax."
+  (or nvp-move-header-re
+      (setq nvp-move-header-re
             (let* ((comment (string-trim comment-start))
                    (cs (regexp-quote comment))
                    (multi (> (string-width comment) 1)))
@@ -102,7 +87,7 @@
   (condition-case nil
       (progn
         (forward-line 1)
-        (re-search-forward (nvp-basic-header-re))
+        (re-search-forward (nvp-move-header-re))
         (beginning-of-line))
     (error
      (forward-line -1)
@@ -113,7 +98,7 @@
   (condition-case nil
       (progn
         (forward-line -1)
-        (re-search-backward (nvp-basic-header-re))
+        (re-search-backward (nvp-move-header-re))
         (beginning-of-line))
     (error
      (forward-line 1)
@@ -123,6 +108,7 @@
 ;;; Scrolling 
 (declare-function do-smooth-scroll "smooth-scrolling")
 
+;; FIXME: 
 (nvp-advise-commands
   'do-smooth-scroll :after
   (nvp-basic-next5 nvp-basic-prev5 nvp-basic-next-defun

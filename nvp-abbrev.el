@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-02 01:35:16>
+;; Last modified: <2019-02-02 20:41:06>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -40,6 +40,58 @@
 
 ;; abbrev prefixes
 (defvar nvp-abbrev-prefix-chars "A-Za-z0-9#.")
+
+;; -------------------------------------------------------------------
+;;; Utils
+
+;; grab preceding characters to match agains in abbrev table
+(defsubst nvp-abbrev--grab-prev (arg)
+  (save-excursion
+    (let ((end (point))
+          (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) arg)))
+          (start (point)))
+      (buffer-substring-no-properties start end))))
+
+;; return list of currently loaded and non-empty abbrev tables
+(defsubst nvp-abbrev--abbrev-list (&optional tables)
+  (cl-remove-if
+   #'(lambda (table)
+       (abbrev-table-empty-p (symbol-value table)))
+   (or tables abbrev-table-name-list)))
+
+;; list of active and non-empty abbrev tables
+(defsubst nvp-abbrev--active-tables ()
+  (nvp-abbrev--abbrev-list (mapcar #'abbrev-table-name (abbrev--active-tables))))
+
+;; insert starter abbrev table template
+(defun nvp-abbrev--insert-template (table)
+  (insert
+   (concat
+    (when (zerop (buffer-size))
+      ";; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-\n")
+    "\n(define-abbrev-table '" table "\n"
+    "  '()\n"
+    (format
+     "  \"%s Abbrevs.\"\n"
+     (capitalize
+      (replace-regexp-in-string "-abbrev-table" "" table)))
+    "  :parents (list prog-mode-abbrev-table))")))
+
+;; open abbrev file and search for the specified table
+;; if it doesn't exist insert starter template
+(defun nvp-abbrev--get-table (table file)
+  (find-file-other-window file)
+  (goto-char (point-min))
+  (unless (search-forward-regexp (concat "'" table "\\>") nil t)
+    (goto-char (point-max))
+    (nvp-abbrev--insert-template table)))
+
+(defun nvp-abbrev--get-plist (table)
+  (when-let* ((bfn))
+   (symbol-plist (obarray-get table ""))))
+
+;; -------------------------------------------------------------------
+;;; Commands
 
 ;;;###autoload
 (defun nvp-abbrev-jump-to-file (arg)
@@ -167,48 +219,6 @@ If FILE is non-nil, read abbrevs from FILE."
   (and (not (memq last-input-event '(?_ ?. ?- ?:)))
        (let ((ppss (syntax-ppss)))
          (not (or (elt ppss 3) (elt ppss 4))))))
-
-;; insert starter abbrev table template
-(defun nvp-abbrev--insert-template (table)
-  (insert
-   (concat
-    (when (zerop (buffer-size))
-      ";; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-\n")
-    "\n(define-abbrev-table '" table "\n"
-    "  '()\n"
-    (format
-     "  \"%s Abbrevs.\"\n"
-     (capitalize
-      (replace-regexp-in-string "-abbrev-table" "" table)))
-    "  :parents (list prog-mode-abbrev-table))")))
-
-;; open abbrev file and search for the specified table
-;; if it doesn't exist insert starter template
-(defun nvp-abbrev--get-table (table file)
-  (find-file-other-window file)
-  (goto-char (point-min))
-  (unless (search-forward-regexp (concat "'" table "\\>") nil t)
-    (goto-char (point-max))
-    (nvp-abbrev--insert-template table)))
-
-;; grab preceding characters to match agains in abbrev table
-(defsubst nvp-abbrev--grab-prev (arg)
-  (save-excursion
-    (let ((end (point))
-          (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) arg)))
-          (start (point)))
-      (buffer-substring-no-properties start end))))
-
-;; return list of currently loaded and non-empty abbrev tables
-(defsubst nvp-abbrev--abbrev-list (&optional tables)
-  (cl-remove-if
-   #'(lambda (table)
-       (abbrev-table-empty-p (symbol-value table)))
-   (or tables abbrev-table-name-list)))
-
-;; list of active and non-empty abbrev tables
-(defsubst nvp-abbrev--active-tables ()
-  (nvp-abbrev--abbrev-list (mapcar #'abbrev-table-name (abbrev--active-tables))))
 
 ;; -------------------------------------------------------------------
 ;;; Completion

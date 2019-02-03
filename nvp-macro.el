@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-02 02:41:22>
+;; Last modified: <2019-02-02 20:49:58>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -29,9 +29,7 @@
 ;;; Code:
 (require 'cl-lib)
 (require 'subr-x)
-(autoload 'nvp--normalize-modemap "nvp")
-(eval-when-compile
-  (defvar eieio--known-slot-names))
+(defvar eieio--known-slot-names)
 
 ;; Doesn't work
 ;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
@@ -41,6 +39,32 @@
                    nil)
                (backtrace-frames))
     (message "Warning: package 'nvp-macro required at runtime")))
+
+;; -------------------------------------------------------------------
+;;; Utils
+
+(defun nvp--normalize-modemap (mode &optional minor)
+  "Convert MODE to keymap symbol if necessary.
+If MINOR is non-nil, create minor mode map symbol."
+  (and (symbolp mode) (setq mode (symbol-name mode)))
+  (let ((minor (or minor (string-match-p "-minor" mode))))
+    (if (not (or (string-match-p "-map\\'" mode)
+                 (string-match-p "-keymap\\'" mode)))
+        (intern
+         (concat (replace-regexp-in-string "\\(?:-minor\\)?-mode\\'" "" mode)
+                 (if minor "-minor-mode-map" "-mode-map")))
+      (intern mode))))
+
+(defun nvp--normalize-hook (mode &optional minor)
+  "Convert MODE to canonical hook symbol.
+If MINOR is non-nil, convert to minor mode hook symbol."
+  (and (symbolp mode) (setq mode (symbol-name mode)))
+  (let ((minor (or minor (string-match-p "-minor" mode))))
+    (intern
+     (concat
+      (replace-regexp-in-string
+       "\\(?:-minor-\\)?\\(?:-mode\\)?\\(?:-hook\\)?\\'" "" mode)
+      (if minor "-minor-mode-hook" "-mode-hook")))))
 
 ;; -------------------------------------------------------------------
 ;;; Misc
@@ -545,17 +569,17 @@ If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
        ,@body)))
 
 (cl-defmacro nvp-bindings (mode &optional feature &rest bindings
-                                &key local &allow-other-keys)
+                                &key local minor &allow-other-keys)
   "Set MODE BINDINGS after FEATURE is loaded.
 If LOCAL is non-nil, make map buffer local."
   (declare (indent defun))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
-  (let ((modemap (nvp--normalize-modemap mode)))
+  (let ((modemap (nvp--normalize-modemap mode minor)))
     `(progn
        (eval-when-compile (defvar ,modemap))
        ,(when local
-          `(make-local-variable ',(nvp--normalize-modemap mode)))
+          `(make-local-variable ',modemap))
        (with-eval-after-load ,(or feature `',(intern mode))
          ,@(cl-loop for (k . b) in bindings
               collect `(define-key ,modemap (kbd ,k) ',b))))))
@@ -586,8 +610,8 @@ Run PRE form prior to setting commands."
       ,exit)))
 
 ;; general movement bindings for non-insert modes
-(declare-function nvp-basic-up-paragraph "nvp-basic")
-(declare-function nvp-basic-down-paragraph "nvp-basic")
+(declare-function nvp-move-up-paragraph "")
+(declare-function nvp-move-down-paragraph "")
 (defmacro nvp-bindings-view ()
   ''(("j"    . next-line) ;; use instead of forward-line since it is often advised
      ("k"    . previous-line)
@@ -600,8 +624,8 @@ Run PRE form prior to setting commands."
      ("/"    . isearch-forward)
      ("M-n"  . nil)
      ("M-p"  . nil)
-     ("M-N"  . nvp-basic-down-paragraph)
-     ("M-P"  . nvp-basic-up-paragraph)))
+     ("M-N"  . nvp-move-down-paragraph)
+     ("M-P"  . nvp-move-up-paragraph)))
 
 (defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
 (defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
@@ -1230,11 +1254,6 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
          (cl-member (file-name-nondirectory f) ignored :test 'string=)))
    (directory-files root t "^[^.]")))
 
-(defun nvp--setup-normalize-hook (mode)
-  (and (symbolp mode) (setq mode (symbol-name mode)))
-  (intern (replace-regexp-in-string
-           "\\(?:-mode\\)?\\(?:-hook\\)?\\'" "-mode-hook" mode)))
-
 (defmacro nvp-setup-diminish (&rest modes)
   "Diminish MODES in modeline."
   (declare (indent 0))
@@ -1268,7 +1287,7 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
   (declare (indent 1))
   (macroexp-progn
    (cl-loop for mode in modes
-      as mode-hook = (nvp--setup-normalize-hook mode)
+      as mode-hook = (nvp--normalize-hook mode)
       collect `(add-hook ',mode-hook #',hook))))
 
 (defmacro nvp-setup-add-subdir-load-paths (root &optional ignored)

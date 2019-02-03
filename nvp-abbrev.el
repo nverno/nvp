@@ -86,9 +86,9 @@
     (goto-char (point-max))
     (nvp-abbrev--insert-template table)))
 
-(defun nvp-abbrev--get-plist (table)
-  (when-let* ((bfn))
-   (symbol-plist (obarray-get table ""))))
+;; (defun nvp-abbrev--get-plist (table)
+;;   (when-let* ((bfn))
+;;    (symbol-plist (obarray-get table ""))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

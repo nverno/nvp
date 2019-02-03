@@ -32,6 +32,8 @@
   (require 'cl-lib)
   (require 'subr-x)
   (require 'nvp-macro))
+(nvp-declare "define-word" define-word define-word-at-point)
+(autoload 'ispell-get-word "ispell")
 
 ;; -------------------------------------------------------------------
 ;;; Lookup Words

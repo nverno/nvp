@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-01 21:21:03>
+;; Last modified: <2019-02-02 22:10:10>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  2 November 2016
@@ -30,20 +30,6 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
-(declare-function advice-mapc "nadvice")
-(declare-function advice-remove "nadvice")
-
-;; https://emacs.stackexchange.com/questions/24657/unadvise-a-function-remove-all-advice-from-it
-;;;###autoload
-(defun nvp-advice-remove-all (sym)
-  "Remove all advice from SYM."
-  (interactive "aFunction: ")
-  (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
-
-;; insert date
-(defun nvp-insert-date ()
-  (interactive)
-  (insert (format-time-string "%e %B %Y")))
 
 ;; -------------------------------------------------------------------
 ;;; Lists
@@ -125,7 +111,7 @@
     (nreverse res)))
 
 ;; make indentation based regexp
-(defsubst nvp-re-indent-re ()
+(defun nvp-indent-regexp ()
   (concat "^\\(?:[ \t]*$\\|"
           (buffer-substring
            (point)

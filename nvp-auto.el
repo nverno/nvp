@@ -1,8 +1,8 @@
-;;; nvp-autos.el --- homeless autos -*- lexical-binding: t; -*-
+;;; nvp-auto.el --- homeless autos -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-02 20:59:19>
+;; Last modified: <2019-02-02 22:08:29>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -33,6 +33,7 @@
   (require 'subr-x)
   (require 'nvp-macro))
 (require 'nvp)
+(nvp-declare advice-mapc advice-remove "nadvice")
 
 ;; -------------------------------------------------------------------
 ;;; Movement
@@ -56,5 +57,19 @@
         (forward-line 1))
     (line-move (- arg))))
 
-(provide 'nvp-autos)
-;;; nvp-autos.el ends here
+;; -------------------------------------------------------------------
+;;; Random
+;; https://emacs.stackexchange.com/questions/24657/unadvise-a-function-remove-all-advice-from-it
+;;;###autoload
+(defun nvp-advice-remove-all (sym)
+  "Remove all advice from SYM."
+  (interactive "aFunction: ")
+  (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
+
+;; insert date
+(defun nvp-insert-date ()
+  (interactive)
+  (insert (format-time-string "%e %B %Y")))
+
+(provide 'nvp-auto)
+;;; nvp-auto.el ends here

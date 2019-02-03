@@ -34,16 +34,10 @@
 (require 'nvp)
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-install "nvp-ext"))
-(autoload 'ispell-get-word "ispell")
-(autoload 'define-word "define-word")
-(autoload 'define-word-at-point "define-word")
 (autoload 'nvp-ext-run-script "nvp-ext")
-
 
 ;; -------------------------------------------------------------------
 ;;; Docsets 
-(eval-when-compile
-  (defvar zeal-at-po))
 (declare-function zeal-at-point-get-version "zeal-at-point")
 (declare-function zeal-at-point "zeal-at-point")
 (autoload 'zeal-at-point-run-search "zeal-at-point")

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-02 22:48:37>
+;; Last modified: <2019-02-03 02:21:31>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -62,11 +62,13 @@
   (interactive)
   (forward-line -5))
 
+;;; TODO: generic
 (defun nvp-move-next-defun (&rest _ignored)
   (interactive)
   (beginning-of-defun -1))
 
 ;;; Headings
+;; TODO: generic
 ;; these may vary by mode
 (defun nvp-move-header-re ()
   "Get or create header regex based on comment syntax."
@@ -231,6 +233,7 @@ With ARG use default behaviour."
 ;; -------------------------------------------------------------------
 ;;; Newline 
 
+;;; TODO: default & generic
 (nvp-newline nvp-basic-newline-dwim nil
   :pairs (("{" "}") ("(" ")") ("\\[" "\\]")))
 
@@ -250,6 +253,7 @@ With ARG use default behaviour."
         ;;            #'ignore)))
         (company-quickhelp-manual-begin))))
 
+;;; TODO: macro instead
 (defun nvp-company-local (backend)
   "Make a buffer-local company backend."
   (set (make-local-variable 'company-backends)

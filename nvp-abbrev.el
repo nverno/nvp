@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-02 20:41:06>
+;; Last modified: <2019-02-03 02:19:13>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -86,9 +86,16 @@
     (goto-char (point-max))
     (nvp-abbrev--insert-template table)))
 
-;; (defun nvp-abbrev--get-plist (table)
-;;   (when-let* ((bfn))
-;;    (symbol-plist (obarray-get table ""))))
+;; get list of all table properties, converting parent tables into symbols
+(defun nvp-abbrev--get-plist (table)
+  (unless (abbrev-table-p table) (setq table (symbol-value table)))
+  (when-let* ((sym (obarray-get table ""))
+              (props (symbol-plist sym)))
+    (cl-loop for (k v) on props by #'cddr
+       if (eq :parents k)
+       collect (list k (mapcar #'abbrev-table-name v))
+       else
+       collect (list k v))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -178,8 +185,7 @@ If FILE is non-nil, read abbrevs from FILE."
     (if current-prefix-arg
         (abbrev-table-name local-abbrev-table)
       (nvp-completing-read
-       "Abbrev table: " (mapcar 'symbol-name
-                                (nvp-abbrev--abbrev-list))))
+       "Abbrev table: " (mapcar #'symbol-name (nvp-abbrev--abbrev-list))))
     (read-file-name "Write abbrevs to: ")))
   (let ((abbrev-table-name-list (list (intern table))))
     (cl-letf (((symbol-function 'abbrev--write)
@@ -193,6 +199,22 @@ If FILE is non-nil, read abbrevs from FILE."
                    (prin1 (symbol-function sym))
                    (insert " :system t)\n")))))
       (write-abbrev-file file))))
+
+;;;###autoload
+(defun nvp-abbrev-properties (table)
+  "List all abbrev table properties."
+  (interactive
+   (list
+    (if current-prefix-arg
+        (abbrev-table-name local-abbrev-table)
+      (nvp-completing-read
+       "List abbrev table props: "
+       (mapcar #'symbol-name (nvp-abbrev--abbrev-list))))))
+  (let ((props (nvp-abbrev--get-plist (intern table))))
+    (nvp-with-results-buffer nil
+      (princ (format "%S\n--------------------\n" table))
+      (pcase-dolist (`(,k ,v) props)
+        (princ (format "%S: %S\n" k v))))))
 
 ;; -------------------------------------------------------------------
 ;;; Expand Hooks

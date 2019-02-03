@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-02 22:08:29>
+;; Last modified: <2019-02-03 02:06:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -70,6 +70,32 @@
 (defun nvp-insert-date ()
   (interactive)
   (insert (format-time-string "%e %B %Y")))
+
+;; Print counts of strings in region, with prefix dump at point
+;;;###autoload
+(defun nvp-stats-uniq (beg end &optional count-lines)
+  "Print counts (case-insensitive) of unique words in region BEG to END.
+With prefix COUNT-LINES count unique lines."
+  (interactive "r\nP")
+  (require 'nvp-hash)
+  (let ((ht (make-hash-table :test 'case-fold))
+        (lines (split-string
+                (buffer-substring-no-properties beg end) "\n" 'omit-nulls " "))
+        lst)
+    (if count-lines
+        (dolist (line lines)
+          (puthash line (1+ (gethash line ht 0)) ht))
+      ;; strip punctuation for words
+      (cl-loop for line in lines
+         as words = (split-string line "[[:punct:] \t]" 'omit " ")
+         when words
+         do (cl-loop for word in words
+               do (puthash word (1+ (gethash word ht 0)) ht))))
+    (maphash (lambda (key val) (push (cons val key) lst)) ht)
+    (setq lst (cl-sort lst #'> :key #'car))
+    (nvp-with-results-buffer nil
+      (pcase-dolist (`(,k . ,v) lst)
+        (princ (format "%d: %s\n" k v))))))
 
 (provide 'nvp-auto)
 ;;; nvp-auto.el ends here

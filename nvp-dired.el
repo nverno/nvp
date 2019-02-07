@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 08:22:30>
+;; Last modified: <2019-02-07 09:17:36>
 ;; Package-Requires: 
 ;; Created:  2 December 2016
 
@@ -33,23 +33,13 @@
   (require 'cl-lib))
 (require 'dired)
 
-(declare-function tramp-dissect-file-name "tramp")
 (declare-function dired-read-shell-command "dired-aux")
 (declare-function w32-shell-execute "w32")
-
-(autoload 'nvp-ext-terminal "nvp-ext")
-(autoload 'dired-filename-at-point "dired-x")
+(declare-function nvp-ext-terminal "nvp-ext")
+(declare-function dired-filename-at-point "dired-x")
 
 ;; -------------------------------------------------------------------
 ;;; Dired
-
-;; (defun nvp-dired-ignore-local-mode (orig-fun &rest args)
-;;   (hack-dir-local-variables)
-;;   (if (memq 'mode dir-local-variables-alist)
-;;       (let ((enable-dir-local-variables nil))
-;;         (apply orig-fun args))
-;;     (apply orig-fun args)))
-;; (advice-add 'dired-jump :around 'nvp-dired-ignore-local-mode)
 
 ;;;###autoload
 (defun nvp-dired-jump (&optional other-window file-name)
@@ -330,20 +320,21 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
 ;; -------------------------------------------------------------------
 ;;; Imenu
 
-;; Find the previous file in the buffer.
-(defsubst nvp-dired-imenu-prev-index-position ()
-  (dired-previous-line 1))
-
-;; Get name of file at point.
-(defsubst nvp-dired-imenu-extract-index-name ()
-  (dired-get-filename 'verbatim))
-
-;; Configure imenu for current dired buffer.
-(defun nvp-dired-setup-imenu ()
-  (set (make-local-variable 'imenu-prev-index-position-function)
-       #'nvp-dired-imenu-prev-index-position)
-  (set (make-local-variable 'imenu-extract-index-name-function)
-       #'nvp-dired-imenu-extract-index-name))
+;; imenu indexer to simply list all files/dirs except . and ..
+(defun nvp-dired-imenu-create-index ()
+  (let ((case-fold-search t)
+        item
+        index-alist)
+    (goto-char (point-max))
+    (beginning-of-line)
+    (unwind-protect
+        (save-match-data
+          (while (not (bobp))
+            (when (setq item (dired-get-filename 'verbatim 'no-error)))
+            (unless (member item '("." ".." nil))
+              (push (cons item (copy-marker (dired-move-to-filename))) index-alist))
+            (forward-line -1))))
+    index-alist))
 
 (provide 'nvp-dired)
 ;;; nvp-dired.el ends here

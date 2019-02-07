@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 05:20:19>
+;; Last modified: <2019-02-07 09:23:48>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -265,6 +265,32 @@ With ARG use default behaviour."
   "Make a buffer-local company backend."
   (set (make-local-variable 'company-backends)
        (push backend company-backends)))
+
+;; -------------------------------------------------------------------
+;;; IDO
+
+(defun nvp-ido-refresh-homedir ()
+  "Refresh completion for homedir while ido is finding a file."
+  (interactive)
+  (ido-set-current-directory "~/")
+  (setq ido-exit 'refresh)
+  (exit-minibuffer))
+
+(defun nvp-ido-yank ()
+  "Forward to `yank'."
+  (interactive)
+  (if (file-exists-p (current-kill 0))
+      (ido-fallback-command)
+    (yank)))
+
+(defun nvp-ido-backspace ()
+  "Forward to `backward-delete-char'. 
+On error (read-only), quit without selecting."
+  (interactive)
+  (condition-case nil
+      (backward-delete-char 1)
+    (error
+     (minibuffer-keyboard-quit))))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

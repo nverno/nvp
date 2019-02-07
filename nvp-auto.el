@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 06:37:04>
+;; Last modified: <2019-02-07 09:19:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -58,10 +58,8 @@
     (line-move (- arg))))
 
 ;; -------------------------------------------------------------------
-;;; Files
-
-;; -------------------------------------------------------------------
 ;;; Random
+
 ;; https://emacs.stackexchange.com/questions/24657/unadvise-a-function-remove-all-advice-from-it
 ;;;###autoload
 (defun nvp-advice-remove-all (sym)

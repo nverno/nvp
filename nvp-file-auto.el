@@ -1,10 +1,10 @@
-;;; nvp-file-auto.el --- file helpers -*- lexical-binding: t; -*-
+;;; nvp-find.el --- find stuff -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 06:36:11>
+;; Last modified: <2019-02-07 09:20:27>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -33,7 +33,6 @@
   (require 'cl-lib)
   (defvar recentf-list))
 (require 'nvp)
-(declare-function dired-copy-filename-as-kill "dired")
 
 ;; Open nearest file up the directory tree named:
 ;; 1. NAME if non-nil
@@ -74,5 +73,5 @@
     (when filename
       (find-file (cdr (assoc filename file-assoc-list))))))
 
-(provide 'nvp-file-auto)
-;;; nvp-file-auto.el ends here
+(provide 'nvp-find)
+;;; nvp-find.el ends here

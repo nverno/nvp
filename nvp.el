@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 01:41:29>
+;; Last modified: <2019-02-07 04:10:43>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -35,14 +35,12 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp-basic)
-
-(nvp-package-define-root)
-
-;;; Defaults
-(defalias 'nvp-completing-read 'ido-completing-read)
+(declare-function company-grab-symbol "company")
 
 ;; -------------------------------------------------------------------
-;;; Local variables
+;;; Variables: global / local
+
+(nvp-package-define-root)
 
 ;; Abbrevs
 (defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
@@ -53,14 +51,8 @@
 ;; Snippets
 (defvar-local nvp-snippet-dir nil "Directory to load for mode's snippets.")
 
-;; -------------------------------------------------------------------
-;;; Generics
-
-(declare-function company-grab-symbol "company")
-
-(cl-defgeneric nvp-grab-previous-symbol ()
-  "Default method to grab previous symbol."
-  (company-grab-symbol))
+;;; Defaults
+(defalias 'nvp-completing-read 'ido-completing-read)
 
 ;; ------------------------------------------------------------
 ;;; Setup

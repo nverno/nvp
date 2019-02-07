@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 02:10:53>
+;; Last modified: <2019-02-07 03:28:31>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -52,8 +52,8 @@
 ;; return list of currently loaded and non-empty abbrev tables
 (defsubst nvp-abbrev--abbrev-list (&optional tables)
   (cl-remove-if
-   #'(lambda (table)
-       (abbrev-table-empty-p (symbol-value table)))
+   (lambda (table)
+     (abbrev-table-empty-p (symbol-value table)))
    (or tables abbrev-table-name-list)))
 
 ;; list of active and non-empty abbrev tables

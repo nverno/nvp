@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 03:20:52>
+;; Last modified: <2019-02-07 04:11:24>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -28,9 +28,11 @@
 
 ;;; Commentary:
 
-;; `company-abbrev' doesn't account for :regexp properties, so doesnt
-;; work properly when abbrev tables define their own :regexp,
-;; ie "\\degree" or "#inc"
+;; `company-abbrev' doesn't account for :regexp properties or :enable-function,
+;; so doesn't work properly in context, eg. ie "\\degree" or "#inc"
+;;
+;; This replacement uses all parents of local-abbrev-table, accounting for
+;; :enable-function and :regexp properties for each table
 
 ;;; Code:
 (eval-when-compile
@@ -38,6 +40,7 @@
   (require 'nvp-macro))
 (require 'company)
 (require 'nvp-abbrev)
+(require 'nvp-syntax)
 
 ;; use local table along with its parents + global table
 (defvar-local nvp-abbrev-completion--tables nil)
@@ -54,7 +57,7 @@
   (let ((tab-name (symbol-name table)))
     (mapatoms (lambda (sym) (add-text-properties 0 1 (list 'annotation tab-name) sym)))))
 
-;; active tables at point
+;; active tables in current context, determined by :enable-function
 (defun nvp-abbrev-completion--active-tables ()
   (cl-remove-if-not (lambda (tab)
                       (let ((pred (abbrev-table-get

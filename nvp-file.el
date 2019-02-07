@@ -1,11 +1,13 @@
-;;; nvp-file ---  -*- lexical-binding: t; -*-
+;;; nvp-file.el --- File helpers -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-06 20:30:36>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
+;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
-;; Created: 24 November 2016
+;; Created:  6 February 2019
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -27,79 +29,52 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
-  (defvar recentf-list))
+  (require 'subr-x)
+  (require 'nvp-macro))
 
-;; Open nearest file up the directory tree named:
-;; 1. NAME if non-nil
-;; 2. Prompt for file name with prefix arg
-;; 3. Variable `notes-file' (directory-local) if non-nil
-;; 4. Otherwise, default to 'todo.org'.
-;;;###autoload
-(defun nvp-file-open-nearest-dwim (name)
-  (interactive
-   (list (or
-          (bound-and-true-p name)
-          (and current-prefix-arg
-               (read-from-minibuffer "File name: "))
-          (bound-and-true-p notes-file)
-          "todo.org")))
-  (let ((dir (locate-dominating-file (or
-                                      (buffer-file-name)
-                                      default-directory)
-                                     name)))
-    (if dir (find-file (expand-file-name name dir))
-      (user-error
-       (format "%s not found up the directory tree." name)))))
+;; -------------------------------------------------------------------
+;;; Utils
 
-;;--- recentf --------------------------------------------------------
 
-;; Find a recent file using ido completion, trimming to basename.
-;;;###autoload
-(defun nvp-file-recentf-ido-find-file-trim ()
-  (interactive)
-  (if (not (bound-and-true-p recentf-mode))
-      (recentf-mode))
-  (let* ((file-assoc-list
-	  (mapcar (lambda (x)
-		    (cons (file-name-nondirectory x)
-			  x))
-		  recentf-list))
-	 (filename-list
-	  (cl-remove-duplicates (mapcar #'car file-assoc-list)
-                                :test #'string=))
-	 (filename (ido-completing-read "choose recent file: "
-					filename-list
-					nil
-					t)))
-    (when filename
-      (find-file (cdr (assoc filename file-assoc-list))))))
+(defun nvp-file-create-path (args &optional sep)
+  "Create file path from list of ARGS (strings) components."
+  (mapconcat #'file-name-as-directory args (if sep sep "")))
 
-;; Find a recent file using ido completion, only abbreviating
-;; filenames.
-;;;###autoload
-(defun nvp-file-recentf-ido-find-file ()
-  (interactive)
-  (if (not (bound-and-true-p recentf-mode))
-      (recentf-mode))
-  (let* ((file-assoc-list
-	  (mapcar (lambda (x)
-	            (cons (abbreviate-file-name x) x))
-	          recentf-list))
-	 (filename-list
-	  (cl-remove-duplicates (mapcar #'car file-assoc-list)
-			     :test #'string=))
-	 (filename (ido-completing-read "Recent File: "
-					filename-list nil t)))
-    (when filename
-      (find-file (cdr (assoc filename file-assoc-list))))))
+(defun nvp-file-md5 (filename)
+  "Generate MD5 of FILENAME contents and prepend to `kill-ring'."
+  (interactive "f")
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (kill-new (md5 (current-buffer)))))
 
-;;--- Directories ----------------------------------------------------
+;;; I/O
+;; see f.el
+(defun nvp-file-bytes (file)
+  "Return FILE contents as bytes returning unibyte string."
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
+    (setq buffer-file-coding-system 'binary)
+    (insert-file-contents-literally file)
+    (buffer-string)))
 
-;; Subdirectories in `DIR'.
-;;;###autoload
+(cl-defun nvp-file-string (file &optional (coding 'utf-8))
+  "Return FILE contents as string with default CODING utf-8."
+  (decode-coding-string (nvp-file-bytes file) coding))
+
+;; see f.el `f--write-bytes'
+(defun nvp-file-write-bytes (data file &optional append)
+  "Write binary DATA to FILE.
+If APPEND is non-nil, append DATA to existing contents."
+  (when (not (multibyte-string-p data))
+    (signal 'wrong-type-argument (list 'multibyte-string-p data)))
+  (let ((coding-system-for-write 'binary))))
+
+;; -------------------------------------------------------------------
+;;; Directories 
+
 (defun nvp-file-subdirs (dir)
+  "Retutn alist of (dir-name . full-path) for subdirectories of DIR."
   (delq nil
         (mapcar
          (lambda (x)
@@ -107,59 +82,7 @@
              (when (file-directory-p
                     (setq y (expand-file-name x dir)))
                (cons x y))))
-         (cl-set-difference
-          (directory-files dir)
-          '("." "..")
-          :test #'equal))))
-
-;; Create directory when finding file requires.
-;;;###autoload
-(defun nvp-file-create-non-existent-directory ()
-  (let ((parent-directory (file-name-directory buffer-file-name)))
-    (when (and (not (file-exists-p parent-directory))
-               (y-or-n-p 
-		(format "directory `%s' does not exist! create it?" 
-			parent-directory)))
-      (make-directory parent-directory t))))
-
-;;--- Utils ----------------------------------------------------------
-
-;; Add buffer file name or marked file to kill.
-;;;###autoload
-(defun nvp-file-copy-name ()
-  (interactive)
-  (if (eq major-mode 'dired-mode)
-      (prog1
-          (dired-copy-filename-as-kill 0)
-        (message "Copied marked filenames."))
-    (let ((filename (buffer-file-name)))
-      (when filename
-        (kill-new filename)
-        (message "Copied: %s" filename)))))
-
-;;;###autoload
-(defun nvp-file-to-string (file)
-  (with-temp-buffer
-    (insert-file-contents file)
-    (buffer-string)))
-
-;; Create file path from list of strings.
-;;;###autoload
-(defun nvp-file-path (args &optional sep)
-  (mapconcat #'file-name-as-directory args (if sep sep "")))
-
-;; Open FILENAME, load it into a buffer, generate the md5 of its
-;; contents, and prepend to the kill-ring.
-;;;###autoload
-(defun nvp-file-md5 (filename)
-  (interactive "f")
-  (with-temp-buffer
-    (insert-file-contents filename)
-    (kill-new (md5 (current-buffer)))))
-
-;; -------------------------------------------------------------------
-
-(declare-function dired-copy-filename-as-kill "dired")
+         (cl-set-difference (directory-files dir) '("." "..") :test #'equal))))
 
 (provide 'nvp-file)
 ;;; nvp-file.el ends here

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-31 17:08:01>
+;; Last modified: <2019-02-06 19:44:23>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -91,7 +91,15 @@ Optionally, compile ALL snippets including subdirs in site-lisp packages."
 (defsubst nvp-yas-pad-right (char padmax)
   (make-string (max 0 (- padmax (string-width yas-text))) char))
 
-;;--- Args -----------------------------------------------------------
+;; yas-inside-string uses `font-lock-string-face'
+(defsubst nvp-yas-inside-string ()
+  (nth 3 (syntax-ppss)))
+
+(defsubst nvp-yas-inside-comment ()
+  (nth 4 (syntax-ppss)))
+
+;; -------------------------------------------------------------------
+;;; Args 
 
 ;; split argument STR by SEPS, eg. "a,b" => '("a" "b"). Strings are trimmed and
 ;; nulls are dropped.

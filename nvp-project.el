@@ -54,8 +54,12 @@
          (nvp-project--test-dir ',test-dir))
      ,@body))
 
-(defmacro nvp-with-project-root (&optional local &rest body)
+(cl-defmacro nvp-with-project-root (&rest body &key local &allow-other-keys)
+  "Execute BODY with \\[default-directory] bound to project root.
+If LOCAL is non-nil find closest root."
   (declare (indent defun) (debug t))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
   `(let ((default-directory (nvp-project-locate-root ,local)))
      ,@body))
 
@@ -129,18 +133,21 @@
   (unless projectile-mode
     (projectile-mode))
   (global-set-key (kbd "<f2> p p") #'projectile-commander)
-  (call-interactively 'projectile-commander))
+  (call-interactively #'projectile-commander))
+
+;; -------------------------------------------------------------------
+;;; Jumping to locations
 
 ;;;###autoload
 (defun nvp-project-jump-to-gitpage (arg)
   "Jump to project's git page.
-With prefix ARG 4 or 64 prompt for project name, with prefix 16 or 64 prompt \
+With prefix ARG 4 or 64 prompt for project name, with prefix 16 or 64 prompt 
 for base URI."
   (interactive "P")
-  (let ((uri (if (cl-member arg '((16) (64)) :test 'equal)
+  (let ((uri (if (cl-member arg '((16) (64)) :test #'equal)
                  (read-string "URI: " "https://")
                "https://github.com/nverno/"))
-        (name (nvp-project-name (cl-member arg '((4) (64)) :test 'equal))))
+        (name (nvp-project-name (cl-member arg '((4) (64)) :test #'equal))))
     (and (not (string-suffix-p "/" uri)) (setq uri (concat uri "/")))
     (and name (browse-url (concat uri name)))))
 
@@ -148,15 +155,26 @@ for base URI."
 (defun nvp-project-jump-to-projectile ()
   "Jump to project's projectile file."
   (interactive)
-  (nvp-with-project-root 'local
+  (nvp-with-project-root :local t
     (find-file-other-window ".projectile")))
 
 ;;;###autoload
 (defun nvp-project-jump-to-notes ()
   "Jump to project's notes.org file."
   (interactive)
-  (nvp-with-project-root 'local
+  (nvp-with-project-root :local t
     (find-file-other-window "notes.org")))
+
+;;;###autoload
+(defun nvp-project-jump-to-makefile (&optional root)
+  "Jump to closest Makefile.
+With \\[universal-argument] jump to root Makefile."
+  (interactive "P")
+  (if (not root)
+      (find-file-other-window (locate-dominating-file ))
+      (nvp-with-project-root
+        
+        (find-file-other-window ))))
 
 (provide 'nvp-project)
 ;;; nvp-project.el ends here

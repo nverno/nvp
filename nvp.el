@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-02 19:07:33>
+;; Last modified: <2019-02-07 01:41:29>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -33,15 +33,34 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro)
-  (defvar nvp-snippet-dir)
-  (defvar nvp-abbrev-local-file)
-  (defvar nvp-abbrev-local-table))
+  (require 'nvp-macro))
 (require 'nvp-basic)
 
 (nvp-package-define-root)
 
+;;; Defaults
 (defalias 'nvp-completing-read 'ido-completing-read)
+
+;; -------------------------------------------------------------------
+;;; Local variables
+
+;; Abbrevs
+(defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
+(defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
+(defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
+(defvar nvp-abbrev-prefix-chars "A-Za-z0-9#." "Chars to include in abbrev prefixes")
+
+;; Snippets
+(defvar-local nvp-snippet-dir nil "Directory to load for mode's snippets.")
+
+;; -------------------------------------------------------------------
+;;; Generics
+
+(declare-function company-grab-symbol "company")
+
+(cl-defgeneric nvp-grab-previous-symbol ()
+  "Default method to grab previous symbol."
+  (company-grab-symbol))
 
 ;; ------------------------------------------------------------
 ;;; Setup

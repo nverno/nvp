@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-06 19:04:11>
+;; Last modified: <2019-02-07 01:35:20>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -532,9 +532,22 @@ could be either 'major or 'minor."
                " ")))
 
 (defmacro nvp-def-key (map key cmd)
-  "Define KEY being either a string or vector."
+  "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
+  (declare (debug t))
   (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
-  `(define-key ,map ,(if (or (vectorp key) (keymapp key)) key (kbd key)) ,cmd))
+  `(define-key ,map
+     ,(if (or (vectorp key) (keymapp key)) key (kbd key))
+     ,(cond
+       ((or (null cmd) (and (consp cmd)
+                            (or (equal (cdr cmd) '(nil))
+                                (equal (cddr cmd) '(nil)))))
+        nil)
+       ((consp cmd)
+        (cond
+         ((equal (car cmd) 'function) `,cmd)
+         ((equal (car cmd) 'quote) `#',(cadr cmd))
+         (t `,cmd)))
+       (t `#',cmd))))
 
 (defmacro nvp-create-keymaps (leader &rest maps)
   "Create submaps from LEADER map. Optionally give name of keymap for 
@@ -554,7 +567,7 @@ menu entry."
   (declare (indent defun))
   (macroexp-progn
    (cl-loop for (k . b) in bindings
-      collect `(nvp-def-key (current-global-map) ,k #',b))))
+      collect `(nvp-def-key (current-global-map) ,k ,b))))
 
 (cl-defmacro nvp-bind-keys (map &rest bindings &key pred-form &allow-other-keys)
   "Add BINDINGS to MAP.
@@ -567,9 +580,7 @@ If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
        (eval-when-compile (defvar ,map))
        (,@(if pred-form `(when ,pred-form) '(progn))
         ,@(cl-loop for (k . b) in bindings
-             collect `(nvp-def-key ,map ,k ',b)
-             ;; collect `(define-key ,map (kbd ,k) ',b)
-               )))))
+             collect `(nvp-def-key ,map ,k ,b))))))
 
 (cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
                                      &rest body)
@@ -578,7 +589,7 @@ If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
   (let ((tmap (cl-gensym)))
     `(let ((,tmap (make-sparse-keymap)))
        ,@(cl-loop for (k . b) in bindings
-            collect `(nvp-def-key ,tmap ,k #',b))
+            collect `(nvp-def-key ,tmap ,k ,b))
        (set-transient-map ,tmap ,keep ,exit)
        ,@body)))
 
@@ -596,7 +607,7 @@ If LOCAL is non-nil, make map buffer local."
           `(make-local-variable ',modemap))
        (with-eval-after-load ,(or feature `',(intern mode))
          ,@(cl-loop for (k . b) in bindings
-              collect `(nvp-def-key ,modemap ,k #',b))))))
+              collect `(nvp-def-key ,modemap ,k ,b))))))
 
 (cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings &allow-other-keys)
   "Add shared BINDINGS to multiple MODES keymaps.
@@ -630,7 +641,7 @@ Run PRE form prior to setting commands."
          (newmap (make-sparse-keymap)))
      (when oldmap (set-keymap-parent newmap oldmap))
      ,@(cl-loop for (k . b) in bindings
-          collect `(nvp-def-key newmap ,k #',b))
+          collect `(nvp-def-key newmap ,k ,b))
      (use-local-map newmap)))
 
 (defmacro nvp-use-local-keymap (keymap &rest bindings)
@@ -641,7 +652,7 @@ Run PRE form prior to setting commands."
      (let ((newmap (make-sparse-keymap)))
        (set-keymap-parent newmap ,keymap)
        ,@(cl-loop for (k . b) in bindings
-            collect `(nvp-def-key newmap ,k #',b))
+            collect `(nvp-def-key newmap ,k ,b))
        (set ',keymap newmap))))
 
 ;; general movement bindings for non-insert modes

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-03 02:19:13>
+;; Last modified: <2019-02-07 02:07:49>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -35,22 +35,19 @@
 (require 'abbrev)
 (require 'nvp)
 
-;; abbrev table read in mode hooks
-(defvar-local nvp-abbrev-local-table nil)
+;; -------------------------------------------------------------------
+;;; Generics 
 
-;; abbrev prefixes
-(defvar nvp-abbrev-prefix-chars "A-Za-z0-9#.")
+(cl-defgeneric nvp-abbrev--grab-prev (nchars)
+  "Default method to grab preceding NCHARS to match against in abbrev table."
+  (save-excursion
+    (let ((end (point))
+          (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) nchars)))
+          (start (point)))
+      (buffer-substring-no-properties start end))))
 
 ;; -------------------------------------------------------------------
 ;;; Utils
-
-;; grab preceding characters to match agains in abbrev table
-(defsubst nvp-abbrev--grab-prev (arg)
-  (save-excursion
-    (let ((end (point))
-          (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) arg)))
-          (start (point)))
-      (buffer-substring-no-properties start end))))
 
 ;; return list of currently loaded and non-empty abbrev tables
 (defsubst nvp-abbrev--abbrev-list (&optional tables)
@@ -64,18 +61,25 @@
   (nvp-abbrev--abbrev-list (mapcar #'abbrev-table-name (abbrev--active-tables))))
 
 ;; insert starter abbrev table template
-(defun nvp-abbrev--insert-template (table)
-  (insert
-   (concat
-    (when (zerop (buffer-size))
-      ";; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-\n")
-    "\n(define-abbrev-table '" table "\n"
-    "  '()\n"
-    (format
-     "  \"%s Abbrevs.\"\n"
-     (capitalize
-      (replace-regexp-in-string "-abbrev-table" "" table)))
-    "  :parents (list prog-mode-abbrev-table))")))
+(defun nvp-abbrev--insert-template (table &optional parents)
+  (unless parents
+    (setq parents (if (derived-mode-p 'prog-mode) '(prog-mode)
+                    '(fundamental-mode))))
+  (let ((parents
+         (concat "(list "
+                 (mapconcat (lambda (s) (concat (symbol-name s) "-abbrev-table"))
+                            parents " ") ")")))
+   (insert
+    (concat
+     (when (zerop (buffer-size))
+       ";; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-\n")
+     "\n(define-abbrev-table '" table "\n"
+     "  '()\n"
+     (format
+      "  \"%s Abbrevs.\"\n"
+      (capitalize
+       (replace-regexp-in-string "-abbrev-table" "" table)))
+     (format "  :parents %s)" parents)))))
 
 ;; open abbrev file and search for the specified table
 ;; if it doesn't exist insert starter template
@@ -93,12 +97,27 @@
               (props (symbol-plist sym)))
     (cl-loop for (k v) on props by #'cddr
        if (eq :parents k)
-       collect (list k (mapcar #'abbrev-table-name v))
+       collect (list k (nvp-abbrev--all-parents table))
        else
        collect (list k v))))
 
+;; list of all table parents, recursively
+(defun nvp-abbrev--all-parents (table)
+  (unless (abbrev-table-p table) (setq table (symbol-value table)))
+  (let ((parents (abbrev-table-get table :parents))
+        res)
+    (while parents
+      (setq res (append res parents))
+      (setq parents (car (mapcar (lambda (tab) (abbrev-table-get tab :parents)) parents))))
+    (mapcar #'abbrev-table-name res)))
+
 ;; -------------------------------------------------------------------
 ;;; Commands
+
+;; reload abbrevs after modification
+(defun nvp-abbrev-after-save-hook ()
+  (and (buffer-modified-p buffer-file-name)
+       (quietly-read-abbrev-file buffer-file-name)))
 
 ;;;###autoload
 (defun nvp-abbrev-jump-to-file (arg)
@@ -112,17 +131,14 @@ When abbrev text is selected, searching is done first by length then lexically."
          (pref (if arg (nvp-abbrev--grab-prev arg))))
     (if (bound-and-true-p nvp-abbrev-local-file)
         (nvp-abbrev--get-table table nvp-abbrev-local-file)
-      (nvp-abbrev--get-table
-       table (expand-file-name table nvp/abbrevs)))
+      (nvp-abbrev--get-table table (expand-file-name table nvp/abbrevs)))
     (goto-char (point-min))
     (search-forward-regexp (concat "'" table "\\>") nil t)
     (when pref
       (while
           (and
-           (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)"
-                              nil t)
-           (let ((str (buffer-substring-no-properties
-                       (match-beginning 1) (match-end 1))))
+           (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)" nil 'move)
+           (let ((str (match-string-no-properties 1)))
              (if (> (length pref) (length str))
                  t
                (string> pref str)))))
@@ -132,9 +148,7 @@ When abbrev text is selected, searching is done first by length then lexically."
       (indent-according-to-mode)
       (backward-char (+ (current-indentation) 17)))
     ;; reload abbrev table after modification
-    (add-hook 'after-save-hook
-              #'(lambda () (quietly-read-abbrev-file buffer-file-name))
-              t 'local)))
+    (add-hook 'after-save-hook #'nvp-abbrev-after-save-hook t 'local)))
 
 ;; add unicode abbrevs to local table parents
 ;;;###autoload
@@ -149,8 +163,7 @@ If FILE is non-nil, read abbrevs from FILE."
     (quietly-read-abbrev-file file))
   (let ((parents (abbrev-table-get local-abbrev-table :parents)))
     (abbrev-table-put
-     local-abbrev-table
-     :parents (cons (symbol-value (intern table)) parents)))
+     local-abbrev-table :parents (cons (symbol-value (intern table)) parents)))
   (message "Activated %s abbrevs locally." table))
 
 ;;;###autoload
@@ -216,61 +229,20 @@ If FILE is non-nil, read abbrevs from FILE."
       (pcase-dolist (`(,k ,v) props)
         (princ (format "%S: %S\n" k v))))))
 
-;; -------------------------------------------------------------------
-;;; Expand Hooks
-
-;; allow abbrevs to expand inside parens
+;; unlike default, list all parent tables and dynamic tables as well
 ;;;###autoload
-(defun nvp-abbrev-expand-in-paren-hook ()
-  (cl-letf (((symbol-function 'eolp)
-             #'(lambda () (not (eq (char-syntax (char-after)) ?w)))))
-    (expand-abbrev-hook)))
-
-;; -------------------------------------------------------------------
-;;; Expansion predicates
-
-;; dont expand in strings/comments
-;;;###autoload
-(defun nvp-abbrev-expand-p ()
-  (let ((ppss (syntax-ppss)))
-    (not (or (elt ppss 3) (elt ppss 4)))))
-
-;; don't expand in strings/comments or after [_.-:]
-;;;###autoload
-(defun nvp-abbrev-expand-not-after-punct-p ()
-  (and (not (memq last-input-event '(?_ ?. ?- ?:)))
-       (let ((ppss (syntax-ppss)))
-         (not (or (elt ppss 3) (elt ppss 4))))))
-
-;; -------------------------------------------------------------------
-;;; Completion
-
-;; `company-abbrev' doesn't account for :regexp properties, so doesnt
-;; work properly when abbrev tables define their own :regexp,
-;; ie "\\degree" or "#inc"
-
-(declare-function company-grab-symbol "company")
-
-;; Return completion candidates
-;; take into account per-table :regexp. If not defined, default to
-;; `company-grab-symbol'
-(defun nvp-abbrev--complete-candidates ()
-  (interactive)
-  (let ((tables (nvp-abbrev--active-tables))
-        prefix re comps)
-    (dolist (table tables)
-      (setq re (abbrev-table-get (symbol-value table) :regexp))
-      (setq prefix
-            (if re
-                (and (looking-back re (line-beginning-position))
-                     (match-string 1))
-              (company-grab-symbol)))
-      (and prefix
-           (setq comps
-                 (nconc
-                  (delete "" (all-completions prefix (symbol-value table)))
-                  comps))))
-    comps))
+(defun nvp-abbrev-list-abbrevs (&optional all)
+  "List all local abbrev tables by default.
+If ALL is non-nill, list all abbrev tables."
+  (interactive "P")
+  (if all
+      (display-buffer (prepare-abbrev-list-buffer))
+    (let ((abbrev-table-name-list
+           (cons (abbrev-table-name local-abbrev-table)
+                 (nvp-abbrev--all-parents local-abbrev-table))))
+      (and nvp-abbrev-dynamic-table
+           (push 'nvp-abbrev-dynamic-table abbrev-table-name-list))
+      (display-buffer (prepare-abbrev-list-buffer nil)))))
 
 (provide 'nvp-abbrev)
 ;;; nvp-abbrev.el ends here

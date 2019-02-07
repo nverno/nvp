@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-02 20:40:35>
+;; Last modified: <2019-02-06 22:22:54>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -42,6 +42,7 @@
 ;; with two prefix use lookup-word.
 ;;;###autoload
 (defun nvp-help-define-word (arg)
+  "Define word at point, dispatching based on ARG."
   (interactive "p")
   (cond
    ((eq arg 4) (call-interactively  #'define-word))
@@ -59,11 +60,22 @@
 ;; Show the name of face under point.
 ;;;###autoload
 (defun nvp-help-font-face (pos)
+  "Info on char face at POS."
   (interactive "d")
   (let ((face (or (get-char-property (point) 'read-face-name)
                   (get-char-property (point) 'face))))
     (if face (message "Face: %s" face)
       (message "No face at %d" pos))))
+
+;;;###autoload
+(defun nvp-help-list-charsets (&optional arg)
+  "List names of charsets."
+  (interactive "P")
+  (if arg
+      (list-character-sets nil)
+    (let* ((table (mapcar (lambda (x) (list (symbol-name x))) charset-list))
+           (charset (ido-completing-read "Charset: " table)))
+     (list-charset-chars (intern charset)))))
 
 (provide 'nvp-help-auto)
 ;;; nvp-help-auto.el ends here

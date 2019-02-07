@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 02:07:18>
+;; Last modified: <2019-02-06 21:28:32>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -34,7 +34,7 @@
 ;; expand word before point according to local abbrev tables
 ;; #<marker at 30147 in hippie-exp.el.gz>
 ;;;###autoload
-(defun try-expand-local-abbrevs (old)
+(defun nvp-he-try-expand-local-abbrevs (old)
   (unless old
     (he-init-string (he-dabbrev-beg) (point))
     (setq he-expand-list            ;expansion candidates

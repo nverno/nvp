@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-06 19:44:23>
+;; Last modified: <2019-02-07 14:43:49>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -29,28 +29,11 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'cl-lib)
   (nvp-local-vars))
+(require 'nvp)
 (require 'yasnippet)
 (require 'nvp-comment)
-(declare-function company-abort "company")
-(declare-function company-complete-common "company")
-(autoload 'string-trim "subr-x")
-
-(defvar-local nvp-snippet-dir nil)
-
-;; -------------------------------------------------------------------
-;;; Setup 
-
-;; compile snippets, optionally compile all snippet subdirs in site-lisp addons
-;;;###autoload
-(defun nvp-yas-compile (&optional all)
-  "Compile snippets in default location.
-Optionally, compile ALL snippets including subdirs in site-lisp packages."
-  (interactive "P")
-  (let ((yas-snippet-dirs
-         (cons nvp/snippet
-               (and all (directory-files-recursively nvp/site "snippets" 'dirs)))))
-    (mapc #'yas-recompile-all yas-snippet-dirs)))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
@@ -121,118 +104,6 @@ Optionally, compile ALL snippets including subdirs in site-lisp packages."
    (let* ((str (car (split-string str "=" t " ")))
           (strs (split-string str nil t " ")))
      (or (cadr strs) (car strs)))))
-
-;; -------------------------------------------------------------------
-;;; Commands 
-
-;; de/in-crement snippet expansion numbers in selected region
-(defun nvp-yas-increment-count (start end)
-  (interactive "r")
-  (goto-char start)
-  (while (re-search-forward "\$\{\\([[:digit:]]\\):" end 'move)
-    (replace-match (number-to-string
-                    (+ (if current-prefix-arg -1 1)
-                       (string-to-number (match-string 1))))
-                   nil nil nil 1)))
-
-;; Initialize a directory of snippets.
-(defun nvp-yas-snippets-initialize (dir)
-  (interactive)
-  (when (and (fboundp 'yas-load-directory)
-	     (file-directory-p dir))
-    (yas-load-directory (expand-file-name dir nvp/snippet))))
-
-(defun nvp-yas-goto-end-of-active-field ()
-  (interactive)
-  (let* ((snippet (car (yas-active-snippets)))
-	 (position (yas--field-end (yas--snippet-active-field snippet))))
-    (if (= (point) position)
-        (move-end-of-line 1)
-      (goto-char position))))
-
-(defun nvp-yas-goto-start-of-active-field ()
-  (interactive)
-  (let* ((snippet (car-safe (yas-active-snippets)))
-	 (position (yas--field-start
-                    (yas--snippet-active-field snippet))))
-    (if (= (point) position)
-	(move-beginning-of-line 1)
-      (goto-char position))))
-
-;; Expand yasnippet if possible, otherwise complete.
-;; FIXME: remove?
-(defun nvp-yas-company-or-snippet ()
-  (interactive)
-  (if (car (yas--templates-for-key-at-point))
-      (progn
-        (company-abort)
-        (yas-expand))
-    (company-complete-common)))
-
-(defun nvp-yas-snippet-help-at-point ()
-  (interactive)
-  (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
-
-;;;###autoload
-(defun nvp-yas-reload-all ()
-  "Reload modes' snippet tables."
-  (interactive)
-  (unless (member nvp-snippet-dir yas-snippet-dirs)
-    (push nvp-snippet-dir yas-snippet-dirs))
-  (cl-loop for dir in yas-snippet-dirs
-     do (yas-load-directory dir)))
-
-;; ------------------------------------------------------------
-;;;  Snippet-mode
-
-;; replace macros in snippet-mode with expansions
-;; #<marker at 21701 in macrostep.el>
-;; Reload directory after saving
-(defun nvp-yas-snippet-reload (&optional dir compile)
-  (let* ((ddir (file-name-directory
-                (expand-file-name default-directory)))
-         (parent (file-name-nondirectory
-                  (directory-file-name 
-                   (file-name-directory (directory-file-name ddir)))))
-         ;; if in yas group folder, parent one extra directory up
-         (ddir (if (not (string= "snippets" parent))
-                   (file-name-directory
-                    (directory-file-name
-                     (file-name-directory ddir)))
-                 ddir)))
-    (when compile
-      (yas-compile-directory (or dir ddir)))
-    (yas-load-directory
-     (or dir ddir))))
-;; (yas-recompile-all)
-;; (yas-reload-all)
-
-;; #<marker at 95724 in yasnippet.el>
-;;;###autoload
-(defun nvp-jump-to-new-snippet (arg)
-  (interactive "P")
-  (when (not (fboundp 'yas-new-snippet))
-    (require 'yasnippet))
-  (let* ((mm (symbol-name major-mode))
-         (default-directory (or (and arg (equal arg '(16)) nvp/snippet)
-                                nvp-snippet-dir
-                                (expand-file-name mm nvp/snippet)))
-         (yas-selected-text (or yas-selected-text
-                                (and (region-active-p)
-                                     (buffer-substring-no-properties
-                                      (region-beginning) (region-end))))))
-    (when (not (file-exists-p default-directory))
-      (make-directory default-directory))
-    ;; with prefix dired the snippet directory
-    (if (equal arg '(4)) (dired default-directory)
-      (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
-      (erase-buffer)
-      (kill-all-local-variables)
-      (snippet-mode)
-      (yas-expand-snippet yas-new-snippet-default)
-      ;; reload / compile after save
-      ;; (add-hook 'after-save-hook 'nvp-yas-snippet-reload nil 'local)
-      )))
 
 (provide 'nvp-yas)
 ;;; nvp-yas.el ends here

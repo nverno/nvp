@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-31 14:34:07>
+;; Last modified: <2019-02-07 13:59:25>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -46,12 +46,13 @@
 
 ;; Call `occur' with a sane default.
 ;;;###autoload
-(defun nvp-occur-dwim ()
-  (interactive)
-  (push (nvp-occur-region-str-or-symbol) regexp-history)
-  (call-interactively 'occur)
-  (if (get-buffer "*Occur*")
-      (switch-to-buffer-other-window "*Occur*")))
+(defun nvp-occur-dwim (&optional arg)
+  (interactive "P")
+  (if arg (nvp-multi-occur-in-this-mode)
+    (push (nvp-occur-region-str-or-symbol) regexp-history)
+    (call-interactively 'occur)
+    (if (get-buffer "*Occur*")
+        (switch-to-buffer-other-window "*Occur*"))))
 
 ;; https://www.masteringemacs.org/article/searching-buffers-occur-mode
 ;; Show all lines matching REGEXP in buffers withe the same 

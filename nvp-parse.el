@@ -1,10 +1,9 @@
-;;; nvp-syntax.el --- syntax helpers -*- lexical-binding: t; -*-
+;;; nvp-parse.el --- Generics for parse -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 04:09:37>
+;; Last modified: <2019-02-07 16:27:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  7 February 2019
@@ -30,18 +29,21 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'subr-x)
   (require 'nvp-macro))
 
-(declare-function company-grab-symbol "company")
+;; default just tries to use imenu
+(cl-defgeneric nvp-parse-function-names (&optional buffer-or-file &rest args)
+  "Default method to gather function names from current buffer or BUFFER-OR-FILE."
+  (ignore-errors
+    (when (fboundp 'imenu--make-index-alist)
+      (let ((buff (if (not buffer-or-file) (current-buffer)
+                    (if (buffer-live-p buffer-or-file)
+                        buffer-or-file
+                      (find-file-noselect buffer-or-file)))))
+        (set-buffer buff)
+        (when-let ((objs (cdr (imenu--make-index-alist))))
+          (cl-loop for (func . loc) in objs
+             collect func))))))
 
-(cl-defgeneric nvp-grab-previous-symbol ()
-  "Default method to grab previous symbol."
-  (company-grab-symbol))
-
-(cl-defgeneric nvp-symbol-at-point ()
-  "Default method to return symbol at point."
-  (symbol-at-point))
-
-(provide 'nvp-syntax)
-;;; nvp-syntax.el ends here
+(provide 'nvp-parse)
+;;; nvp-parse.el ends here

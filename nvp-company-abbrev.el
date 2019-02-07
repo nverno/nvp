@@ -1,12 +1,12 @@
-;;; nvp-code.el ---  -*- lexical-binding: t; -*-
+;;; nvp-company-abbrev.el --- company backend for abbrevs -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-07 12:01:25>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 14:13:54>
 ;; Package-Requires: 
-;; Created: 25 November 2016
+;; Created:  7 February 2019
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -26,37 +26,29 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+
+;; `company-abbrev' doesn't account for :regexp properties or :enable-function,
+;; so doesn't work properly in context, eg. ie "\\degree" or "#inc"
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
-(nvp-declare "hideshow" hs-toggle-hiding hs-show-all hs-hide-all)
-
-;; -------------------------------------------------------------------
-;;; Code Fold
-
-(defvar nvp-hs--hidden nil)
-
-(defun nvp-hs-toggle (&optional arg)
-  (interactive "P")
-  (unless hs-minor-mode
-    (hs-minor-mode))
-  (if arg
-      (if (setq nvp-hs--hidden (not nvp-hs--hidden))
-          (hs-show-all)
-        (hs-hide-all))
-    (hs-toggle-hiding)))
+(require 'abbrev)
+(require 'company)
+(require 'nvp-abbrev-completion)
 
 ;;;###autoload
-(defun nvp-hs-init (&optional arg)
-  (interactive "P")
-  (hs-minor-mode)
-  (nvp-bind-keys nvp-narrow/fold-keymap
-    ("f"   . nil)
-    ("f f" . nvp-hs-toggle)
-    ("f a" . hs-hide-all)
-    ("f s" . hs-show-all))
-  (nvp-hs-toggle arg))
+(defun nvp-company-abbrev (command &optional arg &rest _ignored)
+  "`company-mode' completion backend for abbrevs accounting for table props.
+Respects abbrev table :regexp and :enable-function properties."
+  (interactive (list 'interactive))
+  (cl-case command
+    (interactive (company-begin-backend 'nvp-company-abbrev))
+    (prefix (nvp-abbrev-completion-prefix))
+    (candidates (nvp-abbrev-completion-candidates arg))
+    (meta (abbrev-expansion arg))
+    (annotation (or (get-text-property 0 'annotation arg) "<abbrev>"))))
 
-(provide 'nvp-code)
-;;; nvp-code.el ends here
+(provide 'nvp-company-abbrev)
+;;; nvp-company-abbrev.el ends here

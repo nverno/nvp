@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-06 21:28:32>
+;; Last modified: <2019-02-07 12:28:47>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -35,16 +35,15 @@
 ;; #<marker at 30147 in hippie-exp.el.gz>
 ;;;###autoload
 (defun nvp-he-try-expand-local-abbrevs (old)
+  (require 'nvp-abbrev-completion)
   (unless old
-    (he-init-string (he-dabbrev-beg) (point))
+    (he-init-string (nvp-abbrev-completion-prefix-beg) (point))
     (setq he-expand-list            ;expansion candidates
           (and (not (equal he-search-string ""))
                (mapcar
-                (function (lambda (sym)
-                            (if (and (boundp sym) (vectorp (eval sym)))
-                                (abbrev-expansion (downcase he-search-string)
-                                                  (eval sym)))))
-                '(local-abbrev-table global-abbrev-table)))))
+                (lambda (table)
+                  (abbrev-expansion he-search-string (symbol-value table)))
+                (nvp-abbrev-completion--active-tables)))))
   (while (and he-expand-list            ;clean expansion list
               (or (not (car he-expand-list))
                   (he-string-member (car he-expand-list) he-tried-table t)))
@@ -55,11 +54,11 @@
       (he-substitute-string (pop he-expand-list) t))))
 
 ;; https://github.com/magnars/.emacs.d/blob/master/settings/setup-hippie.el
-(defvar he-search-loc-backward (make-marker))
-(defvar he-search-loc-forward (make-marker))
+(defvar nvp-he-search-loc-backward (make-marker))
+(defvar nvp-he-search-loc-forward (make-marker))
 
 ;;;###autoload
-(defun try-expand-dabbrev-closest-first (old)
+(defun nvp-he-try-expand-dabbrev-closest-first (old)
   "Try to expand word \"dynamically\", searching the current buffer.
 The argument OLD has to be nil the first call of this function, and t
 for subsequent calls (for further possible expansions of the same
@@ -67,8 +66,8 @@ string).  It returns t if a new expansion is found, nil otherwise."
   (let (expansion)
     (unless old
       (he-init-string (he-dabbrev-beg) (point))
-      (set-marker he-search-loc-backward he-string-beg)
-      (set-marker he-search-loc-forward he-string-end))
+      (set-marker nvp-he-search-loc-backward he-string-beg)
+      (set-marker nvp-he-search-loc-forward he-string-end))
     (if (not (equal he-search-string ""))
         (save-excursion
           (save-restriction
@@ -82,14 +81,14 @@ string).  It returns t if a new expansion is found, nil otherwise."
                   backward-expansion
                   chosen)
               ;; search backward
-              (goto-char he-search-loc-backward)
+              (goto-char nvp-he-search-loc-backward)
               (setq expansion (he-dabbrev-search he-search-string t))
               (when expansion
                 (setq backward-expansion expansion)
                 (setq backward-point (point))
                 (setq backward-distance (- he-string-beg backward-point)))
               ;; search forward
-              (goto-char he-search-loc-forward)
+              (goto-char nvp-he-search-loc-forward)
               (setq expansion (he-dabbrev-search he-search-string nil))
               (when expansion
                 (setq forward-expansion expansion)
@@ -104,11 +103,11 @@ string).  It returns t if a new expansion is found, nil otherwise."
                             (backward-point :backward)))
               (when (equal chosen :forward)
                 (setq expansion forward-expansion)
-                (set-marker he-search-loc-forward forward-point))
+                (set-marker nvp-he-search-loc-forward forward-point))
 
               (when (equal chosen :backward)
                 (setq expansion backward-expansion)
-                (set-marker he-search-loc-backward backward-point))))))
+                (set-marker nvp-he-search-loc-backward backward-point))))))
     (if (not expansion)
         (progn
           (if old (he-reset-string))
@@ -118,7 +117,7 @@ string).  It returns t if a new expansion is found, nil otherwise."
         t))))
 
 ;;;###autoload
-(defun try-expand-line-closest-first (old)
+(defun nvp-he-try-expand-line-closest-first (old)
   "Try to complete the current line to an entire line in the buffer.
 The argument OLD has to be nil the first call of this function, and t
 for subsequent calls (for further possible completions of the same
@@ -129,8 +128,8 @@ string).  It returns t if a new completion is found, nil otherwise."
                            comint-prompt-regexp)))
     (unless old
       (he-init-string (he-line-beg strip-prompt) (point))
-      (set-marker he-search-loc-backward he-string-beg)
-      (set-marker he-search-loc-forward he-string-end))
+      (set-marker nvp-he-search-loc-backward he-string-beg)
+      (set-marker nvp-he-search-loc-forward he-string-end))
 
     (if (not (equal he-search-string ""))
         (save-excursion
@@ -147,7 +146,7 @@ string).  It returns t if a new completion is found, nil otherwise."
                   chosen)
 
               ;; search backward
-              (goto-char he-search-loc-backward)
+              (goto-char nvp-he-search-loc-backward)
               (setq expansion (he-line-search he-search-string
                                               strip-prompt t))
 
@@ -157,7 +156,7 @@ string).  It returns t if a new completion is found, nil otherwise."
                 (setq backward-distance (- he-string-beg backward-point)))
 
               ;; search forward
-              (goto-char he-search-loc-forward)
+              (goto-char nvp-he-search-loc-forward)
               (setq expansion (he-line-search he-search-string
                                               strip-prompt nil))
 
@@ -177,11 +176,11 @@ string).  It returns t if a new completion is found, nil otherwise."
 
               (when (equal chosen :forward)
                 (setq expansion forward-expansion)
-                (set-marker he-search-loc-forward forward-point))
+                (set-marker nvp-he-search-loc-forward forward-point))
 
               (when (equal chosen :backward)
                 (setq expansion backward-expansion)
-                (set-marker he-search-loc-backward backward-point))
+                (set-marker nvp-he-search-loc-backward backward-point))
 
               ))))
 
@@ -197,7 +196,7 @@ string).  It returns t if a new completion is found, nil otherwise."
 (defun nvp-hippie-expand-lines ()
   (interactive)
   (let ((hippie-expand-try-functions-list 
-	 '(try-expand-line-closest-first
+	 '(nvp-he-try-expand-line-closest-first
 	   try-expand-line-all-buffers)))
     (end-of-line)
     (hippie-expand nil)))

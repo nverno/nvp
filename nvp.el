@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 05:20:01>
+;; Last modified: <2019-02-07 14:35:12>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -34,6 +34,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
+(declare-function company-grab-symbol "company")
 
 ;; -------------------------------------------------------------------
 ;;; Variables: global / local
@@ -54,6 +55,8 @@
 
 ;;; Defaults
 (defalias 'nvp-completing-read 'ido-completing-read)
+(defalias 'nvp-grab-symbol 'company-grab-symbol)
+(defalias 'nvp-move-previous-defun 'beginning-of-defun)
 
 ;; ------------------------------------------------------------
 ;;; Setup

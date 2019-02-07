@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 09:23:48>
+;; Last modified: <2019-02-07 13:37:19>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -291,6 +291,14 @@ On error (read-only), quit without selecting."
       (backward-delete-char 1)
     (error
      (minibuffer-keyboard-quit))))
+
+;; -------------------------------------------------------------------
+;;; Assorted
+
+(defun nvp-kill-emacs ()
+  (interactive)
+  (save-some-buffers 'no-ask)
+  (kill-emacs))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

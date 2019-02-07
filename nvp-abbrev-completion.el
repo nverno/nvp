@@ -1,10 +1,9 @@
-;;; nvp-abbrev-company.el --- local abbrev completion -*- lexical-binding: t; -*-
+;;; nvp-abbrev-completion.el --- local abbrev completion -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 04:11:24>
+;; Last modified: <2019-02-07 12:29:23>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  6 February 2019
@@ -28,29 +27,26 @@
 
 ;;; Commentary:
 
-;; `company-abbrev' doesn't account for :regexp properties or :enable-function,
-;; so doesn't work properly in context, eg. ie "\\degree" or "#inc"
+;; Completion functions for abbrevs that take into account local context
+;; using each active table's :regexp and :enable-function properties
 ;;
-;; This replacement uses all parents of local-abbrev-table, accounting for
-;; :enable-function and :regexp properties for each table
-
+;; These complete for all parents of `local-abbrev-table', accounting for
+;; :enable-function and :regexp properties for each table separately
+;;
+;; Used by company and hippie-exp.
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
-(require 'company)
-(require 'nvp-abbrev)
-(require 'nvp-syntax)
+(require 'abbrev)
+(require 'nvp)
+(require 'nvp-abbrev-util)
 
 ;; use local table along with its parents + global table
 (defvar-local nvp-abbrev-completion--tables nil)
 (defun nvp-abbrev-completion--tables ()
   (or nvp-abbrev-completion--tables
-      (setq nvp-abbrev-completion--tables
-            (cl-remove-duplicates
-             (append (list (abbrev-table-name local-abbrev-table))
-                     (nvp-abbrev--all-parents local-abbrev-table)
-                     '(global-abbrev-table))))))
+      (setq nvp-abbrev-completion--tables (nvp-abbrev--active-tables))))
 
 ;; add completion annotations
 (defun nvp-abbrev-completion--apply-annotation (table)
@@ -73,31 +69,21 @@
      when (and re (looking-back re (line-beginning-position)))
      return (match-string-no-properties 1)))
 
+;; return beginning position of prefix for hippie
+(defun nvp-abbrev-completion-prefix-beg ()
+  (and (nvp-abbrev-completion--prefix)
+       (match-beginning 0)))
+
 ;; return prefix, either matching a table's predicates or defaulting to the
 ;; previous symbol
 (defun nvp-abbrev-completion-prefix ()
   (or (nvp-abbrev-completion--prefix)
-      (nvp-grab-previous-symbol)))
+      (nvp-grab-symbol)))
 
 ;; Return completion candidates, taking into account per-table :regexp
 (defun nvp-abbrev-completion-candidates (arg)
   (cl-loop for tab in (nvp-abbrev-completion--active-tables)
      nconc (delete "" (all-completions arg (symbol-value tab)))))
 
-;; -------------------------------------------------------------------
-;;; Company
-
-;;;###autoload
-(defun nvp-company-abbrev (command &optional arg &rest _ignored)
-  "`company-mode' completion backend for abbrevs accounting for table props.
-Respects abbrev table :regexp and :enable-function properties."
-  (interactive (list 'interactive))
-  (cl-case command
-    (interactive (company-begin-backend 'nvp-company-abbrev))
-    (prefix (nvp-abbrev-completion-prefix))
-    (candidates (nvp-abbrev-completion-candidates arg))
-    (meta (abbrev-expansion arg))
-    (annotation (or (get-text-property 0 'annotation arg) "<abbrev>"))))
-
 (provide 'nvp-abbrev-completion)
-;;; nvp-abbrev-company.el ends here
+;;; nvp-abbrev-completion.el ends here

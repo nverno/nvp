@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 02:13:40>
+;; Last modified: <2019-02-07 14:48:02>
 ;; Package-Requires: 
 ;; Created:  2 December 2016
 
@@ -61,13 +61,15 @@
                       (start-process "git" nil "git" "pull" "origin" "master")))
                 nil 'local))))
 
-;;--- Magit ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Magit 
 
 (defsubst nvp-vc-magit-ref ()
   (interactive)
   (browse-url "https://magit.vc/manual/magit-refcard.pdf"))
 
-;;--- SVN ------------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; SVN 
 
 ;; Cached list of git svn subcommands
 (defvar nvp-vc-svn--available-commands nil)

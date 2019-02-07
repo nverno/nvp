@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-28 05:27:16>
+;; Last modified: <2019-02-07 08:22:30>
 ;; Package-Requires: 
 ;; Created:  2 December 2016
 
@@ -59,45 +59,51 @@
   (global-set-key (kbd "C-x C-j") #'dired-jump)
   (dired-jump other-window file-name))
 
-;;; Movement
+;; -------------------------------------------------------------------
+;;; Movement 
 
-(defsubst nvp-dired-start-of-files ()
+(defun nvp-dired-start-of-files ()
   (interactive)
   (backward-char (- (current-column) 2)))
 
-(defsubst nvp-dired-back-to-top ()
+(defun nvp-dired-beginning-of-filename ()
+  (interactive)
+  (dired-move-to-filename 'no-error))
+
+(defun nvp-dired-beginning-of-buffer ()
   (interactive)
   (widen)
   (goto-char (point-min))
   (forward-line 2)
-  (nvp-dired-start-of-files))
+  (dired-move-to-filename 'no-error))
 
-(defsubst nvp-dired-jump-to-bottom ()
+(defun nvp-dired-end-of-buffer ()
   (interactive)
   (goto-char (point-max))
   (dired-next-line -1)
   (recenter-top-bottom))
 
-(defsubst nvp-dired-find-alternate-file ()
+;; or C-x C-j
+(defun nvp-dired-find-alternate-file ()
   (interactive)
   (find-alternate-file ".."))
 
-(defsubst nvp-dired-next5 ()
+(defun nvp-dired-next5 ()
   (interactive)
   (forward-line 5)
   (dired-move-to-filename))
 
-(defsubst nvp-dired-prev5 ()
+(defun nvp-dired-prev5 ()
   (interactive)
   (forward-line -5)
   (dired-move-to-filename))
 
-(defsubst nvp-dired-scroll-up ()
+(defun nvp-dired-scroll-up ()
   (interactive)
   (scroll-up-command)
   (dired-move-to-filename))
 
-(defsubst nvp-dired-scroll-down ()
+(defun nvp-dired-scroll-down ()
   (interactive)
   (scroll-down-command)
   (dired-move-to-filename))
@@ -114,6 +120,19 @@
   ("j" dired-next-dirline))
 
 ;;; Kill
+
+;; Add buffer file name or marked file to kill.
+;;;###autoload
+(defun nvp-dired-or-buffer-filename (&optional arg)
+  "Add `buffer-file-name' or marked file in `dired-mode' to kill."
+  (interactive "P")
+  (if (eq major-mode 'dired-mode)
+      (nvp-dired-kill arg)
+    (let ((filename (buffer-file-name)))
+      (when filename
+        (kill-new filename)
+        (message "Copied as kill: %s" filename)))))
+
 ;; copy absolute filenames as string to kill ring
 ;; with prefix, separate with ', ', otherwise ' '
 (defun nvp-dired-kill (arg)
@@ -127,7 +146,8 @@
       (setq string (mapconcat 'identity files (if arg ", " " ")))
       (if (eq last-command 'kill-region)
           (kill-append string nil)
-        (kill-new string)))))
+        (kill-new string))
+      (message "Copied as kill: %S" string))))
 
 (defun nvp-dired-touch (filename)
   (interactive (list (read-string "Filename: " ".gitkeep")))
@@ -193,42 +213,39 @@
 ;;; Install info
 (autoload 'org-texinfo-export-to-info "ox-texinfo")
 
-;; Convert marked .org files to .info and install.  If marked files
-;; are already .info files, just install.
-;; installs files in current directory, or prompts with prefix
-(defun nvp-dired-convert-and-install-info (arg)
-  (interactive "P")
-  (let* ((info-dir
-          (replace-regexp-in-string
-           "/+$" ""
-           (expand-file-name
-            (if arg (read-directory-name
-                     "Install info to directory: ")
-              default-directory))))
-         (keep (or (not arg)
-                   (string= info-dir default-directory))))
-    ;; convert org files to .info
-    (mapc (lambda (f)
-            (when (string= "org" (file-name-extension f))
-              (with-current-buffer (find-file-noselect f)
-                (org-texinfo-export-to-info)
-                (kill-buffer (current-buffer))))
-            (let* ((base (file-name-nondirectory (file-name-sans-extension f)))
-                   (info (concat base ".info"))
-                   (dest (expand-file-name info info-dir)))
-              ;; install .info files, delete intermediates, copy to destination
-              (when (file-exists-p info)
-                (delete-file (concat base ".texi"))
-                (copy-file info dest t)
-                ;; delete .info file if .org exists and moving to different
-                ;; info directory
-                (and (not keep) 
-                     (file-exists-p (concat base ".org"))
-                     (delete-file info))
-                (call-process "install-info" nil (nvp-process-buffer) nil
-                              (concat "--info-dir=" info-dir)
-                              (concat "--info-file=" dest)))))
-          (dired-get-marked-files))))
+(defun nvp-dired-convert-and-install-info (info-dir &optional keep-info)
+  "Convert marked .org files to .info and install.
+If marked files are already .info files, just install. By default, installs
+to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument]."
+  (interactive
+   (let ((dir
+          (if current-prefix-arg
+              (read-directory-name "Install info to directory: ")
+            nvp/info)))
+     (list (directory-file-name dir)
+           (nvp-file-same dir default-directory))))
+  ;; convert org files to .info
+  (mapc (lambda (f)
+          (when (string= "org" (file-name-extension f))
+            (with-current-buffer (find-file-noselect f)
+              (org-texinfo-export-to-info)
+              (kill-buffer (current-buffer))))
+          (let* ((base (file-name-nondirectory (file-name-sans-extension f)))
+                 (info (concat base ".info"))
+                 (dest (expand-file-name info info-dir)))
+            ;; install .info files, delete intermediates, copy to destination
+            (when (file-exists-p info)
+              (delete-file (concat base ".texi"))
+              (copy-file info dest t)
+              ;; delete .info file if .org exists and moving to different
+              ;; info directory
+              (and (not keep-info) 
+                   (file-exists-p (concat base ".org"))
+                   (delete-file info))
+              (nvp-with-process "install-info"
+                :proc-args ((concat "--info-dir=" info-dir)
+                            (concat "--info-file=" dest))))))
+        (dired-get-marked-files)))
 
 ;;; Compress
 

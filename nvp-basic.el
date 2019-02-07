@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-03 02:21:31>
+;; Last modified: <2019-02-07 05:20:19>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -30,12 +30,9 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib))
-(autoload 'string-trim "subr-x")
-(declare-function nvp-bind-transient-key "nvp-bind")
-
-;; mode-dependent regex to move between headers
-(defvar-local nvp-move-header-re nil)
+  (require 'cl-lib)
+  (require 'subr-x))
+(require 'nvp)
 
 ;; -------------------------------------------------------------------
 ;;; Movement 
@@ -53,6 +50,16 @@
                    (goto-char pt))))))
   (nvp-bind-transient-key
    char (lambda () (interactive) (nvp-move-char-this-line char)) t))
+
+;; used recursively below so not a macro
+(defun nvp-bind-transient-key (key cmd &optional keep exit)
+  "Bind KEY to CMD in transient map."
+  (set-transient-map
+   (let ((tmap (make-sparse-keymap)))
+     (define-key tmap (kbd key) cmd)
+     tmap)
+   (or keep t)
+   (or exit nil)))
 
 (defun nvp-move-next5 (&rest _ignored)
   (interactive)

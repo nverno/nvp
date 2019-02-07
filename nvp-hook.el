@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-30 20:16:48>
+;; Last modified: <2019-02-07 06:24:59>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -30,17 +30,27 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))
-(require 'time-stamp)
 
 ;;;###autoload
 (defun nvp-hook-update-timestamp ()
   "Update buffer time stamps - `before-save-hook'."
+  (require 'time-stamp)
   (let ((time-stamp-pattern 
          (or time-stamp-pattern
              (pcase major-mode
                (`org-mode "#\\+DATE: <%%>$")
                (_ "15/Last modified: <%%>$")))))
     (time-stamp)))
+
+;;;###autoload
+(defun nvp-hook-create-directory ()
+  "Added to `find-file-not-found-functions'."
+  (let ((parent-directory (file-name-directory buffer-file-name)))
+    (when (and (not (file-exists-p parent-directory))
+               (y-or-n-p 
+		(format "directory `%s' does not exist! create it?" 
+			parent-directory)))
+      (make-directory parent-directory t))))
 
 ;; -------------------------------------------------------------------
 ;;; Remove lsp stuff

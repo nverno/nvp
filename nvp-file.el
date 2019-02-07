@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-06 20:30:36>
+;; Last modified: <2019-02-07 07:40:44>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -36,7 +36,6 @@
 ;; -------------------------------------------------------------------
 ;;; Utils
 
-
 (defun nvp-file-create-path (args &optional sep)
   "Create file path from list of ARGS (strings) components."
   (mapconcat #'file-name-as-directory args (if sep sep "")))
@@ -68,7 +67,24 @@
 If APPEND is non-nil, append DATA to existing contents."
   (when (not (multibyte-string-p data))
     (signal 'wrong-type-argument (list 'multibyte-string-p data)))
-  (let ((coding-system-for-write 'binary))))
+  (let ((coding-system-for-write 'binary)
+        (write-region-annotate-functions nil)
+        (write-region-post-annotation-function nil))
+    (write-region data nil file append 'silent)
+    nil))
+
+(defun nvp-file-append-bytes (data file)
+  "Append binary DATA to FILE.
+FILE is created if it doesn't exist."
+  (nvp-file-write-bytes data file 'append))
+
+(cl-defun nvp-file-append (text file &optional (coding 'utf-8))
+  "Append TEXT to FILE with CODING."
+  (nvp-file-append-bytes (encode-coding-string text coding) file))
+
+(cl-defun nvp-file-write (text file &optional (coding 'utf-8))
+  "Write TEXT to FILE with CODING."
+  (nvp-file-write-bytes (encode-coding-string text coding) file))
 
 ;; -------------------------------------------------------------------
 ;;; Directories 

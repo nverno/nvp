@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 01:35:20>
+;; Last modified: <2019-02-07 08:12:18>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -618,12 +618,18 @@ Optional :local key can be set to make the mappings buffer-local."
      ,@(cl-loop for (mode . feature) in modes
           collect `(nvp-bindings ,mode ',feature ,@bindings))))
 
-(cl-defmacro nvp-bindings-transient (bindings
-                                     &key (keep t)
-                                     (pre '(nvp-indicate-cursor-pre))         
-                                     (exit '(nvp-indicate-cursor-post)))
-  "Set multiple BINDINGS in transient map.
+;; -------------------------------------------------------------------
+;;; Bindings: local / transient / overriding
+
+(cl-defmacro nvp-use-transient-bindings (bindings
+                                         &key (keep t)
+                                         (pre '(nvp-indicate-cursor-pre))         
+                                         (exit '(nvp-indicate-cursor-post)))
+  "Set BINDINGS in transient map.
 Run PRE form prior to setting commands."
+  (declare (indent 0))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
   `(progn
      (nvp-declare "nvp-indicate" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
      ,pre
@@ -634,15 +640,30 @@ Run PRE form prior to setting commands."
       ,keep
       ,exit)))
 
-(defmacro nvp-use-local-bindings (&rest bindings)
-  "Set buffer local bindings."
+(cl-defmacro nvp-use-local-bindings (&rest bindings &key buffer &allow-other-keys)
+  "Set local BINDINGS.
+If BUFFER is non-nil, set local bindings in BUFFER."
   (declare (indent defun))
-  `(let ((oldmap (current-local-map))
-         (newmap (make-sparse-keymap)))
-     (when oldmap (set-keymap-parent newmap oldmap))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  `(let ((lmap (make-sparse-keymap)))
+     (set-keymap-parent lmap (current-local-map))
      ,@(cl-loop for (k . b) in bindings
-          collect `(nvp-def-key newmap ,k ,b))
-     (use-local-map newmap)))
+          collect `(nvp-def-key lmap ,k ,b))
+     ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
+        `(use-local-map lmap))))
+
+;; Overrides a minor mode keybinding for the local buffer by creating
+;; or altering keymaps stored in buffer-local variable 
+;; `minor-mode-overriding-map-alist'.
+(defmacro nvp-use-minor-mode-overriding-map (mode bindings)
+  "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'."
+  (declare (indent defun))
+  `(let ((map (make-sparse-keymap)))
+     (macroexp-progn
+      (cl-loop for (k . b) in ,bindings
+         collect `(nvp-def-key ,map ,k ,b)))
+     (push (cons ,mode map) minor-mode-overriding-map-alist)))
 
 (defmacro nvp-use-local-keymap (keymap &rest bindings)
   "Use a local version of keymap."
@@ -654,6 +675,9 @@ Run PRE form prior to setting commands."
        ,@(cl-loop for (k . b) in bindings
             collect `(nvp-def-key newmap ,k ,b))
        (set ',keymap newmap))))
+
+;; -------------------------------------------------------------------
+;;; Bindings: view 
 
 ;; general movement bindings for non-insert modes
 (declare-function nvp-move-up-paragraph "")
@@ -688,6 +712,15 @@ Run PRE form prior to setting commands."
                 :keep t
                 :exit (lambda () (message "vim out")))
      ,@body))
+
+;; -------------------------------------------------------------------
+;;; Files
+
+(defmacro nvp-file-same (file-1 file-2)
+  "Return non-nil if FILE-1 and FILE-2 are the same."
+  (declare (indent defun))
+  `(when (and (file-exists-p ,file-1) (file-exists-p ,file-2))
+     (equal (file-truename ,file-1) (file-truename ,file-2))))
 
 ;; -------------------------------------------------------------------
 ;;; Buffers / IO
@@ -901,26 +934,27 @@ if process exit status isn't 0."
                                               (kill-buffer (current-buffer))))
                                (on-failure '(pop-to-buffer (current-buffer))))
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer."
-  (declare (indent defun))
-  `(progn
-     (declare-function nvp-indicate-modeline-success "nvp-indicate")
-     (declare-function nvp-log "nvp-log")
-     (let ((proc (start-process
-                 ,(or proc-name process) (,get-buff-function ,proc-buff)
-                 ,process ,@proc-args)))
-      ,(cond
-        ((eq proc-filter t)
-         '(set-process-filter proc 'nvp-process-buffer-filter))
-        (proc-filter
-         `(set-process-filter proc ,proc-filter))
-        (t nil))
-      (set-process-sentinel proc
-                            (lambda (p m)
-                              (nvp-log "%s: %s" nil (process-name p) m)
-                              (with-current-buffer (process-buffer p)
-                                (if (zerop (process-exit-status p))
-                                    ,on-success
-                                  ,on-failure)))))))
+  (declare (indent defun) (debug t))
+  (let ((proc (make-symbol "proc")))
+    `(progn
+       (declare-function nvp-indicate-modeline-success "nvp-indicate")
+       (declare-function nvp-log "nvp-log")
+       (let ((,proc (start-process
+                     ,(or proc-name process) (,get-buff-function ,proc-buff)
+                     ,process ,@proc-args)))
+         ,(cond
+           ((eq proc-filter t)
+            `(set-process-filter ,proc 'nvp-process-buffer-filter))
+           (proc-filter
+            `(set-process-filter ,proc ,proc-filter))
+           (t nil))
+         (set-process-sentinel ,proc
+                               (lambda (p m)
+                                 (nvp-log "%s: %s" nil (process-name p) m)
+                                 (with-current-buffer (process-buffer p)
+                                   (if (zerop (process-exit-status p))
+                                       ,on-success
+                                     ,on-failure))))))))
 
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment

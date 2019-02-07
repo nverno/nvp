@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-06 20:11:12>
+;; Last modified: <2019-02-07 06:36:11>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -32,6 +32,7 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (defvar recentf-list))
+(require 'nvp)
 (declare-function dired-copy-filename-as-kill "dired")
 
 ;; Open nearest file up the directory tree named:
@@ -40,7 +41,7 @@
 ;; 3. Variable `notes-file' (directory-local) if non-nil
 ;; 4. Otherwise, default to 'todo.org'.
 ;;;###autoload
-(defun nvp-file-open-nearest-dwim (name)
+(defun nvp-find-nearest-file-dwim (name)
   (interactive
    (list (or
           (bound-and-true-p name)
@@ -56,31 +57,10 @@
 ;; -------------------------------------------------------------------
 ;;; Recentf 
 
-;; Find a recent file using ido completion, trimming to basename.
-;;;###autoload
-(defun nvp-file-recentf-ido-find-file-trim ()
-  (interactive)
-  (if (not (bound-and-true-p recentf-mode))
-      (recentf-mode))
-  (let* ((file-assoc-list
-	  (mapcar (lambda (x)
-		    (cons (file-name-nondirectory x)
-			  x))
-		  recentf-list))
-	 (filename-list
-	  (cl-remove-duplicates (mapcar #'car file-assoc-list)
-                                :test #'string=))
-	 (filename (ido-completing-read "choose recent file: "
-					filename-list
-					nil
-					t)))
-    (when filename
-      (find-file (cdr (assoc filename file-assoc-list))))))
-
 ;; Find a recent file using ido completion, only abbreviating
 ;; filenames.
 ;;;###autoload
-(defun nvp-file-recentf-ido-find-file ()
+(defun nvp-find-recentf ()
   (interactive)
   (if (not (bound-and-true-p recentf-mode))
       (recentf-mode))
@@ -89,39 +69,10 @@
 	            (cons (abbreviate-file-name x) x))
 	          recentf-list))
 	 (filename-list
-	  (cl-remove-duplicates (mapcar #'car file-assoc-list)
-			     :test #'string=))
-	 (filename (ido-completing-read "Recent File: "
-					filename-list nil t)))
+	  (cl-remove-duplicates (mapcar #'car file-assoc-list) :test #'string=))
+	 (filename (nvp-completing-read "Recent File: " filename-list nil t)))
     (when filename
       (find-file (cdr (assoc filename file-assoc-list))))))
-
-;; Add buffer file name or marked file to kill.
-;;;###autoload
-(defun nvp-file-copy-name ()
-  "Add `buffer-file-name' or marked file in `dired-mode' to kill."
-  (interactive)
-  (if (eq major-mode 'dired-mode)
-      (prog1
-          (dired-copy-filename-as-kill 0)
-        (message "Copied marked filenames."))
-    (let ((filename (buffer-file-name)))
-      (when filename
-        (kill-new filename)
-        (message "Copied: %s" filename)))))
-
-;; -------------------------------------------------------------------
-;;; Hooks
-
-;;;###autoload
-(defun nvp-file-create-non-existent-directory ()
-  "Hooked into `find-file-not-found-functions'."
-  (let ((parent-directory (file-name-directory buffer-file-name)))
-    (when (and (not (file-exists-p parent-directory))
-               (y-or-n-p 
-		(format "directory `%s' does not exist! create it?" 
-			parent-directory)))
-      (make-directory parent-directory t))))
 
 (provide 'nvp-file-auto)
 ;;; nvp-file-auto.el ends here

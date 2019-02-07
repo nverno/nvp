@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 04:10:43>
+;; Last modified: <2019-02-07 05:20:01>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -34,13 +34,14 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
-(require 'nvp-basic)
-(declare-function company-grab-symbol "company")
 
 ;; -------------------------------------------------------------------
 ;;; Variables: global / local
 
 (nvp-package-define-root)
+
+;; movement
+(defvar-local nvp-move-header-re nil "Regex to move b/w headers.")
 
 ;; Abbrevs
 (defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")

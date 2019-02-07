@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-31 18:55:09>
+;; Last modified: <2019-02-06 19:04:34>
 ;; URL: https://github.com/nverno/
 ;; Package-Requires:
 ;; Created: 11 November 2016
@@ -91,6 +91,7 @@
 ;; run bash script. If FUNCTIONS is non-nil call those functions
 ;; from script, as SUDO if non-nil.
 ;; Interactively, prompts for file and functions
+;;;###autoload
 (defun nvp-ext-run-script (file &optional functions sudo passwd)
   (interactive
    (let* ((file (read-file-name "File: "))

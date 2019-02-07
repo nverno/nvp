@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-03 01:08:20>
+;; Last modified: <2019-02-06 19:04:11>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -953,6 +953,7 @@ BODY."
      (require 'nvp)
      (require 'nvp-log)
      (require 'nvp-ext)
+     (declare-function nvp-ext-run-script "nvp-ext")
      (declare-function nvp-log "nvp-log")
      (let ((script (nvp-install--script ,dir)))
        (nvp-with-process-log

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 01:40:06>
+;; Last modified: <2019-02-07 03:20:52>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -45,51 +45,56 @@
   (or nvp-abbrev-completion--tables
       (setq nvp-abbrev-completion--tables
             (cl-remove-duplicates
-             (cons 'local-abbrev-table
-              (cons 'global-abbrev-table
-                    (nvp-abbrev--all-parents local-abbrev-table)))))))
+             (append (list (abbrev-table-name local-abbrev-table))
+                     (nvp-abbrev--all-parents local-abbrev-table)
+                     '(global-abbrev-table))))))
 
+;; add completion annotations
+(defun nvp-abbrev-completion--apply-annotation (table)
+  (let ((tab-name (symbol-name table)))
+    (mapatoms (lambda (sym) (add-text-properties 0 1 (list 'annotation tab-name) sym)))))
+
+;; active tables at point
+(defun nvp-abbrev-completion--active-tables ()
+  (cl-remove-if-not (lambda (tab)
+                      (let ((pred (abbrev-table-get
+                                   (symbol-value tab) :enable-function)))
+                        (if pred (funcall pred) t)))
+                    (nvp-abbrev-completion--tables)))
+
+;; Return first prefix from tables that satisfies its `:enable-function'
+;; and matches its table's `:regexp'
 (defun nvp-abbrev-completion--prefix ()
-  (dolist (tab (nvp-abbrev-completion--tables))
-    (if-let ((re (abbrev-table-get :regexp)))
-        (and (looking-back re (line-beginning-position))))))
+  (cl-loop for tab in (nvp-abbrev-completion--active-tables)
+     as re = (abbrev-table-get (symbol-value tab) :regexp)
+     when (and re (looking-back re (line-beginning-position)))
+     return (match-string-no-properties 1)))
+
+;; return prefix, either matching a table's predicates or defaulting to the
+;; previous symbol
+(defun nvp-abbrev-completion-prefix ()
+  (or (nvp-abbrev-completion--prefix)
+      (nvp-grab-previous-symbol)))
 
 ;; Return completion candidates, taking into account per-table :regexp
-(defun nvp-abbrev-completion--candidates ()
-  (interactive)
-  (let ((tables (nvp-abbrev-completion--tables))
-        prefix re comps)
-    (dolist (table tables)
-      (setq re (abbrev-table-get (symbol-value table) :regexp))
-      (setq prefix
-            (if re
-                (and (looking-back re (line-beginning-position))
-                     (match-string 1))
-              (company-grab-symbol)))
-      (and prefix
-           (setq comps
-                 (nconc
-                  (delete "" (all-completions prefix (symbol-value table)))
-                  comps))))
-    comps))
+(defun nvp-abbrev-completion-candidates (arg)
+  (cl-loop for tab in (nvp-abbrev-completion--active-tables)
+     nconc (delete "" (all-completions arg (symbol-value tab)))))
 
 ;; -------------------------------------------------------------------
 ;;; Company
 
-(defun nvp-company-abbrev-prefix ()
-  (let ((res (dolist (t (nvp-abbrev-completion--tables))
-               ())))))
-
 ;;;###autoload
 (defun nvp-company-abbrev (command &optional arg &rest _ignored)
-  "`company-mode' completion backend for abbrevs accounting for table :regexp."
+  "`company-mode' completion backend for abbrevs accounting for table props.
+Respects abbrev table :regexp and :enable-function properties."
   (interactive (list 'interactive))
   (cl-case command
-    (interactive (company-begin-backend 'company-abbrev
-                                        'company-abbrev-insert))
-    (prefix (or (abbrev-table-get local-abbrev-table :regexp)
-                (company-grab-symbol)))
-    (candidates)))
+    (interactive (company-begin-backend 'nvp-company-abbrev))
+    (prefix (nvp-abbrev-completion-prefix))
+    (candidates (nvp-abbrev-completion-candidates arg))
+    (meta (abbrev-expansion arg))
+    (annotation (or (get-text-property 0 'annotation arg) "<abbrev>"))))
 
-(provide 'nvp-abbrev-complete)
+(provide 'nvp-abbrev-completion)
 ;;; nvp-abbrev-company.el ends here

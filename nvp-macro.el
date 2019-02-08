@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 08:12:18>
+;; Last modified: <2019-02-07 21:54:39>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -678,24 +678,28 @@ If BUFFER is non-nil, set local bindings in BUFFER."
 
 ;; -------------------------------------------------------------------
 ;;; Bindings: view 
-
+(nvp-declare "" nvp-move-up-paragraph nvp-move-down-paragraph
+                  nvp-move-next-heading nvp-move-previous-heading)
 ;; general movement bindings for non-insert modes
-(declare-function nvp-move-up-paragraph "")
-(declare-function nvp-move-down-paragraph "")
 (defmacro nvp-bindings-view ()
-  ''(("j"    . next-line) ;; use instead of forward-line since it is often advised
-     ("k"    . previous-line)
-     ("h"    . backward-char)
-     ("l"    . forward-char)
-     ("e"    . end-of-line)
-     ("a"    . beginning-of-line)
-     ("A"    . beginning-of-buffer)
-     ("E"    . end-of-buffer)
-     ("/"    . isearch-forward)
-     ("M-n"  . nil)
-     ("M-p"  . nil)
-     ("M-N"  . nvp-move-down-paragraph)
-     ("M-P"  . nvp-move-up-paragraph)))
+  ''(("j"     . next-line) ;; use instead of forward-line since it is often advised
+     ("k"     . previous-line)
+     ("h"     . backward-char)
+     ("l"     . forward-char)
+     ("e"     . end-of-line)
+     ("a"     . beginning-of-line)
+     ("A"     . beginning-of-buffer)
+     ("E"     . end-of-buffer)
+     ("/"     . isearch-forward)
+     ("?"     . isearch-backward)
+     ("SPC"   . scroll-down)
+     ("S-SPC" . scroll-up)
+     ("M-n"   . nil)
+     ("M-p"   . nil)
+     ("M-s-n" . nvp-move-next-heading)
+     ("M-s-p" . nvp-move-previous-heading)
+     ("M-N"   . nvp-move-down-paragraph)
+     ("M-P"   . nvp-move-up-paragraph)))
 
 (defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
 (defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
@@ -927,7 +931,7 @@ if process exit status isn't 0."
                                (proc-buff `,(concat "*" proc-name "*"))
                                (proc-args nil)
                                (proc-filter t)
-                               (get-buff-function 'generate-new-buffer)
+                               (buffer-fn 'generate-new-buffer)
                                (on-success `(progn
                                               (nvp-indicate-modeline-success
                                                ,(concat proc-name " success"))
@@ -940,7 +944,7 @@ if process exit status isn't 0."
        (declare-function nvp-indicate-modeline-success "nvp-indicate")
        (declare-function nvp-log "nvp-log")
        (let ((,proc (start-process
-                     ,(or proc-name process) (,get-buff-function ,proc-buff)
+                     ,(or proc-name process) (,buffer-fn ,proc-buff)
                      ,process ,@proc-args)))
          ,(cond
            ((eq proc-filter t)

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 11:40:52>
+;; Last modified: <2019-02-07 18:12:25>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -30,7 +30,13 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
+(require 'abbrev)
 (require 'nvp)
+
+;; get the value of the local abbrev table
+(defun nvp-abbrev--local-table ()
+  (or local-abbrev-table
+      (symbol-value (intern (format "%s-abbrev-table" (symbol-name major-mode))))))
 
 ;; return list of currently loaded and non-empty abbrev tables
 (defsubst nvp-abbrev--nonempty (&optional tables)

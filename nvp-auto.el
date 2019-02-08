@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 09:19:34>
+;; Last modified: <2019-02-07 22:07:14>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -97,6 +97,33 @@ With prefix COUNT-LINES count unique lines."
     (nvp-with-results-buffer nil
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
+
+;;; FIXME: remove
+;; convert selected bindings to macro form and align
+;;;###autoload
+(defun nvp-macroify-bindings (start end)
+  (interactive "r")
+  (goto-char start)
+  (let ((map (save-excursion
+               (when (re-search-forward "\\([a-zA-Z0-9-]+\\)-map"
+                                        end t)
+                 (match-string-no-properties 1)))))
+    (when map
+      (let (binds)
+        (while (re-search-forward
+                "\\(\"[^\"]+\"\\))?[\n\t ]*[#']*\\([a-zA-Z0-9-]+\\)"
+                end t)
+          (push (format "(%s . %s)"
+                        (match-string-no-properties 1)
+                        (match-string-no-properties 2))
+                binds))
+        (goto-char start)
+        (insert (concat "(nvp-bindings \"" map "\" nil \n  "
+                        (mapconcat 'identity (nreverse binds) "\n  ")
+                        ")\n"))
+        (goto-char start)
+        (mark-sexp)
+        (align-regexp (region-beginning) (region-end) "\\(\\s-*\\)\\. ")))))
 
 (provide 'nvp-auto)
 ;;; nvp-auto.el ends here

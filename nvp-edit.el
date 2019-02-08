@@ -35,33 +35,6 @@
 
 (autoload 'sp-wrap-with-pair "smartparens")
 
-;; convert selected bindings to macro form and align
-;;;###autoload
-(defun nvp-macroify-bindings (start end)
-  (interactive "r")
-  (goto-char start)
-  (let ((map (save-excursion
-               (when (re-search-forward "\\([a-zA-Z0-9-]+\\)-map"
-                                        end t)
-                 (match-string-no-properties 1)))))
-    (when map
-      (let (binds)
-        (while (re-search-forward
-                "\\(\"[^\"]+\"\\))?[\n\t ]*[#']*\\([a-zA-Z0-9-]+\\)"
-                end t)
-          (push (format "(%s . %s)"
-                        (match-string-no-properties 1)
-                        (match-string-no-properties 2))
-                binds))
-        (goto-char start)
-        (insert (concat "(nvp-bindings \"" map "\" nil \n  "
-                        (mapconcat 'identity (nreverse binds) "\n  ")
-                        ")\n"))
-        (goto-char start)
-        (mark-sexp)
-        (align-regexp (region-beginning) (region-end)
-                      "\\(\\s-*\\)\\. ")))))
-
 ;; -------------------------------------------------------------------
 ;;; Sort
 
@@ -222,19 +195,6 @@ With prefix sort in REVERSE."
         (delete-region from to)
         (goto-char from)
         (insert outputstr)))))
-
-;; insert a lorem ipsum spiel
-;;;###autoload
-(defun nvp-lorem ()
-  (interactive)
-  (insert
-   "lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do "
-   "eiusmod tempor incididunt ut labore et dolore magna aliqua. ut enim"
-   "ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut "
-   "aliquip ex ea commodo consequat. duis aute irure dolor in "
-   "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla "
-   "pariatur. excepteur sint occaecat cupidatat non proident, sunt in "
-   "culpa qui officia deserunt mollit anim id est laborum."))
 
 ;; -------------------------------------------------------------------
 ;;; Wrap text

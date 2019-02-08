@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-02 02:19:57>
+;; Last modified: <2019-02-07 19:45:40>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -27,9 +27,8 @@
 
 ;;; Commentary:
 ;;; Code:
-
-;; time to display overlay
-(defvar nvp-indicate--blink-delay 0.3)
+(nvp-declare "pulse"
+  pulse-momentary-highlight-region pulse-momentary-highlight-one-line)
 
 ;; store indicators
 (defvar nvp-indicate--cache (make-hash-table))
@@ -42,21 +41,19 @@
             (puthash key value nvp-indicate--cache)))
     (gethash key nvp-indicate--cache)))
 
-;;; Temporarily highlight region
-
-;; #<marker at 49961 in ess-utils.el>
-;; overlay to blink in current region
-(defvar nvp-indicate--region-overlay
-  (let ((overlay (make-overlay (point) (point))))
-    (overlay-put overlay 'face 'highlight)
-    overlay))
+;; -------------------------------------------------------------------
+;;; Temporarily highlight
 
 ;;;###autoload
-(defun nvp-indicate-blink-region (start end)
-  (move-overlay nvp-indicate--region-overlay start end)
-  (run-with-timer nvp-indicate--blink-delay nil
-                  #'(lambda ()
-                      (delete-overlay nvp-indicate--region-overlay))))
+(defun nvp-indicate-pulse-region-or-line (&optional beg end face)
+  "Momentarily highlight line or region between BEG and END."
+  (or face (setq face 'next-error))
+  (if (and beg end)
+      (pulse-momentary-highlight-region beg end face)
+    (pulse-momentary-highlight-one-line (point) face)))
+
+;; -------------------------------------------------------------------
+;;; Cursor
 
 ;;; pre/post change cursor color, eg. for hydra or transient state
 ;;;###autoload
@@ -102,8 +99,7 @@
       (font-lock-refresh-defaults)
     (let ((len (if arg (read-number "Length: ") 80)))
       (font-lock-add-keywords
-       nil `((,(format "^[^\n]\\{%d\\}\\(.*\\)$" len)
-              1 font-lock-warning-face t)))
+       nil `((,(format "^[^\n]\\{%d\\}\\(.*\\)$" len) 1 font-lock-warning-face t)))
       (font-lock-flush)
       (font-lock-ensure))))
 

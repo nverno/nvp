@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 21:54:39>
+;; Last modified: <2019-02-07 22:56:22>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -46,14 +46,15 @@
 (defun nvp--normalize-modemap (mode &optional minor)
   "Convert MODE to keymap symbol if necessary.
 If MINOR is non-nil, create minor mode map symbol."
-  (and (symbolp mode) (setq mode (symbol-name mode)))
-  (let ((minor (or minor (string-match-p "-minor" mode))))
-    (if (not (or (string-match-p "-map\\'" mode)
-                 (string-match-p "-keymap\\'" mode)))
-        (intern
-         (concat (replace-regexp-in-string "\\(?:-minor\\)?-mode\\'" "" mode)
-                 (if minor "-minor-mode-map" "-mode-map")))
-      (intern mode))))
+  (if (keymapp mode) mode
+    (and (symbolp mode) (setq mode (symbol-name mode)))
+    (let ((minor (or minor (string-match-p "-minor" mode))))
+      (if (not (or (string-match-p "-map\\'" mode)
+                   (string-match-p "-keymap\\'" mode)))
+          (intern
+           (concat (replace-regexp-in-string "\\(?:-minor\\)?-mode\\'" "" mode)
+                   (if minor "-minor-mode-map" "-mode-map")))
+        (intern mode)))))
 
 (defun nvp--normalize-hook (mode &optional minor)
   "Convert MODE to canonical hook symbol.
@@ -535,7 +536,8 @@ could be either 'major or 'minor."
   "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
   (declare (debug t))
   (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
-  `(define-key ,map
+  `(define-key
+     ,(if (keymapp map) `',map map)
      ,(if (or (vectorp key) (keymapp key)) key (kbd key))
      ,(cond
        ((or (null cmd) (and (consp cmd)
@@ -572,7 +574,7 @@ menu entry."
 (cl-defmacro nvp-bind-keys (map &rest bindings &key pred-form &allow-other-keys)
   "Add BINDINGS to MAP.
 If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
-  (declare (indent defun))
+  (declare (indent defun) (debug t))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
   (let ((map (nvp--normalize-modemap map)))

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-06 22:22:54>
+;; Last modified: <2019-02-07 22:38:18>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -67,6 +67,9 @@
     (if face (message "Face: %s" face)
       (message "No face at %d" pos))))
 
+;; -------------------------------------------------------------------
+;;; Charsets
+ 
 ;;;###autoload
 (defun nvp-help-list-charsets (&optional arg)
   "List names of charsets."
@@ -76,6 +79,30 @@
     (let* ((table (mapcar (lambda (x) (list (symbol-name x))) charset-list))
            (charset (ido-completing-read "Charset: " table)))
      (list-charset-chars (intern charset)))))
+
+;;;###autoload
+(defun nvp-help-ascii-table ()
+  "Print ASCII table values."
+  (interactive)
+  (nvp-with-results-buffer "*ASCII*"
+    (insert "ASCII characters up to number 254\n"
+            "----------------------------------\n")
+    (cl-loop
+       for i from 0 to 15
+       do (cl-loop
+             for j from 0 to 15
+             do
+               (when (= j 0) (insert (format "%4d |" i)))
+               (insert (format " %c " (+ i (* j 16))))
+               (when (= j 15) (insert "\n"))))))
+
+;; -------------------------------------------------------------------
+;;; Bindings
+
+;;;###autoload
+(defun nvp-help-describe-bindings (prefix)
+  (interactive (list (read-key-sequence "Bindings prefix: ")))
+  (describe-bindings prefix))
 
 (provide 'nvp-help-auto)
 ;;; nvp-help-auto.el ends here

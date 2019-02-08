@@ -261,21 +261,5 @@ Uses default vaules for `sp-pair-list'."
   (interactive (list (read-quoted-char "Char: ")))
   (insert-char char))
 
-;; Print the ascii table.
-;;;###autoload
-(defun nvp-ascii-table ()
-  (interactive)
-  (switch-to-buffer "*ASCII*")
-  (erase-buffer)
-  (insert (format "ASCII characters up to number %d.\n" 254))
-  (cl-loop
-     for i from 0 to 15
-     do (cl-loop
-           for j from 0 to 15
-           do
-             (when (= j 0) (insert (format "%4d |" i)))
-             (insert (format " %c " (+ i (* j 16))))
-             (when (= j 15) (insert "\n")))))
-
 (provide 'nvp-edit)
 ;;; nvp-edit.el ends here

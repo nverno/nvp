@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 09:17:36>
+;; Last modified: <2019-02-08 09:55:27>
 ;; Package-Requires: 
 ;; Created:  2 December 2016
 
@@ -30,7 +30,8 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'subr-x)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (nvp-local-vars))
 (require 'dired)
 
 (declare-function dired-read-shell-command "dired-aux")

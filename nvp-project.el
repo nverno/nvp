@@ -165,16 +165,16 @@ for base URI."
   (nvp-with-project-root :local t
     (find-file-other-window "notes.org")))
 
-;;;###autoload
-(defun nvp-project-jump-to-makefile (&optional root)
-  "Jump to closest Makefile.
-With \\[universal-argument] jump to root Makefile."
-  (interactive "P")
-  (if (not root)
-      (find-file-other-window (locate-dominating-file ))
-      (nvp-with-project-root
+;; ;;;###autoload
+;; (defun nvp-project-jump-to-makefile (&optional root)
+;;   "Jump to closest Makefile.
+;; With \\[universal-argument] jump to root Makefile."
+;;   (interactive "P")
+;;   (if (not root)
+;;       (find-file-other-window (locate-dominating-file ))
+;;       (nvp-with-project-root
         
-        (find-file-other-window ))))
+;;         (find-file-other-window ))))
 
 (provide 'nvp-project)
 ;;; nvp-project.el ends here

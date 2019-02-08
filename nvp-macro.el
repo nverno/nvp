@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 01:47:51>
+;; Last modified: <2019-02-08 09:48:25>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -561,7 +561,7 @@ menu entry."
           as map = (pop args)
           as name = (and args (pop args))
           collect `(progn
-                     (defvar ,map)      ;compiler warnings
+                     (eval-when-compile (declare-function ,map "")) ;compiler
                      (define-prefix-command ',map nil ,name)
                      (nvp-def-key ,leader ,key ',map)))))
 

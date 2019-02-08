@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 16:27:39>
+;; Last modified: <2019-02-08 09:53:25>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -32,7 +32,7 @@
   (require 'nvp-macro))
 
 ;; default just tries to use imenu
-(cl-defgeneric nvp-parse-function-names (&optional buffer-or-file &rest args)
+(cl-defgeneric nvp-parse-function-names (&optional buffer-or-file &rest _args)
   "Default method to gather function names from current buffer or BUFFER-OR-FILE."
   (ignore-errors
     (when (fboundp 'imenu--make-index-alist)

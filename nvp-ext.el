@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-07 08:15:21>
+;; Last modified: <2019-02-08 09:55:03>
 ;; URL: https://github.com/nverno/
 ;; Package-Requires:
 ;; Created: 11 November 2016
@@ -219,7 +219,7 @@ in buffer *vagrant-status*."
   (let ((default-directory dir))
     (nvp-with-process prog
       :proc-name "gpg"
-      :get-buff-function get-buffer-create
+      :buffer-fn get-buffer-create
       :proc-args ("--armor" "--output" "public_key.asc" "--export" name))))
 
 ;; copy gpg files to directory for backup/export

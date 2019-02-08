@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 14:43:22>
+;; Last modified: <2019-02-08 09:52:26>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -30,7 +30,8 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (nvp-local-vars))
 (require 'nvp)
 (require 'yasnippet)
 

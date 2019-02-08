@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 13:37:19>
+;; Last modified: <2019-02-08 09:56:08>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -268,6 +268,7 @@ With ARG use default behaviour."
 
 ;; -------------------------------------------------------------------
 ;;; IDO
+(declare-function minibuffer-keyboard-quit "delsel")
 
 (defun nvp-ido-refresh-homedir ()
   "Refresh completion for homedir while ido is finding a file."
@@ -291,6 +292,10 @@ On error (read-only), quit without selecting."
       (backward-delete-char 1)
     (error
      (minibuffer-keyboard-quit))))
+
+(defun nvp-ido-beginning-of-input ()
+  (interactive)
+  (goto-char (minibuffer-prompt-end)))
 
 ;; -------------------------------------------------------------------
 ;;; Assorted

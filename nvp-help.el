@@ -26,49 +26,12 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+;; utility functions to parse help output
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
-  (defvar zeal-at-point-exe))
+  (require 'cl-lib))
 (require 'nvp)
-(nvp-with-gnu
-  (autoload 'nvp-ext-sudo-install "nvp-ext"))
-(autoload 'nvp-ext-run-script "nvp-ext")
-
-;; -------------------------------------------------------------------
-;;; Docsets 
-(declare-function zeal-at-point-get-version "zeal-at-point")
-(declare-function zeal-at-point "zeal-at-point")
-(autoload 'zeal-at-point-run-search "zeal-at-point")
-
-(defun nvp-help-zeal-run-search (search)
-  (if zeal-at-point-exe
-      (if (version< "0.2.0" (zeal-at-point-get-version))
-          (start-process "Zeal" nil zeal-at-point-exe search)
-        (start-process "Zeal" nil zeal-at-point-exe "--query" search))
-    (nvp-with-gnu/w32
-        (and (y-or-n-p "Install zeal? ")
-             (set-process-sentinel
-              (nvp-ext-run-script
-               (expand-file-name "script/install.sh" nvp--dir)
-               '("install_zeal") 'sudo)
-              ;; reset global key / zeal exe
-              #'(lambda (p _m)
-                  (when (zerop (process-exit-status p))
-                    (global-set-key
-                     (kbd "C-c d") 'zeal-at-point-search)
-                    (setq zeal-at-point-exe
-                          (executable-find "zeal"))))))
-      (and (y-or-n-p "Zeal not found, goto http://zealdocs.org? ")
-           (browse-url "http://zealdocs.org")))))
-
-;;;###autoload
-(defun nvp-help-zeal-at-point (&optional edit-search)
-  (interactive "P")
-  (cl-letf (((symbol-function 'zeal-at-point-run-search)
-             'nvp-help-zeal-run-search))
-    (zeal-at-point edit-search)))
 
 ;; -------------------------------------------------------------------
 ;;; Parsing Man output

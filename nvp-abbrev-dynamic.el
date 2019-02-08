@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 19:25:06>
+;; Last modified: <2019-02-08 08:15:04>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -38,7 +38,8 @@
 (require 'nvp-parse)
 (require 'nvp-abbrev-util)
 
-(cl-defgeneric nvp-abbrev-dynamic--read (&optional arg buffer-or-file append)
+;;; FIXME:
+(cl-defgeneric nvp-abbrev-dynamic--read (&optional arg)
   "Default method to read arguments for dynamic abbrev tables."
   (list (and arg (read-file-name "File to abbrev: "))
         (y-or-n-p "Append to current dynamic table? ")))
@@ -46,7 +47,7 @@
 (cl-defun nvp-abbrev-dynamic (&optional buffer-or-file append)
   "Create dynamic abbrevs from BUFFER-OR-FILE.
 If APPEND is non-nil, add abbrevs to current buffer-local dynamic table."
-  (interactive (nvp-abbrev-dynamic--read current-prefix-arg buffer-or-file append))
+  (interactive (nvp-abbrev-dynamic--read current-prefix-arg))
   (let ((buff (if (buffer-live-p buffer-or-file)
                   buffer-or-file
                 (find-file-noselect buffer-or-file))))
@@ -66,7 +67,7 @@ If APPEND is non-nil, add abbrevs to current buffer-local dynamic table."
       (define-abbrev-table 'nvp-abbrev-dynamic-table nil
         :parents parents
         :regexp regexp
-        :enable-function enable-fn))
+        :enable-function enable-function))
     (setq-local local-abbrev-table nvp-abbrev-dynamic-table)
     (pcase-dolist (`(,abbr ,exp) (nvp-abbrev--make-abbrevs :objects fns))
       (define-abbrev nvp-abbrev-dynamic-table abbr exp))))

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 22:56:22>
+;; Last modified: <2019-02-08 01:16:03>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -78,7 +78,8 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 (defmacro nvp-setq (var value)
   "Define VAR and eval VALUE during compile."
   (declare (indent 0))
-  `(progn (setq ,var (eval-when-compile ,value))))
+  `(progn (eval-when-compile (defvar ,var))
+          (setq ,var (eval-when-compile ,value))))
 
 (defmacro current-buffer-process ()
   `(get-buffer-process (current-buffer)))
@@ -1241,18 +1242,18 @@ and install PLUGIN with asdf."
      (let ((retval (url-filename (url-generic-parse-url (url-unhex-string ,uri)))))
        (nvp-with-gnu/w32 retval (substring retval 1)))))
 
-(defmacro with-url-buffer (url &rest body)
+(defmacro nvp-with-url-buffer (url &rest body)
   "Do BODY in buffer with contents from URL."
   (declare (indent defun)
            (debug (sexp &rest form)))
   `(with-current-buffer (url-retrieve-synchronously ,url)
      ,@body))
 
-(defmacro while-scanning-url (url regex &rest body)
+(defmacro nvp-while-scanning-url (url regex &rest body)
   "Do BODY in buffer with URL contents at position of REGEX."
   (declare (indent defun)
            (debug (sexp sexp &rest form)))
-  `(with-url-buffer ,url
+  `(nvp-with-url-buffer ,url
      (goto-char (point-min))
      (while (re-search-forward ,regex nil t)
        ,@body)
@@ -1393,10 +1394,16 @@ is already present."
   (cl-pushnew name eieio--known-slot-names) nil)
 
 (defmacro nvp-declare (package &rest funcs)
-  (declare (indent 1))
+  (declare (indent defun))
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(declare-function ,func ,package))))
+
+(defmacro nvp-autoload (package &rest funcs)
+  (declare (indent defun))
+  (macroexp-progn
+   (cl-loop for func in funcs
+      collect `(autoload ',func ,package))))
 
 (defmacro nvp-local-vars ()
   '(progn

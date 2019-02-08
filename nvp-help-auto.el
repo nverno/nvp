@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 22:38:18>
+;; Last modified: <2019-02-08 00:07:17>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -101,8 +101,8 @@
 
 ;;;###autoload
 (defun nvp-help-describe-bindings (prefix)
-  (interactive (list (read-key-sequence "Bindings prefix: ")))
-  (describe-bindings prefix))
+  (interactive (list (read-string "Bindings prefix (enter as for `kbd'): ")))
+  (describe-bindings (kbd prefix)))
 
 (provide 'nvp-help-auto)
 ;;; nvp-help-auto.el ends here

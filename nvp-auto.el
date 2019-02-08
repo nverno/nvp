@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 22:07:14>
+;; Last modified: <2019-02-08 00:21:04>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -33,10 +33,11 @@
   (require 'subr-x)
   (require 'nvp-macro))
 (require 'nvp)
-(nvp-declare advice-mapc advice-remove "nadvice")
+(nvp-declare "advice" advice-mapc advice-remove)
 
 ;; -------------------------------------------------------------------
 ;;; Movement
+;; see `paragraph-start' and `paragraph-separate' to extend
 
 ;;;###autoload
 (defun nvp-move-down-paragraph (&optional arg)
@@ -66,11 +67,6 @@
   "Remove all advice from SYM."
   (interactive "aFunction: ")
   (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
-
-;; insert date
-(defun nvp-insert-date ()
-  (interactive)
-  (insert (format-time-string "%e %B %Y")))
 
 ;; Print counts of strings in region, with prefix dump at point
 ;;;###autoload

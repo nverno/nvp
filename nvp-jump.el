@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-30 23:58:19>
+;; Last modified: <2019-02-08 04:28:19>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -30,13 +30,10 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (nvp-local-vars)
-  (defvar recentf-list))
+  (nvp-local-vars))
+(require 'nvp)
 (autoload 'find-function-other-window "find-func")
-(autoload 'nvp-log "nvp-log")
 (autoload 'string-remove-prefix "subr-x")
-(nvp-with-gnu
- (autoload 'nvp-ext-sudo-install "nvp-ext"))
 
 ;; -------------------------------------------------------------------
 ;;; Modes
@@ -45,17 +42,16 @@
 (defun nvp-jump-to-mode-config (mode)
   (interactive
    (list 
-    (completing-read
+    (nvp-completing-read
      "Mode: "
      (mapcar
       #'(lambda (x)
-          (replace-regexp-in-string "\\(nvp-\\|\\.el\\)" ""
-                                    x))
+          (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
       (directory-files nvp/mode nil "^[^\\.].*\\.el$"))
      nil nil
      (and current-prefix-arg major-mode
           (substring (symbol-name major-mode) 0 -5)))))
-  (let ((src (format "nvp-%s.el" mode)))
+  (let ((src (format "nvp-%s-config.el" mode)))
     (find-file-other-window (expand-file-name src nvp/mode))))
 
 

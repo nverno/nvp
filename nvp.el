@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 14:35:12>
+;; Last modified: <2019-02-08 05:34:42>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -109,7 +109,10 @@
     (setq-local nvp-abbrev-local-table abbr-table)
     (and abbr-file
          (setq-local nvp-abbrev-local-file (expand-file-name abbr-file dir))
-         (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file))))
+         (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file)))
+    (setq-local local-abbrev-table
+                (symbol-value
+                 (intern (concat nvp-abbrev-local-table "-abbrev-table")))))
   (when fn (funcall fn)))
 
 ;; -------------------------------------------------------------------

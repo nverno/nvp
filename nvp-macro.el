@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 01:16:03>
+;; Last modified: <2019-02-08 01:47:51>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -681,8 +681,7 @@ If BUFFER is non-nil, set local bindings in BUFFER."
 
 ;; -------------------------------------------------------------------
 ;;; Bindings: view 
-(nvp-declare "" nvp-move-up-paragraph nvp-move-down-paragraph
-                  nvp-move-next-heading nvp-move-previous-heading)
+
 ;; general movement bindings for non-insert modes
 (defmacro nvp-bindings-view ()
   ''(("j"     . next-line) ;; use instead of forward-line since it is often advised

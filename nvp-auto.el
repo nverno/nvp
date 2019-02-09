@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 08:48:16>
+;; Last modified: <2019-02-09 09:00:54>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -35,7 +35,7 @@
   (require 'hydra))
 (require 'nvp)
 (nvp-declare "nadvice" advice-mapc advice-remove)
-(declare-function help-show-kill-ring "")
+(declare-function helm-show-kill-ring "")
 
 ;;; FIXME: remove / update macroify bindings
 ;;; TODO:

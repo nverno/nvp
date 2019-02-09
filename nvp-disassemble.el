@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 00:30:26>
+;; Last modified: <2019-02-09 08:44:23>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires:
@@ -33,11 +33,15 @@
   (require 'nvp-macro))
 (require 'nvp)
 
+;;; TODO:
+
 ;;;###autoload
-(defun nvp-disassemble ()
+(defun nvp-disassemble (popup)
   "Call local function `nvp-disassemble-function'."
-  (interactive)
-  (call-interactively nvp-disassemble-function))
+  (interactive "P")
+  (if popup
+      (nvp-disassemble-doc)
+   (call-interactively nvp-disassemble-function)))
 
 (cl-defgeneric nvp-disassemble-doc ()
   "Return docstring with disassembly."

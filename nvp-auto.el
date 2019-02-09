@@ -1,8 +1,8 @@
-;;; nvp-auto.el --- homeless autos -*- lexical-binding: t; -*-
+;;; nvp-auto.el --- lesser used autos but bound to keys -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-08 23:02:11>
+;; Last modified: <2019-02-09 08:48:16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -35,6 +35,11 @@
   (require 'hydra))
 (require 'nvp)
 (nvp-declare "nadvice" advice-mapc advice-remove)
+(declare-function help-show-kill-ring "")
+
+;;; FIXME: remove / update macroify bindings
+;;; TODO:
+;; - remove all methods from generic
 
 ;; -------------------------------------------------------------------
 ;;; Movement
@@ -61,24 +66,27 @@
 
 ;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
 (nvp-hydra-set-property 'nvp-hydra-goto-line)
-(defhydra nvp-hydra-goto-line (:body-map goto-map) "line"
-  ("g" nvp-goto-line "go")
-  ("b" nvp-goto-line-back "back")
+(defhydra nvp-hydra-goto-line (goto-map) "line"
+  ("g" goto-line "go")
+  ("b" (push-mark (car mark-ring) nil 'activate) "mark to start")
   ("m" set-mark-command "mark" :bind nil)
   ("p" (set-mark-command 1) "pop" :bind nil)
   ("e" exchange-point-and-mark "exchange")
   ("q" nil "quit"))
-(global-set-key [remap goto-line] #'nvp-hydra-goto-line/nvp-goto-line)
-(defun nvp-goto-line ()
-  (interactive)
-  (put 'nvp-goto-line-back 'previous-mark (point-marker))
-  (call-interactively 'goto-line))
 
-(defun nvp-goto-line-back ()
-  "Pop back to point from whence came."
-  (when-let ((marker (get 'nvp-goto-line-back 'previous-mark)))
-    (goto-char marker)
-    (put 'nvp-goto-line-back 'previous-mark nil)))
+;; -------------------------------------------------------------------
+;;; Yank / Pop
+
+;;;###autoload(autoload 'nvp-hydra-yank-pop/yank-pop "nvp-auto")
+;;;###autoload(autoload 'nvp-hydra-yank-pop/yank "nvp-auto")
+(nvp-hydra-set-property 'nvp-hydra-yank-pop)
+(defhydra nvp-hydra-yank-pop ()
+  "yank"
+  ("C-y" yank nil)
+  ("M-y" yank-pop nil)
+  ("y" (yank-pop 1) "next")
+  ("Y" (yank-pop -1) "prev")
+  ("l" helm-show-kill-ring "list" :color blue))
 
 ;; -------------------------------------------------------------------
 ;;; Random
@@ -116,7 +124,6 @@ With prefix COUNT-LINES count unique lines."
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
 
-;;; FIXME: remove
 ;; convert selected bindings to macro form and align
 ;;;###autoload
 (defun nvp-macroify-bindings (start end)

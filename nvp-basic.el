@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 03:07:16>
+;; Last modified: <2019-02-09 06:50:10>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -33,6 +33,13 @@
   (require 'cl-lib)
   (require 'subr-x))
 (require 'nvp)
+
+;;; TODO:
+;; - reusable region or symbol/point utility function
+;; - possible generics: next/previous function, header-regex, newline
+;;; FIXME:
+;; - quickhelp toggle
+;; - macro company-local
 
 ;; -------------------------------------------------------------------
 ;;; Movement 
@@ -69,13 +76,11 @@
   (interactive)
   (forward-line -5))
 
-;;; TODO: generic
 (defun nvp-move-next-defun (&rest _ignored)
   (interactive)
   (beginning-of-defun -1))
 
 ;;; Headings
-;; TODO: generic
 ;; these may vary by mode
 (defun nvp-move-header-regex ()
   "Get or create header regex based on comment syntax."
@@ -133,8 +138,8 @@
       (let ((beg (region-beginning))
             (end (region-end)))
         (nvp--duplicate-region arg beg end))
-  (nvp--duplicate-last-nonempty-line arg)
-  (nvp-bind-transient-key "d" #'nvp--duplicate-back-and-dupe)))
+    (nvp--duplicate-last-nonempty-line arg)
+    (nvp-bind-transient-key "d" #'nvp--duplicate-back-and-dupe)))
 
 ;; duplicate the current line num times.
 (defun nvp-duplicate-current-line (&optional num)
@@ -239,17 +244,9 @@ With ARG use default behaviour, except also call `expand-abbrev'."
       (nvp-paredit-delete-indentation))))
 
 ;; -------------------------------------------------------------------
-;;; Newline 
-
-;;; TODO: default & generic
-(nvp-newline nvp-basic-newline-dwim nil
-  :pairs (("{" "}") ("(" ")") ("\\[" "\\]")))
-
-;; -------------------------------------------------------------------
 ;;; Company
 (declare-function company-quickhelp-manual-begin "company-quickhelp")
 
-;;; FIXME: toggle off pops back up
 (defun nvp-company-quickhelp-toggle ()
   "Toggle pos-tip help on/off."
   (interactive)
@@ -261,7 +258,6 @@ With ARG use default behaviour, except also call `expand-abbrev'."
         ;;            #'ignore)))
         (company-quickhelp-manual-begin))))
 
-;;; TODO: macro instead
 (defun nvp-company-local (backend)
   "Make a buffer-local company backend."
   (set (make-local-variable 'company-backends)

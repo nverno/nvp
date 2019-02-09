@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-08 21:33:15>
+;; Last modified: <2019-02-09 08:50:25>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -32,8 +32,13 @@
   (require 'cl-lib)
   (require 'subr-x)
   (require 'nvp-macro))
+(require 'help-fns)
 (nvp-declare "define-word" define-word define-word-at-point)
 (autoload 'ispell-get-word "ispell")
+
+;;; TODO:
+;; - list package dependencies: see `package--get-deps'
+;; - describe keymap
 
 ;; -------------------------------------------------------------------
 ;;; Lookup Words
@@ -85,15 +90,16 @@
   "Print ASCII table values."
   (interactive)
   (nvp-with-results-buffer "*ASCII*"
-    (insert "ASCII characters up to number 254\n"
+    (insert "              ASCII               \n"
             "----------------------------------\n")
     (cl-loop
        for i from 0 to 15
        do (cl-loop
              for j from 0 to 15
+             as num = (+ i (* j 16))
              do
                (when (= j 0) (insert (format "%4d |" i)))
-               (insert (format " %c " (+ i (* j 16))))
+               (insert (format " %c " num))
                (when (= j 15) (insert "\n"))))))
 
 ;; -------------------------------------------------------------------
@@ -101,15 +107,13 @@
 
 ;;;###autoload
 (defun nvp-help-describe-bindings (prefix)
-  ("Describe bindings beginning with PREFIX.")
-  (interactive (list (read-string "Bindings prefix (enter as for `kbd'): ")))
+  "Describe bindings beginning with PREFIX."
+  (interactive (list (read-string "Bindings prefix (enter as for 'kbd'): ")))
   (describe-bindings (kbd prefix)))
 
-;; see https://www.emacswiki.org/emacs/help-fns%2b.el
 ;;;###autoload
 (defun nvp-help-describe-keymap (keymap)
   "Describe KEYMAP readably."
-  (require 'help-fns)
   (interactive
    ;; #<marker at 34938 in help-fns.el.gz>
    (let ((v (variable-at-point))
@@ -131,8 +135,22 @@
   (cl-assert (keymapp keymap))
   (setq keymap (or (ignore-errors (indirect-variable keymap)) keymap))
   (help-setup-xref (list #'nvp-help-describe-keymap keymap)
-                   (cip))
-  (let* ((name (symbol-name keymap)))))
+                   (called-interactively-p 'interactive))
+  (let ((name (symbol-name keymap))
+        (doc (documentation-property keymap 'variable-documentation)))
+    (and (equal "" doc) (setq doc nil))
+    (with-help-window (help-buffer)
+      (princ name) (terpri) (princ (make-string (length name) ?-)) (terpri) (terpri)
+      (with-current-buffer standard-output
+        (when doc
+          (princ doc) (terpri) (terpri))
+        ;; see https://www.emacswiki.org/emacs/help-fns%2b.el
+        ;; Use `insert' instead of `princ', so control chars (e.g. \377) insert
+        ;; correctly.
+        (insert (substitute-command-keys (concat "\\{" name "}")))))))
+
+;;; https://www.emacswiki.org/emacs/help-fns%2b.el
+;; describe-package ?
 
 (provide 'nvp-help-auto)
 ;;; nvp-help-auto.el ends here

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 08:13:04>
+;; Last modified: <2019-02-09 08:32:36>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -33,12 +33,13 @@
   (require 'cl-lib)
   (nvp-local-vars)
   (defvar nvp-info-nodes))
+(require 'nvp)
 (require 'info)
 
 ;;;###autoload
 (defun nvp-info-open (topic &optional bname)
   "Open info on TOPIC in BNAME."
-  (interactive (list (ido-completing-read "Topic: " nvp-info-nodes)))
+  (interactive (list (nvp-completing-read "Topic: " nvp-info-nodes)))
   (let ((buff (or bname (concat "*" topic " info*"))))
     (if (get-buffer buff)
         (progn

@@ -1,9 +1,10 @@
-;;; nvp-fixme ---  -*- lexical-binding: t; -*-
+;;; nvp-fixme.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-02-09 08:48:38>
 ;; Package-Requires: 
 ;; Created: 30 November 2016
 
@@ -30,8 +31,8 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 
-(defvar nvp-fixme-keywords "\\<\\(TODO\\|FIXME\\):")
-(defvar nvp-fixme-font-lock-words
+(eval-and-compile (defvar nvp-fixme-keywords "\\<\\(TODO\\|FIXME\\):"))
+(nvp-defvar nvp-fixme-font-lock-words
   `((,nvp-fixme-keywords 1 'font-lock-warning-face prepend)))
 
 ;; collect occurences of fixme keywords in buffer
@@ -49,25 +50,35 @@
                        (push (line-number-at-pos) res)))
                 res)))))
 
-;;--- Interactive ----------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Commands 
+
+(defun fixme-search (&optional back)
+  (let ((case-fold-search t)
+        (search-fn (if back 're-search-backward 're-search-forward))
+        (beg (point)))
+    (condition-case nil
+        (progn
+          (when (looking-at-p nvp-fixme-keywords)
+            (forward-line (and back -1)))
+          (funcall search-fn nvp-fixme-keywords)
+          (goto-char (match-beginning 0)))
+      (error (message "No more fixmes") (goto-char beg)))))
 
 (defun fixme-next ()
   (interactive)
-  (condition-case nil
-      (re-search-forward nvp-fixme-keywords)
-    (error (user-error "No more fixmes"))))
+  (fixme-search))
 
 (defun fixme-previous ()
   (interactive)
-  (condition-case nil
-      (re-search-backward nvp-fixme-keywords)
-    (error (user-error "No previous fixmes"))))
+  (fixme-search 'back))
 
 (defun fixme-occur ()
   (interactive)
   (occur nvp-fixme-keywords))
 
-;;--- Mode -----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Mode 
 
 (defvar fixme-menu
   '("Fixme"

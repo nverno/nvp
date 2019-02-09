@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 20:28:43>
+;; Last modified: <2019-02-09 08:45:47>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -72,12 +72,12 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 
 (defmacro nvp-defvar (var value)
   "Define VAR and eval VALUE during compile."
-  (declare (indent 0))
+  (declare (indent defun))
   `(progn (defvar ,var (eval-when-compile ,value))))
 
 (defmacro nvp-setq (var value)
   "Define VAR and eval VALUE during compile."
-  (declare (indent 0))
+  (declare (indent defun))
   `(progn (eval-when-compile (defvar ,var))
           (setq ,var (eval-when-compile ,value))))
 
@@ -1447,9 +1447,11 @@ is already present."
 PROPS defaults to setting :verbosity to 1."
   (declare (indent 1))
   (unless props (setq props (list :verbosity 1)))
-  `(with-eval-after-load 'hydra
-     ,@(cl-loop for (k v) on props by #'cddr
-          collect `(hydra-set-property ,hydra-name ,k ,v))))
+  `(progn
+     (declare-function hydra-set-property "hydra")
+     (with-eval-after-load 'hydra
+      ,@(cl-loop for (k v) on props by #'cddr
+           collect `(hydra-set-property ,hydra-name ,k ,v)))))
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 20:15:36>
+;; Last modified: <2019-02-09 07:06:31>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -30,8 +30,10 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(autoload 'eldoc-minibuffer-message "eldoc")
 
-(require 'eldoc)
+;;; TODO:
+;; - read w/ popup help: see `register-read-with-preview'
 
 ;;;###autoload
 (defun nvp-read-with-message (prompt &optional format-string &rest args)

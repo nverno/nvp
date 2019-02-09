@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 01:17:40>
+;; Last modified: <2019-02-09 07:16:27>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -36,6 +36,11 @@
   (require 'nvp-macro))
 (declare-function company-grab-symbol "company")
 
+;;; TODO:
+;; - separate setup from variables
+;; - only search in setup when not loaded
+;; - use mode-local ?, better way to set many mode-local variables
+
 ;;; Aliases
 (defalias 'nvp-completing-read 'ido-completing-read)
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
@@ -61,6 +66,9 @@
 (defvar-local nvp-snippet-dir nil "Directory to load for mode's snippets.")
 
 ;; functions
+;; (defvar-local nvp-help-at-point-function #'nvp-help-at-point)
+;; (defvar-local nvp-repl-switch-function #'nvp-repl-switch)
+;; (defvar-local nvp-check-buffer-function #'nvp-validate-buffer)
 (defvar-local nvp-disassemble-function #'disassemble)
 
 ;; ------------------------------------------------------------
@@ -92,7 +100,6 @@
 (define-obsolete-function-alias 'nvp-utils-setup-local 'nvp-tools-setup-local)
 ;;;###autoload
 (define-obsolete-function-alias 'nvp-tools-setup-local 'nvp-setup-local)
-;;; FIXME: search only if not loaded
 ;;;###autoload
 (cl-defun nvp-setup-local
     (name

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 09:56:08>
+;; Last modified: <2019-02-08 23:05:30>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -77,10 +77,10 @@
 ;;; Headings
 ;; TODO: generic
 ;; these may vary by mode
-(defun nvp-move-header-re ()
+(defun nvp-move-header-regex ()
   "Get or create header regex based on comment syntax."
-  (or nvp-move-header-re
-      (setq nvp-move-header-re
+  (or nvp-move-header-regex
+      (setq nvp-move-header-regex
             (let* ((comment (string-trim comment-start))
                    (cs (regexp-quote comment))
                    (multi (> (string-width comment) 1)))
@@ -96,7 +96,7 @@
   (condition-case nil
       (progn
         (forward-line 1)
-        (re-search-forward (nvp-move-header-re))
+        (re-search-forward (nvp-move-header-regex))
         (beginning-of-line))
     (error
      (forward-line -1)
@@ -107,7 +107,7 @@
   (condition-case nil
       (progn
         (forward-line -1)
-        (re-search-backward (nvp-move-header-re))
+        (re-search-backward (nvp-move-header-regex))
         (beginning-of-line))
     (error
      (forward-line 1)

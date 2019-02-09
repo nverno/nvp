@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 11:53:05>
+;; Last modified: <2019-02-08 22:30:03>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -30,7 +30,8 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (nvp-local-vars))
+  (nvp-local-vars)
+  (defvar nvp-abbrev-completion-need-refresh))
 (require 'abbrev)
 (require 'nvp)
 (require 'nvp-abbrev-util)
@@ -80,11 +81,6 @@
     (goto-char (point-max))
     (nvp-abbrev--insert-template table)))
 
-;; reload abbrevs after modification
-(defun nvp-abbrev-after-save-hook ()
-  (and (buffer-modified-p (current-buffer))
-       (quietly-read-abbrev-file buffer-file-name)))
-
 ;; -------------------------------------------------------------------
 ;;; Commands
 
@@ -111,9 +107,15 @@ When abbrev text is selected, searching is done first by length then lexically."
       ;; insert default template for prefix
       (back-to-indentation)
       (yas-expand-snippet
-       (format "(\"%s\" \"$1\" nil :system t)\n" prefix))))
+       (format "(\"%s\" \"$1\" nil :system t)\n" prefix)))
     ;; reload abbrev table after modification
-    (add-hook 'after-save-hook #'nvp-abbrev-after-save-hook t 'local))
+    (cl-labels (((nvp-abbrev-after-save-hook
+                  ()
+                  (when (buffer-modified-p (current-buffer))
+                    (quietly-read-abbrev-file buffer-file-name)
+                    ;; refresh cached active abbrev tables
+                    (setq nvp-abbrev-completion-need-refresh t)))))
+      (add-hook 'after-save-hook #'nvp-abbrev-after-save-hook t 'local))))
 
 ;; add unicode abbrevs to local table parents
 ;;;###autoload

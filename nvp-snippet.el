@@ -30,7 +30,8 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (nvp-local-vars))
 (require 'nvp)
 (require 'yasnippet)
 

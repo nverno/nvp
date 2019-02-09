@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 05:34:42>
+;; Last modified: <2019-02-08 23:07:20>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -36,27 +36,32 @@
   (require 'nvp-macro))
 (declare-function company-grab-symbol "company")
 
-;; -------------------------------------------------------------------
-;;; Variables: global / local
+;;; Aliases
+(defalias 'nvp-completing-read 'ido-completing-read)
+(defalias 'nvp-grab-symbol 'company-grab-symbol)
+(defalias 'nvp-move-previous-defun 'beginning-of-defun)
 
+;; root directory
 (nvp-package-define-root)
 
+;; -------------------------------------------------------------------
+;;; Variables
+
 ;; movement
-(defvar-local nvp-move-header-re nil "Regex to move b/w headers.")
+(defvar-local nvp-move-header-regex nil "Regex to move b/w headers.")
 
 ;; Abbrevs
 (defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
 (defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
 (defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
-(defvar nvp-abbrev-prefix-chars "A-Za-z0-9#." "Chars to include in abbrev prefixes")
+(defvar nvp-abbrev-prefix-chars ":<>=/#.[:alnum:]"
+  "Chars to include in abbrev prefixes")
 
 ;; Snippets
 (defvar-local nvp-snippet-dir nil "Directory to load for mode's snippets.")
 
-;;; Defaults
-(defalias 'nvp-completing-read 'ido-completing-read)
-(defalias 'nvp-grab-symbol 'company-grab-symbol)
-(defalias 'nvp-move-previous-defun 'beginning-of-defun)
+;; functions
+(defvar-local nvp-disassemble-function #'disassemble)
 
 ;; ------------------------------------------------------------
 ;;; Setup

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 09:48:25>
+;; Last modified: <2019-02-08 20:28:43>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -1438,6 +1438,18 @@ is already present."
      (defvar nvp/books)
      (defvar nvp/install)
      (defvar nvp/private)))
+
+;; -------------------------------------------------------------------
+;;; Mode specific
+
+(defmacro nvp-hydra-set-property (hydra-name &rest props)
+  "Apply PROPS to HYDRA-NAME after `hydra' is loaded.
+PROPS defaults to setting :verbosity to 1."
+  (declare (indent 1))
+  (unless props (setq props (list :verbosity 1)))
+  `(with-eval-after-load 'hydra
+     ,@(cl-loop for (k v) on props by #'cddr
+          collect `(hydra-set-property ,hydra-name ,k ,v))))
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

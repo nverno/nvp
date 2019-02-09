@@ -1,4 +1,4 @@
-;;; nvp-log ---  -*- lexical-binding: t; -*-
+;;; nvp-log.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

@@ -1,12 +1,12 @@
-;;; nvp-read.el ---  -*- lexical-binding: t; -*-
+;;; nvp-disassemble.el --- disassembly -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-09 00:30:26>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 20:15:36>
-;; Package-Requires: 
-;; Created: 29 November 2016
+;; Package-Requires:
+;; Created:  8 February 2019
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -28,23 +28,30 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
-
-(require 'eldoc)
-
-;;;###autoload
-(defun nvp-read-with-message (prompt &optional format-string &rest args)
-  "Display message in mode-line while reading from minibuffer."
-  (minibuffer-with-setup-hook
-      (:append (lambda () (eldoc-minibuffer-message format-string args)))
-    (read-from-minibuffer prompt)))
+  (require 'cl-lib)
+  (require 'subr-x)
+  (require 'nvp-macro))
+(require 'nvp)
 
 ;;;###autoload
-(defun nvp-read-obarray (prompt &optional regexp)
-  "Completing read for obarray with optional REGEXP filter."
-  (completing-read prompt obarray
-                   (lambda (sym) (string-match-p regexp (symbol-name sym)))))
+(defun nvp-disassemble ()
+  "Call local function `nvp-disassemble-function'."
+  (interactive)
+  (call-interactively nvp-disassemble-function))
 
-(provide 'nvp-read)
-;;; nvp-read.el ends here
+(cl-defgeneric nvp-disassemble-doc ()
+  "Return docstring with disassembly."
+  (user-error "`nvp-disassemble-doc' not implemented for %S" major-mode))
+
+(cl-defmethod nvp-disassemble-doc
+  (&context (major-mode comint-mode)) ()
+  (user-error "TODO"))
+
+(defun nvp-disassemble-popup ()
+  (interactive)
+  (let ((doc (nvp-disassemble-doc)))
+    (nvp-with-toggled-tip doc
+      :help-buffer '(get-buffer-create "*Disassembly*"))))
+
+(provide 'nvp-disassemble)
+;;; nvp-disassemble.el ends here

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-01 19:22:16>
+;; Last modified: <2019-02-09 00:36:02>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -94,7 +94,8 @@ Call repeatedly with 'i'."
         val
       (intern (concat str "-mode")))))
 
-(defun nvp-toggle--local-variable (var &optional val dir footer)
+;;;###autoload
+(defun nvp-toggle-local-variable (var &optional val dir footer)
   "Toggle file/dir-local binding of VAR with VAL.
 If DIR is non-nil toggle dir-local variable.
 If FOOTER is non-nil toggle value in file's Local Variables."
@@ -141,7 +142,7 @@ If FOOTER is non-nil toggle value in file's Local Variables."
 If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
   (interactive "P")
   (let ((var (read-file-local-variable "Toggle file-local variable")))
-    (nvp-toggle--local-variable
+    (nvp-toggle-local-variable
      var (read-file-local-variable-value var) nil footer)))
 
 ;;;###autoload
@@ -150,7 +151,7 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
   (interactive
    (let ((var (read-file-local-variable "Add dir-local variable")))
      (list var (read-file-local-variable-value var))))
-  (nvp-toggle--local-variable var val 'dir))
+  (nvp-toggle-local-variable var val 'dir))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

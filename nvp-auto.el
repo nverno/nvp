@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-08 00:21:04>
+;; Last modified: <2019-02-08 23:02:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -31,9 +31,10 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'hydra))
 (require 'nvp)
-(nvp-declare "advice" advice-mapc advice-remove)
+(nvp-declare "nadvice" advice-mapc advice-remove)
 
 ;; -------------------------------------------------------------------
 ;;; Movement
@@ -57,6 +58,27 @@
         (backward-paragraph arg)
         (forward-line 1))
     (line-move (- arg))))
+
+;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
+(nvp-hydra-set-property 'nvp-hydra-goto-line)
+(defhydra nvp-hydra-goto-line (:body-map goto-map) "line"
+  ("g" nvp-goto-line "go")
+  ("b" nvp-goto-line-back "back")
+  ("m" set-mark-command "mark" :bind nil)
+  ("p" (set-mark-command 1) "pop" :bind nil)
+  ("e" exchange-point-and-mark "exchange")
+  ("q" nil "quit"))
+(global-set-key [remap goto-line] #'nvp-hydra-goto-line/nvp-goto-line)
+(defun nvp-goto-line ()
+  (interactive)
+  (put 'nvp-goto-line-back 'previous-mark (point-marker))
+  (call-interactively 'goto-line))
+
+(defun nvp-goto-line-back ()
+  "Pop back to point from whence came."
+  (when-let ((marker (get 'nvp-goto-line-back 'previous-mark)))
+    (goto-char marker)
+    (put 'nvp-goto-line-back 'previous-mark nil)))
 
 ;; -------------------------------------------------------------------
 ;;; Random

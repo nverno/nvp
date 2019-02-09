@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 20:33:36>
+;; Last modified: <2019-02-09 00:51:33>
 ;; Package-Requires: 
 ;; Created: 25 November 2016
 
@@ -29,22 +29,13 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (defvar tramp-debug-buffer)
-  (defvar tramp-verbose))
-(require 'hydra)
+  (defvar tramp-debug-on-error)
+  (defvar tramp-verbose)
+  (require 'hydra))
 
-(global-set-key (kbd "<f2> d e") #'nvp-debug-emacs/body)
-
-;;;###autoload
-(defun nvp-debug-emacs ()
-  (interactive)
-  (nvp-debug-emacs/body))
-
-(defadvice nvp-debug-emacs/body (around show-help activate)
-  (let ((hydra-is-helpful t))
-    ad-do-it))
-
-(defhydra nvp-debug-emacs (:color red :hint nil)
+;;;###autoload(autoload 'nvp-debug-hydra-emacs/body "nvp-debug")
+(nvp-hydra-set-property 'nvp-debug-hydra-emacs)
+(defhydra nvp-debug-hydra-emacs (:color teal)
   "
 Toggle debugging functions:
 
@@ -73,7 +64,7 @@ _d_ebugger
   "Start new emacs in debug mode."
   (interactive)
   (call-process-shell-command 
-   (concat (shell-quote-argument "runemacs.exe") " "
+   (concat (shell-quote-argument (nvp-with-gnu/w32 "emacs" "runemacs.exe")) " "
 	   (shell-quote-argument "--debug-init"))
    nil 0 nil))
 
@@ -84,18 +75,17 @@ _d_ebugger
   (make-local-variable 'edebug-all-defs)
   (edebug-all-defs)
   (setq nvp-ede-local-active (not nvp-ede-local-active))
-  (message "Local edebug-all-defs is %s."
-           (if nvp-ede-local-active "on" "off")))
+  (message "Local edebug-all-defs is %s." (if nvp-ede-local-active "on" "off")))
 
-;;* tramp
 (defun nvp-debug-tramp-toggle-debug ()
   (interactive)
-  (let ((action (and (not (null tramp-debug-buffer))
-                     tramp-debug-buffer)))
-    (setq tramp-debug-buffer (not action))
-    (setq tramp-verbose (if action 0 10))
-    (message "set tramp debug variables %s"
-             (if action "off" "on"))))
+  (ignore-errors
+   (when (and (file-remote-p (buffer-file-name)))
+     (let ((action (and (not (null tramp-debug-on-error))
+                        tramp-debug-on-error)))
+       (setq tramp-debug-on-error (not action))
+       (setq tramp-verbose (if action 0 10))
+       (message "set `tramp-debug-on-error' %s" (if action "off" "on"))))))
 
 (provide 'nvp-debug)
 ;;; nvp-debug.el ends here

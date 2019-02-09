@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 12:29:23>
+;; Last modified: <2019-02-08 22:29:44>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -42,11 +42,15 @@
 (require 'nvp)
 (require 'nvp-abbrev-util)
 
+;; if non-nil, update active table cache
+(defvar-local nvp-abbrev-completion-need-refresh nil)
+
 ;; use local table along with its parents + global table
 (defvar-local nvp-abbrev-completion--tables nil)
 (defun nvp-abbrev-completion--tables ()
-  (or nvp-abbrev-completion--tables
-      (setq nvp-abbrev-completion--tables (nvp-abbrev--active-tables))))
+  (or (or nvp-abbrev-completion-need-refresh nvp-abbrev-completion--tables)
+      (prog1 (setq nvp-abbrev-completion--tables (nvp-abbrev--active-tables))
+        (setq nvp-abbrev-completion-need-refresh nil))))
 
 ;; add completion annotations
 (defun nvp-abbrev-completion--apply-annotation (table)

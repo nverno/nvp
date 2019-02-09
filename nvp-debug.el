@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 00:51:33>
+;; Last modified: <2019-02-09 00:56:42>
 ;; Package-Requires: 
 ;; Created: 25 November 2016
 
@@ -35,7 +35,7 @@
 
 ;;;###autoload(autoload 'nvp-debug-hydra-emacs/body "nvp-debug")
 (nvp-hydra-set-property 'nvp-debug-hydra-emacs)
-(defhydra nvp-debug-hydra-emacs (:color teal)
+(defhydra nvp-debug-hydra-emacs (:color blue)
   "
 Toggle debugging functions:
 

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 00:33:56>
+;; Last modified: <2019-02-09 04:28:54>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -34,6 +34,16 @@
   (require 'nvp-macro))
 (require 'nvp)
 (declare-function expand-abbrev-hook "expand")
+
+;; -------------------------------------------------------------------
+;;; Post insert
+;; C level only calls `expand-abbrev' when preceding char is word syntax
+;; so hook into `post-self-insert-hook'
+;;;###autoload
+(defun nvp-abbrev-expand-after-symbols-hook ()
+  (and (equal (syntax-after (1- (point))) '(3))
+       (setq this-command 'nvp-abbrev-expand-after-symbols)
+       (expand-abbrev)))
 
 ;; -------------------------------------------------------------------
 ;;; Expand Hooks

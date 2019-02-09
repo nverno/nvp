@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 23:07:20>
+;; Last modified: <2019-02-09 01:17:40>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -92,6 +92,7 @@
 (define-obsolete-function-alias 'nvp-utils-setup-local 'nvp-tools-setup-local)
 ;;;###autoload
 (define-obsolete-function-alias 'nvp-tools-setup-local 'nvp-setup-local)
+;;; FIXME: search only if not loaded
 ;;;###autoload
 (cl-defun nvp-setup-local
     (name
@@ -117,7 +118,7 @@
          (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file)))
     (setq-local local-abbrev-table
                 (symbol-value
-                 (intern (concat nvp-abbrev-local-table "-abbrev-table")))))
+                 (intern-soft (concat nvp-abbrev-local-table "-abbrev-table")))))
   (when fn (funcall fn)))
 
 ;; -------------------------------------------------------------------

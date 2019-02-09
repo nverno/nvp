@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 12:28:47>
+;; Last modified: <2019-02-09 01:44:49>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -37,13 +37,14 @@
 (defun nvp-he-try-expand-local-abbrevs (old)
   (require 'nvp-abbrev-completion)
   (unless old
-    (he-init-string (nvp-abbrev-completion-prefix-beg) (point))
-    (setq he-expand-list            ;expansion candidates
-          (and (not (equal he-search-string ""))
-               (mapcar
-                (lambda (table)
-                  (abbrev-expansion he-search-string (symbol-value table)))
-                (nvp-abbrev-completion--active-tables)))))
+    (when-let ((beg (nvp-abbrev-completion-prefix-beg)))
+      (he-init-string beg (point))
+      (setq he-expand-list            ;expansion candidates
+            (and (not (equal he-search-string ""))
+                 (mapcar
+                  (lambda (table)
+                    (abbrev-expansion he-search-string (symbol-value table)))
+                  (nvp-abbrev-completion--active-tables))))))
   (while (and he-expand-list            ;clean expansion list
               (or (not (car he-expand-list))
                   (he-string-member (car he-expand-list) he-tried-table t)))

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 00:36:02>
+;; Last modified: <2019-02-09 01:48:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -68,7 +68,7 @@ Call repeatedly with 'i'."
      t)))
 
 ;; -------------------------------------------------------------------
-;;; Toggle local variables
+;;; Toggle file/directory local variables
 
 ;; remove empty prop-line -- point should be in -*- -*-
 (defun nvp-toggle--cleanup-prop-line ()

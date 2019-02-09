@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 23:05:30>
+;; Last modified: <2019-02-09 03:07:16>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -201,9 +201,10 @@
   paredit-close-round paredit-find-comment-on-line paredit-move-past-close)
 
 (defun nvp-paredit-close-round (&optional arg)
-  "Close paren skipping over possible comments.
-With ARG use default behaviour."
+  "Close paren skipping over possible comments and call `expand-abbrev'.
+With ARG use default behaviour, except also call `expand-abbrev'."
   (interactive "P")
+  (expand-abbrev)
   (if arg (paredit-close-round)
     (let ((beg (point)) ;keep comment on same line
           (cmt (paredit-find-comment-on-line)))

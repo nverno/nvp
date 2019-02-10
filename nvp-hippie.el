@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 01:44:49>
+;; Last modified: <2019-02-09 19:49:20>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -31,20 +31,23 @@
   (require 'nvp-macro))
 (require 'hippie-exp)
 
-;; expand word before point according to local abbrev tables
 ;; #<marker at 30147 in hippie-exp.el.gz>
 ;;;###autoload
 (defun nvp-he-try-expand-local-abbrevs (old)
+  "Try to expand word from locally active abbrev tables.
+Accounts for :enable-function and :regexp table properties when selecting
+candidates."
   (require 'nvp-abbrev-completion)
   (unless old
     (when-let ((beg (nvp-abbrev-completion-prefix-beg)))
       (he-init-string beg (point))
       (setq he-expand-list            ;expansion candidates
             (and (not (equal he-search-string ""))
-                 (mapcar
-                  (lambda (table)
-                    (abbrev-expansion he-search-string (symbol-value table)))
-                  (nvp-abbrev-completion--active-tables))))))
+                 (delq nil
+                       (mapcar
+                        (lambda (table)
+                          (abbrev-expansion he-search-string (symbol-value table)))
+                        (nvp-abbrev-completion--active-tables)))))))
   (while (and he-expand-list            ;clean expansion list
               (or (not (car he-expand-list))
                   (he-string-member (car he-expand-list) he-tried-table t)))

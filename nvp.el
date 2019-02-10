@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 07:16:27>
+;; Last modified: <2019-02-10 02:59:03>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -39,6 +39,7 @@
 ;;; TODO:
 ;; - separate setup from variables
 ;; - only search in setup when not loaded
+;;   `load-history-regexp', `load-history-filename-element'
 ;; - use mode-local ?, better way to set many mode-local variables
 
 ;;; Aliases
@@ -96,10 +97,6 @@
       (if (file-directory-p path) path
         (directory-file-name (file-name-directory path))))))
 
-;;;###autoload
-(define-obsolete-function-alias 'nvp-utils-setup-local 'nvp-tools-setup-local)
-;;;###autoload
-(define-obsolete-function-alias 'nvp-tools-setup-local 'nvp-setup-local)
 ;;;###autoload
 (cl-defun nvp-setup-local
     (name

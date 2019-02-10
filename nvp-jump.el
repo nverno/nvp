@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 04:28:19>
+;; Last modified: <2019-02-10 02:39:15>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -32,7 +32,8 @@
   (require 'nvp-macro)
   (nvp-local-vars))
 (require 'nvp)
-(autoload 'find-function-other-window "find-func")
+(declare-function find-function-other-window "find-func")
+(declare-function nvp-read-mode "nvp-read")
 (autoload 'string-remove-prefix "subr-x")
 
 ;; -------------------------------------------------------------------
@@ -46,13 +47,14 @@
      "Mode: "
      (mapcar
       #'(lambda (x)
+          ;; ignore preceding 'nvp-' and ending '-config.el'
           (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
-      (directory-files nvp/mode nil "^[^\\.].*\\.el$"))
+      (directory-files nvp/config nil "^[^\\.].*\\.el$"))
      nil nil
      (and current-prefix-arg major-mode
           (substring (symbol-name major-mode) 0 -5)))))
-  (let ((src (format "nvp-%s-config.el" mode)))
-    (find-file-other-window (expand-file-name src nvp/mode))))
+  (let ((config-file (nvp-mode-config-path mode)))
+    (find-file-other-window config-file)))
 
 
 ;; Jump to test with extension `STR'.  If it doesn't exist make a new
@@ -77,11 +79,12 @@
 
 ;; Jump to where the hook for this mode is defined.
 ;;;###autoload
-(defun nvp-jump-to-mode-hook ()
-  (interactive)
-  (let* ((str-mode-hook (format "%s-hook" major-mode))
+(defun nvp-jump-to-mode-hook (&optional mode)
+  (interactive (list (if current-prefix-arg (read-variable "Mode: ") major-mode)))
+  (and (stringp mode) (setq mode (intern mode)))
+  (let* ((str-mode-hook (format "%s-hook" mode))
          (hook-fn-name
-          (format "nvp-%s-hook" (substring (symbol-name major-mode) 0 -5)))
+          (format "nvp-%s-hook" (substring (symbol-name mode) 0 -5)))
          (hook-fn (intern-soft hook-fn-name)))
     (if hook-fn (find-function-other-window hook-fn)
       (find-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
@@ -120,13 +123,11 @@
 
 ;; -------------------------------------------------------------------
 ;;; Scratch
-(autoload 'nvp-read-obarray "nvp-read")
 
 ;;;###autoload
 (defun nvp-jump-to-scratch (mode)
   (interactive
-   (list (if current-prefix-arg
-             (nvp-read-obarray "Major mode: " "-mode\\'")
+   (list (if current-prefix-arg (nvp-read-mode)
            (symbol-name major-mode))))
   (if (string= mode "emacs-lisp-mode")
       (switch-to-buffer (get-buffer-create "*scratch*"))

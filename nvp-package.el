@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-01-28 05:31:10>
+;; Last modified: <2019-02-09 20:45:12>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 29 November 2016
@@ -28,8 +28,10 @@
 
 ;;; Commentary:
 
-;; TODO: remove nvp/defs and nvp/modedefs and associated functions
-;; https://github.com/tttuuu888/.emacs.d/blob/master/install.el
+;;; TODO:
+;; - remove nvp/defs and nvp/modedefs and associated functions
+;; - parallel pkg install
+;;   https://github.com/tttuuu888/.emacs.d/blob/master/install.el
 
 ;;; Code:
 (eval-when-compile
@@ -50,7 +52,7 @@ With prefix ARG recompile all extension files.
 With double prefix, FORCE compile all .el files with associated .elc file."
   (interactive "P")
   (cl-loop for (defs . dirs) in `(,(cons nvp/auto
-                                         (list nvp/defs nvp/mode nvp/modedefs))
+                                         (list nvp/defs nvp/config nvp/modedefs))
                                   ,(cons nvp/auto-site (list nvp/site)))
      for generated-autoload-file = defs
      do
@@ -93,14 +95,14 @@ ARG and FORCE are passed to `byte-recompile-directory'."
   "Guess the autoload target and whether to compile. Compile notation
 R=recompile, F=force, P=if prefix.
 
-1. `nvp/modes'(R), `nvp/defs'(F), `nvp/modedefs'(R) -> nvp/auto
+1. `nvp/config'(R), `nvp/defs'(F), `nvp/modedefs'(R) -> nvp/auto
 2. `site-lisp'/*/*' (F)                             -> nvp/auto-site
 3. './*[autoloads?|loaddefs].el' (P)                -> first match
 5. default (P)                                      -> prompt"
   (interactive (list (read-directory-name "Directory: ")))
   (let* ((generated-autoload-file
           (or (and (member dir `(,nvp/modedefs
-                                 ,nvp/mode 
+                                 ,nvp/config 
                                  ,nvp/defs))
                    nvp/auto)
               (and (member nvp/site

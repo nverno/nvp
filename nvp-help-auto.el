@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 08:50:25>
+;; Last modified: <2019-02-10 05:40:24>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -32,7 +32,7 @@
   (require 'cl-lib)
   (require 'subr-x)
   (require 'nvp-macro))
-(require 'help-fns)
+(declare-function nvp-read-elisp-symbol "nvp-read")
 (nvp-declare "define-word" define-word define-word-at-point)
 (autoload 'ispell-get-word "ispell")
 
@@ -114,24 +114,7 @@
 ;;;###autoload
 (defun nvp-help-describe-keymap (keymap)
   "Describe KEYMAP readably."
-  (interactive
-   ;; #<marker at 34938 in help-fns.el.gz>
-   (let ((v (variable-at-point))
-         (enable-recursive-minibuffers t)
-         (orig-buffer (current-buffer))
-         val)
-     (setq val (completing-read
-                (if (and (symbolp v) (keymapp v))
-                    (format "Describe keymap (default %s): " v)
-                  "Describe keymap: ")
-                #'help--symbol-completion-table
-                (lambda (vv)
-                  (with-current-buffer orig-buffer
-                    (or (get vv 'variable-documentation)
-                        (and (boundp vv) (keymapp vv)))))
-                t nil nil
-                (if (symbolp v) (symbol-name v))))
-     (list (if (equal val "") v (intern val)))))
+  (interactive (list (nvp-read-elisp-symbol "Describe keymap: " #'keymapp)))
   (cl-assert (keymapp keymap))
   (setq keymap (or (ignore-errors (indirect-variable keymap)) keymap))
   (help-setup-xref (list #'nvp-help-describe-keymap keymap)

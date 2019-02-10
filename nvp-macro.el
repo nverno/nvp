@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 08:45:47>
+;; Last modified: <2019-02-10 06:10:28>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -29,6 +29,7 @@
 ;;; Code:
 (require 'cl-lib)
 (require 'subr-x)
+(require 'macroexp)
 (defvar eieio--known-slot-names)
 
 ;; Doesn't work
@@ -343,9 +344,17 @@ line at match (default) or do BODY at point if non-nil."
      (let ((path (substitute-env-in-file-name ,path)))
        (and path (file-exists-p path) path))))
 
-(defmacro nvp-mode-config (mode)
-  `(expand-file-name
-    (concat "nvp-" ,mode "-config.el") (bound-and-true-p nvp/mode)))
+(defmacro nvp-mode-config-path (mode)
+  "Create path for MODE config file."
+  `(progn
+     (cl-assert (bound-and-true-p nvp/config))
+     (expand-file-name (concat "nvp-" ,mode "-config.el") nvp/config)))
+
+(defmacro nvp-cache-file-path (filename)
+  "Create cache path for FILENAME."
+  `(progn
+     (cl-assert (bound-and-true-p nvp/cache))
+     (expand-file-name ,filename nvp/cache)))
 
 ;; -------------------------------------------------------------------
 ;;; REPLs
@@ -627,21 +636,24 @@ Optional :local key can be set to make the mappings buffer-local."
 (cl-defmacro nvp-use-transient-bindings (bindings
                                          &key (keep t)
                                          (pre '(nvp-indicate-cursor-pre))         
-                                         (exit '(nvp-indicate-cursor-post)))
+                                         (exit '(nvp-indicate-cursor-post))
+                                         &allow-other-keys)
   "Set BINDINGS in transient map.
 Run PRE form prior to setting commands."
   (declare (indent 0))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
-  `(progn
-     (nvp-declare "nvp-indicate" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
-     ,pre
-     (set-transient-map
-      (let ((tmap (make-sparse-keymap)))
-        (pcase-dolist (`(,key . ,cmd) ,bindings)
-          (define-key tmap (kbd key) (function cmd))))
-      ,keep
-      ,exit)))
+  (macroexp-let2* nil ((pre pre) (exit exit))
+   `(progn
+      (nvp-declare "nvp-indicate" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
+      ,pre
+      (set-transient-map
+       (let ((tmap (make-sparse-keymap)))
+         ,@(cl-loop for (k . b) in bindings
+              collect `(nvp-def-key tmap ,k ,b))
+         tmap)
+       ,keep
+       ,exit))))
 
 (cl-defmacro nvp-use-local-bindings (&rest bindings &key buffer &allow-other-keys)
   "Set local BINDINGS.
@@ -804,11 +816,13 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
 ;;; Tooltips
 
 (declare-function pos-tip-show "pos-tip")
-(declare-function nvp-bind-transient-key "nvp-bind")
 
+;;; TODO:
+;; - use help buffer with xref
+;; - truncate popup
 (cl-defmacro nvp-with-toggled-tip (popup &key use-gtk help-fn bindings (timeout 45)
-                                           (help-buffer
-                                            '(get-buffer-create "*nvp-help*")))
+                                         (help-buffer
+                                          '(get-buffer-create "*nvp-help*")))
   "Toggle POPUP, a help string, in pos-tip. 
 If HELP-FN is :none, 'h' is not bound by default. Normally, 'h' triggers a function
 to jump to a buffer displaying the full help doc for the popup.
@@ -818,37 +832,31 @@ active popup.
 TIMEOUT is passed to `pos-tip-show'.
 HELP-BUFFER is buffer with full help documentation. This is only applicable to the
 default help function."
-  (declare (indent defun))
-  (let ((str (make-symbol "str")))
+  (declare (indent defun) (debug t))
+  (macroexp-let2* nil ((str popup)
+                       (h-fn (cond
+                              ((eq :none help-fn) nil)
+                              (help-fn help-fn)
+                              (t `(lambda ()
+                                    (interactive)
+                                    (x-hide-tip)
+                                    (with-current-buffer ,help-buffer
+                                      (insert ,str)
+                                      (view-mode-enter)
+                                      (pop-to-buffer (current-buffer)))))))
+                       (q-fn '(lambda () (interactive) (x-hide-tip))))
     `(progn
        (declare-function pos-tip-show "pos-tip")
-       (declare-function nvp-bind-transient-key "nvp-bind")
        (let ((x-gtk-use-system-tooltips ,use-gtk))
-         (or (x-hide-tip)
-             (let ((,str ,popup))
-               (pos-tip-show ,str nil nil nil ,timeout)
-               (nvp-bind-transient-key
-                "h" ,(cond
-                       ((eq :none help-fn) nil)
-                       (help-fn help-fn)
-                       (t `(lambda ()
-                             (interactive)
-                             (x-hide-tip)
-                             (with-current-buffer
-                                 ,(or help-buffer
-                                      '(get-buffer-create "*nvp-help*"))
-                               (insert ,str)
-                               (view-mode-enter)
-                               (pop-to-buffer (current-buffer)))))))
-               (nvp-bind-transient-key
-                "q" #'(lambda () (interactive) (let ((x-gtk-use-system-tooltips nil))
-                                                 (x-hide-tip))))
-               ,@(cl-loop for (k . b) in bindings
-                    collect `(nvp-bind-transient-key (kbd ,k) ,b))
-               ;; (cl-labels
-               ;;     ((untoggle-tip () (x-hide-tip)))
-               ;;   (add-hook 'focus-out-hook #'untoggle-tip nil t))
-               ))))))
+         (unless (x-hide-tip)
+           (pos-tip-show ,str nil nil nil ,timeout)
+           (set-transient-map
+            (let ((tmap (make-sparse-keymap)))
+              (define-key tmap "h" ,h-fn)
+              (define-key tmap "q" ,q-fn)
+              ,@(cl-loop for (k . b) in bindings
+                   collect `(nvp-def-key tmap ,k ,b))
+              tmap)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Processes
@@ -1422,7 +1430,7 @@ is already present."
      (defvar nvp/git)
      (defvar nvp/test)
      (defvar nvp/lisp)
-     (defvar nvp/mode)
+     (defvar nvp/config)
      (defvar nvp/defs)
      (defvar nvp/modedefs)
      (defvar nvp/custom)

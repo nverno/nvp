@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-31 00:11:57>
+;; Last modified: <2019-02-09 21:09:00>
 ;; Package-Requires: 
 ;; Created: 13 November 2016
 
@@ -26,6 +26,16 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+
+;;; TODO:
+;; Rewrite:
+;; - interface to makefile install
+;; - defstruct mode configs
+;; - generic fetcher
+;; - better logging / cleanup / error reporting
+;; - parallel pkg install
+;; - async external installs
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-local nil t)
@@ -51,7 +61,7 @@
    "Mode: "
    (mapcar (lambda (x)
              (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)\\.el\\)" "" x))
-           (directory-files nvp/mode nil "^[^\\.].*\\.el$"))))
+           (directory-files nvp/config nil "^[^\\.].*\\.el$"))))
 
 (defun nvp-install-list-make-targets (&optional makefile)
   "List available targets in MAKEFILE, defaulting to `nvp-install-makefile'."
@@ -118,7 +128,7 @@
 ;; parse config for MODE. Returns list of matches for each pattern
 ;; or nil if file doesn't exist or no configs present
 (defun nvp-install-get-packages (mode &optional patterns)
-  (let ((file (expand-file-name (format "nvp-%s.el" mode) nvp/mode))
+  (let ((file (expand-file-name (format "nvp-%s.el" mode) nvp/config))
         (case-fold-search nil)
         (patterns (or patterns nvp-install-mode-patterns)))
     (when (file-exists-p file)
@@ -302,7 +312,7 @@
 ;;;###autoload
 (defun nvp-install-mode (mode)
   (interactive (list (nvp-install-list-modes)))
-  (load (nvp-mode-config mode)))
+  (load (nvp-mode-config-path mode)))
 
 ;;;###autoload
 (defun nvp-install-modes (modes)

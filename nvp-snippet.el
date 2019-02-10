@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 14:32:12>
+;; Last modified: <2019-02-10 05:40:05>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -34,36 +34,43 @@
   (nvp-local-vars))
 (require 'nvp)
 (require 'yasnippet)
+(declare-function nvp-read-mode "nvp-read")
 
 ;; ------------------------------------------------------------
 ;;; Jump to new snippet
 
 ;; #<marker at 95724 in yasnippet.el>
 ;;;###autoload
-(defun nvp-jump-to-new-snippet (arg)
-  (interactive "P")
-  (when (not (fboundp 'yas-new-snippet))
-    (require 'yasnippet))
-  (let* ((mm (symbol-name major-mode))
-         (default-directory (or (and arg (equal arg '(16)) nvp/snippet)
-                                nvp-snippet-dir
-                                (expand-file-name mm nvp/snippet)))
-         (yas-selected-text (or yas-selected-text
-                                (and (region-active-p)
-                                     (buffer-substring-no-properties
-                                      (region-beginning) (region-end))))))
-    (when (not (file-exists-p default-directory))
-      (make-directory default-directory))
-    ;; with prefix dired the snippet directory
-    (if (equal arg '(4)) (dired default-directory)
-      (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
-      (erase-buffer)
-      (kill-all-local-variables)
-      (snippet-mode)
-      (yas-expand-snippet yas-new-snippet-default)
-      ;; reload / compile after save
-      ;; (add-hook 'after-save-hook 'nvp-snippet-reload nil 'local)
-      )))
+(defun nvp-jump-to-new-snippet (mode snippet-dir &optional do-dired text)
+  "Jump to a new snippet for MODE in snippet SNIPPET-DIR (creating if necessary).
+If DO-DIRED is non-nil, `dired' that directory instead of creating snippet.
+If TEXT is non-nil use as `yas-selected-text'."
+  (interactive
+   (let ((mode-name (if (equal current-prefix-arg '(64)) (nvp-read-mode)
+                      (symbol-name major-mode))))
+     (list mode-name
+           (if (or (equal current-prefix-arg '(16)) (not nvp-snippet-dir))
+               (expand-file-name mode-name nvp/snippet)
+             nvp-snippet-dir)
+           (and (equal current-prefix-arg '(4)) 'do-dired)
+           (or yas-selected-text
+               (and (region-active-p)
+                    (buffer-substring-no-properties
+                     (region-beginning) (region-end)))))))
+  (and (symbolp mode) (setq mode (symbol-name mode)))
+  (unless (file-exists-p snippet-dir)
+    (make-directory snippet-dir))
+  ;; with prefix dired the snippet directory
+  (if do-dired (dired snippet-dir)
+    (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
+    (snippet-mode)
+    (yas-minor-mode)
+    (setq-local default-directory snippet-dir)
+    (yas-expand-snippet
+     yas-new-snippet-default nil nil `((yas-selected-text ,text)))
+    ;; reload / compile after save
+    ;; (add-hook 'after-save-hook 'nvp-snippet-reload nil 'local)
+    ))
 
 ;; replace macros in snippet-mode with expansions
 ;; #<marker at 21701 in macrostep.el>

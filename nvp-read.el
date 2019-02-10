@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-10 02:43:13>
+;; Last modified: <2019-02-10 06:12:24>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -32,6 +32,7 @@
   (require 'cl-lib))
 (require 'nvp)
 (declare-function function-called-at-point "help")
+(declare-function help--symbol-completion-table "help-fns")
 (autoload 'eldoc-minibuffer-message "eldoc")
 
 ;;; TODO:

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 09:00:54>
+;; Last modified: <2019-02-10 18:41:27>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -77,6 +77,7 @@
 ;; -------------------------------------------------------------------
 ;;; Yank / Pop
 
+;;; FIXME: how to disable hints in minibuffer
 ;;;###autoload(autoload 'nvp-hydra-yank-pop/yank-pop "nvp-auto")
 ;;;###autoload(autoload 'nvp-hydra-yank-pop/yank "nvp-auto")
 (nvp-hydra-set-property 'nvp-hydra-yank-pop)

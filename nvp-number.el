@@ -1,9 +1,10 @@
-;;; nvp-number ---  -*- lexical-binding: t; -*-
+;;; nvp-number.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-02-10 19:37:58>
 ;; Package-Requires: 
 ;; Created:  1 October 2017
 
@@ -58,8 +59,7 @@
     (nvp-with-toggled-tip
       (number-to-string
        (string-to-number (substring symbol (match-end 0)) 16))
-      :help-fn nil
-      :bindings nil))))
+      :help-fn nil))))
 
 (provide 'nvp-number)
 ;;; nvp-number.el ends here

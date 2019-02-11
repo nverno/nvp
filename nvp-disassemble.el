@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 08:44:23>
+;; Last modified: <2019-02-10 21:12:43>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires:
@@ -46,6 +46,10 @@
 (cl-defgeneric nvp-disassemble-doc ()
   "Return docstring with disassembly."
   (user-error "`nvp-disassemble-doc' not implemented for %S" major-mode))
+
+(cl-defmethod nvp-disassemble-doc
+  (&context ((not (null (derived-mode-p 'emacs-lisp-mode 'inferior-emacs-lisp-mode))) (eql t)))
+  (message "BLAH"))
 
 (cl-defmethod nvp-disassemble-doc
   (&context (major-mode comint-mode)) ()

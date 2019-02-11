@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-10 06:12:24>
+;; Last modified: <2019-02-10 22:17:29>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -39,10 +39,12 @@
 ;; - read w/ popup help: see `register-read-with-preview'
 
 ;; add default to prompt
-(defsubst nvp-read--with-default (prompt default)
-  (format (replace-regexp-in-string
-           "\\(?:(default.*)\\)?:?\\s-*$" " (default %s): " prompt)
-          default))
+(defsubst nvp-read--with-default (prompt &optional default)
+  (if default
+      (format "%s (default %s): "
+              (substring prompt 0 (string-match "[ :]+\\'" prompt))
+              default)
+    prompt))
 
 ;;;###autoload
 (defun nvp-read-with-message (prompt &optional format-string &rest args)
@@ -67,8 +69,7 @@
 Filter by PREDICATE if non-nil."
   (require 'help-fns)
   (let ((enable-recursive-minibuffers t) val)
-    (when default
-      (setq prompt (nvp-read--with-default prompt default)))
+    (setq prompt (nvp-read--with-default prompt default))
     (setq val (completing-read prompt #'help--symbol-completion-table
                                predicate t nil nil
                                (if (and default (symbolp default))

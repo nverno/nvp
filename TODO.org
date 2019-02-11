@@ -1,0 +1,25 @@
+#+TITLE: TODO
+
+* Settings
+- tags settings / ggtags / etags
+  https://github.com/skeeto/.emacs.d/tree/master/lisp
+- grep / ag settings
+
+* FIX
+- nvp-minibuffer
+- nvp-doc
+- nvp-abbrev-dynamic
+- nvp-disassemble
+- separate setup from nvp and fix load paths
+- better package installs
+  https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
+- fix nvp-install
+
+* Generic
+- help-at-point
+- dynamic abbrevs
+- parse functions
+- install
+
+* Remove
+- nvp-conf

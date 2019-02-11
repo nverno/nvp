@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-11 00:55:47>
+;; Last modified: <2019-02-11 01:16:54>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -28,14 +28,14 @@
 ;;; Commentary:
 ;; Generic documentation lookup, modeled after xref
 ;; popup.el/pos-tip.el/quickhelp.el to truncate pop-tips
+;; #<marker at 84732 in etags.el.gz>
+;; #<marker at 8769 in cl-generic.el.gz>
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
 
-(cl-defstruct (nvp-doc (:constructor nvp-doc-make (buffer &optional start end))
-                       (:constructor nvp-doc-make (file &optional start end))
-                       (:constructor nvp-doc-make (func &optional start end))
+(cl-defstruct (nvp-doc (:constructor nvp-doc-make)
                        (:copier nil))
   "Documentation location information.
 Location could be a buffer, file, or a function to call with no args.
@@ -55,7 +55,7 @@ START and END can be specify relevant region."
   (when-let ((ident (thing-at-point 'symbol)))
     (substring-no-properties ident)))
 
-(cl-defgeneric nvp-doc-backend-identifier-completion-table (backend)
+(cl-defgeneric nvp-doc-backend-identifier-completion-table (_backend)
   "Returns the completion table for identifiers."
   nil)
 
@@ -84,7 +84,7 @@ START and END can be specify relevant region."
   (interactive (list (nvp-doc--read-identifier "Documentation for: ")))
   (nvp-doc--find-doc identifier 'popup))
 
-(defun nvp-doc--show-doc (doc display-action)
+(defun nvp-doc--show-doc (_doc _display-action)
   "Show DOC according to DISPLAY-ACTION.")
 
 (defun nvp-doc--find-doc (input kind arg display-action)

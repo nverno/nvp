@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-10 20:27:15>
+;; Last modified: <2019-02-11 01:21:03>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -71,7 +71,6 @@
 ;; (defvar-local nvp-repl-switch-function #'nvp-repl-switch)
 ;; (defvar-local nvp-check-buffer-function #'nvp-validate-buffer)
 (defvar-local nvp-disassemble-function #'disassemble)
-(defvar-local nvp-macrostep-function #'macrostep-expand)
 
 ;; ------------------------------------------------------------
 ;;; Setup

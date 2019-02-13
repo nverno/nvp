@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 00:40:42>
+;; Last modified: <2019-02-13 05:33:18>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -72,58 +72,10 @@
 ;; (defvar-local nvp-check-buffer-function #'nvp-validate-buffer)
 (defvar-local nvp-disassemble-function #'disassemble)
 
-;; ------------------------------------------------------------
-;;; Setup
-;;;###autoload
-(defun nvp-setup-package-root (pkg)
-  "Return a guess for the package root directory."
-  (let* ((sym (and pkg (if (stringp pkg) (intern-soft pkg) pkg)))
-         (str (and pkg (if (stringp pkg) pkg (symbol-name pkg))))
-         (path                          ;path to package
-          (cond
-           ;; should be able to find features and autoloads
-           ((and sym (featurep sym) (locate-library str)))
-           ((and sym                    ;autoload / already loaded
-                 (ignore-errors (locate-library (symbol-file sym)))))
-           ;; check if pkg exists or is on load-path
-           ((and (stringp str)
-                 (if (file-exists-p pkg) pkg
-                   ;; look for package directory
-                   (locate-file str load-path nil
-                                (lambda (f) (if (file-directory-p f) 'dir-ok))))))
-           (t nil))))
-    ;; return directory
-    (if path
-      (if (file-directory-p path) path
-        (directory-file-name (file-name-directory path))))))
-
-;;;###autoload
-(cl-defun nvp-setup-local
-    (name
-     &key
-     mode
-     abbr-file
-     snippets-dir
-     (dir (nvp-setup-package-root name))
-     (snippets (concat "snippets/" (or snippets-dir mode (symbol-name major-mode))))
-     (abbr-table (or mode (symbol-name major-mode)))
-     (fn nil))
-  "Setup local variables for helper package - abbrevs, snippets, root dir."
-  (if (not (file-exists-p dir))
-      (user-error "Setup for '%s' failed to find package root"
-                  (if (symbolp name) (symbol-value name) name))
-    (or abbr-file
-        (setq abbr-file (ignore-errors
-                          (car (directory-files dir nil "abbrev-table")))))
-    (setq-local nvp-snippet-dir (expand-file-name snippets dir))
-    (setq-local nvp-abbrev-local-table abbr-table)
-    (and abbr-file
-         (setq-local nvp-abbrev-local-file (expand-file-name abbr-file dir))
-         (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file)))
-    (setq-local local-abbrev-table
-                (symbol-value
-                 (intern-soft (concat nvp-abbrev-local-table "-abbrev-table")))))
-  (when fn (funcall fn)))
+;; programs
+(defvar nvp-program-search-paths
+  (nvp-with-gnu/w32 `(,nvp/bin "~/.local/bin" "/usr/local/bin")
+    `(,nvp/bin ,nvp/binw)))
 
 ;; -------------------------------------------------------------------
 ;;; general helpers

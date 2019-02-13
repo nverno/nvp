@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 01:46:34>
+;; Last modified: <2019-02-13 05:20:17>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -42,6 +42,8 @@
                (format-kbd-macro (vector repeat-key))
                ()))))
 
+(defun nvp-toggle--repeat (func arg)
+  ())
 ;;;###autoload
 (defun nvp-toggle-timestamp (&optional arg)
   "Insert/update timestamp for current buffer."

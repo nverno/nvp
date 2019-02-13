@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-10 18:56:50>
+;; Last modified: <2019-02-13 06:48:07>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -125,14 +125,22 @@
 ;;; Scratch
 
 ;;;###autoload
-(defun nvp-jump-to-scratch (mode)
+(defun nvp-jump-to-scratch (mode &optional action)
+  "Jump to scratch buffer in MODE (default current `major-mode').
+With prefix, pop other window, with double prefix, prompt for MODE."
   (interactive
-   (list (if current-prefix-arg (nvp-read-mode)
-           (symbol-name major-mode))))
-  (if (string= mode "emacs-lisp-mode")
-      (switch-to-buffer (get-buffer-create "*scratch*"))
-    (switch-to-buffer (get-buffer-create (concat "*scratch-" mode)) "*")
-    (call-interactively (intern mode))))
+   (list (if (eq (car current-prefix-arg) 16) (intern (nvp-read-mode))
+           major-mode)
+         (eq (car current-prefix-arg) 4)))
+  (pop-to-buffer (get-buffer-create "*scratch*") action)
+  (if (eq mode 'emacs-lisp-mode)
+      (unless (eq major-mode 'lisp-interaction-mode)
+        (lisp-interaction-mode))
+    (let ((inhibit-read-only t))
+      (kill-all-local-variables)
+      (erase-buffer)
+      (funcall mode)))
+  (local-set-key (kbd "C-c C-c") #'kill-this-buffer))
 
 ;; -------------------------------------------------------------------
 ;;; Books / PDFs

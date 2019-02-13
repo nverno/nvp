@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 01:07:36>
+;; Last modified: <2019-02-13 06:19:07>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -155,127 +155,14 @@ use either `buffer-file-name' or `buffer-name'."
   "If SYM is string convert to symbol."
   `(if (stringp ,sym) (intern ,sym) ,sym))
 
-;; -------------------------------------------------------------------
-;;; Code 
-
-;; Marks
-(defmacro nvp-mark-defun (&optional first-time &rest rest)
-  "Mark blocks, expanding successively."
-  `(if (or (and (eq last-command this-command) (mark t))
-           (and transient-mark-mode mark-active))
-       (set-mark
-        (save-excursion
-          (goto-char (mark))
-          ,@(or rest
-                (list
-                 '(smie-forward-sexp 'halfsexp)
-                 '(point)))))
-     ,(or first-time '(mark-defun))))
-
-;; code folding
-(defmacro nvp-hs-blocks (start end)
-  `(progn
-     (setq hs-block-start-regexp ,start)
-     (setq hs-block-end-regexp ,end)))
-
-(defmacro nvp-with-hs-block (start end &rest body)
-  "Do hideshow with START and END regexps."
-  (declare (indent defun))
-  `(progn
-     (require 'hideshow)
-     (unless hs-minor-mode (hs-minor-mode))
-     (let ((hs-block-start-regexp ,start)
-           (hs-block-end-regexp ,end))
-       ,@(or body (list '(hs-toggle-hiding))))))
-
-;; -------------------------------------------------------------------
-;;; Package
-
-(defmacro nvp-load-file-name ()
-  "Expand to the file's name."
-  '(cond
-    (load-in-progress load-file-name)
-    ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
-     byte-compile-current-file)
-    (t (buffer-file-name))))
-
-(defmacro nvp-package-root (&optional name)
-  "Expand to the default package directory with default prefix or NAME."
-  (let ((prefix
-         (if name
-             (if (symbolp name) (symbol-name name) name)
-           (file-name-nondirectory
-            (directory-file-name
-             (file-name-directory (nvp-load-file-name)))))))
-    (intern (concat prefix "--dir"))))
-
-(cl-defmacro nvp-package-define-root (&key name snippets dirs after-load)
-  "Define package root directory with default prefix as directory name or NAME.
-If SNIPPETS is non-nil, setup snippet loading for directory.
-If DIRS is non-nil it should be a list of variables to define as directories
-relative to the project root directory as symbols 'prefix--dir'.
-AFTER-LOAD is a form to execute after file is loaded during which the root
-directory is bound to `root' and all `dirs' are let-bound to their symbols."
-  (declare (indent 0) (debug t))
-  (let* ((file (cond
-                (load-in-progress load-file-name)
-                ((and (boundp 'byte-compile-current-file)
-                      byte-compile-current-file)
-                 byte-compile-current-file)
-                (t (buffer-file-name))))
-         (root-val (file-name-directory file))
-         (base (file-name-nondirectory (directory-file-name root-val)))
-         (prefix (if name (if (symbolp name) (symbol-name name) name) base))
-         (root (intern (concat prefix "--dir")))
-         (dirs (mapcar (lambda (d)
-                         (and (symbolp d) (setq d (symbol-name d)))
-                         (list (intern d)
-                               (intern (concat prefix "--" d))
-                               (expand-file-name d root-val)))
-                       dirs))
-         (mappings (cons `(root ,root) (mapcar 'butlast dirs))))
-    `(progn
-       (eval-and-compile
-         (defconst ,root ,root-val))
-       ,(when snippets `(nvp-package-load-snippets ,root))
-       ,(when dirs
-          `(progn
-             ,@(cl-loop for (_orig-sym dir-sym dir-val) in dirs
-                  collect `(defconst ,dir-sym ,dir-val))))
-       ,(when after-load
-          `(with-eval-after-load ,file
-             (let ,mappings
-               ,after-load))))))
-
-(defmacro nvp-package-load-snippets (dir)
-  "Add packages snippet directory to `yas-snippet-dirs' after loading
-`yasnippet'."
-  `(progn
-     (eval-when-compile (defvar yas-snippet-dirs))
-     (declare-function yas-load-directory "yasnippet")
-     (with-eval-after-load 'yasnippet
-       (let ((snippet-dir (expand-file-name "snippets" ,dir))
-             (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
-                       (cons yas-snippet-dirs ()))))
-         (unless (member snippet-dir dirs)
-           (setq yas-snippet-dirs (delq nil (cons snippet-dir dirs))))
-         (yas-load-directory snippet-dir)))))
-
-(make-obsolete 'nvp-package-dir 'nvp-package-define-root nil)
-(defmacro nvp-package-dir (dir &optional snippets)
-  "Define package directory DIR.
-If SNIPPETS is non-nil, setup snippet loading."
-  `(progn
-     (eval-and-compile
-       (defconst ,dir
-         (file-name-directory
-          (cond
-            (load-in-progress load-file-name)
-            ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
-             byte-compile-current-file)
-            (:else (buffer-file-name))))))
-     ,(when snippets
-        `(nvp-package-load-snippets ,dir))))
+(defmacro nvp-stringify (name)
+  "Sort of ensure that NAME symbol is a string."
+  (pcase name
+    ((pred stringp) name)
+    ((pred symbolp) (symbol-name name))
+    (`(quote ,sym) (symbol-name sym))
+    (`(function ,sym) (symbol-name sym))
+    (_ (user-error "How to stringify %S?" name))))
 
 ;; -------------------------------------------------------------------
 ;;; Regex / Strings
@@ -320,6 +207,11 @@ line at match (default) or do BODY at point if non-nil."
 
 ;; -------------------------------------------------------------------
 ;;; Programs / Paths
+
+(defmacro nvp-w32-program (name)
+  "Name of cached program on shitty w32.e"
+  (and (symbolp name) (setq name (symbol-name name)))
+  `(intern (concat "nvp-" ,name "-program")))
 
 ;; PATH can contain environment variables to expand
 ;; if NO-COMPILE is defined the name is determined at runtime
@@ -910,15 +802,19 @@ COMINT mode or with BODY."
                 ,@(or body (list '(comint-mode)))
                 (current-buffer))))))
 
-(defmacro nvp-with-process-filter (process)
+(cl-defmacro nvp-with-process-filter (process
+                                      &key
+                                      (filter ''nvp-process-buffer-filter))
   "Run processs with `nvp-process-buffer-filter'.
 Return process object."
   (declare (indent defun))
-  `(let ((proc ,process))
-     (set-process-filter proc 'nvp-process-buffer-filter)
-     proc))
+  (macroexp-let2* nil ((process process) (filter filter))
+    `(prog1 ,process
+       (set-process-filter ,process ,filter))))
 
 (defmacro nvp-with-sentinel (&optional on-error &rest body)
+  "With process sentinel do ON-ERROR if exist status isn't 0 or BODY with\
+successful process exit buffer."
   (declare (indent 2) (indent 1) (debug t))
   `(function
     (lambda (p m)
@@ -927,24 +823,26 @@ Return process object."
          ,(or on-error '(pop-to-buffer (process-buffer p)))
        ,@body))))
 
-(defmacro nvp-with-process-log (process &optional on-error &rest body)
+(cl-defmacro nvp-with-process-log (process &key on-error on-success proc-filter
+                                           display-action)
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
   (declare (indent 0))
-  (let* ((proc (make-symbol "proc"))
-         (err (if (and (symbolp on-error)
-                       (equal on-error :pop-on-error))
-                  `(pop-to-buffer (process-buffer ,proc))
-                on-error)))
-    `(let ((,proc (nvp-with-process-filter ,process)))
-       (set-process-sentinel
-        ,proc
-        #'(lambda (p m)
-            (nvp-log "%s: %s" nil (process-name p) m)
-            (if (not (zerop (process-exit-status p)))
-                ,err
-              ,@body)))
-       (display-buffer (process-buffer ,proc)))))
+  (macroexp-let2* nil ((proc `(nvp-with-process-filter ,process
+                                :filter ,proc-filter))
+                       (on-err (if (and (symbolp on-error)
+                                        (equal on-error :pop-on-error))
+                                   `(pop-to-buffer (process-buffer ,proc)
+                                                   ,display-action)
+                                 on-error)))
+    `(progn
+       (set-process-sentinel ,proc
+                             #'(lambda (p m)
+                                 (nvp-log "%s: %s" nil (process-name p) m)
+                                 (if (zerop (process-exit-status p))
+                                     ,on-success
+                                   ,on-error)))
+       (display-buffer (process-buffer ,proc) ,display-action))))
 
 (defmacro nvp-with-process-buffer (process &optional on-error &rest body)
   "Log PROCESS output in log buffer, do ON-ERROR and BODY in process buffer."
@@ -967,7 +865,7 @@ if process exit status isn't 0."
                                (buffer-fn 'generate-new-buffer)
                                (on-success `(progn
                                               (nvp-indicate-modeline-success
-                                               ,(concat proc-name " success"))
+                                               ,(concat " " proc-name " success"))
                                               (kill-buffer (current-buffer))))
                                (on-failure '(pop-to-buffer (current-buffer))))
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer."
@@ -1000,23 +898,28 @@ Note: use lexical-binding."
   (let ((sps (cl-gensym))
         (proc (cl-gensym))
         (fn (cl-gensym)))
-    `(let ((,sps (symbol-function 'set-process-sentinel)))
-       (cl-letf (((symbol-function 'set-process-sentinel))
-                 (lambda (,proc ,fn)
-                   (funcall ,sps ,proc (funcall ,wrapper ,fn))))
-         ,@body))))
+    (macroexp-let2 nil wrapper wrapper
+     `(let ((,sps (symbol-function 'set-process-sentinel)))
+        (cl-letf (((symbol-function 'set-process-sentinel))
+                  (lambda (,proc ,fn)
+                    (funcall ,sps ,proc (funcall wrapper ,fn))))
+          ,@body)))))
 
 (defmacro nvp-with-async-override (orig-fn new-fn &rest body)
   "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of 
 BODY."
   (declare (indent defun))
-  `(with-sentinel-wrapper
-    (lambda (fn)
-      (let ((fun fn))
-        (lambda (p m)
-          (cl-letf (((symbol-function ,orig-fn) ,new-fn))
-            (funcall fun p m)))))
-    ,@body))
+  (macroexp-let2 nil new-fn new-fn
+   `(with-sentinel-wrapper
+     (lambda (fn)
+       (let ((fun fn))
+         (lambda (p m)
+           (cl-letf (((symbol-function ,orig-fn) new-func))
+             (funcall fun p m)))))
+     ,@body)))
+
+;; -------------------------------------------------------------------
+;;; Installation wrappers: obsolete
 
 (defmacro nvp-install--script (directory)
   "Find installation script."
@@ -1028,6 +931,7 @@ BODY."
                 if (file-exists-p fname)
                 return fname)))
 
+(make-obsolete 'nvp-install 'nvp-with-install-script "")
 (defmacro nvp-with-install-script (dir &optional funcs sudo &rest body)
   "Run installation script."
   (declare (indent defun) (debug defun))
@@ -1046,6 +950,7 @@ BODY."
          :pop-on-error
          ,@body))))
 
+(make-obsolete 'nvp-install 'nvp-with-script "")
 (defmacro nvp-with-script (script &optional funcs sudo &rest body)
   "Run FUNCS in SCRIPT."
   (declare (indent defun) (debug defun))
@@ -1062,6 +967,7 @@ BODY."
        :pop-on-error
        ,@body)))
 
+(make-obsolete 'nvp-install 'nvp-with-asdf-install "")
 (defmacro nvp-with-asdf-install (prefix dir plugin
                                         &optional config-defaults error-callback
                                         success-callback script-fn sudo
@@ -1087,7 +993,23 @@ and install PLUGIN with asdf."
        (nvp-with-install-script ,dir ,(or script-fn "install") ,sudo ,@body))))
 
 ;; -------------------------------------------------------------------
-;;; Interactive Functions
+;;; Building Interactive Functions
+;; FIXME: most of these should either be generic or act on local variables
+;; instead of being defined many times
+
+;; Marks
+(defmacro nvp-mark-defun (&optional first-time &rest rest)
+  "Mark blocks, expanding successively."
+  `(if (or (and (eq last-command this-command) (mark t))
+           (and transient-mark-mode mark-active))
+       (set-mark
+        (save-excursion
+          (goto-char (mark))
+          ,@(or rest
+                (list
+                 '(smie-forward-sexp 'halfsexp)
+                 '(point)))))
+     ,(or first-time '(mark-defun))))
 
 ;;; Newline
 
@@ -1315,6 +1237,7 @@ and install PLUGIN with asdf."
 ;; -------------------------------------------------------------------
 ;;; Mode specific
 
+;; Hydras
 (defmacro nvp-hydra-set-property (hydra-name &rest props)
   "Apply PROPS to HYDRA-NAME after `hydra' is loaded.
 PROPS defaults to setting :verbosity to 1."
@@ -1326,8 +1249,97 @@ PROPS defaults to setting :verbosity to 1."
       ,@(cl-loop for (k v) on props by #'cddr
            collect `(hydra-set-property ,hydra-name ,k ,v)))))
 
+;; Hideshow
+(defmacro nvp-hs-blocks (start end)
+  `(progn
+     (setq hs-block-start-regexp ,start)
+     (setq hs-block-end-regexp ,end)))
+
+(defmacro nvp-with-hs-block (start end &rest body)
+  "Do hideshow with START and END regexps."
+  (declare (indent defun))
+  `(progn
+     (require 'hideshow)
+     (unless hs-minor-mode (hs-minor-mode))
+     (let ((hs-block-start-regexp ,start)
+           (hs-block-end-regexp ,end))
+       ,@(or body (list '(hs-toggle-hiding))))))
+
 ;; -------------------------------------------------------------------
-;;; Setup
+;;; Package
+
+(defmacro nvp-load-file-name ()
+  "Expand to the file's name."
+  '(cond
+    (load-in-progress load-file-name)
+    ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+     byte-compile-current-file)
+    (t (buffer-file-name))))
+
+(defmacro nvp-package-root (&optional name)
+  "Expand to the default package directory with default prefix or NAME."
+  (let ((prefix
+         (if name
+             (if (symbolp name) (symbol-name name) name)
+           (file-name-nondirectory
+            (directory-file-name
+             (file-name-directory (nvp-load-file-name)))))))
+    (intern (concat prefix "--dir"))))
+
+(cl-defmacro nvp-package-define-root (&key name snippets dirs after-load)
+  "Define package root directory with default prefix as directory name or NAME.
+If SNIPPETS is non-nil, setup snippet loading for directory.
+If DIRS is non-nil it should be a list of variables to define as directories
+relative to the project root directory as symbols 'prefix--dir'.
+AFTER-LOAD is a form to execute after file is loaded during which the root
+directory is bound to `root' and all `dirs' are let-bound to their symbols."
+  (declare (indent 0) (debug t))
+  (let* ((file (cond
+                (load-in-progress load-file-name)
+                ((and (boundp 'byte-compile-current-file)
+                      byte-compile-current-file)
+                 byte-compile-current-file)
+                (t (buffer-file-name))))
+         (root-val (file-name-directory file))
+         (base (file-name-nondirectory (directory-file-name root-val)))
+         (prefix (if name (if (symbolp name) (symbol-name name) name) base))
+         (root (intern (concat prefix "--dir")))
+         (dirs (mapcar (lambda (d)
+                         (and (symbolp d) (setq d (symbol-name d)))
+                         (list (intern d)
+                               (intern (concat prefix "--" d))
+                               (expand-file-name d root-val)))
+                       dirs))
+         (mappings (cons `(root ,root) (mapcar 'butlast dirs))))
+    `(progn
+       (eval-and-compile
+         (defconst ,root ,root-val))
+       ,(when snippets `(nvp-package-load-snippets ,root))
+       ,(when dirs
+          `(progn
+             ,@(cl-loop for (_orig-sym dir-sym dir-val) in dirs
+                  collect `(defconst ,dir-sym ,dir-val))))
+       ,(when after-load
+          `(with-eval-after-load ,file
+             (let ,mappings
+               ,after-load))))))
+
+(defmacro nvp-package-load-snippets (dir)
+  "Add packages snippet directory to `yas-snippet-dirs' after loading
+`yasnippet'."
+  `(progn
+     (eval-when-compile (defvar yas-snippet-dirs))
+     (declare-function yas-load-directory "yasnippet")
+     (with-eval-after-load 'yasnippet
+       (let ((snippet-dir (expand-file-name "snippets" ,dir))
+             (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
+                       (cons yas-snippet-dirs ()))))
+         (unless (member snippet-dir dirs)
+           (setq yas-snippet-dirs (delq nil (cons snippet-dir dirs))))
+         (yas-load-directory snippet-dir)))))
+
+;; -------------------------------------------------------------------
+;;; Setup / Build init
 
 ;; Find locations for init constants
 (defun nvp--setup-normalize-locs (locs &optional defaults)

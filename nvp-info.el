@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 04:34:10>
+;; Last modified: <2019-02-13 14:13:46>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -34,11 +34,12 @@
   (nvp-local-vars))
 (require 'nvp)
 (require 'info)
+(require 'filenotify)
 
 ;; compile list of my info manuals
 (defvar nvp-info-nodes ())
 (defun nvp-info-nodes ()
-  (or nvp-info-nodes
+  (unless nvp-info-nodes
       (setq nvp-info-nodes
             (with-temp-buffer
               (insert-file-contents-literally (expand-file-name "dir" nvp/info))
@@ -49,6 +50,14 @@
                         "^\\*[^\:]+:\\s-*(\\([^)]+\\))\\." nil 'move)
                   (push (match-string-no-properties 1) nodes))
                 nodes)))))
+
+;; update list when dir changes
+(defun nvp-info-nodes-update (&rest _ignored)
+  (setq nvp-info-nodes nil))
+
+(eval-when (load)
+ (file-notify-add-watch (expand-file-name "dir" nvp/info)
+                        (list 'change) #'nvp-info-nodes-update))
 
 ;;;###autoload
 (defun nvp-info-open (topic &optional bname)
@@ -74,6 +83,16 @@
     (nvp-with-process "make"
       :proc-name "install-info"
       :proc-args (target))))
+
+;;;###autoload
+(defun nvp-info-goto-source (file &optional this-window)
+  "Jump to source of current info FILE."
+  (interactive
+   (let ((fname (concat "org/" (file-name-nondirectory Info-current-file) ".org")))
+     (list (expand-file-name fname nvp/info) current-prefix-arg)))
+  (if this-window
+      (find-file file)
+    (find-file-other-window file)))
 
 ;; -------------------------------------------------------------------
 ;;; Imenu support

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 07:40:44>
+;; Last modified: <2019-02-13 14:05:10>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -99,6 +99,10 @@ FILE is created if it doesn't exist."
                     (setq y (expand-file-name x dir)))
                (cons x y))))
          (cl-set-difference (directory-files dir) '("." "..") :test #'equal))))
+
+;; -------------------------------------------------------------------
+;;; Watch file changes
+
 
 (provide 'nvp-file)
 ;;; nvp-file.el ends here

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 09:20:27>
+;; Last modified: <2019-02-13 14:07:16>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -37,16 +37,15 @@
 ;; Open nearest file up the directory tree named:
 ;; 1. NAME if non-nil
 ;; 2. Prompt for file name with prefix arg
-;; 3. Variable `notes-file' (directory-local) if non-nil
+;; 3. Variable `nvp-notes-local-file' (directory-local) if non-nil
 ;; 4. Otherwise, default to 'todo.org'.
 ;;;###autoload
 (defun nvp-find-nearest-file-dwim (name)
+  "Jump to nearest notes file, prompting with prefix."
   (interactive
-   (list (or
-          (bound-and-true-p name)
-          (and current-prefix-arg (read-from-minibuffer "File name: "))
-          (bound-and-true-p notes-file)
-          "todo.org")))
+   (list (or (and current-prefix-arg (read-file-name "File name: "))
+             (bound-and-true-p nvp-notes-local-file)
+             "todo.org")))
   (let ((dir (locate-dominating-file (or (buffer-file-name)
                                          default-directory)
                                      name)))

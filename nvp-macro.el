@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 08:17:53>
+;; Last modified: <2019-02-13 15:38:00>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -1064,7 +1064,7 @@ and install PLUGIN with asdf."
       (doc "Compile using make or cmake if found, otherwise execute body.")
       (make-action
        '(let ((compile-command (or args "make -k")))
-          (nvp-compile-basic)))
+          (nvp-compile)))
       (cmake-action
        '(nvp-compile-cmake args))
       (default-prompt
@@ -1262,6 +1262,19 @@ PROPS defaults to setting :verbosity to 1."
      (let ((hs-block-start-regexp ,start)
            (hs-block-end-regexp ,end))
        ,@(or body (list '(hs-toggle-hiding))))))
+
+;; parens
+(cl-defmacro nvp-sp-local-pair (&rest pairs &key modes &allow-other-keys)
+  (declare (indent defun))
+  (while (keywordp (car pairs))
+    (setq pairs (cdr (cdr pairs))))
+  `(progn
+     (eval-when-compile (require 'smartparens))
+     (declare-function sp-local-pair "smartparens")
+     ,(if modes
+          `(sp-with-modes ,modes
+             ,@pairs)
+        `(sp-local-pair ,@pairs))))
 
 ;; -------------------------------------------------------------------
 ;;; Package

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-12 21:44:41>
+;; Last modified: <2019-02-13 14:29:04>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires:
@@ -26,6 +26,7 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+;; Mode local functions
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -33,7 +34,17 @@
   (require 'nvp-macro))
 (require 'nvp)
 
-;;; TODO:
+;; -------------------------------------------------------------------
+;;; Check buffer for errors
+
+;;;###autoload
+(defun nvp-check-buffer ()
+  (interactive)
+  (call-interactively nvp-check-buffer-function))
+
+;; -------------------------------------------------------------------
+;;; Disassemble code
+;; - lisp, c, java
 
 ;;;###autoload
 (defun nvp-disassemble (popup)

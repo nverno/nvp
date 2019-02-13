@@ -2,11 +2,11 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-10 18:41:27>
+;; Last modified: <2019-02-13 14:25:45>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
+;; Package-Requires:
 ;; Created:  2 February 2019
 
 ;; This file is not part of GNU Emacs.
@@ -77,10 +77,8 @@
 ;; -------------------------------------------------------------------
 ;;; Yank / Pop
 
-;;; FIXME: how to disable hints in minibuffer
 ;;;###autoload(autoload 'nvp-hydra-yank-pop/yank-pop "nvp-auto")
 ;;;###autoload(autoload 'nvp-hydra-yank-pop/yank "nvp-auto")
-(nvp-hydra-set-property 'nvp-hydra-yank-pop)
 (defhydra nvp-hydra-yank-pop ()
   "yank"
   ("C-y" yank nil)

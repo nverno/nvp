@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-12 20:30:11>
+;; Last modified: <2019-02-13 14:36:22>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -34,6 +34,15 @@
 (autoload 'ansi-color-apply-on-region "ansi-color")
 
 ;;;###autoload
+(defun nvp-compile (&optional comint read-command)
+  "Basic compilation."
+  (interactive)
+  (setq-local compilation-read-command read-command)
+  (and compilation-read-command
+       (setq-local compile-command (compilation-read-command compile-command)))
+  (funcall-interactively 'compile compile-command comint))
+
+;;;###autoload
 (defun nvp-compile-colorize ()
   (interactive)
   (let ((inhibit-read-only t))
@@ -41,17 +50,6 @@
     (if (boundp 'xterm-color-colorize-buffer)
         (xterm-color-colorize-buffer)
      (ansi-color-apply-on-region compilation-filter-start (point-max)))))
-
-;;;###autoload
-(define-obsolete-function-alias 'nvp-basic-compile 'nvp-compile-basic)
-;;;###autoload
-(defun nvp-compile-basic (&optional comint read-command)
-  "Basic compilation."
-  (interactive)
-  (setq-local compilation-read-command read-command)
-  (and compilation-read-command
-       (setq-local compile-command (compilation-read-command compile-command)))
-  (funcall-interactively 'compile compile-command comint))
 
 (defun nvp-compile-add-local-bindings (buff _stat bindings)
   (with-current-buffer buff
@@ -61,10 +59,10 @@
 ;;;###autoload
 (defun nvp-compile-basic-with-bindings (bindings &rest args)
   "Run basic compile with local BINDINGS in output buffer.
-ARGS are passed to `nvp-basic-compile'."
+ARGS are passed to `nvp-compile'."
   (let ((compilation-finish-functions
          `(nvp-compile-add-local-bindings buff stat ,bindings)))
-    (funcall 'nvp-compile-basic args)))
+    (funcall 'nvp-compile args)))
 
 ;; ------------------------------------------------------------
 ;;; Cmake

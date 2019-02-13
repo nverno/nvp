@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 08:14:01>
+;; Last modified: <2019-02-13 14:17:29>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -66,19 +66,21 @@
 ;; Snippets
 (defvar-local nvp-snippet-dir nil "Directory to load for mode's snippets.")
 
-;; functions
-;; (defvar-local nvp-help-at-point-function #'nvp-help-at-point)
-;; (defvar-local nvp-repl-switch-function #'nvp-repl-switch)
-;; (defvar-local nvp-check-buffer-function #'nvp-validate-buffer)
-(defvar-local nvp-disassemble-function #'disassemble)
-
 ;; programs
 (defvar nvp-program-search-paths
   (nvp-with-gnu/w32 `(,nvp/bin "~/.local/bin" "/usr/local/bin")
     `(,nvp/bin ,nvp/binw)))
 
-;; various local variables
+;; local variables for jumping -- might be set in dir-locals
 (defvar-local nvp-notes-local-file ())
+(defvar-local nvp-books-local-directory ())
+
+;; -------------------------------------------------------------------
+;;; Functions
+;; (defvar-local nvp-help-at-point-function #'nvp-help-at-point)
+;; (defvar-local nvp-repl-switch-function #'nvp-repl-switch)
+(defvar-local nvp-check-buffer-function #'checkdoc)
+(defvar-local nvp-disassemble-function #'disassemble)
 
 ;; -------------------------------------------------------------------
 ;;; general helpers

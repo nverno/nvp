@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 10:52:08>
+;; Last modified: <2019-02-13 12:39:38>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -46,13 +46,14 @@
    (`4                                  ;same window
     (if buffer-p
         (display-buffer location '(display-buffer-same-window
-                                   . display-buffer-same-window))
+                                   ((inhibit-switch-frame . nil))
+                                   ((inhibit-same-window  . nil))))
       (find-file location)))
    ((pred functionp) (funcall action location))
    (_                                   ;different window
     (if buffer-p
         (display-buffer location '(display-buffer-pop-up-window
-                                   . inhibit-same-window))
+                                   ((inhibit-same-window  . t))))
       (find-file-other-window location)))))
 
 ;; -------------------------------------------------------------------
@@ -130,102 +131,86 @@
       (search-forward "* Notes" nil 'move))))
 
 ;;;###autoload
-(defun nvp-jump-to-info (&optional arg)
-  "Jump to info file (in org mode).
-With prefix jump this window, otherwise `find-file-other-window'."
-  (interactive "P")
-  (let* ((org (nvp-completing-read
-               "Info file: "
-               (directory-files (expand-file-name "org" nvp/info) nil "\.org")))
-         (file (expand-file-name org (expand-file-name "org" nvp/info))))
-    (if arg (find-file file)
-      (find-file-other-window file))))
+(defun nvp-jump-to-info (file action)
+  "Jump to info file (in org mode)                               . 
+With prefix jump this window, otherwise `find-file-other-window' . "
+  (interactive
+   (let* ((file (nvp-completing-read
+                 "Info file: "
+                 (directory-files (expand-file-name "org" nvp/info) nil "\.org")))
+          (file (expand-file-name file (expand-file-name "org" nvp/info))))
+     (list file (car current-prefix-arg))))
+  (nvp-jump--location file nil action))
 
 ;; -------------------------------------------------------------------
 ;;; Scratch
 
 ;;;###autoload
-(defun nvp-jump-to-scratch (mode &optional action)
-  "Jump to scratch buffer in MODE (default current `major-mode').
-With prefix, pop other window, with double prefix, prompt for MODE."
+(defun nvp-jump-to-scratch (mode action)
+  "Jump to scratch buffer in MODE (default current `major-mode')   . 
+With prefix, pop other window, with double prefix, prompt for MODE . "
   (interactive
    (list (if (eq (car current-prefix-arg) 16) (intern (nvp-read-mode))
            major-mode)
-         (eq (car current-prefix-arg) 4)))
-  (pop-to-buffer (get-buffer-create "*scratch*") action)
-  (if (eq mode 'emacs-lisp-mode)
-      (unless (eq major-mode 'lisp-interaction-mode)
-        (lisp-interaction-mode))
-    (let ((inhibit-read-only t))
-      (kill-all-local-variables)
-      (erase-buffer)
-      (funcall mode)))
-  (local-set-key (kbd "C-c C-c") #'kill-this-buffer))
+         (car current-prefix-arg)))
+  (let ((buff (get-buffer-create "*scratch*")))
+   (with-current-buffer (window-buffer (nvp-jump--location buff 'buffer action))
+     (if (eq mode 'emacs-lisp-mode)
+         (unless (eq major-mode 'lisp-interaction-mode)
+           (lisp-interaction-mode))
+       (let ((inhibit-read-only t))
+         (kill-all-local-variables)
+         (erase-buffer)
+         (funcall mode)))
+     (local-set-key (kbd "C-c C-c") #'kill-this-buffer)
+     (local-set-key
+      (kbd "C-c C-s") (lambda () (interactive) (funcall (intern (nvp-read-mode)))))
+     (pop-to-buffer (current-buffer)))))
 
 ;; -------------------------------------------------------------------
 ;;; Books / PDFs
 
-;; Jump to book in directory:
-;; 1. `nvp/books'/DIRNAME if non-nil.
-;; 2. Prompt for directory with prefix arg (appends `nvp/books')
-;; 3. Check for variable 'books-directory'
-;; 4. Default to 'nvp/books'.
-;; Opens epubs in external program - calibre / sumatrapdf
-;; FIXME: when opening in calibre, import is annoying - alternative
-;;        to calibre?
+;; FIXME: when opening in calibre, import is annoying - alternative to calibre?
 ;;;###autoload
-(defun nvp-jump-to-book (dirname &optional recurse)
+(defun nvp-jump-to-book (dir &optional action)
+  "Jump to book, either opening in emacs (eg. pdfs) or external for epubs.
+With double prefix, prompt for directory (default `nvp-books-local-directory'
+or `nvp/books'.
+With triple prefix, offer recursive results."
   (interactive
-   (list
-    (or (bound-and-true-p dirname)
-        ;; select root directory
-        (and (member current-prefix-arg '((16) (64)))
-             (expand-file-name
-              (read-directory-name
-               "Book Directory (default book root): "
-               nvp/books)))
-        ;; local variable
-        (and (bound-and-true-p books-directory)
-             (expand-file-name books-directory))
-        ;; default
-        nvp/books)
-    (and (member current-prefix-arg '((4) (64))))))
-  (let* ((files (if recurse
-                    ;; exclude directories
-                    (directory-files-recursively
-                     dirname "^[^.].*[^/]$")
-                  (directory-files dirname t "^[^.]")))
-         (shortnames
-          ;; if recursing, use name after DIRNAME for completing-read
-          ;; otherwise, just use short name
-          (mapcar (if recurse
-                      #'(lambda (s)
-                          (string-remove-prefix dirname s))
-                    'file-name-nondirectory)
-                  files))
-         (mode (substring-no-properties (symbol-name major-mode) 0 -5))
-         (case-fold-search t))
-    (when (and mode (member mode shortnames))
-      (setq dirname (expand-file-name mode dirname))
-      (setq shortnames (directory-files dirname nil "^[^.]")))
-    (when shortnames
-      (let* ((file (ido-completing-read "Book: " shortnames))
-             (fullname (expand-file-name file dirname)))
-        (cond
-         ;; epubs
-         ((string-match-p "\\.epub$" file)
-          (nvp-with-gnu/w32
-           (if (executable-find "calibre")
-               (call-process "calibre" nil 0 nil fullname)
-             (call-process "firefox" nil 0 nil fullname))
-           (if (executable-find "sumatrapdf")
-               (call-process "sumatrapdf" nil 0 nil fullname)
-             (call-process (nvp-program "firefox") nil 0 nil fullname))))
-         ;; open if non-directory
-         ((file-name-extension file)
-          (find-file fullname))
-         ;; otherwise assume its a directory
-         (t (nvp-jump-to-book fullname)))))))
+   (let* ((arg (or (car current-prefix-arg) 0))
+          (case-fold-search t)
+          ;; (mode (substring (substring-no-properties (symbol-name major-mode)) 0 -5))
+          (locals (bound-and-true-p nvp-books-local-directory))
+          (root (cond
+                 (root root)
+                 ((> arg 4)
+                  (expand-file-name
+                   (read-directory-name "Book Directory: " nvp/books)))
+                 (locals locals)
+                 (t (expand-file-name "programming" nvp/books)))))
+     (list root arg)))
+  (let* ((files (mapcar (lambda (f) (file-relative-name f dir))
+                        (if (eq action 16) ;recurse
+                            (directory-files-recursively dir "^[^.].*[^/]$")
+                          (directory-files dir t "^[^.]"))))
+         (book (nvp-completing-read "Book: " files nil 'match))
+         (fullname (expand-file-name book dir)))
+    (cond
+     ;; epubs
+     ((string-match-p "\\.epub$" book)
+      (nvp-with-gnu/w32
+          (if (executable-find "calibre")
+              (call-process "calibre" nil 0 nil fullname)
+            (call-process "firefox" nil 0 nil fullname))
+        (if (executable-find "sumatrapdf")
+            (call-process "sumatrapdf" nil 0 nil fullname)
+          (call-process (nvp-program "firefox") nil 0 nil fullname))))
+     ;; probably PDF, open in emacs
+     ((file-name-extension book)
+      (nvp-jump--location fullname nil action))
+     ;; otherwise recurse in subdirs
+     (t (nvp-jump-to-book fullname action)))))
 
 ;; -------------------------------------------------------------------
 ;;; Other

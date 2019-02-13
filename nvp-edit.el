@@ -38,6 +38,8 @@
 ;; -------------------------------------------------------------------
 ;;; Sort
 
+;;; FIXME: don't ignore list syntax
+;; #<marker at 7784 in thingatpt.el.gz>
 (defmacro nvp-sort-with-defaults (start end &rest body)
   "Sort region between START and END by BODY, using defaults and indent region \
 afterward."
@@ -140,6 +142,7 @@ With prefix sort in REVERSE."
         (group (if justify-right -1 1)))
     (align-regexp start end complete-regexp group 1 t)))
 
+;;; FIXME: ignore commented regions
 ;; Align text as columns. Originally made for aligning abbrevs.
 ;; Text is treated as anything between '', "", or non-spaces.
 ;;;###autoload

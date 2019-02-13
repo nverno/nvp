@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-12 18:36:46>
+;; Last modified: <2019-02-12 23:20:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -106,8 +106,7 @@ When abbrev text is selected, searching is done first by length then lexically."
                      (string> prefix str)))))
       ;; insert default template for prefix
       (back-to-indentation)
-      (yas-expand-snippet
-       (format "(\"%s\" \"$1\" nil :system t)\n" prefix)))
+      (yas-expand-snippet (format "(\"%s\" \"$1\" nil :system t)\n" prefix)))
     ;; reload abbrev table after modification
     (add-hook 'after-save-hook
               (lambda ()

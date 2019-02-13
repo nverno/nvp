@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-08 09:55:27>
+;; Last modified: <2019-02-13 04:36:22>
 ;; Package-Requires: 
 ;; Created:  2 December 2016
 
@@ -322,19 +322,19 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
 ;;; Imenu
 
 ;; imenu indexer to simply list all files/dirs except . and ..
+;; faster than using prev/next position functions
 (defun nvp-dired-imenu-create-index ()
   (let ((case-fold-search t)
         item
         index-alist)
     (goto-char (point-max))
     (beginning-of-line)
-    (unwind-protect
-        (save-match-data
-          (while (not (bobp))
-            (when (setq item (dired-get-filename 'verbatim 'no-error)))
-            (unless (member item '("." ".." nil))
-              (push (cons item (copy-marker (dired-move-to-filename))) index-alist))
-            (forward-line -1))))
+    (save-match-data
+      (while (not (bobp))
+        (when (setq item (dired-get-filename 'verbatim 'no-error)))
+        (unless (member item '("." ".." nil))
+          (push (cons item (copy-marker (dired-move-to-filename))) index-alist))
+        (forward-line -1)))
     index-alist))
 
 (provide 'nvp-dired)

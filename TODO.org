@@ -1,25 +1,53 @@
 #+TITLE: TODO
 
-* Settings
-- tags settings / ggtags / etags
+* Automated [0/1]
+- [ ] tags installs
+
+* Settings [0/2]
+- [ ] tags settings / ggtags / etags
   https://github.com/skeeto/.emacs.d/tree/master/lisp
-- grep / ag settings
+- [ ] grep / ag settings
 
-* FIX
-- nvp-minibuffer
-- nvp-doc
-- nvp-abbrev-dynamic
-- nvp-disassemble
-- separate setup from nvp and fix load paths
-- better package installs
+* FIX [0/7]
+- [ ] nvp-minibuffer
+- [ ] nvp-doc
+- [ ] nvp-abbrev-dynamic
+- [ ] nvp-disassemble
+- [ ] separate setup from nvp and fix load paths
+- [ ] better package installs
   https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
-- fix nvp-install
+- [ ] fix nvp-install
 
-* Generic
-- help-at-point
-- dynamic abbrevs
-- parse functions
-- install
+* Generic [0/4]
+- [ ] help-at-point
+- [ ] dynamic abbrevs
+- [ ] parse functions
+- [ ] install
 
-* Remove
-- nvp-conf
+* Merge [0/16]
+- [ ] bmk-to-bmk
+- [ ] esh-help
+- [ ] project-templates
+- [ ] project-ido
+- [ ] cheatsheet-lookup
+- [ ] yas-capf
+- [ ] save-utils
+- [ ] log-utils
+- [ ] help-utils
+- [ ] tag-utils
+- [ ] config-tools
+- [ ] md-tools
+- [ ] elisp-utils
+- [ ] yaml-tools
+- [ ] shell-tools
+- [ ] c-tools
+
+* Remove [0/1]
+- [ ] nvp-conf
+
+* Tests / Profile [0/1]
+- [ ] doc-at-point / help-at-point
+
+* Templates [0/1]
+- [ ] general el
+

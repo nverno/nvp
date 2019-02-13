@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-12 21:39:03>
+;; Last modified: <2019-02-13 01:07:36>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -113,6 +113,11 @@ use either `buffer-file-name' or `buffer-name'."
 (defmacro nvp-indent-cl (fn)
   "Generally doesn't work."
   `(put ,fn 'lisp-indent-function 'common-lisp-indent-function))
+
+(defmacro nvp-region-or-batp (&optional thing)
+  "Region bounds if active or bounds of THING at point."
+  `(if (region-active-p) (car (region-bounds))
+     (bounds-of-thing-at-point ,(or thing ''symbol))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -819,7 +824,7 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
 (declare-function pos-tip-show "pos-tip")
 
 ;;; TODO:
-;; - use help buffer with xref
+;; - use help buffer with xref?
 ;; - truncate popup
 (cl-defmacro nvp-with-toggled-tip (popup
                                    &key
@@ -829,9 +834,7 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
                                    (timeout 45)    ;pos-tip timeout
                                    keep            ;keep transient map
                                    use-gtk         ;use gtk tooltips
-                                   ;; (help-buffer
-                                   ;;  '(get-buffer-create "*nvp-help*"))
-                                   )
+                                   (help-buffer '(help-buffer)))
   "Toggle POPUP, a help string, in pos-tip. 
 If HELP-FN is :none, HELP-KEY is not bound by default. 
 Normally, HELP-KEY triggers a function to jump to a full help description 
@@ -852,7 +855,7 @@ default help function."
                                `(lambda ()
                                   (interactive)
                                   (x-hide-tip)
-                                  (with-help-window (help-buffer)
+                                  (with-help-window ,help-buffer
                                     (with-current-buffer standard-output
                                       (insert ,str)))
                                   ;; (with-current-buffer ,help-buffer

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-12 19:54:36>
+;; Last modified: <2019-02-13 04:38:29>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -41,10 +41,12 @@
 
 ;; #<marker at 95724 in yasnippet.el>
 ;;;###autoload
-(defun nvp-jump-to-new-snippet (mode snippet-dir &optional do-dired text)
+(defun nvp-jump-to-new-snippet (mode snippet-dir &optional do-dired text
+                                     default-new-snippet)
   "Jump to a new snippet for MODE in snippet SNIPPET-DIR (creating if necessary).
 If DO-DIRED is non-nil, `dired' that directory instead of creating snippet.
-If TEXT is non-nil use as `yas-selected-text'."
+If TEXT is non-nil use as `yas-selected-text'.
+DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (interactive
    (let ((mode-name (if (equal current-prefix-arg '(64)) (nvp-read-mode)
                       (symbol-name major-mode))))
@@ -58,16 +60,18 @@ If TEXT is non-nil use as `yas-selected-text'."
                     (buffer-substring-no-properties
                      (region-beginning) (region-end)))))))
   (and (symbolp mode) (setq mode (symbol-name mode)))
+  (or default-new-snippet (setq default-new-snippet yas-new-snippet-default))
   (unless (file-exists-p snippet-dir)
     (make-directory snippet-dir))
   ;; with prefix dired the snippet directory
   (if do-dired (dired snippet-dir)
-    (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
-    (snippet-mode)
-    (yas-minor-mode)
-    (setq-local default-directory snippet-dir)
-    (setq-local yas-selected-text text)
-    (yas-expand-snippet yas-new-snippet-default nil nil `((yas-selected-text ,text)))
+    (let ((yas-wrap-around-region nil)  ;don't insert selected twice
+          (yas-selected-text text)
+          (default-directory snippet-dir))
+      (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
+      (snippet-mode)
+      (yas-minor-mode)
+      (yas-expand-snippet default-new-snippet))
     ;; reload / compile after save
     ;; (add-hook 'after-save-hook 'nvp-snippet-reload nil 'local)
     ))
@@ -91,20 +95,21 @@ If TEXT is non-nil use as `yas-selected-text'."
       (yas-compile-directory (or dir ddir)))
     (yas-load-directory
      (or dir ddir))))
-;; (yas-recompile-all)
-;; (yas-reload-all)
+
+;; -------------------------------------------------------------------
+;;; Commands
 
 ;; de/in-crement snippet expansion numbers in selected region
-(defun nvp-snippet-increment-count (start end)
-  (interactive "r")
-  (goto-char start)
-  (while (re-search-forward "\$\{\\([[:digit:]]\\):" end 'move)
-    (replace-match (number-to-string
-                    (+ (if current-prefix-arg -1 1)
-                       (string-to-number (match-string 1))))
-                   nil nil nil 1)))
+(defun nvp-snippet-increment-count (bounds)
+  (interactive (list (nvp-region-or-batp)))
+  (cl-destructuring-bind (beg . end) bounds
+    (goto-char beg)
+    (while (re-search-forward "\$\{?\\([[:digit:]]\\)" end 'move)
+      (replace-match (number-to-string
+                      (+ (if current-prefix-arg -1 1)
+                         (string-to-number (match-string 1))))
+                     nil nil nil 1))))
 
-;;;###autoload
 (defun nvp-snippet-help-at-point ()
   (interactive)
   (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))

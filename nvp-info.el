@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 08:32:36>
+;; Last modified: <2019-02-13 04:34:10>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -31,10 +31,24 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib)
-  (nvp-local-vars)
-  (defvar nvp-info-nodes))
+  (nvp-local-vars))
 (require 'nvp)
 (require 'info)
+
+;; compile list of my info manuals
+(defvar nvp-info-nodes ())
+(defun nvp-info-nodes ()
+  (or nvp-info-nodes
+      (setq nvp-info-nodes
+            (with-temp-buffer
+              (insert-file-contents-literally (expand-file-name "dir" nvp/info))
+              (goto-char (point-min))
+              (search-forward "* Menu")
+              (let (nodes)
+                (while (re-search-forward
+                        "^\\*[^\:]+:\\s-*(\\([^)]+\\))\\." nil 'move)
+                  (push (match-string-no-properties 1) nodes))
+                nodes)))))
 
 ;;;###autoload
 (defun nvp-info-open (topic &optional bname)
@@ -50,7 +64,7 @@
 
 ;;;###autoload
 (defun nvp-info-install (file)
-  "Install FILE into info directory."
+  "Install org texinfo FILE into info directory."
   (interactive
    (list (ido-read-file-name "File: " (expand-file-name "org" nvp/info))))
   (let ((default-directory (expand-file-name "org" nvp/info))
@@ -60,6 +74,25 @@
     (nvp-with-process "make"
       :proc-name "install-info"
       :proc-args (target))))
+
+;; -------------------------------------------------------------------
+;;; Imenu support
+(require 'imenu)
+
+;;;###autoload
+(defun nvp-info-imenu-create-index-function ()
+  (goto-char (point-min))
+  (search-forward "* Menu:")
+  (let ((pat "\\*note[ \n\t]+\\([^:]+\\):\\|^\\* .*:\\|[hf]t?tps?://")
+        (case-fold-search t)
+        node index-alist)
+    (or (eobp) (forward-char 1))
+    (while (and (not (eobp)) (Info-next-reference-or-link pat 'link))
+      (and (setq node (Info-extract-menu-node-name))
+           (push (cons node (copy-marker (point)))
+                 index-alist))
+      (forward-line 1))
+    index-alist))
 
 (provide 'nvp-info)
 ;;; nvp-info.el ends here

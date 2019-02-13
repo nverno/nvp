@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-11 01:21:03>
+;; Last modified: <2019-02-13 00:40:42>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -126,7 +126,7 @@
   (when fn (funcall fn)))
 
 ;; -------------------------------------------------------------------
-;;; Process
+;;; general helpers
 
 ;; strip ctrl-m, multiple newlines
 (defun nvp-process-buffer-filter (proc string)

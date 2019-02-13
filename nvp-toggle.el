@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 01:48:40>
+;; Last modified: <2019-02-13 01:46:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -33,6 +33,14 @@
   (require 'time-stamp))
 (require 'files-x)
 (declare-function time-stamp "time-stamp")
+
+(defun nvp-toggle--repeat (arg)
+  (and (consp arg) (setq arg (car arg)))
+  (let ((repeat-key last-input-event))
+    (unless (current-message)
+      (message "(Type %s to repeat %s)"
+               (format-kbd-macro (vector repeat-key))
+               ()))))
 
 ;;;###autoload
 (defun nvp-toggle-timestamp (&optional arg)

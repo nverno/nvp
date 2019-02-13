@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 19:49:20>
+;; Last modified: <2019-02-13 00:12:42>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -38,24 +38,25 @@
 Accounts for :enable-function and :regexp table properties when selecting
 candidates."
   (require 'nvp-abbrev-completion)
-  (unless old
-    (when-let ((beg (nvp-abbrev-completion-prefix-beg)))
-      (he-init-string beg (point))
-      (setq he-expand-list            ;expansion candidates
-            (and (not (equal he-search-string ""))
-                 (delq nil
-                       (mapcar
-                        (lambda (table)
-                          (abbrev-expansion he-search-string (symbol-value table)))
-                        (nvp-abbrev-completion--active-tables)))))))
-  (while (and he-expand-list            ;clean expansion list
-              (or (not (car he-expand-list))
-                  (he-string-member (car he-expand-list) he-tried-table t)))
-    (setq he-expand-list (cdr he-expand-list)))
-  (prog1 (not (null he-expand-list))
-    (if (null he-expand-list)
-        (and old (he-reset-string))
-      (he-substitute-string (pop he-expand-list) t))))
+  (cl-block nil
+    (unless old
+      (let ((beg (nvp-abbrev-completion-prefix-beg)))
+        (and (not beg) (cl-return))
+        (he-init-string beg (point))
+        (setq he-expand-list             ;expansion candidates
+              (and (not (equal he-search-string ""))
+                   (delq nil
+                         (mapcar
+                          (lambda (table)
+                            (abbrev-expansion he-search-string (symbol-value table)))
+                          (nvp-abbrev-completion--active-tables)))))))
+    (while (and he-expand-list            ;clean expansion list
+                (he-string-member (car he-expand-list) he-tried-table t))
+      (setq he-expand-list (cdr he-expand-list)))
+    (prog1 (not (null he-expand-list))
+      (if (null he-expand-list)
+          (and old (he-reset-string))
+        (he-substitute-string (pop he-expand-list) t)))))
 
 ;; https://github.com/magnars/.emacs.d/blob/master/settings/setup-hippie.el
 (defvar nvp-he-search-loc-backward (make-marker))

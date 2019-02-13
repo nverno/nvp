@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-12 22:18:32>
+;; Last modified: <2019-02-13 04:44:25>
 ;; Package-Requires: 
 ;; Created: 25 November 2016
 
@@ -33,6 +33,7 @@
   (defvar tramp-debug-on-error)
   (defvar tramp-verbose)
   (require 'hydra))
+(defvar nvp/etc)
 
 ;;;###autoload(autoload 'nvp-debug-hydra-emacs/body "nvp-debug")
 (nvp-hydra-set-property 'nvp-debug-hydra-emacs)

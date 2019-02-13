@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 02:05:03>
+;; Last modified: <2019-02-13 04:45:07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -31,6 +31,7 @@
 (eval-when-compile
   (defvar aya-current))
 (require 'auto-yasnippet)
+(nvp-declare "" nvp-jump-to-new-snippet)
 
 (defvar nvp-aya-new-template "\
 # -*- mode: snippet -*-

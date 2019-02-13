@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-10 19:41:46>
+;; Last modified: <2019-02-12 21:39:03>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -829,8 +829,9 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
                                    (timeout 45)    ;pos-tip timeout
                                    keep            ;keep transient map
                                    use-gtk         ;use gtk tooltips
-                                   (help-buffer
-                                    '(get-buffer-create "*nvp-help*")))
+                                   ;; (help-buffer
+                                   ;;  '(get-buffer-create "*nvp-help*"))
+                                   )
   "Toggle POPUP, a help string, in pos-tip. 
 If HELP-FN is :none, HELP-KEY is not bound by default. 
 Normally, HELP-KEY triggers a function to jump to a full help description 
@@ -1309,6 +1310,20 @@ and install PLUGIN with asdf."
      ,(when init '(eldoc-mode))))
 
 ;; -------------------------------------------------------------------
+;;; Mode specific
+
+(defmacro nvp-hydra-set-property (hydra-name &rest props)
+  "Apply PROPS to HYDRA-NAME after `hydra' is loaded.
+PROPS defaults to setting :verbosity to 1."
+  (declare (indent 1))
+  (unless props (setq props (list :verbosity 1)))
+  `(progn
+     (declare-function hydra-set-property "hydra")
+     (with-eval-after-load 'hydra
+      ,@(cl-loop for (k v) on props by #'cddr
+           collect `(hydra-set-property ,hydra-name ,k ,v)))))
+
+;; -------------------------------------------------------------------
 ;;; Setup
 
 ;; Find locations for init constants
@@ -1465,20 +1480,6 @@ is already present."
      (defvar nvp/books)
      (defvar nvp/install)
      (defvar nvp/private)))
-
-;; -------------------------------------------------------------------
-;;; Mode specific
-
-(defmacro nvp-hydra-set-property (hydra-name &rest props)
-  "Apply PROPS to HYDRA-NAME after `hydra' is loaded.
-PROPS defaults to setting :verbosity to 1."
-  (declare (indent 1))
-  (unless props (setq props (list :verbosity 1)))
-  `(progn
-     (declare-function hydra-set-property "hydra")
-     (with-eval-after-load 'hydra
-      ,@(cl-loop for (k v) on props by #'cddr
-           collect `(hydra-set-property ,hydra-name ,k ,v)))))
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

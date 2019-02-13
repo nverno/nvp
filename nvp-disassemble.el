@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-10 21:12:43>
+;; Last modified: <2019-02-12 21:44:41>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires:
@@ -58,8 +58,7 @@
 (defun nvp-disassemble-popup ()
   (interactive)
   (let ((doc (nvp-disassemble-doc)))
-    (nvp-with-toggled-tip doc
-      :help-buffer '(get-buffer-create "*Disassembly*"))))
+    (nvp-with-toggled-tip doc)))
 
 (provide 'nvp-disassemble)
 ;;; nvp-disassemble.el ends here

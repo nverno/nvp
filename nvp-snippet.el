@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-10 05:40:05>
+;; Last modified: <2019-02-12 19:54:36>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -66,8 +66,8 @@ If TEXT is non-nil use as `yas-selected-text'."
     (snippet-mode)
     (yas-minor-mode)
     (setq-local default-directory snippet-dir)
-    (yas-expand-snippet
-     yas-new-snippet-default nil nil `((yas-selected-text ,text)))
+    (setq-local yas-selected-text text)
+    (yas-expand-snippet yas-new-snippet-default nil nil `((yas-selected-text ,text)))
     ;; reload / compile after save
     ;; (add-hook 'after-save-hook 'nvp-snippet-reload nil 'local)
     ))

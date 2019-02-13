@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 00:56:42>
+;; Last modified: <2019-02-12 20:02:12>
 ;; Package-Requires: 
 ;; Created: 25 November 2016
 
@@ -44,6 +44,7 @@ Toggle debugging functions:
 toggle on _e_rror              _a_: all defuns         _t_ramp
 toggle on _q_uit               _l_: all local defs     _i_: ielm
 _n_ew emacs (in debug)         _f_: all forms          _SPC_: cancel
+_b_are emas (-Q
 toggle on entr_y_              _c_urrent defun
 _d_ebugger
 "
@@ -71,6 +72,7 @@ _d_ebugger
 (defvar nvp-ede-local-active nil)
 
 (defun nvp-debug-ede-all-local ()
+  "Toggle debugging of all defuns."
   (interactive)
   (make-local-variable 'edebug-all-defs)
   (edebug-all-defs)
@@ -78,6 +80,7 @@ _d_ebugger
   (message "Local edebug-all-defs is %s." (if nvp-ede-local-active "on" "off")))
 
 (defun nvp-debug-tramp-toggle-debug ()
+  "Toggle `tramp-debug-on-error' on/off."
   (interactive)
   (ignore-errors
    (when (and (file-remote-p (buffer-file-name)))
@@ -86,6 +89,13 @@ _d_ebugger
        (setq tramp-debug-on-error (not action))
        (setq tramp-verbose (if action 0 10))
        (message "set `tramp-debug-on-error' %s" (if action "off" "on"))))))
+
+(defun nvp-debug-launch-bare-emacs ()
+  "Start new emacs instance loading bare init file."
+  (interactive)
+  (apply #'shell-quote-argument
+   (nvp-with-gnu/w32 "emacs" "runemacs.exe")) 
+  )
 
 (provide 'nvp-debug)
 ;;; nvp-debug.el ends here

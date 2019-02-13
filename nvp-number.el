@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-11 02:10:27>
+;; Last modified: <2019-02-12 21:26:03>
 ;; Package-Requires: 
 ;; Created:  1 October 2017
 
@@ -30,8 +30,8 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
-(declare-function hexl-hex-char-to-integer "hexl")
-(declare-function hexl-oct-char-to-integer "hexl")
+(autoload 'hexl-hex-string-to-integer "hexl")
+(autoload 'hexl-octal-string-to-integer "hexl")
 
 ;; -------------------------------------------------------------------
 ;;; Conversion
@@ -40,13 +40,11 @@
 ;;;###autoload
 (defun nvp-number-hex-string-to-integer ()
   (interactive)
-  (require 'hexl)
   (message "%d" (call-interactively #'hexl-hex-string-to-integer)))
 
 ;;;###autoload
 (defun nvp-number-octal-string-to-integer ()
   (interactive)
-  (require 'hexl)
   (message "%d" (call-interactively #'hexl-octal-string-to-integer)))
 
 ;; -------------------------------------------------------------------

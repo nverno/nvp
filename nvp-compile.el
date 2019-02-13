@@ -1,11 +1,12 @@
-;;; nvp-compile ---  -*- lexical-binding: t; -*-
+;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-12 20:30:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
-;; Created: 11 November 2016
+;; Created: 12 February 2019
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -27,8 +28,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
+  (require 'cl-lib)
   (require 'nvp-macro))
-(require 'compile)
 (declare-function xterm-color-colorize-buffer "xterm-color")
 (autoload 'ansi-color-apply-on-region "ansi-color")
 

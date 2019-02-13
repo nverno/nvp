@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 05:33:18>
+;; Last modified: <2019-02-13 08:14:01>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -77,8 +77,14 @@
   (nvp-with-gnu/w32 `(,nvp/bin "~/.local/bin" "/usr/local/bin")
     `(,nvp/bin ,nvp/binw)))
 
+;; various local variables
+(defvar-local nvp-notes-local-file ())
+
 ;; -------------------------------------------------------------------
 ;;; general helpers
+
+;; (defsubst nvp-mode-config-path (mode)
+;;   (expand-file-name (concat "nvp-" (nvp-stringify mode) "-config.el") nvp/config))
 
 ;; strip ctrl-m, multiple newlines
 (defun nvp-process-buffer-filter (proc string)

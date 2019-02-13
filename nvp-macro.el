@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 06:19:07>
+;; Last modified: <2019-02-13 08:17:53>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -157,12 +157,12 @@ use either `buffer-file-name' or `buffer-name'."
 
 (defmacro nvp-stringify (name)
   "Sort of ensure that NAME symbol is a string."
-  (pcase name
-    ((pred stringp) name)
-    ((pred symbolp) (symbol-name name))
-    (`(quote ,sym) (symbol-name sym))
-    (`(function ,sym) (symbol-name sym))
-    (_ (user-error "How to stringify %S?" name))))
+  `(pcase ,name
+     ((pred stringp) ,name)
+     ((pred symbolp) (symbol-name ,name))
+     (`(quote ,sym) (symbol-name sym))
+     (`(function ,sym) (symbol-name sym))
+     (_ (user-error "How to stringify %S?" ,name))))
 
 ;; -------------------------------------------------------------------
 ;;; Regex / Strings
@@ -241,17 +241,17 @@ line at match (default) or do BODY at point if non-nil."
      (let ((path (substitute-env-in-file-name ,path)))
        (and path (file-exists-p path) path))))
 
-(defmacro nvp-mode-config-path (mode)
+(defmacro nvp-mode-config-path (mode &optional ensure-string)
   "Create path for MODE config file."
   `(progn
-     (cl-assert (bound-and-true-p nvp/config))
-     (expand-file-name (concat "nvp-" ,mode "-config.el") nvp/config)))
+     (expand-file-name
+      (concat "nvp-" ,(if ensure-string (nvp-stringify mode) `,mode)
+              "-config.el")
+      nvp/config)))
 
 (defmacro nvp-cache-file-path (filename)
   "Create cache path for FILENAME."
-  `(progn
-     (cl-assert (bound-and-true-p nvp/cache))
-     (expand-file-name ,filename nvp/cache)))
+  `(progn (expand-file-name (nvp-stringify ,filename) nvp/cache)))
 
 ;; -------------------------------------------------------------------
 ;;; REPLs
@@ -788,13 +788,13 @@ default help function."
   (declare (indent defun))
   `(nvp-comint-buffer ,name ,@body))
 
-(defmacro nvp-process-buffer (&optional name reuse comint &rest body)
+(defmacro nvp-process-buffer (&optional name new-buff comint &rest body)
   "Return a process buffer name NAME.
-REUSE previous buffer if non-nil.  Optionally initialize buffer in
+If NEW-BUFF generate a new buffer.  Optionally initialize buffer in
 COMINT mode or with BODY."
   (declare (indent 2) (indent 1))
-  (let ((get-buffer-function (if reuse 'get-buffer-create
-                               'generate-new-buffer))
+  (let ((get-buffer-function (if new-buff 'generate-new-buffer
+                               'get-buffer-create))
         (name (or name "*nvp-install*")))
     (if (not (or comint body))
         `(,get-buffer-function ,name)
@@ -802,15 +802,15 @@ COMINT mode or with BODY."
                 ,@(or body (list '(comint-mode)))
                 (current-buffer))))))
 
-(cl-defmacro nvp-with-process-filter (process
-                                      &key
-                                      (filter ''nvp-process-buffer-filter))
+(defmacro nvp-with-process-filter (process &optional proc-filter)
   "Run processs with `nvp-process-buffer-filter'.
 Return process object."
   (declare (indent defun))
-  (macroexp-let2* nil ((process process) (filter filter))
-    `(prog1 ,process
-       (set-process-filter ,process ,filter))))
+  (if (and proc-filter (eql proc-filter :none)) `,process
+    (and (not proc-filter) (setq proc-filter ''nvp-process-buffer-filter))
+    (macroexp-let2* nil ((process process) (proc-filter proc-filter))
+      `(prog1 ,process
+         (set-process-filter ,process ,proc-filter)))))
 
 (defmacro nvp-with-sentinel (&optional on-error &rest body)
   "With process sentinel do ON-ERROR if exist status isn't 0 or BODY with\
@@ -828,8 +828,7 @@ successful process exit buffer."
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
   (declare (indent 0))
-  (macroexp-let2* nil ((proc `(nvp-with-process-filter ,process
-                                :filter ,proc-filter))
+  (macroexp-let2* nil ((proc `(nvp-with-process-filter ,process ,proc-filter))
                        (on-err (if (and (symbolp on-error)
                                         (equal on-error :pop-on-error))
                                    `(pop-to-buffer (process-buffer ,proc)
@@ -844,17 +843,16 @@ if process exit status isn't 0."
                                    ,on-error)))
        (display-buffer (process-buffer ,proc) ,display-action))))
 
-(defmacro nvp-with-process-buffer (process &optional on-error &rest body)
-  "Log PROCESS output in log buffer, do ON-ERROR and BODY in process buffer."
+(cl-defmacro nvp-with-process-buffer (process &key on-error on-success proc-filter)
+  "Log PROCESS output in log buffer, do ON-ERROR and ON-SUCCESS in process buffer."
   (declare (indent defun))
-  `(set-process-sentinel
-    (nvp-with-process-filter ,process)
+  `(set-process-sentinel (nvp-with-process-filter ,process ,proc-filter)
     #'(lambda (p m)
         (nvp-log "%s: %s" nil (process-name p) m)
         (with-current-buffer (process-buffer p)
-          (if (not (zerop (process-exit-status p)))
-              ,@on-error
-            ,@body)))))
+          (if (zerop (process-exit-status p))
+              ,@on-success
+            ,@on-error)))))
 
 (cl-defmacro nvp-with-process (process
                                &key

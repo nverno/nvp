@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 15:38:00>
+;; Last modified: <2019-02-13 17:32:01>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -442,6 +442,7 @@ could be either 'major or 'minor."
 (defmacro nvp-def-key (map key cmd)
   "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
   (declare (debug t))
+  (and (symbolp key) (setq key (symbol-value key)))
   (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
   `(define-key
      ,(if (keymapp map) `',map map)
@@ -1264,7 +1265,7 @@ PROPS defaults to setting :verbosity to 1."
        ,@(or body (list '(hs-toggle-hiding))))))
 
 ;; parens
-(cl-defmacro nvp-sp-local-pair (&rest pairs &key modes &allow-other-keys)
+(cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
   (declare (indent defun))
   (while (keywordp (car pairs))
     (setq pairs (cdr (cdr pairs))))

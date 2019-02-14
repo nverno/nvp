@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 14:25:45>
+;; Last modified: <2019-02-13 18:38:15>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -40,6 +40,11 @@
 ;;; FIXME: remove / update macroify bindings
 ;;; TODO:
 ;; - remove all methods from generic
+
+;;;###autoload
+(defun nvp-check-buffer ()
+  (interactive)
+  (call-interactively nvp-check-buffer-function))
 
 ;; -------------------------------------------------------------------
 ;;; Movement

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-31 20:01:27>
+;; Last modified: <2019-02-13 18:24:03>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -31,7 +31,6 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'hydra))
-(require 'hydra)
 (require 'outline)
 
 ;;;###autoload
@@ -49,6 +48,7 @@
       ";;; End:"))))
 
 ;;;###autoload(autoload 'nvp-outline-hydra/body "nvp-outline")
+(nvp-hydra-set-property 'nvp-outline-hydra)
 (defhydra nvp-outline-hydra (:color red :hint t)
   "
 ^Hide^             ^Show^           ^Move
@@ -78,7 +78,6 @@ _d_: subtree       _s_: subtree     _b_: backward same level
   ("f" outline-forward-same-level)        ; Forward - same level
   ("b" outline-backward-same-level)       ; Backward - same level
   ("q" nil "quit"))
-(hydra-set-property 'nvp-outline-hydra :verbosity 1)
 
 (provide 'nvp-outline)
 ;;; nvp-outline.el ends here

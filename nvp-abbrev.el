@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-12 23:20:11>
+;; Last modified: <2019-02-13 18:16:33>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -79,7 +79,8 @@
   (goto-char (point-min))
   (unless (search-forward-regexp (concat "'" table "\\>") nil t)
     (goto-char (point-max))
-    (nvp-abbrev--insert-template table)))
+    (nvp-abbrev--insert-template table))
+  (current-buffer))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -93,28 +94,28 @@ When abbrev text is selected, searching is done first by length then lexically."
   (let* ((file-abbr (bound-and-true-p nvp-abbrev-local-table))
          (table (regexp-quote (format "%s-abbrev-table" (or file-abbr major-mode))))
          (prefix (if arg (nvp-abbrev--grab-prev arg))))
-    (if (bound-and-true-p nvp-abbrev-local-file)
-        (nvp-abbrev--get-table table nvp-abbrev-local-file)
-      (nvp-abbrev--get-table table (expand-file-name table nvp/abbrevs)))
-    (goto-char (point-min))
-    (search-forward-regexp (concat "'" table "\\>") nil t)
-    (when prefix
-      (while
-          (and (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)" nil 'move)
-               (let ((str (match-string-no-properties 1)))
-                 (or (> (length prefix) (length str))
-                     (string> prefix str)))))
-      ;; insert default template for prefix
-      (back-to-indentation)
-      (yas-expand-snippet (format "(\"%s\" \"$1\" nil :system t)\n" prefix)))
-    ;; reload abbrev table after modification
-    (add-hook 'after-save-hook
-              (lambda ()
-                (when (buffer-modified-p (current-buffer))
-                  (quietly-read-abbrev-file buffer-file-name)
-                  ;; refresh cached active abbrev tables
-                  (setq nvp-abbrev-completion-need-refresh t)))
-              t 'local)))
+    (with-current-buffer (nvp-abbrev--get-table
+                          table (or (bound-and-true-p nvp-abbrev-local-file)
+                                    (expand-file-name table nvp/abbrevs)))
+      (goto-char (point-min))
+      (search-forward-regexp (concat "'" table "\\>") nil t)
+      (when prefix
+        (while
+            (and (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)" nil 'move)
+                 (let ((str (match-string-no-properties 1)))
+                   (or (> (length prefix) (length str))
+                       (string> prefix str)))))
+        ;; insert default template for prefix
+        (back-to-indentation)
+        (yas-expand-snippet (format "(\"%s\" \"$1\" nil :system t)\n" prefix)))
+      ;; reload abbrev table after modification
+      (cl-labels ((nvp-abbrev-save-hook
+                   ()
+                   (when (buffer-modified-p (current-buffer))
+                     (quietly-read-abbrev-file (buffer-file-name))
+                     ;; refresh cached active abbrev tables
+                     (setq nvp-abbrev-completion-need-refresh t))))
+        (add-hook 'after-save-hook #'nvp-abbrev-save-hook t 'local)))))
 
 ;; add unicode abbrevs to local table parents
 ;;;###autoload

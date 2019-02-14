@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 14:29:04>
+;; Last modified: <2019-02-13 18:38:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires:
@@ -33,14 +33,6 @@
   (require 'subr-x)
   (require 'nvp-macro))
 (require 'nvp)
-
-;; -------------------------------------------------------------------
-;;; Check buffer for errors
-
-;;;###autoload
-(defun nvp-check-buffer ()
-  (interactive)
-  (call-interactively nvp-check-buffer-function))
 
 ;; -------------------------------------------------------------------
 ;;; Disassemble code

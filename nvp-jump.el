@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 12:39:38>
+;; Last modified: <2019-02-13 18:30:19>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -59,19 +59,21 @@
 ;; -------------------------------------------------------------------
 ;;; Modes
 
+(defvar nvp-mode-config-history ())
+
 ;;;###autoload
 (defun nvp-jump-to-mode-config (mode action)
   (interactive
    (list
     (let ((mmode (and major-mode (symbol-name major-mode))))
-      (nvp-completing-read
-       "Mode: "
+      (ido-completing-read
+       (if mmode (format "Mode (default %s): " mmode) "Mode: ")
        (mapcar
         #'(lambda (x)
             ;; ignore preceding 'nvp-' and ending '-config.el'
             (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
         (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-       nil nil (substring mmode 0 -5)))
+       nil nil nil 'nvp-mode-config-history (substring mmode 0 -5)))
     (car current-prefix-arg)))
   (nvp-jump--location (nvp-mode-config-path mode) nil action))
 

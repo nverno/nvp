@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 00:12:42>
+;; Last modified: <2019-02-13 20:58:50>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -48,7 +48,11 @@ candidates."
                    (delq nil
                          (mapcar
                           (lambda (table)
-                            (abbrev-expansion he-search-string (symbol-value table)))
+                            (let ((exp (abbrev-expansion he-search-string
+                                                         (symbol-value table))))
+                              (if (vectorp exp)
+                                  (aref exp 0) ;expand hooks
+                                exp)))
                           (nvp-abbrev-completion--active-tables)))))))
     (while (and he-expand-list            ;clean expansion list
                 (he-string-member (car he-expand-list) he-tried-table t))

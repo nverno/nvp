@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-14 00:49:36>
+;; Last modified: <2019-02-14 05:32:22>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -47,14 +47,14 @@
   "Struct to hold external installer info."
   location help targets pending buffer)
 
-(defvar nvp-installer
-  (nvp-installer-makefile-make
-   :location (expand-file-name "Makefile" nvp/install)
-   :help (nvp-installer--))
-  "Installer instance.")
+;; (defvar nvp-installer
+;;   (nvp-installer-makefile-make
+;;    :location (expand-file-name "Makefile" nvp/install)
+;;    :help (nvp-installer--))
+;;   "Installer instance.")
 
-(defun nvp-installer--call (installer &rest args)
-  )
+;; (defun nvp-installer--call (installer &rest args)
+;;   )
 
 (defun nvp-installer--help (&optional makefile)
   "Return MAKEFILE help doc."

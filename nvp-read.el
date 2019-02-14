@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 22:53:25>
+;; Last modified: <2019-02-14 05:12:31>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -66,7 +66,8 @@
   (expand-file-name 
    (nvp-completing-read
     (or prompt "Info file: ")
-    (directory-files (expand-file-name "org" nvp/info) nil "\.org"))
+    (directory-files (expand-file-name "org" nvp/info) nil "\.org")
+    nil nil nil 'nvp-config-file-history)
    (concat nvp/info "org")))
 
 (defun nvp-read--mode-test (&optional prompt default)

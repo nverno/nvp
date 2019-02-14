@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-08 09:55:03>
+;; Last modified: <2019-02-14 05:17:19>
 ;; URL: https://github.com/nverno/
 ;; Package-Requires:
 ;; Created: 11 November 2016
@@ -203,7 +203,7 @@ in buffer *vagrant-status*."
                 nvp/vms "-K")))
     (when (not arg)
       (message "Running vagrant-halt...")
-      (nvp-with-process-log proc :pop-on-error))))
+      (nvp-with-process-log proc :on-error (pop-to-buffer (current-buffer))))))
 
 ;; -------------------------------------------------------------------
 ;;; GPG

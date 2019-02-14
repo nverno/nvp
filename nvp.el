@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 00:36:32>
+;; Last modified: <2019-02-14 05:34:41>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -34,6 +34,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
+(require 'nvp-local)
 (declare-function company-grab-symbol "company")
 
 ;;; TODO:

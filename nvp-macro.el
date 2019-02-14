@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 00:57:34>
+;; Last modified: <2019-02-14 05:10:48>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -831,7 +831,7 @@ successful process exit buffer."
                                            (display-action t))
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
-  (declare (indent 0))
+  (declare (indent defun))
   (macroexp-let2* nil ((proc `(nvp-with-process-filter ,process ,proc-filter))
                        (on-err (if (and (symbolp on-error)
                                         (equal on-error :pop-on-error))

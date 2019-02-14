@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-10 22:17:29>
+;; Last modified: <2019-02-13 22:53:25>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -45,6 +45,53 @@
               (substring prompt 0 (string-match "[ :]+\\'" prompt))
               default)
     prompt))
+
+;; minibuffer history
+(defvar nvp-mode-config-history ())
+
+;; some completing reads for general config files
+(defun nvp-read--mode-config (&optional prompt default)
+  (unless default
+    (setq default (symbol-name major-mode)))
+  (setq prompt (nvp-read--with-default (or prompt "Mode config: ") default))
+  (nvp-completing-read
+   prompt
+   (mapcar
+    #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
+        (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
+    (directory-files nvp/config nil "^[^\\.].*\\.el$"))
+   nil nil nil 'nvp-mode-config-history (substring default 0 -5)))
+
+(defun nvp-read--info-files (&optional prompt)
+  (expand-file-name 
+   (nvp-completing-read
+    (or prompt "Info file: ")
+    (directory-files (expand-file-name "org" nvp/info) nil "\.org"))
+   (concat nvp/info "org")))
+
+(defun nvp-read--mode-test (&optional prompt default)
+  (let* ((ext (ignore-errors (file-name-extension (buffer-file-name))))
+         (default-directory nvp/test)
+         (completion-ignored-extensions
+          (cons "target" completion-ignored-extensions))
+         (files (mapcar (lambda (f) (file-relative-name f nvp/test))
+                        (directory-files-recursively nvp/test "^[^.][^.]")))
+         (def (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files))))
+    (setq prompt (nvp-read--with-default (or prompt "Test: ") def))
+    (expand-file-name
+     (nvp-completing-read
+      prompt files nil nil nil 'nvp-config-file-history def)
+     nvp/test)))
+
+(defun nvp-read--org-file (&optional prompt default)
+  (or default (setq default "gtd.org"))
+  (setq prompt (nvp-read--with-default (or prompt "Org file: ") default))
+  (ido-completing-read
+   prompt
+   (expand-file-name (directory-files nvp/org nil "^[^.]") nvp/org) nil nil nil
+   'nvp-config-file-history default))
+
+;; -------------------------------------------------------------------
 
 ;;;###autoload
 (defun nvp-read-with-message (prompt &optional format-string &rest args)

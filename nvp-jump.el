@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 18:30:19>
+;; Last modified: <2019-02-13 22:30:00>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -36,9 +36,9 @@
   (require 'nvp-macro)
   (nvp-local-vars))
 (require 'nvp)
+(require 'nvp-read)
 (declare-function find-function-other-window "find-func")
 (declare-function nvp-read-mode "nvp-read")
-(autoload 'string-remove-prefix "subr-x")
 
 ;; actions to take jumping to buffers/files
 (defun nvp-jump--location (location buffer-p action)
@@ -59,22 +59,10 @@
 ;; -------------------------------------------------------------------
 ;;; Modes
 
-(defvar nvp-mode-config-history ())
-
 ;;;###autoload
 (defun nvp-jump-to-mode-config (mode action)
-  (interactive
-   (list
-    (let ((mmode (and major-mode (symbol-name major-mode))))
-      (ido-completing-read
-       (if mmode (format "Mode (default %s): " mmode) "Mode: ")
-       (mapcar
-        #'(lambda (x)
-            ;; ignore preceding 'nvp-' and ending '-config.el'
-            (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
-        (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-       nil nil nil 'nvp-mode-config-history (substring mmode 0 -5)))
-    (car current-prefix-arg)))
+  (interactive (list (nvp-read--mode-config "Jump to config: ")
+                     (car current-prefix-arg)))
   (nvp-jump--location (nvp-mode-config-path mode) nil action))
 
 ;; Jump to test with extension `STR'.  If it doesn't exist make a new
@@ -82,15 +70,8 @@
 ;;;###autoload
 (defun nvp-jump-to-mode-test (test action)
   "Jump to TEST file for mode, creating one if necessary."
-  (interactive
-   (let* ((files (let ((default-directory nvp/test)
-                       (completion-ignored-extensions
-                        (cons "target" completion-ignored-extensions)))
-                   (mapcar (lambda (f) (file-relative-name f nvp/test))
-                           (directory-files-recursively nvp/test "^[^.][^.]"))))
-          (test (nvp-completing-read "Test: " files)))
-     (list test (car current-prefix-arg))))
-  (nvp-jump--location (expand-file-name test nvp/test) nil action))
+  (interactive (list (nvp-read--mode-test) (car current-prefix-arg)))
+  (nvp-jump--location test nil action))
 
 ;;;###autoload
 (defun nvp-jump-to-mode-hook (mode action)
@@ -136,12 +117,7 @@
 (defun nvp-jump-to-info (file action)
   "Jump to info file (in org mode)                               . 
 With prefix jump this window, otherwise `find-file-other-window' . "
-  (interactive
-   (let* ((file (nvp-completing-read
-                 "Info file: "
-                 (directory-files (expand-file-name "org" nvp/info) nil "\.org")))
-          (file (expand-file-name file (expand-file-name "org" nvp/info))))
-     (list file (car current-prefix-arg))))
+  (interactive (list (nvp-read--info-files) (car current-prefix-arg)))
   (nvp-jump--location file nil action))
 
 ;; -------------------------------------------------------------------

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 21:09:00>
+;; Last modified: <2019-02-14 00:32:00>
 ;; Package-Requires: 
 ;; Created: 13 November 2016
 
@@ -44,38 +44,15 @@
   (nvp-local-vars))
 (eval-when-compile
   (defvar makefile-target-table))
+(require 'nvp-read)
 (declare-function w32-shell-execute "w32")
 (declare-function imenu--make-index-alist "imenu")
 (declare-function makefile-pickup-targets "make-mode")
 
-(autoload 'nvp-log "nvp-log")
-(autoload 'nvp-package-directory-dwim "nvp-package")
+(declare-function nvp-log "nvp-log")
+(declare-function nvp-package-directory-dwim "nvp-package")
 (nvp-with-gnu
   (autoload 'nvp-ext-sudo-command "nvp-ext"))
-
-(defvar nvp-install-makefile "~/bin/install/Makefile")
-
-;; completing read for mode configs
-(defun nvp-install-list-modes ()
-  (ido-completing-read
-   "Mode: "
-   (mapcar (lambda (x)
-             (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)\\.el\\)" "" x))
-           (directory-files nvp/config nil "^[^\\.].*\\.el$"))))
-
-(defun nvp-install-list-make-targets (&optional makefile)
-  "List available targets in MAKEFILE, defaulting to `nvp-install-makefile'."
-  (setq makefile (or makefile nvp-install-makefile))
-  (with-temp-buffer
-    (insert-file-contents (or makefile nvp-install-makefile))
-    (makefile-pickup-targets)
-    makefile-target-table))
-
-;; (defun nvp-install-make-target (&optional makefile target)
-;;   (interactive
-;;    (let ((makefile (and makefile )))
-;;     (list ())))
-;; )
 
 ;; possible local locations
 (defvar nvp-install-local-locations '("~/.local/bin/" "/usr/local/bin/"))
@@ -311,7 +288,7 @@
 
 ;;;###autoload
 (defun nvp-install-mode (mode)
-  (interactive (list (nvp-install-list-modes)))
+  (interactive (list (nvp-read--mode-config)))
   (load (nvp-mode-config-path mode)))
 
 ;;;###autoload

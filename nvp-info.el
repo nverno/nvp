@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 14:13:46>
+;; Last modified: <2019-02-14 00:30:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -35,6 +35,7 @@
 (require 'nvp)
 (require 'info)
 (require 'filenotify)
+;;; FIXME: how to remove all notifications without storing them?
 
 ;; compile list of my info manuals
 (defvar nvp-info-nodes ())

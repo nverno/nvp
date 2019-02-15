@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 05:10:48>
+;; Last modified: <2019-02-14 18:53:30>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -608,10 +608,10 @@ If BUFFER is non-nil, set local bindings in BUFFER."
      ("S-SPC" . scroll-up)
      ("M-n"   . nil)
      ("M-p"   . nil)
-     ("M-s-n" . nvp-move-next-heading)
+     ("M-s-n" . nvp-move-forward-heading)
      ("M-s-p" . nvp-move-previous-heading)
-     ("M-N"   . nvp-move-down-paragraph)
-     ("M-P"   . nvp-move-up-paragraph)))
+     ("M-N"   . nvp-move-forward-paragraph)
+     ("M-P"   . nvp-move-backward-paragraph)))
 
 (defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
 (defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
@@ -999,6 +999,11 @@ and install PLUGIN with asdf."
 ;; FIXME: most of these should either be generic or act on local variables
 ;; instead of being defined many times
 
+(cl-defmacro nvp-wrapper-function (name &optional doc &rest args
+                                        &key run-hooks &allow-other-keys)
+  (while (keywordp (car args))
+    (setq args (cdr (cdr args)))))
+
 ;; Marks
 (defmacro nvp-mark-defun (&optional first-time &rest rest)
   "Mark blocks, expanding successively."
@@ -1278,7 +1283,9 @@ PROPS defaults to setting :verbosity to 1."
      ,(if modes
           `(sp-with-modes ,modes
              ,@pairs)
-        `(sp-local-pair ,@pairs))))
+        (macroexp-progn
+         (cl-loop for pair in pairs
+            collect `(sp-local-pair ,@pair))))))
 
 ;; -------------------------------------------------------------------
 ;;; Package

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 05:34:41>
+;; Last modified: <2019-02-14 16:46:50>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -38,7 +38,6 @@
 (declare-function company-grab-symbol "company")
 
 ;;; TODO:
-;; - separate setup from variables
 ;; - only search in setup when not loaded
 ;;   `load-history-regexp', `load-history-filename-element'
 ;; - use mode-local ?, better way to set many mode-local variables
@@ -46,7 +45,6 @@
 ;;; Aliases
 (defalias 'nvp-completing-read 'ido-completing-read)
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
-(defalias 'nvp-move-previous-defun 'beginning-of-defun)
 
 ;; root directory
 (nvp-package-define-root)
@@ -86,6 +84,9 @@
 ;; (defvar-local nvp-repl-switch-function #'nvp-repl-switch)
 (defvar-local nvp-check-buffer-function #'checkdoc)
 (defvar-local nvp-disassemble-function #'disassemble)
+(defvar-local nvp-repl-switch-function ())
+(defvar-local nvp-test-function ())
+(defvar-local nvp-tag-function ())
 
 ;; -------------------------------------------------------------------
 ;;; general helpers

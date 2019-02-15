@@ -1,4 +1,4 @@
-;;; nvp-session ---  -*- lexical-binding: t; -*-
+;;; nvp-session.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
@@ -29,15 +29,15 @@
 (eval-when-compile
   (require 'nvp-macro)
   (nvp-local-vars)
-  (require 'cl-lib)
-  (yas-snippet-dirs))
+  (require 'cl-lib))
+(require 'nvp)
 (require 'desktop)
-(declare-function yas-load-directory "yasnippet")
+(nvp-declare "nvp-buffer" nvp-buffer-kill-all-buffers)
 
 (defsubst nvp-session--read (prompt)
   (list
    (expand-file-name "sessions" nvp/cache)
-   (ido-completing-read
+   (nvp-completing-read
     prompt
     (directory-files (expand-file-name "sessions" nvp/cache) nil "^.[^.]"))))
 
@@ -57,7 +57,7 @@
 ;;;###autoload
 (defun nvp-session-load (&optional dirname name)
   (interactive (nvp-session--read "Load session: "))
-  (call-interactively 'nvp-session-kill-all-buffers)
+  (call-interactively #'nvp-buffer-kill-all-buffers)
   (with-desktop-vars dirname name
     (desktop-read dirname)))
 
@@ -65,13 +65,6 @@
 (defun nvp-session-delete (&optional dirname name)
   (interactive (nvp-session--read "Delete session: "))
   (delete-file (expand-file-name name dirname)))
-
-;;;###autoload
-(defun nvp-session-kill-all-buffers ()
-  (interactive)
-  (save-some-buffers)
-  (mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
-  (kill-buffer))
 
 (provide 'nvp-session)
 ;;; nvp-session.el ends here

@@ -1,7 +1,8 @@
-;;; nvp-inf ---  -*- lexical-binding: t; -*-
+;;; nvp-inf.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-14 16:13:48>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -33,12 +34,9 @@
 ;; inferior process utilities
 
 ;; error signals
-(put 'nvp-inf-process-died 'error-conditions
-     '(nvp-inf-process-died error))
-(put 'nvp-inf-process-busy 'error-conditions
-     '(nvp-inf-process-busy error))
-(put 'nvp-inf-process-async 'error-conditions
-     '(nvp-inf-process-async error))
+(put 'nvp-inf-process-died 'error-conditions '(nvp-inf-process-died error))
+(put 'nvp-inf-process-busy 'error-conditions '(nvp-inf-process-busy error))
+(put 'nvp-inf-process-async 'error-conditions '(nvp-inf-process-async error))
 (put 'nvp-inf-process-uninterruptable 'error-conditions
      '(nvp-inf-process-uninterruptable error))
 (put 'nvp-inf-process-interrupt-failed 'error-conditions

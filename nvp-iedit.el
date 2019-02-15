@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 02:08:17>
+;; Last modified: <2019-02-14 16:11:01>
 ;; Package-Requires: 
 ;; Created: 22 August 2018
 
@@ -26,6 +26,7 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+;; toggle restriction of iedit b/w global, defun, and line
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

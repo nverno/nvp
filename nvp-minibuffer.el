@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 19:53:47>
+;; Last modified: <2019-02-14 18:53:38>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -26,17 +26,43 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+
+;; minibuffer config during elisp eval / edebugging
+
 ;;; Code:
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'nvp-macro))
 
 ;; -------------------------------------------------------------------
-;;; Eval 
+;;; General to eval / edebugging
+(defun nvp-minibuffer-general)
+
 ;; `(symbol-value bfn
 ;;; TODO:
 ;; - hippie-exp
 ;; - setup hook as elisp
 
 ;; -------------------------------------------------------------------
-;;; Debugging eval
+;;; Minibuffer elisp eval
+
+;;; TODO: expansion from history
+;; use elisp abbrevs/hippie during minibuffer evaluation
+;;;###autoload
+(defun nvp-minibuffer-eval-hook ()
+  (setq-local )
+  (setq-local hippie-expand-try-functions-list
+              '(
+                nvp-he-try-expand-local-abbrevs
+                try-complete-lisp-symbol-partially
+                try-complete-lisp-symbol))
+  (setq local-abbrev-table emacs-lisp-mode-abbrev-table)
+  (smartparens-mode)
+  (paredit-mode)
+  (eldoc-mode))
+
+;;;###autoload
+(add-hook 'eval-expression-minibuffer-setup-hook #'nvp-minibuffer-eval-hook)
 
 (provide 'nvp-minibuffer)
 ;;; nvp-minibuffer.el ends here

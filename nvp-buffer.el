@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-01 21:17:55>
+;; Last modified: <2019-02-14 16:07:52>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -48,6 +48,14 @@
 
 ;; ------------------------------------------------------------
 ;;; Kill buffers
+
+;;;###autoload
+(defun nvp-buffer-kill-all-buffers ()
+  "Kill all buffers including this one, calling `save-some-buffers' first."
+  (interactive)
+  (save-some-buffers)
+  (nvp-buffer-kill-other-buffers)
+  (kill-buffer))
 
 ;;;###autoload
 (defun nvp-buffer-kill-other-buffers () 
@@ -110,40 +118,6 @@
           (set-window-buffer (next-window) next-win)
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
-
-;; -------------------------------------------------------------------
-;;; Scratch buffers 
-
-;; Create a new scratch buffer in given mode.
-;;;###autoload
-(defun nvp-buffer-scratch (mode)
-  (interactive (list (if current-prefix-arg
-                         (intern
-                          (ido-completing-read
-                           "Major mode: "
-                           (let (r)
-                             (mapatoms
-                              (lambda (x)
-                                (when (string-suffix-p "-mode" (symbol-name x))
-                                  (push x r))))
-                             (mapcar 'symbol-name r))))
-                       'emacs-lisp-mode)))
-  (let ((n 0)
-        bufname)
-    (while (progn
-             (setq bufname (concat "*scratch*"
-                                   (if (= n 0) "" (int-to-string n))
-                                   "*"))
-             (setq n (1+ n))
-             (get-buffer bufname)))
-    (switch-to-buffer (get-buffer-create bufname))
-    (call-interactively mode)))
-
-;; Create scratch for current mode.
-;;;###autoload
-(defun nvp-buffer-scratch-current-mode ()
-  (interactive)
-  (nvp-buffer-scratch major-mode))
 
 ;; -------------------------------------------------------------------
 ;;; Buffer files 

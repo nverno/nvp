@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-31 04:18:20>
+;; Last modified: <2019-02-14 16:00:20>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -33,11 +33,10 @@
   (require 'cl-lib)
   (require 'nvp-macro)
   (require 'hydra))
-(require 'hydra)
 (require 'smerge-mode)
 
+(nvp-hydra-set-property 'nvp-hydra-smerge :verbosity 1)
 ;;;###autoload(autoload 'nvp-hydra-smerge/body "nvp-smerge")
-
 (defhydra nvp-hydra-smerge
   (:color red :hint nil :pre (smerge-mode 1))
   "
@@ -64,7 +63,6 @@ _q_uit _RET_: current
   ("=" smerge-diff-upper-lower)
   (">" smerge-diff-base-lower)
   ("q" nil :color blue))
-(hydra-set-property 'nvp-hydra-smerge :verbosity 1)
 
 (provide 'nvp-smerge)
 ;;; nvp-smerge.el ends here

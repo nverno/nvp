@@ -1,12 +1,12 @@
-;;; nvp-trace.el --- trace -*- lexical-binding: t; -*-
+;;; nvp-dev.el --- devel helpers -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-14 15:58:05>
+;; Last modified: <2019-02-14 16:15:33>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
-;; Created: 12 February 2019
+;; Created: 14 February 2019
 
 ;; This file is not part of GNU Emacs.
 ;;
@@ -29,17 +29,15 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'hydra)
   (require 'nvp-macro))
-(require 'trace)
+(nvp-declare "nadvice" advice-mapc advice-remove)
 
-;;;###autoload(autoload 'nvp-trace-hydra/body "nvp-trace")
-(nvp-hydra-set-property 'nvp-trace-hydra)
-(defhydra nvp-trace-hydra (:color blue )
-  ("f" trace-function "trace func")
-  ("b" trace-function-background "trace func background")
-  ("u" untrace-function "untrace func")
-  ("q" untrace-all "untrace all"))
+;; https://emacs.stackexchange.com/questions/24657/unadvise-a-function-remove-all-advice-from-it
+;;;###autoload
+(defun nvp-advice-remove-all (sym)
+  "Remove all advice from SYM."
+  (interactive "aFunction: ")
+  (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
 
-(provide 'nvp-trace)
-;;; nvp-trace.el ends here
+(provide 'nvp-dev)
+;;; nvp-dev.el ends here

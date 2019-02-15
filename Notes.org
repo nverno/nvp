@@ -1,0 +1,140 @@
+#+TITLE: Notes / Todos
+
+* Functions
+** General [0/8]
+- [ ] generic doc-at-point backends
+- [ ] generic test function
+- [ ] generic help-at-point using docs backend
+- [ ] generic buffer functions
+- [ ] generic dynamic abbrevs
+- [ ] generic repl-switching
+- [ ] make newline generic 
+- [ ] mark-defun optionally not include comments
+- [ ] align current defun region
+- [ ] interface to install external deps
+
+** Utils [0/4]
+- [ ] reusable region or string utility function
+- [ ] utility function to repeat command like kbdmacro-repeat
+- [ ] remove all methods from generic for debugging
+- [ ] function cache wrappers
+
+** Hooks [0/2]
+- [ ] minibuffer eval
+- [ ] minibuffer edebug
+
+** Completion [0/4]
+- [ ] hippie-expand minibuffer history
+- [ ] completion during edebugging?
+- [ ] fix quickhelp-toggle
+- [ ] macro company-local?
+
+** elisp
+- [ ] elisp-help-at-point: type/location, jump to source
+- [ ] macroify-bindings update => elisp
+- [X] generic buffer functions
+- [ ] fix generic dynamic abbrev
+
+** C
+- [ ] gather all c includes required by project
+- [ ] fixup awk script
+- [ ] generic local functions
+- [ ] generic dynamic-abbrevs
+- [ ] generic local abbrevs
+- [ ] generic doc-at-point
+- [ ] generic local includes
+- [ ] remove all left-over install stuff
+- [ ] update includes install
+
+** Makefile
+- [ ] fixup awk script to gather local variables for macrostep
+- [ ] update macrostep with additional variables + defaults
+- [ ] change cleanup to use align rules + better indentation
+
+** M4/Autotools
+- [ ] merge completion/font-lock with autoconf?
+- [ ] update hook
+
+** Awk
+- [ ] capf?
+- [ ] function to open src buffer from sh script
+- [ ] function to choose from useful oneliners
+
+** sh
+- [ ] capf for lexical scoped variables
+- [ ] merge capf bash-completion/variable-completion, maybe
+  `completion-merge-tables` from minibuffer
+- [ ] xref for company-bash sources
+- [ ] Split sh usage arguments in snippets
+- [ ] parse sh function documentation
+- [ ] generic jump to unit test
+- [ ] prefix hippie-shell-expand
+** Java
+- [ ] new root package directory w/o creating new directory
+*** javadoc-mode
+- [ ] formatting for lists
+- [ ] possible to determine table starts?
+- [ ] better faces
+- [ ] jump b/w sections, eg. Man-goto-section
+
+* Automation [1/6]
+- [ ] ggtags install
+- [ ] hooks to compile/autoload updated packages
+- [ ] better logging - only want to see warnings/errors
+- [ ] update makefiles - remove extra stuff
+- [ ] update build-scripts - refactor
+- [X] asm install
+
+* Elisp settings [1/5]
+- [ ] tags settings / ggtags / etags
+  https://github.com/skeeto/.emacs.d/tree/master/lisp
+- [X] wgrep
+- [ ] grep / ag settings
+- [ ] EDE
+- [ ] m4
+
+* Library fixes [0/8]
+- [ ] fix nvp-install
+- [ ] better package installs
+  https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
+- [ ] nvp-minibuffer: 
+- [ ] nvp-doc
+- [ ] nvp-abbrev-dynamic
+- [ ] nvp-disassemble
+- [ ] separate setup from nvp and load once
+- [ ] remove nvp-conf / merge with config-tools
+
+* Merge/remove old packages [0/16]
+- [ ] bmk-to-bmk
+- [ ] esh-help
+- [ ] project-templates
+- [ ] project-ido
+- [ ] cheatsheet-lookup
+- [ ] yas-capf
+- [ ] save-utils
+- [ ] log-utils
+- [ ] help-utils
+- [ ] tag-utils
+- [ ] config-tools
+- [ ] md-tools
+- [ ] elisp-utils
+- [ ] yaml-tools
+- [ ] shell-tools
+- [ ] c-tools
+
+* Tests / Profile [0/1]
+- [ ] update profiling script
+- [ ] add back unit tests
+- [ ] choose testing framework
+- [ ] update CI
+
+* Packages [0/3]
+- [ ] new cookiecutter wrapper
+- [ ] update/remove fork of cargo
+- [ ] incorporate awk-it?
+
+* cookies [0/3]
+- [ ] el
+- [ ] pydata
+- [ ] CI
+

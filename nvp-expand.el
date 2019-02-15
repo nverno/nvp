@@ -1,7 +1,8 @@
-;;; nvp-expand ---  -*- lexical-binding: t; -*-
+;;; nvp-expand.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-14 15:56:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -30,6 +31,8 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (defvar tiny-beg))
+(declare-function tiny-expand "tiny")
+(declare-function nvp-list-wrap-quotes "nvp-edit")
 
 ;;;###autoload
 (defun nvp-expand-range (&optional sep)
@@ -87,11 +90,6 @@ for string to wrap."
                   (split-string (match-string 2) "|" 'omit " "))
                 "\n")
      nil nil nil 0)))
-
-;; -------------------------------------------------------------------
-
-(declare-function tiny-expand "tiny")
-(declare-function nvp-list-wrap-quotes "nvp-edit")
 
 (provide 'nvp-expand)
 ;;; nvp-expand.el ends here

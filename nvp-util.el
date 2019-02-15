@@ -1,9 +1,9 @@
-;;; nvp-util.el ---  -*- lexical-binding: t; -*-
+;;; nvp-util.el --- Various utility functinos -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-02 22:10:10>
+;; Last modified: <2019-02-14 18:53:08>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  2 November 2016
@@ -30,6 +30,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(require 'nvp)
 
 ;; -------------------------------------------------------------------
 ;;; Lists
@@ -119,15 +120,15 @@
              (progn (back-to-indentation) (point))))
           "\\)"))
 
-;; Skip back across `backwards' chars, then look for `forward',
+;; Skip back across `backchars' chars, then look for `forward-regexp',
 ;; returning cons of start and end of match.
-(defsubst nvp-back-chars-then-look (backwards &optional forward)
-  (let ((forward (or forward (format "[%s]+" backwards))))
-    (save-excursion
-      (skip-chars-backward backwards)
-      (if (looking-at forward)
-          (cons (point) (match-end 0))
-        nil))))
+(defun nvp-back-chars-then-look (backchars &optional forward-regexp)
+  (or forward-regexp (setq forward-regexp (format "[%s]+" backchars)))
+  (save-excursion
+    (skip-chars-backward backchars)
+    (if (looking-at forward-regexp)
+        (cons (point) (match-end 0))
+      nil)))
 
 (provide 'nvp-util)
 ;;; nvp-util.el ends here

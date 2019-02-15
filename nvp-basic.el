@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-09 06:50:10>
+;; Last modified: <2019-02-14 15:38:10>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -33,13 +33,6 @@
   (require 'cl-lib)
   (require 'subr-x))
 (require 'nvp)
-
-;;; TODO:
-;; - reusable region or symbol/point utility function
-;; - possible generics: next/previous function, header-regex, newline
-;;; FIXME:
-;; - quickhelp toggle
-;; - macro company-local
 
 ;; -------------------------------------------------------------------
 ;;; Movement 
@@ -76,9 +69,11 @@
   (interactive)
   (forward-line -5))
 
-(defun nvp-move-next-defun (&rest _ignored)
+(defun nvp-move-forward-defun (&rest _ignored)
   (interactive)
   (beginning-of-defun -1))
+
+(defalias 'nvp-move-backward-defun 'beginning-of-defun)
 
 ;;; Headings
 ;; these may vary by mode
@@ -96,109 +91,27 @@
                 (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" cs
                         (regexp-quote (substring comment 1 2))))))))
 
-(defun nvp-move-next-heading (&rest _ignored)
+(defun nvp-move-forward-heading (&optional back)
   (interactive)
   (condition-case nil
       (progn
-        (forward-line 1)
-        (re-search-forward (nvp-move-header-regex))
+        (forward-line (if back -1 1))
+        (if back (re-search-backward (nvp-move-header-regex))
+          (re-search-forward (nvp-move-header-regex)))
         (beginning-of-line))
     (error
-     (forward-line -1)
-     (user-error "No more headings"))))
+     (forward-line (if back 1 -1))
+     (user-error (format "No %s headings" (if back "previous" "more"))))))
 
 (defun nvp-move-previous-heading (&rest _ignored)
   (interactive)
-  (condition-case nil
-      (progn
-        (forward-line -1)
-        (re-search-backward (nvp-move-header-regex))
-        (beginning-of-line))
-    (error
-     (forward-line 1)
-     (user-error "No previous headings"))))
+  (nvp-move-forward-heading 'back))
 
 ;; -------------------------------------------------------------------
-;;; Scrolling 
+;;; Scrolling
 (declare-function do-smooth-scroll "smooth-scrolling")
 
 (nvp-advise-commands 'do-smooth-scroll :after (nvp-move-next5 nvp-move-prev5))
-
-;; -------------------------------------------------------------------
-;;; Duplicate lines 
-
-(declare-function paredit-kill "paredit")
-
-;; Duplicates the current line or region arg times.
-;; if there's no region, the current line will be duplicated
-;; (or last non-empty).
-(defun nvp-duplicate-line-or-region (arg)
-  (interactive "p")
-  (if (region-active-p)
-      (let ((beg (region-beginning))
-            (end (region-end)))
-        (nvp--duplicate-region arg beg end))
-    (nvp--duplicate-last-nonempty-line arg)
-    (nvp-bind-transient-key "d" #'nvp--duplicate-back-and-dupe)))
-
-;; duplicate the current line num times.
-(defun nvp-duplicate-current-line (&optional num)
-  (interactive "p")
-  (if (bound-and-true-p paredit-mode)
-      (nvp--paredit-duplicate-current-line)
-    (save-excursion
-      (when (eq (point-at-eol) (point-max))
-        (goto-char (point-max))
-        (newline)
-        (forward-char -1))
-      (nvp--duplicate-region num (point-at-bol) (1+ (point-at-eol))))))
-
-(defun nvp--duplicate-back-and-dupe ()
-  (interactive)
-  (forward-line -1)
-  (nvp-duplicate-current-line))
-
-;; duplicates the region bounded by start and end num times.
-;; if no start and end is provided, the current region-beginning and
-;; region-end is used.
-(defun nvp--duplicate-region (&optional num start end)
-  (interactive "p")
-  (save-excursion
-    (let* ((start (or start (region-beginning)))
-	   (end (or end (region-end)))
-	   (region (buffer-substring start end)))
-      (goto-char end)
-      (dotimes (_i num)
-	(insert region)))))
-
-;; Duplicate the current of previous line that isn't blank.
-(defun nvp--duplicate-last-nonempty-line (&optional num)
-  (interactive "p")
-  (let ((back 0))
-    (while (and (save-excursion
-                  (beginning-of-line)
-                  (looking-at-p "[[:space:]]*$"))
-                (> (line-number-at-pos) 1))
-      (forward-line -1)
-      (setq back (1+ back)))
-    (when (eq (point-at-eol) (point-max))
-      (goto-char (point-max))
-      (newline)
-      (forward-char -1))
-    (let ((region (buffer-substring (point-at-bol)
-                                    (1+ (point-at-eol)))))
-      (forward-line back)
-      (dotimes (_i num)
-        (insert region))))
-  (goto-char (point-at-eol)))
-
-(defun nvp--paredit-duplicate-current-line ()
-  (back-to-indentation)
-  (let (kill-ring kill-ring-yank-pointer)
-    (paredit-kill)
-    (yank)
-    (newline-and-indent)
-    (yank)))
 
 ;; -------------------------------------------------------------------
 ;;; Paredit
@@ -218,30 +131,6 @@ With ARG use default behaviour, except also call `expand-abbrev'."
                  (unless (eq (line-number-at-pos) (line-number-at-pos beg))
                    (goto-char beg))
                  (insert (car cmt)))))))
-
-;; https://www.emacswiki.org/emacs/ParEdit
-(defun nvp-paredit-delete-indentation (&optional arg)
-  "Handle joining lines that end in a comment."
-  (interactive "P")
-  (let (comt)
-    (save-excursion
-      (move-beginning-of-line (if arg 1 0))
-      (when (skip-syntax-forward "^<" (point-at-eol))
-        (setq comt (delete-and-extract-region (point) (point-at-eol))))
-      (delete-indentation arg)
-      (when comt
-        (save-excursion
-          (move-end-of-line 1)
-          (insert " ")
-          (insert comt))))))
-
-(defun nvp-paredit-remove-newlines ()
-  "Removes extra whitespace and newlines from current point to the next paren."
-  (interactive)
-  (let ((up-to (point)))
-    (backward-char)
-    (while (> (point) up-to)
-      (nvp-paredit-delete-indentation))))
 
 ;; -------------------------------------------------------------------
 ;;; Company
@@ -293,14 +182,6 @@ On error (read-only), quit without selecting."
 (defun nvp-ido-beginning-of-input ()
   (interactive)
   (goto-char (minibuffer-prompt-end)))
-
-;; -------------------------------------------------------------------
-;;; Assorted
-
-(defun nvp-kill-emacs ()
-  (interactive)
-  (save-some-buffers 'no-ask)
-  (kill-emacs))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

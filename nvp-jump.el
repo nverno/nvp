@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 22:30:00>
+;; Last modified: <2019-02-14 15:30:21>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -99,14 +99,18 @@
   (interactive
    (let* ((choose (eq 16 (car current-prefix-arg)))
           (local-file (bound-and-true-p nvp-local-notes-file))
-          (org (if choose
-                   (nvp-completing-read
-                    "Org file: "
-                    (delq nil (cons local-file
-                                    (directory-files nvp/org nil "^[^.]"))))
-                 "gtd.org"))
-          (file (or (and (not choose) local-file)
-                    (expand-file-name org nvp/org))))
+          (org (unless (eq 64 (car current-prefix-arg))
+                 (if choose
+                     (nvp-completing-read
+                      "Org file: "
+                      (delq nil (cons local-file
+                                      (directory-files nvp/org nil "^[^.]"))))
+                   "gtd.org")))
+          (file (cond
+                 ((eq (car current-prefix-arg) 64)
+                  (expand-file-name "gtd.org" nvp/org))
+                 (t (if (not choose) local-file
+                      (expand-file-name org nvp/org))))))
      (list file (car current-prefix-arg) local-file)))
   (with-current-buffer (nvp-jump--location org-file nil action)
     (unless local-file
@@ -158,14 +162,12 @@ With triple prefix, offer recursive results."
   (interactive
    (let* ((arg (or (car current-prefix-arg) 0))
           (case-fold-search t)
-          ;; (mode (substring (substring-no-properties (symbol-name major-mode)) 0 -5))
-          (locals (bound-and-true-p nvp-books-local-directory))
           (root (cond
-                 (root root)
                  ((> arg 4)
                   (expand-file-name
                    (read-directory-name "Book Directory: " nvp/books)))
-                 (locals locals)
+                 ((bound-and-true-p nvp-books-local-directory)
+                  nvp-books-local-directory)
                  (t (expand-file-name "programming" nvp/books)))))
      (list root arg)))
   (let* ((files (mapcar (lambda (f) (file-relative-name f dir))

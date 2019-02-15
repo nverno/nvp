@@ -264,5 +264,34 @@ Uses default vaules for `sp-pair-list'."
   (interactive (list (read-quoted-char "Char: ")))
   (insert-char char))
 
+;; -------------------------------------------------------------------
+;;; Assorted
+
+;; Print counts of strings in region, with prefix dump at point
+;;;###autoload
+(defun nvp-stats-uniq (beg end &optional count-lines)
+  "Print counts (case-insensitive) of unique words in region BEG to END.
+With prefix COUNT-LINES count unique lines."
+  (interactive "r\nP")
+  (require 'nvp-hash)
+  (let ((ht (make-hash-table :test 'case-fold))
+        (lines (split-string
+                (buffer-substring-no-properties beg end) "\n" 'omit-nulls " "))
+        lst)
+    (if count-lines
+        (dolist (line lines)
+          (puthash line (1+ (gethash line ht 0)) ht))
+      ;; strip punctuation for words
+      (cl-loop for line in lines
+         as words = (split-string line "[[:punct:] \t]" 'omit " ")
+         when words
+         do (cl-loop for word in words
+               do (puthash word (1+ (gethash word ht 0)) ht))))
+    (maphash (lambda (key val) (push (cons val key) lst)) ht)
+    (setq lst (cl-sort lst #'> :key #'car))
+    (nvp-with-results-buffer nil
+      (pcase-dolist (`(,k . ,v) lst)
+        (princ (format "%d: %s\n" k v))))))
+
 (provide 'nvp-edit)
 ;;; nvp-edit.el ends here

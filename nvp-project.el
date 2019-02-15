@@ -1,4 +1,4 @@
-;;; nvp-project ---  -*- lexical-binding: t; -*-
+;;; nvp-project.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 

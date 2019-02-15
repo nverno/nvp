@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 20:58:31>
+;; Last modified: <2019-02-15 02:22:14>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -71,12 +71,18 @@
     `(,nvp/bin ,nvp/binw)))
 
 ;; local variables for jumping -- might be set in dir-locals
+(defvar nvp-default-org-file "gtd.org")
+(defvar nvp-default-hooks-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
+(defvar nvp-build-init-dir (expand-file-name "build" nvp/home))
 (defvar-local nvp-notes-local-file ())
 (defvar-local nvp-books-local-directory ())
 
 ;; installs
 (defvar-local nvp-install-mode-targets ()
   "External installation targets for a major-mode.")
+
+;; minibuffer read history from jumping to local configs
+(defvar nvp-read-config-history ())
 
 ;; -------------------------------------------------------------------
 ;;; Functions
@@ -89,9 +95,6 @@
   "Function called to run applicable tests at point.")
 (defvar-local nvp-tag-function ()
   "Function called to ")
-
-;; minibuffer read history from jumping to local configs
-(defvar nvp-read-config-history ())
 
 ;; -------------------------------------------------------------------
 ;;; general helpers

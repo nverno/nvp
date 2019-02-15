@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 18:49:04>
+;; Last modified: <2019-02-15 01:32:41>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -34,20 +34,24 @@
   (require 'nvp-macro))
 (require 'nvp)
 
+;;; FIXME: check for package on load-history before running setup routine
+;; should cache packages w/ local variables as structs
+
 ;; -------------------------------------------------------------------
 ;;; Helpers
 
-;; macro version unless needing to mapc
+;; alternative macro version to find at compile time -- falls back to this
 ;;;###autoload
 (defun nvp-setup-program (name &optional path)
   (and (symbolp name) (setq name (symbol-name name)))
   (and path (substitute-env-in-file-name path))
   (or (nvp-with-gnu/w32
-          (cl-loop for dir in (delq nil (cons path nvp-program-search-paths))
-             as f = (expand-file-name name dir)
-             when (file-exists-p f)
-             return f)
-        (bound-and-true-p (nvp-w32-program name)))
+          (cl-loop for p in (delq nil (cons path nvp-program-search-paths))
+             do (let ((f (expand-file-name name p)))
+                  (and (file-exists-p f)
+                       (file-executable-p f)
+                       (cl-return f))))
+        (bound-and-true-p (intern (nvp-w32-program name))))
       (executable-find name)))
 
 ;; ------------------------------------------------------------

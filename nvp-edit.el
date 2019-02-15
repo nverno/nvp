@@ -38,15 +38,18 @@
 ;; -------------------------------------------------------------------
 ;;; Sort
 
-;;; FIXME: don't ignore list syntax
+;; list syntax
 ;; #<marker at 7784 in thingatpt.el.gz>
 (defmacro nvp-sort-with-defaults (start end &rest body)
   "Sort region between START and END by BODY, using defaults and indent region \
 afterward."
-  (declare (indent defun))
+  (declare (indent defun) (debug (sexp sexp &rest form)))
   `(let ((sort-fold-case t))
-     ,@body
-     (indent-region ,start ,end)))
+     (save-excursion
+       (save-match-data
+         (unwind-protect
+             ,@body
+           (indent-region ,start ,end))))))
 
 ;;;###autoload
 (defun nvp-sort-lines-first-word (start end &optional reverse)
@@ -57,16 +60,34 @@ With prefix sort in REVERSE."
     (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
 
 ;;;###autoload
-(defun nvp-sort-list (start end &optional reverse)
-  "Sort list b/w START and END by words/symbols.
+(defun nvp-sort-list (&optional start end reverse)
+  "Sort list region in list at point or b/w START and END by words/symbols.
 With prefix sort in REVERSE."
   (interactive "r\nP")
-  (nvp-sort-with-defaults start end
-    (sort-regexp-fields reverse (nvp-concat "\\(?:"
-                                            "\\s\"\\S\"*\\s\"" ;quoted
-                                            "\\|\\sw+\\|\\s_+" ;word/symbol
-                                            "\\)")
-                        "\\(\\sw\\|\\s_\\)+" start end)))
+  (nvp-within-bounds-of-thing-or-region 'list start end
+    (nvp-sort-with-defaults start end
+      (sort-regexp-fields reverse (nvp-concat "\\(?:"
+                                              "\\s\"\\S\"*\\s\"" ;quoted
+                                              "\\|\\sw+\\|\\s_+" ;word/symbol
+                                              "\\)")
+                          "\\(\\sw\\|\\s_\\)+" start end))))
+
+;;;###autoload
+(defun nvp-sort-alist (&optional start end reverse)
+  "Sort alist by car of each element in list at point or b/w START and END."
+  (interactive "r\nP")
+  (nvp-within-bounds-of-thing-or-region 'list start end
+    (nvp-sort-with-defaults start end
+      ;; skip to first inner '(' eg. if this is a macro body
+      (goto-char start)
+      ;; sort between starting and ending cells
+      (let ((epos (save-excursion (forward-list) (1- (point))))
+            (bpos (progn
+                    (forward-char 1)
+                    (skip-syntax-forward "^(")
+                    (point))))
+        (sort-regexp-fields
+         reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)" bpos epos)))))
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)
@@ -121,13 +142,11 @@ With prefix sort in REVERSE."
 ;; -------------------------------------------------------------------
 ;;; Align 
 
-;;;###autoload
-(defadvice align-regexp (around align-regexp-with-spaces)
-  "Never use tabs for alignment."
+;; ensure spaces when aligning
+;;;###autoload(advice-add 'align-regexp :around #'align-regexp@no-tabs)
+(define-advice align-regexp (:around (old-fn &rest args) "no-tabs")
   (let ((indent-tabs-mode nil))
-    ad-do-it))
-;;;###autoload
-(ad-activate 'align-regexp)
+    (apply old-fn args)))
 
 ;; Repeat alignment with respect to `REGEXP'. If `JUSTIFY-RIGHT'
 ;; is non-nil, justify to the right. If `AFTER', add whitespace to left

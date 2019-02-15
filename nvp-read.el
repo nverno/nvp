@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 20:50:08>
+;; Last modified: <2019-02-15 02:20:29>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -33,11 +33,27 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp))
 (require 'nvp)                          ;nvp-prompt--with-default
 (declare-function function-called-at-point "help")
 (declare-function help--symbol-completion-table "help-fns")
 (autoload 'eldoc-minibuffer-message "eldoc")
+
+(defsubst nvp-read--relative-files (root regexp)
+  (mapcar (lambda (f) (file-relative-name f root))
+          (directory-files-recursively root regexp)))
+
+;;;###autoload
+(defun nvp-read-relative-recursively (root regexp &optional prompt default)
+  "Return full filepath prompting with file matching REGEXP from ROOT with\
+`directory-files-recursively'."
+  (expand-file-name
+   (nvp-completing-read
+    (nvp-prompt--with-default (or prompt "File: ") default)
+    (nvp-read--relative-files root regexp) nil nil nil
+    'nvp-read-config-history default)
+   root))
 
 ;; some completing reads for general config files
 (defun nvp-read-mode-config (&optional prompt default)
@@ -65,8 +81,7 @@
          (default-directory nvp/test)
          (completion-ignored-extensions
           (cons "target" completion-ignored-extensions))
-         (files (mapcar (lambda (f) (file-relative-name f nvp/test))
-                        (directory-files-recursively nvp/test "^[^.][^.]"))))
+         (files (nvp-read--relative-files nvp/test "^[^.][^.]")))
     (unless default
       (setq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files))))
     (setq prompt (nvp-prompt--with-default (or prompt "Test: ") default))
@@ -75,15 +90,17 @@
       prompt files nil nil nil 'nvp-read-config-history default)
      nvp/test)))
 
-(defun nvp-read--org-file (&optional prompt default)
-  (or default (setq default "gtd.org"))
-  (setq prompt (nvp-prompt--with-default (or prompt "Org file: ") default))
-  (ido-completing-read
-   prompt
-   (expand-file-name (directory-files nvp/org nil "^[^.]") nvp/org) nil nil nil
-   'nvp-read-config-history default))
+;; if LOCAL is non-nil use that
+(defun nvp-read--org-file (&optional prompt default nolocal)
+  (if (and (not nolocal) (bound-and-true-p nvp-local-notes-file))
+      nvp-local-notes-file
+    (or default (setq default nvp-default-org-file))
+    (setq prompt (nvp-prompt--with-default (or prompt "Org file: ") default))
+    (nvp-read-relative-recursively
+     nvp/org "\.org$" (or prompt "Org file: ") default)))
 
 ;; -------------------------------------------------------------------
+;;; Minibuffer input
 
 ;;;###autoload
 (defun nvp-read-with-message (prompt &optional format-string &rest args)
@@ -91,6 +108,9 @@
   (minibuffer-with-setup-hook
       (:append (lambda () (eldoc-minibuffer-message format-string args)))
     (read-from-minibuffer prompt)))
+
+;; -------------------------------------------------------------------
+;;; Elisp objects 
 
 ;;;###autoload
 (defun nvp-read-obarray-regex (prompt &optional regexp default)

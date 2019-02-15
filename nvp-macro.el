@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 00:55:57>
+;; Last modified: <2019-02-15 07:43:21>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -122,6 +122,18 @@ use either `buffer-file-name' or `buffer-name'."
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
+(defmacro nvp-within-bounds-of-thing-or-region (thing beg end &rest body)
+  "Execute BODY with region widened to bounds of THING at point \
+unless region is active.
+BEG and END are bound to the bounds."
+  (declare (indent defun) (debug (sexp sexp sexp &rest form)))
+  `(if (not (region-active-p))
+       (save-restriction
+         (widen)
+         (cl-destructuring-bind (,beg . ,end) (bounds-of-thing-at-point ,thing)
+           ,@body))
+     ,@body))
+
 (defmacro nvp-unless-in-comment-or-string (&rest body)
   "Execute BODY unless currently in a string or comment."
   (declare (indent defun))
@@ -208,6 +220,7 @@ line at match (default) or do BODY at point if non-nil."
 
 ;; -------------------------------------------------------------------
 ;;; Programs / Paths
+(declare-function nvp-setup-program "nvp-setup")
 
 (defmacro nvp-w32-program (name)
   "Name of cached program on shitty w32.e"
@@ -228,14 +241,18 @@ line at match (default) or do BODY at point if non-nil."
                  (t (user-error "%S unmatched"))))
          (path (and path (substitute-env-in-file-name path))))
     `(,(if no-compile 'progn 'eval-when-compile)
-       (or (nvp-with-gnu/w32
-               (cl-loop for p in
-                    (delq nil (cons ,path '("~/.local/bin/" "/usr/local/bin")))
-                  do (let ((f (expand-file-name ,name p)))
-                       (and (file-exists-p f)
-                            (cl-return f))))
-             (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
-           (executable-find ,name)))))
+      (or (nvp-with-gnu/w32
+              (cl-loop for p in
+                   (delq nil (cons ,path '("~/bin/" "~/.asdf/shims" "~/.local/bin/"
+                                           "/usr/local/bin")))
+                 do (let ((f (expand-file-name ,name p)))
+                      (and (file-exists-p f)
+                           (file-executable-p f)
+                           (cl-return f))))
+            (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
+          (executable-find ,name)
+          ;; fallback to runtime search
+          `(nvp-setup-program ,name ,path)))))
 
 (defmacro nvp-path (path &optional no-compile)
   `(,(if no-compile 'progn 'eval-when-compile)
@@ -1299,18 +1316,21 @@ PROPS defaults to setting :verbosity to 1."
 
 ;; smartparens
 (cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
-  (declare (indent defun))
+  (declare (indent defun) (debug defun))
   (while (keywordp (car pairs))
     (setq pairs (cdr (cdr pairs))))
   `(progn
      (eval-when-compile (require 'smartparens))
      (declare-function sp-local-pair "smartparens")
-     ,(if modes
-          `(sp-with-modes ,modes
-             ,@pairs)
+     ,(cond
+       (modes
+        `(sp-with-modes ,modes
+           ,@pairs))
+       ((equal 'quote (caar pairs)) `(sp-local-pair ,@pairs))
+       (t
         (macroexp-progn
          (cl-loop for pair in pairs
-            collect `(sp-local-pair ,@pair))))))
+            collect `(sp-local-pair ,@pair)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Package

@@ -1,24 +1,26 @@
 #+TITLE: Notes / Todos
+#+DATE: <2019-02-15 00:59:03>
 
 * Functions
-** General [0/11]
+** General [1/11]
 - [ ] generic doc-at-point backends
 - [ ] generic test function
 - [ ] generic help-at-point using docs backend
 - [ ] generic buffer functions
 - [ ] generic dynamic abbrevs
 - [ ] generic repl-switching
-- [ ] make newline generic 
+- [X] make newline generic 
 - [ ] mark-defun optionally not include comments
 - [ ] align current defun region
 - [ ] interface to install external deps
-- [ ] read w/ popup help: `register-read-with-preview'
+- [ ] quickhelp-toggle
 
-** Utils [0/4]
+** Utils [1/5]
 - [ ] reusable region or string utility function
 - [ ] utility function to repeat command like kbdmacro-repeat
 - [ ] remove all methods from generic for debugging
-- [ ] function cache wrappers
+- [X] function cache wrappers
+- [ ] read w/ popup help: `register-read-with-preview'
 
 ** Hooks [0/2]
 - [ ] minibuffer eval
@@ -81,9 +83,9 @@
 * Automation [1/6]
 - [ ] ggtags install
 - [ ] hooks to compile/autoload updated packages
-- [ ] better logging - only want to see warnings/errors
+- [ ] better logging - only want to see warnings/errors during build
 - [ ] update makefiles - remove extra stuff
-- [ ] update build-scripts - refactor
+- [ ] update build-scripts for init / site-lisp - refactor
 - [X] asm install
 
 * Elisp settings [1/5]
@@ -98,41 +100,45 @@
 - [ ] fix nvp-install
 - [ ] better package installs
   https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
-- [ ] nvp-minibuffer: 
-- [ ] nvp-doc
-- [ ] nvp-abbrev-dynamic
-- [ ] nvp-disassemble
+- [ ] nvp-minibuffer: eval / edebug hooks, hippie expand history
+- [ ] nvp-doc - company backend, man backend, fallback to websearch? zeal?
+- [ ] nvp-abbrev-dynamic - should be ready for elisp / C
+- [ ] nvp-disassemble - waiting on generic docs
 - [ ] separate setup from nvp and load once
 - [ ] remove nvp-conf / merge with config-tools
 
-* Merge/remove old packages [0/16]
-- [ ] bmk-to-bmk
-- [ ] esh-help
-- [ ] project-templates
-- [ ] project-ido
-- [ ] cheatsheet-lookup
-- [ ] yas-capf
-- [ ] save-utils
-- [ ] log-utils
-- [ ] help-utils
-- [ ] tag-utils
-- [ ] config-tools
-- [ ] md-tools
-- [ ] elisp-utils
-- [ ] yaml-tools
-- [ ] shell-tools
-- [ ] c-tools
+* Merge/remove old packages [0/11]
+- [ ] bmk-to-bmk => nvp-bookmark
+- [ ] esh-help => nvp-eshell
+- [ ] project-templates => cookiecutter?
+- [ ] project-ido => cookiecutter?
+- [ ] cheatsheet-lookup => nvp-help
+- [ ] yas-capf => nvp-snippet
+- [ ] save-utils => nvp-utils
+- [ ] log-utils => nvp-log
+- [ ] help-utils => nvp-help
+- [ ] tag-utils => nvp-tags
+- [ ] config-tools => nvp-conf
+** subdirs [0/5]
+- [ ] md-tools => subdir 
+- [ ] elisp-utils => subdir
+- [ ] yaml-tools => subdir 
+- [ ] shell-tools => subdir
+- [ ] c-tools => subdir
 
-* Tests / Profile [0/1]
+* Tests / Profile [2/4]
 - [ ] update profiling script
-- [ ] add back unit tests
-- [ ] choose testing framework
 - [ ] update CI
+- [X] choose testing framework
+- [X] add back unit tests
+
+[[https://github.com/emacsmirror/paredit/blob/master/test.el][paredit tests]]
 
 * Packages [0/3]
 - [ ] new cookiecutter wrapper
 - [ ] update/remove fork of cargo
 - [ ] incorporate awk-it?
+- [ ] extensions for awk
 
 * cookies [0/3]
 - [ ] el

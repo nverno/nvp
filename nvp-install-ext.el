@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-14 05:32:22>
+;; Last modified: <2019-02-15 00:45:28>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -45,7 +45,7 @@
 (cl-defstruct (nvp-installer (:constructor nvp-installer-make)
                              (:copier nil))
   "Struct to hold external installer info."
-  location help targets pending buffer)
+  location help targets pending buffer pkg)
 
 ;; (defvar nvp-installer
 ;;   (nvp-installer-makefile-make

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 00:08:52>
+;; Last modified: <2019-02-15 00:40:18>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -36,30 +36,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Movement 
-
-;; jump to next char on this line. if matching char,
-;; pressing the same key again jumps to the next one, etc.
-(defun nvp-move-char-this-line (&optional char)
-  (interactive (list (char-to-string (read-char "Char: " t))))
-  (let ((case-fold-search t))
-    (condition-case nil
-        (search-forward char (point-at-eol))
-      (error (let ((pt (point)))
-               (beginning-of-line)
-               (or (search-forward char (point-at-eol))
-                   (goto-char pt))))))
-  (nvp-bind-transient-key
-   char (lambda () (interactive) (nvp-move-char-this-line char)) t))
-
-;; used recursively below so not a macro
-(defun nvp-bind-transient-key (key cmd &optional keep exit)
-  "Bind KEY to CMD in transient map."
-  (set-transient-map
-   (let ((tmap (make-sparse-keymap)))
-     (define-key tmap (kbd key) cmd)
-     tmap)
-   (or keep t)
-   (or exit nil)))
 
 (defun nvp-move-next5 (&rest _ignored)
   (interactive)

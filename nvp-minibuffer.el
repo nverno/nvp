@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-14 18:53:38>
+;; Last modified: <2019-02-15 00:46:28>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -36,7 +36,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; General to eval / edebugging
-(defun nvp-minibuffer-general)
+;; (defun nvp-minibuffer-general)
 
 ;; `(symbol-value bfn
 ;;; TODO:
@@ -50,7 +50,7 @@
 ;; use elisp abbrevs/hippie during minibuffer evaluation
 ;;;###autoload
 (defun nvp-minibuffer-eval-hook ()
-  (setq-local )
+  ;; (setq-local )
   (setq-local hippie-expand-try-functions-list
               '(
                 nvp-he-try-expand-local-abbrevs

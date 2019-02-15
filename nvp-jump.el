@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 15:30:21>
+;; Last modified: <2019-02-15 00:59:11>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -92,7 +92,7 @@
       (search-forward str-mode-hook nil t))))
 
 ;; -------------------------------------------------------------------
-;;; Org
+;;; Org / Info
 
 ;;;###autoload
 (defun nvp-jump-to-org (org-file action &optional local-file)
@@ -194,6 +194,9 @@ With triple prefix, offer recursive results."
 
 ;; -------------------------------------------------------------------
 ;;; Other
+
+;;;###autoload
+(defun nvp-jump-to-build-file ())
 
 ;; jump to register in other window
 ;;;###autoload

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 20:07:41>
+;; Last modified: <2019-02-15 00:55:57>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -157,12 +157,13 @@ use either `buffer-file-name' or `buffer-name'."
 
 (defmacro nvp-stringify (name)
   "Sort of ensure that NAME symbol is a string."
-  `(pcase ,name
-     ((pred stringp) ,name)
-     ((pred symbolp) (symbol-name ,name))
-     (`(quote ,sym) (symbol-name sym))
-     (`(function ,sym) (symbol-name sym))
-     (_ (user-error "How to stringify %S?" ,name))))
+  `(progn
+     (pcase ,name
+       ((pred stringp) ,name)
+       ((pred symbolp) (symbol-name ,name))
+       (`(quote ,sym) (symbol-name sym))
+       (`(function ,sym) (symbol-name sym))
+       (_ (user-error "How to stringify %S?" ,name)))))
 
 ;; -------------------------------------------------------------------
 ;;; Regex / Strings
@@ -251,7 +252,7 @@ line at match (default) or do BODY at point if non-nil."
 
 (defmacro nvp-cache-file-path (filename)
   "Create cache path for FILENAME."
-  `(progn (expand-file-name (nvp-stringify ,filename) nvp/cache)))
+  `(progn (expand-file-name ,(nvp-stringify filename) nvp/cache)))
 
 ;; -------------------------------------------------------------------
 ;;; REPLs

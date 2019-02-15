@@ -148,6 +148,19 @@ With prefix sort in REVERSE."
   (let ((indent-tabs-mode nil))
     (apply old-fn args)))
 
+;; align restricted to current defun
+(defun nvp-align-current-defun (&optional arg)
+  "Restrict align to current defun, minus preceding comments using default rules.
+With prefix ARG, highlight changes that would take place with rule."
+  (interactive "P")
+  (save-mark-and-excursion
+    (setq mark-active nil)
+    (beginning-of-defun)
+    (mark-defun)
+    (comment-forward (point-max))       ;skip preceding comments
+    (if arg (call-interactively 'align-highlight-rule)
+      (call-interactively 'align))))
+
 ;; Repeat alignment with respect to `REGEXP'. If `JUSTIFY-RIGHT'
 ;; is non-nil, justify to the right. If `AFTER', add whitespace to left
 ;; instead of right.

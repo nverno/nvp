@@ -1,8 +1,8 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-15 09:51:32>
+#+DATE: <2019-02-15 12:34:18>
 
 * Functions
-** General [1/11]
+** General [3/12]
 - [ ] generic doc-at-point backends
 - [ ] generic test function
 - [ ] generic help-at-point using docs backend
@@ -10,12 +10,14 @@
 - [ ] generic dynamic abbrevs
 - [ ] generic repl-switching
 - [X] make newline generic 
-- [ ] mark-defun optionally not include comments
+- [X] mark-defun optionally not include comments
       #<marker at 21626 in lisp.el.gz>
-- [ ] align current defun region
+      NOTE: needs some work to expand to more functions though
+- [X] align current defun region
 - [ ] interface to install external deps
 - [ ] quickhelp-toggle
 - [ ] wrapper to cache function results - lighter weight than memoize
+   [[https://github.com/skeeto/emacs-memoize][memoize]]
 
 ** Utils [1/5]
 - [ ] reusable region or string utility function

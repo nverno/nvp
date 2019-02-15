@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-14 19:24:04>
+;; Last modified: <2019-02-15 12:33:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -43,6 +43,17 @@
  (nvp-repl-switch-function  . nil)
  (nvp-test-function         . nil)
  (nvp-tag-function          . nil))
+
+;; #<marker at 11387 in lisp.el.gz>
+;; FIXME: account for continued expansion
+;;;###autoload
+(defun nvp-mark-defun (&optional _first-time &rest _rest)
+  "Mark defuns, expanding successively."
+  (interactive "P")
+  (setq mark-active nil)
+  (beginning-of-defun)
+  (mark-defun)
+  (comment-forward (point-max)))
 
 ;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
 (nvp-hydra-set-property 'nvp-hydra-goto-line)

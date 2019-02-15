@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-14 16:15:33>
+;; Last modified: <2019-02-14 20:57:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -31,8 +31,17 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (nvp-declare "nadvice" advice-mapc advice-remove)
+(nvp-declare "ert" ert-run-tests-interactively)
 
-;; https://emacs.stackexchange.com/questions/24657/unadvise-a-function-remove-all-advice-from-it
+;;;###autoload
+(defun nvp-ert-run-tests ()
+  "Run ert tests.
+With prefix ARG, prompt for selector."
+  (interactive)
+  (if (featurep 'ert)
+      (call-interactively 'ert-run-tests-interactively)
+    (user-error "`ert' must be loaded to run this function")))
+
 ;;;###autoload
 (defun nvp-advice-remove-all (sym)
   "Remove all advice from SYM."

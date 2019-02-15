@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 15:38:10>
+;; Last modified: <2019-02-15 00:08:52>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -106,6 +106,29 @@
 (defun nvp-move-previous-heading (&rest _ignored)
   (interactive)
   (nvp-move-forward-heading 'back))
+
+;;; Newlines
+;; generics with defaults - lisp modes don't do anything special
+;;;###autoload
+(cl-defgeneric nvp-newline-dwim-prefix (&optional arg)
+  "Generic function to handle newline dwim in special contexts."
+  (newline arg 'interactive))
+
+;;;###autoload
+(cl-defgeneric nvp-newline-dwim-syntax (&optional arg _syntax _comment-cont)
+  "Generic function to handle newline dwim syntactically."
+  (newline arg 'interactive))
+
+;;;###autoload
+(cl-defgeneric nvp-newline-dwim-default (&optional arg _pairs)
+  "Generic function to handle default newline dwim."
+  (newline arg 'interactive))
+
+(defun nvp-newline-dwim (&optional arg)
+  "Newline dwim.
+Dispatches to generic handlers with ARG."
+  (interactive "*P")
+  (funcall-interactively 'nvp-newline-dwim-default arg))
 
 ;; -------------------------------------------------------------------
 ;;; Scrolling

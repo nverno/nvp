@@ -61,7 +61,7 @@
 
 ;;;###autoload
 (defun nvp-jump-to-mode-config (mode action)
-  (interactive (list (nvp-read--mode-config "Jump to config: ")
+  (interactive (list (nvp-read-mode-config "Jump to config: ")
                      (car current-prefix-arg)))
   (nvp-jump--location (nvp-mode-config-path mode) nil action))
 

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-14 18:53:35>
+;; Last modified: <2019-02-14 19:24:04>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -33,15 +33,16 @@
   (require 'hydra))
 (require 'nvp)
 
-;;;###autoload
-(defun nvp-check-buffer ()
-  "Call local `nvp-check-buffer-function' to validate current buffer."
-  (interactive)
-  (call-interactively nvp-check-buffer-function))
-
-;;;###autoload
-(defun nvp-repl-switch ()
-  "")
+;;; Generate wrapper functions to call locals
+;;;###autoload(autoload 'nvp-check-buffer "nvp-auto")
+;;;###autoload(autoload 'nvp-repl-switch "nvp-auto")
+;;;###autoload(autoload 'nvp-test "nvp-auto")
+;;;###autoload(autoload 'nvp-tag "nvp-auto")
+(nvp-wrapper-fuctions
+ (nvp-check-buffer-function . nil)
+ (nvp-repl-switch-function  . nil)
+ (nvp-test-function         . nil)
+ (nvp-tag-function          . nil))
 
 ;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
 (nvp-hydra-set-property 'nvp-hydra-goto-line)

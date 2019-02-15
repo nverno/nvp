@@ -1,7 +1,7 @@
 #+TITLE: Notes / Todos
 
 * Functions
-** General [0/8]
+** General [0/11]
 - [ ] generic doc-at-point backends
 - [ ] generic test function
 - [ ] generic help-at-point using docs backend
@@ -12,6 +12,7 @@
 - [ ] mark-defun optionally not include comments
 - [ ] align current defun region
 - [ ] interface to install external deps
+- [ ] read w/ popup help: `register-read-with-preview'
 
 ** Utils [0/4]
 - [ ] reusable region or string utility function

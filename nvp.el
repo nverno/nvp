@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 16:46:50>
+;; Last modified: <2019-02-14 20:58:31>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -80,13 +80,18 @@
 
 ;; -------------------------------------------------------------------
 ;;; Functions
-;; (defvar-local nvp-help-at-point-function #'nvp-help-at-point)
-;; (defvar-local nvp-repl-switch-function #'nvp-repl-switch)
+(defvar-local nvp-help-at-point-functions ())
 (defvar-local nvp-check-buffer-function #'checkdoc)
 (defvar-local nvp-disassemble-function #'disassemble)
-(defvar-local nvp-repl-switch-function ())
-(defvar-local nvp-test-function ())
-(defvar-local nvp-tag-function ())
+(defvar-local nvp-repl-switch-function ()
+  "Function called to switch b/w source and REPL buffers.")
+(defvar-local nvp-test-function ()
+  "Function called to run applicable tests at point.")
+(defvar-local nvp-tag-function ()
+  "Function called to ")
+
+;; minibuffer read history from jumping to local configs
+(defvar nvp-read-config-history ())
 
 ;; -------------------------------------------------------------------
 ;;; general helpers
@@ -99,6 +104,12 @@
   (with-current-buffer (process-buffer proc)
     (goto-char (point-max))
     (insert (replace-regexp-in-string "[\r\n]+" "\n" string))))
+
+;; add default to prompt in non-nil
+(defsubst nvp-prompt--with-default (prompt &optional default)
+  (if default (format "%s (default %s): "
+                      (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
+    prompt))
 
 (provide 'nvp)
 ;;; nvp.el ends here

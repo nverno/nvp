@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 18:53:30>
+;; Last modified: <2019-02-14 20:07:41>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -641,6 +641,15 @@ If BUFFER is non-nil, set local bindings in BUFFER."
 ;; -------------------------------------------------------------------
 ;;; Buffers / IO
 
+;; modified from smartparens.el
+(defmacro nvp-with-buffers-using-mode (mode &rest body)
+  "Execute BODY in every existing buffer using `major-mode' MODE."
+  (declare (indent 1))
+  `(dolist (buff (buffer-list))
+     (when (provided-mode-derived-p ,mode (buffer-local-value 'major-mode buff))
+       (with-current-buffer buff
+         ,@body))))
+
 (defmacro nvp-last-input-char ()
   "Return the last character input."
   '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
@@ -996,14 +1005,29 @@ and install PLUGIN with asdf."
 
 ;; -------------------------------------------------------------------
 ;;; Building Interactive Functions
+
+;;; Wrapper functions to call mode-local values
+(defmacro nvp-wrapper-function (symbol &optional doc)
+  "Creates a simple wrapper function to call local SYMBOL function with \
+list of args.
+Optionally use DOC for function."
+  (let ((fn (intern (string-remove-suffix "-function" (symbol-name symbol))))
+        (args (make-symbol "args")))
+    `(defun ,fn (&rest ,args)
+       ,(or doc (format "Function to run local `%s'." symbol))
+       (interactive)
+       (setq prefix-arg current-prefix-arg)
+       (funcall-interactively ,symbol ,args))))
+
+(defmacro nvp-wrapper-fuctions (&rest fun-docs)
+  "Create list of wrapper functions.
+FUN-DOCS is an alist of pairs of symbols with optional docs."
+  (macroexp-progn
+   (cl-loop for (sym . doc) in fun-docs
+      collect `(nvp-wrapper-function ,sym ,doc))))
+
 ;; FIXME: most of these should either be generic or act on local variables
 ;; instead of being defined many times
-
-(cl-defmacro nvp-wrapper-function (name &optional doc &rest args
-                                        &key run-hooks &allow-other-keys)
-  (while (keywordp (car args))
-    (setq args (cdr (cdr args)))))
-
 ;; Marks
 (defmacro nvp-mark-defun (&optional first-time &rest rest)
   "Mark blocks, expanding successively."
@@ -1272,7 +1296,7 @@ PROPS defaults to setting :verbosity to 1."
            (hs-block-end-regexp ,end))
        ,@(or body (list '(hs-toggle-hiding))))))
 
-;; parens
+;; smartparens
 (cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
   (declare (indent defun))
   (while (keywordp (car pairs))

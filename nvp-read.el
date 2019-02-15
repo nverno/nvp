@@ -1,10 +1,10 @@
-;;; nvp-read.el ---  -*- lexical-binding: t; -*-
+;;; nvp-read.el --- Completing read for thangs -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 05:12:31>
+;; Last modified: <2019-02-14 20:50:08>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -26,48 +26,38 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
-(require 'nvp)
-(declare-function function-called-at-point "help")
-(declare-function help--symbol-completion-table "help-fns")
-(autoload 'eldoc-minibuffer-message "eldoc")
 
 ;;; TODO:
 ;; - read w/ popup help: see `register-read-with-preview'
 
-;; add default to prompt
-(defsubst nvp-read--with-default (prompt &optional default)
-  (if default
-      (format "%s (default %s): "
-              (substring prompt 0 (string-match "[ :]+\\'" prompt))
-              default)
-    prompt))
-
-;; minibuffer history
-(defvar nvp-mode-config-history ())
+;;; Code:
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'cl-lib))
+(require 'nvp)                          ;nvp-prompt--with-default
+(declare-function function-called-at-point "help")
+(declare-function help--symbol-completion-table "help-fns")
+(autoload 'eldoc-minibuffer-message "eldoc")
 
 ;; some completing reads for general config files
-(defun nvp-read--mode-config (&optional prompt default)
+(defun nvp-read-mode-config (&optional prompt default)
   (unless default
     (setq default (symbol-name major-mode)))
-  (setq prompt (nvp-read--with-default (or prompt "Mode config: ") default))
+  (setq prompt (nvp-prompt--with-default (or prompt "Mode config: ") default))
   (nvp-completing-read
    prompt
    (mapcar
     #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
         (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
     (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-   nil nil nil 'nvp-mode-config-history (substring default 0 -5)))
+   nil nil nil 'nvp-read-config-history (substring default 0 -5)))
 
 (defun nvp-read--info-files (&optional prompt)
   (expand-file-name 
    (nvp-completing-read
     (or prompt "Info file: ")
     (directory-files (expand-file-name "org" nvp/info) nil "\.org")
-    nil nil nil 'nvp-config-file-history)
+    nil nil nil 'nvp-read-config-history)
    (concat nvp/info "org")))
 
 (defun nvp-read--mode-test (&optional prompt default)
@@ -76,21 +66,22 @@
          (completion-ignored-extensions
           (cons "target" completion-ignored-extensions))
          (files (mapcar (lambda (f) (file-relative-name f nvp/test))
-                        (directory-files-recursively nvp/test "^[^.][^.]")))
-         (def (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files))))
-    (setq prompt (nvp-read--with-default (or prompt "Test: ") def))
+                        (directory-files-recursively nvp/test "^[^.][^.]"))))
+    (unless default
+      (setq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files))))
+    (setq prompt (nvp-prompt--with-default (or prompt "Test: ") default))
     (expand-file-name
      (nvp-completing-read
-      prompt files nil nil nil 'nvp-config-file-history def)
+      prompt files nil nil nil 'nvp-read-config-history default)
      nvp/test)))
 
 (defun nvp-read--org-file (&optional prompt default)
   (or default (setq default "gtd.org"))
-  (setq prompt (nvp-read--with-default (or prompt "Org file: ") default))
+  (setq prompt (nvp-prompt--with-default (or prompt "Org file: ") default))
   (ido-completing-read
    prompt
    (expand-file-name (directory-files nvp/org nil "^[^.]") nvp/org) nil nil nil
-   'nvp-config-file-history default))
+   'nvp-read-config-history default))
 
 ;; -------------------------------------------------------------------
 
@@ -117,7 +108,7 @@
 Filter by PREDICATE if non-nil."
   (require 'help-fns)
   (let ((enable-recursive-minibuffers t) val)
-    (setq prompt (nvp-read--with-default prompt default))
+    (setq prompt (nvp-prompt--with-default prompt default))
     (setq val (completing-read prompt #'help--symbol-completion-table
                                predicate t nil nil
                                (if (and default (symbolp default))

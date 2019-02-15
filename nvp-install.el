@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 00:32:00>
+;; Last modified: <2019-02-14 20:47:45>
 ;; Package-Requires: 
 ;; Created: 13 November 2016
 
@@ -42,17 +42,13 @@
   (require 'cl-lib)
   (require 'nvp-macro)
   (nvp-local-vars))
-(eval-when-compile
-  (defvar makefile-target-table))
-(require 'nvp-read)
-(declare-function w32-shell-execute "w32")
-(declare-function imenu--make-index-alist "imenu")
-(declare-function makefile-pickup-targets "make-mode")
+(require 'nvp)
 
+(declare-function w32-shell-execute "w32")
 (declare-function nvp-log "nvp-log")
 (declare-function nvp-package-directory-dwim "nvp-package")
-(nvp-with-gnu
-  (autoload 'nvp-ext-sudo-command "nvp-ext"))
+(nvp-with-gnu (autoload 'nvp-ext-sudo-command "nvp-ext"))
+(autoload 'nvp-read-mode-config "nvp-read")
 
 ;; possible local locations
 (defvar nvp-install-local-locations '("~/.local/bin/" "/usr/local/bin/"))
@@ -288,7 +284,7 @@
 
 ;;;###autoload
 (defun nvp-install-mode (mode)
-  (interactive (list (nvp-read--mode-config)))
+  (interactive (list (nvp-read-mode-config)))
   (load (nvp-mode-config-path mode)))
 
 ;;;###autoload

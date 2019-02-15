@@ -6,4 +6,4 @@
   (nvp-local-notes-file    . "Notes.org"))
  ("test" 
   (emacs-lisp-mode
-   . ((eval . (local-set-key (kbd "C-c C-c") 'nvp--run-tests))))))
+   . ((eval . (local-set-key (kbd "C-c C-c") #'nvp-ert-run-tests))))))

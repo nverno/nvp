@@ -25,6 +25,7 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+;; TODO: completely refactor
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

@@ -862,8 +862,8 @@ successful process exit buffer."
 if process exit status isn't 0."
   (declare (indent defun))
   (macroexp-let2* nil ((proc `(nvp-with-process-filter ,process ,proc-filter))
-                       (on-err (if (and (symbolp on-error)
-                                        (equal on-error :pop-on-error))
+                       (on-err (if (keywordp on-error)
+                                   ;; (equal on-error :pop-on-error)
                                    `(pop-to-buffer (process-buffer ,proc)
                                                    ,display-action)
                                  on-error)))

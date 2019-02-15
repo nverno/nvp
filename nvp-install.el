@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-14 20:47:45>
+;; Last modified: <2019-02-15 13:17:13>
 ;; Package-Requires: 
 ;; Created: 13 November 2016
 
@@ -120,7 +120,7 @@
   (let* ((git-uri (format "%s/%s" (or root "https://github.com") repo))
          (pkg (car (last (split-string repo "/"))))
          (default-directory nvp/site)
-         (buff (nvp-process-buffer "*git-installs*" 'reuse)))
+         (buff (nvp-process-buffer "*git-installs*")))
     (if (file-exists-p pkg)
         (progn
           (cd pkg)
@@ -167,14 +167,16 @@
   (declare (indent 1) (debug t))
   `(progn
      (cl-incf nvp-install--total-proc)
-     (nvp-with-process-log ,process :pop-on-error
-       (cl-decf nvp-install--total-proc)
-       ,@body
-       (when (zerop nvp-install--total-proc)
-         ;; build site-lisp packages
-         (nvp-install-pending-dirs)
-         ;; compile mode
-         (nvp-install-compile ,file)))))
+     (nvp-with-process-log ,process
+       :on-error (pop-to-buffer (current-buffer))
+       :on-success (progn
+                     (cl-decf nvp-install--total-proc)
+                     ,@body
+                     (when (zerop nvp-install--total-proc)
+                       ;; build site-lisp packages
+                       (nvp-install-pending-dirs)
+                       ;; compile mode
+                       (nvp-install-compile ,file))))))
 
 ;; compile the file, removing macro+contents
 (defun nvp-install-compile (file)

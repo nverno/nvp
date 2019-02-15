@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: init
+# key: init
+# --
+[Desktop Entry]
+Version=0.1
+Name=$1
+Comment=$2
+Exec=$3
+Icon=$0
+Terminal=false
+Type=Application
+Categories=Utility;Application;

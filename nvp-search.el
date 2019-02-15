@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-14 05:18:05>
+;; Last modified: <2019-02-15 10:05:31>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -34,7 +34,7 @@
   (require 'nvp-macro))
 (nvp-declare "wgrep" wgrep-exit wgrep-save-all-buffers wgrep-abort-changes
   wgrep-remove-change wgrep-remove-all-change wgrep-toggle-readonly-area
-  wgrep-mark-deletion)
+  wgrep-mark-deletion wgrep-change-to-wgrep-mode)
 
 ;; -------------------------------------------------------------------
 ;;; wgrep
@@ -45,8 +45,7 @@
   (interactive)
   (require 'nvp-grep-config)
   (let ((map (symbol-value (intern-soft (format "%s-map" major-mode)))))
-    (nvp-bindings map "wgrep"
-      ("C-x C-n w"      . wgrep-change-to-wgrep-mode))))
+    (define-key map (kbd "C-x C-n w") #'wgrep-change-to-wgrep-mode)))
 
 ;;;###autoload(autoload 'nvp-wgrep-hydra/body "nvp-search")
 (nvp-hydra-set-property 'nvp-wgrep-hydra)

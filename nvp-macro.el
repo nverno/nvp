@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 07:43:21>
+;; Last modified: <2019-02-15 10:19:50>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -241,8 +241,9 @@ line at match (default) or do BODY at point if non-nil."
                  (t (user-error "%S unmatched"))))
          (path (and path (substitute-env-in-file-name path))))
     `(,(if no-compile 'progn 'eval-when-compile)
+      (declare-function nvp-setup-program "nvp-setup")
       (or (nvp-with-gnu/w32
-              (cl-loop for p in
+               (cl-loop for p in
                    (delq nil (cons ,path '("~/bin/" "~/.asdf/shims" "~/.local/bin/"
                                            "/usr/local/bin")))
                  do (let ((f (expand-file-name ,name p)))
@@ -252,7 +253,8 @@ line at match (default) or do BODY at point if non-nil."
             (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
           (executable-find ,name)
           ;; fallback to runtime search
-          `(nvp-setup-program ,name ,path)))))
+          (and (require 'nvp-setup)
+               (nvp-setup-program ,name ,path))))))
 
 (defmacro nvp-path (path &optional no-compile)
   `(,(if no-compile 'progn 'eval-when-compile)
@@ -891,7 +893,7 @@ if process exit status isn't 0."
                                (proc-buff `,(concat "*" proc-name "*"))
                                (proc-args nil)
                                (proc-filter t)
-                               (buffer-fn 'generate-new-buffer)
+                               (buffer-fn 'get-buffer-create)
                                (on-success `(progn
                                               (nvp-indicate-modeline-success
                                                ,(concat " " proc-name " success"))

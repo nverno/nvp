@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-15 00:45:28>
+;; Last modified: <2019-02-15 10:11:49>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -56,20 +56,21 @@
 ;; (defun nvp-installer--call (installer &rest args)
 ;;   )
 
-(defun nvp-installer--help (&optional makefile)
-  "Return MAKEFILE help doc."
-  (with-output-to-temp-buffer)
-  )
+;; (defun nvp-installer--help (&optional makefile)
+;;   "Return MAKEFILE help doc."
+;;   (with-output-to-temp-buffer)
+;;   )
+
 (defun nvp-installer--make-targets (&optional makefile)
   "List available targets in MAKEFILE, defaulting to `nvp-installer-makefile'."
   (with-temp-buffer
-    (insert-file-contents (or makefile nvp-installer-makefile))
+    (insert-file-contents (or makefile nvp-install-makefile))
     (makefile-pickup-targets)
     makefile-target-table))
 
-(defun nvp-installer-make-target (&optional makefile &rest targets)
-  "Install MAKEFILE TARGETS."
-  (interactive (list nvp-installer-makefile)))
+;; (defun nvp-installer-make-target (&optional makefile &rest targets)
+;;   "Install MAKEFILE TARGETS."
+;;   (interactive (list nvp-installer-makefile)))
 
 
 (provide 'nvp-installer-ext)

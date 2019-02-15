@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 00:40:18>
+;; Last modified: <2019-02-15 08:23:41>
 ;; Package-Requires: 
 ;; Created: 16 November 2016
 
@@ -33,6 +33,11 @@
   (require 'cl-lib)
   (require 'subr-x))
 (require 'nvp)
+(declare-function company-quickhelp-manual-begin "company-quickhelp")
+(declare-function do-smooth-scroll "smooth-scrolling")
+(declare-function minibuffer-keyboard-quit "delsel")
+(nvp-declare "paredit"
+  paredit-close-round paredit-find-comment-on-line paredit-move-past-close)
 
 ;; -------------------------------------------------------------------
 ;;; Movement 
@@ -44,6 +49,9 @@
 (defun nvp-move-prev5 (&rest _ignored)
   (interactive)
   (forward-line -5))
+
+;; add smooth-scrolling
+(nvp-advise-commands 'do-smooth-scroll :after (nvp-move-next5 nvp-move-prev5))
 
 (defun nvp-move-forward-defun (&rest _ignored)
   (interactive)
@@ -107,15 +115,7 @@ Dispatches to generic handlers with ARG."
   (funcall-interactively 'nvp-newline-dwim-default arg))
 
 ;; -------------------------------------------------------------------
-;;; Scrolling
-(declare-function do-smooth-scroll "smooth-scrolling")
-
-(nvp-advise-commands 'do-smooth-scroll :after (nvp-move-next5 nvp-move-prev5))
-
-;; -------------------------------------------------------------------
 ;;; Paredit
-(nvp-declare "paredit"
-  paredit-close-round paredit-find-comment-on-line paredit-move-past-close)
 
 (defun nvp-paredit-close-round (&optional arg)
   "Close paren skipping over possible comments and call `expand-abbrev'.
@@ -133,7 +133,6 @@ With ARG use default behaviour, except also call `expand-abbrev'."
 
 ;; -------------------------------------------------------------------
 ;;; Company
-(declare-function company-quickhelp-manual-begin "company-quickhelp")
 
 (defun nvp-company-quickhelp-toggle ()
   "Toggle pos-tip help on/off."
@@ -146,6 +145,7 @@ With ARG use default behaviour, except also call `expand-abbrev'."
         ;;            #'ignore)))
         (company-quickhelp-manual-begin))))
 
+;;; FIXME: check if backend is already there -- this could be a macro
 (defun nvp-company-local (backend)
   "Make a buffer-local company backend."
   (set (make-local-variable 'company-backends)
@@ -153,7 +153,6 @@ With ARG use default behaviour, except also call `expand-abbrev'."
 
 ;; -------------------------------------------------------------------
 ;;; IDO
-(declare-function minibuffer-keyboard-quit "delsel")
 
 (defun nvp-ido-refresh-homedir ()
   "Refresh completion for homedir while ido is finding a file."

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: org
+# key: org
+# --
+_minted*
+$1.[odt|pdf|tex|html]`(nvp-expand-or-pattern)`

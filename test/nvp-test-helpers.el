@@ -17,11 +17,11 @@
     (when (search-forward "_" nil 'move)
       (delete-char -1)
       (set-mark (point)))
-    (goto-char (point-min)))
-  (when (search-forward "|")
-    (delete-char -1)
-    (setq end-char ?|))
-  end-char)
+    (goto-char (point-min))
+    (when (search-forward "|")
+      (delete-char -1)
+      (setq end-char ?|))
+    end-char))
 
 (defmacro nvp--buffer-should-change (from to &optional mode &rest body)
   "Buffer contents should change FROM to TO.

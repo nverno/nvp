@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-15 00:59:03>
+#+DATE: <2019-02-15 09:51:32>
 
 * Functions
 ** General [1/11]
@@ -11,9 +11,11 @@
 - [ ] generic repl-switching
 - [X] make newline generic 
 - [ ] mark-defun optionally not include comments
+      #<marker at 21626 in lisp.el.gz>
 - [ ] align current defun region
 - [ ] interface to install external deps
 - [ ] quickhelp-toggle
+- [ ] wrapper to cache function results - lighter weight than memoize
 
 ** Utils [1/5]
 - [ ] reusable region or string utility function
@@ -107,7 +109,7 @@
 - [ ] separate setup from nvp and load once
 - [ ] remove nvp-conf / merge with config-tools
 
-* Merge/remove old packages [0/11]
+* Merge/remove old packages [1/11]
 - [ ] bmk-to-bmk => nvp-bookmark
 - [ ] esh-help => nvp-eshell
 - [ ] project-templates => cookiecutter?
@@ -118,7 +120,7 @@
 - [ ] log-utils => nvp-log
 - [ ] help-utils => nvp-help
 - [ ] tag-utils => nvp-tags
-- [ ] config-tools => nvp-conf
+- [X] config-tools => nvp-conf
 ** subdirs [0/5]
 - [ ] md-tools => subdir 
 - [ ] elisp-utils => subdir

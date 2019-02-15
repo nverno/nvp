@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 02:20:29>
+;; Last modified: <2019-02-15 10:09:19>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -92,12 +92,12 @@
 
 ;; if LOCAL is non-nil use that
 (defun nvp-read--org-file (&optional prompt default nolocal)
-  (if (and (not nolocal) (bound-and-true-p nvp-local-notes-file))
-      nvp-local-notes-file
-    (or default (setq default nvp-default-org-file))
-    (setq prompt (nvp-prompt--with-default (or prompt "Org file: ") default))
-    (nvp-read-relative-recursively
-     nvp/org "\.org$" (or prompt "Org file: ") default)))
+  (let ((local (bound-and-true-p nvp-local-notes-file)))
+    (if (and local (not nolocal)) local
+      (or default (setq default nvp-default-org-file))
+      (setq prompt (nvp-prompt--with-default (or prompt "Org file: ") default))
+      (nvp-read-relative-recursively
+       nvp/org "\.org$" (or prompt "Org file: ") default))))
 
 ;; -------------------------------------------------------------------
 ;;; Minibuffer input

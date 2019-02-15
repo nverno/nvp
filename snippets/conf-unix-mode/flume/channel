@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: channel
+# key: channel
+# --
+${1:agent}.channels.${2:channel_name}.type = ${3:memory}
+$1.channels.$2.capacity = 10000
+$1.channels.$2.transactionCapacity = 10000

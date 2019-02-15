@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-15 00:46:28>
+;; Last modified: <2019-02-15 10:54:13>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -33,6 +33,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
+(nvp-declare "" paredit-mode smartparens-mode)
 
 ;; -------------------------------------------------------------------
 ;;; General to eval / edebugging
@@ -45,6 +46,9 @@
 
 ;; -------------------------------------------------------------------
 ;;; Minibuffer elisp eval
+
+(nvp-sp-local-pairs :modes 'minibuffer-inactive-mode
+  (sp-local-pair "'" nil :actions nil))
 
 ;;; TODO: expansion from history
 ;; use elisp abbrevs/hippie during minibuffer evaluation

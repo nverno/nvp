@@ -1,9 +1,7 @@
-;;; nvp-conf.el --- parse config files -*- lexical-binding: t; -*-
-;; Last modified: <2019-01-28 20:40:50>
-;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x))
+;; -*- no-byte-compile: t; -*-
+
+;; -------------------------------------------------------------------
+;;; Reading conf files
 
 (autoload 'nvp-env-substitute-vars "nvp-env")
 
@@ -101,6 +99,3 @@
                               ,(match-string-no-properties 2))))))))
       (user-error "File %s doesn't exist." netrc))
     res))
-
-(provide 'nvp-conf)
-;;; nvp-conf.el ends here

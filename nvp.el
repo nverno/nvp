@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 02:22:14>
+;; Last modified: <2019-02-15 10:11:36>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -47,7 +47,7 @@
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
 
 ;; root directory
-(nvp-package-define-root)
+(nvp-package-define-root :snippets t)
 
 ;; -------------------------------------------------------------------
 ;;; Variables
@@ -63,14 +63,14 @@
   "Chars to include in abbrev prefixes")
 
 ;; Snippets
-(defvar-local nvp-snippet-dir nil "Directory to load for mode's snippets.")
+(defvar-local nvp-snippet-dir nil "Current mode's snippet directory.")
 
 ;; programs
 (defvar nvp-program-search-paths
   (nvp-with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
     `(,nvp/bin ,nvp/binw)))
 
-;; local variables for jumping -- might be set in dir-locals
+;; jumping variables -- might be set in dir-locals
 (defvar nvp-default-org-file "gtd.org")
 (defvar nvp-default-hooks-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
 (defvar nvp-build-init-dir (expand-file-name "build" nvp/home))
@@ -78,6 +78,7 @@
 (defvar-local nvp-books-local-directory ())
 
 ;; installs
+(defvar nvp-install-makefile (expand-file-name "Makefile" nvp/install))
 (defvar-local nvp-install-mode-targets ()
   "External installation targets for a major-mode.")
 

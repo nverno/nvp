@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 10:19:50>
+;; Last modified: <2019-02-20 13:18:58>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -290,13 +290,13 @@ line at match (default) or do BODY at point if non-nil."
          (defvar comint-input-ring-size))
        (declare-function comint-read-input-ring "comint")
        (declare-function comint-write-input-ring "comint")
-       (autoload 'hippie-expand-shell-setup "hippie-expand-shell")
+       (declare-function nvp-he-history-setup "nvp-hippie-history")
        (defun ,fn ()
          (setq comint-input-ring-file-name (expand-file-name ,histfile nvp/cache))
          (setq comint-input-ring-size ,size)
          (comint-read-input-ring)
          (add-hook 'kill-buffer-hook 'comint-write-input-ring nil 'local)
-         (hippie-expand-shell-setup
+         (nvp-he-history-setup
           :history ,history
           :bol-fn ,bol-fn
           :history-fn ,history-fn

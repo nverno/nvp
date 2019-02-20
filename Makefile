@@ -1,11 +1,12 @@
 emacs  ?= emacs
 wget   ?= wget
 SCRIPT = script
+LATEX_ABBREVS=etc/unicode-latex-abbrev-table
 
 .PHONY: test
 all: test
 test:
-	$(emacs) -Q -batch -L . -l ert -l test/nvp-tests.el \
+	$(emacs) -Q -batch -L . -l ert -l test/nvp-tests.el	\
 	-f ert-run-tests-batch-and-exit
 
 README.md : el2markdown.el nvp.el
@@ -17,7 +18,7 @@ el2markdown.el:
 
 .PHONY: unicode
 unicode:
-	@julia ${SCRIPT}/latex_abbrevs.jl abbrev nil unicode-latex-abbrev-table
+	@julia ${SCRIPT}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
 clean:
 	$(RM) *~ dist

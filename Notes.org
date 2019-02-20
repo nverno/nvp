@@ -1,15 +1,8 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-15 12:34:18>
+#+DATE: <2019-02-20 14:58:16>
 
 * Functions
-** General [3/12]
-- [ ] generic doc-at-point backends
-- [ ] generic test function
-- [ ] generic help-at-point using docs backend
-- [ ] generic buffer functions
-- [ ] generic dynamic abbrevs
-- [ ] generic repl-switching
-- [X] make newline generic 
+** General [2/6]
 - [X] mark-defun optionally not include comments
       #<marker at 21626 in lisp.el.gz>
       NOTE: needs some work to expand to more functions though
@@ -18,6 +11,7 @@
 - [ ] quickhelp-toggle
 - [ ] wrapper to cache function results - lighter weight than memoize
    [[https://github.com/skeeto/emacs-memoize][memoize]]
+- [ ] jumping from shell doesn't account for local variables
 
 ** Utils [1/5]
 - [ ] reusable region or string utility function
@@ -26,63 +20,164 @@
 - [X] function cache wrappers
 - [ ] read w/ popup help: `register-read-with-preview'
 
-** Hooks [0/2]
-- [ ] minibuffer eval
-- [ ] minibuffer edebug
 
-** Completion [0/4]
-- [ ] hippie-expand minibuffer history
+** REPLs
+- [ ] uniform repl-swithcing interface
+
+** Newline DWIM [1/2]
+- [X] generic methods
+- [ ] method to match delims
+
+** Tests [0/4] 
+- [ ] generic at point
+- [ ] framework to use? mode-dependent?
+- [ ] unit test
+- [ ] project tests
+
+** Parsing [1/2]
+- [X] generic functions in buffer
+- [ ] includes in buffer
+
+** Dynamic abbrevs [1/3]
+- [X] Generic read
+- [ ] generic create table
+- [ ] generic make abbrevs
+
+** Docs/help-at-point [1/4]
+- [X] generic methods
+- [ ] company-backend
+- [ ] web search backend
+- [ ] help-at-point frontend function
+
+** minibuffer/edebug [2/4]
+- [ ] capf?
+- [ ] hippie exp
+- [X] minibuffer eval setup lisp
+- [X] minibuffer eval hippie expand history
+
+** Completion [1/4]
+- [X] hippie-expand minibuffer history
 - [ ] completion during edebugging?
 - [ ] fix quickhelp-toggle
 - [ ] macro company-local?
 
-** elisp
-- [ ] elisp-help-at-point: type/location, jump to source
+** Modes
+*** elisp
+- [ ] move to subdir of nvp
 - [ ] macroify-bindings update => elisp
-- [X] generic buffer functions
-- [ ] fix generic dynamic abbrev
+- [ ] package
+- [ ] fix hippie - adds extra ')' when no match
+**** HAP [0/1]
+- [ ] use company-backend
+**** Parsing [1/3]
+Use ~load-history~
+- [X] buffer functions
+- [ ] buffer includes
+- [ ] buffer variables
+**** newline-dwim [1/1]
+- [X] defaults
+**** Dynamic abbrevs [0/2]
+- [ ] optionally abbrev library, buffer, or file
+- [ ] another abbrev table for variables?
+**** Jump to source functions [0/4]
+- [ ] xref
+- [ ] company-backend
+- [ ] etags
+- [ ] ggtags
 
-** C
-- [ ] gather all c includes required by project
-- [ ] fixup awk script
-- [ ] generic local functions
-- [ ] generic dynamic-abbrevs
-- [ ] generic local abbrevs
-- [ ] generic doc-at-point
-- [ ] generic local includes
+*** C/C++
+- [ ] fixup awk script to parse system includes
+- [ ] use EDE?
+- [ ] how to gather all includes needed for project?
 - [ ] remove all left-over install stuff
 - [ ] update includes install
+- [ ] package
+- [ ] subdir of nvp
 
-** Makefile
+**** HAP [0/2]
+- [ ] company-backend (irony)
+- [ ] semantic-backend
+**** Parsing [0/4]
+- [ ] includes
+- [ ] local functions (statics)
+- [ ] exported functions
+- [ ] globals?
+**** Newline DWIM [0/3]
+- [ ] default in code method
+- [ ] in normal comments
+- [ ] in doxygen comments
+**** Dynamic abbrevs [0/1]
+- [ ] local functions
+**** Jump to source functions [0/2]
+- [ ] semantic-backend
+- [ ] ggtags
+
+
+*** Makefile                                         :makefile:
+- [ ] change cleanup to use align rules + better indentation
+**** macrostep [0/3]
 - [ ] fixup awk script to gather local variables for macrostep
 - [ ] update macrostep with additional variables + defaults
-- [ ] change cleanup to use align rules + better indentation
+- [ ] optionally parse makefile commands?
+**** Newline DWIM [1/1]
+- [X] defaults
+**** Parsing [0/3]
+- [ ] includes
+- [ ] targets
+- [ ] dependencies
+**** HAP [0/1]
+- [ ] company-backends
+**** Jump to source functions [0/2]
+- [ ] company-backends
+- [ ] xref / tags
 
-** M4/Autotools
+*** M4/Autotools                                           :m4:
 - [ ] merge completion/font-lock with autoconf?
 - [ ] update hook
 
-** Awk
-- [ ] capf?
+*** Awk                                                   :awk:
 - [ ] function to open src buffer from sh script
 - [ ] function to choose from useful oneliners
-
-** sh
+**** Completion [0/4]
+- [ ] variables / function
+- [ ] builtin variables / functions
+*** sh                                                     :sh:
+- [ ] prefix hippie-shell-expand functions
+- [ ] parse sh function documentation
+**** Completion [0/2]
 - [ ] capf for lexical scoped variables
 - [ ] merge capf bash-completion/variable-completion, maybe
   `completion-merge-tables` from minibuffer
-- [ ] xref for company-bash sources
-- [ ] Split sh usage arguments in snippets
+**** Snippets [0/1]
+- [ ] split sh usage arguments in snippets
+**** HAP [0/2]
+- [ ] company-backend
 - [ ] parse sh function documentation
-- [ ] generic jump to unit test
-- [ ] prefix hippie-shell-expand
-** Java
+**** Jump to source functions [0/1]
+- [ ] xref for company-bash sources
+**** Tests
+- [ ] method to jump to unit test at point
+
+*** Java                                                 :java:
 - [ ] new root package directory w/o creating new directory
-*** javadoc-mode
+**** javadoc-mode
 - [ ] formatting for lists
 - [ ] possible to determine table starts?
 - [ ] better faces
 - [ ] jump b/w sections, eg. Man-goto-section
+**** HAP [0/2]
+- [ ] company-backend
+- [ ] web-backend?? javadoc-lookup
+**** Tests / jump to source [2/2]
+- [X] irony
+- [X] irony runs tests
+
+* Mode
+- [ ] struct or class?
+- [ ] package deps
+- [ ] support recipe fetcher
+- [ ] external install targets
+- [ ] define mode-local variables?
 
 * Automation [1/6]
 - [ ] ggtags install
@@ -92,11 +187,11 @@
 - [ ] update build-scripts for init / site-lisp - refactor
 - [X] asm install
 
-* Elisp settings [1/5]
+* Mode settings [1/5]
 - [ ] tags settings / ggtags / etags
   https://github.com/skeeto/.emacs.d/tree/master/lisp
 - [X] wgrep
-- [ ] grep / ag settings
+- [ ] grep / ag settings , pdfgrep?
 - [ ] EDE
 - [ ] m4
 
@@ -138,11 +233,13 @@
 
 [[https://github.com/emacsmirror/paredit/blob/master/test.el][paredit tests]]
 
-* Packages [0/3]
-- [ ] new cookiecutter wrapper
-- [ ] update/remove fork of cargo
-- [ ] incorporate awk-it?
-- [ ] extensions for awk
+* Elisp Packages [0/4]
+** Cookiecutter
+wrapper for cookiecutter packages
+** Cargo
+update / remove
+** Awk-it
+incorporate?
 
 * cookies [0/3]
 - [ ] el

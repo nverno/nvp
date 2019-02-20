@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 04:44:25>
+;; Last modified: <2019-02-20 15:18:38>
 ;; Package-Requires: 
 ;; Created: 25 November 2016
 
@@ -90,13 +90,14 @@ toggle on entr_y_
     (declare (debug defun))
     (let ((args (cons (nvp-with-gnu/w32 "emacs" "runemacs.exe") args)))
       `(call-process-shell-command
-        (mapconcat #'shell-quote-argument (list ,@args) " ") nil 0 nil))))
+        (mapconcat #'shell-quote-argument (delq nil (list ,@args)) " ") nil 0 nil))))
 
-(defun nvp-debug-launch-bare-emacs ()
-  "Start new emacs instance loading init file that only adds load paths."
-  (interactive)
+(defun nvp-debug-launch-bare-emacs (&optional arg)
+  "Start new emacs instance loading init file that only adds load paths.
+With prefix open current file."
+  (interactive "P")
   (nvp-debug--launch-emacs
-   "-Q" "-l" (expand-file-name "bare-site.el" nvp/etc)))
+   "-Q" "-l" (expand-file-name "bare-site.el" nvp/etc) (if arg (buffer-file-name))))
 
 (defun nvp-debug-launch-new-debug ()
   "Start new emacs in debug mode."

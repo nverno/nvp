@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-20 14:58:16>
+#+DATE: <2019-02-20 15:27:33>
 
 * Functions
 ** General [2/6]
@@ -12,6 +12,7 @@
 - [ ] wrapper to cache function results - lighter weight than memoize
    [[https://github.com/skeeto/emacs-memoize][memoize]]
 - [ ] jumping from shell doesn't account for local variables
+- [ ] company-local => macro
 
 ** Utils [1/5]
 - [ ] reusable region or string utility function
@@ -50,16 +51,14 @@
 - [ ] help-at-point frontend function
 
 ** minibuffer/edebug [2/4]
-- [ ] capf?
-- [ ] hippie exp
+- [ ] edebug hippie exp
+- [ ] edebug hydra
 - [X] minibuffer eval setup lisp
 - [X] minibuffer eval hippie expand history
 
-** Completion [1/4]
+** Completion [1/2]
 - [X] hippie-expand minibuffer history
 - [ ] completion during edebugging?
-- [ ] fix quickhelp-toggle
-- [ ] macro company-local?
 
 ** Modes
 *** elisp
@@ -187,9 +186,10 @@ Use ~load-history~
 - [ ] update build-scripts for init / site-lisp - refactor
 - [X] asm install
 
-* Mode settings [1/5]
+* Mode settings [1/6]
 - [ ] tags settings / ggtags / etags
   https://github.com/skeeto/.emacs.d/tree/master/lisp
+- [ ] edebug
 - [X] wgrep
 - [ ] grep / ag settings , pdfgrep?
 - [ ] EDE

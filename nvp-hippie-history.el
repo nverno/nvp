@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-20 14:28:55>
+;; Last modified: <2019-02-20 15:07:24>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -134,7 +134,7 @@
                   (and comint-p
                        (cdr (assoc 'comint-mode nvp-he-history-bol-alist))))))
     (when (and (fboundp bol) (or history-fn (not (null history))))
-      (while (and (symbolp history) (boundp history)) ;minibuffer-history-variable
+      (while (and history (symbolp history) (boundp history)) ;minibuffer
         (setq history (symbol-value history)))
       (setq nvp-he-history history)
       (setq nvp-he-history-bol-fn bol)

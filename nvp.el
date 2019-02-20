@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 10:11:36>
+;; Last modified: <2019-02-20 09:59:44>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -95,7 +95,7 @@
 (defvar-local nvp-test-function ()
   "Function called to run applicable tests at point.")
 (defvar-local nvp-tag-function ()
-  "Function called to ")
+  "Function called to create tags by mode.")
 
 ;; -------------------------------------------------------------------
 ;;; general helpers

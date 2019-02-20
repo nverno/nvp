@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-20 15:27:33>
+#+DATE: <2019-02-20 17:46:21>
 
 * Functions
 ** General [2/6]
@@ -50,15 +50,15 @@
 - [ ] web search backend
 - [ ] help-at-point frontend function
 
-** minibuffer/edebug [2/4]
-- [ ] edebug hippie exp
-- [ ] edebug hydra
+** minibuffer/edebug [4/4]
+- [X] edebug eval w/ elisp setup
+- [X] edebug eval w/ completion
 - [X] minibuffer eval setup lisp
 - [X] minibuffer eval hippie expand history
 
-** Completion [1/2]
+** Completion [2/2]
 - [X] hippie-expand minibuffer history
-- [ ] completion during edebugging?
+- [X] completion during edebugging?
 
 ** Modes
 *** elisp
@@ -186,10 +186,10 @@ Use ~load-history~
 - [ ] update build-scripts for init / site-lisp - refactor
 - [X] asm install
 
-* Mode settings [1/6]
+* Mode settings [2/6]
 - [ ] tags settings / ggtags / etags
   https://github.com/skeeto/.emacs.d/tree/master/lisp
-- [ ] edebug
+- [X] edebug
 - [X] wgrep
 - [ ] grep / ag settings , pdfgrep?
 - [ ] EDE

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-20 16:59:12>
+;; Last modified: <2019-02-20 17:45:06>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -33,13 +33,11 @@
   (require 'which-key nil t))
 (require 'edebug)
 
-;; ;;;###autoload
-;; (defun nvp-edebug-eval-hook (old-fn &rest args)
-;;   (minibuffer-with-setup-hook ()
-;;     (nvp-minibuffer-eval-hook)))
-
+;; setup eval with elisp minibuffer eval hooks
 ;;;###autoload
-(advice-add 'edebug-eval-expression :after #'nvp-minibuffer-eval-hook)
+(defun nvp-edebug-eval-expression (expr)
+  (interactive (list (read--expression "Eval: ")))
+  (edebug-eval-expression expr))
 
 ;;;###autoload
 (defun nvp-edebug-help ()

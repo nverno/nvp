@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 04:38:29>
+;; Last modified: <2019-02-20 23:11:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -110,9 +110,34 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
                          (string-to-number (match-string 1))))
                      nil nil nil 1))))
 
+;;; FIXME:
 (defun nvp-snippet-help-at-point ()
   (interactive)
   (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
+([])
+;; -------------------------------------------------------------------
+;;; Snippet mode enhancements
+
+(defvar-local nvp-snippet-header-end nil "Marker at end of snippet header.")
+
+;; "'" should be prefix to enable quote wrapping etc.
+(modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
+(modify-syntax-entry ?\` "(" snippet-mode-syntax-table)
+(modify-syntax-entry ?\` ")" snippet-mode-syntax-table)
+
+(nvp-function-with-cache nvp-snippet-header-end ()
+  "Return marker at end of snippet header."
+  :local t
+  (save-excursion
+    (goto-char (point-min))
+    (when (search-forward "# --")
+      (point-marker))))
+
+(defsubst nvp-snippet-header-p (&optional pnt)
+  (< (or pnt (point)) (marker-position (nvp-snippet-header-end))))
+
+(defsubst nvp-snippet-code-p (&optional pnt)
+  ())
 
 (provide 'nvp-snippet)
 ;;; nvp-snippet.el ends here

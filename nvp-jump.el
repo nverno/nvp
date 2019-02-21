@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 07:29:01>
+;; Last modified: <2019-02-21 01:05:58>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -115,6 +115,16 @@
       (nvp-jump--location nvp-default-hooks-file nil action)
       (goto-char (point-min))
       (search-forward str-mode-hook nil t))))
+
+;;;###autoload
+(defun nvp-jump-to-mode-install (file action)
+  "Jump to external installation files for MODE.
+With double prefix, prompt for mode."
+  (interactive (list (nvp-read--mode-install
+                      (if (eq (car current-prefix-arg) 16)
+                          (substring (nvp-read-mode) 0 -5)))
+                     (car current-prefix-arg)))
+  (nvp-jump--location file nil action))
 
 ;; -------------------------------------------------------------------
 ;;; Org / Info

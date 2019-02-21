@@ -133,6 +133,7 @@ With prefix sort in REVERSE."
   (interactive)
   (let (deactivate-mark
         (fill-column
+         (nvp-toggled-if )
          (if (not (eq last-command this-command))
              fill-column
            (setq this-command nil)

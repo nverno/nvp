@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-20 18:32:30>
+;; Last modified: <2019-02-20 23:11:14>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -49,6 +49,11 @@
   paths                                 ;load-paths
   )
 
+(cl-defmethod nvp-install-help (&optional type)
+  "Display help about mode, eg. dependencies, packages, paths, etc."
+  (nvp-with-results-buffer (help-buffer)
+    (call-process "make" nil t t (concat "--file=" nvp-install-makefile) "help")))
+
 ;; -------------------------------------------------------------------
 ;;; Manage external dependencies
 
@@ -60,7 +65,7 @@
 (cl-defun nvp-install-ext-make (targets &key mode (makefile nvp-install-makefile))
   (nvp-install-ext--make :targets targets :mode mode :makefile makefile))
 
-(defun nvp-install-ext-help (ext)
+(defun nvp-install-help (ext)
   (nvp-with-results-buffer (help-buffer)
     (call-process-shell-command
      (concat "make -C " (file-name-directory (nvp-install-ext-makefile ext)) " help")

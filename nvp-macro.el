@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-20 21:20:34>
+;; Last modified: <2019-02-20 23:57:49>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -42,7 +42,7 @@
     (message "Warning: package 'nvp-macro required at runtime")))
 
 ;; -------------------------------------------------------------------
-;;; Utils
+;;; Functions
 
 (defun nvp--normalize-modemap (mode &optional minor)
   "Convert MODE to keymap symbol if necessary.
@@ -119,6 +119,14 @@ use either `buffer-file-name' or `buffer-name'."
   `(if (region-active-p) (car (region-bounds))
      (bounds-of-thing-at-point ,(or thing ''symbol))))
 
+(defmacro nvp-toggled-if (then &rest rest)
+  "Do THEN if `last-command' wasn't `this-command', otherwise do REST."
+  (declare (indent 1))
+  `(if (not (eq this-command last-command))
+       ,then
+     ,@rest
+     (setq this-command nil)))
+
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
@@ -157,6 +165,7 @@ BEG and END are bound to the bounds."
 
 ;; -------------------------------------------------------------------
 ;;; Conversions
+;;; FIXME: remove unused
 
 (defmacro nvp-listify (args)
   "Ensure ARGS is a list."
@@ -230,31 +239,31 @@ line at match (default) or do BODY at point if non-nil."
 ;; PATH can contain environment variables to expand
 ;; if NO-COMPILE is defined the name is determined at runtime
 (defmacro nvp-program (name &optional no-compile path)
+  (declare (indent defun) (debug t))
   (let* ((name (cond
-                 ((symbolp name) (symbol-name name))
-                 ((consp name)
-                  (pcase name
-                    (`(quote ,sym)
-                      (symbol-name sym))
-                    (_ name)))
-                 ((stringp name) name)
-                 (t (user-error "%S unmatched"))))
+                ((symbolp name) (symbol-name name))
+                ((consp name)
+                 (pcase name
+                   (`(quote ,sym)
+                    (symbol-name sym))
+                   (_ name)))
+                ((stringp name) name)
+                (t (user-error "%S unmatched"))))
          (path (and path (substitute-env-in-file-name path))))
-    `(,(if no-compile 'progn 'eval-when-compile)
-      (declare-function nvp-setup-program "nvp-setup")
-      (or (nvp-with-gnu/w32
-               (cl-loop for p in
-                   (delq nil (cons ,path '("~/bin/" "~/.asdf/shims" "~/.local/bin/"
-                                           "/usr/local/bin")))
-                 do (let ((f (expand-file-name ,name p)))
-                      (and (file-exists-p f)
-                           (file-executable-p f)
-                           (cl-return f))))
-            (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
-          (executable-find ,name)
-          ;; fallback to runtime search
-          (and (require 'nvp-setup)
-               (nvp-setup-program ,name ,path))))))
+    `(progn
+       (declare-function nvp-setup-program "nvp-setup")
+       (or (,(if no-compile 'progn 'eval-when-compile)
+            (nvp-with-gnu/w32
+                (let ((exec-path (delq nil (cons ,path '("~/bin/"
+                                                         "~/.asdf/shims/"
+                                                         "~/.local/bin/"
+                                                         "/usr/local/bin/")))))
+                  (executable-find ,name))
+              (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
+            ;; otherwise try entire PATH
+            (executable-find ,name))
+           ;; fallback to runtime search
+           (nvp-setup-program ,name ,path)))))
 
 (defmacro nvp-path (path &optional no-compile)
   `(,(if no-compile 'progn 'eval-when-compile)
@@ -276,6 +285,7 @@ line at match (default) or do BODY at point if non-nil."
 ;; -------------------------------------------------------------------
 ;;; REPLs
 
+;;; FIXME: how to make more generic?
 (cl-defmacro nvp-hippie-shell-fn (name histfile
                                        &key
                                        (size 5000)
@@ -365,7 +375,7 @@ line at match (default) or do BODY at point if non-nil."
 
 ;; -------------------------------------------------------------------
 ;;; Bindings
-
+;;; FIXME: remove most of this
 (defconst nvp-binding-prefix "<f2>")
 (defconst nvp-major-mode-prefix "m")       ;eg <f2> m
 (defconst nvp-major-minor-mode-prefix "m") ;eg <f2> m m
@@ -1046,13 +1056,25 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
    (cl-loop for (sym . doc) in fun-docs
       collect `(nvp-wrapper-function ,sym ,doc))))
 
-(defmacro nvp-if-toggle (then &rest rest)
-  "Do THEN if `last-command' wasn't `this-command', otherwise do REST."
-  (declare (indent 1))
-  `(if (not (eq this-command last-command))
-       ,then
-     ,@rest
-     (setq this-command nil)))
+;; Simple memoization / result caching
+(cl-defmacro nvp-function-with-cache (func arglist &optional docstring
+                                           &rest body
+                                           &key local &allow-other-keys)
+  "Create a simple cache for FUNC results."
+  (declare (indent defun) (debug defun))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
+  (let ((cache (make-symbol (concat (if (symbolp func) (symbol-name func) func)
+                                    "-cache")))
+        (fn (if (stringp func) (intern func) func)))
+    `(progn
+       ,(if local `(defvar-local ,cache nil)
+          `(defvar ,cache))
+       (defun ,fn ,arglist
+         ,docstring
+         (or ,cache (setq ,cache (progn ,@body)))))))
+
+;; -------------------------------------------------------------------
 
 ;; FIXME: most of these should either be generic or act on local variables
 ;; instead of being defined many times

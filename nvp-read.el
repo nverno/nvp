@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 10:09:19>
+;; Last modified: <2019-02-21 01:00:56>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
@@ -98,6 +98,31 @@
       (setq prompt (nvp-prompt--with-default (or prompt "Org file: ") default))
       (nvp-read-relative-recursively
        nvp/org "\.org$" (or prompt "Org file: ") default))))
+
+;; read mode installation files
+(defun nvp-read--mode-install (&optional mode prompt default)
+  (or prompt (setq prompt "Install file: "))
+  (let* ((mode (or mode (substring (symbol-name major-mode) 0 -5)))
+         (modedir (expand-file-name mode nvp/install))
+         files)
+    (if (not (file-exists-p modedir))
+        (nvp-read-relative-recursively nvp/install "^[^.]+$" prompt)
+      (setq files (directory-files modedir nil "^[^.]+$"))
+      (if (eq 1 (length files))
+          (expand-file-name (concat mode "/" (car files)) nvp/install)
+        (unless default
+          (setq prompt
+                (nvp-prompt--with-default
+                 prompt (cl-some (lambda (f)
+                                   (member
+                                    f `(,(format "install-%s" mode) "install")))
+                                 files))))
+        (expand-file-name
+         (concat
+          mode "/"
+          (nvp-completing-read
+           prompt files nil nil nil 'nvp-read-config-history default))
+         nvp/install)))))
 
 ;; -------------------------------------------------------------------
 ;;; Minibuffer input

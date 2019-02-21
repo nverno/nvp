@@ -4,8 +4,8 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-15 08:23:41>
-;; Package-Requires: 
+;; Last modified: <2019-02-21 13:14:57>
+;; Package-Requires:
 ;; Created: 16 November 2016
 
 ;; This file is not part of GNU Emacs.
@@ -40,7 +40,7 @@
   paredit-close-round paredit-find-comment-on-line paredit-move-past-close)
 
 ;; -------------------------------------------------------------------
-;;; Movement 
+;;; Movement
 
 (defun nvp-move-next5 (&rest _ignored)
   (interactive)
@@ -169,7 +169,7 @@ With ARG use default behaviour, except also call `expand-abbrev'."
     (yank)))
 
 (defun nvp-ido-backspace ()
-  "Forward to `backward-delete-char'. 
+  "Forward to `backward-delete-char'.
 On error (read-only), quit without selecting."
   (interactive)
   (condition-case nil
@@ -180,6 +180,15 @@ On error (read-only), quit without selecting."
 (defun nvp-ido-beginning-of-input ()
   (interactive)
   (goto-char (minibuffer-prompt-end)))
+
+;; -------------------------------------------------------------------
+;;; Wrapper functions
+
+(nvp-wrapper-fuctions
+ (nvp-check-buffer-function . nil)
+ (nvp-repl-switch-function  . nil)
+ (nvp-test-function         . nil)
+ (nvp-tag-function          . nil))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

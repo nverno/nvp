@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-15 00:42:37>
+;; Last modified: <2019-02-21 13:36:50>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -97,113 +97,38 @@
   ("l" helm-show-kill-ring "list" :color blue))
 
 ;; -------------------------------------------------------------------
-;;; Paredit -- little used commands
-(nvp-declare "paredit" paredit-delete-indentation)
-
-;;;###autoload
-(defun nvp-paredit-remove-newlines ()
-  "Removes extra whitespace and newlines from current point to the next paren."
-  (interactive)
-  (let ((up-to (point)))
-    (backward-char)
-    (while (> (point) up-to)
-      (nvp-paredit-delete-indentation))))
-
-;; https://www.emacswiki.org/emacs/ParEdit
-(defun nvp-paredit-delete-indentation (&optional arg)
-  "Handle joining lines that end in a comment."
-  (interactive "P")
-  (let (comt)
-    (save-excursion
-      (move-beginning-of-line (if arg 1 0))
-      (when (skip-syntax-forward "^<" (point-at-eol))
-        (setq comt (delete-and-extract-region (point) (point-at-eol))))
-      (delete-indentation arg)
-      (when comt
-        (save-excursion
-          (move-end-of-line 1)
-          (insert " ")
-          (insert comt))))))
-
-;; -------------------------------------------------------------------
-;;; Duplicate lines 
-
-(declare-function paredit-kill "paredit")
-
-;; Duplicates the current line or region arg times.
-;; if there's no region, the current line will be duplicated
-;; (or last non-empty).
-;;;###autoload
-(defun nvp-duplicate-line-or-region (arg)
-  (interactive "p")
-  (if (region-active-p)
-      (let ((beg (region-beginning))
-            (end (region-end)))
-        (nvp--duplicate-region arg beg end))
-    (nvp--duplicate-last-nonempty-line arg)
-    (nvp-bind-transient-key "d" #'nvp--duplicate-back-and-dupe)))
-
-;; duplicate the current line num times.
-(defun nvp-duplicate-current-line (&optional num)
-  (interactive "p")
-  (if (bound-and-true-p paredit-mode)
-      (nvp--paredit-duplicate-current-line)
-    (save-excursion
-      (when (eq (point-at-eol) (point-max))
-        (goto-char (point-max))
-        (newline)
-        (forward-char -1))
-      (nvp--duplicate-region num (point-at-bol) (1+ (point-at-eol))))))
-
-(defun nvp--duplicate-back-and-dupe ()
-  (interactive)
-  (forward-line -1)
-  (nvp-duplicate-current-line))
-
-;; duplicates the region bounded by start and end num times.
-;; if no start and end is provided, the current region-beginning and
-;; region-end is used.
-(defun nvp--duplicate-region (&optional num start end)
-  (interactive "p")
-  (save-excursion
-    (let* ((start (or start (region-beginning)))
-	   (end (or end (region-end)))
-	   (region (buffer-substring start end)))
-      (goto-char end)
-      (dotimes (_i num)
-	(insert region)))))
-
-;; Duplicate the current of previous line that isn't blank.
-(defun nvp--duplicate-last-nonempty-line (&optional num)
-  (interactive "p")
-  (let ((back 0))
-    (while (and (save-excursion
-                  (beginning-of-line)
-                  (looking-at-p "[[:space:]]*$"))
-                (> (line-number-at-pos) 1))
-      (forward-line -1)
-      (setq back (1+ back)))
-    (when (eq (point-at-eol) (point-max))
-      (goto-char (point-max))
-      (newline)
-      (forward-char -1))
-    (let ((region (buffer-substring (point-at-bol)
-                                    (1+ (point-at-eol)))))
-      (forward-line back)
-      (dotimes (_i num)
-        (insert region))))
-  (goto-char (point-at-eol)))
-
-(defun nvp--paredit-duplicate-current-line ()
-  (back-to-indentation)
-  (let (kill-ring kill-ring-yank-pointer)
-    (paredit-kill)
-    (yank)
-    (newline-and-indent)
-    (yank)))
-
-;; -------------------------------------------------------------------
 ;;; Assorted
+(nvp-declare "" nvp-indicate-pulse-region-or-line)
+
+;;;###autoload
+(defun nvp-mark-defun (&optional arg)
+  "Mark defun, skipping preceding comments."
+  (interactive "p")
+  (let ((skip-comments (not (region-active-p))))
+    (setq prefix-arg current-prefix-arg)
+    (funcall nvp-mark-defun-function arg)
+    (and skip-comments (comment-forward (point-max)))))
+
+;;;###autoload
+(defun nvp-align (&optional arg beg end)
+  "Align buffer region b/w BEG and END, or call `nvp-mark-defun' if nil.
+With a single prefix, align entire active region or buffer.
+With double prefix, highlight changes that would occur."
+  (interactive
+   (cons (car current-prefix-arg)
+         (if (region-active-p)
+             (list (region-beginning) (region-end)))))
+  (if (eq 4 arg)                        ;align entire region / buffer
+      (if (and beg end) (align beg end)
+        (align (point-min) (point-max)))
+    (save-mark-and-excursion
+      (unless (and beg end)
+        (nvp-mark-defun)
+        (setq beg (region-beginning) end (region-end)))
+        (nvp-indicate-pulse-region-or-line beg end)
+      (if (eq 16 arg)                     ;test alignment rule
+          (call-interactively 'align-highlight-rule)
+        (align beg end)))))
 
 ;;;###autoload
 (defun nvp-kill-emacs ()

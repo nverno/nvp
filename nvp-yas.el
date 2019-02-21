@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-20 21:40:01>
+;; Last modified: <2019-02-21 10:52:27>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -35,10 +35,10 @@
 (require 'yasnippet)
 (require 'nvp-comment)
 
-;; -------------------------------------------------------------------
-;;; Padding / Headers
-
 (defalias 'yas-comment-string 'nvp-yas-comment)
+
+;; -------------------------------------------------------------------
+;;; Buffers / files
 
 ;; trimmed filename
 (defsubst nvp-yas-bfn ()
@@ -54,6 +54,9 @@
 ;; current indentation
 (defsubst nvp-yas-indent ()
   (current-indentation))
+
+;; -------------------------------------------------------------------
+;;; Padding / Headers
 
 (defsubst nvp-yas-header (char &optional extra max)
   (let ((sw (string-width yas-text)))

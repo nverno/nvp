@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-20 11:38:50>
+;; Last modified: <2019-02-21 13:37:51>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -66,19 +66,19 @@
 (defvar-local nvp-snippet-dir nil "Current mode's snippet directory.")
 
 ;; programs
-(defvar nvp-program-search-paths
+(nvp-defvar nvp-program-search-paths
   (nvp-with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
     `(,nvp/bin ,nvp/binw)))
 
 ;; jumping variables -- might be set in dir-locals
 (defvar nvp-default-org-file "gtd.org")
-(defvar nvp-default-hooks-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
-(defvar nvp-build-init-dir (expand-file-name "build" nvp/home))
+(nvp-defvar nvp-default-hooks-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
+(nvp-defvar nvp-build-init-dir (expand-file-name "build" nvp/home))
 (defvar-local nvp-notes-local-file ())
 (defvar-local nvp-books-local-directory ())
 
 ;; installs
-(defvar nvp-install-makefile (expand-file-name "Makefile" nvp/install))
+(nvp-defvar nvp-install-makefile (expand-file-name "Makefile" nvp/install))
 (defvar-local nvp-install-mode-targets ()
   "External installation targets for a major-mode.")
 
@@ -87,15 +87,34 @@
 
 ;; -------------------------------------------------------------------
 ;;; Functions
+(nvp-declare "" nvp-ert-run-tests)
+
 (defvar-local nvp-help-at-point-functions ())
 (defvar-local nvp-check-buffer-function #'checkdoc)
 (defvar-local nvp-disassemble-function #'disassemble)
-(defvar-local nvp-repl-switch-function ()
+(defvar-local nvp-repl-switch-function #'ignore
   "Function called to switch b/w source and REPL buffers.")
-(defvar-local nvp-test-function ()
+(defvar-local nvp-test-function #'nvp-ert-run-tests
   "Function called to run applicable tests at point.")
-(defvar-local nvp-tag-function ()
+(defvar-local nvp-tag-function #'ignore
   "Function called to create tags by mode.")
+(defvar-local nvp-mark-defun-function #'mark-defun)
+
+;; -------------------------------------------------------------------
+;;; Faces
+
+(defface nvp-gaudy-variable-face
+  `((((class grayscale) (background light))
+     (:background "Gray90" :weight bold :slant italic))
+    (((class grayscale) (background dark))
+     (:foreground "Gray80" :weight bold :slant italic))
+    (((class color) (background light))
+     (:inherit font-lock-variable-name-face :weight bold :slant italic))
+    (((class color) (background dark))
+     (:inherit font-lock-variable-name-face :weight bold :slant italic))
+    (t (:weight bold)))
+  "Gaudy variable font locking - bold & italicized."
+  :group 'nvp)
 
 ;; -------------------------------------------------------------------
 ;;; general helpers

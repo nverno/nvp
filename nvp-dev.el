@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-21 10:29:05>
+;; Last modified: <2019-02-21 11:26:12>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -65,7 +65,7 @@ With prefix ARG, prompt for selector."
   "Display info about syntax at point.
 With prefix, display in same frame using `display-buffer' ACTION."
   (interactive (list (point-marker) (car current-prefix-arg)))
-  (set-buffer (marker-buffer marker))
+  ;; (set-buffer (marker-buffer marker))
   (let ((ppss (syntax-ppss marker))
         (help
          '("depth in parens."

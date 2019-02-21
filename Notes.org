@@ -1,13 +1,12 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-21 08:29:45>
+#+DATE: <2019-02-21 13:30:07>
 
 * Functions
-** General [4/11]
+** General [4/10]
 - [ ] interface to install external deps
 - [ ] quickhelp-toggle
 - [ ] company-local => macro, check for nested backends
 - [ ] list package dependencies -- `package--get-deps'
-- [ ] generic mark defun
 - [ ] more generic compile function?
 - [ ] fix list wrapping to account for syntax
 - [X] mark-defun optionally not include comments
@@ -79,6 +78,7 @@ Not sure how this should work.
 ** Modes
 *** elisp
 - [ ] move to subdir of nvp
+- [ ] align rules are shitty - dots in double quotes get moved.
 - [ ] macroify-bindings update => elisp
 - [ ] package
 - [ ] fix hippie - adds extra ')' when no match
@@ -257,6 +257,7 @@ Use ~load-history~
 wrapper for cookiecutter packages
 ** Cargo
 update / remove
+** macrostep-sh
 ** Awk-it
 incorporate?
 

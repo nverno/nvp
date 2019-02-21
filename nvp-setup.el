@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-15 01:32:41>
+;; Last modified: <2019-02-21 12:12:20>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -53,6 +53,22 @@
                        (cl-return f))))
         (bound-and-true-p (intern (nvp-w32-program name))))
       (executable-find name)))
+
+;;;###autoload
+(defun nvp-setup-smie-bindings (&optional debug)
+  "Locally override minor mode bindings when smie functions are available."
+  (nvp-bindings "smartparens" nil :local t
+    ("C-M-f"    . smie-forward-sexp-command)
+    ("C-M-b"    . smie-backward-sexp-command)
+    ("<f2> q c" . smie-close-block))
+  (when debug
+    (nvp-bind-keys nvp-debug-keymap
+      :pred-form (featurep 'smie)
+      ("sc" . smie-config-show-indent)
+      ("ss" . smie-config-set-indent)
+      ("sg" . smie-config-guess)
+      ("sS" . smie-config-save)
+      ("se" . smie-edebug))))
 
 ;; ------------------------------------------------------------
 ;;; Setup

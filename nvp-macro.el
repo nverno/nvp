@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 08:29:01>
+;; Last modified: <2019-02-21 13:14:43>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -952,12 +952,13 @@ and install PLUGIN with asdf."
 list of args.
 Optionally use DOC for function."
   (let ((fn (intern (string-remove-suffix "-function" (symbol-name symbol))))
-        (args (make-symbol "args")))
-    `(defun ,fn (&rest ,args)
+        ;; (arg (make-symbol "arg"))
+        )
+    `(defun ,fn ()
        ,(or doc (format "Function to run local `%s'." symbol))
        (interactive)
        (setq prefix-arg current-prefix-arg)
-       (funcall-interactively ,symbol ,args))))
+       (call-interactively ,symbol))))
 
 (defmacro nvp-wrapper-fuctions (&rest fun-docs)
   "Create list of wrapper functions.

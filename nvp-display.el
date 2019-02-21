@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-21 10:11:17>
+;; Last modified: <2019-02-21 12:16:00>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -100,7 +100,7 @@
     `(let* ((display-buffer-overriding-action
              (nvp-display--get-action ,action :buffer))
             (ido-default-buffer-method (nvp-display--get-action ,action :ido))
-            (help-window-select nil))
+            (help-window-select 'other))
       ,@body)))
 
 

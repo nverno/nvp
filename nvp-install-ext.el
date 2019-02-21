@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-15 10:11:49>
+;; Last modified: <2019-02-20 18:32:30>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -37,22 +37,36 @@
   (require 'subr-x)
   (require 'nvp-macro)
   (nvp-local-vars))
+(require 'make-mode)
 (require 'nvp)
+
+(cl-defstruct (nvp-mode (:constructor nvp-mode--make)
+                        (:copier nil))
+  "Mode configuration and dependencies."
+  depends                               ;modes on which it depends
+  pkgs                                  ;pkgs using default manager
+  external                              ;external dependencies
+  paths                                 ;load-paths
+  )
 
 ;; -------------------------------------------------------------------
 ;;; Manage external dependencies
 
-(cl-defstruct (nvp-installer (:constructor nvp-installer-make)
-                             (:copier nil))
+(cl-defstruct (nvp-install-ext (:constructor nvp-install-ext--make)
+                               (:copier nil))
   "Struct to hold external installer info."
-  location help targets pending buffer pkg)
+  (mode :read-only t) (makefile :read-only t) (targets :read-only t))
 
-;; (defvar nvp-installer
-;;   (nvp-installer-makefile-make
-;;    :location (expand-file-name "Makefile" nvp/install)
-;;    :help (nvp-installer--))
-;;   "Installer instance.")
+(cl-defun nvp-install-ext-make (targets &key mode (makefile nvp-install-makefile))
+  (nvp-install-ext--make :targets targets :mode mode :makefile makefile))
 
+(defun nvp-install-ext-help (ext)
+  (nvp-with-results-buffer (help-buffer)
+    (call-process-shell-command
+     (concat "make -C " (file-name-directory (nvp-install-ext-makefile ext)) " help")
+     nil t t)))
+
+(setq tst (nvp-install-ext-make '("default") :mode "elisp"))
 ;; (defun nvp-installer--call (installer &rest args)
 ;;   )
 

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-20 13:18:58>
+;; Last modified: <2019-02-20 21:20:34>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -1045,6 +1045,14 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
   (macroexp-progn
    (cl-loop for (sym . doc) in fun-docs
       collect `(nvp-wrapper-function ,sym ,doc))))
+
+(defmacro nvp-if-toggle (then &rest rest)
+  "Do THEN if `last-command' wasn't `this-command', otherwise do REST."
+  (declare (indent 1))
+  `(if (not (eq this-command last-command))
+       ,then
+     ,@rest
+     (setq this-command nil)))
 
 ;; FIXME: most of these should either be generic or act on local variables
 ;; instead of being defined many times

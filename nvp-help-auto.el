@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-10 05:40:24>
+;; Last modified: <2019-02-20 18:34:19>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -85,6 +85,7 @@
            (charset (ido-completing-read "Charset: " table)))
      (list-charset-chars (intern charset)))))
 
+;;; FIXME: unprintable characters
 ;;;###autoload
 (defun nvp-help-ascii-table ()
   "Print ASCII table values."

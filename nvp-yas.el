@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 14:43:49>
+;; Last modified: <2019-02-20 21:40:01>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -36,14 +36,9 @@
 (require 'nvp-comment)
 
 ;; -------------------------------------------------------------------
-;;; Snippet helpers
+;;; Padding / Headers
 
-;;; Comments
-(define-obsolete-function-alias 'nvp-yas-with-comment 'nvp-comment-string)
-(define-obsolete-function-alias 'nvp-yas-comment 'nvp-comment-start)
 (defalias 'yas-comment-string 'nvp-yas-comment)
-(define-obsolete-function-alias 'nvp-yas-comment-cont 'nvp-comment-continued)
-(define-obsolete-function-alias 'nvp-yas-comment-end 'nvp-comment-end)
 
 ;; trimmed filename
 (defsubst nvp-yas-bfn ()
@@ -73,6 +68,9 @@
 ;; fill after yas-text with CHAR until PADMAX
 (defsubst nvp-yas-pad-right (char padmax)
   (make-string (max 0 (- padmax (string-width yas-text))) char))
+
+;; -------------------------------------------------------------------
+;;; Syntax
 
 ;; yas-inside-string uses `font-lock-string-face'
 (defsubst nvp-yas-inside-string ()
@@ -104,6 +102,12 @@
    (let* ((str (car (split-string str "=" t " ")))
           (strs (split-string str nil t " ")))
      (or (cadr strs) (car strs)))))
+
+;; -------------------------------------------------------------------
+;;; Or patterns
+
+(defsubst nvp-yas-or-values (str &optional seps)
+  (split-string str (or seps "[\]\[|]") 'omit " "))
 
 (provide 'nvp-yas)
 ;;; nvp-yas.el ends here

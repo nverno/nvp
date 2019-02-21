@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-20 23:11:11>
+;; Last modified: <2019-02-21 03:20:49>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -126,7 +126,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 (modify-syntax-entry ?\` ")" snippet-mode-syntax-table)
 
 (nvp-function-with-cache nvp-snippet-header-end ()
-  "Return marker at end of snippet header."
+  :doc "Return marker at end of snippet header."
   :local t
   (save-excursion
     (goto-char (point-min))

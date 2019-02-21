@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-20 23:57:49>
+;; Last modified: <2019-02-21 03:06:25>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -263,7 +263,8 @@ line at match (default) or do BODY at point if non-nil."
             ;; otherwise try entire PATH
             (executable-find ,name))
            ;; fallback to runtime search
-           (nvp-setup-program ,name ,path)))))
+           (when (require 'nvp-setup nil t)
+             (nvp-setup-program ,name ,path))))))
 
 (defmacro nvp-path (path &optional no-compile)
   `(,(if no-compile 'progn 'eval-when-compile)
@@ -375,99 +376,6 @@ line at match (default) or do BODY at point if non-nil."
 
 ;; -------------------------------------------------------------------
 ;;; Bindings
-;;; FIXME: remove most of this
-(defconst nvp-binding-prefix "<f2>")
-(defconst nvp-major-mode-prefix "m")       ;eg <f2> m
-(defconst nvp-major-minor-mode-prefix "m") ;eg <f2> m m
-
-(defconst nvp-bindings-table
-  (let* ((nvp nvp-binding-prefix)
-         (major (concat nvp " " nvp-major-mode-prefix)))
-    `((align    -> ,nvp "a")
-      (abbrev   -> ,nvp "a")
-      (bookmark -> ,nvp "b")
-      (code     -> ,nvp "c")
-      (count    -> ,nvp "c")
-      (debug    -> ,nvp "d")
-      (env      -> ,nvp "e")
-      (edit     -> ,nvp "e")
-      (find     -> ,nvp "f")
-      (git      -> ,nvp "g")
-      (help     -> ,nvp "h")
-      (install  -> ,nvp "i")
-      (jump     -> "C-x j")
-      (list     -> ,nvp "l")
-      (open     -> ,nvp "o")
-      (session  -> ,nvp "o")
-      (package  -> ,nvp "p")
-      (toggle   -> ,nvp "q")
-      (insert   -> ,nvp "q")
-      (sort     -> ,nvp "s")
-      (theme    -> ,nvp "t")
-      (tag      -> ,nvp "T")
-      (vagrant  -> ,nvp "v")
-      (web      -> ,nvp "w")
-      (process  -> ,nvp "x")
-      (shell    -> ,nvp "z")
-      (repl     -> ,nvp "z")
-      ;; major mode bindings
-      (major    -> ,major
-                (abbrev  -> "a")
-                (compile -> "c")
-                (debug   -> "d")
-                (doc     -> "D")
-                (env     -> "e")
-                (file    -> "f")
-                (help    -> "h")
-                (install -> "i")
-                (jump    -> "j")
-                (load    -> "l")
-                (minor   -> ,nvp-major-minor-mode-prefix)
-                (package -> "p")
-                (style   -> "s")
-                (test    -> "t")
-                (tag     -> "T")
-                (process -> "x")
-                (repl    -> "z"))
-      ())))
-
-;; create binding from table
-(defun nvp--bind-lookup (sym &optional table)
-  (or (cdr (cdr (assoc sym (or table nvp-bindings-table))))
-      (error "%s not in bindings table" sym)))
-
-(defun nvp--bind-concat (sym &optional table)
-  (mapconcat 'identity (nvp--bind-lookup sym table) " "))
-
-(defun nvp--bind (sym &optional key table)
-  (pcase sym
-    ('major
-     (unless key
-       (error "major mode binding requires subkey"))
-     (let* ((major (nvp--bind-lookup 'major table))
-            (val (nvp--bind-lookup key (cdr major))))
-       (unless val
-         (error "%s not found in bindings table" key))
-       (mapconcat 'identity (cons (car major) val) " ")))
-    ('minor
-     (nvp--bind 'major 'minor table))
-    (_ (nvp--bind-concat sym table))))
-
-(defmacro nvp-define-key (keymap key category mode-type func)
-  `(define-key ,keymap (kbd (nvp-bind ,key ,category ,mode-type)) ,func))
-
-(defmacro nvp-bind (key category &optional mode-type)
-  "Create binding for KEY in CATEGORY, optionally of MODE-TYPE which 
-could be either 'major or 'minor."
-  (cl-destructuring-bind (_ cat) category
-    (mapconcat 'identity
-               (delq nil
-                     (list (pcase mode-type
-                             (`'major (nvp--bind 'major cat))
-                             (`'minor (nvp--bind 'minor))
-                             (_ (nvp--bind cat)))
-                           key))
-               " ")))
 
 (defmacro nvp-def-key (map key cmd)
   "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
@@ -1057,9 +965,8 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
       collect `(nvp-wrapper-function ,sym ,doc))))
 
 ;; Simple memoization / result caching
-(cl-defmacro nvp-function-with-cache (func arglist &optional docstring
-                                           &rest body
-                                           &key local &allow-other-keys)
+(cl-defmacro nvp-function-with-cache (func arglist &rest body
+                                           &key doc local &allow-other-keys)
   "Create a simple cache for FUNC results."
   (declare (indent defun) (debug defun))
   (while (keywordp (car body))
@@ -1071,7 +978,7 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
        ,(if local `(defvar-local ,cache nil)
           `(defvar ,cache))
        (defun ,fn ,arglist
-         ,docstring
+         ,doc
          (or ,cache (setq ,cache (progn ,@body)))))))
 
 ;; -------------------------------------------------------------------

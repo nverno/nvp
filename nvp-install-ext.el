@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-20 23:11:14>
+;; Last modified: <2019-02-21 01:45:56>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -49,7 +49,7 @@
   paths                                 ;load-paths
   )
 
-(cl-defmethod nvp-install-help (&optional type)
+(cl-defmethod nvp-install-help (&optional _type)
   "Display help about mode, eg. dependencies, packages, paths, etc."
   (nvp-with-results-buffer (help-buffer)
     (call-process "make" nil t t (concat "--file=" nvp-install-makefile) "help")))
@@ -60,7 +60,7 @@
 (cl-defstruct (nvp-install-ext (:constructor nvp-install-ext--make)
                                (:copier nil))
   "Struct to hold external installer info."
-  (mode :read-only t) (makefile :read-only t) (targets :read-only t))
+  (mode :read-only) (makefile :read-only) (targets :read-only))
 
 (cl-defun nvp-install-ext-make (targets &key mode (makefile nvp-install-makefile))
   (nvp-install-ext--make :targets targets :mode mode :makefile makefile))
@@ -71,7 +71,7 @@
      (concat "make -C " (file-name-directory (nvp-install-ext-makefile ext)) " help")
      nil t t)))
 
-(setq tst (nvp-install-ext-make '("default") :mode "elisp"))
+;; (setq tst (nvp-install-ext-make '("default") :mode "elisp"))
 ;; (defun nvp-installer--call (installer &rest args)
 ;;   )
 

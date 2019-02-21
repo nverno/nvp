@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-07 14:48:02>
+;; Last modified: <2019-02-21 03:20:25>
 ;; Package-Requires: 
 ;; Created:  2 December 2016
 
@@ -30,7 +30,8 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
-(autoload 'nvp-string-all-matches "nvp-util")
+(require 'nvp)
+(require 'nvp-string)
 
 ;; checkout part of a repo
 ;;;###autoload
@@ -41,16 +42,16 @@
           (subdir (read-string "Subdirectory to clone: "))
           (ddir (car (last (split-string repo "/"))))
           (local-dir (read-directory-name "Clone into: "
-                                          (or (getenv "LOCALSRC")
+                                          (or (getenv "DEVEL")
                                               default-directory)
                                           ddir nil ddir)))
      (list repo subdir local-dir)))
   (unless (file-exists-p local-dir)
     (mkdir local-dir))
   (let ((default-directory local-dir))
-    (call-process "git" nil nil nil "init")
-    (call-process "git" nil nil nil "remote" "add" "-f" "origin" repo)
-    (call-process "git" nil nil nil "config" "core.sparseCheckout" "true")
+    (call-process-shell-command
+     (format "git init && git remote add -f origin %s && \
+git config core.sparseCheckout true" repo) nil nil nil)
     (with-current-buffer (find-file-noselect ".git/info/sparse-checkout")
       (goto-char (point-max))
       (insert subdir)
@@ -62,37 +63,33 @@
                 nil 'local))))
 
 ;; -------------------------------------------------------------------
+;;; SVN 
+
+;; Cached list of git svn subcommands
+(nvp-function-with-cache nvp-vc-svn--available-commands ()
+  :doc "List of git svn subcommands."
+  (nvp-s-all-matches
+   "^  \\([-a-z]+\\) +" (shell-command-to-string "git svn help") 1))
+
+;;;###autoload
+(defun nvp-vc-svn (dir command)
+  "Run a git svn subcommand in `DIR'."
+  (interactive (list (read-directory-name "Directory: " nil default-directory)
+                     (nvp-completing-read
+                      "Git svn command to run: "
+                      (nvp-vc-svn--available-commands)
+                      nil t nil nil)))
+  (let* ((default-directory (vc-git-root dir))
+         (compilation-buffer-name-function
+          #'(lambda (_major-mode-name) "*git-svn*")))
+    (compile (concat "git svn " command))))
+
+;; -------------------------------------------------------------------
 ;;; Magit 
 
 (defsubst nvp-vc-magit-ref ()
   (interactive)
   (browse-url "https://magit.vc/manual/magit-refcard.pdf"))
-
-;; -------------------------------------------------------------------
-;;; SVN 
-
-;; Cached list of git svn subcommands
-(defvar nvp-vc-svn--available-commands nil)
-(defun nvp-vc-svn--available-commands ()
-  (or nvp-vc-svn--available-commands
-      (setq nvp-vc-svn--available-commands
-            (nvp-string-all-matches
-             "^  \\([-a-z]+\\) +"
-             (shell-command-to-string "git svn help") 1))))
-
-;;;###autoload
-(defun nvp-vc-svn (dir command)
-  "Run a git svn subcommand in `DIR'."
-  (interactive (list (read-directory-name "Directory: ")
-                     (completing-read
-                      "nvp-vc-svn command: "
-                      (nvp-vc-svn--available-commands)
-                      nil t nil nil
-                      (nvp-vc-svn--available-commands))))
-  (let* ((default-directory (vc-git-root dir))
-         (compilation-buffer-name-function
-          #'(lambda (_major-mode-name) "*git-svn*")))
-    (compile (concat "git svn " command))))
 
 (provide 'nvp-vc)
 ;;; nvp-vc.el ends here

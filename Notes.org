@@ -1,28 +1,31 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-20 17:46:21>
+#+DATE: <2019-02-21 02:07:22>
 
 * Functions
-** General [2/6]
+** General [4/7]
+- [ ] interface to install external deps
+- [ ] quickhelp-toggle
+- [ ] company-local => macro, check for nested backends
 - [X] mark-defun optionally not include comments
       #<marker at 21626 in lisp.el.gz>
       NOTE: needs some work to expand to more functions though
 - [X] align current defun region
-- [ ] interface to install external deps
-- [ ] quickhelp-toggle
-- [ ] wrapper to cache function results - lighter weight than memoize
-   [[https://github.com/skeeto/emacs-memoize][memoize]]
+- [X] wrapper to cache function results - lighter weight than memoize
+- [X] jump to mode external install file
+*** Meh [0/2]
+- [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
 - [ ] jumping from shell doesn't account for local variables
-- [ ] company-local => macro
 
 ** Utils [1/5]
 - [ ] reusable region or string utility function
 - [ ] utility function to repeat command like kbdmacro-repeat
 - [ ] remove all methods from generic for debugging
-- [X] function cache wrappers
 - [ ] read w/ popup help: `register-read-with-preview'
+- [X] function cache wrappers
 
 
-** REPLs
+** REPLs [0/1]
+Not sure how this should work.
 - [ ] uniform repl-swithcing interface
 
 ** Newline DWIM [1/2]
@@ -35,30 +38,35 @@
 - [ ] unit test
 - [ ] project tests
 
-** Parsing [1/2]
+** Parsing [1/4]
 - [X] generic functions in buffer
 - [ ] includes in buffer
+- [ ] global variables in buffer
+- [ ] local variables in lexical scope
 
 ** Dynamic abbrevs [1/3]
 - [X] Generic read
 - [ ] generic create table
 - [ ] generic make abbrevs
 
-** Docs/help-at-point [1/4]
+** Docs/help-at-point [1/6]
 - [X] generic methods
 - [ ] company-backend
+- [ ] man backend
 - [ ] web search backend
 - [ ] help-at-point frontend function
+- [ ] better fitting of popup to frame
 
-** minibuffer/edebug [4/4]
-- [X] edebug eval w/ elisp setup
-- [X] edebug eval w/ completion
-- [X] minibuffer eval setup lisp
-- [X] minibuffer eval hippie expand history
+** Completion [2/3]
+- [ ] edebug -- possibly favor local variable completion?
+*** TODO company-bash [0/2]
+- [ ] don't leave includes open
+- [ ] create xrefs from imenu markers
 
-** Completion [2/2]
-- [X] hippie-expand minibuffer history
-- [X] completion during edebugging?
+*** TODO snippet completion [0/3]
+- [ ] basic head completion => merge yas-capf
+- [ ] elisp completion where appropriate
+- [ ] elisp-xref backend
 
 ** Modes
 *** elisp
@@ -195,16 +203,17 @@ Use ~load-history~
 - [ ] EDE
 - [ ] m4
 
-* Library fixes [0/8]
+* Library fixes [3/9]
 - [ ] fix nvp-install
 - [ ] better package installs
   https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
-- [ ] nvp-minibuffer: eval / edebug hooks, hippie expand history
+- [X] nvp-minibuffer: eval / edebug hooks, hippie expand history
 - [ ] nvp-doc - company backend, man backend, fallback to websearch? zeal?
 - [ ] nvp-abbrev-dynamic - should be ready for elisp / C
 - [ ] nvp-disassemble - waiting on generic docs
-- [ ] separate setup from nvp and load once
-- [ ] remove nvp-conf / merge with config-tools
+- [X] separate setup from nvp
+- [ ] only call setup functions on first load
+- [X] remove nvp-conf / merge with config-tools
 
 * Merge/remove old packages [1/11]
 - [ ] bmk-to-bmk => nvp-bookmark

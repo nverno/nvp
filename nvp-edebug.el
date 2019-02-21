@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-20 17:45:06>
+;; Last modified: <2019-02-21 01:44:52>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -32,6 +32,7 @@
   (require 'nvp-macro)
   (require 'which-key nil t))
 (require 'edebug)
+(nvp-declare "which-key" which-key-show-keymap which-key-mode)
 
 ;; setup eval with elisp minibuffer eval hooks
 ;;;###autoload

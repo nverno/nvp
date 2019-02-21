@@ -128,16 +128,12 @@ With prefix sort in REVERSE."
     (let ((fill-column 75))
       (fill-paragraph))))
 
+;;; FIXME:
 ;;;###autoload
 (defun nvp-fill-paragraph-toggle ()
   (interactive)
   (let (deactivate-mark
-        (fill-column
-         (nvp-toggled-if )
-         (if (not (eq last-command this-command))
-             fill-column
-           (setq this-command nil)
-           most-positive-fixnum)))
+        (fill-column (nvp-toggled-if fill-column most-positive-fixnum)))
     (call-interactively 'fill-paragraph)))
 
 ;; -------------------------------------------------------------------

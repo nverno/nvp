@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 03:20:25>
+;; Last modified: <2019-02-21 03:31:51>
 ;; Package-Requires: 
 ;; Created:  2 December 2016
 
@@ -67,7 +67,7 @@ git config core.sparseCheckout true" repo) nil nil nil)
 
 ;; Cached list of git svn subcommands
 (nvp-function-with-cache nvp-vc-svn--available-commands ()
-  :doc "List of git svn subcommands."
+  "List of git svn subcommands."
   (nvp-s-all-matches
    "^  \\([-a-z]+\\) +" (shell-command-to-string "git svn help") 1))
 

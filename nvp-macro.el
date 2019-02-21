@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 03:06:25>
+;; Last modified: <2019-02-21 08:12:52>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -26,6 +26,7 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+;; declare - defun-declarations-alist, macro-declarations-alist
 ;;; Code:
 (require 'cl-lib)
 (require 'subr-x)
@@ -626,7 +627,7 @@ If BUFFER is non-nil, set local bindings in BUFFER."
 (defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."
-  (declare (indent defun))
+  (declare (indent defun) (debug (sexp &rest form)))
   `(let (other-window-scroll-buffer)
      (with-temp-buffer-window
       ,(or buffer-or-name "*results*")
@@ -965,10 +966,10 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
       collect `(nvp-wrapper-function ,sym ,doc))))
 
 ;; Simple memoization / result caching
-(cl-defmacro nvp-function-with-cache (func arglist &rest body
-                                           &key doc local &allow-other-keys)
+(cl-defmacro nvp-function-with-cache (func arglist &optional docstring &rest body
+                                           &key local &allow-other-keys)
   "Create a simple cache for FUNC results."
-  (declare (indent defun) (debug defun))
+  (declare (indent defun) (debug defun) (doc-string 3))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
   (let ((cache (make-symbol (concat (if (symbolp func) (symbol-name func) func)
@@ -978,7 +979,7 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
        ,(if local `(defvar-local ,cache nil)
           `(defvar ,cache))
        (defun ,fn ,arglist
-         ,doc
+         ,docstring
          (or ,cache (setq ,cache (progn ,@body)))))))
 
 ;; -------------------------------------------------------------------

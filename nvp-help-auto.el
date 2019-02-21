@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-20 23:11:05>
+;; Last modified: <2019-02-21 08:12:38>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
@@ -27,6 +27,10 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+
+;;; TODO:
+;; - list package dependencies: see `package--get-deps'
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -35,10 +39,6 @@
 (declare-function nvp-read-elisp-symbol "nvp-read")
 (nvp-declare "define-word" define-word define-word-at-point)
 (autoload 'ispell-get-word "ispell")
-
-;;; TODO:
-;; - list package dependencies: see `package--get-deps'
-;; - describe keymap
 
 ;; -------------------------------------------------------------------
 ;;; Lookup Words
@@ -102,42 +102,6 @@
                (when (= j 0) (insert (format "%4d |" i)))
                (insert (format " %c " num))
                (when (= j 15) (insert "\n"))))))
-
-(defun nvp-help-syntax-at-point (point)
-  "Message about syntax at point."
-  (interactive "d")
-  (let ((ppss (syntax-ppss point))
-        (help
-         '("depth in parens."
-           "character address of start of innermost containing list; nil if none."
-           "character address of start of last complete sexp terminated."
-           "non-nil if inside a string. \
-(it is the character that will terminate the string, \
-or t if the string should be terminated by a generic string delimiter.)"
-           "nil if outside a comment, t if inside a non-nestable comment, \
-else an integer (the current comment nesting)."
-           "t if following a quote character."
-           "the minimum paren-depth encountered during this scan."
-           "style of comment, if any."
-           "character address of start of comment or string; nil if not in one."
-           "List of positions of currently open parens, outermost first."
-           "When the last position scanned holds the first character of a
-(potential) two character construct, the syntax of that position, \
-otherwise nil.  That construct can be a two character comment \
-delimiter or an Escaped or Char-quoted character."
-           ".... Possible further internal information used by \
-‘parse-partial-sexp’.")))
-    (nvp-with-results-buffer "*Syntax*"
-      (goto-char (point-min))
-      (let ((comment-start ";; ")
-            (comment-column 30))
-        (cl-loop
-           for i from 0 upto (length ppss)
-           do (princ (nth i ppss)) (princ (format " ;; %s\n" (nth i help))))
-        (goto-char (point-min))
-        (while (not (eobp))
-          (comment-indent)
-          (forward-line 1))))))
 
 ;; -------------------------------------------------------------------
 ;;; Bindings

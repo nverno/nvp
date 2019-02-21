@@ -1,11 +1,15 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-21 02:07:22>
+#+DATE: <2019-02-21 08:24:21>
 
 * Functions
-** General [4/7]
+** General [4/11]
 - [ ] interface to install external deps
 - [ ] quickhelp-toggle
 - [ ] company-local => macro, check for nested backends
+- [ ] list package dependencies -- `package--get-deps'
+- [ ] generic mark defun
+- [ ] more generic compile function?
+- [ ] fix list wrapping to account for syntax
 - [X] mark-defun optionally not include comments
       #<marker at 21626 in lisp.el.gz>
       NOTE: needs some work to expand to more functions though
@@ -24,6 +28,10 @@
 - [X] function cache wrappers
 
 
+** Logging [0/3]
+- [ ] only report warnings / errors when compiling
+- [ ] add option to treat all warnings as errors to makefile
+- [ ] update nvp-log, not very useful. Look into shutup
 ** REPLs [0/1]
 Not sure how this should work.
 - [ ] uniform repl-swithcing interface
@@ -81,8 +89,6 @@ Use ~load-history~
 - [X] buffer functions
 - [ ] buffer includes
 - [ ] buffer variables
-**** newline-dwim [1/1]
-- [X] defaults
 **** Dynamic abbrevs [0/2]
 - [ ] optionally abbrev library, buffer, or file
 - [ ] another abbrev table for variables?
@@ -164,7 +170,10 @@ Use ~load-history~
 - [ ] xref for company-bash sources
 **** Tests
 - [ ] method to jump to unit test at point
-
+*** Shell                                               :shell:
+- [ ] wrapping with quotes is broken
+- [ ] account for dir-locals when jumping from shell
+**** Dynamic abbrevs
 *** Java                                                 :java:
 - [ ] new root package directory w/o creating new directory
 **** javadoc-mode

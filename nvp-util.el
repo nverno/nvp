@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-21 02:30:42>
+;; Last modified: <2019-02-21 03:24:19>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  2 November 2016
@@ -88,28 +88,7 @@
       (insert "\n        ))\n"))))
 
 ;; -------------------------------------------------------------------
-;;; Strings / Regexp
-
-;; Find all matches for `REGEX' within `STR', returning the full match
-;; string or group `GROUP'.
-(defun nvp-string-all-matches (regex str &optional group)
-  (let ((result nil)
-        (pos 0)
-        (group (or group 0)))
-    (while (string-match regex str pos)
-      (push (match-string group str) result)
-      (setq pos (match-end group)))
-    result))
-
-;; Match `REGEXP' positions in `STR'.
-(defun nvp-string-match-positions (regexp str)
-  (let ((res '()) (pos 0))
-    (while (and (string-match regexp str pos)
-		(< pos (length str) ) )
-      (let ((m (match-end 0)))
-	(push m res)
-	(setq pos m)))
-    (nreverse res)))
+;;; Regexp
 
 ;; make indentation based regexp
 (defun nvp-indent-regexp ()

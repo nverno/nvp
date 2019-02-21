@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 01:05:58>
+;; Last modified: <2019-02-21 04:34:01>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -27,8 +27,9 @@
 
 ;;; Commentary:
 
+;; Default jump to other window
 ;; With single prefix, jump same window
-;; With double prefix, prompt
+;; With double prefix, prompt or something else
 
 ;;; Code:
 (eval-when-compile
@@ -54,32 +55,54 @@
     :ido ((4 raise-frame)
           (t other-window))))
 
+;; -------------------------------------------------------------------
+;;; Utils
+
+(eval-when-compile
+  (defmacro nvp-jump--action (action type)
+    `(,(if (eq type :buffer) 'cdr 'cadr)
+      (assq ,action (plist-get nvp-jump--display-actions ,type)))))
+
 (defmacro nvp-jump--with-action (action &rest body)
   "Execute BODY with jump ACTION defaults."
   (declare (indent defun) (debug (sexp &rest form)))
   (macroexp-let2 nil action action
-   `(let* ((buffer-overriding-action
-            (cdr (assq ,action (plist-get nvp-jump--display-actions :buffer))))
-           (file-fn
-            (cadr (assq ,action (plist-get nvp-jump--display-actions :file))))
-           (ido-default-file-method
-            (cadr (assq ,action (plist-get nvp-jump--display-actions :ido))))
-           (ido-default-buffer-method ido-default-file-method))
-      (cl-letf (((symbol-function 'find-file)
-                 (symbol-function file-fn)))
-        ,@body))))
+    `(let* ((buffer-overriding-action (nvp-jump--action ,action :buffer))
+            (file-fn (nvp-jump--action ,action :file))
+            (ido-default-file-method (nvp-jump--action ,action :ido))
+            (ido-default-buffer-method ido-default-file-method))
+       (cl-letf (((symbol-function 'find-file) (symbol-function file-fn)))
+         ,@body))))
+
+(defmacro nvp-jump--file-with-action (action &rest body)
+  "Execute BODY with jump ACTION file defaults."
+  (declare (indent defun) (debug (sexp &rest form)))
+  (macroexp-let2 nil action action
+    `(let* ((file-fn (nvp-jump--action ,action :file))
+            (ido-default-file-method (nvp-jump--action ,action :ido)))
+       (cl-letf (((symbol-function 'find-file) (symbol-function file-fn)))
+         ,@body))))
+
+(defmacro nvp-jump--buffer-with-action (action &rest body)
+  (declare (indent defun) (debug (sexp &rest form)))
+  (macroexp-let2 nil action action
+    `(let* ((buffer-overriding-action (nvp-jump--action ,action :buffer))
+            (ido-default-buffer-method (nvp-jump--action ,action :ido)))
+       ,@body)))
 
 ;; actions to take jumping to buffers/files
 (defun nvp-jump--location (location buffer-p action)
   (pcase action
     (`4                                  ;same window
      (if buffer-p
-         (display-buffer location (cdr (assq action nvp-jump--display-actions)))
+         (pop-to-buffer
+          location (cdr (assq action (plist-get nvp-jump--display-actions :buffer))))
        (find-file location)))
     ((pred functionp) (funcall action location))
     (_                                   ;different window
      (if buffer-p
-         (display-buffer location (cdr (assq t nvp-jump--display-actions)))
+         (pop-to-buffer
+          location (cdr (assq t (plist-get nvp-jump--display-actions :buffer))))
        (find-file-other-window location)))))
 
 ;; -------------------------------------------------------------------
@@ -116,6 +139,9 @@
       (goto-char (point-min))
       (search-forward str-mode-hook nil t))))
 
+;; -------------------------------------------------------------------
+;;; Install / build files
+
 ;;;###autoload
 (defun nvp-jump-to-mode-install (file action)
   "Jump to external installation files for MODE.
@@ -124,6 +150,15 @@ With double prefix, prompt for mode."
                       (if (eq (car current-prefix-arg) 16)
                           (substring (nvp-read-mode) 0 -5)))
                      (car current-prefix-arg)))
+  (nvp-jump--location file nil action))
+
+;;;###autoload
+(defun nvp-jump-to-build-file (file action)
+  "Jump with ACTION to an init FILE in the build directory."
+  (interactive
+   (list (nvp-read-relative-recursively
+          nvp-build-init-dir ".el$" "Jump to init file: ")
+         (car current-prefix-arg)))
   (nvp-jump--location file nil action))
 
 ;; -------------------------------------------------------------------
@@ -160,7 +195,7 @@ With prefix, pop other window, with double prefix, prompt for MODE."
            major-mode)
          (car current-prefix-arg)))
   (let ((buff (get-buffer-create "*scratch*")))
-    (with-current-buffer (window-buffer (nvp-jump--location buff 'buffer action))
+    (with-current-buffer buff
       (if (eq mode 'emacs-lisp-mode)
           (unless (eq major-mode 'lisp-interaction-mode)
             (lisp-interaction-mode))
@@ -171,12 +206,14 @@ With prefix, pop other window, with double prefix, prompt for MODE."
       (local-set-key (kbd "C-c C-c") #'kill-this-buffer)
       (local-set-key
        (kbd "C-c C-s") (lambda () (interactive) (funcall (intern (nvp-read-mode)))))
-      (pop-to-buffer (current-buffer)))))
+      (message "%s" (substitute-command-keys
+                     "Press \\[kill-this-buffer] to kill this buffer \
+or C-c C-s to switch major modes. "))
+      (nvp-jump--location buff 'buffer action))))
 
 ;; -------------------------------------------------------------------
 ;;; Books / PDFs
 
-;; FIXME: when opening in calibre, import is annoying - alternative to calibre?
 ;;;###autoload
 (defun nvp-jump-to-book (dir &optional action)
   "Jump to book, either opening in emacs (eg. pdfs) or external for epubs.
@@ -220,15 +257,6 @@ With triple prefix, offer recursive results."
 ;;; Other
 
 ;;;###autoload
-(defun nvp-jump-to-init-file (file action)
-  "Jump with ACTION to an init FILE in the build directory."
-  (interactive
-   (list (nvp-read-relative-recursively
-          nvp-build-init-dir ".el$" "Jump to init file: ")
-         (car current-prefix-arg)))
-  (nvp-jump--location file nil action))
-
-;;;###autoload
 (defun nvp-jump-to-register (action)
   (interactive (list (car current-prefix-arg)))
   (nvp-jump--with-action (or (not (eq action 4)) 4)
@@ -240,13 +268,13 @@ With triple prefix, offer recursive results."
   (interactive
    (list (if (eq (car current-prefix-arg) 16) nvp/project nvp/class)
          (car current-prefix-arg)))
-  (nvp-jump--with-action (or (not (eq action 4)) 4)
+  (nvp-jump--file-with-action (or (not (eq action 4)) 4)
     (ido-find-file-in-dir dir)))
 
 ;;;###autoload
 (defun nvp-jump-to-template (action)
   (interactive (list (car current-prefix-arg)))
-  (nvp-jump--with-action (or (not (eq action 4)) t)
+  (nvp-jump--file-with-action (or (not (eq action 4)) t)
     (ido-find-file-in-dir nvp/template)))
 
 (provide 'nvp-jump)

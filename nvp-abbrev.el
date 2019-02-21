@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-15 09:25:28>
+;; Last modified: <2019-02-21 04:18:38>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -111,10 +111,9 @@ When abbrev text is selected, searching is done first by length then lexically."
       ;; reload abbrev table after modification
       (cl-labels ((nvp-abbrev-save-hook
                    ()
-                   (when (buffer-modified-p (current-buffer))
-                     (quietly-read-abbrev-file (buffer-file-name))
-                     ;; refresh cached active abbrev tables
-                     (setq nvp-abbrev-completion-need-refresh t))))
+                   (quietly-read-abbrev-file (buffer-file-name))
+                   ;; refresh cached active abbrev tables
+                   (setq nvp-abbrev-completion-need-refresh t)))
         (add-hook 'after-save-hook #'nvp-abbrev-save-hook t 'local)))))
 
 ;; add unicode abbrevs to local table parents

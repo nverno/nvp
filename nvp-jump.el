@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 04:34:01>
+;; Last modified: <2019-02-21 09:39:44>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -35,75 +35,10 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (nvp-local-vars)
-  (defvar buffer-overriding-action))
+  (nvp-local-vars))
 (require 'nvp)
 (require 'nvp-read)
-(declare-function find-function-other-window "find-func")
-(declare-function nvp-read-mode "nvp-read")
-
-;; overrides to display result in current or other window
-(defvar nvp-jump--display-actions
-  '(
-    :buffer ((4 display-buffer-same-window
-                ((inhibit-switch-frame . nil))
-                ((inhibit-same-window  . nil)))
-             (t display-buffer-pop-up-window
-                ((inhibit-same-window  . t))))
-    :file ((4 find-file)
-           (t find-file-other-window))
-    :ido ((4 raise-frame)
-          (t other-window))))
-
-;; -------------------------------------------------------------------
-;;; Utils
-
-(eval-when-compile
-  (defmacro nvp-jump--action (action type)
-    `(,(if (eq type :buffer) 'cdr 'cadr)
-      (assq ,action (plist-get nvp-jump--display-actions ,type)))))
-
-(defmacro nvp-jump--with-action (action &rest body)
-  "Execute BODY with jump ACTION defaults."
-  (declare (indent defun) (debug (sexp &rest form)))
-  (macroexp-let2 nil action action
-    `(let* ((buffer-overriding-action (nvp-jump--action ,action :buffer))
-            (file-fn (nvp-jump--action ,action :file))
-            (ido-default-file-method (nvp-jump--action ,action :ido))
-            (ido-default-buffer-method ido-default-file-method))
-       (cl-letf (((symbol-function 'find-file) (symbol-function file-fn)))
-         ,@body))))
-
-(defmacro nvp-jump--file-with-action (action &rest body)
-  "Execute BODY with jump ACTION file defaults."
-  (declare (indent defun) (debug (sexp &rest form)))
-  (macroexp-let2 nil action action
-    `(let* ((file-fn (nvp-jump--action ,action :file))
-            (ido-default-file-method (nvp-jump--action ,action :ido)))
-       (cl-letf (((symbol-function 'find-file) (symbol-function file-fn)))
-         ,@body))))
-
-(defmacro nvp-jump--buffer-with-action (action &rest body)
-  (declare (indent defun) (debug (sexp &rest form)))
-  (macroexp-let2 nil action action
-    `(let* ((buffer-overriding-action (nvp-jump--action ,action :buffer))
-            (ido-default-buffer-method (nvp-jump--action ,action :ido)))
-       ,@body)))
-
-;; actions to take jumping to buffers/files
-(defun nvp-jump--location (location buffer-p action)
-  (pcase action
-    (`4                                  ;same window
-     (if buffer-p
-         (pop-to-buffer
-          location (cdr (assq action (plist-get nvp-jump--display-actions :buffer))))
-       (find-file location)))
-    ((pred functionp) (funcall action location))
-    (_                                   ;different window
-     (if buffer-p
-         (pop-to-buffer
-          location (cdr (assq t (plist-get nvp-jump--display-actions :buffer))))
-       (find-file-other-window location)))))
+(require 'nvp-display)
 
 ;; -------------------------------------------------------------------
 ;;; Modes
@@ -112,7 +47,7 @@
 (defun nvp-jump-to-mode-config (mode action)
   (interactive (list (nvp-read-mode-config "Jump to config: ")
                      (car current-prefix-arg)))
-  (nvp-jump--location (nvp-mode-config-path mode) nil action))
+  (nvp-display-location (nvp-mode-config-path mode) :file action))
 
 ;; Jump to test with extension `STR'.  If it doesn't exist make a new
 ;; file, and if there are multiple matches offer ido choice.
@@ -120,7 +55,7 @@
 (defun nvp-jump-to-mode-test (test action)
   "Jump to TEST file for mode, creating one if necessary."
   (interactive (list (nvp-read--mode-test) (car current-prefix-arg)))
-  (nvp-jump--location test nil action))
+  (nvp-display-location test :file action))
 
 ;;;###autoload
 (defun nvp-jump-to-mode-hook (mode action)
@@ -131,13 +66,10 @@
   (and (stringp mode) (setq mode (intern mode)))
   (let* ((str-mode-hook (format "%s-hook" mode))
          (hook-fn-name (format "nvp-%s-hook" (substring (symbol-name mode) 0 -5)))
-         (hook-fn (intern-soft hook-fn-name))
-         (action (if (eq 4 action) #'find-function #'find-function-other-window)))
-    (if hook-fn
-        (nvp-jump--location hook-fn nil action)
-      (nvp-jump--location nvp-default-hooks-file nil action)
-      (goto-char (point-min))
-      (search-forward str-mode-hook nil t))))
+         (hook-fn (intern-soft hook-fn-name)))
+    (nvp-display-location (or hook-fn nvp-default-hooks-file) :find-func action)
+    (goto-char (point-min))
+    (search-forward str-mode-hook nil t)))
 
 ;; -------------------------------------------------------------------
 ;;; Install / build files
@@ -150,7 +82,7 @@ With double prefix, prompt for mode."
                       (if (eq (car current-prefix-arg) 16)
                           (substring (nvp-read-mode) 0 -5)))
                      (car current-prefix-arg)))
-  (nvp-jump--location file nil action))
+  (nvp-display-location file :file action))
 
 ;;;###autoload
 (defun nvp-jump-to-build-file (file action)
@@ -159,7 +91,7 @@ With double prefix, prompt for mode."
    (list (nvp-read-relative-recursively
           nvp-build-init-dir ".el$" "Jump to init file: ")
          (car current-prefix-arg)))
-  (nvp-jump--location file nil action))
+  (nvp-display-location file :file action))
 
 ;; -------------------------------------------------------------------
 ;;; Org / Info
@@ -172,7 +104,7 @@ Otherwise prompt, with default `nvp-default-org-file'."
   (interactive
    (list (nvp-read--org-file nil nil (eq 16 (car current-prefix-arg)))
          (car current-prefix-arg)))
-  (with-current-buffer (nvp-jump--location org-file nil action)
+  (with-current-buffer (nvp-display-location org-file :file action)
     (goto-char (point-min))
     (ignore-errors (search-forward "* Notes"))))
 
@@ -181,7 +113,7 @@ Otherwise prompt, with default `nvp-default-org-file'."
   "Jump to info file (in org mode). 
 With prefix jump this window, otherwise `find-file-other-window'."
   (interactive (list (nvp-read--info-files) (car current-prefix-arg)))
-  (nvp-jump--location file nil action))
+  (nvp-display-location file :file action))
 
 ;; -------------------------------------------------------------------
 ;;; Scratch
@@ -209,7 +141,7 @@ With prefix, pop other window, with double prefix, prompt for MODE."
       (message "%s" (substitute-command-keys
                      "Press \\[kill-this-buffer] to kill this buffer \
 or C-c C-s to switch major modes. "))
-      (nvp-jump--location buff 'buffer action))))
+      (nvp-display-location buff :buffer action))))
 
 ;; -------------------------------------------------------------------
 ;;; Books / PDFs
@@ -249,7 +181,7 @@ With triple prefix, offer recursive results."
            (call-process (nvp-program "firefox") nil 0 nil fullname))))
       ;; probably PDF, open in emacs
       ((file-name-extension book)
-       (nvp-jump--location fullname nil action))
+       (nvp-display-location fullname :file action))
       ;; otherwise recurse in subdirs
       (t (nvp-jump-to-book fullname action)))))
 
@@ -259,23 +191,21 @@ With triple prefix, offer recursive results."
 ;;;###autoload
 (defun nvp-jump-to-register (action)
   (interactive (list (car current-prefix-arg)))
-  (nvp-jump--with-action (or (not (eq action 4)) 4)
+  (nvp-display-with-action (or (not (eq action 4)) 4)
     (setq prefix-arg current-prefix-arg)
-    (call-interactively 'jump-to-register)))
+    (call-interactively #'jump-to-register)))
 
 ;;;###autoload
 (defun nvp-jump-to-dir (dir action)
   (interactive
    (list (if (eq (car current-prefix-arg) 16) nvp/project nvp/class)
          (car current-prefix-arg)))
-  (nvp-jump--file-with-action (or (not (eq action 4)) 4)
-    (ido-find-file-in-dir dir)))
+  (nvp-display-location dir :ido action #'ido-find-file-in-dir))
 
 ;;;###autoload
 (defun nvp-jump-to-template (action)
   (interactive (list (car current-prefix-arg)))
-  (nvp-jump--file-with-action (or (not (eq action 4)) t)
-    (ido-find-file-in-dir nvp/template)))
+  (nvp-display-location nvp/template :ido action #'ido-find-file-in-dir))
 
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

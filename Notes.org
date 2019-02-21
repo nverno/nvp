@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-21 08:24:21>
+#+DATE: <2019-02-21 08:29:45>
 
 * Functions
 ** General [4/11]
@@ -209,6 +209,7 @@ Use ~load-history~
 - [X] edebug
 - [X] wgrep
 - [ ] grep / ag settings , pdfgrep?
+- [ ] limit greps search directories
 - [ ] EDE
 - [ ] m4
 

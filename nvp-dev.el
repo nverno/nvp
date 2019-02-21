@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-21 08:13:35>
+;; Last modified: <2019-02-21 10:29:05>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -31,6 +31,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
+(require 'nvp-display)
 (require 'help-mode)
 (nvp-declare "nadvice" advice-mapc advice-remove)
 (nvp-declare "ert" ert-run-tests-interactively)
@@ -60,9 +61,10 @@ With prefix ARG, prompt for selector."
 ;;; Syntax
 
 ;;;###autoload
-(defun nvp-syntax-at-point (marker)
-  "Message about syntax at point."
-  (interactive (list (point-marker)))
+(defun nvp-syntax-at-point (marker &optional action)
+  "Display info about syntax at point.
+With prefix, display in same frame using `display-buffer' ACTION."
+  (interactive (list (point-marker) (car current-prefix-arg)))
   (set-buffer (marker-buffer marker))
   (let ((ppss (syntax-ppss marker))
         (help
@@ -87,34 +89,35 @@ delimiter or an Escaped or Char-quoted character."
 ‘parse-partial-sexp’.")))
     (help-setup-xref (list #'nvp-syntax-at-point marker)
                      (called-interactively-p 'interactive))
-    (with-help-window (help-buffer)
-      (princ
-       (format "\n%s\n%s\n\n"
-               (nvp-s-center 60 "Syntax at <marker>")
-               (nvp-s-repeat 85 "~")))
+    (nvp-display-buffer-with-action action
+      (with-help-window (help-buffer)
+        (princ
+         (format "\n%s\n%s\n\n"
+                 (nvp-s-center 60 "Syntax at <marker>")
+                 (nvp-s-repeat 85 "~")))
       
-      (cl-loop
-         for i from 0 upto (length ppss)
-         do
-           (princ (format "%d) %S " i (nth i ppss)))
-           (princ (format "%s" (nvp-s-wrap 45 (nth i help) "; ")))
-           (terpri))
-      (with-current-buffer standard-output
-        (let ((inhibit-read-only t)
-              (comment-start "; ")
-              (fill-column 85)
-              (comment-column 30))
-          (goto-char (point-min))
-          (search-forward "<marker>")
-          (replace-match "")
-          (help-insert-xref-button (format "%S" marker) 'help-marker marker)
-          (forward-line 2)
-          (while (not (eobp))
-            (when (looking-at-p comment-start)
-              (insert "|"))
-            (comment-indent)
-            (forward-line 1)))
-        (hl-line-mode)))))
+       (cl-loop
+          for i from 0 upto (length ppss)
+          do
+            (princ (format "%d) %S " i (nth i ppss)))
+            (princ (format "%s" (nvp-s-wrap 45 (nth i help) "; ")))
+            (terpri))
+       (with-current-buffer standard-output
+         (let ((inhibit-read-only t)
+               (comment-start "; ")
+               (fill-column 85)
+               (comment-column 30))
+           (goto-char (point-min))
+           (search-forward "<marker>")
+           (replace-match "")
+           (help-insert-xref-button (format "%S" marker) 'help-marker marker)
+           (forward-line 2)
+           (while (not (eobp))
+             (when (looking-at-p comment-start)
+               (insert "|"))
+             (comment-indent)
+             (forward-line 1)))
+         (hl-line-mode))))))
 
 (provide 'nvp-dev)
 ;;; nvp-dev.el ends here

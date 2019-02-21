@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-21 03:32:28>
+;; Last modified: <2019-02-21 08:36:54>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -122,8 +122,8 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 
 ;; "'" should be prefix to enable quote wrapping etc.
 (modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
-(modify-syntax-entry ?\` "(" snippet-mode-syntax-table)
-(modify-syntax-entry ?\` ")" snippet-mode-syntax-table)
+(modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
+(modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
 
 (nvp-function-with-cache nvp-snippet-header-end ()
   "Return marker at end of snippet header."

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 08:12:52>
+;; Last modified: <2019-02-21 08:29:01>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -593,6 +593,7 @@ If BUFFER is non-nil, set local bindings in BUFFER."
   "Return the last character input."
   '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
 
+;;; TODO: remove
 ;; read input in various ways
 (defmacro nvp-read (prompt &optional thing &rest args)
   (declare (indent defun))

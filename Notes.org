@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-21 22:56:57>
+#+DATE: <2019-02-22 11:27:30>
 
 * Functions
 ** General [4/10]
@@ -76,30 +76,30 @@ see which-func
 - [ ] elisp completion where appropriate
 - [ ] elisp-xref backend
 
-** Modes
-*** elisp
+* Modes
+** elisp
 - [ ] move to subdir of nvp
 - [ ] align rules are shitty - dots in double quotes get moved.
 - [ ] macroify-bindings update => elisp
 - [ ] package
 - [ ] fix hippie - adds extra ')' when no match
-**** HAP [0/1]
+*** HAP [0/1]
 - [ ] use company-backend
-**** Parsing [1/3]
+*** Parsing [1/3]
 Use ~load-history~
 - [X] buffer functions
 - [ ] buffer includes
 - [ ] buffer variables
-**** Dynamic abbrevs [0/2]
+*** Dynamic abbrevs [0/2]
 - [ ] optionally abbrev library, buffer, or file
 - [ ] another abbrev table for variables?
-**** Jump to source functions [0/4]
+*** Jump to source functions [0/4]
 - [ ] xref
 - [ ] company-backend
 - [ ] etags
 - [ ] ggtags
 
-*** C/C++
+** C/C++
 - [ ] fixup awk script to parse system includes
 - [ ] use EDE?
 - [ ] how to gather all includes needed for project?
@@ -108,88 +108,91 @@ Use ~load-history~
 - [ ] package
 - [ ] subdir of nvp
 
-**** HAP [0/2]
+*** HAP [0/2]
 - [ ] company-backend (irony)
 - [ ] semantic-backend
-**** Parsing [0/4]
+*** Parsing [0/4]
 - [ ] includes
 - [ ] local functions (statics)
 - [ ] exported functions
 - [ ] globals?
-**** Newline DWIM [0/3]
+*** Newline DWIM [0/3]
 - [ ] default in code method
 - [ ] in normal comments
 - [ ] in doxygen comments
-**** Dynamic abbrevs [0/1]
+*** Dynamic abbrevs [0/1]
 - [ ] local functions
-**** Jump to source functions [0/2]
+*** Jump to source functions [0/2]
 - [ ] semantic-backend
 - [ ] ggtags
 
 
-*** Makefile                                         :makefile:
+** Makefile                                           :makefile:
 - [ ] change cleanup to use align rules + better indentation
-**** macrostep [0/3]
+*** macrostep [0/3]
 - [ ] fixup awk script to gather local variables for macrostep
 - [ ] update macrostep with additional variables + defaults
 - [ ] optionally parse makefile commands?
-**** Newline DWIM [1/1]
+*** Newline DWIM [1/1]
 - [X] defaults
-**** Parsing [0/3]
+*** Parsing [0/3]
 - [ ] includes
 - [ ] targets
 - [ ] dependencies
-**** HAP [0/1]
+*** HAP [0/1]
 - [ ] company-backends
-**** Jump to source functions [0/2]
+*** Jump to source functions [0/2]
 - [ ] company-backends
 - [ ] xref / tags
 
-*** M4/Autotools                                           :m4:
+** M4/Autotools                                             :m4:
 - [ ] merge completion/font-lock with autoconf?
 - [ ] update hook
 
-*** Awk                                                   :awk:
+** Awk                                                     :awk:
 - [ ] function to open src buffer from sh script
 - [ ] function to choose from useful oneliners
-**** Completion [0/4]
+*** Completion [0/2]
+[[https://www.gnu.org/software/gawk/manual/gawk.html#Getting-Started][manual]] : Builtin-in Variables, String functions, Arithmetic Ops, Output
+Separators, 
 - [ ] variables / function
 - [ ] builtin variables / functions
-*** sh                                                     :sh:
+** sh                                                       :sh:
 - [ ] prefix hippie-shell-expand functions
 - [ ] parse sh function documentation
-**** Completion [0/2]
+*** Completion [0/2]
 - [ ] capf for lexical scoped variables
 - [ ] merge capf bash-completion/variable-completion, maybe
   `completion-merge-tables` from minibuffer
-**** Snippets [0/1]
+*** Snippets [0/1]
 - [ ] split sh usage arguments in snippets
-**** HAP [0/2]
+*** HAP [0/2]
 - [ ] company-backend
 - [ ] parse sh function documentation
-**** Jump to source functions [0/1]
+*** Jump to source functions [0/1]
 - [ ] xref for company-bash sources
-**** Tests
+*** Tests
 - [ ] method to jump to unit test at point
-*** Shell                                               :shell:
+** Shell                                                 :shell:
 - [ ] wrapping with quotes is broken
 - [ ] account for dir-locals when jumping from shell
-**** Dynamic abbrevs
-*** Java                                                 :java:
+*** Dynamic abbrevs
+** Java                                                   :java:
 - [ ] new root package directory w/o creating new directory
-**** javadoc-mode
+*** javadoc-mode
 - [ ] formatting for lists
 - [ ] possible to determine table starts?
 - [ ] better faces
 - [ ] jump b/w sections, eg. Man-goto-section
-**** HAP [0/2]
+*** HAP [0/2]
 - [ ] company-backend
 - [ ] web-backend?? javadoc-lookup
-**** Tests / jump to source [2/2]
+*** Tests / jump to source [2/2]
 - [X] irony
 - [X] irony runs tests
 
-* Mode
+
+* Mode struct
 - [ ] struct or class?
 - [ ] package deps
 - [ ] support recipe fetcher

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 01:50:45>
+;; Last modified: <2019-02-22 09:02:18>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -56,7 +56,7 @@ _l_ →          _Z_ reset         _d_elete  _q_uit
    ("k" windmove-down)
    ("i" windmove-up)
    ("l" windmove-right)
-   ("r" nvp-window-resize/body :exit t)
+   ("r" nvp-window-resize-hydra/body :exit t)
    ("a" (lambda ()
           (interactive)
           (ace-window 1)

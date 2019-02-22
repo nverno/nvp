@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 04:53:39>
+;; Last modified: <2019-02-22 09:01:29>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -34,6 +34,7 @@
   (require 'time-stamp))
 (require 'files-x)
 (declare-function time-stamp "time-stamp")
+(autoload 'nvp-regex-map-across-matches "nvp-util")
 
 ;;; FIXME:
 ;; (defun nvp-toggle--repeat (arg)

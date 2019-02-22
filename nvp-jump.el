@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 09:39:44>
+;; Last modified: <2019-02-21 17:05:38>
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
@@ -27,9 +27,9 @@
 
 ;;; Commentary:
 
-;; Default jump to other window
-;; With single prefix, jump same window
-;; With double prefix, prompt or something else
+;; 0) Default jump to other window
+;; 1) With single prefix, jump same window
+;; 2) With double prefix, prompt or something else
 
 ;;; Code:
 (eval-when-compile
@@ -187,6 +187,17 @@ With triple prefix, offer recursive results."
 
 ;; -------------------------------------------------------------------
 ;;; Other
+
+;;;###autoload
+(defun nvp-jump-to-dotfile (dir action)
+  "Jump to dotfile in other window.
+With single prefix, open in this window.
+With double prefix, set coding to utf-8."
+  (interactive (list nvp/dots (car current-prefix-arg)))
+  (let ((buff (nvp-display-location dir :ido action #'ido-find-file-in-dir)))
+    (when (eq 16 action)
+      (with-current-buffer buff
+        (set-buffer-file-coding-system 'utf-8-unix nil t)))))
 
 ;;;###autoload
 (defun nvp-jump-to-register (action)

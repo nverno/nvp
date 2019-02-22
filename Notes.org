@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-21 13:30:07>
+#+DATE: <2019-02-21 22:56:57>
 
 * Functions
 ** General [4/10]
@@ -46,6 +46,7 @@ Not sure how this should work.
 - [ ] project tests
 
 ** Parsing [1/4]
+see which-func
 - [X] generic functions in buffer
 - [ ] includes in buffer
 - [ ] global variables in buffer

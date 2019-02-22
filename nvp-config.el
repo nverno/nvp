@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/config-tools
-;; Last modified: <2019-02-15 10:50:29>
+;; Last modified: <2019-02-21 16:59:43>
 ;; Package-Requires: 
 ;; Created:  10 November 2016
 
@@ -42,21 +42,6 @@
       :buffer-fn get-buffer-create
       :proc-filter nil
       :on-success (kill-buffer))))
-
-;;;###autoload
-(defun nvp-config-jump-to-dotfile (action)
-  "Jump to dotfile.
-With single prefix, open in this window.
-With double prefix, set coding to utf-8."
-  (interactive (list (car current-prefix-arg)))
-  (let* ((default-directory nvp/dots)
-         (ido-default-file-method (if (eq 4 action) 'raise-frame 'other-window))
-         (buff (if (eq 4 action)
-                   (ido-find-file)
-                 (ido-find-file-other-window))))
-    (when (eq 16 action)
-      (with-current-buffer buff
-        (set-buffer-file-coding-system 'utf-8-unix nil t)))))
 
 ;; ------------------------------------------------------------
 ;;; Config files

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 13:14:43>
+;; Last modified: <2019-02-21 17:48:15>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -115,10 +115,17 @@ use either `buffer-file-name' or `buffer-name'."
   "Generally doesn't work."
   `(put ,fn 'lisp-indent-function 'common-lisp-indent-function))
 
-(defmacro nvp-region-or-batp (&optional thing)
+(defmacro nvp-region-or-batp (&optional thing no-pulse)
   "Region bounds if active or bounds of THING at point."
-  `(if (region-active-p) (car (region-bounds))
-     (bounds-of-thing-at-point ,(or thing ''symbol))))
+  (declare (indent defun) (debug t))
+  `(progn
+     (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
+     (if (region-active-p) (car (region-bounds))
+       (let ((bnds (bounds-of-thing-at-point (or ,thing 'symbol))))
+         (if ,no-pulse bnds
+           (prog1 bnds
+             (and bnds (nvp-indicate-pulse-region-or-line
+                        (car bnds) (cdr bnds)))))))))
 
 (defmacro nvp-toggled-if (then &rest rest)
   "Do THEN if `last-command' wasn't `this-command', otherwise do REST."

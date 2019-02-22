@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 00:14:33>
+;; Last modified: <2019-02-22 00:53:15>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -32,22 +32,32 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 
+;; -------------------------------------------------------------------
+;;; utils
+
+(eval-when-compile
+ (defmacro nvp--parse-ensure-imenu ()
+   "Create imenu index alist if possible."
+   `(ignore-errors
+      (when (and (fboundp 'imenu--make-index-alist) (null imenu--index-alist))
+        (imenu--make-index-alist 'noerror)))))
+
+;; -------------------------------------------------------------------
+;;; Generics
+
 ;; default just tries to use imenu
 (cl-defgeneric nvp-parse-function-names (&optional buffer-or-file &rest _args)
   "Default method to gather function names from current buffer or BUFFER-OR-FILE."
-  (ignore-errors
-    ;; create imenu index if necessary
-    (when (and (fboundp 'imenu--make-index-alist) (null imenu--index-alist))
-      (imenu--make-index-alist 'noerror))
-    ;; just loops through alist and gathers names
-    (let ((buff (if (not buffer-or-file) (current-buffer)
-                  (if (buffer-live-p buffer-or-file)
-                      buffer-or-file
-                    (find-file-noselect buffer-or-file)))))
-      (set-buffer buff)
-      (when-let ((objs (cdr (imenu--make-index-alist))))
-        (cl-loop for (func . loc) in objs
-           collect func)))))
+  (nvp--parse-ensure-imenu)
+  ;; just loops through alist and gathers names
+  (let ((buff (if (not buffer-or-file) (current-buffer)
+                (if (buffer-live-p buffer-or-file)
+                    buffer-or-file
+                  (find-file-noselect buffer-or-file)))))
+    (set-buffer buff)
+    (when-let ((objs (cdr (imenu--make-index-alist))))
+      (cl-loop for (func . loc) in objs
+         collect func))))
 
 (defun nvp-list-flatten (lst)
   "Flatten nested list."
@@ -55,6 +65,20 @@
   (if (and (listp lst) (listp (cdr lst)))
       (apply #'append (mapcar (lambda (x) (nvp-list-flatten x)) lst))
     (list lst)))
+
+(defun nvp-imenu-sort-by-relative-position (pos item1 item2)
+  "Sort items such that closest elements to POS in buffer are first.
+Assumes the list is flattened and only elements with markers remain.
+Return non-nil if ITEM1's position is closer than ITEM2's."
+  (< (abs (- pos (cdr item1)))
+     (abs (- pos (cdr item2)))))
+
+(setq tst
+      (cl-sort
+       (cl-remove-if-not
+        (lambda (x) (and (listp x) (number-or-marker-p (cdr x)))) tst)
+          (apply-partially #'nvp-imenu-sort-by-relative-position (point-marker))))
+
 (setq tst (nvp-list-flatten imenu--index-alist))
 
 ;; sort by imenu--relative-position to find closest match in buffer

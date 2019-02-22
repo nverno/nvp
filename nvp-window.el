@@ -1,10 +1,10 @@
-;;; nvp-window.el ---  -*- lexical-binding: t; -*-
+;;; nvp-window.el --- window hydra from git -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 02:13:17>
+;; Last modified: <2019-02-22 01:50:45>
 ;; Package-Requires: 
 ;; Created: 20 December 2016
 
@@ -31,43 +31,37 @@
   (require 'nvp-macro)
   (require 'hydra))
 (require 'windmove)
-(declare-function helm-mini "helm")
-(declare-function helm-find-files "helm")
-(autoload 'ace-window "ace-window")
-(autoload 'winner-undo "winner")
-(autoload 'winner-redo "winner")
+(declare-function ace-window "ace-window")
+(nvp-autoload "winner" winner-undo winner-redo)
 
 ;;;###autoload
-(defun nvp-winmove-init ()
-  (interactive)
-  (nvp-window/body))
+(defun nvp-window-toggle-dedicated (window)
+  "Toggle WINDOW strongly dedicated."
+  (interactive (list (selected-window)))
+  (let ((dedicated-p (window-dedicated-p window)))
+    (set-window-dedicated-p window (not dedicated-p))))
 
-;; bindings
-(global-set-key (kbd "<f2> Q") #'nvp-window/body)
-
-(defhydra nvp-window (:color red :hint nil)
+;;;###autoload(autoload 'nvp-window-hydra/body "nvp-window")
+(nvp-hydra-set-property 'nvp-window-hydra)
+(defhydra nvp-window-hydra (:color red)
    "
-Movement^^        ^Split^         ^Switch^      ^Resize^
+Movement^^        ^Split^       ^Switch^   ^Resize^
 ----------------------------------------------------------------
-_j_ ←          _v_ertical      _b_uffer        _r_esize
-_k_ ↓          _x_ horizontal  _f_ind files   
-_i_ ↑          _z_ undo        _a_ce 1        
-_l_ →          _Z_ reset       _s_wap         
-^ ^            _D_lt Other     _S_ave         
-_q_ quit       _o_nly this     _d_elete    
-"
-   ("j" windmove-left )
-   ("k" windmove-down )
-   ("i" windmove-up )
-   ("l" windmove-right )
+_j_ ←          _v_ertical        _a_ce 1   _r_esize
+_k_ ↓          _x_ horizontal    _s_wap    _D_lt Other
+_i_ ↑          _z_ undo          _S_ave    _o_nly this  
+_l_ →          _Z_ reset         _d_elete  _q_uit
+"                                     
+   ("j" windmove-left)
+   ("k" windmove-down)
+   ("i" windmove-up)
+   ("l" windmove-right)
    ("r" nvp-window-resize/body :exit t)
-   ("b" helm-mini)
-   ("f" helm-find-files)
    ("a" (lambda ()
           (interactive)
           (ace-window 1)
           (add-hook 'ace-window-end-once-hook
-                    'nvp-window/body))
+                    'nvp-window-hydra/body))
     :exit t)
    ("v" (lambda ()
           (interactive)
@@ -81,35 +75,33 @@ _q_ quit       _o_nly this     _d_elete
           (interactive)
           (ace-window 4)
           (add-hook 'ace-window-end-once-hook
-                    'nvp-window/body)))
+                    'nvp-window-hydra/body)))
    ("S" save-buffer)
    ("d" delete-window)
    ("D" (lambda ()
           (interactive)
           (ace-window 16)
           (add-hook 'ace-window-end-once-hook
-                    'nvp-window/body)))
+                    'nvp-window-hydra/body)))
    ("o" delete-other-windows)
    ("z" (progn
           (winner-undo)
-          (setq this-command 'winner-undo))
-   )
+          (setq this-command 'winner-undo)))
    ("Z" winner-redo)
    ("q" nil))
-(hydra-set-property 'nvp-window :verbosity 1)
 
-(defhydra nvp-window-resize (:color red)
+;; -------------------------------------------------------------------
+;;; Resizing windows
+
+(nvp-hydra-set-property 'nvp-window-resize-hydra)
+(defhydra nvp-window-resize-hydra (:color red)
   "resize"
    ("j" nvp-window-move-splitter-left "←")
    ("k" nvp-window-move-splitter-down "↓")
    ("i" nvp-window-move-splitter-up "↑")
    ("l" nvp-window-move-splitter-right "→")
-   ("b" nvp-window/body "back" :exit t)
+   ("b" nvp-window-hydra/body "back" :exit t)
    ("q" nil "quit"))
-(hydra-set-property 'nvp-window-resize :verbosity 1)
-
-;; ------------------------------------------------------------
-;;; Functions
 
 ;; Move window splitter left.
 (defun nvp-window-move-splitter-left (arg)

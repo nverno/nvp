@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-21 22:39:39>
+;; Last modified: <2019-02-22 01:47:25>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -72,12 +72,13 @@ Call repeatedly with 'i'."
   (unless bnds
     (user-error "No region to search in."))
   (let (deactivate-mark)
-    ;; increment the first time
-    (nvp-regex-map-all-matches
+    (nvp-regex-map-all-matches          ;first de/increment
      (lambda (ms)
        (replace-match (number-to-string (+ inc (string-to-number ms)))))
      "\\([-]?[[:digit:]]+\\)" bnds nil 1)
     ;; repeating the command
+    (if (null nvp-prefix-arg)
+        (message "Repeating: %S %S" nvp-prefix-arg ))
     (setq prefix-arg current-prefix-arg)
     (set-transient-map
      (let ((km (make-composed-keymap `(,(make-sparse-keymap) universal-argument-map)

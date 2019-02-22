@@ -28,21 +28,14 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'hydra)
-  (defvar rectangle-mark-mode))
+  (require 'hydra))
 (require 'rect)
 
-;;;###autoload
-(defun nvp-rect-load ()
-  (interactive)
-  (nvp-rect-hydra/body))
-
-;; reset bindings
-(global-set-key (kbd "<f2> [") #'nvp-rect-hydra/body)
-
+;;;###autoload(autoload 'nvp-rect-hydra/body "nvp-rect")
+(nvp-hydra-set-property 'nvp-rect-hydra)
 (defhydra nvp-rect-hydra (:body-pre (rectangle-mark-mode 1)
-                                    :color pink
-                                    :post (deactivate-mark))
+                          :color pink
+                          :post (deactivate-mark))
   "
   ^_k_^     _d_elete    _t_ype    _N_umber-lines
 _h_   _l_   _y_ank      _o_pen    _e_xchange-point
@@ -68,7 +61,6 @@ _h_   _l_   _y_ank      _o_pen    _e_xchange-point
          (rectangle-mark-mode 1)) nil)
   ("u" undo nil)
   ("g" nil))
-(hydra-set-property 'nvp-rect-hydra :verbosity 1)
 
 ;; Exchange point and mark.
 (defun nvp-rect-ex-point-mark ()

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-14 21:02:39>
+;; Last modified: <2019-02-22 04:29:26>
 ;; Package-Requires: 
 ;; Created: 25 January 2017
 
@@ -33,6 +33,7 @@
 (require 'idomenu nil t)
 (declare-function idomenu "idomenu")
 (autoload 'nvp-comment-start "nvp-comment")
+(autoload 'nvp-list-flatten "nvp-util")
 
 ;;; Local variables
 
@@ -46,9 +47,36 @@
 ;; sub-headers
 (defvar-local nvp-imenu-comment-headers-re-2 nil "Imenu sub-header regexp.")
 
+;; -------------------------------------------------------------------
+;;; Util
+;; #<marker at 12739 in which-func.el.gz>
 (eval-when-compile
   (defmacro ido/imenu ()
     (if (featurep 'idomenu) '(idomenu) '(imenu))))
+
+(defun nvp-imenu-sort-relative-positions (marker alist)
+  "Sort imenu entries so those closest in the buffer are first."
+  (cl-sort alist (apply-partially #'nvp-imenu--relative-positions marker)))
+
+(defun nvp-imenu-cleaned-alist (&optional alist)
+  "Flatten imenu alist, remove headers and things that don't look like code."
+  (cl-remove-if-not
+   #'nvp-imenu-maybe-code-p (nvp-list-flatten (or alist imenu--index-alist))))
+
+(defun nvp-imenu-maybe-code-p (elem)
+  "Filter out probable non code things."
+  (let (mark)
+    (and (consp elem)
+         (not (string-match-p "[ \t;]\\|:\\'" (car elem)))
+         (or (number-or-marker-p (setq mark (cdr elem)))
+             (and (overlayp mark)
+                  (setq mark (overlay-start mark)))))))
+
+(defun nvp-imenu--relative-positions (pos item1 item2)
+  "Return non-nil if ITEM1 is closer to POS than ITEM2 in the buffer.
+Assumes the list is flattened and only elements with markers remain."
+  (< (abs (- pos (cdr item1)))
+     (abs (- pos (cdr item2)))))
 
 ;; -------------------------------------------------------------------
 ;;; Hook

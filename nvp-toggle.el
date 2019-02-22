@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 01:47:25>
+;; Last modified: <2019-02-22 04:53:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -58,34 +58,38 @@
 
 ;; In/De-crement numbers in region,  decremnent with prefix argument
 ;;;###autoload
-(defun nvp-toggle-increment-numbers (&optional bnds inc)
+(defun nvp-toggle-increment-numbers (arg &optional bnds inc)
   "Simple function to increment numbers in region. Decrement with prefix.
 Call repeatedly with 'i'."
-  (interactive
-   (list
-    (nvp-region-or-batp
-      (if (eq 16 (car current-prefix-arg))
-          (intern (read-from-minibuffer "Thingatpt (default 'paragraph): "
-                                        nil nil nil nil 'paragraph))
-        'paragraph))
-    (if (eq 4 (car current-prefix-arg)) -1 1)))
+  (interactive "P")
+  (or bnds (setq bnds (nvp-region-or-batp
+                        (if (eq 16 (car arg))
+                            (intern (read-from-minibuffer
+                                     "Thingatpt (default 'paragraph): "
+                                     nil nil nil nil 'paragraph))
+                          'paragraph))))
   (unless bnds
     (user-error "No region to search in."))
+  (setq inc (if (eq 4 (car arg)) -1 1))
   (let (deactivate-mark)
-    (nvp-regex-map-all-matches          ;first de/increment
+    (nvp-regex-map-across-matches
      (lambda (ms)
        (replace-match (number-to-string (+ inc (string-to-number ms)))))
      "\\([-]?[[:digit:]]+\\)" bnds nil 1)
     ;; repeating the command
-    (if (null nvp-prefix-arg)
-        (message "Repeating: %S %S" nvp-prefix-arg ))
-    (setq prefix-arg current-prefix-arg)
+    (if (null arg) (message "No prefix arg")
+      (setq current-prefix-arg arg)
+      (message "Prefix: %S" arg))
+    (setq prefix-arg arg)
     (set-transient-map
      (let ((km (make-composed-keymap `(,(make-sparse-keymap) universal-argument-map)
                                      universal-argument-map)))
        ;; (define-key km (kbd "C-u") #'universal-argument)
        ;; (define-key km (kbd "C-u C-u") #'universal-argument-more)
-       (define-key km (vector last-command-event) this-command)
+       (define-key km (vector last-command-event)
+         (lambda ()
+           (interactive)
+           (call-interactively 'nvp-toggle-increment-numbers)))
        (define-key km "d" (lambda ()
                             (interactive)
                             (setq current-prefix-arg '(4))

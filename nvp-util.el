@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-21 19:57:33>
+;; Last modified: <2019-02-22 03:39:31>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created:  2 November 2016
@@ -35,8 +35,16 @@
 ;; -------------------------------------------------------------------
 ;;; Lists
 
+(defun nvp-list-flatten (lst)
+  "Flatten nested list."
+  (declare (pure t) (side-effect-free t))
+  (if (and (listp lst) (listp (cdr lst)))
+      (apply #'append (mapcar (lambda (x) (nvp-list-flatten x)) lst))
+    (list lst)))
+
 ;; Intersection of multiple lists.
 (defun nvp-list-intersection (l)
+  (declare (pure t) (side-effect-free t))
   (cond ((null l) nil)
 	((null (cdr l)) (car l))
 	(t (cl-intersection (car l) (nvp-list-intersection (cdr l))))))
@@ -56,7 +64,7 @@
            (user-error "No region given to search in."))
        (or ,subexp (setq ,subexp 0)))))
 
-(defun nvp-regex-map-all-matches (fun regex &optional bnds thing subexp)
+(defun nvp-regex-map-across-matches (fun regex &optional bnds thing subexp)
   "Apply FUN to all REGEX matches in BNDS or bounds of THING.
 If non-nil use SUBEXP regexp group."
   (nvp--regex-set-defaults bnds thing subexp)

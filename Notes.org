@@ -1,30 +1,27 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-22 11:27:30>
+#+DATE: <2019-02-22 23:11:43>
 
 * Functions
-** General [4/10]
+** General [0/7]
 - [ ] interface to install external deps
 - [ ] quickhelp-toggle
 - [ ] company-local => macro, check for nested backends
 - [ ] list package dependencies -- `package--get-deps'
 - [ ] more generic compile function?
 - [ ] fix list wrapping to account for syntax
-- [X] mark-defun optionally not include comments
-      #<marker at 21626 in lisp.el.gz>
-      NOTE: needs some work to expand to more functions though
-- [X] align current defun region
-- [X] wrapper to cache function results - lighter weight than memoize
-- [X] jump to mode external install file
-*** Meh [0/2]
-- [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
 - [ ] jumping from shell doesn't account for local variables
+- [ ] remove all methods from generic for debugging
 
-** Utils [1/5]
+** Utils [1/4]
 - [ ] reusable region or string utility function
 - [ ] utility function to repeat command like kbdmacro-repeat
-- [ ] remove all methods from generic for debugging
 - [ ] read w/ popup help: `register-read-with-preview'
-- [X] function cache wrappers
+- [X] function wrappers to call local funs
+*** Wrappers [1/4]
+- [X] basic cache wrapper
+- [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
+- [ ] frame cache - see which-func
+- [ ] cache w/ filenotify invalidation
 
 
 ** Logging [0/3]
@@ -45,17 +42,21 @@ Not sure how this should work.
 - [ ] unit test
 - [ ] project tests
 
-** Parsing [1/4]
+** Parsing [2/6]
 see which-func
 - [X] generic functions in buffer
+- [X] current function name
+- [ ] cache functions ala which-func
 - [ ] includes in buffer
 - [ ] global variables in buffer
 - [ ] local variables in lexical scope
 
-** Dynamic abbrevs [1/3]
+** Generic abbrevs [3/5]
 - [X] Generic read
-- [ ] generic create table
-- [ ] generic make abbrevs
+- [X] create abbrev from region
+- [X] determine abbrev table name from abbrev
+- [ ] create dynamic table
+- [ ] make dynamic abbrevs
 
 ** Docs/help-at-point [1/6]
 - [X] generic methods
@@ -199,34 +200,39 @@ Separators,
 - [ ] external install targets
 - [ ] define mode-local variables?
 
-* Automation [1/6]
+* Automation [2/7]
 - [ ] ggtags install
 - [ ] hooks to compile/autoload updated packages
 - [ ] better logging - only want to see warnings/errors during build
 - [ ] update makefiles - remove extra stuff
 - [ ] update build-scripts for init / site-lisp - refactor
+- [X] gawk installs
 - [X] asm install
 
-* Mode settings [2/6]
-- [ ] tags settings / ggtags / etags
+* Mode settings [5/11]
+- [ ] ggtags
+- [ ] ctags
   https://github.com/skeeto/.emacs.d/tree/master/lisp
-- [X] edebug
-- [X] wgrep
-- [ ] grep / ag settings , pdfgrep?
-- [ ] limit greps search directories
+- [ ] ag settings
+- [ ] pdfgrep
 - [ ] EDE
 - [ ] m4
+- [X] etags
+- [X] edebug
+- [X] wgrep
+- [X] grep
+- [X] limit greps search directories
 
 * Library fixes [3/9]
 - [ ] fix nvp-install
 - [ ] better package installs
   https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
-- [X] nvp-minibuffer: eval / edebug hooks, hippie expand history
 - [ ] nvp-doc - company backend, man backend, fallback to websearch? zeal?
 - [ ] nvp-abbrev-dynamic - should be ready for elisp / C
 - [ ] nvp-disassemble - waiting on generic docs
-- [X] separate setup from nvp
 - [ ] only call setup functions on first load
+- [X] nvp-minibuffer: eval / edebug hooks, hippie expand history
+- [X] separate setup from nvp
 - [X] remove nvp-conf / merge with config-tools
 
 * Merge/remove old packages [1/11]

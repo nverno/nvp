@@ -4,29 +4,11 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 17:48:15>
-;; Package-Requires: 
+;; Last modified: <2019-02-22 23:51:23>
 ;; Created:  2 November 2016
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
-;; declare - defun-declarations-alist, macro-declarations-alist
+;; info on declare - defun-declarations-alist, macro-declarations-alist
 ;;; Code:
 (require 'cl-lib)
 (require 'subr-x)
@@ -126,6 +108,19 @@ use either `buffer-file-name' or `buffer-name'."
            (prog1 bnds
              (and bnds (nvp-indicate-pulse-region-or-line
                         (car bnds) (cdr bnds)))))))))
+
+(defmacro nvp-region-str-or-thing (&optional thing no-pulse)
+  "Region string if active or THING at point."
+  (declare (indent defun) (debug t))
+  `(progn
+     (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
+     (if (region-active-p)
+         (buffer-substring-no-properties (region-beginning) (region-end))
+       (when-let* ((bnds (bounds-of-thing-at-point (or ,thing 'symbol)))
+                   (str (buffer-substring-no-properties (car bnds) (cdr bnds))))
+         (if ,no-pulse str
+           (prog1 str
+             (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
 
 (defmacro nvp-toggled-if (then &rest rest)
   "Do THEN if `last-command' wasn't `this-command', otherwise do REST."
@@ -597,7 +592,7 @@ If BUFFER is non-nil, set local bindings in BUFFER."
          ,@body))))
 
 (defmacro nvp-last-input-char ()
-  "Return the last character input."
+  "Return the last character input as string."
   '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
 
 ;;; TODO: remove
@@ -976,7 +971,7 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 
 ;; Simple memoization / result caching
 (cl-defmacro nvp-function-with-cache (func arglist &optional docstring &rest body
-                                           &key local &allow-other-keys)
+                                           &key local predicate &allow-other-keys)
   "Create a simple cache for FUNC results."
   (declare (indent defun) (debug defun) (doc-string 3))
   (while (keywordp (car body))
@@ -986,17 +981,18 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
         (fn (if (stringp func) (intern func) func)))
     `(progn
        ,(if local `(defvar-local ,cache nil)
-          `(defvar ,cache))
+          `(defvar ,cache nil))
        (defun ,fn ,arglist
          ,docstring
-         (or ,cache (setq ,cache (progn ,@body)))))))
+         (or (,@(if predicate `(and ,predicate) '(progn)) ,cache)
+             (setq ,cache (progn ,@body)))))))
 
 ;; -------------------------------------------------------------------
 
 ;; FIXME: most of these should either be generic or act on local variables
 ;; instead of being defined many times
 ;; Marks
-(defmacro nvp-mark-defun (&optional first-time &rest rest)
+(defmacro nvp--mark-defun (&optional first-time &rest rest)
   "Mark blocks, expanding successively."
   `(if (or (and (eq last-command this-command) (mark t))
            (and transient-mark-mode mark-active))

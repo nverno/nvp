@@ -2,31 +2,13 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-13 18:38:50>
+;; Last modified: <2019-02-22 21:51:05>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
 ;; Created:  6 February 2019
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
+;; file utils
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -35,6 +17,13 @@
 
 ;; -------------------------------------------------------------------
 ;;; Utils
+
+(defun nvp-file-locate-first-dominating (file names)
+  "Locate first name in NAMES using `locate-dominating-file' starting from FILE."
+  (cl-loop for name in names
+     as res = (locate-dominating-file file name)
+     when res
+     return res))
 
 (defun nvp-file-create-path (args &optional sep)
   "Create file path from list of ARGS (strings) components."

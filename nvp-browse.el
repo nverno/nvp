@@ -1,28 +1,11 @@
-;;; nvp-browse.el --- web -*- lexical-binding: t; -*-
+;;; nvp-browse.el --- web browsing -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-22 18:24:56>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
 ;; Created:  2 December 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 ;;; Code:
@@ -30,13 +13,10 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (defvar webjump-sites))
+(require 'nvp)
 (declare-function thing-at-point-url-at-point "thingatpt")
-(declare-function webjump-url-fix "webjump")
-(declare-function webjump-builtin "webjump")
+(nvp-declare "webjump" webjump-builtin webjump-url-fix)
 (declare-function web-mode "web-mode")
-
-;; local uris to jump to
-(defvar nvp-local-uris nil)
 
 ;;;###autoload
 (defun nvp-browse-start ()
@@ -57,72 +37,22 @@
 ;; -------------------------------------------------------------------
 ;;; Webjump
 
-(defvar nvp-webjump-sites
-  '(
-    ("Gmail" . "www.gmail.com")
-    ("Bitbucket" .
-     [simple-query "www.bitbucket.org/nverno"
-                   "www.bitbucket.org/nverno/" ""])
-    ("Github" .
-     [simple-query "www.github.com"
-                   "https://github.com/search?utf8=%E2%9C%93&q=" "&type=repo"])
-    ("Bookfi".
-     [simple-query "en.bookfi.net"
-                   "en.bookfi.net/s/?q=" "&t=0"])
-    ("Stackoverflow" .
-     [simple-query "www.stackoverflow.com"
-                   "www.stackoverflow.com/search?q=" ""])
-    ("Dzone" . "www.dzone.com/search")
-    ("Unblocked" . "unblocked-pw.github.io/")
-    ("Ubuntu" .
-     [simple-query "packages.ubuntu.com"
-                   "packages.ubuntu.com/search?keywords=" ""])
-    ("Amazon" .
-     [simple-query "www.amazon.com"
-                   "www.amazon.com/s/ref=nb_sb_noss_2?url=search-alias%3Daps&field-keywords=" ""])
-    ("Stanford". "www.lagunita.stanford.edu/courses")
-    ("Edx" .
-     [simple-query "www.edx.org"
-                   "www.edx.org/course?search_query=" ""])
-    ("Coursera" .
-     [simple-query "www.coursera.org"
-                   "www.coursera.org/courses?languages=en&query=" ""])
-    ("Torrents" . "https://unblocked-pw.github.io/")
-    ("Pirate Bay" . "https://proxybay.one/")
-    ("Kickass" .
-     [simple-query "https://kickass.unblocked.live"
-                   "https://kickass.unblocked.live/search.php?q=" ""])
-    ("Choco" .
-     [simple-query "https://chocolatey.org/packages"
-                   "https://chocolatey.org/packages?q=" ""])
-    ("Omniref" .
-     [simple-query "https://docs.omniref.com/"
-                   "https://docs.omniref.com/?q=" ""])
-    ("Travis" . "https://travis-ci.org/nverno")
-    ("TestGenerator" . "http://spojtoolkit.com/TestCaseGenerator/")
-    ("gradle" .
-     [simple-query "https://plugins.gradle.org"
-                   "https://plugins.gradle.org/search?term=" ""])
-    ("scaladex".
-     [simple-query "https://index.scala-lang.org/search"
-                   "https://index.scala-lang.org/search?q=" ""])))
-
-;; Webjump interface
 ;;;###autoload
 (defun nvp-browse-webjump (&optional arg)
+  "Jump to website."
   (interactive "P")
   (require 'webjump)
+  (require 'nvp-vars)                   ;nvp-webjump-sites
   (let* ((completion-ignore-case t)
          (locals (or (and arg (read-from-minibuffer "URI: "))
                      (and (bound-and-true-p nvp-local-uris)
                           (y-or-n-p "Use local uris?")
                           nvp-local-uris)))
-         (sites (or locals
-                    (append nvp-webjump-sites webjump-sites)))
+         (sites (or locals (append nvp-webjump-sites webjump-sites)))
          (item (or (and arg (cons nil locals))
                    (assoc-string
-                    (ido-completing-read "WebJump to site: "
-                                         (mapcar 'car sites) nil t)
+                    (nvp-completing-read "WebJump to site: "
+                                         (mapcar #'car sites) nil t)
                     sites t)))
          (name (car item))
          (expr (cdr item)))

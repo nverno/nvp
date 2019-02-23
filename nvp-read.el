@@ -4,29 +4,12 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 01:00:56>
-;; Package-Requires: 
+;; Last modified: <2019-02-22 22:59:09>
 ;; Created: 29 November 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
+;; various completing read functions
 ;;; TODO:
 ;; - read w/ popup help: see `register-read-with-preview'
 
@@ -137,7 +120,16 @@
 ;; -------------------------------------------------------------------
 ;;; Elisp objects 
 
-;;;###autoload
+(defun nvp-read-keymap ()
+  "Read keymap from `obarray'."
+  (intern (completing-read "Keymap: " obarray
+                           (lambda (m)
+                             (and (boundp m)
+                                  (keymapp (symbol-value m))
+                                  (not (equal (symbol-value m)
+                                              (make-sparse-keymap)))))
+                           t nil nil nil)))
+
 (defun nvp-read-obarray-regex (prompt &optional regexp default)
   "Completing read for obarray with optional REGEXP filter."
   (completing-read prompt obarray
@@ -147,7 +139,6 @@
                                   default))))
 
 ;; #<marker at 34938 in help-fns.el.gz>
-;;;###autoload
 (defun nvp-read-elisp-symbol (prompt &optional predicate default)
   "Read symbol using `help--symbol-completion-table' using PROMPT with DEFAULT.
 Filter by PREDICATE if non-nil."
@@ -161,7 +152,6 @@ Filter by PREDICATE if non-nil."
     (unless (equal val "")
       (intern val))))
 
-;;;###autoload
 (defun nvp-read-elisp-variable (prompt &optional default)
   "Lookup elisp symbol using PROMPT and optional DEFAULT."
   (unless default (setq default (variable-at-point)))
@@ -172,7 +162,6 @@ Filter by PREDICATE if non-nil."
                                (or (get vv 'variable-documentation)
                                    (and (boundp vv) (not (keywordp vv)))))))))
 
-;;;###autoload
 (defun nvp-read-elisp-function (prompt &optional default)
   "Lookup elisp function with PROMPT and optional DEFAULT."
   (unless default (setq default (function-called-at-point)))

@@ -2,30 +2,34 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-21 04:18:38>
+;; Last modified: <2019-02-22 15:59:48>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 24 November 2016
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
+
+;; Jumping to abbrev files
+;; - converts region to abbrev if region is active (generic)
+;;   includes default + elisp
+;; - uses previous N chars with prefix N
+;; - determines table to insert into given abbrev (generic)
+;;   includes default + elisp
+;; - sorts tables by abbrev length then lexi and expands new abbrev at proper
+;;   location
+;; - prefers buffer-local abbrev file over default
+;; - reloads abbrevs on save
+;; - inserts new abbrev table when necessary
+;;
+;; Additional commands
+;; - add / remove abbrev-table as parent of local table
+;; - activate unicode abbrevs locally
+;; - some enhancements for listing tables
+;; - show all abbrev-table properties, including all parents recursively
+;; - when listing locally active table, include all parents of local-table
+;; - write abbrevs as system abbrevs to save permanently
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -37,11 +41,26 @@
 (require 'nvp-abbrev-util)
 (declare-function yas-expand-snippet "yasnippet")
 
-(defun nvp-abbrev--read-table (prompt choices)
-  (nvp-completing-read prompt choices nil t nil 'minibuffer-history))
-
 ;; -------------------------------------------------------------------
-;;; Jumping to abbrevs
+;;; Utils
+
+(defvar nvp-abbrev--read-history ())
+(defun nvp-abbrev--read-table (prompt choices)
+  (nvp-completing-read prompt choices nil t nil 'nvp-abbrev--read-history))
+
+(cl-defgeneric nvp-abbrev--grab-region (beg end)
+  "Generic function to return abbrev from region BEG to END.
+Should return sexp of form (abbrev . expansion)."
+  (let ((exp (buffer-substring-no-properties beg end)))
+    (cons (read-string (format "Abbrev for %s: " exp)) exp)))
+
+(cl-defmethod nvp-abbrev--grab-region
+    (beg end &context (major-mode emacs-lisp-mode))
+  "Try to determine appropriate elisp abbrev from region.
+Remove any surrounding parens and use first chars with lisp transformer."
+  (let ((exp (string-trim
+              (buffer-substring-no-properties beg end) "[ \t\n\(]" "[ \t\n\)]")))
+    (cons (nvp-abbrev--lisp-transformer exp) exp)))
 
 (defun nvp-abbrev--grab-prev (nchars)
   "Grab preceding NCHARS to match against in abbrev table."
@@ -50,6 +69,22 @@
           (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) nchars)))
           (start (point)))
       (buffer-substring-no-properties start end))))
+
+(cl-defgeneric nvp-abbrev--table-name (&optional local-table _abbrev)
+  "Generic function to return the name of abbrev file to use with PREFIX."
+  (regexp-quote (format "%s-abbrev-table" (or local-table major-mode))))
+
+(cl-defmethod nvp-abbrev--table-name
+  (&context (major-mode emacs-lisp-mode) &optional local-table abbrev)
+  "Determine with abbrev table to use based on prefix and possibly context."
+  (if (not abbrev) (cl-call-next-method)
+    (let ((prefix
+           (and abbrev
+                (cdr (cl-find-if (lambda (pre) (string-prefix-p pre abbrev))
+                                 '(("cl"  . "emacs-lisp-cl")
+                                   ("nvp" . "emacs-lisp-nvp"))
+                                 :key #'car)))))
+      (regexp-quote (format "%s-abbrev-table" (or prefix local-table major-mode))))))
 
 ;; insert starter abbrev table template
 (defun nvp-abbrev--insert-template (table &optional parents)
@@ -83,38 +118,53 @@
   (current-buffer))
 
 ;; -------------------------------------------------------------------
-;;; Commands
+;;; Jumping to abbrev
 
 ;;;###autoload
-(defun nvp-abbrev-jump-to-file (arg)
+(defun nvp-abbrev-jump-to-file (beg end &optional arg)
   "Jump to abbrev file, `nvp-abbrev-local-table', and search for insertion location.
 Prefix ARG specifies the length of the preceding text to use as abbrev.
 When abbrev text is selected, searching is done first by length then lexically."
-  (interactive "P")
-  (let* ((file-abbr (bound-and-true-p nvp-abbrev-local-table))
-         (table (regexp-quote (format "%s-abbrev-table" (or file-abbr major-mode))))
-         (prefix (if arg (nvp-abbrev--grab-prev arg))))
-    (with-current-buffer (nvp-abbrev--get-table
-                          table (or (bound-and-true-p nvp-abbrev-local-file)
-                                    (expand-file-name table nvp/abbrevs)))
-      (goto-char (point-min))
-      (search-forward-regexp (concat "'" table "\\>") nil t)
-      (when prefix
-        (while
-            (and (re-search-forward "[^\\(?:(define-\\)](\"\\(\\w+\\)" nil 'move)
-                 (let ((str (match-string-no-properties 1)))
-                   (or (> (length prefix) (length str))
-                       (string> prefix str)))))
-        ;; insert default template for prefix
-        (back-to-indentation)
-        (yas-expand-snippet (format "(\"%s\" \"$1\" nil :system t)\n" prefix)))
-      ;; reload abbrev table after modification
-      (cl-labels ((nvp-abbrev-save-hook
-                   ()
-                   (quietly-read-abbrev-file (buffer-file-name))
-                   ;; refresh cached active abbrev tables
-                   (setq nvp-abbrev-completion-need-refresh t)))
-        (add-hook 'after-save-hook #'nvp-abbrev-save-hook t 'local)))))
+  (interactive "r\nP")
+  (let* ((local-abbrevs (bound-and-true-p nvp-abbrev-local-table))
+         (prefix (cond
+                  ((and (region-active-p) beg end)
+                   (nvp-abbrev--grab-region beg end))
+                  (arg (nvp-abbrev--grab-prev arg))
+                  (t nil)))
+         (expansion (and (consp prefix) (prog1 (cdr prefix)
+                                          (setq prefix (car prefix)))))
+         (table (nvp-abbrev--table-name local-abbrevs prefix)))
+    (save-restriction
+      (widen)
+      (with-current-buffer (nvp-abbrev--get-table
+                            table (or (bound-and-true-p nvp-abbrev-local-file)
+                                      (expand-file-name table nvp/abbrevs)))
+        (if (not prefix)                ;blank start: no prefix or expansion
+            (ignore-errors
+              (down-list)
+              (yas-expand-snippet "(\"$1\" \"$2\" nil :system t)\n"))
+          (narrow-to-defun)
+          (let ((end (save-excursion (forward-list) (1- (point)))))
+            (when prefix
+              (while
+                  (and (re-search-forward
+                        "[^\\(?:(define-\\)](\"\\(\\w+\\)" end 'move)
+                       (let ((str (match-string-no-properties 1)))
+                         (or (> (length prefix) (length str))
+                             (string> prefix str)))))
+              ;; insert default template for prefix
+              (back-to-indentation)
+              (yas-expand-snippet
+               (format "(\"%s\" \"%s\" nil :system t)\n" prefix
+                       (if expansion (concat "${1:" expansion "}") "$1"))))))
+        ;; reload abbrev table after modification
+        (cl-labels ((nvp-abbrev-save-hook
+                     ()
+                     (quietly-read-abbrev-file (buffer-file-name))
+                     ;; refresh cached active abbrev tables
+                     (setq nvp-abbrev-completion-need-refresh t)))
+          (add-hook 'after-save-hook #'nvp-abbrev-save-hook t 'local))))))
 
 ;; add unicode abbrevs to local table parents
 ;;;###autoload

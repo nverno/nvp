@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 09:01:29>
+;; Last modified: <2019-02-23 00:21:57>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -27,6 +27,8 @@
 
 ;;; Commentary:
 ;; - see repeat.el for repeating last command with last input
+;; - helm real command: #<marker at 13548 in helm-lib.el>
+;; - edmacro
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -77,6 +79,7 @@ Call repeatedly with 'i'."
      (lambda (ms)
        (replace-match (number-to-string (+ inc (string-to-number ms)))))
      "\\([-]?[[:digit:]]+\\)" bnds nil 1)
+    ;; #<marker at 13548 in helm-lib.el>
     ;; repeating the command
     (if (null arg) (message "No prefix arg")
       (setq current-prefix-arg arg)

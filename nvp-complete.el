@@ -1,117 +1,105 @@
-;;; nvp-complete.el ---  -*- lexical-binding: t; -*-
+;;; nvp-complete.el --- random completion -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-27 00:34:47>
-;; Package-Requires: 
+;; Last modified: <2019-02-22 19:17:36>
 ;; Created: 29 November 2016
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
+
+;; FIXME: this should be cleaned up to be of any use
+;; Completion for command line switches
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
 
-;;--- Command Line Switches ------------------------------------------
+;; -------------------------------------------------------------------
+;;; Command line switches 
 ;; Completion for command line arguments
+
+;; minibuffer history
+(defvar nvp-complete-switch-history ())
 
 ;; bind dynamically
 (defvar-local nvp-complete--switch-program nil)
-(defvar-local nvp-complete--switch-cache nil)
-(defvar-local nvp-complete--switch-args nil)
+(defvar-local nvp-complete--switch-args '("--help"))
 
 ;; gather command line switches for completion
-(defun nvp-complete--switch ()
-  (or (and (bound-and-true-p nvp-complete--switch-cache)
-           (symbol-value nvp-complete--switch-cache))
-      (with-temp-buffer
-        (apply 'call-process nvp-complete--switch-program
-               nil (current-buffer) nil
-               (or nvp-complete--switch-args '("--help")))
-        (goto-char (point-min))
-        (let (res)
-          (while (re-search-forward "^\\s-*\\(-[a-zA-Z0-9]+\\)" nil t)
-            (push (match-string 1) res)
-            (while (re-search-forward "\\(-[a-zA-Z0-9]+\\)"
-                                      (line-end-position) t)
-              (push (match-string 1) res)))
-          (if nvp-complete--switch-cache
-              (set nvp-complete--switch-cache (nreverse res))
-            res)))))
+(nvp-function-with-cache nvp-complete--switches ()
+  "Local command line switches."
+  :local t
+  (with-temp-buffer
+    (apply 'call-process nvp-complete--switch-program
+           nil (current-buffer) nil nvp-complete--switch-args)
+    (goto-char (point-min))
+    (let (res)
+      (while (re-search-forward "^\\s-*\\(-[a-zA-Z0-9]+\\)" nil t)
+        (push (match-string 1) res)
+        (while (re-search-forward "\\(-[a-zA-Z0-9]+\\)" (line-end-position) t)
+          (push (match-string 1) res)))
+      (nreverse res))))
 
 ;; completion at point for command line switch
-(defun nvp-complete-switch-completion ()
+(defun nvp-complete-switch-completion-at-point ()
   (let ((bnds (bounds-of-thing-at-point 'symbol)))
-    (if (and bnds
-             (eq ?- (char-after (car bnds))))
-        (list (car bnds) (cdr bnds) (nvp-complete--switch)))))
+    (if (and bnds (eq ?- (char-after (car bnds))))
+        (list (car bnds) (cdr bnds) (nvp-complete--switches)))))
 
-;; read from minibuffer with completion for command line switches
 ;;;###autoload
-(defun nvp-complete-read-switch (prompt &optional initial-contents)
+(defun nvp-complete-read-switch (&optional prompt initial-contents)
+  "Read from minibuffer with completion for command line switches."
+  (or prompt (setq prompt "Command switches: "))
   (let ((minibuffer-completing-symbol nil))
     (minibuffer-with-setup-hook
      (lambda ()
        (add-hook 'completion-at-point-functions
-                 'nvp-complete-switch-completion nil 'local))
+                 'nvp-complete-switch-completion-at-point nil 'local))
      (read-from-minibuffer prompt initial-contents
                            read-expression-map nil
-                           'read-expression-history))))
+                           'nvp-complete-switch-history))))
 
-;;--- Switch Macros --------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Setup macros 
 
-(defmacro nvp-complete-with-switch-completion (program args cache
-                                                       &rest body)
-  (declare (indent 1) (indent 1) (indent 2) (debug t))
+(defmacro nvp-with-switch-completion (program &optional args &rest body)
+  "Evaluate BODY with local PROGRAM and ARGS bound."
+  (declare (indent defun) (debug (sexp sexp &rest form)))
   `(progn
      (eval-when-compile (require 'nvp-complete))
      (let ((nvp-complete--switch-program ,program)
-          (nvp-complete--switch-args ,args)
-          (nvp-complete--switch-cache ,cache))
-      ,@body)))
+           (nvp-complete--switch-args ,args))
+       ,@body)))
 
-(defmacro nvp-complete-compile-with-completion (program args cache
-                                                        cmd prompt
-                                                        &rest body)
-  (declare (indent defun) (debug t))
-  `(nvp-complete-with-switch-completion ,program ,args ,cache
-     (let ((compile-command
-            (format
-             (concat ,cmd " %s %s")
-             (nvp-complete-read-switch ,prompt)
-             buffer-file-name))
-           (compilation-read-command))
-       ,@body
-       (call-interactively 'compile))))
+(defmacro nvp-compile-with-switch-completion (program &optional args cmd prompt
+                                                      &rest body)
+  "Setup `compile-command' with completions for compiler switches.
+Execute BODY and `compile'."
+  (declare (indent defun) (debug (sexp sexp sexp sexp &rest form)))
+  (macroexp-let2 nil program program
+   `(nvp-with-switch-completion ,program ,args
+      (let ((compile-command
+             (format
+              (concat ,(or cmd program) " %s %s")
+              (nvp-complete-read-switch ,prompt)
+              buffer-file-name))
+            (compilation-read-command))
+        ,@body
+        (call-interactively 'compile)))))
 
-(defmacro nvp-complete-compile (program default args cache cmd prompt
+(defmacro nvp-complete-compile (program default
+                                        &optional args cmd prompt
                                         &rest body)
   "Defines body of compile command. With prefix, prompts for additional
 arguments, providing completion for command line switches (determined
 from PROGRAM ARGS)."
   (declare (indent defun))
   `(if current-prefix-arg
-       (nvp-complete-compile-with-completion ,program ,args ,cache
-         ,cmd ,prompt ,body)
+       (nvp-compile-with-switch-completion ,program ,args ,cmd ,prompt
+         ,@body)
      (let ((compile-command (format ,default buffer-file-name))
            (compilation-read-command))
        (call-interactively 'compile))))

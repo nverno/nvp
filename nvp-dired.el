@@ -4,26 +4,8 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-13 04:36:22>
-;; Package-Requires: 
+;; Last modified: <2019-02-23 00:32:16>
 ;; Created:  2 December 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 ;;; Code:
@@ -63,6 +45,7 @@
 
 (defun nvp-dired-beginning-of-buffer ()
   (interactive)
+  (or (region-active-p) (push-mark))
   (widen)
   (goto-char (point-min))
   (forward-line 2)
@@ -70,6 +53,7 @@
 
 (defun nvp-dired-end-of-buffer ()
   (interactive)
+  (or (region-active-p) (push-mark))
   (goto-char (point-max))
   (dired-next-line -1)
   (recenter-top-bottom))
@@ -98,6 +82,10 @@
   (interactive)
   (scroll-down-command)
   (dired-move-to-filename))
+
+;; covers both next & previous
+(define-advice dired-next-dirline (:before (&rest _args) "push-mark")
+  (or (region-active-p) (push-mark)))
 
 (defhydra nvp-dired-hydra (:color red :hint nil)
   "move"

@@ -4,33 +4,19 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-01-16 02:09:06>
+;; Last modified: <2019-02-22 20:49:15>
 ;; Package-Requires: 
 ;; Created: 29 November 2016
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
+
+;; Minor mode to create xrefs from marker text on the fly
+
 ;;; Code:
 (eval-when-compile
+  (require 'nvp-macro)
   (require 'cl-lib)
   (require 'subr-x))
-
 (autoload 'find-library-name "find-func")
 
 (eval-and-compile
@@ -179,15 +165,16 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
 ;; -------------------------------------------------------------------
 ;;; Advices
 
-;;;###autoload
-(defadvice pop-to-mark-command (around ensure-new-position activate)
-  (let ((p (point)))
-    (when (eq last-command 'save-region-or-current-line)
-      ad-do-it
-      ad-do-it
-      ad-do-it)
-    (dotimes (i 10)
-      (when (= p (point)) ad-do-it))))
+;; ;; ;;; FIXME: why is this here? where did it come from?
+;; ;;;###autoload
+;; (defadvice pop-to-mark-command (around ensure-new-position activate)
+;;   (let ((p (point)))
+;;     (when (eq last-command 'save-region-or-current-line)
+;;       ad-do-it
+;;       ad-do-it
+;;       ad-do-it)
+;;     (dotimes (i 10)
+;;       (when (= p (point)) ad-do-it))))
 
 (provide 'nvp-mark)
 ;;; nvp-mark.el ends here

@@ -1,28 +1,12 @@
-;;; nvp-edit ---  -*- lexical-binding: t; -*-
+;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-22 19:33:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 24 November 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 ;;; Code:
@@ -144,19 +128,6 @@ With prefix sort in REVERSE."
 (define-advice align-regexp (:around (old-fn &rest args) "no-tabs")
   (let ((indent-tabs-mode nil))
     (apply old-fn args)))
-
-;; align restricted to current defun
-(defun nvp-align-current-defun (&optional arg)
-  "Restrict align to current defun, minus preceding comments using default rules.
-With prefix ARG, highlight changes that would take place with rule."
-  (interactive "P")
-  (save-mark-and-excursion
-    (setq mark-active nil)
-    (beginning-of-defun)
-    (mark-defun)
-    (comment-forward (point-max))       ;skip preceding comments
-    (if arg (call-interactively 'align-highlight-rule)
-      (call-interactively 'align))))
 
 ;; Repeat alignment with respect to `REGEXP'. If `JUSTIFY-RIGHT'
 ;; is non-nil, justify to the right. If `AFTER', add whitespace to left

@@ -2,29 +2,10 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-01-31 12:26:39>
+;; Last modified: <2019-02-22 15:48:16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
 ;; Created: 31 January 2019
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 ;;; Code:
@@ -32,10 +13,9 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'hydra))
-(require 'hydra)
 
 ;;;###autoload(autoload 'nvp-hydra-buffer-menu/body "nvp-Buffer-menu")
-
+(nvp-hydra-set-property 'nvp-hydra-buffer-menu :verbosity 1)
 (defhydra nvp-hydra-buffer-menu (:color pink :hint nil :pre (Buffer-menu-mode))
   "
 ^Mark^             ^Unmark^           ^Actions^          ^Search
@@ -64,7 +44,6 @@ _~_: modified      ^ ^                ^ ^                ^^                     
   ("v" Buffer-menu-select "select" :color blue)
   ("o" Buffer-menu-other-window "other-window" :color blue)
   ("q" quit-window "quit" :color blue))
-(hydra-set-property 'nvp-hydra-buffer-menu :verbosity 1)
 
 (provide 'nvp-Buffer-menu)
 ;;; nvp-Buffer-menu.el ends here

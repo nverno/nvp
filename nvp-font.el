@@ -1,44 +1,21 @@
-;;; nvp-font ---  -*- lexical-binding: t; -*-
+;;; nvp-font.el ---  -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-02-22 19:50:26>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
 ;; Created: 29 November 2016
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
+;; font/glyph related functions
 ;;; Code:
 (eval-when-compile
+  (require 'nvp-macro)
   (require 'cl-lib))
 
-;;--- Greek Letters --------------------------------------------------
-
-;;; Obsolete
-(defun nvp-font-lambda ()
-  (font-lock-add-keywords
-   nil `(("(?\\(lambda\\>\\)"
-	  (0 (progn (compose-region (match-beginning 1) (match-end 1)
-				    ,(make-char 'greek-iso8859-7 107))
-		    nil))))))
-
+;; -------------------------------------------------------------------
+;;; Greek letters 
 ;; http://www.emacswiki.org/emacs/PrettyGreek
 (defvar nvp-font-greek-alist
   `(("rangle" . ?\⟩)
@@ -76,7 +53,8 @@
 		nil)))))))
    nvp-font-greek-alist))
 
-;;--- Glyphs ---------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Glyphs 
 
 ;;;###autoload
 (defun nvp-font-quote-glyphs ()
@@ -97,7 +75,8 @@
                             ,glyph)
           nil)))))
 
-;;--- Fontify --------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Fontify 
 
 ;; Add face to region.
 ;;;###autoload
@@ -108,7 +87,8 @@
                 (read-face-name "Face")))
   (put-text-property beg end 'font-lock-face face))
 
-;;--- Other ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Assorted 
 
 ;; https://gist.github.com/haxney/3055728
 ;; non-nil if monospaced font
@@ -127,29 +107,23 @@
      (setq m-width (car (posn-x-y (posn-at-point))))
      (eq l-width m-width))))
 
-;; Display various available fonts
 ;; https://www.emacswiki.org/emacs/GoodFonts
 ;;;###autoload
 (defun nvp-font-list ()
+  "Display various available fonts."
   (interactive)
-  (let ((str "The quick brown fox jumps over the lazy dog ´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
+  (let ((str "The quick brown fox jumps over the lazy dog \
+´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
         (font-families (cl-remove-duplicates 
                         (sort (font-family-list) 
                               #'(lambda (x y) (string< (upcase x)
                                                   (upcase y))))
-                        :test 'string=))
-        (buff (get-buffer-create "*fonts*"))
-        (inhibit-read-only t))
-    (with-current-buffer buff
-      (erase-buffer)
-      (font-lock-mode)
-      (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
-        (insert 
-         (propertize str 'font-lock-face
-                     `(:family ,ff)) ff "\n"
-         (propertize str 'font-lock-face
-                     `(:family ,ff :slant italic)) ff "\n"))
-      (pop-to-buffer (current-buffer)))))
+                        :test 'string=)))
+    (nvp-with-results-buffer "*Fonts*"
+     (font-lock-mode)
+     (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
+       (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
+        (propertize str 'font-lock-face `(:family ,ff :slant italic)) ff "\n")))))
 
 (provide 'nvp-font)
 ;;; nvp-font.el ends here

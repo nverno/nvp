@@ -4,29 +4,13 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 17:05:38>
-;; Package-Requires: 
+;; Last modified: <2019-02-22 23:14:13>
 ;; Created: 24 November 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
+;; Functions to jump to locations
+;; Prefix args should do the following:
 ;; 0) Default jump to other window
 ;; 1) With single prefix, jump same window
 ;; 2) With double prefix, prompt or something else
@@ -39,6 +23,7 @@
 (require 'nvp)
 (require 'nvp-read)
 (require 'nvp-display)
+(autoload 'nvp-file-locate-first-dominating "nvp-file")
 
 ;; -------------------------------------------------------------------
 ;;; Modes
@@ -149,7 +134,7 @@ or C-c C-s to switch major modes. "))
 ;;;###autoload
 (defun nvp-jump-to-book (dir &optional action)
   "Jump to book, either opening in emacs (eg. pdfs) or external for epubs.
-With double prefix, prompt for directory (default `nvp-books-local-directory'
+With double prefix, prompt for directory (default `nvp-local-books-directory'
 or `nvp/books'. 
 With triple prefix, offer recursive results."
   (interactive
@@ -159,8 +144,8 @@ With triple prefix, offer recursive results."
                   ((> arg 4)
                    (expand-file-name
                     (read-directory-name "Book Directory: " nvp/books)))
-                  ((bound-and-true-p nvp-books-local-directory)
-                   nvp-books-local-directory)
+                  ((bound-and-true-p nvp-local-books-directory)
+                   nvp-local-books-directory)
                   (t (expand-file-name "programming" nvp/books)))))
      (list root arg)))
   (let* ((files (mapcar (lambda (f) (file-relative-name f dir))
@@ -186,7 +171,29 @@ With triple prefix, offer recursive results."
       (t (nvp-jump-to-book fullname action)))))
 
 ;; -------------------------------------------------------------------
-;;; Other
+;;; Files/Directories
+
+;; Open nearest file up the directory tree named:
+;; 1. NAME if non-nil
+;; 2. Prompt for file name with 2 prefix arg
+;; 3. Variable `nvp-local-notes-file' (directory-local) if non-nil
+;; 4. Otherwise, default to 'todo.org' or 'notes.org'.
+;;;###autoload
+(defun nvp-jump-to-nearest-notes-dwim (name action)
+  "Jump to nearest notes/todo file, prompting with prefix."
+  (interactive
+   (list (or (and (eq 16 (car current-prefix-arg))
+                  (read-file-name "File name: "))
+             (bound-and-true-p nvp-local-notes-file)
+             '("notes.org" "Notes.org" "todo.org" "Todo.org"))
+         (car current-prefix-arg)))
+  (let* ((locate-fn (if (consp name) #'nvp-file-locate-first-dominating
+               #'locate-dominating-file))
+         (dir (funcall locate-fn (or (buffer-file-name)
+                                     default-directory)
+                       name)))
+    (if dir (nvp-display-location (expand-file-name name dir) :file action)
+      (user-error (format "%S not found up the directory tree." name)))))
 
 ;;;###autoload
 (defun nvp-jump-to-dotfile (dir action)
@@ -200,18 +207,21 @@ With double prefix, set coding to utf-8."
         (set-buffer-file-coding-system 'utf-8-unix nil t)))))
 
 ;;;###autoload
-(defun nvp-jump-to-register (action)
-  (interactive (list (car current-prefix-arg)))
-  (nvp-display-with-action (or (not (eq action 4)) 4)
-    (setq prefix-arg current-prefix-arg)
-    (call-interactively #'jump-to-register)))
-
-;;;###autoload
 (defun nvp-jump-to-dir (dir action)
   (interactive
    (list (if (eq (car current-prefix-arg) 16) nvp/project nvp/class)
          (car current-prefix-arg)))
   (nvp-display-location dir :ido action #'ido-find-file-in-dir))
+
+;; -------------------------------------------------------------------
+;;; Other
+
+;;;###autoload
+(defun nvp-jump-to-register (action)
+  (interactive (list (car current-prefix-arg)))
+  (nvp-display-with-action (or (not (eq action 4)) 4)
+    (setq prefix-arg current-prefix-arg)
+    (call-interactively #'jump-to-register)))
 
 ;;;###autoload
 (defun nvp-jump-to-template (action)

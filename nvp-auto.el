@@ -2,30 +2,14 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-21 13:36:28>
+;; Last modified: <2019-02-22 18:03:29>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
 ;; Created: 14 February 2019
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
+;; Autos rarely called
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -33,15 +17,52 @@
   (require 'hydra))
 (require 'nvp)
 
-;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
-(nvp-hydra-set-property 'nvp-hydra-goto-line)
-(defhydra nvp-hydra-goto-line (goto-map) "line"
-  ("g" goto-line "go")
-  ("b" (push-mark (car mark-ring) nil 'activate) "mark to start")
-  ("m" set-mark-command "mark" :bind nil)
-  ("p" (set-mark-command 1) "pop" :bind nil)
-  ("e" exchange-point-and-mark "exchange")
-  ("q" nil "quit"))
+;; -------------------------------------------------------------------
+;;; Movement
+
+;; jump to next char on this line. if matching char,
+;; pressing the same key again jumps to the next one, etc.
+;;;###autoload
+(defun nvp-move-char-this-line (&optional char)
+  (interactive (list (char-to-string (read-char "Char: " t))))
+  (let ((case-fold-search t))
+    (condition-case nil
+        (search-forward char (point-at-eol))
+      (error (let ((pt (point)))
+               (beginning-of-line)
+               (or (search-forward char (point-at-eol))
+                   (goto-char pt))))))
+  (nvp-bind-transient-key
+   char (lambda () (interactive) (nvp-move-char-this-line char)) t))
+
+;; used recursively below so not a macro
+;;;###autoload
+(defun nvp-bind-transient-key (key cmd &optional keep exit)
+  "Bind KEY to CMD in transient map."
+  (set-transient-map
+   (let ((tmap (make-sparse-keymap)))
+     (define-key tmap (kbd key) cmd)
+     tmap)
+   (or keep t)
+   (or exit nil)))
+
+;; see `paragraph-start' and `paragraph-separate' to extend
+;;;###autoload
+(defun nvp-move-forward-paragraph (&optional arg)
+  (interactive "^p")
+  (or arg (setq arg 1))
+  (if (bolp)
+      (progn
+        (and (< arg 1) (forward-line -1))
+        (forward-paragraph arg)
+        (forward-line 1))
+    (line-move arg)))
+
+;;;###autoload
+(defun nvp-move-backward-paragraph (&optional arg)
+  (interactive "^p")
+  (or arg (setq arg 1))
+  (nvp-move-forward-paragraph (- arg)))
 
 ;; -------------------------------------------------------------------
 ;;; Duplicate lines 
@@ -59,7 +80,8 @@
             (end (region-end)))
         (nvp--duplicate-region arg beg end))
     (nvp--duplicate-last-nonempty-line arg)
-    (nvp-bind-transient-key "d" #'nvp--duplicate-back-and-dupe)))
+    (nvp-use-transient-bindings
+      (("d" . nvp--duplicate-back-and-dupe)))))
 
 ;; duplicate the current line num times.
 (defun nvp-duplicate-current-line (&optional num)

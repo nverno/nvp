@@ -2,32 +2,23 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-09 04:28:54>
+;; Last modified: <2019-02-22 21:05:51>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
 ;; Created:  6 February 2019
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
-;;; Code:
 
+;; general abbrev hooks
+;; - post-insert hook
+;; - simple enable-functions
+;; - expand hooks
+;; - abbrev-edit hook
+;;
+;; Additional
+;; - function to grab previous abbrev
+
+;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x)
@@ -35,13 +26,23 @@
 (require 'nvp)
 (declare-function expand-abbrev-hook "expand")
 
+;;;###autoload
+(defun nvp-abbrev-grab ()
+  "Grabs previous symbol if point is at the end of a symbol or if the \
+`last-input-event' was a space."
+  (if (or (and (characterp last-input-event)
+               (eq ? (char-syntax last-input-event)))
+          (looking-at-p "\\_>"))
+      (buffer-substring-no-properties
+       (point) (save-excursion (skip-syntax-backward "w_") (point)))))
+
 ;; -------------------------------------------------------------------
 ;;; Post insert
 ;; C level only calls `expand-abbrev' when preceding char is word syntax
 ;; so hook into `post-self-insert-hook'
 ;;;###autoload
 (defun nvp-abbrev-expand-after-symbols-hook ()
-  (and (equal (syntax-after (1- (point))) '(3))
+  (and (memq (car (syntax-after (1- (point)))) '(0 3))
        (setq this-command 'nvp-abbrev-expand-after-symbols)
        (expand-abbrev)))
 

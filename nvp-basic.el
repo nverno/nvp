@@ -4,29 +4,11 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-21 13:14:57>
-;; Package-Requires:
+;; Last modified: <2019-02-22 18:09:07>
 ;; Created: 16 November 2016
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
-;; Stuff required during init
+;; Required in init
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -183,12 +165,44 @@ On error (read-only), quit without selecting."
 
 ;; -------------------------------------------------------------------
 ;;; Wrapper functions
-
+;;; FIXME: wip
 (nvp-wrapper-fuctions
  (nvp-check-buffer-function . nil)
  (nvp-repl-switch-function  . nil)
  (nvp-test-function         . nil)
  (nvp-tag-function          . nil))
+
+;; -------------------------------------------------------------------
+;;; Assorted
+(nvp-declare "" nvp-indicate-pulse-region-or-line)
+
+(defun nvp-mark-defun (&optional arg)
+  "Mark defun, skipping preceding comments."
+  (interactive "p")
+  (let ((skip-comments (not (region-active-p))))
+    (setq prefix-arg current-prefix-arg)
+    (funcall nvp-mark-defun-function arg)
+    (and skip-comments (comment-forward (point-max)))))
+
+(defun nvp-align (&optional arg beg end)
+  "Align buffer region b/w BEG and END, or call `nvp-mark-defun' if nil.
+With a single prefix, align entire active region or buffer.
+With double prefix, highlight changes that would occur."
+  (interactive
+   (cons (car current-prefix-arg)
+         (if (region-active-p)
+             (list (region-beginning) (region-end)))))
+  (if (eq 4 arg)                        ;align entire region / buffer
+      (if (and beg end) (align beg end)
+        (align (point-min) (point-max)))
+    (save-mark-and-excursion
+      (unless (and beg end)
+        (nvp-mark-defun)
+        (setq beg (region-beginning) end (region-end)))
+        (nvp-indicate-pulse-region-or-line beg end)
+      (if (eq 16 arg)                     ;test alignment rule
+          (call-interactively 'align-highlight-rule)
+        (align beg end)))))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

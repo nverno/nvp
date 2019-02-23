@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-21 16:19:31>
+;; Last modified: <2019-02-23 00:34:33>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -118,8 +118,6 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;; -------------------------------------------------------------------
 ;;; Snippet mode enhancements
 ;; #<marker at 172452 in yasnippet.el>
-
-(defvar-local nvp-snippet-header-end nil "Marker at end of snippet header.")
 
 ;; "'" should be prefix to enable quote wrapping etc.
 (modify-syntax-entry ?$ "'" snippet-mode-syntax-table)

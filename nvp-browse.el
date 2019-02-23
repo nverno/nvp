@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 18:24:56>
+;; Last modified: <2019-02-23 00:37:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 December 2016
@@ -12,6 +12,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib)
+  (defvar nvp-webjump-sites)
   (defvar webjump-sites))
 (require 'nvp)
 (declare-function thing-at-point-url-at-point "thingatpt")

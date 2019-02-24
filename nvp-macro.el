@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 00:25:32>
+;; Last modified: <2019-02-24 00:47:49>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -406,17 +406,18 @@ Optional :local key can be set to make the mappings buffer-local."
   "Set BINDINGS in transient map.
 Run PRE form prior to setting commands and EXIT on leaving transient map.
 If REPEAT is non-nil, add a binding to repeat command from the last input char."
-  (declare (indent 0))
+  (declare (indent 0) (debug defun))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
-  (let ((msg (nvp--msg-from-bindings bindings)))
+  (macroexp-let2 nil msg (nvp--msg-from-bindings bindings)
    `(progn
       (nvp-declare "nvp-indicate" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
-      (let ((orig-cmd this-command) repeat-key)
+      (let ((msg ,msg) orig-cmd repeat-key)
         (when (and ,repeat (null repeat-key)) ;don't need to set repeatedly
+          (setq orig-cmd this-command)
           (setq repeat-key (nvp-last-command-char))
-          (setq msg (concat (format ", [%s] repeat command" repeat-key) ,msg)))
-        (nvp-msg ,msg)
+          (setq msg (concat (format ", [%s] repeat command" repeat-key) msg)))
+        (message msg)
         ,pre
         (set-transient-map
          (let ((tmap (make-sparse-keymap)))
@@ -424,9 +425,8 @@ If REPEAT is non-nil, add a binding to repeat command from the last input char."
                 collect `(nvp-def-key tmap ,k ,b))
            ,(when repeat '(define-key tmap (kbd repeat-key) orig-cmd))
            tmap)
-         ,(when keep `(lambda () (setq this-command orig-cmd) t))
-         ,exit))
-      ,(when repeat `(setq this-command this-command)))))
+         ,(if repeat '(lambda () (setq this-command orig-cmd)) `,keep)
+         ,exit)))))
 
 (cl-defmacro nvp-use-local-bindings (&rest bindings &key buffer &allow-other-keys)
   "Set local BINDINGS.

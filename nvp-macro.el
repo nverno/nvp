@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-23 19:07:54>
+;; Last modified: <2019-02-24 00:25:32>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -25,7 +25,7 @@
     (message "Warning: package 'nvp-macro required at runtime")))
 
 ;; -------------------------------------------------------------------
-;;; Functions
+;;; Internal functions
 
 (defun nvp--normalize-modemap (mode &optional minor)
   "Convert MODE to keymap symbol if necessary.
@@ -52,8 +52,37 @@ If MINOR is non-nil, convert to minor mode hook symbol."
       (if minor "-minor-mode-hook" "-mode-hook")))))
 
 ;; -------------------------------------------------------------------
-;;; Misc
+;;; Messages
 
+(cl-defmacro nvp-msg (fmt &rest args &key keys &allow-other-keys)
+  (while (keywordp (car args))
+    (setq args (cdr (cdr args))))
+  (if keys `(message "%s" (substitute-command-keys (format ,fmt ,@args)))
+    `(message ,fmt ,@args)))
+
+;; (nvp-msg "tmap: \\<overriding-local-key-map>" :keys t)
+
+;; -------------------------------------------------------------------
+;;; General
+
+;;-- OS
+(defmacro nvp-with-w32 (&rest body)
+  (declare (indent 0) (debug t))
+  (when (eq system-type 'windows-nt)
+    `(progn ,@body)))
+
+(defmacro nvp-with-gnu (&rest body)
+  (declare (indent 0) (debug t))
+  (when (not (eq system-type 'windows-nt))
+    `(progn ,@body)))
+
+(defmacro nvp-with-gnu/w32 (gnu w32)
+  (declare (indent 2) (indent 1) (debug t))
+  (if (eq system-type 'windows-nt)
+      `,@w32
+    `,@gnu))
+
+;;-- Vars
 (defmacro nvp-defvar (var value)
   "Define VAR and eval VALUE during compile."
   (declare (indent defun))
@@ -65,8 +94,13 @@ If MINOR is non-nil, convert to minor mode hook symbol."
   `(progn (eval-when-compile (defvar ,var))
           (setq ,var (eval-when-compile ,value))))
 
-(defmacro current-buffer-process ()
-  `(get-buffer-process (current-buffer)))
+(defmacro nvp-concat (&rest body)
+  `(eval-when-compile (concat ,@body)))
+
+(defmacro nvp-re-opt (opts &optional no-symbol)
+  `(eval-when-compile
+     (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
+             ,(and (not no-symbol) "\\_>"))))
 
 (defmacro nvp-bfn (&optional no-ext or-buffer)
   "Short buffer file name.
@@ -93,9 +127,8 @@ use either `buffer-file-name' or `buffer-name'."
        (file-name-directory
         (file-name-sans-extension (buffer-file-name)))))))
 
-(defmacro nvp-indent-cl (fn)
-  "Generally doesn't work."
-  `(put ,fn 'lisp-indent-function 'common-lisp-indent-function))
+;; -------------------------------------------------------------------
+;;; Regions / things-at-point
 
 (defmacro nvp-region-or-batp (&optional thing no-pulse)
   "Region bounds if active or bounds of THING at point."
@@ -121,14 +154,6 @@ use either `buffer-file-name' or `buffer-name'."
          (if ,no-pulse str
            (prog1 str
              (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
-
-(defmacro nvp-toggled-if (then &rest rest)
-  "Do THEN if `last-command' wasn't `this-command', otherwise do REST."
-  (declare (indent 1))
-  `(if (not (eq this-command last-command))
-       ,then
-     ,@rest
-     (setq this-command nil)))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -167,9 +192,33 @@ BEG and END are bound to the bounds."
      ,@body))
 
 ;; -------------------------------------------------------------------
-;;; Conversions
-;;; FIXME: remove unused
+;;; Control flow
 
+(defmacro nvp-toggled-if (then &rest rest)
+  "Do THEN if `last-command' wasn't `this-command', otherwise do REST \
+and set `this-command' to nil so opposite happens next time."
+  (declare (indent 1))
+  `(if (not (eq this-command last-command))
+       ,then
+     ,@rest
+     (setq this-command nil)))
+
+;;; FIXME: unused
+(defmacro nvp-search-and-go (regexp &optional back &rest body)
+  "Search forward or backward for REGEXP, and move point to beginning of
+line at match (default) or do BODY at point if non-nil."
+  `(let ((start (point)))
+     (condition-case nil
+         (progn
+           (forward-line ,(if back -1 1))
+           (,(if back 're-search-backward 're-search-forward) ,regexp)
+           ,@(or body (list '(beginning-of-line))))
+       (error (goto-char start)))))
+
+;; -------------------------------------------------------------------
+;;; Conversions
+
+;;; FIXME: remove -- seem to just occur in C stuff
 (defmacro nvp-listify (args)
   "Ensure ARGS is a list."
   (let ((args (if (stringp args) (intern args) args)))
@@ -188,47 +237,6 @@ BEG and END are bound to the bounds."
        (`(quote ,sym) (symbol-name sym))
        (`(function ,sym) (symbol-name sym))
        (_ (user-error "How to stringify %S?" ,name)))))
-
-;; -------------------------------------------------------------------
-;;; Regex / Strings
-
-(defmacro nvp-search-and-go (regexp &optional back &rest body)
-  "Search forward or backward for REGEXP, and move point to beginning of 
-line at match (default) or do BODY at point if non-nil."
-  `(let ((start (point)))
-     (condition-case nil
-         (progn
-           (forward-line ,(if back -1 1))
-           (,(if back 're-search-backward 're-search-forward) ,regexp)
-           ,@(or body (list '(beginning-of-line))))
-       (error (goto-char start)))))
-
-(defmacro nvp-re-opt (opts &optional no-symbol)
-  `(eval-when-compile
-     (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
-             ,(and (not no-symbol) "\\_>"))))
-
-(defmacro nvp-concat (&rest body)
-  `(eval-when-compile (concat ,@body)))
-
-;; -------------------------------------------------------------------
-;;; OS
-
-(defmacro nvp-with-w32 (&rest body)
-  (declare (indent 0) (debug t))
-  (when (eq system-type 'windows-nt)
-    `(progn ,@body)))
-
-(defmacro nvp-with-gnu (&rest body)
-  (declare (indent 0) (debug t))
-  (when (not (eq system-type 'windows-nt))
-    `(progn ,@body)))
-
-(defmacro nvp-with-gnu/w32 (gnu w32)
-  (declare (indent 2) (indent 1) (debug t))
-  (if (eq system-type 'windows-nt)
-      `,@w32
-    `,@gnu))
 
 ;; -------------------------------------------------------------------
 ;;; Programs / Paths
@@ -287,97 +295,6 @@ line at match (default) or do BODY at point if non-nil."
   `(progn (expand-file-name ,(nvp-stringify filename) nvp/cache)))
 
 ;; -------------------------------------------------------------------
-;;; REPLs
-
-;;; FIXME: how to make more generic?
-(cl-defmacro nvp-hippie-shell-fn (name histfile
-                                       &key
-                                       (size 5000)
-                                       (history ''comint-input-ring)
-                                       (bol-fn ''comint-line-beginning-position)
-                                       history-fn expand-fn)
-  "Setup comint history ring read/write and hippie-expand for it."
-  (let ((fn (nvp-string-or-symbol name)))
-    `(progn
-       (eval-when-compile
-         (defvar comint-input-ring-file-name)
-         (defvar comint-input-ring-size))
-       (declare-function comint-read-input-ring "comint")
-       (declare-function comint-write-input-ring "comint")
-       (declare-function nvp-he-history-setup "nvp-hippie-history")
-       (defun ,fn ()
-         (setq comint-input-ring-file-name (expand-file-name ,histfile nvp/cache))
-         (setq comint-input-ring-size ,size)
-         (comint-read-input-ring)
-         (add-hook 'kill-buffer-hook 'comint-write-input-ring nil 'local)
-         (nvp-he-history-setup
-          :history ,history
-          :bol-fn ,bol-fn
-          :history-fn ,history-fn
-          :expand-fn ,expand-fn)))))
-
-;; switching between REPLs and source buffers -- maintain the name of the
-;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
-;; if supplied to find/create the REPL buffer, REPL-LIVE-P is called to check
-;; if it is alive (defaults to `buffer-live-p'
-;; if REPL-HISTORY is non-nil `nvp-comint-add-history-sentinel' is added before the
-;; buffers process-filter. REPL-INIT is called to create and return a new REPL
-;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
-(cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
-                                         repl-live-p repl-history repl-process
-                                         repl-config repl-wait
-                                         repl-doc (repl-switch-fn ''pop-to-buffer))
-                              &rest repl-init)
-  (declare (indent defun))
-  (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
-  (let ((fn (intern (format "nvp-%s-repl-switch" name))))
-    `(defun ,fn ()
-       ,(or repl-doc "Switch between source and REPL buffers")
-       (interactive)
-       (if ,(or (and repl-mode `(eq major-mode ,repl-mode))
-                (and repl-buffer-name `(equal ,repl-buffer-name (buffer-name))))
-           ;; in REPL buffer, switch back to source
-           (switch-to-buffer-other-window
-            ;; switch to set source buffer or the most recent other buffer
-            (or (process-get
-                 ,(or repl-process '(current-buffer-process)) :src-buffer)
-                (other-buffer (current-buffer) 'visible)))
-         ;; in source buffer, try to go to a REPL
-         (let ((src-buffer (current-buffer))
-               (repl-buffer
-                ;; Should there be a default?
-                (or ,(and repl-buffer-name
-                          `(get-buffer ,repl-buffer-name))
-                    ,(and repl-find-fn
-                          `(ignore-errors (funcall ,repl-find-fn))))))
-           ;; there is a REPL buffer, but is it alive?
-           (when (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
-             ;; no, so we need to start one somehow -- this should return the
-             ;; buffer object
-             (setq repl-buffer (progn ,@repl-init))
-             ,@(and repl-wait `((sit-for ,repl-wait)))
-             (and (processp repl-buffer)
-                  (setq repl-buffer (process-buffer repl-buffer))
-                  ;; add a sentinel to write comint histfile before other
-                  ;; sentinels that may be set by the mode
-                  ,(and repl-history
-                        '(nvp-comint-add-history-sentinel))))
-           ;; Now switch to REPL and set its properties to point back to the source
-           ;; buffer from whence we came
-           (if (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
-               (error (message "The REPL didnt start!!!")))
-           ,@(when repl-switch-fn
-               `((funcall ,repl-switch-fn repl-buffer)))
-           ;; only config first time through
-           (when (not (process-get ,(or repl-process
-                                        '(get-buffer-process repl-buffer))
-                                   :src-buffer))
-             ,(and repl-config `(funcall ,repl-config)))
-           (process-put ,(or repl-process
-                             '(get-buffer-process repl-buffer))
-                        :src-buffer src-buffer))))))
-
-;; -------------------------------------------------------------------
 ;;; Bindings
 
 (defmacro nvp-def-key (map key cmd)
@@ -401,7 +318,7 @@ line at match (default) or do BODY at point if non-nil."
        (t `#',cmd))))
 
 (defmacro nvp-create-keymaps (leader &rest maps)
-  "Create submaps from LEADER map. Optionally give name of keymap for 
+  "Create submaps from LEADER map. Optionally give name of keymap for
 menu entry."
   (declare (indent defun))
   `(progn
@@ -471,30 +388,45 @@ Optional :local key can be set to make the mappings buffer-local."
      ,@(cl-loop for (mode . feature) in modes
           collect `(nvp-bindings ,mode ',feature ,@bindings))))
 
-;; -------------------------------------------------------------------
-;;; Bindings: local / transient / overriding
+;;-- Bindings: local / transient / overriding
+(defun nvp--msg-from-bindings (bindings &optional prefix)
+  "Create message of 'PREFIX: [key] cmd, ...' from list of cons BINDINGS."
+  (or prefix (setq prefix "Transient: "))
+  (concat
+   prefix
+   (mapconcat (lambda (b) (format "[%S] %S" (car b) (cdr b))) bindings ", ")))
 
 (cl-defmacro nvp-use-transient-bindings (bindings
-                                         &key (keep t)
-                                         (pre '(nvp-indicate-cursor-pre))         
-                                         (exit '(nvp-indicate-cursor-post))
+                                         &key
+                                         (keep '(lambda () ))
+                                         (pre '(nvp-indicate-cursor-pre))
+                                         (exit '(lambda () (nvp-indicate-cursor-post)))
+                                         (repeat t) ;add repeat binding as last char
                                          &allow-other-keys)
   "Set BINDINGS in transient map.
-Run PRE form prior to setting commands."
+Run PRE form prior to setting commands and EXIT on leaving transient map.
+If REPEAT is non-nil, add a binding to repeat command from the last input char."
   (declare (indent 0))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
-  (macroexp-let2* nil ((pre pre) (exit exit))
+  (let ((msg (nvp--msg-from-bindings bindings)))
    `(progn
       (nvp-declare "nvp-indicate" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
-      ,pre
-      (set-transient-map
-       (let ((tmap (make-sparse-keymap)))
-         ,@(cl-loop for (k . b) in bindings
-              collect `(nvp-def-key tmap ,k ,b))
-         tmap)
-       ,keep
-       ,exit))))
+      (let ((orig-cmd this-command) repeat-key)
+        (when (and ,repeat (null repeat-key)) ;don't need to set repeatedly
+          (setq repeat-key (nvp-last-command-char))
+          (setq msg (concat (format ", [%s] repeat command" repeat-key) ,msg)))
+        (nvp-msg ,msg)
+        ,pre
+        (set-transient-map
+         (let ((tmap (make-sparse-keymap)))
+           ,@(cl-loop for (k . b) in bindings
+                collect `(nvp-def-key tmap ,k ,b))
+           ,(when repeat '(define-key tmap (kbd repeat-key) orig-cmd))
+           tmap)
+         ,(when keep `(lambda () (setq this-command orig-cmd) t))
+         ,exit))
+      ,(when repeat `(setq this-command this-command)))))
 
 (cl-defmacro nvp-use-local-bindings (&rest bindings &key buffer &allow-other-keys)
   "Set local BINDINGS.
@@ -510,7 +442,7 @@ If BUFFER is non-nil, set local bindings in BUFFER."
         `(use-local-map lmap))))
 
 ;; Overrides a minor mode keybinding for the local buffer by creating
-;; or altering keymaps stored in buffer-local variable 
+;; or altering keymaps stored in buffer-local variable
 ;; `minor-mode-overriding-map-alist'.
 (defmacro nvp-use-minor-mode-overriding-map (mode bindings)
   "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'."
@@ -532,8 +464,7 @@ If BUFFER is non-nil, set local bindings in BUFFER."
             collect `(nvp-def-key newmap ,k ,b))
        (set ',keymap newmap))))
 
-;; -------------------------------------------------------------------
-;;; Bindings: view 
+;;-- bindings: view
 
 ;; general movement bindings for non-insert modes
 (defmacro nvp-bindings-view ()
@@ -573,16 +504,104 @@ If BUFFER is non-nil, set local bindings in BUFFER."
      ,@body))
 
 ;; -------------------------------------------------------------------
-;;; Files
+;;; REPLs
+
+;; FIXME: how to make more generic?
+(cl-defmacro nvp-hippie-shell-fn (name histfile
+                                       &key
+                                       (size 5000)
+                                       (history ''comint-input-ring)
+                                       (bol-fn ''comint-line-beginning-position)
+                                       history-fn expand-fn)
+  "Setup comint history ring read/write and hippie-expand for it."
+  (let ((fn (nvp-string-or-symbol name)))
+    `(progn
+       (eval-when-compile
+         (defvar comint-input-ring-file-name)
+         (defvar comint-input-ring-size))
+       (declare-function comint-read-input-ring "comint")
+       (declare-function comint-write-input-ring "comint")
+       (declare-function nvp-he-history-setup "nvp-hippie-history")
+       (defun ,fn ()
+         (setq comint-input-ring-file-name (expand-file-name ,histfile nvp/cache))
+         (setq comint-input-ring-size ,size)
+         (comint-read-input-ring)
+         (add-hook 'kill-buffer-hook 'comint-write-input-ring nil 'local)
+         (nvp-he-history-setup
+          :history ,history
+          :bol-fn ,bol-fn
+          :history-fn ,history-fn
+          :expand-fn ,expand-fn)))))
+
+;; switching between REPLs and source buffers -- maintain the name of the
+;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
+;; if supplied to find/create the REPL buffer, REPL-LIVE-P is called to check
+;; if it is alive (defaults to `buffer-live-p'
+;; if REPL-HISTORY is non-nil `nvp-comint-add-history-sentinel' is added before the
+;; buffers process-filter. REPL-INIT is called to create and return a new REPL
+;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
+(cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
+                                         repl-live-p repl-history repl-process
+                                         repl-config repl-wait
+                                         repl-doc (repl-switch-fn ''pop-to-buffer))
+                              &rest repl-init)
+  (declare (indent defun))
+  (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
+  (let ((fn (intern (format "nvp-%s-repl-switch" name))))
+    `(defun ,fn ()
+       ,(or repl-doc "Switch between source and REPL buffers")
+       (interactive)
+       (if ,(or (and repl-mode `(eq major-mode ,repl-mode))
+                (and repl-buffer-name `(equal ,repl-buffer-name (buffer-name))))
+           ;; in REPL buffer, switch back to source
+           (switch-to-buffer-other-window
+            ;; switch to set source buffer or the most recent other buffer
+            (or (process-get
+                 ,(or repl-process '(nvp-buffer-process)) :src-buffer)
+                (other-buffer (current-buffer) 'visible)))
+         ;; in source buffer, try to go to a REPL
+         (let ((src-buffer (current-buffer))
+               (repl-buffer
+                ;; Should there be a default?
+                (or ,(and repl-buffer-name
+                          `(get-buffer ,repl-buffer-name))
+                    ,(and repl-find-fn
+                          `(ignore-errors (funcall ,repl-find-fn))))))
+           ;; there is a REPL buffer, but is it alive?
+           (when (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
+             ;; no, so we need to start one somehow -- this should return the
+             ;; buffer object
+             (setq repl-buffer (progn ,@repl-init))
+             ,@(and repl-wait `((sit-for ,repl-wait)))
+             (and (processp repl-buffer)
+                  (setq repl-buffer (process-buffer repl-buffer))
+                  ;; add a sentinel to write comint histfile before other
+                  ;; sentinels that may be set by the mode
+                  ,(and repl-history
+                        '(nvp-comint-add-history-sentinel))))
+           ;; Now switch to REPL and set its properties to point back to the source
+           ;; buffer from whence we came
+           (if (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
+               (error (message "The REPL didnt start!!!")))
+           ,@(when repl-switch-fn
+               `((funcall ,repl-switch-fn repl-buffer)))
+           ;; only config first time through
+           (when (not (process-get ,(or repl-process
+                                        '(get-buffer-process repl-buffer))
+                                   :src-buffer))
+             ,(and repl-config `(funcall ,repl-config)))
+           (process-put ,(or repl-process
+                             '(get-buffer-process repl-buffer))
+                        :src-buffer src-buffer))))))
+
+;; -------------------------------------------------------------------
+;;; Files / Buffers
 
 (defmacro nvp-file-same (file-1 file-2)
   "Return non-nil if FILE-1 and FILE-2 are the same."
   (declare (indent defun))
   `(when (and (file-exists-p ,file-1) (file-exists-p ,file-2))
      (equal (file-truename ,file-1) (file-truename ,file-2))))
-
-;; -------------------------------------------------------------------
-;;; Buffers / IO
 
 ;; modified from smartparens.el
 (defmacro nvp-with-buffers-using-mode (mode &rest body)
@@ -593,13 +612,34 @@ If BUFFER is non-nil, set local bindings in BUFFER."
        (with-current-buffer buff
          ,@body))))
 
+(defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
+  "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
+Make the temp buffer scrollable, in `view-mode' and kill when finished."
+  (declare (indent defun) (debug (sexp &rest form)))
+  `(let (other-window-scroll-buffer)
+     (with-temp-buffer-window
+      ,(or buffer-or-name "*results*")
+      t
+      nil
+      (with-current-buffer standard-output
+        (setq other-window-scroll-buffer (current-buffer))
+        ,@body
+        (view-mode-enter nil 'kill-buffer)))))
+
+;; -------------------------------------------------------------------
+;;; Keys / IO
+
 (defmacro nvp-last-input-char ()
   "Return the last character input as string."
   '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
 
-;;; TODO: remove
-;; read input in various ways
+(defmacro nvp-last-command-char ()
+  "Return last char from previous command."
+  '(key-description (vector last-command-event)))
+
+;; TODO: remove
 (defmacro nvp-read (prompt &optional thing &rest args)
+  "Read input in various ways."
   (declare (indent defun))
   (pcase thing
     ((pred stringp)
@@ -629,20 +669,6 @@ If BUFFER is non-nil, set local bindings in BUFFER."
      `(ido-completing-read ,prompt ,thing))
     (_ `(read-from-minibuffer ,prompt))))
 
-(defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
-  "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
-Make the temp buffer scrollable, in `view-mode' and kill when finished."
-  (declare (indent defun) (debug (sexp &rest form)))
-  `(let (other-window-scroll-buffer)
-     (with-temp-buffer-window
-      ,(or buffer-or-name "*results*")
-      t
-      nil
-      (with-current-buffer standard-output
-        (setq other-window-scroll-buffer (current-buffer))
-        ,@body
-        (view-mode-enter nil 'kill-buffer)))))
-
 ;; -------------------------------------------------------------------
 ;;; Time
 
@@ -669,7 +695,7 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
 
 (declare-function pos-tip-show "pos-tip")
 
-;;; TODO:
+;; TODO:
 ;; - use help buffer with xref?
 ;; - truncate popup
 (cl-defmacro nvp-with-toggled-tip (popup
@@ -681,9 +707,9 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
                                    keep            ;keep transient map
                                    use-gtk         ;use gtk tooltips
                                    (help-buffer '(help-buffer)))
-  "Toggle POPUP, a help string, in pos-tip. 
-If HELP-FN is :none, HELP-KEY is not bound by default. 
-Normally, HELP-KEY triggers a function to jump to a full help description 
+  "Toggle POPUP, a help string, in pos-tip.
+If HELP-FN is :none, HELP-KEY is not bound by default.
+Normally, HELP-KEY triggers a function to jump to a full help description
 related to the popup - hopefully in a buffer.
 BINDINGS are an alist of (key . function) of additional keys to bind in the
 transient keymap.
@@ -730,6 +756,10 @@ default help function."
 ;; -------------------------------------------------------------------
 ;;; Processes
 
+(defmacro nvp-buffer-process (&optional buffer)
+  "Return BUFFER's process."
+  `(get-buffer-process ,(or buffer '(current-buffer))))
+(nvp-buffer-process )
 ;; get a comint buffer, run body, return buffer
 (defmacro nvp-comint-buffer (name &rest body)
   (declare (indent 2) (indent 1))
@@ -848,7 +878,7 @@ if process exit status isn't 0."
 
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment
-where WRAPPER has effect, eg. `cl-letf' will have effect. 
+where WRAPPER has effect, eg. `cl-letf' will have effect.
 Note: use lexical-binding."
   (let ((sps (cl-gensym))
         (proc (cl-gensym))
@@ -861,7 +891,7 @@ Note: use lexical-binding."
           ,@body)))))
 
 (defmacro nvp-with-async-override (orig-fn new-fn &rest body)
-  "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of 
+  "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of
 BODY."
   (declare (indent defun))
   (macroexp-let2 nil new-fn new-fn
@@ -1057,7 +1087,7 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 ;; execute BODY. Prefix argument executes PROMPT-ACTION, and its
 ;; result is bound to ARGS, which can be used in the body.
 (cl-defmacro nvp-make-or-compile-fn
-    (name 
+    (name
      (&key
       (doc "Compile using make or cmake if found, otherwise execute body.")
       (make-action

@@ -4,18 +4,29 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 20:11:55>
+;; Last modified: <2019-02-23 23:57:35>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
+
+;; Indicate various things
+;; - pulse regions with overlays
+;; - temporarily change cursor color, eg. for hydra execution
+;; - temporarily change modeline color with message
+;; Commands to toggle indicators
+;; - long lines
+;; - trailing white space
+
 ;;; Code:
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (nvp-declare "pulse"
   pulse-momentary-highlight-region pulse-momentary-highlight-one-line)
 
 ;; store indicators
 (defvar nvp-indicate--cache (make-hash-table))
 
-;;;###autoload
 (defun nvp-indicate-cache (key &optional value overwrite)
   (if value
       (if overwrite (puthash key value nvp-indicate--cache)
@@ -66,24 +77,33 @@
     ;; (add-hook 'post-command-hook #'nvp-indicate-modeline-revert nil t)
     ))
 
-(defun nvp-indicate-modeline-revert (&optional color)
-  (remove-hook 'post-command-hook #'nvp-indicate-modeline-revert t)
-  (set-face-background 'mode-line color))
+;; (defun nvp-indicate-modeline-revert (&optional color)
+;;   (remove-hook 'post-command-hook #'nvp-indicate-modeline-revert t)
+;;   (set-face-background 'mode-line color))
 
 ;; ------------------------------------------------------------
 ;;; Toggle font-locking for long lines
 
-(defvar-local nvp-indicate--add-font t)
 ;;;###autoload
 (defun nvp-indicate-long-lines (arg)
+  "Toggle indication of long lines (length with prefix ARG, default 80)."
   (interactive "P")
-  (if (setq nvp-indicate--add-font (not nvp-indicate--add-font))
-      (font-lock-refresh-defaults)
+  (nvp-toggled-if (font-lock-refresh-defaults)
     (let ((len (if arg (read-number "Length: ") 80)))
       (font-lock-add-keywords
        nil `((,(format "^[^\n]\\{%d\\}\\(.*\\)$" len) 1 font-lock-warning-face t)))
       (font-lock-flush)
       (font-lock-ensure))))
+
+;;;###autoload
+(defun nvp-indicate-trailing-whitespace ()
+  "Toggle indicatation of trailing whitespace."
+  (interactive)
+  (setq show-trailing-whitespace (not show-trailing-whitespace))
+  (font-lock-flush)
+  (font-lock-ensure)
+  ;; when show-trailing-whitespace
+  (nvp-use-transient-bindings (("d" . delete-trailing-whitespace))))
 
 (provide 'nvp-indicate)
 ;;; nvp-indicate.el ends here

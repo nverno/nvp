@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-23 00:21:57>
+;; Last modified: <2019-02-23 20:48:47>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -29,6 +29,7 @@
 ;; - see repeat.el for repeating last command with last input
 ;; - helm real command: #<marker at 13548 in helm-lib.el>
 ;; - edmacro
+;; - prefix commands in simple.el #<marker at 170851 in simple.el.gz>
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -48,7 +49,7 @@
 ;;                ()))))
 
 ;;;###autoload
-(defun nvp-toggle-timestamp (&optional arg)
+(defun nvp-toggle-timestamp (arg)
   "Insert/update timestamp for current buffer."
   (interactive "P")
   (let ((time-stamp-active t)
@@ -59,6 +60,7 @@
                                   (_ "15/Last modified: <%%>$")))))
     (time-stamp)))
 
+;; FIXME: cleanup repeated calling
 ;; In/De-crement numbers in region,  decremnent with prefix argument
 ;;;###autoload
 (defun nvp-toggle-increment-numbers (arg &optional bnds inc)

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 20:09:07>
+;; Last modified: <2019-02-23 19:29:37>
 ;; Created: 22 August 2018
 
 ;;; Commentary:
@@ -51,7 +51,8 @@
       (`(4)
        (setq nvp-iedit-restriction 'defun)
        (iedit-restrict-function))
-      (_))))
+      (_)))
+  (message "%s" "Toggle restricted regions with "))
 
 ;; allow expanding of restricted region when in `iedit-mode'
 (defun nvp-iedit-expand ()

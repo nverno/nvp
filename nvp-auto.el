@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 18:03:29>
+;; Last modified: <2019-02-23 22:07:21>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -25,6 +25,7 @@
 ;;;###autoload
 (defun nvp-move-char-this-line (&optional char)
   (interactive (list (char-to-string (read-char "Char: " t))))
+  (or (eq last-command this-command) (region-active-p) (push-mark))
   (let ((case-fold-search t))
     (condition-case nil
         (search-forward char (point-at-eol))
@@ -33,7 +34,10 @@
                (or (search-forward char (point-at-eol))
                    (goto-char pt))))))
   (nvp-bind-transient-key
-   char (lambda () (interactive) (nvp-move-char-this-line char)) t))
+   char (lambda () (interactive)
+          (setq this-command 'nvp-move-char-this-line)
+          (nvp-move-char-this-line char))
+   t))
 
 ;; used recursively below so not a macro
 ;;;###autoload

@@ -35,7 +35,7 @@
 
 ;; to be called in a hook
 (defun nvp-comint-add-history-sentinel ()
-  (when-let* ((proc (current-buffer-process)))
+  (when-let* ((proc (nvp-buffer-process)))
     (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
 
 ;; write comint-input-ring when buffer is killed: in kill-buffer-hook

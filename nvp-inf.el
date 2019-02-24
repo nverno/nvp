@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 18:32:24>
+;; Last modified: <2019-02-23 20:04:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
@@ -62,53 +62,6 @@
      if (and (string= name (process-name proc))
              (process-live-p proc))
      return t))
-
-;; choose process by name, return process
-(defun nvp-inf-choose-process ()
-  (let ((procs (mapcar #'(lambda (p) (cons (process-name p) p))
-                       (process-list))))
-    (when procs
-      (cdr (assoc-string
-            (ido-completing-read "Process: " (mapcar #'car procs))
-            procs)))))
-
-;; prompt for process name and pop to it
-;;;###autoload
-(defun nvp-inf-goto-process (proc)
-  (interactive
-   (list (nvp-inf-choose-process)))
-  (if proc
-      (pop-to-buffer (process-buffer proc))
-    (message "No processes")))
-
-;; -------------------------------------------------------------------
-;;; Buffer Process Info
-
-;; print message with current buffer's process status
-;;;###autoload
-(defun nvp-inf-process-status ()
-  (interactive)
-  (message "Process status: %s" (process-status (current-buffer))))
-
-;;;###autoload
-(defun nvp-inf-process-attributes (var)
-  (interactive
-   (list (completing-read "Process attr: "
-                          '(filter plist coding exit command id name sentinel)
-                          nil nil "plist")))
-  (when-let* ((proc (get-buffer-process (current-buffer))))
-    (princ (pcase var
-             (`"filter" (process-filter proc))
-             (`"plist" (process-plist proc))
-             (`"coding" (process-coding-system proc))
-             (`"exit" (process-exit-status proc))
-             (`"command" (process-command proc))
-             (`"id" (process-id proc))
-             (`"name" (process-name proc))
-             (`"sentinel" (process-sentinel proc))
-             (_ (condition-case var
-                    (process-get proc var)
-                  (error (format "Process attribute %s not found" var))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Hooks

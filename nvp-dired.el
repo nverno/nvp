@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-23 18:15:01>
+;; Last modified: <2019-02-23 19:16:47>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -33,8 +33,7 @@
   (message "%S called with %S" this-command
            (prin1-to-string (vector last-input-event)))
   ;; (global-set-key (kbd "C-x C-j") #'dired-jump)
-  ;; (dired-jump other-window file-name)
-  )
+  (dired-jump other-window file-name))
 
 ;; -------------------------------------------------------------------
 ;;; Movement 

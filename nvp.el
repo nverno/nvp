@@ -56,7 +56,7 @@
 ;; jumping variables -- might be set in dir-locals
 (defvar nvp-default-org-file "gtd.org")
 (nvp-defvar nvp-default-hooks-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
-(nvp-defvar nvp-build-init-dir (expand-file-name "build" nvp/home))
+(nvp-defvar nvp-build-init-dir (expand-file-name "build" nvp/emacs))
 (defvar-local nvp-local-notes-file ())
 (defvar-local nvp-local-books-directory ())
 (defvar-local nvp-local-uris nil)

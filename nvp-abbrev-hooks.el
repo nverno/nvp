@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 21:05:51>
+;; Last modified: <2019-02-23 18:10:24>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  6 February 2019
@@ -33,8 +33,12 @@
   (if (or (and (characterp last-input-event)
                (eq ? (char-syntax last-input-event)))
           (looking-at-p "\\_>"))
-      (buffer-substring-no-properties
-       (point) (save-excursion (skip-syntax-backward "w_") (point)))))
+      (let ((str (buffer-substring-no-properties
+                  (point) (save-excursion (skip-syntax-backward "w_") (point)))))
+        ;; so eldoc still displays args, let it know this was a
+        ;; `self-insert-command'
+        (if (not (equal "" str)) str
+          (prog1 nil (setq this-command 'self-insert-command))))))
 
 ;; -------------------------------------------------------------------
 ;;; Post insert

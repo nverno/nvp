@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-23 00:32:16>
+;; Last modified: <2019-02-23 18:15:01>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -22,15 +22,19 @@
 (declare-function dired-filename-at-point "dired-x")
 
 ;; -------------------------------------------------------------------
-;;; Dired
+;;; Dired - entry point
 
 ;;;###autoload
 (defun nvp-dired-jump (&optional other-window file-name)
   (interactive
-   (list nil (and current-prefix-arg
-                  (read-file-name "Jump to Dired file: "))))
-  (global-set-key (kbd "C-x C-j") #'dired-jump)
-  (dired-jump other-window file-name))
+   (list (eq 4 (car current-prefix-arg))
+         (and (eq 16 (car current-prefix-arg))
+              (read-file-name "Jump to Dired file: "))))
+  (message "%S called with %S" this-command
+           (prin1-to-string (vector last-input-event)))
+  ;; (global-set-key (kbd "C-x C-j") #'dired-jump)
+  ;; (dired-jump other-window file-name)
+  )
 
 ;; -------------------------------------------------------------------
 ;;; Movement 

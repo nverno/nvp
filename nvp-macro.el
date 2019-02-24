@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 23:51:23>
+;; Last modified: <2019-02-23 19:07:54>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -420,7 +420,8 @@ menu entry."
    (cl-loop for (k . b) in bindings
       collect `(nvp-def-key (current-global-map) ,k ,b))))
 
-(cl-defmacro nvp-bind-keys (map &rest bindings &key pred-form &allow-other-keys)
+(cl-defmacro nvp-bind-keys (map &rest bindings &key predicate after-load
+                                &allow-other-keys)
   "Add BINDINGS to MAP.
 If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
   (declare (indent defun) (debug t))
@@ -429,7 +430,8 @@ If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
   (let ((map (nvp--normalize-modemap map)))
     `(progn
        (eval-when-compile (defvar ,map))
-       (,@(if pred-form `(when ,pred-form) '(progn))
+       (,@(if predicate `(when ,predicate)
+            (if after-load `(with-eval-after-load ,after-load) '(progn)))
         ,@(cl-loop for (k . b) in bindings
              collect `(nvp-def-key ,map ,k ,b))))))
 
@@ -1353,6 +1355,7 @@ directory is bound to `root' and all `dirs' are let-bound to their symbols."
 ;; -------------------------------------------------------------------
 ;;; Setup / Build init
 
+;;-- Setup helper functions
 ;; Find locations for init constants
 (defun nvp--setup-normalize-locs (locs &optional defaults)
   "Ensure LOCS is a list.
@@ -1389,7 +1392,7 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
          (cl-member (file-name-nondirectory f) ignored :test 'string=)))
    (directory-files root t "^[^.]")))
 
-
+;;-- setup macros
 (cl-defmacro nvp-add-to-alist (&rest items
                                      &key
                                      (alist 'auto-mode-alist)
@@ -1407,11 +1410,14 @@ is already present."
       collect `(push (cons ,k ',v) ,alist))))
 
 (defmacro nvp-setup-diminish (&rest modes)
-  "Diminish MODES in modeline."
+  "Diminish MODES in modeline.
+MODES is of form (feature . mode)."
   (declare (indent 0))
-  (macroexp-progn
-   (cl-loop for (feat . mode) in modes
-      collect `(eval-after-load ',feat '(diminish ',mode)))))
+  `(progn
+     (eval-when-compile ,@(mapcar (lambda (f) `(defvar ,(cdr f))) modes))
+     ,(macroexp-progn
+       (cl-loop for (feat . mode) in modes
+          collect `(eval-after-load ',feat '(diminish ',mode))))))
 
 (defmacro nvp-setup-consts (&rest vars)
   "Define consts in init."
@@ -1451,6 +1457,10 @@ is already present."
      (cl-loop for d in dirs
         collect `(add-to-list 'load-path ,d)))))
 
+(defmacro nvp-setup-cache (var filename)
+  "Set cache FILENAME location."
+  `(nvp-setq ,var (expand-file-name ,filename nvp/cache)))
+
 ;; -------------------------------------------------------------------
 ;;; Warnings / Compat / Variables
 
@@ -1480,7 +1490,8 @@ is already present."
      (defvar nvp/auto-site)
      (defvar nvp/devel)
      (defvar nvp/site)
-     (defvar nvp/home)
+     (defvar nvp/emacs)
+     (defvar nvp/build)
      (defvar nvp/project)
      (defvar nvp/info)
      (defvar nvp/bin)

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 22:59:09>
+;; Last modified: <2019-02-23 18:11:14>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -128,6 +128,15 @@
                                   (keymapp (symbol-value m))
                                   (not (equal (symbol-value m)
                                               (make-sparse-keymap)))))
+                           t nil nil nil)))
+
+(defun nvp-read-nvp-keymap ()
+  "Read one of my keymaps."
+  (intern (completing-read "nvp-..-keymap: " obarray
+                           (lambda (m)
+                             (and (boundp)
+                                  (keymapp (symbol-value m))
+                                  (string-prefix-p "nvp-" (symbol-name m))))
                            t nil nil nil)))
 
 (defun nvp-read-obarray-regex (prompt &optional regexp default)

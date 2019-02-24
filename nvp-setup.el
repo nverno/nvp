@@ -63,7 +63,7 @@
     ("<f2> q c" . smie-close-block))
   (when debug
     (nvp-bind-keys nvp-debug-keymap
-      :pred-form (featurep 'smie)
+      :predicate (featurep 'smie)
       ("sc" . smie-config-show-indent)
       ("ss" . smie-config-set-indent)
       ("sg" . smie-config-guess)

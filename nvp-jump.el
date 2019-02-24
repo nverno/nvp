@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 23:14:13>
+;; Last modified: <2019-02-23 18:14:57>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -78,6 +78,11 @@ With double prefix, prompt for mode."
          (car current-prefix-arg)))
   (nvp-display-location file :file action))
 
+;;;###autoload
+(defun nvp-jump-to-keymap (file action)
+  "Jump to one of my defined keymaps."
+  (interactive
+   (list (expand-file-name "base/nvp-bindings.el" nvp/build))))
 ;; -------------------------------------------------------------------
 ;;; Org / Info
 

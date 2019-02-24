@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 19:33:39>
+;; Last modified: <2019-02-24 05:44:43>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -88,16 +88,9 @@ With prefix sort in REVERSE."
 ;; -------------------------------------------------------------------
 ;;; Fill 
 
-;; Convert multiple line paragraph into one line.
-;;;###autoload
-(defun nvp-unfill-paragraph ()
-  (interactive)
-  (let ((fill-column (point-max)))
-    (call-interactively 'fill-paragraph)))
-
-;; Remove newlines in list, leaving single spaces.
 ;;;###autoload
 (defun nvp-unfill-list (begin end &optional regexp)
+  "Remove newlines in list, leaving single spaces."
   (interactive "r")
   (setq regexp
         (if current-prefix-arg
@@ -112,12 +105,30 @@ With prefix sort in REVERSE."
     (let ((fill-column 75))
       (fill-paragraph))))
 
+;; FIXME: generalize to non-elisp?
+;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph    
+;;;###autoload
+(defun nvp-unfill-paragraph (&optional region)
+  "Takes a multi-line paragraph and makes it into a single line of text."
+  (interactive (list t))
+  (let ((fill-column (point-max))
+        (emacs-lisp-docstring-fill-column t))
+    (fill-paragraph nil region)))
+
+;;;###autoload
+(defun nvp-unfill-region (beg end)
+  "Unfill the region, joining text paragraphs into a single logical line. This
+is useful, e.g, for use with `visual-line-mode'."
+  (interactive "*r")
+  (let ((fill-column (point-max)))
+    (fill-region beg end)))
+
 ;;; FIXME:
 ;;;###autoload
 (defun nvp-fill-paragraph-toggle ()
   (interactive)
-  (let (deactivate-mark
-        (fill-column (nvp-toggled-if fill-column most-positive-fixnum)))
+  (let ((fill-column (nvp-toggled-if fill-column most-positive-fixnum))
+        (deactivate-mark))
     (call-interactively 'fill-paragraph)))
 
 ;; -------------------------------------------------------------------

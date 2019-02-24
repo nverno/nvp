@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 00:47:49>
+;; Last modified: <2019-02-24 04:07:07>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -54,13 +54,26 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; -------------------------------------------------------------------
 ;;; Messages
 
-(cl-defmacro nvp-msg (fmt &rest args &key keys &allow-other-keys)
+(defun nvp--msg-from-bindings (bindings &optional prefix)
+  "Create message of 'PREFIX: [key] cmd, ...' from list of cons BINDINGS."
+  (or prefix (setq prefix "Transient: "))
+  (let ((msg (if (listp bindings)
+                 (concat
+                  prefix
+                  (mapconcat (lambda (b)
+                               (format "[%S] %S" (car b) (cdr b))) bindings ", "))
+               prefix)))
+    msg))
+
+(cl-defmacro nvp-msg (fmt &rest args &key keys delay &allow-other-keys)
+  "Print message, optionally using `substitute-command-keys'."
   (while (keywordp (car args))
     (setq args (cdr (cdr args))))
-  (if keys `(message "%s" (substitute-command-keys (format ,fmt ,@args)))
-    `(message ,fmt ,@args)))
-
-;; (nvp-msg "tmap: \\<overriding-local-key-map>" :keys t)
+  (let ((msg `(message
+               ,@(if keys `("%s" (substitute-command-keys (format ,fmt ,@args)))
+                   `(,fmt ,@args)))))
+    (if delay `(run-with-idle-timer ,delay nil (lambda () ,msg))
+      `,msg)))
 
 ;; -------------------------------------------------------------------
 ;;; General
@@ -389,44 +402,46 @@ Optional :local key can be set to make the mappings buffer-local."
           collect `(nvp-bindings ,mode ',feature ,@bindings))))
 
 ;;-- Bindings: local / transient / overriding
-(defun nvp--msg-from-bindings (bindings &optional prefix)
-  "Create message of 'PREFIX: [key] cmd, ...' from list of cons BINDINGS."
-  (or prefix (setq prefix "Transient: "))
-  (concat
-   prefix
-   (mapconcat (lambda (b) (format "[%S] %S" (car b) (cdr b))) bindings ", ")))
-
-(cl-defmacro nvp-use-transient-bindings (bindings
-                                         &key
-                                         (keep '(lambda () ))
-                                         (pre '(nvp-indicate-cursor-pre))
-                                         (exit '(lambda () (nvp-indicate-cursor-post)))
-                                         (repeat t) ;add repeat binding as last char
-                                         &allow-other-keys)
-  "Set BINDINGS in transient map.
+(cl-defmacro nvp-use-transient-bindings
+    (&optional bindings
+               &key
+               (keep t)
+               (pre '(nvp-indicate-cursor-pre))
+               (exit '(lambda () (nvp-indicate-cursor-post)))
+               (repeat t) ;add repeat binding as last char
+               repeat-key) ;key to use instead of last char
+  "Set BINDINGS in transient map or REPEAT command.
+If both BINDINGS and REPEAT are nil, do nothing.
 Run PRE form prior to setting commands and EXIT on leaving transient map.
-If REPEAT is non-nil, add a binding to repeat command from the last input char."
-  (declare (indent 0) (debug defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (macroexp-let2 nil msg (nvp--msg-from-bindings bindings)
-   `(progn
-      (nvp-declare "nvp-indicate" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
-      (let ((msg ,msg) orig-cmd repeat-key)
-        (when (and ,repeat (null repeat-key)) ;don't need to set repeatedly
-          (setq orig-cmd this-command)
-          (setq repeat-key (nvp-last-command-char))
-          (setq msg (concat (format ", [%s] repeat command" repeat-key) msg)))
-        (message msg)
-        ,pre
-        (set-transient-map
-         (let ((tmap (make-sparse-keymap)))
-           ,@(cl-loop for (k . b) in bindings
-                collect `(nvp-def-key tmap ,k ,b))
-           ,(when repeat '(define-key tmap (kbd repeat-key) orig-cmd))
-           tmap)
-         ,(if repeat '(lambda () (setq this-command orig-cmd)) `,keep)
-         ,exit)))))
+If REPEAT is non-nil, add a binding to repeat command from the last input char
+or use REPEAT-KEY if specified."
+  (declare (indent defun) (debug defun))
+  (when (or bindings repeat)            ;w/o one of these, do nothing
+    (let ((msg (nvp--msg-from-bindings bindings)))
+     `(progn
+        (nvp-declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
+        ;; only set first time
+        (when (null overriding-terminal-local-map)
+          (let ((tmap (make-sparse-keymap))
+                (repeat-key ,(when repeat (or repeat-key '(nvp-last-command-char)))))
+            ,(when repeat
+               (prog1 nil
+                 (setq msg (concat msg (and bindings ", ") "[%s] repeat command"))))
+            (message ,msg repeat-key)   ;echo bindings on first pass
+            ,pre
+            ,@(cl-loop for (k . b) in bindings
+                 collect `(nvp-def-key tmap ,k ,b))
+            ,(when repeat '(define-key tmap (kbd repeat-key) this-command))
+            (set-transient-map
+             tmap
+             ,(if repeat `(lambda ()         ;conditions to continue
+                            (when (and (not (memq this-command
+                                                  '(handle-switch-frame
+                                                    keyboard-quit)))
+                                       (lookup-key tmap (this-single-command-keys)))
+                              (message ,msg repeat-key) t))
+                `,keep)
+             ,exit)))))))
 
 (cl-defmacro nvp-use-local-bindings (&rest bindings &key buffer &allow-other-keys)
   "Set local BINDINGS.

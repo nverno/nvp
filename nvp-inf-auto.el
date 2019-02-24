@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-23 21:10:19>
+;; Last modified: <2019-02-24 04:41:26>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 23 February 2019
@@ -19,6 +19,7 @@
 ;;; Util 
 
 ;; completing read for processes
+;;;###autoload
 (defun nvp-inf-read-process ()
   (let* ((current (nvp-buffer-process))
          (prompt (if current (format "Process (default %s): " current)

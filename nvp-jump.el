@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-23 18:14:57>
+;; Last modified: <2019-02-24 03:32:05>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -79,10 +79,20 @@ With double prefix, prompt for mode."
   (nvp-display-location file :file action))
 
 ;;;###autoload
-(defun nvp-jump-to-keymap (file action)
+(defun nvp-jump-to-nvp-keymap (keymap action)
   "Jump to one of my defined keymaps."
-  (interactive
-   (list (expand-file-name "base/nvp-bindings.el" nvp/build))))
+  (interactive (list (nvp-read-nvp-keymap) current-prefix-arg))
+  (and (symbolp keymap) (setq keymap (symbol-name keymap)))
+  (let ((buff (find-file-noselect
+               (expand-file-name "base/nvp-bindings.el" nvp/build))))
+    (with-current-buffer buff
+      (goto-char (point-min))           ;might already be open
+     (condition-case nil
+       (progn
+         (re-search-forward (concat "^(nvp-[^\n]+" (regexp-quote keymap))))
+       (error (goto-char (point-min)))))
+   (nvp-display-location buff :buffer action)))
+
 ;; -------------------------------------------------------------------
 ;;; Org / Info
 

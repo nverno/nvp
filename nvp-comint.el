@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 18:31:05>
+;; Last modified: <2019-02-24 04:38:37>
 ;; Created: 31 March 2017
 
 ;;; Commentary:
@@ -15,10 +15,15 @@
   (require 'cl-lib)
   (require 'subr-x))
 (require 'comint)
-(declare-function nvp-inf-kill-proc-before-buffer "nvp-inf")
 
 ;; size of history files to save
 (defvar nvp-comint-history-size 5000)
+
+;;; kill process before killing buffer
+(defun nvp-comint-kill-proc-before-buffer ()
+  (let ((proc (nvp-buffer-process)))
+    (when (processp proc)
+      (delete-process proc))))
 
 ;;; History
 
@@ -42,8 +47,8 @@
 ;;;###autoload
 (defun nvp-comint-write-history-on-kill ()
   ;; make sure the buffer exists before calling the process sentinel
-  (add-hook 'kill-buffer-hook 'nvp-inf-kill-proc-before-buffer nil 'local)
-  (advice-add 'nvp-inf-kill-proc-before-buffer :before 'comint-write-input-ring))
+  (add-hook 'kill-buffer-hook 'nvp-comint-kill-proc-before-buffer nil 'local)
+  (advice-add 'nvp-comint-kill-proc-before-buffer :before 'comint-write-input-ring))
 
 (defun nvp-comint-history-process-sentinel (proc _m)
   (when (not (comint-check-proc proc))

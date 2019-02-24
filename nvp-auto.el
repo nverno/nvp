@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-23 22:07:21>
+;; Last modified: <2019-02-24 02:45:30>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -84,8 +84,7 @@
             (end (region-end)))
         (nvp--duplicate-region arg beg end))
     (nvp--duplicate-last-nonempty-line arg)
-    (nvp-use-transient-bindings
-      (("d" . nvp--duplicate-back-and-dupe)))))
+    (nvp-use-transient-bindings nil :repeat-key "d")))
 
 ;; duplicate the current line num times.
 (defun nvp-duplicate-current-line (&optional num)

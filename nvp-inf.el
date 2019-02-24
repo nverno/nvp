@@ -2,19 +2,23 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-23 20:04:39>
+;; Last modified: <2019-02-24 04:42:36>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
 
 ;;; Commentary:
+
+;; TODO: cleanup
+;; inferior process utilities
 ;; lots of unused stuff
+
 ;;; Code:
 (eval-when-compile
   (require 'subr-x)
-  (require 'cl-lib))
-
-;; inferior process utilities
+  (require 'cl-lib)
+  (require 'nvp-macro))
+(nvp-declare "" nvp-inf-read-process)
 
 ;; error signals
 (put 'nvp-inf-process-died 'error-conditions '(nvp-inf-process-died error))
@@ -62,16 +66,6 @@
      if (and (string= name (process-name proc))
              (process-live-p proc))
      return t))
-
-;; -------------------------------------------------------------------
-;;; Hooks
-
-;; kill process before killing buffer
-;;;###autoload
-(defun nvp-inf-kill-proc-before-buffer ()
-  (let ((proc (get-buffer-process (current-buffer))))
-    (when (processp proc)
-      (delete-process proc))))
 
 ;; ------------------------------------------------------------
 ;;; Prompts
@@ -273,7 +267,7 @@
                                      wait force-redisplay
                                      no-prompt-check)
   (interactive
-   (list (nvp-inf-choose-process)
+   (list (nvp-inf-read-process)
          (format "%s\n" (read-string "Command (adds \"\\n\"): "))
          nvp-inf-output-buffer nil t))
   (if (stringp proc)
@@ -342,7 +336,7 @@
                                            out-buffer _out-filter
                                            callback interrupt-callback)
   (interactive
-   (list (nvp-inf-choose-process)
+   (list (nvp-inf-read-process)
          (format "%s\n" (read-string "Command (adds \"\\n\"): "))
          nvp-inf-output-buffer nil t t))
   (when (stringp proc)

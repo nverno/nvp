@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 19:25:54>
+;; Last modified: <2019-02-24 03:45:48>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -44,7 +44,8 @@
 ;; 4 => same window
 ;; _ => other window (default)
 (defun nvp-display-location (location type action &optional func)
-  (or action (setq action t))
+  (if (not action) (setq action t)
+    (if (consp action) (setq action (car action))))
   (pcase (cons type action)
     (`(:buffer . ,_)
      (pop-to-buffer location (nvp-display--get-action action :buffer)))
@@ -88,6 +89,12 @@
             (help-window-select 'other))
       ,@body)))
 
+;; -------------------------------------------------------------------
+;;; Messages
+
+(defun nvp-msg-delayed (secs fmt &rest args)
+  "Display message after idle SECS."
+  (run-with-idle-timer secs nil (lambda () (message fmt args))))
 
 (provide 'nvp-display)
 ;;; nvp-display.el ends here

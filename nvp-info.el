@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 20:23:53>
+;; Last modified: <2019-02-24 03:04:05>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 January 2019
@@ -40,7 +40,7 @@
         (push (match-string-no-properties 1) nodes))
       nodes)))
 
-(eval-when (load)
+(cl-eval-when (load)
   (file-notify-add-watch (expand-file-name "dir" nvp/info) (list 'change)
                          #'(lambda (&rest _args) (setq nvp-info-nodes-need-refresh t))))
 

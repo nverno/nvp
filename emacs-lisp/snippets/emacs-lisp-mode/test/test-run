@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: run tests
+# key: test-run
+# --
+(defun nvp--run-tests ()
+  (interactive)
+  (if (featurep 'ert)
+      (ert-run-tests-interactively "${1:nvp--test}")
+    (message "cant run without ert.")))

@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-24 04:46:56>
+#+DATE: <2019-02-24 14:22:05>
 
 * Functions
 ** General [0/7]
@@ -11,6 +11,17 @@
 - [ ] fix list wrapping to account for syntax
 - [ ] jumping from shell doesn't account for local variables
 - [ ] remove all methods from generic for debugging
+** evil
+things to look into
+- [ ] define command
+- [ ] repeat
+- [ ] fold-list
+- [ ] evil-make
+- [ ] evil-shell-command
+- [ ] evil-with-view-list
+- [ ] evil-ex-sort : sort lines command
+- [ ] evil-jump-to-tag
+- [ ] evil-lookup-func
 
 ** Utils [1/4]
 - [ ] reusable region or string utility function

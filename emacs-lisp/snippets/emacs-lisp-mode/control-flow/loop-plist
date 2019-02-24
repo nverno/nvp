@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: loop-plist
+# key: loopp
+# --
+(cl-loop for ${1:(k v)} on ${2:props} by #'cddr
+    $0)

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: declare
+# key: decl
+# --
+(declare (${1:indent} ${2:defun})${3: (debug t)})

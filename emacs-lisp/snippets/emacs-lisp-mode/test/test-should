@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: test should macro
+# key: test-should
+# --
+(defmacro nvp--${1:should} (from to)
+  `(with-temp-buffer
+     (let ()
+       (insert ,from)
+       (should (string= (buffer-substring-no-properties (point-min) (point-max))
+                      ,to)))))

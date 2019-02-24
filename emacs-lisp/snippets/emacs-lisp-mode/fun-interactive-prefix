@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: interactive defun with prefix
+# key: funp
+# --
+(defun $1 (arg$2)
+  (interactive "P")
+  $0)

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: auto
+# key: auto
+# --
+(autoload '$1 "$2")

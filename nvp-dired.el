@@ -27,8 +27,8 @@
 ;;;###autoload
 (defun nvp-dired-jump (&optional other-window file-name)
   (interactive
-   (list (eq 4 (car current-prefix-arg))
-         (and (eq 16 (car current-prefix-arg))
+   (list (eq 4 (prefix-numeric-value current-prefix-arg))
+         (and (eq 16 (prefix-numeric-value current-prefix-arg))
               (read-file-name "Jump to Dired file: "))))
   (message "%S called with %S" this-command
            (prin1-to-string (vector last-input-event)))

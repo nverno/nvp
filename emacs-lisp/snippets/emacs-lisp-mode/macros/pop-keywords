@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: pop-keywords
+# key: popkeys
+# --
+(while (keywordp (car ${1:body}))
+  (setq $1 (cdr (cdr $1))))

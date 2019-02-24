@@ -1,12 +1,12 @@
 emacs  ?= emacs
 wget   ?= wget
 SCRIPT = script
-LATEX_ABBREVS=etc/unicode-latex-abbrev-table
+LATEX_ABBREVS = etc/unicode-latex-abbrev-table
 
 .PHONY: test
 all: test
 test:
-	$(emacs) -Q -batch -L . -l ert -l test/nvp-tests.el	\
+	$(emacs) -Q -batch -L . -l ert -l test/nvp-tests.el \
 	-f ert-run-tests-batch-and-exit
 
 README.md : el2markdown.el nvp.el

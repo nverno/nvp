@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: loop collect
+# key: loopc
+# --
+(cl-loop for $1 in $2
+  collect $0)

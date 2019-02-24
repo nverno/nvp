@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: function declare
+# key: fdecl
+# --
+(declare (pure t) (side-effect-free t))

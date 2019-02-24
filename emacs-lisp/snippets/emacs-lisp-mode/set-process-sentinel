@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: set-process-setinel
+# key: sps
+# --
+set-process-sentinel $1
+  #'(lambda (p _m)
+    (when (zerop (process-exit-status p))
+      $2))

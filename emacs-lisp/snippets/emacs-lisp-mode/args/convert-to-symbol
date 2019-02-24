@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: convert-to-symbol
+# key: c-sym
+# --
+(and (${1:stringp} ${2:mode}) (setq $2 (intern $2)))

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: cl-labels
+# key: cll
+# --
+(cl-labels ((${1:function}
+            ($1)
+            $0))
+ )

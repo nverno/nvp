@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: file last modified (days)
+# key: filetime
+# --
+(< (time-to-seconds
+     (time-subtract
+       (current-time)
+      (nth 5 (file-attributes ${1:file}))))
+   (* 60 60 24 ${2:days}))

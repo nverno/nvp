@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: std
+# key: std
+# --
+(source gnu)
+(source melpa)
+(depends-on "$1")

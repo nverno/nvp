@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: package dir
+# key: pkg-dir
+# --
+(defvar ${1:`(nvp-yas-dfn)`--dir}
+  (file-name-as-directory
+   (directory-file-name
+    (file-name-directory
+     (or load-file-name (buffer-file-name))))))

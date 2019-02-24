@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 15:59:48>
+;; Last modified: <2019-02-24 16:08:27>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -57,9 +57,13 @@ Should return sexp of form (abbrev . expansion)."
 (cl-defmethod nvp-abbrev--grab-region
     (beg end &context (major-mode emacs-lisp-mode))
   "Try to determine appropriate elisp abbrev from region.
-Remove any surrounding parens and use first chars with lisp transformer."
-  (let ((exp (string-trim
-              (buffer-substring-no-properties beg end) "[ \t\n\(]" "[ \t\n\)]")))
+Remove any surrounding parens and use first chars with lisp transformer.
+With prefix, don't split region by whitespace."
+  (let* ((str (if current-prefix-arg
+                  (buffer-substring-no-properties beg end)
+                (car (split-string
+                      (buffer-substring-no-properties beg end) nil 'omit))))
+         (exp (string-trim str "[ \t\n\(]" "[ \t\n\)]")))
     (cons (nvp-abbrev--lisp-transformer exp) exp)))
 
 (defun nvp-abbrev--grab-prev (nchars)
@@ -70,20 +74,22 @@ Remove any surrounding parens and use first chars with lisp transformer."
           (start (point)))
       (buffer-substring-no-properties start end))))
 
-(cl-defgeneric nvp-abbrev--table-name (&optional local-table _abbrev)
-  "Generic function to return the name of abbrev file to use with PREFIX."
+(cl-defgeneric nvp-abbrev--table-name (&optional local-table _abbrev _exp)
+  "Generic function to return the name of abbrev file to use with given abbrev \
+or expansion."
   (regexp-quote (format "%s-abbrev-table" (or local-table major-mode))))
 
 (cl-defmethod nvp-abbrev--table-name
-  (&context (major-mode emacs-lisp-mode) &optional local-table abbrev)
+  (&context (major-mode emacs-lisp-mode) &optional local-table abbrev exp)
   "Determine with abbrev table to use based on prefix and possibly context."
   (if (not abbrev) (cl-call-next-method)
-    (let ((prefix
-           (and abbrev
-                (cdr (cl-find-if (lambda (pre) (string-prefix-p pre abbrev))
-                                 '(("cl"  . "emacs-lisp-cl")
-                                   ("nvp" . "emacs-lisp-nvp"))
-                                 :key #'car)))))
+    (let* ((pref (or exp abbrev))
+           (prefix
+            (and pref
+                 (cdr (cl-find-if (lambda (pre) (string-prefix-p pre pref))
+                                  '(("cl"  . "emacs-lisp-cl")
+                                    ("nvp" . "emacs-lisp-nvp"))
+                                  :key #'car)))))
       (regexp-quote (format "%s-abbrev-table" (or prefix local-table major-mode))))))
 
 ;; insert starter abbrev table template
@@ -98,7 +104,7 @@ Remove any surrounding parens and use first chars with lisp transformer."
    (insert
     (concat
      (when (zerop (buffer-size))
-       ";; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-\n")
+       ";; -*- coding: utf-8; -*-\n")
      "\n(define-abbrev-table '" table "\n"
      "  '()\n"
      (format
@@ -111,6 +117,7 @@ Remove any surrounding parens and use first chars with lisp transformer."
 ;; if it doesn't exist insert starter template
 (defun nvp-abbrev--get-table (table file)
   (find-file-other-window file)
+  (widen)
   (goto-char (point-min))
   (unless (search-forward-regexp (concat "'" table "\\>") nil t)
     (goto-char (point-max))
@@ -134,9 +141,8 @@ When abbrev text is selected, searching is done first by length then lexically."
                   (t nil)))
          (expansion (and (consp prefix) (prog1 (cdr prefix)
                                           (setq prefix (car prefix)))))
-         (table (nvp-abbrev--table-name local-abbrevs prefix)))
+         (table (nvp-abbrev--table-name local-abbrevs prefix expansion)))
     (save-restriction
-      (widen)
       (with-current-buffer (nvp-abbrev--get-table
                             table (or (bound-and-true-p nvp-abbrev-local-file)
                                       (expand-file-name table nvp/abbrevs)))
@@ -161,6 +167,7 @@ When abbrev text is selected, searching is done first by length then lexically."
         ;; reload abbrev table after modification
         (cl-labels ((nvp-abbrev-save-hook
                      ()
+                     (widen)
                      (quietly-read-abbrev-file (buffer-file-name))
                      ;; refresh cached active abbrev tables
                      (setq nvp-abbrev-completion-need-refresh t)))

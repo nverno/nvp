@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: expand abbrev
+# key: eah
+# group: abbrevs
+# FIXME: `string-bytes` not right for "\x100"
+# --
+("${1:abbrev}" ["${2:pre}${3:post}" ${3:$(string-bytes yas-text)} nil nil] expand-abbrev-hook :system t)

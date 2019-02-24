@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: git
+# key: git
+# --
+(depends-on ${1:"nvp"} :git ${2:"https://github.com/nverno/"}$3)

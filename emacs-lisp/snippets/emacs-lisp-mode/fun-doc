@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: defun interactive with doc
+# key: fundoc
+# --
+(defun $1 ($2)
+  "$3"
+  (interactive$4)
+  $0)

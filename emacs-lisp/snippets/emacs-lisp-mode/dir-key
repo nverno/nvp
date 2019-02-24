@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: dir local binding
+# key: dir-key
+# group: dir-local
+# --
+((nil (eval . (global-set-key (kbd "$1") '$2))))

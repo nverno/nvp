@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: macroexp-progn loop
+# key: loope
+# --
+(macroexp-progn
+  (cl-loop for $1 in $2
+    ${3:collect} $0))

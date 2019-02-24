@@ -1,0 +1,37 @@
+# -*- mode: snippet -*-
+# name: company preamble
+# key: company
+# --
+(defvar company-${1:`(cadr (split-string (nvp-elisp-provide-name) "-"))`}-modes '($1-mode))
+(defun company-$1--prefix ()
+  (and (memq major-mode company-$1-modes)
+       (not (company-in-string-or-comment))
+       (company-grab-symbol)))
+
+(defun company-$1--annotation (candidate)
+  (or (get-text-property 0 'annot candidate) ""))
+
+(defun company-$1--meta (candidate)
+  (get-text-property 0 'meta candidate))
+
+(defun company-$1--doc (candidate)
+  (company-doc-buffer ""))
+
+(defun company-$1--location (candidate))
+
+(defun company-$1--candidates (arg)
+  (all-completions arg ${2:(company-$1-keywords)}))
+
+;;;###autoload
+(defun company-$1 (command &optional arg &rest _args)
+  (interactive (list 'interactive))
+  (cl-case command
+    (interactive (company-begin-backend 'company-$1))
+    (prefix (company-$1--prefix))
+    (annotation (company-$1--annotation arg))
+    (doc-buffer (company-$1--doc arg))
+    (location (company-$1--location arg))
+    (candidates (company-$1--candidates arg))
+    (require-match 'never)
+    (duplicates nil)
+    (sorted t)))

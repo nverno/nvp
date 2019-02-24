@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 03:45:48>
+;; Last modified: <2019-02-24 16:00:55>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -26,17 +26,18 @@
     :buffer ((4 display-buffer-same-window
                 ((inhibit-switch-frame . nil))
                 ((inhibit-same-window  . nil)))
-             (t display-buffer-pop-up-window
+             (1 display-buffer-pop-up-window
                 ((inhibit-same-window  . t))))
     :file ((4 find-file)
-           (t find-file-other-window))
+           (1 find-file-other-window))
     :ido ((4 raise-frame)
-          (t other-window))
+          (1 other-window))
     :find-func ((4 find-function)
-                (t find-function-other-window))))
+                (1 find-function-other-window))))
 
 (eval-and-compile
   (defmacro nvp-display--get-action (action type)
+    (and (consp action) (setq action (prefix-numeric-value action)))
    `(,(if (eq type :buffer) 'cdr 'cadr)
      (assq ,action (plist-get nvp-display--actions ,type)))))
 
@@ -44,8 +45,8 @@
 ;; 4 => same window
 ;; _ => other window (default)
 (defun nvp-display-location (location type action &optional func)
-  (if (not action) (setq action t)
-    (if (consp action) (setq action (car action))))
+  (if (not action) (setq action 1)
+    (if (consp action) (setq action (prefix-numeric-value action))))
   (pcase (cons type action)
     (`(:buffer . ,_)
      (pop-to-buffer location (nvp-display--get-action action :buffer)))
@@ -64,12 +65,13 @@
   (declare (indent defun) (debug (sexp &rest form)))
   (macroexp-let2 nil action action
     `(let* ((display-buffer-overriding-action
-            (nvp-display--get-action ,action :buffer))
-           (file-fn (nvp-display--get-action ,action :file))
-           (ido-default-file-method (nvp-display--get-action ,action :ido))
-           (ido-default-buffer-method ido-default-file-method))
-      (cl-letf (((symbol-function 'find-file) (symbol-function file-fn)))
-        ,@body))))
+             (nvp-display--get-action ,action :buffer))
+            (file-fn (nvp-display--get-action ,action :file))
+            (ido-default-file-method (nvp-display--get-action ,action :ido))
+            (ido-default-buffer-method ido-default-file-method))
+       (cl-letf (((symbol-function 'find-file)
+                  (symbol-function file-fn)))
+         ,@body))))
 
 (defmacro nvp-display-file-with-action (action &rest body)
   "Execute BODY with jump ACTION file defaults."
@@ -77,7 +79,8 @@
   (macroexp-let2 nil action action
     `(let* ((file-fn (nvp-display--get-action ,action :file))
             (ido-default-file-method (nvp-display--get-action ,action :ido)))
-       (cl-letf (((symbol-function 'find-file) (symbol-function file-fn)))
+       (cl-letf (((symbol-function 'find-file)
+                  (symbol-function file-fn)))
          ,@body))))
 
 (defmacro nvp-display-buffer-with-action (action &rest body)
@@ -87,14 +90,7 @@
              (nvp-display--get-action ,action :buffer))
             (ido-default-buffer-method (nvp-display--get-action ,action :ido))
             (help-window-select 'other))
-      ,@body)))
-
-;; -------------------------------------------------------------------
-;;; Messages
-
-(defun nvp-msg-delayed (secs fmt &rest args)
-  "Display message after idle SECS."
-  (run-with-idle-timer secs nil (lambda () (message fmt args))))
+       ,@body)))
 
 (provide 'nvp-display)
 ;;; nvp-display.el ends here

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: \\[...]
+# key: \\
+# condition: (nvp-yas-inside-string)
+# --
+\\\\[${1:universal-argument}]

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: default macros
+# key: macs
+# --
+(eval-when-compile
+  (require 'cl-lib)${1:
+  (require 'subr-x)}
+  (require 'nvp-macro))

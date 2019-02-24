@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: windows test
+# key: =w
+# --
+(eq system-type 'windows-nt)$0

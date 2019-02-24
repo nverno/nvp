@@ -189,7 +189,7 @@ On error (read-only), quit without selecting."
 With a single prefix, align entire active region or buffer.
 With double prefix, highlight changes that would occur."
   (interactive
-   (cons (car current-prefix-arg)
+   (cons (prefix-numeric-value current-prefix-arg)
          (if (region-active-p)
              (list (region-beginning) (region-end)))))
   (if (eq 4 arg)                        ;align entire region / buffer

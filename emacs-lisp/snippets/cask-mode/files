@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: files
+# key: files
+# --
+(files :defaults ${1:"script" }"snippets" "-*abbrev-table")

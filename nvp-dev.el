@@ -50,7 +50,7 @@ With prefix ARG, prompt for selector."
 (defun nvp-syntax-at-point (marker &optional action)
   "Display info about syntax at point.
 With prefix, display in same frame using `display-buffer' ACTION."
-  (interactive (list (point-marker) (car current-prefix-arg)))
+  (interactive (list (point-marker) (prefix-numeric-value current-prefix-arg)))
   ;; (set-buffer (marker-buffer marker))
   (let ((ppss (syntax-ppss marker))
         (help

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: add keybinding
+# key: k
+# --
+("$1" . $2)

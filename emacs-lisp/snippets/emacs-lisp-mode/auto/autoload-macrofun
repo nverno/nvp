@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: autoload macro function
+# key: #am
+# --
+;;;###autoload(autoload ${3:$2} "`(nvp-yas-bfn-no-ext)`")
+(${1:macro} ${2:defun-name} $0)

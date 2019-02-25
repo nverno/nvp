@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-24 14:22:05>
+#+DATE: <2019-02-25 01:24:28>
 
 * Functions
 ** General [0/7]
@@ -90,12 +90,12 @@ see which-func
 
 * Modes
 ** elisp
-- [ ] move to subdir of nvp
+- [X] move to subdir of nvp
 - [ ] align rules are shitty - dots in double quotes get moved.
 - [ ] macroify-bindings update => elisp
 - [ ] package
 - [ ] fix hippie - adds extra ')' when no match
-- [ ] jumping to abbrev with region doesn't account for prefixes
+- [X] jumping to abbrev with region doesn't account for prefixes
 *** HAP [0/1]
 - [ ] use company-backend
 *** Parsing [1/3]
@@ -207,8 +207,8 @@ Separators,
 
 
 * Mode struct
-- [ ] struct or class?
-- [ ] package deps
+- [X] struct or class?
+- [X] package deps
 - [ ] support recipe fetcher
 - [ ] external install targets
 - [ ] define mode-local variables?
@@ -260,9 +260,9 @@ Separators,
 - [ ] help-utils => nvp-help
 - [ ] tag-utils => nvp-tags
 - [X] config-tools => nvp-conf
-** subdirs [0/5]
+** subdirs [1/5]
 - [ ] md-tools => subdir 
-- [ ] elisp-utils => subdir
+- [X] elisp-utils => subdir
 - [ ] yaml-tools => subdir 
 - [ ] shell-tools => subdir
 - [ ] c-tools => subdir

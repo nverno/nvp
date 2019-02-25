@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 03:31:14>
+;; Last modified: <2019-02-25 00:39:30>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -43,13 +43,14 @@
   (unless default
     (setq default (symbol-name major-mode)))
   (setq prompt (nvp-prompt--with-default (or prompt "Mode config: ") default))
-  (nvp-completing-read
-   prompt
-   (mapcar
-    #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
-        (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
-    (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-   nil nil nil 'nvp-read-config-history (substring default 0 -5)))
+  (catch 'dired
+    (nvp-completing-read
+     prompt
+     (mapcar
+      #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
+          (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
+      (directory-files nvp/config nil "^[^\\.].*\\.el$"))
+     nil nil nil 'nvp-read-config-history (substring default 0 -5))))
 
 (defun nvp-read--info-files (&optional prompt)
   (expand-file-name 

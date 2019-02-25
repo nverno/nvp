@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 04:07:07>
+;; Last modified: <2019-02-25 01:15:33>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -1552,8 +1552,6 @@ MODES is of form (feature . mode)."
      (defvar nvp/test)
      (defvar nvp/lisp)
      (defvar nvp/config)
-     (defvar nvp/defs)
-     (defvar nvp/modedefs)
      (defvar nvp/custom)
      (defvar nvp/data)
      (defvar nvp/template)

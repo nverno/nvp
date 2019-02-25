@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 16:00:55>
+;; Last modified: <2019-02-24 23:26:28>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -19,6 +19,8 @@
   (nvp-local-vars))
 (require 'nvp)
 (declare-function find-function-other-window "find-func")
+
+(defvar nvp-display-fallback-function #'dired "Fallback for unhandled prefix.")
 
 ;; overrides to display result in current or other window
 (defvar nvp-display--actions
@@ -38,8 +40,9 @@
 (eval-and-compile
   (defmacro nvp-display--get-action (action type)
     (and (consp action) (setq action (prefix-numeric-value action)))
-   `(,(if (eq type :buffer) 'cdr 'cadr)
-     (assq ,action (plist-get nvp-display--actions ,type)))))
+    `(or (,(if (eq type :buffer) 'cdr 'cadr)
+          (assq ,action (plist-get nvp-display--actions ,type)))
+         nvp-display-fallback-function)))
 
 ;; actions to take jumping to buffers/files
 ;; 4 => same window

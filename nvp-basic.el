@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 18:09:07>
+;; Last modified: <2019-02-25 00:39:29>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -162,6 +162,10 @@ On error (read-only), quit without selecting."
 (defun nvp-ido-beginning-of-input ()
   (interactive)
   (goto-char (minibuffer-prompt-end)))
+
+(defun nvp-ido-throw-dired ()
+  (interactive)
+  (throw 'dired t))
 
 ;; -------------------------------------------------------------------
 ;;; Wrapper functions

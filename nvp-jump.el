@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 16:00:28>
+;; Last modified: <2019-02-25 00:37:53>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -30,8 +30,10 @@
 
 ;;;###autoload
 (defun nvp-jump-to-mode-config (mode action)
-  (interactive (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
-  (nvp-display-location (nvp-mode-config-path mode) :file action))
+  (interactive
+   (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
+  (if (eq t mode) (dired-other-window nvp/config)
+    (nvp-display-location (nvp-mode-config-path mode) :file action)))
 
 ;; Jump to test with extension `STR'.  If it doesn't exist make a new
 ;; file, and if there are multiple matches offer ido choice.
@@ -105,9 +107,11 @@ Otherwise prompt, with default `nvp-default-org-file'."
    (list (nvp-read--org-file
           nil nil (eq 16 (prefix-numeric-value current-prefix-arg)))
          current-prefix-arg))
-  (with-current-buffer (nvp-display-location org-file :file action)
-    (goto-char (point-min))
-    (ignore-errors (search-forward "* Notes"))))
+  (prog1 (setq org-file (nvp-display-location org-file :file action))
+    (when (bufferp org-file)
+      (with-current-buffer org-file
+        (goto-char (point-min))
+        (ignore-errors (search-forward "* Notes"))))))
 
 ;;;###autoload
 (defun nvp-jump-to-info (file action)

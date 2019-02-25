@@ -3,14 +3,14 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-24 22:18:08>
+;; Last modified: <2019-02-25 01:15:23>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
 
 ;;; Commentary:
 
 ;;; TODO:
-;; - remove nvp/defs and nvp/modedefs and associated functions
+
 ;; - parallel pkg install
 ;;   https://github.com/tttuuu888/.emacs.d/blob/master/install.el
 ;; - generate autoloads / compile installed modes
@@ -119,11 +119,93 @@ correspond to previously loaded files (`package--list-loaded-files')."
 ;; (require 'autoload)
 (defvar version-control)
 (defvar autoload-timestamps)
+;; Update the main loaddefs files from directories with autoloads
+;; as well as the subdirs that need autoloads and compilation.
+;;;###autoload
+(defun nvp-update-all-autoloads (&optional arg force)
+  "Update loaddefs for configs and extensions.
+With prefix ARG recompile all extension files. 
+With double prefix, FORCE compile all .el files with associated .elc file."
+  (interactive "P")
+  (cl-loop for (defs . dirs) in `(,(cons nvp/auto nvp/config)
+                                  ,(cons nvp/auto-site (list nvp/site)))
+     for generated-autoload-file = defs
+     do
+       (package-autoload-ensure-default-file defs)
+       (mapc #'update-directory-autoloads dirs)
+       (let ((buf (find-buffer-visiting defs)))
+         (when buf (kill-buffer buf)))
+     when arg                           ;byte-compile as well
+     do (dolist (dir dirs)
+          ;; compile all .el files in site-lisp with prefix
+          (nvp-package-subdir-compile dir (and (string= dir nvp/auto-site) arg 0)
+                                      (or force (equal arg '(16)))))))
+
+;;;###autoload
+(defun nvp-package-update-dir (name pkg-dir &optional arg force)
+  "Update directory PKG-DIR to autoloads NAME file and compile.
+ARG and FORCE are passed to `byte-recompile-directory'."
+  (package-generate-autoloads name pkg-dir)
+  (add-to-list 'load-path pkg-dir)
+  (nvp-package-subdir-compile pkg-dir arg force))
+
+;;;###autoload
+(defun nvp-package-directory-dwim (dir)
+  "Guess the autoload target and whether to compile. Compile notation
+R=recompile, F=force, P=if prefix.
+
+1. `nvp/config'(R),  -> nvp/auto
+2. `site-lisp'/*/*' (F)                             -> nvp/auto-site
+3. './*[autoloads?|loaddefs].el' (P)                -> first match
+5. default (P)                                      -> prompt"
+  (interactive (list (read-directory-name "Directory: ")))
+  (let* ((generated-autoload-file
+          (or (and (member dir `(,nvp/config))
+                   nvp/auto)
+              (and (member nvp/site
+                           `(,(file-name-directory
+                               (directory-file-name dir))
+                             ,dir))
+                   nvp/auto-site)
+              (car-safe (directory-files dir t "autoloads?.el"))
+              (car-safe (directory-files dir t "loaddefs?.el"))
+              "default"))
+         (do-compile
+          (and (or (string= generated-autoload-file nvp/auto-site)
+                   current-prefix-arg)
+               0)))
+
+    (pcase generated-autoload-file
+      (`"default" (nvp-package-update-dir
+                  (read-from-minibuffer "Autoloads name: ") dir nil
+                  current-prefix-arg))
+      (_ (progn
+           (update-directory-autoloads dir)
+           (nvp-package-subdir-compile dir do-compile nil))))))
 
 
 ;; -------------------------------------------------------------------
 ;;; Compilation
 (defvar warning-minimum-level)
+
+;; Byte compile PKG-DIR and its subdirectories.  Just a wrapper around
+;; `byte-recompile-directory'.  If ARG is 0, compile all '.el' files,
+;; else if it is non-nil query the user.
+;; If FORCE, recompile all '.elc' files regardless.
+(defun nvp-package-subdir-compile (pkg-dir &optional arg force)
+  (let ((warning-minimum-level :error)
+        (save-silently inhibit-message)
+        (load-path load-path))
+    (byte-recompile-directory pkg-dir arg force)))
+
+;;;###autoload
+(defun nvp-package-recompile (lib)
+  "Force compile files in LIB directory."
+  (interactive (list (nvp-read "Recompile library: " :library)))
+  (let ((default-directory
+          (file-name-directory (locate-file lib load-path (get-load-suffixes)))))
+    (byte-recompile-directory default-directory 0 t)))
+
 (defun nvp-pkg--compile (nvp-pkg)
   "Byte-compile package.
 This assumes package has been activated."
@@ -150,6 +232,7 @@ An alist mapping package names to `nvp-pkg' structures.")
           (insert-file-contents filename))
         (setq nvp-pkg-archive-contents (cdr (read (current-buffer))))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Initialize
 (defvar nvp-pkg--initialized nil)
@@ -181,6 +264,7 @@ An alist mapping package names to `nvp-pkg' structures.")
 ;; (defun nvp-pkg--get-deps (pkg )
 ;;   )
 
+
 ;; -------------------------------------------------------------------
 ;;; Install
 
@@ -211,114 +295,6 @@ PKG can be a `nvp-pkg' or a symbol naming an available package in
                                     (symbol-name (car elt))))
                                 nvp-pkg-archive))
                   nil t)))))
-
-;; -------------------------------------------------------------------
-;;; Commands
-
-;; Update the main loaddefs files from directories with autoloads
-;; as well as the subdirs that need autoloads and compilation.
-;;;###autoload
-(defun nvp-update-all-autoloads (&optional arg force)
-  "Update loaddefs for configs and extensions.
-With prefix ARG recompile all extension files. 
-With double prefix, FORCE compile all .el files with associated .elc file."
-  (interactive "P")
-  (cl-loop for (defs . dirs) in `(,(cons nvp/auto
-                                         (list nvp/defs nvp/config nvp/modedefs))
-                                  ,(cons nvp/auto-site (list nvp/site)))
-     for generated-autoload-file = defs
-     do
-       (package-autoload-ensure-default-file defs)
-       (mapc #'update-directory-autoloads dirs)
-       (let ((buf (find-buffer-visiting defs)))
-         (when buf (kill-buffer buf)))
-     when arg                           ;byte-compile as well
-     do (dolist (dir dirs)
-          ;; compile all .el files in site-lisp with prefix
-          (nvp-package-subdir-compile dir (and (string= dir nvp/auto-site) arg 0)
-                                      (or force (equal arg '(16)))))))
-
-(defun nvp-package-update-modedefs (&optional arg force)
-  "Update autoloads/compile modedefs."
-  (interactive "P")
-  ;; FIXME: don't use anything in nvp/modedefs
-  ;; These don't get added to load-path, but instead need to be
-  ;; required when a specific mode is loaded
-  (dolist (dir (directory-files nvp/modedefs t))
-    (when (file-directory-p dir)
-      (unless (member (file-name-nondirectory dir) '("." ".."))
-        (package-generate-autoloads (file-name-nondirectory dir) dir)
-        ;; add to load-path for compilation
-        (add-to-list 'load-path dir)
-        (nvp-package-subdir-compile dir arg force))))
-  ;; Compile this directory as well
-  (nvp-package-subdir-compile nvp/modedefs arg force))
-
-;;;###autoload
-(defun nvp-package-update-dir (name pkg-dir &optional arg force)
-  "Update directory PKG-DIR to autoloads NAME file and compile.
-ARG and FORCE are passed to `byte-recompile-directory'."
-  (package-generate-autoloads name pkg-dir)
-  (add-to-list 'load-path pkg-dir)
-  (nvp-package-subdir-compile pkg-dir arg force))
-
-;;;###autoload
-(defun nvp-package-directory-dwim (dir)
-  "Guess the autoload target and whether to compile. Compile notation
-R=recompile, F=force, P=if prefix.
-
-1. `nvp/config'(R), `nvp/defs'(F), `nvp/modedefs'(R) -> nvp/auto
-2. `site-lisp'/*/*' (F)                             -> nvp/auto-site
-3. './*[autoloads?|loaddefs].el' (P)                -> first match
-5. default (P)                                      -> prompt"
-  (interactive (list (read-directory-name "Directory: ")))
-  (let* ((generated-autoload-file
-          (or (and (member dir `(,nvp/modedefs
-                                 ,nvp/config 
-                                 ,nvp/defs))
-                   nvp/auto)
-              (and (member nvp/site
-                           `(,(file-name-directory
-                               (directory-file-name dir))
-                             ,dir))
-                   nvp/auto-site)
-              (car-safe (directory-files dir t "autoloads?.el"))
-              (car-safe (directory-files dir t "loaddefs?.el"))
-              "default"))
-         (do-compile
-          (and (or (string= dir nvp/defs)
-                   (string= generated-autoload-file nvp/auto-site)
-                   current-prefix-arg)
-               0)))
-
-    (pcase generated-autoload-file
-      (`"default" (nvp-package-update-dir
-                  (read-from-minibuffer "Autoloads name: ") dir nil
-                  current-prefix-arg))
-      (_ (progn
-           (update-directory-autoloads dir)
-           (nvp-package-subdir-compile dir do-compile nil))))))
-
-;; -------------------------------------------------------------------
-;;; Compile
-
-;; Byte compile PKG-DIR and its subdirectories.  Just a wrapper around
-;; `byte-recompile-directory'.  If ARG is 0, compile all '.el' files,
-;; else if it is non-nil query the user.
-;; If FORCE, recompile all '.elc' files regardless.
-(defun nvp-package-subdir-compile (pkg-dir &optional arg force)
-  (let ((warning-minimum-level :error)
-        (save-silently inhibit-message)
-        (load-path load-path))
-    (byte-recompile-directory pkg-dir arg force)))
-
-;;;###autoload
-(defun nvp-package-recompile (lib)
-  "Force compile files in LIB directory."
-  (interactive (list (nvp-read "Recompile library: " :library)))
-  (let ((default-directory
-          (file-name-directory (locate-file lib load-path (get-load-suffixes)))))
-    (byte-recompile-directory default-directory 0 t)))
 
 (provide 'nvp-pkg)
 ;;; nvp-pkg.el ends here

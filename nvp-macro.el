@@ -1430,7 +1430,10 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
                           (file-name-as-directory loc-name))))))
 
 (defun nvp--setup-subdirs (root &optional ignored)
-  (and (symbolp root) (setq root (symbol-value root)))
+  (setq root
+        (cond
+         ((symbolp root) (setq root (symbol-value root)))
+         ((consp root) (eval root))))
   (cl-remove-if
    (lambda (f)
      (or (not (file-directory-p f))
@@ -1535,6 +1538,7 @@ MODES is of form (feature . mode)."
      (defvar nvp/auto-site)
      (defvar nvp/devel)
      (defvar nvp/site)
+     (defvar nvp/modes)
      (defvar nvp/emacs)
      (defvar nvp/build)
      (defvar nvp/project)

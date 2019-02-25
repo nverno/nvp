@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 16:08:27>
+;; Last modified: <2019-02-24 19:32:09>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -128,15 +128,15 @@ or expansion."
 ;;; Jumping to abbrev
 
 ;;;###autoload
-(defun nvp-abbrev-jump-to-file (beg end &optional arg)
+(defun nvp-abbrev-jump-to-file (arg)
   "Jump to abbrev file, `nvp-abbrev-local-table', and search for insertion location.
 Prefix ARG specifies the length of the preceding text to use as abbrev.
 When abbrev text is selected, searching is done first by length then lexically."
-  (interactive "r\nP")
+  (interactive "P")
   (let* ((local-abbrevs (bound-and-true-p nvp-abbrev-local-table))
          (prefix (cond
-                  ((and (region-active-p) beg end)
-                   (nvp-abbrev--grab-region beg end))
+                  ((region-active-p)
+                   (nvp-abbrev--grab-region (region-beginning) (region-end)))
                   (arg (nvp-abbrev--grab-prev arg))
                   (t nil)))
          (expansion (and (consp prefix) (prog1 (cdr prefix)

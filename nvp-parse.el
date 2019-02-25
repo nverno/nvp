@@ -2,13 +2,15 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 04:53:28>
+;; Last modified: <2019-02-24 20:03:17>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
 
 ;;; Commentary:
 ;; #<marker at 10467 in which-func.el.gz>
+;; TODO:
+;; cache values by window -- see which-func
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)

@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-23 18:26:42>
+;; Last modified: <2019-02-24 20:07:38>
 ;; URL: https://github.com/nverno/elisp-utils
 ;; Package-Requires: 
 ;; Created: 31 October 2016
@@ -28,13 +28,13 @@
 ;;; FIXME:
 ;; - update / remove macroify
 ;; - update provides?
-;; - merge with nvp
 ;; - imenu filter out package related headers
 
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
+(require 'nvp-parse)
 (declare-function idomenu "idomenu")
 (declare-function paredit-mode "paredit")
 (declare-function nvp-toggle-local-variable "nvp-toggle")
@@ -67,6 +67,13 @@
     (defvar nvp-elisp-defuns-regexp defs-re)
     ;; additional let macros, pcase, cond, etc.
     (defvar nvp-elisp-var-binding-regexp vars-re)))
+
+;; -------------------------------------------------------------------
+;;; Generics
+
+(cl-defmethod nvp-parse-current-function
+  (&context (major-mode emacs-lisp-mode) &rest _args)
+  (or (add-log-current-defun) (cl-call-next-method)))
 
 ;; -------------------------------------------------------------------
 ;;; FIXME: functions to fix or remove

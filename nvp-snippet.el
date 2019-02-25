@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 04:50:11>
+;; Last modified: <2019-02-24 19:30:50>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -18,6 +18,57 @@
 (require 'yasnippet)
 (declare-function nvp-read-mode "nvp-read")
 
+;; -------------------------------------------------------------------
+;;; Snippet mode
+;; #<marker at 172452 in yasnippet.el>
+
+;; "'" should be prefix to enable quote wrapping etc.
+(modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
+(modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
+(modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
+
+(nvp-function-with-cache nvp-snippet-header-end ()
+  "Return marker at end of snippet header."
+  :local t
+  (save-excursion
+    (goto-char (point-min))
+    (when (search-forward "# --")
+      (point-marker))))
+
+(defsubst nvp-snippet-header-p (&optional pnt)
+  (< (or pnt (point)) (marker-position (nvp-snippet-header-end))))
+
+;; (defsubst nvp-snippet-code-p (&optional pnt)
+;;   ())
+
+;; -------------------------------------------------------------------
+;;; Utils
+
+(defun nvp-snippet-add-field (field value)
+  "Add FIELD with VALUE unless FIELD is already defined."
+  (save-excursion
+    (goto-char (point-min))
+    (let ((end (nvp-snippet-header-end)))
+      (condition-case nil
+          (when (re-search-forward (concat "^#\\s-*" field ":") end)
+            (message "%s already defined: %S" field
+                     (buffer-substring-no-properties (point) (point-at-eol))))
+        (error
+         (goto-char end)
+         (beginning-of-line)
+         (insert (format "# %s: %S\n" field value)))))))
+
+;; -------------------------------------------------------------------
+;;; Hooks
+(nvp-declare "" nvp-yas-inside-string nvp-yas-inside-comment)
+
+(defun nvp-snippet-before-save-hook ()
+  "Add conditions based on directory names."
+  (pcase (nvp-dfn)
+    (`"doc" (nvp-snippet-add-field "condition" '(nvp-yas-inside-string)))
+    (`"comments" (nvp-snippet-add-field "condition" '(nvp-yas-inside-comment)))
+    (_)))
+
 ;; ------------------------------------------------------------
 ;;; Jump to new snippet
 
@@ -26,7 +77,7 @@
 (defun nvp-jump-to-new-snippet (mode snippet-dir &optional do-dired text
                                      default-new-snippet)
   "Jump to a new snippet for MODE in snippet SNIPPET-DIR (creating if necessary).
-If DO-DIRED is non-nil, `dired' that directory instead of creating snippet.
+ If DO-DIRED is non-nil, `dired' that directory instead of creating snippet.
 If TEXT is non-nil use as `yas-selected-text'.
 DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (interactive
@@ -53,30 +104,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
       (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
       (snippet-mode)
       (yas-minor-mode)
-      (yas-expand-snippet default-new-snippet))
-    ;; reload / compile after save
-    ;; (add-hook 'after-save-hook 'nvp-snippet-reload nil 'local)
-    ))
-
-;; replace macros in snippet-mode with expansions
-;; #<marker at 21701 in macrostep.el>
-;; Reload directory after saving
-(defun nvp-snippet-reload (&optional dir compile)
-  (let* ((ddir (file-name-directory
-                (expand-file-name default-directory)))
-         (parent (file-name-nondirectory
-                  (directory-file-name 
-                   (file-name-directory (directory-file-name ddir)))))
-         ;; if in yas group folder, parent one extra directory up
-         (ddir (if (not (string= "snippets" parent))
-                   (file-name-directory
-                    (directory-file-name
-                     (file-name-directory ddir)))
-                 ddir)))
-    (when compile
-      (yas-compile-directory (or dir ddir)))
-    (yas-load-directory
-     (or dir ddir))))
+      (yas-expand-snippet default-new-snippet))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -96,29 +124,6 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 (defun nvp-snippet-help-at-point ()
   (interactive)
   (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
-
-;; -------------------------------------------------------------------
-;;; Snippet mode enhancements
-;; #<marker at 172452 in yasnippet.el>
-
-;; "'" should be prefix to enable quote wrapping etc.
-(modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
-(modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
-(modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
-
-(nvp-function-with-cache nvp-snippet-header-end ()
-  "Return marker at end of snippet header."
-  :local t
-  (save-excursion
-    (goto-char (point-min))
-    (when (search-forward "# --")
-      (point-marker))))
-
-(defsubst nvp-snippet-header-p (&optional pnt)
-  (< (or pnt (point)) (marker-position (nvp-snippet-header-end))))
-
-;; (defsubst nvp-snippet-code-p (&optional pnt)
-;;   ())
 
 (provide 'nvp-snippet)
 ;;; nvp-snippet.el ends here

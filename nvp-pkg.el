@@ -3,19 +3,35 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-25 01:15:23>
+;; Last modified: <2019-02-25 07:17:18>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
 
 ;;; Commentary:
 
 ;;; TODO:
-
+;; Archive:
+;; - create pkg recipes and populate cache
+;; Refactor regular package installs:
 ;; - parallel pkg install
 ;;   https://github.com/tttuuu888/.emacs.d/blob/master/install.el
-;; - generate autoloads / compile installed modes
-;; - dependencies for installed modes
-;; - can reuse from package.el: update autoloads/compile
+;; Autoloads / compile
+;; - generate individually instead of current single
+;; - better compile logging
+;; - refactor build scripts
+;; Load-paths
+;; - add installed pkg load paths
+;; Install
+;; - write install interface
+;; - external install targets
+;; - non-standard recipe installs
+;; - external target show help / available targets
+;; Display package info / dependencies
+;; Interface:
+;; - will need to refactor update-all-autoloads
+;; - how to change current install-on-demand?
+;; Uninstall
+;; - support uninstalling pkgs
 
 ;;; Code:
 (eval-when-compile
@@ -119,6 +135,128 @@ correspond to previously loaded files (`package--list-loaded-files')."
 ;; (require 'autoload)
 (defvar version-control)
 (defvar autoload-timestamps)
+
+
+;; -------------------------------------------------------------------
+;;; Compilation
+(defvar warning-minimum-level)
+
+;; Byte compile PKG-DIR and its subdirectories.  Just a wrapper around
+;; `byte-recompile-directory'.  If ARG is 0, compile all '.el' files,
+;; else if it is non-nil query the user.
+;; If FORCE, recompile all '.elc' files regardless.
+(defun nvp-package-subdir-compile (pkg-dir &optional arg force)
+  (let ((warning-minimum-level :error)
+        (save-silently inhibit-message)
+        (load-path load-path))
+    (byte-recompile-directory pkg-dir arg force)))
+
+;;;###autoload
+(defun nvp-package-recompile (lib)
+  "Force compile files in LIB directory."
+  (interactive (list (nvp-read "Recompile library: " :library)))
+  (let ((default-directory
+          (file-name-directory (locate-file lib load-path (get-load-suffixes)))))
+    (byte-recompile-directory default-directory 0 t)))
+
+(defun nvp-pkg--compile (nvp-pkg)
+  "Byte-compile package.
+This assumes package has been activated."
+  (let ((warning-minimum-level :error)
+        (save-silently inhibit-message)
+        (load-path load-path))
+    (byte-recompile-directory (nvp-pkg-dir nvp-pkg) 0 t)))
+
+
+;; -------------------------------------------------------------------
+;;; Archives
+;; list available packages
+
+(defvar nvp-pkg-archive-contents nil
+  "Store list of available packages.
+An alist mapping package names to `nvp-pkg' structures.")
+
+(defun nvp-pkg-refresh-contents ()
+  "Read archive contents."
+  (let ((filename (expand-file-name "archive-contents" nvp-pkg-directory)))
+    (when (file-exists-p filename)
+      (with-temp-buffer
+        (let ((coding-system-for-read 'utf-8))
+          (insert-file-contents filename))
+        (setq nvp-pkg-archive-contents (cdr (read (current-buffer))))))))
+
+
+;; -------------------------------------------------------------------
+;;; Initialize
+
+(defvar nvp-pkg--initialized nil)
+
+(defun nvp-pkg-initialize (&optional no-activate)
+  "Load packages and activate them unless NO-ACTIVATE is non-nil."
+  (interactive)
+  (when (and nvp-pkg--initialized (not after-init-time))
+    (lwarn '(package reinitialization) :warning
+           "Unnecessary call to `nvp-pkg-initialize' in init file"))
+  (setq nvp-pkg-alist (nvp-pkg-refresh-contents))
+  (setq nvp-pkg--initialized t)
+  (unless no-activate
+    (nvp-pkg-activate-all)))
+
+(defun nvp-pkg-activate-all ()
+  "Activate all installed packages."
+  (unless nvp-pkg--initialized
+    (nvp-pkg-initialize t))
+  (dolist (elt nvp-pkg-alist)
+    (condition-case err
+        (nvp-pkg-activate (car elt))
+      (error (message "%s" (error-message-string err))))))
+
+;; -------------------------------------------------------------------
+;;; Description
+;; TODO: pretty print pkg details
+;; ;; `package--get-deps' to get package installed info
+;; (defun nvp-pkg--get-deps (pkg )
+;;   )
+
+
+;; -------------------------------------------------------------------
+;;; Install
+
+(defun nvp-pkg-installed-p (pkg)
+  "Return non-nil if PKG is installed.
+PKG can either be a `nvp-pkg' or symbol."
+  (cond
+   ((nvp-pkg-p pkg)
+    (memq (nvp-pkg-name pkg) nvp-pkg-alist))
+   (t (memq pkg nvp-pkg-alist))))
+
+;;; TODO: #<marker at 84915 in package.el>
+;;;###autoload
+(defun nvp-pkg-install (pkg)
+  "Install PKG.
+PKG can be a `nvp-pkg' or a symbol naming an available package in 
+`nvp-pkg-archives'."
+  (interactive
+   (progn
+     ;; Initialize to get list of package symbols for completion
+     (unless nvp-pkg--initialized
+       (nvp-pkg-initialize t))
+     (unless nvp-pkg-archive-contents
+       (nvp-pkg-refresh-contents))
+     (list (intern (completing-read
+                    "Install nvp pkg: "
+                    (delq nil
+                          (mapcar (lambda (elt)
+                                    (unless (nvp-pkg-installed-p (car elt))
+                                      (symbol-name (car elt))))
+                                  nvp-pkg-archive-contents))
+                    nil t)))))
+  pkg)
+
+
+;; -------------------------------------------------------------------
+;;; Old commands
+
 ;; Update the main loaddefs files from directories with autoloads
 ;; as well as the subdirs that need autoloads and compilation.
 ;;;###autoload
@@ -127,7 +265,7 @@ correspond to previously loaded files (`package--list-loaded-files')."
 With prefix ARG recompile all extension files. 
 With double prefix, FORCE compile all .el files with associated .elc file."
   (interactive "P")
-  (cl-loop for (defs . dirs) in `(,(cons nvp/auto nvp/config)
+  (cl-loop for (defs . dirs) in `(,(cons nvp/auto (list nvp/config))
                                   ,(cons nvp/auto-site (list nvp/site)))
      for generated-autoload-file = defs
      do
@@ -182,119 +320,6 @@ R=recompile, F=force, P=if prefix.
       (_ (progn
            (update-directory-autoloads dir)
            (nvp-package-subdir-compile dir do-compile nil))))))
-
-
-;; -------------------------------------------------------------------
-;;; Compilation
-(defvar warning-minimum-level)
-
-;; Byte compile PKG-DIR and its subdirectories.  Just a wrapper around
-;; `byte-recompile-directory'.  If ARG is 0, compile all '.el' files,
-;; else if it is non-nil query the user.
-;; If FORCE, recompile all '.elc' files regardless.
-(defun nvp-package-subdir-compile (pkg-dir &optional arg force)
-  (let ((warning-minimum-level :error)
-        (save-silently inhibit-message)
-        (load-path load-path))
-    (byte-recompile-directory pkg-dir arg force)))
-
-;;;###autoload
-(defun nvp-package-recompile (lib)
-  "Force compile files in LIB directory."
-  (interactive (list (nvp-read "Recompile library: " :library)))
-  (let ((default-directory
-          (file-name-directory (locate-file lib load-path (get-load-suffixes)))))
-    (byte-recompile-directory default-directory 0 t)))
-
-(defun nvp-pkg--compile (nvp-pkg)
-  "Byte-compile package.
-This assumes package has been activated."
-  (let ((warning-minimum-level :error)
-        (save-silently inhibit-message)
-        (load-path load-path))
-    (byte-recompile-directory (nvp-pkg-dir nvp-pkg) 0 t)))
-
-
-;; -------------------------------------------------------------------
-;;; Archives
-;; list available packages
-
-(defvar nvp-pkg-archive-contents nil
-  "Store list of available packages.
-An alist mapping package names to `nvp-pkg' structures.")
-
-(defun nvp-pkg-read-archive-contents ()
-  "Read archive contents."
-  (let ((filename (expand-file-name "archive-contents" nvp-pkg-directory)))
-    (when (file-exists-p filename)
-      (with-temp-buffer
-        (let ((coding-system-for-read 'utf-8))
-          (insert-file-contents filename))
-        (setq nvp-pkg-archive-contents (cdr (read (current-buffer))))))))
-
-
-;; -------------------------------------------------------------------
-;;; Initialize
-(defvar nvp-pkg--initialized nil)
-
-(defun nvp-pkg-initialize (&optional no-activate)
-  "Load packages and activate them unless NO-ACTIVATE is non-nil."
-  (interactive)
-  (when (and nvp-pkg--initialized (not after-init-time))
-    (lwarn '(package reinitialization) :warning
-           "Unnecessary call to `nvp-pkg-initialize' in init file"))
-  (setq nvp-pkg-alist (nvp-pkg-read-archive-contents))
-  (setq nvp-pkg--initialized t)
-  (unless no-activate
-    (nvp-pkg-activate-all)))
-
-(defun nvp-pkg-activate-all ()
-  "Activate all installed packages."
-  (unless nvp-pkg--initialized
-    (nvp-pkg-initialize t))
-  (dolist (elt nvp-pkg-alist)
-    (condition-case err
-        (nvp-pkg-activate (car elt))
-      (error (message "%s" (error-message-string err))))))
-
-;; -------------------------------------------------------------------
-;;; Description
-;; TODO: pretty print pkg details
-;; ;; `package--get-deps' to get package installed info
-;; (defun nvp-pkg--get-deps (pkg )
-;;   )
-
-
-;; -------------------------------------------------------------------
-;;; Install
-
-(defun nvp-pkg-installed-p (pkg)
-  "Return non-nil if PKG is installed.
-PKG can either be a `nvp-pkg' or symbol."
-  (cond
-   ((nvp-pkg-p pkg)
-    (memq (nvp-pkg-name pkg) nvp-pkg-alist))
-   (t (memq pkg nvp-pkg-alist))))
-
-;;;###autoload
-(defun nvp-pkg-install (pkg)
-  "Install PKG.
-PKG can be a `nvp-pkg' or a symbol naming an available package in 
-`nvp-pkg-archives'."
-  (interactive
-   ;; Initialize to get list of package symbols for completion
-   (unless nvp-pkg--initialized
-     (nvp-pkg-initialize t))
-   (unless nvp-pkg-archive
-     (nvp-pkg-refresh-contents))
-   (list (intern (completing-read
-                  "Install nvp pkg: "
-                  (delq nil
-                        (mapcar (lambda (elt)
-                                  (unless (nvp-pkg-installed-p (car elt))
-                                    (symbol-name (car elt))))
-                                nvp-pkg-archive))
-                  nil t)))))
 
 (provide 'nvp-pkg)
 ;;; nvp-pkg.el ends here

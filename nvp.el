@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 18:23:38>
+;; Last modified: <2019-02-25 05:39:25>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 ;; Version: 1.0.0
@@ -87,7 +87,7 @@
 ;; -------------------------------------------------------------------
 ;;; Faces
 
-(defface nvp-gaudy-variable-face
+(defface nvp-italic-variable-face
   `((((class grayscale) (background light))
      (:background "Gray90" :weight bold :slant italic))
     (((class grayscale) (background dark))
@@ -98,6 +98,19 @@
      (:inherit font-lock-variable-name-face :weight bold :slant italic))
     (t (:weight bold)))
   "Gaudy variable font locking - bold & italicized."
+  :group 'nvp)
+
+(defface nvp-italic-type-face
+  `((((class grayscale) (background light))
+     (:background "Gray90" :weight bold :slant italic))
+    (((class grayscale) (background dark))
+     (:foreground "Gray80" :weight bold :slant italic))
+    (((class color) (background light))
+     (:inherit font-lock-type-face :weight bold :slant italic))
+    (((class color) (background dark))
+     (:inherit font-lock-type-face :weight bold :slant italic))
+    (t (:weight bold :slant italic)))
+  "Gaudy type face - bold & italicized."
   :group 'nvp)
 
 ;; -------------------------------------------------------------------

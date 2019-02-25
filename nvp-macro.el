@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 01:15:33>
+;; Last modified: <2019-02-25 02:56:40>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -168,9 +168,6 @@ use either `buffer-file-name' or `buffer-name'."
            (prog1 str
              (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
 
-;; -------------------------------------------------------------------
-;;; Syntax
-
 (defmacro nvp-within-bounds-of-thing-or-region (thing beg end &rest body)
   "Execute BODY with region widened to bounds of THING at point \
 unless region is active.
@@ -182,6 +179,9 @@ BEG and END are bound to the bounds."
          (cl-destructuring-bind (,beg . ,end) (bounds-of-thing-at-point ,thing)
            ,@body))
      ,@body))
+
+;; -------------------------------------------------------------------
+;;; Syntax
 
 (defmacro nvp-unless-in-comment-or-string (&rest body)
   "Execute BODY unless currently in a string or comment."
@@ -627,6 +627,7 @@ If BUFFER is non-nil, set local bindings in BUFFER."
        (with-current-buffer buff
          ,@body))))
 
+;; TODO: evil-with-view-buffer looks good
 (defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."

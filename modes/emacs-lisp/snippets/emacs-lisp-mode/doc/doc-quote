@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: \\[...]
-# key: _
+# name: doc-quote
+# key: __
 # condition: (nvp-yas-inside-string)
 # --
-\\\\[${1:universal-argument}]
+\\='

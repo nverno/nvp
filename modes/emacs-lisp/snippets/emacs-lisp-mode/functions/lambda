@@ -2,4 +2,4 @@
 # name: lambda
 # key: fn
 # --
-#'(lambda (${1:x}) $2)
+(lambda (${1:x}) $2)

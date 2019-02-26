@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: interactive ido
-# key: iido
-# --
-(interactive
-  (list (if #'ido-completing-read
-            (ido-completing-read $1)
-          (completing-read $1))))

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 19:50:26>
+;; Last modified: <2019-02-26 16:03:08>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
@@ -78,14 +78,18 @@
 ;; -------------------------------------------------------------------
 ;;; Fontify 
 
-;; Add face to region.
 ;;;###autoload
-(defun nvp-font-fontify-region (beg end face)
-  (interactive (list
-                (region-beginning)
-                (region-end)
-                (read-face-name "Face")))
+(defun nvp-font-fontify-region-face (face &optional thing beg end)
+  "Fontify region or `thing-at-point' with font FACE.
+With _ "
+  (interactive
+   (list
+    (read-face-name "Fontifaction face: ")
+    (nvp-region-or-batp (eq 4 (prefix-numeric-value current-prefix-arg)))))
   (put-text-property beg end 'font-lock-face face))
+
+(defun nvp-font-refresh-defaults ()
+  )
 
 ;; -------------------------------------------------------------------
 ;;; Assorted 

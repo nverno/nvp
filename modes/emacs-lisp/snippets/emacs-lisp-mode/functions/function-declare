@@ -2,4 +2,4 @@
 # name: function declare
 # key: fdecl
 # --
-(declare (pure t) (side-effect-free t))
+(declare ${1:(pure t) }${2:(side-effect-free t)})

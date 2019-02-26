@@ -1,0 +1,24 @@
+#+TITLE: Awk
+
+* Functions
+- Arrays passed by reference
+- Gawk allows indirect function calls with '@func()' where ~func~ is a string,
+  like function pointers in c/c++. Can be passed to functions, etc.
+
+** Peculiarities
+- There can't be a leading space before function calls
+- Function local parameters are indicated by extra whitespace in the function
+parameters, eg.
+
+#+BEGIN_SRC awk
+function f(passed-param1, passed-param2,    local-var) { ... }
+#+END_SRC
+
+* Variables
+- ~PROCINFO~ contains info about current process, ~PROCINFO["identifiers"]~ will
+  list all the builtin functions/variables + user-defined
+- ~FUNTAB~ is array of user defined functions
+- ENVIRON contains current environment, but modification isn't passed to
+  commands invoked with ~system~
+
+

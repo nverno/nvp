@@ -2,5 +2,5 @@
 # name: defun
 # key: fun
 # --
-(defun $1 ($2)
+(defun `(nvp-yas-bfn-no-ext)`-$1 ($2)
   $0)

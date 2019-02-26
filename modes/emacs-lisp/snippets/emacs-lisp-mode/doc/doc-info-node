@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: \\[...]
-# key: _
+# name: info-node
+# key: info
 # condition: (nvp-yas-inside-string)
 # --
-\\\\[${1:universal-argument}]
+See Info node \`(${1:elisp}) $2'.

@@ -1,6 +1,7 @@
 # -*- mode: snippet -*-
-# name: \\[...]
-# key: _
+# name: doc-keybindings
+# key: _b
 # condition: (nvp-yas-inside-string)
 # --
-\\\\[${1:universal-argument}]
+Key bindings:
+\\{${1}-mode-map}

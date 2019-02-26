@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: when-proc
-# key: when-proc
+# key: whenp
 # --
 (when-let* ((proc (get-buffer-process (current-buffer))))
   $1)

@@ -2,6 +2,6 @@
 # name: interactive defun with prefix
 # key: funp
 # --
-(defun $1 (arg$2)
-  (interactive "P")
+(defun `(nvp-bfn-no-ext)`-$1 (${2:arg})
+  (interactive${3: "P"})
   $0)

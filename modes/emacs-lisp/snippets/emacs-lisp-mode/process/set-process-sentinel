@@ -2,7 +2,7 @@
 # name: set-process-setinel
 # key: sps
 # --
-set-process-sentinel $1
+(set-process-sentinel $1
   #'(lambda (p _m)
     (when (zerop (process-exit-status p))
-      $2))
+      $2)))

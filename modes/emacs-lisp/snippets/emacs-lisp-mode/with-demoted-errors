@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: with-demoted-errors
+# key: wde
+# --
+(with-demoted-errors "Error in `(nvp-parse-current-function)`: %S"
+  $0)

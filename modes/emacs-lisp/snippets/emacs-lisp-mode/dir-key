@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: dir local binding
-# key: dir-key
-# group: dir-local
+# key: key
+# condition: (string= (nvp-yas-bfn) ".dir-locals.el")
 # --
 ((nil (eval . (global-set-key (kbd "$1") '$2))))

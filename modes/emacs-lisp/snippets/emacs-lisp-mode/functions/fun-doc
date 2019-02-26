@@ -2,7 +2,7 @@
 # name: defun interactive with doc
 # key: fundoc
 # --
-(defun $1 ($2)
+(defun `(nvp-yas-bfn-no-ext)`-$1 (${2:arg})
   "$3"
-  (interactive$4)
+  (interactive${4: "P"})
   $0)

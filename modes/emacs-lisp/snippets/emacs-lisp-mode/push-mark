@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: push-mark
+# key: push-mark
+# --
+(or (not (eq this-command '`(nvp-parse-current-function)`))
+      (eq last-command '`(nvp-parse-current-function)`)
+      (and transient-mark-mode mark-active)
+      (push-mark))

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 15:11:43>
+;; Last modified: <2019-02-25 23:39:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  6 February 2019
@@ -83,7 +83,8 @@
 (define-derived-mode abbrev-table-mode emacs-lisp-mode "Abbrev-Table"
   "Simple abbrev table extension mode."
   :abbrev-table nil
-  (setq-local imenu-generic-expression '((nil "^(define-abbrev-table '\\(.*\\))" 1))))
+  (setq-local imenu-generic-expression
+              '((nil "^(define-abbrev-table '\\([^ \n]+\\)" 1))))
 
 ;;;###autoload
 (defun nvp-abbrev-edit-hook ()

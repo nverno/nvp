@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 04:51:47>
+;; Last modified: <2019-02-26 03:45:35>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -19,6 +19,9 @@
 
 ;;; FIXME: check for package on load-history before running setup routine
 ;; should cache packages w/ local variables as structs
+;; - only search in setup when not loaded
+;;   `load-history-regexp', `load-history-filename-element'
+;; - use mode-local ?, better way to set many mode-local variables
 
 ;; -------------------------------------------------------------------
 ;;; Helpers
@@ -26,6 +29,7 @@
 ;; alternative macro version to find at compile time -- falls back to this
 ;;;###autoload
 (defun nvp-setup-program (name &optional path)
+  "Lookup program in preferable locations before falling back to PATH."
   (and (symbolp name) (setq name (symbol-name name)))
   (and path (substitute-env-in-file-name path))
   (or (nvp-with-gnu/w32
@@ -40,10 +44,11 @@
 ;;;###autoload
 (defun nvp-setup-smie-bindings (&optional debug)
   "Locally override minor mode bindings when smie functions are available."
-  (nvp-bindings "smartparens" nil :local t
+  (nvp-use-minor-mode-overriding-map smartparens-mode
     ("C-M-f"    . smie-forward-sexp-command)
     ("C-M-b"    . smie-backward-sexp-command)
     ("<f2> q c" . smie-close-block))
+  ;; FIXME: only activate if mode uses smie?
   (when debug
     (nvp-bind-keys nvp-debug-keymap
       :predicate (featurep 'smie)
@@ -55,6 +60,7 @@
 
 ;; ------------------------------------------------------------
 ;;; Setup
+;; FIXME: better way to implement these
 
 ;;;###autoload
 (defun nvp-setup-package-root (pkg)

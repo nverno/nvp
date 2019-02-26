@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 00:39:29>
+;; Last modified: <2019-02-26 00:08:16>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -37,6 +37,10 @@
 
 (defun nvp-move-forward-defun (&rest _ignored)
   (interactive)
+  (or (not (eq this-command 'nvp-move-forward-defun))
+      (eq last-command 'nvp-move-forward-defun)
+      (and transient-mark-mode mark-active)
+      (push-mark))
   (beginning-of-defun -1))
 
 (defalias 'nvp-move-backward-defun 'beginning-of-defun)

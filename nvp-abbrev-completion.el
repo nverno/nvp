@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 16:18:08>
+;; Last modified: <2019-02-26 00:20:22>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -49,23 +49,34 @@
                         (if pred (funcall pred) t)))
                     (nvp-abbrev-completion--tables)))
 
+;; default grab previous abbrev when no regexp -- see `abbrev--before-point'
+(defsubst nvp-abbrev-completion--grab ()
+  (let ((lim (point)) start end)
+    (backward-word 1)
+    (setq start (point))
+    (forward-word 1)
+    (setq end (min (point) lim))
+    (list (buffer-substring start end) start end)))
+
 ;; Return first prefix from tables that satisfies its `:enable-function'
 ;; and matches its table's `:regexp'
 (defun nvp-abbrev-completion--prefix ()
   (cl-loop for tab in (nvp-abbrev-completion--active-tables)
      as re = (abbrev-table-get (symbol-value tab) :regexp)
-     when (and re (looking-back re (line-beginning-position)))
-     return (match-string-no-properties 1)))
+     if (not re)
+     return (nvp-abbrev-completion--grab)
+     when (looking-back re (line-beginning-position))
+     return (list (match-string-no-properties 1) (match-beginning 0) (point))))
 
 ;; return beginning position of prefix for hippie
 (defun nvp-abbrev-completion-prefix-beg ()
-  (and (nvp-abbrev-completion--prefix)
-       (match-beginning 0)))
+  (when-let ((abbrev (nvp-abbrev-completion--prefix)))
+    (cadr abbrev)))
 
 ;; return prefix, either matching a table's predicates or defaulting to the
 ;; previous symbol
 (defun nvp-abbrev-completion-prefix ()
-  (or (nvp-abbrev-completion--prefix)
+  (or (car-safe (nvp-abbrev-completion--prefix))
       (nvp-grab-symbol)))
 
 ;; Return completion candidates, taking into account per-table :regexp

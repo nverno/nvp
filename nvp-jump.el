@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 21:11:37>
+;; Last modified: <2019-02-25 22:57:42>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -162,7 +162,7 @@ or C-c C-s to switch major modes. " :keys t))))
 ;;;###autoload
 (defun nvp-jump-to-book (dir &optional action)
   "Jump to book, either opening in emacs (eg. pdfs) or external for epubs.
-With double prefix, prompt for directory (default `nvp-local-books-directory'
+With double prefix, prompt for directory (default `nvp-local-books-directories'
 or `nvp/books'. 
 With triple prefix, offer recursive results."
   (interactive
@@ -172,8 +172,8 @@ With triple prefix, offer recursive results."
                   ((> arg 4)
                    (expand-file-name
                     (read-directory-name "Book Directory: " nvp/books)))
-                  ((bound-and-true-p nvp-local-books-directory)
-                   nvp-local-books-directory)
+                  ((bound-and-true-p nvp-local-books-directories)
+                   nvp-local-books-directories)
                   (t (expand-file-name "programming" nvp/books)))))
      (list root arg)))
   (let* ((files (mapcar (lambda (f) (file-relative-name f dir))
@@ -238,6 +238,21 @@ With double prefix, set coding to utf-8."
 (defun nvp-jump-to-dir (dir action)
   (interactive
    (list (if (eq (prefix-numeric-value current-prefix-arg) 16) nvp/project nvp/class)
+         current-prefix-arg))
+  (nvp-display-location dir :ido action #'ido-find-file-in-dir))
+
+;;;###autoload
+(defun nvp-jump-to-source (dir action)
+  "Jump to local source or default devel directory."
+  (interactive
+   (list (cond
+          ((eq 16 (prefix-numeric-value current-prefix-arg)) "~")
+          ((bound-and-true-p nvp-local-src-directories)
+           (if (> 1 (length nvp-local-src-directories))
+               (nvp-completing-read "Source directory: " nvp-local-src-directories
+                                    nil t nil 'nvp-read-config-history)
+             nvp-local-src-directories))
+          (t nvp/devel))
          current-prefix-arg))
   (nvp-display-location dir :ido action #'ido-find-file-in-dir))
 

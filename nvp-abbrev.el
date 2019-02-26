@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 19:32:09>
+;; Last modified: <2019-02-25 23:52:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -48,6 +48,14 @@
 (defun nvp-abbrev--read-table (prompt choices)
   (nvp-completing-read prompt choices nil t nil 'nvp-abbrev--read-history))
 
+(defun nvp-abbrev--grab-prev (nchars)
+  "Grab preceding NCHARS to match against in abbrev table."
+  (save-excursion
+    (let ((end (point))
+          (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) nchars)))
+          (start (point)))
+      (buffer-substring-no-properties start end))))
+
 (cl-defgeneric nvp-abbrev--grab-region (beg end)
   "Generic function to return abbrev from region BEG to END.
 Should return sexp of form (abbrev . expansion)."
@@ -65,14 +73,6 @@ With prefix, don't split region by whitespace."
                       (buffer-substring-no-properties beg end) nil 'omit))))
          (exp (string-trim str "[ \t\n\(]" "[ \t\n\)]")))
     (cons (nvp-abbrev--lisp-transformer exp) exp)))
-
-(defun nvp-abbrev--grab-prev (nchars)
-  "Grab preceding NCHARS to match against in abbrev table."
-  (save-excursion
-    (let ((end (point))
-          (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) nchars)))
-          (start (point)))
-      (buffer-substring-no-properties start end))))
 
 (cl-defgeneric nvp-abbrev--table-name (&optional local-table _abbrev _exp)
   "Generic function to return the name of abbrev file to use with given abbrev \

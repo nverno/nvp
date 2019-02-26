@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 21:11:23>
+;; Last modified: <2019-02-26 04:56:10>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -480,13 +480,12 @@ If BUFFER is non-nil, set local bindings in BUFFER."
 ;; Overrides a minor mode keybinding for the local buffer by creating
 ;; or altering keymaps stored in buffer-local variable
 ;; `minor-mode-overriding-map-alist'.
-(defmacro nvp-use-minor-mode-overriding-map (mode bindings)
+(defmacro nvp-use-minor-mode-overriding-map (mode &rest bindings)
   "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'."
   (declare (indent defun))
   `(let ((map (make-sparse-keymap)))
-     (macroexp-progn
-      (cl-loop for (k . b) in ,bindings
-         collect `(nvp-def-key ,map ,k ,b)))
+     ,@(cl-loop for (k . b) in bindings
+          collect `(nvp-def-key map ,k ,b))
      (push (cons ,mode map) minor-mode-overriding-map-alist)))
 
 (defmacro nvp-use-local-keymap (keymap &rest bindings)
@@ -1045,7 +1044,7 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
   "Create a simple cache for FUNC results. 
 Cache is either defvar (possibly local) so is updated when set to nil,
 or PREDICATE is non-nil and returns nil."
-  (declare (indent defun) (debug defun) (doc-string 3))
+  (declare (indent defun) (debug (sexp sexp sexp &form body)) (doc-string 3))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
   (let ((cache (make-symbol (concat (if (symbolp func) (symbol-name func) func)

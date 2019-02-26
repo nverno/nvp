@@ -15,6 +15,7 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'nvp)
+(require 'man)
 
 ;; -------------------------------------------------------------------
 ;;; Parsing Man output
@@ -47,7 +48,10 @@
       (buffer-substring start (1- (point))))))
 
 ;; get switches from man section from START-RE to END-RE
-(defun nvp-help-man-switches (section-re start-re end-re)
+;; default to start of SECTION-RE to beginning of next section
+(defun nvp-help-man-switches (section-re &optional start-re end-re)
+  (or start-re (setq start-re ""))
+  (or end-re (setq end-re Man-heading-regexp))
   (goto-char (point-min))
   (when (re-search-forward section-re)
     (forward-line)
@@ -60,7 +64,7 @@
         (while (not (looking-at-p end-re))
           (if (not (looking-at flag-re))
               (forward-line)
-            (setq key (match-string 1))
+            (setq key (match-string-no-properties 1))
             ;; get description for key
             (setq start (match-end 0))
             (forward-line)
@@ -70,7 +74,7 @@
              (cons key
                    (replace-regexp-in-string
                     "^\\s-+\\|\t\\|\n$" ""
-                    (buffer-substring start (1- (point)))))
+                    (buffer-substring-no-properties start (1- (point)))))
              res))))
       (nreverse res))))
 

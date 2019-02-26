@@ -4,10 +4,8 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 05:39:25>
-;; Package-Requires: 
+;; Last modified: <2019-02-26 02:58:23>
 ;; Created:  2 November 2016
-;; Version: 1.0.0
 
 ;;; Commentary:
 
@@ -19,11 +17,6 @@
   (require 'nvp-macro))
 (require 'nvp-local)
 (declare-function company-grab-symbol "company")
-
-;;; TODO:
-;; - only search in setup when not loaded
-;;   `load-history-regexp', `load-history-filename-element'
-;; - use mode-local ?, better way to set many mode-local variables
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'ido-completing-read)
@@ -42,7 +35,7 @@
 (defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
 (defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
 (defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
-(defvar nvp-abbrev-prefix-chars ":<>=/#.[:alnum:]"
+(defvar nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
   "Chars to include in abbrev prefixes")
 
 ;; Snippets
@@ -57,9 +50,10 @@
 (defvar nvp-default-org-file "gtd.org")
 (nvp-defvar nvp-default-hooks-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
 (nvp-defvar nvp-build-init-dir (expand-file-name "build" nvp/emacs))
-(defvar-local nvp-local-notes-file ())
-(defvar-local nvp-local-books-directory ())
-(defvar-local nvp-local-uris nil)
+(defvar-local nvp-local-notes-file () "Local notes/todo to jump dwim.")
+(defvar-local nvp-local-books-directories () "Local book directory/s.")
+(defvar-local nvp-local-uris () "Local URIs for webjumping.")
+(defvar-local nvp-local-src-directories () "Local source dirs to jump.")
 
 ;; installs
 (nvp-defvar nvp-install-makefile (expand-file-name "Makefile" nvp/install))

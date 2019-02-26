@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 18:08:36>
+;; Last modified: <2019-02-26 11:54:02>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 February 2019
@@ -20,7 +20,7 @@
 ;; -------------------------------------------------------------------
 ;;; Hydras
 
-;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
+;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-basic-auto")
 (nvp-hydra-set-property 'nvp-hydra-goto-line)
 (defhydra nvp-hydra-goto-line (goto-map) "line"
   ("g" goto-line "go")

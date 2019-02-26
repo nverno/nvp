@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 02:56:40>
+;; Last modified: <2019-02-25 21:11:23>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -96,6 +96,27 @@ If MINOR is non-nil, convert to minor mode hook symbol."
     `,@gnu))
 
 ;;-- Vars
+(defmacro nvp-with-preserved-vars (vars &rest body)
+  "Let bind VARS then execute BODY, so VARS maintain their original values.
+VARS should be either a symbol or list or symbols."
+  (declare (indent 1) (debug (form body)))
+  `(cl-progv ,(if (listp vars) `,vars `(list ',vars)) nil
+     (unwind-protect
+         ,@body)))
+
+;; from yasnippet #<marker at 126339 in yasnippet.el>
+(defmacro nvp-letenv (env &rest body)
+  "Evaluate BODY with bindings from ENV.
+ENV is a lisp expression evaluating to list of (VAR FORM), where
+VAR is a symbol and FORM is evaluated."
+  (declare (indent 1) (debug (form body)))
+  (let ((envvar (make-symbol "envvar")))
+    `(let ((,envvar ,env))
+       (cl-progv
+           (mapcar #'car ,envvar)
+           (mapcar (lambda (k-v) (eval (cadr k-v))) ,envvar)
+         ,@body))))
+
 (defmacro nvp-defvar (var value)
   "Define VAR and eval VALUE during compile."
   (declare (indent defun))
@@ -471,13 +492,14 @@ If BUFFER is non-nil, set local bindings in BUFFER."
 (defmacro nvp-use-local-keymap (keymap &rest bindings)
   "Use a local version of keymap."
   (declare (indent defun))
-  `(progn
-     (make-local-variable ',keymap)
-     (let ((newmap (make-sparse-keymap)))
-       (set-keymap-parent newmap ,keymap)
-       ,@(cl-loop for (k . b) in bindings
-            collect `(nvp-def-key newmap ,k ,b))
-       (set ',keymap newmap))))
+  (macroexp-let2 nil keymap keymap
+   `(progn
+      (make-local-variable ',keymap)
+      (let ((newmap (make-sparse-keymap)))
+        (set-keymap-parent newmap ,keymap)
+        ,@(cl-loop for (k . b) in bindings
+             collect `(nvp-def-key newmap ,k ,b))
+        (set ',keymap newmap)))))
 
 ;;-- bindings: view
 
@@ -1020,7 +1042,9 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 ;; Simple memoization / result caching
 (cl-defmacro nvp-function-with-cache (func arglist &optional docstring &rest body
                                            &key local predicate &allow-other-keys)
-  "Create a simple cache for FUNC results."
+  "Create a simple cache for FUNC results. 
+Cache is either defvar (possibly local) so is updated when set to nil,
+or PREDICATE is non-nil and returns nil."
   (declare (indent defun) (debug defun) (doc-string 3))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
@@ -1034,6 +1058,18 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
          ,docstring
          (or (,@(if predicate `(and ,predicate) '(progn)) ,cache)
              (setq ,cache (progn ,@body)))))))
+
+(defmacro nvp-define-cache-runonce (func arglist &optional docstring &rest body)
+  "Define cache function that will only compute cache once."
+  (declare (indent defun) (debug defun) (doc-string 3))
+  (let ((cache (make-symbol "cache-runonce"))
+        (fn (if (stringp func) (intern func) func)))
+    `(defun ,fn ,arglist
+       ,docstring
+       (or (get ',fn ',cache)
+           (let ((val (progn ,@body)))
+             (prog1 val
+               (put ',fn ',cache val)))))))
 
 ;; -------------------------------------------------------------------
 

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 00:37:53>
+;; Last modified: <2019-02-25 21:11:37>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -134,20 +134,27 @@ With prefix, pop other window, with double prefix, prompt for MODE."
          current-prefix-arg))
   (let ((buff (get-buffer-create "*scratch*")))
     (with-current-buffer buff
-      (if (eq mode 'emacs-lisp-mode)
+      (if (provided-mode-derived-p mode 'emacs-lisp-mode)
           (unless (eq major-mode 'lisp-interaction-mode)
             (lisp-interaction-mode))
+        (when (provided-mode-derived-p mode 'comint-mode)
+          (setq mode 'sh-mode))
         (let ((inhibit-read-only t))
           (kill-all-local-variables)
           (erase-buffer)
           (funcall mode)))
-      (local-set-key (kbd "C-c C-c") #'kill-this-buffer)
-      (local-set-key
-       (kbd "C-c C-s") (lambda () (interactive) (funcall (intern (nvp-read-mode)))))
-      (message "%s" (substitute-command-keys
-                     "Press \\[kill-this-buffer] to kill this buffer \
-or C-c C-s to switch major modes. "))
-      (nvp-display-location buff :buffer action))))
+      ;; don't want the bindings set for all buffers in this mode
+      (nvp-use-local-keymap (current-local-map)
+        ("C-c C-c" . kill-this-buffer)
+        ("C-c C-s" . (lambda () (interactive)
+                       
+                       (funcall (intern (nvp-read-mode))))))
+;;       (message "%s" (substitute-command-keys
+;;                      "Press \\[kill-this-buffer] to kill this buffer \
+;; or C-c C-s to switch major modes. "))
+      (nvp-display-location buff :buffer action)
+      (nvp-msg "Press \\[kill-this-buffer] to kill this buffer \
+or C-c C-s to switch major modes. " :keys t))))
 
 ;; -------------------------------------------------------------------
 ;;; Books / PDFs

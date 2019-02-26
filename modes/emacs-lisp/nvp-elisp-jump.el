@@ -4,33 +4,15 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-01-16 03:16:45>
-;; Package-Requires: 
+;; Last modified: <2019-02-25 21:33:32>
 ;; Created:  2 December 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
-(autoload 'lm-header "lisp-mnt")
+(declare-function lm-header "lisp-mnt")
 (autoload 'find-function-library "find-func")
 (autoload 'find-library-name "find-func")
 
@@ -62,23 +44,25 @@ Optionally, search LISP-ONLY files (no C sources)."
     lib))
 
 ;;;###autoload
-(defun nvp-elisp-jump-to-library-url (&optional this-buffer)
+(defun nvp-elisp-jump-to-library-url (&optional choose)
   "Browse URL of either file defining symbol at point or prompt for library.
-If THIS-BUFFER is non-nil, try browsing current buffer's URL."
+If CHOOSE is non-nil, prompt for library."
   (interactive "P")
-  (let ((lib (if this-buffer (buffer-file-name)
-               (nvp-elisp-get-library-file 'lisp-only))))
-    (if (and lib                        ;no URL in emacs sources
-             (member (file-name-extension lib) '("el" "elc")))
-        (let ((file (concat (file-name-sans-extension lib) ".el")))
-          (if (not (file-exists-p file))
-              (user-error "Emacs source library: %s" lib)
-            (with-temp-buffer
-              (insert-file-contents file)
-              (if-let ((url (lm-header "URL")))
-                  (browse-url url)
-                (user-error "Library %s has no URL header" lib)))))
-      (user-error "Library %s isn't elisp." lib))))
+  (let (url)
+    (if (and (not choose) (setq url (save-excursion (lm-header "URL"))))
+        (browse-url url)                ;found URL in current buffer!!
+       (let ((lib (nvp-elisp-get-library-file 'lisp-only)))
+         (if (and lib                   ;no URL in emacs sources
+                  (member (file-name-extension lib) '("el" "elc")))
+             (let ((file (concat (file-name-sans-extension lib) ".el")))
+               (if (not (file-exists-p file))
+                   (user-error "Emacs source library - no URL: %s" lib)
+                 (with-temp-buffer
+                   (insert-file-contents file)
+                   (if (setq url (lm-header "URL"))
+                       (browse-url url)
+                     (user-error "Library %s has no URL header" lib)))))
+           (user-error "Library %s isn't elisp." lib))))))
 
 ;;;###autoload
 (defun nvp-elisp-jump-to-cask (&optional this-window)

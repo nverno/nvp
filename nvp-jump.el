@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-26 21:48:20>
+;; Last modified: <2019-02-27 14:24:41>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -142,16 +142,12 @@ With prefix, pop other window, with double prefix, prompt for MODE."
           (kill-all-local-variables)
           (erase-buffer)
           (funcall mode)))
-      ;; don't want the bindings set for all buffers in this mode
-      (nvp-use-local-keymap (current-local-map)
-        ("C-c C-c" . kill-this-buffer)
-        ("C-c C-s" . (lambda () (interactive)
-                       
-                       (funcall (intern (nvp-read-mode))))))
-;;       (message "%s" (substitute-command-keys
-;;                      "Press \\[kill-this-buffer] to kill this buffer \
-;; or C-c C-s to switch major modes. "))
       (nvp-display-location buff :buffer action)
+      (with-current-buffer (current-buffer)
+        (nvp-use-local-keymap (current-local-map)
+         ("C-c C-c" . kill-this-buffer)
+         ("C-c C-s" . (lambda () (interactive)
+                        (funcall (intern (nvp-read-mode)))))))
       (nvp-msg "Press \\[kill-this-buffer] to kill this buffer \
 or C-c C-s to switch major modes. " :keys t))))
 

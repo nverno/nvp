@@ -1,6 +1,6 @@
 ;;; ocaml-tools.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-02-22 19:21:07>
+;; Last modified: <2019-02-27 14:32:42>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/ocaml-tools
 ;; Created:  4 November 2016
@@ -35,6 +35,7 @@
   (defvar opam-share))
 (declare-function utop "utop")
 (declare-function ocaml-module-alist "caml-help")
+(declare-function smie-forward-sexp "smie")
 (nvp-declare "tuareg" tuareg-opam-current-compiler tuareg-beginning-of-defun)
 (autoload 'nvp-ext-run-script "nvp-ext")
 (autoload 'nvp-process-buffer "nvp")
@@ -54,8 +55,7 @@
     (interactive
      (list (ido-completing-read
             "Install: " '("opam" "packages" "src" "info"))))
-    (let ((script (expand-file-name "tools/install.sh"
-                                    ocaml-tools--dir)))
+    (let ((script (expand-file-name "tools/install.sh" (nvp-package-root))))
      (pcase what
        (`"opam"
         (set-process-sentinel
@@ -271,8 +271,7 @@
 (defun ocaml-tools-merlin-init ()
   "Create .merlin with all ocamlfind packages / .opam sources."
   (interactive)
-  (let ((script (expand-file-name "tools/merlin-init.sh"
-                                  ocaml-tools--dir)))
+  (let ((script (expand-file-name "tools/merlin-init.sh" (nvp-package-root))))
     (nvp-ext-run-script script)))
 
 ;;; inf shell

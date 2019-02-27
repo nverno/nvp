@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-27 10:35:08>
+;; Last modified: <2019-02-27 14:30:39>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -488,17 +488,17 @@ If BUFFER is non-nil, set local bindings in BUFFER."
           collect `(nvp-def-key map ,k ,b))
      (push (cons ,mode map) minor-mode-overriding-map-alist)))
 
-(defmacro nvp-use-local-keymap (keymap &rest bindings)
-  "Use a local version of keymap."
+(defmacro nvp-use-local-keymap (&optional keymap &rest bindings)
+  "Use a local version of KEYMAP or `current-local-map'."
   (declare (indent defun))
   (macroexp-let2 nil keymap keymap
    `(progn
-      (make-local-variable ',keymap)
-      (let ((newmap (make-sparse-keymap)))
-        (set-keymap-parent newmap ,keymap)
+      (let ((current (or ,keymap (current-local-map)))
+            (newmap (make-sparse-keymap)))
+        (set-keymap-parent newmap current)
         ,@(cl-loop for (k . b) in bindings
              collect `(nvp-def-key newmap ,k ,b))
-        (set ',keymap newmap)))))
+        (use-local-map newmap)))))
 
 ;;-- bindings: view
 

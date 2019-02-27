@@ -1,0 +1,6 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'nasm-mode-abbrev-table
+  '()
+  "Nasm-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

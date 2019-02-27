@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if-OS
+# key: ifos
+# --
+ifeq (\$(OS),Windows_NT)
+  ${2:@echo "Running Windows"}
+endif

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: std
+# key: std
+# --
+#include <stdio.h>
+#include <stdlib.h>
+${1:#include <unistd.h>}

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: class
+# key: class
+# --
+class ${1:name} inherits ${2:super} {
+  $0
+};

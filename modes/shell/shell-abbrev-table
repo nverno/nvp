@@ -1,0 +1,139 @@
+;; -*- coding: utf-8; -*-
+
+(define-abbrev-table 'shells-abbrev-table
+  '(
+    ("aa" "2>&1" nil :system t) 
+    ("ae" ">&2" nil :system t)
+    ("dn" ">/dev/null" nil :system t)
+    ("aadn" ">/dev/null 2>&1" nil :system t)
+    ("21dn" ">/dev/null 2>&1" nil :system t)
+    ("edn" "2>/dev/null" nil :system t)
+    ("2dn" "2>/dev/null" nil :system t)
+    
+    ("ddu" "ls | xargs -n 1 du -hs" nil :system t)
+    ("lgrep" ["find . -maxdepth 1 -iregex '.*'" 1 nil nil]
+     expand-abbrev-hook :system t)
+
+    ("sa" "sudo apt" nil :system t) 
+    ("sai" "sudo apt install -y" nil :system t) 
+    ("sau" "sudo apt update" nil :system t) 
+    ("sar" ["sudo add-apt-repository ppa:" 0 nil nil] expand-abbrev-hook :system t)
+
+    ("findf" ["find . -type -f -name '*.'" 1 nil nil] expand-abbrev-hook :system t)
+    ("findd" ["find . -type -d -name '*.'" 1 nil nil] expand-abbrev-hook :system t)
+    ("findrm" ["find . -type f -name '*.' -delete" 9 nil nil]
+     expand-abbrev-hook :system t)
+    ("findrmd" ["find . -type d -name '' -exec rm -rf {} \\;" 20 nil nil]
+     expand-abbrev-hook :system t)
+    
+    ("bitn" "https://bitbucket.org/nverno " nil :system t) 
+    ("gitn" "https://github.com/nverno" nil :system t) 
+    ("gitp" "git pull" nil :system t) 
+    ("bitcl" "https://bitbucket.org" nil :system t) 
+    ("bitrm" "git remote add origin https://bitbucket.org/nverno"
+     nil :system t) 
+    ("gitcl" "git clone https://github.com" nil :system t) 
+    ("gitrm" "git remote add origin https://github.com/nverno"
+     nil :system t) 
+    ("gitcln" "git clone https://github.com/nverno" nil :system t) 
+    ("bitcln" "git clone https://bitbucket.org/nverno" nil :system t) 
+    ("lnsf" "ln -sfn $(realpath " nil :system t)
+    )
+  "Shells abbrevs."
+  :enable-function 'nvp-abbrev-expand-not-after-punct-p
+  :regexp nvp-shell-abbrev-re)
+
+(define-abbrev-table 'shell-mode-abbrev-table
+  '( )
+  "Shell-Mode Abbrevs."
+  :parents (list shells-abbrev-table)
+  :enable-function 'nvp-abbrev-expand-not-after-punct-p
+  :regexp nvp-shell-abbrev-re)
+
+(define-abbrev-table 'shell-alias-abbrev-table
+  '(
+    ("sag" "sudo apt-get " nil :system t)
+    ("cdc" "cd c:/" nil :system t)
+    ("cdd" "cd d:/" nil :system t)
+    ("df" "df -kTh" nil :system t)
+    ("du" "du -kh" nil :system t)
+    ("e" "emacsclient -ca \"\"" nil :system t)
+    ("ebc" "emacs -Q -batch -L . -f batch-byte-compile" nil :system t)
+    ("egrep" "egrep --color=auto" nil :system t)
+    ("et" "emacsclient -ta \"\"" nil :system t)
+    ("fgrep" "fgrep --color=auto" nil :system t)
+    ("gdb" "gdb -q" nil :system t)
+    ("gitd" "git add -A && git commit -m squash && git push -u" nil :system t)
+    ("grep" "grep --color=auto" nil :system t)
+    ("httpd" "screen -S httpd python -m SimpleHTTPServer 8001" nil :system t)
+    ("ins" "sudo apt-get install" nil :system t)
+    ("l" "ls -CF" nil :system t)
+    ("la" "ls -A" nil :system t)
+    ("lc" "ls -ltcr" nil :system t)
+    ("libpath" "echo -e ${LD_LIBRARY_PATH//:/\\\\n}" nil :system t)
+    ("lk" "ls -lSr" nil :system t)
+    ("ll" "ls -alF" nil :system t)
+    ("lr" "ls -R" nil :system t)
+    ;; ("ls" "ls --color=auto" nil :system t)
+    ("lt" "ls -ltr" nil :system t)
+    ("lu" "ls -ltur" nil :system t)
+    ("lx" "ls -lXB" nil :system t)
+    ("mkdir" "mkdir -p" nil :system t)
+    ("mozilla" "\"$PROGRAMFILES/Mozilla Firefox/firefox.exe\"" nil :system t)
+    ("p" "pushd" nil :system t)
+    ("path" "echo -e ${PATH//:/\\\\n}" nil :system t)
+    ("pm" "pmount" nil :system t)
+    ("po" "popd" nil :system t)
+    ("pu" "pumount" nil :system t)
+    ("s" "less -SR" nil :system t)
+    ("sql" "sqlite3 -interactive :memory:" nil :system t)
+    ("t" "tar -axvf" nil :system t)
+    ("tree" "tree -Csuh" nil :system t)
+    ("vlc" "\"$PROGRAMFILES/VideoLAN/VLC/vlc.exe\"" nil :system t))
+  "Shell-Mode Aliases for crappy windows shells."
+  :parents (list shell-mode-abbrev-table)
+  :enable-function 'nvp-abbrev-expand-not-after-punct-p
+  :regexp nvp-shell-abbrev-re)
+
+(define-abbrev-table 'eshell-mode-abbrev-table
+  '()
+  "eshell mode abbrevs"
+  :parents (list shell-mode-abbrev-table))
+
+(define-abbrev-table 'sh-mode-abbrev-table
+  '(
+    ("ro" "readonly" nil :system t)
+    ("here" "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd)\""
+     nil :system t)
+    ("ret" "return" nil :system t)
+    ;; i/o
+    ("eecho" ["(>&2 echo \"\")" 2 nil nil] expand-abbrev-hook :system t)
+    ("ee" ["_error_exit \"\"" 1 nil nil] expand-abbrev-hook :system t)
+    ("ii" ["_info \"\"" 1 nil nil] expand-abbrev-hook :system t)
+    ("ll" ["_log \"\"" 1 nil nil] expand-abbrev-hook :system t)
+    ;; shellcheck
+    ("scs" "# shellcheck source=/dev/null" nil :system t)
+    ("scd" ["# shellcheck disable=SC2" 0 nil nil] expand-abbrev-hook :system t)
+    ("utils" "# shellcheck source=/dev/null\n. ~/bin/include/utils.sh" nil :system t)
+    ("wutils" "# shellcheck source=/dev/null\n. ~/bin/include/web-utils.sh"
+     nil :system t)
+    ("gutils" "# shellcheck source=/dev/null\n. ~/bin/include/git-utils.sh"
+     nil :system t)
+    ("iutils" "# shellcheck source=/dev/null\n. ~/bin/include/install-utils.sh"
+     nil :system t)
+    ("xutils" "# shellcheck source=/dev/null\n. ~/bin/include/x-utils.sh"
+     nil :system t)
+    )
+  "sh mode abbrevs"
+  :parents (list shells-abbrev-table)
+  :enable-function 'nvp-abbrev-expand-not-after-punct-p)
+
+(define-abbrev-table 'fish-mode-abbrev-table
+  '()
+  "Fish-Mode Abbrevs."
+  :parents (list shells-abbrev-table))
+
+(define-abbrev-table 'bats-mode-abbrev-table
+  '()
+  "Bats-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

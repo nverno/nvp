@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: server address
+# key: servaddr
+# --
+struct sockaddr_in ${1:servaddr}; /* store the server address */
+struct hostent *${2:hp};          /* used to get server address */
+
+memset(&$1, 0, sizeof($1));           /* zero struct */
+$2 = gethostbyname(${3:"localhost"}); /* lookup host's IP # */
+if ($2 == NULL) {
+    perror($3);
+    exit(EXIT_FAILURE);
+}
+memcpy((char *)&$1.sin_addr, $2->h_addr, $2->h_length); /* set host address */
+$1.sin_port = htons(${4:port number});                  /* port number */
+$1.sin_family = ${5:AF_INET};                           /* socket type */

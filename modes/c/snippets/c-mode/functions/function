@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: function
+# key: fun
+# --
+${1:static }${2:void} ${3:name}($4) {
+    $0
+}

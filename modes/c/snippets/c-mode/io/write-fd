@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: write-fd
+# key: writefd
+# --
+if (write(${1:fd}, ${2:message}, ${3:messlen}) != messlen) {
+    perror("write");
+    exit(EXIT_FAILURE);
+}

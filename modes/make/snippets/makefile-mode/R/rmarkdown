@@ -1,0 +1,17 @@
+# -*- mode: snippet -*-
+# name: rmarkdown website
+# key: rmarkdown
+# --
+HTML_FILES := \$(patsubst %${1:.R}, %.html ,\$(wildcard *$1))
+
+all: clean html
+
+html: \$(HTML_FILES)
+
+%.html: %$1
+	R --slave -e "set.seed(0);rmarkdown::render('$<')"
+
+.PHONY: clean
+
+clean:
+	\$(RM) \$(HTML_FILES)

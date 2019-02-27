@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: close-on-exec
+# key: cloexec
+# --
+int ${1:flags};
+$1 = fcntl(${2:fd}, F_GETFD);
+if (flags == -1) {
+    err_sys("fcntl");
+}
+
+flags |= FD_CLOEXEC;
+if (fcntl($2, F_SETFD, $1) == -1) {
+    err_sys("fcntl");
+}

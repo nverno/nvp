@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: read-fd
+# key: readfd
+# --
+if ((${1:msg} = read(${2:sock_id}, ${3:message}, ${4:BUFSIZE})) == -1) {
+    perror("read");
+    exit(EXIT_FAILURE);
+}

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: unbuffer
+# key: unbuffer
+# --
+# Turn all buffering off.
+select((select(STDOUT), $| = 1)[0]);
+select((select(STDERR), $| = 1)[0]);
+select((select(STDIN), $| = 1)[0]);$0

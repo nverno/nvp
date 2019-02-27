@@ -1,0 +1,7 @@
+# -*- mode: snippet; -*-
+# name: doxygen header
+# key: dox
+# --
+/**
+ * $0
+ */

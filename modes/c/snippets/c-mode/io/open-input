@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: open file or stdin
+# key: openi
+# --
+FILE *fp;
+${1:int result = EXIT_SUCCESS;}
+
+if (argc == 1) {
+    ${1:$(when (yas-text) (concat (nvp-c-yas-var yas-text) " = "))}${2:process_input}(stdin);
+} else if ((fp = fopen(*++argv, "r")) != NULL) {
+    ${1:$(when (yas-text) (concat (nvp-c-yas-var yas-text) " = "))}$2(*++argv, "r");
+    fclose(fp);
+} else {
+    ${1:$(when (yas-text) (concat (nvp-c-yas-var yas-text) " = "))}EXIT_FAILURE;
+}

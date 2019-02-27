@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: object
+# key: obj
+# --
+object $1 extends $2 {
+  $3
+}

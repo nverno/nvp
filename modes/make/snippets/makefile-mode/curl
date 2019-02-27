@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: curl
+# key: curl
+# --
+`(nvp-makefile-add-define "curl")`\$(curl) -fsSkL --retry 9 --retry-delay 9 \
+"https://${1:raw.githubusercontent.com/nverno/}${2:repo}/${3:master}/$4" \
+-o $4

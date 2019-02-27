@@ -1,0 +1,30 @@
+# -*- mode: snippet -*-
+# name: client
+# key: client
+# --
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define BUFLEN 1024
+
+static void $2(int fd);
+
+int main(int argc, char *argv[]) {
+    int fd;
+
+    fd = ${1:connect_to_server();}
+    if (fd == -1)
+      exit(EXIT_FAILURE);
+
+    ${2:talk_with_server}(fd);$0
+    close(fd);
+}
+
+void $2(int fd) {
+    char buf[BUFLEN];
+    int n;
+
+    n = read(fd, buf, BUFLEN);
+    write(1, buf, n);
+}

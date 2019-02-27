@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: asdf install latest
+# key: asdfi
+# --
+if ! asdf current $1 2>&1 >/dev/null; then
+    asdf_install_latest $1 ${2:regexp?}
+else
+    local ver=$(asdf current $1)
+    _log "Current $1: $ver"
+fi

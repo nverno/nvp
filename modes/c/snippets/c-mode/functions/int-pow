@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: int-pow
+# key: int_pow
+# --
+size_t int_pow(size_t base, size_t exp) {
+
+    size_t result = 1;
+
+    while (exp) {
+    if (exp & 1) {
+        result *= base;
+    }
+    exp /= 2;
+    base *= base;
+    }
+
+    return result;
+}

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-auto
+# key: fora
+# --
+for (${1:auto i} = ${2:0}; ${1:$(nvp-c-yas-var yas-text)} < ${3:MAXIMUM}; ${1:$(nvp-c-yas-var yas-text)}${4:++}) {
+    $0
+}

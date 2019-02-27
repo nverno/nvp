@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: section
+# key: section
+# binding: C-c s
+# --
+<section ${2:$(if-non-empty "anchor='")}${2:anchor}${2:$(if-non-empty"' ")}title='${1:Title}'>
+  `yas-selected-text`$0
+</section>

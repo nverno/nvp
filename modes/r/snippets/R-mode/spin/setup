@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: setup code chunk
+# key: setup
+# --
+##- setup, echo=FALSE, include=FALSE --------------------
+library(knitr)
+opts_chunk$set(message=FALSE, cache=FALSE, echo=TRUE)
+$0
+## /* end setup */

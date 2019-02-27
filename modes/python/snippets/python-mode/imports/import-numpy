@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: numpy
+# key: numpy
+# --
+import numpy as np
+${1:import matplotlib.pyplot as plt}

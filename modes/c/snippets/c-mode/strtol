@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: strtol
+# key: strtol
+# --
+${1:n} = strtol(${2:str}, &p, 10);
+if (errno != 0 || *p != '\0' || n > INT_MAX) {
+    fprintf(stderr, "ERROR: parsing %s\n", $2);
+    exit(EXIT_FAILURE);
+}

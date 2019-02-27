@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: buffered-writer
+# key: bw
+# --
+try (BufferedWriter ${1:writer} = 
+     Files.newBufferedWriter(${2:path}, StandardCharsets.UTF_8,
+                             StandardOpenOption.WRITE,
+                             StandardOpenOption.CREATE_NEW)) {
+    $0
+} catch (Exception e) {
+    e.printStackTrace();
+}

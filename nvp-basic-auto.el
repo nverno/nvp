@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-26 18:56:06>
+;; Last modified: <2019-02-27 02:35:01>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 February 2019
@@ -45,7 +45,8 @@
 
 ;; -------------------------------------------------------------------
 ;;; Assorted
-(nvp-declare "" nvp-move-previous-heading nvp-move-forward-heading)
+(nvp-declare "" nvp-move-previous-heading nvp-move-forward-heading
+  nvp-local-header-regex)
 
 ;;;###autoload
 (defun nvp-mark-header-region ()

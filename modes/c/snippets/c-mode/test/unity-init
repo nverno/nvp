@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: unity_init
+# key: unity_init
+# --
+#include "unity.h"
+#include "${1:`(bound-and-true-p include-file)`}"
+
+void test_${2:name}(void) {
+    $0
+}
+
+int main(void) {
+    UNITY_BEGIN();
+
+    RUN_TEST(test_$2);
+
+    return UNITY_END();
+}

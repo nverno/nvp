@@ -1,0 +1,19 @@
+# -*- mode: snippet -*-
+# name: singleton
+# key: singleton
+# --
+private volatile static ${1:class} ${2:inst}; /** singleton instance */
+
+/**
+ * Gets singleton instance of $1.
+ *
+ * @return reference to $1
+ */
+public static $1 getInstance() {
+    if ($2 == null) {
+        synchronized ($1.class) {
+            $2 = new $1();
+        }
+    }
+    return $2;
+}

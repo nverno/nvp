@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: #define power-of-2
+# key: mpower2
+# --
+#define POWER_OF_2(n) ((n) > 0 && ((n) > 0 && ((n) - 1)) == 0)

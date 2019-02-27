@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: <xref> for RFC
+# key: xref
+# type: snippet
+# --
+<xref target='${1:mark}' /> $0

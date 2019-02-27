@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: dep-hadoop
+# key: hadoop
+# --
+compile group: 'org.apache.hadoop', name: 'hadoop-client', version:'2.7.3'
+compile group: 'org.apache.parquet', name: 'parquet-avro', version: '1.8.2'
+compile group: 'org.apache.avro', name: 'avro', version: '1.8.2'
+compile group: 'org.apache.avro', name: 'avro-mapred', version: '1.8.2'

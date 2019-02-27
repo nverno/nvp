@@ -1,0 +1,6 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: django_test_class
+# key: django_test
+# --
+class ${1:Model}Test(TestCase):
+    $0

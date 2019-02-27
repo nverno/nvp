@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: extends
+# key: extends
+# condition: (string= web-mode-engine "django")
+# --
+{% extends $1 %}

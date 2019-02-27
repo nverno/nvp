@@ -1,0 +1,24 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'ruby-mode-abbrev-table
+  '(
+    ("inc" "include" nil :system t)
+    ("mod" "module" nil :system t)
+    )
+  "Ruby-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'inf-ruby-mode-abbrev-table
+  '()
+  "Inf-Ruby-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'rhtml-mode-abbrev-table
+  '()
+  "Rhtml-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'rake-compilation-mode-abbrev-table
+  '()
+  "Rake-Compilation Abbrevs."
+  :parents (list prog-mode-abbrev-table))

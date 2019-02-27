@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: assertIn
+# key: assi
+# --
+self.assertIn(${1:member}, ${2:container})

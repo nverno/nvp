@@ -1,0 +1,7 @@
+# -*- mode: snippet; -*-
+# name: struct
+# key: tdstruct
+# --
+typedef struct {
+    $0
+} $1;

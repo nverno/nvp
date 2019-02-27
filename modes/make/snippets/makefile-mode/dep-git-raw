@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: depgitraw
+# key: depgitraw
+# expand-env: ((nvp-makefile-current-target (nvp-makefile-yas-setenv 'targets)))
+# --
+.INTERMEDIATE: ${1:doc}
+$1:
+	$(wget) -q -O $@ "https://github.com/${2:repo}/raw/master/$1"

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __mod__
+# key: __mod__
+# --
+def __mod__(self, other):
+    return $0

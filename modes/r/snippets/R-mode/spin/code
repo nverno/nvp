@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: code chunk
+# key: code
+# --
+##- $1 ${1:$(nvp-yas-pad-right ?- 70)}
+$0
+## /* end ${1:$(car (nvp-yas-split-args yas-text))} */

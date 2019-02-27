@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: arg
+# key: arg
+# --
+parser.add_argument('-$1', '--$2',
+                    $0)

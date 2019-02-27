@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: attr_writer
+# key: attrw
+# --
+attr_writer :${1:attr_names}

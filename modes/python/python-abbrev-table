@@ -1,0 +1,27 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'python-mode-abbrev-table
+  '(
+    ("cont" "continue" nil :system t)
+    ("imp" "import" nil :system t)
+    ("ret" "return" nil :system t)
+    ("fn" "lambda" nil :system t)
+    ("fn1" "lambda x:" nil :system t)
+    ("fn2" "lambda x, y:" nil :system t)
+    ("true" "True" nil :system t)
+    ("false" "False" nil :system t)
+    ("none" "None" nil :system t)
+    )
+  "Python-Mode Abbrevs."
+  :enable-function 'nvp-abbrev-expand-not-after-punct-p
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'cython-mode-abbrev-table
+  '()
+  "Cython-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'inferior-python-mode-abbrev-table
+  '()
+  "Inferior Python Abbrevs."
+  :parents (list python-mode-abbrev-table))

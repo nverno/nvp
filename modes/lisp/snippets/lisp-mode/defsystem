@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# contributor: Mark Karpov
+# name: defsystem
+# key: defsystem
+# --
+(${1:asdf:}defsystem :${2:system}${3:
+  :version      "${4:0.1.0}"}${5:
+  :description  "${6:description}"}${7:
+  :author       "${8:`user-full-name` <`user-mail-address`>}"}${9:
+  :serial       t}${10:
+  :license      "${11:GNU GPL, version 3}"}${12:
+  :components   (${13:(:file "file.lisp")})}${14:
+  :depends-on   (${15:#:alexandria})})
+$0

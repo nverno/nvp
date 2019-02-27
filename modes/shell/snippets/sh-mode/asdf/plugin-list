@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: asdf plugin-list | grep
+# key: asdfpl
+# group: asdf
+# --
+if ! asdf plugin-list | grep $1; then
+    $0
+fi

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: forit
+# key: forit
+# --
+for (${1:auto it} = ${2:var}.${3:begin}(); ${1:$(nvp-c-yas-var yas-text)} != $2.${3:$(if (string= yas-text "begin") "end" "begin")}(); ${1:$(nvp-c-yas-var yas-text)}++) ${4:{
+  $0
+}}

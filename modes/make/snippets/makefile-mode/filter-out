@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: filter-out
+# key: fo
+# --
+\$(filter-out $1)

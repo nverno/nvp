@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: for files in directory
+# key: forf
+# --
+DIR *dp;
+struct dirent *dirp;
+
+if ((dp = opendir(${1:dirname})) == NULL) /* open directory */
+    err_sys("can't open %s", $1);
+while ((dirp = readdir(dp)) != NULL) {    /* loop through files */
+    $0
+}
+
+closedir(dp);

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: println
+# key: prln
+# --
+println(${1:"$2"})

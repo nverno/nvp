@@ -1,0 +1,12 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'julia-mode-abbrev-table
+  '(
+    ("fi" "end" nil :system t)
+    ("ass" "@assert" nil :system t)
+    ("ret" "return" nil :system t)
+    ("pr" ["print()" 1 nil nil] expand-abbrev-hook :system t)
+    ("elif" "elseif" nil :system t)
+    )
+  "Julia-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

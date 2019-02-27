@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: sci
+# key: sci
+# --
+import numpy as np
+import pandas as pd
+from scipy.$1 import $2

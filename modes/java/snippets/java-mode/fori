@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: fori
+# key: fori
+# --
+for (${1:Integer i} : ${2:iterator}) {
+    $0
+}

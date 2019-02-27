@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: fun (...) -> ... end
+# key: fun
+# --
+fun ($1) -> $0 end

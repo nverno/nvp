@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: bibref
+# key: bibref
+# type: snippet
+# --
+<reference anchor="${1:anchor}">
+  <front>
+    <title abbrev="${2:short}">${3:long}</title>
+	<author initials="$4:initials" surname="${5:surname}" fullname="${6:given name} $5"/>
+    <organization/>
+    <date year="${7:year}" month="${8:Month}"/>
+  </front>
+  <seriesInfo name="${9:series}" value=""/>
+</reference>
+$0

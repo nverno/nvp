@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: root-p
+# key: root-p
+# --
+if [[ $EUID -eq 0 ]]; then
+    $0
+fi

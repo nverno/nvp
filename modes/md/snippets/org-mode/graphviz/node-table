@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: node-table
+# key: nodes
+# --
+| *node* | *label* | *shape* | *fillcolor* | *hrank* | *vrank* |
+|--------+---------+---------+-------------+---------+---------|
+| $0      |        |   |        |        |        |

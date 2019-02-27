@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: <t>
+# key: xt
+# type: snippet
+# binding: C-c t
+# expand-env: ((yas-wrap-around-region t))
+# --
+<t>$0</t>

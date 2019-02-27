@@ -1,0 +1,24 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'R-mode-abbrev-table
+  '(
+    ("fn" ["function()" 1 nil nil] nvp-abbrev-expand-in-paren-hook :system t)
+    ("fp" "file.path" nil :system t)
+    ("fun" ["function()" 1 nil nil] nvp-abbrev-expand-in-paren-hook :system t)
+    ("ret" ["return()" 1 nil nil] expand-abbrev-hook :system t)
+    ("lib" ["library()" 1 nil nil] expand-abbrev-hook :system t)
+    ("datt" ["data.table()" 1 nil nil] expand-abbrev-hook :system t)
+    ("datf" ["data.frame()" 1 nil nil] expand-abbrev-hook :system t)
+    ("null" "NULL" nil :system t)
+    ("true" "TRUE" nil :system t)
+    ("false" "FALSE" nil :system t)
+    )
+  "R-Mode Abbrevs."
+  :enable-function 'nvp-r-abbrev-expand-p
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'inferior-ess-r-mode-abbrev-table
+  '()
+  "Inferior R Abbrevs."
+  :enable-function 'nvp-r-abbrev-expand-p
+  :parents (list R-mode-abbrev-table))

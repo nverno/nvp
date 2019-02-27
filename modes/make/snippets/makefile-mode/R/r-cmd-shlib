@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: R CMD SHLIB
+# key: rcs
+# --
+R CMD SHLIB ${1:c file}

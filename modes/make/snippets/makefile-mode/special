@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Special Targets
+# key: .
+# --
+${1:$$(yas-choose-value (nvp-makefile-special-targets))}: $0

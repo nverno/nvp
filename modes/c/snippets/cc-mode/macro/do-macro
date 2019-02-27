@@ -1,0 +1,5 @@
+# -*- mode: snippet; -*-
+# name: #define ..  do .. while(0)
+# key: mdo
+# --
+#define $1 do { $0; } while (0)

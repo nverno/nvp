@@ -1,0 +1,122 @@
+;; -*- coding: utf-8; -*-
+(define-abbrev-table 'c-macros-includes-abbrev-table
+  '(("#i" "#include" nil :system t)
+    ("#e" "#endif" nil :system t)
+    ("#d" "#define" nil :system t)
+    ("#u" "#undef" nil :system t)
+    ("#ifd" "#ifdef" nil :system t)
+    ("#ifn" "#ifndef" nil :system t)
+    ("#max" "#define MAX(A, B) ((A) > (B) ? (A) : (B))" nil :system t)
+    ("#min" "#define MIN(A, B) ((A) < (B) ? (A) : (B))" nil :system t))
+  "Includes abbrevs b/c cant have optional character looking back."
+  :regexp "\\(#\\w+\\)"
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'c-common-abbrev-table
+  '(
+    ("td" "typedef" nil :system t)
+    ("ret" "return" nil :system t)
+    ("cont" "continue" nil :system t)
+    ("null" "NULL" nil :system t)
+    )
+  :enable-function 'nvp-c-abbrev-expand-p
+  :parents (list c-macros-includes-abbrev-table))
+
+(define-abbrev-table 'c-mode-abbrev-table
+  '(
+    ("ef" "EXIT_FAILURE" nil :system t)
+    ("es" "EXIT_SUCCESS" nil :system t)
+    ("szt" "size_t" nil :system t)
+    ("prn" "printf(\"\\n\")" nil :system t)
+    ("fprn" "fprintf(stderr, \"\\n\")" nil :system t)
+    ("exitf" "exit(EXIT_FAILURE);" nil :system t)
+    ("exits" "exit(EXIT_SUCCESS);" nil :system t))
+  "C-mode abbrevs."
+  :enable-function 'nvp-c-abbrev-expand-p
+  :parents (list c-common-abbrev-table))
+
+(define-abbrev-table 'c/R-abbrev-table
+  '(
+    ("cv" ["coerceVector();" 2 nil nil] expand-abbrev-hook :system t)
+    ("rint" "INTEGER" nil :system t)
+    ("rnil" "R_NilValue" nil :system t)
+    ("rreal" "REAL" nil :system t)
+    ("sexp" "SEXP" nil :system t))
+  "C-R ffi abbrevs."
+  :parents (list c-mode-abbrev-table))
+
+(define-abbrev-table 'c++-mode-abbrev-table
+  '(
+    ("th" "this" nil :system t)
+    ("usi" ["using std::;" 1 nil nil] expand-abbrev-hook :system t)
+    ("veci" "std::vector<int>" nil :system t)
+    ("vecd" "std::vector<double>" nil :system t)
+    ("vecs" "std::vector<std::string>" nil :system t)
+    ("vecp" ["std::vector<std::pair<>>" 2 nil nil] expand-abbrev-hook :system t)
+    )
+  "C++-mode abbrevs."
+  :parents (list c-common-abbrev-table))
+
+(define-abbrev-table 'boost-test-abbrev-table
+  '(
+    ("bc" ["BOOST_CHECK();" 2 nil nil] expand-abbrev-hook :system t)
+    ("br" ["BOOST_REQUIRE();" 2 nil nil] expand-abbrev-hook :system t)
+    ("bw" ["BOOST_WARN();" 2 nil nil] expand-abbrev-hook :system t)
+
+    ("bcm" ["BOOST_CHECK_MESSAGE();" 2 nil nil] expand-abbrev-hook :system t)
+    ("bct" ["BOOST_CHECK_THROW();" 2 nil nil] expand-abbrev-hook :system t)
+
+    ("batc" ["BOOST_AUTO_TEST_CASE()" 1 nil nil] expand-abbrev-hook :system t)
+    ("bats"
+     ["BOOST_AUTO_TEST_SUITE(  )\nBOOST_AUTO_TEST_SUITE_END()" 30 nil nil]
+     expand-abbrev-hook :system t)
+    ("bceq" ["BOOST_CHECK_EQUAL();" 2 nil nil] expand-abbrev-hook :system t)
+    ("bcne" ["BOOST_CHECK_NE();" 2 nil nil] expand-abbrev-hook :system t)
+    ("bclt" ["BOOST_CHECK_LT();" 2 nil nil] expand-abbrev-hook :system t)
+    ("breq" ["BOOST_REQUIRE_EQUAL();" 2 nil nil] expand-abbrev-hook :system t)
+    ("brlt" ["BOOST_REQUIRE_LT();" 2 nil nil] expand-abbrev-hook :system t)
+    ("brne" ["BOOST_REQUIRE_NE();" 2 nil nil] expand-abbrev-hook :system t)
+    )
+  "Boost abbrevs."
+  :parents (list c++-mode-abbrev-table))
+
+(define-abbrev-table 'check-abbrev-table
+  '(
+    ("st" ["START_TEST(   )\n{\n}\nEND_TEST" 16 nil nil] expand-abbrev-hook :system t)
+    )
+  "Check test abbrevs."
+  :parents (list c-mode-abbrev-table))
+
+(define-abbrev-table 'cunit-abbrev-table
+  '()
+  "CUnit abbrevs."
+  :parents (list c-mode-abbrev-table))
+
+(define-abbrev-table 'unity-abbrev-table
+  '(
+    ("rt" ["RUN_TEST();" 2 nil nil] expand-abbrev-hook :system t)
+    ("tf" ["TEST_FAIL();" 2 nil nil] expand-abbrev-hook :system t)
+    ("ti" ["TEST_IGNORE();" 2 nil nil] expand-abbrev-hook :system t)
+
+    ;; test_asserts
+    ("ta" ["TEST_ASSERT();" 2 nil nil] expand-abbrev-hook :system t)
+    ("tae" ["TEST_ASSERT_EQUAL();" 2 nil nil] expand-abbrev-hook :system t)
+    ("tane" ["TEST_ASSERT_NOT_EQUAL();" 2 nil nil] expand-abbrev-hook :system t)
+    ("taf" ["TEST_ASSERT_FALSE();" 2 nil nil] expand-abbrev-hook :system t)
+    ("tan" ["TEST_ASSERT_NULL();" 2 nil nil] expand-abbrev-hook :system t)
+    ("tann" ["TEST_ASSERT_NOT_NULL();" 2 nil nil] expand-abbrev-hook :system t)
+    ("tat" ["TEST_ASSERT_TRUE();" 2 nil nil] expand-abbrev-hook :system t)
+
+    ;; strings/structs
+    ("taep" ["TEST_ASSERT_EQUAL_PTR();" 2 nil nil] expand-abbrev-hook :system t)
+    ("taes" ["TEST_ASSERT_EQUAL_STRING();" 2 nil nil] expand-abbrev-hook :system t)
+    ("taem" ["TEST_ASSERT_EQUAL_MEMORY();" 2 nil nil] expand-abbrev-hook :system t)
+
+    ;; ints/floats/doubles
+    ("taiw" ["TEST_ASSERT_INT_WITHIN();" 2 nil nil] expand-abbrev-hook :system t)
+    ("tadw" ["TEST_ASSERT_DOUBLE_WITHIN();" 2 nil nil] expand-abbrev-hook :system t)
+    ("taef" ["TEST_ASSERT_EQUAL_FLOAT();" 2 nil nil] expand-abbrev-hook :system t)
+    ("taed" ["TEST_ASSERT_EQUAL_DOUBLE();" 2 nil nil] expand-abbrev-hook :system t)
+    )
+  "Unity abbrevs."
+  :parents (list c-mode-abbrev-table))

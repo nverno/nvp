@@ -1,0 +1,7 @@
+# -*- mode: snippet; -*-
+# name: union
+# key: uni
+# --
+union ${1:name} {
+    $0
+};

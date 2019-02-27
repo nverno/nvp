@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: seterr
+# key: seterr
+# --
+set -o nounset -o pipefail -o errexit

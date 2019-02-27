@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-25 01:52:27>
+;; Last modified: <2019-02-27 02:26:15>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -19,30 +19,15 @@
 (declare-function nvp-read-mode "nvp-read")
 
 ;; -------------------------------------------------------------------
-;;; Snippet mode
-;; #<marker at 172452 in yasnippet.el>
+;;; Hooks
+(nvp-declare "" nvp-yas-inside-string nvp-yas-inside-comment)
 
-;; "'" should be prefix to enable quote wrapping etc.
-(modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
-(modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
-(modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
-
-(nvp-define-cache nvp-snippet-header-end ()
-  "Return marker at end of snippet header."
-  :local t
-  (save-excursion
-    (goto-char (point-min))
-    (when (search-forward "# --")
-      (point-marker))))
-
-(defsubst nvp-snippet-header-p (&optional pnt)
-  (< (or pnt (point)) (marker-position (nvp-snippet-header-end))))
-
-;; (defsubst nvp-snippet-code-p (&optional pnt)
-;;   ())
-
-;; -------------------------------------------------------------------
-;;; Utils
+(defun nvp-snippet-before-save-hook ()
+  "Add conditions based on directory names."
+  (pcase (or (ignore-errors (nvp-dfn) (buffer-file-name)))
+    (`"doc" (nvp-snippet-add-field "condition" '(nvp-yas-inside-string)))
+    (`"comments" (nvp-snippet-add-field "condition" '(nvp-yas-inside-comment)))
+    (_)))
 
 (defun nvp-snippet-add-field (field value)
   "Add FIELD with VALUE unless FIELD is already defined."
@@ -57,17 +42,6 @@
          (goto-char end)
          (beginning-of-line)
          (insert (format "# %s: %S\n" field value)))))))
-
-;; -------------------------------------------------------------------
-;;; Hooks
-(nvp-declare "" nvp-yas-inside-string nvp-yas-inside-comment)
-
-(defun nvp-snippet-before-save-hook ()
-  "Add conditions based on directory names."
-  (pcase (or (ignore-errors (nvp-dfn) (buffer-file-name)))
-    (`"doc" (nvp-snippet-add-field "condition" '(nvp-yas-inside-string)))
-    (`"comments" (nvp-snippet-add-field "condition" '(nvp-yas-inside-comment)))
-    (_)))
 
 ;; ------------------------------------------------------------
 ;;; Jump to new snippet
@@ -124,6 +98,73 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 (defun nvp-snippet-help-at-point ()
   (interactive)
   (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
+
+;; -------------------------------------------------------------------
+;;; Snippet mode
+;; #<marker at 172452 in yasnippet.el>
+
+;; "'" should be prefix to enable quote wrapping etc.
+(modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
+(modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
+(modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
+
+(nvp-define-cache nvp-snippet-header-end ()
+  "Return marker at end of snippet header."
+  :local t
+  (save-excursion
+    (goto-char (point-min))
+    (when (search-forward "# --")
+      (point-marker))))
+
+(defsubst nvp-snippet-header-p (&optional pnt)
+  (< (or pnt (point)) (marker-position (nvp-snippet-header-end))))
+
+;; (defsubst nvp-snippet-code-p (&optional pnt)
+;;   ())
+
+(defvar nvp-snippet--field-vars
+  (eval-when-compile
+    (append
+     '("-*- mode: snippet -*-")
+     (mapcar
+      #'(lambda (x) (concat x ": "))
+      '("key" "content" "name" "condition" "expand-env" "load-file"
+        "save-file" "keybinding" "uuid" "menu-binding-pair" "group"
+        "perm-group" "table")))))
+
+(defvar nvp-snippet--env-vars
+  '("((yas-indent-line 'fixed))" "((yas-wrap-around-region 'nil))"))
+
+;; check if should complete
+(defun nvp-snippet--region-p ()
+  (< (point) (save-excursion
+               (goto-char (point-min))
+               (search-forward "# --" nil t))))
+
+(defun nvp-snippet--field (field)
+  (and (nvp-snippet--region-p)
+       (save-excursion
+         (beginning-of-line)
+         (looking-at-p (concat "^#\\s-*" field)))))
+
+;;;###autoload
+(defun nvp-snippet-capf ()
+  (save-excursion
+    (skip-chars-forward "^\n()")
+    (let ((end (point))
+          (_ (skip-chars-backward "^\n#: "))
+          (start (point)))
+      (skip-chars-backward " ")
+      (cond
+       ((eq (char-before) ?#)
+        (list start end nvp-snippet--field-vars))
+       ((nvp-snippet--field "expand-env:")
+        (list start end nvp-snippet--env-vars))))))
+
+;;;###autoload
+(add-hook 'snippet-mode-hook
+          #'(lambda ()
+              (add-hook 'completion-at-point-functions 'nvp-snippet-capf nil t)))
 
 (provide 'nvp-snippet)
 ;;; nvp-snippet.el ends here

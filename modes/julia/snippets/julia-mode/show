@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: show
+# key: show
+# --
+@show `yas-selected-text`$0

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: BOOST_AUTO_TEST_CASE
+# key: batc
+# --
+BOOST_AUTO_TEST_CASE(${1:test name}) {
+    $0
+    BOOST_CHECK(${2:condition});
+}

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ifarg
+# key: ifarg
+# --
+if [ -n "\$1" ]; then
+    $0
+fi

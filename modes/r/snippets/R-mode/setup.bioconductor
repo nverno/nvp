@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: setup bioconductor
+# key: setup.bioconductor
+# binding: direct-keybinding
+# --
+source("http://bioconductor.org/biocLite.R")
+biocLite("Biobase")
+library(Biobase)

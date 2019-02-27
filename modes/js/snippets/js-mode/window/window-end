@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: window-end
+# key: window-end
+# --
+window.innerHeight + window.scrollY >= document.body.offsetHeight

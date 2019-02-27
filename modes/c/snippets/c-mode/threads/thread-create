@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: thread-create
+# key: threadc
+# --
+${1:r} = pthread_create(&${2:tid}, NULL, ${3:thread_fun}, ${4:&thread_args});
+if ($1 != 0) {
+    fprintf(stderr, "pthread_create: %s\n", strerror($1));
+    exit(EXIT_FAILURE);
+}$0

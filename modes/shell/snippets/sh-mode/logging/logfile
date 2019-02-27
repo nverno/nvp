@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: log-file
+# key: logf
+# --
+readonly __LOGFILE=./"\$( basename "\${BASH_SOURCE[0]}" )".log
+if [ -f "$__LOGFILE" ]; then
+    rm -rf "$__LOGFILE"
+    (
+        echo "----------------------------------------"
+        echo "${1:\`date\`}"
+        echo "----------------------------------------"
+    ) >> "$__LOGFILE"
+fi

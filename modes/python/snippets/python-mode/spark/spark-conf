@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: sparkconf
+# key: sparkconf
+# --
+from pyspark import SparkConf, SparkContext
+conf = SparkConf().setAppName("${1:app}")${2:.setMaster("local[*]")}
+sc = SparkContext(conf=conf)

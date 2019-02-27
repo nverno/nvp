@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: h2
+# key: h2
+# --
+${1:Title}
+${1:$(nvp-yas-header ?-)}

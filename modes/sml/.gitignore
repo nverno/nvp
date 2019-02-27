@@ -1,0 +1,6 @@
+*.elc
+*~
+.#*
+*autoloads.el
+*loaddefs.el
+sml-source

@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: readme elisp
+# key: el-readme
+# expand-env: ((_ (nvp-makefile-add-define "wget" 'ifdef)))
+# --
+README.md: el2markdown.el $1  ## Generate README.md
+	\$(emacs) -batch -l \$< $1 -f el2markdown-write-readme
+	\$(RM) \$@~
+
+.INTERMEDIATE: el2markdown.el
+el2markdown.el:  ## Download el2markdown converter
+	\$(wget) -q -O \$@ "https://github.com/Lindydancer/el2markdown/raw/master/el2markdown.el"

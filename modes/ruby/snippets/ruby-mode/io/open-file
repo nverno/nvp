@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: open-file
+# key: openf
+# --
+File.open(${1:File.join(${2:File.dirname(__FILE__),}$3)}, ${4:'r'}) do |f|
+  $0
+end

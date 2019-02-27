@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: func
+# key: func
+# --
+fun ${1:name} ${2:exp} =
+    case $2 of
+        $3 => $4
+      | $5 => $0

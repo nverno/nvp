@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: length
+# key: lenl
+# --
+List.length $0`(ocaml-yas-end)`

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: curl
+# key: curl
+# --
+`(yas-yaml-insert-decl "curl" nil "env-curl")`$CURL https://raw.githubusercontent.com/${1:nverno}/${2:repo}/${3:master}/${4:file} -o $4`(yas-yaml-post-insert)`

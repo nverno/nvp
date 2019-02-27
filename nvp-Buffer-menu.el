@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 15:48:16>
+;; Last modified: <2019-02-27 02:35:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 January 2019
@@ -11,8 +11,8 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
-  (require 'hydra))
+  (require 'cl-lib))
+(require 'hydra)
 
 ;;;###autoload(autoload 'nvp-hydra-buffer-menu/body "nvp-Buffer-menu")
 (nvp-hydra-set-property 'nvp-hydra-buffer-menu :verbosity 1)

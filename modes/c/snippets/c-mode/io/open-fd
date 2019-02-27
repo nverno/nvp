@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: open-fd
+# key: openfd
+# --
+if ((${1:fd} = open(${2:file}, ${3:O_CREAT}, 0644)) == -1) {
+    perror("open");
+    exit(EXIT_FAILURE);
+}

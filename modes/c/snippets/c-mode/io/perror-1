@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: perr
+# key: perr
+# --
+perror("$1");
+exit(EXIT_FAILURE);

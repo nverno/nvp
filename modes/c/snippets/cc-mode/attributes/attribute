@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: attr
+# key: attr
+# --
+__attribute__ (($1));

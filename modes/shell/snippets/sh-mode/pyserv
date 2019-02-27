@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: python server
+# key: pyserve
+# group: python
+# --
+sudo python -m SimpleHTTPServer ${1:80}$0

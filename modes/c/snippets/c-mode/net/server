@@ -1,0 +1,19 @@
+# -*- mode: snippet -*-
+# name: setup server loop
+# key: server
+# --
+int sock, fd;
+
+/* set up socket */
+sock = ${1:make_server_socket(fd)};
+if (sock == -1)
+    exit(EXIT_FAILURE);
+
+while (1) { /* main server loop */
+    fd = accept(sock, NULL, NULL);
+    if (fd == -1)
+      break;
+
+    process_request(fd); /* handle client's request */
+    close(fd);
+}

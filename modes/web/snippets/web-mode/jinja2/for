@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: for
+# key: for
+# condition: (string= web-mode-engine "django")
+# --
+{% for $1 in $2 %}
+    $0
+{% endfor %}

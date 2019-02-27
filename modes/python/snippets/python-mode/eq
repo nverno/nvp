@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __eq__
+# key: eq
+# --
+def __eq__(self, other):
+    return self.$1 == other.$1

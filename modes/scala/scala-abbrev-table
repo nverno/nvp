@@ -1,0 +1,6 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'scala-mode-abbrev-table
+  '()
+  "Scala-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

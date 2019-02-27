@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sub
+# key: sub
+# --
+sub("$1", ${2:rep}, ${3:x}, perl=TRUE)

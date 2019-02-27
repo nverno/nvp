@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: mapper
+# key: mapper
+# --
+public static class ${1:mapper} extends Mapper<Object, ${2:Text}, ${3:Text}, ${4:IntWritable}> {
+
+    public void map(Object key, $2 value, Context context) 
+            throws IOException, InterruptedException {
+        $0
+        context.write($3, $4);
+    }
+}

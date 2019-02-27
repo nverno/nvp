@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: getline
+# key: getline
+# --
+char *${1:line} = NULL;
+size_t ${2:len} = 0;
+ssize_t ${3:read};
+
+while (($3 = getline(&$1, &$2, ${4:fp})) != -1) {
+    $0
+}

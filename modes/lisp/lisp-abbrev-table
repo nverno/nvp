@@ -1,0 +1,35 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'lisp-mode-vars-abbrev-table
+  '()
+  :parents (list prog-mode-abbrev-table)
+  :enable-function 'nvp-elisp-abbrev-expand-var-p)
+
+(define-abbrev-table 'lisp-mode-abbrev-table
+  '(
+    ("d" "defun" nil :system t)
+
+    ("db" "destructuring-bind" nil :system t)
+    ("dc" "defclass" nil :system t)
+    ("dg" "defgeneric" nil :system t)
+    ("dm" "defmacro" nil :system t)
+    ("dp" "defparameter" nil :system t)
+    ("ds" "defstruct" nil :system t)
+    ("dt" "deftype" nil :system t)
+    ("dv" "defvar" nil :system t)
+    ("fi" "find-if" nil :system t)
+    ("ie" "ignore-errors" nil :system t)
+    ("ip" "in-package" nil :system t)
+    ("mc" "mapcar" nil :system t)
+    ("pf" "probe-file" nil :system t)
+    ("pi" "parse-integer" nil :system t)
+    ("ri" "remove-if" nil :system t)
+    ("rl" "read-line" nil :system t)
+    ("fin" "find-if-not" nil :system t)
+    ("mht" "make-hash-table" nil :system t)
+    ("rin" "remove-if-not" nil :system t)
+    ("wof" "with-open-file" nil :system t)
+    )
+  "Lisp-Mode Abbrevs."
+  :parents (list lisp-mode-vars-abbrev-table)
+  :enable-function 'nvp-elisp-abbrev-expand-fn-p)

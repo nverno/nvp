@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: readAllLines
+# key: readAllLines
+# --
+try {
+    for (String line : Files.readAllLines(Paths.get(${1:fileName})${2:,
+                                          Charset.defaultCharset()})) {
+        $0
+    }
+} catch (IOException ex) {
+    ${3:Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);}
+    return;
+}

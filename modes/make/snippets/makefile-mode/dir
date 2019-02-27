@@ -1,0 +1,5 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: dir
+# key: d
+# --
+\$(dir ${1:\$(${2:paths})})

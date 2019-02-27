@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: linked-list
+# key: ll
+# --
+List<${1:Integer}> ${2:lst} = new LinkedList<>();;

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: noframe
+# key: noframe
+# --
+for spine in plt.gca().spines.values():
+    spine.set_visible(False)

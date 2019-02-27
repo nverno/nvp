@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: shebang
+# key: !
+# --
+#!/usr/bin/env `(if (eq 'guile geiser-impl--implementation) "guile -s\n!#")`

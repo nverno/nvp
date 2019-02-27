@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for size_t
+# key: fors
+# --
+for (size_t ${1:i} = 0; ${1:$(nvp-c-yas-var yas-text)} < ${2:N}; ++${1:$(nvp-c-yas-var yas-text)}) {
+    $0
+}

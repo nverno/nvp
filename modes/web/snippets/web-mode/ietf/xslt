@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: Include the xslt to read in browser
+# key: xslt
+# type: snippet
+# --
+<?xml-stylesheet type='text/xsl' href='http://xml.resource.org/authoring/rfc2629.xslt' ?>
+

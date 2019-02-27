@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: deprecated
+# key: depr
+# condition: (nvp-java-in-javadoc)
+# --
+@deprecated ${1: As of ${2:version}}, replaced by <code>$3</code> in the
+<code>$4</code> module

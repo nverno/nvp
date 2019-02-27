@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: pushd
+# key: pushd
+# --
+pushd $1 >/dev/null
+$0
+popd >/dev/null

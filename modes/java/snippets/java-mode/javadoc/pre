@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: pre
+# key: pre
+# condition: (nvp-java-in-javadoc)
+# --
+<pre>$1</pre>$0

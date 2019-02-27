@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: fprintf
+# key: fprf
+# --
+fprintf(${1:stderr}, "${2:%s}\\n"${2:$(if (string-match "%" yas-text) ", " "\);")}$3${2:$(if (string-match "%" yas-text) "\);" "")}

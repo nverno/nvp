@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: fork switch
+# key: forks
+# --
+pid_t pid;
+switch(pid = fork()) {
+case -1:
+    err_sys("fork");
+case 0:                         /* child */
+    $0
+    break;
+default:                        /* parent */
+    $1
+    break;
+}

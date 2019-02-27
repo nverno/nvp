@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: single target generic
+# key: c1
+# --
+CFLAGS = -Wall -std=c11 -O2
+CC = gcc
+
+%: %.c
+	\$(CC) -o \$@ \$^ \${CFLAGS}
+
+.PHONY: clean
+clean:
+	\$(RM) *.o *.exe

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: rm
+# key: rm
+# --
+`(nvp-makefile-add-define "RM" nil "rm -rf")`\$(RM)$0

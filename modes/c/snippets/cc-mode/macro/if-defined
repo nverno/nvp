@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: #if defined
+# key: mifdef
+# --
+#if defined($1) /* $1 */
+# define $0
+#endif /* $1 */

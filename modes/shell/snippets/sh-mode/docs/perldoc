@@ -1,0 +1,24 @@
+# -*- mode: snippet -*-
+# name: perldoc
+# key: perldoc
+# --
+: <<'END_OF_DOC'
+
+=head1 NAME
+
+  ${1:PROGRAM}--${2:One line description}
+
+=head1 SYNOPSIS
+
+  $1 ${3:[OPITONS] <file>}
+
+=head1 OPTIONS
+
+  ${4:-h = this usage}
+
+=head1 DESCRIPTION
+  $0
+
+=cut
+
+END_OF_DOC

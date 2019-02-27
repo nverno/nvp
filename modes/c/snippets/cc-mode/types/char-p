@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: char pointer
+# key: cp
+# --
+char *

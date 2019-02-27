@@ -1,0 +1,15 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'js-mode-abbrev-table
+  '(
+    ("cl" "console.log" nil :system t)
+    ("pf" ["parseFloat()" 1 nil nil] expand-abbrev-hook :system t)
+    ("ret" "return" nil :system t)
+    )
+  "Js-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'nodejs-repl-mode-abbrev-table
+  '()
+  "Nodejs-Repl-Mode Abbrevs."
+  :parents (list js-mode-abbrev-table))

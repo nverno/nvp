@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if-os-2
+# key: ifosc
+# --
+ifdef COMSPEC
+  ${2:@echo "Running windows"}
+endif

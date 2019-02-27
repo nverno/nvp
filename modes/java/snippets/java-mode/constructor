@@ -1,0 +1,7 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: constructor
+# key: cons
+# --
+public ${1:`(if (functionp 'eclim--java-current-class-name) (eclim--java-current-class-name) "Class")`}(${2:args}) {
+    $0
+}

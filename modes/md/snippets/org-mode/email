@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: email
+# key: email
+# condition: (or (= (current-column) 5) (= (current-column) 0))
+# --
+#+EMAIL: ${1:`user-mail-address`}

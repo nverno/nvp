@@ -1,0 +1,5 @@
+#  -*- mode: snippet; -*-
+# name : using namespace ... 
+# key: use
+# --
+using namespace ${1:std};

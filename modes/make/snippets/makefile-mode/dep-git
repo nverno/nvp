@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: add git dependency
+# key: depgit
+# expand-env: ((nvp-makefile-current-target (nvp-makefile-yas-setenv 'targets)))
+# --
+.INTERMEDIATE: $1
+$1:
+	if [ ! -d $1 ]; then \
+	  git clone --depth=1 "https://github.com/${2:nverno}/$1"; \
+	fi
+${1:$(nvp-makefile-yas-text)}`(nvp-makefile-add-define "RM" nil "rm -rf")`$0

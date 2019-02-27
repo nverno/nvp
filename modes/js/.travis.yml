@@ -1,0 +1,32 @@
+language: generic
+sudo: required
+
+env:
+  global:
+    - CURL="curl -fsSkL --retry 9 --retry-delay 9"
+  matrix:
+    - EMACS=emacs-snapshot
+
+branches:
+  only:
+    - master
+
+install:
+  - if [ "$EMACS" = 'emacs-snapshot' ]; then
+      sudo add-apt-repository -y ppa:ubuntu-elisp/ppa &&
+      sudo apt-get -qq update &&
+      sudo apt-get -qq -f install &&
+      sudo apt-get -qq install emacs-snapshot &&
+      sudo apt-get -qq install emacs-snapshot-el;
+    fi
+  - $EMACS --version
+
+script:
+  - $EMACS --batch --eval '(progn (push "." load-path) (byte-compile-file "js-tools.el"))'
+
+notifications:
+  email:
+    on_success: never
+    on_failure: always
+
+      

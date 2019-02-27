@@ -1,0 +1,9 @@
+# -*- mode: snippet; -*-
+# name: main-class
+# key: mainc
+# --
+class `(nvp-yas-bfn)` {
+  public static void main(String args[]) {
+    $0
+  }
+}

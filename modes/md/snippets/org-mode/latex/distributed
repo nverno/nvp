@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: distributed
+# key: distr
+# --
+$${1:X} \sim \text{${2:Bin}}($3)$

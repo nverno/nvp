@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: doc
+# key: doc
+# --
+##
+# Makefile for $1${2:
+# Author: Noah Peart}
+##

@@ -1,0 +1,132 @@
+#+TITLE: x86 Assembler
+
+* Integer Registers
+Ref: CS pg. 216
+Low-order portions of all 16 registers can be accessed as a byte, word (16-bit),
+double word (32-bit), and quad word (64-bit).
+
+#+NAME: integer-register-table
+| Register | 32bit | 16bit | 8bit(0-7) | 8bit(8-15) | Name/Convention             | Saved |
+|----------+-------+-------+-----------+------------+-----------------------------+-------|
+| %rax     | %eax  | %ax   | %al       | %ah        | Return value                | No    |
+| %rbx     | %ebx  | %bx   | %bl       | %bh        | Callee saved                | Yes   |
+| %rcx     | %ecx  | %cx   | %cl       | %ch        | 4th arg                     | No    |
+| %rdx     | %edx  | %dx   | %dl       | %dh        | 3rd arg                     | No    |
+| %rsi     | %esi  | %si   | %sil      |            | 2nd arg                     | No    |
+| %rdi     | %edi  | %di   | %dil      |            | 1st arg                     | No    |
+| %rbp     | %ebp  | %bp   | %bpl      |            | Base Pointer (callee saved) | Yes   |
+| %rsp     | %esp  | %sp   | %spl      |            | Stack pointer               | Yes   |
+| %r8      | %r8d  | %r8w  | %r8b      |            | 5th arg                     | No    |
+| %r9      | %r9d  | %r9w  | %r9b      |            | 6th arg                     | No    |
+| %r10     | %r10d | %r10w | %r10b     |            | Caller saved                | No    |
+| %r11     | %r11d | %r11w | %r11b     |            | Caller saved                | Yes   |
+| %r12     | %r12d | %r12w | %r12b     |            | Callee saved                | Yes   |
+| %r13     | %r13d | %r13w | %r13b     |            | Callee saved                | Yes   |
+| %r14     | %r14d | %r14w | %r14b     |            | Callee saved                | Yes   |
+| %r15     | %r15d | %r15w | %r15b     |            | Callee saved                | Yes   |
+
+Notes:
+- Loading a 32-bit register name sets the /upper/ 32 bits to 0.
+- Loading a 16- or 8-bit register /leaves all other bits unchanged/.
+
+* Other Registers
+
+#+NAME: other-register-table
+| Register | 32bit   | 16bit  | 8bit(0-7) | 8bit(8-15) | Name                                | Saved |
+|----------+---------+--------+-----------+------------+-------------------------------------+-------|
+| %rip     | %eip    | %ip    | -         | -          | Instruction Pointer/Program Counter | *     |
+| %rflags  | %eflags | %flags | -         | -          | Flags and Condition Codes           | No    |
+
+* Operand Forms
+Ref: CS pg. 217
+Operands can be immediate(constant) values, register values, or values from
+memory. The scaling factor /s/ must be 1, 2, 4, or 8.
+
+#+NAME: operand-table
+| Type      | Form             | Operand Value             | Name                |
+|-----------+------------------+---------------------------+---------------------|
+| Immediate | $Imm             | Imm                       | Immediate           |
+| Register  | r_a              | R[r_a]                    | Register            |
+| Memory    | Imm              | M[Imm]                    | Absolute            |
+| Memory    | (r_a)            | M[R[r_a]]                 | Indirect            |
+| Memory    | Imm(r_b)         | M[Imm + R[r_b]]           | Base + displacement |
+| Memory    | (r_b, r_i)       | M[R[r_b] + R[r_a]]        | Indexed             |
+| Memory    | Imm(r_b, r_i)    | M[Imm + R[r_b] + R[r_a]]  | Indexed             |
+| Memory    | (,r_i, s)        | M[R[r_i]*s]               | Scaled Indexed      |
+| Memory    | Imm(,r_i, s)     | M[Imm + R[r_i]*s]         | Scaled Indexed      |
+| Memory    | (r_b, r_i, s)    | M[R[r_b] + R[r_i]*s]      | Scaled Indexed      |
+| Memory    | Imm(r_b, r_i, s) | M[Imm + R[r_b] + R[r_i]*s | Scaled Indexed      |
+
+* Stack
+Stack address grow down on x86. To increase the stack, just subtract from the
+stack pointer, and to decrease simply add to it.
+
+#+NAME: stack-instruction-table
+| Instruction | Mnemonic                                                   |
+|-------------+------------------------------------------------------------|
+| push        | Pushes value onto stack (modifies %rsp and grows stack)    |
+| pop         | Reverse of push                                            |
+| call        | effect of pseudo: pushq [NEXT INSTRUCTION POINTER]; j ADDR |
+| ret         | effect of pseudo: popq %rip                                |
+
+* Conditional Branches
+Arithmetic instructions change part of the ~%rflags~ register as side effect of
+their operation.
+
+#+NAME: conditional-flags-table
+| Flag | Mnemonic     | Condition                                                    |
+|------+---------------+--------------------------------------------------------------|
+| ZF   | zero flag     | set IFF result was zero                                      |
+| SF   | sign flag     | set IFF most sig. bit was 1                                  |
+| CF   | carry flag    | set IFF result overflowed as unsigned: > 2^w-1               |
+| OF   | overflow flag | set IFF result overflowed as signed: >2^{w-1}-1 or <-2^{w-1} |
+
+#+NAME: conditional-test-table
+| Instruction | Mnemonic                                           |
+|-------------+----------------------------------------------------|
+| test        | Binary AND                                         |
+| cmp         | substraction: cmpq %rax %rbx evaluates %rbx - %rax |
+
+#+NAME: conditional-instruction-table
+| Instruction | Mnemonic                    | C example             | Cond. Flags           |
+|-------------+-----------------------------+-----------------------+-----------------------|
+| j, jmp      | Jump                        | break;                | (Unconditional)       |
+| je, jz      | Jump if equal (zero)        | if (x == y)           | ZF                    |
+| jne, jnz    | Jump if not equal (nonzero) | if (x != y)           | !ZF                   |
+| jg, jnle    | Jump if greater             | if (x > y), signed    | !ZF && !(SF^OF)       |
+| jge, jnl    | Jump if greater or equal    | if (x >= y), signed   | !(SF ^ OF)            |
+| jl, jnge    | Jump if less                | if (x < y), signed    | SF ^ OF               |
+| jle, jng    | Jump if less or equal       | if (x <= y), signed   | (SF^OF) \vert\vert ZF |
+| ja, jnbe    | Jump if above               | if (x > y), unsigned  | !CF && !ZF            |
+| jae, jnb    | Jump if above or equal      | if (x >= y), unsigned | !CF                   |
+| jb, jnae    | Jump if below               | if (x < y), unsigned  | CF                    |
+| jbe, jna    | Jump if below or equal      | if (x <= y), unsigned | CF \vert\vert ZF      |
+| js          | Jump if sign bit            | if (x < 0), signed    | SF                    |
+| jns         | Jump if not sign bit        | if (x >= 0), signed   | !SF                   |
+
+
+* Calling Conventions
+The [[https://software.intel.com/sites/default/files/article/402129/mpx-linux64-abi.pdf][full linux x86-64 calling convention]]
+
+The basics:
+ - *Return address*: At function entry, the stack pointer %rsp points at the
+   function's return address
+ - *Stack alignment*: At function entry, the stack pointer must equal a multiple
+   of 16 plus 8. It must be 8 bytes off the 16-byte alignment because the ~callq~
+   modifies the stack by pushing the return address onto the stack. Thus, the
+   stack will be 16-byte aligned.
+ - *Parameters*: Function's first 6 arguments are in ~%rdi~, ~%rsi~, ~%rdx~,
+   ~%rcx~, ~%r8~, and ~%r9~. Any parameters less than 64-bits only use the lower
+   bits, the rest is garbage. Remaining arguments are the first elements on the
+   stack (8 bytes), eg. argument 7 is ~8(initial-%rsp)~, 8 is ~16(initial-%rsp)~.
+ - *Return Values*: in the ~%rax~ register, returned by ~retq~.
+ - *Callee-saved registers*: At function exit ~%rsp~, ~%rbp~, ~%rbx~, ~%r12-15~
+   must have the same values as before the function call.
+ - *Stack usage*: The function must not access/modify caller-reserved space
+   (addresses larger than ~%rsp~) with two exceptions: it can modify the stack
+   pointer and access or modify objects with publicly visible addresses. It can
+   increase the stack with ~subq~ or decrease it with ~addq~. Also, it can use
+   the 128 bytes above the current ~%rsp~ as scratch space.
+
+* Linux 64 ABI
+- [[https://software.intel.com/sites/default/files/article/402129/mpx-linux64-abi.pdf][System V Application Binary Interface]]

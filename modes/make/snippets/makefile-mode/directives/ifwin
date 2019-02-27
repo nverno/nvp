@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: ifwin
+# key: ifwin
+# --
+EXT=
+ifeq (\$(OS), Windows_NT)
+  EXT=.exe$1
+endif$0

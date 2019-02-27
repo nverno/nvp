@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: check_init
+# key: check_init
+# --
+#include <check.h>
+#include "../$1.c"
+
+START_TEST (${2:test_$1})
+{
+    $0
+}
+END_TEST

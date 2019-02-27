@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: empty
+# key: empty
+# condition: (string= web-mode-engine "django")
+# --
+{% empty %}

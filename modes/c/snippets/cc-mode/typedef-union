@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: typedef union
+# key: tduni
+# --
+typedef union {
+    $0
+} ${1:name};

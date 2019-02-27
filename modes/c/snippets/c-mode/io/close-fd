@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: close-fd
+# key: closefd
+# --
+if (close(${1:fd}) == -1) {
+    perror("close");
+    exit(EXIT_FAILURE);
+}

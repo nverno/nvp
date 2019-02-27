@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: noreturn
+# key: noreturn
+# --
+__attribute__((noreturn))

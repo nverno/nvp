@@ -1,0 +1,5 @@
+# -*- mode: snippet; -*-
+# name: doxygen member
+# key: doxm
+# --
+${1:member}${2:;}  /**< ${3:$1} */

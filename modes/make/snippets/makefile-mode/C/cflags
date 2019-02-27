@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: cflags
+# key: cflags
+# --
+CC = gcc
+CFLAGS = -${1:O2} -Wall -Werror -std=c11

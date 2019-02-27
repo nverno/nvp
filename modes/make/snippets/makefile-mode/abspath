@@ -1,0 +1,5 @@
+# -*- mode: snippet; -*-
+# name: abspath
+# key: abs
+# --
+\$(abspath ${1:\$(${2:paths})})$0

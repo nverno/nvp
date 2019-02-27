@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ol
+# key: ol
+# --
+1. ${1:Text}
+`(cl-loop for i from 2 upto (1+ (nvp-yas-read #'read-number "Elements: "))
+    do (insert (format "%d. ${%d:x}\n" i i)))`

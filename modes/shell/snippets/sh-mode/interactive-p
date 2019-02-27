@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: interactive-p
+# key: interactive-p
+# --
+case "$-" in
+    *i*) $1;;
+    *)
+        $0;;
+esac

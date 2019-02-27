@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: strdup
+# key: strdup
+# --
+char *${1:strdup}(const char *src) {
+    size_t len = strlen(src) + 1;
+    return (char*)memcpy(malloc(len), src, len);
+}

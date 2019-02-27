@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __pos__
+# key: __pos__
+# --
+def __pos__(self):
+    return $0

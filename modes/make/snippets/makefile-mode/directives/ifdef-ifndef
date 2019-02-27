@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: ifd
+# key: ifd
+# --
+if${1:n}def $2
+  $0${3:
+else
+  $4}
+endif

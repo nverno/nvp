@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: reducer
+# key: reducer
+# --
+public static class ${1:Reducer} extends Reducer<${2:Text}, ${3:IntWritable}, ${4:Text}, ${5:IntWritable}> {
+
+    public void reduce($2 key, Iterable<$3> values, Context context)
+          throws IOException, InterruptedException {
+        $0
+    context.write($4, $5);
+    }
+}

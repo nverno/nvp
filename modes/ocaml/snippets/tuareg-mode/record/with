@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: with
+# key: with
+# --
+{${1:array} with ${2:field}=${3:value}$0}

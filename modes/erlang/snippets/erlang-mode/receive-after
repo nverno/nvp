@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: receive after ... -> ... end
+# key: rcva
+# --
+receive
+after
+  $1 -> $0
+end

@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: RFC text table
+# key: texttable
+# --
+<texttable ${1:$(if-non-empty "anchor='")}${1:anchor}${1:$(if-non-empty "'")}>
+  <preamble${2:$(if-empty "/")}>${2:preamble}${2:$(if-non-empty "</preamble>")}
+  <ttcol align='${3:center}'${4:$(if-empty "/")}>${4:head}${4:$(if-non-empty "</ttcol>")}
+  <c>$0</c>
+  <postamble${5:$(if-empty "/")}>${5:postamble}${5:$(if-non-empty "</postamble>")}
+</texttable>

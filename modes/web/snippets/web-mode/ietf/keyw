@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: Keyword in an RFC
+# key: keyw
+# type: snippet
+# --
+<keyword>$1</keyword>
+$0

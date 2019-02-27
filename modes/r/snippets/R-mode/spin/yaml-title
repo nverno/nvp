@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: Add YAML for spinning just title (for sites)
+# key: yaml-title
+# --
+##' ---
+##' title: "$1"
+##' author: ""
+##' date: ""
+##' ---
+$0

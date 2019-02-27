@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sapply
+# key: sa
+# --
+sapply($1, ${2:function(x)}$3)

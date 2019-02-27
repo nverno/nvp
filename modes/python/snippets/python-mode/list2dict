@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: list2dict
+# key: list2dict
+# --
+${1:d} = dict(itertools.`(if (python-yas-py3-p) "" "i")`zip_longest(*[iter(${2:lst})]*2, fillvalue=${3:""}))

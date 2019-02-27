@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: type with doc
+# key: typedoc
+# --
+"""
+# Description
+
+"""
+type ${1:$$(capitalize yas-text)}
+  $0
+end

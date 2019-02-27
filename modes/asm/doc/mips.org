@@ -1,0 +1,40 @@
+#+TITLE: MIPS
+
+* Registers
+
+|---------------+--------+----------------------------------------------------------|
+| Register Name | Number | Usage                                                    |
+|---------------+--------+----------------------------------------------------------|
+| $zero         |      0 | Constant 0 (hardwired)                                   |
+| $at           |      1 | reserved for assembler                                   |
+| $v0           |      2 | expr eval & function results, codes for syscalls to spim |
+| $v1           |      3 | expr eval & function results                             |
+| $a0           |      4 | function arg 1                                           |
+| $a1           |      5 | function arg 2                                           |
+| $a2           |      6 | function arg 3                                           |
+| $a3           |      7 | function arg4                                            |
+| $t0           |      8 | temps (not preserved across function calls)              |
+| $t1           |      9 | temps (not preserved across function calls)              |
+| $t2           |     10 | temps (not preserved across function calls)              |
+| $t3           |     11 | temps (not preserved across function calls)              |
+| $t4           |     12 | temps (not preserved across function calls)              |
+| $t5           |     13 | temps (not preserved across function calls)              |
+| $t6           |     14 | temps (not preserved across function calls)              |
+| $t7           |     15 | temps (not preserved across function calls)              |
+| $s0           |     16 | saved temps (preserved across calls)                     |
+| $s1           |     17 | saved temps (preserved across calls)                     |
+| $s2           |     18 | saved temps (preserved across calls)                     |
+| $s3           |     19 | saved temps (preserved across calls)                     |
+| $s4           |     20 | saved temps (preserved across calls)                     |
+| $s5           |     21 | saved temps (preserved across calls)                     |
+| $s6           |     22 | saved temps (preserved across calls)                     |
+| $s7           |     23 | saved temps (preserved across calls)                     |
+| $t8           |     24 | temps (not preserved across function calls)              |
+| $t9           |     25 | temps (not preserved across function calls)              |
+| $k0           |     26 | reserved for OS kernel                                   |
+| $k1           |     27 | reserved for OS kernel                                   |
+| $gp           |     28 | pointer to global area                                   |
+| $sp           |     29 | stack pointer                                            |
+| $fp           |     30 | frame pointer                                            |
+| $ra           |     31 | return address (used by function call)                   |
+

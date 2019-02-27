@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: hash
+# key: hash
+# --
+Hashtbl.create ${1:128}`(ocaml-yas-end)`

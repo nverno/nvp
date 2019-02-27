@@ -1,0 +1,39 @@
+#+TITLE: Signals
+#+SOURCE: The linux programming interface, page 396
+
+| Name      | Signal Number       | Description                 | Default |
+|-----------+---------------------+-----------------------------+---------|
+| SIGABRT   | 6                   | Abort Process               | core    |
+| SIGALRM   | 14                  | Real-time timer expired     | term    |
+| SIGBUS    | 7(SAMP=10)          | Memory access error         | core    |
+| SIGCHLD   | 17(SA=20,MP=18)     | Child terminated or stopped | ignore  |
+| SIGCONT   | 18(SA=19,M=25,P=26) | Continue if stopped         | cont    |
+| SIGEMT    | undef(SAMP=7)       | Hardware fault              | cont    |
+| SIGFPE    | 8                   | Arithmetic exception        | core    |
+| SIGHUP    | 1                   | Hangup                      | term    |
+| SIGILL    | 4                   | Illegal instruction         | core    |
+| SIGINT    | 2                   | Terminal interrupt          | term    |
+| SIGIO /   | 29(SA=23,MP=22)     | I/O Possible                | term    |
+| SIGPOLL   |                     |                             |         |
+| SIGKILL   | 9                   | Sure kill (unblockable)     | term    |
+| SIGPIPE   | 13                  | Broken pipe (no reader)     | term    |
+| SIGPROF   | 27(M=29,P=21)       | Profiling timer expired     | term    |
+| SIGPWR    | 30(SA=29,MP=19)     | Power about to fail         | term    |
+| SIGQUIT   | 3                   | Terminal quit               | core    |
+| SIGSEGV   | 11                  | Invalid memory reference    | core    |
+| SIGSTKFLT | 16(SAM=undef,P=36)  | Stack fault on coprocessor  | term    |
+| SIGSTOP   | 19(SA=17,M=23,P=24) | Sure stop                   | stop    |
+| SIGSYS    | 31(SAMP=12)         | Invalid system call         | core    |
+| SIGTERM   | 15                  | Terminate process           | term    |
+| SIGTRAP   | 5                   | Trace/breakpoint trap       | core    |
+| SIGTSTP   | 20(SA=18,M=24,P=25) | Terminal stop               | stop    |
+| SIGTTIN   | 21(M=26,P=27)       | Terminal read from BG       | stop    |
+| SIGTTOU   | 22(M=27,P=28)       | Terminal write from BG      | stop    |
+| SIGURG    | 23(SA=16,M=21,P=29) | Urgent data on socket       | ignore  |
+| SIGUSR1   | 10(SA=30,MP=16)     | User-defined signal 1       | term    |
+| SIGUSR2   | 12(SA=31,MP=17)     | User-defined signal 2       | term    |
+| SIGVTALRM | 26(M=28,P=20)       | Virtual timer expired       | term    |
+| SIGWINCH  | 28(M=20,P=23)       | Terminal window size change | ignore  |
+| SIGXCPU   | 24(M=30,P=33)       | CPU time limit exceeded     | core    |
+| SIGXFSZ   | 25(M=31,P=34)       | File size limit exceeded    | core    |
+

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: for array
+# key: fora
+# --
+for $1 in "\${!$2[@]}"; do
+    $0
+done
+

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: reduce
+# key: reduce
+# condition: (python-yas-py3-p)
+# --
+${1:acc} = 0.0
+for ${2:i} in range(len(${3:list})):
+	$1 += $0$3[$2]

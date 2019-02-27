@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mode 0644
+# key: S_0644
+# --
+S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH

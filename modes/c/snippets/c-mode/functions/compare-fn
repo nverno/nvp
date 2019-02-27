@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: compare
+# key: compare
+# --
+int comparator(const void *a, const void *b) {
+    const $1 *x = (const $1 *)a;
+    const $1 *y = (const $1 *)b;
+    return *x - *y;
+}

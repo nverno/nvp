@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: if-err-success
+# key: iferr0
+# --
+if ($1) {
+    fprintf(stderr, "$2\n", $3);
+    exit(EXIT_SUCCESS);
+}

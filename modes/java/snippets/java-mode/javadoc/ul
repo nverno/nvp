@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ul
+# key: ul
+# condition: (nvp-java-in-javadoc)
+# --
+<ul>$1</ul>

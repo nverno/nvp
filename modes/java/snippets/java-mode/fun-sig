@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sig
+# key: sig
+# --
+${1:public}${2: abstract} ${3:void} ${4:name}(${5:args});

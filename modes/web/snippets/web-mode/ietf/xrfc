@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: <xrfc> for RFC or ID
+# key: xrfc
+# type: snippet
+# --
+<xref anchor=\'${1:RFC}${2:rfc}\'>${1:$(if (string-equal "RFC" yas-text) "RFC " yas-text)}$2</xref>$0
+

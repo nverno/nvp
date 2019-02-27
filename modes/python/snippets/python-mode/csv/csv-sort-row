@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: sort csv by row
+# key: sortrow
+# group: csv
+# --
+${1:res} = sorted(${2:csv}, key=lambda row: row[${3:col}]${4:, reverse=True})

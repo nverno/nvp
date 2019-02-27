@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: ifarg
+# key: ifarg
+# --
+if len(sys.argv) < ${1:2}:
+    exit(1)
+else:
+    $2

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __hex__
+# key: __hex__
+# --
+def __hex__(self):
+    return $0

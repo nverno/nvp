@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: immutable type
+# key: imm
+# --
+immutable ${1:$$(capitalize yas-text)}
+  $0
+end

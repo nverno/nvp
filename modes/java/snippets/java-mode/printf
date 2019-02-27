@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: printf
+# key: prf
+# --
+System.out.printf("$1${2:\\n}");

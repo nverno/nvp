@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: doc
+# key: doc
+# --
+##
+# @info         $0`(dotimes (n (read-number "Pars: "))(insert (format "\n# @param        $%s" (+ 2 n))))`${1:
+# @return       0 on success, 1 otherwise}
+##

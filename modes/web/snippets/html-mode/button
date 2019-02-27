@@ -1,0 +1,5 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: button
+# key: button
+# --
+<button type="button" class="btn ${1:btn-success}">${2:Submit form}</button>

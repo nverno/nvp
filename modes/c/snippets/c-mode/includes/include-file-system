@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: include file system headers
+# key: incf
+# --
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: true
+# key: true
+# condition: (nvp-java-in-javadoc)
+# --
+<code>true</code>

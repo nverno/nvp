@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: ifeq
+# key: ifeq
+# --
+if${1:n}eq (\$(${2:OS}),${3:Windows_NT})
+  $4${5:
+else
+  $6}
+endif

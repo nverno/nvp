@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: set
+# key: set
+# --
+Set<${1:Integer}> ${2:set} = new ${3:HashSet}<>();

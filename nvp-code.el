@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 20:05:10>
+;; Last modified: <2019-02-27 02:34:02>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Last modified: <2019-02-07 14:13:54>
@@ -15,6 +15,7 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (nvp-declare "hideshow" hs-toggle-hiding hs-show-all hs-hide-all)
+(defvar hs-minor-mode)
 
 ;; -------------------------------------------------------------------
 ;;; Code Fold

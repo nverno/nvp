@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: open-file
+# key: openf
+# --
+std::ifstream ${1:infile}(${2:file});
+while ($1 >> ${3:var}) {
+    $0
+}

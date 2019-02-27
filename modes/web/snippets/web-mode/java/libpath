@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: libpath
+# key: libpath
+# --
+<classpathentry kind="lib" path="`(expand-file-name ".local/lib" (getenv "HOME"))`/$1"/>

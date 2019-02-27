@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: class
+# key: class
+# --
+class ${1:class}:
+    $0

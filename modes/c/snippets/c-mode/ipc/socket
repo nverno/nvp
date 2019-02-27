@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: socket
+# key: socket
+# --
+${1:sock_id} = socket(${2:AF_INET}, SOCK_STREAM, 0);
+if ($1 == -1) {
+    perror("socket");
+    exit(EXIT_FAILURE);
+}

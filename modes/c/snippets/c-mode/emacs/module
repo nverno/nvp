@@ -1,0 +1,54 @@
+# -*- mode: snippet -*-
+# name: module
+# key: module
+# --
+#include <emacs-module.h>
+
+int plugin_is_GPL_compatible;
+
+/* Exposed function */
+static emacs_value
+F${1:function}(emacs_env *env, long nargs, emacs_value args[], void *data) {
+    $0
+}
+
+/* bind NAME to function */
+static void bind_function(emacs_env *env, const char *name, emacs_value Sfun) {
+    /* convert strings to symbols */
+    emacs_value Qfset = env->intern(env, "fset");
+    emacs_value Qsym = env->intern(env, name);
+
+    /* prepare arguments array */
+    emacs_value args[] = { Qsym, Sfun };
+
+    /* call function */
+    env->funcall(env, Qfset, 2, args);
+}
+
+/* provide FEATURE */
+static void provide(emacs_env *env, const char *feature) {
+    /* call 'provide' with FEATURE converted to a symbol */
+    emacs_value Qfeat = env->intern(env, feature);
+    emacs_value Qprovide = env->intern(env, "provide");
+    emacs_value args[] = { Qfeat };
+    
+    env->funcall(env, Qprovide, 1, args);
+}
+
+int emacs_module_init(struct emacs_runtime *ert) {
+    emacs_env *env = ert->get_environment(ert);
+    
+    /* create a lambda (returns an emacs_value) */
+    emacs_value fun = env->make_function(
+        env,
+        0,                         /* min number args */
+        0,                         /* max number args */
+        F$1,                       /* actual function pointer */
+        "doc",                     /* doc */
+        NULL);                     /* user pointer (data param in F$1) */
+    
+    bind_function(env, "$1", fun);
+    provide(env, "${2:feature}");
+
+    return 0;
+}

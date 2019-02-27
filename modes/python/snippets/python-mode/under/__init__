@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: __init__ with assignment
+# key: init
+# --
+def __init__(self${1:, args}):
+    """$2
+    """
+    ${1:$(elpy-snippet-init-assignments yas-text)}

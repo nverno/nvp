@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: swap
+# key: swap
+# --
+void swap(${1:int} *a, $1 *b) {
+    $1 temp;
+    temp = *a;
+    *a = *b;
+    *b = temp;
+}

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __ipow__
+# key: __ipow__
+# --
+def __ipow__(self, other):
+    return $0

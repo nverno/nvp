@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: false
+# key: false
+# condition: (nvp-java-in-javadoc)
+# --
+<code>false</code>

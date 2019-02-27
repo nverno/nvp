@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mpl
+# key: mpl
+# --
+import matplotlib as mpl

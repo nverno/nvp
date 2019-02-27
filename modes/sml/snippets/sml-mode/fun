@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: fun
+# key: fun
+# --
+fun ${1:name} ${2:()} =
+    $0

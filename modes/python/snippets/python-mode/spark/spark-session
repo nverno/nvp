@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: spark-session
+# key: spark
+# --
+from pyspark.sql import SparkSession
+
+spark = SparkSession \
+    .builder \
+    .appName("$1") \
+    ${2:.config("${3:spark.some.config.option}", "${4:some-value}") \
+    }.getOrCreate()

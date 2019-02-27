@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: length of array
+# key: len
+# --
+$\{#${1:arrayname}[@]}

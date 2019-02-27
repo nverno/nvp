@@ -1,0 +1,7 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: canvas
+# key: canvas
+# --
+<canvas id="${1:canvas}" width="{2:640}" height="${3:640}" style="${4:position: absolute; left: 0; top: 0;}">
+	$0
+</canvas>

@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: init_docstring
+# key: initdoc
+# --
+def __init__(self$1):
+    \"\"\"$2
+    ${1:$(python-yas-args-to-docstring)}
+    \"\"\"
+    $0

@@ -1,0 +1,5 @@
+#+TITLE: References
+
+- [[http://scala-lang.org/files/archive/spec/2.12/][Language spec 2.12]]
+- [[http://ensime.github.io/editors/emacs/cheat_sheet/][ensime cheatsheet]]
+- [[https://github.com/foundweekends/giter8/wiki/giter8-templates][project templates]]

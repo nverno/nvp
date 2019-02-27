@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: test_file
+# key: testf
+# --
+import unittest
+${1:from ${2:test_file} import *}
+
+$0
+
+if __name__ == '__main__':
+    unittest.main()

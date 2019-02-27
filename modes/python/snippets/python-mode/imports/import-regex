@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: import-re
+# key: re
+# --
+import regex as re

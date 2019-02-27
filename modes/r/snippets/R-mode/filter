@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Filter
+# key: filt
+# --
+Filter(${1:function(x)}$2, ${3:x})

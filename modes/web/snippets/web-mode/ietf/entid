@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: <!ENTITY > for RFC
+# key: entid
+# type: snippet
+# --
+<!ENTITY ${1:I-D}.${2:idref} SYSTEM
+ 'http://xml.resource.org/public/rfc/bibxml${1:$(if (string= yas-text "I-D") "3" "")}/reference.$1.$2.xml'>
+$0

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if-pkg
+# key: ifpkg
+# --
+if ${1:! }dpkg-query -W $2 >/dev/null; then
+    sudo apt install -y $3
+fi

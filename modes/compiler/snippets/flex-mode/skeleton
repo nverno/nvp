@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: skeleton
+# key: skel
+# --
+%{
+// Declarations$0
+%}
+// Definitions
+%%
+// Rules
+%%
+// User subroutines

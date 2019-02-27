@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: dotify org-table
+# key: dotify
+# --
+#+HEADER: :var nodes=${1:node-table} graph=${2:graph-table} file="$3.png"
+#+BEGIN_SRC emacs-lisp :colnames yes :exports results :results none
+(org-tools-dotify nodes graph (cons :file file))
+#+END_SRC
+
+#+attr_latex: :width 6cm
+[[$3.png]]

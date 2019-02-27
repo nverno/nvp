@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ifr
+# key: ifr
+# --
+if [ -r "${1:src}" ]; then
+   $0
+fi

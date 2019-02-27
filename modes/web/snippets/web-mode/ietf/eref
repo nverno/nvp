@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: <eref> for RFC
+# key: eref
+# type: snippet
+# --
+<eref target='${1:URL}'${2:$(yas-if-empty " />" ">")}${2:Title}${2:$(yas-if-not-empty "</eref>")}$0

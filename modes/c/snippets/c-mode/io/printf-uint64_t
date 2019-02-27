@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: printf 64bit
+# key: pr64
+# --
+printf("%" PRI${1:`(yas-choose-value "u" "d")`}64 "${2:\n}", $0);

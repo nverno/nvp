@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: or-and-empty
+# key: orz
+# --
+[ -${1:z} "\$$2" ] ${3:&&} ${4:_error_exit "$2 required"}

@@ -1,0 +1,23 @@
+# -*- mode: snippet -*-
+# name: <address> for RFC
+# key: addr
+# type: snippet
+# optional fields are:
+#   organization, region, phone, fax and uri
+# --
+<author fullname="${1:given} ${2:surname}" initials="${3:initials}" surname="$2">
+  ${4:$(if-empty "<!-- <organization/> -->" "<organization>")}${4:organization}${4:$(if-non-empty "</organization>")}
+  <address>
+    <postal>
+      <street>${5:Street}</street>
+      <city>${6:City}</city>
+      ${7:$(if-empty "<!-- <region/> -->" "<region>")}${7:reg}${7:$(if-non-empty "</region>")}
+      <code>${8:Code}</code>
+      <country>${9:Country}</country>
+    </postal>
+  ${10:$(if-empty "<!-- <phone/> -->" "<phone>")}${10:phone}${10:$(if-non-empty "</phone>")}
+  ${11:$(if-empty "<!-- <facsimile/> -->" "<facsimile>")}${11:fax}${11:$(if-non-empty "</facsimile>")}
+  <email>${12:email}</email>
+  ${13:$(if-empty "<!-- <uri/> -->" "<uri>")}${13:uri}${13:$(if-non-empty "</uri>")}
+  </address>
+</author>$0

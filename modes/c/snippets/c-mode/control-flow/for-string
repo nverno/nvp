@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: for_string
+# key: forstr
+# --
+size_t ${1:len} = strlen(${2:str});
+for (size_t ${3:i} = 0; i < len; i++) {
+    $0
+}

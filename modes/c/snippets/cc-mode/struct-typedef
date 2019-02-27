@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: struct type
+# key: structt
+# --
+struct ${1:name}_s {
+    $0;
+};
+typedef struct $1_s $1_t;

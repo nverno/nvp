@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: type
+# key: type
+# --
+type ${1:$$(capitalize yas-text)}
+  $0
+end

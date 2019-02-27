@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: main
+# key: main
+# --
+let main =
+    $0`(ocaml-yas-end)`

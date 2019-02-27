@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for i in range
+# key: forr
+# --
+for ${1:i} in \$(seq 1 ${2:END}); do
+    $0
+done

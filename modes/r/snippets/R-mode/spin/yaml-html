@@ -1,0 +1,22 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: Add yaml front matter for spinning html
+# key: spin-html
+# binding: direct-keybinding
+# --
+##' ---
+##' title: "$1"
+##' output:
+##'    html_document:
+##'       theme: ${2:readable}
+##'       highlight: ${3:zenburn}
+##'       toc: true${4:
+##'       toc_float: false
+##'          collapsed: false
+##'          smooth_scroll: false}
+##'       css: ${5: includes/css/mystyles.css}
+##'       fig_caption: ${6:true}
+##'       code_folding: ${7:hide}
+##'       keep_md: ${8:false}
+##'       self_contained: ${9:true}
+##' ---
+$0

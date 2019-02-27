@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ditaa
+# key: ditaa
+# --
+#+BEGIN_SRC ditaa :file images/${1:png-file}.png
+$0
+#+END_SRC

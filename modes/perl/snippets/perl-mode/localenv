@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: localenv
+# key: localenv
+# --
+local $ENV{${1:PATH}} = "${2:`(getenv \"HOME\")`/perl5/bin:$ENV{PATH}}";

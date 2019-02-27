@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: Add timing
+# key: timeit
+# --
+${1:START}=\$(date +%s)
+$0
+${2:END}=\$(date +%s)
+${3:DIFF}=\$(( $2 - $1 ))
+$3=\$(( $3 / 60 ))
+
+echo "runtime: $3 minutes"

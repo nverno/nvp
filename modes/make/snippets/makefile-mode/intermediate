@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: intermediate
+# key: int
+# --
+.INTERMEDIATE: $1
+$1:

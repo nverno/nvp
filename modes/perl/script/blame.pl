@@ -1,0 +1,25 @@
+#! /usr/bin/env perl
+
+# http://geekblog.oneandoneis2.org/index.php/2012/02/15/cuz-multiple-steps-into-one-is-cool
+
+use strict;
+use warnings;
+use 5.010;
+
+my $debug = 0;
+
+my $line_no   = shift;
+my $file_name = shift;
+
+say "Line: $line_no | File: $file_name" if $debug;
+
+# Get the git blame for the line & file
+my( $line ) = `git blame -L $line_no $file_name`;
+say "Line: $line" if $debug;
+
+# Reduce this just to the SHA
+chomp $line;
+(my $sha = $line) =~ s/^(\S+).*/$1/;
+say "SHA: $sha" if $debug;
+
+( $sha eq '00000000') ? say $line : system("git show $sha");

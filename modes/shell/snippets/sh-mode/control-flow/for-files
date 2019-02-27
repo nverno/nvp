@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for_files
+# key: forf
+# --
+for ${1:f} in \$(find ${2:~} -type f -name "$3"); do
+    $0
+done

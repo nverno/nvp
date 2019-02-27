@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: rstar
+# key: rstar
+# --
+(run* [q]
+  $0)

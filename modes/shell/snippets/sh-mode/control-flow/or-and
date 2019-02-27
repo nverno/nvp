@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: or-and
+# key: or
+# --
+[ ${1:! }${2:-f} "${3:file}" ] ${4:&&} ${5:_error_exit "$6"}

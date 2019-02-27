@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: doxygen file header
+# key: doxf
+# --
+/** @file ${1:`(file-name-nondirectory (buffer-file-name))`}
+ * @brief $0
+ */

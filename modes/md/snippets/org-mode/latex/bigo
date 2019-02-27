@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: bigo
+# key: bigo
+# --
+$\mathcal\{O}($1)$

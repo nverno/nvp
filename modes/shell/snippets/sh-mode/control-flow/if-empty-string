@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if-empty-string
+# key: ifz
+# --
+if [ -z "\$$2" ]; then
+    $0
+fi

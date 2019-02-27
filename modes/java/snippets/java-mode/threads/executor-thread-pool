@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: Exectutor thread pool
+# key: execpool
+# --
+ExecutorService ${1:threadPool} = Executors.newFixedThreadPool(${2:numThreads});
+$0
+$1.shutdown();
+try {
+    $1.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+} catch (InterruptedException e) {
+    e.printStackTrace();
+}

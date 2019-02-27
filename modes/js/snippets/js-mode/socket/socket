@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: socket
+# key: socket
+# --
+var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);

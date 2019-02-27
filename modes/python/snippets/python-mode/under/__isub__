@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __isub__
+# key: __isub__
+# --
+def __isub__(self, other):
+    return $0

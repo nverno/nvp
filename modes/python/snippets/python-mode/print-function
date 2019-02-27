@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: future
+# key: future
+# --
+from __future__ import ${1:print_function}

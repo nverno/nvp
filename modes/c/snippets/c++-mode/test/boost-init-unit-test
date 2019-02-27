@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: boost test init
+# key: boost_init
+# --
+#define BOOST_TEST_MODULE ${1:UF_Test}
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/unit_test.hpp>
+using namespace boost::unit_test;

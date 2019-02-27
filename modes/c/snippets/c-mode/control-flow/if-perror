@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: if-perror
+# key: ifperr
+# --
+if ($1) {
+    perror("$2");
+    exit(EXIT_FAILURE);
+}

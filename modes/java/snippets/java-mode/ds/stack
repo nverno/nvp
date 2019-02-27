@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: stack
+# key: stack
+# --
+Deque<${1:Integer}> ${2:stack} = new ArrayDeque<>();

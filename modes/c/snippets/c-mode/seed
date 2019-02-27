@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: seed
+# key: seed
+# --
+srand(time(NULL));

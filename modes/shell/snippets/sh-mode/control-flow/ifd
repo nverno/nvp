@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if directory
+# key: ifd
+# --
+if [ ${1:! }-d "$2" ]; then
+    $0
+fi

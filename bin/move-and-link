@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -e
+
+# shellcheck source=/dev/null
+. ~/bin/include/utils.sh
+
+SITE_LISP="$HOME/.emacs.d/site-lisp"
+
+##
+# @info         Nest dirs in nvp and link to site-lisp until better packaging
+##
+move_and_link() {
+    local modename npkg d
+
+    for d in "$SITE_LISP"/*-tools; do
+        modename="$(basename "${d%%-tools}")"
+        npkg="$SITE_LISP/nvp/modes/$modename"
+        _log "$d => $npkg"
+        mv "$d" "$npkg"
+        ln -sfn "$npkg" "$d"
+    done
+}
+
+move_and_link

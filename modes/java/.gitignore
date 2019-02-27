@@ -1,0 +1,7 @@
+*~
+*.elc
+*loaddefs.el
+*autoloads.el
+c-tools-include.el*
+.clang_complete
+workbench.xmi

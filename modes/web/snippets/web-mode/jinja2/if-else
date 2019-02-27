@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: if-else
+# key: ife
+# condition: (string= web-mode-engine "django")
+# --
+{% if $1 %}
+    $2
+{% else %}
+    $0
+{% endif %}

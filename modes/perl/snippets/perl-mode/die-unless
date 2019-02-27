@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: die unless
+# key: dieu
+# --
+die "$1" unless $2

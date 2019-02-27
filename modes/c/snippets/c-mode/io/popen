@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: popen
+# key: popen
+# --
+FILE *fp = popen("$1", "${2:r}");
+
+if (fp == NULL) {
+    perror("popen");
+    $0
+}
+
+pclose(fp);

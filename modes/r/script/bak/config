@@ -1,0 +1,18 @@
+[default]
+targets=R_deps R_config R_asdf R_packages
+
+# Install CRAN repo in apt sources and R build dependencies
+[R_deps]
+sudo=true
+
+# install config files
+[R_config]
+
+# Installs R using asdf -- builds from source
+[R_asdf]
+# either devel for latest devel or a version number, defaults to latest version
+args=devel
+
+# Install default R packages: installed via Rscript in install.R
+# Note: takes quite a while
+[R_packages]

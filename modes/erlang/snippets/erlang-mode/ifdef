@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: -ifdef(...). ... -endif.
+# key: ifd
+# --
+-ifdef($1).
+  $0
+-endif.

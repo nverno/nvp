@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: mainapp
+# key: mainapp
+# --
+object ${1:Class} extends App {
+  val ${2:(arg1)} = (args(0))
+}

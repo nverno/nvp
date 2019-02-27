@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: immutable with doc
+# key: immdoc
+# --
+"""
+# Description
+
+"""
+immutable ${1:$$(capitalize yas-text)}
+  $0
+end

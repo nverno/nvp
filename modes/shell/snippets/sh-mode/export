@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: export
+# key: exp
+# --
+export $1="$2"

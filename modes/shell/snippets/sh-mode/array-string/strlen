@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: strlen
+# key: strlen
+# --
+$\{#$1}$0

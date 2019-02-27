@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ol
+# key: ol
+# condition: (nvp-java-in-javadoc)
+# --
+<ol>$1</ol>$0

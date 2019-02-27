@@ -1,0 +1,17 @@
+# -*- mode: snippet -*-
+# name: sub with doc
+# key: subdoc
+# expand-env: ((yas-indent-line 'fixed))
+# --
+=head2 ${1:$(yas-text)}(${2:$(yas-text)}) : 1
+
+# POD
+
+=cut
+sub $1 {
+  my $self = shift;
+  my (${2:args}) = @_;
+  
+  $0
+  return 1;
+}

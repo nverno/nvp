@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: logm
+# key: logm
+# --
+log("`(nvp-java-method-name)`() called with: `(nvp-java-method-args)`");

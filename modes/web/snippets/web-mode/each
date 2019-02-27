@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: each
+# key: each
+# --
+<% ${1:hash}.each do |${2:i}| %>
+  $0
+<% end %>

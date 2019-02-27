@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __getattr__
+# key: __getattr__
+# --
+def __getattr__(self, name):
+    return $0

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: setup
+# key: setup
+# --
+#+SETUPFILE: `(expand-file-name "org-html-themes/setup" (getenv "LOCALSRC"))`/$0

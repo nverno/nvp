@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: open-dir
+# key: opend
+# --
+my $${1:dir} = ${2:'./tests'};
+opendir (${3:DIR}, $$1) or die $!;
+
+while (my $${4:file} = readdir($3)) {
+  $0
+}
+
+closedir($3);

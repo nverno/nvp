@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: stdin
+# key: stdin
+# --
+Scanner ${1:in} = new Scanner(System.in);
+$0
+in.close();

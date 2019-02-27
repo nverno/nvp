@@ -1,0 +1,4 @@
+*
+!.gitignore
+!provision.sh
+!.dir-locals.el

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: or-program
+# key: orp
+# --
+command -v $1 ${2:||} ${3:_error_exit "$1 not installed... aborting"}

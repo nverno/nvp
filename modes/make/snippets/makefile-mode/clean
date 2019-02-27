@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: clean
+# key: clean
+# --
+clean:
+	\$(RM) -r core *~ *.o *.out *.exe $0${1:
+
+distclean: clean
+	\$(RM)}

@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: if-err-fail
+# key: iferr1
+# --
+if ($1) {
+    fprintf(stderr, "ERROR: ${2:%s}\\n"${2:$(if (string-match-p "%" yas-text) ", " "\);")
+}$3${2:$(if (string-match-p "%" yas-text) "\);" "")}
+    exit(EXIT_FAILURE);
+}

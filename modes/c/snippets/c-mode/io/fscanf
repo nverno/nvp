@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: fscanf
+# key: fscanf
+# --
+if (fscanf(${1:fp}, "${2:%zu}", &$3) == EOF) {
+    return${4: NULL};
+}

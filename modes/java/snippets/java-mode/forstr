@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: fors
+# key: fors
+# --
+for (${1:String s} : ${2:iterator}) {
+    $0
+}

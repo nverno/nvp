@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __index__
+# key: __index__
+# --
+def __index__(self):
+    return $0

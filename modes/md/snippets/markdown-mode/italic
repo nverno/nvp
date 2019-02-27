@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: italic
+# key: _
+# --
+_${1:Text}_$0

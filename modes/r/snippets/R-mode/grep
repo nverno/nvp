@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: grep
+# key: grep
+# --
+grep("$1", $2, perl=TRUE)

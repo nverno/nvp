@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: main
+# key: main
+# --
+class Main inherits ${1:IO} {
+  $0
+  main() : Object {
+    {
+      out_string("Hi\n");
+    }
+  };
+};

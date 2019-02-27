@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: wait
+# key: wait
+# --
+if (${1:\(pid = }wait(${2:NULL})${1:$(if (yas-text) ")")} == -1) {
+    perror("wait");
+    exit(EXIT_FAILURE);
+}

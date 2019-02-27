@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: trap-return
+# key: trapr
+# --
+trap "$0" RETURN

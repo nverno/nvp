@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: el files
+# key: el
+# --
+el = \$(wildcard *.el)
+elc = \$(el:.el=.elc)$0

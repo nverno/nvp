@@ -1,0 +1,11 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'clojure-mode-abbrev-table
+  '()
+  "Clojure-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'cider-repl-mode-abbrev-table
+  '()
+  "Cider-Repl-Mode Abbrevs."
+  :parents (list clojure-mode-abbrev-table))

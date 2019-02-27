@@ -1,0 +1,14 @@
+;; -*- coding: utf-8; -*-
+
+(define-abbrev-table 'yaml-mode-abbrev-table
+  '(
+    ("gitcl" "git clone --depth=1 https://github.com")
+    ("bitcl" "git clone --depth=1 https://bitbucket.org")
+    ("gitcln" "git clone --depth=1 https://github.com/nverno"
+     nil :system t)
+    ("bitcln" "git clone --depth=1 https://bitbucket.org/nverno"
+     nil :system t)
+    )
+  "Yaml-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table shells-abbrev-table
+                 sh-mode-abbrev-table))

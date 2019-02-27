@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: import-spark
+# key: imp.s
+# --
+import org.apache.spark.${1:{SparkConf, SparkContext}}

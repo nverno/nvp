@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mvn-project
+# key: mvn
+# --
+mvn archetype:generate -DgroupId=${1:org.edu.e88} -DartifactId=${2:p5} -DarchetypeArtifactId=maven-archetype-quickstart -DinteractivMode=false

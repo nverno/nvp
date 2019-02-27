@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: timestamp
+# key: timestamp
+# --
+System.currentTimeMillis() / 1000L;

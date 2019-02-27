@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: figure for RFC
+# key: rfcfig
+# type: snippet
+# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region t))
+# --
+<figure title="${1:title}" align="center" anchor="${2:tag}">
+  <preamble${3:$(if-empty "/")}>${3:preamble}${3:$(if-non-empty "</preamble>")}
+    <artwork>
+      <![CDATA[
+$0
+      ]]>
+    </artwork>
+  <postamble${5:$(if-empty "/")}>${5:postamble}${5:$(if-non-empty "</postamble>")}
+</figure>
+

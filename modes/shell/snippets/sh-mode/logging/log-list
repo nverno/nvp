@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: loglist
+# key: loglist
+# --
+${1:Note: must "export -f _log"}${2:xargs -I {} bash -c '${3:_log} "$@"' _ {}}

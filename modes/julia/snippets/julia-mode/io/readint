@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: readint
+# key: readint
+# -
+dat = Int64[]
+open("$1") do f
+  for l in eachline(f)
+    push!(dat, parse(Int64, chomp(l)))
+  end
+end$0

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: err-file
+# key: err-file
+# --
+void err_file(const char *file) {
+    fprintf(stderr, "%s: %s\n", file, strerror(errno));
+    exit(EXIT_FAILURE);
+}

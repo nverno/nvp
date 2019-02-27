@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for directory
+# key: ford
+# --
+for ${1:d} in ./ */; do
+    $0
+done

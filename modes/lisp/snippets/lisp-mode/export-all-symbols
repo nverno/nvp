@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: export all symbols
+# key: export-all
+# --
+(let ((pack (find-package :${1:package})))
+  (do-all-symbols (sym pack)
+    (when (eql (symbol-package sym) pack)
+      (export sym))))

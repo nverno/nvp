@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __rtruediv__
+# key: __rtruediv__
+# --
+def __rtruediv__(self, other):
+    return $0

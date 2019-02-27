@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __iter__
+# key: __iter__
+# --
+def __iter__(self):
+    $0

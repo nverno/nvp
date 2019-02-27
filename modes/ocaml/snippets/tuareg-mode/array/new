@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: new Array
+# key: new
+# --
+Array.make ${1:size} ${2:init_value}`(ocaml-yas-end)`$0

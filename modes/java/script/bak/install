@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+# Installs		Version 	Configs
+# ------------------------------------------------------------
+# - jdk 		8 or 10		-
+# - eclipse	        latest        	eclipse.cfg
+# - eclim		latest		eclipse/.eclimrc
+# - gradle 		latest		-
+# - maven		repos		-
+# - hadoop		latest		-
+
+# Env: ECLIPSE_HOME, JAVA_HOME, HADOOP_HOME
+set -o pipefail -o errexit
+
+. ~/bin/versions.sh
+. ~/bin/utils.sh
+. ~/bin/install/install.sh
+. ~/.env
+
+# eclipse, eclim, gradle
+install_default() {
+    install_eclipse
+    install_eclim
+    install_gradle
+    install_maven
+}
+
+install_oracle_jdk8() {
+    if [ ! -d "$JAVA8_HOME" ]; then
+        _log "========== Installing Oracle JDK 8 =========="
+        # oracle
+        sudo add-apt-repository -y ppa:webupd8team/java
+        sudo apt-get update -q
+        yes | sudo apt-get install -q -y oracle-java8-installer
+
+        # Set default java to java 8
+        # sudo update-alternatives --config java
+        # sudo apt-get install -q -y oracle-java8-set-default
+    fi
+}
+
+install_jdk() {
+    if ! hash javac 2>/dev/null ; then
+        _log "========== Installing OpenJDK =========="
+        sudo apt install default-jdk
+    fi
+}
+
+install_maven() {
+    if ! hash mvn 2>/dev/null ; then
+        _log "========== Installing Maven =========="
+        sudo apt-get install -y maven 2>&1 2>/dev/null
+    fi
+}
+
+install_gradle() {
+    if ! hash gradle 2>/dev/null ; then
+        _log "========== Installing Gradle =========="
+        asdf plugin-add gradle 2>&1 2>/dev/null
+        local ver=$(asdf list-all gradle | tail -n1)
+        asdf install gradle $ver 2>&1 >/dev/null
+        asdf global gradle $ver
+    fi
+    _log "Using gradle verion: $(asdf current gradle)"
+}
+
+# Note: requires JAVA_HOME to have been set correctly
+install_hadoop() {
+    local uri="http://mirror.reverse.net/pub/apache/hadoop/common/current"
+    if ! hash hadoop 2>/dev/null ; then
+        _log "========== Installing Hadoop =========="
+        ver=$(get_latest_version $uri 3 "hadoop-\K[0-9]+\.[0-9]+\.[0-9]+")
+        if [ -n "$ver" ]; then
+            (
+                cd /tmp
+                _log "Version: $ver"
+                _log "Downloading [$uri/hadoop-$ver.tar.gz]"
+                wget "$uri/hadoop-$ver.tar.gz" 2>&1 >/dev/null
+                local hadoop_home="${HADOOP_HOME:-$HOME/.local/hadoop}"
+                _log "Extracting hadoop-$ver.tar.gz to $hadoop_home"
+                tar xzf "hadoop-$ver.tar.gz" 2>&1 >/dev/null
+                mv hadoop-$ver "$hadoop_home"
+            )
+        else
+            _error_exit "Failed to download Hadoop"
+        fi
+    fi
+}
+
+install_eclim() {
+    if [ ! -d "$ECLIPSE_HOME" ]; then 
+        _error_exit "Eclipse directory not found"
+    elif ! ls "$ECLIPSE_HOME" 2>/dev/null | grep eclim 2>&1 >/dev/null; then 
+        _log "========== Installing Eclim =========="
+        local uri="https://github.com/ervandew/eclim/releases"
+        local ver=$(get_latest_version $uri 3 "eclim_\K[0-9]+\.[0-9]+\.[0-9]+")
+        if [ -n $ver ]; then
+            uri="$uri/download/$ver/eclim_$ver.bin"
+            _log "Downloading: eclim version - $ver"
+            _log "from $uri"
+            (
+                cd /tmp
+                wget $uri 2>&1 2>/dev/null
+                
+                # install eclim
+                if [ -f eclim_$ver.bin ]; then
+                    # -Dvim.files=$HOME/.vim
+                    # java -Dvim.skip=true -Declipse.home=$ECLIPSE_HOME \
+                    #      -jar eclim_$ver.jar install
+                    # Plugins: 
+                    # - jdt: java dev kit
+                    # - sdt: scala dev kit
+                    # - groovy -- FIXME: not working with photon release
+                    chmod +x eclim_$ver.bin
+                    ./eclim_$ver.bin --yes                              \
+                                     --eclipse=$ECLIPSE_HOME            \
+                                     --vimfiles=skip                    \
+                                     --plugins=sdt
+                else
+                    _error_exit "Failed to download eclim"
+                fi
+            )
+        fi
+        
+        # dots
+        cp ~/dotfiles/eclipse/_eclimrc ~/.eclimrc
+    fi
+}
+
+# https://github.com/budhash/install-eclipse/blob/master/install-eclipse
+install_eclipse() {
+    if ! hash eclipse 2>/dev/null ; then
+        _log "========== Installing eclipse =========="
+        bash <( curl -sk https://raw.githubusercontent.com/budhash/install-eclipse/master/install-eclipse ) -c ./eclipse.cfg "$ECLIPSE_HOME"
+    fi
+}
+
+while (( "$#" > 0 )); do $1; shift ; done

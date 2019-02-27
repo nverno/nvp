@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: __xor__
+# key: __xor__
+# --
+def __xor__(self, other):
+    return $0

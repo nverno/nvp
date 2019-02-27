@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: grepl
+# key: grepl
+# --
+grepl("$1", $2, perl=TRUE)

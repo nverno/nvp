@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: #ifdef DEBUG
+# key: mifdeb
+# --
+#ifdef DEBUG
+  $0
+#endif /* DEBUG */

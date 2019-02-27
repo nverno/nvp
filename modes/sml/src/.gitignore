@@ -1,0 +1,5 @@
+*.out
+*.exe
+*.img*
+*-image*
+.cm/

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: edge-table
+# key: edges
+# --
+| from | to | label | style  | weight |
+|------+----+-------+--------+--------|
+| $0    |   |      |        |        |

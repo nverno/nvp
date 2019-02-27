@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: do
+# key: fore
+# --
+(dolist (${1:var} ${2:list-form})
+        ${3:body})

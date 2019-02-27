@@ -1,0 +1,10 @@
+# -*- mode: snippet; -*-
+# name : header guard
+# key: mguard
+# --
+#ifndef ${1:`(upcase (nvp-yas-bfn))`_H}
+#define $1
+
+$0
+
+#endif /* $1 */

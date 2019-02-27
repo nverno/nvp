@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: queue
+# key: queue
+# --
+Queue<${1:Integer}> ${2:q} = new ArrayDeque<>();

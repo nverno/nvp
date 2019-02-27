@@ -1,0 +1,5 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: notdir
+# key: nd
+# --
+\$(notdir ${1:\$(${2:paths})})

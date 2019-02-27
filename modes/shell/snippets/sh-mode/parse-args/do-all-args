@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: do-all-args
+# key: $@
+# --
+while (( "$#" > 0 )); do \$1; shift; done

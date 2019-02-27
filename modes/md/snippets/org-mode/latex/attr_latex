@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: attr_latex
+# key: atl
+# condition: (= (current-column) 3) 
+# --
+#+ATTR_LATEX: ${1:width=$2\textwidth}$0

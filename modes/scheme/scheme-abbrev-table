@@ -1,0 +1,68 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'scheme-mode-abbrev-table
+  '(
+    ("d" "define" nil :system t)
+    ("l" "lambda" nil :system t)
+    ("w" "when" nil :system t)
+    ("z" "zero?" nil :system t)
+    )
+  "Scheme-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table)
+  :enable-function 'nvp-scheme-abbrev-expand-p)
+
+(define-abbrev-table 'guile-mode-abbrev-table
+  '(
+    ("i" "ice-9" nil :system t)
+
+    ("di" "display" nil :system t)
+    ("ds" "define-syntax" nil :system t)
+    ("sr" "syntax-rules" nil :system t)
+    ("um" "use-modules" nil :system t)
+    ("rl" "read-line" nil :system t)
+    )
+  "Guile-Mode Abbrevs."
+  :parents (list scheme-mode-abbrev-table))
+
+(define-abbrev-table 'racket-mode-variable-abbrev-table
+  '(
+    ("#l" "#lang racket" nil :system t)
+
+    ("true" "#t" nil :system t)
+    ("false" "#f" nil :system t)
+    )
+  :regexp "\\(?:^\\|[^A-Za-z0-9_.#/-]\\)\\([A-Za-z0-9_.#/-]+\\)")
+
+(define-abbrev-table 'racket-mode-abbrev-table
+  '(
+    ("r" "require" nil :system t)
+    
+    ("n?" "number?" nil :system t)
+    ("z?" "zero?" nil :system t)
+
+    ("ir" "in-range" nil :system t)
+    ("mp" "make-pipe" nil :system t)
+    ("rl" "read-line" nil :system t)
+    ("rs" "read-string" nil :system t)
+    ("ss" "string-split" nil :system t)
+    
+    ("app" "append" nil :system t)
+    ("cip" "close-input-port" nil :system t)
+    ("cop" "close-output-port" nil :system t)
+    ("err" "error" nil :system t)
+    ("oif" "open-input-file" nil :system t)
+    ("oof" "open-output-file" nil :system t)
+
+    ("wiff" "with-input-from-file" nil :system t)
+    ("wotf" "with-output-to-file" nil :system t)
+    )
+  "Racket-Mode Abbrevs."
+  :parents (list racket-mode-variable-abbrev-table scheme-mode-abbrev-table)
+  ;; :regexp "\\(?:[ \t\(\)\{\}\[\]]\\|^\\)\\([A-Za-z0-9_.#/*?-]+\\)\\W*"
+  :enable-function 'nvp-scheme-abbrev-expand-p)
+
+(define-abbrev-table 'geiser-repl-mode-abbrev-table
+  '()
+  "Geiser-Repl-Mode Abbrevs."
+  :enable-function 'nvp-scheme-repl-init-abbrevs)
+

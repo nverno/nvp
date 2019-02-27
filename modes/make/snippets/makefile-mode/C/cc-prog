@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: basic c compile
+# key: ccprog
+# --
+$1: ${1:src}.c $0
+	\$(CC) \$(CFLAGS) -o $@ $^

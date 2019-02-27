@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: info
+# key: info
+# --
+println("\e[36m[info]\e[0m $0")

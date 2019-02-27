@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: cases
+# key: cases
+# --
+\begin{equation}
+  $1 =
+  \begin{cases}
+    $2, & \text{${3:if}}\ $4 \\\\
+    $5, & \text{${6:otherwise}} \\\\
+  \end{cases}
+\end{equation}

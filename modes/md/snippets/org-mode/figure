@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: figure
+# key: fig
+# --
+#+ATTR_LATEX: width=$1\textwidth
+#+ATTR_HTML: width="$2%"
+#+caption: $3
+`(org-insert-link '(4))`
+$0

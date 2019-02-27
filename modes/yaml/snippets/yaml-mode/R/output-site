@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: Create _output.yaml for spinning website
+# key: output-site
+# expand-env: ((yas-indent-line 'fixed) (yas-wrap-around-region 'nil))
+# --
+html_document:
+  self_contained: false
+  lib_dir: ${1:libs}
+  theme: readable
+  highlight: zenburn
+  code_folding: hide
+  css: ${2:includes/css/styles.css}
+  includes:
+    in_header: ${3:includes/_navbar.html}
+    ${5:after_body: {$6}}

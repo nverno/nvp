@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: bash_completion
+# key: complete
+# --
+_${1:complete}() {
+    local cur prev words cword
+    _init_completion || return
+
+    if [[ "$cur" == -* ]]; then
+        COMPREPLY=( $( compgen -W '${3:wordlist}' \
+                               -- "$cur" ) )
+    else
+        _filedir
+    fi
+} && complete -F _$1${4: -o default } ${5:program}

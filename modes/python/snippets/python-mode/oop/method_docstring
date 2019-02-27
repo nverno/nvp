@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: method_docstring
+# key: defmdoc
+# --
+def ${1:name}(self$2):
+    \"\"\"$3
+    ${2:$(python-yas-args-to-docstring)}
+    \"\"\"
+    $0

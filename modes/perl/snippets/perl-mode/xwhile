@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: ... while ...
+# key: xwhi
+# --
+${1:expression} while ${2:condition};

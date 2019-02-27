@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: gsub
+# key: gsub
+# --
+gsub("$1", ${2:rep}, ${3:x}, perl=TRUE)

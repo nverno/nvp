@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: fn
+# key: fn
+# expand-env: ((yas-indent-line 'fixed))
+# --
+fn ${1:main}(${2:params})${3:$(if (> (length yas-text) 0) " -> " "")}${3:int}${4: {
+  $0
+}}

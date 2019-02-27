@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: function with doc
+# key: fundoc
+# --
+/**
+ * @brief $4
+ * $5${3:$(nvp-c-yas-args-docstring yas-text)}
+ *${1:$(if (not (string= "void" (yas-text))) (concat " @return " (yas-text) "\n */") "/")}
+${1:void} ${2:name}($3) {
+    $0
+}

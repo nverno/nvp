@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: function with docstring
+# key: fundoc
+# --
+"""
+# Description
+
+${2:$(nvp-julia-args-to-docstring)}
+"""
+function ${1:name}($2)
+  $0
+end

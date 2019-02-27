@@ -1,0 +1,4 @@
+perldoc-cache
+perldoc-cache.el
+_build/
+*.tar.gz

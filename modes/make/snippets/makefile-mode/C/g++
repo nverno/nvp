@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: g++
+# key: g++
+# --
+`(if (eq system-type 'windows-nt) "C:/msys64/mingw64/bin/g++.exe" "g++")`$0

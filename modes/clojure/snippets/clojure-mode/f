@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: fresh
+# key: f
+# --
+(fresh [${1:vars}]
+  $0)

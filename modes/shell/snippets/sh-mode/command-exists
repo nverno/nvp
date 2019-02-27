@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: exists
+# key: exists
+# --
+command -v $1 >/dev/null

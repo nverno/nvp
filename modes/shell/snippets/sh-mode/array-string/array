@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: array
+# key: arr
+# --
+declare -a ${1:array}=(${["k"=v] ...})

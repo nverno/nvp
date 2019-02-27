@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: msys path convert
+# key: msyspath
+# group: msys
+# --
+sed 's|/c|c:|' <<< "$1"

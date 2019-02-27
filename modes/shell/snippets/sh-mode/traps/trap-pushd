@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: trap-pushd
+# key: trapp
+# --
+pushd "${1:\$1}" >/dev/null
+trap 'popd >/dev/null' ${2:RETURN}

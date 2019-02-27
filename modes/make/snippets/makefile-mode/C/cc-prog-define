@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: cc define
+# key: ccd
+# --
+$1: ${1:src}.c $0
+	\$(CC) \$(CFLAGS) -D${1:DEBUG} -o $@ $^

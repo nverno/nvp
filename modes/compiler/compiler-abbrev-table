@@ -1,0 +1,20 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'cool-mode-abbrev-table
+  '(
+    ("ins" "in_string();" nil :system t)
+    ("tt" [":  <- " 4 nil nil] expand-abbrev-hook :system t)
+    ("outs" ["out_string(\"\");" 3 nil nil] expand-abbrev-hook :system t)
+    )
+  "Cool-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'flex-mode-abbrev-table
+  '(
+    ("WS" "WS		[ \\v\\r\\f\\t]+" nil :system t)
+    )
+  "Flex-Mode Abbrevs."
+  :parents (list c-macros-includes-abbrev-table
+                 c-mode-abbrev-table
+                 c++-mode-abbrev-table
+                 prog-mode-abbrev-table))

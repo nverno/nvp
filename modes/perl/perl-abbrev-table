@@ -1,0 +1,28 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'cperl-mode-abbrev-table
+  '(
+    ("_" "$_" nil :system t)
+    ("my" "my $" perl-tools-my-toggle :system t)
+    ("pr" "print" nil :system t)
+    ("def" "defined" nil :system t)
+    ("ddd" "Data::Dumper::Dumper" nil :system t)
+    ("ret" "return" nil :system t)
+    ("useenc" "use Encode qw(encode decode from_to);" nil :system t)
+    ("usedump" "use Data::Dumper qw(Dumper);" nil :system t)
+    ("useopt" "use Getopt::Long; GetOptions();" nil :system t)
+    ("usetext" "use Text::Wrap qw(wrap);" nil :system t)
+    )
+  "Cperl-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table)
+  :regexp "\\(\\_<[:\_A-Za-z0-9-]+\\)")
+
+(define-abbrev-table 'perl-mode-abbrev-table
+  '()
+  "Perl-Mode Abbrevs."
+  :parents (list cperl-mode-abbrev-table))
+
+(define-abbrev-table 'inf-perl-mode-abbrev-table
+  '()
+  "Inf-Perl-Mode Abbrevs."
+  :parents (list cperl-mode-abbrev-table))

@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: parse integer
+# key: parse_int
+# --
+/**
+ * @brief parse string as integer
+ * @param string to parse
+ * @return integer
+ */
+static size_t parse_int(char const *str) {
+    char *p;
+    long n = strtol(str, &p, ${1:10});
+    if (errno != 0 || *p != '\0' || n > INT_MAX) {
+      fprintf(stderr, "ERROR: %s should be an integer\n", str);
+      usage(EXIT_FAILURE);
+    }
+    return (size_t)n;
+}

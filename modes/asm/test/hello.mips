@@ -1,0 +1,14 @@
+# Hello World
+        .data                           #Data declaration section
+# String to be printed
+out_string: .asciiz "\nHi\n"
+
+        .text                           # Assembly laguage instructions go in
+                                        # text segment
+main:                                   #start of code section
+        li          $v0, 4              #system call code for printing string = 4
+        la          $a0, out_string     #load address of string to be printed into $a
+        syscall                         #call OS to perform operation in $v0
+
+        li          $v0, 10             #terminate program
+        syscall

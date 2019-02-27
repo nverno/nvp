@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: subst
+# key: subst
+# --
+\$(subst ${1:.c},${2:.o},${3:\${SRCS}})

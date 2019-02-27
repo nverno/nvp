@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: function-doc
+# key: fundoc
+# --
+##
+# @info			$2
+# @usage		$1${4:$(if (string= yas-text "") "" (concat ": " yas-text))}${3:
+# @param		$4}
+##
+${1:func} () {
+    $0
+}

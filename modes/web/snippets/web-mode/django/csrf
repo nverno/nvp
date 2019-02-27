@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: csrf
+# key: csrf
+# condition: (string= web-mode-engine "django")
+# --
+{% csrf_token %}

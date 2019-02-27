@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: openf
+# key: openf
+# --
+with open(${1:file}, ${2:"r"}) as f:
+	$0

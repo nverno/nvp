@@ -1,0 +1,15 @@
+#+TITLE: Bash
+
+* String Manipulation
+
+| Inside ${...}        | Action                                     |
+|----------------------+--------------------------------------------|
+| name:number:number   | Substring starting character,length        |
+| #name                | Return the length of the string            |
+| name#pattern         | Remove (shortest) *front*-anchored pattern |
+| name##pattern        | Remove (longest) *front*-anchored pattern  |
+| name%pattern         | Remove (shortest) *rear*-anchored pattern  |
+| name%%pattern        | Remove (longest) *rear*-anchored pattern   |
+| name/pattern/string  | Replace first occurence                    |
+| name//pattern/string | Replace all occurences                     |
+#+CAPTION: Bash Cookbook pg. 129

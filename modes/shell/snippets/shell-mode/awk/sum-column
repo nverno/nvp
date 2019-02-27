@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: sum column
+# group: awk
+# key: awksum
+# --
+awk -F ${1:' '} '${2:regex($1 ~ /blah/)} {sum += $${3:column}} END {print sum}' ${4:inputfile}

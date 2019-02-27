@@ -1,0 +1,65 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'ocaml-mode-abbrev-table
+  '(
+    ("fn" "function" nil :system t)
+    ("ass" ["assert ;;" 2 nil nil] expand-abbrev-hook :system t)
+    ("inf" "infinity" nil :system t)
+    ;; conversion
+    ("ioc" "int_of_char" nil :system t)
+    ("iof" "int_of_float" nil :system t)
+    ("ios" "int_of_string" nil :system t)
+    ("foi" "float_of_int" nil :system t)
+    ("fos" "float_of_string" nil :system t)
+    ("sob" "string_of_bool" nil :system t)
+    ("sof" "string_of_float" nil :system t)
+    ("soi" "string_of_int" nil :system t)
+    ("bos" "bool_of_string" nil :system t)
+    ("charos" "char_of_string" nil :system t)
+    ;; strings
+    ("Sc" "String.compare" nil :system t)
+    ("Sl" "String.length" nil :system t)
+    ("Ss" "String.sub" nil :system t)
+    ("Sm" "String.map" nil :system t)
+    ("Si" "String.index" nil :system t)
+    ;; Arrays
+    ("Al" "Array.length" nil :system t)
+    ("Am" "Array.map" nil :system t)
+    ("Ami" "Array.mapi" nil :system t)
+    ("Afl" "Array.fold_left" nil :system t)
+    ("Afr" "Array.fold_right" nil :system t)
+    ("Ai" "Array.iter" nil :system t)
+    ("Aii" "Array.iteri" nil :system t)
+    ("Ac" "Array.copy" nil :system t)
+    ("Atl" "Array.to_list" nil :system t)
+    ("Aol" "Array.of_list" nil :system t)
+    ("As" "Array.sort" nil :system t)
+    ;; List
+    ("Li" "List.iter" nil :system t)
+    ("Ll" "List.length" nil :system t)
+    ;; Hash
+    ("Hf" "Hashtbl.find" nil :system t)
+    ("Hr" "Hashtbl.replace" nil :system t)
+    ("Hc" "Hashtbl.create" nil :system t)
+    ("Ha" "Hashtbl.add" nil :system t)
+    ("Hi" "Hashtbl.iter" nil :system t)
+    )
+  "Ocaml-Mode Abbrevs."
+  :regexp "\\(?:^\\|[^A-Za-z0-9_.]\\)\\([A-Za-z0-9_.]+\\)")
+
+(define-abbrev-table 'tuareg-mode-abbrev-table
+  '()
+  "Tuareg-Mode Abbrevs."
+  :parents (list ocaml-mode-abbrev-table))
+
+(define-abbrev-table 'utop-mode-abbrev-table
+  '()
+  "Utop-Mode Abbrevs."
+  :parents (list ocaml-mode-abbrev-table))
+
+(define-abbrev-table 'ocamldebug-mode-abbrev-table
+  '(
+    ("params" "set arguments" nil :system t)
+    )
+  "Ocamldebug-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

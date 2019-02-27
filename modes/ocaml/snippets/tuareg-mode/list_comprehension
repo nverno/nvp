@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: list_comprehension
+# key: lc
+# --
+[? $1 | $0 ?]

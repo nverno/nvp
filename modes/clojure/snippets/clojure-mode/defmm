@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: defmulti
+# key: defmm
+# --
+(defmulti ${1:name} ${2:dispatch-fn})

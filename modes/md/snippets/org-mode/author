@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: author
+# key: author
+# --
+#+AUTHOR: ${1:`user-full-name`} ${2:<`user-mail-address`>}

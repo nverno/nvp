@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: header
+# key: header
+# --
+;;; -*- Mode: Lisp -*-$0

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ifprog
+# key: ifprog
+# --
+if ${1:! }hash ${2:program} 2>/dev/null; then
+   $0
+fi

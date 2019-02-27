@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: parseInt
+# key: parseInt
+# --
+try {
+    ${1:int i} = Integer.parseInt($2);
+} catch (NumberFormatException ex) {
+    ${3:Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+     return;}
+}

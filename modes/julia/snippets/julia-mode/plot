@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: plot
+# key: plot
+# --
+plot(${1:x}, ${2:y}, marker=${3::hex}, leg=${4:false}, linewidth=${5:2},
+     linecolor=${6::black}, title=${7:""})

@@ -1,0 +1,18 @@
+#+TITLE: Setup
+
+* Links
+- [[https://docs.scala-lang.org/getting-started-sbt-track/getting-started-with-scala-and-sbt-on-the-command-line.html][Getting started with SBT]]
+- [[https://hackr.io/tutorials/learn-scala][scala tutorials]]
+- [[https://github.com/lampepfl/progfun-wiki/blob/gh-pages/CheatSheet.md][progfun cheatsheet github]]
+
+* SBT
+- from sbt console in project, command ~~run~ will cause project to re-run on
+  every file save.
+
+* Ensime
+- [[http://ensime.github.io/build_tools/sbt/][sbt with ensime]]
+- to create ~.ensime~ file in project folder:
+  - start ~sbt~ and run command ~ensimeConfig~
+- ensime-company changes yas bindings in such a way that messes up yas bindings
+  in all modes. Comment out the lines related to local-binding in
+  ~ensime-company-setup~ and everything should work as expected.

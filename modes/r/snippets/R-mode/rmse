@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: rmse
+# key: rmse
+# --
+sqrt(mean(resid($1)^2))

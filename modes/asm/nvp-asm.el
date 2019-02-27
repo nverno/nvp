@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 02:17:03>
+;; Last modified: <2019-02-27 11:43:05>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/asm-tools
 ;; Created: 19 December 2016
@@ -16,6 +16,7 @@
 
 (nvp-package-define-root :snippets t)
 
+;; FIXME: this is handled in installs
 ;; Download the nasm instruction PDF
 (defun nvp-asm-init ()
   (let ((pdf (expand-file-name "intel_dev.pdf" "~/.local/share/doc")))

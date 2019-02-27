@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: syscall
+# key: sys
+# --
+li \$v0, ${1:code} # system call ${1:$(yas-text)}${2:
+la \$a0 ${3:string} # load string address $3 into \$a}
+syscall # call OS op in \$v0

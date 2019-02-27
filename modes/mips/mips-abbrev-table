@@ -1,6 +1,6 @@
 ;; -*- coding: utf-8; -*-
 
-(define-abbrev-table 'nasm-mode-abbrev-table
+(define-abbrev-table 'mips-mode-abbrev-table
   '()
-  "Nasm-Mode Abbrevs."
+  "Mips-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

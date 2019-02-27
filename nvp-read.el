@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 00:39:30>
+;; Last modified: <2019-02-27 11:02:12>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -76,6 +76,8 @@
 
 ;; if LOCAL is non-nil use that
 (defun nvp-read--org-file (&optional prompt default nolocal)
+  (when (derived-mode-p 'comint-mode)   ;jumping from shell
+    (hack-local-variables))
   (let ((local (bound-and-true-p nvp-local-notes-file)))
     (if (and local (not nolocal)) local
       (or default (setq default nvp-default-org-file))

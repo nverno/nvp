@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+set -e
+
+# shellcheck source=/dev/null
+. ~/bin/include/utils.sh
+
+SITE_LISP="$HOME/.emacs.d/site-lisp"
+
+##
+# @info         Nest dirs in nvp and link to site-lisp until better packaging
+##
+move_and_link() {
+    local modename npkg d
+
+    for d in "$SITE_LISP"/*-tools; do
+        if [ -d "$d" ] && [ ! -L "$d" ]; then
+            modename="$(basename "${d%%-tools}")"
+            npkg="$SITE_LISP/nvp/modes/$modename"
+            _log "$d => $npkg"
+            mv "$d" "$npkg"
+            ln -sfn "$npkg" "$d"
+        fi
+    done
+}
+
+remove_links() {
+    local d
+    
+    for d in "$SITE_LISP/"*; do
+        if [ -L "$d" ]; then
+            _log "removing $d"
+            rm "$d"
+        fi
+    done
+}
+
+make_links() {
+    local d name
+    
+    for d in "$SITE_LISP/nvp/modes/"*/; do
+        if [ -d "$d" ]; then
+            name="$(basename "$d")"
+            _log "linking $d => $SITE_LISP/$name"
+            ln -sfn "$d" "$SITE_LISP/$name"
+        fi
+    done
+}
+
+##
+# @info         Print usage info
+##
+usage() {
+    cat <<EOF_HELP
+Usage: $0 [move|unlink] 
+       move	move tools to nvp and link to site-lisp
+       unlink   remove links from site-lisp
+       link	link from nvp/modes to site-lisp
+EOF_HELP
+}
+
+if [ $# -eq 0 ]; then
+    usage && exit 1
+fi
+
+while (( "$#" )); do
+    case "$1" in
+        move) move_and_link;;
+        unlink) remove_links;;
+        link) make_links;;
+        *) usage && exit 1;;
+    esac
+    shift
+done

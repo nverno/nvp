@@ -1,2 +1,6 @@
 (("w32"
-  (no-byte-compile . t)))
+  (nil
+   (no-byte-compile . t)))
+ ("etc"
+  (nil
+   (no-byte-compile . t))))

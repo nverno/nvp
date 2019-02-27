@@ -1,6 +1,8 @@
 *~
 *.elc
-*autoloads.el
-*loaddefs.el
+*autoloads?.el
+*loaddefs?.el
+.yas-compiled-snippets.el
+
 _build/
 .cask/

@@ -3,7 +3,7 @@
 
 ((nil
   (projectile-project-type . emacs-cask)
-  (nvp-local-notes-file    . "Notes.org"))
+  (nvp-local-notes-file . "~/.emacs.d/site-lisp/nvp/Notes.org"))
  (emacs-lisp-mode
   (outline-regexp . "\f\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*")
   (indent-tabs-mode))

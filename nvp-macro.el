@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-26 17:54:49>
+;; Last modified: <2019-02-27 10:35:08>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -1195,6 +1195,19 @@ or PREDICATE is non-nil and returns nil."
          ,doc
          (interactive "r")
          (align-regexp start end ,regex)))))
+
+;;-- Sort
+
+(defmacro nvp-sort-with-defaults (start end &rest body)
+  "Sort region between START and END by BODY, using defaults and indent region \
+afterward."
+  (declare (indent defun) (debug (sexp sexp &rest form)))
+  `(let ((sort-fold-case t))
+     (save-excursion
+       (save-match-data
+         (unwind-protect
+             ,@body
+           (indent-region ,start ,end))))))
 
 ;;-- Wrap
 

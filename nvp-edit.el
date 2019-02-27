@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 05:44:43>
+;; Last modified: <2019-02-27 10:36:07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -16,7 +16,6 @@
   (require 'cl-lib)
   (defvar sort-fold-case)
   (defvar align-to-tab-stop))
-
 (autoload 'sp-wrap-with-pair "smartparens")
 
 ;; -------------------------------------------------------------------
@@ -24,16 +23,6 @@
 
 ;; list syntax
 ;; #<marker at 7784 in thingatpt.el.gz>
-(defmacro nvp-sort-with-defaults (start end &rest body)
-  "Sort region between START and END by BODY, using defaults and indent region \
-afterward."
-  (declare (indent defun) (debug (sexp sexp &rest form)))
-  `(let ((sort-fold-case t))
-     (save-excursion
-       (save-match-data
-         (unwind-protect
-             ,@body
-           (indent-region ,start ,end))))))
 
 ;;;###autoload
 (defun nvp-sort-lines-first-word (start end &optional reverse)

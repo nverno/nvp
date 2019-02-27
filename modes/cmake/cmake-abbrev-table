@@ -1,6 +1,6 @@
 ;; -*- coding: utf-8; -*-
 
-(define-abbrev-table 'nasm-mode-abbrev-table
+(define-abbrev-table 'cmake-mode-abbrev-table
   '()
-  "Nasm-Mode Abbrevs."
+  "Cmake-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

@@ -2,10 +2,9 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-26 00:20:22>
+;; Last modified: <2019-02-27 10:56:03>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
 ;; Created:  6 February 2019
 
 ;;; Commentary:

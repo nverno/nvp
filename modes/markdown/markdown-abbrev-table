@@ -1,0 +1,6 @@
+;; -*- coding: utf-8; -*-
+
+(define-abbrev-table 'markdown-mode-abbrev-table
+  '()
+  "Markdown-Mode Abbrevs."
+  :parents (list text-mode-abbrev-table))

@@ -1,13 +1,11 @@
 ;;; nvp-js.el ---  -*- lexical-binding: t; -*-
 
+;; Last modified: <2019-02-27 13:16:55>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/js-tools
 ;; Created:  1 November 2016
 
 ;;; Commentary:
-
-;; [![Build Status](https://travis-ci.org/nverno/js-tools.svg?branch=master)](https://travis-ci.org/nverno/js-tools)
-
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

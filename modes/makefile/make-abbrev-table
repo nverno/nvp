@@ -1,0 +1,15 @@
+;; -*- coding: utf-8; -*-
+
+(define-abbrev-table 'makefile-mode-abbrev-table
+  '(
+    ("ph" ".PHONY:" nil :system t)
+    ("bbc" "-f batch-byte-compile" nil :system t)
+    )
+  "Make-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table shells-abbrev-table)
+  :enable-function 'nvp-abbrev-expand-not-after-punct-p)
+
+(define-abbrev-table 'makefile-gmake-mode-abbrev-table
+  '()
+  "Makefile-Gmake-Mode Abbrevs."
+  :parents (list makefile-mode-abbrev-table))

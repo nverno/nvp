@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-25 23:52:11>
+;; Last modified: <2019-02-27 10:53:55>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -172,6 +172,16 @@ When abbrev text is selected, searching is done first by length then lexically."
                      ;; refresh cached active abbrev tables
                      (setq nvp-abbrev-completion-need-refresh t)))
           (add-hook 'after-save-hook #'nvp-abbrev-save-hook t 'local))))))
+
+;; -------------------------------------------------------------------
+;;; Abbrev table mode
+
+;;;###autoload
+(define-derived-mode abbrev-table-mode emacs-lisp-mode "Abbrev-Table"
+  "Simple abbrev table extension mode."
+  :abbrev-table nil
+  (setq-local imenu-generic-expression
+              '((nil "^(define-abbrev-table '\\([^ \n]+\\)" 1))))
 
 ;; add unicode abbrevs to local table parents
 ;;;###autoload

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-25 22:57:42>
+;; Last modified: <2019-02-26 21:48:20>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -22,7 +22,6 @@
   (nvp-local-vars))
 (require 'nvp)
 (require 'nvp-read)
-(require 'nvp-display)
 (autoload 'nvp-file-locate-first-dominating "nvp-file")
 
 ;; -------------------------------------------------------------------

@@ -48,7 +48,7 @@ git config core.sparseCheckout true" repo) nil nil nil)
 ;;; SVN 
 
 ;; Cached list of git svn subcommands
-(nvp-function-with-cache nvp-vc-svn--available-commands ()
+(nvp-define-cache nvp-vc-svn--available-commands ()
   "List of git svn subcommands."
   (nvp-s-all-matches
    "^  \\([-a-z]+\\) +" (shell-command-to-string "git svn help") 1))

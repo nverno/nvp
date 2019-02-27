@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-26 11:54:02>
+;; Last modified: <2019-02-26 18:56:06>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 February 2019
@@ -45,6 +45,28 @@
 
 ;; -------------------------------------------------------------------
 ;;; Assorted
+(nvp-declare "" nvp-move-previous-heading nvp-move-forward-heading)
+
+;;;###autoload
+(defun nvp-mark-header-region ()
+  "Mark current header region."
+  (interactive)
+  (let ((start (point)) beg)
+    (condition-case nil
+        (progn
+          (forward-line 0)
+          (or (looking-at (nvp-local-header-regex))
+              (nvp-move-previous-heading 'error))
+          ;; headers are known at this point
+          (setq beg (point))
+          (or (ignore-errors (nvp-move-forward-heading))
+              (prog1 (goto-char (point-max))
+                (message "Marked to end of buffer (no more headings)")))
+          (push-mark (point) nil 'activate)
+          (goto-char beg))
+      (error
+       (goto-char start)
+       (user-error "Can't find header region to mark.")))))
 
 ;;;###autoload
 (defun nvp-kill-emacs ()

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 23:26:28>
+;; Last modified: <2019-02-26 21:47:48>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -47,7 +47,13 @@
 ;; actions to take jumping to buffers/files
 ;; 4 => same window
 ;; _ => other window (default)
+;;;###autoload
 (defun nvp-display-location (location type action &optional func)
+  "Display LOCATION of TYPE using ACTION.
+Currently supported TYPEs are :buffer, :find-func, :file, and :ido.
+Action decides how to display location: 
+  - with prefix => same window
+  - otherwise   => other window (default)"
   (if (not action) (setq action 1)
     (if (consp action) (setq action (prefix-numeric-value action))))
   (pcase (cons type action)

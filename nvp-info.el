@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 03:04:05>
+;; Last modified: <2019-02-26 21:48:01>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 January 2019
@@ -24,21 +24,23 @@
 (require 'nvp)
 (require 'info)
 (require 'filenotify)
+(autoload 'nvp-read--info-files "nvp-read")
 
 (defvar nvp-info-nodes-need-refresh () "Update list when 'dir' changes.")
-(nvp-function-with-cache nvp-info-nodes ()
-  "List of my info manuals."
-  :predicate (not nvp-info-nodes-need-refresh)
-  (setq nvp-info-nodes-need-refresh nil)
-  (with-temp-buffer
-    (insert-file-contents-literally (expand-file-name "dir" nvp/info))
-    (goto-char (point-min))
-    (search-forward "* Menu")
-    (let (nodes)
-      (while (re-search-forward
-              "^\\*[^\:]+:\\s-*(\\([^)]+\\))\\." nil 'move)
-        (push (match-string-no-properties 1) nodes))
-      nodes)))
+(cl-eval-when (load compile eval)
+  (nvp-define-cache nvp-info-nodes ()
+    "List of my info manuals."
+    :predicate (not nvp-info-nodes-need-refresh)
+    (setq nvp-info-nodes-need-refresh nil)
+    (with-temp-buffer
+      (insert-file-contents-literally (expand-file-name "dir" nvp/info))
+      (goto-char (point-min))
+      (search-forward "* Menu")
+      (let (nodes)
+        (while (re-search-forward
+                "^\\*[^\:]+:\\s-*(\\([^)]+\\))\\." nil 'move)
+          (push (match-string-no-properties 1) nodes))
+        nodes))))
 
 (cl-eval-when (load)
   (file-notify-add-watch (expand-file-name "dir" nvp/info) (list 'change)
@@ -59,8 +61,7 @@
 ;;;###autoload
 (defun nvp-info-install (file)
   "Install org texinfo FILE into info directory."
-  (interactive
-   (list (ido-read-file-name "File: " (expand-file-name "org" nvp/info))))
+  (interactive (list (nvp-read--info-files)))
   (let ((default-directory (expand-file-name "org" nvp/info))
         (target
          (concat "install-"
@@ -69,21 +70,17 @@
       :proc-name "install-info"
       :proc-args (target))))
 
-;;;###autoload
-(defun nvp-info-goto-source (file &optional this-window)
+(defun nvp-info-goto-source (file action)
   "Jump to source of current info FILE."
   (interactive
    (let ((fname (concat "org/" (file-name-nondirectory Info-current-file) ".org")))
      (list (expand-file-name fname nvp/info) current-prefix-arg)))
-  (if this-window
-      (find-file file)
-    (find-file-other-window file)))
+  (nvp-display-location file :file action))
 
 ;; -------------------------------------------------------------------
 ;;; Imenu support
 (require 'imenu)
 
-;;;###autoload
 (defun nvp-info-imenu-create-index-function ()
   (goto-char (point-min))
   (search-forward "* Menu:")

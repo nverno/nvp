@@ -30,7 +30,7 @@
 (defvar-local nvp-abbrev-completion-need-refresh nil)
 
 ;; use local table along with its parents + global table
-(nvp-function-with-cache nvp-abbrev-completion--tables () nil
+(nvp-define-cache nvp-abbrev-completion--tables () nil
   :local t
   :predicate (not nvp-abbrev-completion-need-refresh)
   (prog1 (nvp-abbrev--active-tables)

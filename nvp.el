@@ -4,12 +4,18 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-26 02:58:23>
+;; Last modified: <2019-02-27 01:44:21>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
 
 ;; [![Build Status](https://travis-ci.org/nverno/nvp.svg?branch=master)](https://travis-ci.org/nverno/nvp)
+
+;; - Global variables / variables set by modes
+;; - Some general aliases that haven't made it to init
+;; - Local site variables - compiled in init
+;; - some utility functions
+;; - font faces
 
 ;;; Code:
 (eval-when-compile
@@ -29,14 +35,16 @@
 ;;; Variables
 
 ;; movement
-(defvar-local nvp-move-header-regex nil "Regex to move b/w headers.")
+(defvar-local nvp-local-header-regex nil "Regex to move b/w headers.")
 
 ;; Abbrevs
 (defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
+(put 'nvp-local-header-regex 'permanent-local t)
 (defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
 (defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
-(defvar nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
+(defvar-local nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
   "Chars to include in abbrev prefixes")
+(put 'nvp-abbrev-prefix-chars 'permanent-local t)
 
 ;; Snippets
 (defvar-local nvp-snippet-dir nil "Current mode's snippet directory.")
@@ -51,14 +59,20 @@
 (nvp-defvar nvp-default-hooks-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
 (nvp-defvar nvp-build-init-dir (expand-file-name "build" nvp/emacs))
 (defvar-local nvp-local-notes-file () "Local notes/todo to jump dwim.")
+(put 'nvp-local-notes-file 'permanent-local t)
 (defvar-local nvp-local-books-directories () "Local book directory/s.")
+(put 'nvp-local-notes-file 'permanent-local t)
 (defvar-local nvp-local-uris () "Local URIs for webjumping.")
+(put 'nvp-local-uris 'permanent-local t)
 (defvar-local nvp-local-src-directories () "Local source dirs to jump.")
 
 ;; installs
 (nvp-defvar nvp-install-makefile (expand-file-name "Makefile" nvp/install))
 (defvar-local nvp-install-mode-targets ()
   "External installation targets for a major-mode.")
+
+;; font-lock
+(defvar-local nvp-local-font-lock () "Local font-lock additions.")
 
 ;; minibuffer read history from jumping to local configs
 (defvar nvp-read-config-history ())
@@ -81,6 +95,7 @@
 ;; -------------------------------------------------------------------
 ;;; Faces
 
+;; see cperl gaudy array/hash faces
 (defface nvp-italic-variable-face
   `((((class grayscale) (background light))
      (:background "Gray90" :weight bold :slant italic))

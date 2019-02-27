@@ -21,7 +21,7 @@
   `((,nvp-fixme-keywords 1 'font-lock-warning-face prepend)))
 
 ;; collect occurences of fixme keywords in buffer
-(nvp-function-with-cache nvp-fixme-collect-occurences () nil
+(nvp-define-cache nvp-fixme-collect-occurences () nil
   :local t
   :predicate (not (buffer-modified-p))
   (save-excursion

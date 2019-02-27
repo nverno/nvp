@@ -4,7 +4,11 @@
 ((nil
   (projectile-project-type . emacs-cask)
   (nvp-local-notes-file    . "Notes.org"))
- ("test" 
+ (emacs-lisp-mode
+  (outline-regexp . "\f\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*")
+  (indent-tabs-mode))
+ ("test"
+  (nil . ((eval . (add-to-list 'load-path default-directory))))
   (emacs-lisp-mode
    . ((eval . (local-set-key (kbd "C-c C-c") #'nvp-ert-run-tests))
       (no-byte-compile . t))))

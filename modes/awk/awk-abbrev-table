@@ -1,0 +1,11 @@
+;; -*- coding: utf-8; -*-
+(define-abbrev-table 'awk-mode-abbrev-table
+  '(
+    ("pr" "print" nil :system t)
+    ("beg" "BEGIN {" nil :system t)
+    ("ret" "return" nil :systen t)
+    ("begin" "BEGIN {" nil :system t)
+    ("end" "END {" nil :system t)
+    )
+  "Awk-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

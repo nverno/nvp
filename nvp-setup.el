@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-26 03:45:35>
+;; Last modified: <2019-02-27 01:53:24>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -44,7 +44,8 @@
 ;;;###autoload
 (defun nvp-setup-smie-bindings (&optional debug)
   "Locally override minor mode bindings when smie functions are available."
-  (nvp-use-minor-mode-overriding-map smartparens-mode
+  ;; FIXME: buffer-local bindings only when smie is active?
+  (nvp-use-minor-mode-overriding-map 'smartparens-mode
     ("C-M-f"    . smie-forward-sexp-command)
     ("C-M-b"    . smie-backward-sexp-command)
     ("<f2> q c" . smie-close-block))

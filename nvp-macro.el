@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-26 04:56:10>
+;; Last modified: <2019-02-26 17:54:49>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -1017,7 +1017,7 @@ and install PLUGIN with asdf."
 ;; -------------------------------------------------------------------
 ;;; Building Interactive Functions
 
-;;; Wrapper functions to call mode-local values
+;;-- Wrapper functions to call mode-local values
 (defmacro nvp-wrapper-function (symbol &optional doc)
   "Creates a simple wrapper function to call local SYMBOL function with \
 list of args.
@@ -1038,17 +1038,21 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
    (cl-loop for (sym . doc) in fun-docs
       collect `(nvp-wrapper-function ,sym ,doc))))
 
+;;-- functions with cached results
+
 ;; Simple memoization / result caching
-(cl-defmacro nvp-function-with-cache (func arglist &optional docstring &rest body
-                                           &key local predicate &allow-other-keys)
+(cl-defmacro nvp-define-cache (func arglist &optional docstring &rest body
+                                           &key local predicate cache
+                                           &allow-other-keys)
   "Create a simple cache for FUNC results. 
 Cache is either defvar (possibly local) so is updated when set to nil,
 or PREDICATE is non-nil and returns nil."
   (declare (indent defun) (debug (sexp sexp sexp &form body)) (doc-string 3))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
-  (let ((cache (make-symbol (concat (if (symbolp func) (symbol-name func) func)
-                                    "-cache")))
+  (let ((cache (or cache
+                   (make-symbol (concat (if (symbolp func) (symbol-name func) func)
+                                        "-cache"))))
         (fn (if (stringp func) (intern func) func)))
     `(progn
        ,(if local `(defvar-local ,cache nil)
@@ -1070,7 +1074,7 @@ or PREDICATE is non-nil and returns nil."
              (prog1 val
                (put ',fn ',cache val)))))))
 
-;; -------------------------------------------------------------------
+;;-- marking
 
 ;; FIXME: most of these should either be generic or act on local variables
 ;; instead of being defined many times
@@ -1088,7 +1092,7 @@ or PREDICATE is non-nil and returns nil."
                  '(point)))))
      ,(or first-time '(mark-defun))))
 
-;;; Newline
+;;-- Newline
 
 ;; Newline and indents for PAIRS, extends comment region with
 ;; COMMENT-START when inside COMMENT-RE.
@@ -1132,7 +1136,7 @@ or PREDICATE is non-nil and returns nil."
                      (newline-and-indent)))))
            (indent-according-to-mode)))))))
 
-;;; Compile
+;;-- Compile
 
 ;; Create compile function, check for makefiles/cmake first, otherwise
 ;; execute BODY. Prefix argument executes PROMPT-ACTION, and its
@@ -1176,7 +1180,7 @@ or PREDICATE is non-nil and returns nil."
           ,@(and make-action `((have-make ,make-action)))
           (t ,@body))))))
 
-;;; Align
+;;-- Align
 
 ;; Create alignment functions
 (defmacro nvp-align-fn (name doc regex &optional _ignore-string)
@@ -1192,7 +1196,7 @@ or PREDICATE is non-nil and returns nil."
          (interactive "r")
          (align-regexp start end ,regex)))))
 
-;;; Wrap
+;;-- Wrap
 
 ;; Create function to wrap region, inserting BEGIN at beginning,
 ;; AFTER at the end.

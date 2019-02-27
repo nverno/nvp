@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: match regexp
+# key: match
+# --
+match(${1:string},${2:regexp}${3:,optarray})

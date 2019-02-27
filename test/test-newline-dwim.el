@@ -37,3 +37,5 @@
     "
 (list {
       |})" nil (call-interactively ' nvp-newline-dwim)))
+
+(provide 'test-newline-dwim)

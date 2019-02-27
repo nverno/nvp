@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: printf
+# key: prf
+# --
+printf("%${1:type}", ${2:var})

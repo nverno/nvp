@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: populate array
+# key: arrp
+# --
+split("${1:PointSeparateString}", ${2:array}, ".")

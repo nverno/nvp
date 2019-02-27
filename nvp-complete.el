@@ -29,7 +29,7 @@
 (defvar-local nvp-complete--switch-args '("--help"))
 
 ;; gather command line switches for completion
-(nvp-function-with-cache nvp-complete--switches ()
+(nvp-define-cache nvp-complete--switches ()
   "Local command line switches."
   :local t
   (with-temp-buffer

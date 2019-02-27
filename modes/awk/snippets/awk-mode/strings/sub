@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sub
+# key: sub
+# --
+sub(${1:regexp},${2:replace}${3:,optdest})

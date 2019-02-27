@@ -27,7 +27,7 @@
 (modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
 (modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
 
-(nvp-function-with-cache nvp-snippet-header-end ()
+(nvp-define-cache nvp-snippet-header-end ()
   "Return marker at end of snippet header."
   :local t
   (save-excursion

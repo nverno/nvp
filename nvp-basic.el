@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-26 00:08:16>
+;; Last modified: <2019-02-26 18:58:33>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -47,35 +47,36 @@
 
 ;;; Headings
 ;; these may vary by mode
-(defun nvp-move-header-regex ()
+(nvp-define-cache nvp-local-header-regex ()
   "Get or create header regex based on comment syntax."
-  (or nvp-move-header-regex
-      (setq nvp-move-header-regex
-            (let* ((comment (string-trim comment-start))
-                   (cs (regexp-quote comment))
-                   (multi (> (string-width comment) 1)))
-              (if (not multi)
-                  ;; ignore things like ';;;###autoload'
-                  (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-"
-                          cs cs cs)
-                (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" cs
-                        (regexp-quote (substring comment 1 2))))))))
+  :local t
+  :cache nvp-local-header-regex
+  (let* ((comment (string-trim comment-start))
+         (cs (regexp-quote comment))
+         (multi (> (string-width comment) 1)))
+    (if (not multi)
+        ;; ignore things like ';;;###autoload'
+        (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-"
+                cs cs cs)
+      (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" cs
+              (regexp-quote (substring comment 1 2))))))
 
-(defun nvp-move-forward-heading (&optional back)
+(defun nvp-move-forward-heading (&optional back error)
   (interactive)
   (condition-case nil
       (progn
         (forward-line (if back -1 1))
-        (if back (re-search-backward (nvp-move-header-regex))
-          (re-search-forward (nvp-move-header-regex)))
-        (beginning-of-line))
+        (if back (re-search-backward (nvp-local-header-regex))
+          (re-search-forward (nvp-local-header-regex)))
+        (forward-line 0))
     (error
      (forward-line (if back 1 -1))
-     (user-error (format "No %s headings" (if back "previous" "more"))))))
+     (user-error (format "No %s headings" (if back "previous" "more")))
+     (and error (signal error t)))))
 
-(defun nvp-move-previous-heading (&rest _ignored)
+(defun nvp-move-previous-heading (&optional error)
   (interactive)
-  (nvp-move-forward-heading 'back))
+  (nvp-move-forward-heading 'back error))
 
 ;;; Newlines
 ;; generics with defaults - lisp modes don't do anything special

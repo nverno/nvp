@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-26 15:57:38>
+;; Last modified: <2019-02-27 01:55:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 26 February 2019
@@ -29,7 +29,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Completion
-
+;; PROCINFO['identifiers'], FUNCTAB
 
 (provide 'nvp-awk)
 ;; Local Variables:

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 04:49:41>
+;; Last modified: <2019-02-26 20:19:15>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -40,19 +40,29 @@
 ;; -------------------------------------------------------------------
 ;;; Padding / Headers
 
-(defsubst nvp-yas-header (char &optional extra max)
-  (let ((sw (string-width yas-text)))
-    (make-string (if extra (min max (+ sw extra)) sw) char)))
+;; create string length of `yas-text', optionally constrained by min-len/max-len
+(defsubst nvp-yas-header (char &optional min-len max-len)
+  (let ((sw (+ (or min-len 0) (string-width yas-text))))
+    (make-string (if max-len (max 0 (min sw (- max-len sw))) sw) char)))
 
 ;; add padding to `yas-text'
 (defsubst nvp-yas-pad (char padmin padmax)
-  (let* ((sw (string-width yas-text))
-         (extra (max padmin (- padmax sw))))
-    (make-string (/ (max 0 extra) 2) char)))
+  (let* ((sw (+ padmin (string-width yas-text)))
+         (extra (max 0 sw (- padmax sw))))
+    (make-string (/ extra 2) char)))
 
 ;; fill after yas-text with CHAR until PADMAX
 (defsubst nvp-yas-pad-right (char padmax)
   (make-string (max 0 (- padmax (string-width yas-text))) char))
+
+;; center `yas-text' constrained by padmin/padmax
+(defsubst nvp-yas-center (padmin padmax &optional char)
+  (or char (setq char ? ))
+  (let* ((sw (+ padmin (length yas-text)))
+         (extra (max 0 sw (- padmax sw))))
+    (concat (make-string (ceiling extra 2) char)
+            yas-text
+            (make-string (floor extra 2) char))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -93,6 +103,15 @@
 
 (defsubst nvp-yas-or-values (str &optional seps)
   (split-string str (or seps "[\]\[|]") 'omit " "))
+
+;; -------------------------------------------------------------------
+;;; Input
+
+;; yas read input wrapper
+(defun nvp-yas-read (func &rest args)
+  (unless (or yas-moving-away-p
+              yas-modified-p)
+    (apply func args)))
 
 (provide 'nvp-yas)
 ;;; nvp-yas.el ends here

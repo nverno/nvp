@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: substr
+# key: substr
+# --
+substr(${1:string},${2:begin},${3:size})

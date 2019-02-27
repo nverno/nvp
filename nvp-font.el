@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-26 16:03:08>
+;; Last modified: <2019-02-26 20:40:44>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
@@ -79,17 +79,24 @@
 ;;; Fontify 
 
 ;;;###autoload
-(defun nvp-font-fontify-region-face (face &optional thing beg end)
+(defun nvp-font-fontify-region-face (face &optional beg end)
   "Fontify region or `thing-at-point' with font FACE.
-With _ "
+With \\[universal-argument] prompt for THING at point."
   (interactive
    (list
     (read-face-name "Fontifaction face: ")
     (nvp-region-or-batp (eq 4 (prefix-numeric-value current-prefix-arg)))))
   (put-text-property beg end 'font-lock-face face))
 
-(defun nvp-font-refresh-defaults ()
-  )
+;;;###autoload
+(defun nvp-font-lock-toggle ()
+  "Toggle font-lock additions on/off."
+  (interactive)
+  (if (not (bound-and-true-p nvp-local-font-lock))
+      (message "No additional font-lock rules for %s" major-mode)
+    (nvp-toggled-if (font-lock-refresh-defaults)
+      (font-lock-flush (point-min) (point-max))
+      (font-lock-ensure (point-min) (point-max)))))
 
 ;; -------------------------------------------------------------------
 ;;; Assorted 

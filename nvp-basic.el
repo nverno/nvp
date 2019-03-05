@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-26 18:58:33>
+;; Last modified: <2019-03-05 17:08:48>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -35,7 +35,7 @@
 ;; add smooth-scrolling
 (nvp-advise-commands 'do-smooth-scroll :after (nvp-move-next5 nvp-move-prev5))
 
-(defun nvp-move-forward-defun (&rest _ignored)
+(defun nvp-move-forward-defun ()
   (interactive)
   (or (not (eq this-command 'nvp-move-forward-defun))
       (eq last-command 'nvp-move-forward-defun)

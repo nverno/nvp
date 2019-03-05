@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-26 21:47:48>
+;; Last modified: <2019-03-05 17:15:20>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -58,7 +58,9 @@ Action decides how to display location:
     (if (consp action) (setq action (prefix-numeric-value action))))
   (pcase (cons type action)
     (`(:buffer . ,_)
-     (pop-to-buffer location (nvp-display--get-action action :buffer)))
+     (pop-to-buffer location (nvp-display--get-action action :buffer))
+     (and (marker-position (mark-marker))
+          (goto-char (mark-marker))))
     ((or `(,:find-func . ,_) `(,:file . ,_))
      (funcall (nvp-display--get-action action type) location))
     (`(:ido . ,_)

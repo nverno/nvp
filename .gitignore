@@ -6,3 +6,7 @@
 
 _build/
 .cask/
+_minted*
+**/doc/*.pdf
+**/doc/*.tex
+**/doc/*.html

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-27 14:30:39>
+;; Last modified: <2019-03-05 17:03:16>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -336,20 +336,22 @@ line at match (default) or do BODY at point if non-nil."
   (declare (debug t))
   (and (symbolp key) (setq key (symbol-value key)))
   (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
-  `(define-key
-     ,(if (keymapp map) `',map map)
-     ,(if (or (vectorp key) (keymapp key)) key (kbd key))
-     ,(cond
-       ((or (null cmd) (and (consp cmd)
-                            (or (equal (cdr cmd) '(nil))
-                                (equal (cddr cmd) '(nil)))))
-        nil)
-       ((consp cmd)
-        (cond
-         ((equal (car cmd) 'function) `,cmd)
-         ((equal (car cmd) 'quote) `#',(cadr cmd))
-         (t `,cmd)))
-       (t `#',cmd))))
+  `(progn
+     (declare-function ,cmd "")
+     (define-key
+      ,(if (keymapp map) `',map map)
+      ,(if (or (vectorp key) (keymapp key)) key (kbd key))
+      ,(cond
+        ((or (null cmd) (and (consp cmd)
+                             (or (equal (cdr cmd) '(nil))
+                                 (equal (cddr cmd) '(nil)))))
+         nil)
+        ((consp cmd)
+         (cond
+          ((equal (car cmd) 'function) `,cmd)
+          ((equal (car cmd) 'quote) `#',(cadr cmd))
+          (t `,cmd)))
+        (t `#',cmd)))))
 
 (defmacro nvp-create-keymaps (leader &rest maps)
   "Create submaps from LEADER map. Optionally give name of keymap for
@@ -386,17 +388,6 @@ If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
         ,@(cl-loop for (k . b) in bindings
              collect `(nvp-def-key ,map ,k ,b))))))
 
-(cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
-                                     &rest body)
-  "Execute BODY with BINDINGS set in transient map."
-  (declare (indent 0))
-  (let ((tmap (cl-gensym)))
-    `(let ((,tmap (make-sparse-keymap)))
-       ,@(cl-loop for (k . b) in bindings
-            collect `(nvp-def-key ,tmap ,k ,b))
-       (set-transient-map ,tmap ,keep ,exit)
-       ,@body)))
-
 (cl-defmacro nvp-bindings (mode &optional feature &rest bindings
                                 &key local minor &allow-other-keys)
   "Set MODE BINDINGS after FEATURE is loaded.
@@ -423,6 +414,19 @@ Optional :local key can be set to make the mappings buffer-local."
           collect `(nvp-bindings ,mode ',feature ,@bindings))))
 
 ;;-- Bindings: local / transient / overriding
+
+;; FIXME: remove this?
+(cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
+                                     &rest body)
+  "Execute BODY with BINDINGS set in transient map."
+  (declare (indent 0))
+  (let ((tmap (cl-gensym)))
+    `(let ((,tmap (make-sparse-keymap)))
+       ,@(cl-loop for (k . b) in bindings
+            collect `(nvp-def-key ,tmap ,k ,b))
+       (set-transient-map ,tmap ,keep ,exit)
+       ,@body)))
+
 (cl-defmacro nvp-use-transient-bindings
     (&optional bindings
                &key
@@ -480,13 +484,19 @@ If BUFFER is non-nil, set local bindings in BUFFER."
 ;; Overrides a minor mode keybinding for the local buffer by creating
 ;; or altering keymaps stored in buffer-local variable
 ;; `minor-mode-overriding-map-alist'.
-(defmacro nvp-use-minor-mode-overriding-map (mode &rest bindings)
-  "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'."
+(cl-defmacro nvp-use-minor-mode-overriding-map (mode &rest bindings
+                                                     &key predicate
+                                                     &allow-other-keys)
+  "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'.
+If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil."
   (declare (indent defun))
-  `(let ((map (make-sparse-keymap)))
-     ,@(cl-loop for (k . b) in bindings
-          collect `(nvp-def-key map ,k ,b))
-     (push (cons ,mode map) minor-mode-overriding-map-alist)))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  `(,@(if predicate `(when ,predicate) '(progn))
+    (let ((map (make-sparse-keymap)))
+      ,@(cl-loop for (k . b) in bindings
+           collect `(nvp-def-key map ,k ,b))
+      (push (cons ,mode map) minor-mode-overriding-map-alist))))
 
 (defmacro nvp-use-local-keymap (&optional keymap &rest bindings)
   "Use a local version of KEYMAP or `current-local-map'."

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-27 14:24:41>
+;; Last modified: <2019-03-05 16:32:20>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -89,8 +89,9 @@ With double prefix, prompt for mode."
     (with-current-buffer buff
       (goto-char (point-min))           ;might already be open
      (condition-case nil
-       (progn
-         (re-search-forward (concat "^(nvp-[^\n]+" (regexp-quote keymap))))
+         (when (re-search-forward
+                (concat "^(nvp-bind-keys[ ]+" (regexp-quote keymap)))
+           (set-marker (mark-marker) (match-end 0)))
        (error (goto-char (point-min)))))
    (nvp-display-location buff :buffer action)))
 

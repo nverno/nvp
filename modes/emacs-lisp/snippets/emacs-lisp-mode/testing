@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: blah
+# key: blah
+# --
+(concat "abc" "def")

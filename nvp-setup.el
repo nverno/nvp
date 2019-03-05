@@ -2,12 +2,21 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-05 16:18:32>
+;; Last modified: <2019-03-05 16:51:10>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
 
 ;;; Commentary:
+
+;; Mode setup helpers
+
+;;; FIXME: check for package on load-history before running setup routine
+;; should cache packages w/ local variables as structs
+;; - only search in setup when not loaded
+;;   `load-history-regexp', `load-history-filename-element'
+;; - use mode-local ?, better way to set many mode-local variables
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -16,12 +25,6 @@
   (require 'nvp-macro)
   (require 'smie))
 (require 'nvp)
-
-;;; FIXME: check for package on load-history before running setup routine
-;; should cache packages w/ local variables as structs
-;; - only search in setup when not loaded
-;;   `load-history-regexp', `load-history-filename-element'
-;; - use mode-local ?, better way to set many mode-local variables
 
 ;; -------------------------------------------------------------------
 ;;; Helpers
@@ -42,22 +45,13 @@
       (executable-find name)))
 
 ;;;###autoload
-(defun nvp-setup-smie-bindings (&optional debug)
+(defun nvp-setup-smie-bindings (&optional minor-mode)
   "Locally override minor mode bindings when smie functions are available."
-  ;; FIXME: buffer-local bindings only when smie is active?
-  (nvp-use-minor-mode-overriding-map 'smartparens-mode
+  (nvp-use-minor-mode-overriding-map (or minor-mode 'smartparens-mode)
+    :predicate (not (null smie-closer-alist))
     ("C-M-f"    . smie-forward-sexp-command)
     ("C-M-b"    . smie-backward-sexp-command)
-    ("<f2> q c" . smie-close-block))
-  ;; FIXME: only activate if mode uses smie?
-  (when debug
-    (nvp-bind-keys nvp-debug-keymap
-      :predicate (featurep 'smie)
-      ("sc" . smie-config-show-indent)
-      ("ss" . smie-config-set-indent)
-      ("sg" . smie-config-guess)
-      ("sS" . smie-config-save)
-      ("se" . smie-edebug))))
+    ("<f2> q c" . smie-close-block)))
 
 ;; ------------------------------------------------------------
 ;;; Setup

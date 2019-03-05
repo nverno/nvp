@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-05 13:49:58>
+;; Last modified: <2019-03-05 17:51:16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -103,6 +103,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;;; Snippet mode
 ;; #<marker at 172452 in yasnippet.el>
 
+;; stuff to be evaluated once when file is loaded
 ;; "'" should be prefix to enable quote wrapping etc.
 (modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
 (modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
@@ -112,16 +113,19 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 (nvp-define-cache nvp-snippet-header-end ()
   "Return marker at end of snippet header."
   :local t
+  :cache nvp-snippet-header-end--cache
   (save-excursion
     (goto-char (point-min))
     (when (search-forward "# --")
       (point-marker))))
 
+;; non-nil if point is in header portion of snippet
 (defsubst nvp-snippet-header-p (&optional pnt)
   (< (or pnt (point)) (marker-position (nvp-snippet-header-end))))
 
-;; (defsubst nvp-snippet-code-p (&optional pnt)
-;;   ())
+;; non-nil if point is in an elisp code segment
+(defsubst nvp-snippet-code-p (&optional pnt)
+  ())
 
 (defvar nvp-snippet--field-vars
   (eval-when-compile

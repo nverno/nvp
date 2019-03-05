@@ -4,51 +4,16 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 19:59:59>
+;; Last modified: <2019-03-05 13:43:40>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
 ;; Base hippie expansion functions
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'cl-lib))
 (require 'hippie-exp)
-
-;; #<marker at 30147 in hippie-exp.el.gz>
-;;;###autoload
-(defun nvp-he-try-expand-local-abbrevs (old)
-  "Try to expand word from locally active abbrev tables.
-Accounts for :enable-function and :regexp table properties when selecting
-candidates."
-  (require 'nvp-abbrev-completion)
-  (cl-block nil
-    (unless old
-      (let ((beg (nvp-abbrev-completion-prefix-beg)))
-        (and (not beg) (cl-return))
-        (he-init-string beg (point))
-        (unless (he-string-member he-search-string he-tried-table)
-          (setq he-tried-table (cons he-search-string he-tried-table)))
-        (setq he-expand-list                    ;expansion candidates
-              (and (not (equal he-search-string ""))
-                   (delq nil
-                         (mapcan
-                          (lambda (table)
-                            (mapcar
-                             (lambda (prefix)
-                               (let ((exp
-                                      (abbrev-expansion prefix (symbol-value table))))
-                                 (if (vectorp exp)
-                                     (aref exp 0)  ;expand hooks
-                                   exp)))
-                             (all-completions he-search-string (symbol-value table))))
-                          (nvp-abbrev-completion--active-tables)))))))
-    (while (and he-expand-list                  ;clean expansion list
-                (he-string-member (car he-expand-list) he-tried-table t))
-      (setq he-expand-list (cdr he-expand-list)))
-    (prog1 (not (null he-expand-list))
-      (if (null he-expand-list)
-          (and old (he-reset-string))
-        (he-substitute-string (pop he-expand-list) t)))))
 
 ;; https://github.com/magnars/.emacs.d/blob/master/settings/setup-hippie.el
 (defvar nvp-he-search-loc-backward (make-marker))

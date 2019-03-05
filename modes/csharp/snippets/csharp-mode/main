@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: main
+# key: main
+# --
+static ${1:void} Main(${2:String[] args})
+{
+  $0
+}

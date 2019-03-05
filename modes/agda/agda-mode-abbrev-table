@@ -1,0 +1,19 @@
+(define-abbrev-table 'agda2-mode-abbrev-table
+  '(
+    ("a"  "abstract" nil :system t)
+    ("c" "codata" nil :system t)
+    ("f" "∀ {" nil :system t)
+    ("h" "hiding" nil :system t)
+    ("m" "module" nil :system t)
+    ("r" "renaming" nil :system t) 
+    ("u" "using" nil :system t)
+    ("w"  "where" nil :system t)
+    
+    ("mu" "mutual" nil :system t)
+    ("oi" "open import" nil :system t)
+    ("po" "postulate" nil :system t)
+    ("pr" "private" nil :system t)
+    ("pu" "public" nil :system t)
+
+    ("rec" "record" nil :system t)
+    ))

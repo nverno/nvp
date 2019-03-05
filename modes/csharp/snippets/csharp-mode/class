@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: class
+# key: class
+# --
+${1:public} class ${2:Name}
+{
+  #region constructor & destructor
+  /// <summary>
+  /// ${3:Constructor}
+  /// </summary>
+  public $2 ($4) {
+    $0
+  }
+
+  /// <summary>
+  /// ${5:Default Destructor}
+  /// </summary>
+  public ~$2 () {
+  
+  }
+  #endregion
+}

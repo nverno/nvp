@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name : region
+# key: region
+# --
+#region $1
+$0
+#endregion

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mode header
+# key: mmode
+# --
+`(nvp-yas-comment 2)` -*- mode: $1; -*-$0`(nvp-yas-comment-end)`

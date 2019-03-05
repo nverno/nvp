@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 10:56:03>
+;; Last modified: <2019-03-05 13:42:03>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  6 February 2019
@@ -82,6 +82,45 @@
 (defun nvp-abbrev-completion-candidates (arg)
   (cl-loop for tab in (nvp-abbrev-completion--active-tables)
      nconc (delete "" (all-completions arg (symbol-value tab)))))
+
+;; -------------------------------------------------------------------
+;;; Abbrevs
+(require 'hippie-exp)
+
+;; #<marker at 30147 in hippie-exp.el.gz>
+;;;###autoload
+(defun nvp-he-try-expand-local-abbrevs (old)
+  "Try to expand word from locally active abbrev tables.
+Accounts for :enable-function and :regexp table properties when selecting
+candidates."
+  (cl-block nil
+    (unless old
+      (let ((beg (nvp-abbrev-completion-prefix-beg)))
+        (and (not beg) (cl-return))
+        (he-init-string beg (point))
+        (unless (he-string-member he-search-string he-tried-table)
+          (setq he-tried-table (cons he-search-string he-tried-table)))
+        (setq he-expand-list                    ;expansion candidates
+              (and (not (equal he-search-string ""))
+                   (delq nil
+                         (mapcan
+                          (lambda (table)
+                            (mapcar
+                             (lambda (prefix)
+                               (let ((exp
+                                      (abbrev-expansion prefix (symbol-value table))))
+                                 (if (vectorp exp)
+                                     (aref exp 0)  ;expand hooks
+                                   exp)))
+                             (all-completions he-search-string (symbol-value table))))
+                          (nvp-abbrev-completion--active-tables)))))))
+    (while (and he-expand-list                  ;clean expansion list
+                (he-string-member (car he-expand-list) he-tried-table t))
+      (setq he-expand-list (cdr he-expand-list)))
+    (prog1 (not (null he-expand-list))
+      (if (null he-expand-list)
+          (and old (he-reset-string))
+        (he-substitute-string (pop he-expand-list) t)))))
 
 (provide 'nvp-abbrev-completion)
 ;;; nvp-abbrev-completion.el ends here

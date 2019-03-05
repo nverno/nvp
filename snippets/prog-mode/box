@@ -1,0 +1,7 @@
+# -*- mode: snippet; -*-
+# name: box
+# key: box
+# --
+`(nvp-comment-start 2)` +-----------------------------------------------------------------+
+`(nvp-comment-continued 2)` |${1:$(nvp-yas-pad ? 5 61)}${1:title}${1:$(nvp-yas-pad ? 5 70)}|
+`(nvp-comment-continued 2)` +-----------------------------------------------------------------+`(nvp-comment-end)`

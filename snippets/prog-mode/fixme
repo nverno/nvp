@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: fixme
+# key: fix
+# condition: (not (eq major-mode 'sh-mode))
+# --
+`(nvp-comment-string " FIXME: ")`

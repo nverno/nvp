@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 04:49:25>
+;; Last modified: <2019-03-05 13:57:26>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -21,7 +21,7 @@
 (defun nvp-yas-reload-all ()
   "Reload modes' snippet tables."
   (interactive)
-  (unless (member nvp-snippet-dir yas-snippet-dirs)
+  (when (and nvp-snippet-dir (not (member nvp-snippet-dir yas-snippet-dirs)))
     (push nvp-snippet-dir yas-snippet-dirs))
   (cl-loop for dir in yas-snippet-dirs
      do (yas-load-directory dir)))

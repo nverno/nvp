@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: delimiter
+# key: delm
+# --
+`(nvp-comment-start 2)` `(make-string (- 67 (nvp-yas-indent)) ?-)`
+`(nvp-comment-continued 3)` $0 `(nvp-comment-end)`

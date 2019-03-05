@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: delimiter with two bars
+# key: ddelm
+# expand-env: ((yas-indent-line 'auto) (char (read-char "Header char: ")))
+# --
+`(nvp-comment-start 2)``(make-string (- 68 (nvp-yas-indent)) char)`
+`(nvp-comment-continued 3)` $0
+`(nvp-comment-continued 2)``(make-string (- 68 (nvp-yas-indent) (length (nvp-comment-end 'trim))) char)``(nvp-comment-end 'trim))`

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name : private attrib
+# key: attrib
+# --
+/// <summary>
+/// $3
+/// </summary>
+private $1 $2;

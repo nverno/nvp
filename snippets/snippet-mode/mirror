@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ${n:$(...)} mirror
+# key: __
+# contributor: joaotavora
+# --
+\${${1:n}:${2:\$(${3:reflection-fn})}\}

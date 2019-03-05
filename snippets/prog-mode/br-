@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: br-
+# key: br-
+# --
+`(nvp-comment-start 2)`——— ${1:title} ${1:$(make-string (- 63 (string-width yas-text) (nvp-yas-indent) (length (nvp-comment-end))) ?—)}`(nvp-comment-end)`

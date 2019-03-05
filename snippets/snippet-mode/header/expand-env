@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: expand-env
+# key: env
+# --
+# expand-env: ${1:((yas-indent-line 'fixed))}

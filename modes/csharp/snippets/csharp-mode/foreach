@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: foreach
+# key: foreach
+# --
+foreach (${1:var} ${2:item} in ${3:list})
+{
+  $0
+}

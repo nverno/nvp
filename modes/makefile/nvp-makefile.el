@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-02-27 11:41:15>
+;; Last modified: <2019-03-05 16:04:05>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -53,6 +53,24 @@
  (nvp-makefile-collect-topics
   "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
   "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
+
+;; -------------------------------------------------------------------
+;;; General mode variables
+
+(defun nvp-makefile-beginning-of-defun-function (&optional arg)
+  "See `beginning-of-defun'.
+Treats target blocks as defuns."
+  (when (or (null arg) (= 0 arg)) (setq arg 1))
+  (while (and (not (= 0 arg))
+              (makefile-previous-dependency))
+    (setq arg (if (> arg 0) (1- arg) (1+ arg)))))
+
+(defun nvp-makefile-end-of-defun-function ()
+  "See `end-of-defun'.
+Skips to end of tabbed block."
+  (forward-line 1)                   ;called when point is at beginning of block
+  (while (looking-at-p "^\t")
+    (forward-line 1)))
 
 ;; ------------------------------------------------------------
 ;;; Parse / Snippet helpers

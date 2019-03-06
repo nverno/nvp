@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-05 22:42:08>
+;; Last modified: <2019-03-06 00:00:03>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -86,27 +86,32 @@
   (newline arg 'interactive))
 
 ;;;###autoload
-(cl-defgeneric nvp-newline-dwim-syntax (&optional arg _syntax _comment-cont)
-  "Generic function to handle newline dwim syntactically."
-  (newline arg 'interactive))
-
-;;;###autoload
-(cl-defgeneric nvp-newline-dwim-default (&optional arg _pairs)
-  "Generic function to handle default newline dwim."
-  (nvp-newline-dwim--parens arg))
-
-(cl-defmethod nvp-newline-dwim-default (&context (major-mode emacs-lisp-mode)
-                                                 &optional arg _pairs)
-  "Nothing special for lisp newlines."
+(cl-defgeneric nvp-newline-dwim-comment (&optional arg _comment-cont)
+  "Generic function to handle newline dwim in comments."
   (newline arg 'interactive))
 
 ;; add additional newline when between syntactic open/closer
 (defun nvp-newline-dwim--parens (&optional arg)
   (save-excursion
-    (when
-        (and (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
-             (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))
+    (when (nvp-between-empty-parens-p)
       (newline-and-indent)))
+  (newline arg 'interactive))
+
+;;;###autoload
+(cl-defgeneric nvp-newline-dwim-default (&optional arg)
+  "Generic function to handle newline dwim syntactically."
+  (let ((syntax (syntax-ppss)))
+    (cond
+     ((nvp-in-string syntax)
+      (newline arg 'interactive))
+     ((nvp-in-comment syntax 'in-string)
+      (nvp-newline-dwim-comment arg))
+     ;; default to adding newline between paren delimiters
+     (t (nvp-newline-dwim--parens arg)))))
+
+(cl-defmethod nvp-newline-dwim-default
+  (&context (major-mode emacs-lisp-mode) &optional arg _pairs)
+  "Nothing special for lisp newlines."
   (newline arg 'interactive))
 
 (defun nvp-newline-dwim (&optional arg)

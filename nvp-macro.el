@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-05 21:32:42>
+;; Last modified: <2019-03-05 23:54:40>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -204,26 +204,67 @@ BEG and END are bound to the bounds."
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
-(defmacro nvp-unless-in-comment-or-string (&rest body)
-  "Execute BODY unless currently in a string or comment."
-  (declare (indent defun))
-  `(unless (let ((ppss (syntax-ppss)))
-             (or (car (setq ppss (nthcdr 3 ppss)))
-                 (car (setq ppss (cdr ppss)))
-                 (nth 3 ppss)))
-     ,@body))
+(defmacro nvp-in-string (&optional ppss)
+  "Non-nil if in string."
+  (let ((syn (if (and ppss (symbolp ppss)) ppss (make-symbol "syntax"))))
+    `(car (setq ,syn (nthcdr 3 ,(or ppss '(syntax-ppss)))))))
+
+(defmacro nvp-in-comment (&optional ppss in-string)
+  "Non-nil if in comment."
+  (let ((syn (if (and ppss (symbolp ppss)) ppss (make-symbol "syntax"))))
+    (if (and ppss in-string)
+        `(car (setq ,syn (cdr ,syn)))
+      `(nth 4 ,(or ppss '(syntax-ppss))))))
+
+(defmacro nvp-in-string-or-comment (&optional ppss)
+  "Non-nil if in string or comment."
+  (macroexp-let2 nil syntax (or ppss '(syntax-ppss))
+    `(or (nvp-in-string ,syntax)
+         (nvp-in-comment ,syntax 'in-string)
+         (nth 3 ,syntax))))
 
 (defmacro nvp-unless-in-comment (&rest body)
   "Execute BODY unless in comment."
   (declare (indent defun) (debug t))
-  `(unless (nth 4 (syntax-ppss))
+  `(unless (nvp-in-comment)
      ,@body))
+
+(defmacro nvp-if-in-comment (then &rest else)
+  "Do THEN if in comment, otherwise ELSE."
+  (declare (indent 1) (debug (sexp &rest form)))
+  `(if (nvp-in-comment) ,then
+     ,@else))
 
 (defmacro nvp-unless-in-string (&rest body)
   "Execute BODY unless in string."
   (declare (indent defun))
   `(unless (nth 3 (syntax-ppss))
      ,@body))
+
+(defmacro nvp-if-in-string (then &rest else)
+  "Do THEN if in string, otherwise ELSE."
+  (declare (indent 1) (debug (sexp &rest form)))
+  `(if (nvp-in-string) ,then
+     ,@else))
+
+(defmacro nvp-unless-in-comment-or-string (&rest body)
+  "Execute BODY unless currently in a string or comment."
+  (declare (indent defun))
+  `(unless (nvp-in-string-or-comment)
+     ,@body))
+
+(defmacro nvp-if-in-string-or-comment (then &rest else)
+  "Do THEN if in string or comment, otherwise ELSE."
+  (declare (indent 1) (debug (sexp &rest form)))
+  `(if (nvp-in-string-or-comment) ,then
+     ,@else))
+
+(defsubst nvp-between-empty-parens-p (&optional point)
+  "Non-nil if POINT is between open/close syntax with only whitespace."
+  (and point (goto-char point))
+  (and
+   (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
+   (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before))))))
 
 ;; -------------------------------------------------------------------
 ;;; Control flow

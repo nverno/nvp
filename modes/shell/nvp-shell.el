@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-02-15 10:22:50>
+;; Last modified: <2019-03-05 22:48:22>
 ;; Package-Requires: 
 ;; Created:  4 November 2016
 
@@ -110,8 +110,8 @@
         (compilation-read-command))
     (call-interactively 'compile)))
 
-(nvp-newline nvp-shell-newline-dwim nil
-  :pairs (("{" "}") ("(" ")")))
+;; (nvp-newline nvp-shell-newline-dwim nil
+;;   :pairs (("{" "}") ("(" ")")))
 
 (defun nvp-shell-expand-alias ()
   "Expand shell alias at/before point."

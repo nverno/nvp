@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-05 23:54:40>
+;; Last modified: <2019-03-06 00:26:59>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -261,10 +261,11 @@ BEG and END are bound to the bounds."
 
 (defsubst nvp-between-empty-parens-p (&optional point)
   "Non-nil if POINT is between open/close syntax with only whitespace."
-  (and point (goto-char point))
-  (and
-   (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
-   (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before))))))
+  (ignore-errors
+    (and point (goto-char point))
+    (and
+     (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
+     (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Control flow

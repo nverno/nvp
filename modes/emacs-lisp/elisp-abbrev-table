@@ -3,6 +3,8 @@
 (define-abbrev-table 'emacs-lisp-vars-abbrev-table
   '(
     ("cc" "compile-command" nil :system t)
+    ("ce" "comment-end" nil :system t)
+    ("cs" "comment-start" nil :system t)
     ("dd" "default-directory" nil :system t)
     ("lc" "last-command" nil :system t)
     ("lp" "load-path" nil :system t)

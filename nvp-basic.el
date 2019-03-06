@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-05 17:08:48>
+;; Last modified: <2019-03-05 19:12:09>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -121,6 +121,7 @@ With ARG use default behaviour, except also call `expand-abbrev'."
 ;; -------------------------------------------------------------------
 ;;; Company
 
+; FIXME: toggle off just pops up a new postip
 (defun nvp-company-quickhelp-toggle ()
   "Toggle pos-tip help on/off."
   (interactive)

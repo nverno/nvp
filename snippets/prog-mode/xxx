@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: xxx
+# key: xxx
+# --
+`(nvp-comment-string (concat " " (yas-choose-value "TODO" "FIXME") ": ") 2)`

@@ -1,0 +1,23 @@
+;; -*- coding: utf-8; -*-
+
+(define-abbrev-table 'css-common-abbrev-table
+  '(
+    ("bg" "background-color" nil :system t)
+    ("fs" "font-style" nil :system t)
+    ("fw" "font-weight" nil :system t)
+    ("ta" "text-align" nil :system t)
+    ("pl" "padding-left" nil :system t)
+    ("pr" "padding-right" nil :system t)
+    )
+  :enable-function 'nvp-abbrev-expand-p)
+
+(define-abbrev-table 'scss-mode-abbrev-table
+  '()
+  "Scss-Mode Abbrevs."
+  :parents (list css-common-abbrev-table))
+
+
+(define-abbrev-table 'css-mode-abbrev-table
+  '()
+  "Css-Mode Abbrevs."
+  :parents (list css-common-abbrev-table))

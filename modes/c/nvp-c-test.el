@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/c-tools
-;; Last modified: <2019-02-12 21:45:18>
+;; Last modified: <2019-03-05 21:29:44>
 ;; Package-Requires: 
 ;; Created: 20 January 2017
 
@@ -63,7 +63,7 @@
        (setq-local local-abbrev-table
                    (symbol-value (intern (concat ,type "-abbrev-table"))))
        (setq-local nvp-abbrev-local-table ,type)
-       (nvp-use-local-bindings
+       (nvp-use-local-keymap
          ("C-c C-c" . nvp-c-test-run-unit-test))))
 
   ;; generate function to run unit tests

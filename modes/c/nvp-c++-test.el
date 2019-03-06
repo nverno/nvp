@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 00:10:01>
+;; Last modified: <2019-03-05 21:28:43>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/c-tools
 ;; Package-Requires: 
@@ -49,7 +49,7 @@
  (defmacro nvp-c++-test--setup-buffer ()
    `(progn
       (setq-local local-abbrev-table boost-test-abbrev-table)
-      (nvp-use-local-bindings
+      (nvp-use-local-keymap
         ("C-c C-c" . nvp-c++-test-run-unit-test)))))
 
 ;; -------------------------------------------------------------------

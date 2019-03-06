@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 02:35:01>
+;; Last modified: <2019-03-05 19:15:58>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 February 2019
@@ -48,6 +48,7 @@
 (nvp-declare "" nvp-move-previous-heading nvp-move-forward-heading
   nvp-local-header-regex)
 
+;; FIXME: mark successive regions?
 ;;;###autoload
 (defun nvp-mark-header-region ()
   "Mark current header region."

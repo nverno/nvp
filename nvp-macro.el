@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-05 17:03:16>
+;; Last modified: <2019-03-05 21:32:42>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -415,7 +415,6 @@ Optional :local key can be set to make the mappings buffer-local."
 
 ;;-- Bindings: local / transient / overriding
 
-;; FIXME: remove this?
 (cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
                                      &rest body)
   "Execute BODY with BINDINGS set in transient map."
@@ -498,17 +497,19 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
            collect `(nvp-def-key map ,k ,b))
       (push (cons ,mode map) minor-mode-overriding-map-alist))))
 
-(defmacro nvp-use-local-keymap (&optional keymap &rest bindings)
-  "Use a local version of KEYMAP or `current-local-map'."
+(cl-defmacro nvp-use-local-keymap (&rest bindings
+                                   &key keymap buffer &allow-other-keys)
+  "Use a local version of KEYMAP or `current-local-map'.
+If BUFFER is non-nil, use BINDINGS locally in BUFFER."
   (declare (indent defun))
-  (macroexp-let2 nil keymap keymap
-   `(progn
-      (let ((current (or ,keymap (current-local-map)))
-            (newmap (make-sparse-keymap)))
-        (set-keymap-parent newmap current)
-        ,@(cl-loop for (k . b) in bindings
-             collect `(nvp-def-key newmap ,k ,b))
-        (use-local-map newmap)))))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  `(let ((lmap (make-sparse-keymap)))
+     (set-keymap-parent lmap ,(or keymap '(current-local-map)))
+     ,@(cl-loop for (k . b) in bindings
+          collect `(nvp-def-key lmap ,k ,b))
+     ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
+        '(use-local-map lmap))))
 
 ;;-- bindings: view
 

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-05 19:12:09>
+;; Last modified: <2019-03-05 22:42:08>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -93,6 +93,20 @@
 ;;;###autoload
 (cl-defgeneric nvp-newline-dwim-default (&optional arg _pairs)
   "Generic function to handle default newline dwim."
+  (nvp-newline-dwim--parens arg))
+
+(cl-defmethod nvp-newline-dwim-default (&context (major-mode emacs-lisp-mode)
+                                                 &optional arg _pairs)
+  "Nothing special for lisp newlines."
+  (newline arg 'interactive))
+
+;; add additional newline when between syntactic open/closer
+(defun nvp-newline-dwim--parens (&optional arg)
+  (save-excursion
+    (when
+        (and (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
+             (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))
+      (newline-and-indent)))
   (newline arg 'interactive))
 
 (defun nvp-newline-dwim (&optional arg)

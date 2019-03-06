@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-07 08:16:31>
+;; Last modified: <2019-03-05 21:31:51>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
@@ -52,7 +52,7 @@
           #'(lambda (_m) (concat "*shellcheck: " (buffer-file-name) "*")))
          (funcs compilation-finish-functions)
          (kill-func #'(lambda (&rest _ignored)
-                        (nvp-use-local-bindings ("q" . kill-this-buffer))
+                        (nvp-use-local-keymap ("q" . kill-this-buffer))
                         ;; reset compilation-finish-functions
                         (setq compilation-finish-functions funcs))))
     (setq compilation-finish-functions kill-func)

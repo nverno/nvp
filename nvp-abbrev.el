@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 10:53:55>
+;; Last modified: <2019-03-06 15:29:08>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -205,8 +205,7 @@ If FILE is non-nil, read abbrevs from FILE."
   (interactive)
   (nvp-abbrev-add-parent
    "unicode-latex-abbrev-table"
-   (expand-file-name
-    "unicode-latex-abbrev-table" (expand-file-name "etc" (nvp-package-root)))))
+   (expand-file-name "unicode-latex-abbrev-table" nvp/abbrevs)))
 
 ;;;###autoload
 (defun nvp-abbrev-remove-parent (table &optional parents)

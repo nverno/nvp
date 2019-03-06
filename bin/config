@@ -52,7 +52,7 @@ make_links() {
 ##
 usage() {
     cat <<EOF_HELP
-Usage: $0 [move|unlink] 
+Usage: $0 [move|unlink|link] 
        move	move tools to nvp and link to site-lisp
        unlink   remove links from site-lisp
        link	link from nvp/modes to site-lisp

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 00:26:59>
+;; Last modified: <2019-03-06 16:10:22>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -117,16 +117,20 @@ VAR is a symbol and FORM is evaluated."
            (mapcar (lambda (k-v) (eval (cadr k-v))) ,envvar)
          ,@body))))
 
-(defmacro nvp-defvar (var value)
+(defmacro nvp-defvar (&rest var-vals)
   "Define VAR and eval VALUE during compile."
-  (declare (indent defun))
-  `(progn (defvar ,var (eval-when-compile ,value))))
+  (declare (indent 0))
+  (macroexp-progn
+   (cl-loop for (var value) on var-vals by #'cddr
+      collect `(progn (defvar ,var (eval-when-compile ,value))))))
 
-(defmacro nvp-setq (var value)
+(defmacro nvp-setq (&rest var-vals)
   "Define VAR and eval VALUE during compile."
-  (declare (indent defun))
-  `(progn (eval-when-compile (defvar ,var))
-          (setq ,var (eval-when-compile ,value))))
+  (declare (indent 0))
+  (macroexp-progn
+   (cl-loop for (var value) on var-vals by #'cddr
+      collect `(progn (eval-when-compile (defvar ,var))
+                 (setq ,var (eval-when-compile ,value))))))
 
 (defmacro nvp-concat (&rest body)
   `(eval-when-compile (concat ,@body)))

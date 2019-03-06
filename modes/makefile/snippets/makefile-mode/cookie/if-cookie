@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: ifc
+# key: ifc
+# condition: (bound-and-true-p cookie)
+# --
+{%- if cookiecutter.$1 %}
+$0${2:
+{%- else %}
+$3}
+{%- endif %}

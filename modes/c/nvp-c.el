@@ -135,6 +135,10 @@
 ;; ------------------------------------------------------------
 ;;; Commands
 
+;; when in /* continued comments or doxygen, add comment continuation for
+;; newline-dwim
+;; (cl-defmethod nvp-newline-dwim-comment
+;;   (&context (major-mode c-mode) &optional arg))
 (nvp-newline nvp-c-newline-dwim nil
   :pairs (("{" "}"))
   :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
@@ -287,7 +291,7 @@
         
         (find-file-other-window (nvp-c--header-file-name)))))
 
-;;; Create/update header file with function signatures
+;; Create/update header file with function signatures
 (defun nvp-c-create-or-update-header (and-go)
   (interactive (list t))
   (let ((header (nvp-c--header-file-name))

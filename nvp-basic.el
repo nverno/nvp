@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 00:00:03>
+;; Last modified: <2019-03-06 07:01:36>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -202,16 +202,28 @@ On error (read-only), quit without selecting."
  (nvp-tag-function          . nil))
 
 ;; -------------------------------------------------------------------
-;;; Assorted
-(nvp-declare "" nvp-indicate-pulse-region-or-line)
+;;; Marks
 
-(defun nvp-mark-defun (&optional arg)
+(defun nvp-mark-defun (arg)
   "Mark defun, skipping preceding comments."
   (interactive "p")
   (let ((skip-comments (not (region-active-p))))
-    (setq prefix-arg current-prefix-arg)
-    (funcall nvp-mark-defun-function arg)
+    (setq prefix-arg (max 1 (/ (lsh arg -1) 4)))
+    (funcall nvp-mark-defun-function prefix-arg)
     (and skip-comments (comment-forward (point-max)))))
+
+;; -------------------------------------------------------------------
+;;; Align
+(nvp-declare "" nvp-indicate-pulse-region-or-line)
+
+;; ensure spaces when aligning
+(define-advice align-regexp (:around (old-fn &rest args) "no-tabs")
+  (let ((indent-tabs-mode nil))
+    (apply old-fn args)))
+
+(define-advice align (:around (old-fn &rest args) "no-tabs")
+  (let ((indent-tabs-mode nil))
+    (apply old-fn args)))
 
 (defun nvp-align (&optional arg beg end)
   "Align buffer region b/w BEG and END, or call `nvp-mark-defun' if nil.
@@ -226,7 +238,7 @@ With double prefix, highlight changes that would occur."
         (align (point-min) (point-max)))
     (save-mark-and-excursion
       (unless (and beg end)
-        (nvp-mark-defun)
+        (nvp-mark-defun 1)
         (setq beg (region-beginning) end (region-end)))
         (nvp-indicate-pulse-region-or-line beg end)
       (if (eq 16 arg)                     ;test alignment rule

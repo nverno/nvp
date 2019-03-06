@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 20:24:37>
+;; Last modified: <2019-03-06 12:15:35>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -33,9 +33,10 @@
   "Run ert tests.
 With prefix ARG, prompt for selector."
   (interactive)
-  (if (featurep 'ert)
-      (call-interactively 'ert-run-tests-interactively)
-    (user-error "`ert' must be loaded to run this function")))
+  (if (not (featurep 'ert))
+      (user-error "`ert' must be loaded to run this function")
+    (eval-buffer (current-buffer))
+    (call-interactively 'ert-run-tests-interactively)))
 
 ;;;###autoload
 (defun nvp-advice-remove-all (sym)

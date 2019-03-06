@@ -3,33 +3,19 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Maintainer: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-20 15:03:54>
+;; Last modified: <2019-03-06 15:56:04>
 ;; URL: https://github.com/nverno/lisp-tools
 ;; Package-Requires: 
 ;; Created: 21 November 2016
-;; Version: 0.0.1
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
-;; [![Build Status](https://travis-ci.org/nverno/lisp-tools.svg?branch=master)](https://travis-ci.org/nverno/lisp-tools)
+;; TODO:
+;; - auto-abbrevs
+;; - sbcl: jump to source
+;; - hap
+;; - pophelp
+;; - info
 
 ;;; Code:
 (eval-when-compile
@@ -43,13 +29,6 @@
 
 (autoload 'nvp-elisp-abbrev-expand-var-p "nvp-elisp")
 (autoload 'nvp-elisp-abbrev-expand-fn-p "nvp-elisp")
-
-;;; TODO:
-;; - auto-abbrevs
-;; - sbcl: jump to source
-;; - hap
-;; - pophelp
-;; - info
 
 (nvp-package-define-root :snippets t)
 

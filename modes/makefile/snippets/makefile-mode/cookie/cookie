@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: cc
+# key: _
+# condition: (bound-and-true-p cookie)
+# --
+{{cookiecutter.$1}}

@@ -3,6 +3,7 @@
 *autoloads?.el
 *loaddefs?.el
 .yas-compiled-snippets.el
+.depend
 
 _build/
 .cask/

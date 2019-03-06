@@ -339,6 +339,10 @@
 (define-abbrev-table 'cask-mode-abbrev-table
   '(
     ("do" "depends-on" nil :system t)
+    ("pf" "package-file" nil :system t)
+    ("sm" "source melpa" nil :system t)
+    ("sg" "source gnu" nil :system t)
+    ("dev" "development" nil :system t)
     )
   "Cask-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

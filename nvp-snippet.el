@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-05 17:51:16>
+;; Last modified: <2019-03-06 05:16:48>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -24,10 +24,15 @@
 
 (defun nvp-snippet-before-save-hook ()
   "Add conditions based on directory names."
-  (pcase (or (ignore-errors (nvp-dfn) (buffer-file-name)))
-    (`"doc" (nvp-snippet-add-field "condition" '(nvp-yas-inside-string)))
-    (`"comments" (nvp-snippet-add-field "condition" '(nvp-yas-inside-comment)))
-    (_)))
+  (cl-flet ((add-condition
+             (pred)
+             (nvp-snippet-add-field "condition" pred)))
+    (pcase (ignore-errors (or (nvp-dfn)
+                              (file-name-directory (buffer-file-name))))
+      (`"doc" (add-condition '(nvp-yas-inside-string)))
+      (`"comment" (add-condition '(nvp-yas-inside-comment)))
+      (`"cookie" (add-condition '(bound-and-true-p cookie)))
+      (_))))
 
 (defun nvp-snippet-add-field (field value)
   "Add FIELD with VALUE unless FIELD is already defined."
@@ -49,7 +54,7 @@
 ;; #<marker at 95724 in yasnippet.el>
 ;;;###autoload
 (defun nvp-jump-to-new-snippet (mode snippet-dir &optional do-dired text
-                                     default-new-snippet)
+                                                   default-new-snippet)
   "Jump to a new snippet for MODE in snippet SNIPPET-DIR (creating if necessary).
  If DO-DIRED is non-nil, `dired' that directory instead of creating snippet.
 If TEXT is non-nil use as `yas-selected-text'.
@@ -124,8 +129,8 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (< (or pnt (point)) (marker-position (nvp-snippet-header-end))))
 
 ;; non-nil if point is in an elisp code segment
-(defsubst nvp-snippet-code-p (&optional pnt)
-  ())
+;; (defsubst nvp-snippet-code-p (&optional pnt)
+;;   ())
 
 (defvar nvp-snippet--field-vars
   (eval-when-compile

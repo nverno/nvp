@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-05 16:04:05>
+;; Last modified: <2019-03-06 05:05:38>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -266,17 +266,19 @@ Skips to end of tabbed block."
     ;; fixup indent
     (nvp-makefile-indent)
     ;; align [?:]= before first rule
-    (let ((end (save-excursion
-                 ;; find first rule
-                 (progn (goto-char (point-min))
-                        (re-search-forward "^[^ ]+:" nil t)
-                        (point)))))
-      (align-regexp (point-min) end (nvp-concat
-                                     "\\(?:[^<?]\\)\\(\\s-*\\)"
-                                     "\\(=\\|[:?+]=\\)")
-                    1))
+    (align (point-min) (point-max))     ;use builtin align rules for now
+    ;; (let ((end (save-excursion
+    ;;              ;; find first rule
+    ;;              (progn (goto-char (point-min))
+    ;;                     (re-search-forward "^[^ ]+:" nil t)
+    ;;                     (point)))))
+    ;;   (align-regexp (point-min) end (nvp-concat
+    ;;                                  "\\(?:[^<?]\\)\\(\\s-*\\)"
+    ;;                                  "\\(=\\|[:?+]=\\)")
+    ;;                 1))
     ;; align trailing '\'
-    (align-regexp (point-min) (point-max) "\\(\\s-*\\)\\\\\\s-*$")))
+    ;; (align-regexp (point-min) (point-max) "\\(\\s-*\\)\\\\\\s-*$")
+    ))
 
 (provide 'nvp-makefile)
 ;;; nvp-makefile.el ends here

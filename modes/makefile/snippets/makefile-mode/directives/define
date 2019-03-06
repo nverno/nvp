@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: define
+# key: define
+# --
+define $1
+$0
+endef${2:
+export $1}

@@ -1,8 +1,8 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-02-26 04:42:55>
+#+DATE: <2019-03-06 12:53:32>
 
 * Functions
-** General [0/7]
+** General [1/9]
 - [ ] awk script to parse man switches in section
 - [ ] interface to install external deps
 - [ ] quickhelp-toggle
@@ -10,8 +10,9 @@
 - [ ] list package dependencies -- `package--get-deps'
 - [ ] more generic compile function?
 - [ ] fix list wrapping to account for syntax
-- [ ] jumping from shell doesn't account for local variables
+- [X] jumping from shell doesn't account for local variables
 - [ ] remove all methods from generic for debugging
+
 ** evil [0/9]
 things to look into
 - [ ] define command
@@ -24,30 +25,39 @@ things to look into
 - [ ] evil-jump-to-tag
 - [ ] evil-lookup-func
 
+** Jumps [0/4]
+refs: smart-jump, dumb-jump, evil-jump-to-tag
+- [ ] generalized interface
+- [ ] register methods for mode - do this in mode struct?
+- [ ] allow multiple registered backends for each mode, like smart-jump
+- [ ] fallback to grep/ag/dumb-jump or something
+
 ** Utils [1/4]
 - [ ] reusable region or string utility function
 - [ ] read w/ popup help: `register-read-with-preview'
 - [ ] utility function to repeat command like kbdmacro-repeat
 - [X] function wrappers to call local funs
-*** Function cache wrappers [2/5]
+*** Function cache wrappers [2/6]
 - [X] basic cache wrapper
 - [X] cache run once
 - [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
 - [ ] frame cache - see which-func
 - [ ] cache w/ filenotify invalidation
-
+- [ ] cache w/ timeout
 
 ** Logging [0/3]
 - [ ] only report warnings / errors when compiling
 - [ ] add option to treat all warnings as errors to makefile
 - [ ] update nvp-log, not very useful. Look into shutup
+
 ** REPLs [0/1]
 Not sure how this should work.
 - [ ] uniform repl-swithcing interface
 
-** Newline DWIM [1/2]
+** Newline DWIM [2/3]
 - [X] generic methods
-- [ ] method to match delims
+- [X] method to match delims
+- [ ] remove mode specific newline functions
 
 ** Tests [0/4] 
 - [ ] generic at point
@@ -71,14 +81,15 @@ see which-func
 - [ ] create dynamic table
 - [ ] make dynamic abbrevs
 
-** Docs/help-at-point
+** Docs/help-at-point [1/3]
+*** DONE Generic interface
 - [X] generic interface
 
-*** Front end [0/2]
+*** TODO Front end [0/2]
 - [ ] help-at-point frontend interface
 - [ ] better fitting of popup to frame
 
-*** Backends [0/9]
+*** TODO Backends [0/9]
 - [ ] company
 - [ ] semantic
 - [ ] man
@@ -88,6 +99,7 @@ see which-func
 - [ ] zeal?
 - [ ] javadoc - general html parsing?
 - [ ] info files
+- [ ] sh script parser like semantic/ia-doc for commented functions
 
 ** Completion [2/3]
 - [ ] edebug -- possibly favor local variable completion?
@@ -95,141 +107,171 @@ see which-func
 - [ ] don't leave includes open
 - [ ] create xrefs from imenu markers
 
-*** TODO snippet completion [0/3]
+*** TODO snippet completion [1/3]
 - [ ] basic head completion => merge yas-capf
 - [ ] elisp completion where appropriate
-- [ ] elisp-xref backend
+- [X] elisp-xref backend
 
 * Modes
-** elisp
-- [X] move to subdir of nvp
-- [ ] align rules are shitty - dots in double quotes get moved.
+** elisp [0/5]
+*** TODO General [0/2]
 - [ ] macroify-bindings update => elisp
-- [ ] package
 - [ ] fix hippie - adds extra ')' when no match
-- [X] jumping to abbrev with region doesn't account for prefixes
-*** HAP [0/1]
+
+*** TODO Align [1/5]
+- [ ] align rules are shitty - dots in double quotes get moved.
+
+*** TODO HAP [0/1]
 - [ ] use company-backend
-*** Parsing [1/3]
+*** TODO Parsing [1/3]
 Use ~load-history~
 - [X] buffer functions
 - [ ] buffer includes
 - [ ] buffer variables
-*** Dynamic abbrevs [0/2]
+*** TODO Dynamic abbrevs [0/2]
 - [ ] optionally abbrev library, buffer, or file
 - [ ] another abbrev table for variables?
-*** Jump to source functions [0/4]
-- [ ] xref
-- [ ] company-backend
-- [ ] etags
-- [ ] ggtags
 
-** C/C++
+** C/C++ [0/9]
+
+*** TODO Font-lock [0/1]
+- [ ] toggle doxygen
+
+*** TODO Align [0/1]
+- [ ] align rules for doxygen
+
+*** TODO script [0/3]
 - [ ] fixup awk script to parse system includes
-- [ ] use EDE?
 - [ ] how to gather all includes needed for project?
-- [ ] remove all left-over install stuff
-- [X] update includes install
-- [ ] package
-- [ ] subdir of nvp
 
-*** HAP [0/2]
-- [ ] company-backend (irony)
-- [ ] semantic-backend
-*** Parsing [0/4]
+*** TODO install [0/1]
+- [ ] cleanup includes/irony install
+
+*** TODO Project [0/1]
+- [ ] use EDE?
+
+*** TODO HAP [0/2]
+- [ ] additional backend to lookup online docs? 
+- [ ] man 2/3 depending on function
+
+*** TODO Parsing [0/4]
 - [ ] includes
-- [ ] local functions (statics)
-- [ ] exported functions
-- [ ] globals?
-*** Newline DWIM [0/3]
-- [ ] default in code method
+- [ ] buffer local functions
+- [ ] lexical variables
+
+*** TODO Newline DWIM [1/3]
+- [X] default in code method
+- [ ] convert newline to generic
 - [ ] in normal comments
 - [ ] in doxygen comments
-*** Dynamic abbrevs [0/1]
+
+*** TODO Dynamic abbrevs [0/1]
 - [ ] local functions
-*** Jump to source functions [0/2]
-- [ ] semantic-backend
-- [ ] ggtags
 
 
-** Makefile                                           :makefile:
-- [ ] change cleanup to use align rules + better indentation
+** Makefile [0/7]
+*** TODO Align/Indent [0/7]
+- [ ] fix align rule for trailing \\
+- [ ] add indentation b/w declarations
+*** TODO General functions [0/5]
+- [ ] beginning/end-of-defun functions/marking
+- [ ] fold declarations
+- [ ] fold targets
+*** TODO Download [0/1]
 - [ ] add download source to install
-- [ ] completion missing a number of things, eg. warning, error, dynamic
-  variables, environment variables
-*** macrostep [0/3]
+
+*** TODO Completion [0/3]
+- [ ] missing builtins, eg. warning, error, lastword
+- [ ] dynamic variables
+- [ ] environment variables
+*** TODO macrostep [0/3]
 - [ ] fixup awk script to gather local variables for macrostep
 - [ ] update macrostep with additional variables + defaults
 - [ ] optionally parse makefile commands?
-*** Newline DWIM [1/1]
-- [X] defaults
-*** Parsing [0/3]
+
+*** TODO Parsing [0/3]
 - [ ] includes
 - [ ] targets
 - [ ] dependencies
-*** HAP [0/1]
-- [ ] company-backends
-*** Jump to source functions [0/2]
-- [ ] company-backends
-- [ ] xref / tags
-- [ ] jump to source code for builtin functions
-** M4/Autotools                                             :m4:
-- [ ] merge completion/font-lock with autoconf?
-- [ ] update hook
 
-** Awk                                                     :awk:
+*** TODO Jumps [0/1]
+- [ ] jump to source code for builtin functions
+
+** M4/Autotools [2/4]
+- [X] merge completion/font-lock with autoconf?
+- [ ] m4 still missing lots of font-locking
+- [X] update hook
+- [ ] parse current function
+
+** Awk [0/3]
+*** refs
+  + man.el uses to parse output
+  + emacs source hooks / build-aux
+
+*** TODO General [1/4]
 - [ ] function to open src buffer from sh script
 - [ ] function to choose from useful oneliners
 - [ ] use awk-it??
-*** Generics [0/3]
+- [X] additional font-lock: indirect calls, fields
+
+*** TODO Generics [0/3]
 - [ ] should be able to use norm beg/end/mark function from C
 - [ ] function at point, other parse probably not important
-- [ ] HAP - man/html/info docs or source code to find help?
 
-*** Completion [0/2]
+*** TODO Completion [0/2]
 [[https://www.gnu.org/software/gawk/manual/gawk.html#Getting-Started][manual]] : Builtin-in Variables, String functions, Arithmetic Ops, Output
 Separators, 
-- [ ] variables / function
-- [ ] builtin variables / functions
-*** Refs
-- man.el uses to parse output
-- emacs source pre-commit hooks
-** sh                                                       :sh:
+- [ ] parse typescript for builtin sigs/docs/names
+- [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
+
+** sh [0/4]
 - [X] prefix hippie-shell-expand functions
 - [ ] parse sh function documentation
-*** Completion [0/2]
+*** TODO Completion [0/2]
 - [ ] capf for lexical scoped variables
 - [ ] merge capf bash-completion/variable-completion, maybe
-  `completion-merge-tables` from minibuffer
-*** Snippets [0/1]
+  ~completion-merge-tables~ from minibuffer
+*** TODO Snippets [0/1]
 - [ ] split sh usage arguments in snippets
-*** HAP [0/2]
-- [ ] company-backend
-- [ ] function comments backend - like semantic/ia
-*** Jump to source functions [0/1]
+
+*** TODO Jumps [0/1]
 - [ ] xref for company-bash sources, or configure tags properly
-*** Tests [0/1]
+
+*** TODO Tests [0/1]
 - [ ] method to jump to unit test at point
-** Shell                                                 :shell:
+
+*** Newline [1/2]
+- [X] code method
+- [ ] doc comment
+
+** Python [0/2]
+- [ ] convert newline
+- [ ] newline in string => parameters
+
+** Julia [0/2]
+- [ ] convert newline
+- [ ] update help with new functions
+
+** R [0/3]
+- [ ] convert newline
+- [ ] newline in roxygen
+- [ ] update help with new layout
+** Shell [0/1]
 - [X] wrapping with quotes is broken
-- [ ] account for dir-locals when jumping from shell
-*** Dynamic abbrevs
-** Java                                                   :java:
+- [X] account for dir-locals when jumping from shell
+*** TODO Dynamic abbrevs [0/1]
+- [ ] fix
+** Java [0/3]
 - [ ] new root package directory w/o creating new directory
-*** javadoc-mode
+*** TODO javadoc-mode [0/4]
 - [ ] formatting for lists
 - [ ] possible to determine table starts?
 - [ ] better faces
 - [ ] jump b/w sections, eg. Man-goto-section
-*** HAP [0/2]
-- [ ] company-backend
+*** TODO HAP [0/1]
 - [ ] web-backend?? javadoc-lookup
-*** Tests / jump to source [2/2]
-- [X] irony
-- [X] irony runs tests
 
-
-* Mode struct
+* Mode struct [2/5]
 - [X] struct or class?
 - [X] package deps
 - [ ] support recipe fetcher
@@ -245,14 +287,14 @@ Separators,
 - [X] gawk installs
 - [X] asm install
 
-* Mode settings [5/11]
+* Mode settings [6/11]
 - [ ] ggtags
 - [ ] ctags
   https://github.com/skeeto/.emacs.d/tree/master/lisp
 - [ ] ag settings
 - [ ] pdfgrep
 - [ ] EDE
-- [ ] m4
+- [X] m4
 - [X] etags
 - [X] edebug
 - [X] wgrep
@@ -271,24 +313,24 @@ Separators,
 - [X] separate setup from nvp
 - [X] remove nvp-conf / merge with config-tools
 
-* Merge/remove old packages [1/11]
+* Merge/remove old packages [2/11]
 - [ ] bmk-to-bmk => nvp-bookmark
 - [ ] esh-help => nvp-eshell
 - [ ] project-templates => cookiecutter?
 - [ ] project-ido => cookiecutter?
 - [ ] cheatsheet-lookup => nvp-help
-- [ ] yas-capf => nvp-snippet
+- [X] yas-capf => nvp-snippet
 - [ ] save-utils => nvp-utils
 - [ ] log-utils => nvp-log
 - [ ] help-utils => nvp-help
 - [ ] tag-utils => nvp-tags
 - [X] config-tools => nvp-conf
-** subdirs [1/5]
-- [ ] md-tools => subdir 
+** subdirs [5/5]
+- [X] md-tools => subdir 
 - [X] elisp-utils => subdir
-- [ ] yaml-tools => subdir 
-- [ ] shell-tools => subdir
-- [ ] c-tools => subdir
+- [X] yaml-tools => subdir 
+- [X] shell-tools => subdir
+- [X] c-tools => subdir
 
 * Tests / Profile [2/4]
 - [ ] update profiling script
@@ -307,6 +349,11 @@ wrapper for cookiecutter packages
 ** Cargo [0/1]
 - [ ] update / remove
 ** macrostep-sh
+- [ ] bounds of things at point
+- [ ] parse variables in lexical context
+- [ ] include environment variables
+- [ ] handle various string operations
+- [ ] handle default values
 
 * cookies [1/3]
 - [X] el

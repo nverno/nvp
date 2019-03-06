@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 10:36:07>
+;; Last modified: <2019-03-06 06:34:13>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -122,12 +122,6 @@ is useful, e.g, for use with `visual-line-mode'."
 
 ;; -------------------------------------------------------------------
 ;;; Align 
-
-;; ensure spaces when aligning
-;;;###autoload(advice-add 'align-regexp :around #'align-regexp@no-tabs)
-(define-advice align-regexp (:around (old-fn &rest args) "no-tabs")
-  (let ((indent-tabs-mode nil))
-    (apply old-fn args)))
 
 ;; Repeat alignment with respect to `REGEXP'. If `JUSTIFY-RIGHT'
 ;; is non-nil, justify to the right. If `AFTER', add whitespace to left

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: block
+# key: block
+# --
+`(nvp-comment-start 3)`
+`(nvp-comment-start 3)`  $0
+`(nvp-comment-start 3)`

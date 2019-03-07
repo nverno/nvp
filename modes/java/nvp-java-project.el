@@ -1,8 +1,20 @@
-;;; nvp-java-project ---  -*- lexical-binding: t; -*-
-(eval-when-compile (require 'nvp-macro))
-(eval-and-compile (require 'hydra))
+;;; nvp-java-project.el --- java project -*- lexical-binding: t; -*-
+
+;; This is free and unencumbered software released into the public domain.
+
+;; Last modified: <2019-03-06 18:06:52>
+;; Author: Noah Peart <noah.v.peart@gmail.com>
+;; URL: https://github.com/nverno/nvp
+;; Created:  6 March 2019
+
+;;; Commentary:
+;;; Code:
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'cl-lib)
+  (require 'hydra))
 (require 'eclim)
-(require 'java-tools)
+(require 'nvp-java)
 
 (autoload 'eclimd--ensure-started "eclimd")
 (autoload 'eclim--connected-p "eclim-common")
@@ -12,14 +24,8 @@
   (when (not (eclim--connected-p))
     (eclimd--ensure-started t 'nvp-java-project-hydra/body)))
 
-;;;###autoload
-(defun nvp-java-project ()
-  (interactive)
-  (require 'nvp-java)
-  (nvp-bind-keys nvp-project-keymap
-    ("c j" . nvp-java-project-hydra/body))
-  (nvp-java-project-hydra/body))
-
+;;;###autoload(autoload 'nvp-java-project-hydra/body "nvp-java-project")
+(nvp-hydra-set-property 'nvp-java-project-hydra :verbosity 1)
 (defhydra nvp-java-project-hydra (:color blue :pre nvp-java-project-pre)
   "Java Project"
   ("s" nvp-java-new-package  "pkg"       )
@@ -35,7 +41,10 @@
   ("r" eclim-project-refresh "refresh"   )  
   ("R" eclim-project-rename  "rename"    )  
   ("u" eclim-project-update  "update"    )) 
-(hydra-set-property 'nvp-java-project-hydra :verbosity 1)
 
 (provide 'nvp-java-project)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-java-project.el ends here

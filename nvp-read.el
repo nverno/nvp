@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-27 11:02:12>
+;; Last modified: <2019-03-06 19:43:13>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -44,7 +44,7 @@
     (setq default (symbol-name major-mode)))
   (setq prompt (nvp-prompt--with-default (or prompt "Mode config: ") default))
   (catch 'dired
-    (nvp-completing-read
+    (ido-completing-read
      prompt
      (mapcar
       #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'

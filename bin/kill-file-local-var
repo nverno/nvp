@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+# shellcheck source=/dev/null
+. ~/bin/include/utils.sh
+
+cat < "${1?}" || _error_exit "usage: $0 <local-var-name>"
+
+find . -iname *.el -exec sed '1 s/^;.*\(-\*-\(.*\)'"$1"''

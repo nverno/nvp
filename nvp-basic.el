@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 07:01:36>
+;; Last modified: <2019-03-06 19:56:08>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -45,7 +45,7 @@
 
 (defalias 'nvp-move-backward-defun 'beginning-of-defun)
 
-;;; Headings
+;;--- Headings
 ;; these may vary by mode
 (nvp-define-cache nvp-local-header-regex ()
   "Get or create header regex based on comment syntax."
@@ -78,7 +78,19 @@
   (interactive)
   (nvp-move-forward-heading 'back error))
 
-;;; Newlines
+;; -------------------------------------------------------------------
+;;; Newline DWIM 
+
+;; add additional newline when between syntactic open/closer
+(defun nvp-newline-dwim--parens (&optional arg)
+  (save-excursion
+    (when (nvp-between-empty-parens-p)
+      (newline-and-indent)))
+  (newline arg 'interactive))
+
+;; add a comment continuation string when in nestable doc comments
+(defun nvp-newline-dwim--comment (&optional _comment-continue))
+
 ;; generics with defaults - lisp modes don't do anything special
 ;;;###autoload
 (cl-defgeneric nvp-newline-dwim-prefix (&optional arg)
@@ -88,13 +100,6 @@
 ;;;###autoload
 (cl-defgeneric nvp-newline-dwim-comment (&optional arg _comment-cont)
   "Generic function to handle newline dwim in comments."
-  (newline arg 'interactive))
-
-;; add additional newline when between syntactic open/closer
-(defun nvp-newline-dwim--parens (&optional arg)
-  (save-excursion
-    (when (nvp-between-empty-parens-p)
-      (newline-and-indent)))
   (newline arg 'interactive))
 
 ;;;###autoload

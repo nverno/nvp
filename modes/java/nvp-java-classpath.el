@@ -3,7 +3,7 @@
 (eval-and-compile (require 'hydra))
 (require 'eclim)
 
-;; TODO:
+;; TODO: unimplemented?
 (defun nvp-eclim-classpath-create (lib-dir)
   (interactive "D")
   (eclim--call-process 

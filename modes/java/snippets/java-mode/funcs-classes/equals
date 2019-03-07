@@ -3,5 +3,5 @@
 # key: eq
 # --
 public boolean equals(${1:Class} other) {
-       $0
+    $0
 }

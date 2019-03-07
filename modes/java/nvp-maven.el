@@ -1,22 +1,28 @@
-;; -*- lexical-binding: t; -*-
+;;; nvp-maven.el --- maven stuff -*- lexical-binding: t; -*-
+
+;; This is free and unencumbered software released into the public domain.
+
+;; Last modified: <2019-03-06 18:11:15>
+;; Author: Noah Peart <noah.v.peart@gmail.com>
+;; URL: https://github.com/nverno/nvp
+;; Created:  6 March 2019
+
+;;; Commentary:
+;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (nvp-local-vars)
-  (require 'cl-lib))
-(require 'java-tools)
+  (require 'cl-lib)
+  (require 'hydra)
+  (require 'nvp-java))
 (require 'eclim-maven)
-(require 'hydra)
 
 (eval-when-compile
-  (defmacro stringify (cmd)
-    `(if (stringp ,cmd) ,cmd (symbol-name ,cmd)))
-
   ;; maven function factory
   (defmacro maven-fn (cmd)
-    `(defun ,(intern (concat "nvp-maven-" (stringify cmd))) ()
+    `(defun ,(intern (concat "nvp-maven-" (nvp-stringify cmd))) ()
        (interactive)
        (if (nvp-maven-p)
-           (eclim-maven-run ,(stringify cmd))
+           (eclim-maven-run ,(nvp-stringify cmd))
          (message "No pom.xml file found in project root directory")))))
 
 ;; -------------------------------------------------------------------
@@ -33,7 +39,7 @@
 (maven-fn compile)
 
 ;;;###autoload(autoload 'nvp-maven-hydra/body "nvp-maven")
-
+(nvp-hydra-set-property 'nvp-maven-hydra :verbosity 1)
 (defhydra nvp-maven-hydra (:color blue)
   ("r" eclim-maven-run "run")
   ("p" eclim-maven-lifecycle-phase-run "phase")
@@ -43,6 +49,10 @@
   ("C" nvp-maven-clean-install "clean-install")
   ("d" eclim-debug-maven-test "debug")
   ("q" nil))
-(hydra-set-property 'nvp-maven-hydra :verbosity 1)
 
 (provide 'nvp-maven)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
+;;; nvp-maven.el ends here

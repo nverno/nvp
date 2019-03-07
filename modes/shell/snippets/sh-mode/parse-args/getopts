@@ -11,7 +11,7 @@ while getopts "${1:d:s}" opt
 do case "\$opt" in
     ${2:d}) ${3:opt1}="$OPTARG";;
     ${4:s}) ${5:opt2}="$OPTARG";;
-    [?]) echo -e "\e[40m\e[1;32mUsage: `(nvp-sh-yas-defun-or-script)` $6\e[0m"
+    [?]) echo -e "\e[40m\e[1;32mUsage: `(nvp-yas-function-or-script)` $6\e[0m"
          exit 1;
    esac
 done

@@ -1,0 +1,10 @@
+;; -*- coding: utf-8; -*- 
+
+(define-abbrev-table 'groovy-mode-abbrev-table
+  '()
+  "Groovy mode abbrev table."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'gradle-mode-abbrev-table
+  '()
+  "Gradle mode abbrev table.")

@@ -1,7 +1,8 @@
-;;; java-tools.el --- ... -*- lexical-binding: t-*-
+;;; nvp-java.el --- ... -*- lexical-binding: t-*-
 
 ;; This is free and unencumbered software released into the public domain.
 
+;; Last modified: <2019-03-06 19:13:28>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/java-tools
 ;; Package-Requires: 
@@ -26,7 +27,8 @@
 
 ;;; Commentary:
 
-;; [![Build Status](https://travis-ci.org/nverno/java-tools.svg?branch=master)](https://travis-ci.org/nverno/java-tools)
+;;; TODO:
+;; - abbrevs for includes / file-local things only?
 
 ;;; Code:
 (eval-when-compile
@@ -34,28 +36,24 @@
   (require 'cl-lib))
 (require 'eclim)
 (require 'eclimd)
+(require 'nvp-parse)
 
-(declare-function eclim-maven-lifecycle-phase-run "eclim-maven")
 (declare-function eclim--maven-pom-path "eclim-maven")
 (declare-function eclim--project-read "eclim-project")
 (declare-function eclim--project-dir "eclim-common")
 (declare-function javadoc-lookup "javadoc-lookup")
-(declare-function nvp-maven-compile "nvp-maven")
 (declare-function eclim--completion-candidates "eclim-completion")
 (declare-function eclim-java-browse-documentation-at-point "eclim-javadoc")
 (declare-function eclim-javadoc-buffer "eclim-javadoc")
 
+(declare-function nvp-maven-compile "nvp-maven")
 (declare-function nvp-compile "nvp-compile")
-(declare-function nvp-log "nvp-log")
 (declare-function nvp-abbrev-expand-p "nvp-abbrev")
-(autoload 'c-beginning-of-defun "cc-cmds")
 
 (nvp-package-define-root :snippets t)
 
-;;; TODO:
-;; - abbrevs for includes / file-local things only?
-
-(defun java-tools-eclipse-releases ()
+;; FIXME: remove
+(defun nvp-java-eclipse-releases ()
   (interactive)
   (browse-url "https://projects.eclipse.org/releases"))
 
@@ -67,22 +65,16 @@
   (file-exists-p (string-trim (eclim--maven-pom-path))))
 
 ;; FIXME: remove or fix -- these can probably be replaced with eclim
-(defmacro java-tools-method-name ()
+(defmacro nvp-java-method-args ()
   `(save-excursion
-     (c-beginning-of-defun)
-     (when (re-search-forward "\\([A-Za-z]+\\)\\s-*(")
-       (match-string-no-properties 1))))
-      
-(defmacro java-tools-method-args ()
-  `(save-excursion
-     (c-beginning-of-defun)
+     (beginning-of-defun)
      (when (re-search-forward "(\\([^)]*\\))")
        (match-string-no-properties 1))))
 
 ;; FIXME: doesn't work 
-(defmacro java-tools-method-name-and-args ()
+(defmacro nvp-java-method-name-and-args ()
   `(save-excursion
-     (c-beginning-of-defun)
+     (beginning-of-defun)
      (when (re-search-forward "\\([A-Za-z]+\\)\\s-*(")
        (let ((method (match-string-no-properties 1))
              args)
@@ -92,17 +84,29 @@
          (cons method args)))))
 
 ;; -------------------------------------------------------------------
+;;; Generics
+(require 'nvp-parse)
+
+(cl-defmethod nvp-parse-current-function
+  (&context (major-mode java-mode) &rest _args)
+  (save-excursion
+    (beginning-of-defun)
+    (search-forward "(")
+    (backward-char 2)
+    (thing-at-point 'symbol t)))
+
+;; -------------------------------------------------------------------
 ;;; Commands
 
-;;; newline
-
-(nvp-newline java-tools-newline-dwim nil
+;;--- newline
+;; FIXME: remove
+(nvp-newline nvp-java-newline-dwim nil
   :pairs (("{" "}"))
   :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
   :comment-start "* ")
 
-;;; Movement
-
+;;--- Movement
+;; FIXME: convert these to beginning/end-of-defun
 ;; if outside of class move to methods within instead of just jumping
 ;; over the whole class
 (defun nvp-java-next-defun (&optional arg)
@@ -113,14 +117,14 @@
     (and (= 0 (syntax-ppss-depth ppss))
          (or arg (looking-at-p "\\s-*\\(public\\|private\\|class\\)"))
          (down-list (and arg -1))))
-  (c-beginning-of-defun (and (not arg) -1))
+  (beginning-of-defun (and (not arg) -1))
   (recenter))
 
 (defun nvp-java-previous-defun ()
   (interactive)
   (nvp-java-next-defun 'previous))
 
-;;; Compile
+;;--- Compile
 
 (defun nvp-java-compile ()
   (interactive)
@@ -132,7 +136,7 @@
                      (file-name-sans-extension buffer-file-name))))
         (nvp-compile)))))
 
-;;; Package
+;;--- Package
 ;; create package structure in current directory
 (defun nvp-java-new-package (root name)
   (interactive (list
@@ -160,6 +164,7 @@
                       #'(lambda () (call-interactively 'eclim-project-create))))
     (call-interactively 'eclim-project-create)))
 
+;; FIXME: opening shell in project root should be generic
 ;; open shell in project root
 (autoload 'nvp-ext-terminal-in-dir-p "nvp-ext")
 (defun nvp-java-project-shell (project-root)
@@ -220,6 +225,7 @@
             nil 'move)
            (match-string-no-properties 1)))))
 
+;; TODO: could use much better formatting
 ;; Show help in a popup window
 (defun nvp-java-popup-help ()
   (interactive)
@@ -250,5 +256,5 @@
       (`(64) (eclim-java-browse-documentation-at-point 'prompt))
       (_ (nvp-java-popup-help)))))
 
-(provide 'java-tools)
-;;; java-tools.el ends here
+(provide 'nvp-java)
+;;; nvp-java.el ends here

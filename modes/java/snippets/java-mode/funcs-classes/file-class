@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: file-class
+# key: filec
+# --
+public class ${1:`(nvp-yas-bfn-no-ext)`} {
+    $0
+}

@@ -1,8 +1,15 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-06 12:53:32>
+#+DATE: <2019-03-06 19:16:19>
+
+* Packages with stuff I want
+- smart-jump / dumb-jump
+- evil: define toggle commands / window
+- transient: replacement for magit-popup?
+- ag / ggtags: start using again
+- straight package manager is kinda close to what I want
 
 * Functions
-** General [1/9]
+** General [1/10]
 - [ ] awk script to parse man switches in section
 - [ ] interface to install external deps
 - [ ] quickhelp-toggle
@@ -12,7 +19,8 @@
 - [ ] fix list wrapping to account for syntax
 - [X] jumping from shell doesn't account for local variables
 - [ ] remove all methods from generic for debugging
-
+- [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
+- [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
 ** evil [0/9]
 things to look into
 - [ ] define command
@@ -82,6 +90,7 @@ see which-func
 - [ ] make dynamic abbrevs
 
 ** Docs/help-at-point [1/3]
+- [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L556][describe hash variable]]
 *** DONE Generic interface
 - [X] generic interface
 
@@ -103,6 +112,7 @@ see which-func
 
 ** Completion [2/3]
 - [ ] edebug -- possibly favor local variable completion?
+- [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L475][dabbrev-capf?]]
 *** TODO company-bash [0/2]
 - [ ] don't leave includes open
 - [ ] create xrefs from imenu markers
@@ -112,6 +122,8 @@ see which-func
 - [ ] elisp completion where appropriate
 - [X] elisp-xref backend
 
+** Dired [0/1]
+- [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L280][fix rsync]]
 * Modes
 ** elisp [0/5]
 *** TODO General [0/2]
@@ -133,7 +145,7 @@ Use ~load-history~
 - [ ] another abbrev table for variables?
 
 ** C/C++ [0/9]
-
+- [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
 *** TODO Font-lock [0/1]
 - [ ] toggle doxygen
 
@@ -261,8 +273,10 @@ Separators,
 - [X] account for dir-locals when jumping from shell
 *** TODO Dynamic abbrevs [0/1]
 - [ ] fix
-** Java [0/3]
+** Java [1/3]
 - [ ] new root package directory w/o creating new directory
+- [ ] fix newline
+- [X] parse-current-function
 *** TODO javadoc-mode [0/4]
 - [ ] formatting for lists
 - [ ] possible to determine table starts?
@@ -313,7 +327,7 @@ Separators,
 - [X] separate setup from nvp
 - [X] remove nvp-conf / merge with config-tools
 
-* Merge/remove old packages [2/11]
+* Merge/remove old packages [3/11]
 - [ ] bmk-to-bmk => nvp-bookmark
 - [ ] esh-help => nvp-eshell
 - [ ] project-templates => cookiecutter?
@@ -321,16 +335,10 @@ Separators,
 - [ ] cheatsheet-lookup => nvp-help
 - [X] yas-capf => nvp-snippet
 - [ ] save-utils => nvp-utils
-- [ ] log-utils => nvp-log
+- [X] log-utils => nvp-log
 - [ ] help-utils => nvp-help
 - [ ] tag-utils => nvp-tags
 - [X] config-tools => nvp-conf
-** subdirs [5/5]
-- [X] md-tools => subdir 
-- [X] elisp-utils => subdir
-- [X] yaml-tools => subdir 
-- [X] shell-tools => subdir
-- [X] c-tools => subdir
 
 * Tests / Profile [2/4]
 - [ ] update profiling script

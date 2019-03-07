@@ -2,4 +2,4 @@
 # name: logm
 # key: logm
 # --
-log("`(nvp-java-method-name)`() called with: `(nvp-java-method-args)`");
+log("`(nvp-parse-current-function)`() called with: `(nvp-java-method-args)`");

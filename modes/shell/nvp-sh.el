@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-05 21:13:16>
+;; Last modified: <2019-03-07 00:46:12>
 ;; Package-Requires: 
 ;; Created:  5 December 2016
 
@@ -412,12 +412,6 @@ Optionally return process specific to THIS-BUFFER."
     (align (point-min) (point-max))
     (and (buffer-modified-p)
          (save-buffer))))
-
-;; -------------------------------------------------------------------
-;;; Yas / Snippets
-
-(defun nvp-sh-yas-defun-or-script ()
-  (or (nvp-parse-current-function) (nvp-bfn)))
 
 ;; -------------------------------------------------------------------
 ;;; Toggle

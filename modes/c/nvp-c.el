@@ -26,7 +26,11 @@
 
 ;;; Commentary:
 
-;; [![Build Status](https://travis-ci.org/nverno/c-tools.svg?branch=master)](https://travis-ci.org/nverno/c-tools)
+;;; TODO:
+;; - Move env setup ffi - R, lisp - to separate file.
+;;   Should do env., snippets, abbrevs, etc all together.
+;;; FIXME:
+;; - function signatures => generic parsing method
 
 ;;; Code:
 (eval-when-compile
@@ -36,14 +40,8 @@
   (defvar nvp-abbrev-local-table))
 (declare-function xref-push-marker-stack "xref")
 (nvp-declare "cc-cmds" c-mark-function c-beginning-of-defun)
-(nvp-declare "" nvp-log nvp-compile nvp-compile-cmake)
+(nvp-declare "" nvp-compile)
 (autoload 'string-trim-right "subr-x")
-
-;;; TODO:
-;; - Move env setup ffi - R, lisp - to separate file.
-;;   Should do env., snippets, abbrevs, etc all together.
-;;; FIXME:
-;; - function signatures => generic parsing method
 
 (nvp-package-define-root :snippets t)
 
@@ -139,6 +137,7 @@
 ;; newline-dwim
 ;; (cl-defmethod nvp-newline-dwim-comment
 ;;   (&context (major-mode c-mode) &optional arg))
+
 (nvp-newline nvp-c-newline-dwim nil
   :pairs (("{" "}"))
   :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")

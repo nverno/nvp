@@ -1,7 +1,7 @@
 # copying projectile 
 site_name: "𝐄𝐌𝐀𝐂𝐒 Disaster" 
 repo_url: https://github.com/nverno/nvp
-site_favicon: favicon.ico
+# site_favicon: favicon.ico
 docs_dir: doc
 pages:
 - Home: index.md

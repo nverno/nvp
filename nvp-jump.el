@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 00:02:13>
+;; Last modified: <2019-03-06 17:30:41>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -22,6 +22,7 @@
   (nvp-local-vars))
 (require 'nvp)
 (require 'nvp-read)
+(nvp-declare "yasnippet" yas-expand-snippet yas-lookup-snippet)
 (autoload 'nvp-file-locate-first-dominating "nvp-file")
 
 ;; -------------------------------------------------------------------
@@ -29,10 +30,16 @@
 
 ;;;###autoload
 (defun nvp-jump-to-mode-config (mode action)
-  (interactive
-   (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
+  "Jump to MODE configuration, inserting skeleton snippet if non-existent."
+  (interactive (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
   (if (eq t mode) (dired-other-window nvp/config)
-    (nvp-display-location (nvp-mode-config-path mode) :file action)))
+    (let ((file (nvp-mode-config-path mode)))
+      (nvp-display-location file :file action)
+      (unless (file-exists-p file)
+        (yas-expand-snippet
+         (yas-lookup-snippet 'mode-config) nil nil
+         `((modename ,(if (string-suffix-p "-mode" mode) (substring mode -5)
+                        mode))))))))
 
 ;; Jump to test with extension `STR'.  If it doesn't exist make a new
 ;; file, and if there are multiple matches offer ido choice.

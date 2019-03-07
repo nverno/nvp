@@ -1,0 +1,4 @@
+#+TITLE: Configurations
+
+* mkdocs
+- [[https://www.mkdocs.org/user-guide/configuration/][user-guide]]

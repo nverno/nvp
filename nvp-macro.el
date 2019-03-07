@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 16:10:22>
+;; Last modified: <2019-03-06 20:34:00>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -1221,21 +1221,24 @@ or PREDICATE is non-nil and returns nil."
      &rest body)
   (declare (indent defun))
   (let ((fn (if (symbolp name) name (intern name))))
-    `(defun ,fn (&optional arg)
-       ,doc
-       (interactive "P")
-       (let* (,@(and make-action
-                     '((have-make
-                        (memq t (mapcar #'file-exists-p
-                                        '("Makefile" "makefile" "GNUMakefile"))))))
-              ,@(and cmake-action
-                     '((have-cmake (file-exists-p "CMakeLists.txt"))))
-              (args (and arg ,@(or prompt-action
-                                   '((read-from-minibuffer "Compile args: "))))))
-         (cond
-          ,@(and cmake-action `((have-cmake ,cmake-action)))
-          ,@(and make-action `((have-make ,make-action)))
-          (t ,@body))))))
+    `(progn
+       (declare-function nvp-compile "nvp-compile")
+       (declare-function nvp-compile-cmake "nvp-compile")
+       (defun ,fn (&optional arg)
+         ,doc
+         (interactive "P")
+         (let* (,@(and make-action
+                       '((have-make
+                          (memq t (mapcar #'file-exists-p
+                                          '("Makefile" "makefile" "GNUMakefile"))))))
+                ,@(and cmake-action
+                       '((have-cmake (file-exists-p "CMakeLists.txt"))))
+                (args (and arg ,@(or prompt-action
+                                     '((read-from-minibuffer "Compile args: "))))))
+           (cond
+            ,@(and cmake-action `((have-cmake ,cmake-action)))
+            ,@(and make-action `((have-make ,make-action)))
+            (t ,@body)))))))
 
 ;;-- Align
 

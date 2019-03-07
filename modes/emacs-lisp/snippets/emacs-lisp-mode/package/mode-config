@@ -1,0 +1,27 @@
+# -*- mode: snippet -*-
+# name: mode-config
+# key: mode-config
+# expand-env: ((modename))
+# --
+;; Last modified: <>
+(nvp-install-on-demand$1)
+(eval-when-compile
+  (require 'nvp-macro))
+
+;; -------------------------------------------------------------------
+;;; Settings
+
+;; -------------------------------------------------------------------
+;;; Bindings
+
+(nvp-bindings "${2:`modename`-mode}" ${3:nil}
+  ($4))
+
+;; -------------------------------------------------------------------
+;;; Hooks
+
+;;;###autoload
+(defun nvp-`modename`-hook ()
+  (nvp-setup-local "`modename`"))
+
+(provide 'nvp-`modename`-config)

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-26 20:19:15>
+;; Last modified: <2019-03-07 00:46:39>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -16,6 +16,7 @@
 (require 'nvp)
 (require 'yasnippet)
 (require 'nvp-comment)
+(autoload 'nvp-parse-current-function "nvp-parse")
 
 (defalias 'yas-comment-string 'nvp-yas-comment)
 
@@ -24,10 +25,10 @@
 
 ;; trimmed filename
 (defsubst nvp-yas-bfn ()
-  (nvp-bfn))
+  (nvp-bfn nil 'or-buff))
 
 (defsubst nvp-yas-bfn-no-ext ()
-  (nvp-bfn 'no-ext))
+  (nvp-bfn 'no-ext 'or-buff))
 
 ;; directory name
 (defsubst nvp-yas-dfn ()
@@ -75,8 +76,9 @@
   (nth 4 (syntax-ppss)))
 
 ;; -------------------------------------------------------------------
-;;; Args 
+;;; Functions, args, variables
 
+;; Function arguments w/o types
 ;; split argument STR by SEPS, eg. "a,b" => '("a" "b"). Strings are trimmed and
 ;; nulls are dropped.
 ;; if DEFAULTS is non-nil, split by "=" as well, eg.
@@ -90,13 +92,18 @@
                 args)
       args)))
 
-;; get variable name from string of form "i = 1" or "int i = 1"
-(defun nvp-yas-varname (str)
+;; Variable that may/may not have a type, eg in a for loop
+;; Gets variable name from string of form "i = 1" or "int i = 1"
+(defun nvp-yas-var (str)
   (if (< (length str) 1)
       ""
    (let* ((str (car (split-string str "=" t " ")))
           (strs (split-string str nil t " ")))
      (or (cadr strs) (car strs)))))
+
+;; name of current function or script
+(defun nvp-yas-function-or-script ()
+  (or (nvp-parse-current-function) (nvp-bfn 'no-ext 'or-buff)))
 
 ;; -------------------------------------------------------------------
 ;;; Or patterns

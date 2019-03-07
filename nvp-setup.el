@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-05 16:51:10>
+;; Last modified: <2019-03-07 02:26:16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -11,11 +11,7 @@
 
 ;; Mode setup helpers
 
-;;; FIXME: check for package on load-history before running setup routine
-;; should cache packages w/ local variables as structs
-;; - only search in setup when not loaded
-;;   `load-history-regexp', `load-history-filename-element'
-;; - use mode-local ?, better way to set many mode-local variables
+;;; FIXME: better setup with packages
 
 ;;; Code:
 (eval-when-compile
@@ -25,6 +21,14 @@
   (require 'nvp-macro)
   (require 'smie))
 (require 'nvp)
+
+(cl-defstruct (nvp-mode-vars (:constructor nvp-mode-vars-make)
+                             (:copier nil))
+  "Store the local variables setup when a mode hook first runs."
+  dir snippets abbr-file abbr-table)
+
+(defvar nvp-mode-cache (make-hash-table)
+  "Store local variables for modes once they have been loaded.")
 
 ;; -------------------------------------------------------------------
 ;;; Helpers
@@ -55,7 +59,6 @@
 
 ;; ------------------------------------------------------------
 ;;; Setup
-;; FIXME: better way to implement these
 
 ;;;###autoload
 (defun nvp-setup-package-root (pkg)
@@ -64,16 +67,18 @@
          (str (and pkg (if (stringp pkg) pkg (symbol-name pkg))))
          (path                          ;path to package
           (cond
+           ((and (stringp str)
+                 (let ((dir (expand-file-name str nvp/modes)))
+                   (cond
+                    ((file-exists-p dir) dir) ;should just be here
+                    ((file-exists-p str) str)
+                    (t ;; look for package directory
+                     (locate-file str load-path nil
+                                  (lambda (f) (if (file-directory-p f) 'dir-ok))))))))
            ;; should be able to find features and autoloads
            ((and sym (featurep sym) (locate-library str)))
-           ((and sym                    ;autoload / already loaded
-                 (ignore-errors (locate-library (symbol-file sym)))))
-           ;; check if pkg exists or is on load-path
-           ((and (stringp str)
-                 (if (file-exists-p pkg) pkg
-                   ;; look for package directory
-                   (locate-file str load-path nil
-                                (lambda (f) (if (file-directory-p f) 'dir-ok))))))
+           ;; autoload / already loaded
+           ((and sym (ignore-errors (locate-library (symbol-file sym)))))
            (t nil))))
     ;; return directory
     (if path
@@ -87,26 +92,41 @@
      mode
      abbr-file
      snippets-dir
-     (dir (nvp-setup-package-root name))
-     (snippets (concat "snippets/" (or snippets-dir mode (symbol-name major-mode))))
-     (abbr-table (or mode (symbol-name major-mode)))
-     (fn nil))
+     dir
+     snippets
+     abbr-table
+     post-fn)
   "Setup local variables for helper package - abbrevs, snippets, root dir."
-  (if (not (file-exists-p dir))
-      (user-error "Setup for '%s' failed to find package root"
-                  (if (symbolp name) (symbol-value name) name))
-    (or abbr-file
-        (setq abbr-file (ignore-errors
-                          (car (directory-files dir nil "abbrev-table")))))
-    (setq-local nvp-snippet-dir (expand-file-name snippets dir))
-    (setq-local nvp-abbrev-local-table abbr-table)
-    (and abbr-file
-         (setq-local nvp-abbrev-local-file (expand-file-name abbr-file dir))
-         (ignore-errors (quietly-read-abbrev-file nvp-abbrev-local-file)))
-    (setq-local local-abbrev-table
-                (symbol-value
-                 (intern-soft (concat nvp-abbrev-local-table "-abbrev-table")))))
-  (when fn (funcall fn)))
+  (setq mode (if mode (if (stringp mode) (intern-soft mode) mode) major-mode))
+  (let ((mvars (gethash mode nvp-mode-cache nil)))
+    (unless mvars
+      (or dir (setq dir (nvp-setup-package-root name)))
+      (if (not (file-exists-p dir))
+          (user-error "Setup for '%s' failed to find package root"
+                      (if (symbolp name) (symbol-value name) name))
+        (or abbr-file
+            (setq abbr-file (ignore-errors
+                              (car (directory-files dir t "abbrev-table")))))
+        (or snippets
+            (setq snippets
+                  (concat "snippets/" (or snippets-dir (symbol-name mode)))))
+        (or abbr-table (setq abbr-table (symbol-name mode)))
+        (setq mvars (nvp-mode-vars-make
+                     :dir dir
+                     :snippets (expand-file-name snippets dir)
+                     :abbr-file abbr-file
+                     :abbr-table abbr-table))
+        ;; FIXME: should initialize the dir here, loading autoloads etc.
+        (cl-pushnew dir load-path :test #'string=)
+        (ignore-errors (quietly-read-abbrev-file abbr-file))
+        (puthash mode mvars nvp-mode-cache)))
+    (setq nvp-snippet-dir (nvp-mode-vars-snippets mvars)
+          nvp-abbrev-local-file (nvp-mode-vars-abbr-file mvars)
+          nvp-abbrev-local-table (nvp-mode-vars-abbr-table mvars))
+    (setq local-abbrev-table
+          (symbol-value
+           (intern-soft (concat (nvp-mode-vars-abbr-table mvars) "-abbrev-table")))))
+  (when post-fn (funcall post-fn)))
 
 (provide 'nvp-setup)
 ;;; nvp-setup.el ends here

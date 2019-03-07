@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-06 00:11:01>
+;; Last modified: <2019-03-07 02:39:17>
 ;; Package-Requires: 
 ;; Created:  4 November 2016
 
@@ -54,24 +54,23 @@
 ;; hash table to hold bash aliases and their expansions
 (defvar nvp-shell-alias-table nil)
 (defun nvp-shell-alias-table ()
-  (setq nvp-shell-alias-table (make-hash-table :size 129 :test 'equal))
-  (dolist (line (process-lines "bash" "-ci" "alias"))
-    (when (string-prefix-p "alias" line)
-      (and (string-match "alias\\s-*\\([^=]+\\)=\\(.*\\)" line)
-           (puthash (match-string-no-properties 1 line)
-                    ;; assume all aliases are of the form
-                    ;; alias ..='cd ..'
-                    ;; eg. the start and end with "'"
-                    ;; that way don't have to worry about escaped single quotes
-                    ;; when parsing aliases
-                    (substring (match-string-no-properties 2 line) 1 -1)
-                    nvp-shell-alias-table)))))
+  (or nvp-shell-alias-table
+      (setq nvp-shell-alias-table (make-hash-table :size 129 :test 'equal))
+      (dolist (line (process-lines "bash" "-ci" "alias"))
+        (when (string-prefix-p "alias" line)
+          (and (string-match "alias\\s-*\\([^=]+\\)=\\(.*\\)" line)
+               (puthash (match-string-no-properties 1 line)
+                        ;; assume all aliases are of the form
+                        ;; alias ..='cd ..'
+                        ;; eg. the start and end with "'" that way don't have to
+                        ;; worry about escaped single quotes when parsing
+                        ;; aliases
+                        (substring (match-string-no-properties 2 line) 1 -1)
+                        nvp-shell-alias-table))))))
 
 ;; get bash alias expansion, return nil if none
-(defun nvp-shell-get-alias (alias)
-  (unless nvp-shell-alias-table          ;initialize/fill the alias hash
-    (nvp-shell-alias-table))
-  (gethash alias nvp-shell-alias-table nil))
+(defsubst nvp-shell-get-alias (alias)
+  (gethash alias (nvp-shell-alias-table) nil))
 
 ;; -------------------------------------------------------------------
 ;;; Process

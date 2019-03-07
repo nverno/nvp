@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-05 13:42:03>
+;; Last modified: <2019-03-07 13:31:57>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  6 February 2019
@@ -30,6 +30,7 @@
 
 ;; use local table along with its parents + global table
 (nvp-define-cache nvp-abbrev-completion--tables () nil
+  :cache nvp-abbrev-completion--tables-cache
   :local t
   :predicate (not nvp-abbrev-completion-need-refresh)
   (prog1 (nvp-abbrev--active-tables)

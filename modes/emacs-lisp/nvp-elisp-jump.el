@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-02-25 21:33:32>
+;; Last modified: <2019-03-07 13:02:56>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -12,7 +12,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
-(declare-function lm-header "lisp-mnt")
+(autoload 'lm-header "lisp-mnt")
 (autoload 'find-function-library "find-func")
 (autoload 'find-library-name "find-func")
 

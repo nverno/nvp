@@ -3,7 +3,7 @@
 use File::Find;
 use Data::Dumper qw(Dumper);
 use Text::Wrap qw(wrap);
-local $ENV{PATH} = "/home/nverno/perl5/bin:$ENV{PATH}";
+# local $ENV{PATH} = "/home/nverno/perl5/bin:$ENV{PATH}";
 
 if ( @ARGV ) {
   my $file = shift;
@@ -12,6 +12,7 @@ if ( @ARGV ) {
 
 my $fn = build_function();
 print <<'EL';
+(defvar perldoc-obarray)
 (setq perldoc-obarray (make-vector 1519 nil))
 ;; Functions
 (mapc (lambda (func)

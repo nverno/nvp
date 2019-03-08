@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-27 01:44:21>
+;; Last modified: <2019-03-08 05:36:46>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -84,7 +84,7 @@
 (defvar-local nvp-help-at-point-functions ())
 (defvar-local nvp-check-buffer-function #'checkdoc)
 (defvar-local nvp-disassemble-function #'disassemble)
-(defvar-local nvp-repl-switch-function #'ignore
+(defvar-local nvp-repl-jump-function #'ignore
   "Function called to switch b/w source and REPL buffers.")
 (defvar-local nvp-test-function #'nvp-ert-run-tests
   "Function called to run applicable tests at point.")

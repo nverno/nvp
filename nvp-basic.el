@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 16:41:53>
+;; Last modified: <2019-03-08 05:35:46>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -199,10 +199,11 @@ On error (read-only), quit without selecting."
 
 ;; -------------------------------------------------------------------
 ;;; Wrapper functions
-;;; FIXME: wip
+
+;;; FIXME: implement
 (nvp-wrapper-fuctions
  (nvp-check-buffer-function . nil)
- (nvp-repl-switch-function  . nil)
+ (nvp-repl-jump-function    . nil)
  (nvp-test-function         . nil)
  (nvp-tag-function          . nil))
 

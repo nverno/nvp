@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-07 16:46:48>
+;; Last modified: <2019-03-08 05:32:59>
 ;; Package-Requires: 
 ;; Created:  5 December 2016
 
@@ -407,8 +407,6 @@ Optionally return process specific to THIS-BUFFER."
 ;; enforce uft-8-unix and align when killing buffer
 (defun nvp-sh-cleanup-buffer ()
   (unless (or buffer-read-only (not (buffer-modified-p)))
-    (unless (eq 'utf-8-unix buffer-file-coding-system)
-      (set-buffer-file-coding-system 'utf-8-unix))
     (align (point-min) (point-max))
     (and (buffer-modified-p)
          (save-buffer))))

@@ -4,31 +4,11 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/scheme-tools
-;; Last modified: <2019-02-20 13:27:45>
+;; Last modified: <2019-03-08 06:34:43>
 ;; Package-Requires: 
 ;; Created: 14 May 2017
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
-
-;; [![Build Status](https://travis-ci.org/nverno/scheme-tools.svg?branch=master)](https://travis-ci.org/nverno/scheme-tools)
-
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -44,7 +24,7 @@
 (declare-function nvp-ext-run-script "nvp-ext")
 (declare-function nvp-log "nvp-log")
 
-(nvp-package-define-root :snippets t)
+(nvp-package-define-root)
 
 ;;; TODO:
 ;; - snippets => jump to snippet should depend on geiser-impl--implementation?

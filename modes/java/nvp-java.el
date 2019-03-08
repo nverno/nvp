@@ -2,28 +2,11 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-06 19:13:28>
+;; Last modified: <2019-03-08 06:44:31>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/java-tools
 ;; Package-Requires: 
 ;; Created: 12 November 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
@@ -50,7 +33,7 @@
 (declare-function nvp-compile "nvp-compile")
 (declare-function nvp-abbrev-expand-p "nvp-abbrev")
 
-(nvp-package-define-root :snippets t)
+(nvp-package-define-root)
 
 ;; FIXME: remove
 (defun nvp-java-eclipse-releases ()

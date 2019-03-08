@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 18:27:11>
+;; Last modified: <2019-03-07 17:00:04>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -37,12 +37,13 @@
   "Kill all buffers including this one, calling `save-some-buffers' first."
   (interactive)
   (save-some-buffers)
-  (nvp-buffer-kill-other-buffers)
-  (kill-buffer))
+  (let ((kill-buffer-query-functions ()))
+    (nvp-buffer-kill-other-buffers)
+   (kill-buffer (current-buffer))))
 
 ;;;###autoload
 (defun nvp-buffer-kill-other-buffers () 
-  "Kill all other buffers."
+  "Kill all buffers other than the current one in this frame."
   (interactive)
   (mapc #'kill-buffer (cdr (buffer-list (current-buffer)))))
 

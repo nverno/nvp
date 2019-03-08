@@ -81,6 +81,7 @@
     ("ah" "add-hook" nil :system t)
     ("bc" "backward-char" nil :system t)
     ("bl" "buffer-list" nil :system t)
+    ("bn" "buffer-name" nil :system t)
     ("bs" "buffer-substring" nil :system t)
     ("bu" "browse-url" nil :system t)
     ("bw" "backward-word" nil :system t)

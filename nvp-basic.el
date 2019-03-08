@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 19:56:08>
+;; Last modified: <2019-03-07 16:41:53>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -249,6 +249,27 @@ With double prefix, highlight changes that would occur."
       (if (eq 16 arg)                     ;test alignment rule
           (call-interactively 'align-highlight-rule)
         (align beg end)))))
+
+;; -------------------------------------------------------------------
+;;; Bindings
+
+(defun nvp-buffer-local-set-key (key cmd)
+  "Like `local-set-key', but don't modify KEY in other buffers of same mode."
+  (let ((lmap (make-sparse-keymap)))
+    (set-keymap-parent lmap (current-local-map))
+    (define-key lmap key cmd)
+    (use-local-map lmap)))
+
+;; https://stackoverflow.com/a/14769115/2415684
+(defun nvp-local-set-minor-mode-key (mode key def)
+  "Override a minor mode keybinding for the local buffer only using \
+`minor-mode-overriding-map-alist'."
+  (let* ((oldmap (cdr (assoc mode minor-mode-map-alist)))
+         (newmap (or (cdr (assoc mode minor-mode-overriding-map-alist))
+                     (let ((map (make-sparse-keymap)))
+                       (set-keymap-parent map oldmap)
+                       (push `(,mode . ,map) minor-mode-overriding-map-alist)))))
+    (define-key newmap key def)))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

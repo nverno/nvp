@@ -1,8 +1,8 @@
-;;; nvp-perl.el --- perl helpers -*- lexical-binding: t; -*-
+;;; nvp-perl.el --- perl helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-02-27 13:29:55>
+;; Last modified: <2019-03-07 17:22:54>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -286,35 +286,29 @@
 
 ;; -------------------------------------------------------------------
 ;;; Perltidy 
+;; https://github.com/genehack/perl-elisp/blob/master/perltidy.el
 
-(defvar nvp-perl-perltidy "perltidy")
-(defvar nvp-perl-tidy-map
-  (let ((km (make-sparse-keymap)))
-    (define-key km (kbd "C-x C-s") 'nvp-perl-tidy-write)
-    km))
-
-(defvar nvp-perl-tidy--buffer nil)
+(defvar nvp-perltidy "perltidy" "perltidy executable.")
 
 ;; call perltidy on region 
-(defun nvp-perl-tidy-region (beg end)
+(defun nvp-perltidy-region (beg end)
   (interactive "r")
-  (save-excursion
-    (call-process-region beg end nvp-perl-perltidy t t)))
+  (save-excursion (call-process-region beg end nvp-perltidy t t)))
 
 ;; tidy entire buffer
-(defun nvp-perl-tidy-buffer ()
+(defun nvp-perltidy-buffer ()
   (interactive)
-  (nvp-perl-tidy-region (point-min) (point-max)))
+  (nvp-perltidy-region (point-min) (point-max)))
 
 ;; tidy function at point
-(defun nvp-perl-tidy-sub ()
+(defun nvp-perltidy-function ()
   (interactive)
-  (nvp-perl-tidy-region (progn (beginning-of-defun) (point))
+  (nvp-perltidy-region (progn (beginning-of-defun) (point))
                           (progn (end-of-defun) (point))))
 
-(defun nvp-perl-tidy-dwim (arg)
+(defun nvp-perltidy-dwim (arg)
   (interactive "P")
-  (let ((buf (current-buffer))
+  (let ((orig-buff (current-buffer))
         beg end)
     (cond ((and mark-active transient-mark-mode)
            (setq beg (region-beginning)
@@ -329,27 +323,27 @@
     (when arg
       (set-buffer (get-buffer-create "*perltidy*"))
       (erase-buffer)
-      (insert (with-current-buffer buf
+      (insert (with-current-buffer orig-buff
                 (buffer-substring beg end)))
-      (setq nvp-perl-tidy--buffer (list buf beg end))
+      (setq nvp-perltidy--buffer (list orig-buff beg end))
       (setq beg (point-min)
             end (point-max))
       (perl-mode)
-      (use-local-map nvp-perl-tidy-map)
       (pop-to-buffer (current-buffer))
-      (message "C-x C-s to apply result."))
-    (nvp-perl-tidy-region beg end)))
+      (nvp-use-local-keymap
+        ("C-x C-s" . nvp-perltidy-write))
+      (nvp-msg "\\[nvp-perltidy-write] to apply changes." :keys t))
+    (nvp-perltidy-region beg end)))
 
-;; https://github.com/genehack/perl-elisp/blob/master/perltidy.el
-(defun nvp-perl-tidy-write ()
+(defun nvp-perltidy-write ()
   (interactive))
 
-;; (defun nvp-perl-tidy-write ()
+;; (defun nvp-perltidy-write ()
 ;;   (interactive)
-;;   (if nvp-perl-tidy--buffer
+;;   (if nvp-perltidy--buffer
 ;;       (let ((buf (get-buffer "*perltidy*")))
 ;;         (if (buffer-live-p buf)
-;;             (if (buffer-live-p (car nvp-perl-tidy--buffer)))))))
+;;             (if (buffer-live-p (car nvp-perltidy--buffer)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Hooks

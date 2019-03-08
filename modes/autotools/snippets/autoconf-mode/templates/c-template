@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: skeleton
-# key: init
+# name: c-template
+# key: c-skel
 # --
 AC_INIT([${1:name}], [${2:1.0}])
 AM_INIT_AUTOMAKE([-Wall -Werror])

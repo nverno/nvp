@@ -8,4 +8,4 @@
 (define-abbrev-table 'm4-mode-abbrev-table
   '()
   "M4-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list autoconf-mode-abbrev-table))

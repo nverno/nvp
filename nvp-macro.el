@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 20:34:00>
+;; Last modified: <2019-03-07 16:46:44>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -435,7 +435,7 @@ If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
              collect `(nvp-def-key ,map ,k ,b))))))
 
 (cl-defmacro nvp-bindings (mode &optional feature &rest bindings
-                                &key local minor &allow-other-keys)
+                                &key local buff-local minor &allow-other-keys)
   "Set MODE BINDINGS after FEATURE is loaded.
 If LOCAL is non-nil, make map buffer local."
   (declare (indent defun))
@@ -444,8 +444,11 @@ If LOCAL is non-nil, make map buffer local."
   (let ((modemap (nvp--normalize-modemap mode minor)))
     `(progn
        (eval-when-compile (defvar ,modemap))
-       ,(when local
+       ,(when local                     ;will change bindings for all mode buffers
           `(make-local-variable ',modemap))
+       ,(when buff-local                ;HACK: but how to modify 
+          `(with-no-warnings             ; something like `company-active-map'
+             (make-variable-buffer-local ',modemap)))
        (with-eval-after-load ,(or feature `',(intern mode))
          ,@(cl-loop for (k . b) in bindings
               collect `(nvp-def-key ,modemap ,k ,b))))))

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 20:53:32>
+;; Last modified: <2019-03-07 19:07:07>
 ;; Created: 30 November 2016
 
 ;;; Commentary:
@@ -16,8 +16,11 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 
-(eval-and-compile (defvar nvp-fixme-keywords "\\<\\(TODO\\|FIXME\\):"))
-(nvp-defvar nvp-fixme-font-lock-words
+(defconst nvp-fixme-keywords
+  (eval-when-compile
+    (concat "\\<" (regexp-opt '("TODO" "FIXME" "HACK") 'paren) ":")))
+
+(defconst nvp-fixme-font-lock-keywords
   `((,nvp-fixme-keywords 1 'font-lock-warning-face prepend)))
 
 ;; collect occurences of fixme keywords in buffer
@@ -85,8 +88,8 @@
   :lighter " Fixme"
   :keymap nvp-fixme-mode-map
   (if nvp-fixme-mode
-      (font-lock-add-keywords nil nvp-fixme-font-lock-words)
-    (font-lock-remove-keywords nil nvp-fixme-font-lock-words))
+      (font-lock-add-keywords nil nvp-fixme-font-lock-keywords)
+    (font-lock-remove-keywords nil nvp-fixme-font-lock-keywords))
   (font-lock-flush)
   (font-lock-ensure))
 

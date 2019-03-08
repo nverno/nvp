@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-02-27 11:32:45>
+;; Last modified: <2019-03-07 22:22:54>
 ;; Created: 20 January 2017
 
 ;;; Commentary:
@@ -27,8 +27,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Variables
-
-(nvp-package-define-root :snippets t)
 
 ;; cache manual / index here
 (defvar nvp-autoconf-cache (expand-file-name "cache" user-emacs-directory))
@@ -82,20 +80,35 @@
         (ignore-errors (read (current-buffer)))))))
 
 ;; load index, or if not made do all the setup and return it when finished
-(nvp-define-cache-runonce nvp-autoconf-index ()
+(nvp-define-cache-runonce nvp-autoconf-manual-index ()
   "Cached macro manual indicies."
   (nvp-autoconf--load-index))
+
+(nvp-define-cache-runonce nvp-autoconf-all-macros ()
+  "Cache of all known macros, either from company or index."
+  (delete-dups (append (mapcar #'car (nvp-autoconf-manual-index))
+                       company-autoconf-keywords)))
+
+;; completing read for macros
+;; by default completing read from all known macros
+(defvar nvp-autoconf-read-history ())
+(defun nvp-autoconf-read (&optional prompt default collection)
+  (or default (setq default (thing-at-point 'symbol)))
+  (completing-read
+   (nvp-prompt--with-default (or prompt "Lookup macro: ") default)
+   (if collection (funcall collection) (nvp-autoconf-all-macros))
+   nil nil nil 'nvp-autoconf-read-history default))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
 
 ;; Lookup MACRO in pdf manual
-(defun nvp-autoconf-lookup-manual (macro)
-  (interactive (list (thing-at-point 'symbol)))
+(defun nvp-autoconf-lookup-in-manual (&optional macro)
+  "Lookup MACRO in manual."
+  (interactive (list (nvp-autoconf-read nil nil 'nvp-autoconf-manual-index)))
   (require 'pdf-tools)
-  (unless macro
-    (setq macro (nvp-completing-read "Lookup macro: " (nvp-autoconf-index))))
-  (when-let* ((page (cdr (assoc macro (nvp-autoconf-index)))))
+  (or macro (setq macro (nvp-autoconf-read nil nil 'nvp-autoconf-manual-index)))
+  (when-let* ((page (cdr (assoc macro (nvp-autoconf-manual-index)))))
     (prog1 t
       (with-selected-window
           (display-buffer (find-file-noselect nvp-autoconf-manual 'nowarn))
@@ -103,24 +116,31 @@
           ;; +10 offset to first page
           (pdf-view-goto-page (+ 10 page)))))))
 
-;; lookup VAR in manual or online
-(defun nvp-autoconf-lookup (var &optional online)
-  (interactive)
-  (if online
-      (company-autoconf-location var)
-    (nvp-autoconf-lookup-manual var)))
+(defun nvp-autoconf-lookup (macro &optional online)
+  "Lookup MACRO in the manual or ONLINE.
+With prefix or if MACRO isn't in indices lookup ONLINE."
+  (interactive (list (nvp-autoconf-read) current-prefix-arg))
+  (or (and online (company-autoconf-location macro))
+      (if (and (nvp-autoconf-lookup-in-manual macro) online)
+          (message "No help found online for %s" macro)
+        (message "No help found in manual or online for %s" macro))))
 
-(defun nvp-autoconf-help-at-point (arg)
-  (interactive "P")
-  (when-let* ((sym (thing-at-point 'symbol))
-              (sym (car-safe (member sym company-autoconf-keywords))))
-    (when arg
-      (setq sym
-            (nvp-completing-read "Lookup: " company-autoconf-keywords nil nil sym)))
-    (nvp-with-toggled-tip
-      (if sym (or (get-text-property 0 'annot sym) "No documentation found"))
-      :help-fn (function (lambda (arg) (interactive "P") (nvp-autoconf-lookup sym arg)))
-      :bindings (("." . (lambda () (interactive) (company-autoconf-location sym)))))))
+(defun nvp-autoconf-help-at-point (macro)
+  "Display help popup for thing at point.
+With prefix ARG, prompt with macros from manual."
+  (interactive
+   (list (let ((macro (thing-at-point 'symbol)))
+           (if (or current-prefix-arg (not macro))
+               (nvp-autoconf-read nil macro)
+             macro))))
+  (nvp-with-toggled-tip
+    (if macro (or (get-text-property 0 'annot macro)
+                  (format (if (assoc macro (nvp-autoconf-manual-index))
+                              "Manual available for %s ('h')"
+                            "No docs or index found for %s")
+                          macro)))
+    :help-fn (function (lambda (arg) (interactive "P") (nvp-autoconf-lookup macro arg)))
+    :bindings (("." . (lambda () (interactive) (company-autoconf-location macro))))))
 
 ;; -------------------------------------------------------------------
 ;;; Eldoc

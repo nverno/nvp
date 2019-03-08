@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-06 15:03:41>
+;; Last modified: <2019-03-07 16:34:16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 February 2019
@@ -75,14 +75,6 @@
   (interactive)
   (save-some-buffers 'no-ask)
   (kill-emacs))
-
-;;;###autoload
-(defun nvp-buffer-local-set-key (key cmd)
-  "Like `local-set-key', but don't modify KEY in other buffers of same mode."
-  (let ((lmap (make-sparse-keymap)))
-    (set-keymap-parent lmap (current-local-map))
-    (define-key lmap key cmd)
-    (use-local-map lmap)))
 
 (provide 'nvp-basic-auto)
 ;;; nvp-basic-auto.el ends here

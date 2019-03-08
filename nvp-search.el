@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 04:52:35>
+;; Last modified: <2019-03-07 20:04:10>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -13,10 +13,34 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'hydra)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (nvp-local-vars))
 (nvp-declare "wgrep" wgrep-exit wgrep-save-all-buffers wgrep-abort-changes
   wgrep-remove-change wgrep-remove-all-change wgrep-toggle-readonly-area
   wgrep-mark-deletion wgrep-change-to-wgrep-mode)
+
+;; -------------------------------------------------------------------
+;;; Rgrep
+
+;;;###autoload
+(defun nvp-rgrep-symbol (arg)
+  "Lookup SYM using rgrep with FILES regexp from ROOT directory.
+By default, lookup symbol at point in files matching current file's extension
+or '*' from emacs root, ignoring package directory.
+With single prefix, includes package directory.
+With double prefix just calls `rgrep' interactively to prompt for defaults."
+  (interactive "P")
+  (if (equal '(16) arg) (call-interactively 'rgrep)
+    (let ((sym (or (thing-at-point 'symbol t)
+                   (read-from-minibuffer "Symbol: ")))
+          (ext (file-name-extension (or (buffer-file-name) (buffer-name))))
+          (grep-find-ignored-directories
+           (if (not (equal '(4) arg))
+               (cons (file-name-nondirectory package-user-dir)
+                     grep-find-ignored-directories)
+             grep-find-ignored-directories)))
+      (grep-compute-defaults)
+      (rgrep (concat "\\<" sym "\\>") (if ext (concat "*." ext) "*") nvp/emacs))))
 
 ;; -------------------------------------------------------------------
 ;;; wgrep

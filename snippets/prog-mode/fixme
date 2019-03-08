@@ -2,4 +2,4 @@
 # name: fixme
 # key: fix
 # --
-`(nvp-comment-string " FIXME: " 2)`
+`(nvp-comment-string "FIXME: " 2)`

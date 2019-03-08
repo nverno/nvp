@@ -2,13 +2,18 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 11:34:23>
+;; Last modified: <2019-03-07 20:30:15>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
 ;; Created:  8 February 2019
 
 ;;; Commentary:
+
 ;; m4 add-ons to autoconf
+;;
+;; TODO:
+;; - add string / sh font-locking? need to understand syntax better
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -19,7 +24,8 @@
 (require 'nvp-autoconf)
 
 ;; -------------------------------------------------------------------
-;;; Add font-locking 
+;;; Font-locking
+;; add autoconf font-locking
 
 (eval-when-compile
   (defun nvp-m4--ac-regexp (&rest names)

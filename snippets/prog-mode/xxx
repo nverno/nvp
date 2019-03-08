@@ -1,5 +1,9 @@
 # -*- mode: snippet -*-
 # name: xxx
 # key: xxx
+# expand-env: ((single (memq major-mode '(org-mode))))
 # --
-`(nvp-comment-string (concat " " (yas-choose-value "TODO" "FIXME") ": ") 2)`
+`(nvp-comment-string
+  (let ((val (yas-choose-value '("FIXME" "TODO" "HACK" "remove"))))
+    (if (string= "remove" val) "FIXME: remove" (concat val ": ")))
+    (if single 1 2))`

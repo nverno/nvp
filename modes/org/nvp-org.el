@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 13:24:48>
+;; Last modified: <2019-03-07 20:12:22>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/md-tools
 ;; Package-Requires: 
@@ -39,17 +39,12 @@
 (declare-function org-table-beginning-of-field "org-table")
 (declare-function org-babel-execute:dot "ob-dot")
 (declare-function outline-show-subtree "outline")
-(declare-function guide-key/add-local-guide-key-sequence "guide-key")
-(declare-function guide-key/add-local-highlight-command-regexp "guide-key")
-
-(declare-function nvp-list-split "nvp-util")
-(declare-function nvp-sos "nvp-sos-config")
-
-(nvp-package-define-root :snippets t)
+(autoload 'nvp-list-split "nvp-util")
 
 ;; -------------------------------------------------------------------
 ;;; Utils
 
+;; Note: this isn't used anywhere
 ;; Format alist DAT as an org table.  This alist assumes :head and
 ;; :rows lists. It splits :rows into number of sublists matching
 ;; number of colums (:head).
@@ -213,6 +208,7 @@ See `org-element-all-elements' for possible item types."
       (org-down-element)
     (error (org-forward-heading-same-level 1))))
 
+;; FIXME: don't skip over tags
 ;; ensure point is at end-of-line so text doesn't get carried to next todo
 (define-advice org-insert-todo-heading (:before (&rest _args) "move-eol")
   (end-of-line))
@@ -223,14 +219,6 @@ See `org-element-all-elements' for possible item types."
   (interactive)
   (require 'nvp-vars)
   (org-capture goto keys))
-
-;;;###autoload
-(defun org-help-guide-key ()
-  (interactive)
-  (nvp-sos)
-  (guide-key/add-local-guide-key-sequence "C-c")
-  (guide-key/add-local-guide-key-sequence "C-c C-x")
-  (guide-key/add-local-highlight-command-regexp "org-"))
 
 ;; -------------------------------------------------------------------
 ;;; Export
@@ -244,7 +232,6 @@ See `org-element-all-elements' for possible item types."
 ;; -------------------------------------------------------------------
 ;;; Toggle / insert
 
-;; FIXME: skip over tags
 (defun nvp-org-toggle-parent-checkbox ()
   "Add checkbox to parent header if not there and update block statistics."
   (interactive)

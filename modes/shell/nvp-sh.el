@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-07 00:46:12>
+;; Last modified: <2019-03-07 16:46:48>
 ;; Package-Requires: 
 ;; Created:  5 December 2016
 
@@ -237,7 +237,7 @@ Used to set `end-of-defun-function'."
       (add-hook 'completion-at-point-functions 'nvp-sh-dynamic-complete-vars nil t)))
   ;; use local version of `company-active-map' to rebind
   ;; functions to show popup help and jump to help buffer
-  (nvp-bindings "company-active-map" 'company :local t
+  (nvp-bindings "company-active-map" 'company :buff-local t
     ("M-h" . nvp-sh-quickhelp-toggle)
     ("C-h" . nvp-sh-company-show-doc-buffer))
   (cl-pushnew nvp-sh-company-backends company-backends)

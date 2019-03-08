@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-23 19:16:47>
+;; Last modified: <2019-03-07 20:26:44>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -101,7 +101,8 @@
   ("l" dired-prev-dirline)
   ("j" dired-next-dirline))
 
-;;; Kill
+;; -------------------------------------------------------------------
+;;; Dired actions 
 
 ;; Add buffer file name or marked file to kill.
 ;;;###autoload
@@ -136,6 +137,13 @@
   (with-temp-buffer
     (write-file filename)))
 
+;; same as regular, but with prefix don't assume other dired window
+(defun nvp-dired-do-rename (arg)
+  (interactive "P")
+  (if arg (let (dired-dwim-target)
+            (dired-do-rename))
+    (dired-do-rename)))
+
 ;; -------------------------------------------------------------------
 ;;; External
 
@@ -144,7 +152,7 @@
   (defvar nvp-dired-external-program))
 (declare-function conda-env-read-env "conda-env")
 
-;;; Open externally
+;;-- Open external files
 
 ;; Open current or marked dired files in external app.
 (defun nvp-dired-external-open ()
@@ -192,7 +200,7 @@
               (start-process cmd nil cmd file)
             (w32-shell-execute (cdr (assoc 'cmd prog)) file)))))))
 
-;;; Install info
+;;-- Install info
 (autoload 'org-texinfo-export-to-info "ox-texinfo")
 
 (defun nvp-dired-convert-and-install-info (info-dir &optional keep-info)
@@ -229,7 +237,7 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
                             (concat "--info-file=" dest))))))
         (dired-get-marked-files)))
 
-;;; Compress
+;;-- Compress
 
 (defun nvp-dired-zip ()
   (interactive)
@@ -260,14 +268,14 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
         (user-error "TODO: unzip multiple files")
       (start-process-shell-command "unzip" nil (format "unzip %s" (car-safe file))))))
 
-;;; Shell
+;;-- Shell
 
 (defun nvp-dired-shell-here ()
   "Open an `shell' in current directory."
   (interactive)
   (nvp-ext-terminal 'current-dir))
 
-;;; Process
+;;-- Process
 
 (defun nvp-dired-start-process (cmd &optional file-list)
   "Call shell command CMD on FILE-LIST."
@@ -297,7 +305,7 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
     (dolist (file file-list)
       (w32-shell-execute "open" (expand-file-name file)))))
 
-;;; FIXME: rsync
+;;-- TODO: rsync
 
 ;; (defun nvp-dired-rsync (dest)
 ;;   (interactive

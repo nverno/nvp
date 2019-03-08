@@ -3,6 +3,6 @@
 # key: cll
 # --
 (cl-labels ((${1:function}
-            ($1)
+            ($2)
             $0))
  )

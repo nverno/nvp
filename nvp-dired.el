@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 20:26:44>
+;; Last modified: <2019-03-08 01:53:56>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -137,12 +137,14 @@
   (with-temp-buffer
     (write-file filename)))
 
-;; same as regular, but with prefix don't assume other dired window
-(defun nvp-dired-do-rename (arg)
+;; same as regular, but assume current dired directory unless prefix
+(defun nvp-dired-do-rename (&optional arg)
   (interactive "P")
-  (if arg (let (dired-dwim-target)
-            (dired-do-rename))
-    (dired-do-rename)))
+  (setq prefix-arg current-prefix-arg)
+  (setq this-command 'dired-do-rename)  ;so ido doesn't fuck it up
+  (if arg (dired-do-rename arg)
+    (let (dired-dwim-target)
+      (dired-do-rename arg))))
 
 ;; -------------------------------------------------------------------
 ;;; External

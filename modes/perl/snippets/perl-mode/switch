@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: switch
 # key: switch
-# expand-env: ((_ (perl-tools-add-use "Switch")))
+# expand-env: ((_ (nvp-perl-add-use "Switch")))
 # --
 switch($1) {
   case $2 { $0 };

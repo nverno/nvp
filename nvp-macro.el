@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 16:46:44>
+;; Last modified: <2019-03-08 05:29:28>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -339,8 +339,7 @@ line at match (default) or do BODY at point if non-nil."
                     (symbol-name sym))
                    (_ name)))
                 ((stringp name) name)
-                (t (user-error "%S unmatched"))))
-         (path (and path (substitute-env-in-file-name path))))
+                (t (user-error "%S unmatched")))))
     `(progn
        (declare-function nvp-setup-program "nvp-setup")
        (or (,(if no-compile 'progn 'eval-when-compile)

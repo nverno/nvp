@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-22 19:36:24>
+;; Last modified: <2019-03-08 02:17:04>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -147,7 +147,10 @@ specified, prefer shell in current directory if available."
   (let* ((remote (file-remote-p default-directory))
          (default-name (if buffer (buffer-name buffer) "*shell*"))
          (explicit-shell-file-name (if remote "/bin/bash"
-                                     (or shell-name (getenv "SHELL")))))
+                                     (or shell-name (getenv "SHELL"))))
+         ;; always pop the shell in other window
+         (display-buffer-overriding-action
+          '(display-buffer-pop-up-window ((inhibit-same-window . t)))))
     (if buffer (shell buffer)
       (if remote
           (shell (format "*shell:%s*"

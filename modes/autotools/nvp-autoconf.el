@@ -3,8 +3,8 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-07 22:22:54>
+;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-03-07 22:56:48>
 ;; Created: 20 January 2017
 
 ;;; Commentary:
@@ -12,8 +12,7 @@
 ;; Help-at-point:
 ;; - Uses both URLs from company-autoconf and manual indicies as sources
 ;;   to gather info.
-;; - See x86-lookup.el for example of looking up indices in pdf manual.
-;; - Eldoc function for autoconf/m4
+;; - Basic eldoc function for autoconf/m4
 
 ;;; Code:
 (eval-when-compile
@@ -22,13 +21,31 @@
   (require 'cl-lib)
   (require 'subr-x)
   (defvar company-autoconf-keywords))
+(require 'company-autoconf)
 (require 'nvp)
-(autoload 'company-autoconf-location "company-autoconf")
 
 ;; -------------------------------------------------------------------
-;;; Variables
+;;; Locally available macros
 
-;; cache manual / index here
+;; (defun nvp-autoconf-local-macros (&optional location)
+;;   )
+
+
+;; -------------------------------------------------------------------
+;;; Eldoc
+
+(defun nvp-autoconf-eldoc-function ()
+  (when-let* ((sym (thing-at-point 'symbol))
+              (sym (car-safe (member sym company-autoconf-keywords)))
+              (annot (get-text-property 0 'annot sym)))
+    (concat
+     (propertize sym 'face 'font-lock-function-name-face) ": " annot)))
+
+;; -------------------------------------------------------------------
+;;; Manual lookup
+;; PDF is converted to text and macros w/ indices are cached
+
+;; cache manual indices here
 (defvar nvp-autoconf-cache (expand-file-name "cache" user-emacs-directory))
 
 ;; location of manual
@@ -37,8 +54,7 @@
 ;; regex to match macros and their page number in index
 (defvar nvp-autoconf-macro-regexp "\\([A-Z0-9_]+\\)[ .]+\\([0-9]+\\)")
 
-;; -------------------------------------------------------------------
-;;; Manual lookup
+;;-- Manual utils
 
 ;; create index to lookup autoconf macros ((macro . page) ...)
 (defun nvp-autoconf--create-index ()
@@ -100,7 +116,7 @@
    nil nil nil 'nvp-autoconf-read-history default))
 
 ;; -------------------------------------------------------------------
-;;; Commands
+;;; Help commands 
 
 ;; Lookup MACRO in pdf manual
 (defun nvp-autoconf-lookup-in-manual (&optional macro)
@@ -141,16 +157,6 @@ With prefix ARG, prompt with macros from manual."
                           macro)))
     :help-fn (function (lambda (arg) (interactive "P") (nvp-autoconf-lookup macro arg)))
     :bindings (("." . (lambda () (interactive) (company-autoconf-location macro))))))
-
-;; -------------------------------------------------------------------
-;;; Eldoc
-
-(defun nvp-autoconf-eldoc-function ()
-  (when-let* ((sym (thing-at-point 'symbol))
-              (sym (car-safe (member sym company-autoconf-keywords)))
-              (annot (get-text-property 0 'annot sym)))
-    (concat
-     (propertize sym 'face 'font-lock-function-name-face) ": " annot)))
 
 (provide 'nvp-autoconf)
 ;;; nvp-autoconf.el ends here

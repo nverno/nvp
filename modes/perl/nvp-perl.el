@@ -2,16 +2,16 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-07 17:22:54>
+;; Last modified: <2019-03-08 05:22:25>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro)
-  (defvar gud-perldb-history))
+  (require 'nvp-macro))
 (require 'cperl-mode)
+
 (declare-function yas-expand-snippet "yasnippet")
 (declare-function auto-complete-mode "autocomplete")
 (declare-function company-mode "company")
@@ -23,10 +23,11 @@
 
 (nvp-with-w32
   ;; load windows environment helpers
-  (add-to-list 'load-path (expand-file-name "w32" (nvp-package-root)))
+  (add-to-list
+   'load-path
+   (expand-file-name "w32" (file-name-directory
+                            (or load-file-name (buffer-file-name)))))
   (require 'perl-w32tools))
-
-(nvp-package-define-root :snippets t)
 
 ;; -------------------------------------------------------------------
 ;;; Perl object bounds
@@ -53,15 +54,9 @@
       :buffer-fn get-buffer-create
       :proc-args (module))))
 
-;; indent
-(defun nvp-perl-indent-region (start end)
-  (interactive "r")
-  (cperl-indent-region start end))
-
 ;; ------------------------------------------------------------
 ;;; Eldoc
 
-;;;###autoload
 (defun nvp-perl-eldoc-function ()
   (ignore-errors
     (nvp-unless-in-comment-or-string
@@ -95,9 +90,6 @@
 ;; ------------------------------------------------------------
 ;;; Insert / Toggle
 
-(nvp-newline "nvp-perl-newline-dwim" nil
-  :pairs (("{" "}") ("(" ")")))
-
 ;; non-nil if point is in hash definition
 (defsubst nvp-perl-hash-p ()
   (save-excursion
@@ -106,10 +98,9 @@
       (beginning-of-line)
       (looking-at-p ".*%.*="))))
 
-;; toggle my type variable after abbrev expansion
 (defun nvp-perl-my-cycle ()
+  "Cycle between [$ @ %] after 'my' abbrev expansion."
   (interactive)
-  ;; cycle between: $ @ %
   (let ((char (char-before)))
     (pcase char
       (`?$ (delete-char -1) (insert "@"))
@@ -182,21 +173,11 @@
 ;; on windows just run in an external shell
 (defun nvp-perl-debug (_arg)
   (interactive "P")
-  (or
-   (nvp-with-w32
-     (perl-w32tools-debug-shell _arg))
-   (nvp-with-gnu
-     (let ((process-environment
-            (cons "PERL5DB_THREADED=1" process-environment)))
-       (require 'gud)
-       (perldb
-        (read-from-minibuffer "Run perldb (like this): "
-                              (if (consp gud-perldb-history)
-                                  (car gud-perldb-history)
-                                (concat "perl -d "
-                                        (buffer-file-name)))
-                              nil nil
-                              '(gud-perldb-history . 1)))))))
+  (nvp-with-gnu/w32
+      (let ((process-environment
+             (cons "PERL5DB_THREADED=1" process-environment)))
+        (call-interactively 'cperl-db))
+    (perl-w32tools-debug-shell _arg)))
 
 ;; Insert 'use Data::Printer; p `var'' where `var' is the variable
 ;; near the point.  If invoked with an argument, comments out the
@@ -283,76 +264,6 @@
    (list (ido-completing-read
           "Library: " (nvp-perl-modules))))
   (find-file-other-window (nvp-perl-module-path module)))
-
-;; -------------------------------------------------------------------
-;;; Perltidy 
-;; https://github.com/genehack/perl-elisp/blob/master/perltidy.el
-
-(defvar nvp-perltidy "perltidy" "perltidy executable.")
-
-;; call perltidy on region 
-(defun nvp-perltidy-region (beg end)
-  (interactive "r")
-  (save-excursion (call-process-region beg end nvp-perltidy t t)))
-
-;; tidy entire buffer
-(defun nvp-perltidy-buffer ()
-  (interactive)
-  (nvp-perltidy-region (point-min) (point-max)))
-
-;; tidy function at point
-(defun nvp-perltidy-function ()
-  (interactive)
-  (nvp-perltidy-region (progn (beginning-of-defun) (point))
-                          (progn (end-of-defun) (point))))
-
-(defun nvp-perltidy-dwim (arg)
-  (interactive "P")
-  (let ((orig-buff (current-buffer))
-        beg end)
-    (cond ((and mark-active transient-mark-mode)
-           (setq beg (region-beginning)
-                 end (region-end)))
-          ((save-excursion
-             (beginning-of-defun)
-             (when (looking-at-p "\\s-*sub\\s-+")
-               (setq beg (point)
-                     end (progn (end-of-defun) (point))))))
-          (t (setq beg (point-min)
-                   end (point-max))))
-    (when arg
-      (set-buffer (get-buffer-create "*perltidy*"))
-      (erase-buffer)
-      (insert (with-current-buffer orig-buff
-                (buffer-substring beg end)))
-      (setq nvp-perltidy--buffer (list orig-buff beg end))
-      (setq beg (point-min)
-            end (point-max))
-      (perl-mode)
-      (pop-to-buffer (current-buffer))
-      (nvp-use-local-keymap
-        ("C-x C-s" . nvp-perltidy-write))
-      (nvp-msg "\\[nvp-perltidy-write] to apply changes." :keys t))
-    (nvp-perltidy-region beg end)))
-
-(defun nvp-perltidy-write ()
-  (interactive))
-
-;; (defun nvp-perltidy-write ()
-;;   (interactive)
-;;   (if nvp-perltidy--buffer
-;;       (let ((buf (get-buffer "*perltidy*")))
-;;         (if (buffer-live-p buf)
-;;             (if (buffer-live-p (car nvp-perltidy--buffer)))))))
-
-;; -------------------------------------------------------------------
-;;; Hooks
-
-;; cleanup buffer before saving
-(defun nvp-perl-cleanup-buffer ()
-  (when (and (buffer-modified-p)
-             (not (eq system-type 'windows-nt)))
-    (set-buffer-file-coding-system 'utf-8-unix)))
 
 (provide 'nvp-perl)
 ;;; nvp-perl.el ends here

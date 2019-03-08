@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 17:00:04>
+;; Last modified: <2019-03-07 23:31:29>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -39,7 +39,7 @@
   (save-some-buffers)
   (let ((kill-buffer-query-functions ()))
     (nvp-buffer-kill-other-buffers)
-   (kill-buffer (current-buffer))))
+    (kill-buffer (current-buffer))))
 
 ;;;###autoload
 (defun nvp-buffer-kill-other-buffers () 

@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-07 19:22:59>
+#+DATE: <2019-03-07 23:32:46>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -237,13 +237,14 @@ Use ~load-history~
 - [ ] jump to source code for builtin functions
 
 ** Autotools [0/3]
-*** TODO m4 [2/6]
+*** TODO m4 [2/7]
 - [X] merge completion/font-lock with autoconf?
 - [ ] m4 still missing lots of font-locking
-- [ ] string font-lock? sh font-lock?
+- [ ] add imenu support
+- [ ] gather locally available macros
+- [ ] string font-lock? sh font-lock? msgs with string?
 - [ ] HAP - how to get info on functions?
 - [X] update hook
-- [ ] list public autoconf-macros
 
 *** TODO autoconf [0/4]
 - [ ] parse generics

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-07 20:30:15>
+;; Last modified: <2019-03-08 04:24:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
 ;; Created:  8 February 2019
@@ -18,25 +18,30 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'lisp-mode))
+  (require 'lisp-mode)
+  (require 'autoconf))
 (require 'autoconf)
 (require 'm4-mode)
 (require 'nvp-autoconf)
 
+(defvar nvp-m4-def-regex)
+(defvar nvp-m4-imenu-expression)
+
 ;; -------------------------------------------------------------------
 ;;; Font-locking
-;; add autoconf font-locking
+;; add autoconf font-locking and imenu
 
 (eval-when-compile
   (defun nvp-m4--ac-regexp (&rest names)
     (concat "\\_<\\(A[UC]_" (regexp-opt names) "\\)\\_>(\\[\\([^\]]+\\)")))
 
-(defvar nvp-m4-def-regex)
 (let-when-compile
     ((defs '("DEFUN" "DEFUN_ONCE" "ALIAS")))
   (let ((defs-re (eval-when-compile (apply #'nvp-m4--ac-regexp defs))))
-    ;; font-lock functions and defins
-    (defvar nvp-m4-def-regex defs-re)))
+    ;; font-lock functions and defuns
+    (defvar nvp-m4-def-regex defs-re)
+    (defvar nvp-m4-imenu-expression `(,@autoconf-imenu-generic-expression
+                                      ,(list nil defs-re 1)))))
 
 (font-lock-add-keywords
  'm4-mode

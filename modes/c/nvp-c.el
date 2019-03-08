@@ -365,18 +365,6 @@
 ;; -------------------------------------------------------------------
 ;;; Snippets / Yas
 
-(eval-when-compile
-  (defvar yas-text))
-
-;; get variable name from declaration, either with type or not
-;; eg., i = 1 or int i = 1 => `i'
-(defun c-yas-var (text)
-  (if (< (length text) 1)
-      ""
-   (let* ((str (car (split-string text "=" t " ")))
-          (strs (split-string str nil t " ")))
-     (or (cadr strs) (car strs)))))
-
 ;; convert functions args to doxygen params
 (defun c-yas-args-docstring (text)
   (let ((args (nvp-c-split-string text)))

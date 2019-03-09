@@ -1,13 +1,14 @@
 ;;; nvp-shell-abbrev.el --- shell abbrevs -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-27 02:36:31>
+;; Last modified: <2019-03-09 02:48:38>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell-tools
+;; URL: https://github.com/nverno/nvp
 ;; Created: 24 January 2019
 
 ;;; Commentary:
+
+;; TODO: Add option to merge to tables
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -83,15 +84,12 @@
   ;; Set new abbrev table as local abbrev table
   (setq-local local-abbrev-table nvp-shell-abbrev-table))
 
-;; FIXME: Add option to merge to tables
-
 ;; write shell abbrevs
 ;; temporarily rebind `abbrev--write' so we can write out
 ;; :system abbrevs as well
 (defun shell-tools-write-abbrevs (file)
   "Write shell abbrevs table to FILE."
-  (interactive
-   (list (read-file-name "Write abbrevs to: " (nvp-package-root))))
+  (interactive (list (read-file-name "Write abbrevs to: ")))
   (let ((abbrev-table-name-list '(nvp-shell-abbrev-table)))
     (cl-letf (((symbol-function 'abbrev--write)
                (lambda (sym)

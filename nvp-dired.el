@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 21:35:21>
+;; Last modified: <2019-03-09 02:46:55>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -138,8 +138,8 @@
     (write-file filename)))
 
 ;; advice for copy/rename w/ multiple open direds
-(defun nvp-dired-w/o-dwim (cmd &optional arg)
-  (message "%S" (this-command-keys-vector))
+(defun nvp-dired-w/o-dwim (cmd &optional _arg)
+  ;; (message "%S" (this-command-keys-vector))
   (let ((dired-dwim-target (equal '(4) current-prefix-arg)))
     (apply cmd (list (max 1 (prefix-numeric-value current-prefix-arg))))))
 

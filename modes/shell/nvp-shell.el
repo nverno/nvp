@@ -1,40 +1,16 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
+;; Last modified: <2019-03-09 03:01:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-07 13:41:29>
-;; Package-Requires: 
+;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
-
-;; [![Build Status](https://travis-ci.org/nverno/shell-tools.svg?branch=master)](https://travis-ci.org/nverno/shell-tools)
-
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
-
-(nvp-package-define-root :snippets t)
+(require 'nvp)
 
 ;; dont expand when prefixed by [-/_.]
 (defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
@@ -44,38 +20,15 @@
 
 ;; return some available shells
 (defun nvp-shell-get-shells ()
-  (nvp-with-gnu/w32 '("sh" "bash" "fish" "zsh")
+  (nvp-with-gnu/w32 '("sh" "bash" "fish" "zsh" "csh")
     (cl-loop
        for var in `(,(expand-file-name "usr/bin" (getenv "MSYS_HOME"))
                     ,(expand-file-name "bin" (getenv "CYGWIN_HOME")))
        nconc (mapcar (lambda (x) (expand-file-name x var))
                      '("sh.exe" "bash.exe" "fish.exe" "zsh.exe")))))
 
-;; hash table to hold bash aliases and their expansions
-(defvar nvp-shell-alias-table nil)
-(defun nvp-shell-alias-table ()
-  (or nvp-shell-alias-table
-      (prog1 (setq nvp-shell-alias-table (make-hash-table :size 129 :test 'equal))
-        (dolist (line (process-lines "bash" "-ci" "alias"))
-          (when (string-prefix-p "alias" line)
-            (and (string-match "alias\\s-*\\([^=]+\\)=\\(.*\\)" line)
-                 (puthash (match-string-no-properties 1 line)
-                          ;; assume all aliases are of the form
-                          ;; alias ..='cd ..'
-                          ;; eg. the start and end with "'" that way don't have to
-                          ;; worry about escaped single quotes when parsing
-                          ;; aliases
-                          (substring (match-string-no-properties 2 line) 1 -1)
-                          nvp-shell-alias-table)))))))
-
-;; get bash alias expansion, return nil if none
-(defsubst nvp-shell-get-alias (alias)
-  (gethash alias (nvp-shell-alias-table) nil))
-
-;; -------------------------------------------------------------------
-;;; Process
-
-;; look for an active shell process
+;; FIXME: Isn't something similar defined elsewhere?
+;; look for an active interactive shell process
 (defun nvp-shell-get-process (&optional proc-name buffer-name)
   (cl-loop for proc in (process-list)
      when (and (process-live-p proc)
@@ -87,6 +40,36 @@
                    (cl-find "-i" (process-command proc) :test 'string=))))
      return proc))
 
+(defun nvp-shell-get-aliases (shell-cmd regex key val)
+  "SHELL-CMD is a string passed to `call-process-shell-command' to print \
+aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
+  (let ((ht (make-hash-table :size 129 :test #'equal)))
+    (with-temp-buffer
+      (let ((standard-output (current-buffer)))
+        (call-process-shell-command shell-cmd nil t nil)
+        (goto-char (point-min))
+        (while (re-search-forward regex nil 'move)
+          (puthash (match-string-no-properties key)
+                   (match-string-no-properties val) ht))
+        ht))))
+
+(nvp-define-cache-runonce nvp-shell-alias-table ()
+  "Holds alist of hash tables mapping aliases to expansions.
+Each cell is a cons (SYM . HASH)."
+  ;; for bash assume all aliases are of the form
+  ;; alias ..='cd ..'
+  ;; eg. the start and end with "'" that way don't have to
+  ;; worry about escaped single quotes when parsing
+  ;; aliases
+  (list (cons 'bash (nvp-shell-get-aliases
+                     "bash -ci alias" "^alias\\s-*\\([^=]+\\)='\\(.*\\)'$" 1 2))
+        (cons 'git (nvp-shell-get-aliases
+                    "git alias" "^\\([^=]+\\)=\\(.+\\)$" 1 2))))
+
+;; get alias expansion for key, return nil if none
+(defsubst nvp-shell-get-alias (key alias)
+  (gethash alias (cdr (assoc key (nvp-shell-alias-table))) nil))
+
 ;; -------------------------------------------------------------------
 ;;; Commands
 
@@ -94,10 +77,7 @@
 (defvar-local nvp-shell-current-shell "bash")
 (defun nvp-shell-switch-shell (shell)
   "Switch to SHELL process."
-  (interactive
-   (list (if #'ido-completing-read
-             (ido-completing-read "Shell: " (nvp-shell-get-shells))
-           (completing-read "Shell: " (nvp-shell-get-shells)))))
+  (interactive (nvp-completing-read "Shell: " (nvp-shell-get-shells)))
   (setq nvp-shell-current-shell shell))
 
 (defun nvp-shell-basic-compile ()

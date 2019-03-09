@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 set -e
 
@@ -24,9 +24,9 @@ org_refcard() {
     fi
 }
 
-if [[ "$#" -eq 0 ]]; then
-    _usage_from_args
-fi
+# if [[ "$#" -eq 0 ]]; then
+#     _usage_from_args
+# fi
 
 while (( "$#" )); do
     case "$1" in

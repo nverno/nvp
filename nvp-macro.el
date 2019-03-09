@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 20:34:40>
+;; Last modified: <2019-03-08 23:48:02>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -754,6 +754,27 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
         (setq other-window-scroll-buffer (current-buffer))
         ,@body
         (view-mode-enter nil 'kill-buffer)))))
+
+;; evil-with-view-list
+(cl-defmacro nvp-with-view-list (&key
+                                 name           ;buffer name
+                                 mode-name      ;mode-line name
+                                 format         ;`tabulated-list-format'
+                                 entries        ;`tabulated-list-entries'
+                                 select-action) ;function applied to row
+  "View buffer in `tabulated-list-mode'."
+  (declare (indent defun) (debug t))
+  `(let ((bufname (concat "*" ,name "*"))
+         (inhibit-read-only t))
+     (and (get-buffer bufname)
+          (kill-buffer bufname))
+     (let ((buf (get-buffer-create bufname)))
+       (with-current-buffer buf
+         (setq tabulated-list-format ,format
+               tabulated-list-entries ,entries
+
+               )
+         ))))
 
 ;; -------------------------------------------------------------------
 ;;; Keys / IO

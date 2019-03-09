@@ -22,7 +22,6 @@ el2markdown.el:
 unicode:  ## Generate latex/unicode abbrevs
 	@julia ${SCRIPT}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
-.PHONY: .depend
 .depend: $(EL) ## create depends for package .el files
 	@echo Compute dependencies
 	@rm -f .depend

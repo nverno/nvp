@@ -129,7 +129,12 @@
   :enable-function 'nvp-abbrev-expand-not-after-punct-p)
 
 (define-abbrev-table 'fish-mode-abbrev-table
-  '()
+  '(
+    ("a?" "2>?" nil :system t)
+    ("aa" "2>&1" nil :system t)
+    ("argv" "$argv" nil :system t)
+    ("path" "$PATH" nil :system t)
+    )
   "Fish-Mode Abbrevs."
   :parents (list shells-abbrev-table))
 

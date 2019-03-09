@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-08 23:44:58>
+;; Last modified: <2019-03-09 06:31:47>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -108,29 +108,29 @@ delimiter or an Escaped or Char-quoted character."
 ;; -------------------------------------------------------------------
 ;;; Keys
 
-(defun nvp-describe-key-events (&optional arg)
-  (interactive "P")
-  (nvp-display-buffer-with-action 4
-    (with-help-window (help-buffer)
-        (princ
-         (format "\n%s\n%s\n\n"
-                 (nvp-s-center 60 "Key commands")
-                 (nvp-s-repeat 85 "~")))
-        (let ((vars '(this-command
-                      real-this-command
-                      this-original-command
-                      last-command
-                      last-command-event
-                      last-input-event
-                      last-repeatable-command
-                      last-event-frame
-                      current-prefix-arg
-                      prefix-arg
-                      last-prefix-arg
-                      ))))
-      (with-current-buffer standard-output
-        (let ((inhibit-read-only t))
-          (hl-line-mode))))))
+;; (defun nvp-describe-key-events (&optional arg)
+;;   (interactive "P")
+;;   (nvp-display-buffer-with-action 4
+;;     (with-help-window (help-buffer)
+;;         (princ
+;;          (format "\n%s\n%s\n\n"
+;;                  (nvp-s-center 60 "Key commands")
+;;                  (nvp-s-repeat 85 "~")))
+;;         (let ((vars '(this-command
+;;                       real-this-command
+;;                       this-original-command
+;;                       last-command
+;;                       last-command-event
+;;                       last-input-event
+;;                       last-repeatable-command
+;;                       last-event-frame
+;;                       current-prefix-arg
+;;                       prefix-arg
+;;                       last-prefix-arg
+;;                       ))))
+;;       (with-current-buffer standard-output
+;;         (let ((inhibit-read-only t))
+;;           (hl-line-mode))))))
 
 ;; -------------------------------------------------------------------
 ;;; Assorted

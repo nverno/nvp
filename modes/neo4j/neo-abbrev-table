@@ -1,0 +1,15 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'cypher-mode-abbrev-table
+  '(
+    ("create" "CREATE" nil :system t) 
+    ("constraint" "CONSTRAINT" nil :system t)
+    ("on" "ON" nil :system t)
+    ("delete" "DELETE" nil :system t) 
+    ("detach" "DETACH" nil :system t) 
+    ("match"  "MATCH"  nil :system t) 
+    ("return" "RETURN" nil :system t) 
+    )
+  "Cypher-Mode Abbrevs."
+  :enable-function 'nvp-abbrev-expand-p
+  :parents (list prog-mode-abbrev-table))

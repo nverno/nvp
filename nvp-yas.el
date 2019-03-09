@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 18:45:43>
+;; Last modified: <2019-03-09 06:38:20>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -68,6 +68,7 @@
 ;; -------------------------------------------------------------------
 ;;; General
 
+;; TODO:
 (defun nvp-yas= (str)
   (when yas-moving-away-p
     (string= (yas-text) str)))

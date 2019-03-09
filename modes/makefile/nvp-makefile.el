@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-08 18:45:45>
+;; Last modified: <2019-03-09 06:40:20>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -282,9 +282,10 @@ Skips to end of tabbed block."
 
 ;; -------------------------------------------------------------------
 ;;; Advice
-(define-advice 'comment-dwim (:around (orig-fn (&rest _args))))
-(define-advice 'advised (:around (orig-fn (&rest ))
-  
-  (apply orig-fn ))
+
+(define-advice comment-dwim (:around (orig-fn &rest args) "space-to-comment")
+  (let ((indent-tabs-mode nil))
+    (apply orig-fn args)))
+
 (provide 'nvp-makefile)
 ;;; nvp-makefile.el ends here

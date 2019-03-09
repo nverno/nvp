@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-07 23:32:46>
+#+DATE: <2019-03-09 05:25:55>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -18,6 +18,7 @@
 - emacs source tagging
 - determing include path of project, eg. emacs source
 - tracing: following all calls, not just main traced function
+- doc programs: doc-base/install-docs for browsing debian docs
 
 * Packages to look into
 - smart-jump / dumb-jump
@@ -31,12 +32,12 @@
 - semantic-sticky-func minor mode for parse generics
 
 * Functions
-** General [1/10]
+** General [2/10]
 - [ ] interface to install external deps
 - [ ] quickhelp-toggle
 - [ ] company-local => macro, check for nested backends
 - [ ] list package dependencies -- `package--get-deps'
-- [ ] more generic compile function?
+- [X] more generic compile function?
 - [ ] fix list wrapping to account for syntax
 - [X] jumping from shell doesn't account for local variables
 - [ ] remove all methods from generic for debugging
@@ -46,15 +47,15 @@
 ** Bin helpers [0/2]
 - [ ] awk script to parse man switches in section
 - [ ] remove local vars from all files from current directory
+- [ ] get using from script args
 
-** evil [0/9]
-Things to steal
+** evil [1/9]
 - [ ] define command
 - [ ] repeat
 - [ ] fold-list
 - [ ] evil-make
 - [ ] evil-shell-command
-- [ ] evil-with-view-list
+- [X] evil-with-view-list
 - [ ] evil-ex-sort : sort lines command
 - [ ] evil-jump-to-tag
 - [ ] evil-lookup-func
@@ -66,12 +67,12 @@ pkgs: smart-jump, dumb-jump, evil-jump-to-tag
 - [ ] allow multiple registered backends for each mode, like smart-jump
 - [ ] fallback to grep/ag/dumb-jump or something
 
-** Utils [0/0]
+** Utils [0/1]
 - [ ] reusable region or string utility function - replace ~r-str-...~ macros
 - [ ] read w/ popup help: `register-read-with-preview'
 - [ ] utility function to repeat command like kbdmacro-repeat
 - [X] function wrappers to call local funs
-*** Function cache wrappers [2/6]
+*** TODO Function cache wrappers [2/6]
 - [X] basic cache wrapper
 - [X] cache run once
 - [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
@@ -81,6 +82,7 @@ pkgs: smart-jump, dumb-jump, evil-jump-to-tag
 
 ** Logging [0/3]
 pkgs: [[https://github.com/aki2o/log4e][log4e: might be worth checking out]], shut-up
+funcs: with-temp-message
 - [ ] silence everything but warnings/errors when building
 - [ ] add option to treat all warnings as errors to makefile
 - [ ] update nvp-log, not very useful - probably just remove
@@ -92,6 +94,7 @@ Not sure how this should work.
 ** Newline DWIM [2/3]
 - [X] generic methods
 - [X] method to match delims
+- [ ] method to do comment continuations
 - [ ] remove mode specific newline functions
 
 ** Tests [0/4] 
@@ -144,13 +147,15 @@ see which-func
 - [ ] don't leave includes open
 - [ ] create xrefs from imenu markers
 
-*** TODO snippet completion [1/3]
-- [ ] basic head completion => merge yas-capf
+*** TODO snippet completion [2/3]
+- [X] basic head completion => merge yas-capf
 - [ ] elisp completion where appropriate
 - [X] elisp-xref backend
 
 ** Dired [0/1]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L280][fix rsync]]
+- [ ] pass numeric prefix to copy/rename???
+
 * Modes
 ** elisp [0/5]
 *** TODO General [0/2]
@@ -188,15 +193,17 @@ Use ~load-history~
 
 *** TODO Project [0/1]
 - [ ] use EDE?
+- [ ] srecode templates
 
 *** TODO HAP [0/2]
 - [ ] additional backend to lookup online docs? 
 - [ ] man 2/3 depending on function
 
-*** TODO Parsing [0/3]
+*** TODO Parsing [1/4]
 - [ ] includes
 - [ ] buffer local functions
 - [ ] lexical variables
+- [X] current function
 
 *** TODO Newline DWIM [1/4]
 - [X] default in code method
@@ -229,6 +236,7 @@ Use ~load-history~
 - [ ] optionally parse makefile commands?
 
 *** TODO Parsing [0/3]
+semantic support? seems fucked
 - [ ] includes
 - [ ] targets
 - [ ] dependencies
@@ -237,10 +245,11 @@ Use ~load-history~
 - [ ] jump to source code for builtin functions
 
 ** Autotools [0/3]
-*** TODO m4 [2/7]
+enable semantic support??
+*** TODO m4 [3/7]
 - [X] merge completion/font-lock with autoconf?
 - [ ] m4 still missing lots of font-locking
-- [ ] add imenu support
+- [X] add imenu support
 - [ ] gather locally available macros
 - [ ] string font-lock? sh font-lock? msgs with string?
 - [ ] HAP - how to get info on functions?
@@ -267,9 +276,9 @@ Use ~load-history~
 - [ ] use awk-it??
 - [X] additional font-lock: indirect calls, fields
 
-*** TODO Generics [0/2]
+*** TODO Generics [1/2]
 - [ ] should be able to use norm beg/end/mark function from C
-- [ ] function at point, other parse probably not important
+- [X] function at point, other parse probably not important
 
 *** TODO Completion [0/2]
 [[https://www.gnu.org/software/gawk/manual/gawk.html#Getting-Started][manual]] : Builtin-in Variables, String functions, Arithmetic Ops, Output
@@ -277,9 +286,10 @@ Separators,
 - [ ] parse typescript for builtin sigs/docs/names
 - [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
 
-** sh [0/4]
+** sh [0/5]
 - [X] prefix hippie-shell-expand functions
 - [ ] parse sh function documentation
+- [ ] fix comanpy-active-map
 *** TODO Completion [0/2]
 - [ ] capf for lexical scoped variables
 - [ ] merge capf bash-completion/variable-completion, maybe
@@ -293,7 +303,7 @@ Separators,
 *** TODO Tests [0/1]
 - [ ] method to jump to unit test at point
 
-*** Newline [1/2]
+*** TODO Newline [1/2]
 - [X] code method
 - [ ] doc comment
 
@@ -363,14 +373,14 @@ Separators,
 - [X] grep
 - [X] limit greps search directories
 
-* Library fixes [3/9]
+* Library fixes [4/9]
 - [ ] fix nvp-install
 - [ ] better package installs
   https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [ ] nvp-doc - company backend, man backend, fallback to websearch? zeal?
 - [ ] nvp-abbrev-dynamic - should be ready for elisp / C
 - [ ] nvp-disassemble - waiting on generic docs
-- [ ] only call setup functions on first load
+- [X] only call setup functions on first load
 - [X] nvp-minibuffer: eval / edebug hooks, hippie expand history
 - [X] separate setup from nvp
 - [X] remove nvp-conf / merge with config-tools
@@ -396,15 +406,15 @@ Separators,
 
 [[https://github.com/emacsmirror/paredit/blob/master/test.el][paredit tests]]
 
-* Elisp Packages [0/0]
-** Cookiecutter [2/3]
+* Elisp Packages [0/3]
+** TODO Cookiecutter [2/3]
 wrapper for cookiecutter packages
 - [X] install cookiecutter
 - [X] start package
 - [ ] design interface
-** Cargo [0/1]
+** TODO Cargo [0/1]
 - [ ] update / remove
-** macrostep-sh
+** TODO macrostep-sh
 - [ ] bounds of things at point
 - [ ] parse variables in lexical context
 - [ ] include environment variables

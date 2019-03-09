@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-08 18:35:11>
+;; Last modified: <2019-03-09 06:09:19>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -110,7 +110,8 @@
         ;; top-level snippets dir to load
         (setq yas-dir (or (ignore-errors (car (directory-files dir t "snippets")))
                           nvp/snippet))
-        (setq mode-snips (concat yas-dir (or snippets-dir (symbol-name mode))))
+        (setq mode-snips
+              (expand-file-name (or snippets-dir (symbol-name mode)) yas-dir))
         (or abbr-table (setq abbr-table (symbol-name mode)))
         (setq mvars (nvp-mode-vars-make
                      :dir dir
@@ -124,8 +125,8 @@
         ;; - load abbrevs
         ;; - etc.
         (unless (member yas-dir yas-snippet-dirs)
-          (push yas-dir yas-snippet-dirs)
-          (yas-load-directory mode-snips))
+          (push yas-dir yas-snippet-dirs))
+        (yas-load-directory mode-snips)
         (cl-pushnew dir load-path :test #'string=)
         (ignore-errors (quietly-read-abbrev-file abbr-file))
         (puthash mode mvars nvp-mode-cache)))

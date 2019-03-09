@@ -1,6 +1,6 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-09 03:01:11>
+;; Last modified: <2019-03-09 06:18:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
@@ -73,22 +73,7 @@ Each cell is a cons (SYM . HASH)."
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-;; switch to a different shell for compiling
-(defvar-local nvp-shell-current-shell "bash")
-(defun nvp-shell-switch-shell (shell)
-  "Switch to SHELL process."
-  (interactive (nvp-completing-read "Shell: " (nvp-shell-get-shells)))
-  (setq nvp-shell-current-shell shell))
-
-(defun nvp-shell-basic-compile ()
-  "Run script with output to compilation buffer."
-  (interactive)
-  (let ((compile-command
-         (concat (or nvp-shell-current-shell "bash") " "
-                 (if buffer-file-name buffer-file-name)))
-        (compilation-read-command))
-    (call-interactively 'compile)))
-
+;; TODO: expand git aliases as well
 (defun nvp-shell-expand-alias ()
   "Expand shell alias at/before point."
   (interactive)
@@ -96,6 +81,7 @@ Each cell is a cons (SYM . HASH)."
   (unless (eq (point) (comint-line-beginning-position))
     (pcase-let* ((`(,start . ,end) (bounds-of-thing-at-point 'symbol))
                  (exp (nvp-shell-get-alias
+                       'bash
                        (buffer-substring-no-properties start end))))
       (when exp
         (delete-region start end)

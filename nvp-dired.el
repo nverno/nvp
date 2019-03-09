@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-09 02:46:55>
+;; Last modified: <2019-03-09 06:46:48>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -137,11 +137,13 @@
   (with-temp-buffer
     (write-file filename)))
 
+;; #<marker at 171949 in simple.el.gz>
+;; How to determine the number of C-u before numeric arg????
 ;; advice for copy/rename w/ multiple open direds
 (defun nvp-dired-w/o-dwim (cmd &optional _arg)
   ;; (message "%S" (this-command-keys-vector))
   (let ((dired-dwim-target (equal '(4) current-prefix-arg)))
-    (apply cmd (list (max 1 (prefix-numeric-value current-prefix-arg))))))
+    (apply cmd (list (max 1 (length (dired-get-marked-files)))))))
 
 (nvp-advise-commands 'nvp-dired-w/o-dwim :around
   (dired-do-rename dired-do-copy))

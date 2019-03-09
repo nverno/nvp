@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 17:21:54>
+;; Last modified: <2019-03-09 06:37:39>
 ;; Created: 22 August 2018
 
 ;;; Commentary:
@@ -12,6 +12,10 @@
 ;; iedit extensions:
 ;; - toggle match restriction b/w global, defun, line
 ;; - expand regions during iedit
+
+;; FIXME:
+;; - Toggling region is pointless
+;; - Generic cycling interface
 
 ;;; Code:
 (eval-when-compile

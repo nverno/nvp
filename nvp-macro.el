@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 23:48:02>
+;; Last modified: <2019-03-09 07:00:14>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -755,6 +755,19 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
         ,@body
         (view-mode-enter nil 'kill-buffer)))))
 
+;; FIXME: move this stuff out of here and make minor mode
+;; #<marker at 153343 in evil-common.el>
+(defvar-local nvp-list-view-select-action ())
+(put 'nvp-list-view-select-action 'permanent-local t)
+
+(defun nvp-view-list-goto-entry ()
+  (interactive)
+  (when (and nvp-list-view-select-action
+             (not (eobp)))
+    (let* ((line (line-number-at-pos (point)))
+           (entry (elt tabulated-list-entries (1- line))))
+      (funcall nvp-list-view-select-action (nth 1 entry)))))
+
 ;; evil-with-view-list
 (cl-defmacro nvp-with-view-list (&key
                                  name           ;buffer name
@@ -764,17 +777,28 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
                                  select-action) ;function applied to row
   "View buffer in `tabulated-list-mode'."
   (declare (indent defun) (debug t))
-  `(let ((bufname (concat "*" ,name "*"))
-         (inhibit-read-only t))
-     (and (get-buffer bufname)
-          (kill-buffer bufname))
-     (let ((buf (get-buffer-create bufname)))
-       (with-current-buffer buf
-         (setq tabulated-list-format ,format
-               tabulated-list-entries ,entries
-
-               )
-         ))))
+  (let ((action (make-symbol "action")))
+    `(let ((,action ,select-action)
+           (bufname (concat "*" ,name "*"))
+           (inhibit-read-only t))
+       (and (get-buffer bufname)
+            (kill-buffer bufname))
+       (let ((buf (get-buffer-create bufname))
+             (map (make-sparse-keymap)))
+         (define-key map "q" #'kill-this-buffer)
+         (define-key [follow-link] nil)
+         (define-key [mouse-1] ,action)
+         (define-key [return] ,action)
+         (with-current-buffer buf
+           (setq tabulated-list-format ,format
+                 tabulated-list-entries ,entries
+                 mode-name ,mode-name
+                 action ,action)
+
+           ;; init tabulated mode => put into minor mode
+           (tabulated-list-init-header)
+           (tabulated-list-print))
+         (pop-to-buffer buff)))))
 
 ;; -------------------------------------------------------------------
 ;;; Keys / IO

@@ -1,11 +1,14 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-09 03:03:19>
+;; Last modified: <2019-03-09 04:42:00>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 12 February 2019
 
 ;;; Commentary:
+;; Possible packages:
+;; - https://github.com/plandes/flex-compile
+;; More generalization is good
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)

@@ -1,6 +1,6 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-08 19:48:09>
+;; Last modified: <2019-03-09 06:45:37>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -164,18 +164,7 @@ is useful, e.g, for use with `visual-line-mode'."
 (nvp-align-fn nvp-align-= nil "\\(\\s-*\\)=")
 
 ;; -------------------------------------------------------------------
-;;; Insert 
-
-;; -------------------------------------------------------------------
 ;;; Wrap text
-
-;;;###autoload
-(defun nvp-wrap-quotes (&optional _arg)
-  (interactive "P")
-  (if (not (assoc "\"" sp-pair-list))
-      (let ((sp-pair-list '(("\"". "\""))))
-        (sp-wrap-with-pair "\""))
-    (sp-wrap-with-pair "\"")))
 
 ;;;###autoload
 (defun nvp-wrap-with-squiggles (&optional _arg)

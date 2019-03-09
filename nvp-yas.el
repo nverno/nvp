@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 00:46:39>
+;; Last modified: <2019-03-08 18:45:43>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -66,7 +66,11 @@
             (make-string (floor extra 2) char))))
 
 ;; -------------------------------------------------------------------
-;;; Syntax
+;;; General
+
+(defun nvp-yas= (str)
+  (when yas-moving-away-p
+    (string= (yas-text) str)))
 
 ;; yas-inside-string uses `font-lock-string-face'
 (defsubst nvp-yas-inside-string ()

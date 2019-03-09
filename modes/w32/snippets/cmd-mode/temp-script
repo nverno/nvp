@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: temp script
+# key: tscript
+# --
+set tscript="%TEMP%\%RANDOM%-%RANDOM%-%RANDOM%.vbs"$0

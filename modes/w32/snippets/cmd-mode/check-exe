@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: check for program
+# key: check
+# --
+where $1 > NUL || ${2:goto :EOF}$0

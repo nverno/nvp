@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: param
+# key: param
+# --
+if "x%~1"=="x$1" shift& set "$2=%~2"& ${3:shift&} goto :checkParams$0

@@ -1,0 +1,12 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'cmd-mode-abbrev-table
+  '()
+  "Cmd-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table shells-abbrev-table))
+
+(define-abbrev-table 'w32-registry-mode-abbrev-table
+  '(("hkcu" "HKEY_CURRENT_USER" nil :system t)
+    ("hklm" "HKEY_LOCAL_MACHINE" nil :system t))
+  "w32-registry abbrevs table."
+  :case-fixed nil)

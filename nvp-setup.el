@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-07 16:47:34>
+;; Last modified: <2019-03-08 18:35:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -87,18 +87,18 @@
 
 ;;;###autoload
 (cl-defun nvp-setup-local
-    (name
+    (name                               ;package root dir name
      &key
-     mode
-     abbr-file
-     snippets-dir
-     dir
-     snippets
-     abbr-table
-     post-fn)
+     mode                               ;major-mode or key for hash
+     abbr-file                          ;file containing mode abbrevs
+     snippets-dir                       ;snippet dir to use instead of mode name
+     dir                                ;mode root directory
+     abbr-table                         ;abbrev table to use for mode
+     post-fn)                           ;function called after setup
   "Setup local variables for helper package - abbrevs, snippets, root dir."
   (setq mode (if mode (if (stringp mode) (intern-soft mode) mode) major-mode))
-  (let ((mvars (gethash mode nvp-mode-cache nil)))
+  (let ((mvars (gethash mode nvp-mode-cache nil))
+        yas-dir mode-snips)
     (unless mvars
       (or dir (setq dir (nvp-setup-package-root name)))
       (if (not (file-exists-p dir))
@@ -107,16 +107,25 @@
         (or abbr-file
             (setq abbr-file (ignore-errors
                               (car (directory-files dir t "abbrev-table")))))
-        (or snippets
-            (setq snippets
-                  (concat "snippets/" (or snippets-dir (symbol-name mode)))))
+        ;; top-level snippets dir to load
+        (setq yas-dir (or (ignore-errors (car (directory-files dir t "snippets")))
+                          nvp/snippet))
+        (setq mode-snips (concat yas-dir (or snippets-dir (symbol-name mode))))
         (or abbr-table (setq abbr-table (symbol-name mode)))
         (setq mvars (nvp-mode-vars-make
                      :dir dir
-                     :snippets (expand-file-name snippets dir)
+                     :snippets mode-snips
                      :abbr-file abbr-file
                      :abbr-table abbr-table))
-        ;; FIXME: should initialize the dir here, loading autoloads etc.
+        ;; FIXME: initialize mode here
+        ;; - ensure load-path
+        ;; - load-autoloads/activate mode
+        ;; - load snippets
+        ;; - load abbrevs
+        ;; - etc.
+        (unless (member yas-dir yas-snippet-dirs)
+          (push yas-dir yas-snippet-dirs)
+          (yas-load-directory mode-snips))
         (cl-pushnew dir load-path :test #'string=)
         (ignore-errors (quietly-read-abbrev-file abbr-file))
         (puthash mode mvars nvp-mode-cache)))

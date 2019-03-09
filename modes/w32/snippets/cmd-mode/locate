@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: locate
+# key: locate
+# --
+:search
+set "index=${1:%APPDATA%\exe-index}"
+for /f "tokens=*" %%a in ('locate.bat -f "%index%" -o "/i" "%~2"') do (
+    call set ^"%1=%%a"
+    ${2:goto :EOF}
+)

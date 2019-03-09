@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: dword
+# key: dw
+# --
+dword:0000000${1:0}$0

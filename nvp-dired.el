@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 01:53:56>
+;; Last modified: <2019-03-08 21:35:21>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -137,14 +137,14 @@
   (with-temp-buffer
     (write-file filename)))
 
-;; same as regular, but assume current dired directory unless prefix
-(defun nvp-dired-do-rename (&optional arg)
-  (interactive "P")
-  (setq prefix-arg current-prefix-arg)
-  (setq this-command 'dired-do-rename)  ;so ido doesn't fuck it up
-  (if arg (dired-do-rename arg)
-    (let (dired-dwim-target)
-      (dired-do-rename arg))))
+;; advice for copy/rename w/ multiple open direds
+(defun nvp-dired-w/o-dwim (cmd &optional arg)
+  (message "%S" (this-command-keys-vector))
+  (let ((dired-dwim-target (equal '(4) current-prefix-arg)))
+    (apply cmd (list (max 1 (prefix-numeric-value current-prefix-arg))))))
+
+(nvp-advise-commands 'nvp-dired-w/o-dwim :around
+  (dired-do-rename dired-do-copy))
 
 ;; -------------------------------------------------------------------
 ;;; External

@@ -1,8 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-06 12:15:35>
+;; Last modified: <2019-03-08 22:00:52>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -12,6 +10,7 @@
 ;; TODO:
 ;; - function to remove all methods from generic
 ;; - how to remove all notifications (filenotify) without storing them?
+;; - activate ert when in test buffer, otherwise try project build test?
 
 ;;; Code:
 (eval-when-compile
@@ -105,6 +104,62 @@ delimiter or an Escaped or Char-quoted character."
              (comment-indent)
              (forward-line 1)))
          (hl-line-mode))))))
+
+;; -------------------------------------------------------------------
+;;; Keys
+
+(defun nvp-describe-key-events (&optional arg)
+  (interactive "P")
+  (nvp-display-buffer-with-action 4
+    (with-help-window (help-buffer)
+        (princ
+         (format "\n%s\n%s\n\n"
+                 (nvp-s-center 60 "Key commands")
+                 (nvp-s-repeat 85 "~")))
+        (let ((vars '(this-command
+                      real-this-command
+                      this-original-command
+                      last-command
+                      last-command-event
+                      last-input-event
+                      last-repeatable-command
+                      last-event-frame
+                      current-prefix-arg
+                      prefix-arg
+                      last-prefix-arg
+                      ))))
+      (with-current-buffer standard-output
+        (let ((inhibit-read-only t))
+          (hl-line-mode))))))
+
+;; -------------------------------------------------------------------
+;;; Assorted
+
+;; Print counts of strings in region, with prefix dump at point
+;;;###autoload
+(defun nvp-stats-uniq (beg end &optional count-lines)
+  "Print counts (case-insensitive) of unique words in region BEG to END.
+With prefix COUNT-LINES count unique lines."
+  (interactive "r\nP")
+  (require 'nvp-hash)
+  (let ((ht (make-hash-table :test 'case-fold))
+        (lines (split-string
+                (buffer-substring-no-properties beg end) "\n" 'omit-nulls " "))
+        lst)
+    (if count-lines
+        (dolist (line lines)
+          (puthash line (1+ (gethash line ht 0)) ht))
+      ;; strip punctuation for words
+      (cl-loop for line in lines
+         as words = (split-string line "[[:punct:] \t]" 'omit " ")
+         when words
+         do (cl-loop for word in words
+               do (puthash word (1+ (gethash word ht 0)) ht))))
+    (maphash (lambda (key val) (push (cons val key) lst)) ht)
+    (setq lst (cl-sort lst #'> :key #'car))
+    (nvp-with-results-buffer nil
+      (pcase-dolist (`(,k . ,v) lst)
+        (princ (format "%d: %s\n" k v))))))
 
 (provide 'nvp-dev)
 ;;; nvp-dev.el ends here

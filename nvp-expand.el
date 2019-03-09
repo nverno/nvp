@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 19:35:19>
+;; Last modified: <2019-03-08 18:59:57>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 10 January 2017
@@ -14,7 +14,7 @@
   (require 'cl-lib)
   (defvar tiny-beg))
 (declare-function tiny-expand "tiny")
-(declare-function nvp-list-wrap-quotes "nvp-edit")
+(autoload 'nvp-list-wrap-quotes "nvp-edit")
 
 ;;;###autoload
 (defun nvp-expand-range (&optional sep)

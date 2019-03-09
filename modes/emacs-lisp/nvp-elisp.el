@@ -1,27 +1,10 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-24 20:07:38>
+;; Last modified: <2019-03-08 15:09:54>
 ;; URL: https://github.com/nverno/elisp-utils
 ;; Package-Requires: 
 ;; Created: 31 October 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
@@ -67,6 +50,34 @@
     (defvar nvp-elisp-defuns-regexp defs-re)
     ;; additional let macros, pcase, cond, etc.
     (defvar nvp-elisp-var-binding-regexp vars-re)))
+
+;; -------------------------------------------------------------------
+;;; Things at point
+
+(defun nvp-elisp-bounds-of-cons ()
+  "Return bounds of dotted cons cell, eg (sexp . sexp)."
+  (save-excursion
+    (let* ((ppss (parse-partial-sexp (point-min) (point)))
+           (parens (reverse (nth 9 ppss))))
+      (cl-block nil
+        (dolist (pos parens)
+          (goto-char (1+ pos))
+          (forward-sexp)
+          (skip-chars-forward "^.)")
+          (and (eq ?. (char-after))
+               (cl-return (bounds-of-thing-at-point 'list))))))))
+(put 'cons 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons)
+
+(defun nvp-elisp-bounds-of-alist ()
+  "Return bounds of alist at point."
+  (save-excursion
+    (let ((ppss (parse-partial-sexp (point-min) (point))))
+      (if (= 1 (nth 0 ppss)) (bounds-of-thing-at-point 'list)
+        ;; otherwise check if in cons and back out of it
+        (when-let* ((bnds (bounds-of-thing-at-point 'cons)))
+          (goto-char (1- (car bnds)))
+          (bounds-of-thing-at-point 'list))))))
+(put 'alist 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-alist)
 
 ;; -------------------------------------------------------------------
 ;;; Generics

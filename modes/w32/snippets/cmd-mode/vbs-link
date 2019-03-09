@@ -1,0 +1,37 @@
+# -*- mode: snippet -*-
+# name: vbs link
+# key: link
+# --
+:: Create a link using a temporary VBS script
+:: <> required, [] optional
+:: createLink <-l link location> <-t target location> [-w working directory]
+:: [-i icon location] [-d description] [-a arguments] [-s window style]
+:createLink
+set tscript="%TEMP%\%RANDOM%-%RANDOM%-%RANDOM%.vbs"
+
+:linkParams
+if "x%~1"=="x-l" shift& set link="%~2"& shift& goto   :linkParams
+if "x%~1"=="x-t" shift& set target="%~2"& shift& goto :linkParams
+if "x%~1"=="x-w" shift& set workd="%~2"& shift& goto  :linkParams
+if "x%~1"=="x-i" shift& set icon="%~2"& shift& goto   :linkParams
+if "x%~1"=="x-d" shift& set desc=%~2& shift& goto     :linkParams
+if "x%~1"=="x-a" shift& set args=%~2& shift& goto     :linkParams
+if "x%~1"=="x-s" shift& set style=%~2& shift& goto    :linkParams
+
+:: required
+echo.Set oWS = Wscript.CreateObject("WScript.Shell") >> %tscript%
+echo.sLinkFile = %link% >> %tscript%
+echo.Set oLink = oWS.CreateShortcut(sLinkFile) >> %tscript%
+echo.oLink.TargetPath = %target% >> %tscript%
+
+:: optional
+if not "x%workd%" == "x" echo.oLink.WorkingDirectory = %workd% >> %tscript%
+if not "x%args%" == "x" echo.oLink.Arguments = "%args%" >> %tscript%
+if not "x%style%" == "x" echo.oLink.WindowStyle = %style% >> %tscript%
+if not "x%desc%" == "x" echo.oLink.Description = "%desc%" >> %tscript%
+if not "x%icon%" == "x" echo.oLink.IconLocation = %icon% >> %tscript%
+
+echo.oLink.Save >> %tscript%
+
+cscript /nologo %tscript%
+del %tscript%

@@ -54,7 +54,7 @@ endef
 export LOADDEFS_TMPL
 #'
 
-${PKG}-autoloads.el: ${EL}
+${PKG}-autoloads.el: ${EL}			  #
 	@echo "Generating $@"
 	@printf "%s" "$$LOADDEFS_TMPL" > $@
 	@${EMACS} -Q --batch --eval "(progn                        \

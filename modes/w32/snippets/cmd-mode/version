@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: latest version
+# key: version
+# --
+set "uri=$1"
+
+:version
+for /f "tokens=*" %%i in ('curl -Ls "%uri%" ^|
+                          grep -Poi -m 1 ${2:"[A-Za-z0-9_/:.-]+win64\.exe"}') do (
+    set "latest=%%i"
+)
+if "x%latest%"=="x" (
+    echo.error: failed to find latest version of $3 >>${4:"%logfile%"}
+    goto :EOF
+)
+echo.Found latest version of $3: %latest%>>$4

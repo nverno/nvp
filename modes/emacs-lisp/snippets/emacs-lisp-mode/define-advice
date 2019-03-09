@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: define-advice
+# key: defa
+# --
+(define-advice '${1:advised} (:${2:around} (orig-fn (&rest ${3:${2:$(if (string= (yas-text) "around" "args" "_args"))})))
+  $0
+  (apply orig-fn $3))

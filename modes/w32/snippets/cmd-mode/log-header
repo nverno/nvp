@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: log header
+# key: logh
+# --
+echo.-*- mode: compilation; default-directory: ${1:"%~dp0"} -*->$0

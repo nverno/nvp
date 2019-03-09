@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-06 05:05:38>
+;; Last modified: <2019-03-08 18:45:45>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -75,7 +75,7 @@ Skips to end of tabbed block."
 ;; ------------------------------------------------------------
 ;;; Parse / Snippet helpers
 
-;;; Get values
+;;-- Get values
 
 (defun nvp-makefile-target-name ()
   (save-excursion
@@ -142,7 +142,7 @@ Skips to end of tabbed block."
            (and (not (bolp))
                 (insert "\n")))))
 
-;;; Add stuff
+;;-- Add stuff
 
 ;; add program ?= program to top if not already declared
 (defun nvp-makefile-add-define (program &optional ifdef value)
@@ -184,7 +184,7 @@ Skips to end of tabbed block."
                              (nconc deps (cons dep nil)) " ")))))))
 
 ;; -------------------------------------------------------------------
-;;; Indent 
+;;-- Indent 
 
 (defvar nvp-makefile-indent-offset 2)
 
@@ -280,5 +280,11 @@ Skips to end of tabbed block."
     ;; (align-regexp (point-min) (point-max) "\\(\\s-*\\)\\\\\\s-*$")
     ))
 
+;; -------------------------------------------------------------------
+;;; Advice
+(define-advice 'comment-dwim (:around (orig-fn (&rest _args))))
+(define-advice 'advised (:around (orig-fn (&rest ))
+  
+  (apply orig-fn ))
 (provide 'nvp-makefile)
 ;;; nvp-makefile.el ends here

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: base template
+# key: base
+# --
+@echo off
+setlocal$0

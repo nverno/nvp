@@ -1,10 +1,10 @@
-;;; nvp-macro.el ---  -*- lexical-binding: t; -*-
+;;; nvp-macro.el --- compile time macros -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 05:29:28>
+;; Last modified: <2019-03-08 20:34:40>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -65,15 +65,34 @@ If MINOR is non-nil, convert to minor mode hook symbol."
                prefix)))
     msg))
 
-(cl-defmacro nvp-msg (fmt &rest args &key keys delay &allow-other-keys)
-  "Print message, optionally using `substitute-command-keys'."
+(cl-defmacro nvp-msg (fmt &rest args &key keys delay duration &allow-other-keys)
+  "Print message, optionally using `substitute-command-keys' if KEYS.
+Message is displayed temporarily, restoring any previous message after
+DURATION or 2 seconds.
+If DELAY is non-nil, message won't be displayed for that many seconds, so
+if a useful message is expected it can be read before this message is 
+displayed. The original message will be displayed after DELAY + DURATION when
+those are both specified."
+  (declare (indent defun) (debug (sexp &rest form)))
   (while (keywordp (car args))
     (setq args (cdr (cdr args))))
-  (let ((msg `(message
-               ,@(if keys `("%s" (substitute-command-keys (format ,fmt ,@args)))
-                   `(,fmt ,@args)))))
-    (if delay `(run-with-idle-timer ,delay nil (lambda () ,msg))
-      `,msg)))
+  (let ((msg
+         `(function
+           (lambda ()
+             (message
+              ,@(if keys
+                    `("%s" (substitute-command-keys (format ,fmt ,@args)))
+                  `(,fmt ,@args)))))))
+    `(let ((orig-msg (current-message)))
+       ,(if delay
+            `(run-with-idle-timer ,delay nil ,msg)
+          `,msg)
+       (run-with-idle-timer
+        (+ ,(or delay 0) ,(or duration 2))
+        nil (function
+             (lambda ()
+               (eval
+                `(and ,orig-msg (message ,orig-msg)))))))))
 
 ;; -------------------------------------------------------------------
 ;;; General
@@ -168,17 +187,21 @@ use either `buffer-file-name' or `buffer-name'."
 ;; -------------------------------------------------------------------
 ;;; Regions / things-at-point
 
+(defmacro nvp-bounds-of-thing (thing &optional no-pulse)
+  "Return `bounds-of-thing-at-point' and pulse region unless NO-PULSE."
+  (declare (indent 0))
+  `(progn
+     (declare-function nvp-indicate-pulse-region-or-line "")
+     (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
+       (prog1 bnds
+         ,(unless no-pulse
+            `(nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds)))))))
+
 (defmacro nvp-region-or-batp (&optional thing no-pulse)
   "Region bounds if active or bounds of THING at point."
   (declare (indent defun) (debug t))
-  `(progn
-     (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
-     (if (region-active-p) (car (region-bounds))
-       (let ((bnds (bounds-of-thing-at-point (or ,thing 'symbol))))
-         (if ,no-pulse bnds
-           (prog1 bnds
-             (and bnds (nvp-indicate-pulse-region-or-line
-                        (car bnds) (cdr bnds)))))))))
+  `(if (region-active-p) (car (region-bounds))
+     (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse)))
 
 (defmacro nvp-region-str-or-thing (&optional thing no-pulse)
   "Region string if active or THING at point."
@@ -187,23 +210,31 @@ use either `buffer-file-name' or `buffer-name'."
      (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
      (if (region-active-p)
          (buffer-substring-no-properties (region-beginning) (region-end))
-       (when-let* ((bnds (bounds-of-thing-at-point (or ,thing 'symbol)))
+       (when-let* ((bnds (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse))
                    (str (buffer-substring-no-properties (car bnds) (cdr bnds))))
          (if ,no-pulse str
            (prog1 str
              (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
 
-(defmacro nvp-within-bounds-of-thing-or-region (thing beg end &rest body)
+(cl-defmacro nvp-within-bounds-of-thing-or-region
+    (thing beg end &rest body &key no-pulse &allow-other-keys)
   "Execute BODY with region widened to bounds of THING at point \
 unless region is active.
-BEG and END are bound to the bounds."
+BEG and END are symbols to bind to the region the bounds.
+If NO-PULSE, don't pulse region when using THING."
   (declare (indent defun) (debug (sexp sexp sexp &rest form)))
-  `(if (not (region-active-p))
-       (save-restriction
-         (widen)
-         (cl-destructuring-bind (,beg . ,end) (bounds-of-thing-at-point ,thing)
-           ,@body))
-     ,@body))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
+  `(save-excursion
+     (declare-function nvp-indicate-pulse-region-or-line "")
+     (if (not (region-active-p))
+         (save-restriction
+           (widen)
+           (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
+             (cl-destructuring-bind (,beg . ,end) bnds
+               ,(unless no-pulse `(nvp-indicate-pulse-region-or-line ,beg ,end))
+               ,@body)))
+       ,@body)))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -418,10 +449,12 @@ menu entry."
    (cl-loop for (k . b) in bindings
       collect `(nvp-def-key (current-global-map) ,k ,b))))
 
-(cl-defmacro nvp-bind-keys (map &rest bindings &key predicate after-load
+(cl-defmacro nvp-bind-keys (map &rest bindings
+                                &key predicate after-load
                                 &allow-other-keys)
   "Add BINDINGS to MAP.
-If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys."
+If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys.
+If AFTER-LOAD is non-nil, eval after loading feature/file."
   (declare (indent defun) (debug t))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
@@ -725,13 +758,19 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
 ;; -------------------------------------------------------------------
 ;;; Keys / IO
 
+;; FIXME: which of these is better??
+;; `key-description' is defined at C level and `edemacro-format-keys' does
+;; a lot of work. How to profile?
 (defmacro nvp-last-input-char ()
   "Return the last character input as string."
   '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
 
-(defmacro nvp-last-command-char ()
-  "Return last char from previous command."
-  '(key-description (vector last-command-event)))
+(defmacro nvp-last-command-char (&optional strip-ctrl)
+  "Return string value from previous command.
+If STRIP-CTRL, just return the last character, eg. M-* => *."
+  (if strip-ctrl
+      `(substring (key-description (vector last-command-event)) -1)
+    `(key-description (vector last-command-event))))
 
 ;; TODO: remove
 (defmacro nvp-read (prompt &optional thing &rest args)
@@ -1265,7 +1304,7 @@ or PREDICATE is non-nil and returns nil."
 afterward."
   (declare (indent defun) (debug (sexp sexp &rest form)))
   `(let ((sort-fold-case t))
-     (save-excursion
+     (save-mark-and-excursion
        (save-match-data
          (unwind-protect
              ,@body
@@ -1372,7 +1411,7 @@ afterward."
 
 (defmacro nvp-advise-commands (advice where funcs &optional props)
   "Apply ADVICE at location WHERE to funcs."
-  (declare (indent 0))
+  (declare (indent defun))
   `(progn
      ,@(mapcar (lambda (fn) `(advice-add ',fn ,where ,advice ,props)) funcs)))
 

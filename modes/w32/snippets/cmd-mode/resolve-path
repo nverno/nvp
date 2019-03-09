@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: resolve relative path
+# key: resolve
+# --
+:: Usage: call :resolvePath "%root%\.." parent_root
+:resolvePath
+set "%2=%~f1"
+goto :EOF$0

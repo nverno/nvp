@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-07 20:04:10>
+;; Last modified: <2019-03-08 15:36:31>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -30,6 +30,7 @@ or '*' from emacs root, ignoring package directory.
 With single prefix, includes package directory.
 With double prefix just calls `rgrep' interactively to prompt for defaults."
   (interactive "P")
+  (require 'grep)
   (if (equal '(16) arg) (call-interactively 'rgrep)
     (let ((sym (or (thing-at-point 'symbol t)
                    (read-from-minibuffer "Symbol: ")))

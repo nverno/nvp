@@ -1,14 +1,16 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-06 06:34:13>
+;; Last modified: <2019-03-08 19:48:09>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
 ;; Created: 24 November 2016
 
 ;;; Commentary:
+
+;; FIXME:
+;; - fill functions are pretty useless
+;; - fill toggle doesn't work much
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -20,9 +22,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Sort
-
-;; list syntax
-;; #<marker at 7784 in thingatpt.el.gz>
 
 ;;;###autoload
 (defun nvp-sort-lines-first-word (start end &optional reverse)
@@ -45,28 +44,23 @@ With prefix sort in REVERSE."
                                               "\\)")
                           "\\(\\sw\\|\\s_\\)+" start end))))
 
+;; note uses 'cons/'alist at point defined in nvp-elisp
 ;;;###autoload
 (defun nvp-sort-alist (&optional start end reverse)
   "Sort alist by car of each element in list at point or b/w START and END."
   (interactive "r\nP")
-  (nvp-within-bounds-of-thing-or-region 'list start end
+  (nvp-within-bounds-of-thing-or-region 'alist start end
     (nvp-sort-with-defaults start end
-      ;; skip to first inner '(' eg. if this is a macro body
-      (goto-char start)
-      ;; sort between starting and ending cells
-      (let ((epos (save-excursion (forward-list) (1- (point))))
-            (bpos (progn
-                    (forward-char 1)
-                    (skip-syntax-forward "^(")
-                    (point))))
-        (sort-regexp-fields
-         reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)" bpos epos)))))
+      (sort-regexp-fields
+       reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)"
+       (1+ start)                       ;skip over outer '('
+       (1- end)))))                     ;stop before final ')'
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)
   (interactive "r\nP")
   (nvp-sort-with-defaults start end
-   (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
+    (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
 
 ;;;###autoload
 (defun nvp-sort-symbols (start end &optional reverse)
@@ -172,34 +166,8 @@ is useful, e.g, for use with `visual-line-mode'."
 ;; -------------------------------------------------------------------
 ;;; Insert 
 
-;; Adds commas after numbers in list, like matlab -> R.
-;;;###autoload
-(defun nvp-list-insert-commas (str &optional from to)
-  (interactive
-   (if (region-active-p)
-       (list nil (region-beginning) (region-end))
-     (let ((bds (bounds-of-thing-at-point 'paragraph)))
-       (list nil (car bds) (cdr bds)))))
-  (let (workonstringp inputstr outputstr)
-    (setq workonstringp (if str t nil))
-    (setq inputstr (if workonstringp str
-                     (buffer-substring-no-properties from to)))
-    (setq outputstr
-	  (replace-regexp-in-string "\\([0-9]\\)\\s " "\\1," inputstr))
-    (if workonstringp
-        outputstr
-      (save-excursion
-        (delete-region from to)
-        (goto-char from)
-        (insert outputstr)))))
-
 ;; -------------------------------------------------------------------
 ;;; Wrap text
-
-;;;###autoload
-(defun nvp-wrap-parens (&optional _arg)
-  (interactive "P")
-  (sp-wrap-with-pair "("))
 
 ;;;###autoload
 (defun nvp-wrap-quotes (&optional _arg)
@@ -221,30 +189,47 @@ is useful, e.g, for use with `visual-line-mode'."
       (sp-wrap-with-pair "~"))))
 
 ;;;###autoload
-(defun nvp-wrap-with-defaults (char &optional _arg)
-  "Wrap next sexp with CHAR, where CHAR is the last key pressed.
-Uses default vaules for `sp-pair-list'."
-  (interactive (list (nvp-last-input-char) current-prefix-arg))
-  (sp-wrap-with-pair char))
+(defun nvp-wrap-with-last-char (char &optional _arg)
+  "Wrap next sexp with CHAR (last key pressed in calling command).
+Override default `sp-pair-list' if CHAR isn't a leading member.
+Prefix arg is passed to SP, wrapping the next _ARG elements."
+  (interactive (list (nvp-last-command-char 'strip) current-prefix-arg))
+  (let ((sp-pair-list
+         (if (not (cl-member char sp-pair-list :test #'string= :key #'car))
+             `((,char . ,char))
+           sp-pair-list)))
+    (with-demoted-errors "Error in nvp-wrap-with-last-char: %S"
+      (sp-wrap-with-pair char))))
 
-;;;###autoload
-(defun nvp-wrap-with (char &optional _arg)
-  "Wrap next sexp with CHAR (last key pressed), overriding default `sp-pair-list'."
-  (interactive (list (nvp-last-input-char) current-prefix-arg))
-  (let ((sp-pair-list `((,char . ,char))))
-    (sp-wrap-with-pair char)))
+;; -------------------------------------------------------------------
+;;; Lists
 
+;; Adds commas after numbers in list, like matlab -> R.
+(defun nvp-list-insert-commas (str &optional from to)
+  (interactive
+   (if (region-active-p)
+       (list nil (region-beginning) (region-end))
+     (let ((bds (bounds-of-thing-at-point 'paragraph)))
+       (list nil (car bds) (cdr bds)))))
+  (let (workonstringp inputstr outputstr)
+    (setq workonstringp (if str t nil))
+    (setq inputstr (if workonstringp str
+                     (buffer-substring-no-properties from to)))
+    (setq outputstr
+	  (replace-regexp-in-string "\\([0-9]\\)\\s " "\\1," inputstr))
+    (if workonstringp
+        outputstr
+      (save-excursion
+        (delete-region from to)
+        (goto-char from)
+        (insert outputstr)))))
+
+;; FIXME: Combine into single interface, wrapping with next character
+;;        Also, become syntax aware
 ;; wrap items in list b/w "("..")", defaulting to wrapping with quotes
-;;;###autoload (autoload 'nvp-list-wrap-quotes "nvp-edit")
 (nvp-wrap-list-items quotes :wrap ("\"" . "\""))
-
-;;;###autoload (autoload 'nvp-list-wrap-parens "nvp-edit")
 (nvp-wrap-list-items parens :wrap ("(" . ")"))
-
-;;;###autoload (autoload 'nvp-list-wrap-brackets "nvp-edit")
 (nvp-wrap-list-items brackets :wrap ("[" . "]"))
-
-;;;###autoload (autoload 'nvp-list-wrap-squiggles "nvp-edit")
 (nvp-wrap-list-items squiggles :wrap ("{" . "}"))
 
 ;; -------------------------------------------------------------------
@@ -253,39 +238,9 @@ Uses default vaules for `sp-pair-list'."
 ;; https://www.emacswiki.org/emacs/UnicodeEncoding
 ;; Read a unicode code point and insert said character.  Input uses
 ;; `read-quoted-char-radix' (set to 16 in build/nvp-encoding).
-;;;###autoload
 (defun nvp-unicode-insert (char)
   (interactive (list (read-quoted-char "Char: ")))
   (insert-char char))
-
-;; -------------------------------------------------------------------
-;;; Assorted
-
-;; Print counts of strings in region, with prefix dump at point
-;;;###autoload
-(defun nvp-stats-uniq (beg end &optional count-lines)
-  "Print counts (case-insensitive) of unique words in region BEG to END.
-With prefix COUNT-LINES count unique lines."
-  (interactive "r\nP")
-  (require 'nvp-hash)
-  (let ((ht (make-hash-table :test 'case-fold))
-        (lines (split-string
-                (buffer-substring-no-properties beg end) "\n" 'omit-nulls " "))
-        lst)
-    (if count-lines
-        (dolist (line lines)
-          (puthash line (1+ (gethash line ht 0)) ht))
-      ;; strip punctuation for words
-      (cl-loop for line in lines
-         as words = (split-string line "[[:punct:] \t]" 'omit " ")
-         when words
-         do (cl-loop for word in words
-               do (puthash word (1+ (gethash word ht 0)) ht))))
-    (maphash (lambda (key val) (push (cons val key) lst)) ht)
-    (setq lst (cl-sort lst #'> :key #'car))
-    (nvp-with-results-buffer nil
-      (pcase-dolist (`(,k . ,v) lst)
-        (princ (format "%d: %s\n" k v))))))
 
 (provide 'nvp-edit)
 ;;; nvp-edit.el ends here

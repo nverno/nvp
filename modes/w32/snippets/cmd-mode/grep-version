@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: grep version
+# key: grepv
+# --
+set "uri=$1"
+set "regex=$2"
+for /f "tokens=*" %%i in ('curl -Ls "%uri%" ^|
+                          grep -Poi -m 1 "%regex%"') do (
+    set "${3:=%%i}"$0
+)

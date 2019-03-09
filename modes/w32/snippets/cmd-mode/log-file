@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: logfile
+# key: logf
+# --
+set "logfile=%~dp0$1"
+set "defdir=%~dp0"
+set "defdir=%defdir:\=/%"
+if not exist "%logfile%" (
+    echo.-*- mode: compilation; default-directory: "%defdir%" -*->"%logfile%"
+)$0

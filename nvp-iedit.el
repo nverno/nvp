@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 04:55:02>
+;; Last modified: <2019-03-08 17:21:54>
 ;; Created: 22 August 2018
 
 ;;; Commentary:
@@ -22,7 +22,7 @@
 
 ;; Add iedit bindings
 (nvp-bind-keys iedit-mode-keymap
-  ("C-=" . nvp-iedit-expand))
+  ("C-=" . nvp-iedit-cycle-regions))
 
 ;; current level of iedit restriction: line, defun, buffer, region
 (defvar-local nvp-iedit-restriction 'buffer)
@@ -52,11 +52,18 @@
       (`(4)
        (setq nvp-iedit-restriction 'defun)
        (iedit-restrict-function))
-      (_)))
-  (nvp-msg "Toggle restrictions with \\[nvp-iedit-expand]" :delay 1 :keys t))
+      (_))
+    (nvp-msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
+      :delay 1 :keys t)))
+
+(defun nvp-cycle-actions (actions)
+  (let ((idx (or (get 'nvp-cycle-actions 'idx) 0)))
+    (funcall (nth idx actions))
+    (put 'nvp-cycle-actions 'idx (if (> (1+ idx) (length actions)) 0 (1+ idx)))))
 
 ;; allow expanding of restricted region when in `iedit-mode'
-(defun nvp-iedit-expand ()
+(defun nvp-iedit-cycle-regions ()
+  "Cycle `iedit-mode' region restrictions."
   (interactive)
   (when iedit-mode
     (let ((occ-regexp (iedit-current-occurrence-string)))

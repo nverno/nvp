@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: >> logfile
+# key: al
+# --
+>>"%${1:logfile}%"$0

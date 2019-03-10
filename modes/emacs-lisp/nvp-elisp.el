@@ -1,9 +1,8 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-08 15:09:54>
+;; Last modified: <2019-03-09 21:14:45>
 ;; URL: https://github.com/nverno/elisp-utils
-;; Package-Requires: 
 ;; Created: 31 October 2016
 
 ;;; Commentary:
@@ -127,16 +126,23 @@
 
 ;; Eval region from BEG to END if active, otherwise the last sexp.
 (defun nvp-elisp-eval-last-sexp-or-region (arg)
+  "Eval region if active, otherwise last sexp.
+If in `lisp-interaction-mode' or with prefix ARG, pretty-print the results."
   (interactive "P")
-  (if (and (mark) (use-region-p))
-      (eval-region (min (point) (mark)) (max (point) (mark)))
-    (let ((print-length (window-total-height))
-          (print-level))
-      (if arg (pp-eval-expression (pp-last-sexp))
-        (save-excursion
-          (pp-eval-expression (pp-last-sexp))))
-      (with-current-buffer "*Pp Eval Output*"
-        (display-buffer (current-buffer) t)))))
+  (let ((expr
+         (if (and (mark) (use-region-p))
+             (let ((beg (min (point) (mark)))
+                   (end (max (point) (mark))))
+               (save-restriction
+                 (narrow-to-region beg end)
+                 (read (current-buffer))))
+           (pp-last-sexp)))
+        (print-length (window-total-height))
+        (print-level))
+    (if arg (pp-eval-expression expr)
+      (when (eq 'lisp-interaction-mode major-mode)
+        (let ((standard-output (current-buffer)))
+          (pp (eval expr)))))))
 
 ;; Jump to end of line and try eval if not looking back at `)'.
 (defun nvp-elisp-eval-last-sexp-or-eol (arg)

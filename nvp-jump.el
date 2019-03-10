@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 17:30:41>
+;; Last modified: <2019-03-09 19:01:26>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -153,7 +153,7 @@ With prefix, pop other window, with double prefix, prompt for MODE."
       (nvp-display-location buff :buffer action)
       (with-current-buffer (current-buffer)
         (nvp-use-local-keymap :keymap (current-local-map)
-         ("C-c C-c" . kill-this-buffer)
+         ("C-c C-k" . kill-this-buffer)
          ("C-c C-s" . (lambda () (interactive)
                         (funcall (intern (nvp-read-mode)))))))
       (nvp-msg "Press \\[kill-this-buffer] to kill this buffer \

@@ -24,27 +24,88 @@ move_and_link() {
     done
 }
 
-remove_links() {
+_unlink() {
+    if [[ -L "$1" ]]; then
+        _log "unlinking $1"
+        rm "$1"
+    else
+        if [[ ! -e "$1" ]]; then
+            _log "$1 doesn't exist"
+        else
+            _log "$1 isn't a link"
+        fi
+    fi
+}
+
+##
+# @usage        unlink_all
+# @brief        Remove all subdir links from site-lisp
+##
+unlink_all() {
     local d
     
     for d in "$SITE_LISP/"*; do
         if [ -L "$d" ]; then
-            _log "removing $d"
-            rm "$d"
+            _unlink "$d"
         fi
     done
 }
 
-make_links() {
-    local d name
+##
+# @usage        unlink <mode>
+# @brief        Remove link from mode to site-lisp
+# @param        <mode> - name of mode's subdir 
+##
+unlink() {
+    [[ -z "$1" ]] && _error_exit "usage: unlink <mode>"
+    _unlink "$SITE_LISP/$1"
+}
+
+##
+# @usage        _link <directory>
+# @brief        Helper to create link from full path to site-lisp
+# @param        <directory> - full path to root directory to link to site-lisp 
+##
+_link() {
+    local name
+    if [[ -n "$1" && -d "$1" ]]; then
+        name="$(basename "$1")"
+        _log "linking $SITE_LISP/$name => $1"
+        ln -sfn "$1" "$SITE_LISP/$name"
+    else
+        _error_exit "$1 not found"
+    fi
+}
+
+##
+# @usage        link_all
+# @brief        Link all modes to site-lisp 
+##
+link_all() {
+    local d
     
     for d in "$SITE_LISP/nvp/modes/"*/; do
-        if [ -d "$d" ]; then
-            name="$(basename "$d")"
-            _log "linking $d => $SITE_LISP/$name"
-            ln -sfn "$d" "$SITE_LISP/$name"
-        fi
+        _link "$d"
     done
+}
+
+##
+# @usage        link <mode>
+# @brief        Link a mode to site-lisp
+# @param        <mode> - name of mode subdir to link 
+##
+link() {
+    [[ -z "$1" ]] && _error_exit "usage: link <mode>"
+    _link "$SITE_LISP/nvp/modes/$1"
+}
+
+##
+# @usage        clean_site
+# @brief        cleanup site-lisp dir, removing broken links. 
+##
+clean_site() {
+    cd "$SITE_LISP"
+    find -L . -name . -o -type d -prune -o -type l -exec rm {} +
 }
 
 ##
@@ -53,9 +114,12 @@ make_links() {
 usage() {
     cat <<EOF_HELP
 Usage: $0 [move|unlink|link] 
-       move	move tools to nvp and link to site-lisp
-       unlink   remove links from site-lisp
-       link	link from nvp/modes to site-lisp
+       move		move tools to nvp and link to site-lisp
+       unlink-all	remove links from site-lisp
+       link-all		link from nvp/modes to site-lisp
+       unlink		remove mode link from site-lisp
+       link		link mode subdir to site-lisp
+       clean		clean broken links from site-lisp
 EOF_HELP
 }
 
@@ -66,8 +130,11 @@ fi
 while (( "$#" )); do
     case "$1" in
         move) move_and_link;;
-        unlink) remove_links;;
-        link) make_links;;
+        unlink-all) unlink_all;;
+        link-all) link_all;;
+        unlink) shift && unlink "$1";;
+        link) shift && link "$1";;
+        clean) clean_site;;
         *) usage && exit 1;;
     esac
     shift

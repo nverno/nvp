@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 01:49:43>
+;; Last modified: <2019-03-15 12:58:47>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -112,10 +112,11 @@
 
 ;; build param strings: params range from BEG length LEN
 ;; each param is prepended by JOIN string
-(defsubst nvp-yas-param-str (beg len join)
+(defsubst nvp-yas-param-str (beg len join &optional fmt)
+  (or fmt (setq fmt "$%d"))
   (if (or (not len) (= len 0)) ""
     (concat join
-            (mapconcat (lambda (n) (format "$%d" n))
+            (mapconcat (lambda (n) (format fmt n))
                        (number-sequence beg (+ beg (1- len))) join))))
 
 ;; -------------------------------------------------------------------

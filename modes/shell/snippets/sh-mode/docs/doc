@@ -9,6 +9,6 @@
    (concat
     (format "##\n%-16s${1:`(nvp-parse-current-function)`}%s\n%-16s$0"
             "# @usage" (nvp-yas-param-str 3 npars " ") "# @brief")
-    (nvp-yas-param-str 3 npars (format "\n%-16s" "# @param"))
+    (nvp-yas-param-str 3 npars (format "\n%-16s" "# @param") "$%d - ")
     (format "${2:\n%-16s0 on success, 1 otherwise} " "# @return")
     "\n##")))

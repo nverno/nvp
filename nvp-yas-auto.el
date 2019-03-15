@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-05 13:57:26>
+;; Last modified: <2019-03-15 13:06:33>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -17,14 +17,15 @@
 (require 'nvp)
 (require 'yasnippet)
 
+;; TODO: optionally remove dirs of modes with no live buffers
 ;;;###autoload
 (defun nvp-yas-reload-all ()
-  "Reload modes' snippet tables."
+  "Reload modes' snippet tables, removing any that no longer exist."
   (interactive)
   (when (and nvp-snippet-dir (not (member nvp-snippet-dir yas-snippet-dirs)))
     (push nvp-snippet-dir yas-snippet-dirs))
-  (cl-loop for dir in yas-snippet-dirs
-     do (yas-load-directory dir)))
+  (setq yas-snippet-dirs (cl-remove-if-not #'file-exists-p yas-snippet-dirs))
+  (mapc #'yas-load-directory yas-snippet-dirs))
 
 ;; compile snippets, optionally compile all snippet subdirs in site-lisp addons
 ;;;###autoload

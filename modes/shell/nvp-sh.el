@@ -4,26 +4,8 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-08 05:32:59>
-;; Package-Requires: 
+;; Last modified: <2019-03-15 14:34:04>
 ;; Created:  5 December 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
@@ -237,7 +219,9 @@ Used to set `end-of-defun-function'."
       (add-hook 'completion-at-point-functions 'nvp-sh-dynamic-complete-vars nil t)))
   ;; use local version of `company-active-map' to rebind
   ;; functions to show popup help and jump to help buffer
-  (nvp-bindings "company-active-map" 'company :buff-local t
+  (make-local-variable 'company-active-map)
+  (nvp-bind-keys company-active-map
+    :predicate (keymapp company-active-map)
     ("M-h" . nvp-sh-quickhelp-toggle)
     ("C-h" . nvp-sh-company-show-doc-buffer))
   (cl-pushnew nvp-sh-company-backends company-backends)

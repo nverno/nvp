@@ -1,6 +1,6 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-09 06:18:40>
+;; Last modified: <2019-03-15 16:11:04>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
@@ -10,6 +10,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
+(require 'comint)
 (require 'nvp)
 
 ;; dont expand when prefixed by [-/_.]
@@ -17,6 +18,54 @@
 
 ;; -------------------------------------------------------------------
 ;;; Utils
+
+(defmacro nvp-shell-goto-command-start (start &optional limit delims)
+  "Move point to beginning of current command.
+START is the initial point, LIMIT is an optional search bound.
+DELIMS are chars that will delimit commands and won't be skipped outside of
+strings."
+  (or delims (setq delims "^)(|&\`;\["))
+  (macroexp-let2 nil limit limit
+   `(let (ppss done)
+      (while (and (not done) ,(if limit `(> (point) ,limit) t))
+        (skip-chars-backward ,delims ,(or limit '(line-beginning-position)))
+        (if (eq (char-before) ?\))
+            (forward-sexp -1)           ; jump back over a possible subshell
+          (setq ppss (parse-partial-sexp ,(or limit '(point-min)) (point)))
+          (cond
+           ;; presumably reached the beginning of a command
+           ((or (not (nth 3 ppss))
+                (eq (char-before) ?\`)
+                (and (eq (char-before) ?\()
+                     (eq (char-before (1- (point))) ?$)))
+            (setq done t))
+           ;; move backward out of enclosing string that shouldn't be a quoted
+           ;; command
+           (t (up-list -1 t t)))))
+      (skip-syntax-forward " " ,start))))
+
+;; -------------------------------------------------------------------
+;;; Things-at-point
+
+;; guess bounds from beginning of current command to end of symbol/word at point
+(defun nvp-shell-bounds-of-stmt-at-point ()
+  (save-excursion
+    (let* ((bol (comint-line-beginning-position))
+           (end (progn (skip-syntax-forward "w_\"") (point)))
+           (beg (progn (nvp-shell-goto-command-start end bol) (point))))
+      (cons beg end))))
+(put 'shell-stmt 'bounds-of-thing-at-point #'nvp-shell-bounds-of-stmt-at-point)
+
+;; bounds for current active shell command
+(defun nvp-shell-bounds-of-cmd-at-point ()
+  (save-excursion
+    (goto-char (car (bounds-of-thing-at-point 'shell-stmt)))
+    (skip-syntax-forward "\"")
+    (bounds-of-thing-at-point 'symbol)))
+(put 'shell-cmd 'bounds-of-thing-at-point #'nvp-shell-bounds-of-cmd-at-point)
+
+;; -------------------------------------------------------------------
+;;; Processes
 
 ;; return some available shells
 (defun nvp-shell-get-shells ()
@@ -39,6 +88,9 @@
                 (t (process-command proc)
                    (cl-find "-i" (process-command proc) :test 'string=))))
      return proc))
+
+;; -------------------------------------------------------------------
+;;; Aliases
 
 (defun nvp-shell-get-aliases (shell-cmd regex key val)
   "SHELL-CMD is a string passed to `call-process-shell-command' to print \

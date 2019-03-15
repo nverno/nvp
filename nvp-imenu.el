@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 20:11:35>
+;; Last modified: <2019-03-15 12:06:56>
 ;; Created: 25 January 2017
 
 ;;; Commentary:
@@ -35,6 +35,9 @@
 ;; sub-headers
 (defvar-local nvp-imenu-comment-headers-re-2 nil "Imenu sub-header regexp.")
 
+(defvar nvp-imenu-default-filter-regex (regexp-opt '("Headers" "Sub-Headers"))
+  "Regex to match sublist headers to filter out of cleaned imenu alist.")
+
 ;; -------------------------------------------------------------------
 ;;; Util
 ;; #<marker at 12739 in which-func.el.gz>
@@ -42,14 +45,23 @@
   (defmacro ido/imenu ()
     (if (featurep 'idomenu) '(idomenu) '(imenu))))
 
+(defun nvp-imenu-filter-regex (regex &optional alist)
+  "Remove entries from ALIST matching REGEX."
+  (cl-remove-if (apply-partially #'string-match-p regex) alist :key #'car))
+
 (defun nvp-imenu-sort-relative-positions (marker alist)
   "Sort imenu entries so those closest in the buffer are first."
   (cl-sort alist (apply-partially #'nvp-imenu--relative-positions marker)))
 
-(defun nvp-imenu-cleaned-alist (&optional alist)
+(defun nvp-imenu-cleaned-alist (&optional regex alist)
   "Flatten imenu alist, remove headers and things that don't look like code."
+  (or regex (setq regex nvp-imenu-default-filter-regex))
+  (or alist (setq alist imenu--index-alist))
   (cl-remove-if-not
-   #'nvp-imenu-maybe-code-p (nvp-list-flatten (or alist imenu--index-alist))))
+   #'nvp-imenu-maybe-code-p
+   (nvp-list-flatten (if (and regex (stringp regex))
+                         (nvp-imenu-filter-regex regex alist)
+                       alist))))
 
 (defun nvp-imenu-maybe-code-p (elem)
   "Filter out probable non code things."

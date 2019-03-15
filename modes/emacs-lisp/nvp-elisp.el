@@ -1,14 +1,11 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-15 09:34:33>
-;; URL: https://github.com/nverno/elisp-utils
+;; Last modified: <2019-03-15 11:49:19>
+;; URL: https://github.com/nverno/nvp
 ;; Created: 31 October 2016
 
 ;;; Commentary:
-
-;; FIXME:
-;; - imenu filter out package related headers
 
 ;;; Code:
 (eval-when-compile
@@ -303,19 +300,25 @@ If in `declare-function', convert to autoload."
 ;; ------------------------------------------------------------
 ;;; Imenu
 
-;; TODO: filter out package fluff
 (eval-and-compile
-  (nvp-defvar nvp-elisp-imenu-comment-headers
+  (nvp-setq nvp-elisp-imenu-comment-headers
    (let* ((prefix "^;;\\(?:;\\|[*]+\\| |\\)\\s-*")
-          (hdr (concat prefix "\\([^#].*\\)\\s-*$"))
-          (_pkg-hdrs
+          (hdr-regex (concat prefix "\\([^#].*\\)\\s-*$"))
+          (pkg-hdrs
            (concat prefix "\\("
                    (regexp-opt '("Commentary:" "Code:" "Documentation:"
                                  "History:" "ChangeLog:" "Change Log:"))
                    "\\|.*\\.el\\)")))
-     `((nil ,hdr 1))))
+     ;; don't include default package headers, beginning/end of file
+     `((nil (lambda ()
+              (cl-block nil
+                (while (and (not (bobp))
+                            (re-search-backward ,hdr-regex nil t))
+                  (unless (looking-at-p ,pkg-hdrs)
+                    (cl-return t)))))
+            1))))
 
- (nvp-defvar nvp-elisp-imenu-comment-headers-1
+ (nvp-setq nvp-elisp-imenu-comment-headers-1
    `(("Headers" ,(cadar nvp-elisp-imenu-comment-headers) 1)
      ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)))
 

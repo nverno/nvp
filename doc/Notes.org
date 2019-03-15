@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-15 09:30:45>
+#+DATE: <2019-03-15 12:17:14>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -44,10 +44,11 @@
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
 
-** Bin helpers [0/3]
+** Bin helpers [0/4]
 - [ ] awk script to parse man switches in section
 - [ ] remove local vars from all files from current directory
 - [ ] get using from script args
+- [ ] update URLs
 
 ** evil [1/9]
 - [ ] define command
@@ -300,7 +301,7 @@ Separators,
 - [ ] setup REPL config
 - [ ] generic switching function
 
-*** TODO Parse [0/4]
+*** TODO Parse [0/5]
 - [ ] current function
 - [ ] buffer functions
 - [ ] current module
@@ -377,12 +378,12 @@ Separators,
 - [ ] external install targets
 - [ ] define mode-local variables?
 
-* Automation [2/7]
+* Automation [3/7]
 - [ ] ggtags install
 - [ ] hooks to compile/autoload updated packages
 - [ ] better logging - only want to see warnings/errors during build
-- [ ] update makefiles - remove extra stuff
 - [ ] update build-scripts for init / site-lisp - refactor
+- [X] update makefiles - remove extra stuff
 - [X] gawk installs
 - [X] asm install
 
@@ -412,18 +413,20 @@ Separators,
 - [X] separate setup from nvp
 - [X] remove nvp-conf / merge with config-tools
 
-* Merge/remove old packages [3/11]
+* Merge/remove old packages
 - [ ] bmk-to-bmk => nvp-bookmark
 - [ ] esh-help => nvp-eshell
 - [ ] project-templates => cookiecutter?
-- [ ] project-ido => cookiecutter?
-- [ ] cheatsheet-lookup => nvp-help
-- [X] yas-capf => nvp-snippet
-- [ ] save-utils => nvp-utils
-- [X] log-utils => nvp-log
-- [ ] help-utils => nvp-help
 - [ ] tag-utils => nvp-tags
+- [X] project-ido => cookiecutter?
+- [X] yas-capf => nvp-snippet
+- [X] save-utils => nvp-utils
+- [X] log-utils => nvp-log
 - [X] config-tools => nvp-conf
+** Merge help packages [0/3]
+- [ ] cheatsheet-lookup
+- [ ] help-utils
+- [ ] hyperglot
 
 * Tests / Profile [2/4]
 - [ ] update profiling script

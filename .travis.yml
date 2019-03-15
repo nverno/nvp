@@ -19,15 +19,12 @@ install:
       sudo apt-get -qq install emacs-snapshot &&
       sudo apt-get -qq install emacs-snapshot-el;
     fi
-  - $EMACS --version
   
 script:
-  - $EMACS --batch -L . -f batch-byte-compile nvp.el
-  - $EMACS -batch -L . -l ert -l test/nvp-tests.el -f  ert-run-tests-batch-and-exit
+  - $EMACS --version
+  - make test
 
 notifications:
   email:
     on_success: never
     on_failure: always
-
-      

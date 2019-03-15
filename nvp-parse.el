@@ -2,15 +2,19 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-15 08:55:06>
+;; Last modified: <2019-03-15 12:10:46>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
 
 ;;; Commentary:
-;; #<marker at 10467 in which-func.el.gz>
+
 ;; TODO:
-;; cache values by window -- see which-func
+;; - cache values by window -- see which-func
+;; #<marker at 10467 in which-func.el.gz>
+;; - use sematic when tags available:
+;; #<marker at 19142 in semantic/imenu.el.gz>
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -27,7 +31,8 @@
    "Create imenu index alist if possible."
    `(ignore-errors
       (when (and (fboundp 'imenu--make-index-alist) (null imenu--index-alist))
-        (imenu--make-index-alist 'noerror)))))
+        (setq imenu--index-alist
+              (save-excursion (funcall imenu-create-index-function)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Generics
@@ -63,12 +68,10 @@ Additionally recognized ARGS to specify locations to gather functions from:
 (cl-defgeneric nvp-parse-current-function (&rest _args)
   "Default method to get name of function containing point.
 First tries closest imenu entry, then `add-log-current-defun'."
-  (unless (add-log-current-defun)
-    (nvp--parse-ensure-imenu)
-    (let ((func (nvp-imenu-sort-relative-positions
-                 (point) (nvp-imenu-cleaned-alist))))
-      (if func (caar func)
-        (add-log-current-defun)))))
+  (nvp--parse-ensure-imenu)
+  (let ((func (nvp-imenu-sort-relative-positions (point) (nvp-imenu-cleaned-alist))))
+    (if func (caar func)
+      (add-log-current-defun))))
 
 (cl-defgeneric nvp-parse-library (&rest _args)
   "Generic function to return the name of the current library, module, ..."

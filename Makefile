@@ -64,15 +64,20 @@ ${PKG}-autoloads.el: ${EL} ## Generate package autoloads
 	(setq find-file-visit-truename t)                          \
 	(update-directory-autoloads default-directory))"
 
+TAGS: ${EL}
+	$(RM) $@
+	@touch $@
+	ls $(EL) | xargs $(ETAGS) -a -o $@
+
 .PHONY: clean distclean
 clean:  ## clean temp files
 	$(RM) *~ \#.*\#
 
 distclean: clean ## clean all generated files including compiled & autoloads
-	$(RM) *loaddefs?.el *autoloads.el
+	$(RM) *loaddefs?.el *autoloads.el TAGS GPATH GTAGS
 
 .PHONY: help
 help:  ## Show help for targets
 	@grep -E '^[/.%0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-	| sort | ${AWK}                                           \
+	| sort | ${AWK} \
 	'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

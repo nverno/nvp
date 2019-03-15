@@ -3,6 +3,7 @@ EMACS ?= emacs
 AWK   ?= gawk
 SED   ?= sed
 CASK  ?= cask
+ETAGS ?= etags
 
 PKG = nvp
 EL  = $(filter-out %-autoloads.el, $(wildcard *.el))

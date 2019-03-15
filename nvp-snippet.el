@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-06 22:47:52>
+;; Last modified: <2019-03-15 01:58:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -95,6 +95,27 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;; -------------------------------------------------------------------
 ;;; Commands
 
+(defun nvp-snippet-toggle-indent (&optional beg end)
+  "Switch b/w lisp indentation and relative indentation."
+  (interactive)
+  (let* ((iline (if (eq indent-line-function 'lisp-indent-line)
+                    'indent-relative 'lisp-indent-line))
+         (iregion (if (eq indent-region-function 'lisp-indent-region)
+                      'indent-region-line-by-line 'lisp-indent-region)))
+    (if (region-active-p)
+        (setq beg (or beg (region-beginning))
+              end (or end (region-end)))
+     (setq beg (point-min) end (point-max)))
+   (setq-local indent-line-function iline)
+   (setq-local indent-region-function iregion)
+   (indent-region beg end)))
+
+(defun nvp-snippet-indent-line ()
+  (interactive)
+  (condition-case nil
+      (funcall-interactively indent-line-function)
+    (error (indent-relative))))
+
 ;; de/in-crement snippet expansion numbers in selected region
 (defun nvp-snippet-increment-count (bounds)
   (interactive (list (nvp-region-or-batp)))
@@ -118,9 +139,9 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;; stuff to be evaluated once when file is loaded
 ;; "'" should be prefix to enable quote wrapping etc.
 (modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
-(modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
-(modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
-(modify-syntax-entry ?\" "_" snippet-mode-syntax-table)
+;; (modify-syntax-entry ?\" "_" snippet-mode-syntax-table)
+;; (modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
+;; (modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
 
 (nvp-define-cache nvp-snippet-header-end ()
   "Return marker at end of snippet header."
@@ -145,43 +166,33 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
      '("-*- mode: snippet -*-")
      (mapcar
       #'(lambda (x) (concat x ": "))
-      '("key" "content" "name" "condition" "expand-env" "load-file"
-        "save-file" "keybinding" "uuid" "menu-binding-pair" "group"
-        "perm-group" "table")))))
+      '("key" "name" "condition" "expand-env" "uuid" "group" "type")))))
 
 (defvar nvp-snippet--env-vars
   '("((yas-indent-line 'fixed))" "((yas-wrap-around-region 'nil))"))
 
-;; check if should complete
-(defun nvp-snippet--region-p ()
-  (< (point) (save-excursion
-               (goto-char (point-min))
-               (search-forward "# --" nil t))))
-
-(defun nvp-snippet--field (field)
-  (and (nvp-snippet--region-p)
-       (save-excursion
-         (beginning-of-line)
-         (looking-at-p (concat "^#\\s-*" field)))))
-
-;;;###autoload
+;; completion at point, use yas headers in header section, elisp capf otherwise
 (defun nvp-snippet-capf ()
-  (save-excursion
-    (skip-chars-forward "^\n()")
-    (let ((end (point))
-          (_ (skip-chars-backward "^\n#: "))
-          (start (point)))
-      (skip-chars-backward " ")
-      (cond
-       ((eq (char-before) ?#)
-        (list start end nvp-snippet--field-vars))
-       ((nvp-snippet--field "expand-env:")
-        (list start end nvp-snippet--env-vars))))))
-
-;;;###autoload
-(add-hook 'snippet-mode-hook
-          #'(lambda ()
-              (add-hook 'completion-at-point-functions 'nvp-snippet-capf nil t)))
+  (if (nvp-snippet-header-p)
+      (save-excursion
+        (let* ((end (point))
+               (beg (progn (skip-syntax-backward "w_") (point)))
+               (field (progn
+                        (forward-line 0)
+                        (and (looking-at "^#\\s-*\\([^: \n]+\\)\\s-*:?")
+                             (match-string-no-properties 1))))
+               (colon-p (and field (eq ?: (char-before (match-end 0))))))
+          (goto-char beg)
+          (skip-chars-backward " ")
+          (cond
+           ((eq (char-before) ?#)
+            (list beg end nvp-snippet--field-vars))
+           ((and colon-p (not (eq end beg)))
+            (pcase field
+              (`"expand-env" (list beg end nvp-snippet--env-vars))
+              (`"type" (list beg end '("snippet" "command")))))
+           ((not colon-p) (list beg end nvp-snippet--field-vars)))))
+    (elisp-completion-at-point)))
 
 (provide 'nvp-snippet)
 ;;; nvp-snippet.el ends here

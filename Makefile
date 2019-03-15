@@ -1,3 +1,4 @@
+-include config.mk
 include default.mk
 
 .PHONY: test

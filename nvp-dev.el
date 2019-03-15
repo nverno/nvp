@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-14 19:02:53>
+;; Last modified: <2019-03-14 23:22:28>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -19,23 +19,12 @@
 (require 'nvp-display)
 (require 'help-mode)
 (nvp-declare "nadvice" advice-mapc advice-remove)
-(nvp-declare "ert" ert-run-tests-interactively)
 (nvp-autoload "nvp-string" nvp-s-wrap nvp-s-center nvp-s-repeat)
 
 (define-button-type 'help-marker
   :supertype 'help-xref
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
-
-;;;###autoload
-(defun nvp-ert-run-tests ()
-  "Run ert tests.
-With prefix ARG, prompt for selector."
-  (interactive)
-  (if (not (require 'ert nil t))
-      (user-error "`ert' must be loaded to run this function")
-    (eval-buffer (current-buffer))
-    (call-interactively 'ert-run-tests-interactively)))
 
 ;;;###autoload
 (defun nvp-advice-remove-all (sym)

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: template
+# name: define-template
 # binding: C-c C-t
 # --
 define ${1:PROGRAM$(upcase yas-text)}_template

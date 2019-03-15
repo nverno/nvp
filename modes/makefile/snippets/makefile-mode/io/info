@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: info
+# key: ii
+# --
+$(info $0)

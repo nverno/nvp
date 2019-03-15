@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-09 05:25:55>
+#+DATE: <2019-03-15 02:10:18>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -286,7 +286,10 @@ Separators,
 - [ ] parse typescript for builtin sigs/docs/names
 - [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
 
-** sh [0/5]
+** Perl [0/1]
+
+*** TODO newline [/]
+** sh [1/5]
 - [X] prefix hippie-shell-expand functions
 - [ ] parse sh function documentation
 - [ ] fix comanpy-active-map
@@ -294,8 +297,8 @@ Separators,
 - [ ] capf for lexical scoped variables
 - [ ] merge capf bash-completion/variable-completion, maybe
   ~completion-merge-tables~ from minibuffer
-*** TODO Snippets [0/1]
-- [ ] split sh usage arguments in snippets
+*** DONE Snippets [1/1]
+- [X] split sh usage arguments in snippets
 
 *** TODO Jumps [0/1]
 - [ ] xref for company-bash sources, or configure tags properly

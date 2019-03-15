@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-08 05:16:41>
+;; Last modified: <2019-03-15 02:12:31>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  8 March 2019
@@ -23,6 +23,7 @@
 (defvar nvp-perltidy-args '("-st" "-se")
   "Args to pass to perltidy. Defaults send outputs to stdout/stderr.")
 
+;; FIXME: abstract out buffer with preview changes -- same as org/yaml-src etc.
 ;;;###autoload
 (defun nvp-perltidy-dwim (arg)
   "Tidy active region, current defun, or entire buffer.

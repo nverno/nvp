@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 04:50:34>
+;; Last modified: <2019-03-14 23:21:59>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 18 January 2017
@@ -15,6 +15,7 @@
   (require 'cl-lib)
   (require 'subr-x))
 (require 'nvp-project)
+(nvp-declare "ert" ert-run-tests-interactively)
 
 ;; called when visiting new test buffer, passed name of matching source file
 (defvar nvp-test-init-function 'ignore)
@@ -32,6 +33,16 @@
 
 ;; -------------------------------------------------------------------
 ;;; TODO: Default unit test runner
+
+;;;###autoload
+(defun nvp-ert-run-tests ()
+  "Run ert tests.
+With prefix ARG, prompt for selector."
+  (interactive)
+  (if (not (require 'ert nil t))
+      (user-error "`ert' must be loaded to run this function")
+    (eval-buffer (current-buffer))
+    (call-interactively 'ert-run-tests-interactively)))
 
 ;; -------------------------------------------------------------------
 ;;; Find test files 

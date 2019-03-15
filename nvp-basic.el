@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 05:35:46>
+;; Last modified: <2019-03-14 22:48:19>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -271,6 +271,18 @@ With double prefix, highlight changes that would occur."
                        (set-keymap-parent map oldmap)
                        (push `(,mode . ,map) minor-mode-overriding-map-alist)))))
     (define-key newmap key def)))
+
+;; -------------------------------------------------------------------
+;;; Hooks
+
+;; Added to `find-file-not-found-functions'. Create new directories for new files.
+(defun nvp-find-create-directory ()
+  (let ((parent-directory (file-name-directory buffer-file-name)))
+    (when (and (not (file-exists-p parent-directory))
+               (y-or-n-p 
+		(format "directory `%s' does not exist! create it?" 
+			parent-directory)))
+      (make-directory parent-directory t))))
 
 (provide 'nvp-basic)
 ;;; nvp-basic.el ends here

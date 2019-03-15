@@ -1,8 +1,14 @@
 # -*- mode: snippet -*-
 # name: doc
-# key: doc
+# key: doc 
+# type: command
 # --
-##
-# @info         $0`(dotimes (n (read-number "Pars: "))(insert (format "\n# @param        $%s" (+ 2 n))))`${1:
-# @return       0 on success, 1 otherwise}
-##
+(let ((yas-good-grace nil)
+      (npars (read-number "Number params: ")))
+  (yas-expand-snippet
+   (concat
+    (format "##\n%-16s${1:`(nvp-parse-current-function)`}%s\n%-16s$0"
+            "# @usage" (nvp-yas-param-str 3 npars " ") "# @brief")
+    (nvp-yas-param-str 3 npars (format "\n%-16s" "# @param"))
+    (format "${2:\n%-16s0 on success, 1 otherwise} " "# @return")
+    "\n##")))

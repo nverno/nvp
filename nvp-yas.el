@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-09 06:38:20>
+;; Last modified: <2019-03-15 01:49:43>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -109,6 +109,14 @@
 ;; name of current function or script
 (defun nvp-yas-function-or-script ()
   (or (nvp-parse-current-function) (nvp-bfn 'no-ext 'or-buff)))
+
+;; build param strings: params range from BEG length LEN
+;; each param is prepended by JOIN string
+(defsubst nvp-yas-param-str (beg len join)
+  (if (or (not len) (= len 0)) ""
+    (concat join
+            (mapconcat (lambda (n) (format "$%d" n))
+                       (number-sequence beg (+ beg (1- len))) join))))
 
 ;; -------------------------------------------------------------------
 ;;; Or patterns

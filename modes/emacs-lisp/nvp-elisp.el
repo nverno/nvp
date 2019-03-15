@@ -1,14 +1,13 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-09 21:14:45>
+;; Last modified: <2019-03-15 02:29:03>
 ;; URL: https://github.com/nverno/elisp-utils
 ;; Created: 31 October 2016
 
 ;;; Commentary:
 
-;;; FIXME:
-;; - update / remove macroify
+;; FIXME:
 ;; - update provides?
 ;; - imenu filter out package related headers
 
@@ -22,8 +21,6 @@
 (declare-function nvp-toggle-local-variable "nvp-toggle")
 (nvp-declare "company-elisp" company-elisp--candidates-predicate
   company-elisp--fns-regexp company-grab-symbol)
-
-(nvp-package-define-root :snippets t)
 
 ;; -------------------------------------------------------------------
 ;;; Util
@@ -85,8 +82,7 @@
   (&context (major-mode emacs-lisp-mode) &rest _args)
   (or (add-log-current-defun) (cl-call-next-method)))
 
-;; -------------------------------------------------------------------
-;;; FIXME: functions to fix or remove
+;; FIXME: functions to fix or remove
 ;; remove this? can be found from `load-history'
 (defun nvp-elisp-provide-name ()
   (save-excursion
@@ -94,32 +90,6 @@
     (when (re-search-forward
            "\\<provide\\>[ \t']+\\([-0-9A-Za-z]+\\)" nil t)
       (match-string-no-properties 1))))
-
-;;; FIXME: update or remove
-;; convert selected bindings to macro form and align
-(defun nvp-macroify-bindings (start end)
-  (interactive "r")
-  (goto-char start)
-  (let ((map (save-excursion
-               (when (re-search-forward "\\([a-zA-Z0-9-]+\\)-map"
-                                        end t)
-                 (match-string-no-properties 1)))))
-    (when map
-      (let (binds)
-        (while (re-search-forward
-                "\\(\"[^\"]+\"\\))?[\n\t ]*[#']*\\([a-zA-Z0-9-]+\\)"
-                end t)
-          (push (format "(%s . %s)"
-                        (match-string-no-properties 1)
-                        (match-string-no-properties 2))
-                binds))
-        (goto-char start)
-        (insert (concat "(nvp-bindings \"" map "\" nil \n  "
-                        (mapconcat 'identity (nreverse binds) "\n  ")
-                        ")\n"))
-        (goto-char start)
-        (mark-sexp)
-        (align-regexp (region-beginning) (region-end) "\\(\\s-*\\)\\. ")))))
 
 ;; ------------------------------------------------------------
 ;;; Eval

@@ -1,8 +1,7 @@
 ;; -*- coding: utf-8; -*-
 
 (define-abbrev-table 'cperl-mode-abbrev-table
-  '(
-    ("_" "$_" nil :system t)
+  '(("_" "$_" nil :system t)
 
     ("my" "my $" nvp-perl-my-toggle :system t)
     ("pr" "print" nil :system t)

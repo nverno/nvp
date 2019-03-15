@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-15 02:10:18>
+#+DATE: <2019-03-15 05:25:07>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -44,7 +44,7 @@
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
 
-** Bin helpers [0/2]
+** Bin helpers [0/3]
 - [ ] awk script to parse man switches in section
 - [ ] remove local vars from all files from current directory
 - [ ] get using from script args
@@ -95,7 +95,6 @@ Not sure how this should work.
 - [X] generic methods
 - [X] method to match delims
 - [ ] method to do comment continuations
-- [ ] remove mode specific newline functions
 
 ** Tests [0/4] 
 - [ ] generic at point
@@ -140,26 +139,26 @@ see which-func
 - [ ] info files
 - [ ] sh script parser like semantic/ia-doc for commented functions
 
-** Completion [0/2]
+** Completion [1/2]
 - [ ] edebug -- possibly favor local variable completion?
 - [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L475][dabbrev-capf?]]
 *** TODO company-bash [0/2]
 - [ ] don't leave includes open
 - [ ] create xrefs from imenu markers
 
-*** TODO snippet completion [2/3]
+*** DONE snippet completion [3/3]
 - [X] basic head completion => merge yas-capf
-- [ ] elisp completion where appropriate
+- [X] elisp completion where appropriate
 - [X] elisp-xref backend
 
-** Dired [0/1]
+** Dired [0/2]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L280][fix rsync]]
 - [ ] pass numeric prefix to copy/rename???
 
 * Modes
 ** elisp [0/5]
-*** TODO General [0/2]
-- [ ] macroify-bindings update => elisp
+*** TODO General [1/2]
+- [X] macroify-bindings update => elisp
 - [ ] fix hippie - adds extra ')' when no match
 
 *** TODO Align [0/1]
@@ -191,7 +190,7 @@ Use ~load-history~
 *** TODO install [0/1]
 - [ ] cleanup includes/irony install
 
-*** TODO Project [0/1]
+*** TODO Project [0/2]
 - [ ] use EDE?
 - [ ] srecode templates
 
@@ -286,9 +285,21 @@ Separators,
 - [ ] parse typescript for builtin sigs/docs/names
 - [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
 
-** Perl [0/1]
+** Perl [1/6]
+*** TODO General [0/1]
+- [ ] cache module paths
+*** DONE newline
+*** TODO HAP [0/1]
+- [ ] perldoc to popup
+*** TODO REPL [0/3]
+- [ ] choose / install REPL
+- [ ] setup REPL config
+- [ ] generic switching function
+*** TODO Completion [0/1]
+- [ ] get company-plsense working?
+*** TODO Tests [0/1]
+- [ ] simple test setup
 
-*** TODO newline [/]
 ** sh [1/5]
 - [X] prefix hippie-shell-expand functions
 - [ ] parse sh function documentation

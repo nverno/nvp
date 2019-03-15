@@ -2,14 +2,19 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-09 06:40:20>
+;; Last modified: <2019-03-15 05:06:53>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
 
-;;; TODO
+;; TODO:
 ;; - align rules and remove cleanup
 ;; - fix yas expansions that add deps
+;; - beginning/end of defun functions
+;; - font-lock for info/warning?
+;; FIXME:
+;; - collect remote info async
+;; -
 
 ;;; Code:
 (eval-when-compile
@@ -19,8 +24,6 @@
   (require 'cl-lib))
 (require 'nvp)
 (require 'make-mode)
-
-(nvp-package-define-root :snippets t)
 
 ;; -------------------------------------------------------------------
 ;;; Util
@@ -39,6 +42,7 @@
 
 ;; ------------------------------------------------------------
 ;;; Web topics
+;; FIXME: run async
 
 ;; collect matches from url
 (defun nvp-makefile-collect-topics (url regex)
@@ -150,8 +154,7 @@ Skips to end of tabbed block."
     (goto-char (point-min))
     (unless (re-search-forward (concat "^" program) nil t)
       (goto-char (point-min))
-      (insert (format "%s %s= %s\n" program (if ifdef "?" "")
-                      (or value program))))))
+      (insert (format "%s %s= %s\n" program (if ifdef "?" "") (or value program))))))
 
 (defun nvp-makefile-add-target (target)
   ;; annoying to try to track additions/deletions
@@ -184,7 +187,7 @@ Skips to end of tabbed block."
                              (nconc deps (cons dep nil)) " ")))))))
 
 ;; -------------------------------------------------------------------
-;;-- Indent 
+;;; Indent 
 
 (defvar nvp-makefile-indent-offset 2)
 
@@ -238,23 +241,15 @@ Skips to end of tabbed block."
     (when target
       (nvp-makefile-add-dep ".PHONY" target 'toggle))))
 
-;; -------------------------------------------------------------------
-;;; Run 
+;;; Compile
 
-;;;###autoload
-(defun nvp-makefile-make-and-reload ()
-  "Make and reload autoloads."
-  (interactive)
-  (call-process "make" nil 0 nil "-k")
-  (let ((file (car (directory-files (expand-file-name ".") t "autoloads.el"))))
-    (load-file file)))
-
-(defun nvp-makefile-save-and-compile ()
-  (interactive)
+(defun nvp-makefile-save-and-compile (&optional arg)
+  "Save and compile.
+With prefix ARG, run `helm-make'."
+  (interactive "P")
   (save-buffer)
-  (if current-prefix-arg
-      (call-interactively 'helm-make)
-    (call-interactively 'compile))
+  (if arg (call-interactively 'helm-make)
+    (call-interactively 'nvp-compile))
   (pop-to-buffer next-error-last-buffer))
 
 ;; ------------------------------------------------------------

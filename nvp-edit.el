@@ -1,6 +1,6 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-09 06:45:37>
+;; Last modified: <2019-03-15 05:12:45>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -152,16 +152,16 @@ is useful, e.g, for use with `visual-line-mode'."
                       nil 2)
       (align-regexp beg end (concat "\\(\\s-*\\)\\(?://\\|/\\*\\)")))))
 
-;;;###autoload (autoload 'nvp-align-backslash "nvp-edit")
-(nvp-align-fn nvp-align-backslash
-  "Align backslashes at end of line in region."
-  "\\(\\s-*\\)\\\\$")
-
-;;;###autoload (autoload 'nvp-align-hash "nvp-edit")
-(nvp-align-fn nvp-align-hash nil "\\(\\s-*\\)#")
-
-;;;###autoload (autoload 'nvp-align-= "nvp-edit")
-(nvp-align-fn nvp-align-= nil "\\(\\s-*\\)=")
+;;;###autoload
+(defun nvp-align-by-last-char (char &optional beg end)
+  "Align BEG to END or bounds of paragraph by CHAR.
+With prefix or if char is '\\', ensure CHAR is at the end of the line."
+  (interactive
+   (cl-destructuring-bind (beg . end) (nvp-region-or-batp 'paragraph)
+     (list (nvp-last-command-char 'strip) beg end)))
+  (let ((re (concat "\\(\\s-+\\)" (regexp-quote char)
+                    (if (or current-prefix-arg (string= char "\\")) "$" ""))))
+    (align-regexp beg end re)))
 
 ;; -------------------------------------------------------------------
 ;;; Wrap text
@@ -182,7 +182,8 @@ is useful, e.g, for use with `visual-line-mode'."
   "Wrap next sexp with CHAR (last key pressed in calling command).
 Override default `sp-pair-list' if CHAR isn't a leading member.
 Prefix arg is passed to SP, wrapping the next _ARG elements."
-  (interactive (list (nvp-last-command-char 'strip) current-prefix-arg))
+  (interactive
+   (list (nvp-last-command-char 'strip) current-prefix-arg))
   (let ((sp-pair-list
          (if (not (cl-member char sp-pair-list :test #'string= :key #'car))
              `((,char . ,char))
@@ -196,22 +197,17 @@ Prefix arg is passed to SP, wrapping the next _ARG elements."
 ;; Adds commas after numbers in list, like matlab -> R.
 (defun nvp-list-insert-commas (str &optional from to)
   (interactive
-   (if (region-active-p)
-       (list nil (region-beginning) (region-end))
-     (let ((bds (bounds-of-thing-at-point 'paragraph)))
-       (list nil (car bds) (cdr bds)))))
-  (let (workonstringp inputstr outputstr)
-    (setq workonstringp (if str t nil))
-    (setq inputstr (if workonstringp str
-                     (buffer-substring-no-properties from to)))
-    (setq outputstr
-	  (replace-regexp-in-string "\\([0-9]\\)\\s " "\\1," inputstr))
-    (if workonstringp
-        outputstr
+   (cl-destructuring-bind (from . to) (nvp-region-or-batp 'paragraph)
+     (list nil from to)))
+  (let ((res
+         (replace-regexp-in-string
+          "\\([0-9]\\)\\s-+" "\\1, "
+          (or str (buffer-substring-no-properties from to)))))
+    (if str res
       (save-excursion
         (delete-region from to)
         (goto-char from)
-        (insert outputstr)))))
+        (insert res)))))
 
 ;; FIXME: Combine into single interface, wrapping with next character
 ;;        Also, become syntax aware

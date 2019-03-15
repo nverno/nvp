@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-14 23:22:28>
+;; Last modified: <2019-03-15 04:27:41>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -10,7 +10,6 @@
 ;; TODO:
 ;; - function to remove all methods from generic
 ;; - how to remove all notifications (filenotify) without storing them?
-;; - activate ert when in test buffer, otherwise try project build test?
 
 ;;; Code:
 (eval-when-compile
@@ -31,6 +30,14 @@
   "Remove all advice from SYM."
   (interactive "aFunction: ")
   (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
+
+;;;###autoload
+(defun nvp-dev-make-and-reload ()
+  "Make and reload package autoloads."
+  (interactive)
+  (call-process "make" nil 0 nil "-k")
+  (let ((file (car (directory-files (expand-file-name ".") t "autoloads.el"))))
+    (load-file file)))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax

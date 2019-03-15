@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-15 02:29:03>
+;; Last modified: <2019-03-15 07:55:07>
 ;; URL: https://github.com/nverno/elisp-utils
 ;; Created: 31 October 2016
 
@@ -78,18 +78,40 @@
 ;; -------------------------------------------------------------------
 ;;; Generics
 
+;; return forms defined in FILENAME
+(defsubst nvp-elisp--file-forms (filename)
+  (cl-assoc (regexp-quote filename) load-history :test #'string-match-p))
+
+;; collect forms whose car is a member of ELEMS
+(defsubst nvp-elisp--filter-forms (elems filename)
+  (cl-loop for elt in (nvp-elisp--file-forms filename)
+     when (and (consp elt) (memq (car elt) elems))
+     collect (if (consp (cdr elt)) (cadr elt) (cdr elt))))
+
+(defmacro nvp-elisp--get-forms (elems args)
+  "Filter matching ELEMS from file's forms (possibly loading file).
+Forms are read from :filename if present in ARGS, otherwise current buffer file."
+  (declare (indent defun) (debug defun))
+  (macroexp-let2 nil pargs args
+    `(let ((filename (plist-get :filename ',pargs)))
+       (and filename (plist-get :do-load ',pargs)
+            (load-file filename))
+       (nvp-elisp--filter-forms ,elems (or filename (buffer-file-name))))))
+
 (cl-defmethod nvp-parse-current-function
   (&context (major-mode emacs-lisp-mode) &rest _args)
   (or (add-log-current-defun) (cl-call-next-method)))
 
-;; FIXME: functions to fix or remove
-;; remove this? can be found from `load-history'
-(defun nvp-elisp-provide-name ()
-  (save-excursion
-    (goto-char (point-min))
-    (when (re-search-forward
-           "\\<provide\\>[ \t']+\\([-0-9A-Za-z]+\\)" nil t)
-      (match-string-no-properties 1))))
+;; file could have multiple provides
+(cl-defmethod nvp-parse-library
+  (&context (major-mode emacs-lisp-mode) &rest args)
+  (when-let* ((libs (nvp-elisp--get-forms '(provide) args)))
+    (if (= 1 (length libs)) (car libs) libs)))
+
+;; (cl-defmethod nvp-parse-includes
+;;   (&context (major-mode emacs-lisp-mode) &rest _args)
+;;   (cl-loop for elt in (nvp-elisp--file-forms (buffer-file-name))
+;;        when (and (consp elt) (eq 'require (car elt)))))
 
 ;; ------------------------------------------------------------
 ;;; Eval

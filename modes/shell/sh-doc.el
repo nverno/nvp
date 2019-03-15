@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-02-25 01:56:33>
+;; Last modified: <2019-03-15 07:01:23>
 ;; Created: 17 August 2018
 
 ;;; Commentary:
@@ -14,12 +14,13 @@
 (require 'sh-script)
 
 (eval-and-compile
-  (defvar sh-doc-types '("info" "param" "return" "note" "usage" "see" "depends")))
+  (defvar sh-doc-types '("brief" "param" "return" "note" "usage" "see")))
 (defvar sh-doc-offset-column 16)
 
 (defsubst sh-doc-active-p ()
-  (or (nth 4 (syntax-ppss))
-      (and (bolp) (looking-at-p "#"))))
+  (save-excursion
+    (or (nth 4 (syntax-ppss))
+        (and (bolp) (looking-at-p "#")))))
 
 (defun sh-doc-insert (type)
   (interactive (list (completing-read "doc: " sh-doc-types)))

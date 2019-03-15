@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-14 21:40:03>
+;; Last modified: <2019-03-15 05:13:35>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -1326,22 +1326,6 @@ or PREDICATE is non-nil and returns nil."
             ,@(and make-action `((have-make ,make-action)))
             (t ,@body)))))))
 
-;;-- Align
-
-;; Create alignment functions
-(defmacro nvp-align-fn (name doc regex &optional _ignore-string)
-  (declare (indent defun))
-  (let ((fn (intern (if (symbolp name)
-                        (symbol-name name)
-                      name))))
-    `(progn
-       ,(and (buffer-file-name)
-             `(autoload ',name ,(buffer-file-name)))
-       (defun ,fn (start end)
-         ,doc
-         (interactive "r")
-         (align-regexp start end ,regex)))))
-
 ;;-- Sort
 
 (defmacro nvp-sort-with-defaults (start end &rest body)
@@ -1373,7 +1357,6 @@ afterward."
          (insert ,begin))
        (goto-char (region-end))
        (insert ,end))))
-
 
 ;; Wrap items in list between DELIM, default wrapping with WRAP
 ;; Create list wrapping functions, wrapping items between DELIMS with

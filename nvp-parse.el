@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 20:03:17>
+;; Last modified: <2019-03-15 06:21:56>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -53,6 +53,14 @@ First tries closest imenu entry, then `add-log-current-defun'."
                (point) (nvp-imenu-cleaned-alist))))
     (if func (caar func)
       (add-log-current-defun))))
+
+(cl-defgeneric nvp-parse-library (&rest _args)
+  "Generic function to return the name of the current library, module, ..."
+  nil)
+
+(cl-defgeneric nvp-parse-includes (&rest _args)
+  "Generic function to return the names of required libraries."
+  nil)
 
 (provide 'nvp-parse)
 ;;; nvp-parse.el ends here

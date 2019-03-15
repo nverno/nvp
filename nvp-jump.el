@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-14 22:08:31>
+;; Last modified: <2019-03-15 05:37:53>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -249,7 +249,7 @@ With triple prefix, offer recursive results."
 With single prefix, open in this window.
 With double prefix, set coding to utf-8."
   (interactive (list nvp/dots current-prefix-arg))
-  (let ((buff (nvp-display-location dir :ido action #'ido-find-file-in-dir)))
+  (let ((buff (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir)))
     (when (eq 16 action)
       (with-current-buffer buff
         (set-buffer-file-coding-system 'utf-8-unix nil t)))))
@@ -259,7 +259,7 @@ With double prefix, set coding to utf-8."
   (interactive
    (list (if (eq (prefix-numeric-value current-prefix-arg) 16) nvp/project nvp/class)
          current-prefix-arg))
-  (nvp-display-location dir :ido action #'ido-find-file-in-dir))
+  (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
 
 ;;;###autoload
 (defun nvp-jump-to-source (dir action)
@@ -274,7 +274,7 @@ With double prefix, set coding to utf-8."
              nvp-local-src-directories))
           (t nvp/devel))
          current-prefix-arg))
-  (nvp-display-location dir :ido action #'ido-find-file-in-dir))
+  (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
 
 ;; -------------------------------------------------------------------
 ;;; Other
@@ -289,7 +289,7 @@ With double prefix, set coding to utf-8."
 ;;;###autoload
 (defun nvp-jump-to-template (action)
   (interactive "P")
-  (nvp-display-location nvp/template :ido action #'ido-find-file-in-dir))
+  (nvp-display-location nvp/template :ido action :find-fn #'ido-find-file-in-dir))
 
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

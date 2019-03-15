@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-09 06:31:47>
+;; Last modified: <2019-03-14 19:02:53>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -32,7 +32,7 @@
   "Run ert tests.
 With prefix ARG, prompt for selector."
   (interactive)
-  (if (not (featurep 'ert))
+  (if (not (require 'ert nil t))
       (user-error "`ert' must be loaded to run this function")
     (eval-buffer (current-buffer))
     (call-interactively 'ert-run-tests-interactively)))

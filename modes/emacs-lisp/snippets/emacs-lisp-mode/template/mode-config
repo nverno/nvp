@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: mode-config
 # key: mode-config
-# expand-env: ((modename))
+# expand-env: ((modename (bound-and-true-p modename)))
 # --
 ;; Last modified: <>
 (nvp-install-on-demand$1)
@@ -14,14 +14,14 @@
 ;; -------------------------------------------------------------------
 ;;; Bindings
 
-(nvp-bindings "${2:`modename`-mode}" ${3:nil}
+(nvp-bindings "${2:`modename`}-mode" ${3:nil}
   ($4))
 
 ;; -------------------------------------------------------------------
 ;;; Hooks
 
 ;;;###autoload
-(defun nvp-`modename`-hook ()
-  (nvp-setup-local "`modename`"))
+(defun nvp-$2-hook ()
+  (nvp-setup-local "$2"))
 
-(provide 'nvp-`modename`-config)
+(provide 'nvp-$2-config)

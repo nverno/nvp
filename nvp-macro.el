@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-09 07:00:14>
+;; Last modified: <2019-03-14 21:40:03>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -86,7 +86,7 @@ those are both specified."
     `(let ((orig-msg (current-message)))
        ,(if delay
             `(run-with-idle-timer ,delay nil ,msg)
-          `,msg)
+          `(funcall ,msg))
        (run-with-idle-timer
         (+ ,(or delay 0) ,(or duration 2))
         nil (function

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-05 17:15:20>
+;; Last modified: <2019-03-14 20:54:31>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -19,6 +19,7 @@
   (nvp-local-vars))
 (require 'nvp)
 (declare-function find-function-other-window "find-func")
+(nvp-declare "yasnippet" yas-expand-snippet yas-lookup-snippet)
 
 (defvar nvp-display-fallback-function #'dired "Fallback for unhandled prefix.")
 
@@ -44,16 +45,24 @@
           (assq ,action (plist-get nvp-display--actions ,type)))
          nvp-display-fallback-function)))
 
+(defsubst nvp-display-init-template (template &optional mode start end &rest bindings)
+  "Use TEMPLATE to init a new file.
+MODE and BINDINGS are passed to `yas-expand-snippet'."
+  (cl-progv (mapcar #'car bindings) (mapcar #'cadr bindings)
+    (yas-expand-snippet
+     (yas-lookup-snippet template mode) start end)))
+
 ;; actions to take jumping to buffers/files
 ;; 4 => same window
 ;; _ => other window (default)
 ;;;###autoload
-(defun nvp-display-location (location type action &optional func)
+(cl-defun nvp-display-location (location type action &key find-fn init-fn)
   "Display LOCATION of TYPE using ACTION.
 Currently supported TYPEs are :buffer, :find-func, :file, and :ido.
 Action decides how to display location: 
   - with prefix => same window
-  - otherwise   => other window (default)"
+  - otherwise   => other window (default)
+In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
   (if (not action) (setq action 1)
     (if (consp action) (setq action (prefix-numeric-value action))))
   (pcase (cons type action)
@@ -66,10 +75,12 @@ Action decides how to display location:
     (`(:ido . ,_)
      (let* ((ido-default-file-method (nvp-display--get-action action :ido))
             (ido-default-buffer-method ido-default-file-method))
-       (if func (funcall func location)
+       (if find-fn (funcall find-fn location)
          (user-error "Which ido to call for %S" location))))
     ((pred functionp) (funcall action location))
-    (_ (user-error "Unhandled action(%S)/type(%S) combo" action type))))
+    (_ (user-error "Unhandled action(%S)/type(%S) combo" action type)))
+  (when (and init-fn (ignore-errors (not (file-exists-p location))))
+    (funcall init-fn)))
 
 (defmacro nvp-display-with-action (action &rest body)
   "Execute BODY with jump ACTION defaults."

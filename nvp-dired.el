@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-09 06:46:48>
+;; Last modified: <2019-03-14 21:05:54>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -133,20 +133,21 @@
       (message "Copied as kill: %S" string))))
 
 (defun nvp-dired-touch (filename)
-  (interactive (list (read-string "Filename: " ".gitkeep")))
+  (interactive (list (read-string "Filename (.gitkeep): " nil nil ".gitkeep")))
   (with-temp-buffer
     (write-file filename)))
 
 ;; #<marker at 171949 in simple.el.gz>
-;; How to determine the number of C-u before numeric arg????
+;; FIXME: How to determine the number of C-u before numeric arg????
 ;; advice for copy/rename w/ multiple open direds
 (defun nvp-dired-w/o-dwim (cmd &optional _arg)
   ;; (message "%S" (this-command-keys-vector))
   (let ((dired-dwim-target (equal '(4) current-prefix-arg)))
-    (apply cmd (list (max 1 (length (dired-get-marked-files)))))))
+    ;; nil just assumes current or marked files
+    ;; should be able to pass the numeric argument along properly
+    (apply cmd nil)))
 
-(nvp-advise-commands 'nvp-dired-w/o-dwim :around
-  (dired-do-rename dired-do-copy))
+(nvp-advise-commands 'nvp-dired-w/o-dwim :around (dired-do-rename dired-do-copy))
 
 ;; -------------------------------------------------------------------
 ;;; External

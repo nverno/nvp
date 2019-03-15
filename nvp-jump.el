@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-09 19:01:26>
+;; Last modified: <2019-03-14 22:08:31>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -24,6 +24,7 @@
 (require 'nvp-read)
 (nvp-declare "yasnippet" yas-expand-snippet yas-lookup-snippet)
 (autoload 'nvp-file-locate-first-dominating "nvp-file")
+(autoload 's-chop-suffix "s")
 
 ;; -------------------------------------------------------------------
 ;;; Modes
@@ -34,12 +35,11 @@
   (interactive (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
   (if (eq t mode) (dired-other-window nvp/config)
     (let ((file (nvp-mode-config-path mode)))
-      (nvp-display-location file :file action)
-      (unless (file-exists-p file)
-        (yas-expand-snippet
-         (yas-lookup-snippet 'mode-config) nil nil
-         `((modename ,(if (string-suffix-p "-mode" mode) (substring mode -5)
-                        mode))))))))
+      (nvp-display-location
+       file :file action
+       :init-fn (lambda () (nvp-display-init-template
+                       'mode-config 'emacs-lisp-mode nil nil
+                       `(modename ,(s-chop-suffix "-mode" mode))))))))
 
 ;; Jump to test with extension `STR'.  If it doesn't exist make a new
 ;; file, and if there are multiple matches offer ido choice.
@@ -125,10 +125,31 @@ Otherwise prompt, with default `nvp-default-org-file'."
   "Jump to info file (in org mode). 
 With prefix jump this window, otherwise `find-file-other-window'."
   (interactive (list (nvp-read--info-files) current-prefix-arg))
-  (nvp-display-location file :file action))
+  (nvp-display-location
+   file :file action
+   :init-fn (lambda () (nvp-display-init-template 'texinfo 'org-mode))))
 
 ;; -------------------------------------------------------------------
 ;;; Scratch
+
+(defun nvp-scratch-switch-modes ()
+  "Switch major modes in scratch buffer."
+  (interactive)
+  (funcall (intern (nvp-read-mode)))
+  (nvp-scratch-minor-mode))
+
+(define-minor-mode nvp-scratch-minor-mode
+  "Minor mode in scratch buffers."
+  :lighter nil
+  :keymap (let ((km (make-sparse-keymap)))
+            (define-key km (kbd "C-c C-k") #'kill-this-buffer)
+            (define-key km (kbd "C-c C-s") #'nvp-scratch-switch-modes)
+            km)
+  (when nvp-scratch-minor-mode
+    (add-hook 'after-change-major-mode-hook #'nvp-scratch-minor-mode nil 'local)
+    (setq mode-name (concat "scratch[" mode-name "]"))
+    (nvp-msg "Press \\[kill-this-buffer] to kill this buffer \
+or \\[nvp-scratch-switch-modes] to switch major modes. " :keys t)))
 
 ;;;###autoload
 (defun nvp-jump-to-scratch (mode action)
@@ -151,13 +172,9 @@ With prefix, pop other window, with double prefix, prompt for MODE."
           (erase-buffer)
           (funcall mode)))
       (nvp-display-location buff :buffer action)
-      (with-current-buffer (current-buffer)
-        (nvp-use-local-keymap :keymap (current-local-map)
-         ("C-c C-k" . kill-this-buffer)
-         ("C-c C-s" . (lambda () (interactive)
-                        (funcall (intern (nvp-read-mode)))))))
-      (nvp-msg "Press \\[kill-this-buffer] to kill this buffer \
-or C-c C-s to switch major modes. " :keys t))))
+      (with-current-buffer buff
+        (unless nvp-scratch-minor-mode
+          (nvp-scratch-minor-mode))))))
 
 ;; -------------------------------------------------------------------
 ;;; Books / PDFs

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 04:50:19>
+;; Last modified: <2019-03-14 21:13:50>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -28,7 +28,8 @@
     (mapconcat 'identity res " ")))
 
 (defun nvp-s-wrap (len s &optional prefix)
-  "If S is longer than LEN, wrap and optionally append PREFIX to each line."
+  "If S is longer than LEN, wrap and optionally append PREFIX to each line.
+Like `s-word-wrap' but allow for PREFIX."
   (declare (side-effect-free t))
   (save-match-data
     (with-temp-buffer
@@ -64,25 +65,14 @@
       (nreverse positions))))
 
 (defun nvp-s-center (len s &optional char)
-  "If S is shorter than LEN, pad it with CHAR (default spaces) so it's centered."
+  "If S is shorter than LEN, pad it with CHAR (default spaces) so it's centered.
+Like `s-center' but allow for CHAR."
   (declare (pure t) (side-effect-free t))
   (or char (setq char ? ))
   (let ((extra (max 0 (- len (length s)))))
     (concat (make-string (ceiling extra 2) char)
             s
             (make-string (floor extra 2) char))))
-
-(defun nvp-s-pad-left (len padding s)
-  "If S is shorter than LEN, left pad with PADDING."
-  (declare (pure t) (side-effect-free t))
-  (let ((extra (max 0 (- len (length s)))))
-    (concat (make-string extra (string-to-char padding)) s)))
-
-(defun nvp-s-pad-right (len padding s)
-  "If S is shorter than LEN, add right PADDING."
-  (declare (pure t) (side-effect-free t))
-  (let ((extra (max 0 (- len (length s)))))
-    (concat s (make-string extra (string-to-char padding)))))
 
 (defun nvp-s-repeat (num s)
   "Make a string of S repeated NUM times."

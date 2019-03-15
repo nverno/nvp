@@ -1,20 +1,20 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-15 07:55:07>
+;; Last modified: <2019-03-15 09:34:33>
 ;; URL: https://github.com/nverno/elisp-utils
 ;; Created: 31 October 2016
 
 ;;; Commentary:
 
 ;; FIXME:
-;; - update provides?
 ;; - imenu filter out package related headers
 
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'nvp-parse))
 (require 'nvp-parse)
 (declare-function idomenu "idomenu")
 (declare-function paredit-mode "paredit")
@@ -78,6 +78,12 @@
 ;; -------------------------------------------------------------------
 ;;; Generics
 
+;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Where-Defined.html
+(defvar nvp-elisp--defun-forms
+  '(defun defmacro defsubst cl-defun cl-defsubst cl-defmacro declare-function t
+    autoload cl-defmethod)
+  "Forms to recognize for function names.")
+
 ;; return forms defined in FILENAME
 (defsubst nvp-elisp--file-forms (filename)
   (cl-assoc (regexp-quote filename) load-history :test #'string-match-p))
@@ -88,15 +94,45 @@
      when (and (consp elt) (memq (car elt) elems))
      collect (if (consp (cdr elt)) (cadr elt) (cdr elt))))
 
-(defmacro nvp-elisp--get-forms (elems args)
-  "Filter matching ELEMS from file's forms (possibly loading file).
+(eval-when-compile
+  (defmacro nvp-elisp--get-forms (elems args)
+    "Filter matching ELEMS from file's forms (possibly loading file).
 Forms are read from :filename if present in ARGS, otherwise current buffer file."
-  (declare (indent defun) (debug defun))
-  (macroexp-let2 nil pargs args
-    `(let ((filename (plist-get :filename ',pargs)))
-       (and filename (plist-get :do-load ',pargs)
-            (load-file filename))
-       (nvp-elisp--filter-forms ,elems (or filename (buffer-file-name))))))
+    (declare (indent defun))
+    (macroexp-let2 nil pargs args
+      `(let ((filename (plist-get ,pargs :filename))
+             (buffer (plist-get ,pargs :buffer))
+             (lib (plist-get ,pargs :library)))
+         (if buffer
+             (with-current-buffer buffer
+               (nvp-elisp--filter-forms ,elems (buffer-file-name)))
+           (when (plist-get ,pargs :do-load)
+             (and filename (load-file filename))
+             (and lib `(require ,lib ,filename t)))
+           (and lib (setq filename (file-name-sans-extension (locate-library lib))))
+           (nvp-elisp--filter-forms ,elems (or filename (buffer-file-name))))))))
+
+;; try(not very hard) to gather buffer functions/macros at top level
+;; from current buffer, optionally in region specified by BEG END
+(defun nvp-elisp--buffer-defuns (&optional beg end)
+  (or end (setq end (point-max)))
+  (save-excursion
+    (let (forms form)
+      (goto-char (or beg (point-min)))
+      (ignore-errors
+        (while (and (setq form (read (current-buffer)))
+                    (< (point) end))
+          (when (and (consp form) (memq (car form) nvp-elisp--defun-forms))
+            (push (cadr form) forms))))
+      (delq nil forms))))
+
+(cl-defmethod nvp-parse-function-names
+    (&context (major-mode emacs-lisp-mode) &rest args)
+  "Accepts additional ARGS, :do-load to `load-file' prior to parsing."
+  (or (nvp-elisp--get-forms nvp-elisp--defun-forms args)
+      ;; gather functions from unloaded buffer / file
+      (nvp-parse-with-buffer-or-file args
+        (nvp-elisp--buffer-defuns))))
 
 (cl-defmethod nvp-parse-current-function
   (&context (major-mode emacs-lisp-mode) &rest _args)
@@ -108,10 +144,9 @@ Forms are read from :filename if present in ARGS, otherwise current buffer file.
   (when-let* ((libs (nvp-elisp--get-forms '(provide) args)))
     (if (= 1 (length libs)) (car libs) libs)))
 
-;; (cl-defmethod nvp-parse-includes
-;;   (&context (major-mode emacs-lisp-mode) &rest _args)
-;;   (cl-loop for elt in (nvp-elisp--file-forms (buffer-file-name))
-;;        when (and (consp elt) (eq 'require (car elt)))))
+(cl-defmethod nvp-parse-includes
+  (&context (major-mode emacs-lisp-mode) &rest args)
+  (nvp-elisp--get-forms '(require) args))
 
 ;; ------------------------------------------------------------
 ;;; Eval
@@ -191,7 +226,6 @@ With \\[universal-argument] toggle buffer-local `common-lisp-indent-function'."
   (require 'nvp-toggle)
   (nvp-toggle-local-variable 'lexical-binding t))
 
-;;;###autoload
 (defun nvp-elisp-toggle-auto ()
   "Toggle autoload on/off when in or directly before sexp.
 If in function definition, toggle autoload cookie.

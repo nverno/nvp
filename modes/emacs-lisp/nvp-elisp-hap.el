@@ -2,35 +2,17 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-02-09 07:09:59>
-;; Package-Requires: 
-;; Copyright (C) 2016, Noah Peart, all rights reserved.
+;; Last modified: <2019-03-15 09:24:15>
 ;; Created: 31 October 2016
 
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
-;;; Code:
-(require 'pos-tip)
 
-;;; TODO:
+;; TODO:
 ;; - merge with nvp-with-toggled-tip, most of this is redundant
 ;; - generic method to get documentation / help-at-point
+
+;;; Code:
+(require 'pos-tip)
 
 ;; Number of lines to show in popup.
 (defvar nvp-elisp-hap-max-lines 20)
@@ -40,12 +22,6 @@
 
 ;; default display time
 (defvar nvp-elisp-hap-timer 20)
-
-;; (defface nvp-elisp-hap-face
-;;   '((((class color) (background light))
-;;      :background "#fff3bc" :foreground "black")
-;;     (((class color) (background dark))
-;;      :background "black" :foreground "#fff3bc")))
 
 ;; ------------------------------------------------------------
 ;;; General

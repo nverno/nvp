@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-15 05:25:07>
+#+DATE: <2019-03-15 09:30:45>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -102,12 +102,13 @@ Not sure how this should work.
 - [ ] unit test
 - [ ] project tests
 
-** Parsing [2/6]
+** Parsing [4/7]
 see which-func
 - [X] generic functions in buffer
 - [X] current function name
+- [X] current library
+- [X] includes in buffer
 - [ ] cache functions ala which-func
-- [ ] includes in buffer
 - [ ] global variables in buffer
 - [ ] local variables in lexical scope
 
@@ -156,20 +157,23 @@ see which-func
 - [ ] pass numeric prefix to copy/rename???
 
 * Modes
-** elisp [0/5]
-*** TODO General [1/2]
+** elisp [1/5]
+*** DONE General [2/2]
 - [X] macroify-bindings update => elisp
-- [ ] fix hippie - adds extra ')' when no match
+- [X] fix hippie - adds extra ')' when no match
 
 *** TODO Align [0/1]
 - [ ] align rules are shitty - dots in double quotes get moved.
 
-*** TODO HAP [0/1]
+*** TODO HAP [0/2]
 - [ ] use company-backend
-*** TODO Parsing [1/3]
+- [ ] merge with general toggled-tip
+
+*** TODO Parsing [3/4]
 Use ~load-history~
 - [X] buffer functions
-- [ ] buffer includes
+- [X] buffer provides
+- [X] buffer includes
 - [ ] buffer variables
 *** TODO Dynamic abbrevs [0/2]
 - [ ] optionally abbrev library, buffer, or file
@@ -285,7 +289,7 @@ Separators,
 - [ ] parse typescript for builtin sigs/docs/names
 - [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
 
-** Perl [1/6]
+** Perl [1/7]
 *** TODO General [0/1]
 - [ ] cache module paths
 *** DONE newline
@@ -295,8 +299,17 @@ Separators,
 - [ ] choose / install REPL
 - [ ] setup REPL config
 - [ ] generic switching function
+
+*** TODO Parse [0/4]
+- [ ] current function
+- [ ] buffer functions
+- [ ] current module
+- [ ] includes
+- [ ] variables
+
 *** TODO Completion [0/1]
 - [ ] get company-plsense working?
+
 *** TODO Tests [0/1]
 - [ ] simple test setup
 

@@ -5,14 +5,13 @@ include default.mk
 all: test
 
 %.elc: %.el
-	@${EMACS} -Q --batch ${LOAD_PATH} -f batch-byte-compile $<
+	@${COMPILE} $<
 
 test: ## Run tests
-	$(EMACS) -Q --batch ${LOAD_PATH} -l ert -l test/nvp-tests.el \
-	-f ert-run-tests-batch-and-exit
+	$(BATCH) -l ert -l test/nvp-tests.el -f ert-run-tests-batch-and-exit
 
 README.md : el2markdown.el ${PKG}.el ## Generate README.md from source
-	$(EMACS) -Q --batch ${LOAD_PATH} -l $< ${PKG}.el -f el2markdown-write-readme
+	$(BATCH) -l $< ${PKG}.el -f el2markdown-write-readme
 
 .INTERMEDIATE: el2markdown.el
 el2markdown.el:
@@ -24,7 +23,7 @@ unicode:  ## Generate latex/unicode abbrevs
 	@julia ${SCRIPT}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
 .depend: $(EL) ## create depends for package .el files
-	@echo Compute dependencies
+	$(info Computing depends)
 	@rm -f .depend
 	@for f in $(EL); do                                                  \
 	    sed -n                                                           \
@@ -54,10 +53,10 @@ endef
 export LOADDEFS_TMPL
 #'
 
-${PKG}-autoloads.el: ${EL}			  #
-	@echo "Generating $@"
+${PKG}-autoloads.el: ${EL} ## Generate package autoloads
+	$(info Generating $@)
 	@printf "%s" "$$LOADDEFS_TMPL" > $@
-	@${EMACS} -Q --batch --eval "(progn                        \
+	@${BATCH} --eval "(progn                                   \
 	(setq make-backup-files nil)                               \
 	(setq vc-handled-backends nil)                             \
 	(setq default-directory (file-truename default-directory)) \
@@ -75,5 +74,5 @@ distclean: clean ## clean all generated files including compiled & autoloads
 .PHONY: help
 help:  ## Show help for targets
 	@grep -E '^[/.%0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-	| sort | awk \
+	| sort | ${AWK}                                           \
 	'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

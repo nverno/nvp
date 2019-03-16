@@ -9,3 +9,8 @@
     )
   "Awk-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'sed-mode-abbrev-table
+  '()
+  "Sed-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

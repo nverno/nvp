@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 18:12:34>
+;; Last modified: <2019-03-16 15:05:07>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -139,6 +139,20 @@ With ARG use default behaviour, except also call `expand-abbrev'."
                  (unless (eq (line-number-at-pos) (line-number-at-pos beg))
                    (goto-char beg))
                  (insert (car cmt)))))))
+
+(defun nvp-paredit-reindent-defun (&optional arg)
+  "Replacement for `paredit-reindent-defun' to handle prompts in minibuffer \
+or REPLs."
+  (interactive "P")
+  (if (or (paredit-in-string-p)
+          (paredit-in-comment-p))
+      (lisp-fill-paragraph arg)
+    (nvp-preserving-column major-mode
+      (save-excursion
+        (end-of-defun)
+        (beginning-of-defun)
+        (indent-sexp)))))
+(defalias 'paredit-reindent-defun #'nvp-paredit-reindent-defun)
 
 ;; -------------------------------------------------------------------
 ;;; Company

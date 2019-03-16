@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 14:58:04>
+;; Last modified: <2019-03-16 15:06:10>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -309,27 +309,26 @@ If NO-PULSE, don't pulse region when using THING."
   (declare (indent defun) (debug defun))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
-  (macroexp-let2 nil column (cond
-                             ((null mode) '(current-column))
-                             ((derived-mode-p 'comint-mode)
-                              '(- (current-column)
-                                  (comint-line-beginning-position)))
-                             ((eq major-mode 'minibuffer-inactive-mode)
-                              '(- (current-column (minibuffer-prompt-width))))
-                             (t '(current-column)))
-    (let ((orig-indent (make-symbol "indentation"))
-          (orig-col (make-symbol "column")))
-      `(let ((,orig-col ,column)
-             (,orig-indent (current-indentation)))
-         (unwind-protect
-             (progn ,@body)
-           (let ((ci (current-indentation)))
-             (goto-char
-              (+ (point-at-bol)
-                 (cond ((not (< ,orig-col ,orig-indent))
-                        (+ ,orig-col (- ci ,orig-indent)))
-                       ((<= ci ,orig-col) ci)
-                       (t ,orig-col))))))))))
+  (let ((orig-indent (make-symbol "indentation"))
+        (orig-col (make-symbol "column")))
+    `(let ((,orig-col (cond
+                       ((null mode) '(current-column))
+                       ((derived-mode-p 'comint-mode)
+                        '(- (current-column)
+                            (comint-line-beginning-position)))
+                       ((eq major-mode 'minibuffer-inactive-mode)
+                        '(- (current-column (minibuffer-prompt-width))))
+                       (t '(current-column))))
+           (,orig-indent (current-indentation)))
+       (unwind-protect
+           (progn ,@body)
+         (let ((ci (current-indentation)))
+           (goto-char
+            (+ (point-at-bol)
+               (cond ((not (< ,orig-col ,orig-indent))
+                      (+ ,orig-col (- ci ,orig-indent)))
+                     ((<= ci ,orig-col) ci)
+                     (t ,orig-col)))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Control flow

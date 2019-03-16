@@ -1,10 +1,8 @@
 ;;; nvp-jump.el --- jumping places -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 05:37:53>
+;; Last modified: <2019-03-16 03:54:26>
 ;; Created: 24 November 2016
 
 ;;; Commentary:

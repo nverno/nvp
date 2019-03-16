@@ -2,10 +2,9 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-08 05:26:11>
+;; Last modified: <2019-03-16 05:57:19>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Package-Requires: 
 ;; Created: 15 November 2016
 
 ;;; Commentary:

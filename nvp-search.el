@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-15 23:10:08>
+;; Last modified: <2019-03-16 04:40:54>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -41,7 +41,7 @@ With double prefix just calls `rgrep' interactively to prompt for defaults."
                      grep-find-ignored-directories)
              grep-find-ignored-directories)))
       (grep-compute-defaults)
-      (rgrep (format "\\b%s[ \\t\\n]" sym) (if ext (concat "*." ext) "*")
+      (rgrep (format "\\b%s[ )\\t\\n]" sym) (if ext (concat "*." ext) "*")
              nvp/emacs (equal '(64) current-prefix-arg)))))
 
 ;; -------------------------------------------------------------------

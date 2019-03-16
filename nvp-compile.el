@@ -1,6 +1,6 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-09 04:42:00>
+;; Last modified: <2019-03-16 05:39:50>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 12 February 2019
@@ -18,16 +18,20 @@
 
 ;;;###autoload
 (defun nvp-compile (&optional arg)
-  "Compile using local `nvp-compile-function' or `nvp-compile-default'."
+  "Compile using local `nvp-compile-function' or `nvp-compile-default'.
+By default, with single prefix or 3 or more, read compilation command.
+With double prefix or more, use comint buffer for compilation."
   (interactive "P")
   (setq current-prefix-arg arg)
   (if (bound-and-true-p nvp-compile-function)
-      (call-interactively nvp-compile-function)
+      (call-interactively nvp-compile-function arg)
     (call-interactively #'nvp-compile-default)))
 
 (defun nvp-compile-default (&optional comint read-command)
   "Basic compilation."
-  (interactive "P")
+  (interactive
+   (let ((arg (prefix-numeric-value current-prefix-arg)))
+     (list (>= arg 16) (or (eq arg 4) (> arg 16)))))
   (setq-local compilation-read-command read-command)
   (when compilation-read-command
     (setq-local compile-command (compilation-read-command compile-command)))

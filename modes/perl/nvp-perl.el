@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-15 02:18:09>
+;; Last modified: <2019-03-16 05:55:10>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -30,7 +30,7 @@
   (require 'perl-w32tools))
 
 ;; -------------------------------------------------------------------
-;;; Perl object bounds
+;;; Things at point
 
 ;; Perl module at point
 (defun nvp-perl--perl-module ()
@@ -67,6 +67,7 @@
 ;; -------------------------------------------------------------------
 ;;; Completion
 
+;; FIXME: Remove AC related stuff
 ;; switch b/w completion backends
 (defun nvp-perl-toggle-completion ()
   (interactive)
@@ -98,6 +99,7 @@
       (beginning-of-line)
       (looking-at-p ".*%.*="))))
 
+;; TODO: Abstract this
 (defun nvp-perl-my-cycle ()
   "Cycle between [$ @ %] after 'my' abbrev expansion."
   (interactive)
@@ -122,14 +124,10 @@
 
 (defun nvp-perl-my-toggle ()
   (set-transient-map nvp-perl-my-map t 'nvp-perl-my-exit))
-
 ;; don't insert a space after expanding 
 (put 'nvp-perl-my-toggle 'no-self-insert t)
 
-(defun nvp-perl-no-space ()
-  (if (string= (this-command-keys) " ") t))
-(put 'nvp-perl-no-space 'no-self-insert t)
-
+;; TODO: Convert to generic
 ;; list modules used and imports
 ;; (("module" import1 import2 ...) ("module2" ... ))
 (defun nvp-perl-used ()
@@ -204,52 +202,44 @@
 
 ;; ------------------------------------------------------------
 ;;; Find Stuff
-
-;;; `perl-find-library' stuff
+;; `perl-find-library' stuff
 
 (defsubst nvp-perl-replace-all (from to str)
-  (while (string-match from str)
-    (setq str (replace-match to t t str)))
-  str)
+  (declare (pure t) (side-effect-free t))
+  (replace-regexp-in-string from to str t t))
 
 ;; build perl modules paths
-(defvar nvp-perl--module-paths ())
-(defun nvp-perl--module-paths ()
-  (or nvp-perl--module-paths
-      (setq nvp-perl--module-paths
-            (cl-remove-if-not
-             #'(lambda (dir)
-                 (and (string-match "/" dir)
-                      (file-exists-p dir)))
-             (car
-              (read-from-string
-               (shell-command-to-string
-                (eval-when-compile
-                  (concat "perl -e '$\"=\"\\\" \\\"\";"
-                          "print \"(\\\"@INC\\\")\"'")))))))))
+(nvp-define-cache-runonce nvp-perl--module-paths () nil
+  (cl-remove-if-not
+   #'(lambda (dir)
+       (and (string-match "/" dir)
+            (file-exists-p dir)))
+   (car
+    (read-from-string
+     (shell-command-to-string
+      (eval-when-compile
+        (concat "perl -e '$\"=\"\\\" \\\"\";"
+                "print \"(\\\"@INC\\\")\"'")))))))
 
 
 ;; Find all perl modules in directories on @INC, and cache
 ;; searches for files ending in .pod or .pm and translates
 ;; file path separators to '::'
-(defvar nvp-perl-modules ())
-(defun nvp-perl-modules ()
-  (or nvp-perl-modules
-      (setq nvp-perl-modules
-            (cl-mapcan
-             #'(lambda (dir)
-                 (mapcar
-                  #'(lambda (file)
-                      (nvp-perl-replace-all
-                       ;; chop suffixes
-                       (rx (seq "." (| "pod" "pm") string-end))
-                       ""
-                       ;; convert file path separators to '::'
-                       (nvp-perl-replace-all
-                        "/" "::" (substring file (1+ (length dir))))))
-                  (find-lisp-find-files
-                   dir (rx (seq "." (| "pod" "pm") string-end)))))
-             (nvp-perl--module-paths)))))
+(nvp-define-cache-runonce nvp-perl-modules () nil
+  (cl-mapcan
+   (lambda (dir)
+     (mapcar
+      (lambda (file)
+        (nvp-perl-replace-all
+         ;; chop suffixes
+         (rx (seq "." (| "pod" "pm") string-end))
+         ""
+         ;; convert file path separators to '::'
+         (nvp-perl-replace-all
+          "/" "::" (substring file (1+ (length dir))))))
+      (find-lisp-find-files
+       dir (rx (seq "." (| "pod" "pm") string-end)))))
+   (nvp-perl--module-paths)))
 
 ;; return path to perl module
 (defun nvp-perl-module-path (module)
@@ -258,12 +248,19 @@
     (and (not (string-match-p "No documentation" path))
          (substring path 0 (1- (length path))))))
 
-;; open module in other window
-(defun nvp-perl-find-module (module)
-  (interactive
-   (list (ido-completing-read
-          "Library: " (nvp-perl-modules))))
-  (find-file-other-window (nvp-perl-module-path module)))
+;; completing read for installed modules
+(defun nvp-perl-read-module (&optional prompt default path)
+  (or default (setq default (thing-at-point 'perl-module t)))
+  (setq prompt (nvp-prompt--with-default (or prompt "Module: ") default))
+  (let ((module (nvp-completing-read prompt (nvp-perl-modules))))
+    (if path (nvp-perl-module-path module)
+      path)))
+
+(defun nvp-perl-jump-to-module (module)
+  "Jump to MODULE in other window."
+  (interactive (list (nvp-perl-read-module nil nil 'path)))
+  (with-demoted-errors "Error in nvp-perl-jump-to-module: %S"
+    (find-file-other-window module)))
 
 (provide 'nvp-perl)
 ;;; nvp-perl.el ends here

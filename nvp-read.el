@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 19:24:47>
+;; Last modified: <2019-03-16 04:03:32>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -52,12 +52,14 @@
       (directory-files nvp/config nil "^[^\\.].*\\.el$"))
      nil nil nil 'nvp-read-config-history (substring default 0 -5))))
 
-(defun nvp-read--info-files (&optional prompt)
+(defun nvp-read--info-files (&optional prompt default)
+  (or default (and (string-prefix-p nvp/info default-directory)
+                   (setq default (file-name-nondirectory (buffer-file-name)))))
   (expand-file-name 
    (nvp-completing-read
-    (or prompt "Info file: ")
+    (nvp-prompt--with-default (or prompt "Info file: ") default)
     (directory-files (expand-file-name "org" nvp/info) nil "\.org")
-    nil nil nil 'nvp-read-config-history)
+    nil nil nil 'nvp-read-config-history default)
    (concat nvp/info "org")))
 
 (defun nvp-read--mode-test (&optional prompt default)

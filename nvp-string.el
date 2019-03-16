@@ -1,8 +1,6 @@
 ;;; nvp-string.el --- string manipulations -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-14 21:13:50>
+;; Last modified: <2019-03-16 04:39:37>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019

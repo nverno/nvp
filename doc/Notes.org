@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-16 00:54:23>
+#+DATE: <2019-03-16 06:13:50>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -32,14 +32,11 @@
 - semantic-sticky-func minor mode for parse generics
 
 * Functions
-** General [5/22]
-- [ ] fix perl package install script / reply
-- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::(defun%20nvp-perl-cpanm-install%20()][perl cpanm install]]
-- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/nvp-sh.el::(defvar%20nvp-sh-company-active-map][fix company-active-map in sh]]
+** General [7/22]
+- [X] fix perl package install script / reply
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
 - [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
 - [ ] update package cache
-- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/emacs-lisp/list_urls.sed::t%20loop][sed basic imenu for labels]]
 - [ ] sed lookup help
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el::(defun%20nvp-makefile-beginning-of-defun-function%20(&optional%20arg)][fix makefile beg/end of defuns]]
 - [ ] [[file:/usr/local/share/emacs/27.0.50/lisp/cedet/semantic/bovine/make.el.gz::(defun%20semantic-default-make-setup%20()][semantic add anything to makefiles?]]
@@ -52,6 +49,9 @@
 - [ ] remove all methods from generic for debugging
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
+- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::(defun%20nvp-perl-cpanm-install%20()][perl cpanm install]]
+- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/nvp-sh.el::(defvar%20nvp-sh-company-active-map][fix company-active-map in sh]]
+- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/emacs-lisp/list_urls.sed::t%20loop][sed basic imenu for labels]]
 - [X] quickhelp-toggle
 - [X] more generic compile function?
 - [X] jumping from shell doesn't account for local variables
@@ -302,15 +302,15 @@ Separators,
 - [ ] parse typescript for builtin sigs/docs/names
 - [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
 
-** Perl [1/7]
-*** TODO General [0/1]
-- [ ] cache module paths
+** Perl [2/7]
+*** DONE General [1/1]
+- [X] cache module paths
 *** DONE newline
 *** TODO HAP [0/1]
 - [ ] perldoc to popup
-*** TODO REPL [0/3]
-- [ ] choose / install REPL
-- [ ] setup REPL config
+*** TODO REPL [2/3]
+- [X] choose / install REPL
+- [X] setup REPL config
 - [ ] generic switching function
 
 *** TODO Parse [0/5]

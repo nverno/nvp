@@ -37,6 +37,16 @@ my @mods = (
   'YAML::Shell' # Interactive yaml shell
 );
 
+my @replmods = (
+  'Term::ReadLine',
+  'Term::ReadLine::Gnu', 
+  'Reply', 
+  'App::Nopaste',                       # biggun
+  'Data::Dump',
+  'Proc::InvokeEditor',
+  'Carp::Always',
+ )
+
 foreach my $x (@mods) {
   print "Installing $x\n";
   system("cpanm $x");

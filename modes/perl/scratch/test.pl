@@ -3,7 +3,6 @@
 use strict;
 use utf8;
 use warnings;
-use 5.010;
 
 use Data::Printer;
 

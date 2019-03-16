@@ -1,6 +1,6 @@
 ;;; nvp-log.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 19:15:36>
+;; Last modified: <2019-03-15 20:56:51>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 November 2016
@@ -57,6 +57,7 @@
 ;; -------------------------------------------------------------------
 ;;; View list - simple tabulated display
 ;; #<marker at 153343 in evil-common.el>
+;; `cl-struct-slot-info'
 
 (defvar-local nvp-view-list-select-action ())
 (put 'nvp-view-list-select-action 'permanent-local t)

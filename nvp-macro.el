@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 19:14:40>
+;; Last modified: <2019-03-15 22:15:57>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -788,6 +788,7 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
 ;; FIXME: which of these is better??
 ;; `key-description' is defined at C level and `edemacro-format-keys' does
 ;; a lot of work. How to profile?
+;; - semantic-read-event : #<marker at 3072 in fw.el.gz>
 (defmacro nvp-last-input-char ()
   "Return the last character input as string."
   '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))

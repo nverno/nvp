@@ -2,19 +2,19 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-15 05:06:53>
+;; Last modified: <2019-03-15 21:56:10>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
 
 ;; TODO:
-;; - align rules and remove cleanup
-;; - fix yas expansions that add deps
-;; - beginning/end of defun functions
-;; - font-lock for info/warning?
+;; - font-lock-doc-face for info/warning/error?
+;; - incorporate semantic stuff?
 ;; FIXME:
+;; - beginning/end of defun functions don't work
+;; - yas expansions that add deps => commands
 ;; - collect remote info async
-;; -
+;; - align rules
 
 ;;; Code:
 (eval-when-compile

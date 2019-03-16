@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 19:19:05>
+;; Last modified: <2019-03-15 22:20:54>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -40,14 +40,37 @@
   (let ((file (car (directory-files (expand-file-name ".") t "autoloads.el"))))
     (load-file file)))
 
-(defun nvp-dev-mode-cache (mode)
-  "Examine, refresh MODE's config cache.
-With prefix, examine contents instead of resetting them."
-  (interactive (list (completing-read "Mode: " nvp-mode-cache)))
-  (require 'nvp-setup)
-  (if current-prefix-arg
-      (let ((cols 5)))
-      (remhash mode nvp-mode-cache)))
+;; (defun nvp-dev-mode-cache (mode)
+;;   "Examine, refresh MODE's config cache.
+;; With prefix, examine contents instead of resetting them."
+;;   (interactive (list (intern (completing-read "Mode: " nvp-mode-cache))))
+;;   (require 'nvp-setup)
+;;   (if current-prefix-arg
+;;       (let ((cols 5))
+;;         (nvp-with-view-list
+;;           :name "mode-cache"
+;;           :mode-name "Mode Cache"
+;;           :format
+;;           (cl-loop for slot across 'nvp-mode-vars
+;;              do (message "%S" slot))
+;;           (mapcar #'symbol-name (cdr (cl-struct-slot-info 'nvp-mode-vars)))
+;;           [("Dir" 12) ("Snippets" 12) ("Abbr-file" 12) ("Abbr-table" 12)]
+;;           :entries
+;;           (car (cl-struct-slot-info 'nvp-mode-vars))
+;;           (cl-loop repeat cols
+;;                vconcat [("")])))
+;;       (remhash mode nvp-mode-cache)))
+
+;; (defmacro nvp-with-struct-slots (spec-list struct &rest body)
+;;   (macroexp-let2 nil struct struct
+;;     (let* ((descs (cl-struct-slot-info struct))
+;;            (type (pop descs)))
+;;      `(cl-symbol-macrolet
+;;           ,(mapcar (lambda (entry)
+;;                      (let ((var (if (listp entry) (car entry) entry))
+;;                            (slot (if (listp entry (cadr entry) entry))))
+;;                        (list var ))))))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Syntax

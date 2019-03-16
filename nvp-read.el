@@ -33,7 +33,7 @@
 `directory-files-recursively'."
   (expand-file-name
    (nvp-completing-read
-    (nvp-prompt--with-default (or prompt "File: ") default)
+    (nvp-prompt-default (or prompt "File: ") default)
     (nvp-read--relative-files root regexp) nil nil nil
     'nvp-read-config-history default)
    root))
@@ -42,7 +42,7 @@
 (defun nvp-read-mode-config (&optional prompt default)
   (unless default
     (setq default (symbol-name major-mode)))
-  (setq prompt (nvp-prompt--with-default (or prompt "Mode config: ") default))
+  (setq prompt (nvp-prompt-default (or prompt "Mode config: ") default))
   (catch 'dired
     (ido-completing-read
      prompt
@@ -57,7 +57,7 @@
                    (setq default (file-name-nondirectory (buffer-file-name)))))
   (expand-file-name 
    (nvp-completing-read
-    (nvp-prompt--with-default (or prompt "Info file: ") default)
+    (nvp-prompt-default (or prompt "Info file: ") default)
     (directory-files (expand-file-name "org" nvp/info) nil "\.org")
     nil nil nil 'nvp-read-config-history default)
    (concat nvp/info "org")))
@@ -70,7 +70,7 @@
          (files (nvp-read--relative-files nvp/test "^[^.][^.]")))
     (unless default
       (setq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files))))
-    (setq prompt (nvp-prompt--with-default (or prompt "Test: ") default))
+    (setq prompt (nvp-prompt-default (or prompt "Test: ") default))
     (expand-file-name
      (nvp-completing-read
       prompt files nil nil nil 'nvp-read-config-history default)
@@ -83,7 +83,7 @@
   (let ((local (bound-and-true-p nvp-local-notes-file)))
     (if (and local (not nolocal)) local
       (or default (setq default nvp-default-org-file))
-      (setq prompt (nvp-prompt--with-default (or prompt "Org file: ") default))
+      (setq prompt (nvp-prompt-default (or prompt "Org file: ") default))
       (nvp-read-relative-recursively
        nvp/org "\.org$" (or prompt "Org file: ") default))))
 
@@ -158,7 +158,7 @@
 Filter by PREDICATE if non-nil."
   (require 'help-fns)
   (let ((enable-recursive-minibuffers t) val)
-    (setq prompt (nvp-prompt--with-default prompt default))
+    (setq prompt (nvp-prompt-default prompt default))
     (setq val (completing-read prompt #'help--symbol-completion-table
                                predicate t nil nil
                                (if (and default (symbolp default))

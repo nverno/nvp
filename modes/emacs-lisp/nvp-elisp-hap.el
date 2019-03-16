@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-03-15 09:24:15>
+;; Last modified: <2019-03-16 14:00:32>
 ;; Created: 31 October 2016
 
 ;;; Commentary:
@@ -12,6 +12,8 @@
 ;; - generic method to get documentation / help-at-point
 
 ;;; Code:
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'pos-tip)
 
 ;; Number of lines to show in popup.

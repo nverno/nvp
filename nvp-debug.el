@@ -31,7 +31,7 @@
    (list
     (let ((default (or (ignore-errors (symbol-name gud-minor-mode)) "gdb")))
      (read-from-minibuffer
-      (nvp-prompt--with-default "Mode: " default) nil nil nil nil default))))
+      (nvp-prompt-default "Mode: " default) nil nil nil nil default))))
   (or name (setq name (if gud-minor-mode (symbol-name gud-minor-mode) "gdb")))
   (nvp-he-history-setup :history 'comint-input-ring
                         :bol-fn 'comint-line-beginning-position)

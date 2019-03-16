@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-16 05:55:10>
+;; Last modified: <2019-03-16 13:16:01>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -44,7 +44,7 @@
 (put 'perl-variable 'bounds-of-thing-at-point 'nvp-perl--perl-var)
 
 ;; ------------------------------------------------------------
-;;; Install
+;;; Cpanm
 
 ;; Install module using cpanm
 (defun nvp-perl-cpanm-install ()
@@ -53,16 +53,6 @@
     (nvp-with-process "cpanm"
       :buffer-fn get-buffer-create
       :proc-args (module))))
-
-;; ------------------------------------------------------------
-;;; Eldoc
-
-(defun nvp-perl-eldoc-function ()
-  (ignore-errors
-    (nvp-unless-in-comment-or-string
-      (car
-       (let ((cperl-message-electric-keyword nil))
-         (cperl-get-help))))))
 
 ;; -------------------------------------------------------------------
 ;;; Completion
@@ -87,6 +77,14 @@
     (plsense-server-start))
    (t (and (fboundp 'company-mode)
            (company-mode)))))
+
+;;; Eldoc
+(defun nvp-perl-eldoc-function ()
+  (ignore-errors
+    (nvp-unless-in-comment-or-string
+      (car
+       (let ((cperl-message-electric-keyword nil))
+         (cperl-get-help))))))
 
 ;; ------------------------------------------------------------
 ;;; Insert / Toggle
@@ -180,8 +178,12 @@
 ;; Insert 'use Data::Printer; p `var'' where `var' is the variable
 ;; near the point.  If invoked with an argument, comments out the
 ;; line where `var' is found.
-(defun nvp-perl-insert-debug-statement (comment)
-  (interactive "P")
+(defun nvp-perl-insert-debug-statement (expr &optional comment)
+  (interactive
+   (let ((var (thing-at-point 'perl-variable t)))
+     (list (read-from-minibuffer
+            (nvp-prompt-default "Expression to dump: " var)
+            nil nil nil nil var))))
   (let ((var (or (thing-at-point 'perl-variable)
                  (read-from-minibuffer "Expression to dump: "))))
     (if comment (progn
@@ -251,7 +253,7 @@
 ;; completing read for installed modules
 (defun nvp-perl-read-module (&optional prompt default path)
   (or default (setq default (thing-at-point 'perl-module t)))
-  (setq prompt (nvp-prompt--with-default (or prompt "Module: ") default))
+  (setq prompt (nvp-prompt-default (or prompt "Module: ") default))
   (let ((module (nvp-completing-read prompt (nvp-perl-modules))))
     (if path (nvp-perl-module-path module)
       path)))

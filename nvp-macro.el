@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 23:58:22>
+;; Last modified: <2019-03-16 14:58:04>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -301,6 +301,35 @@ If NO-PULSE, don't pulse region when using THING."
     (and
      (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
      (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
+
+;; paredit splicing reindent doesn't account for prompts
+(cl-defmacro nvp-preserving-column (&rest body &key mode &allow-other-keys)
+  "Preserve point in column after executing BODY.
+`paredit-preserving-column' doesn't properly account for repl/minibuffer prompts."
+  (declare (indent defun) (debug defun))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
+  (macroexp-let2 nil column (cond
+                             ((null mode) '(current-column))
+                             ((derived-mode-p 'comint-mode)
+                              '(- (current-column)
+                                  (comint-line-beginning-position)))
+                             ((eq major-mode 'minibuffer-inactive-mode)
+                              '(- (current-column (minibuffer-prompt-width))))
+                             (t '(current-column)))
+    (let ((orig-indent (make-symbol "indentation"))
+          (orig-col (make-symbol "column")))
+      `(let ((,orig-col ,column)
+             (,orig-indent (current-indentation)))
+         (unwind-protect
+             (progn ,@body)
+           (let ((ci (current-indentation)))
+             (goto-char
+              (+ (point-at-bol)
+                 (cond ((not (< ,orig-col ,orig-indent))
+                        (+ ,orig-col (- ci ,orig-indent)))
+                       ((<= ci ,orig-col) ci)
+                       (t ,orig-col))))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Control flow
@@ -860,7 +889,8 @@ If STRIP-CTRL, just return the last character, eg. M-* => *."
 
 ;; TODO:
 ;; - use help buffer with xref?
-;; - truncate popup
+;; - better popup formatting
+
 (cl-defmacro nvp-with-toggled-tip (popup
                                    &key
                                    (help-key "h")  ;key-binding for help-fn
@@ -1020,8 +1050,8 @@ if process exit status isn't 0."
   (declare (indent defun) (debug t))
   (let ((proc (make-symbol "proc")))
     `(progn
-       (declare-function nvp-indicate-modeline-success "nvp-indicate")
-       (declare-function nvp-log "nvp-log")
+       (declare-function nvp-indicate-modeline-success "")
+       (declare-function nvp-log "")
        (let ((,proc (start-process
                      ,(or proc-name process) (,buffer-fn ,proc-buff)
                      ,process ,@proc-args)))
@@ -1688,11 +1718,12 @@ MODES is of form (feature . mode)."
 (defmacro eieio-declare-slot (name)
   (cl-pushnew name eieio--known-slot-names) nil)
 
-(defmacro nvp-declare (package &rest funcs)
-  (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for func in funcs
-      collect `(declare-function ,func ,package))))
+(eval-and-compile                       ;use in this file
+  (defmacro nvp-declare (package &rest funcs)
+   (declare (indent defun))
+   (macroexp-progn
+    (cl-loop for func in funcs
+       collect `(declare-function ,func ,package)))))
 
 (defmacro nvp-autoload (package &rest funcs)
   (declare (indent defun))

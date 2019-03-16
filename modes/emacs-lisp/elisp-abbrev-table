@@ -317,6 +317,7 @@
     ("yonp" "yes-or-no-p" nil :system t)
 
     ("botap" "bounds-of-thing-at-point" nil :system t)
+    ("makes" "make-symbol" nil :system t)
     ("procs" "process-status" nil :system t)
     ("stbow" "switch-to-buffer-other-window" nil :system t)
     ("symfi" "symbol-file" nil :system t)

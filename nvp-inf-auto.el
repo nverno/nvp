@@ -1,8 +1,6 @@
 ;;; nvp-inf-auto.el --- autoloaded inf process commands -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-24 04:41:26>
+;; Last modified: <2019-03-16 13:20:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 23 February 2019

@@ -53,7 +53,7 @@
 ;; FIXME:
 ;; Find documentation for given SYMBOL online.
 (defun nvp-clojure-help-online (symbol)
-  (interactive (list (nvp-completing-read-default "Symbol: ")))
+  (interactive (list (nvp-read-default "Symbol: ")))
   (cl-destructuring-bind (x &optional y)
       (split-string symbol "/")
     (browse-url

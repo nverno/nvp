@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-26 15:09:22>
+;; Last modified: <2019-03-16 13:41:25>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 20 March 2017
@@ -170,6 +170,25 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
    (let ((var (read-file-local-variable "Add dir-local variable")))
      (list var (read-file-local-variable-value var))))
   (nvp-toggle-local-variable var val 'dir))
+
+;; -------------------------------------------------------------------
+;;; Font-lock
+
+;;;###autoload
+(defun nvp-toggle-font-lock ()
+  "Toggle font-lock additions on/off."
+  (interactive)
+  (if (not (bound-and-true-p nvp-local-font-lock))
+      (message "No additional font-lock rules for %s" major-mode)
+    (nvp-toggled-if (font-lock-refresh-defaults)
+      (font-lock-flush (point-min) (point-max))
+      (font-lock-ensure (point-min) (point-max)))))
+
+;; -------------------------------------------------------------------
+;;; Text case
+(defun nvp-toggle-case ()
+  (interactive)
+  (nvp-toggled-if nil nil))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

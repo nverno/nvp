@@ -99,3 +99,44 @@
                               ,(match-string-no-properties 2))))))))
       (user-error "File %s doesn't exist." netrc))
     res))
+
+;; -------------------------------------------------------------------
+;;; Fonts
+
+;;- Greek letters 
+;; http://www.emacswiki.org/emacs/PrettyGreek
+(defvar nvp-font-greek-alist
+  `(("rangle" . ?\⟩)
+    ,@(cl-pairlis '("alpha" "beta" "gamma" "delta" "epsilon" "zeta" "eta"
+                    "theta" "iota" "kappa" "lambda" "mu" "nu" "xi" "omicron"
+                    "pi" "rho" "sigma_final" "sigma" "tau" "upsilon" "phi" "chi"
+                    "psi" "omega")
+                  (mapcar
+                   (lambda (x) (make-char 'greek-iso8859-7 x))
+                   (number-sequence 97 121)))))
+
+;; compose chars according to `nvp-font-greek-alist'.
+(defun nvp-font-greekify ()
+  (mapc
+   (lambda (x)
+     (let ((word (car x))
+           (char (cdr x)))
+       (font-lock-add-keywords
+        nil
+        `((,(concat "\\(^\\|[^a-za-z0-9]\\)\\(" word "\\)[a-za-z]")
+	   (0 (progn
+		(decompose-region
+		 (match-beginning 2)
+		 (match-end 2))
+		nil)))))
+       (font-lock-add-keywords
+        nil
+        `((,(concat "\\(^\\|[^a-za-z0-9]\\)\\(" word "\\)[^a-za-z]")
+	   (0 (progn
+		(compose-region
+		 (1- (match-beginning 2))
+		 (match-end 2)
+		 ,char)
+		nil)))))))
+   nvp-font-greek-alist))
+

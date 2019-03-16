@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 23:30:45>
+;; Last modified: <2019-03-16 13:18:02>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -127,9 +127,6 @@
 ;; -------------------------------------------------------------------
 ;;; general helpers
 
-;; (defsubst nvp-mode-config-path (mode)
-;;   (expand-file-name (concat "nvp-" (nvp-stringify mode) "-config.el") nvp/config))
-
 ;; strip ctrl-m, multiple newlines
 (defun nvp-process-buffer-filter (proc string)
   (with-current-buffer (process-buffer proc)
@@ -137,16 +134,21 @@
     (insert (replace-regexp-in-string "[\r\n]+" "\n" string))))
 
 ;; add default to prompt in non-nil
-(defsubst nvp-prompt--with-default (prompt &optional default)
+(defsubst nvp-prompt-default (prompt &optional default)
   (if default (format "%s (default %s): "
                       (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
     prompt))
 
-(defun nvp-completing-read-default (prompt collection &optional pred match initial
+;; Read with default of symbol-at-point. When COLLECTION is provided use
+;; completing read, otherwise read from the minibuffer
+(defun nvp-read-default (prompt &optional collection pred match initial
                                            hist default inherit)
   (or default (setq default (symbol-at-point)))
-  (nvp-completing-read (nvp-prompt--with-default prompt default) collection pred
-                       match initial hist default inherit))
+  (or prompt (setq prompt (nvp-prompt-default)))
+  (if collection
+      (nvp-completing-read (nvp-prompt-default prompt default) collection pred
+                           match initial hist default inherit)
+    (read-from-minibuffer prompt nil nil nil nil default)))
 
 (provide 'nvp)
 ;;; nvp.el ends here

@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-15 18:33:10>
+#+DATE: <2019-03-16 00:54:23>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -32,14 +32,14 @@
 - semantic-sticky-func minor mode for parse generics
 
 * Functions
-** General [3/17]
+** General [5/22]
 - [ ] fix perl package install script / reply
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::(defun%20nvp-perl-cpanm-install%20()][perl cpanm install]]
-- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/nvp-sh.el::(defvar%20nvp-sh-company-active-map][fix company-active-map in sh]]
+- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/nvp-sh.el::(defvar%20nvp-sh-company-active-map][fix company-active-map in sh]]
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
 - [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
 - [ ] update package cache
-- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/emacs-lisp/list_urls.sed::t%20loop][sed basic imenu for labels]]
+- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/emacs-lisp/list_urls.sed::t%20loop][sed basic imenu for labels]]
 - [ ] sed lookup help
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el::(defun%20nvp-makefile-beginning-of-defun-function%20(&optional%20arg)][fix makefile beg/end of defuns]]
 - [ ] [[file:/usr/local/share/emacs/27.0.50/lisp/cedet/semantic/bovine/make.el.gz::(defun%20semantic-default-make-setup%20()][semantic add anything to makefiles?]]

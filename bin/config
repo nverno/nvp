@@ -6,6 +6,7 @@ set -e
 . ~/bin/include/utils.sh
 
 SITE_LISP="$HOME/.emacs.d/site-lisp"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 ##
 # @info         Nest dirs in nvp and link to site-lisp until better packaging
@@ -100,12 +101,18 @@ link() {
 }
 
 ##
-# @usage        clean_site
+# @usage        clean_links [modes]
+# @param        modes - remove links from mode subdirs (optional)
 # @brief        cleanup site-lisp dir, removing broken links. 
 ##
-clean_site() {
-    cd "$SITE_LISP"
-    find -L . -name . -o -type d -prune -o -type l -exec rm {} +
+clean_links() {
+    if [[ -z "$1" ]]; then
+        cd "$SITE_LISP"
+        find -L . -name . -o -type d -prune -o -type l -exec rm {} +
+    else
+        cd "$DIR/../modes"
+        find ./ -maxdepth 2 -type l -exec rm {} +
+    fi
 }
 
 ##
@@ -134,7 +141,7 @@ while (( "$#" )); do
         link-all) link_all;;
         unlink) shift && unlink "$1";;
         link) shift && link "$1";;
-        clean) clean_site;;
+        clean) shift && clean_links "$1";;
         *) usage && exit 1;;
     esac
     shift

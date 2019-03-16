@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-09 03:00:34>
+;; Last modified: <2019-03-15 23:30:45>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -141,6 +141,12 @@
   (if default (format "%s (default %s): "
                       (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
     prompt))
+
+(defun nvp-completing-read-default (prompt collection &optional pred match initial
+                                           hist default inherit)
+  (or default (setq default (symbol-at-point)))
+  (nvp-completing-read (nvp-prompt--with-default prompt default) collection pred
+                       match initial hist default inherit))
 
 (provide 'nvp)
 ;;; nvp.el ends here

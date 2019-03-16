@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-14 19:43:16>
+;; Last modified: <2019-03-16 00:10:57>
 ;; Created:  4 November 2016
 
 ;;; Commentary:
@@ -21,10 +21,11 @@
   (interactive)
   (and (nvp-fish-ensure-indent) (fish_indent)))
 
+(defun nvp-fish-before-save ()
+  (when (executable-find "fish_indent")
+    (add-hook 'before-save-hook #'fish_indent-before-save nil t)))
 (when (executable-find "fish_indent")
-  (defun nvp-fish-before-save ()
-    (add-hook 'before-save-hook #'fish_indent-before-save nil t))
-  (add-hook 'fish-mode-hook #'nvp-fish-before-save))
+ (add-hook 'fish-mode-hook #'nvp-fish-before-save))
 
 ;; -------------------------------------------------------------------
 ;;; Completion - basic

@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-03-15 09:21:48>
+;; Last modified: <2019-03-16 00:32:46>
 ;; Created: 31 October 2016
 
 ;;; Commentary:
@@ -75,7 +75,7 @@
 (defun nvp-elisp-write-abbrev (file &optional verbose)
   (interactive
    (list (read-file-name
-          "Write abbrev file: " (nvp-package-root) "elisp-temp-abbrevs")))
+          "Write abbrev file: " default-directory "elisp-temp-abbrevs")))
   (let ((coding-system-for-write 'utf-8)
         (local-table nvp-abbrev-dynamic-table))
     (with-temp-buffer

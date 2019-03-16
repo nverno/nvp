@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-15 18:15:59>
+;; Last modified: <2019-03-16 00:06:44>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -34,8 +34,6 @@
 (declare-function company-shell "company-shell")
 (declare-function bash-completion-dynamic-complete "bash-completion")
 (declare-function bash-completion-dynamic-complete-nocomint "bash-completion")
-
-(autoload 'string-trim "subr-x")
 
 ;; -------------------------------------------------------------------
 ;;; Variables
@@ -206,6 +204,13 @@ Used to set `end-of-defun-function'."
     (bash-completion-dynamic-complete-nocomint
      (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table)))
 
+(defvar nvp-sh-company-active-map
+  (let ((km (make-sparse-keymap)))
+    (set-keymap-parent km company-active-map)
+    (define-key km [remap nvp-company-quickhelp-toggle] #'nvp-sh-quickhelp-toggle)
+    (define-key km [remap company-show-doc-buffer] #'nvp-sh-company-show-doc-buffer)
+    km))
+
 ;; setup company backends with company-bash and either company-shell
 ;; or bash-completion
 (defun nvp-sh-completion-setup ()
@@ -279,13 +284,6 @@ Used to set `end-of-defun-function'."
              #'(lambda (_type selected)
                  (nvp-sh-doc-buffer selected) "*company-documentation*")))
     (company-show-doc-buffer)))
-
-(defvar nvp-sh-company-active-map
-  (let ((km (make-sparse-keymap)))
-    (set-keymap-parent km company-active-map)
-    (define-key km [remap nvp-company-quickhelp-toggle] #'nvp-sh-quickhelp-toggle)
-    (define-key km [remap company-show-doc-buffer] #'nvp-sh-company-show-doc-buffer)
-    km))
 
 ;; ------------------------------------------------------------
 ;;; Font-lock

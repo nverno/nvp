@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-03-07 13:02:56>
+;; Last modified: <2019-03-16 00:32:10>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -26,9 +26,9 @@
            (elgz (concat el ".gz")))
       (pcase arg
         (`(4) (dired (file-name-directory library)))
-        (`(16) (let ((scripts (nvp-install--script (file-name-directory library))))
-                 (and (file-exists-p scripts)
-                      (find-file-other-window scripts))))
+        ;; (`(16) (let ((scripts (nvp-install--script (file-name-directory library))))
+        ;;          (and (file-exists-p scripts)
+        ;;               (find-file-other-window scripts))))
         (_ (find-file-other-window (if (file-exists-p el) el elgz)))))))
 
 (defun nvp-elisp-get-library-file (&optional lisp-only)

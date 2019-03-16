@@ -2,8 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/rust-tools
-;; Package-Requires: 
-;; Last modified: <2019-03-08 06:43:16>
+;; Last modified: <2019-03-16 00:11:36>
 ;; Created: 26 October 2016
 
 ;;; Commentary:

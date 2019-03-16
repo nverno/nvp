@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 22:15:57>
+;; Last modified: <2019-03-15 23:58:22>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -800,7 +800,7 @@ If STRIP-CTRL, just return the last character, eg. M-* => *."
       `(substring (key-description (vector last-command-event)) -1)
     `(key-description (vector last-command-event))))
 
-;; TODO: remove
+(make-obsolete 'nvp-read 'nvp-completing-read "26.1")
 (defmacro nvp-read (prompt &optional thing &rest args)
   "Read input in various ways."
   (declare (indent defun))
@@ -918,7 +918,7 @@ default help function."
 
 ;; -------------------------------------------------------------------
 ;;; Processes
-
+;; FIXME: Keep only necessary macros here
 (defmacro nvp-buffer-process (&optional buffer)
   "Return BUFFER's process."
   `(get-buffer-process ,(or buffer '(current-buffer))))
@@ -1067,8 +1067,9 @@ BODY."
      ,@body)))
 
 ;; -------------------------------------------------------------------
-;;; Installation wrappers: obsolete
+;;; Installation wrappers
 
+(make-obsolete 'nvp-install--script 'nvp-install "26.1")
 (defmacro nvp-install--script (directory)
   "Find installation script."
   `(cl-loop for dir in '("script" "tools")
@@ -1079,7 +1080,7 @@ BODY."
                 if (file-exists-p fname)
                 return fname)))
 
-(make-obsolete 'nvp-install 'nvp-with-install-script "")
+(make-obsolete 'nvp-with-install-script 'nvp-install "26.1")
 (defmacro nvp-with-install-script (dir &optional funcs sudo &rest body)
   "Run installation script."
   (declare (indent defun) (debug defun))
@@ -1098,7 +1099,7 @@ BODY."
          :pop-on-error
          ,@body))))
 
-(make-obsolete 'nvp-install 'nvp-with-script "")
+(make-obsolete 'nvp-with-scipt 'nvp-install "26.1")
 (defmacro nvp-with-script (script &optional funcs sudo &rest body)
   "Run FUNCS in SCRIPT."
   (declare (indent defun) (debug defun))
@@ -1115,7 +1116,7 @@ BODY."
        :pop-on-error
        ,@body)))
 
-(make-obsolete 'nvp-install 'nvp-with-asdf-install "")
+(make-obsolete 'nvp-with-asdf-install 'nvp-install "26.1")
 (defmacro nvp-with-asdf-install (prefix dir plugin
                                         &optional config-defaults error-callback
                                         success-callback script-fn sudo
@@ -1220,6 +1221,7 @@ or PREDICATE is non-nil and returns nil."
 
 ;;-- Newline
 
+;; FIXME: Obsolete
 ;; Newline and indents for PAIRS, extends comment region with
 ;; COMMENT-START when inside COMMENT-RE.
 (cl-defmacro nvp-newline (name &optional description
@@ -1264,6 +1266,7 @@ or PREDICATE is non-nil and returns nil."
 
 ;;-- Compile
 
+;; FIXME: Obsolete
 ;; Create compile function, check for makefiles/cmake first, otherwise
 ;; execute BODY. Prefix argument executes PROMPT-ACTION, and its
 ;; result is bound to ARGS, which can be used in the body.
@@ -1400,6 +1403,7 @@ afterward."
      (let ((retval (url-filename (url-generic-parse-url (url-unhex-string ,uri)))))
        (nvp-with-gnu/w32 retval (substring retval 1)))))
 
+;; FIXME: Asyncify
 (defmacro nvp-with-url-buffer (url &rest body)
   "Do BODY in buffer with contents from URL."
   (declare (indent defun)

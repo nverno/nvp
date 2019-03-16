@@ -1,23 +1,18 @@
 ;;; nvp-clojure.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/clojure-tools
-;; Package-Requires: 
+;; Last modified: <2019-03-15 23:34:22>
 ;; Created:  1 December 2016
 
 ;;; Commentary:
-;;; Description:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(require 'nvp)
 (require 'subr-x)
 (require 'cider)
-(autoload 'nvp-log "nvp-log")
-
-(nvp-package-define-root)
 
 ;; -------------------------------------------------------------------
 ;;; Util
@@ -58,7 +53,7 @@
 ;; FIXME:
 ;; Find documentation for given SYMBOL online.
 (defun nvp-clojure-help-online (symbol)
-  (interactive (list (nvp-read "Clojure Docs: " (symbol-at-point))))
+  (interactive (list (nvp-completing-read-default "Symbol: ")))
   (cl-destructuring-bind (x &optional y)
       (split-string symbol "/")
     (browse-url

@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-25 07:17:18>
+;; Last modified: <2019-03-15 23:54:23>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
 
@@ -154,9 +154,8 @@ correspond to previously loaded files (`package--list-loaded-files')."
 ;;;###autoload
 (defun nvp-package-recompile (lib)
   "Force compile files in LIB directory."
-  (interactive (list (nvp-read "Recompile library: " :library)))
-  (let ((default-directory
-          (file-name-directory (locate-file lib load-path (get-load-suffixes)))))
+  (interactive (list (call-interactively 'locate-library)))
+  (let ((default-directory (file-name-directory lib)))
     (byte-recompile-directory default-directory 0 t)))
 
 (defun nvp-pkg--compile (nvp-pkg)

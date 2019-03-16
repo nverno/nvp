@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 15:05:07>
+;; Last modified: <2019-03-16 15:09:05>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -147,7 +147,7 @@ or REPLs."
   (if (or (paredit-in-string-p)
           (paredit-in-comment-p))
       (lisp-fill-paragraph arg)
-    (nvp-preserving-column major-mode
+    (nvp-preserving-column
       (save-excursion
         (end-of-defun)
         (beginning-of-defun)

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 15:06:10>
+;; Last modified: <2019-03-16 15:27:36>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -303,28 +303,21 @@ If NO-PULSE, don't pulse region when using THING."
      (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
 
 ;; paredit splicing reindent doesn't account for prompts
-(cl-defmacro nvp-preserving-column (&rest body &key mode &allow-other-keys)
+(defmacro nvp-preserving-column (&rest body)
   "Preserve point in column after executing BODY.
-`paredit-preserving-column' doesn't properly account for repl/minibuffer prompts."
-  (declare (indent defun) (debug defun))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
+`paredit-preserving-column' doesn't properly account for minibuffer prompts."
+  (declare (indent defun) (debug body))
   (let ((orig-indent (make-symbol "indentation"))
         (orig-col (make-symbol "column")))
-    `(let ((,orig-col (cond
-                       ((null mode) '(current-column))
-                       ((derived-mode-p 'comint-mode)
-                        '(- (current-column)
-                            (comint-line-beginning-position)))
-                       ((eq major-mode 'minibuffer-inactive-mode)
-                        '(- (current-column (minibuffer-prompt-width))))
-                       (t '(current-column))))
+    `(let ((,orig-col (save-excursion (back-to-indentation) (current-column)))
            (,orig-indent (current-indentation)))
        (unwind-protect
            (progn ,@body)
          (let ((ci (current-indentation)))
            (goto-char
-            (+ (point-at-bol)
+            (+ (if (eq major-mode 'minibuffer-inactive-mode)
+                   (- (minibuffer-prompt-width))
+                 (point-at-bol))
                (cond ((not (< ,orig-col ,orig-indent))
                       (+ ,orig-col (- ci ,orig-indent)))
                      ((<= ci ,orig-col) ci)

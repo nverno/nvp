@@ -113,7 +113,7 @@ clean_site() {
 ##
 usage() {
     cat <<EOF_HELP
-Usage: $0 [move|unlink|link] 
+Usage: $0 [move|unlink|link|unlink-all|link-all|clean] 
        move		move tools to nvp and link to site-lisp
        unlink-all	remove links from site-lisp
        link-all		link from nvp/modes to site-lisp

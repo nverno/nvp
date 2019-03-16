@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 05:13:35>
+;; Last modified: <2019-03-15 19:14:40>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -305,14 +305,16 @@ If NO-PULSE, don't pulse region when using THING."
 ;; -------------------------------------------------------------------
 ;;; Control flow
 
-(defmacro nvp-toggled-if (then &rest rest)
+(cl-defmacro nvp-toggled-if (then &rest rest &key this-cmd &allow-other-keys)
   "Do THEN if `last-command' wasn't `this-command', otherwise do REST \
 and set `this-command' to nil so opposite happens next time."
   (declare (indent 1))
+  (while (keywordp (car rest))
+    (setq rest (cdr (cdr rest))))
   `(if (not (eq this-command last-command))
        ,then
      ,@rest
-     (setq this-command nil)))
+     (setq this-command ,this-cmd)))
 
 ;;; FIXME: unused
 (defmacro nvp-search-and-go (regexp &optional back &rest body)
@@ -740,7 +742,6 @@ If BUFFER is non-nil, use BINDINGS locally in BUFFER."
        (with-current-buffer buff
          ,@body))))
 
-;; TODO: evil-with-view-buffer looks good
 (defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."
@@ -755,20 +756,7 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
         ,@body
         (view-mode-enter nil 'kill-buffer)))))
 
-;; FIXME: move this stuff out of here and make minor mode
-;; #<marker at 153343 in evil-common.el>
-(defvar-local nvp-list-view-select-action ())
-(put 'nvp-list-view-select-action 'permanent-local t)
-
-(defun nvp-view-list-goto-entry ()
-  (interactive)
-  (when (and nvp-list-view-select-action
-             (not (eobp)))
-    (let* ((line (line-number-at-pos (point)))
-           (entry (elt tabulated-list-entries (1- line))))
-      (funcall nvp-list-view-select-action (nth 1 entry)))))
-
-;; evil-with-view-list
+;; evil-with-view-list: #<marker at 154076 in evil-common.el>
 (cl-defmacro nvp-with-view-list (&key
                                  name           ;buffer name
                                  mode-name      ;mode-line name
@@ -778,27 +766,21 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
   "View buffer in `tabulated-list-mode'."
   (declare (indent defun) (debug t))
   (let ((action (make-symbol "action")))
-    `(let ((,action ,select-action)
-           (bufname (concat "*" ,name "*"))
-           (inhibit-read-only t))
-       (and (get-buffer bufname)
-            (kill-buffer bufname))
-       (let ((buf (get-buffer-create bufname))
-             (map (make-sparse-keymap)))
-         (define-key map "q" #'kill-this-buffer)
-         (define-key [follow-link] nil)
-         (define-key [mouse-1] ,action)
-         (define-key [return] ,action)
-         (with-current-buffer buf
-           (setq tabulated-list-format ,format
-                 tabulated-list-entries ,entries
-                 mode-name ,mode-name
-                 action ,action)
-
-           ;; init tabulated mode => put into minor mode
-           (tabulated-list-init-header)
-           (tabulated-list-print))
-         (pop-to-buffer buff)))))
+    `(progn
+       (declare-function nvp-view-list-mode "")
+       (let ((,action ,select-action)
+            (bufname (concat "*" ,name "*"))
+            (inhibit-read-only t))
+        (and (get-buffer bufname)
+             (kill-buffer bufname))
+        (let ((buf (get-buffer-create bufname)))
+          (with-current-buffer buf
+            (setq tabulated-list-format ,format
+                  tabulated-list-entries ,entries
+                  action ,action)
+            (nvp-view-list-mode)        ;inits lists
+            (setq mode-name ,mode-name))
+          (pop-to-buffer buff))))))
 
 ;; -------------------------------------------------------------------
 ;;; Keys / IO

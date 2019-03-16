@@ -1,8 +1,6 @@
 ;;; nvp-yas-auto.el --- yas helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-15 13:06:33>
+;; Last modified: <2019-03-15 19:03:01>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019

@@ -1,10 +1,8 @@
 ;;; nvp-basic.el --- basic requires -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-14 22:48:19>
+;; Last modified: <2019-03-15 18:12:34>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -145,23 +143,36 @@ With ARG use default behaviour, except also call `expand-abbrev'."
 ;; -------------------------------------------------------------------
 ;;; Company
 
-; FIXME: toggle off just pops up a new postip
 (defun nvp-company-quickhelp-toggle ()
   "Toggle pos-tip help on/off."
   (interactive)
   (let ((x-gtk-use-system-tooltips nil))
-    (or (x-hide-tip)
-        ;;   (add-hook 'pre-command-hook #'company-pre-command nil t)
-        ;; (remove-hook 'pre-command-hook #'company-pre-command t)
-        ;; (cl-letf (((symbol-function 'company--electric-restore-window-configuration)
-        ;;            #'ignore)))
-        (company-quickhelp-manual-begin))))
+    ;; tell `company-quickhelp--manual-begin' to start the timer
+    ;; alternatively, could probably call `company-quickhelp--cancel-timer'
+    ;; #<marker at 8895 in company-quickhelp.el>
+    (nvp-toggled-if
+      (if (bound-and-true-p nvp-doc-toggle-function)
+          (funcall nvp-doc-toggle-function 'company)
+        (company-quickhelp-manual-begin))
+      :this-cmd 'company-quickhelp-manual-begin
+      (x-hide-tip))))
 
-;;; FIXME: check if backend is already there -- this could be a macro
-(defun nvp-company-local (backend)
+;;; FIXME: check if backends is already there -- this could be a macro
+(defun nvp-company-local (backends)
   "Make a buffer-local company backend."
-  (set (make-local-variable 'company-backends)
-       (push backend company-backends)))
+  (make-local-variable 'company-backends)
+  (cl-macrolet
+      ((del-copies
+        (backend)
+        `(cl-delete-if (lambda (elt)
+                         (if (consp elt) (memq ,backend elt) (eql ,backend elt)))
+                       company-backends)))
+    (if (consp backends)
+        (dolist (be backends)
+          (unless (keywordp be)
+            (del-copies be)))
+      (del-copies backends)))
+  (cl-pushnew backends company-backends :test #'equal))
 
 ;; -------------------------------------------------------------------
 ;;; IDO

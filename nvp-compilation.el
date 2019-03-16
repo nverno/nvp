@@ -2,12 +2,13 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 18:34:09>
+;; Last modified: <2019-03-15 19:01:21>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 11 November 2016
 
 ;;; Commentary:
+;; FIXME: merge with compile
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))

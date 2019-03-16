@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-15 05:38:07>
+;; Last modified: <2019-03-15 18:45:19>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -95,15 +95,15 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
                   (symbol-function file-fn)))
          ,@body))))
 
-(defmacro nvp-display-file-with-action (action &rest body)
-  "Execute BODY with jump ACTION file defaults."
-  (declare (indent defun) (debug (sexp &rest form)))
-  (macroexp-let2 nil action action
-    `(let* ((file-fn (nvp-display--get-action ,action :file))
-            (ido-default-file-method (nvp-display--get-action ,action :ido)))
-       (cl-letf (((symbol-function 'find-file)
-                  (symbol-function file-fn)))
-         ,@body))))
+; (defmacro nvp-display-file-with-action (action &rest body)
+;   "Execute BODY with jump ACTION file defaults."
+;   (declare (indent defun) (debug (sexp &rest form)))
+;   (macroexp-let2 nil action action
+;     `(let* ((file-fn (nvp-display--get-action ,action :file))
+;             (ido-default-file-method (nvp-display--get-action ,action :ido)))
+;        (cl-letf (((symbol-function 'find-file)
+;                   (symbol-function file-fn)))
+;          ,@body))))
 
 (defmacro nvp-display-buffer-with-action (action &rest body)
   (declare (indent defun) (debug (sexp &rest form)))

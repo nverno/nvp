@@ -5,6 +5,12 @@ SED   ?= sed
 CASK  ?= cask
 ETAGS ?= etags
 
+CP ?= install -p -m 644
+MKDIR ?= install -p -d                            #755 regardless
+
+INSTALL_INFO ?= $(shell command -v ginstall-info || printf install-info)
+MAKEINFO ?= makeinfo
+
 PKG = nvp
 EL  = $(filter-out %-autoloads.el, $(wildcard *.el))
 ELC = ${EL:.el=.elc}

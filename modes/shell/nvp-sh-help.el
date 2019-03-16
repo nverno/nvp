@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-15 14:36:47>
+;; Last modified: <2019-03-15 16:28:40>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -64,8 +64,7 @@
         (skip-syntax-forward " " start)
         (cond
          ;; '[[' or '['
-         ((looking-back "\\(?:^\\|[^[]\\)\\(\\[+\\)[ \t]*"
-                        (line-beginning-position))
+         ((looking-back "\\(?:^\\|[^[]\\)\\(\\[+\\)[ \t]*" (line-beginning-position))
           (match-string 1))
          ;; 'if' => if in situation like 'if ! hash', then
          ;; return 'hash'

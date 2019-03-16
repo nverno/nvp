@@ -4,10 +4,17 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-15 07:01:23>
+;; Last modified: <2019-03-15 18:24:52>
 ;; Created: 17 August 2018
 
 ;;; Commentary:
+
+;; TODO:
+;; - better check for doc block
+;; - extend newline-dwim with doc-newline-dwim
+;; - parse doc comments
+;; - eldoc support
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib))

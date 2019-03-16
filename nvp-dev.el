@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 04:27:41>
+;; Last modified: <2019-03-15 19:19:05>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -19,6 +19,7 @@
 (require 'help-mode)
 (nvp-declare "nadvice" advice-mapc advice-remove)
 (nvp-autoload "nvp-string" nvp-s-wrap nvp-s-center nvp-s-repeat)
+(defvar nvp-mode-cache)
 
 (define-button-type 'help-marker
   :supertype 'help-xref
@@ -38,6 +39,15 @@
   (call-process "make" nil 0 nil "-k")
   (let ((file (car (directory-files (expand-file-name ".") t "autoloads.el"))))
     (load-file file)))
+
+(defun nvp-dev-mode-cache (mode)
+  "Examine, refresh MODE's config cache.
+With prefix, examine contents instead of resetting them."
+  (interactive (list (completing-read "Mode: " nvp-mode-cache)))
+  (require 'nvp-setup)
+  (if current-prefix-arg
+      (let ((cols 5)))
+      (remhash mode nvp-mode-cache)))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -156,6 +166,36 @@ With prefix COUNT-LINES count unique lines."
     (nvp-with-results-buffer nil
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
+
+;; -------------------------------------------------------------------
+;;; Unused
+
+;; (autoload 'nvp-env-substitute-vars "nvp-env")
+
+;; Read config filename lines, expanding environment variables in key-value pairs
+;; key-value pairs are separated by SEPARATORS and value may be quoted
+;; lines beginning with COMMMENTS regex are ignored
+;; separators default to ":=" and comments default to '#'
+;; Return list of (key . value) pairs
+; (defun nvp-config-read-file (filename &optional separators comments)
+;   (setq separators (regexp-quote (or separators ":=")))
+;   (setq comments (regexp-quote (or comments "#")))
+;   (with-temp-buffer
+;     (insert-file-contents filename)
+;     (goto-char (point-min))
+;     (let ((key-val-regex
+;            (concat "^\\([^" separators "\n]+\\)[" separators "]+\\([^\n]+\\)"))
+;           (vars))
+;       (while (not (eobp))
+;         (when (and (not (looking-at-p comments))
+;                    (looking-at key-val-regex))
+;           ;; expand enviroment variables and remove quotes from values
+;           (push (cons (string-trim (match-string-no-properties 1))
+;                       (nvp-env-substitute-vars
+;                        (match-string-no-properties 2) 'unquote))
+;                 vars))
+;         (forward-line 1))
+;       vars)))
 
 (provide 'nvp-dev)
 ;;; nvp-dev.el ends here

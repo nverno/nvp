@@ -1,8 +1,6 @@
 ;;; nvp-doc.el --- doc strings/buffers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-22 19:27:29>
+;; Last modified: <2019-03-15 16:48:54>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 10 February 2019

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-15 14:34:04>
+;; Last modified: <2019-03-15 18:15:59>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -23,7 +23,6 @@
   (require 'cl-lib)
   (require 'subr-x)
   (defvar explicit-shell-file-name))
-(require 'nvp)
 (require 'nvp-parse)
 (require 'nvp-shell)
 (require 'nvp-sh-help)
@@ -219,11 +218,7 @@ Used to set `end-of-defun-function'."
       (add-hook 'completion-at-point-functions 'nvp-sh-dynamic-complete-vars nil t)))
   ;; use local version of `company-active-map' to rebind
   ;; functions to show popup help and jump to help buffer
-  (make-local-variable 'company-active-map)
-  (nvp-bind-keys company-active-map
-    :predicate (keymapp company-active-map)
-    ("M-h" . nvp-sh-quickhelp-toggle)
-    ("C-h" . nvp-sh-company-show-doc-buffer))
+  (set (make-local-variable 'company-active-map) nvp-sh-company-active-map)
   (cl-pushnew nvp-sh-company-backends company-backends)
   (setq-local company-transformers '(company-sort-by-backend-importance)))
 
@@ -284,6 +279,13 @@ Used to set `end-of-defun-function'."
              #'(lambda (_type selected)
                  (nvp-sh-doc-buffer selected) "*company-documentation*")))
     (company-show-doc-buffer)))
+
+(defvar nvp-sh-company-active-map
+  (let ((km (make-sparse-keymap)))
+    (set-keymap-parent km company-active-map)
+    (define-key km [remap nvp-company-quickhelp-toggle] #'nvp-sh-quickhelp-toggle)
+    (define-key km [remap company-show-doc-buffer] #'nvp-sh-company-show-doc-buffer)
+    km))
 
 ;; ------------------------------------------------------------
 ;;; Font-lock

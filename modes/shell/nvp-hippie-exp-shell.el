@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-07 02:44:12>
+;; Last modified: <2019-03-15 16:18:49>
 ;; Package-Requires: 
 ;; Created:  7 December 2016
 
@@ -31,7 +31,7 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (require 'hippie-exp)
-(autoload 'nvp-shell-alias-table "nvp-shell")
+(require 'nvp-shell)
 
 ;; -------------------------------------------------------------------
 ;;; Expand shell aliases, eg. bash shell-expand-alias C-M-e 

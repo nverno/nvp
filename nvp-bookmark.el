@@ -1,14 +1,12 @@
 ;;; nvp-bookmark.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-22 18:10:28>
+;; Last modified: <2019-03-15 18:50:42>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
 
 ;;; Commentary:
-;; not used
+;; TODO: incorporate bmk-to-bmk if there is anything useful
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

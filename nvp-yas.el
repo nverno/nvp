@@ -1,10 +1,8 @@
 ;;; nvp-yas.el --- snippet helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 12:58:47>
+;; Last modified: <2019-03-15 19:02:49>
 ;; Created: 20 December 2016
 
 ;;; Commentary:

@@ -1,11 +1,8 @@
 ;;; nvp-abbrev-util.el --- shared abbrev utils -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-25 23:51:53>
+;; Last modified: <2019-03-15 18:49:06>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
 ;; Created:  7 February 2019
 
 ;;; Commentary:

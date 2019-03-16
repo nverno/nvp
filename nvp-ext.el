@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-08 02:17:04>
+;; Last modified: <2019-03-15 18:56:55>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -245,6 +245,18 @@ in buffer *vagrant-status*."
          (string-to-number (buffer-string)))))
    ;; Default
    1))
+
+;;;###autoload
+(defun nvp-ext-xev ()
+  "Run xev with output to emacs buffer."
+  (interactive)
+  (with-current-buffer (get-buffer-create "*xev*")
+    (pop-to-buffer (current-buffer))
+    (local-set-key (kbd "C-c C-c") 'kill-this-buffer)
+    (nvp-with-process "xev"
+      :buffer-fn get-buffer-create
+      :proc-filter nil
+      :on-success (kill-buffer))))
 
 (provide 'nvp-ext)
 ;;; nvp-ext.el ends here

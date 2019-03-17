@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-16 21:11:52>
+#+DATE: <2019-03-16 22:19:28>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -305,7 +305,7 @@ Separators,
 - [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
 
 ** Perl [2/7]
-*** DONE General [1/1]
+*** DONE General
 - [X] cache module paths
 *** DONE newline
 *** TODO HAP [0/1]
@@ -401,7 +401,8 @@ Separators,
 - [X] gawk installs
 - [X] asm install
 
-* Mode settings [6/11]
+* Mode settings [6/12]
+- [ ] semantic - separate from cedet / update bindings
 - [ ] ggtags
 - [ ] ctags
   https://github.com/skeeto/.emacs.d/tree/master/lisp

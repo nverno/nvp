@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 04:03:32>
+;; Last modified: <2019-03-16 22:13:57>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -18,7 +18,7 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'nvp))
-(require 'nvp)                          ;nvp-prompt--with-default
+(require 'nvp)                          ;nvp-prompt-default
 (declare-function function-called-at-point "help")
 (declare-function help--symbol-completion-table "help-fns")
 (autoload 'eldoc-minibuffer-message "eldoc")
@@ -100,7 +100,7 @@
           (expand-file-name (concat mode "/" (car files)) nvp/install)
         (unless default
           (setq prompt
-                (nvp-prompt--with-default
+                (nvp-prompt-default
                  prompt (cl-some (lambda (f)
                                    (member
                                     f `(,(format "install-%s" mode) "install")))

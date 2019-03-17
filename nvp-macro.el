@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 15:27:36>
+;; Last modified: <2019-03-16 22:11:24>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -309,15 +309,15 @@ If NO-PULSE, don't pulse region when using THING."
   (declare (indent defun) (debug body))
   (let ((orig-indent (make-symbol "indentation"))
         (orig-col (make-symbol "column")))
-    `(let ((,orig-col (save-excursion (back-to-indentation) (current-column)))
+    `(let ((,orig-col (if (eq major-mode 'minibuffer-inactive-mode)
+                          (- (current-column) (minibuffer-prompt-width))
+                        (current-column)))
            (,orig-indent (current-indentation)))
        (unwind-protect
            (progn ,@body)
          (let ((ci (current-indentation)))
            (goto-char
-            (+ (if (eq major-mode 'minibuffer-inactive-mode)
-                   (- (minibuffer-prompt-width))
-                 (point-at-bol))
+            (+ (point-at-bol)
                (cond ((not (< ,orig-col ,orig-indent))
                       (+ ,orig-col (- ci ,orig-indent)))
                      ((<= ci ,orig-col) ci)

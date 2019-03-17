@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-16 13:16:01>
+;; Last modified: <2019-03-16 22:26:56>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -145,6 +145,7 @@
               res))
       res)))
 
+;; FIXME: inserts in weird places
 ;; Add a new perl use statement after the existing use statements.
 (defun nvp-perl-add-use (&optional module)
   (interactive
@@ -178,29 +179,28 @@
 ;; Insert 'use Data::Printer; p `var'' where `var' is the variable
 ;; near the point.  If invoked with an argument, comments out the
 ;; line where `var' is found.
-(defun nvp-perl-insert-debug-statement (expr &optional comment)
+(defun nvp-perl-insert-debug-statement (var &optional comment)
   (interactive
    (let ((var (thing-at-point 'perl-variable t)))
-     (list (read-from-minibuffer
-            (nvp-prompt-default "Expression to dump: " var)
-            nil nil nil nil var))))
-  (let ((var (or (thing-at-point 'perl-variable)
-                 (read-from-minibuffer "Expression to dump: "))))
-    (if comment (progn
-                  (beginning-of-line)
-                  (cperl-indent-command)
-                  (insert "# ")))
-    (save-excursion
-      (unless
-          (re-search-backward
-           "^[[:space:]]*[^#]*[[:space:]]*use[[:space:]]+Data::Printer;" nil t)
-        (nvp-perl-add-use "Data::Printer")))
-    (save-excursion
-      (back-to-indentation)
-      (split-line)
-      (insert (format "p %s;" var))
-      (comment-indent)
-      (insert "DEBUG"))))
+     (list (read-string (nvp-prompt-default "Expression to dump: " var) nil nil var)
+           current-prefix-arg)))
+  (when comment
+    (progn
+      (beginning-of-line)
+      (cperl-indent-command)
+      (insert "# ")))
+  (save-excursion
+    (unless
+        (re-search-backward
+         "^[[:space:]]*[^#]*[[:space:]]*use[[:space:]]+Data::Printer;" nil t)
+      (goto-char (point-min))
+      (nvp-perl-add-use "Data::Printer")))
+  (save-excursion
+    (back-to-indentation)
+    (split-line)
+    (insert (format "p %s;" var))
+    (comment-indent)
+    (insert "DEBUG")))
 
 ;; ------------------------------------------------------------
 ;;; Find Stuff

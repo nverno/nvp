@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 21:11:15>
+;; Last modified: <2019-03-16 22:14:32>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -140,19 +140,23 @@ With ARG use default behaviour, except also call `expand-abbrev'."
                    (goto-char beg))
                  (insert (car cmt)))))))
 
-(defun nvp-paredit-reindent-defun (&optional arg)
-  "Replacement for `paredit-reindent-defun' to handle prompts in minibuffer \
-or REPLs."
-  (interactive "P")
-  (if (or (paredit-in-string-p)
-          (paredit-in-comment-p))
-      (lisp-fill-paragraph arg)
-    (nvp-preserving-column
-      (save-excursion
-        (end-of-defun)
-        (beginning-of-defun)
-        (indent-sexp)))))
-(defalias 'paredit-reindent-defun #'nvp-paredit-reindent-defun)
+(eval-when-compile (require 'paredit))
+(declare-function paredit-indent-region "paredit")
+;; replacement to handle minibuffer/repl prompts
+(defun nvp-paredit-splice-reindent (start end)
+  (nvp-preserving-column
+    ;; If we changed the first subform of the enclosing list, we must
+    ;; reindent the whole enclosing list.
+    (if (paredit-handle-sexp-errors
+            (save-excursion
+              (backward-up-list)
+              (down-list)
+              (paredit-ignore-sexp-errors (forward-sexp))
+              (< start (point)))
+          nil)
+        (save-excursion (backward-up-list) (indent-sexp))
+      (paredit-indent-region start end))))
+(defalias 'paredit-splice-reindent #'nvp-paredit-splice-reindent)
 
 ;; -------------------------------------------------------------------
 ;;; Company

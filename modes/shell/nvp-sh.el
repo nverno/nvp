@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-16 00:06:44>
+;; Last modified: <2019-03-16 19:33:00>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -314,7 +314,7 @@ backquoted executables in double quotes."
         "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)")
       (1 font-lock-variable-name-face prepend))
      (,(apply-partially                 ;functions in quoted `...`
-        #'nvp-sh-fontify-quoted "`\\s-*\\([[:alnum:]_\\-]+\\)[^`]*`")
+        #'nvp-sh-fontify-quoted "`\\s-*\\([[:alnum:]_\\-]+\\)")
       (1 'sh-quoted-exec prepend))))
   (if (fboundp #'font-lock-flush)
       (font-lock-flush)

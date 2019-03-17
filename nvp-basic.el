@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 15:09:05>
+;; Last modified: <2019-03-16 21:11:15>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -171,22 +171,10 @@ or REPLs."
       :this-cmd 'company-quickhelp-manual-begin
       (x-hide-tip))))
 
-;;; FIXME: check if backends is already there -- this could be a macro
 (defun nvp-company-local (backends)
   "Make a buffer-local company backend."
-  (make-local-variable 'company-backends)
-  (cl-macrolet
-      ((del-copies
-        (backend)
-        `(cl-delete-if (lambda (elt)
-                         (if (consp elt) (memq ,backend elt) (eql ,backend elt)))
-                       company-backends)))
-    (if (consp backends)
-        (dolist (be backends)
-          (unless (keywordp be)
-            (del-copies be)))
-      (del-copies backends)))
-  (cl-pushnew backends company-backends :test #'equal))
+  (set (make-local-variable 'company-backends)
+       (delete-dups (cl-pushnew backends company-backends :test #'equal))))
 
 ;; -------------------------------------------------------------------
 ;;; IDO
@@ -225,12 +213,11 @@ On error (read-only), quit without selecting."
 ;; -------------------------------------------------------------------
 ;;; Wrapper functions
 
-;;; FIXME: implement
 (nvp-wrapper-fuctions
  (nvp-check-buffer-function . nil)
- (nvp-repl-jump-function    . nil)
- (nvp-test-function         . nil)
- (nvp-tag-function          . nil))
+ (nvp-repl-jump-function    . nil)      ;TODO:
+ (nvp-test-function         . nil)      ;TODO:
+ (nvp-tag-function          . nil))     ;TODO:
 
 ;; -------------------------------------------------------------------
 ;;; Marks

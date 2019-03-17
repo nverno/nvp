@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 22:20:54>
+;; Last modified: <2019-03-16 21:31:45>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -71,6 +71,33 @@
 ;;                            (slot (if (listp entry (cadr entry) entry))))
 ;;                        (list var ))))))))
 
+;; https://github.com/abo-abo/oremacs
+;;;###autoload
+(defun nvp-dev-describe-hash (variable)
+  "Display the full documentation of VARIABLE (a symbol)."
+  (interactive
+   (let ((v (variable-at-point))
+         (enable-recursive-minibuffers t)
+         val)
+     (setq val (completing-read
+                (if (and (symbolp v)
+                         (hash-table-p (symbol-value v)))
+                    (format
+                     "Describe hash-map (default %s): " v)
+                  "Describe hash-map: ")
+                obarray
+                (lambda (atom) (and (boundp atom)
+                               (hash-table-p (symbol-value atom))))
+                t nil nil
+                (if (hash-table-p v) (symbol-name v))))
+     (list (if (equal val "") v (intern val)))))
+  (with-output-to-temp-buffer (help-buffer)
+    (maphash (lambda (key value)
+               (pp key)
+               (princ " => ")
+               (pp value)
+               (terpri))
+             (symbol-value variable))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax

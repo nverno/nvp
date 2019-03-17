@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-16 13:26:47>
+#+DATE: <2019-03-16 21:11:52>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -32,7 +32,7 @@
 - semantic-sticky-func minor mode for parse generics
 
 * Functions
-** General [7/24]
+** General [8/24]
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
 - [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
 - [ ] update package cache
@@ -44,12 +44,12 @@
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el][async url topic collection]], [[file:~/.emacs.d/elpa/ess-20190314.1538/ess-julia.el::(defun%20ess-julia--retrive-topics%20(url)][ess does it sync]]
 - [ ] interface to install external deps
 - [ ] use shell-cmd at point to do abbrev expansions / hippie exp
-- [ ] company-local => macro, check for nested backends
 - [ ] list package dependencies -- `package--get-deps'
 - [ ] fix list wrapping to account for syntax
 - [ ] remove all methods from generic for debugging
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
+- [X] company-local => macro, check for nested backends - meh
 - [X] fix perl package install script / reply
 - [X] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::(defun%20nvp-perl-cpanm-install%20()][perl cpanm install]]
 - [X] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/nvp-sh.el::(defvar%20nvp-sh-company-active-map][fix company-active-map in sh]]

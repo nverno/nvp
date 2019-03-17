@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 03:48:23>
+;; Last modified: <2019-03-16 21:44:06>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -307,6 +307,16 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
 ;;         ;; The rsync command
 ;;         ()
 ;;         )))
+
+;;-- Org to PDF
+(nvp-declare "" org-latex-export-to-pdf)
+(defun nvp-dired-convert-org-to-pdf ()
+  "Convert marked org files to PDF."
+  (interactive)
+  (let ((files (dired-get-marked-files)))
+    (mapc (lambda (f) (with-current-buffer (find-file-noselect f)
+                   (org-latex-export-to-pdf)))
+          files)))
 
 ;; -------------------------------------------------------------------
 ;;; Imenu

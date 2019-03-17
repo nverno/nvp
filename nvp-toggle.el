@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-16 13:41:25>
+;; Last modified: <2019-03-16 21:35:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 20 March 2017
@@ -12,6 +12,10 @@
 ;; - helm real command: #<marker at 13548 in helm-lib.el>
 ;; - edmacro
 ;; - prefix commands in simple.el #<marker at 170851 in simple.el.gz>
+;; - `suppress-keymap', `key-description (this-single-command-keys)'
+;;   #<marker at 30452 in subr.el.gz>
+;; - semantic also uses suppress keymap
+;; - event manipulation: #<marker at 44624 in subr.el.gz>
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -55,8 +59,7 @@ Call repeatedly with 'i'."
                                      "Thingatpt (default 'paragraph): "
                                      nil nil nil nil 'paragraph))
                           'paragraph))))
-  (unless bnds
-    (user-error "No region to search in."))
+  (unless bnds (user-error "No region to search in."))
   (setq inc (if (eq 4 (car arg)) -1 1))
   (let (deactivate-mark)
     (nvp-regex-map-across-matches
@@ -186,9 +189,10 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
 
 ;; -------------------------------------------------------------------
 ;;; Text case
-(defun nvp-toggle-case ()
-  (interactive)
-  (nvp-toggled-if nil nil))
+
+;; (defun nvp-toggle-case ()
+;;   (interactive)
+;;   (nvp-toggled-if nil nil))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

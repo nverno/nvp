@@ -78,44 +78,44 @@ END {
 }
 
 sub watch_callback {
-	my ($__fd__, $__condition__, $__fh__) = @_;
-    # internal variable, strange name so that you seldom change them
-    my $__exp__ = "";
-    my $__line__;
-    while (1) {
-        $__line__ = <$__fh__>;
-        unless (defined($__line__)) {
-            exit;
-        }
-        chomp($__line__);
-        if ($__line__ =~ s/\\\s*$//) {
-            print "+> ";
-            $__exp__ .= $__line__ . "\n";
-        } else {
-            last;
-        }
+  my ($__fd__, $__condition__, $__fh__) = @_;
+  # internal variable, strange name so that you seldom change them
+  my $__exp__ = "";
+  my $__line__;
+  while (1) {
+    $__line__ = <$__fh__>;
+    unless (defined($__line__)) {
+      exit;
     }
-    $__exp__ .= $__line__ . "\n";
-    print "\nYou just input: $__exp__\n" if $DEBUG;
-    if ($__exp__ =~ /^(quit|exit|bye)$/) {
-        exit;
-    } elsif ( $__exp__ =~ /^(help\s+|\?)(.*)\s*$/ ) {
-        Gtksh::Subs::help($2);
+    chomp($__line__);
+    if ($__line__ =~ s/\\\s*$//) {
+      print "+> ";
+      $__exp__ .= $__line__ . "\n";
     } else {
-        print "Eval '$__exp__'\n" if $DEBUG;
-        my $res = eval(
-            "{
+      last;
+    }
+  }
+  $__exp__ .= $__line__ . "\n";
+  print "\nYou just input: $__exp__\n" if $DEBUG;
+  if ($__exp__ =~ /^(quit|exit|bye)$/) {
+    exit;
+  } elsif ( $__exp__ =~ /^(help\s+|\?)(.*)\s*$/ ) {
+    Gtksh::Subs::help($2);
+  } else {
+    print "Eval '$__exp__'\n" if $DEBUG;
+    my $res = eval(
+      "{
                 no warnings 'all';
                 $__exp__;
             }"
-        );
-        if ($@) {
-            print "Error: $@\n";
-        }
-        print "\nResult: ", $res, "\n" if defined $res;
+     );
+    if ($@) {
+      print "Error: $@\n";
     }
-    print $PROMPT;
-	return TRUE;
+    print "\nResult: ", $res, "\n" if defined $res;
+  }
+  print $PROMPT;
+  return TRUE;
 }
 
 __END__

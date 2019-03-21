@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-21 14:15:12>
+#+DATE: <2019-03-21 15:23:49>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -194,8 +194,8 @@ Use ~load-history~
 - [ ] optionally abbrev library, buffer, or file
 - [ ] another abbrev table for variables?
 
-** C/C++ [0/9]
-- [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
+** C/C++ [1/1]
+- [X] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
 *** TODO Font-lock [0/1]
 - [ ] toggle doxygen
 

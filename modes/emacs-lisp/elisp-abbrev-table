@@ -114,6 +114,7 @@
     ("fi" "funcall-interactively" nil :system t)
     ("fm" "format-message" nil :system t)
     ("fr" "fill-region" nil :system t)
+    ("fs" "forward-sexp" nil :system t)
     ("fw" "forward-word" nil :system t)
     ("ff" "find-file" nil :system t)
     ("fl" "forward-line" nil :system t)

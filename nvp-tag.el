@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 01:46:53>
+;; Last modified: <2019-03-21 15:52:26>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -73,6 +73,12 @@ Placeholders:
 ;;     (error "No `imenu-generic-expression' defined for %s" major-mode))
 ;;   (let* ((find-cmd
 ;;           (format "find %s -type f -size 1M \\( -regex \".*\\.\"")))))
+
+(defun nvp-xref-find-etags ()
+  (interactive)
+  (let* ((xref-backend-functions '(etags--xref-backend))
+         (thing (xref-backend-identifier-at-point 'etags)))
+    (xref-find-definitions-other-window thing)))
 
 (provide 'nvp-tag)
 ;;; nvp-tag.el ends here

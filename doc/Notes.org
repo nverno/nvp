@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-16 22:19:28>
+#+DATE: <2019-03-21 14:15:12>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -195,7 +195,7 @@ Use ~load-history~
 - [ ] another abbrev table for variables?
 
 ** C/C++ [0/9]
-- [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
+- [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
 *** TODO Font-lock [0/1]
 - [ ] toggle doxygen
 
@@ -328,10 +328,10 @@ Separators,
 *** TODO Tests [0/1]
 - [ ] simple test setup
 
-** sh [1/5]
+** sh [2/3]
 - [X] prefix hippie-shell-expand functions
+- [X] fix comanpy-active-map
 - [ ] parse sh function documentation
-- [ ] fix comanpy-active-map
 *** TODO Completion [0/2]
 - [ ] capf for lexical scoped variables
 - [ ] merge capf bash-completion/variable-completion, maybe
@@ -349,9 +349,10 @@ Separators,
 - [X] code method
 - [ ] doc comment
 
-** Python [0/2]
+** Python [0/3]
 - [ ] convert newline
 - [ ] newline in string => parameters
+- [ ] namespace conda-env?
 
 ** Julia [0/2]
 - [ ] convert newline
@@ -465,6 +466,7 @@ wrapper for cookiecutter packages
 - [ ] include environment variables
 - [ ] handle various string operations
 - [ ] handle default values
+
 
 * cookies [1/3]
 - [X] el

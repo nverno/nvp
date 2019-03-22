@@ -1,35 +1,16 @@
-;;; nvp-c.el --- ... -*- lexical-binding: t; -*-
+;;; nvp-c.el --- c helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
+;; Last modified: <2019-03-21 19:20:44>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/c-tools
-;; Package-Requires: 
+;; URL: https://github.com/nverno/nvp-c
 ;; Created: 11 November 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
-;;; TODO:
+;; TODO:
 ;; - Move env setup ffi - R, lisp - to separate file.
 ;;   Should do env., snippets, abbrevs, etc all together.
-;;; FIXME:
+;; FIXME:
 ;; - function signatures => generic parsing method
 
 ;;; Code:
@@ -42,8 +23,6 @@
 (nvp-declare "cc-cmds" c-mark-function c-beginning-of-defun)
 (nvp-declare "" nvp-compile)
 (autoload 'string-trim-right "subr-x")
-
-(nvp-package-define-root :snippets t)
 
 (defvar-local nvp-c-local-include-paths nil)
 (setq-default nvp-c-local-include-paths '("." ".." "../include"))
@@ -155,12 +134,26 @@
 
 (defun nvp-c-mark-defun ()
   (interactive)
-  (nvp--mark-defun                      ;fixme
+  (nvp--mark-defun                      ;FIXME: generic
    ;; mark function on first invoke
    (c-mark-function)
    ;; successively extend to next functions
    (c-beginning-of-defun -1)
    (point)))
+
+(declare-function forward-ifdef "hideif")
+;; https://github.com/abo-abo/oremacs/
+(defun nvp-c-forward-sexp-function (arg)
+  (if (looking-at "^#if")
+      (forward-ifdef arg)               ;FIXME: forward after final #endif
+    (let ((forward-sexp-function nil))
+      (forward-sexp arg)
+      (while (looking-at "[.-]")
+        (forward-sexp)))
+    (when (and (eq (char-after) ?.)
+               (looking-back "[0-9]+" (line-beginning-position)))
+      (forward-char)
+      (skip-chars-forward "0-9"))))
 
 ;; -------------------------------------------------------------------
 ;;; Compile
@@ -176,7 +169,7 @@
           (format "%s %s -o %s%s %s" (nvp-program "gcc")
                   flags out (nvp-with-gnu/w32 ".out" ".exe") file)))
     (setq-local compile-command compile-command)
-    (call-interactively 'nvp-compile)))
+    (funcall-interactively 'nvp-compile current-prefix-arg)))
 
 ;; compile current file and run it with output to compilation buffer
 (defun nvp-c-compile-and-run (keep &optional compiler flags post-action)
@@ -192,7 +185,7 @@
                       post-action (concat "./" out))
                   (unless keep (concat "; rm " out)))))
     (setq-local compile-command command)
-    (funcall-interactively 'nvp-compile nil current-prefix-arg)))
+    (funcall-interactively 'nvp-compile current-prefix-arg)))
 
 ;; watch error output with TEST
 (defun nvp-c-compile-watch (arg)
@@ -335,6 +328,14 @@
         (insert (format "#ifndef _%s\n#define _%s\n\n" guard guard))
         (goto-char (point-max))
         (insert (format "\n#endif /* _%s */" guard))))))
+
+;; -------------------------------------------------------------------
+;;; Font-lock
+
+(dolist (mode '(c-mode c++-mode))
+  (font-lock-add-keywords
+   mode
+   '(("\\<\\(assert\\|DEBUG\\)\\s-*(" 1 font-lock-warning-face t))))
 
 ;; -------------------------------------------------------------------
 ;;; Doxygen

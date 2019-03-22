@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 13:18:02>
+;; Last modified: <2019-03-21 18:25:29>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -66,6 +66,9 @@
 (put 'nvp-local-uris 'permanent-local t)
 (defvar-local nvp-local-src-directories () "Local source dirs to jump.")
 
+;; windows
+(defvar nvp-window-configuration-stack ())
+
 ;; installs
 (nvp-defvar nvp-install-makefile (expand-file-name "Makefile" nvp/install))
 (defvar-local nvp-install-mode-targets ()
@@ -96,6 +99,13 @@
 
 ;; -------------------------------------------------------------------
 ;;; Faces
+
+(defface nvp-highlight-face
+  '((((class color) (background light))
+     (:background "navy" :foreground "yellow" :weight bold :slant italic))
+    (t (:background "yellow" :foreground "navy" :weight bold :slant italic)))
+  "Really highlight stuff."
+  :group 'nvp)
 
 ;; see cperl gaudy array/hash faces
 (defface nvp-italic-variable-face

@@ -1,6 +1,6 @@
 ;;; nvp-j.el --- from abo-abo config I think -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-09 03:42:50>
+;; Last modified: <2019-03-22 01:34:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  8 March 2019
@@ -10,7 +10,8 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
-(require 'j-mode)
+(require 'j-mode nil t)
+(nvp-declare "" j-console-execute-line j-console-execute-buffer)
 
 ;; provided j-atoms
 ;; (custom-set-faces
@@ -97,7 +98,7 @@ Delete all space to the left beforehand."
 Wrap region if it's active."
   (interactive)
   (if (region-active-p)
-      (j-wrap-region-parens (region-beginning) (region-end))
+      (j-wrap-region-parens)
     (j-delete-spaces-left)
     (unless (looking-back "(\\|^\\|'" (line-beginning-position))
       (insert " "))

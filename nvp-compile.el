@@ -1,6 +1,6 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-16 05:39:50>
+;; Last modified: <2019-03-21 19:11:53>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 12 February 2019
@@ -77,9 +77,9 @@ ARGS are passed to `nvp-compile'."
          (args (mapconcat 'identity
                           `(,(file-name-directory buffer-file-name)
                             ;; for MSYS
-                            (nvp-with-w32 "-G \"MSYS Makefiles\"")
-                            "-DCMAKE_CXX_COMPILER=g++.exe"
-                            "-DCMAKE_C_COMPILER=gcc.exe"
+                            ,(nvp-with-w32 "-G \"MSYS Makefiles\"")
+                            "-DCMAKE_CXX_COMPILER=g++"
+                            "-DCMAKE_C_COMPILER=gcc"
                             "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
                             ,@params)
                           " "))

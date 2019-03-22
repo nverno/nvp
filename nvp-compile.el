@@ -1,6 +1,6 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-21 19:11:53>
+;; Last modified: <2019-03-22 12:39:30>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 12 February 2019
@@ -24,7 +24,7 @@ With double prefix or more, use comint buffer for compilation."
   (interactive "P")
   (setq current-prefix-arg arg)
   (if (bound-and-true-p nvp-compile-function)
-      (call-interactively nvp-compile-function arg)
+      (call-interactively nvp-compile-function)
     (call-interactively #'nvp-compile-default)))
 
 (defun nvp-compile-default (&optional comint read-command)

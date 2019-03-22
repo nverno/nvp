@@ -1,14 +1,14 @@
 ;; -*- coding: utf-8; -*-
 
 (define-abbrev-table 'cperl-mode-abbrev-table
-  '(("_" "$_" nil :system t)
-
+  '(
+    ("_" "$_" nil :system t)
     ("my" "my $" nvp-perl-my-toggle :system t)
     ("pr" "print" nil :system t)
     ("def" "defined" nil :system t)
     ("ddd" "Data::Dumper::Dumper" nil :system t)
     ("ret" "return" nil :system t)
-
+    ("stdin" "<STDIN>" nil :system t)
     ("useenc" "use Encode qw(encode decode from_to);" nil :system t)
     ("usedump" "use Data::Dumper qw(Dumper);" nil :system t)
     ("useopt" "use Getopt::Long; GetOptions();" nil :system t)

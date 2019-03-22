@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-21 17:45:13>
+;; Last modified: <2019-03-22 12:38:07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -127,7 +127,8 @@
         (when (file-exists-p yas-dir)
          (unless (member yas-dir yas-snippet-dirs)
            (push yas-dir yas-snippet-dirs))
-         (yas-load-directory mode-snips))
+         (and (file-exists-p mode-snips)
+              (yas-load-directory mode-snips)))
         (cl-pushnew dir load-path :test #'string=)
         (ignore-errors (quietly-read-abbrev-file abbr-file))
         (puthash mode mvars nvp-mode-cache)))

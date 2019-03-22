@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-21 22:14:46>
+#+DATE: <2019-03-21 23:25:59>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -32,7 +32,7 @@
 - semantic-sticky-func minor mode for parse generics
 
 * Functions
-** General [8/25]
+** General [9/25]
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
 - [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
 - [ ] update package cache
@@ -49,7 +49,7 @@
 - [ ] remove all methods from generic for debugging
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
-- [ ] perl install plsense
+- [X] perl install plsense
 - [X] company-local => macro, check for nested backends - meh
 - [X] fix perl package install script / reply
 - [X] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::(defun%20nvp-perl-cpanm-install%20()][perl cpanm install]]
@@ -302,7 +302,7 @@ Separators,
 - [ ] parse typescript for builtin sigs/docs/names
 - [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
 
-** Perl [2/7]
+** Perl [3/7]
 *** DONE General
 - [X] cache module paths
 *** DONE newline
@@ -320,8 +320,8 @@ Separators,
 - [ ] includes
 - [ ] variables
 
-*** TODO Completion [0/1]
-- [ ] get company-plsense working?
+*** DONE Completion [1/1]
+- [X] get company-plsense working?
 
 *** TODO Tests [0/1]
 - [ ] simple test setup

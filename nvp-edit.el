@@ -1,6 +1,6 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 05:12:45>
+;; Last modified: <2019-03-22 00:54:17>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -88,8 +88,6 @@ With prefix sort in REVERSE."
     (let ((fill-column 75))
       (fill-paragraph))))
 
-;; FIXME: generalize to non-elisp?
-;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph    
 ;;;###autoload
 (defun nvp-unfill-paragraph (&optional region)
   "Takes a multi-line paragraph and makes it into a single line of text."
@@ -106,12 +104,11 @@ is useful, e.g, for use with `visual-line-mode'."
   (let ((fill-column (point-max)))
     (fill-region beg end)))
 
-;;; FIXME:
 ;;;###autoload
 (defun nvp-fill-paragraph-toggle ()
   (interactive)
-  (let ((fill-column (nvp-toggled-if fill-column most-positive-fixnum))
-        (deactivate-mark))
+  (let (deactivate-mark
+        (fill-column (nvp-toggled-if fill-column most-positive-fixnum)))
     (call-interactively 'fill-paragraph)))
 
 ;; -------------------------------------------------------------------

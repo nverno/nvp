@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-21 14:16:46>
+;; Last modified: <2019-03-22 01:30:48>
 ;; Created: 30 October 2016
 
 ;;; Commentary:
@@ -405,6 +405,24 @@ the console."
   (add-hook 'after-save-hook 'nvp-python-set-encoding nil t))
 
 ;;;###autoload (add-hook 'python-mode-hook 'nvp-python-mode)
+
+;; -------------------------------------------------------------------
+;;; Info
+(declare-function info-lookup-add-help "info-look")
+(with-eval-after-load 'info-look
+  (info-lookup-add-help
+   :mode 'python-mode
+   :regexp "[a-zA-Z_0-9.]+"
+   :doc-spec
+   '(("(python)Python Module Index" )
+     ("(python)Index"
+      (lambda
+        (item)
+        (cond
+         ((string-match
+           "\\([A-Za-z0-9_]+\\)() (in module \\([A-Za-z0-9_.]+\\))" item)
+          (format "%s.%s" (match-string 2 item)
+                  (match-string 1 item)))))))))
 
 (provide 'nvp-python)
 ;;; nvp-python.el ends here

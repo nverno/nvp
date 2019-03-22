@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 22:11:24>
+;; Last modified: <2019-03-22 01:34:09>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -334,8 +334,8 @@ and set `this-command' to nil so opposite happens next time."
     (setq rest (cdr (cdr rest))))
   `(if (not (eq this-command last-command))
        ,then
-     ,@rest
-     (setq this-command ,this-cmd)))
+     (prog1 (progn ,@rest)
+       (setq this-command ,this-cmd))))
 
 ;;; FIXME: unused
 (defmacro nvp-search-and-go (regexp &optional back &rest body)
@@ -1356,15 +1356,16 @@ afterward."
   (let ((fn (intern (if (symbolp name)
                         (symbol-name name)
                       name))))
-    `(defun ,fn (start end)
+    `(defun ,fn ()
        ,doc
        ,@(when interact-p
            '(interactive "r"))
-       (save-excursion
-         (goto-char (region-beginning))
-         (insert ,begin))
-       (goto-char (region-end))
-       (insert ,end))))
+       (when (region-active-p)
+        (save-excursion
+          (goto-char (region-beginning))
+          (insert ,begin))
+        (goto-char (region-end))
+        (insert ,end)))))
 
 ;; Wrap items in list between DELIM, default wrapping with WRAP
 ;; Create list wrapping functions, wrapping items between DELIMS with

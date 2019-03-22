@@ -11,7 +11,7 @@ function quicksort(data, left, right, less_than,   i, last) {
     if (left >= right) {
         return
     }
-    
+
     quicksort_swap(data, left, int((left + right) / 2))
     last = left
     for (i = left + 1; i <= rigth; i++) {

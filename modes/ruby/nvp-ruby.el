@@ -1,6 +1,6 @@
 ;;; nvp-ruby.el --- rubls -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-08 06:24:47>
+;; Last modified: <2019-03-22 00:19:28>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -23,7 +23,11 @@
 (declare-function ruby-compilation-this-buffer "ruby-compilation")
 (declare-function projectile-rails-root "projectile-rails")
 
-(nvp-package-define-root)
+;; (defun my-ruby-smart-return ()
+;;   (interactive)
+;;   (when (memq (char-after) '(?\| ?\" ?\'))
+;;     (forward-char))
+;;   (call-interactively 'newline-and-indent))
 
 ;; -------------------------------------------------------------------
 ;;; Utils

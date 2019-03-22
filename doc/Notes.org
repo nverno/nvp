@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-21 23:25:59>
+#+DATE: <2019-03-22 00:31:31>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -49,6 +49,7 @@
 - [ ] remove all methods from generic for debugging
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
+- [ ] smartrep for toggled commands
 - [X] perl install plsense
 - [X] company-local => macro, check for nested backends - meh
 - [X] fix perl package install script / reply
@@ -89,6 +90,7 @@ pkgs: smart-jump, dumb-jump, evil-jump-to-tag
 - [ ] utility function to repeat command like kbdmacro-repeat
 - [X] function wrappers to call local funs
 *** TODO Function cache wrappers [2/6]
+pkgs: memoize, stash
 - [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
 - [ ] frame cache - see which-func
 - [ ] cache w/ filenotify invalidation
@@ -104,10 +106,12 @@ funcs: with-temp-message
 - [ ] update nvp-log, not very useful - probably just remove
 
 ** REPLs [0/1]
+see repl-toggle library
 Not sure how this should work.
 - [ ] uniform repl-swithcing interface
 
 ** Newline DWIM [2/4]
+https://github.com/ainame/smart-newline.el/blob/master/smart-newline.el
 - [ ] method to do comment continuations
 - [ ] optional openers/closers
 - [X] generic methods

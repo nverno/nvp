@@ -3,9 +3,8 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-06 15:56:04>
-;; URL: https://github.com/nverno/lisp-tools
-;; Package-Requires: 
+;; Last modified: <2019-03-21 20:29:00>
+;; URL: https://github.com/nverno/nvp
 ;; Created: 21 November 2016
 
 ;;; Commentary:
@@ -29,8 +28,6 @@
 
 (autoload 'nvp-elisp-abbrev-expand-var-p "nvp-elisp")
 (autoload 'nvp-elisp-abbrev-expand-fn-p "nvp-elisp")
-
-(nvp-package-define-root :snippets t)
 
 ;; -------------------------------------------------------------------
 ;;; Util

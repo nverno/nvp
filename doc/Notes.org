@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-21 19:46:13>
+#+DATE: <2019-03-21 22:14:46>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -150,6 +150,7 @@ see which-func
 - [ ] semantic
 - [ ] man
 - [ ] web search / GNU docs
+  pkgs: google-this
 - [ ] source code (using tags)
 - [ ] tags
 - [ ] zeal?
@@ -384,6 +385,7 @@ Separators,
 - [ ] web-backend?? javadoc-lookup
 
 * Mode struct [2/5]
+https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [X] struct or class?
 - [X] package deps
 - [ ] support recipe fetcher
@@ -399,14 +401,15 @@ Separators,
 - [X] gawk installs
 - [X] asm install
 
-* Mode settings [6/12]
+* Mode settings [7/13]
 - [ ] semantic - separate from cedet / update bindings
 - [ ] ggtags
 - [ ] ctags
   https://github.com/skeeto/.emacs.d/tree/master/lisp
-- [ ] ag settings
+- [ ] ag/ripgrep settings
 - [ ] pdfgrep
 - [ ] EDE
+- [X] erc
 - [X] m4
 - [X] etags
 - [X] edebug
@@ -414,21 +417,8 @@ Separators,
 - [X] grep
 - [X] limit greps search directories
 
-* Library fixes [4/9]
-- [ ] fix nvp-install
-- [ ] better package installs
-  https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
-- [ ] nvp-doc - company backend, man backend, fallback to websearch? zeal?
-- [ ] nvp-abbrev-dynamic - should be ready for elisp / C
-- [ ] nvp-disassemble - waiting on generic docs
-- [X] only call setup functions on first load
-- [X] nvp-minibuffer: eval / edebug hooks, hippie expand history
-- [X] separate setup from nvp
-- [X] remove nvp-conf / merge with config-tools
-
-* Merge/remove old packages
+* TODO Merge/remove old packages [5/9]
 - [ ] bmk-to-bmk => nvp-bookmark
-- [ ] esh-help => nvp-eshell
 - [ ] project-templates => cookiecutter?
 - [ ] tag-utils => nvp-tags
 - [X] project-ido => cookiecutter?
@@ -436,7 +426,7 @@ Separators,
 - [X] save-utils => nvp-utils
 - [X] log-utils => nvp-log
 - [X] config-tools => nvp-conf
-** Merge help packages [0/3]
+** TODO Merge help packages [0/3]
 - [ ] cheatsheet-lookup
 - [ ] help-utils
 - [ ] hyperglot

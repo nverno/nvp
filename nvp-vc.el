@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 04:48:43>
+;; Last modified: <2019-03-21 18:36:20>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -72,6 +72,9 @@ git config core.sparseCheckout true" repo) nil nil nil)
 (defsubst nvp-vc-magit-ref ()
   (interactive)
   (browse-url "https://magit.vc/manual/magit-refcard.pdf"))
+
+;; TODO: ghub
+;; https://github.com/jwiegley/dot-emacs/blob/0e07f471036d6f3ec4f3cbd38fe3277be072747b/init.el#L180
 
 (provide 'nvp-vc)
 ;;; nvp-vc.el ends here

@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 03:54:26>
+;; Last modified: <2019-03-21 17:41:44>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -58,7 +58,9 @@
   (let* ((str-mode-hook (format "%s-hook" mode))
          (hook-fn-name (format "nvp-%s-hook" (substring (symbol-name mode) 0 -5)))
          (hook-fn (intern-soft hook-fn-name)))
-    (nvp-display-location (or hook-fn nvp-default-hooks-file) :find-func action)
+    (if (bound-and-true-p hook-fn) 
+        (nvp-display-location hook-fn :find-func action)
+      (nvp-display-location nvp-default-hooks-file :file action))
     (goto-char (point-min))
     (search-forward str-mode-hook nil t)))
 

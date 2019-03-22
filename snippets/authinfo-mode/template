@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: template
+# key: init
+# --
+machine ${1:github.com} protocol ${2:https} login ${3:nverno} password $4

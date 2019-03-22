@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-15 18:45:19>
+;; Last modified: <2019-03-21 18:17:07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -51,6 +51,19 @@ MODE and BINDINGS are passed to `yas-expand-snippet'."
   (cl-progv (mapcar #'car bindings) (mapcar #'cadr bindings)
     (yas-expand-snippet
      (yas-lookup-snippet template mode) start end)))
+
+;; save / restore window configurations
+(defun nvp-window-configuration-save ()
+  (interactive)
+  (push (current-window-configuration) nvp-window-configuration-stack))
+
+(defun nvp-window-configuration-restore ()
+  (interactive)
+  (if-let* ((conf (pop nvp-window-configuration-stack)))
+      (set-window-configuration conf)
+    (if (> (length (window-list)) 1)
+        (delete-window)
+      (bury-buffer))))
 
 ;; actions to take jumping to buffers/files
 ;; 4 => same window

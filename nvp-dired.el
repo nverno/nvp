@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 21:44:06>
+;; Last modified: <2019-03-21 19:44:05>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -20,6 +20,25 @@
 (declare-function w32-shell-execute "w32")
 (declare-function nvp-ext-terminal "nvp-ext")
 (declare-function dired-filename-at-point "dired-x")
+
+;; -------------------------------------------------------------------
+;;; Imenu
+
+;; imenu indexer to simply list all files/dirs except . and ..
+;; faster than using prev/next position functions
+(defun nvp-dired-imenu-create-index ()
+  (let ((case-fold-search t)
+        item
+        index-alist)
+    (goto-char (point-max))
+    (beginning-of-line)
+    (save-match-data
+      (while (not (bobp))
+        (when (setq item (dired-get-filename 'verbatim 'no-error)))
+        (unless (member item '("." ".." nil))
+          (push (cons item (copy-marker (dired-move-to-filename))) index-alist))
+        (forward-line -1)))
+    index-alist))
 
 ;; -------------------------------------------------------------------
 ;;; Movement 
@@ -296,18 +315,6 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
     (dolist (file file-list)
       (w32-shell-execute "open" (expand-file-name file)))))
 
-;;-- TODO: rsync
-
-;; (defun nvp-dired-rsync (dest)
-;;   (interactive
-;;    (list (expand-file-name
-;;           (read-file-name "Rsync to:" (dired-dwim-target-directory)))))
-;;   ;; store all selected files into "files" list
-;;   (let ((files (dired-get-marked-files nil current-prefix-arg))
-;;         ;; The rsync command
-;;         ()
-;;         )))
-
 ;;-- Org to PDF
 (nvp-declare "" org-latex-export-to-pdf)
 (defun nvp-dired-convert-org-to-pdf ()
@@ -318,24 +325,37 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
                    (org-latex-export-to-pdf)))
           files)))
 
-;; -------------------------------------------------------------------
-;;; Imenu
+;; from abo-abo config
+(defun nvp-dired-ediff ()
+  (interactive)
+  (let ((files (dired-get-marked-files))
+        (wnd (current-window-configuration)))
+    (if (<= (length files) 2)
+        (let ((file1 (car files))
+              (file2 (if (cdr files)
+                         (cadr files)
+                       (read-file-name "File to diff against: "
+                                       (dired-dwim-target-directory)))))
+          (if (file-newer-than-file-p file1 file2)
+              (ediff-files file2 file1)
+            (ediff-files file1 file2))
+          (add-hook 'ediff-after-quit-hook-internal
+                    `(lambda ()
+                       (setq ediff-after-quit-hook-internal nil)
+                       (set-window-configuration ,wnd))))
+      (error "No more that 2 files should be marked"))))
 
-;; imenu indexer to simply list all files/dirs except . and ..
-;; faster than using prev/next position functions
-(defun nvp-dired-imenu-create-index ()
-  (let ((case-fold-search t)
-        item
-        index-alist)
-    (goto-char (point-max))
-    (beginning-of-line)
-    (save-match-data
-      (while (not (bobp))
-        (when (setq item (dired-get-filename 'verbatim 'no-error)))
-        (unless (member item '("." ".." nil))
-          (push (cons item (copy-marker (dired-move-to-filename))) index-alist))
-        (forward-line -1)))
-    index-alist))
+(defun nvp-dired-rsync (dest)
+  (interactive
+   (list
+    (expand-file-name (read-file-name "Rsync to: " (dired-dwim-target-directory)))))
+  (let ((files (dired-get-marked-files nil current-prefix-arg))
+        (rsync-command "rsync -aP "))
+    (dolist (file files)
+      (setq rsync-command (concat rsync-command (shell-quote-argument file) " ")))
+    (setq rsync-command (concat rsync-command (shell-quote-argument dest)))
+    (async-shell-command rsync-command "*rsync*")
+    (other-window 1)))
 
 (provide 'nvp-dired)
 ;;; nvp-dired.el ends here

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-22 01:34:09>
+;; Last modified: <2019-03-23 16:31:34>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -1469,6 +1469,18 @@ afterward."
 
 ;; -------------------------------------------------------------------
 ;;; Mode specific
+
+(defmacro nvp-mode-bind (&optional mode &rest bindings)
+  "Attach BINDINGS globally to MODE."
+  (declare (indent defun))
+  (or mode (setq mode (quote major-mode)))
+  `(if (not (get ,mode 'nvp))
+       (put ,mode 'nvp ,@bindings)
+     (put ,mode 'nvp
+          (cl-delete-duplicates (append (get ,mode 'nvp) ,@bindings) :key #'car))))
+
+;; -------------------------------------------------------------------
+;;; Non-builtin modes
 
 ;; Hydras
 (defmacro nvp-hydra-set-property (hydra-name &rest props)

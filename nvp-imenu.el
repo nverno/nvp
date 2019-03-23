@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 12:06:56>
+;; Last modified: <2019-03-23 18:46:50>
 ;; Created: 25 January 2017
 
 ;;; Commentary:
@@ -18,6 +18,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(require 'nvp)
 (require 'idomenu nil t)
 (declare-function idomenu "idomenu")
 (autoload 'nvp-comment-start "nvp-comment")
@@ -110,23 +111,23 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 ;;;###autoload
 (defun nvp-imenu-idomenu (arg)
   (interactive "P")
-  (pcase arg
-    (`(4)
-     ;; headers only
-     (let ((imenu-generic-expression nvp-imenu-comment-headers-re)
-           (imenu-create-index-function 'imenu-default-create-index-function))
-       (condition-case nil
-           (ido/imenu)
-         (error (message "nvp-imenu-comment-headers-re: %s"
-                         nvp-imenu-comment-headers-re)))))
-    (`(16)
-     ;; headers + sub-headers
-     (let ((imenu-generic-expression
-            (append nvp-imenu-comment-headers-re-1
-                    nvp-imenu-comment-headers-re-2))
-           (imenu-create-index-function 'imenu-default-create-index-function))
-       (ido/imenu)))
-    (_ (ido/imenu))))
+  (with-demoted-errors "Error in nvp-imenu-idomenu: %S"
+   (pcase arg
+     (`(4)                              ; headers only
+      (let ((imenu-generic-expression
+             (or nvp-imenu-comment-headers-re
+                 (symbol-value (nvp-mode-val 'imenu-hdrs))))
+            (imenu-create-index-function 'imenu-default-create-index-function))
+        (ido/imenu)))
+     (`(16)                             ; headers + sub-headers only
+      (let ((imenu-generic-expression
+             (append (or nvp-imenu-comment-headers-re
+                         (symbol-value (nvp-mode-val 'imenu-hdrs)))
+                     (or nvp-imenu-comment-headers-re-2
+                         (symbol-value (nvp-mode-val 'imenu-hdrs-2)))))
+            (imenu-create-index-function 'imenu-default-create-index-function))
+        (ido/imenu)))
+     (_ (ido/imenu)))))
 
 (provide 'nvp-imenu)
 ;;; nvp-imenu.el ends here

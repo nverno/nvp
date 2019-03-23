@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-21 18:17:07>
+;; Last modified: <2019-03-23 18:55:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -81,8 +81,9 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
   (pcase (cons type action)
     (`(:buffer . ,_)
      (pop-to-buffer location (nvp-display--get-action action :buffer))
-     (and (marker-position (mark-marker))
-          (goto-char (mark-marker))))
+     ;; (and (marker-position (mark-marker))
+     ;;      (goto-char (mark-marker)))
+     )
     ((or `(,:find-func . ,_) `(,:file . ,_))
      (funcall (nvp-display--get-action action type) location))
     (`(:ido . ,_)

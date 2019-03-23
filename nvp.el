@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-21 18:25:29>
+;; Last modified: <2019-03-23 16:29:16>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -159,6 +159,20 @@
       (nvp-completing-read (nvp-prompt-default prompt default) collection pred
                            match initial hist default inherit)
     (read-from-minibuffer prompt nil nil nil nil default)))
+
+;; -------------------------------------------------------------------
+;;; Mode variables
+
+;; return MODE value associated with KEY if exists
+(define-inline nvp-mode-get-val (key &optional mode)
+  (inline-letevals ((mode (or mode (quote major-mode))) key)
+    (inline-quote (assq ,key (get ,mode 'nvp)))))
+
+;; return mode value, default to cadr (first value minus the key)
+(defsubst nvp-mode-val (key &optional all)
+  (when-let* ((val (nvp-mode-get-val key)))
+    (if all (cdr val)
+      (cadr val))))
 
 (provide 'nvp)
 ;;; nvp.el ends here

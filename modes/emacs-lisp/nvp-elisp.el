@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-15 11:49:19>
+;; Last modified: <2019-03-23 19:04:21>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 October 2016
 
@@ -15,7 +15,7 @@
 (require 'nvp-parse)
 (declare-function idomenu "idomenu")
 (declare-function paredit-mode "paredit")
-(declare-function nvp-toggle-local-variable "nvp-toggle")
+(nvp-declare "" nvp-toggle-local-variable)
 (nvp-declare "company-elisp" company-elisp--candidates-predicate
   company-elisp--fns-regexp company-grab-symbol)
 
@@ -279,15 +279,17 @@ If in `declare-function', convert to autoload."
 ;; ------------------------------------------------------------
 ;;; REPL / IELM
 (declare-function ielm "ielm")
+(defvar ielm-working-buffer)
 
-(nvp-repl-switch "ielm" (:repl-mode 'inferior-emacs-lisp-mode
-                         :repl-find-fn #'(lambda () (get-buffer "*ielm*"))
-                         :repl-wait 0.1
-                         :repl-switch-fn 'switch-to-buffer-other-window)
-  (with-current-buffer (get-buffer-create "*ielm*")
-    (cl-letf (((symbol-function 'pop-to-buffer-same-window) #'ignore))
-      (ielm))
-    (current-buffer)))
+;; use `pop-to-buffer' and set local `ielm-working-buffer'
+(define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
+  (let ((orig-buff (current-buffer)))
+   (with-current-buffer (get-buffer-create "*ielm*")
+     (cl-letf (((symbol-function 'pop-to-buffer-same-window) #'ignore))
+       (funcall orig-fn))
+     (prog1 (current-buffer)
+       (setq-local ielm-working-buffer orig-buff)
+       (and current-prefix-arg (pop-to-buffer (current-buffer)))))))
 
 (with-eval-after-load 'ielm
   ;; synchronize with default switching function and update default-directory
@@ -301,7 +303,7 @@ If in `declare-function', convert to autoload."
 ;;; Imenu
 
 (eval-and-compile
-  (nvp-setq nvp-elisp-imenu-comment-headers
+  (nvp-setq nvp-elisp-imenu-headers
    (let* ((prefix "^;;\\(?:;\\|[*]+\\| |\\)\\s-*")
           (hdr-regex (concat prefix "\\([^#].*\\)\\s-*$"))
           (pkg-hdrs
@@ -318,11 +320,11 @@ If in `declare-function', convert to autoload."
                     (cl-return t)))))
             1))))
 
- (nvp-setq nvp-elisp-imenu-comment-headers-1
-   `(("Headers" ,(cadar nvp-elisp-imenu-comment-headers) 1)
+ (nvp-setq nvp-elisp-imenu-headers-1
+   `(("Headers" ,(cadar nvp-elisp-imenu-headers) 1)
      ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)))
 
- (defvar nvp-elisp-imenu-comment-headers-2
+ (defvar nvp-elisp-imenu-headers-2
    '(("Sub-Headers" "^;;---*\\s-*\\([^-\n]+\\)\\s-*-*$" 1))))
 
 (provide 'nvp-elisp)

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-range
+# key: forr
+# --
+foreach (${1:beg}..${2:end}) {
+  ${3:say \$_};
+}

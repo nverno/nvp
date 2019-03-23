@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: each
+# key: each
+# --
+while(my(\$${1:index}, \$${2:value}) = each @${3:arr}) {
+  $0
+}

@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-22 00:31:31>
+#+DATE: <2019-03-22 21:37:58>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -390,11 +390,11 @@ Separators,
 
 * Mode struct [2/5]
 https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
-- [X] struct or class?
-- [X] package deps
 - [ ] support recipe fetcher
 - [ ] external install targets
 - [ ] define mode-local variables?
+- [X] struct or class?
+- [X] package deps
 
 * Automation [3/7]
 - [ ] ggtags install
@@ -421,7 +421,7 @@ https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [X] grep
 - [X] limit greps search directories
 
-* TODO Merge/remove old packages [5/9]
+* Merge/remove old packages [5/8]
 - [ ] bmk-to-bmk => nvp-bookmark
 - [ ] project-templates => cookiecutter?
 - [ ] tag-utils => nvp-tags

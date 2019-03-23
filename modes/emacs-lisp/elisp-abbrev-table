@@ -292,6 +292,7 @@
     ("defa" "define-advice" nil :system t)
     ("defc" "defconst" nil :system t)
     ("defh" "defhydra" nil :system t)
+    ("defi" "define-inline" nil :system t)
     ("dirf" "directory-files" nil :system t)
     ("dofa" "define-obsolete-function-alias" nil :system t)
     ("ffow" "find-file-other-window" nil :system t)

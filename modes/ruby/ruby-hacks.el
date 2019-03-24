@@ -25,6 +25,7 @@
 ;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 ;;; Code:
+(require 'ruby-mode)
 (defvar hs-set-up-overlay)
 
 ;; setup align for ruby-mode
@@ -46,13 +47,14 @@
   "Alignment rules specific to the ruby mode.
 See the variable `align-rules-list' for more details.")
 
-(with-eval-after-load 'align
-  (add-to-list 'align-perl-modes 'ruby-mode)
-  (add-to-list 'align-dq-string-modes 'ruby-mode)
-  (add-to-list 'align-sq-string-modes 'ruby-mode)
-  (add-to-list 'align-open-comment-modes 'ruby-mode)
-  (dolist (it ruby-align-rules-list)
-    (add-to-list 'align-rules-list it)))
+(with-no-warnings
+  (with-eval-after-load 'align
+    (add-to-list 'align-perl-modes 'ruby-mode)
+    (add-to-list 'align-dq-string-modes 'ruby-mode)
+    (add-to-list 'align-sq-string-modes 'ruby-mode)
+    (add-to-list 'align-open-comment-modes 'ruby-mode)
+    (dolist (it ruby-align-rules-list)
+      (add-to-list 'align-rules-list it))))
 
 ;; hideshow ruby support
 

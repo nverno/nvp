@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-24 03:50:44>
+;; Last modified: <2019-03-24 05:40:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
 ;; Created: 15 November 2016
@@ -11,7 +11,9 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib))
+(require 'cperl-mode)
 
+(defvar perl-reply-font-lock-keywords (cperl-load-font-lock-keywords-2))
 (defvar perl-reply-program "reply")
 (defvar perl-reply-filter-regexp "\\`\\s-+")
 (defvar perl-reply-buffer "*reply*")
@@ -42,26 +44,24 @@
 
 (defun perl-reply-send-string (str)
   (comint-send-string
-   (perl-reply-process)
-   (replace-regexp-in-string "[\r\n]+$" " " (concat str "\n"))))
+   (perl-reply-process) 
+   (replace-regexp-in-string "[\r\n]*$" " " str))
+  (comint-send-string (perl-reply-process) "\n"))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
 
 (defun perl-reply-send-region (start end)
   (interactive "r")
-  (perl-reply-send-string
-   (buffer-substring-no-properties start end)))
+  (perl-reply-send-string (buffer-substring-no-properties start end)))
 
 (defun perl-reply-send-line ()
   (interactive)
-  (perl-reply-send-string
-   (buffer-substring-no-properties (point-at-bol) (point-at-eol))))
+  (perl-reply-send-region (line-beginning-position) (line-end-position)))
 
 (defun perl-reply-send-buffer ()
   (interactive)
-  (perl-reply-send-string
-   (buffer-substring-no-properties (point-min) (point-max))))
+  (perl-reply-send-region (point-min) (point-max)))
 
 ;;;###autoload(defalias 'run-perl 'perl-reply-run)
 ;;;###autoload
@@ -75,7 +75,8 @@
   "Perl Reply REPL mode."
   (setq mode-line-process '(":%s"))
   (setq-local comint-prompt-regexp "^[0-9]+> *")
-  (setq-local comint-input-filter 'perl-reply-input-filter))
+  (setq-local comint-input-filter 'perl-reply-input-filter)
+  (setq-local font-lock-defaults '(perl-reply-font-lock-keywords t)))
 
 (provide 'perl-reply)
 ;;; perl-reply.el ends here

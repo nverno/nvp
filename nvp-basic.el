@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 22:14:32>
+;; Last modified: <2019-03-24 04:07:05>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -219,7 +219,6 @@ On error (read-only), quit without selecting."
 
 (nvp-wrapper-fuctions
  (nvp-check-buffer-function . nil)
- (nvp-repl-jump-function    . nil)      ;TODO:
  (nvp-test-function         . nil)      ;TODO:
  (nvp-tag-function          . nil))     ;TODO:
 

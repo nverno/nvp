@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-23 23:24:27>
+;; Last modified: <2019-03-24 04:22:43>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 22 March 2019
@@ -42,10 +42,10 @@
      when (memq (buffer-local-value 'major-mode (get-buffer buff)) modes)
      return buff))
 
-;; associate REPL buffer with SRC-BUFFER
-(defsubst nvp-repl--associate (src-buffer)
-  (let ((proc (nvp-buffer-process)))
-    (when (not (process-get proc :src-buffer))
+;; associate SRC-BUFFER with REPL-BUFFER
+(defsubst nvp-repl--associate (src-buffer repl-buffer)
+  (let ((proc (get-buffer-process repl-buffer)))
+    (when (and proc (not (process-get proc :src-buffer)))
       (process-put proc :src-buffer src-buffer))))
 
 ;; -------------------------------------------------------------------
@@ -62,7 +62,7 @@
                    (nvp-repl--match-mode repl-modes)))))
     (if (and buff (if live-p (funcall live-p buff) (comint-check-proc buff)))
         buff                     ; return live REPL buffer
-      ;; otherwise initialize a new one
+      ;; otherwise, initialize a new one
       (or (nvp-repl-start)
           (user-error "Failed to initialize REPL")))))
 
@@ -75,7 +75,7 @@
     (setq repl-buffer (funcall init-fn))
     (and wait (sit-for wait))
     (and (processp repl-buffer) (setq repl-buffer (process-buffer repl-buffer)))
-    (nvp-repl--associate src-buff)
+    (nvp-repl--associate src-buff repl-buffer)
     repl-buffer
     ;; (with-current-buffer repl-buffer
     ;;   (when hist

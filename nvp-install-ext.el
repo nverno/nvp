@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-23 21:01:56>
+;; Last modified: <2019-03-24 17:53:37>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -38,7 +38,7 @@
 (cl-defmethod nvp-install-help (&optional _type)
   "Display help about mode, eg. dependencies, packages, paths, etc."
   (nvp-with-results-buffer (help-buffer)
-    (call-process "make" nil t t (concat "--file=" nvp-install-makefile) "help")))
+    (call-process "make" nil t t (concat "--file=" nvp/makeext) "help")))
 
 ;; -------------------------------------------------------------------
 ;;; Manage external dependencies
@@ -48,7 +48,7 @@
   "Struct to hold external installer info."
   (mode :read-only) (makefile :read-only) (targets :read-only))
 
-(cl-defun nvp-install-ext-make (targets &key mode (makefile nvp-install-makefile))
+(cl-defun nvp-install-ext-make (targets &key mode (makefile nvp/makeext))
   (nvp-install-ext--make :targets targets :mode mode :makefile makefile))
 
 (defun nvp-install-help (ext)
@@ -69,7 +69,7 @@
 (defun nvp-installer--make-targets (&optional makefile)
   "List available targets in MAKEFILE, defaulting to `nvp-installer-makefile'."
   (with-temp-buffer
-    (insert-file-contents (or makefile nvp-install-makefile))
+    (insert-file-contents (or makefile nvp/makeext))
     (makefile-pickup-targets)
     makefile-target-table))
 

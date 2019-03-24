@@ -46,7 +46,7 @@
 ;; -------------------------------------------------------------------
 ;;; Assorted
 (nvp-declare "" nvp-move-previous-heading nvp-move-forward-heading
-  nvp-local-header-regex)
+  nvp-mode-header-regex)
 
 ;; FIXME: mark successive regions?
 ;;;###autoload
@@ -57,7 +57,7 @@
     (condition-case nil
         (progn
           (forward-line 0)
-          (or (looking-at (nvp-local-header-regex))
+          (or (looking-at (nvp-mode-header-regex))
               (nvp-move-previous-heading 'error))
           ;; headers are known at this point
           (setq beg (point))

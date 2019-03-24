@@ -131,7 +131,7 @@
         (cl-pushnew dir load-path :test #'string=)
         (ignore-errors (quietly-read-abbrev-file abbr-file))
         (puthash mode mvars nvp-mode-cache)))
-    (setq nvp-snippet-dir (nvp-mode-vars-snippets mvars)
+    (setq nvp-mode-snippet-dir (nvp-mode-vars-snippets mvars)
           nvp-abbrev-local-file (nvp-mode-vars-abbr-file mvars)
           nvp-abbrev-local-table (nvp-mode-vars-abbr-table mvars))
     (setq local-abbrev-table

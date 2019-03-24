@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-21 17:41:44>
+;; Last modified: <2019-03-24 18:45:49>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -58,11 +58,12 @@
   (let* ((str-mode-hook (format "%s-hook" mode))
          (hook-fn-name (format "nvp-%s-hook" (substring (symbol-name mode) 0 -5)))
          (hook-fn (intern-soft hook-fn-name)))
-    (if (bound-and-true-p hook-fn) 
+    (if hook-fn                         ; probably in its own config file
         (nvp-display-location hook-fn :find-func action)
-      (nvp-display-location nvp-default-hooks-file :file action))
-    (goto-char (point-min))
-    (search-forward str-mode-hook nil t)))
+      ;; otherwise goto default hook file and search for it
+      (nvp-display-location nvp/hooks :file action)
+      (goto-char (point-min))
+      (search-forward str-mode-hook nil 'move 1))))
 
 ;; -------------------------------------------------------------------
 ;;; Install / build files
@@ -81,8 +82,7 @@ With double prefix, prompt for mode."
 (defun nvp-jump-to-build-file (file action)
   "Jump with ACTION to an init FILE in the build directory."
   (interactive
-   (list (nvp-read-relative-recursively
-          nvp-build-init-dir ".el$" "Jump to init file: ")
+   (list (nvp-read-relative-recursively nvp/build ".el$" "Jump to init file: ")
          current-prefix-arg))
   (nvp-display-location file :file action))
 
@@ -131,25 +131,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
 
 ;; -------------------------------------------------------------------
 ;;; Scratch
-
-(defun nvp-scratch-switch-modes ()
-  "Switch major modes in scratch buffer."
-  (interactive)
-  (funcall (intern (nvp-read-mode)))
-  (nvp-scratch-minor-mode))
-
-(define-minor-mode nvp-scratch-minor-mode
-  "Minor mode in scratch buffers."
-  :lighter nil
-  :keymap (let ((km (make-sparse-keymap)))
-            (define-key km (kbd "C-c C-k") #'kill-this-buffer)
-            (define-key km (kbd "C-c C-s") #'nvp-scratch-switch-modes)
-            km)
-  (when nvp-scratch-minor-mode
-    (add-hook 'after-change-major-mode-hook #'nvp-scratch-minor-mode nil 'local)
-    (setq mode-name (concat "scratch[" mode-name "]"))
-    (nvp-msg "Press \\[kill-this-buffer] to kill this buffer \
-or \\[nvp-scratch-switch-modes] to switch major modes. " :keys t)))
+(autoload 'nvp-scratch-switch-modes "nvp-scratch")
 
 ;;;###autoload
 (defun nvp-jump-to-scratch (mode action)
@@ -162,17 +144,9 @@ With prefix, pop other window, with double prefix, prompt for MODE."
          current-prefix-arg))
   (let ((buff (get-buffer-create "*scratch*")))
     (with-current-buffer buff
-      (if (provided-mode-derived-p mode 'emacs-lisp-mode)
-          (unless (eq major-mode 'lisp-interaction-mode)
-            (lisp-interaction-mode))
-        (when (provided-mode-derived-p mode 'comint-mode)
-          (setq mode 'sh-mode))
-        (let ((inhibit-read-only t))
-          (kill-all-local-variables)
-          (erase-buffer)
-          (funcall mode)))
       (nvp-display-location buff :buffer action)
       (with-current-buffer buff
+        (nvp-scratch-switch-modes mode)
         (unless nvp-scratch-minor-mode
           (nvp-scratch-minor-mode))))))
 
@@ -256,8 +230,10 @@ With double prefix, set coding to utf-8."
 
 ;;;###autoload
 (defun nvp-jump-to-dir (dir action)
+  "Jump to some common directories."
   (interactive
-   (list (if (eq (prefix-numeric-value current-prefix-arg) 16) nvp/project nvp/class)
+   (list (if (eq (prefix-numeric-value current-prefix-arg) 16)
+             (nvp-completing-read "Directory (default %s): "nvp/project) nvp/class)
          current-prefix-arg))
   (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
 

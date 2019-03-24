@@ -45,7 +45,7 @@
 
 ;;--- Headings
 ;; these may vary by mode
-(nvp-define-cache nvp-local-header-regex ()
+(nvp-define-cache nvp-mode-header-regex ()
   "Get or create header regex based on comment syntax."
   :local t
   :cache nvp-local-header-regex
@@ -64,8 +64,8 @@
   (condition-case nil
       (progn
         (forward-line (if back -1 1))
-        (if back (re-search-backward (nvp-local-header-regex))
-          (re-search-forward (nvp-local-header-regex)))
+        (if back (re-search-backward (nvp-mode-header-regex))
+          (re-search-forward (nvp-mode-header-regex)))
         (forward-line 0))
     (error
      (forward-line (if back 1 -1))

@@ -37,7 +37,7 @@
    (if (string-empty-p aya-current)
        (user-error "No current auto-snippet.")
      (list aya-current)))
-  (nvp-jump-to-new-snippet major-mode nvp-snippet-dir nil aya-current
+  (nvp-jump-to-new-snippet major-mode nvp-mode-snippet-dir nil aya-current
                            nvp-aya-new-template))
 
 (provide 'nvp-snippet-aya)

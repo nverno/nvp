@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 04:07:49>
+;; Last modified: <2019-03-24 18:14:29>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -34,30 +34,25 @@
 ;; -------------------------------------------------------------------
 ;;; Variables
 
-;; movement
-(defvar-local nvp-local-header-regex nil "Regex to move b/w headers.")
-
-;; Abbrevs
-(defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
-(put 'nvp-local-header-regex 'permanent-local t)
-(defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
-(defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
-(defvar-local nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
-  "Chars to include in abbrev prefixes")
-(put 'nvp-abbrev-prefix-chars 'permanent-local t)
-
-;; Snippets
-(defvar-local nvp-snippet-dir nil "Current mode's snippet directory.")
-
-;; programs
+;;-- Global -- most machine specific are compiled in init
 (nvp-defvar nvp-program-search-paths
   (nvp-with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
     `(,nvp/bin ,nvp/binw)))
+(defvar nvp-default-org-file "gtd.org" "Default org file.")
+(defvar nvp-window-configuration-stack () "Store window configurations.")
+(defvar nvp-read-config-history () "Minibuffer jumping history.")
+
+;;-- Local
+;; Abbrevs
+(defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
+(put 'nvp-mode-header-regex 'permanent-local t)
+(defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
+(defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
+(defvar-local nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
+  "Default chars to include in abbrev prefixes")
+(put 'nvp-abbrev-prefix-chars 'permanent-local t)
 
 ;; jumping variables -- might be set in dir-locals
-(defvar nvp-default-org-file "gtd.org")
-(nvp-defvar nvp-default-hooks-file (expand-file-name "nvp-mode-hooks.el" nvp/lisp))
-(nvp-defvar nvp-build-init-dir (expand-file-name "build" nvp/emacs))
 (defvar-local nvp-local-notes-file () "Local notes/todo to jump dwim.")
 (put 'nvp-local-notes-file 'permanent-local t)
 (defvar-local nvp-local-books-directories () "Local book directory/s.")
@@ -65,36 +60,33 @@
 (defvar-local nvp-local-uris () "Local URIs for webjumping.")
 (put 'nvp-local-uris 'permanent-local t)
 (defvar-local nvp-local-src-directories () "Local source dirs to jump.")
+(put 'nvp-local-src-directories 'permanent-local t)
 
-;; windows
-(defvar nvp-window-configuration-stack ())
-
-;; installs
-(nvp-defvar nvp-install-makefile (expand-file-name "Makefile" nvp/install))
-(defvar-local nvp-install-mode-targets ()
-  "External installation targets for a major-mode.")
-
-;; font-lock
-(defvar-local nvp-local-font-lock () "Local font-lock additions.")
-
-;; minibuffer read history from jumping to local configs
-(defvar nvp-read-config-history ())
+;;-- Possibly mode vars
+(defvar-local nvp-mode-header-regex nil "Regex to move b/w headers.")
+(defvar-local nvp-mode-snippet-dir nil "Mode's snippet directory.")
+(defvar-local nvp-mode-install-targets () "Mode's external install targets.")
+(defvar-local nvp-mode-font-lock () "Mode's font-lock additions.")
 
 ;; -------------------------------------------------------------------
 ;;; Functions
+;; can be set as mode vars
 (nvp-declare "" nvp-ert-run-tests nvp-compile-default)
 
-(defvar-local nvp-help-at-point-functions ())
-(defvar-local nvp-check-buffer-function #'checkdoc)
-(defvar-local nvp-disassemble-function #'disassemble)
+;;-- Alists
+(defvar nvp-help-at-point-functions ()
+  "List of functions to return help at point.")
+(defvar nvp-check-buffer-functions
+  '((emacs-lisp-mode #'checkdoc))
+  "List of functions to check buffer.")
+(defvar nvp-disassemble-functions
+  '((emacs-lisp-mode #'disassemble)))
+(defvar nvp-test-functions
+  '((emacs-lisp-mode #'nvp-ert-run-tests))
+  "Functions called to run applicable tests in current context.")
+(defvar nvp-tag-functions () "Functions called to create tags.")
 (defvar-local nvp-compile-function #'nvp-compile-default
   "Function to compile file.")
-;; (defvar-local nvp-repl-jump-function #'ignore
-;;   "Function called to switch b/w source and REPL buffers.")
-(defvar-local nvp-test-function #'nvp-ert-run-tests
-  "Function called to run applicable tests at point.")
-(defvar-local nvp-tag-function #'ignore
-  "Function called to create tags by mode.")
 (defvar-local nvp-mark-defun-function #'mark-defun)
 
 ;; -------------------------------------------------------------------

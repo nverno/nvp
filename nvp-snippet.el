@@ -70,9 +70,9 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
    (let ((mode-name (if (equal current-prefix-arg '(64)) (nvp-read-mode)
                       (symbol-name major-mode))))
      (list mode-name
-           (if (or (equal current-prefix-arg '(16)) (not nvp-snippet-dir))
+           (if (or (equal current-prefix-arg '(16)) (not nvp-mode-snippet-dir))
                (expand-file-name mode-name nvp/snippet)
-             nvp-snippet-dir)
+             nvp-mode-snippet-dir)
            (and (equal current-prefix-arg '(4)) 'do-dired)
            (or yas-selected-text
                (and (region-active-p)

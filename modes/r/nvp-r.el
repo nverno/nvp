@@ -146,12 +146,12 @@
   (defvar nvp-imenu-comment-headers-re)
   (defvar nvp-imenu-comment-headers-re-1)
   (defvar nvp-imenu-comment-headers-re-2)
-  (defvar nvp-local-header-regex))
+  (defvar nvp-mode-header-regex))
 (declare-function nvp-imenu-setup "nvp-imenu")
 
 (defun nvp-r-setup-headers ()
   ;; code blocks in spin docs
-  (setq nvp-local-header-regex "\\s-*##\\(?:-\\|+\\)+")
+  (setq nvp-mode-header-regex "\\s-*##\\(?:-\\|+\\)+")
   ;; comment headers in rmd/spin
   (nvp-imenu-setup
    :headers '((nil "\\s-*##'\\s-+#\\s-*\\(.*\\)\\s-*$" 1))

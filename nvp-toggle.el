@@ -181,7 +181,7 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
 (defun nvp-toggle-font-lock ()
   "Toggle font-lock additions on/off."
   (interactive)
-  (if (not (bound-and-true-p nvp-local-font-lock))
+  (if (not (bound-and-true-p nvp-mode-font-lock))
       (message "No additional font-lock rules for %s" major-mode)
     (nvp-toggled-if (font-lock-refresh-defaults)
       (font-lock-flush (point-min) (point-max))

@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-24 17:32:18>
+;; Last modified: <2019-03-24 19:16:31>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -181,14 +181,12 @@ specified, prefer shell in current directory if available."
   "Halt all running vagrant boxes in `vms'.  With prefix, show output
 in buffer *vagrant-status*."
   (interactive "P")
-  (let* ((buff (if arg (get-buffer-create "*vagrant-status*") nil))
-         (proc (start-process
-                "bash" buff "bash"
-                (expand-file-name "vagrant-tools.sh" nvp/bin) "-l"
-                nvp/vms "-K")))
-    (when (not arg)
-      (message "Running vagrant-halt...")
-      (nvp-with-process-log proc :on-error (pop-to-buffer (current-buffer))))))
+  (unless nvp/vms (user-error "'nvp/vms' is nil" nvp/vms))
+  (nvp-with-process "bash"
+    :proc-buff (and arg "*vagrant-status*")
+    :proc-args ((expand-file-name "vms/vagrant-shizzle" nvp/bin) "-l" nvp/vms "-K"))
+  (when (not arg)
+    (message "Running vagrant-halt...")))
 
 ;; -------------------------------------------------------------------
 ;;; GPG

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-23 16:31:34>
+;; Last modified: <2019-03-24 19:07:05>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -1040,13 +1040,16 @@ if process exit status isn't 0."
                                (on-failure '(pop-to-buffer (current-buffer))))
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer."
   (declare (indent defun) (debug t))
-  (let ((proc (make-symbol "proc")))
+  (let ((proc (make-symbol "proc"))
+        (pbuf (make-symbol "proc-buff")))
     `(progn
        (declare-function nvp-indicate-modeline-success "")
        (declare-function nvp-log "")
-       (let ((,proc (start-process
-                     ,(or proc-name process) (,buffer-fn ,proc-buff)
-                     ,process ,@proc-args)))
+       (let* ((,pbuf ,proc-buff)
+              (,proc (start-process
+                      ,(or proc-name process) (if ,pbuf (,buffer-fn ,pbuf)
+                                                nil)
+                      ,process ,@proc-args)))
          ,(cond
            ((eq proc-filter t)
             `(set-process-filter ,proc 'nvp-process-buffer-filter))

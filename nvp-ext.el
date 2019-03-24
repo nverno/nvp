@@ -3,11 +3,12 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-15 18:56:55>
+;; Last modified: <2019-03-23 23:08:40>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
 ;;; Commentary:
+;; - https://github.com/syohex/better-shell/blob/master/better-shell.el
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-23 18:53:43>
+;; Last modified: <2019-03-23 23:24:27>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 22 March 2019
@@ -15,6 +15,10 @@
 ;; - send-dwim (region / previous sexp)
 ;; - send-defun
 ;; - redirect output
+
+;; other options:
+;; - https://github.com/tomterl/repl-toggle/blob/master/repl-toggle.el
+;; - https://github.com/kaz-yos/eval-in-repl -- meh
 
 ;;; Code:
 (eval-when-compile
@@ -38,6 +42,12 @@
      when (memq (buffer-local-value 'major-mode (get-buffer buff)) modes)
      return buff))
 
+;; associate REPL buffer with SRC-BUFFER
+(defsubst nvp-repl--associate (src-buffer)
+  (let ((proc (nvp-buffer-process)))
+    (when (not (process-get proc :src-buffer))
+      (process-put proc :src-buffer src-buffer))))
+
 ;; -------------------------------------------------------------------
 ;;; Generics
 
@@ -51,7 +61,7 @@
                  (if find-fn (ignore-errors (funcall find-fn))
                    (nvp-repl--match-mode repl-modes)))))
     (if (and buff (if live-p (funcall live-p buff) (comint-check-proc buff)))
-        buff                            ;return live REPL buffer
+        buff                     ; return live REPL buffer
       ;; otherwise initialize a new one
       (or (nvp-repl-start)
           (user-error "Failed to initialize REPL")))))
@@ -60,13 +70,12 @@
   "Initialize and return a new REPL buffer associated with current buffer."
   (let ((wait (nvp-mode-val 'repl-wait))
         (init-fn (nvp-mode-val 'repl-init-fn))
-        (cb (current-buffer))
+        (src-buff (current-buffer))
         repl-buffer)
     (setq repl-buffer (funcall init-fn))
     (and wait (sit-for wait))
     (and (processp repl-buffer) (setq repl-buffer (process-buffer repl-buffer)))
-    (when (not (process-get (get-buffer-process repl-buffer) :src-buffer))
-      (process-put (get-buffer-process repl-buffer) :src-buffer cb))
+    (nvp-repl--associate src-buff)
     repl-buffer
     ;; (with-current-buffer repl-buffer
     ;;   (when hist

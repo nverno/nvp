@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+# https://github.com/syohex/emacs-helm-perldoc
 use strict;
 use warnings;
 

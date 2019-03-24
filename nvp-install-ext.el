@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 20:31:30>
+;; Last modified: <2019-03-23 21:01:56>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -15,6 +15,7 @@
 ;; - better logging
 ;; - `make-progress-reporter'
 ;; - eventually merge back into nvp-install
+;; - gather targets: eg. make -prRn
 
 ;;; Code:
 (eval-when-compile

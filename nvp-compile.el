@@ -1,14 +1,20 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-23 19:08:45>
+;; Last modified: <2019-03-23 23:09:50>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 12 February 2019
 
 ;;; Commentary:
+
 ;; Possible packages:
-;; - https://github.com/plandes/flex-compile
+;; - https://github.com/ReanGD/emacs-multi-compile
+;; - https://github.com/plandes/flex-compile -- nah
+;; - https://github.com/defunkt/emacs/blob/master/vendor/mode-compile.el
+;; - smart-compile
+;; - https://github.com/syohex/emacs-quickrun
 ;; More generalization is good
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)

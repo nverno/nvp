@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-22 21:37:58>
+#+DATE: <2019-03-23 23:12:24>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -23,7 +23,7 @@
 * Packages to look into
 - smart-jump / dumb-jump
 - evil - see below
-- transient: replacement for magit-popup?
+- transient: for compile options / strace
 - ag / ggtags: start using again
 - straight package manager is kinda close to what I want
 ** semantic stuff

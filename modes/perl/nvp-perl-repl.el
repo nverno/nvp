@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-16 05:57:19>
+;; Last modified: <2019-03-24 03:07:00>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
 ;; Created: 15 November 2016
@@ -64,7 +64,7 @@
     (pop-to-buffer
      (process-buffer (nvp-perl-repl-process)))))
 
-;;;###autoload(defalias 'nvp-perl-repl-run 'run-perl)
+;;;###autoload(defalias 'run-perl 'nvp-perl-repl-run)
 ;;;###autoload
 (defun nvp-perl-repl-run (&optional arg)
   (interactive "P")

@@ -2,10 +2,21 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-16 22:26:56>
+;; Last modified: <2019-03-24 03:31:18>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
+
+;; TODO:
+;; - Abstract cycling chars
+;; - Examples:
+;;   - ESS cycles assign
+;;   - https://github.com/emacsmirror/cycle-quotes/blob/master/cycle-quotes.el
+;; - generic parse
+
+;; FIXME:
+;; - remove AC related plsense stuff
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -97,7 +108,6 @@
       (beginning-of-line)
       (looking-at-p ".*%.*="))))
 
-;; TODO: Abstract this
 (defun nvp-perl-my-cycle ()
   "Cycle between [$ @ %] after 'my' abbrev expansion."
   (interactive)

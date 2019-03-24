@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: var
+# key: _
+# type: command
+# --
+(insert "$")(nvp-perl-my-toggle)

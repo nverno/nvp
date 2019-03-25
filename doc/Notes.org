@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-24 20:25:51>
+#+DATE: <2019-03-24 23:46:36>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -171,7 +171,6 @@ see which-func
 
 ** Completion [0/1]
 - [ ] edebug -- possibly favor local variable completion?
-
 *** TODO company-bash [0/2]
 - [ ] don't leave includes open
 - [ ] create xrefs from imenu markers

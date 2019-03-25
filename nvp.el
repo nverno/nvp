@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 22:46:31>
+;; Last modified: <2019-03-24 23:54:25>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -73,18 +73,19 @@
 ;; can be set as mode vars
 (nvp-declare "" nvp-ert-run-tests nvp-compile-default)
 
-;;-- Alists
+;;-- FIXME: Alists
 (defvar nvp-help-at-point-functions ()
   "List of functions to return help at point.")
-(defvar nvp-check-buffer-functions
-  '((emacs-lisp-mode #'checkdoc))
+(defvar nvp-check-buffer-function #'checkdoc
+  ;; '((emacs-lisp-mode #'checkdoc))
   "List of functions to check buffer.")
-(defvar nvp-disassemble-functions
-  '((emacs-lisp-mode #'disassemble)))
-(defvar nvp-test-functions
-  '((emacs-lisp-mode #'nvp-ert-run-tests))
+(defvar nvp-disassemble-function #'disassemble
+  ;; '((emacs-lisp-mode #'disassemble))
+  )
+(defvar nvp-test-function #'nvp-ert-run-tests
+  ;; '((emacs-lisp-mode #'nvp-ert-run-tests))
   "Functions called to run applicable tests in current context.")
-(defvar nvp-tag-functions () "Functions called to create tags.")
+(defvar nvp-tag-function () "Functions called to create tags.")
 (defvar-local nvp-compile-function #'nvp-compile-default
   "Function to compile file.")
 (defvar-local nvp-mark-defun-function #'mark-defun)

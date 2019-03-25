@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-24 20:28:18>
+;; Last modified: <2019-03-24 23:55:33>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 March 2019
@@ -14,6 +14,7 @@
   (require 'cl-lib))
 (require 'nvp)
 (require 'nvp-read)
+(autoload 'nvp-comment-string "nvp-comment")
 
 (defun nvp-scratch-switch-modes (mode)
   "Switch major modes in scratch buffer."

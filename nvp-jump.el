@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 20:27:46>
+;; Last modified: <2019-03-24 23:57:22>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -20,6 +20,7 @@
   (nvp-local-vars))
 (require 'nvp)
 (require 'nvp-read)
+(nvp-declare "" nvp-scratch-minor-mode)
 (nvp-declare "yasnippet" yas-expand-snippet yas-lookup-snippet)
 (autoload 'nvp-file-locate-first-dominating "nvp-file")
 (autoload 's-chop-suffix "s")
@@ -148,8 +149,7 @@ With prefix, pop other window, with double prefix, prompt for MODE."
       (nvp-display-location buff :buffer action)
       (with-current-buffer buff
         (nvp-scratch-switch-modes mode)
-        (unless nvp-scratch-minor-mode
-          (nvp-scratch-minor-mode))))))
+        (nvp-scratch-minor-mode)))))
 
 ;; -------------------------------------------------------------------
 ;;; Books / PDFs

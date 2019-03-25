@@ -131,9 +131,11 @@ See the variable `align-rules-list' for more details.")
     (goto-char initial-pos)))
 
 ;; FIXME: rails-ruby-command, el4r-ruby-eval => just evaluate, capital-word-p
-(nvp-declare "" el4r-ruby-eval capital-word-p)
+(nvp-declare "" el4r-ruby-eval capital-word-p inf-ruby-mode)
 (defvar rails-ruby-command)
-(require 'inf-ruby)
+(defvar inf-ruby-first-prompt-pattern)
+(defvar inf-ruby-prompt-pattern)
+(require 'inf-ruby nil t)
 
 (defun run-ruby-in-buffer (buf script &optional params)
   "Run CMD as a ruby process in BUF if BUF does not exist."

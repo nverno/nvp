@@ -1,11 +1,14 @@
 ;;; nvp-sed.el --- sed -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-16 00:44:09>
+;; Last modified: <2019-03-25 03:29:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 15 March 2019
 
 ;;; Commentary:
+;; TODO:
+;; - info-lookup-add-help
+;; - see helm-info
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

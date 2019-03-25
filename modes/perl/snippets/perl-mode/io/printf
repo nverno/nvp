@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: prf
+# key: prf
+# type: command
+# --
+(let* ((yas-good-grace nil)
+       (fmt (read-string "Printf format: "))
+       (npars (s-count-matches "%" fmt)))
+  (yas-expand-snippet
+   (concat (format "printf \"%s\"%s" fmt (nvp-yas-param-str 3 npars ", ")) ";")))

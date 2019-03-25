@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 18:14:29>
+;; Last modified: <2019-03-24 20:31:43>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -151,6 +151,22 @@
       (nvp-completing-read (nvp-prompt-default prompt default) collection pred
                            match initial hist default inherit)
     (read-from-minibuffer prompt nil nil nil nil default)))
+
+;; -------------------------------------------------------------------
+;;; Window configuration
+
+;; save / restore window configurations
+(defun nvp-window-configuration-save ()
+  (interactive)
+  (push (current-window-configuration) nvp-window-configuration-stack))
+
+(defun nvp-window-configuration-restore ()
+  (interactive)
+  (if-let* ((conf (pop nvp-window-configuration-stack)))
+      (set-window-configuration conf)
+    (if (> (length (window-list)) 1)
+        (delete-window)
+      (bury-buffer))))
 
 ;; -------------------------------------------------------------------
 ;;; Mode variables

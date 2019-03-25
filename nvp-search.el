@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-16 04:40:54>
+;; Last modified: <2019-03-24 19:32:15>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -27,22 +27,23 @@
   "Lookup SYM using rgrep with FILES regexp from ROOT directory.
 By default, lookup symbol at point in files matching current file's extension
 or '*' from emacs root, ignoring package directory.
-With single prefix, includes package directory.
-With double prefix just calls `rgrep' interactively to prompt for defaults."
+(1) prefix, includes package directory.
+(2) prefix just calls `rgrep' on all files (no ext).
+(3) prefix prompt for confirmation"
   (interactive "P")
-  (require 'grep)
-  (if (equal '(16) arg) (call-interactively 'rgrep)
-    (let ((sym (or (thing-at-point 'symbol t)
-                   (read-from-minibuffer "Symbol: ")))
-          (ext (file-name-extension (or (buffer-file-name) (buffer-name))))
-          (grep-find-ignored-directories
-           (if (not (equal '(4) arg))
-               (cons (file-name-nondirectory package-user-dir)
-                     grep-find-ignored-directories)
-             grep-find-ignored-directories)))
-      (grep-compute-defaults)
-      (rgrep (format "\\b%s[ )\\t\\n]" sym) (if ext (concat "*." ext) "*")
-             nvp/emacs (equal '(64) current-prefix-arg)))))
+  (require 'nvp-grep-config)
+  (let ((sym (or (thing-at-point 'symbol t)
+                 (read-from-minibuffer "Symbol: ")))
+        (ext (and (/= (prefix-numeric-value arg) 16)
+                  (file-name-extension (or (buffer-file-name) (buffer-name)))))
+        (grep-find-ignored-directories
+         (if (not (equal '(4) arg))
+             (cons (file-name-nondirectory package-user-dir)
+                   grep-find-ignored-directories)
+           grep-find-ignored-directories)))
+    (grep-compute-defaults)
+    (rgrep (format "[\(\\b]%s[ )\\t\\n]" sym) (if ext (concat "*." ext) "*")
+           nvp/emacs (equal '(64) current-prefix-arg))))
 
 ;; -------------------------------------------------------------------
 ;;; wgrep

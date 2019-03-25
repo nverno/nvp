@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: command
+# key: command
+# --
+(let ((yas-good-grace nil)
+      $1)
+  (yas-expand-snippet $2))

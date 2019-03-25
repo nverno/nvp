@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-23 23:12:24>
+#+DATE: <2019-03-24 20:25:51>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -32,38 +32,40 @@
 - semantic-sticky-func minor mode for parse generics
 
 * Functions
-** General [9/25]
-- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
-- [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
-- [ ] update package cache
-- [ ] display package cache
+** General [0/9]
+- [ ] nvp-proc: separate sentinels from comint / find proc from nvp-ext
+  use in nvp-shell, nvp-ext, comint, term, eshell setup
+- [ ] setup hippie history expansion when setting up inf histories
 - [ ] convert cl-defstruct to vector - formatting for output
-- [ ] sed lookup help
-- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el::(defun%20nvp-makefile-beginning-of-defun-function%20(&optional%20arg)][fix makefile beg/end of defuns]]
-- [ ] [[file:/usr/local/share/emacs/27.0.50/lisp/cedet/semantic/bovine/make.el.gz::(defun%20semantic-default-make-setup%20()][semantic add anything to makefiles?]]
-- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el][async url topic collection]], [[file:~/.emacs.d/elpa/ess-20190314.1538/ess-julia.el::(defun%20ess-julia--retrive-topics%20(url)][ess does it sync]]
-- [ ] interface to install external deps
-- [ ] use shell-cmd at point to do abbrev expansions / hippie exp
-- [ ] list package dependencies -- `package--get-deps'
 - [ ] fix list wrapping to account for syntax
 - [ ] remove all methods from generic for debugging
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
-- [ ] smartrep for toggled commands
-- [X] perl install plsense
-- [X] company-local => macro, check for nested backends - meh
-- [X] fix perl package install script / reply
-- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::(defun%20nvp-perl-cpanm-install%20()][perl cpanm install]]
-- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/nvp-sh.el::(defvar%20nvp-sh-company-active-map][fix company-active-map in sh]]
-- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/emacs-lisp/list_urls.sed::t%20loop][sed basic imenu for labels]]
-- [X] quickhelp-toggle
-- [X] more generic compile function?
-- [X] jumping from shell doesn't account for local variables
+- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
+- [ ] update functions to find first applicable function from list:
+  check-buffer, disassemble, test, tag, compile
 
-** Bin helpers [0/4]
+** Install [0/2]
+- [ ] interface to install external deps
+- [ ] mode install targets
+
+** Compile [0/4]
+- [ ] generic compile interface
+- [ ] find first applicable function
+- [ ] compile with completing read for compiler switches
+- [ ] compile with completing read for makefile targets
+** Package [0/3]
+- [ ] update package cache
+- [ ] display package cache
+- [ ] list package dependencies -- `package--get-deps'
+
+** Bin helpers [0/7]
+- [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
 - [ ] awk script to parse man switches in section
 - [ ] remove local vars from all files from current directory
-- [ ] get using from script args
+- [ ] get usage from script args
+- [ ] parse sh function docs
+- [ ] parse makefile targets
 - [ ] update URLs
 
 ** evil [1/9]
@@ -88,6 +90,7 @@ pkgs: smart-jump, dumb-jump, evil-jump-to-tag
 - [ ] reusable region or string utility function - replace ~r-str-...~ macros
 - [ ] read w/ popup help: `register-read-with-preview'
 - [ ] utility function to repeat command like kbdmacro-repeat
+- [ ] smartrep for toggled commands
 - [X] function wrappers to call local funs
 *** TODO Function cache wrappers [2/6]
 pkgs: memoize, stash
@@ -105,10 +108,14 @@ funcs: with-temp-message
 - [ ] add option to treat all warnings as errors to makefile
 - [ ] update nvp-log, not very useful - probably just remove
 
-** REPLs [0/1]
-see repl-toggle library
+** REPLs [1/5]
++ see repl-toggle library
 Not sure how this should work.
-- [ ] uniform repl-swithcing interface
+- [ ] generic send region
+- [ ] generic send line
+- [ ] generic send dwim - last defun / sexp
+- [ ] generic send buffer
+- [X] uniform repl-swithcing interface
 
 ** Newline DWIM [2/4]
 https://github.com/ainame/smart-newline.el/blob/master/smart-newline.el
@@ -141,7 +148,7 @@ see which-func
 - [X] determine abbrev table name from abbrev
 
 ** Docs/help-at-point [1/3]
-
+- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el][async url topic collection]], [[file:~/.emacs.d/elpa/ess-20190314.1538/ess-julia.el::(defun%20ess-julia--retrive-topics%20(url)][ess does it sync]]
 *** DONE Generic interface
 - [X] generic interface
 
@@ -239,7 +246,9 @@ Use ~load-history~
 *** TODO Align/Indent [0/2]
 - [ ] fix align rule for trailing \\
 - [ ] add indentation b/w declarations
-*** TODO General functions [0/3]
+*** TODO General functions [0/5]
+- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el::(defun%20nvp-makefile-beginning-of-defun-function%20(&optional%20arg)][fix makefile beg/end of defuns]]
+- [ ] [[file:/usr/local/share/emacs/27.0.50/lisp/cedet/semantic/bovine/make.el.gz::(defun%20semantic-default-make-setup%20()][semantic add anything to makefiles?]]
 - [ ] beginning/end-of-defun functions/marking
 - [ ] fold declarations
 - [ ] fold targets
@@ -285,7 +294,7 @@ enable semantic support??
 - [ ] hook
 - [ ] skeleton - srecode?
 
-** Awk [0/3]
+** Awk/sed [0/4]
 *** refs
   + man.el uses to parse output
   + emacs source hooks / build-aux
@@ -306,16 +315,20 @@ Separators,
 - [ ] parse typescript for builtin sigs/docs/names
 - [ ] ~FUNCTAB~, ~PROCINFO["identifiers"]~ provide dynamic completion info
 
-** Perl [3/7]
+*** TODO Help [0/2]
+- [ ] sed lookup help
+- [ ] awk lookup help in info node
+
+** Perl [4/7]
 *** DONE General
 - [X] cache module paths
 *** DONE newline
 *** TODO HAP [0/1]
 - [ ] perldoc to popup
-*** TODO REPL [2/3]
+*** DONE REPL [3/3]
 - [X] choose / install REPL
 - [X] setup REPL config
-- [ ] generic switching function
+- [X] generic switching function
 
 *** TODO Parse [0/5]
 - [ ] current function
@@ -331,9 +344,11 @@ Separators,
 - [ ] simple test setup
 
 ** sh [1/5]
+- [ ] use shell-cmd at point to do abbrev expansions / hippie exp
+- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
+- [ ] parse sh function documentation
 - [X] prefix hippie-shell-expand functions
 - [X] fix comanpy-active-map
-- [ ] parse sh function documentation
 *** TODO Completion [0/2]
 - [ ] capf for lexical scoped variables
 - [ ] merge capf bash-completion/variable-completion, maybe
@@ -421,7 +436,7 @@ https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [X] grep
 - [X] limit greps search directories
 
-* Merge/remove old packages [5/8]
+* Merge/remove old packages [0/1]
 - [ ] bmk-to-bmk => nvp-bookmark
 - [ ] project-templates => cookiecutter?
 - [ ] tag-utils => nvp-tags

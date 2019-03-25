@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 18:58:15>
+;; Last modified: <2019-03-24 20:27:46>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -142,6 +142,7 @@ With prefix, pop other window, with double prefix, prompt for MODE."
              (intern (nvp-read-mode))
            major-mode)
          current-prefix-arg))
+  (nvp-window-configuration-save)
   (let ((buff (get-buffer-create "*scratch*")))
     (with-current-buffer buff
       (nvp-display-location buff :buffer action)

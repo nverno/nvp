@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-24 03:31:18>
+;; Last modified: <2019-03-24 20:21:19>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -13,6 +13,7 @@
 ;;   - ESS cycles assign
 ;;   - https://github.com/emacsmirror/cycle-quotes/blob/master/cycle-quotes.el
 ;; - generic parse
+;; - update compile: warnings / diagnostics, input in compilation comint buffer
 
 ;; FIXME:
 ;; - remove AC related plsense stuff

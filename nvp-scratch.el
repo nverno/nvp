@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-24 18:45:18>
+;; Last modified: <2019-03-24 20:28:18>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 March 2019
@@ -30,7 +30,8 @@
   "Kill buffer ignoring `kill-buffer-hook', `kill-buffer-query-functions'."
   (interactive)
   (let (kill-buffer-hook kill-buffer-query-functions)
-    (kill-this-buffer)))
+    (kill-this-buffer))
+  (nvp-window-configuration-restore))
 
 (defvar nvp-scratch-minor-mode-map
   (let ((km (make-sparse-keymap)))

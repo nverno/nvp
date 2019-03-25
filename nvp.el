@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 20:31:43>
+;; Last modified: <2019-03-24 22:46:31>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -181,6 +181,11 @@
   (when-let* ((val (nvp-mode-get-val key)))
     (if all (cdr val)
       (cadr val))))
+
+;; return KEY if defined otherwise lookup its mode value
+(defsubst nvp-mode-local-or-val (key &optional all)
+  (or (eval `(bound-and-true-p ,(intern-soft key)))
+      (nvp-mode-val key all)))
 
 (provide 'nvp)
 ;;; nvp.el ends here

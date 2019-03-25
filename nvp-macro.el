@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 19:07:05>
+;; Last modified: <2019-03-24 22:38:56>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -1196,16 +1196,14 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 (cl-defmacro nvp-define-cache (func arglist &optional docstring &rest body
                                            &key local predicate cache
                                            &allow-other-keys)
-  "Create a simple cache for FUNC results. 
+  "Create a simple cache for FUNC results named FUNC or CACHE if non-nil. 
 Cache is either defvar (possibly local) so is updated when set to nil,
 or PREDICATE is non-nil and returns nil."
   (declare (indent defun) (debug (sexp sexp sexp &form body)) (doc-string 3))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
-  (let ((cache (or cache
-                   (make-symbol (concat (if (symbolp func) (symbol-name func) func)
-                                        "-cache"))))
-        (fn (if (stringp func) (intern func) func)))
+  (let* ((fn (if (stringp func) (intern func) func))
+         (cache (or cache fn)))
     `(progn
        ,(if local `(defvar-local ,cache nil)
           `(defvar ,cache nil))

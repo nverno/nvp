@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 04:07:05>
+;; Last modified: <2019-03-24 21:45:43>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -48,7 +48,6 @@
 (nvp-define-cache nvp-mode-header-regex ()
   "Get or create header regex based on comment syntax."
   :local t
-  :cache nvp-local-header-regex
   (let* ((comment (string-trim comment-start))
          (cs (regexp-quote comment))
          (multi (> (string-width comment) 1)))
@@ -169,8 +168,8 @@ With ARG use default behaviour, except also call `expand-abbrev'."
     ;; alternatively, could probably call `company-quickhelp--cancel-timer'
     ;; #<marker at 8895 in company-quickhelp.el>
     (nvp-toggled-if
-      (if (bound-and-true-p nvp-doc-toggle-function)
-          (funcall nvp-doc-toggle-function 'company)
+      (if-let ((fn (nvp-mode-local-or-val 'nvp-doc-toggle-fn)))
+          (funcall fn 'company)
         (company-quickhelp-manual-begin))
       :this-cmd 'company-quickhelp-manual-begin
       (x-hide-tip))))

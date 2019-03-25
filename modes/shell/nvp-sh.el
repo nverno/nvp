@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-16 22:18:43>
+;; Last modified: <2019-03-24 21:28:11>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -271,8 +271,7 @@ Used to set `end-of-defun-function'."
         ;; (company-quickhelp-delay 0.1)
         )
     (or (x-hide-tip)
-        (cl-letf (((symbol-function 'company-quickhelp--doc)
-                   #'nvp-sh-quickhelp-doc))
+        (cl-letf (((symbol-function 'company-quickhelp--doc) #'nvp-sh-quickhelp-doc))
           ;; flickers the screen - cant use the timer, since it seems
           ;; that lexical binding doesn't work in that case
           (company-quickhelp--show)))))

@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-24 20:21:19>
+;; Last modified: <2019-03-26 05:25:46>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -123,7 +123,7 @@
   (let ((char (char-before)))
     (pcase char
       (`?% (yas-expand-snippet
-            "$1${2: = (\n  ${3:x} => $4\n);}" nil nil
+            "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
             '((yas-indent-line 'auto)))))))
 
 (defvar nvp-perl-my-map

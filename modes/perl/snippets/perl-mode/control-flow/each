@@ -2,6 +2,6 @@
 # name: each
 # key: each
 # --
-while(my(\$${1:index}, \$${2:value}) = each @${3:arr}) {
+while (${1:my }(\$${2:key}, \$${3:value}) = each ${4:@arr}) {
   $0
 }

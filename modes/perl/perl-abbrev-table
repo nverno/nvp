@@ -1,23 +1,23 @@
 ;; -*- coding: utf-8; -*-
 
 (define-abbrev-table 'cperl-mode-abbrev-table
-  '(
-    ;; ("_" "$" nvp-perl-my-toggle :system t)
+  '(;; ("_" "$" nvp-perl-my-toggle :system t)
     ("my" "my $" nvp-perl-my-toggle :system t)
     ("pr" "print" nil :system t)
     ("def" "defined" nil :system t)
     ("ddd" "Data::Dumper::Dumper" nil :system t)
     ("ret" "return" nil :system t)
-    ("stdin" "<STDIN>" nil :system t)
-    ("stdout" "<STDOUT>" nil :system t)
-    ("stderr" "<STDERR>" nil :system t)
+    ("argv" "ARGV" nil :system t)
+    ("stdin" "STDIN" nil :system t)
+    ("stdout" "STDOUT" nil :system t)
+    ("stderr" "STDERR" nil :system t)
     ("useenc" "use Encode qw(encode decode from_to);" nil :system t)
     ("usedump" "use Data::Dumper qw(Dumper);" nil :system t)
     ("useopt" "use Getopt::Long; GetOptions();" nil :system t)
     ("usetext" "use Text::Wrap qw(wrap);" nil :system t)
     )
   "Cperl-Mode Abbrevs."
-  :parents (list cperl-mode-electric-keywords-abbrev-table
+  :parents (list ;; cperl-mode-electric-keywords-abbrev-table
                  prog-mode-abbrev-table)
   :regexp "\\(\\_<[:\_A-Za-z0-9-]+\\)")
 

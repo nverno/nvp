@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 22:38:56>
+;; Last modified: <2019-03-25 13:47:23>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -113,6 +113,29 @@ those are both specified."
   (if (eq system-type 'windows-nt)
       `,@w32
     `,@gnu))
+
+;;-- Compat
+
+(unless (fboundp 'ignore-errors)
+  (defmacro ignore-errors (&rest body)
+    `(condition-case nil (progn ,@body) (error nil))))
+
+(defmacro eieio-declare-slot (name)
+  (cl-pushnew name eieio--known-slot-names) nil)
+
+;;-- Declares / Autoloads
+(eval-and-compile                       ;use in this file
+  (defmacro nvp-declare (package &rest funcs)
+   (declare (indent defun))
+   (macroexp-progn
+    (cl-loop for func in funcs
+       collect `(declare-function ,func ,package)))))
+
+(defmacro nvp-autoload (package &rest funcs)
+  (declare (indent defun))
+  (macroexp-progn
+   (cl-loop for func in funcs
+      collect `(autoload ',func ,package))))
 
 ;;-- Vars
 (defmacro nvp-with-preserved-vars (vars &rest body)
@@ -428,233 +451,6 @@ line at match (default) or do BODY at point if non-nil."
   `(progn (expand-file-name ,(nvp-stringify filename) nvp/cache)))
 
 ;; -------------------------------------------------------------------
-;;; Bindings
-
-(defmacro nvp-def-key (map key cmd)
-  "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
-  (declare (debug t))
-  (and (symbolp key) (setq key (symbol-value key)))
-  (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
-  `(progn
-     (declare-function ,cmd "")
-     (define-key
-      ,(if (keymapp map) `',map map)
-      ,(if (or (vectorp key) (keymapp key)) key (kbd key))
-      ,(cond
-        ((or (null cmd) (and (consp cmd)
-                             (or (equal (cdr cmd) '(nil))
-                                 (equal (cddr cmd) '(nil)))))
-         nil)
-        ((consp cmd)
-         (cond
-          ((equal (car cmd) 'function) `,cmd)
-          ((equal (car cmd) 'quote) `#',(cadr cmd))
-          (t `,cmd)))
-        (t `#',cmd)))))
-
-(defmacro nvp-create-keymaps (leader &rest maps)
-  "Create submaps from LEADER map. Optionally give name of keymap for
-menu entry."
-  (declare (indent defun))
-  `(progn
-     ,@(cl-loop for (key . args) in maps
-          as map = (pop args)
-          as name = (and args (pop args))
-          collect `(progn
-                     (eval-when-compile (declare-function ,map "")) ;compiler
-                     (define-prefix-command ',map nil ,name)
-                     (nvp-def-key ,leader ,key ',map)))))
-
-(defmacro nvp-global-bindings (&rest bindings)
-  "Add BINDINGS to global keymap."
-  (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for (k . b) in bindings
-      collect `(nvp-def-key (current-global-map) ,k ,b))))
-
-(cl-defmacro nvp-bind-keys (map &rest bindings
-                                &key predicate after-load
-                                &allow-other-keys)
-  "Add BINDINGS to MAP.
-If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys.
-If AFTER-LOAD is non-nil, eval after loading feature/file."
-  (declare (indent defun) (debug t))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (let ((map (nvp--normalize-modemap map)))
-    `(progn
-       (eval-when-compile (defvar ,map))
-       (,@(if predicate `(when ,predicate)
-            (if after-load `(with-eval-after-load ,after-load) '(progn)))
-        ,@(cl-loop for (k . b) in bindings
-             collect `(nvp-def-key ,map ,k ,b))))))
-
-(cl-defmacro nvp-bindings (mode &optional feature &rest bindings
-                                &key local buff-local minor &allow-other-keys)
-  "Set MODE BINDINGS after FEATURE is loaded.
-If LOCAL is non-nil, make map buffer local."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (let ((modemap (nvp--normalize-modemap mode minor)))
-    `(progn
-       (eval-when-compile (defvar ,modemap))
-       ,(when local                     ;will change bindings for all mode buffers
-          `(make-local-variable ',modemap))
-       ,(when buff-local                ;HACK: but how to modify 
-          `(with-no-warnings             ; something like `company-active-map'
-             (make-variable-buffer-local ',modemap)))
-       (with-eval-after-load ,(or feature `',(intern mode))
-         ,@(cl-loop for (k . b) in bindings
-              collect `(nvp-def-key ,modemap ,k ,b))))))
-
-(cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings &allow-other-keys)
-  "Add shared BINDINGS to multiple MODES keymaps.
-MODES is of the form ((mode-name . feature) ...).
-Optional :local key can be set to make the mappings buffer-local."
-  (declare (indent 1))
-  `(progn
-     ,@(cl-loop for (mode . feature) in modes
-          collect `(nvp-bindings ,mode ',feature ,@bindings))))
-
-;;-- Bindings: local / transient / overriding
-
-(cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
-                                     &rest body)
-  "Execute BODY with BINDINGS set in transient map."
-  (declare (indent 0))
-  (let ((tmap (cl-gensym)))
-    `(let ((,tmap (make-sparse-keymap)))
-       ,@(cl-loop for (k . b) in bindings
-            collect `(nvp-def-key ,tmap ,k ,b))
-       (set-transient-map ,tmap ,keep ,exit)
-       ,@body)))
-
-(cl-defmacro nvp-use-transient-bindings
-    (&optional bindings
-               &key
-               (keep t)
-               (pre '(nvp-indicate-cursor-pre))
-               (exit '(lambda () (nvp-indicate-cursor-post)))
-               (repeat t) ;add repeat binding as last char
-               repeat-key) ;key to use instead of last char
-  "Set BINDINGS in transient map or REPEAT command.
-If both BINDINGS and REPEAT are nil, do nothing.
-Run PRE form prior to setting commands and EXIT on leaving transient map.
-If REPEAT is non-nil, add a binding to repeat command from the last input char
-or use REPEAT-KEY if specified."
-  (declare (indent defun) (debug defun))
-  (when (or bindings repeat)            ;w/o one of these, do nothing
-    (let ((msg (nvp--msg-from-bindings bindings)))
-     `(progn
-        (nvp-declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
-        ;; only set first time
-        (when (null overriding-terminal-local-map)
-          (let ((tmap (make-sparse-keymap))
-                (repeat-key ,(when repeat (or repeat-key '(nvp-last-command-char)))))
-            ,(when repeat
-               (prog1 nil
-                 (setq msg (concat msg (and bindings ", ") "[%s] repeat command"))))
-            (message ,msg repeat-key)   ;echo bindings on first pass
-            ,pre
-            ,@(cl-loop for (k . b) in bindings
-                 collect `(nvp-def-key tmap ,k ,b))
-            ,(when repeat '(define-key tmap (kbd repeat-key) this-command))
-            (set-transient-map
-             tmap
-             ,(if repeat `(lambda ()         ;conditions to continue
-                            (when (and (not (memq this-command
-                                                  '(handle-switch-frame
-                                                    keyboard-quit)))
-                                       (lookup-key tmap (this-single-command-keys)))
-                              (message ,msg repeat-key) t))
-                `,keep)
-             ,exit)))))))
-
-(cl-defmacro nvp-use-local-bindings (&rest bindings &key buffer &allow-other-keys)
-  "Set local BINDINGS.
-If BUFFER is non-nil, set local bindings in BUFFER."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  `(let ((lmap (make-sparse-keymap)))
-     (set-keymap-parent lmap (current-local-map))
-     ,@(cl-loop for (k . b) in bindings
-          collect `(nvp-def-key lmap ,k ,b))
-     ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
-        `(use-local-map lmap))))
-
-;; Overrides a minor mode keybinding for the local buffer by creating
-;; or altering keymaps stored in buffer-local variable
-;; `minor-mode-overriding-map-alist'.
-(cl-defmacro nvp-use-minor-mode-overriding-map (mode &rest bindings
-                                                     &key predicate
-                                                     &allow-other-keys)
-  "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'.
-If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  `(,@(if predicate `(when ,predicate) '(progn))
-    (let ((map (make-sparse-keymap)))
-      ,@(cl-loop for (k . b) in bindings
-           collect `(nvp-def-key map ,k ,b))
-      (push (cons ,mode map) minor-mode-overriding-map-alist))))
-
-(cl-defmacro nvp-use-local-keymap (&rest bindings
-                                   &key keymap buffer &allow-other-keys)
-  "Use a local version of KEYMAP or `current-local-map'.
-If BUFFER is non-nil, use BINDINGS locally in BUFFER."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  `(let ((lmap (make-sparse-keymap)))
-     (set-keymap-parent lmap ,(or keymap '(current-local-map)))
-     ,@(cl-loop for (k . b) in bindings
-          collect `(nvp-def-key lmap ,k ,b))
-     ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
-        '(use-local-map lmap))))
-
-;;-- bindings: view
-
-;; general movement bindings for non-insert modes
-(defmacro nvp-bindings-view ()
-  ''(("j"     . next-line) ;; use instead of forward-line since it is often advised
-     ("k"     . previous-line)
-     ("h"     . backward-char)
-     ("l"     . forward-char)
-     ("e"     . end-of-line)
-     ("a"     . beginning-of-line)
-     ("A"     . beginning-of-buffer)
-     ("E"     . end-of-buffer)
-     ("/"     . isearch-forward)
-     ("?"     . isearch-backward)
-     ("SPC"   . scroll-down)
-     ("S-SPC" . scroll-up)
-     ("M-n"   . nil)
-     ("M-p"   . nil)
-     ("M-s-n" . nvp-move-forward-heading)
-     ("M-s-p" . nvp-move-previous-heading)
-     ("M-N"   . nvp-move-forward-paragraph)
-     ("M-P"   . nvp-move-backward-paragraph)))
-
-(defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
-(defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
-  (declare (indent defun))
-  (let ((bs `(,@(nvp-bindings-view) ,@bindings)))
-    `(nvp-bindings ,mode ,feature ,@bs)))
-
-(defmacro nvp-bindings-add-view (mode &optional feature)
-  `(progn (nvp-bindings ,mode ,feature ,@(nvp-bindings-view))))
-
-(defmacro nvp-with-view-bindings (&rest body)
-  `(nvp-with-temp-bindings
-     (:bindings ,@(nvp-bindings-view)
-                :keep t
-                :exit (lambda () (message "vim out")))
-     ,@body))
-
-;; -------------------------------------------------------------------
 ;;; REPLs
 
 ;; FIXME: how to make more generic?
@@ -821,37 +617,233 @@ If STRIP-CTRL, just return the last character, eg. M-* => *."
       `(substring (key-description (vector last-command-event)) -1)
     `(key-description (vector last-command-event))))
 
-(make-obsolete 'nvp-read 'nvp-completing-read "26.1")
-(defmacro nvp-read (prompt &optional thing &rest args)
-  "Read input in various ways."
+;; -------------------------------------------------------------------
+;;; Bindings
+
+(defmacro nvp-def-key (map key cmd)
+  "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
+  (declare (debug t))
+  (and (symbolp key) (setq key (symbol-value key)))
+  (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
+  `(progn
+     (declare-function ,cmd "")
+     (define-key
+      ,(if (keymapp map) `',map map)
+      ,(if (or (vectorp key) (keymapp key)) key (kbd key))
+      ,(cond
+        ((or (null cmd) (and (consp cmd)
+                             (or (equal (cdr cmd) '(nil))
+                                 (equal (cddr cmd) '(nil)))))
+         nil)
+        ((consp cmd)
+         (cond
+          ((equal (car cmd) 'function) `,cmd)
+          ((equal (car cmd) 'quote) `#',(cadr cmd))
+          (t `,cmd)))
+        (t `#',cmd)))))
+
+(defmacro nvp-create-keymaps (leader &rest maps)
+  "Create submaps from LEADER map. Optionally give name of keymap for
+menu entry."
   (declare (indent defun))
-  (pcase thing
-    ((pred stringp)
-     `(read-from-minibuffer ,prompt ,thing))
-    (`(quote ,sym)
-      (cond
-        ((consp sym)
-         `(ido-completing-read ,prompt ,thing))
-        ((vectorp sym)
-         `(completing-read ,prompt ,thing))
-        ((symbol-function sym)
-         (if args
-             `(funcall-interactively ',sym ,@args)
-           `(call-interactively ',sym)))
-        (t `(ido-completing-read ,prompt ,sym))))
-    ((pred symbolp)
-     (cond
-       ((string= ":library" (symbol-name thing))
-        `(completing-read ,prompt
-                          (apply-partially
-                           'locate-file-completion-table
-                           load-path (get-load-suffixes))))
-       ((vectorp (symbol-value (intern-soft thing)))
-        `(completing-read ,prompt ,thing))
-       (t `(ido-completing-read ,prompt (symbol-value ,thing)))))
-    ((pred consp)
-     `(ido-completing-read ,prompt ,thing))
-    (_ `(read-from-minibuffer ,prompt))))
+  `(progn
+     ,@(cl-loop for (key . args) in maps
+          as map = (pop args)
+          as name = (and args (pop args))
+          collect `(progn
+                     (eval-when-compile (declare-function ,map "")) ;compiler
+                     (define-prefix-command ',map nil ,name)
+                     (nvp-def-key ,leader ,key ',map)))))
+
+(defmacro nvp-global-bindings (&rest bindings)
+  "Add BINDINGS to global keymap."
+  (declare (indent defun))
+  (macroexp-progn
+   (cl-loop for (k . b) in bindings
+      collect `(nvp-def-key (current-global-map) ,k ,b))))
+
+(cl-defmacro nvp-bind-keys (map &rest bindings
+                                &key predicate after-load
+                                &allow-other-keys)
+  "Add BINDINGS to MAP.
+If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys.
+If AFTER-LOAD is non-nil, eval after loading feature/file."
+  (declare (indent defun) (debug t))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  (let ((map (nvp--normalize-modemap map)))
+    `(progn
+       (eval-when-compile (defvar ,map))
+       (,@(if predicate `(when ,predicate)
+            (if after-load `(with-eval-after-load ,after-load) '(progn)))
+        ,@(cl-loop for (k . b) in bindings
+             collect `(nvp-def-key ,map ,k ,b))))))
+
+(cl-defmacro nvp-bindings (mode &optional feature &rest bindings
+                                &key local buff-local minor &allow-other-keys)
+  "Set MODE BINDINGS after FEATURE is loaded.
+If LOCAL is non-nil, make map buffer local."
+  (declare (indent defun))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  (let ((modemap (nvp--normalize-modemap mode minor)))
+    `(progn
+       (eval-when-compile (defvar ,modemap))
+       ,(when local                     ;will change bindings for all mode buffers
+          `(make-local-variable ',modemap))
+       ,(when buff-local                ;HACK: but how to modify 
+          `(with-no-warnings             ; something like `company-active-map'
+             (make-variable-buffer-local ',modemap)))
+       (with-eval-after-load ,(or feature `',(intern mode))
+         ,@(cl-loop for (k . b) in bindings
+              collect `(nvp-def-key ,modemap ,k ,b))))))
+
+(cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings &allow-other-keys)
+  "Add shared BINDINGS to multiple MODES keymaps.
+MODES is of the form ((mode-name . feature) ...).
+Optional :local key can be set to make the mappings buffer-local."
+  (declare (indent 1))
+  `(progn
+     ,@(cl-loop for (mode . feature) in modes
+          collect `(nvp-bindings ,mode ',feature ,@bindings))))
+
+;;-- Local, Transient, Overriding maps
+
+(cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
+                                     &rest body)
+  "Execute BODY with BINDINGS set in transient map."
+  (declare (indent 0))
+  (let ((tmap (cl-gensym)))
+    `(let ((,tmap (make-sparse-keymap)))
+       ,@(cl-loop for (k . b) in bindings
+            collect `(nvp-def-key ,tmap ,k ,b))
+       (set-transient-map ,tmap ,keep ,exit)
+       ,@body)))
+
+(cl-defmacro nvp-use-transient-bindings
+    (&optional bindings
+               &key
+               (keep t)
+               (pre '(nvp-indicate-cursor-pre))
+               (exit '(lambda () (nvp-indicate-cursor-post)))
+               (repeat t) ;add repeat binding as last char
+               repeat-key) ;key to use instead of last char
+  "Set BINDINGS in transient map or REPEAT command.
+If both BINDINGS and REPEAT are nil, do nothing.
+Run PRE form prior to setting commands and EXIT on leaving transient map.
+If REPEAT is non-nil, add a binding to repeat command from the last input char
+or use REPEAT-KEY if specified."
+  (declare (indent defun) (debug defun))
+  (when (or bindings repeat)            ;w/o one of these, do nothing
+    (let ((msg (nvp--msg-from-bindings bindings)))
+     `(progn
+        (nvp-declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
+        ;; only set first time
+        (when (null overriding-terminal-local-map)
+          (let ((tmap (make-sparse-keymap))
+                (repeat-key ,(when repeat (or repeat-key '(nvp-last-command-char)))))
+            ,(when repeat
+               (prog1 nil
+                 (setq msg (concat msg (and bindings ", ") "[%s] repeat command"))))
+            (message ,msg repeat-key)   ;echo bindings on first pass
+            ,pre
+            ,@(cl-loop for (k . b) in bindings
+                 collect `(nvp-def-key tmap ,k ,b))
+            ,(when repeat '(define-key tmap (kbd repeat-key) this-command))
+            (set-transient-map
+             tmap
+             ,(if repeat `(lambda ()         ;conditions to continue
+                            (when (and (not (memq this-command
+                                                  '(handle-switch-frame
+                                                    keyboard-quit)))
+                                       (lookup-key tmap (this-single-command-keys)))
+                              (message ,msg repeat-key) t))
+                `,keep)
+             ,exit)))))))
+
+;; Overrides a minor mode keybinding for the local buffer by creating
+;; or altering keymaps stored in buffer-local variable
+;; `minor-mode-overriding-map-alist'.
+(cl-defmacro nvp-use-minor-mode-overriding-map (mode &rest bindings
+                                                     &key predicate
+                                                     &allow-other-keys)
+  "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'.
+If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil."
+  (declare (indent defun))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  `(,@(if predicate `(when ,predicate) '(progn))
+    (let ((map (make-sparse-keymap)))
+      ,@(cl-loop for (k . b) in bindings
+           collect `(nvp-def-key map ,k ,b))
+      (push (cons ,mode map) minor-mode-overriding-map-alist))))
+
+;;; FIXME: remove one of these / optionally use or return local map variable
+(cl-defmacro nvp-use-local-keymap (&rest bindings
+                                   &key keymap buffer &allow-other-keys)
+  "Use a local version of KEYMAP or `current-local-map'.
+If BUFFER is non-nil, use BINDINGS locally in BUFFER."
+  (declare (indent defun))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  `(let ((lmap (make-sparse-keymap)))
+     (set-keymap-parent lmap ,(or keymap '(current-local-map)))
+     ,@(cl-loop for (k . b) in bindings
+          collect `(nvp-def-key lmap ,k ,b))
+     ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
+        '(use-local-map lmap))))
+
+(cl-defmacro nvp-use-local-bindings (&rest bindings &key buffer &allow-other-keys)
+  "Set local BINDINGS.
+If BUFFER is non-nil, set local bindings in BUFFER."
+  (declare (indent defun))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  `(let ((lmap (make-sparse-keymap)))
+     (set-keymap-parent lmap (current-local-map))
+     ,@(cl-loop for (k . b) in bindings
+          collect `(nvp-def-key lmap ,k ,b))
+     ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
+        `(use-local-map lmap))))
+
+;;-- View bindings
+
+;; general movement bindings for non-insert modes
+(defmacro nvp-bindings-view ()
+  ''(("j"     . next-line) ;; use instead of forward-line since it is often advised
+     ("k"     . previous-line)
+     ("h"     . backward-char)
+     ("l"     . forward-char)
+     ("e"     . end-of-line)
+     ("a"     . beginning-of-line)
+     ("A"     . beginning-of-buffer)
+     ("E"     . end-of-buffer)
+     ("/"     . isearch-forward)
+     ("?"     . isearch-backward)
+     ("SPC"   . scroll-down)
+     ("S-SPC" . scroll-up)
+     ("M-n"   . nil)
+     ("M-p"   . nil)
+     ("M-s-n" . nvp-move-forward-heading)
+     ("M-s-p" . nvp-move-previous-heading)
+     ("M-N"   . nvp-move-forward-paragraph)
+     ("M-P"   . nvp-move-backward-paragraph)))
+
+(defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
+(defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
+  (declare (indent defun))
+  (let ((bs `(,@(nvp-bindings-view) ,@bindings)))
+    `(nvp-bindings ,mode ,feature ,@bs)))
+
+(defmacro nvp-bindings-add-view (mode &optional feature)
+  `(progn (nvp-bindings ,mode ,feature ,@(nvp-bindings-view))))
+
+(defmacro nvp-with-view-bindings (&rest body)
+  `(nvp-with-temp-bindings
+     (:bindings ,@(nvp-bindings-view)
+                :keep t
+                :exit (lambda () (message "vim out")))
+     ,@body))
 
 ;; -------------------------------------------------------------------
 ;;; Time
@@ -944,7 +936,7 @@ default help function."
 (defmacro nvp-buffer-process (&optional buffer)
   "Return BUFFER's process."
   `(get-buffer-process ,(or buffer '(current-buffer))))
-(nvp-buffer-process )
+
 ;; get a comint buffer, run body, return buffer
 (defmacro nvp-comint-buffer (name &rest body)
   (declare (indent 2) (indent 1))
@@ -1481,55 +1473,6 @@ afterward."
           (cl-delete-duplicates (append (get ,mode 'nvp) ,@bindings) :key #'car))))
 
 ;; -------------------------------------------------------------------
-;;; Non-builtin modes
-
-;; Hydras
-(defmacro nvp-hydra-set-property (hydra-name &rest props)
-  "Apply PROPS to HYDRA-NAME after `hydra' is loaded.
-PROPS defaults to setting :verbosity to 1."
-  (declare (indent 1))
-  (unless props (setq props (list :verbosity 1)))
-  `(progn
-     (declare-function hydra-set-property "hydra")
-     (with-eval-after-load 'hydra
-      ,@(cl-loop for (k v) on props by #'cddr
-           collect `(hydra-set-property ,hydra-name ,k ,v)))))
-
-;; Hideshow
-(defmacro nvp-hs-blocks (start end)
-  `(progn
-     (setq hs-block-start-regexp ,start)
-     (setq hs-block-end-regexp ,end)))
-
-(defmacro nvp-with-hs-block (start end &rest body)
-  "Do hideshow with START and END regexps."
-  (declare (indent defun))
-  `(progn
-     (require 'hideshow)
-     (unless hs-minor-mode (hs-minor-mode))
-     (let ((hs-block-start-regexp ,start)
-           (hs-block-end-regexp ,end))
-       ,@(or body (list '(hs-toggle-hiding))))))
-
-;; smartparens
-(cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
-  (declare (indent defun) (debug defun))
-  (while (keywordp (car pairs))
-    (setq pairs (cdr (cdr pairs))))
-  `(progn
-     (eval-when-compile (require 'smartparens))
-     (declare-function sp-local-pair "smartparens")
-     ,(cond
-       (modes
-        `(sp-with-modes ,modes
-           ,@pairs))
-       ((equal 'quote (caar pairs)) `(sp-local-pair ,@pairs))
-       (t
-        (macroexp-progn
-         (cl-loop for pair in pairs
-            collect `(sp-local-pair ,@pair)))))))
-
-;; -------------------------------------------------------------------
 ;;; Package
 
 (defmacro nvp-load-file-name ()
@@ -1715,27 +1658,56 @@ MODES is of form (feature . mode)."
   `(nvp-setq ,var (expand-file-name ,filename nvp/cache)))
 
 ;; -------------------------------------------------------------------
-;;; Warnings / Compat / Variables
+;;; Other modes
 
-(unless (fboundp 'ignore-errors)
-  (defmacro ignore-errors (&rest body)
-    `(condition-case nil (progn ,@body) (error nil))))
+;;-- Hydras
+(defmacro nvp-hydra-set-property (hydra-name &rest props)
+  "Apply PROPS to HYDRA-NAME after `hydra' is loaded.
+PROPS defaults to setting :verbosity to 1."
+  (declare (indent 1))
+  (unless props (setq props (list :verbosity 1)))
+  `(progn
+     (declare-function hydra-set-property "hydra")
+     (with-eval-after-load 'hydra
+      ,@(cl-loop for (k v) on props by #'cddr
+           collect `(hydra-set-property ,hydra-name ,k ,v)))))
 
-(defmacro eieio-declare-slot (name)
-  (cl-pushnew name eieio--known-slot-names) nil)
+;;-- Hideshow
+(defmacro nvp-hs-blocks (start end)
+  `(progn
+     (setq hs-block-start-regexp ,start)
+     (setq hs-block-end-regexp ,end)))
 
-(eval-and-compile                       ;use in this file
-  (defmacro nvp-declare (package &rest funcs)
-   (declare (indent defun))
-   (macroexp-progn
-    (cl-loop for func in funcs
-       collect `(declare-function ,func ,package)))))
-
-(defmacro nvp-autoload (package &rest funcs)
+(defmacro nvp-with-hs-block (start end &rest body)
+  "Do hideshow with START and END regexps."
   (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for func in funcs
-      collect `(autoload ',func ,package))))
+  `(progn
+     (require 'hideshow)
+     (unless hs-minor-mode (hs-minor-mode))
+     (let ((hs-block-start-regexp ,start)
+           (hs-block-end-regexp ,end))
+       ,@(or body (list '(hs-toggle-hiding))))))
+
+;;-- Smartparens
+(cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
+  (declare (indent defun) (debug defun))
+  (while (keywordp (car pairs))
+    (setq pairs (cdr (cdr pairs))))
+  `(progn
+     (eval-when-compile (require 'smartparens))
+     (declare-function sp-local-pair "smartparens")
+     ,(cond
+       (modes
+        `(sp-with-modes ,modes
+           ,@pairs))
+       ((equal 'quote (caar pairs)) `(sp-local-pair ,@pairs))
+       (t
+        (macroexp-progn
+         (cl-loop for pair in pairs
+            collect `(sp-local-pair ,@pair)))))))
+
+;; -------------------------------------------------------------------
+;;; Locals - silence compiler
 
 (defmacro nvp-local-vars ()
   '(progn
@@ -1771,6 +1743,8 @@ MODES is of form (feature . mode)."
      (defvar nvp/books)
      (defvar nvp/install)
      (defvar nvp/private)))
+
+(nvp-local-vars)
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-24 23:46:36>
+#+DATE: <2019-03-25 21:48:55>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -32,7 +32,8 @@
 - semantic-sticky-func minor mode for parse generics
 
 * Functions
-** General [0/9]
+** General [0/11]
+- [ ] use simplified version of cc-defs c-point macro
 - [ ] nvp-proc: separate sentinels from comint / find proc from nvp-ext
   use in nvp-shell, nvp-ext, comint, term, eshell setup
 - [ ] setup hippie history expansion when setting up inf histories
@@ -44,16 +45,20 @@
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
 - [ ] update functions to find first applicable function from list:
   check-buffer, disassemble, test, tag, compile
+- [ ] navigation by indentation for modes like yaml: pkg indent-tools
 
-** Install [0/2]
+** Install [0/3]
 - [ ] interface to install external deps
 - [ ] mode install targets
+- [ ] interface to install GNU source packages
 
 ** Compile [0/4]
 - [ ] generic compile interface
 - [ ] find first applicable function
 - [ ] compile with completing read for compiler switches
+  Can leverage applicable parts of GNU help2man (perl)
 - [ ] compile with completing read for makefile targets
+
 ** Package [0/3]
 - [ ] update package cache
 - [ ] display package cache
@@ -61,7 +66,7 @@
 
 ** Bin helpers [0/7]
 - [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
-- [ ] awk script to parse man switches in section
+- [ ] adapt help2man to parse switches + docs from man / --help output
 - [ ] remove local vars from all files from current directory
 - [ ] get usage from script args
 - [ ] parse sh function docs
@@ -169,11 +174,15 @@ see which-func
 - [ ] info files
 - [ ] sh script parser like semantic/ia-doc for commented functions
 
-** Completion [0/1]
+** Completion [0/2]
 - [ ] edebug -- possibly favor local variable completion?
 *** TODO company-bash [0/2]
 - [ ] don't leave includes open
 - [ ] create xrefs from imenu markers
+*** TODO company-info [0/3]
+- [ ] company-backend using info-lookup-completion-at-point
+- [ ] extract info locations
+- [ ] extract summary text for completion symbols
 
 ** Dired [1/2]
 - [ ] pass numeric prefix to copy/rename???

@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-15 21:56:10>
+;; Last modified: <2019-03-25 21:41:52>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -10,6 +10,8 @@
 ;; TODO:
 ;; - font-lock-doc-face for info/warning/error?
 ;; - incorporate semantic stuff?
+;; - use info-completition-at-point function
+
 ;; FIXME:
 ;; - beginning/end of defun functions don't work
 ;; - yas expansions that add deps => commands
@@ -39,6 +41,7 @@
          (skip-chars-forward "^:" (point-at-eol))
          (forward-char 1)
          ,@body))))
+
 
 ;; ------------------------------------------------------------
 ;;; Web topics

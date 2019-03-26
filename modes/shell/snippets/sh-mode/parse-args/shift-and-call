@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: shift-and ... "$@"
+# key: shifta
+# --
+shift && $1 ${2:"$@"};;

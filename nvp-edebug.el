@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-05 15:59:56>
+;; Last modified: <2019-03-27 18:38:31>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 20 February 2019
@@ -87,11 +87,11 @@ toggle on entr_y_
         (mapconcat #'shell-quote-argument (delq nil (list ,@args)) " ") nil 0 nil))))
 
 (defun nvp-edebug-launch-bare-emacs (&optional arg)
-  "Start new emacs instance loading init file that only adds load paths.
+  "Start new emacs instance loading very minimal init (load paths + some basics).
 With prefix open current file."
   (interactive "P")
   (nvp-edebug--launch-emacs
-   "-Q" "-l" (expand-file-name "bare-site.el" nvp/etc) (if arg (buffer-file-name))))
+   "-Q" "-l" (expand-file-name "init-site.el" nvp/etc) (if arg (buffer-file-name))))
 
 (defun nvp-edebug-launch-new-debug ()
   "Start new emacs in debug mode."

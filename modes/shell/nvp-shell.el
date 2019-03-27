@@ -1,6 +1,6 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-22 03:22:00>
+;; Last modified: <2019-03-27 18:12:55>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
@@ -18,6 +18,11 @@
 
 ;; -------------------------------------------------------------------
 ;;; Utils
+
+;; don't run `shell-mode-hook' during `shell-command' calls
+(define-advice shell-command (:around (orig-fn &rest args) "noninteractive")
+  (let (shell-mode-hook)
+    (apply orig-fn args)))
 
 (eval-when-compile
  (defmacro nvp-shell-goto-command-start (start &optional limit delims)

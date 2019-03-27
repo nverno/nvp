@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 17:45:24>
+;; Last modified: <2019-03-27 18:23:07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -78,16 +78,19 @@ Defaults to symbol at point and emacs root.
   (ag/search str dir :regexp regex))
 
 ;;;###autoload
-(defun nvp-ag-project-dired (arg &optional default)
-  (interactive
-   (list (prefix-numeric-value current-prefix-arg) (thing-at-point 'symbol t)))
-  (cl-flet ((call-fn (if default (symbol-function 'funcall-interactively)
-                       (symbol-function 'call-interactively))))
-    (require 'ag)
-    (pcase arg
-      (`4 (call-fn #'ag-project-dired default))
-      (`16 (call-fn #'ag-dired))
-      (_ (call-fn #'ag-project-dired-regexp default)))))
+(defun nvp-ag-dired (arg)
+  "Call ag dired functions.
+(0) `ag-project-dired-regexp'
+(1) `ag-project-dired'
+(2) `ag-dired-regexp'
+(3) `ag-dired'" 
+  (interactive (list (prefix-numeric-value current-prefix-arg)))
+  (require 'ag)
+  (pcase arg
+    (`4 (call-interactively #'ag-project-dired))
+    (`16 (call-interactively #'ag-dired-regexp))
+    (`64 (call-interactively #'ag-dired))
+    (_ (call-interactively #'ag-project-dired-regexp))))
 
 ;; -------------------------------------------------------------------
 ;;; wgrep

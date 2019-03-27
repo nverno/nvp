@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 11:26:40>
+;; Last modified: <2019-03-27 13:43:27>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -166,7 +166,10 @@ With ARG use default behaviour, except also call `expand-abbrev'."
   (interactive)
   (let ((x-gtk-use-system-tooltips nil))
     ;; tell `company-quickhelp--manual-begin' to start the timer
-    ;; alternatively, could probably call `company-quickhelp--cancel-timer'
+    ;; An alternative is calling `company-quickhelp--cancel-timer' instead, but
+    ;; I find it buggy when toggling quickly (the popup stops working until
+    ;; moving on to another candidate - I believe breaking the `while-no-input'
+    ;; cycle, but not really sure)
     ;; #<marker at 8895 in company-quickhelp.el>
     (nvp-toggled-if
       (if-let ((fn (nvp-mode-local-or-val 'nvp-doc-toggle-fn)))
@@ -225,13 +228,22 @@ On error (read-only), quit without selecting."
 ;; -------------------------------------------------------------------
 ;;; Marks
 
+(defun nvp-mark-previous-comments ()
+  "Move back previous comment block and end at beginning of line."
+  (interactive)
+  (forward-line 1)
+  (beginning-of-defun-comments))
+
 (defun nvp-mark-defun (arg)
   "Mark defun, skipping preceding comments."
   (interactive "p")
   (let ((skip-comments (not (region-active-p))))
     (setq prefix-arg (max 1 (/ (lsh arg -1) 4)))
     (funcall nvp-mark-defun-function prefix-arg)
-    (and skip-comments (comment-forward (point-max)))))
+    (and skip-comments (comment-forward (point-max)))
+    (nvp-use-transient-bindings
+      (("c" . nvp-mark-previous-comments))
+      :repeat-key "h")))
 
 ;; -------------------------------------------------------------------
 ;;; Align

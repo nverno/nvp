@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-08 06:44:31>
+;; Last modified: <2019-03-27 15:42:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/java-tools
 ;; Package-Requires: 
@@ -16,10 +16,12 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'nvp-doc)
   (require 'cl-lib))
 (require 'eclim)
 (require 'eclimd)
 (require 'nvp-parse)
+(nvp-declare "" nvp-compile nvp-abbrev-expand-p nvp-maven-compile)
 
 (declare-function eclim--maven-pom-path "eclim-maven")
 (declare-function eclim--project-read "eclim-project")
@@ -28,12 +30,6 @@
 (declare-function eclim--completion-candidates "eclim-completion")
 (declare-function eclim-java-browse-documentation-at-point "eclim-javadoc")
 (declare-function eclim-javadoc-buffer "eclim-javadoc")
-
-(declare-function nvp-maven-compile "nvp-maven")
-(declare-function nvp-compile "nvp-compile")
-(declare-function nvp-abbrev-expand-p "nvp-abbrev")
-
-(nvp-package-define-root)
 
 ;; FIXME: remove
 (defun nvp-java-eclipse-releases ()

@@ -1,6 +1,6 @@
 ;;; nvp-c.el --- c helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-21 19:20:44>
+;; Last modified: <2019-03-27 15:32:56>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp-c
 ;; Created: 11 November 2016
@@ -17,6 +17,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
+  (require 'nvp-compile)
   (defvar c/R-abbrev-table)
   (defvar nvp-abbrev-local-table))
 (declare-function xref-push-marker-stack "xref")

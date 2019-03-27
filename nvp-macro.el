@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 10:06:57>
+;; Last modified: <2019-03-27 15:48:51>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -14,15 +14,6 @@
 (require 'subr-x)
 (require 'macroexp)
 (defvar eieio--known-slot-names)
-
-;; Doesn't work
-;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
-(when (functionp 'backtrace-frames)
-  (when (assoc '(t byte-compile-file-form-require
-                   ((require 'nvp-macro))
-                   nil)
-               (backtrace-frames))
-    (message "Warning: package 'nvp-macro required at runtime")))
 
 ;; -------------------------------------------------------------------
 ;;; Internal functions
@@ -138,26 +129,6 @@ those are both specified."
       collect `(autoload ',func ,package))))
 
 ;;-- Vars
-(defmacro nvp-with-preserved-vars (vars &rest body)
-  "Let bind VARS then execute BODY, so VARS maintain their original values.
-VARS should be either a symbol or list or symbols."
-  (declare (indent 1) (debug (form body)))
-  `(cl-progv ,(if (listp vars) `,vars `(list ',vars)) nil
-     (unwind-protect
-         ,@body)))
-
-;; from yasnippet #<marker at 126339 in yasnippet.el>
-(defmacro nvp-letenv (env &rest body)
-  "Evaluate BODY with bindings from ENV.
-ENV is a lisp expression evaluating to list of (VAR FORM), where
-VAR is a symbol and FORM is evaluated."
-  (declare (indent 1) (debug (form body)))
-  (let ((envvar (make-symbol "envvar")))
-    `(let ((,envvar ,env))
-       (cl-progv
-           (mapcar #'car ,envvar)
-           (mapcar (lambda (k-v) (eval (cadr k-v))) ,envvar)
-         ,@body))))
 
 (defmacro nvp-defvar (&rest var-vals)
   "Define VAR and eval VALUE during compile."
@@ -209,6 +180,13 @@ use either `buffer-file-name' or `buffer-name'."
 
 ;; -------------------------------------------------------------------
 ;;; Regions / things-at-point
+
+(defmacro nvp-thing-dwim (&optional thing)
+  "Thing / region at point DWIM."
+  `(cond
+    ((use-region-p)
+     (buffer-substring-no-properties (region-beginning) (region-end)))
+    ((thing-at-point ,(or thing ''symbol) 'noprop))))
 
 (defmacro nvp-bounds-of-thing (thing &optional no-pulse)
   "Return `bounds-of-thing-at-point' and pulse region unless NO-PULSE."
@@ -324,30 +302,6 @@ If NO-PULSE, don't pulse region when using THING."
     (and
      (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
      (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
-
-;; paredit splicing reindent doesn't account for prompts
-(defmacro nvp-preserving-column (&rest body)
-  "Preserve point in column after executing BODY.
-`paredit-preserving-column' doesn't properly account for minibuffer prompts."
-  (declare (indent defun) (debug body))
-  (let ((orig-indent (make-symbol "indentation"))
-        (orig-col (make-symbol "column")))
-    `(let ((,orig-col (if (eq major-mode 'minibuffer-inactive-mode)
-                          (- (current-column) (minibuffer-prompt-width))
-                        (current-column)))
-           (,orig-indent (current-indentation)))
-       (unwind-protect
-           (progn ,@body)
-         (let ((ci (current-indentation)))
-           (goto-char
-            (+ (point-at-bol)
-               (cond ((not (< ,orig-col ,orig-indent))
-                      (+ ,orig-col (- ci ,orig-indent)))
-                     ((<= ci ,orig-col) ci)
-                     (t ,orig-col)))))))))
-
-;;; TODO: modified `c-point'
-;; #<marker at 9767 in cc-defs.el.gz>
 
 ;; -------------------------------------------------------------------
 ;;; Control flow
@@ -786,7 +740,7 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
            collect `(nvp-def-key map ,k ,b))
       (push (cons ,mode map) minor-mode-overriding-map-alist))))
 
-;;; FIXME: remove one of these / optionally use or return local map variable
+;; FIXME: remove one of these / optionally use or return local map variable
 (cl-defmacro nvp-use-local-keymap (&rest bindings
                                    &key keymap buffer &allow-other-keys)
   "Use a local version of KEYMAP or `current-local-map'.
@@ -800,19 +754,6 @@ If BUFFER is non-nil, use BINDINGS locally in BUFFER."
           collect `(nvp-def-key lmap ,k ,b))
      ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
         '(use-local-map lmap))))
-
-(cl-defmacro nvp-use-local-bindings (&rest bindings &key buffer &allow-other-keys)
-  "Set local BINDINGS.
-If BUFFER is non-nil, set local bindings in BUFFER."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  `(let ((lmap (make-sparse-keymap)))
-     (set-keymap-parent lmap (current-local-map))
-     ,@(cl-loop for (k . b) in bindings
-          collect `(nvp-def-key lmap ,k ,b))
-     ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
-        `(use-local-map lmap))))
 
 ;;-- View bindings
 
@@ -873,70 +814,6 @@ If BUFFER is non-nil, set local bindings in BUFFER."
    `(let ((,start (float-time)))
       ,@body
       (- (float-time) ,start))))
-
-;; -------------------------------------------------------------------
-;;; Tooltips
-
-(declare-function pos-tip-show "pos-tip")
-
-;; TODO:
-;; - use help buffer with xref?
-;; - better popup formatting
-
-(cl-defmacro nvp-with-toggled-tip (popup
-                                   &key
-                                   (help-key "h")  ;key-binding for help-fn
-                                   (help-fn t)     ;more help (t is default)
-                                   bindings        ;additional bindings
-                                   (timeout 45)    ;pos-tip timeout
-                                   keep            ;keep transient map
-                                   use-gtk         ;use gtk tooltips
-                                   (help-buffer '(help-buffer)))
-  "Toggle POPUP, a help string, in pos-tip.
-If HELP-FN is :none, HELP-KEY is not bound by default.
-Normally, HELP-KEY triggers a function to jump to a full help description
-related to the popup - hopefully in a buffer.
-BINDINGS are an alist of (key . function) of additional keys to bind in the
-transient keymap.
-TIMEOUT is passed to `pos-tip-show'.
-If USE-GTK is non-nil use gtk tooltips.
-KEEP is passed to `set-transient-map'.
-HELP-BUFFER is buffer with full help documentation. This is only applicable to the
-default help function."
-  (declare (indent defun) (debug t))
-  (macroexp-let2* nil ((str popup)
-                       (h-key (or help-key "h"))
-                       (h-fn (cond
-                              ((eq :none help-fn) nil) ;back-compat
-                              ((eq t help-fn)
-                               `(lambda ()
-                                  (interactive)
-                                  (x-hide-tip)
-                                  (with-help-window ,help-buffer
-                                    (with-current-buffer standard-output
-                                      (insert ,str)))
-                                  ;; (with-current-buffer ,help-buffer
-                                  ;;   (insert ,str)
-                                  ;;   (view-mode-enter)
-                                  ;;   (pop-to-buffer (current-buffer)))
-                                  ))
-                              (help-fn help-fn)
-                              (t nil)))
-                       (exit-fn '(lambda () (interactive) (x-hide-tip)))
-                       (keep keep))
-    `(progn
-       (declare-function pos-tip-show "pos-tip")
-       (let ((x-gtk-use-system-tooltips ,use-gtk))
-         (unless (x-hide-tip)
-           (pos-tip-show ,str nil nil nil ,timeout)
-           (set-transient-map
-            (let ((tmap (make-sparse-keymap)))
-              (define-key tmap ,h-key ,h-fn)
-              ,@(cl-loop for (k . b) in bindings
-                   collect `(define-key tmap ,k ,b))
-              tmap)
-            ,keep
-            ,exit-fn))))))
 
 ;; -------------------------------------------------------------------
 ;;; Processes
@@ -1090,81 +967,6 @@ BODY."
      ,@body)))
 
 ;; -------------------------------------------------------------------
-;;; Installation wrappers
-
-(make-obsolete 'nvp-install--script 'nvp-install "26.1")
-(defmacro nvp-install--script (directory)
-  "Find installation script."
-  `(cl-loop for dir in '("script" "tools")
-      for dirname = (expand-file-name dir ,directory)
-      when (file-exists-p dirname)
-      return (cl-loop for file in '("install.sh" "install")
-                for fname = (expand-file-name file dirname)
-                if (file-exists-p fname)
-                return fname)))
-
-(make-obsolete 'nvp-with-install-script 'nvp-install "26.1")
-(defmacro nvp-with-install-script (dir &optional funcs sudo &rest body)
-  "Run installation script."
-  (declare (indent defun) (debug defun))
-  `(progn
-     (require 'nvp)
-     (require 'nvp-log)
-     (require 'nvp-ext)
-     (declare-function nvp-ext-run-script "nvp-ext")
-     (declare-function nvp-log "nvp-log")
-     (let ((script (nvp-install--script ,dir)))
-       (nvp-with-process-log
-         (funcall-interactively #'nvp-ext-run-script script
-                                ,(if (stringp funcs) `(cons ,funcs nil)
-                                   funcs)
-                                ,sudo)
-         :pop-on-error
-         ,@body))))
-
-(make-obsolete 'nvp-with-scipt 'nvp-install "26.1")
-(defmacro nvp-with-script (script &optional funcs sudo &rest body)
-  "Run FUNCS in SCRIPT."
-  (declare (indent defun) (debug defun))
-  `(progn
-     (require 'nvp)
-     (require 'nvp-log)
-     (require 'nvp-ext)
-     (declare-function nvp-log "nvp-log")
-     (nvp-with-process-log
-       (funcall-interactively #'nvp-ext-run-script ,script
-                              ,(if (stringp funcs) `(cons ,funcs nil)
-                                 funcs)
-                              ,sudo)
-       :pop-on-error
-       ,@body)))
-
-(make-obsolete 'nvp-with-asdf-install 'nvp-install "26.1")
-(defmacro nvp-with-asdf-install (prefix dir plugin
-                                        &optional config-defaults error-callback
-                                        success-callback script-fn sudo
-                                        &rest body)
-  "Run install script, with prefix prompt for extra arguments to configure
-and install PLUGIN with asdf."
-  `(progn
-     (require 'asdf)
-     (declare-function asdf--versions "asdf")
-     (declare-function asdf-install "asdf")
-     (if ,prefix
-         (let ((ver (ido-completing-read
-                     ,(concat (capitalize plugin) " version: ")
-                     (asdf--versions ,plugin)))
-               (process-environment
-                (cons (concat
-                       ,(concat (upcase plugin) "_EXTRA_CONFIGURE_OPTIONS=")
-                       (read-from-minibuffer
-                        ,(concat (capitalize plugin) " configure options: ")
-                        ,config-defaults))
-                      process-environment)))
-           (asdf-install ,plugin ver ,error-callback ,success-callback))
-       (nvp-with-install-script ,dir ,(or script-fn "install") ,sudo ,@body))))
-
-;; -------------------------------------------------------------------
 ;;; Building Interactive Functions
 
 ;;-- Wrapper functions to call mode-local values
@@ -1285,67 +1087,6 @@ or PREDICATE is non-nil and returns nil."
                      (newline-and-indent)))))
            (indent-according-to-mode)))))))
 
-;;-- Compile
-
-;; FIXME: Obsolete
-;; Create compile function, check for makefiles/cmake first, otherwise
-;; execute BODY. Prefix argument executes PROMPT-ACTION, and its
-;; result is bound to ARGS, which can be used in the body.
-(cl-defmacro nvp-make-or-compile-fn
-    (name
-     (&key
-      (doc "Compile using make or cmake if found, otherwise execute body.")
-      (make-action
-       '(let ((compile-command (or args "make -k")))
-          (nvp-compile)))
-      (cmake-action
-       '(nvp-compile-cmake args))
-      (default-prompt
-        '(read-from-minibuffer "Compile args: "))
-      (prompt-action
-       `((cond
-          ,@(and cmake-action
-                 '((have-cmake
-                    (read-from-minibuffer "CMake args: "))))
-          ,@(and make-action
-                 '((have-make
-                    (format "make %s" (read-from-minibuffer "Make args: ")))))
-          (t ,default-prompt)))))
-     &rest body)
-  (declare (indent defun))
-  (let ((fn (if (symbolp name) name (intern name))))
-    `(progn
-       (declare-function nvp-compile "nvp-compile")
-       (declare-function nvp-compile-cmake "nvp-compile")
-       (defun ,fn (&optional arg)
-         ,doc
-         (interactive "P")
-         (let* (,@(and make-action
-                       '((have-make
-                          (memq t (mapcar #'file-exists-p
-                                          '("Makefile" "makefile" "GNUMakefile"))))))
-                ,@(and cmake-action
-                       '((have-cmake (file-exists-p "CMakeLists.txt"))))
-                (args (and arg ,@(or prompt-action
-                                     '((read-from-minibuffer "Compile args: "))))))
-           (cond
-            ,@(and cmake-action `((have-cmake ,cmake-action)))
-            ,@(and make-action `((have-make ,make-action)))
-            (t ,@body)))))))
-
-;;-- Sort
-
-(defmacro nvp-sort-with-defaults (start end &rest body)
-  "Sort region between START and END by BODY, using defaults and indent region \
-afterward."
-  (declare (indent defun) (debug (sexp sexp &rest form)))
-  `(let ((sort-fold-case t))
-     (save-mark-and-excursion
-       (save-match-data
-         (unwind-protect
-             ,@body
-           (indent-region ,start ,end))))))
-
 ;;-- Wrap
 
 ;; Create function to wrap region, inserting BEGIN at beginning,
@@ -1365,49 +1106,6 @@ afterward."
           (insert ,begin))
         (goto-char (region-end))
         (insert ,end)))))
-
-;; Wrap items in list between DELIM, default wrapping with WRAP
-;; Create list wrapping functions, wrapping items between DELIMS with
-;; WRAP by default, prompting for wrapping string with prefix.  IGNORE
-;; is regexp to ignore in list, ie commas and spaces and MATCH is regex
-;; to capture items.
-(cl-defmacro nvp-wrap-list-items (name
-                                  &key
-                                  (delims '("(" . ")"))
-                                  (match "[^)(, \n\t\r]+")
-                                  (ignore "[, \n\t\r]*")
-                                  (wrap '("\"" . "\"")))
-  (declare (debug defun)
-           (indent defun))
-  (let ((fn (intern (concat "nvp-list-wrap-" (symbol-name name))))
-        (doc (format
-              (concat "Wrap items of list in selected region between "
-                      "%s...%s with items with %s..%s by default or "
-                      "string ARG, prompting with prefix.")
-              (car delims) (cdr delims) (car wrap) (cdr wrap)))
-        (delim-re (concat ignore "\\(" match "\\)")))
-    `(defun ,fn (start end &optional arg)
-       ,doc
-       (interactive "r\nP")
-       (let* ((wrap (or (and arg
-                             (car
-                              (read-from-string
-                               (read-from-minibuffer
-                                "Wrap items with(a . b): "))))
-                        ',wrap))
-              (str (buffer-substring-no-properties start end)))
-         (delete-region start end)
-         (insert
-          (with-temp-buffer
-            (insert str)
-            (goto-char (point-min))
-            (re-search-forward ,(regexp-quote (car delims)) nil t)
-            (while (re-search-forward ,delim-re nil t)
-              (replace-match (concat (car wrap)
-                                     (match-string-no-properties 1)
-                                     (cdr wrap))
-                             t nil nil 1))
-            (buffer-string)))))))
 
 ;; -------------------------------------------------------------------
 ;;; URL
@@ -1691,22 +1389,6 @@ PROPS defaults to setting :verbosity to 1."
       ,@(cl-loop for (k v) on props by #'cddr
            collect `(hydra-set-property ,hydra-name ,k ,v)))))
 
-;;-- Hideshow
-(defmacro nvp-hs-blocks (start end)
-  `(progn
-     (setq hs-block-start-regexp ,start)
-     (setq hs-block-end-regexp ,end)))
-
-(defmacro nvp-with-hs-block (start end &rest body)
-  "Do hideshow with START and END regexps."
-  (declare (indent defun))
-  `(progn
-     (require 'hideshow)
-     (unless hs-minor-mode (hs-minor-mode))
-     (let ((hs-block-start-regexp ,start)
-           (hs-block-end-regexp ,end))
-       ,@(or body (list '(hs-toggle-hiding))))))
-
 ;;-- Smartparens
 (cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
   (declare (indent defun) (debug defun))
@@ -1764,6 +1446,15 @@ PROPS defaults to setting :verbosity to 1."
      (defvar nvp/private)))
 
 (nvp-local-vars)
+
+;; Doesn't work
+;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
+(when (functionp 'backtrace-frames)
+  (when (assoc '(t byte-compile-file-form-require
+                   ((require 'nvp-macro))
+                   nil)
+               (backtrace-frames))
+    (message "Warning: package 'nvp-macro required at runtime")))
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

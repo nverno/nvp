@@ -2,27 +2,8 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp-julia
-;; Last modified: <2019-02-21 00:16:18>
-;; Package-Requires: 
-;; Copyright (C) 2016, Noah Peart, all rights reserved.
+;; Last modified: <2019-03-27 15:45:33>
 ;; Created: 28 September 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 
@@ -32,9 +13,10 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'subr-x)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro)
+  (require 'nvp-doc))
 (require 'company)
 (require 'julia-mode)
 (require 'ess-site)
@@ -44,14 +26,12 @@
 
 (autoload 'tag-utils-tag-dir "tag-utils")
 (autoload 'nvp-log "nvp-log")
-(autoload 'nvp-ext-sudo-command "nvp-ext")
 (autoload 'nvp-r-help-at-point "nvp-r")
 
 ;; -------------------------------------------------------------------
 ;;; Vars 
 
-(nvp-package-define-root :snippets t)
-
+;; FIXME: remove
 (defvar nvp-julia-source-repo "https://github.com/JuliaLang/julia")
 (defvar nvp-julia-source-dir
   (expand-file-name "julia" (or (bound-and-true-p tag-utils-source-dir)

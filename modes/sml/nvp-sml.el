@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp-sml
-;; Last modified: <2019-03-16 00:02:39>
+;; Last modified: <2019-03-27 14:45:47>
 ;; Package-Requires: 
 ;; Created:  2 November 2016
 
@@ -32,8 +32,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'sml-mode)
 (declare-function tag-utils-tag-dir "tag-utils")
 (declare-function smie-forward-sexp "smie")

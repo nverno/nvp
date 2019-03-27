@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-26 20:43:43>
+;; Last modified: <2019-03-27 16:27:38>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -42,9 +42,35 @@ or '*' from emacs root, ignoring package directory.
                    grep-find-ignored-directories)
            grep-find-ignored-directories)))
     (grep-compute-defaults)
-    (rgrep (format "[ '\\(]%s[ )\\t\\n\\b]" sym)
+    (rgrep (format "[ '\\(]%s[ \\)\\t\\n\\b]*" sym)
            (if ext (concat "*." ext) "*")
            nvp/emacs (equal '(64) current-prefix-arg))))
+
+;;;###autoload
+(defun nvp-ag (str dir &optional regex)
+  "Search for STR from root DIR using ag.
+Defaults to symbol at point and emacs root.
+(1) prefix prompts for STR and DIR
+(2) or more prefix args to treat STR as REGEX
+(3) prefix prompt and treat as REGEX"
+  (interactive
+   (let* ((arg (prefix-numeric-value current-prefix-arg))
+          (sym (thing-at-point 'symbol t))
+          (dir nvp/emacs)
+          (re (> (prefix-numeric-value current-prefix-arg) 4)))
+     (cond
+      ((memq arg '(4 16))
+       (list (read-from-minibuffer
+              (format "Ag search%s: " (if sym (concat "(" sym ")") ""))
+              nil nil nil nil sym)
+             (read-directory-name
+              "Search directory(~/.emacs.d): " nil nvp/emacs nil "")
+             re))
+      ((null sym)
+       (list (read-from-minibuffer "Ag search string: ") nvp/emacs re))
+      (t (list sym dir re)))))
+  (require 'ag)
+  (ag/search str dir :regexp regex))
 
 ;; -------------------------------------------------------------------
 ;;; wgrep

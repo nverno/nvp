@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-15 16:28:40>
+;; Last modified: <2019-03-27 15:54:49>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -17,8 +17,9 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
+  (require 'nvp-macro)
+  (require 'nvp-doc)
   (defvar Man--sections))
 (require 'nvp-help) ;; parse 'man' stuff
 (autoload 'Man-build-section-list "man")
@@ -304,7 +305,6 @@
 ;; and find help for that.  If in [[ ... ]] or [ ... ],
 ;; show help for current switch, eg. "-d", or all possible switches
 ;;;###autoload
-
 (defun nvp-sh-help-at-point (arg)
   (interactive "P")
   (if (equal arg '(4))

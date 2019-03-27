@@ -27,9 +27,10 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
+  (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'ocaml-tools)
-  (require 'cl-lib))
+  (require 'nvp-doc)
+  (require 'ocaml-tools))
 (require 'ocaml-tools)
 (require 'merlin-company)
 (autoload 'ocaml-module-alist "caml-help")

@@ -1,6 +1,6 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 01:34:45>
+;; Last modified: <2019-03-27 15:20:29>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -22,6 +22,18 @@
 
 ;; -------------------------------------------------------------------
 ;;; Sort
+
+(eval-when-compile
+  (defmacro nvp-sort-with-defaults (start end &rest body)
+    "Sort region between START and END by BODY, using defaults and indent \
+region afterward."
+    (declare (indent defun) (debug (sexp sexp &rest form)))
+    `(let ((sort-fold-case t))
+       (save-mark-and-excursion
+         (save-match-data
+           (unwind-protect
+               ,@body
+             (indent-region ,start ,end)))))))
 
 ;;;###autoload
 (defun nvp-sort-lines-first-word (start end &optional reverse)
@@ -180,7 +192,8 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 Override default `sp-pair-list' if CHAR isn't a leading member.
 Prefix arg is passed to SP, wrapping the next _ARG elements."
   (interactive
-   (list (nvp-last-command-char 'strip) current-prefix-arg))
+   (list (nvp-last-command-char 'strip)
+         current-prefix-arg))
   (let ((sp-pair-list
          (if (not (cl-member char sp-pair-list :test #'string= :key #'car))
              `((,char . ,char))
@@ -205,6 +218,50 @@ Prefix arg is passed to SP, wrapping the next _ARG elements."
         (delete-region from to)
         (goto-char from)
         (insert res)))))
+
+(eval-when-compile
+  ;; Wrap items in list between DELIM, default wrapping with WRAP
+  ;; Create list wrapping functions, wrapping items between DELIMS with
+  ;; WRAP by default, prompting for wrapping string with prefix.  IGNORE
+  ;; is regexp to ignore in list, ie commas and spaces and MATCH is regex
+  ;; to capture items.
+  (cl-defmacro nvp-wrap-list-items (name
+                                    &key
+                                    (delims '("(" . ")"))
+                                    (match "[^)(, \n\t\r]+")
+                                    (ignore "[, \n\t\r]*")
+                                    (wrap '("\"" . "\"")))
+    (declare (debug defun)
+             (indent defun))
+    (let ((fn (intern (concat "nvp-list-wrap-" (symbol-name name))))
+          (doc (format
+                (concat "Wrap items of list in selected region between "
+                        "%s...%s with items with %s..%s by default or "
+                        "string ARG, prompting with prefix.")
+                (car delims) (cdr delims) (car wrap) (cdr wrap)))
+          (delim-re (concat ignore "\\(" match "\\)")))
+      `(defun ,fn (start end &optional arg)
+         ,doc
+         (interactive "r\nP")
+         (let* ((wrap (or (and arg
+                               (car
+                                (read-from-string
+                                 (read-from-minibuffer
+                                  "Wrap items with(a . b): "))))
+                          ',wrap))
+                (str (buffer-substring-no-properties start end)))
+           (delete-region start end)
+           (insert
+            (with-temp-buffer
+              (insert str)
+              (goto-char (point-min))
+              (re-search-forward ,(regexp-quote (car delims)) nil t)
+              (while (re-search-forward ,delim-re nil t)
+                (replace-match (concat (car wrap)
+                                       (match-string-no-properties 1)
+                                       (cdr wrap))
+                               t nil nil 1))
+              (buffer-string))))))))
 
 ;; FIXME: Combine into single interface, wrapping with next character
 ;;        Also, become syntax aware

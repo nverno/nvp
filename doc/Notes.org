@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-27 11:48:22>
+#+DATE: <2019-03-27 16:31:03>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -59,7 +59,7 @@ This doesn't seem to be too actively maintained
 - [ ] generic compile interface
 - [ ] find first applicable function
 - [ ] compile with completing read for compiler switches
-  Can leverage applicable parts of GNU help2man (perl)
+      Can leverage applicable parts of GNU help2man (perl)
 - [ ] compile with completing read for makefile targets
 
 ** Package [0/3]
@@ -434,14 +434,15 @@ https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [X] gawk installs
 - [X] asm install
 
-* Mode settings [7/13]
+* Mode settings [8/14]
 - [ ] semantic - separate from cedet / update bindings
 - [ ] ggtags
 - [ ] ctags
   https://github.com/skeeto/.emacs.d/tree/master/lisp
-- [ ] ag/ripgrep settings
 - [ ] pdfgrep
 - [ ] EDE
+- [ ] ripgrep
+- [X] ag
 - [X] erc
 - [X] m4
 - [X] etags

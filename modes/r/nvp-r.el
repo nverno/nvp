@@ -2,14 +2,15 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/r-tools
-;; Last modified: <2019-03-15 23:16:21>
+;; Last modified: <2019-03-27 15:43:34>
 ;; Created: 27 September 2016
 
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
+  (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'nvp-doc))
 (require 'nvp)
 (require 'ess-site)
 (require 'ess-inf)

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 22:56:48>
+;; Last modified: <2019-03-27 15:53:54>
 ;; Created: 20 January 2017
 
 ;;; Commentary:
@@ -16,10 +16,10 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (nvp-local-vars)
   (require 'cl-lib)
   (require 'subr-x)
+  (require 'nvp-macro)
+  (require 'nvp-doc)
   (defvar company-autoconf-keywords))
 (require 'company-autoconf)
 (require 'nvp)

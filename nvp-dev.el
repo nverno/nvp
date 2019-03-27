@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 03:05:11>
+;; Last modified: <2019-03-27 04:48:28>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -200,6 +200,57 @@ delimiter or an Escaped or Char-quoted character."
 ;;       (with-current-buffer standard-output
 ;;         (let ((inhibit-read-only t))
 ;;           (hl-line-mode))))))
+
+;; -------------------------------------------------------------------
+;;; Fonts
+
+;;;###autoload
+(defun nvp-font-fontify-region-face (face &optional beg end)
+  "Fontify region or `thing-at-point' with font FACE.
+With \\[universal-argument] prompt for THING at point."
+  (interactive
+   (list (read-face-name "Fontifaction face: ")
+         (nvp-region-or-batp (eq 4 (prefix-numeric-value current-prefix-arg)))))
+  (put-text-property beg end 'font-lock-face face))
+
+;; -------------------------------------------------------------------
+;;; Display
+
+;; https://gist.github.com/haxney/3055728
+;; non-nil if monospaced font
+(defun nvp-font-is-mono-p (font-family)
+  (let (m-width l-width)
+   (with-temp-buffer
+     (set-window-buffer (selected-window) (current-buffer))
+     (text-scale-set 4)
+     (insert (propertize "l l l l l" 'face `((:family ,font-family))))
+     (goto-char (line-end-position))
+     (setq l-width (car (posn-x-y (posn-at-point))))
+     (newline)
+     (forward-line)
+     (insert (propertize "m m m m m" 'face `((:family ,font-family) italic)))
+     (goto-char (line-end-position))
+     (setq m-width (car (posn-x-y (posn-at-point))))
+     (eq l-width m-width))))
+
+;; https://www.emacswiki.org/emacs/GoodFonts
+;;;###autoload
+(defun nvp-font-list ()
+  "Display various available fonts."
+  (interactive)
+  (let ((str "The quick brown fox jumps over the lazy dog \
+´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
+        (font-families (cl-remove-duplicates 
+                        (sort (font-family-list) 
+                              #'(lambda (x y) (string< (upcase x)
+                                                  (upcase y))))
+                        :test 'string=)))
+    (nvp-with-results-buffer (help-buffer)
+      (font-lock-mode)
+      (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
+        (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
+                (propertize str 'font-lock-face
+                            `(:family ,ff :slant italic)) ff "\n")))))
 
 ;; -------------------------------------------------------------------
 ;;; Assorted

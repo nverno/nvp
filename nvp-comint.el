@@ -4,19 +4,23 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 13:57:34>
+;; Last modified: <2019-03-27 10:47:43>
 ;; Created: 31 March 2017
 
 ;;; Commentary:
+
+;; TODO:
+;; - default `comint-input-filter-functions' to ignore blanks, compress newlines
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (nvp-local-vars)
   (require 'cl-lib)
   (require 'subr-x))
 (require 'comint)
 
-;;; kill process before killing buffer
+;; FIXME: move to nvp-proc
+;; kill process before killing buffer
 (defun nvp-comint-kill-proc-before-buffer ()
   (let ((proc (nvp-buffer-process)))
     (when (processp proc)
@@ -29,16 +33,18 @@
 
 ;;; History
 
+;; FIXME: setup hippie expansion for shell at same time as history
 ;;;###autoload
 (defun nvp-comint-setup-history (filename &optional size write-history)
   ;; setup read/write for history file
-  (setq comint-input-ignoredups t)
+  (setq comint-input-ignoredups t)      ;FIXME: move to comint-hook
   (setq comint-input-ring-file-name (expand-file-name filename nvp/cache))
   (and size (setq-local comint-input-ring-size size))
   (comint-read-input-ring 'silent)
   (when-let* ((proc (get-buffer-process (current-buffer))))
     (and write-history (nvp-comint-add-history-sentinel proc))))
 
+;; FIXME: is `nvp-comint-add-history-sentinel' necessary with this hook?
 ;; write comint-input-ring when buffer is killed: in kill-buffer-hook
 (defun nvp-comint-write-history-on-kill ()
   ;; make sure the buffer exists before calling the process sentinel

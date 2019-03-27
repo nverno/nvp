@@ -82,6 +82,7 @@
     ("z" "zerop" nil :system t)
     
     ("ah" "add-hook" nil :system t)
+    ("ap" "apply-partially" nil :system t)
     ("bc" "backward-char" nil :system t)
     ("bl" "buffer-list" nil :system t)
     ("bn" "buffer-name" nil :system t)
@@ -175,6 +176,7 @@
     ("atp" "add-text-properties" nil :system t)
     ("bfn" "buffer-file-name" nil :system t)
     ("blp" "buffer-live-p" nil :system t)
+    ("blv" "buffer-local-value" nil :system t)
     ("bmp" "buffer-modified-p" nil :system t)
     ("bod" "beginning-of-defun" nil :system t)
     ("bol" "beginning-of-line" nil :system t)

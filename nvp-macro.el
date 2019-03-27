@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 03:27:09>
+;; Last modified: <2019-03-27 10:06:57>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -345,6 +345,9 @@ If NO-PULSE, don't pulse region when using THING."
                       (+ ,orig-col (- ci ,orig-indent)))
                      ((<= ci ,orig-col) ci)
                      (t ,orig-col)))))))))
+
+;;; TODO: modified `c-point'
+;; #<marker at 9767 in cc-defs.el.gz>
 
 ;; -------------------------------------------------------------------
 ;;; Control flow
@@ -937,36 +940,26 @@ default help function."
 
 ;; -------------------------------------------------------------------
 ;;; Processes
-;; FIXME: Keep only necessary macros here
+
 (defmacro nvp-buffer-process (&optional buffer)
   "Return BUFFER's process."
   `(get-buffer-process ,(or buffer '(current-buffer))))
 
-;; get a comint buffer, run body, return buffer
-(defmacro nvp-comint-buffer (name &rest body)
-  (declare (indent 2) (indent 1))
-  `(progn (with-current-buffer (generate-new-buffer-name ,name)
-            (comint-mode)
-            ,@body
-            (current-buffer))))
-
-(defmacro nvp-with-comint-buffer (name &rest body)
-  (declare (indent defun))
-  `(nvp-comint-buffer ,name ,@body))
-
-(defmacro nvp-process-buffer (&optional name new-buff comint &rest body)
-  "Return a process buffer name NAME.
-If NEW-BUFF generate a new buffer.  Optionally initialize buffer in
-COMINT mode or with BODY."
-  (declare (indent 2) (indent 1))
-  (let ((get-buffer-function (if new-buff 'generate-new-buffer
-                               'get-buffer-create))
-        (name (or name "*nvp-install*")))
-    (if (not (or comint body))
-        `(,get-buffer-function ,name)
-      `(progn (with-current-buffer (,get-buffer-function ,name)
-                ,@(or body (list '(comint-mode)))
-                (current-buffer))))))
+(defalias 'nvp-with-comint-buffer 'nvp-comint-buffer)
+(cl-defmacro nvp-comint-buffer (&rest body &key name new result &allow-other-keys)
+  "Get a new comint buffer from NAME and execute BODY there, returning buffer.
+If NEW is non-nil, use `generate-new-buffer', otherwise `get-buffer-create'.
+If RESULT is non-nil, return result of BODY instead of buffer."
+  (declare (indent 2) (indent 1) (debug body))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
+  (or name (setq name "*nvp*"))
+  (let ((gen-fn (if new #'generate-new-buffer #'get-buffer-create)))
+    `(progn (with-current-buffer (,gen-fn ,name)
+              (comint-mode)
+              ,(if (not result)
+                   `(prog1 (current-buffer)
+                      ,@body))))))
 
 (defmacro nvp-with-process-filter (process &optional proc-filter)
   "Run processs with `nvp-proc-default-filter'.
@@ -1476,14 +1469,27 @@ afterward."
 ;; -------------------------------------------------------------------
 ;;; Mode specific
 
-(defmacro nvp-mode-bind (&optional mode &rest bindings)
+(defmacro nvp-mode-bind-1 (&optional mode &rest bindings)
   "Attach BINDINGS globally to MODE."
   (declare (indent defun))
   (or mode (setq mode (quote major-mode)))
+  (unless (equal 'quote (car-safe mode)) (setq mode `',mode))
   `(if (not (get ,mode 'nvp))
        (put ,mode 'nvp ,@bindings)
      (put ,mode 'nvp
           (cl-delete-duplicates (append (get ,mode 'nvp) ,@bindings) :key #'car))))
+
+(defmacro nvp-mode-bind (&optional modes &rest bindings)
+  "Attach BINDINGS globally to MODES."
+  (declare (indent defun) (debug t))
+  ;; Allow for some various forms
+  (and (equal 'quote (car-safe modes))
+       (setq modes (cadr modes)))                       ; '(a b c)
+  (unless (listp modes) (setq modes (cons modes nil)))  ; some-mode
+  (setq modes (remq 'quote modes))                      ; ('mode-1 'mode-...)
+  (macroexp-progn
+   (cl-loop for mode in modes
+      collect `(nvp-mode-bind-1 ,mode ,@bindings))))
 
 ;; -------------------------------------------------------------------
 ;;; Package

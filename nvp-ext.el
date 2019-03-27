@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-26 22:54:23>
+;; Last modified: <2019-03-27 10:01:39>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -20,6 +20,7 @@
 (declare-function imenu--make-index-alist "imenu")
 (declare-function nvp-log "nvp-log")
 
+;; FIXME: prompts for password
 ;; do sudo command and return process object
 (defun nvp-ext-sudo-command (&optional password command buffer)
   (interactive
@@ -30,7 +31,7 @@
   (let* ((default-directory "/sudo::")
          (proc (nvp-with-process "bash"
                  :proc-buff buffer
-                 :proc-args ("sudo bash -l" "-c" command)
+                 :proc-args ("bash -l" "-c" command)
                  :buffer-fn nvp-proc-comint-buffer
                  :shell t)))
     (sit-for 1)
@@ -83,15 +84,9 @@
           (if sudo
               (nvp-ext-sudo-command passwd cmd)
             (start-process-shell-command
-             "bash" (nvp-process-buffer 'comint) (concat "bash -l " cmd)))
+             "bash" (nvp-comint-buffer file) (concat "bash -l " cmd)))
         (start-process-shell-command
-         "bash" (nvp-process-buffer 'comint) "bash -l " cmd)))))
-
-;;;###autoload
-(define-obsolete-function-alias 'nvp-install-script 'nvp-ext-run-script)
-;;;###autoload
-(define-obsolete-function-alias 'nvp-install-script-functions
-  'nvp-ext--script-functions)
+         "bash" (nvp-comint-buffer file) "bash -l " cmd)))))
 
 ;; -------------------------------------------------------------------
 ;;; Terminal

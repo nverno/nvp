@@ -4,33 +4,40 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-24 21:28:11>
+;; Last modified: <2019-03-27 10:41:54>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
 
 ;; TODO:
-;;   - somehow merge local variable completion with bash-completion
-;;   - restrict local variable candidates to the current context + globals
-;;   - fix narrowing
-;;   - create docstrings from function headers
-;;   - jump to sourced functions
-;;   - don't leave sourced scripts sitting around in buffers
+;; General:
+;;   - fix narrowing to account for different styles
+;; Completion:
+;;  - somehow merge local variable completion with bash-completion
+;;  - restrict local variable candidates to the current context + globals
+;; Company-bash:
+;;  - don't leave sourced scripts sitting around in buffers
+;;  - jump to sourced functions - works fine with TAGs file, but sourced scripts
+;;     can come from anywhere, so an xref backend would be useful
+;;  - create docstrings from function headers
 
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'subr-x)
+  (require 'nvp-sh-help)                ;defsubsts
   (defvar explicit-shell-file-name))
+(eval-and-compile (require 'nvp-font))
 (require 'nvp-parse)
-(require 'nvp-shell)
-(require 'nvp-sh-help)
 (require 'company)
 (require 'company-quickhelp)
-(require 'company-bash)
 (require 'sh-script)
 
+(nvp-autoload "nvp-sh-help" nvp-sh-help-bash-builtin-p nvp-sh-help-bash-builtin-sync)
+(nvp-autoload "nvp-shell" nvp-shell-get-process)
+
+(declare-function company-bash "company-bash")
 (declare-function company-shell "company-shell")
 (declare-function bash-completion-dynamic-complete "bash-completion")
 (declare-function bash-completion-dynamic-complete-nocomint "bash-completion")
@@ -58,46 +65,13 @@
     ("Globals" "^\\([A-Za-z_][^=\n]*\\)=" 1)))
 
 ;; -------------------------------------------------------------------
-;;; Utils
+;;; Generics
 
-;; true if point is in heredoc
-(defsubst nvp-sh--here-doc-p (point)
-  (eq (get-text-property point 'face) 'sh-heredoc))
-
-;; get the here doc marker for block
-(defsubst nvp-sh--here-doc-marker (&optional point)
-  (let ((ppss (syntax-ppss point)))
-    (when (eq t (nth 3 ppss))
-      (get-text-property (nth 8 ppss) 'sh-here-doc-marker))))
-
-;; position at beginning of first line of here-doc if point is
-;; currently in a here-doc
-(defun nvp-sh-here-doc-start-pos (point)
-  (save-excursion
-    (goto-char point)
-    (back-to-indentation)
-    (when (looking-back "[^<]<<.*" (line-beginning-position)) ;skip opening line
-      (forward-line))
-    (let ((in-heredoc (nvp-sh--here-doc-p (point))))
-      (when in-heredoc                      ;search back until no marker
-        (while (and (not (bobp))
-                    (nvp-sh--here-doc-p (point)))
-          (forward-line -1)
-          (back-to-indentation))
-        (point)))))
-
-(defun nvp-sh-narrow-lexically ()
-  "Like `narrow-to-defun', but only narrow if point is actually inside a function.
-Retrun point at start of function if narrowing was done."
-  (save-excursion
-    (widen)
-    (when-let* ((ppss (syntax-ppss))
-                (parens (nth 9 ppss)))   ;start of outermost parens
-      (goto-char (car parens))
-      (and (eq (char-after) ?{)
-           (progn
-             (narrow-to-region (point) (progn (forward-sexp) (point)))
-             (car parens))))))
+;; TODO:
+;; - all buffer functions
+;; - includes
+;; - global variables
+;; - local variables
 
 (cl-defmethod nvp-parse-current-function (&context (major-mode sh-mode) &rest _args)
   "Find name of function containing point.
@@ -112,6 +86,20 @@ Like `sh-current-defun-name' but ignore variables."
 ;;; Navigation
 ;; commands to enable `beginning-of-defun', `end-of-defun', `narrow-to-defun',
 ;; etc. to work properly in sh buffers
+
+;; FIXME: account for styles where brackets are placed on the following line
+(defun nvp-sh-narrow-lexically ()
+  "Like `narrow-to-defun', but only narrow if point is actually inside a function.
+Retrun point at start of function if narrowing was done."
+  (save-excursion
+    (widen)
+    (when-let* ((ppss (syntax-ppss))
+                (parens (nth 9 ppss)))   ;start of outermost parens
+      (goto-char (car parens))
+      (and (eq (char-after) ?{)
+           (progn
+             (narrow-to-region (point) (progn (forward-sexp) (point)))
+             (car parens))))))
 
 (defsubst nvp-sh-looking-at-beginning-of-defun ()
   (save-excursion
@@ -167,7 +155,6 @@ Used to set `end-of-defun-function'."
 (when (require 'bash-completion nil t)
   (setq nvp-sh-company-backends '(company-bash :with company-capf)))
 
-
 (defun nvp-sh-vars-before-point ()
   "Collect variables in current lexical context."
   (save-excursion
@@ -182,6 +169,7 @@ Used to set `end-of-defun-function'."
             (push var vars)))
         vars))))
 
+;; TODO: add thing-at-point for vars
 (defun nvp-sh-dynamic-complete-vars ()
   "Complete local variables, but fail if none match to delegate to bash completion."
   (nvp-unless-in-comment
@@ -204,6 +192,8 @@ Used to set `end-of-defun-function'."
     (bash-completion-dynamic-complete-nocomint
      (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table)))
 
+;; FIXME: replace with `nvp-use-local-keymap' or just define functions for
+;; general company functions to call
 (defvar nvp-sh-company-active-map
   (let ((km (make-sparse-keymap)))
     (set-keymap-parent km company-active-map)
@@ -211,6 +201,8 @@ Used to set `end-of-defun-function'."
     (define-key km [remap company-show-doc-buffer] #'nvp-sh-company-show-doc-buffer)
     km))
 
+;; FIXME: merge completion tables: local variables, sourced functions, tags,
+;;        bash-completion
 ;; setup company backends with company-bash and either company-shell
 ;; or bash-completion
 (defun nvp-sh-completion-setup ()
@@ -242,6 +234,7 @@ Used to set `end-of-defun-function'."
 ;; current candidates
 ;; return a company-documentation buffer with either Man output or bash help
 ;; for a builtin
+;; FIXME: nvp-sh-help is being loaded just for these functions
 (defun nvp-sh-doc-buffer (cmd)
   (let ((doc-str (if (nvp-sh-help-bash-builtin-p cmd)
                      (nvp-sh-help-bash-builtin-sync cmd)
@@ -250,6 +243,7 @@ Used to set `end-of-defun-function'."
                   (string-prefix-p "No manual entry" doc-str)))
          (company-doc-buffer doc-str))))
 
+;; FIXME: move formatting to `nvp-doc' and generalize
 (defun nvp-sh-quickhelp-doc (selected)
   (cl-letf (((symbol-function 'completing-read)
              #'company-quickhelp--completing-read))
@@ -264,6 +258,7 @@ Used to set `end-of-defun-function'."
             (concat doc "\n\n[...]")
           doc)))))
 
+;; FIXME: use `nvp-company-quickhelp-toggle', fixes bugs and can call indirect func
 ;; re-bind to this in `company-active-map'
 (defun nvp-sh-quickhelp-toggle ()
   (interactive)
@@ -276,6 +271,7 @@ Used to set `end-of-defun-function'."
           ;; that lexical binding doesn't work in that case
           (company-quickhelp--show)))))
 
+;; FIXME: use `nvp-doc' generic method to show docs
 ;; show help buffer in other window from company-active-map
 (defun nvp-sh-company-show-doc-buffer ()
   (interactive)
@@ -284,45 +280,10 @@ Used to set `end-of-defun-function'."
                  (nvp-sh-doc-buffer selected) "*company-documentation*")))
     (company-show-doc-buffer)))
 
-;; ------------------------------------------------------------
-;;; Font-lock
-
-;; Add additional font-locking to quoted variables
-;; Non-nil if point in inside a double-quoted string.
-(defsubst nvp-sh-font-lock--quoted-p ()
-  (eq (nth 3 (syntax-ppss)) ?\"))
-
-;; add fontification to double quoted stuff
-(defun nvp-sh-fontify-quoted (regex limit)
-  (let (res)
-    (while (and (setq res (re-search-forward regex limit 'move))
-                (not (nvp-sh-font-lock--quoted-p))))
-    res))
-
-(defun nvp-sh-font-lock ()
-  "Add font-locking for variables, special variables, arrays and \
-backquoted executables in double quotes."
-  (font-lock-add-keywords
-   nil
-   `(                                   ;gaudy font-lock for array
-     ("\\${\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
-      (1 'nvp-italic-variable-face prepend))
-     ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-italic-type-face prepend))
-     (,(apply-partially                 ;vars, special vars, function args
-        #'nvp-sh-fontify-quoted
-        "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)")
-      (1 font-lock-variable-name-face prepend))
-     (,(apply-partially                 ;functions in quoted `...`
-        #'nvp-sh-fontify-quoted "`\\s-*\\([[:alnum:]_\\-]+\\)")
-      (1 'sh-quoted-exec prepend))))
-  (if (fboundp #'font-lock-flush)
-      (font-lock-flush)
-    (when font-lock-mode
-      (font-lock-ensure (point-min) (point-max)))))
-
 ;; -------------------------------------------------------------------
 ;;; REPL
 
+;; FIXME: replace with nvp-proc function
 ;; replacement for `sh-shell-process'
 (defun nvp-sh-get-process (&optional this-buffer)
   "Replacement for `sh-shell-process'.
@@ -346,6 +307,7 @@ Optionally return process specific to THIS-BUFFER."
 ;; FIXME: do I always want a sh file to sending to its own shell?
 (setf (symbol-function 'sh-shell-process) 'nvp-sh-get-process)
 
+;; FIXME: remove - switch to generic
 ;; switch to shell REPL, specific to this buffer with a prefix arg
 (nvp-repl-switch "sh"
     (:repl-mode 'shell-mode
@@ -355,6 +317,7 @@ Optionally return process specific to THIS-BUFFER."
   (process-buffer
    (setq sh-shell-process (nvp-sh-get-process current-prefix-arg))))
 
+;; FIXME: remove, this is covered by generic REPL interface
 ;; send selected region and step
 (defun nvp-sh-send-region (beg end)
   "Send selected region from BEG to END to associated shell process."
@@ -368,6 +331,7 @@ Optionally return process specific to THIS-BUFFER."
 
 (require 'align)
 
+;; FIXME: these rules can be useful for other modes: makefile, automake, etc.
 ;; alignment rules to align '\' not in strings/comments and
 ;; align end-of-line comments
 (defvar nvp-sh-align-rules-list
@@ -387,47 +351,31 @@ Optionally return process specific to THIS-BUFFER."
                          (and (not (bolp))
                               (not (nth 3 (syntax-ppss)))))))))))
 
+;; -------------------------------------------------------------------
+;;; Font-lock additions
+
+;; Add font-locking & register additions
+(nvp-font-lock-add-defaults 'sh-mode
+  ;; gaudy array faces
+  ("\\${\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
+   (1 'nvp-italic-variable-face prepend))
+  ;; redirections
+  ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-italic-type-face prepend))
+  ;; quoted vars, special vars, function arguments
+  (:quoted ?\" "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)"
+           (1 font-lock-variable-name-face prepend))
+  ;; first function in quoted backquote expressions, "`cmd ...`"
+  (:quoted ?\" "`\\s-*\\([[:alnum:]_\\-]+\\)" (1 'sh-quoted-exec prepend)))
+
+;; -------------------------------------------------------------------
+;;; Local variables / Hooks
+
 ;; enforce uft-8-unix and align when killing buffer
-(defun nvp-sh-cleanup-buffer ()
+(defun nvp-sh-tidy-buffer ()
   (unless (or buffer-read-only (not (buffer-modified-p)))
-    (align (point-min) (point-max))
+    (ignore-errors (align (point-min) (point-max)))
     (and (buffer-modified-p)
          (save-buffer))))
-
-;; -------------------------------------------------------------------
-;;; Toggle
-
-;; toggle here-doc indentation:
-;; open with '<<-' and use only leading tabs for indentation
-(defun nvp-sh-toggle-here-doc-indent (point)
-  (interactive "d")
-  (let ((start-pos (nvp-sh-here-doc-start-pos point)))
-    (when start-pos
-      (save-excursion
-        (goto-char start-pos)
-        (search-forward-regexp "[^<]<<" (line-end-position) 'move)
-        (let ((indent (not (eq ?- (char-after))))
-              marker)
-          (if indent                    ;toggle preceding '-'
-              (insert "-")
-            (delete-char 1))
-          (forward-to-indentation)      ;skip past opening line
-          (setq marker (nvp-sh--here-doc-marker))
-          (while (and (nvp-sh--here-doc-p (point))
-                      (not (looking-at-p marker)))
-            (delete-horizontal-space)
-            (and indent                  ;toggle indentation
-                 (insert "\t"))
-            (forward-to-indentation)))))))
-
-(defun nvp-sh-toggle-fontification ()
-  "Toggle extra fontification on/off."
-  (interactive)
-  (nvp-toggled-if (font-lock-refresh-defaults)
-    (nvp-sh-font-lock)))
-
-;; -------------------------------------------------------------------
-;;; Setup local variables
 
 (defun nvp-sh-setup-hook ()
   "Define local variables to be called in hook."
@@ -435,10 +383,9 @@ Optionally return process specific to THIS-BUFFER."
   (setq-local end-of-defun-function 'nvp-sh-end-of-defun)
   (setq-local align-rules-list nvp-sh-align-rules-list)
   (make-local-variable 'hippie-expand-try-functions-list)
-  (push 'nvp-he-try-expand-shell-alias hippie-expand-try-functions-list)
-  (nvp-sh-font-lock)
+  (cl-pushnew 'nvp-he-try-expand-shell-alias hippie-expand-try-functions-list)
   (nvp-sh-completion-setup)
-  (add-hook 'kill-buffer-hook 'nvp-sh-cleanup-buffer nil 'local))
+  (add-hook 'kill-buffer-hook 'nvp-sh-tidy-buffer nil 'local))
 
 (provide 'nvp-sh)
 ;;; nvp-sh.el ends here

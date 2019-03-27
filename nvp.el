@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 03:26:14>
+;; Last modified: <2019-03-27 06:58:44>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -69,7 +69,7 @@
 (defvar-local nvp-mode-header-regex nil "Regex to move b/w headers.")
 (defvar-local nvp-mode-snippet-dir nil "Mode's snippet directory.")
 (defvar-local nvp-mode-install-targets () "Mode's external install targets.")
-(defvar-local nvp-mode-font-lock () "Mode's font-lock additions.")
+(defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
 
 ;; -------------------------------------------------------------------
 ;;; Functions

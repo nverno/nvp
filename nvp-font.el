@@ -1,70 +1,76 @@
-;;; nvp-font.el ---  -*- lexical-binding: t; -*-
+;;; nvp-font.el --- add/toggle additional font-locking -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 00:27:39>
+;; Last modified: <2019-03-27 10:10:23>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
 
 ;;; Commentary:
-;; font/glyph related functions
+
+;; Utils to add additional font-locking
+
+;; TODO:
+;; - update a mode's additions w/o creating entire new entry
+;; - how to remove font locks added with mode via `font-lock-add-keywords'?
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(require 'nvp)
 
 ;; -------------------------------------------------------------------
-;;; Fontify 
+;;; Fontify things in quoted regions
 
-;;;###autoload
-(defun nvp-font-fontify-region-face (face &optional beg end)
-  "Fontify region or `thing-at-point' with font FACE.
-With \\[universal-argument] prompt for THING at point."
-  (interactive
-   (list
-    (read-face-name "Fontifaction face: ")
-    (nvp-region-or-batp (eq 4 (prefix-numeric-value current-prefix-arg)))))
-  (put-text-property beg end 'font-lock-face face))
+;; Non-nil if point is inside a CHAR quoted region
+(defsubst nvp-font-lock-quoted-p (&optional char)
+  (eq (nth 3 (syntax-ppss)) (or char ?\")))
+
+;; add fontification to REGEX up to LIMIT in quoted area by CHAR
+;; (default double-quotes)
+(defsubst nvp-fontify-quoted-1 (regex char limit)
+  (let (res)
+    (while (and (setq res (re-search-forward regex limit 'move))
+                (not (nvp-font-lock-quoted-p char))))
+    res))
+
+(cl-defmacro nvp-fontify-quoted (&rest forms &key char &allow-other-keys)
+  "Fontify elements in quoted regions."
+  (declare (indent defun))
+  (while (keywordp (car forms))
+    (setq forms (cdr (cdr forms))))
+  (unless char (setq char ?\"))
+  (macroexp-progn
+   (cl-loop for (regex font) in forms
+      collect `(cons ,(apply-partially #'nvp-fontify-quoted-1 regex char)
+                     '(,font)))))
 
 ;; -------------------------------------------------------------------
-;;; Display
+;;; Create font-lock additions
 
-;; https://gist.github.com/haxney/3055728
-;; non-nil if monospaced font
-(defun nvp-font-is-mono-p (font-family)
-  (let (m-width l-width)
-   (with-temp-buffer
-     (set-window-buffer (selected-window) (current-buffer))
-     (text-scale-set 4)
-     (insert (propertize "l l l l l" 'face `((:family ,font-family))))
-     (goto-char (line-end-position))
-     (setq l-width (car (posn-x-y (posn-at-point))))
-     (newline)
-     (forward-line)
-     (insert (propertize "m m m m m" 'face `((:family ,font-family) italic)))
-     (goto-char (line-end-position))
-     (setq m-width (car (posn-x-y (posn-at-point))))
-     (eq l-width m-width))))
+(defmacro nvp-font-lock-keywords (&rest forms)
+  "Create list of font-lock additions.
+Each element of FORMS is a list ([:quoted char] regex font-spec)."
+  (declare (indent defun))
+  `(list
+    ,@(cl-loop for form in forms
+         as quoted = (plist-get form :quoted)
+         do (while (keywordp (car form))
+              (setq form (cdr (cdr form))))
+         if quoted
+         collect `(nvp-fontify-quoted :char ,quoted ,form)
+         else
+         collect `(cons ,(car form) ',(cdr form)))))
 
-;; https://www.emacswiki.org/emacs/GoodFonts
-;;;###autoload
-(defun nvp-font-list ()
-  "Display various available fonts."
-  (interactive)
-  (let ((str "The quick brown fox jumps over the lazy dog \
-´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
-        (font-families (cl-remove-duplicates 
-                        (sort (font-family-list) 
-                              #'(lambda (x y) (string< (upcase x)
-                                                  (upcase y))))
-                        :test 'string=)))
-    (nvp-with-results-buffer "*Fonts*"
-      (font-lock-mode)
-      (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
-        (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
-                (propertize str 'font-lock-face
-                            `(:family ,ff :slant italic)) ff "\n")))))
+(defmacro nvp-font-lock-add-defaults (mode &rest forms)
+  "Add font-lock additions to MODE."
+  (declare (indent defun))
+  (macroexp-let2 nil fonts `(progn (nvp-font-lock-keywords ,@forms))
+   `(progn
+      (cl-pushnew (cons ,mode ,fonts) nvp-mode-font-additions :test #'equal)
+      (font-lock-add-keywords ,mode ,fonts))))
 
 ;; -------------------------------------------------------------------
 ;;; Glyphs 

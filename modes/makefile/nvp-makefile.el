@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-25 21:41:52>
+;; Last modified: <2019-03-27 04:45:38>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -41,6 +41,14 @@
          (skip-chars-forward "^:" (point-at-eol))
          (forward-char 1)
          ,@body))))
+
+;; dont tab out when inserting comments
+(define-advice comment-dwim (:around (orig-fn &rest args) "space-to-comment")
+  (let ((indent-tabs-mode nil))
+    (apply orig-fn args)))
+
+;; -------------------------------------------------------------------
+;;; Font-lock
 
 
 ;; ------------------------------------------------------------
@@ -280,10 +288,6 @@ With prefix ARG, run `helm-make'."
 
 ;; -------------------------------------------------------------------
 ;;; Advice
-
-(define-advice comment-dwim (:around (orig-fn &rest args) "space-to-comment")
-  (let ((indent-tabs-mode nil))
-    (apply orig-fn args)))
 
 (provide 'nvp-makefile)
 ;;; nvp-makefile.el ends here

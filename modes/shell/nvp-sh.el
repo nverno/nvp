@@ -4,14 +4,12 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-27 10:41:54>
+;; Last modified: <2019-03-27 11:23:10>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
 
 ;; TODO:
-;; General:
-;;   - fix narrowing to account for different styles
 ;; Completion:
 ;;  - somehow merge local variable completion with bash-completion
 ;;  - restrict local variable candidates to the current context + globals
@@ -87,7 +85,6 @@ Like `sh-current-defun-name' but ignore variables."
 ;; commands to enable `beginning-of-defun', `end-of-defun', `narrow-to-defun',
 ;; etc. to work properly in sh buffers
 
-;; FIXME: account for styles where brackets are placed on the following line
 (defun nvp-sh-narrow-lexically ()
   "Like `narrow-to-defun', but only narrow if point is actually inside a function.
 Retrun point at start of function if narrowing was done."
@@ -309,13 +306,13 @@ Optionally return process specific to THIS-BUFFER."
 
 ;; FIXME: remove - switch to generic
 ;; switch to shell REPL, specific to this buffer with a prefix arg
-(nvp-repl-switch "sh"
-    (:repl-mode 'shell-mode
-     :repl-find-fn #'(lambda ()
-                       (process-buffer (nvp-sh-get-process current-prefix-arg)))
-     :repl-switch-fn 'pop-to-buffer)
-  (process-buffer
-   (setq sh-shell-process (nvp-sh-get-process current-prefix-arg))))
+;; (nvp-repl-switch "sh"
+;;     (:repl-mode 'shell-mode
+;;      :repl-find-fn #'(lambda ()
+;;                        (process-buffer (nvp-sh-get-process current-prefix-arg)))
+;;      :repl-switch-fn 'pop-to-buffer)
+;;   (process-buffer
+;;    (setq sh-shell-process (nvp-sh-get-process current-prefix-arg))))
 
 ;; FIXME: remove, this is covered by generic REPL interface
 ;; send selected region and step

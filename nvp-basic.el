@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 21:45:43>
+;; Last modified: <2019-03-27 11:26:40>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -141,6 +141,7 @@ With ARG use default behaviour, except also call `expand-abbrev'."
 
 (eval-when-compile (require 'paredit))
 (declare-function paredit-indent-region "paredit")
+;; FIXME: this isn't working correctly, point still jumps prompt width
 ;; replacement to handle minibuffer/repl prompts
 (defun nvp-paredit-splice-reindent (start end)
   (nvp-preserving-column

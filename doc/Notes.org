@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-25 21:48:55>
+#+DATE: <2019-03-27 11:48:22>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -21,12 +21,14 @@
 - doc programs: doc-base/install-docs for browsing debian docs
 
 * Packages to look into
-- smart-jump / dumb-jump
-- evil - see below
-- transient: for compile options / strace
-- ag / ggtags: start using again
-- straight package manager is kinda close to what I want
+- Jumps: ggtags / smart-jump / dumb-jump
+- Search: ripgrep / counsel+ivy / ag
+- Toggle&Repeat: evil - see below
+- Porcelains/Buffers: transient
+- Packages: straight, package-build, package-recipe-mode
+- Lex/Parsing: tablist-filter using wisent for simple grammar
 ** semantic stuff
+This doesn't seem to be too actively maintained
 - srecode
 - ede
 - semantic-sticky-func minor mode for parse generics
@@ -35,7 +37,7 @@
 ** General [0/11]
 - [ ] use simplified version of cc-defs c-point macro
 - [ ] nvp-proc: separate sentinels from comint / find proc from nvp-ext
-  use in nvp-shell, nvp-ext, comint, term, eshell setup
+      use in nvp-shell, nvp-ext, comint, term, eshell setup
 - [ ] setup hippie history expansion when setting up inf histories
 - [ ] convert cl-defstruct to vector - formatting for output
 - [ ] fix list wrapping to account for syntax
@@ -44,10 +46,11 @@
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
 - [ ] update functions to find first applicable function from list:
-  check-buffer, disassemble, test, tag, compile
+      check-buffer, disassemble, test, tag, compile
 - [ ] navigation by indentation for modes like yaml: pkg indent-tools
 
-** Install [0/3]
+** Install [0/4]
+- [ ] nvp-ext script functions / sudo are messed up
 - [ ] interface to install external deps
 - [ ] mode install targets
 - [ ] interface to install GNU source packages
@@ -60,6 +63,7 @@
 - [ ] compile with completing read for makefile targets
 
 ** Package [0/3]
+[[file:~/.emacs.d/elpa/package-build-20190314.440/package-recipe-mode.el][package-recipe-mode]]
 - [ ] update package cache
 - [ ] display package cache
 - [ ] list package dependencies -- `package--get-deps'
@@ -113,13 +117,12 @@ funcs: with-temp-message
 - [ ] add option to treat all warnings as errors to makefile
 - [ ] update nvp-log, not very useful - probably just remove
 
-** REPLs [1/5]
-+ see repl-toggle library
-Not sure how this should work.
-- [ ] generic send region
-- [ ] generic send line
+** REPLs [4/6]
+- [ ] call indirect functions to modify regions as necessary
 - [ ] generic send dwim - last defun / sexp
-- [ ] generic send buffer
+- [X] generic send region
+- [X] generic send line
+- [X] generic send buffer
 - [X] uniform repl-swithcing interface
 
 ** Newline DWIM [2/4]
@@ -187,6 +190,7 @@ see which-func
 ** Dired [1/2]
 - [ ] pass numeric prefix to copy/rename???
 - [X] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L280][fix rsync]]
+
 
 * Modes
 ** elisp [1/5]
@@ -264,7 +268,7 @@ Use ~load-history~
 - [ ] add download source to install
 
 *** TODO Completion [0/3]
-- [ ] missing builtins, eg. warning, error, lastword
+- [ ] use info-lookup-completion-at-point
 - [ ] dynamic variables
 - [ ] environment variables
 *** TODO macrostep [0/3]
@@ -282,20 +286,22 @@ semantic support? seems fucked
 - [ ] jump to source code for builtin functions
 
 ** Autotools [0/3]
-enable semantic support??
+- [ ] enable semantic support??
+- [ ] completion with info-lookup
+
 *** TODO m4 [3/7]
-- [X] merge completion/font-lock with autoconf?
 - [ ] m4 still missing lots of font-locking
-- [X] add imenu support
 - [ ] gather locally available macros
 - [ ] string font-lock? sh font-lock? msgs with string?
-- [ ] HAP - how to get info on functions?
+- [ ] HAP - from info-lookup
+- [X] merge completion/font-lock with autoconf?
+- [X] add imenu support
 - [X] update hook
 
 *** TODO autoconf [0/4]
 - [ ] parse generics
 - [ ] string/sh font-lock?
-- [ ] fixup HAP - how to get info on macros?
+- [ ] fixup HAP - how good is info-lookup work for macros?
 - [ ] jump to source?
 
 *** TODO automake [0/2]
@@ -327,17 +333,19 @@ Separators,
 - [ ] sed lookup help
 - [ ] awk lookup help in info node
 
-** Perl [4/7]
+** Perl [3/6]
 *** DONE General
 - [X] cache module paths
 *** DONE newline
 *** TODO HAP [0/1]
 - [ ] perldoc to popup
-*** DONE REPL [3/3]
+*** DONE REPL [3/6]
+- [ ] comint-input-filter-functions to join lines
+- [ ] get completions from Reply?
+- [ ] sending buffer/region indirect function to remove junk
 - [X] choose / install REPL
 - [X] setup REPL config
 - [X] generic switching function
-
 *** TODO Parse [0/5]
 - [ ] current function
 - [ ] buffer functions
@@ -345,30 +353,28 @@ Separators,
 - [ ] includes
 - [ ] variables
 
-*** DONE Completion [1/1]
-- [X] get company-plsense working?
-
-*** TODO Tests [0/1]
+*** TODO Tests [0/2]
 - [ ] simple test setup
-
+- [ ] use script to associate source with test dir?
 ** sh [1/5]
 - [ ] use shell-cmd at point to do abbrev expansions / hippie exp
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
 - [ ] parse sh function documentation
+- [ ] quote wrapping moves '$' sometimes -- see smartparens-ess
 - [X] prefix hippie-shell-expand functions
 - [X] fix comanpy-active-map
 *** TODO Completion [0/2]
 - [ ] capf for lexical scoped variables
 - [ ] merge capf bash-completion/variable-completion, maybe
   ~completion-merge-tables~ from minibuffer
-*** DONE Snippets [1/1]
+*** DONE Snippets [1/2]
 - [X] split sh usage arguments in snippets
-
-*** TODO Jumps [0/1]
-- [ ] xref for company-bash sources, or configure tags properly
-
+- [ ] main fn snippet for parsing args - generate usage at same time
+*** TODO Jumps [1/2]
+- [ ] xref for company-bash sources
+- [X] etags
 *** TODO Tests [0/1]
-- [ ] method to jump to unit test at point
+- [ ] jump to bat test
 
 *** TODO Newline [1/2]
 - [X] code method

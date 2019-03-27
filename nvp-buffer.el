@@ -1,10 +1,8 @@
 ;;; nvp-buffer.el --- buffer functions -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 23:31:29>
+;; Last modified: <2019-03-27 17:15:49>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -13,6 +11,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+(require 'nvp)
 
 ;; ------------------------------------------------------------
 ;;; Utils
@@ -49,17 +48,21 @@
 
 ;;;###autoload
 (defun nvp-buffer-kill-mode-buffers (mode &optional buffs)
-  "Kill all MODE buffers."
+  "Kill all buffers of current MODE by default.
+With prefix, prompt for MODE buffers to kill."
   (interactive
    (let ((buffs (nvp-buffer-major-modes)))
-     (list (ido-completing-read
-            "Mode to kill: " (cl-delete-duplicates
-                              (mapcar (lambda (s) (symbol-name (car s))) buffs)))
-           buffs)))
-  (cl-loop for (buff-mode . buff) in (or buffs (nvp-buffer-matching-mode mode))
-     with mode = (intern mode)
-     when (eq mode buff-mode)
-     do (kill-buffer buff)))
+     (if (not current-prefix-arg)
+         (list major-mode buffs)
+       (list (intern
+              (completing-read
+               "Mode to kill: " (cl-delete-duplicates buffs :key #'car)))
+             buffs))))
+  (message "Killing all %S buffers..." mode)
+  (and (stringp mode) (setq mode (intern mode)))
+  (or buffs (setq buffs (nvp-buffer-matching-mode mode)))
+  (pcase-dolist (`(,bmode . ,buff) (or buffs (nvp-buffer-matching-mode mode)))
+    (and (eq mode bmode) (kill-buffer buff))))
 
 ;; ------------------------------------------------------------
 ;;; Rearrange buffer windows

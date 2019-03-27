@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-23 19:04:21>
+;; Last modified: <2019-03-27 17:27:13>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 October 2016
 
@@ -31,7 +31,8 @@
                 ))
      (el-vdefs '("let" "cond" "lexical-let" "if-let" "when-let" "lambda"
                  "labels" "flet"
-                 "pcase" "pcase-dolist" "pcase-lambda"
+                 ;; "pcase"
+                 "pcase-dolist" "pcase-lambda"
                  "pcase-exhaustive" "pcase-let")))
   (let ((vars-re
          (eval-when-compile

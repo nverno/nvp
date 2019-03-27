@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 16:27:38>
+;; Last modified: <2019-03-27 17:45:24>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -19,6 +19,8 @@
   wgrep-remove-change wgrep-remove-all-change wgrep-toggle-readonly-area
   wgrep-mark-deletion wgrep-change-to-wgrep-mode)
 
+(defvar nvp-search-history () "Store search history inputs.")
+
 ;; -------------------------------------------------------------------
 ;;; Rgrep
 
@@ -33,7 +35,7 @@ or '*' from emacs root, ignoring package directory.
   (interactive "P")
   (require 'nvp-grep-config)
   (let ((sym (or (thing-at-point 'symbol t)
-                 (read-from-minibuffer "Symbol: ")))
+                 (read-string "Symbol: " nil 'nvp-search-history)))
         (ext (and (/= (prefix-numeric-value arg) 16)
                   (file-name-extension (or (buffer-file-name) (buffer-name)))))
         (grep-find-ignored-directories
@@ -60,17 +62,32 @@ Defaults to symbol at point and emacs root.
           (re (> (prefix-numeric-value current-prefix-arg) 4)))
      (cond
       ((memq arg '(4 16))
-       (list (read-from-minibuffer
-              (format "Ag search%s: " (if sym (concat "(" sym ")") ""))
-              nil nil nil nil sym)
+       (list (read-string
+              (format "Ag search%s: " (if sym (concat " ('" sym "')") ""))
+              nil 'nvp-search-history sym)
              (read-directory-name
-              "Search directory(~/.emacs.d): " nil nvp/emacs nil "")
+              "Search directory(~/.emacs.d): " nvp/emacs "~/" t "~/")
              re))
       ((null sym)
-       (list (read-from-minibuffer "Ag search string: ") nvp/emacs re))
-      (t (list sym dir re)))))
+       (list (read-string "Ag search string: " nil 'nvp-search-history)
+             nvp/emacs re))
+      (t
+       (add-to-history 'nvp-search-history sym)
+       (list sym dir re)))))
   (require 'ag)
   (ag/search str dir :regexp regex))
+
+;;;###autoload
+(defun nvp-ag-project-dired (arg &optional default)
+  (interactive
+   (list (prefix-numeric-value current-prefix-arg) (thing-at-point 'symbol t)))
+  (cl-flet ((call-fn (if default (symbol-function 'funcall-interactively)
+                       (symbol-function 'call-interactively))))
+    (require 'ag)
+    (pcase arg
+      (`4 (call-fn #'ag-project-dired default))
+      (`16 (call-fn #'ag-dired))
+      (_ (call-fn #'ag-project-dired-regexp default)))))
 
 ;; -------------------------------------------------------------------
 ;;; wgrep

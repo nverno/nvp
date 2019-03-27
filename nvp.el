@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 06:58:44>
+;; Last modified: <2019-03-27 17:24:10>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -143,8 +143,8 @@
 ;; completing read, otherwise read from the minibuffer
 (defun nvp-read-default (prompt &optional collection pred match initial
                                            hist default inherit)
-  (or default (setq default (symbol-at-point)))
-  (or prompt (setq prompt (nvp-prompt-default)))
+  (when (and (not default) (setq default (thing-at-point 'symbol t)))
+    (setq prompt (nvp-prompt-default prompt default)))
   (if collection
       (nvp-completing-read (nvp-prompt-default prompt default) collection pred
                            match initial hist default inherit)

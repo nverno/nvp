@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 10:57:00>
+;; Last modified: <2019-03-27 18:02:35>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 22 March 2019
@@ -81,11 +81,9 @@
   (when-let ((finder (nvp-mode-local-or-val 'repl-find-fn)))
     (ignore-errors (funcall finder))))
 
-;; Hook run to find first applicable REPL buffer
-(defvar nvp-repl-find-functions '(nvp-repl-find-custom
-                                  nvp-repl-find-by-name
-                                  nvp-repl-find-by-mode
-                                  nvp-repl-find-by-name-or-mode))
+(defvar nvp-repl-find-functions
+  '(nvp-repl-find-custom nvp-repl-find-by-name-or-mode)
+  "Hook run to find the first applicable REPL process.")
 
 ;; -------------------------------------------------------------------
 ;;; Generics

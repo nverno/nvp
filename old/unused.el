@@ -61,6 +61,31 @@
         res
       (cdr (cl-assoc value res :test 'string=)))))
 
+;; Read config filename lines, expanding environment variables in key-value pairs
+;; key-value pairs are separated by SEPARATORS and value may be quoted
+;; lines beginning with COMMMENTS regex are ignored
+;; separators default to ":=" and comments default to '#'
+;; Return list of (key . value) pairs
+(defun nvp-config-read-file (filename &optional separators comments)
+  (setq separators (regexp-quote (or separators ":=")))
+  (setq comments (regexp-quote (or comments "#")))
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (goto-char (point-min))
+    (let ((key-val-regex
+           (concat "^\\([^" separators "\n]+\\)[" separators "]+\\([^\n]+\\)"))
+          (vars))
+      (while (not (eobp))
+        (when (and (not (looking-at-p comments))
+                   (looking-at key-val-regex))
+          ;; expand enviroment variables and remove quotes from values
+          (push (cons (string-trim (match-string-no-properties 1))
+                      (nvp-env-substitute-vars
+                       (match-string-no-properties 2) 'unquote))
+                vars))
+        (forward-line 1))
+      vars)))
+
 ;; -------------------------------------------------------------------
 ;;; Netrc -- FIXME: outdated, all encrypted 
 

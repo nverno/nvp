@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-25 13:47:23>
+;; Last modified: <2019-03-27 03:27:09>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -559,19 +559,24 @@ line at match (default) or do BODY at point if non-nil."
        (with-current-buffer buff
          ,@body))))
 
+;; -------------------------------------------------------------------
+;;; Display Results
+
 (defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."
   (declare (indent defun) (debug (sexp &rest form)))
   `(let (other-window-scroll-buffer)
+     (nvp-window-configuration-save)
      (with-temp-buffer-window
-      ,(or buffer-or-name "*results*")
+      ,(or buffer-or-name '(help-buffer))
       t
       nil
       (with-current-buffer standard-output
         (setq other-window-scroll-buffer (current-buffer))
         ,@body
-        (view-mode-enter nil 'kill-buffer)))))
+        (hl-line-mode)
+        (view-mode-enter nil #'nvp-window-configuration-restore)))))
 
 ;; evil-with-view-list: #<marker at 154076 in evil-common.el>
 (cl-defmacro nvp-with-view-list (&key
@@ -964,25 +969,14 @@ COMINT mode or with BODY."
                 (current-buffer))))))
 
 (defmacro nvp-with-process-filter (process &optional proc-filter)
-  "Run processs with `nvp-process-buffer-filter'.
+  "Run processs with `nvp-proc-default-filter'.
 Return process object."
   (declare (indent defun))
   (if (and proc-filter (eql proc-filter :none)) `,process
-    (and (not proc-filter) (setq proc-filter ''nvp-process-buffer-filter))
+    (and (not proc-filter) (setq proc-filter ''nvp-proc-default-filter))
     (macroexp-let2* nil ((process process) (proc-filter proc-filter))
       `(prog1 ,process
          (set-process-filter ,process ,proc-filter)))))
-
-(defmacro nvp-with-sentinel (&optional on-error &rest body)
-  "With process sentinel do ON-ERROR if exist status isn't 0 or BODY with\
-successful process exit buffer."
-  (declare (indent 2) (indent 1) (debug t))
-  `(function
-    (lambda (p m)
-     (nvp-log "%s: %s" nil (process-name p) m)
-     (if (not (zerop (process-exit-status p)))
-         ,(or on-error '(pop-to-buffer (process-buffer p)))
-       ,@body))))
 
 (cl-defmacro nvp-with-process-log (process &key
                                            on-error
@@ -1007,17 +1001,6 @@ if process exit status isn't 0."
                                    ,on-error)))
        (display-buffer (process-buffer ,proc) ,display-action))))
 
-(cl-defmacro nvp-with-process-buffer (process &key on-error on-success proc-filter)
-  "Log PROCESS output in log buffer, do ON-ERROR and ON-SUCCESS in process buffer."
-  (declare (indent defun))
-  `(set-process-sentinel (nvp-with-process-filter ,process ,proc-filter)
-    #'(lambda (p m)
-        (nvp-log "%s: %s" nil (process-name p) m)
-        (with-current-buffer (process-buffer p)
-          (if (zerop (process-exit-status p))
-              ,@on-success
-            ,@on-error)))))
-
 (cl-defmacro nvp-with-process (process
                                &key
                                (proc-name process)
@@ -1025,6 +1008,9 @@ if process exit status isn't 0."
                                (proc-args nil)
                                (proc-filter t)
                                (buffer-fn 'get-buffer-create)
+                               sync
+                               shell
+                               sentinel
                                (on-success `(progn
                                               (nvp-indicate-modeline-success
                                                ,(concat " " proc-name " success"))
@@ -1033,28 +1019,55 @@ if process exit status isn't 0."
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer."
   (declare (indent defun) (debug t))
   (let ((proc (make-symbol "proc"))
-        (pbuf (make-symbol "proc-buff")))
+        (pbuf (make-symbol "proc-buff"))
+        (proc-cmd (make-symbol "command")))
     `(progn
-       (declare-function nvp-indicate-modeline-success "")
+       (declare-function nvp-indicate-modeline "")
        (declare-function nvp-log "")
-       (let* ((,pbuf ,proc-buff)
-              (,proc (start-process
-                      ,(or proc-name process) (if ,pbuf (,buffer-fn ,pbuf)
-                                                nil)
-                      ,process ,@proc-args)))
-         ,(cond
-           ((eq proc-filter t)
-            `(set-process-filter ,proc 'nvp-process-buffer-filter))
-           (proc-filter
-            `(set-process-filter ,proc ,proc-filter))
-           (t nil))
-         (set-process-sentinel ,proc
-                               (lambda (p m)
-                                 (nvp-log "%s: %s" nil (process-name p) m)
-                                 (with-current-buffer (process-buffer p)
-                                   (if (zerop (process-exit-status p))
-                                       ,on-success
-                                     ,on-failure))))))))
+       (let* ((,pbuf (,@(if (and buffer-fn proc-buff) `(,buffer-fn ,proc-buff)
+                         `,proc-buff)))
+              (,proc-cmd ',(intern (format "%s%s"
+                                           (if sync "call-process" "start-process")
+                                           (if shell "-shell-command" ""))))
+              (,proc
+               (,@(if shell
+                      (if sync
+                          `(funcall
+                            ,proc-cmd
+                            (mapconcat 'identity (list ,@proc-args) " ")
+                            nil ,pbuf t)
+                        `(funcall
+                          ,proc-cmd ,process ,pbuf
+                          (mapconcat 'identity (list ,@proc-args) " ")))
+                    `(funcall ,proc-cmd
+                              ,(or proc-name process)
+                              (if ,pbuf (,buffer-fn ,pbuf) nil)
+                              ,process ,@proc-args)))))
+         ,(unless sync
+            ;; Process filter
+            (cond
+             ((memq proc-filter '(:default t))
+              `(set-process-filter ,proc 'nvp-proc-default-filter))
+             (proc-filter
+              `(set-process-filter ,proc ,proc-filter))
+             (t nil))
+            ;; Process sentinel - just retrun process without sentinel
+            (cond
+             ((eq sentinel ':default)
+              `(set-process-sentinel ,proc 'nvp-proc-default-sentinel))
+             ((eq sentinel t)
+              `(set-process-sentinel ,proc
+                                       (lambda (p m)
+                                         (nvp-log "%s: %s" nil (process-name p) m)
+                                         (with-current-buffer (process-buffer p)
+                                           (if (zerop (process-exit-status p))
+                                               ,on-success
+                                             ,on-failure))))))
+            (if (not sentinel)
+                `,proc
+              (if (not (memq sentinel '(:default t)))
+                  `(set-process-sentinel ,proc ,sentinel)
+                )))))))
 
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment

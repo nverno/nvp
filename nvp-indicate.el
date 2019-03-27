@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 02:48:45>
+;; Last modified: <2019-03-27 02:43:15>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -24,9 +24,14 @@
 (nvp-declare "pulse"
   pulse-momentary-highlight-region pulse-momentary-highlight-one-line)
 
+;; indicatation colors
+(defvar nvp-indicate-colors
+  '((failure . "#e31422")               ;red
+    (success . "#44de11")))             ;green
+
 ;; store indicators
 (defvar nvp-indicate--cache (make-hash-table))
-
+;; FIXME: define hash cache
 (defun nvp-indicate-cache (key &optional value overwrite)
   (if value
       (if overwrite (puthash key value nvp-indicate--cache)
@@ -61,25 +66,21 @@
 ;; ------------------------------------------------------------
 ;;; Temporarily change modeline color
 
-;; make modeline green for a sec
 ;;;###autoload
-(defun nvp-indicate-modeline-success (&optional msg)
-  "Flash success in modeline with optional MSG."
+(defun nvp-indicate-modeline (&optional msg type)
+  "Flash success or TYPE in modeline with optional MSG."
   (let* ((power-p (memq 'powerline-active0 (face-list)))
          (pcolor (and power-p (face-background 'powerline-active0)))
-         (color (face-background 'mode-line)))
-    (when msg (message (concat "[SUCCESS]" msg)))
-    (set-face-background 'mode-line "#44de11")
-    (and power-p (set-face-background 'powerline-active0 "#44de11"))
-    (sit-for 1.5)
-    (set-face-background 'mode-line color)
-    (and power-p (set-face-background 'powerline-active0 pcolor))
-    ;; (add-hook 'post-command-hook #'nvp-indicate-modeline-revert nil t)
-    ))
-
-;; (defun nvp-indicate-modeline-revert (&optional color)
-;;   (remove-hook 'post-command-hook #'nvp-indicate-modeline-revert t)
-;;   (set-face-background 'mode-line color))
+         (orig-color (face-background 'mode-line))
+         (temp-col (cdr (assoc (or type 'success) nvp-indicate-colors))))
+    (when msg (message (concat (format "[%s] " (if type (upcase (symbol-name type))
+                                                 "SUCCESS"))
+                               msg)))
+    (set-face-background 'mode-line temp-col)
+    (and power-p (set-face-background 'powerline-active0 temp-col))
+    (sit-for 3)
+    (set-face-background 'mode-line orig-color)
+    (and power-p (set-face-background 'powerline-active0 pcolor))))
 
 ;; ------------------------------------------------------------
 ;;; Toggle font-locking for long lines
@@ -89,9 +90,12 @@
   "Toggle indication of long lines (length with prefix ARG, default 80)."
   (interactive "P")
   (nvp-toggled-if (font-lock-refresh-defaults)
-    (let ((len (if arg (read-number "Length: ") 80)))
+    (let ((len (if arg (read-number "Length: ") 60))
+          (font-lock-multiline t))
       (font-lock-add-keywords
-       nil `((,(format "^[^\n]\\{%d\\}\\(.*\\)$" len) 1 font-lock-warning-face t)))
+       nil
+       `((,(format "^[^\n]\\{%d\\}\\([^\n]+\\)$" len)
+          (1 font-lock-warning-face t))))
       (font-lock-flush)
       (font-lock-ensure))))
 

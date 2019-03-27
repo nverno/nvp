@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 17:29:32>
+;; Last modified: <2019-03-27 02:48:54>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -66,17 +66,15 @@
 ;; -------------------------------------------------------------------
 ;;; General
 
-;; TODO:
-(defun nvp-yas= (str)
-  (when yas-moving-away-p
-    (string= (yas-text) str)))
-
 ;; yas-inside-string uses `font-lock-string-face'
-(defsubst nvp-yas-inside-string ()
+(defsubst nvp-yas-in-string ()
   (nth 3 (syntax-ppss)))
 
-(defsubst nvp-yas-inside-comment ()
+(defsubst nvp-yas-in-comment ()
   (nth 4 (syntax-ppss)))
+
+(defsubst nvp-yas-in-string-or-comment ()
+  (nvp-in-string-or-comment))
 
 ;; -------------------------------------------------------------------
 ;;; Functions, args, variables

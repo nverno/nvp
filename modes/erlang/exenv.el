@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-15 10:47:42>
+;; Last modified: <2019-03-26 21:07:21>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/erlang-tools
 ;; Package-Requires: 
@@ -31,8 +31,6 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (autoload 'string-trim "subr-x")
-(declare-function nvp-process-buffer "nvp")
-(declare-function nvp-log "nvp-log")
 
 (defvar exenv-dir "~/.exenv")
 
@@ -66,10 +64,10 @@
   (interactive (list (aref (tabulated-list-get-entry) 0)))
   (nvp-with-process-log
     (start-process-shell-command
-     "exenv" (nvp-process-buffer) (concat "exenv install " id))
+     "exenv" "*exenv*" (concat "exenv install " id))
     :on-error (pop-to-buffer (current-buffer))
     :on-success (view-mode))
-  (display-buffer (nvp-process-buffer)))
+  (display-buffer "*exenv*"))
 
 (defvar exenv-mode-map
   (let ((km (make-sparse-keymap)))

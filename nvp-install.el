@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 20:29:27>
+;; Last modified: <2019-03-26 21:12:30>
 ;; Created: 13 November 2016
 
 ;;; Commentary:
@@ -102,7 +102,7 @@
   (let* ((git-uri (format "%s/%s" (or root "https://github.com") repo))
          (pkg (car (last (split-string repo "/"))))
          (default-directory nvp/site)
-         (buff (nvp-process-buffer "*git-installs*")))
+         (buff (get-buffer-create "*nvp-install*")))
     (if (file-exists-p pkg)
         (progn
           (cd pkg)
@@ -124,7 +124,7 @@
         (nvp-install-pending-dirs))
     ;; something wrong
     (nvp-log "Not rebuilding site-lisp")
-    (pop-to-buffer (nvp-process-buffer))))
+    (pop-to-buffer "*nvp-install*")))
 
 ;; build installed / updated git packages
 (defun nvp-install-pending-dirs ()
@@ -136,7 +136,7 @@
   (setq nvp-install-pending-dirs nil)
   (load-file nvp/auto-site)
   (nvp-log "Finished installing site-lisp.")
-  (pop-to-buffer (nvp-process-buffer)))
+  (pop-to-buffer "*nvp-install*"))
 
 ;;--- On Demand ------------------------------------------------------
 
@@ -237,18 +237,12 @@
            (cl-loop for (prog args) in ,script
               do
                 (nvp-log "Running %s %S" nil prog args)
-                (let ((proc (apply 'start-process prog (nvp-process-buffer)
-                                   prog args)))
+                (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
                   (nvp-with-finished-process proc ,file)))
            (nvp-with-gnu
              ;; sudo commands
              (cl-loop for (action cmd) in ,sudo
-                do
-                  (nvp-log "Running %s %S" nil action cmd)
-                  (let ((proc (if (eq 'install action)
-                                  (nvp-ext-sudo-install cmd)
-                                (nvp-ext-sudo-command nil cmd))))
-                    (nvp-with-finished-process proc ,file))))
+                do (nvp-log "Unsupported :install")))
            (nvp-with-w32
              ;; chocolatey
              (cl-loop for pkg in ,choco

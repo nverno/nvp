@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-16 21:31:45>
+;; Last modified: <2019-03-27 03:05:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -26,8 +26,21 @@
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
 
+;; -------------------------------------------------------------------
+;;; Utils
+
+;; princ centered TITLE
+(defsubst nvp-dev--princ-title (title &optional width char)
+  (or width (setq width 85))
+  (or char (setq char "~"))
+  (princ (format "\n%s\n%s\n\n" (nvp-s-center width title)
+                 (nvp-s-repeat width "~"))))
+
+;; -------------------------------------------------------------------
+;;; Commands 
+
 ;;;###autoload
-(defun nvp-advice-remove-all (sym)
+(defun nvp-dev-advice-remove-all (sym)
   "Remove all advice from SYM."
   (interactive "aFunction: ")
   (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
@@ -75,23 +88,23 @@
 ;;;###autoload
 (defun nvp-dev-describe-hash (variable)
   "Display the full documentation of VARIABLE (a symbol)."
-  (interactive
-   (let ((v (variable-at-point))
-         (enable-recursive-minibuffers t)
-         val)
-     (setq val (completing-read
-                (if (and (symbolp v)
-                         (hash-table-p (symbol-value v)))
-                    (format
-                     "Describe hash-map (default %s): " v)
-                  "Describe hash-map: ")
-                obarray
-                (lambda (atom) (and (boundp atom)
-                               (hash-table-p (symbol-value atom))))
-                t nil nil
-                (if (hash-table-p v) (symbol-name v))))
-     (list (if (equal val "") v (intern val)))))
-  (with-output-to-temp-buffer (help-buffer)
+  (interactive (let ((v (variable-at-point))
+                     (enable-recursive-minibuffers t)
+                     val)
+                 (setq val (completing-read
+                            (if (and (symbolp v)
+                                     (hash-table-p (symbol-value v)))
+                                (format
+                                 "Describe hash-map (default %s): " v)
+                              "Describe hash-map: ")
+                            obarray
+                            (lambda (atom) (and (boundp atom)
+                                           (hash-table-p (symbol-value atom))))
+                            t nil nil
+                            (if (hash-table-p v) (symbol-name v))))
+                 (list (if (equal val "") v (intern val)))))
+  (nvp-with-results-buffer (help-buffer)
+    (nvp-dev--princ-title (format "Hash: %S" variable))
     (maphash (lambda (key value)
                (pp key)
                (princ " => ")
@@ -190,62 +203,23 @@ delimiter or an Escaped or Char-quoted character."
 
 ;; -------------------------------------------------------------------
 ;;; Assorted
+(autoload 's-split-words "s")
 
-;; Print counts of strings in region, with prefix dump at point
 ;;;###autoload
-(defun nvp-stats-uniq (beg end &optional count-lines)
-  "Print counts (case-insensitive) of unique words in region BEG to END.
-With prefix COUNT-LINES count unique lines."
+(defun nvp-dev-stats-uniq (beg end &optional _arg)
+  "Print counts (case-insensitive) of unique words in region BEG to END."
   (interactive "r\nP")
   (require 'nvp-hash)
   (let ((ht (make-hash-table :test 'case-fold))
-        (lines (split-string
-                (buffer-substring-no-properties beg end) "\n" 'omit-nulls " "))
+        (words (s-split-words (buffer-substring-no-properties beg end)))
         lst)
-    (if count-lines
-        (dolist (line lines)
-          (puthash line (1+ (gethash line ht 0)) ht))
-      ;; strip punctuation for words
-      (cl-loop for line in lines
-         as words = (split-string line "[[:punct:] \t]" 'omit " ")
-         when words
-         do (cl-loop for word in words
-               do (puthash word (1+ (gethash word ht 0)) ht))))
+    (mapc (lambda (w) (cl-callf + (gethash w ht 0) 1)) words)
     (maphash (lambda (key val) (push (cons val key) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
-    (nvp-with-results-buffer nil
+    (nvp-with-results-buffer (help-buffer)
+      (nvp-dev--princ-title "Word Counts")
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
-
-;; -------------------------------------------------------------------
-;;; Unused
-
-;; (autoload 'nvp-env-substitute-vars "nvp-env")
-
-;; Read config filename lines, expanding environment variables in key-value pairs
-;; key-value pairs are separated by SEPARATORS and value may be quoted
-;; lines beginning with COMMMENTS regex are ignored
-;; separators default to ":=" and comments default to '#'
-;; Return list of (key . value) pairs
-; (defun nvp-config-read-file (filename &optional separators comments)
-;   (setq separators (regexp-quote (or separators ":=")))
-;   (setq comments (regexp-quote (or comments "#")))
-;   (with-temp-buffer
-;     (insert-file-contents filename)
-;     (goto-char (point-min))
-;     (let ((key-val-regex
-;            (concat "^\\([^" separators "\n]+\\)[" separators "]+\\([^\n]+\\)"))
-;           (vars))
-;       (while (not (eobp))
-;         (when (and (not (looking-at-p comments))
-;                    (looking-at key-val-regex))
-;           ;; expand enviroment variables and remove quotes from values
-;           (push (cons (string-trim (match-string-no-properties 1))
-;                       (nvp-env-substitute-vars
-;                        (match-string-no-properties 2) 'unquote))
-;                 vars))
-;         (forward-line 1))
-;       vars)))
 
 (provide 'nvp-dev)
 ;;; nvp-dev.el ends here

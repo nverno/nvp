@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-24 19:32:15>
+;; Last modified: <2019-03-26 20:43:43>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -42,7 +42,8 @@ or '*' from emacs root, ignoring package directory.
                    grep-find-ignored-directories)
            grep-find-ignored-directories)))
     (grep-compute-defaults)
-    (rgrep (format "[\(\\b]%s[ )\\t\\n]" sym) (if ext (concat "*." ext) "*")
+    (rgrep (format "[ '\\(]%s[ )\\t\\n\\b]" sym)
+           (if ext (concat "*." ext) "*")
            nvp/emacs (equal '(64) current-prefix-arg))))
 
 ;; -------------------------------------------------------------------

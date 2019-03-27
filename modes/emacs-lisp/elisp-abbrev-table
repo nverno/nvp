@@ -61,6 +61,7 @@
 (define-abbrev-table 'emacs-lisp-nvp-abbrev-table
   '(("nb" "nvp-bindings" nil :system t)
     ("nd" "nvp-declare" nil :system t)
+    ("nbk" "nvp-bind-keys" nil :system t)
     ("ncr" "nvp-completing-read" nil :system t)
     ("ndl" "nvp-display-location" nil :system t)
     ("niod" "nvp-install-on-demand" nil :system t)
@@ -140,6 +141,7 @@
     ("pg" "plist-get" nil :system t)
     ("pl" "process-lines" nil :system t)
     ("pm" "point-max" nil :system t)
+    ("pn" "process-name" nil :system t)
     ("rb" "region-beginning" nil :system t)
     ("rc" "right-char" nil :system t)
     ("re" "region-end" nil :system t)

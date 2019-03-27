@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-24 23:54:25>
+;; Last modified: <2019-03-27 03:26:14>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -23,6 +23,7 @@
   (require 'nvp-macro))
 (require 'nvp-local)
 (declare-function company-grab-symbol "company")
+(nvp-declare "" nvp-log)
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'ido-completing-read)
@@ -41,6 +42,8 @@
 (defvar nvp-default-org-file "gtd.org" "Default org file.")
 (defvar nvp-window-configuration-stack () "Store window configurations.")
 (defvar nvp-read-config-history () "Minibuffer jumping history.")
+(defvar nvp-default-log-function #'nvp-log
+  "Default logging function - called from process sentinels, etc.")
 
 ;;-- Local
 ;; Abbrevs
@@ -130,12 +133,6 @@
 ;; -------------------------------------------------------------------
 ;;; general helpers
 
-;; strip ctrl-m, multiple newlines
-(defun nvp-process-buffer-filter (proc string)
-  (with-current-buffer (process-buffer proc)
-    (goto-char (point-max))
-    (insert (replace-regexp-in-string "[\r\n]+" "\n" string))))
-
 ;; add default to prompt in non-nil
 (defsubst nvp-prompt-default (prompt &optional default)
   (if default (format "%s (default %s): "
@@ -161,7 +158,7 @@
   (interactive)
   (push (current-window-configuration) nvp-window-configuration-stack))
 
-(defun nvp-window-configuration-restore ()
+(defun nvp-window-configuration-restore (&rest _args)
   (interactive)
   (if-let* ((conf (pop nvp-window-configuration-stack)))
       (set-window-configuration conf)

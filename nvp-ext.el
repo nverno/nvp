@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-24 19:16:31>
+;; Last modified: <2019-03-26 22:54:23>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -16,42 +16,35 @@
   (nvp-local-vars)
   (defvar explicit-shell-file-name)
   (defvar epg-gpg-home-directory))
+(require 'nvp-proc)
 (declare-function imenu--make-index-alist "imenu")
 (declare-function nvp-log "nvp-log")
 
-;; -------------------------------------------------------------------
-;;; Sudo
+;; do sudo command and return process object
+(defun nvp-ext-sudo-command (&optional password command buffer)
+  (interactive
+   (list (or (bound-and-true-p nvp-sudo-passwd)
+             (nvp-lookup-password "localhost" (user-login-name) nil))
+         (concat "'" (read-shell-command "Sudo command: ") "'")
+         "*sudo-command*"))
+  (let* ((default-directory "/sudo::")
+         (proc (nvp-with-process "bash"
+                 :proc-buff buffer
+                 :proc-args ("sudo bash -l" "-c" command)
+                 :buffer-fn nvp-proc-comint-buffer
+                 :shell t)))
+    (sit-for 1)
+    (process-send-string proc password)
+    (process-send-string proc "\r")
+    (process-send-eof proc)
+    proc))
 
-(defmacro nvp-ext-read-passwd ()
-  '(or (bound-and-true-p nvp-sudo-passwd)
-       (read-passwd "Password: ")))
-
-(nvp-with-gnu
-  (defun nvp-ext-process-filter (proc string)
-    (replace-regexp-in-string "[\n\r]+" "\n" string)
-    (with-current-buffer (process-buffer proc)
-      (insert string)))
-  
-  ;; do sudo command and return process object
-  (defun nvp-ext-sudo-command (&optional password command buffer)
-    (interactive)
-    (let* ((password (or password (nvp-ext-read-passwd)))
-           (cmd (or command (read-shell-command "Command: ")))
-           (proc (start-process-shell-command
-                  "bash" (or buffer (nvp-process-buffer 'comint))
-                  (concat "sudo bash -l " cmd))))
-      (set-process-filter proc 'nvp-ext-process-filter)
-      (process-send-string proc password)
-      (process-send-string proc "\r")
-      (process-send-eof proc)
-      proc))
-
-  (defun nvp-ext-sudo-install (packages &optional buffer)
-    (interactive (list (read-shell-command "Packages: ")))
-    (nvp-ext-sudo-command
-     nil
-     (format "-l -c \"apt-get install -y %s\"" packages)
-     buffer)))
+(defun nvp-ext-sudo-install (packages &optional buffer)
+  (interactive (list (read-shell-command "Packages: ")))
+  (nvp-ext-sudo-command
+   nil
+   (format "-l -c \"apt-get install -y %s\"" packages)
+   buffer))
 
 ;; -------------------------------------------------------------------
 ;;; Bash Script

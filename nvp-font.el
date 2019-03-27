@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-16 13:34:45>
+;; Last modified: <2019-03-27 00:27:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
@@ -60,10 +60,11 @@ With \\[universal-argument] prompt for THING at point."
                                                   (upcase y))))
                         :test 'string=)))
     (nvp-with-results-buffer "*Fonts*"
-     (font-lock-mode)
-     (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
-       (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
-        (propertize str 'font-lock-face `(:family ,ff :slant italic)) ff "\n")))))
+      (font-lock-mode)
+      (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
+        (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
+                (propertize str 'font-lock-face
+                            `(:family ,ff :slant italic)) ff "\n")))))
 
 ;; -------------------------------------------------------------------
 ;;; Glyphs 

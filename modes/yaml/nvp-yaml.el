@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/yaml-tools
-;; Last modified: <2019-02-27 14:04:42>
+;; Last modified: <2019-03-26 21:04:16>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -28,7 +28,7 @@
   (defvar company-dabbrev-code-modes))
 (require 'yaml-indent)
 (declare-function nvp-log "nvp-log")
-(nvp-declare "" nvp-indicate-modeline-success)
+(nvp-declare "" nvp-indicate-modeline)
 
 (nvp-package-define-root :snippets t)
 
@@ -56,13 +56,7 @@
          #'nvp-yaml-travis-sentinel)
         ;; wont return on windows ionno
         (process-send-eof "travis"))
-    (nvp-log "Installing travis")
-    ;; (nvp-with-process-log 
-    ;;   (start-process "gem" (nvp-process-buffer) "gem"
-    ;;                  "install" "travis" "--no-rdoc" "--no-ri")
-    ;;   :pop-on-error
-    ;;   (nvp-yaml-travis-lint))
-    ))
+    (message "travis gem not found")))
 
 (defun nvp-yaml-travis-sentinel (p m)
   (nvp-log (format "%s: %s" (process-name p) m) nvp-yaml-lint-buffer-name)
@@ -70,7 +64,7 @@
     (ansi-color-apply-on-region (point-min) (point-max))
     (goto-char (point-min))
     (if (looking-at-p ".*valid")
-        (nvp-indicate-modeline-success "iriiiiieeeee")
+        (nvp-indicate-modeline "iriiiiieeeee")
       (pop-to-buffer nvp-yaml-lint-buffer-name))))
 
 ;; goto travis page for project, or profile with prefix arg

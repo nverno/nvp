@@ -1,6 +1,6 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-22 00:54:17>
+;; Last modified: <2019-03-27 01:34:45>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -53,8 +53,8 @@ With prefix sort in REVERSE."
     (nvp-sort-with-defaults start end
       (sort-regexp-fields
        reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)"
-       (1+ start)                       ;skip over outer '('
-       (1- end)))))                     ;stop before final ')'
+       (if (looking-at-p "'") (+ 2 start) (1+ start)) ;skip over outer '('
+       (1- end)))))                                   ;stop before final ')'
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)

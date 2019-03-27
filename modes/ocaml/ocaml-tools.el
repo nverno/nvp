@@ -1,12 +1,12 @@
 ;;; ocaml-tools.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-08 06:33:06>
+;; Last modified: <2019-03-26 21:10:18>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
 
 ;;; Commentary:
-
+;; FIXME: remove lots of install stuff, cleanup
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -19,7 +19,6 @@
 (declare-function smie-forward-sexp "smie")
 (nvp-declare "tuareg" tuareg-opam-current-compiler tuareg-beginning-of-defun)
 (autoload 'nvp-ext-run-script "nvp-ext")
-(autoload 'nvp-process-buffer "nvp")
 (autoload 'tuareg-opam-update-env "tuareg")
 (autoload 'expand-abbrev-hook "expand")
 
@@ -29,29 +28,29 @@
 ;;; Install 
 ;; opam, ocp-indent, utop, merlin
 
-(nvp-with-gnu
-  ;; FIXME: install aspcud external solver
-  ;; https://opam.ocaml.org/doc/Install.html#GettingtheSources
-  (defun ocaml-tools-install (what)
-    (interactive
-     (list (ido-completing-read
-            "Install: " '("opam" "packages" "src" "info"))))
-    (let ((script (expand-file-name "tools/install.sh" (nvp-package-root))))
-     (pcase what
-       (`"opam"
-        (set-process-sentinel
-         (nvp-ext-run-script script '("install_opam") 'sudo)
-         #'(lambda (p _m)
-             (when (zerop (process-exit-status p))
-               ;; run non-sudoed
-               (nvp-ext-run-script '("install_opam_init"))))))
-       (`"packages"
-        (nvp-ext-run-script script '("install_ocaml_pkgs")))
-       (`"src"
-        (nvp-ext-run-script script '("install_ocaml_src")))
-       (`"info"
-        (nvp-ext-run-script script '("install_ocaml_info") 'sudo))
-       (_ ())))))
+; (nvp-with-gnu
+;   ;; FIXME: install aspcud external solver
+;   ;; https://opam.ocaml.org/doc/Install.html#GettingtheSources
+;   (defun ocaml-tools-install (what)
+;     (interactive
+;      (list (ido-completing-read
+;             "Install: " '("opam" "packages" "src" "info"))))
+;     (let ((script (expand-file-name "tools/install.sh" (nvp-package-root))))
+;      (pcase what
+;        (`"opam"
+;         (set-process-sentinel
+;          (nvp-ext-run-script script '("install_opam") 'sudo)
+;          #'(lambda (p _m)
+;              (when (zerop (process-exit-status p))
+;                ;; run non-sudoed
+;                (nvp-ext-run-script '("install_opam_init"))))))
+;        (`"packages"
+;         (nvp-ext-run-script script '("install_ocaml_pkgs")))
+;        (`"src"
+;         (nvp-ext-run-script script '("install_ocaml_src")))
+;        (`"info"
+;         (nvp-ext-run-script script '("install_ocaml_info") 'sudo))
+;        (_ ())))))
 
 ;; -------------------------------------------------------------------
 ;;; Utils 

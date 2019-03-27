@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-15 01:58:40>
+;; Last modified: <2019-03-27 02:02:04>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -18,28 +18,37 @@
 (require 'yasnippet)
 (declare-function nvp-read-mode "nvp-read")
 
+(defvar nvp-snippet-default-conditions
+  '(("comment" (nvp-yas-in-comment))
+    ("cookie"  (bound-and-true-p cookie))
+    ("doc"     (nvp-yas-in-comment)))
+  "Directory names to default conditions (eg. :condition key functions).")
+
 ;; local variables to update fields in snippet subdirs
-(defvar-local nvp-snippet-local-condition ()
+(defvar-local nvp-snippet-local-conditions ()
   "Directory local variable to set condition in snippet subdirectories.")
-(put 'nvp-snippet-local-condition 'safe-local-variable 'listp)
+(put 'nvp-snippet-local-conditions 'safe-local-variable 'listp)
 
 ;; -------------------------------------------------------------------
 ;;; Hooks
-(nvp-declare "" nvp-yas-inside-string nvp-yas-inside-comment)
+(nvp-declare "" nvp-yas-in-string nvp-yas-in-comment)
 
-(defun nvp-snippet-before-save-hook ()
-  "Add conditions based on directory names."
-  (if (bound-and-true-p nvp-snippet-local-condition)
-      (nvp-snippet-add-field "condition" nvp-snippet-local-condition)
-    (cl-flet ((add-condition
-               (pred)
-               (nvp-snippet-add-field "condition" pred)))
-      (pcase (ignore-errors (or (nvp-dfn)
-                                (file-name-directory (buffer-file-name))))
-        (`"doc" (add-condition '(nvp-yas-inside-string)))
-        (`"comment" (add-condition '(nvp-yas-inside-comment)))
-        (`"cookie" (add-condition '(bound-and-true-p cookie)))
-        (_)))))
+(defun nvp-snippet-save-hook ()
+  "Add conditions based on directory names.
+When part of `before-save-hook', won't add condition on initial save."
+  (unless buffer-file-name
+    (let ((before-save-hook ()))
+      (save-buffer)))
+  (cl-flet ((add-condition
+             (pred)
+             (nvp-snippet-add-field "condition" pred)))
+    (let ((dir (ignore-errors (or (nvp-dfn)
+                                  (file-name-directory (buffer-file-name))))))
+      (when-let*
+          ((test
+            (assoc-string dir (or (bound-and-true-p nvp-snippet-local-conditions)
+                                  nvp-snippet-default-conditions))))
+        (add-condition (cadr test))))))
 
 (defun nvp-snippet-add-field (field value)
   "Add FIELD with VALUE unless FIELD is already defined."

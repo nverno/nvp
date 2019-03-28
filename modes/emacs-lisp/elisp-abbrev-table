@@ -42,6 +42,7 @@
   '(("cld" "cl-defun" nil :system t)
     ("cll" "cl-loop" nil :system t)
     ("clg" "cl-gensym" nil :system t)
+    ("clr" "cl-return" nil :system t)
     
     ("cldb" "cl-destructuring-bind" nil :system t)
     ("cldi" "cl-delete-if" nil :system t)

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 20:36:45>
+;; Last modified: <2019-03-27 22:06:59>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -54,6 +54,7 @@ or '*' from emacs root, ignoring package directory.
 (nvp-declare "ag" ag-project-dired ag-dired-regexp ag-dired
   ag-project-dired-regexp ag/search)
 (defvar ag/file-column-pattern-group)
+(defvar ag-ignore-list)
 
 (with-eval-after-load 'ag
   ;; Notes
@@ -74,9 +75,9 @@ or '*' from emacs root, ignoring package directory.
   ;;
   ;; Fixes for compilation:
   ;; (1) Can either disable xterm-color, which sucks
-  (define-advice ag/search (:around (orig-fn &rest args) "no-xterm-color")
-    (let (compilation-start-hook)
-      (apply orig-fn args)))
+  ;; (define-advice ag/search (:around (orig-fn &rest args) "no-xterm-color")
+  ;;   (let (compilation-start-hook)
+  ;;     (apply orig-fn args)))
   
   ;; (2) Or override ag's `compilation-error-regexp-alist' matching function
   (defun nvp-ag-match-grouped-filename ()
@@ -92,7 +93,19 @@ or '*' from emacs root, ignoring package directory.
 
   ;; override ag's function
   (setf (symbol-function 'ag/compilation-match-grouped-filename)
-        #'nvp-ag-match-grouped-filename))
+        #'nvp-ag-match-grouped-filename)
+
+  (defvar nvp-ag-imenu-expression
+    `((nil (lambda ()
+             (cl-block nil
+               (when (re-search-backward ,ag/file-column-pattern-group nil 'move)
+                 (beginning-of-line 0)
+                 (while (and (not (bobp))
+                             (looking-at-p ,ag/file-column-pattern-group))
+                   (forward-line -1))
+                 (and (looking-at "^\\([^ \t].*\\)$")
+                      (cl-return t)))))
+           1))))
 
 ;;;###autoload
 (defun nvp-ag (str dir &optional regex)
@@ -105,14 +118,19 @@ Defaults to symbol at point and emacs root.
    (let* ((arg (prefix-numeric-value current-prefix-arg))
           (sym (thing-at-point 'symbol t))
           (dir nvp/emacs)
-          (re (> (prefix-numeric-value current-prefix-arg) 4)))
+          (re (> (prefix-numeric-value current-prefix-arg) 4))
+          (elpa (file-name-nondirectory
+                 (directory-file-name user-package-dir))))
+     (if (< arg 16)
+         (cl-pushnew elpa ag-ignore-list :test #'equal)
+       (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal))
      (cond
       ((memq arg '(4 16))
        (list (read-string
               (format "Ag search%s: " (if sym (concat " ('" sym "')") ""))
               nil 'nvp-search-history sym)
              (read-directory-name
-              "Search directory(~/.emacs.d): " nvp/emacs "~/" t "~/")
+              "Search directory(~/.emacs.d): " nvp/emacs nvp/emacs t "~/")
              re))
       ((null sym)
        (list (read-string "Ag search string: " nil 'nvp-search-history)

@@ -1,6 +1,6 @@
 ;;; nvp-shellcheck.el --- shellcheck compilation -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 16:17:04>
+;; Last modified: <2019-03-27 23:38:42>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
 ;; Created: 24 January 2019
@@ -31,7 +31,7 @@
           #'(lambda (_m) (concat "*shellcheck: " (buffer-file-name) "*")))
          (funcs compilation-finish-functions)
          (kill-func #'(lambda (&rest _ignored)
-                        (nvp-use-local-keymap ("q" . kill-this-buffer))
+                        (nvp-set-local-keymap :use t ("q" . kill-this-buffer))
                         ;; reset compilation-finish-functions
                         (setq compilation-finish-functions funcs))))
     (setq compilation-finish-functions kill-func)

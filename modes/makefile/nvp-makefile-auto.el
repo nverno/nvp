@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 11:14:47>
+;; Last modified: <2019-03-27 22:14:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 27 March 2019
@@ -18,6 +18,35 @@
   (require 'cl-lib))
 (require 'nvp)
 (require 'make-mode)
+
+;; ------------------------------------------------------------
+;;; Parse / Snippet helpers
+
+;; FIXME: convert to generic
+;; - functions => buffer targets
+;; - current function / target
+
+(defun nvp-makefile-target-name ()
+  (save-excursion
+    ;; forward one line so if point on target line
+    ;; the target in the current line is toggled
+    (forward-line 1)
+    (makefile-previous-dependency)
+    ;; `makefile-previous-dependency' modifies match-data
+    ;; with `looking-at'
+    (string-trim (match-string-no-properties 1))))
+
+;; list dependencies for TARGET
+(defun nvp-makefile-list-deps (target)
+  (save-excursion
+    (nvp-makefile-goto-target target)
+    (skip-chars-forward ": \t" (point-at-eol))
+    (split-string (buffer-substring-no-properties (point) (point-at-eol)))))
+
+(defun nvp-makefile-list-targets ()
+  (setq makefile-need-target-pickup t)
+  (makefile-pickup-targets)
+  makefile-target-table)
 
 ;; -------------------------------------------------------------------
 ;;; Auto add defines/targets/deps

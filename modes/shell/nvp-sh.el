@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-27 11:23:10>
+;; Last modified: <2019-03-27 23:57:11>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -189,8 +189,7 @@ Used to set `end-of-defun-function'."
     (bash-completion-dynamic-complete-nocomint
      (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table)))
 
-;; FIXME: replace with `nvp-use-local-keymap' or just define functions for
-;; general company functions to call
+;; FIXME: generalize toggle to call indirectly
 (defvar nvp-sh-company-active-map
   (let ((km (make-sparse-keymap)))
     (set-keymap-parent km company-active-map)
@@ -349,7 +348,7 @@ Optionally return process specific to THIS-BUFFER."
                               (not (nth 3 (syntax-ppss)))))))))))
 
 ;; -------------------------------------------------------------------
-;;; Font-lock additions
+;;; Font-locks
 
 ;; Add font-locking & register additions
 (nvp-font-lock-add-defaults 'sh-mode

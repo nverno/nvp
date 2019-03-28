@@ -1,11 +1,13 @@
 ;;; nvp-makefile.el --- make helpers -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/make-tools
-;; Last modified: <2019-03-27 11:18:17>
+;; URL: https://github.com/nverno/nvp
+;; Last modified: <2019-03-28 00:46:56>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
+
+;; make -q foo => exit 0 if foo is up-to-date
 
 ;; TODO:
 ;; - font-lock-doc-face for info/warning/error?
@@ -90,35 +92,6 @@ Skips to end of tabbed block."
     (forward-line 1)))
 
 ;; ------------------------------------------------------------
-;;; Parse / Snippet helpers
-
-;; FIXME: convert to generic
-;; - functions => buffer targets
-;; - current function / target
-
-(defun nvp-makefile-target-name ()
-  (save-excursion
-    ;; forward one line so if point on target line
-    ;; the target in the current line is toggled
-    (forward-line 1)
-    (makefile-previous-dependency)
-    ;; `makefile-previous-dependency' modifies match-data
-    ;; with `looking-at'
-    (string-trim (match-string-no-properties 1))))
-
-;; list dependencies for TARGET
-(defun nvp-makefile-list-deps (target)
-  (save-excursion
-    (nvp-makefile-goto-target target)
-    (skip-chars-forward ": \t" (point-at-eol))
-    (split-string (buffer-substring-no-properties (point) (point-at-eol)))))
-
-(defun nvp-makefile-list-targets ()
-  (setq makefile-need-target-pickup t)
-  (makefile-pickup-targets)
-  makefile-target-table)
-
-;; ------------------------------------------------------------
 ;;; Goto Locations
 
 ;; put point at end of matching target named TARGET
@@ -149,9 +122,9 @@ Skips to end of tabbed block."
     (goto-char (point-min))
     ;; get first rule
     (let ((end (save-excursion
-                 (progn (re-search-forward makefile-dependency-regex
-                                           nil t)
-                        (point)))))
+                 (progn
+                   (re-search-forward makefile-dependency-regex nil t)
+                   (point)))))
       (while (search-forward "ifeq" end 'move)
         ;; indent if block
         (forward-line 1)
@@ -164,6 +137,18 @@ Skips to end of tabbed block."
               (delete-horizontal-space)
               (indent-to nvp-makefile-indent-offset))
             (forward-line 1)))))))
+
+;; -------------------------------------------------------------------
+;;; Font-locks
+;; `makefile-dependency-regex' => note this doesn't take into account quoting
+;; `makefile-macroassign-regex' => doesn't handle #defines
+
+;; (let ((io-funs
+;;        (concat "\\${\\s-*" (regexp-opt '("info" "warn" "error"))
+;;                "\\(.*\\)}")))
+;;   `(nvp-font-lock-add-defaults 'makefile-mode
+;;      ("\\${\\s-*}")
+;;     ))
 
 ;; ------------------------------------------------------------
 ;;; Hooks

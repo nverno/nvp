@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-21 19:05:26>
+;; Last modified: <2019-03-27 23:36:02>
 ;; Created: 20 January 2017
 
 ;;; Commentary:
@@ -45,7 +45,7 @@
        (setq-local local-abbrev-table
                    (symbol-value (intern (concat ,type "-abbrev-table"))))
        (setq-local nvp-abbrev-local-table ,type)
-       (nvp-use-local-keymap
+       (nvp-set-local-keymap :use t
          ("C-c C-c" . nvp-c-test-run-unit-test))))
 
   ;; generate function to run unit tests

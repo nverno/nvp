@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-15 02:12:31>
+;; Last modified: <2019-03-27 23:36:28>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  8 March 2019
@@ -64,7 +64,7 @@ With prefix ARG display the tidy results in separate buffer before applying them
              (perl-mode)
              (save-excursion (nvp-perltidy-buffer))
              (pop-to-buffer (current-buffer))
-             (nvp-use-local-keymap
+             (nvp-set-local-keymap :use t
                ("C-x C-s" . apply-changes)
                ("C-c C-k" . abort-changes))
              (nvp-msg "C-x C-s to apply changes, C-c C-k to abort"))))))))

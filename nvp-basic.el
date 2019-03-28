@@ -2,16 +2,16 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 13:43:27>
+;; Last modified: <2019-03-27 23:56:06>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
 ;; Required in init
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
-  (require 'subr-x))
+  (require 'subr-x)
+  (require 'nvp-macro))
 (require 'nvp)
 (declare-function company-quickhelp-manual-begin "company-quickhelp")
 (declare-function do-smooth-scroll "smooth-scrolling")

@@ -1,13 +1,16 @@
-;;; nvp-project.el ---  -*- lexical-binding: t; -*-
+;;; nvp-project.el --- project management -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 04:53:16>
+;; Last modified: <2019-03-28 02:40:56>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 December 2016
 
 ;;; Commentary:
+
+;; TODO: get rid of all this, try out new builtin project.el
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -22,6 +25,28 @@
 (defvar-local nvp-project--test-re ".*tests?")
 (defvar-local nvp-project--test-dir '("test" "tests" "t"))
 (defvar-local nvp-project--test-fmt "test-%s")
+
+;; TODO: find project root -- this is just from ag.el
+(defvar-local nvp-project-root-function ()
+  "Function to determine root directory of current project.")
+
+(defsubst nvp-longest-string (&rest strs)
+  (cl-reduce (lambda (a b) (if (> (length a) (length b)) a b)) strs))
+
+(autoload 'vc-git-root "vc-git")
+(autoload 'vc-hg-root "vc-hg")
+(autoload 'vc-bzr-root "vc-bzr")
+(defun nvp-project-root (path)
+  "Try `nvp-project-root-function' if it is defined.
+Otherwise, look for version control directories, returing the longest path."
+  (if nvp-project-root-function
+      (funcall nvp-project-root-function)
+    (or (nvp-longest-string
+         (vc-git-root path)
+         (vc-svn-root path)
+         (vc-hg-root path)
+         (vc-bzr-root path))
+        path)))
 
 ;; -------------------------------------------------------------------
 ;;; Util

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 15:48:51>
+;; Last modified: <2019-03-28 02:21:11>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -302,6 +302,209 @@ If NO-PULSE, don't pulse region when using THING."
     (and
      (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
      (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
+
+;; cc-defs `c-point'
+(defmacro nvp-point (position &optional point escape)
+  "Return relative POSITION to POINT (default current point).
+ESCAPE can be a string to match escaped newlines (default '\\').
+POSITION can be one of the following symbols:
+
+`bol'   -- beginning of line
+`eol'   -- end of line
+`eoll'  -- end of logical line (i.e. without escaped NL)
+`bod'   -- beginning of defun
+`eod'   -- end of defun
+`boi'   -- beginning of indentation
+`ionl'  -- indentation of next line
+`iopl'  -- indentation of previous line
+`bonl'  -- beginning of next line
+`eonl'  -- end of next line
+`bopl'  -- beginning of previous line
+`eopl'  -- end of previous line
+`bosws' -- beginning of syntactic whitespace
+`eosws' -- end of syntactic whitespace
+
+If the referenced position doesn't exist, the closest accessible point
+to it is returned.  This function does not modify the point or the mark."
+  (or escape (setq escape "\\\\"))
+
+  (if (eq (car-safe position) 'quote)
+      (let ((position (eval position)))
+	(cond
+
+	 ((eq position 'bol)
+	  (if (not point)
+	      '(line-beginning-position)
+	    `(save-excursion
+	       ,@(if point `((goto-char ,point)))
+	       (beginning-of-line)
+	       (point))))
+
+	 ((eq position 'eol)
+	  (if (not point)
+	      '(line-end-position)
+	    `(save-excursion
+	       ,@(if point `((goto-char ,point)))
+	       (end-of-line)
+	       (point))))
+
+	 ((eq position 'eoll)
+	  `(save-excursion
+	     ,@(if point `((goto-char ,point)))
+	     (while (progn
+		      (end-of-line)
+		      (prog1 (eq (logand 1 (skip-chars-backward escape)) 1)))
+	       (beginning-of-line 2))
+	     (end-of-line)
+	     (point)))
+
+	 ((eq position 'boi)
+	  `(save-excursion
+	     ,@(if point `((goto-char ,point)))
+	     (back-to-indentation)
+	     (point)))
+
+	 ((eq position 'bod)
+	  `(save-excursion
+	     ,@(if point `((goto-char ,point)))
+             (beginning-of-defun)
+             (and defun-prompt-regexp
+                  (looking-at defun-prompt-regexp)
+                  (goto-char (match-end 0)))
+	     (point)))
+
+	 ((eq position 'eod)
+	  `(save-excursion
+	     ,@(if point `((goto-char ,point)))
+             (end-of-defun)
+	     (point)))
+
+	 ((eq position 'bopl)
+	  (if (not point)
+	      '(line-beginning-position 0)
+	    `(save-excursion
+	       ,@(if point `((goto-char ,point)))
+	       (forward-line -1)
+	       (point))))
+
+	 ((eq position 'bonl)
+	  (if (not point)
+	      '(line-beginning-position 2)
+	    `(save-excursion
+	       ,@(if point `((goto-char ,point)))
+	       (forward-line 1)
+	       (point))))
+
+	 ((eq position 'eopl)
+	  (if (not point)
+	      '(line-end-position 0)
+	    `(save-excursion
+	       ,@(if point `((goto-char ,point)))
+	       (beginning-of-line)
+	       (or (bobp) (backward-char))
+	       (point))))
+
+	 ((eq position 'eonl)
+	  (if (not point)
+	      '(line-end-position 2)
+	    `(save-excursion
+	       ,@(if point `((goto-char ,point)))
+	       (forward-line 1)
+	       (end-of-line)
+	       (point))))
+
+	 ((eq position 'iopl)
+	  `(save-excursion
+	     ,@(if point `((goto-char ,point)))
+	     (forward-line -1)
+	     (back-to-indentation)
+	     (point)))
+
+	 ((eq position 'ionl)
+	  `(save-excursion
+	     ,@(if point `((goto-char ,point)))
+	     (forward-line 1)
+	     (back-to-indentation)
+	     (point)))
+
+         ;; FIXME:
+	 ((eq position 'bosws)
+	  `(save-excursion
+	     ,@(if point `((goto-char ,point)))
+	     (c-backward-syntactic-ws)
+	     (point)))
+
+	 ((eq position 'eosws)
+	  `(save-excursion
+	     ,@(if point `((goto-char ,point)))
+	     (c-forward-syntactic-ws)
+	     (point)))
+
+	 (t (error "Unknown buffer position requested: %s" position))))))
+
+;; paredit splicing reindent doesn't account for prompts
+(defmacro nvp-preserving-column (&rest body)
+  "Preserve point in column after executing BODY.
+`paredit-preserving-column' doesn't properly account for minibuffer prompts."
+  (declare (indent defun) (debug body))
+  (let ((orig-indent (make-symbol "indentation"))
+        (orig-col (make-symbol "column")))
+    `(let ((,orig-col (if (eq major-mode 'minibuffer-inactive-mode)
+                          (- (current-column) (minibuffer-prompt-width))
+                        (current-column)))
+           (,orig-indent (current-indentation)))
+       (unwind-protect
+           (progn ,@body)
+         (let ((ci (current-indentation)))
+           (goto-char
+            (+ (point-at-bol)
+               (cond ((not (< ,orig-col ,orig-indent))
+                      (+ ,orig-col (- ci ,orig-indent)))
+                     ((<= ci ,orig-col) ci)
+                     (t ,orig-col)))))))))
+
+;; -------------------------------------------------------------------
+;;; Save/Restore envs 
+
+(defmacro nvp-with-preserved-vars (vars &rest body)
+  "Let bind VARS then execute BODY, so VARS maintain their original values.
+VARS should be either a symbol or list or symbols."
+  (declare (indent 1) (debug (form body)))
+  `(cl-progv ,(if (listp vars) `,vars `(list ',vars)) nil
+     (unwind-protect
+         ,@body)))
+
+;; from yasnippet #<marker at 126339 in yasnippet.el>
+(defmacro nvp-letenv (env &rest body)
+  "Evaluate BODY with bindings from ENV.
+ENV is a lisp expression evaluating to list of (VAR FORM), where
+VAR is a symbol and FORM is evaluated."
+  (declare (indent 1) (debug (form body)))
+  (let ((envvar (make-symbol "envvar")))
+    `(let ((,envvar ,env))
+       (cl-progv
+           (mapcar #'car ,envvar)
+           (mapcar (lambda (k-v) (eval (cadr k-v))) ,envvar)
+         ,@body))))
+
+;; -------------------------------------------------------------------
+;;; Folding
+
+;;-- Hideshow
+(defmacro nvp-hs-blocks (start end)
+  `(progn
+     (setq hs-block-start-regexp ,start)
+     (setq hs-block-end-regexp ,end)))
+
+(defmacro nvp-with-hs-block (start end &rest body)
+  "Do hideshow with START and END regexps."
+  (declare (indent defun))
+  `(progn
+     (require 'hideshow)
+     (unless hs-minor-mode (hs-minor-mode))
+     (let ((hs-block-start-regexp ,start)
+           (hs-block-end-regexp ,end))
+       ,@(or body (list '(hs-toggle-hiding))))))
 
 ;; -------------------------------------------------------------------
 ;;; Control flow
@@ -740,20 +943,23 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
            collect `(nvp-def-key map ,k ,b))
       (push (cons ,mode map) minor-mode-overriding-map-alist))))
 
-;; FIXME: remove one of these / optionally use or return local map variable
-(cl-defmacro nvp-use-local-keymap (&rest bindings
-                                   &key keymap buffer &allow-other-keys)
-  "Use a local version of KEYMAP or `current-local-map'.
-If BUFFER is non-nil, use BINDINGS locally in BUFFER."
+(cl-defmacro nvp-set-local-keymap (&rest bindings
+                                   &key keymap buffer use &allow-other-keys)
+  "Use or create a local version of KEYMAP (default `current-local-map').
+If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
   (declare (indent defun))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
+  (cl-assert (if (not use) (not (null keymap)) t))
   `(let ((lmap (make-sparse-keymap)))
      (set-keymap-parent lmap ,(or keymap '(current-local-map)))
      ,@(cl-loop for (k . b) in bindings
           collect `(nvp-def-key lmap ,k ,b))
-     ,(if buffer `(with-current-buffer ,buffer (use-local-map lmap))
-        '(use-local-map lmap))))
+     ,(if buffer `(with-current-buffer ,buffer
+                    ,(if use '(use-local-map lmap)
+                       `(set (make-local-variable ',keymap) lmap)))
+        (if use '(use-local-map lmap)
+          `(set (make-local-variable ',keymap) lmap)))))
 
 ;;-- View bindings
 
@@ -871,73 +1077,66 @@ if process exit status isn't 0."
                                    ,on-error)))
        (display-buffer (process-buffer ,proc) ,display-action))))
 
-(cl-defmacro nvp-with-process (process
-                               &key
-                               (proc-name process)
-                               (proc-buff `,(concat "*" proc-name "*"))
-                               (proc-args nil)
-                               (proc-filter t)
-                               (buffer-fn 'get-buffer-create)
-                               sync
-                               shell
-                               sentinel
-                               (on-success `(progn
-                                              (nvp-indicate-modeline-success
-                                               ,(concat " " proc-name " success"))
-                                              (kill-buffer (current-buffer))))
-                               (on-failure '(pop-to-buffer (current-buffer))))
+(cl-defmacro nvp-with-process
+    (process
+     &key
+     (proc-name process)
+     (proc-buff `,(concat "*" proc-name "*"))
+     (proc-args nil)
+     (proc-filter t)
+     (buffer-fn 'get-buffer-create)
+     sync
+     shell
+     sentinel
+     (on-success `(progn
+                    (nvp-indicate-modeline-success
+                     ,(concat " " proc-name " success"))
+                    (kill-buffer (current-buffer))))
+     (on-failure '(pop-to-buffer (current-buffer))))
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer."
   (declare (indent defun) (debug t))
-  (let ((proc (make-symbol "proc"))
-        (pbuf (make-symbol "proc-buff"))
-        (proc-cmd (make-symbol "command")))
+  (let* ((proc (make-symbol "proc"))
+         (proc-cmd (intern (format "%s%s"
+                                   (if sync "call-process" "start-process")
+                                   (if shell "-shell-command" ""))))
+         (pbuf (if (and buffer-fn proc-buff) `(,buffer-fn ,proc-buff)
+                 `,proc-buff)))
     `(progn
        (declare-function nvp-indicate-modeline "")
        (declare-function nvp-log "")
-       (let* ((,pbuf (,@(if (and buffer-fn proc-buff) `(,buffer-fn ,proc-buff)
-                         `,proc-buff)))
-              (,proc-cmd ',(intern (format "%s%s"
-                                           (if sync "call-process" "start-process")
-                                           (if shell "-shell-command" ""))))
-              (,proc
-               (,@(if shell
-                      (if sync
-                          `(funcall
-                            ,proc-cmd
-                            (mapconcat 'identity (list ,@proc-args) " ")
-                            nil ,pbuf t)
-                        `(funcall
-                          ,proc-cmd ,process ,pbuf
-                          (mapconcat 'identity (list ,@proc-args) " ")))
-                    `(funcall ,proc-cmd
-                              ,(or proc-name process)
-                              (if ,pbuf (,buffer-fn ,pbuf) nil)
-                              ,process ,@proc-args)))))
-         ,(unless sync
-            ;; Process filter
-            (cond
-             ((memq proc-filter '(:default t))
-              `(set-process-filter ,proc 'nvp-proc-default-filter))
-             (proc-filter
-              `(set-process-filter ,proc ,proc-filter))
-             (t nil))
-            ;; Process sentinel - just retrun process without sentinel
-            (cond
-             ((eq sentinel ':default)
-              `(set-process-sentinel ,proc 'nvp-proc-default-sentinel))
-             ((eq sentinel t)
-              `(set-process-sentinel ,proc
-                                       (lambda (p m)
-                                         (nvp-log "%s: %s" nil (process-name p) m)
-                                         (with-current-buffer (process-buffer p)
-                                           (if (zerop (process-exit-status p))
-                                               ,on-success
-                                             ,on-failure))))))
-            (if (not sentinel)
-                `,proc
-              (if (not (memq sentinel '(:default t)))
-                  `(set-process-sentinel ,proc ,sentinel)
-                )))))))
+       (let ((,proc
+              ,(if shell
+                   (if sync
+                       `(funcall
+                         ',proc-cmd (mapconcat 'identity (list ,@proc-args) " "))
+                     `(funcall ',proc-cmd ,process ,pbuf
+                               (mapconcat 'identity (list ,@proc-args) " ")))
+                 `(funcall ',proc-cmd
+                           ,(or proc-name process)
+                           ,pbuf ,process ,@proc-args))))
+         ,(if sync `,proc
+            ;; Async process filter
+            `(progn
+               ,(cond
+                 ((memq proc-filter '(:default t))
+                  `(set-process-filter ,proc 'nvp-proc-default-filter))
+                 (proc-filter
+                  `(set-process-filter ,proc ,proc-filter))
+                 (t nil))
+               ;; Process sentinel - just retrun process without sentinel
+               ,(cond
+                 ((eq sentinel ':default)
+                  `(set-process-sentinel ,proc 'nvp-proc-default-sentinel))
+                 ((eq sentinel t)
+                  `(set-process-sentinel ,proc
+                                         ;; FIXME: replace with default
+                                         (lambda (p m)
+                                           (nvp-log "%s: %s" nil (process-name p) m)
+                                           (with-current-buffer (process-buffer p)
+                                             (if (zerop (process-exit-status p))
+                                                 ,on-success
+                                               ,on-failure)))))
+                 ((null sentinel) `,proc))))))))
 
 (defmacro nvp-with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment
@@ -1169,25 +1368,27 @@ or PREDICATE is non-nil and returns nil."
 
 (defmacro nvp-mode-bind-1 (&optional mode &rest bindings)
   "Attach BINDINGS globally to MODE."
-  (declare (indent defun))
+  (declare (indent defun) (debug bindings))
   (or mode (setq mode (quote major-mode)))
   (unless (equal 'quote (car-safe mode)) (setq mode `',mode))
   `(if (not (get ,mode 'nvp))
        (put ,mode 'nvp ,@bindings)
      (put ,mode 'nvp
-          (cl-delete-duplicates (append (get ,mode 'nvp) ,@bindings) :key #'car))))
+          (cl-delete-duplicates
+           (append (get ,mode 'nvp) ,@bindings) :key #'car))))
 
 (defmacro nvp-mode-bind (&optional modes &rest bindings)
   "Attach BINDINGS globally to MODES."
   (declare (indent defun) (debug t))
   ;; Allow for some various forms
-  (and (equal 'quote (car-safe modes))
-       (setq modes (cadr modes)))                       ; '(a b c)
-  (unless (listp modes) (setq modes (cons modes nil)))  ; some-mode
-  (setq modes (remq 'quote modes))                      ; ('mode-1 'mode-...)
-  (macroexp-progn
-   (cl-loop for mode in modes
-      collect `(nvp-mode-bind-1 ,mode ,@bindings))))
+  (unless (null (cadr (car-safe bindings)))
+    (and (equal 'quote (car-safe modes))
+         (setq modes (cadr modes)))                       ; '(a b c)
+    (unless (listp modes) (setq modes (cons modes nil)))  ; some-mode
+    (setq modes (remq 'quote modes))                      ; ('mode-1 'mode-...)
+    (macroexp-progn
+     (cl-loop for mode in modes
+        collect `(nvp-mode-bind-1 ,mode ,@bindings)))))
 
 ;; -------------------------------------------------------------------
 ;;; Package

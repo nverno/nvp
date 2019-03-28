@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-27 10:01:39>
+;; Last modified: <2019-03-28 02:22:35>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -17,24 +17,23 @@
   (defvar explicit-shell-file-name)
   (defvar epg-gpg-home-directory))
 (require 'nvp-proc)
+(nvp-declare "" nvp-lookup-password nvp-log)
 (declare-function imenu--make-index-alist "imenu")
-(declare-function nvp-log "nvp-log")
 
-;; FIXME: prompts for password
 ;; do sudo command and return process object
 (defun nvp-ext-sudo-command (&optional password command buffer)
   (interactive
    (list (or (bound-and-true-p nvp-sudo-passwd)
              (nvp-lookup-password "localhost" (user-login-name) nil))
-         (concat "'" (read-shell-command "Sudo command: ") "'")
+         (read-shell-command "Sudo command: ")
          "*sudo-command*"))
-  (let* ((default-directory "/sudo::")
+  (let* (;; (default-directory "/sudo::")
          (proc (nvp-with-process "bash"
                  :proc-buff buffer
                  :proc-args ("bash -l" "-c" command)
                  :buffer-fn nvp-proc-comint-buffer
                  :shell t)))
-    (sit-for 1)
+    ;; (sit-for 1)
     (process-send-string proc password)
     (process-send-string proc "\r")
     (process-send-eof proc)

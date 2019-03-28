@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-26 23:54:56>
+;; Last modified: <2019-03-27 20:56:52>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 March 2019
@@ -23,7 +23,7 @@
 ;; -------------------------------------------------------------------
 ;;; Filters / Sentinels
 
-;; strip ctrl-m, multiple newlines
+;; condense multiple newlines
 ;;;###autoload
 (defun nvp-proc-default-filter (proc string)
   (with-current-buffer (process-buffer proc)

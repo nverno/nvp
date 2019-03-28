@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 18:23:07>
+;; Last modified: <2019-03-27 20:36:45>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -47,6 +47,52 @@ or '*' from emacs root, ignoring package directory.
     (rgrep (format "[ '\\(]%s[ \\)\\t\\n\\b]*" sym)
            (if ext (concat "*." ext) "*")
            nvp/emacs (equal '(64) current-prefix-arg))))
+
+;; -------------------------------------------------------------------
+;;; ag.el
+
+(nvp-declare "ag" ag-project-dired ag-dired-regexp ag-dired
+  ag-project-dired-regexp ag/search)
+(defvar ag/file-column-pattern-group)
+
+(with-eval-after-load 'ag
+  ;; Notes
+  ;; -----
+  ;; `ag-filter' replaces escape sequences with 'File: ' by regex parsing
+  ;; and then relies on that text to match `compilation-error-regexp's to jump
+  ;; to error locations. However, this is fucked up by xterm-color's
+  ;; `compilation-start-hook' which processes the string prior to passing it to
+  ;; `compilation-filter', and then to `ag-filter'. It seems that
+  ;; `xterm-color-filter' modifies the output so `ag-filter' no longer matches
+  ;; and replaces text with 'File: ', hence the resulting compilation jumps
+  ;; don't know the proper locations.
+  ;;
+  ;; Offending location: #<marker at 24916 in ag.el>. It seems like a very brittle
+  ;; package and doesn't support wgrep. It also runs `shell-command' which
+  ;; awkwardly invokes `shell-mode-hook' on the output results, which also
+  ;; required fixes.
+  ;;
+  ;; Fixes for compilation:
+  ;; (1) Can either disable xterm-color, which sucks
+  (define-advice ag/search (:around (orig-fn &rest args) "no-xterm-color")
+    (let (compilation-start-hook)
+      (apply orig-fn args)))
+  
+  ;; (2) Or override ag's `compilation-error-regexp-alist' matching function
+  (defun nvp-ag-match-grouped-filename ()
+    "Match grouped filename in compilation output."
+    (save-match-data
+      (save-excursion
+        (beginning-of-line)
+        (while (and (not (bobp))
+                    (looking-at-p ag/file-column-pattern-group))
+          (forward-line -1))
+        (and (looking-at "^\\([^ \t].*\\)$")
+             (list (match-string 1))))))
+
+  ;; override ag's function
+  (setf (symbol-function 'ag/compilation-match-grouped-filename)
+        #'nvp-ag-match-grouped-filename))
 
 ;;;###autoload
 (defun nvp-ag (str dir &optional regex)

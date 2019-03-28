@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-27 16:31:03>
+#+DATE: <2019-03-27 20:42:42>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -22,8 +22,9 @@
 
 * Packages to look into
 - Jumps: ggtags / smart-jump / dumb-jump
-- Search: ripgrep / counsel+ivy / ag
-- Toggle&Repeat: evil - see below
+- Search: counsel+ivy has interfaces to info/ag / ripgrep is fast, but no
+  wgrep?? Helm also has a nice info-lookup interface.
+- Toggle&Repeat: evil, smartrep - see below
 - Porcelains/Buffers: transient
 - Packages: straight, package-build, package-recipe-mode
 - Lex/Parsing: tablist-filter using wisent for simple grammar
@@ -32,6 +33,15 @@ This doesn't seem to be too actively maintained
 - srecode
 - ede
 - semantic-sticky-func minor mode for parse generics
+
+* Bin
+- [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
+- [ ] adapt help2man to parse switches + docs from man / --help output
+- [ ] remove local vars from all files from current directory
+- [ ] get usage from script args
+- [ ] parse sh function docs
+- [ ] parse makefile targets
+- [ ] update URLs
 
 * Functions
 ** General [0/11]
@@ -68,14 +78,6 @@ This doesn't seem to be too actively maintained
 - [ ] display package cache
 - [ ] list package dependencies -- `package--get-deps'
 
-** Bin helpers [0/7]
-- [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
-- [ ] adapt help2man to parse switches + docs from man / --help output
-- [ ] remove local vars from all files from current directory
-- [ ] get usage from script args
-- [ ] parse sh function docs
-- [ ] parse makefile targets
-- [ ] update URLs
 
 ** evil [1/9]
 - [ ] define command

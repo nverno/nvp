@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-28 02:41:26>
+;; Last modified: <2019-03-28 03:02:21>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 March 2019
@@ -19,6 +19,23 @@
   (require 'cl-lib))
 (require 'nvp)
 (nvp-declare "" nvp-indicate-modeline)
+
+;; -------------------------------------------------------------------
+;;; Find processes
+
+;; find first process matching PRED function
+(cl-defsubst nvp-proc-find (item &key test key)
+  (cl-find item (process-list) :test test :key key))
+
+;; find all processes matching PRED
+(defun nvp-proc-find-all (pred)
+  (cl-loop for proc in (process-list)
+     when (funcall pred proc)
+     collect proc))
+
+;; find process by matching NAME
+(defsubst nvp-proc-find-by-name (name)
+  (nvp-proc-find name :test #'string-match-p :key #'process-name))
 
 ;; -------------------------------------------------------------------
 ;;; Filters / Sentinels

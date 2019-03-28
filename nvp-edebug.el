@@ -1,23 +1,22 @@
 ;;; nvp-edebug.el --- emacs/elisp debubgging helper -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-27 18:38:31>
+;; Last modified: <2019-03-28 02:43:23>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 20 February 2019
 
 ;;; Commentary:
+
 ;; emacs/elisp debugging
+;; - cc-engine: #<marker at 23505 in cc-engine.el.gz>
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (nvp-local-vars)
   (defvar tramp-debug-on-error)
   (defvar tramp-verbose)
   (require 'hydra))
-(defvar nvp/etc)
 (require 'edebug)
 (nvp-declare "" nvp-help-describe-keymap)
 

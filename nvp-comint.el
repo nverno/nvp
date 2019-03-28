@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 10:47:43>
+;; Last modified: <2019-03-28 02:47:05>
 ;; Created: 31 March 2017
 
 ;;; Commentary:
@@ -19,17 +19,11 @@
   (require 'subr-x))
 (require 'comint)
 
-;; FIXME: move to nvp-proc
-;; kill process before killing buffer
+;; kill process before killing buffer -- ensure comint writes history
 (defun nvp-comint-kill-proc-before-buffer ()
   (let ((proc (nvp-buffer-process)))
     (when (processp proc)
       (delete-process proc))))
-
-;; to be called in a hook
-(defun nvp-comint-add-history-sentinel (&optional proc)
-  (when-let* ((proc (or proc (nvp-buffer-process))))
-    (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
 
 ;;; History
 
@@ -44,16 +38,21 @@
   (when-let* ((proc (get-buffer-process (current-buffer))))
     (and write-history (nvp-comint-add-history-sentinel proc))))
 
+;; FIXME: this is called too much. 
+(defun nvp-comint-add-history-sentinel (&optional proc)
+  (when-let* ((proc (or proc (nvp-buffer-process))))
+    (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
+
+(defun nvp-comint-history-sentinel (proc _m)
+  (with-current-buffer (process-buffer proc)
+    (comint-write-input-ring)))
+
 ;; FIXME: is `nvp-comint-add-history-sentinel' necessary with this hook?
 ;; write comint-input-ring when buffer is killed: in kill-buffer-hook
 (defun nvp-comint-write-history-on-kill ()
   ;; make sure the buffer exists before calling the process sentinel
   (add-hook 'kill-buffer-hook 'nvp-comint-kill-proc-before-buffer nil 'local)
   (advice-add 'nvp-comint-kill-proc-before-buffer :before 'comint-write-input-ring))
-
-(defun nvp-comint-history-sentinel (proc _m)
-  (with-current-buffer (process-buffer proc)
-    (comint-write-input-ring)))
 
 (defun nvp-comint-redirect-silently (proc string &optional prompt)
   (let* ((comint-redirect-perform-sanity-check))

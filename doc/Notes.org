@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-27 20:42:42>
+#+DATE: <2019-03-28 03:03:03>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -59,8 +59,8 @@ This doesn't seem to be too actively maintained
       check-buffer, disassemble, test, tag, compile
 - [ ] navigation by indentation for modes like yaml: pkg indent-tools
 
-** Install [0/4]
-- [ ] nvp-ext script functions / sudo are messed up
+** Install [1/4]
+- [X] nvp-ext script functions / sudo are messed up
 - [ ] interface to install external deps
 - [ ] mode install targets
 - [ ] interface to install GNU source packages

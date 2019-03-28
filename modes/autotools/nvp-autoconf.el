@@ -19,7 +19,7 @@
   (require 'cl-lib)
   (require 'subr-x)
   (require 'nvp-macro)
-  (require 'nvp-doc)
+  (require 'nvp-hap)
   (defvar company-autoconf-keywords))
 (require 'company-autoconf)
 (require 'nvp)

@@ -10,7 +10,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-doc)
+  (require 'nvp-hap)
   (defvar semantic-c-dependency-system-include-path))
 (require 'semantic/analyze)
 

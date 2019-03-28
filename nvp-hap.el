@@ -153,5 +153,5 @@ START and END can be specify relevant region."
   
   (nth company-selection company-candidates))
 
-(provide 'nvp-doc)
+(provide 'nvp-hap)
 ;;; nvp-hap.el ends here

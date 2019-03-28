@@ -16,7 +16,7 @@
   (require 'subr-x)
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-doc))
+  (require 'nvp-hap))
 (require 'company)
 (require 'julia-mode)
 (require 'ess-site)

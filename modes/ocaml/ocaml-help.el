@@ -29,7 +29,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-doc)
+  (require 'nvp-hap)
   (require 'ocaml-tools))
 (require 'ocaml-tools)
 (require 'merlin-company)

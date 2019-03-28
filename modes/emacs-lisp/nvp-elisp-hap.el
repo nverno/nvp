@@ -14,7 +14,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-doc))
+  (require 'nvp-hap))
 (require 'pos-tip)
 
 ;; Number of lines to show in popup.

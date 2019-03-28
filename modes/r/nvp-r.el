@@ -10,7 +10,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-doc))
+  (require 'nvp-hap))
 (require 'nvp)
 (require 'ess-site)
 (require 'ess-inf)

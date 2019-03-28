@@ -19,7 +19,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-doc)
+  (require 'nvp-hap)
   (defvar Man--sections))
 (require 'nvp-help) ;; parse 'man' stuff
 (autoload 'Man-build-section-list "man")

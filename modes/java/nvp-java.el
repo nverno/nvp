@@ -16,7 +16,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-doc)
+  (require 'nvp-hap)
   (require 'cl-lib))
 (require 'eclim)
 (require 'eclimd)

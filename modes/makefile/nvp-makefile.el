@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-28 00:46:56>
+;; Last modified: <2019-03-29 02:53:35>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -27,21 +27,6 @@
   (require 'cl-lib))
 (require 'nvp)
 (require 'make-mode)
-
-;; -------------------------------------------------------------------
-;;; Util
-
-(eval-when-compile
-  (defmacro nvp-makefile-with-target (target &rest body)
-    "Execute BODY with point after ':' following TARGET."
-    (declare (indent defun) (debug (symbolp &rest form)))
-    `(save-excursion
-       ;; if target is found point will be at the end
-       ;; of match, skip ahead to ':'
-       (when (nvp-makefile-goto-target ,target)
-         (skip-chars-forward "^:" (point-at-eol))
-         (forward-char 1)
-         ,@body))))
 
 ;; dont tab out when inserting comments
 (define-advice comment-dwim (:around (orig-fn &rest args) "space-to-comment")
@@ -90,26 +75,6 @@ Skips to end of tabbed block."
   (forward-line 1)                   ;called when point is at beginning of block
   (while (looking-at-p "^\t")
     (forward-line 1)))
-
-;; ------------------------------------------------------------
-;;; Goto Locations
-
-;; put point at end of matching target named TARGET
-(defun nvp-makefile-goto-target (target)
-  (let ((place (point)))
-    (goto-char (point-min))
-    (or (re-search-forward (concat "^" target) nil t)
-        ;; if not found, put point back at start
-        (and (goto-char place) nil))))
-
-;; FIXME: unused
-;; put point after current rule.  if in last rule, goto end of
-;; buffer and insert newline if not at beginning of line
-;; (defun nvp-makefile-goto-end-of-rule ()
-;;   (or (makefile-next-dependency)
-;;       (and (goto-char (point-max))
-;;            (and (not (bolp))
-;;                 (insert "\n")))))
 
 ;; -------------------------------------------------------------------
 ;;; Indent 

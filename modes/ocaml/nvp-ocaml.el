@@ -1,6 +1,6 @@
-;;; ocaml-tools.el ---  -*- lexical-binding: t; -*-
+;;; nvp-ocaml.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-28 20:45:39>
+;; Last modified: <2019-03-29 02:38:20>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
@@ -22,6 +22,8 @@
 (autoload 'tuareg-opam-update-env "tuareg")
 (autoload 'expand-abbrev-hook "expand")
 
+(defvar ocaml--dir (nvp-load-file-name))
+
 ;; -------------------------------------------------------------------
 ;;; Install 
 ;; opam, ocp-indent, utop, merlin
@@ -29,7 +31,7 @@
 ; (nvp-with-gnu
 ;   ;; FIXME: install aspcud external solver
 ;   ;; https://opam.ocaml.org/doc/Install.html#GettingtheSources
-;   (defun ocaml-tools-install (what)
+;   (defun nvp-ocaml-install (what)
 ;     (interactive
 ;      (list (ido-completing-read
 ;             "Install: " '("opam" "packages" "src" "info"))))
@@ -54,7 +56,7 @@
 ;;; Utils 
 
 ;; read input in various ways
-(defmacro ocaml-tools-read (prompt &optional thing &rest args)
+(defmacro nvp-ocaml-read (prompt &optional thing &rest args)
   (declare (indent defun) (debug t))
   (pcase thing
     ((pred stringp)
@@ -79,13 +81,13 @@
     (_ `(read-from-minibuffer ,prompt))))
 
 ;; get version
-(defun ocaml-tools-compiler-version ()
+(defun nvp-ocaml-compiler-version ()
   (let ((ver (shell-command-to-string "opam switch show -s")))
     (and ver (string-match "\\([0-9.]+\\)" ver)
          (match-string 1 ver))))
 
 ;; check tools, return those that are missing
-(defun ocaml-tools-missing-tools (&optional tools)
+(defun nvp-ocaml-missing-tools (&optional tools)
   (let ((tools (or tools '("merlin" "utop" "ocp-indent"))))
     (delq
      nil
@@ -104,15 +106,15 @@
 ;;; Environment
 
 ;; return list of opam environment variables 
-;; (defun ocaml-tools--opam-env ()
+;; (defun nvp-ocaml--opam-env ()
 ;;   (let ((env (shell-command-to-string
 ;;               "opam config env --safe --sexp")))
 ;;     (and env (not (string= env ""))
 ;;          (car (read-from-string env)))))
 
 ;; sync emacs environment with opam
-;; (defun ocaml-tools-opam-setenv ()
-;;   (let ((env (ocaml-tools--opam-env)))
+;; (defun nvp-ocaml-opam-setenv ()
+;;   (let ((env (nvp-ocaml--opam-env)))
 ;;     (when env
 ;;       (dolist (var env)
 ;;         (setenv (car var) (cadr var))
@@ -121,26 +123,26 @@
 ;;                 (split-string (cadr var) path-separator)))))))
 
 ;; opam-share
-(defun ocaml-tools-opam-share ()
+(defun nvp-ocaml-opam-share ()
   (let ((reply
          (shell-command-to-string "opam config var share --safe")))
     (and reply
          (substring reply 0 -1))))
 
 ;; check / set variables
-(defun ocaml-tools-setenv ()
+(defun nvp-ocaml-setenv ()
   ;; make sure opam binaries are on path
   (and (not (executable-find "ocamlbuild"))
        (tuareg-opam-update-env
         (tuareg-opam-current-compiler)))
   ;; set opam-share and add to load-path
   ;; (and (not (bound-and-true-p opam-share))
-  ;;      (setq opam-share (ocaml-tools-opam-share)))
+  ;;      (setq opam-share (nvp-ocaml-opam-share)))
   ;; (add-to-list
   ;;  'load-path (expand-file-name "emacs/site-lisp" opam-share))
   )
 
-(defsubst ocaml-tools-match-p ()
+(defsubst nvp-ocaml-match-p ()
   (save-excursion
     (beginning-of-line)
     (or (looking-at-p "[ \t]*\\(?:|\\|match\\)")
@@ -148,12 +150,12 @@
           (forward-line -1)
           (looking-at-p "[ \t]*\\(?:match\\)")))))
 
-(defsubst ocaml-tools-record-p ()
+(defsubst nvp-ocaml-record-p ()
   (save-excursion
     (up-list -1 t t)
     (looking-at-p "{")))
 
-(defsubst ocaml-tools-align-fields ()
+(defsubst nvp-ocaml-align-fields ()
   (let (start end)
     (save-excursion
       (up-list -1 t t)
@@ -165,7 +167,7 @@
 ;; -------------------------------------------------------------------
 ;;; Insert / Toggle
 
-(defun ocaml-tools-toggle-rec ()
+(defun nvp-ocaml-toggle-rec ()
   (interactive)
   (save-excursion
     (end-of-line)
@@ -178,23 +180,23 @@
 
 ;; -------------------------------------------------------------------
 ;;; Interactive
+(nvp-declare "" tuareg-beginning-of-defun)
 
-;;; Movement
-
-(defun ocaml-tools-previous-defun ()
+;;-- Movement
+(defun nvp-ocaml-previous-defun ()
   (interactive)
   (tuareg-beginning-of-defun))
 
 ;; goto beginning of next defun
 (defvar tuareg-starters-syms)
-(defun ocaml-tools-next-defun ()
+(defun nvp-ocaml-next-defun ()
   (interactive)
-  (when (ocaml-tools-find-matching-starter tuareg-starters-syms)
+  (when (nvp-ocaml-find-matching-starter tuareg-starters-syms)
     (beginning-of-line)))
 
 ;; modified from `tuareg-find-matching-starter' to use
 ;; `smie-forward-sexp'
-(defun ocaml-tools-find-matching-starter (starters)
+(defun nvp-ocaml-find-matching-starter (starters)
   (let (tok)
     (while
         (let ((td (smie-forward-sexp 'halfsexp)))
@@ -211,16 +213,16 @@
 
 ;;; Newlines
 
-(nvp-newline ocaml-tools-newline-dwim
+(nvp-newline nvp-ocaml-newline-dwim
   "Newline dwim for ocaml."
   :pairs (("{" "}"))
   :comment-re (" *\\(?:(\\*\\|\\*\\)" . "\\*) *")
   :comment-start "* ")
 
-(defun ocaml-tools-newline-or-insert ()
+(defun nvp-ocaml-newline-or-insert ()
   (interactive)
   (cond
-   ((ocaml-tools-match-p)
+   ((nvp-ocaml-match-p)
     (beginning-of-line)
     (if (looking-at-p "[ \t]*$")
         (indent-according-to-mode)
@@ -229,8 +231,8 @@
         (if l1 (newline-and-indent)
           (insert "\n| ")
           (indent-according-to-mode)))))
-   ((ocaml-tools-record-p)
-    (ocaml-tools-align-fields)
+   ((nvp-ocaml-record-p)
+    (nvp-ocaml-align-fields)
     (end-of-line)
     (delete-horizontal-space)
     (if (eq (char-before) ?\})
@@ -246,28 +248,28 @@
 
 ;;; .merlin
 
-(defun ocaml-tools-merlin-init ()
+(defun nvp-ocaml-merlin-init ()
   "Create .merlin with all ocamlfind packages / .opam sources."
   (interactive)
-  (let ((script (expand-file-name "tools/merlin-init.sh" (nvp-package-root))))
+  (let ((script (expand-file-name "bin/merlin-init" ocaml--dir)))
     (nvp-ext-run-script script)))
 
 ;;; inf shell
 
 ;; switch b/w inferior and source buffers
-(defvar ocaml-tools--source-buffer nil)
-(defun ocaml-tools-switch-to-inf ()
+(defvar nvp-ocaml--source-buffer nil)
+(defun nvp-ocaml-switch-to-inf ()
   (interactive)
   (if (eq major-mode 'utop-mode)
-      (and ocaml-tools--source-buffer
-           (pop-to-buffer ocaml-tools--source-buffer))
-    (setq ocaml-tools--source-buffer (current-buffer))
+      (and nvp-ocaml--source-buffer
+           (pop-to-buffer nvp-ocaml--source-buffer))
+    (setq nvp-ocaml--source-buffer (current-buffer))
     (if (and (bound-and-true-p utop-buffer-name)
              (buffer-live-p utop-buffer-name))
         (pop-to-buffer utop-buffer-name)
       (utop))))
 
-(defun ocaml-tools-utop-return ()
+(defun nvp-ocaml-utop-return ()
   (interactive)
   (goto-char (line-end-position))
   (insert ";;")
@@ -275,7 +277,7 @@
 
 ;;; Tag
 
-(defun ocaml-tools-tag-source ()
+(defun nvp-ocaml-tag-source ()
   (interactive)
   ;; (let* ((dir (expand-file-name ""))))
   )
@@ -284,13 +286,13 @@
 ;;; Compile 
 
 ;; display current compiler
-(defun ocaml-tools-compiler ()
+(defun nvp-ocaml-compiler ()
   (interactive)
-  (message "%s" (ocaml-tools-compiler-version)))
+  (message "%s" (nvp-ocaml-compiler-version)))
 
 ;; Run compile, with prefix offers completing read for command line
 ;; switches to ocamlc
-(defun ocaml-tools-compile (&optional args)
+(defun nvp-ocaml-compile (&optional args)
   (interactive)
   (nvp-complete-compile "ocamlc"
     (if args
@@ -377,5 +379,5 @@
            ("'t" . ,(make-char 'symbol 116))
            ("'x" . ,(make-char 'symbol 120))))))
 
-(provide 'ocaml-tools)
-;;; ocaml-tools.el ends here
+(provide 'nvp-ocaml)
+;;; nvp-ocaml.el ends here

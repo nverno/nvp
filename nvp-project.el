@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-28 02:40:56>
+;; Last modified: <2019-03-29 02:52:22>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 December 2016
@@ -36,6 +36,7 @@
 (autoload 'vc-git-root "vc-git")
 (autoload 'vc-hg-root "vc-hg")
 (autoload 'vc-bzr-root "vc-bzr")
+(autoload 'vc-svn-root "vc-svn")
 (defun nvp-project-root (path)
   "Try `nvp-project-root-function' if it is defined.
 Otherwise, look for version control directories, returing the longest path."

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 22:14:39>
+;; Last modified: <2019-03-29 02:53:47>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 27 March 2019
@@ -18,6 +18,39 @@
   (require 'cl-lib))
 (require 'nvp)
 (require 'make-mode)
+
+
+(eval-when-compile
+  (defmacro nvp-makefile-with-target (target &rest body)
+    "Execute BODY with point after ':' following TARGET."
+    (declare (indent defun) (debug (symbolp &rest form)))
+    `(save-excursion
+       ;; if target is found point will be at the end
+       ;; of match, skip ahead to ':'
+       (when (nvp-makefile-goto-target ,target)
+         (skip-chars-forward "^:" (point-at-eol))
+         (forward-char 1)
+         ,@body))))
+
+;; ------------------------------------------------------------
+;;; Goto Locations
+
+;; put point at end of matching target named TARGET
+(defun nvp-makefile-goto-target (target)
+  (let ((place (point)))
+    (goto-char (point-min))
+    (or (re-search-forward (concat "^" target) nil t)
+        ;; if not found, put point back at start
+        (and (goto-char place) nil))))
+
+;; FIXME: unused
+;; put point after current rule.  if in last rule, goto end of
+;; buffer and insert newline if not at beginning of line
+;; (defun nvp-makefile-goto-end-of-rule ()
+;;   (or (makefile-next-dependency)
+;;       (and (goto-char (point-max))
+;;            (and (not (bolp))
+;;                 (insert "\n")))))
 
 ;; ------------------------------------------------------------
 ;;; Parse / Snippet helpers

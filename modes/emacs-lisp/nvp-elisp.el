@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-28 21:30:51>
+;; Last modified: <2019-03-29 02:43:58>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 October 2016
 
@@ -22,7 +22,6 @@
 ;; -------------------------------------------------------------------
 ;;; Util
 
-(defun nvp-byte-)
 ;; modified from company-elisp to incorporate more things
 ;; used to determine abbrev expansion / toggling
 (eval-when-compile (require 'company-elisp))

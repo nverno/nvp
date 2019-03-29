@@ -1,6 +1,6 @@
 ;;; nvp-hap.el --- help-at-point functions -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 23:08:44>
+;; Last modified: <2019-03-29 02:40:32>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 10 February 2019
@@ -18,69 +18,6 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
-(declare-function pos-tip-show "pos-tip")
-
-;; -------------------------------------------------------------------
-;;; Tooltips
-
-(eval-when-compile
-  ;; TODO:
-  ;; - use help buffer with xref?
-  ;; - better popup formatting
-  (cl-defmacro nvp-with-toggled-tip (popup
-                                     &key
-                                     (help-key "h") ;key-binding for help-fn
-                                     (help-fn t)    ;more help (t is default)
-                                     bindings       ;additional bindings
-                                     (timeout 45)   ;pos-tip timeout
-                                     keep           ;keep transient map
-                                     use-gtk        ;use gtk tooltips
-                                     (help-buffer '(help-buffer)))
-    "Toggle POPUP, a help string, in pos-tip.
-If HELP-FN is :none, HELP-KEY is not bound by default.
-Normally, HELP-KEY triggers a function to jump to a full help description
-related to the popup - hopefully in a buffer.
-BINDINGS are an alist of (key . function) of additional keys to bind in the
-transient keymap.
-TIMEOUT is passed to `pos-tip-show'.
-If USE-GTK is non-nil use gtk tooltips.
-KEEP is passed to `set-transient-map'.
-HELP-BUFFER is buffer with full help documentation. This is only applicable to the
-default help function."
-    (declare (indent defun) (debug t))
-    (macroexp-let2* nil ((str popup)
-                         (h-key (or help-key "h"))
-                         (h-fn (cond
-                                ((eq :none help-fn) nil) ;back-compat
-                                ((eq t help-fn)
-                                 `(lambda ()
-                                    (interactive)
-                                    (x-hide-tip)
-                                    (with-help-window ,help-buffer
-                                      (with-current-buffer standard-output
-                                        (insert ,str)))
-                                    ;; (with-current-buffer ,help-buffer
-                                    ;;   (insert ,str)
-                                    ;;   (view-mode-enter)
-                                    ;;   (pop-to-buffer (current-buffer)))
-                                    ))
-                                (help-fn help-fn)
-                                (t nil)))
-                         (exit-fn '(lambda () (interactive) (x-hide-tip)))
-                         (keep keep))
-      `(progn
-         (declare-function pos-tip-show "pos-tip")
-         (let ((x-gtk-use-system-tooltips ,use-gtk))
-           (unless (x-hide-tip)
-             (pos-tip-show ,str nil nil nil ,timeout)
-             (set-transient-map
-              (let ((tmap (make-sparse-keymap)))
-                (define-key tmap ,h-key ,h-fn)
-                ,@(cl-loop for (k . b) in bindings
-                     collect `(define-key tmap ,k ,b))
-                tmap)
-              ,keep
-              ,exit-fn)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Backends

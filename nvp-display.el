@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-24 20:30:45>
+;; Last modified: <2019-03-28 22:34:21>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -15,8 +15,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'macroexp)
-  (nvp-local-vars))
+  (require 'macroexp))
 (require 'nvp)
 (declare-function find-function-other-window "find-func")
 (nvp-declare "yasnippet" yas-expand-snippet yas-lookup-snippet)

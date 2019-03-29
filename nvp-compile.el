@@ -1,6 +1,6 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 15:27:44>
+;; Last modified: <2019-03-28 20:44:15>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 12 February 2019
@@ -139,6 +139,14 @@ ARGS are passed to `nvp-compile'."
                           " "))
          (default-directory build-dir))
     (async-shell-command (format "cmake %s" args) "*cmake*")))
+
+;; -------------------------------------------------------------------
+;;; Related commands
+
+;; TODO: display compiler info
+;;;###autoload
+(defun nvp-compile-help ()
+  (interactive))
 
 (provide 'nvp-compile)
 ;;; nvp-compile.el ends here

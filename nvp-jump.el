@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 09:33:23>
+;; Last modified: <2019-03-28 21:59:15>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -238,7 +238,7 @@ With double prefix, set coding to utf-8."
               (format "Directory (default %s): " nvp/project)
               (list "~/" nvp/project nvp/class nvp/bin nvp/install nvp/work
                     nvp/devel nvp/modes nvp/nvp nvp/site nvp/emacs nvp/build
-                    nvp/private)
+                    nvp/private (expand-file-name "scratch" nvp/class))
               nil nil nil 'nvp-read-config-history nvp/project)
            nvp/project)
          current-prefix-arg))

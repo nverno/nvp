@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 10:10:23>
+;; Last modified: <2019-03-28 23:35:05>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 29 November 2016
@@ -71,6 +71,33 @@ Each element of FORMS is a list ([:quoted char] regex font-spec)."
    `(progn
       (cl-pushnew (cons ,mode ,fonts) nvp-mode-font-additions :test #'equal)
       (font-lock-add-keywords ,mode ,fonts))))
+
+;; -------------------------------------------------------------------
+;;; Overlays
+
+;; remove NAME overlays from region BEG END
+(defun nvp-remove-overlays (beg end name)
+  (dolist (ov (overlays-in beg end))
+    (when (overlay-get ov name)
+      (delete-overlay ov))))
+
+;; make NAME overlay from BEG to END current buffer
+;; non-nil FRONT-ADVANCE => text *not* in overlay
+;; non-nil REAR-ADVANCE => text *is* in overlay
+(defun nvp-make-overlay (beg end name &optional front-advance rear-advance)
+  (let ((o (make-overlay beg end nil front-advance rear-advance)))
+    (overlay-put o name)
+    o))
+
+;; collect NAME overlays in buffer
+(defun nvp-file-overlays (name)
+  (save-restriction
+    (widen)
+    (let (res)
+      (dolist (ov (overlays-in (point-min) (point-max)))
+        (when (overlay-get ov name)
+          (push ov res)))
+      (nreverse res))))
 
 ;; -------------------------------------------------------------------
 ;;; Glyphs 

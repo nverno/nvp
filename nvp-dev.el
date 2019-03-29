@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 04:48:28>
+;; Last modified: <2019-03-28 18:40:05>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -112,6 +112,17 @@
                (terpri))
              (symbol-value variable))))
 
+;; TODO: pretty printing `cl-defstruct'
+;;;###autoload
+(defun nvp-dev-describe-variable (variable type)
+  "Display output of VARIBLE of TYPE in temp buffer.
+TYPES are one of 'default 'hash 'struct 'class."
+  (interactive
+   (let* ((v (variable-at-point))
+          (enable-recursive-minibuffers t)
+          ()
+          (type (completing-read "Type: " '("hash" "struct" "class" "default")))))))
+nvp-mode-cache
 ;; -------------------------------------------------------------------
 ;;; Syntax
 

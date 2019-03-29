@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-28 03:03:03>
+#+DATE: <2019-03-29 00:07:05>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -34,8 +34,9 @@ This doesn't seem to be too actively maintained
 - ede
 - semantic-sticky-func minor mode for parse generics
 
-* Bin
-- [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]]
+
+* Bin [0/7]
+- [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]] - debugging & adding function hooks looks useful
 - [ ] adapt help2man to parse switches + docs from man / --help output
 - [ ] remove local vars from all files from current directory
 - [ ] get usage from script args
@@ -43,41 +44,100 @@ This doesn't seem to be too actively maintained
 - [ ] parse makefile targets
 - [ ] update URLs
 
+* Macros [0/5]
+- [ ] use simplified version of c-point macro, allowing for different types of
+      escaped newlines and not using `c-syntactic-ws` functions
+- [ ] aif
+- [ ] awhile
+- [ ] it would be nice to separate out macros just necessary for setup/init
+- [ ] remove `nvp-install-on-demand` when a better options is found
+
 * Functions
-** General [0/11]
-- [ ] use simplified version of cc-defs c-point macro
-- [ ] nvp-proc: separate sentinels from comint / find proc from nvp-ext
-      use in nvp-shell, nvp-ext, comint, term, eshell setup
-- [ ] setup hippie history expansion when setting up inf histories
-- [ ] convert cl-defstruct to vector - formatting for output
+
+** Tags [0/5]
+- [ ] automate ggtags install
+- [ ] setup ggtags
+- [ ] reconfigure universal-ctags
+- [ ] ctags update - https://github.com/skeeto/.emacs.d/tree/master/lisp
+- [ ] remove / incorporate tag-utils
+
+** Check / cleanup buffer [2/4]
+- [ ] wrapper function: if multiple available options should prompt somehow
+- [ ] determine available backends by mode
+- [X] display long lines
+- [X] display / toggle trailing whitespace cleanup
+
+** Bookmarks [0/2]
+- [ ] incorporate bmk-to-bmk handler if useful
+- [ ] reconfigure settings
+
+** Search [2/5]
+- [ ] pdfgrep
+- [ ] configure ripgrep?
+- [ ] configure wgrep-ag with different grouping regex
+- [X] add ag grouped imenu support
+- [X] configure ag to work with xterm-color filter
+
+** Disassemble [0/2]
+- [ ] wrapper function
+- [ ] modes: elisp (disassemble), c+others (disaster), java, clojure, etc.
+
+** Editing [0/2]
 - [ ] fix list wrapping to account for syntax
-- [ ] remove all methods from generic for debugging
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
-- [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
+
+** Cycling [0/6]
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
-- [ ] update functions to find first applicable function from list:
-      check-buffer, disassemble, test, tag, compile
-- [ ] navigation by indentation for modes like yaml: pkg indent-tools
+- [ ] how to mark cycling region -- overlays?
+- [ ] reuse cycle map
+- [ ] abstract out of nvp-perl
+- [ ] abstract hook to start cycling after abbrev expansion
+- [ ] cycling / moving by indentation - pkg: indent-tools
+
+** Dev [0/3]
+- [ ] remove all methods from generic for debugging
+- [ ] convert cl-defstruct to vector - formatting for output
+- [ ] describe different types of variables: hash, struct, class, default
+
+** Read/Display [0/2]
+- [ ] read w/ popup help: `register-read-with-preview'
+- [ ] make use of nvp-view-list-mode -- pkgs: evil-view-list, tablist-filter
+
+** Repeat / Toggle [0/6]
+- [ ] utility function to repeat command like kbdmacro-repeat
+- [ ] smartrep for toggled commands
+- [ ] define macro for toggle commands
+- [ ] reuse same keymap? like company-active-map, or expand-regions ???
+- [ ] how to remove font-lock keywords added with mode-name?
+- [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
+
+** Comint / Proc [0/6]
+- [ ] separate sentinels from comint
+- [ ] use in nvp-ext to find shell procs
+- [ ] use in nvp-shell to find shell procs
+- [ ] use in nvp-inf
+- [ ] investigate ess-get-next-available-process
+- [ ] merge hippie history expansion with comint-setup-history
 
 ** Install [1/4]
-- [X] nvp-ext script functions / sudo are messed up
 - [ ] interface to install external deps
 - [ ] mode install targets
 - [ ] interface to install GNU source packages
+- [X] nvp-ext script functions / sudo are messed up
 
 ** Compile [0/4]
-- [ ] generic compile interface
-- [ ] find first applicable function
-- [ ] compile with completing read for compiler switches
-      Can leverage applicable parts of GNU help2man (perl)
-- [ ] compile with completing read for makefile targets
+- [ ] better generic compile interface: indirect functions, prompt for multiple
+  options 
+- [ ] completing read for compiler switches - GNU help2map (perl)
+- [ ] completing read for makefile targets
+- [ ] nvp-compile-help: list compiler info / switches
 
-** Package [0/3]
+** Package [0/4]
 [[file:~/.emacs.d/elpa/package-build-20190314.440/package-recipe-mode.el][package-recipe-mode]]
 - [ ] update package cache
 - [ ] display package cache
 - [ ] list package dependencies -- `package--get-deps'
-
+- [ ] hooks to compile/autoload updated packages
 
 ** evil [1/9]
 - [ ] define command
@@ -97,18 +157,13 @@ pkgs: smart-jump, dumb-jump, evil-jump-to-tag
 - [ ] allow multiple registered backends for each mode, like smart-jump
 - [ ] fallback to grep/ag/dumb-jump or something
 
-** Utils [0/1]
-- [ ] reusable region or string utility function - replace ~r-str-...~ macros
-- [ ] read w/ popup help: `register-read-with-preview'
-- [ ] utility function to repeat command like kbdmacro-repeat
-- [ ] smartrep for toggled commands
-- [X] function wrappers to call local funs
-*** TODO Function cache wrappers [2/6]
+** Cache [3/7]
 pkgs: memoize, stash
 - [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
 - [ ] frame cache - see which-func
 - [ ] cache w/ filenotify invalidation
 - [ ] cache w/ timeout
+- [X] function wrappers to call local funs
 - [X] basic cache wrapper
 - [X] cache run once
 
@@ -119,9 +174,11 @@ funcs: with-temp-message
 - [ ] add option to treat all warnings as errors to makefile
 - [ ] update nvp-log, not very useful - probably just remove
 
-** REPLs [4/6]
+** REPLs [4/8]
 - [ ] call indirect functions to modify regions as necessary
 - [ ] generic send dwim - last defun / sexp
+- [ ] extendable REPL props: eg. staus, cached completions, etc.
+- [ ] investigate ess-get-next-available-process
 - [X] generic send region
 - [X] generic send line
 - [X] generic send buffer
@@ -139,6 +196,7 @@ https://github.com/ainame/smart-newline.el/blob/master/smart-newline.el
 - [ ] framework to use? mode-dependent?
 - [ ] unit test
 - [ ] project tests
+[[https://github.com/emacsmirror/paredit/blob/master/test.el][paredit tests]]
 
 ** Parsing [4/7]
 see which-func
@@ -150,34 +208,32 @@ see which-func
 - [X] current library
 - [X] includes in buffer
 
-** Generic abbrevs [3/5]
+** Generic abbrevs [3/6]
 - [ ] create dynamic table
 - [ ] make dynamic abbrevs
+- [ ] font-lock abbrev-table-mode
 - [X] Generic read
 - [X] create abbrev from region
 - [X] determine abbrev table name from abbrev
 
-** Docs/help-at-point [1/3]
+** Help [2/15]
+- [ ] hap: company
+- [ ] hap: temporary map to use when toggled
+- [ ] hap: extensible hook to find help
+- [ ] hap: source code / tags
+- [ ] hap: info files
+- [ ] hap: semantic
+- [ ] hap: man
+- [ ] formatting for toggled tooltip
+- [ ] web search / GNU docs - pkgs: google-this
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el][async url topic collection]], [[file:~/.emacs.d/elpa/ess-20190314.1538/ess-julia.el::(defun%20ess-julia--retrive-topics%20(url)][ess does it sync]]
-*** DONE Generic interface
-- [X] generic interface
+- [X] zeal
+- [X] toggle when company is active
 
-*** TODO Front end [0/2]
-- [ ] help-at-point frontend interface
-- [ ] better fitting of popup to frame
-
-*** TODO Backends [0/10]
-- [ ] company
-- [ ] semantic
-- [ ] man
-- [ ] web search / GNU docs
-  pkgs: google-this
-- [ ] source code (using tags)
-- [ ] tags
-- [ ] zeal?
-- [ ] javadoc - general html parsing?
-- [ ] info files
-- [ ] sh script parser like semantic/ia-doc for commented functions
+Merge loose help packages
+- [ ] cheatsheet-lookup
+- [ ] help-utils
+- [ ] hyperglot
 
 ** Completion [0/2]
 - [ ] edebug -- possibly favor local variable completion?
@@ -189,74 +245,59 @@ see which-func
 - [ ] extract info locations
 - [ ] extract summary text for completion symbols
 
-** Dired [1/2]
+** Dired [0/1]
 - [ ] pass numeric prefix to copy/rename???
-- [X] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L280][fix rsync]]
 
+** Project [1/4]
+- [ ] build project
+- [ ] navigate between source + tests
+- [ ] incorporate project-templates / maybe convert to cookiecutter
+- [X] determine project root
+
+
+** Profile [0/1]
+- [ ] profiling script no longer works with compiled init
 
 * Modes
-** elisp [1/5]
-*** DONE General [2/2]
-- [X] macroify-bindings update => elisp
-- [X] fix hippie - adds extra ')' when no match
-
-*** TODO Align [0/1]
+** elisp [3/10]
 - [ ] align rules are shitty - dots in double quotes get moved.
+- [ ] hap: convert to use generic interface
+- [ ] toggled tip: merge with general interface
+- [ ] parse: buffer variables -- ~load-history~?
+- [ ] abbrev: optionally abbrev library, buffer, or file
+- [ ] abbrev: fix jumping to proper table based on prefix
+- [ ] abbrev: determine variable / func table?
+- [X] parse: buffer functions
+- [X] parse: buffer provides
+- [X] parse: buffer includes
 
-*** TODO HAP [0/2]
-- [ ] use company-backend
-- [ ] merge with general toggled-tip
-
-*** TODO Parsing [3/4]
-Use ~load-history~
-- [X] buffer functions
-- [X] buffer provides
-- [X] buffer includes
-- [ ] buffer variables
-*** TODO Dynamic abbrevs [0/2]
-- [ ] optionally abbrev library, buffer, or file
-- [ ] another abbrev table for variables?
-
-** C/C++ [0/9]
+** C/C++ [0/2]
 - [X] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
-*** TODO Font-lock [0/1]
-- [ ] toggle doxygen
-
-*** TODO Align [0/1]
-- [ ] align rules for doxygen
-
-*** TODO script [0/2]
-- [ ] fixup awk script to parse system includes
+- [ ] font-lock: toggle doxygen
+- [ ] align rules for doxygen ?
 - [ ] how to gather all includes needed for project?
-
-*** TODO install [0/1]
+- [ ] fixup script to generate system includes
 - [ ] cleanup includes/irony install
+- [ ] project: full refactor - EDE, srecode templates?
+- [ ] hap: semantic, man, info
+- [ ] help: online docs - index for lookup?
+- [X] help: man 2/3 depending on function
+- [ ] abbrevs: from local functions
+- [ ] abbrevs: from includes via semantic ?
 
-*** TODO Project [0/2]
-- [ ] use EDE?
-- [ ] srecode templates
-
-*** TODO HAP [0/2]
-- [ ] additional backend to lookup online docs? 
-- [ ] man 2/3 depending on function
-
-*** TODO Parsing [1/4]
+*** TODO Parse [1/4]
 - [ ] includes
 - [ ] buffer local functions
 - [ ] lexical variables
 - [X] current function
 
 *** TODO Newline DWIM [1/4]
-- [X] default in code method
 - [ ] convert newline to generic
 - [ ] in normal comments
 - [ ] in doxygen comments
+- [X] default in code method
 
-*** TODO Dynamic abbrevs [0/1]
-- [ ] local functions
-
-
-** Makefile [0/7]
+** Makefile [0/8]
 *** TODO Align/Indent [0/2]
 - [ ] fix align rule for trailing \\
 - [ ] add indentation b/w declarations
@@ -266,6 +307,10 @@ Use ~load-history~
 - [ ] beginning/end-of-defun functions/marking
 - [ ] fold declarations
 - [ ] fold targets
+*** TODO REPL [1/2]
+- [X] use default shell
+- [ ] add ability to switch to makefile-browser?? It's pretty crappy, but could
+  be useful to run specific targets from
 *** TODO Download [0/1]
 - [ ] add download source to install
 
@@ -391,7 +436,8 @@ Separators,
 - [ ] convert newline
 - [ ] update help with new functions
 
-** R [0/9]
+** R [0/10]
+- [ ] reusable region or string utility function - replace ~r-str-...~ macros
 - [ ] convert newline
 - [ ] newline in roxygen
 - [ ] update help with new layout
@@ -427,69 +473,24 @@ https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [X] struct or class?
 - [X] package deps
 
-* Automation [3/7]
-- [ ] ggtags install
-- [ ] hooks to compile/autoload updated packages
-- [ ] better logging - only want to see warnings/errors during build
-- [ ] update build-scripts for init / site-lisp - refactor
-- [X] update makefiles - remove extra stuff
-- [X] gawk installs
-- [X] asm install
 
-* Mode settings [8/14]
+* Mode settings [0/2]
 - [ ] semantic - separate from cedet / update bindings
-- [ ] ggtags
-- [ ] ctags
-  https://github.com/skeeto/.emacs.d/tree/master/lisp
-- [ ] pdfgrep
 - [ ] EDE
-- [ ] ripgrep
-- [X] ag
-- [X] erc
-- [X] m4
-- [X] etags
-- [X] edebug
-- [X] wgrep
-- [X] grep
-- [X] limit greps search directories
 
-* Merge/remove old packages [0/1]
-- [ ] bmk-to-bmk => nvp-bookmark
-- [ ] project-templates => cookiecutter?
-- [ ] tag-utils => nvp-tags
-- [X] project-ido => cookiecutter?
-- [X] yas-capf => nvp-snippet
-- [X] save-utils => nvp-utils
-- [X] log-utils => nvp-log
-- [X] config-tools => nvp-conf
-** TODO Merge help packages [0/3]
-- [ ] cheatsheet-lookup
-- [ ] help-utils
-- [ ] hyperglot
-
-* Tests / Profile [2/4]
-- [ ] update profiling script
-- [ ] update CI
-- [X] choose testing framework
-- [X] add back unit tests
-
-[[https://github.com/emacsmirror/paredit/blob/master/test.el][paredit tests]]
-
-* Elisp Packages [0/3]
+* Elisp Packages [0/2]
 ** TODO Cookiecutter [2/3]
 wrapper for cookiecutter packages
 - [X] install cookiecutter
 - [X] start package
 - [ ] design interface
-** TODO Cargo [0/1]
-- [ ] update / remove
+
 ** TODO macrostep-sh
 - [ ] bounds of things at point
 - [ ] parse variables in lexical context
 - [ ] include environment variables
 - [ ] handle various string operations
 - [ ] handle default values
-
 
 * cookies [1/3]
 - [X] el

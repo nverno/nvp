@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 17:24:10>
+;; Last modified: <2019-03-28 18:01:22>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -64,6 +64,8 @@
 (put 'nvp-local-uris 'permanent-local t)
 (defvar-local nvp-local-src-directories () "Local source dirs to jump.")
 (put 'nvp-local-src-directories 'permanent-local t)
+(defvar-local nvp-local-bookmark-file () "Local bookmarks to use.")
+(put 'nvp-local-bookmark-file 'permanent-local t)
 
 ;;-- Possibly mode vars
 (defvar-local nvp-mode-header-regex nil "Regex to move b/w headers.")

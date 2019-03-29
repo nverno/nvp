@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 17:15:49>
+;; Last modified: <2019-03-28 17:36:59>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -136,6 +136,11 @@ With prefix, prompt for MODE buffers to kill."
 	  (rename-file filename new-name 1))
 	(rename-buffer new-name)
 	(set-visited-file-name new-name)))))
+
+;; `helm-buffer-toggle-diff'
+(defun nvp-buffer-toggle-diff ()
+  "Diff buffer with its file."
+  ())
 
 ;; -------------------------------------------------------------------
 ;;; Encoding 

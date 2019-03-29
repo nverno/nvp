@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-28 02:21:11>
+;; Last modified: <2019-03-29 01:02:52>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -115,6 +115,7 @@ those are both specified."
   (cl-pushnew name eieio--known-slot-names) nil)
 
 ;;-- Declares / Autoloads
+(defalias 'nvp-decl 'nvp-declare)
 (eval-and-compile                       ;use in this file
   (defmacro nvp-declare (package &rest funcs)
    (declare (indent defun))
@@ -164,78 +165,18 @@ use either `buffer-file-name' or `buffer-name'."
       ,(if no-ext `(file-name-sans-extension ,buff)
         buff))))
 
-(defmacro nvp-dfn (&optional with-default)
-  "Short directory file name."
-  (if with-default
-      `(if buffer-file-name
-           (file-name-nondirectory
-            (directory-file-name
-             (file-name-directory
-              (file-name-sans-extension (buffer-file-name)))))
-         (file-name-nondirectory (directory-file-name default-directory)))
-    `(file-name-nondirectory
-      (directory-file-name
-       (file-name-directory
-        (file-name-sans-extension (buffer-file-name)))))))
-
-;; -------------------------------------------------------------------
-;;; Regions / things-at-point
-
-(defmacro nvp-thing-dwim (&optional thing)
-  "Thing / region at point DWIM."
-  `(cond
-    ((use-region-p)
-     (buffer-substring-no-properties (region-beginning) (region-end)))
-    ((thing-at-point ,(or thing ''symbol) 'noprop))))
-
-(defmacro nvp-bounds-of-thing (thing &optional no-pulse)
-  "Return `bounds-of-thing-at-point' and pulse region unless NO-PULSE."
-  (declare (indent 0))
-  `(progn
-     (declare-function nvp-indicate-pulse-region-or-line "")
-     (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
-       (prog1 bnds
-         ,(unless no-pulse
-            `(nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds)))))))
-
-(defmacro nvp-region-or-batp (&optional thing no-pulse)
-  "Region bounds if active or bounds of THING at point."
-  (declare (indent defun) (debug t))
-  `(if (region-active-p) (car (region-bounds))
-     (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse)))
-
-(defmacro nvp-region-str-or-thing (&optional thing no-pulse)
-  "Region string if active or THING at point."
-  (declare (indent defun) (debug t))
-  `(progn
-     (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
-     (if (region-active-p)
-         (buffer-substring-no-properties (region-beginning) (region-end))
-       (when-let* ((bnds (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse))
-                   (str (buffer-substring-no-properties (car bnds) (cdr bnds))))
-         (if ,no-pulse str
-           (prog1 str
-             (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
-
-(cl-defmacro nvp-within-bounds-of-thing-or-region
-    (thing beg end &rest body &key no-pulse &allow-other-keys)
-  "Execute BODY with region widened to bounds of THING at point \
-unless region is active.
-BEG and END are symbols to bind to the region the bounds.
-If NO-PULSE, don't pulse region when using THING."
-  (declare (indent defun) (debug (sexp sexp sexp &rest form)))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
-  `(save-excursion
-     (declare-function nvp-indicate-pulse-region-or-line "")
-     (if (not (region-active-p))
-         (save-restriction
-           (widen)
-           (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
-             (cl-destructuring-bind (,beg . ,end) bnds
-               ,(unless no-pulse `(nvp-indicate-pulse-region-or-line ,beg ,end))
-               ,@body)))
-       ,@body)))
+(cl-defmacro nvp-dfn (&key file-path no-default)
+  "Directory name for FILE-PATH (default current buffer or `default-directory').
+If NO-DEFAULT is non-nil, don't use `default-directory' if buffer isn't
+associated with a file."
+  (or file-path (setq file-path 'buffer-file-name))
+  `(file-name-nondirectory
+    (directory-file-name
+     (file-name-directory
+      (file-name-sans-extension
+       ,(progn
+          `(or ,(and file-path `(file-truename ,file-path))
+               ,(and (null no-default) '(file-truename default-directory)))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -303,7 +244,10 @@ If NO-PULSE, don't pulse region when using THING."
      (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
      (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
 
-;; cc-defs `c-point'
+
+;; cc-defs
+;; #<marker at 34444 in cc-defs.el.gz>
+
 (defmacro nvp-point (position &optional point escape)
   "Return relative POSITION to POINT (default current point).
 ESCAPE can be a string to match escaped newlines (default '\\').
@@ -427,7 +371,8 @@ to it is returned.  This function does not modify the point or the mark."
 	     (back-to-indentation)
 	     (point)))
 
-         ;; FIXME:
+         ;; FIXME: don't use c-skip-* functions that skip
+         ;; whitespace/comments/macros
 	 ((eq position 'bosws)
 	  `(save-excursion
 	     ,@(if point `((goto-char ,point)))
@@ -462,6 +407,65 @@ to it is returned.  This function does not modify the point or the mark."
                       (+ ,orig-col (- ci ,orig-indent)))
                      ((<= ci ,orig-col) ci)
                      (t ,orig-col)))))))))
+
+;; -------------------------------------------------------------------
+;;; Regions / things-at-point
+
+(defmacro nvp-thing-dwim (&optional thing)
+  "Thing / region at point DWIM."
+  `(cond
+    ((use-region-p)
+     (buffer-substring-no-properties (region-beginning) (region-end)))
+    ((thing-at-point ,(or thing ''symbol) 'noprop))))
+
+(defmacro nvp-bounds-of-thing (thing &optional no-pulse)
+  "Return `bounds-of-thing-at-point' and pulse region unless NO-PULSE."
+  (declare (indent 0))
+  `(progn
+     (declare-function nvp-indicate-pulse-region-or-line "")
+     (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
+       (prog1 bnds
+         ,(unless no-pulse
+            `(nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds)))))))
+
+(defmacro nvp-region-or-batp (&optional thing no-pulse)
+  "Region bounds if active or bounds of THING at point."
+  (declare (indent defun) (debug t))
+  `(if (region-active-p) (car (region-bounds))
+     (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse)))
+
+(defmacro nvp-region-str-or-thing (&optional thing no-pulse)
+  "Region string if active or THING at point."
+  (declare (indent defun) (debug t))
+  `(progn
+     (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
+     (if (region-active-p)
+         (buffer-substring-no-properties (region-beginning) (region-end))
+       (when-let* ((bnds (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse))
+                   (str (buffer-substring-no-properties (car bnds) (cdr bnds))))
+         (if ,no-pulse str
+           (prog1 str
+             (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
+
+(cl-defmacro nvp-within-bounds-of-thing-or-region
+    (thing beg end &rest body &key no-pulse &allow-other-keys)
+  "Execute BODY with region widened to bounds of THING at point \
+unless region is active.
+BEG and END are symbols to bind to the region the bounds.
+If NO-PULSE, don't pulse region when using THING."
+  (declare (indent defun) (debug (sexp sexp sexp &rest form)))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
+  `(save-excursion
+     (declare-function nvp-indicate-pulse-region-or-line "")
+     (if (not (region-active-p))
+         (save-restriction
+           (widen)
+           (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
+             (cl-destructuring-bind (,beg . ,end) bnds
+               ,(unless no-pulse `(nvp-indicate-pulse-region-or-line ,beg ,end))
+               ,@body)))
+       ,@body)))
 
 ;; -------------------------------------------------------------------
 ;;; Save/Restore envs 
@@ -807,71 +811,6 @@ If STRIP-CTRL, just return the last character, eg. M-* => *."
           (t `,cmd)))
         (t `#',cmd)))))
 
-(defmacro nvp-create-keymaps (leader &rest maps)
-  "Create submaps from LEADER map. Optionally give name of keymap for
-menu entry."
-  (declare (indent defun))
-  `(progn
-     ,@(cl-loop for (key . args) in maps
-          as map = (pop args)
-          as name = (and args (pop args))
-          collect `(progn
-                     (eval-when-compile (declare-function ,map "")) ;compiler
-                     (define-prefix-command ',map nil ,name)
-                     (nvp-def-key ,leader ,key ',map)))))
-
-(defmacro nvp-global-bindings (&rest bindings)
-  "Add BINDINGS to global keymap."
-  (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for (k . b) in bindings
-      collect `(nvp-def-key (current-global-map) ,k ,b))))
-
-(cl-defmacro nvp-bind-keys (map &rest bindings
-                                &key predicate after-load
-                                &allow-other-keys)
-  "Add BINDINGS to MAP.
-If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys.
-If AFTER-LOAD is non-nil, eval after loading feature/file."
-  (declare (indent defun) (debug t))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (let ((map (nvp--normalize-modemap map)))
-    `(progn
-       (eval-when-compile (defvar ,map))
-       (,@(if predicate `(when ,predicate)
-            (if after-load `(with-eval-after-load ,after-load) '(progn)))
-        ,@(cl-loop for (k . b) in bindings
-             collect `(nvp-def-key ,map ,k ,b))))))
-
-(cl-defmacro nvp-bindings (mode &optional feature &rest bindings
-                                &key local buff-local minor &allow-other-keys)
-  "Set MODE BINDINGS after FEATURE is loaded.
-If LOCAL is non-nil, make map buffer local."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (let ((modemap (nvp--normalize-modemap mode minor)))
-    `(progn
-       (eval-when-compile (defvar ,modemap))
-       ,(when local                     ;will change bindings for all mode buffers
-          `(make-local-variable ',modemap))
-       ,(when buff-local                ;HACK: but how to modify 
-          `(with-no-warnings             ; something like `company-active-map'
-             (make-variable-buffer-local ',modemap)))
-       (with-eval-after-load ,(or feature `',(intern mode))
-         ,@(cl-loop for (k . b) in bindings
-              collect `(nvp-def-key ,modemap ,k ,b))))))
-
-(cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings &allow-other-keys)
-  "Add shared BINDINGS to multiple MODES keymaps.
-MODES is of the form ((mode-name . feature) ...).
-Optional :local key can be set to make the mappings buffer-local."
-  (declare (indent 1))
-  `(progn
-     ,@(cl-loop for (mode . feature) in modes
-          collect `(nvp-bindings ,mode ',feature ,@bindings))))
-
 ;;-- Local, Transient, Overriding maps
 
 (cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
@@ -961,8 +900,73 @@ If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
         (if use '(use-local-map lmap)
           `(set (make-local-variable ',keymap) lmap)))))
 
-;;-- View bindings
+;;-- Create keymaps
 
+(defmacro nvp-create-keymaps (leader &rest maps)
+  "Create submaps from LEADER map. Optionally give name of keymap for
+menu entry."
+  (declare (indent defun))
+  `(progn
+     ,@(cl-loop for (key . args) in maps
+          as map = (pop args)
+          as name = (and args (pop args))
+          collect `(progn
+                     (eval-when-compile (declare-function ,map "")) ;compiler
+                     (define-prefix-command ',map nil ,name)
+                     (nvp-def-key ,leader ,key ',map)))))
+
+;;-- Global bindings
+(cl-defmacro nvp-global-bindings (&rest bindings &key no-override &allow-other-keys)
+  "Add BINDINGS to global keymap.
+If NO-OVERRIDE is non-nil, assert that the new binding isn't already defined."
+  (declare (indent defun) (debug t))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  (macroexp-progn
+   (cl-loop for (k . b) in bindings
+      when no-override
+      do (when-let ((curr (lookup-key (current-global-map) (kbd k)))))
+        (cl-assert t 'show-args (format "%k is assigned %S globally" k curr))
+      collect `(nvp-def-key (current-global-map) ,k ,b))))
+
+;;-- General bindings
+(cl-defmacro nvp-bind-keys (map &rest bindings
+                                &key predicate after-load
+                                &allow-other-keys)
+  "Add BINDINGS to MAP.
+If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys.
+If AFTER-LOAD is non-nil, eval after loading feature/file."
+  (declare (indent defun) (debug t))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  (let ((map (nvp--normalize-modemap map)))
+    `(progn
+       (eval-when-compile (defvar ,map))
+       (,@(if predicate `(when ,predicate)
+            (if after-load `(with-eval-after-load ,after-load) '(progn)))
+        ,@(cl-loop for (k . b) in bindings
+             collect `(nvp-def-key ,map ,k ,b))))))
+
+(cl-defmacro nvp-bindings (mode &optional feature &rest bindings
+                                &key local buff-local minor &allow-other-keys)
+  "Set MODE BINDINGS after FEATURE is loaded.
+If LOCAL is non-nil, make map buffer local."
+  (declare (indent defun))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  (let ((modemap (nvp--normalize-modemap mode minor)))
+    `(progn
+       (eval-when-compile (defvar ,modemap))
+       ,(when local                     ;will change bindings for all mode buffers
+          `(make-local-variable ',modemap))
+       ,(when buff-local                ;HACK: but how to modify 
+          `(with-no-warnings             ; something like `company-active-map'
+             (make-variable-buffer-local ',modemap)))
+       (with-eval-after-load ,(or feature `',(intern mode))
+         ,@(cl-loop for (k . b) in bindings
+              collect `(nvp-def-key ,modemap ,k ,b))))))
+
+;;-- View mode default bindings
 ;; general movement bindings for non-insert modes
 (defmacro nvp-bindings-view ()
   ''(("j"     . next-line) ;; use instead of forward-line since it is often advised
@@ -999,6 +1003,21 @@ If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
                 :keep t
                 :exit (lambda () (message "vim out")))
      ,@body))
+
+;;-- Multiple mode bindings
+(cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings
+                                                &key view &allow-other-keys)
+  "Add shared BINDINGS to multiple MODES keymaps.
+MODES is of the form ((mode-name . feature) ...).
+Optional :local key can be set to make the mappings buffer-local."
+  (declare (indent 1))
+  (while (keywordp (car bindings))
+    (setq bindings (cdr (cdr bindings))))
+  `(progn
+     ,@(cl-loop for (mode . feature) in modes
+          collect (if view
+                      `(nvp-bindings-with-view ,mode ',feature ,@bindings)
+                    `(nvp-bindings ,mode ',feature ,@bindings)))))
 
 ;; -------------------------------------------------------------------
 ;;; Time

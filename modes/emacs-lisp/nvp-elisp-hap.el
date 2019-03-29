@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-03-27 15:54:21>
+;; Last modified: <2019-03-29 01:34:14>
 ;; Created: 31 October 2016
 
 ;;; Commentary:
@@ -51,7 +51,7 @@
      (define-key tmap (kbd key) command)
      tmap)
    (or keep t)
-   (or exit nil)))
+   (or exit #'x-hide-tip)))
 
 ;; ------------------------------------------------------------
 ;;; elisp specific
@@ -91,7 +91,8 @@
           (when res
             (nvp-elisp-hap--doc res)
             (nvp-elisp-hap--temp-binding "h" #'nvp-elisp-hap--elisp-buff)
-            (nvp-elisp-hap--temp-binding "q" #'(lambda () (interactive) (x-hide-tip))))))))
+            (nvp-elisp-hap--temp-binding
+             "q" #'(lambda () (interactive) (x-hide-tip))))))))
 
 (provide 'nvp-elisp-hap)
 ;;; nvp-elisp-hap.el ends here

@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 23:56:06>
+;; Last modified: <2019-03-28 20:23:06>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -141,8 +141,10 @@ With ARG use default behaviour, except also call `expand-abbrev'."
 
 (eval-when-compile (require 'paredit))
 (declare-function paredit-indent-region "paredit")
-;; FIXME: this isn't working correctly, point still jumps prompt width
-;; replacement to handle minibuffer/repl prompts
+;; Problem: `paredit-splice-reindent' doesn't account for `minibuffer-prompt'
+;; when `paredit' is active in the minibuffer, eg. during lisp evaluation
+;; This redefinition accounts for the minibuffer width during reindent so the
+;; point doesn't jump the width of the minibuffer after splicing
 (defun nvp-paredit-splice-reindent (start end)
   (nvp-preserving-column
     ;; If we changed the first subform of the enclosing list, we must
@@ -156,11 +158,17 @@ With ARG use default behaviour, except also call `expand-abbrev'."
           nil)
         (save-excursion (backward-up-list) (indent-sexp))
       (paredit-indent-region start end))))
-(defalias 'paredit-splice-reindent #'nvp-paredit-splice-reindent)
+
+(with-eval-after-load 'paredit
+  ;; Redefine `paredit-splice-reindent'
+  ;; this was a `defalias', but wasn't being loaded properly, I think it has
+  ;; to do with this file being required in the init which is then compiled??
+  (setf (symbol-function 'paredit-splice-reindent) #'nvp-paredit-splice-reindent))
 
 ;; -------------------------------------------------------------------
 ;;; Company
 
+;; FIXME: move to `nvp-hap'
 (defun nvp-company-quickhelp-toggle ()
   "Toggle pos-tip help on/off."
   (interactive)
@@ -178,6 +186,8 @@ With ARG use default behaviour, except also call `expand-abbrev'."
       :this-cmd 'company-quickhelp-manual-begin
       (x-hide-tip))))
 
+;; FIXME: is it worth checking for nested copies in subgroups?
+;; I think probably not
 (defun nvp-company-local (backends)
   "Make a buffer-local company backend."
   (set (make-local-variable 'company-backends)
@@ -185,7 +195,8 @@ With ARG use default behaviour, except also call `expand-abbrev'."
 
 ;; -------------------------------------------------------------------
 ;;; IDO
-
+;; TODO: someday I'll probably switch over to counsel+ivy, at least for some
+;; stuff like info-lookup, ag, other interfaces that look good
 (defun nvp-ido-refresh-homedir ()
   "Refresh completion for homedir while ido is finding a file."
   (interactive)
@@ -220,30 +231,43 @@ On error (read-only), quit without selecting."
 ;; -------------------------------------------------------------------
 ;;; Wrapper functions
 
+;; TODO:
+;; - test/tag functions should call hooks
+;; - not decided on check-buffer: this could do both buffer cleanup / linting
+;;   either calling a hook or invoking a type of menu with options. Currently,
+;;   it just invokes local indirect function.
+;; - They could just be alists registering modes to functions?
 (nvp-wrapper-fuctions
  (nvp-check-buffer-function . nil)
- (nvp-test-function         . nil)      ;TODO:
- (nvp-tag-function          . nil))     ;TODO:
+ (nvp-test-function         . nil)
+ (nvp-tag-function          . nil))
 
 ;; -------------------------------------------------------------------
 ;;; Marks
 
-(defun nvp-mark-previous-comments ()
+;; FIXME:
+;; currently calls beginning of function twice since I was lazy to write a
+;; function that would skip back over the previous comments. The seemingly
+;; obvious `forward-comment' and other comment skipping functions all seem to
+;; skip over both comments + whitespace which isn't what this should do.
+(defun nvp-mark-expand-to-previous-comments ()
   "Move back previous comment block and end at beginning of line."
   (interactive)
   (forward-line 1)
   (beginning-of-defun-comments))
 
-(defun nvp-mark-defun (arg)
+;; FIXME: on repeats the point moves back one line for some reason.
+(defun nvp-mark-defun (arg &optional interactive-p)
   "Mark defun, skipping preceding comments."
-  (interactive "p")
+  (interactive (list (prefix-numeric-value current-prefix-arg) 'interactive))
   (let ((skip-comments (not (region-active-p))))
     (setq prefix-arg (max 1 (/ (lsh arg -1) 4)))
     (funcall nvp-mark-defun-function prefix-arg)
     (and skip-comments (comment-forward (point-max)))
-    (nvp-use-transient-bindings
-      (("c" . nvp-mark-previous-comments))
-      :repeat-key "h")))
+    (when interactive-p
+      (nvp-use-transient-bindings
+        (("c" . nvp-mark-expand-to-previous-comments))
+        :repeat-key "h"))))
 
 ;; -------------------------------------------------------------------
 ;;; Align

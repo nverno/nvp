@@ -1,6 +1,6 @@
 ;;; ocaml-tools.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-26 21:10:18>
+;; Last modified: <2019-03-28 20:45:39>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
@@ -21,8 +21,6 @@
 (autoload 'nvp-ext-run-script "nvp-ext")
 (autoload 'tuareg-opam-update-env "tuareg")
 (autoload 'expand-abbrev-hook "expand")
-
-(nvp-package-define-root)
 
 ;; -------------------------------------------------------------------
 ;;; Install 

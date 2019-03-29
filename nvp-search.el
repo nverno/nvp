@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 23:51:15>
+;; Last modified: <2019-03-29 01:53:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
@@ -70,7 +70,7 @@ or '*' from emacs root, ignoring package directory.
   ag-project-dired-regexp ag/search)
 (defvar ag/file-column-pattern-group)
 (defvar ag-ignore-list)
-
+(defvar nvp-ag-grouped-file-regex "^\\(?:File:\\s-*\\)\\([^ \t].*\\)$")
 ;;
 ;; Fixes for compilation:
 ;; (1) Can either disable xterm-color, which sucks
@@ -87,7 +87,7 @@ or '*' from emacs root, ignoring package directory.
       (while (and (not (bobp))
                   (looking-at-p ag/file-column-pattern-group))
         (forward-line -1))
-      (and (looking-at "^\\([^ \t].*\\)$")
+      (and (looking-at nvp-ag-grouped-file-regex)
            (list (match-string 1))))))
 
 (with-eval-after-load 'ag
@@ -103,7 +103,7 @@ or '*' from emacs root, ignoring package directory.
                  (while (and (not (bobp))
                              (looking-at-p ,ag/file-column-pattern-group))
                    (forward-line -1))
-                 (and (looking-at "^\\([^ \t].*\\)$")
+                 (and (looking-at "^\\(?:File: \\)?\\([^ \t].*\\)$")
                       (cl-return t)))))
            1))))
 
@@ -139,7 +139,10 @@ Defaults to symbol at point and emacs root.
        (add-to-history 'nvp-search-history sym)
        (list sym dir re)))))
   (require 'ag)
-  (ag/search str dir :regexp regex))
+  ;; just unset these to work with wgrep-ag
+  (let (compilation-environment
+        compilation-start-hook)
+   (ag/search str dir :regexp regex)))
 
 ;;;###autoload
 (defun nvp-ag-dired (arg)

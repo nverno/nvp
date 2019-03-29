@@ -1,11 +1,8 @@
 ;;; nvp-web.el --- web helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-06 16:28:37>
-;; Package-Requires: 
+;; Last modified: <2019-03-28 22:21:54>
 ;; Created: 31 December 2016
 
 ;;; Commentary:
@@ -18,8 +15,6 @@
   (defvar httpd-root)
   (defvar httpd-port))
 (autoload 'nvp-jinja-url-for "nvp-jinja")
-
-(nvp-package-define-root :snippets t)
 
 ;; -------------------------------------------------------------------
 ;;; Interactive

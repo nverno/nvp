@@ -2,6 +2,6 @@
 # name: here-doc
 # key: hdoc
 # --
-<<${1:EOF}
+<<-${1:EOH}
 $0
 $1

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 10:30:55>
+;; Last modified: <2019-03-28 20:57:48>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell
 ;; Created: 27 March 2019
@@ -48,6 +48,7 @@
 ;; -------------------------------------------------------------------
 ;;; Commands
 
+;; FIXME: broken
 ;;;###autoload
 (defun nvp-sh-toggle-here-doc-indent (point)
   "Toggles here-doc indentation.

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-01-14 15:10:21>
+;; Last modified: <2019-03-31 00:53:02>
 ;; Package-Requires: 
 ;; Created:  1 January 2017
 
@@ -77,18 +77,16 @@
 
 (defun bats-run (file &optional name)
   (let ((cmd (concat bats-exe " -t " file)))
-    (compile (if name
-                 (concat (format "BATS_TEST_PATTERN='^%s$' " name) cmd)
-               cmd))))
+    (compile (if name (concat (format "BATS_TEST_PATTERN='^%s$' " name) cmd) cmd))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-(defsubst bats-next-test ()
+(defun bats-next-test ()
   (interactive)
   (bats--search))
 
-(defsubst bats-previous-test ()
+(defun bats-previous-test ()
   (interactive)
   (bats--search 'back))
 

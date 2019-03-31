@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-30 22:48:17>
+;; Last modified: <2019-03-31 01:11:57>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -123,6 +123,8 @@ associated with a file."
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
+
+(defmacro nvp-ppss ())
 
 (defmacro nvp-in-string (&optional ppss)
   "Non-nil if in string."
@@ -525,7 +527,7 @@ line at match (default) or do BODY at point if non-nil."
                 ((stringp name) name)
                 (t (user-error "%S unmatched")))))
     `(progn
-       (declare-function nvp-setup-program "nvp-setup")
+       (nvp-declare "" nvp-setup-program)
        (or (,(if no-compile 'progn 'eval-when-compile)
             (nvp-with-gnu/w32
                 (let ((exec-path (delq nil (cons ,path '("~/bin/"
@@ -537,8 +539,7 @@ line at match (default) or do BODY at point if non-nil."
             ;; otherwise try entire PATH
             (executable-find ,name))
            ;; fallback to runtime search
-           (when (require 'nvp-setup nil t)
-             (nvp-setup-program ,name ,path))))))
+           (nvp-setup-program ,name ,path)))))
 
 (defmacro nvp-path (path &optional no-compile)
   `(,(if no-compile 'progn 'eval-when-compile)

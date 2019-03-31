@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-30 22:19:45>
+;; Last modified: <2019-03-30 23:49:39>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -13,7 +13,6 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib)
-  (nvp-local-vars)
   (defvar explicit-shell-file-name)
   (defvar epg-gpg-home-directory))
 (require 'nvp-proc)

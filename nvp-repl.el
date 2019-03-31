@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 18:02:35>
+;; Last modified: <2019-03-31 02:10:11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 22 March 2019
@@ -28,6 +28,11 @@
 (require 'nvp)
 (require 'nvp-display)
 
+;; may switch storage of REPL vars
+(eval-when-compile
+  (defmacro nvp-repl--val (&rest args)
+   `(apply #'nvp-mode-local-or-val (list ,@args))))
+
 (defvar-local nvp-repl-buffer ()
   "Current REPL buffer associated with source file.")
 
@@ -45,8 +50,8 @@
 ;; find buffer either by name or mode, checking both if available or
 ;; delegating to other matchers
 (defun nvp-repl-find-by-name-or-mode ()
-  (let ((modes (nvp-mode-local-or-val 'repl-mode 'all))
-        (bufname (nvp-mode-local-or-val 'repl-buffer)))
+  (let ((modes (nvp-repl--val 'repl-mode 'all))
+        (bufname (nvp-repl--val 'repl-buffer)))
     (cond
      ((and (null bufname) (null modes)) nil)
      ((null modes)
@@ -68,7 +73,7 @@
 (defsubst nvp-repl-live-p (proc-or-buff)
   (and (not (null proc-or-buff))
        (funcall
-        (or (nvp-mode-local-or-val 'repl-live-p) #'comint-check-proc)
+        (or (nvp-repl--val 'repl-live-p) #'comint-check-proc)
         proc-or-buff)))
 
 ;; get REPL process - may start REPL if there isn't one
@@ -78,7 +83,7 @@
 
 ;; find REPL using a custom function
 (defsubst nvp-repl-find-custom ()
-  (when-let ((finder (nvp-mode-local-or-val 'repl-find-fn)))
+  (when-let ((finder (nvp-repl--val 'repl-find-fn)))
     (ignore-errors (funcall finder))))
 
 (defvar nvp-repl-find-functions
@@ -101,8 +106,8 @@
 
 (cl-defgeneric nvp-repl-start ()
   "Initialize and return a new REPL buffer associated with current buffer."
-  (let ((wait (nvp-mode-val 'repl-wait))
-        (init-fn (nvp-mode-val 'repl-init-fn))
+  (let ((wait (nvp-repl--val 'repl-wait))
+        (init-fn (nvp-repl--val 'repl-init-fn))
         (src-buff (current-buffer)))
     (setq nvp-repl-buffer (funcall init-fn))
     (and wait (sit-for wait))

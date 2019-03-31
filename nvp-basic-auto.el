@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-07 16:34:16>
+;; Last modified: <2019-03-31 03:05:36>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 February 2019
@@ -39,10 +39,9 @@
   ("C-y" yank nil)
   ("M-y" yank-pop nil)
   ("y" (yank-pop 1) "next")
-  ("Y" (yank-pop -1) "prev")
+  ("Y" (yank-pop -1) "prev"))
   ;; ("l" helm-show-kill-ring "list" :color blue)
-  )
-
+  
 ;; -------------------------------------------------------------------
 ;;; Assorted
 (nvp-declare "" nvp-move-previous-heading nvp-move-forward-heading

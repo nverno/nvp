@@ -1,16 +1,13 @@
 ;;; nvp-eshell.el --- eshell helpers -*- lexical-binding: t; -*-
-;; Last modified: <2019-01-24 17:53:03>
+;; Last modified: <2019-03-31 02:14:34>
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'pcomplete))
+  (require 'pcomplete)
+  (require 'nvp-macro))
 (require 'eshell)
-(require 'nvp-shell)
-(declare-function eshell-kill-input "esh-mode")
-(declare-function eshell-send-input "esh-mode")
-
-(autoload 'pcomplete--here "pcomplete")
-(autoload 'pcomplete-entries "pcomplete")
+(nvp-declare "esh-mode" eshell-send-input eshell-kill-input)
+(nvp-autoload "pcomplete" pcomplete--here pcomplete-entries)
 
 ;;;###autoload
 (defun nvp-eshell-this-dir ()

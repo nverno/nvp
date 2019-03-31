@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-28 20:23:06>
+;; Last modified: <2019-03-31 03:03:28>
 ;; Created: 16 November 2016
 
 ;;; Commentary:
@@ -124,23 +124,28 @@ Dispatches to generic handlers with ARG."
 
 ;; -------------------------------------------------------------------
 ;;; Paredit
-
-(defun nvp-paredit-close-round (&optional arg)
-  "Close paren skipping over possible comments and call `expand-abbrev'.
-With ARG use default behaviour, except also call `expand-abbrev'."
-  (interactive "P")
-  (expand-abbrev)
-  (if arg (paredit-close-round)
-    (let ((beg (point)) ;keep comment on same line
-          (cmt (paredit-find-comment-on-line)))
-      (paredit-move-past-close ?\))
-      (and cmt (save-excursion
-                 (unless (eq (line-number-at-pos) (line-number-at-pos beg))
-                   (goto-char beg))
-                 (insert (car cmt)))))))
-
 (eval-when-compile (require 'paredit))
-(declare-function paredit-indent-region "paredit")
+(nvp-declare "paredit" paredit-move-past-close-and paredit-blink-paren-match
+  paredit-indent-region)
+
+(defun nvp-paredit-close-round ()
+  "Close paren skipping over possible comments and call `expand-abbrev'."
+  (interactive)
+  (expand-abbrev)
+  (let ((beg (point))                   ; keep comment on same line
+        (end (paredit-move-past-close-and ?\) (lambda () (point)))))
+    (unless (eq (line-number-at-pos) (line-number-at-pos beg))
+      ;; we moved across lines -- skip back over comments / whitespace
+      (forward-char -1)                 ; skip closer
+      (forward-comment (- (point-max)))
+      (when (not (eq (point) (1- end)))
+        (insert-char ?\))
+        (save-excursion
+          (goto-char (1+ end))
+          (delete-char -1)
+          (delete-blank-lines))))
+    (paredit-blink-paren-match nil)))
+
 ;; Problem: `paredit-splice-reindent' doesn't account for `minibuffer-prompt'
 ;; when `paredit' is active in the minibuffer, eg. during lisp evaluation
 ;; This redefinition accounts for the minibuffer width during reindent so the

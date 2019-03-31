@@ -4,22 +4,21 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-22 01:29:37>
+;; Last modified: <2019-03-31 00:33:29>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'subr-x)
   (require 'cl-lib)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'dired)
 
+(nvp-declare "" nvp-shell nvp-shell-launch-terminal)
 (nvp-declare "dired-aux" dired-dwim-target-directory dired-read-shell-command)
-(declare-function w32-shell-execute "w32")
-(declare-function nvp-ext-terminal "nvp-ext")
 (declare-function dired-filename-at-point "dired-x")
+(declare-function w32-shell-execute "w32")
 
 ;; -------------------------------------------------------------------
 ;;; Imenu
@@ -107,7 +106,22 @@
   ("j" dired-next-dirline))
 
 ;; -------------------------------------------------------------------
-;;; Dired actions 
+;;; Advices
+
+;; #<marker at 171949 in simple.el.gz>
+;; FIXME: How to determine the number of C-u before numeric arg????
+;; advice for copy/rename w/ multiple open direds
+(defun nvp-dired-w/o-dwim (cmd &optional _arg)
+  (message "%S" current-prefix-arg)
+  (let ((dired-dwim-target (equal '(4) current-prefix-arg)))
+    ;; nil just assumes current or marked files
+    ;; should be able to pass the numeric argument along properly
+    (apply cmd nil)))
+
+(nvp-advise-commands 'nvp-dired-w/o-dwim :around (dired-do-rename dired-do-copy))
+
+;; -------------------------------------------------------------------
+;;; Dired actions
 
 ;; Add buffer file name or marked file to kill.
 ;;;###autoload
@@ -120,6 +134,7 @@
       (when filename
         (kill-new filename)
         (message "Copied as kill: %s" filename)))))
+
 
 ;; copy absolute filenames as string to kill ring
 ;; with prefix, separate with ', ', otherwise ' '
@@ -137,25 +152,14 @@
         (kill-new string))
       (message "Copied as kill: %S" string))))
 
+;; create new empty FILENAME in dired directory
 (defun nvp-dired-touch (filename)
   (interactive (list (read-string "Filename (.gitkeep): " nil nil ".gitkeep")))
   (with-temp-buffer
     (write-file filename)))
 
-;; #<marker at 171949 in simple.el.gz>
-;; FIXME: How to determine the number of C-u before numeric arg????
-;; advice for copy/rename w/ multiple open direds
-(defun nvp-dired-w/o-dwim (cmd &optional _arg)
-  ;; (message "%S" (this-command-keys-vector))
-  (let ((dired-dwim-target (equal '(4) current-prefix-arg)))
-    ;; nil just assumes current or marked files
-    ;; should be able to pass the numeric argument along properly
-    (apply cmd nil)))
-
-(nvp-advise-commands 'nvp-dired-w/o-dwim :around (dired-do-rename dired-do-copy))
-
 ;; -------------------------------------------------------------------
-;;; External
+;;; External actions
 
 (eval-when-compile
   (defvar nvp-dired-external-filelist-cmd)
@@ -283,7 +287,7 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
 (defun nvp-dired-shell-here ()
   "Open an `shell' in current directory."
   (interactive)
-  (nvp-ext-terminal 'current-dir))
+  (nvp-shell 'current-dir))
 
 ;;-- Process
 

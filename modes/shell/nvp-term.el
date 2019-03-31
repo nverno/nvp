@@ -1,6 +1,6 @@
 ;;; nvp-term.el --- term mode -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-28 18:53:51>
+;; Last modified: <2019-03-31 01:59:40>
 ;; Created: 13 January 2019
 
 ;;; Commentary:

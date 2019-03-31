@@ -1,6 +1,6 @@
 ;;; nvp-shellcheck.el --- shellcheck compilation -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 23:38:42>
+;; Last modified: <2019-03-31 00:56:40>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
 ;; Created: 24 January 2019
@@ -10,7 +10,7 @@
 (eval-when-compile
   (require 'nvp-macro))
 (declare-function xterm-color-colorize-buffer "xterm-color")
-(declare-function nvp-compile "nvp-compile")
+(nvp-declare "" nvp-compile)
 
 ;;;###autoload
 (defun nvp-shellcheck ()

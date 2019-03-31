@@ -1,8 +1,8 @@
-;;; nvp-macs-base.el --- basic macros -*- lexical-binding: t; -*-
+;;; nvp-macs-common.el --- basic macros -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-30 22:49:21>
+;; Last modified: <2019-03-31 01:16:00>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 30 March 2019
@@ -78,9 +78,9 @@
       collect `(progn (eval-when-compile (defvar ,var))
                  (setq ,var (eval-when-compile ,value))))))
 
-(provide 'nvp-macs-base)
+(provide 'nvp-macs-common)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-macs-base.el ends here
+;;; nvp-macs-common.el ends here

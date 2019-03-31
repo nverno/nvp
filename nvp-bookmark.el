@@ -1,11 +1,15 @@
 ;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-30 23:26:15>
+;; Last modified: <2019-03-31 00:45:14>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
 
 ;;; Commentary:
+
+;; - bookmark-to-bookmark jump handler
+;; - assorted bookmark functions
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

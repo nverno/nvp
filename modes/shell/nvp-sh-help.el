@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-27 15:54:49>
+;; Last modified: <2019-03-31 02:17:51>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -19,7 +19,6 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-hap)
   (defvar Man--sections))
 (require 'nvp-help) ;; parse 'man' stuff
 (autoload 'Man-build-section-list "man")

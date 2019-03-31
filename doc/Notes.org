@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-30 23:27:01>
+#+DATE: <2019-03-31 00:44:05>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -50,6 +50,7 @@ This doesn't seem to be too actively maintained
 - [ ] aif
 - [ ] awhile
 - [ ] acond
+- [ ] nvp-fn - like nvp-point for common file/directory names
 - [ ] it would be nice to separate out macros just necessary for setup/init
 - [ ] remove `nvp-install-on-demand` when a better options is found
 

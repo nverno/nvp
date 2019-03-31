@@ -2,19 +2,17 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-29 01:53:40>
+;; Last modified: <2019-03-31 00:36:27>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
 
 ;;; Commentary:
-;; todo ag / grep / find all c includes for project
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'hydra)
-  (require 'nvp-macro)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (nvp-declare "wgrep" wgrep-exit wgrep-save-all-buffers wgrep-abort-changes
   wgrep-remove-change wgrep-remove-all-change wgrep-toggle-readonly-area
   wgrep-mark-deletion wgrep-change-to-wgrep-mode)
@@ -49,8 +47,30 @@ or '*' from emacs root, ignoring package directory.
            nvp/emacs (equal '(64) current-prefix-arg))))
 
 ;; -------------------------------------------------------------------
-;;; ag.el
-;;
+;;; wgrep
+
+;;;###autoload
+(defun nvp-wgrep-bind ()
+  "Bind wgrep in current mode."
+  (interactive)
+  (require 'nvp-grep-config)
+  (let ((map (symbol-value (intern-soft (format "%s-map" major-mode)))))
+    (define-key map (kbd "C-x C-n w") #'wgrep-change-to-wgrep-mode)))
+
+;;;###autoload(autoload 'nvp-wgrep-hydra/body "nvp-search")
+(nvp-hydra-set-property 'nvp-wgrep-hydra)
+(defhydra nvp-wgrep-hydra (:color red)
+  ("q" wgrep-exit "exit")
+  ("s" wgrep-save-all-buffers "save all")
+  ("a" wgrep-abort-changes "abort")
+  ("r" wgrep-remove-change "remove region change")
+  ("R" wgrep-remove-all-change "remove all changes")
+  ("t" wgrep-toggle-readonly-area "toggle r/o")
+  ("m" wgrep-mark-deletion "mark deletion"))
+
+;; -------------------------------------------------------------------
+;;; Ag
+
 ;; Notes
 ;; -----
 ;; `ag-filter' replaces escape sequences with 'File: ' by regex parsing
@@ -68,16 +88,18 @@ or '*' from emacs root, ignoring package directory.
 ;; required fixes.
 (nvp-declare "ag" ag-project-dired ag-dired-regexp ag-dired
   ag-project-dired-regexp ag/search)
-(defvar ag/file-column-pattern-group)
-(defvar ag-ignore-list)
-(defvar nvp-ag-grouped-file-regex "^\\(?:File:\\s-*\\)\\([^ \t].*\\)$")
+(eval-when-compile
+  (defvar ag/file-column-pattern-group)
+  (defvar ag-ignore-list))
+(defvar nvp-ag-grouped-file-regex "^\\(?:File:\\s-*\\)\\([^ \t].*\\)$"
+  "Support either `xterm-color' filtered results or defaults.")
+
 ;;
 ;; Fixes for compilation:
 ;; (1) Can either disable xterm-color, which sucks
 ;; (define-advice ag/search (:around (orig-fn &rest args) "no-xterm-color")
 ;;   (let (compilation-start-hook)
 ;;     (apply orig-fn args)))
-
 ;; (2) Or override ag's `compilation-error-regexp-alist' matching function
 (defun nvp-ag-match-grouped-filename ()
   "Match grouped filename in compilation output."
@@ -121,6 +143,7 @@ Defaults to symbol at point and emacs root.
           (re (> (prefix-numeric-value current-prefix-arg) 4))
           (elpa (file-name-nondirectory
                  (directory-file-name user-package-dir))))
+     (require 'ag)
      (if (< arg 16)
          (cl-pushnew elpa ag-ignore-list :test #'equal)
        (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal))
@@ -138,11 +161,10 @@ Defaults to symbol at point and emacs root.
       (t
        (add-to-history 'nvp-search-history sym)
        (list sym dir re)))))
-  (require 'ag)
   ;; just unset these to work with wgrep-ag
   (let (compilation-environment
         compilation-start-hook)
-   (ag/search str dir :regexp regex)))
+    (ag/search str dir :regexp regex)))
 
 ;;;###autoload
 (defun nvp-ag-dired (arg)
@@ -152,34 +174,12 @@ Defaults to symbol at point and emacs root.
 (2) `ag-dired-regexp'
 (3) `ag-dired'" 
   (interactive (list (prefix-numeric-value current-prefix-arg)))
-  (require 'ag)
-  (pcase arg
-    (`4 (call-interactively #'ag-project-dired))
-    (`16 (call-interactively #'ag-dired-regexp))
-    (`64 (call-interactively #'ag-dired))
-    (_ (call-interactively #'ag-project-dired-regexp))))
-
-;; -------------------------------------------------------------------
-;;; wgrep
-
-;;;###autoload
-(defun nvp-wgrep-bind ()
-  "Bind wgrep in current mode."
-  (interactive)
-  (require 'nvp-grep-config)
-  (let ((map (symbol-value (intern-soft (format "%s-map" major-mode)))))
-    (define-key map (kbd "C-x C-n w") #'wgrep-change-to-wgrep-mode)))
-
-;;;###autoload(autoload 'nvp-wgrep-hydra/body "nvp-search")
-(nvp-hydra-set-property 'nvp-wgrep-hydra)
-(defhydra nvp-wgrep-hydra (:color red)
-  ("q" wgrep-exit "exit")
-  ("s" wgrep-save-all-buffers "save all")
-  ("a" wgrep-abort-changes "abort")
-  ("r" wgrep-remove-change "remove region change")
-  ("R" wgrep-remove-all-change "remove all changes")
-  ("t" wgrep-toggle-readonly-area "toggle r/o")
-  ("m" wgrep-mark-deletion "mark deletion"))
+  (call-interactively
+   (pcase arg
+     (`4  #'ag-project-dired)
+     (`16 #'ag-dired-regexp)
+     (`64 #'ag-dired)
+     (_   #'ag-project-dired-regexp))))
 
 (provide 'nvp-search)
 ;;; nvp-search.el ends here

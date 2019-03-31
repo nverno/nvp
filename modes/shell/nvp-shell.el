@@ -1,6 +1,6 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 18:12:55>
+;; Last modified: <2019-03-31 00:47:45>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
@@ -24,6 +24,7 @@
   (let (shell-mode-hook)
     (apply orig-fn args)))
 
+;; FIXME: reuse this for sh-mode as well?
 (eval-when-compile
  (defmacro nvp-shell-goto-command-start (start &optional limit delims)
    "Move point to beginning of current command.
@@ -74,7 +75,8 @@ strings."
 ;;; Processes
 
 ;; return some available shells
-(defun nvp-shell-get-shells ()
+(nvp-define-cache-runonce nvp-shell-shells ()
+  "List of possible shells."
   (nvp-with-gnu/w32 '("sh" "bash" "fish" "zsh" "csh")
     (cl-loop
        for var in `(,(expand-file-name "usr/bin" (getenv "MSYS_HOME"))

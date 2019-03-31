@@ -1,6 +1,6 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-31 00:47:45>
+;; Last modified: <2019-03-31 04:13:34>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
@@ -18,11 +18,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Utils
-
-;; don't run `shell-mode-hook' during `shell-command' calls
-(define-advice shell-command (:around (orig-fn &rest args) "noninteractive")
-  (let (shell-mode-hook)
-    (apply orig-fn args)))
 
 ;; FIXME: reuse this for sh-mode as well?
 (eval-when-compile

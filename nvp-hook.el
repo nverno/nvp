@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-14 23:09:08>
+;; Last modified: <2019-03-31 04:38:55>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 January 2019
@@ -27,6 +27,19 @@
                (_ "15/Last modified: <%%>$")))))
     (time-stamp)))
 
+;; Added to `find-file-not-found-functions'. Create new directories for new files.
+;;;###autoload
+(defun nvp-hook-find-create-directory ()
+  (let ((parent-directory (file-name-directory buffer-file-name)))
+    (when (and (not (file-exists-p parent-directory))
+               (y-or-n-p 
+		(format "directory `%s' does not exist! create it?" 
+			parent-directory)))
+      (make-directory parent-directory t))))
+
+;; -------------------------------------------------------------------
+;;; Commands
+
 ;;;###autoload
 (defun nvp-hook-add-or-remove (func hook-var hook-fn &optional append local)
   "Call FUNC to add or remove HOOK-FN from HOOK-VAR, locally when called \
@@ -47,34 +60,6 @@ interactively."
   (if (eq func 'remove-hook)
       (remove-hook hook-var hook-fn local)
    (funcall func hook-var hook-fn append local)))
-
-;; -------------------------------------------------------------------
-;;; Remove lsp stuff
-
-(eval-when-compile
-  (defvar eglot--saved-bindings))
-(declare-function flymake-mode "flymake")
-(declare-function eglot-completion-at-point "eglot")
-(declare-function eglot--eldoc-message "eglot")
-(declare-function eglot-imenu "eglot")
-(declare-function eglot-xref-backend "eglot")
-
-;;;###autoload
-(cl-defun nvp-hook-eglot-shutup (&key (completion t) (eldoc t) (flymake t) (imenu t)
-                                      xref)
-  "Remove eglot hooks/advices that clobber stuff.
-By default remove all but XREF."
-  (and completion
-       (remove-hook 'completion-at-point-functions 'eglot-completion-at-point t))
-  (and flymake (flymake-mode -1))
-  (and xref (remove-hook 'xref-backend-functions 'eglot-xref-backend t))
-  (when eldoc
-    (remove-function (local 'eldoc-message-function) #'eglot--eldoc-message)
-    (and (bound-and-true-p eglot--saved-bindings)
-         (eval
-           `(nvp-eldoc-function
-             ,(cdr (assoc 'eldoc-documentation-function eglot--saved-bindings))))))
-  (and imenu (remove-function (local 'imenu-create-index-function) #'eglot-imenu)))
 
 (provide 'nvp-hook)
 ;;; nvp-hook.el ends here

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 01:11:57>
+;; Last modified: <2019-03-31 05:00:44>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -13,7 +13,8 @@
 (require 'cl-lib)
 (require 'subr-x)
 (require 'macroexp)
-(require 'nvp-macs-base "macs/nvp-macs-base")
+(require 'nvp-macs-common "macs/nvp-macs-common")
+(require 'nvp-macs-setup "macs/nvp-macs-setup")
 
 ;; -------------------------------------------------------------------
 ;;; Internal functions
@@ -539,7 +540,8 @@ line at match (default) or do BODY at point if non-nil."
             ;; otherwise try entire PATH
             (executable-find ,name))
            ;; fallback to runtime search
-           (nvp-setup-program ,name ,path)))))
+           (when (require 'nvp-setup nil t)
+             (nvp-setup-program ,name ,path))))))
 
 (defmacro nvp-path (path &optional no-compile)
   `(,(if no-compile 'progn 'eval-when-compile)

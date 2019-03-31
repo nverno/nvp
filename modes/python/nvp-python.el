@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-22 01:30:48>
+;; Last modified: <2019-03-31 04:57:03>
 ;; Created: 30 October 2016
 
 ;;; Commentary:
@@ -16,27 +16,21 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (nvp-local-vars)
   (require 'cl-lib)
+  (require 'nvp-macro)
   (defvar company-candidates)
   (defvar company-backends))
 (require 'python)
 (require 'tag-utils nil t)
 
 (declare-function projectile-project-name "projectile")
-(declare-function pyenv-mode "pyenv")
-(declare-function pyenv-mode-set "pyenv")
-(declare-function pyenv-mode-unset "pyenv")
-(declare-function pyenv-mode-versions "pyenv")
-(declare-function anaconda-mode-call "anaconda-mode")
-(declare-function anaconda-mode-complete-extract-names "anaconda-mode")
+(nvp-decl "pyenv" pyenv-mode-versions pyenv-mode-unset pyenv-mode-set pyenv-mode)
+(nvp-decl "anaconda-mode" anaconda-mode-complete-extract-names anaconda-mode-call)
 (declare-function company-complete "company")
 
 (nvp-declare "" nvp-abbrev-expand-not-after-punct-p nvp-comint-setup-history)
 
 ;;; Variables
-(nvp-package-define-root :snippets t)
 
 (defvar nvp-python-cython-repo "https://github.com/python/cpython")
 
@@ -115,8 +109,7 @@
 ;; Set pyenv version from ".python-version" by looking in parent directories.
 (defun nvp-python-pyenv-set-local-version ()
   (interactive)
-  (let ((root-path (locate-dominating-file default-directory
-                                           ".python-version")))
+  (let ((root-path (locate-dominating-file default-directory ".python-version")))
     (when root-path
       (let* ((file-path (expand-file-name ".python-version" root-path))
              (version (with-temp-buffer

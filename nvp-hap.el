@@ -1,6 +1,6 @@
 ;;; nvp-hap.el --- help-at-point functions -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-29 02:40:32>
+;; Last modified: <2019-03-31 04:45:07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 10 February 2019
@@ -18,9 +18,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
-
-;; -------------------------------------------------------------------
-;;; Backends
+(declare-function company-quickhelp-manual-begin "company-quickhelp")
 
 (defvar nvp-hap-functions nil
   "Special hook to find first applicable help at point.")
@@ -28,6 +26,28 @@
 ;;;###autoload
 (defun nvp-hap-find-backend ()
   (run-hook-with-args-until-success 'nvp-hap-functions))
+
+;;; Toggle
+;;;###autoload
+(defun nvp-company-quickhelp-toggle ()
+  "Toggle pos-tip help on/off."
+  (interactive)
+  (let ((x-gtk-use-system-tooltips nil))
+    ;; tell `company-quickhelp--manual-begin' to start the timer
+    ;; An alternative is calling `company-quickhelp--cancel-timer' instead, but
+    ;; I find it buggy when toggling quickly (the popup stops working until
+    ;; moving on to another candidate - I believe breaking the `while-no-input'
+    ;; cycle, but not really sure)
+    ;; #<marker at 8895 in company-quickhelp.el>
+    (nvp-toggled-if
+      (if-let ((fn (nvp-mode-local-or-val 'nvp-doc-toggle-fn)))
+          (funcall fn 'company)
+        (company-quickhelp-manual-begin))
+      :this-cmd 'company-quickhelp-manual-begin
+      (x-hide-tip))))
+
+;; -------------------------------------------------------------------
+;;; Backends
 
 (cl-defstruct (nvp-doc (:constructor nvp-doc-make)
                        (:copier nil))

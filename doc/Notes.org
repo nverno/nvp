@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-31 00:44:05>
+#+DATE: <2019-03-31 04:10:22>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -44,13 +44,13 @@ This doesn't seem to be too actively maintained
 - [ ] parse makefile targets
 - [ ] update URLs
 
-* Macros [0/5]
+* Macros [0/7]
 - [ ] use simplified version of c-point macro, allowing for different types of
       escaped newlines and not using `c-syntactic-ws` functions
 - [ ] aif
 - [ ] awhile
 - [ ] acond
-- [ ] nvp-fn - like nvp-point for common file/directory names
+- [ ] nvp-file - like nvp-point for common file/directory names
 - [ ] it would be nice to separate out macros just necessary for setup/init
 - [ ] remove `nvp-install-on-demand` when a better options is found
 
@@ -69,14 +69,10 @@ This doesn't seem to be too actively maintained
 - [X] display long lines
 - [X] display / toggle trailing whitespace cleanup
 
-** Bookmarks [1/2]
-- [X] incorporate bmk-to-bmk handler if useful
-- [ ] reconfigure settings
-
-** Search [2/5]
+** Search [3/5]
 - [ ] pdfgrep
 - [ ] configure ripgrep?
-- [ ] configure wgrep-ag with different grouping regex
+- [X] configure wgrep-ag with different grouping regex
 - [X] add ag grouped imenu support
 - [X] configure ag to work with xterm-color filter
 
@@ -259,6 +255,10 @@ Merge loose help packages
 
 ** Profile [0/1]
 - [ ] profiling script no longer works with compiled init
+
+** Generic template expansion [0/2]
+- [ ] default syntax
+- [ ] function to expand template - like grep-compute-defaults
 
 * Modes
 ** elisp [3/10]

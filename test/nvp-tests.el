@@ -1,7 +1,7 @@
 (require 'ert)
 (require 'nvp-test-helpers)
 (require 'nvp)
-(require 'nvp-basic)
+(require 'nvp)
 
 ;;; Newline dwim tests
 ;; lisp doesn't do anything special

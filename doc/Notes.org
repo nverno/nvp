@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-31 04:10:22>
+#+DATE: <2019-03-31 08:47:22>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -44,15 +44,16 @@ This doesn't seem to be too actively maintained
 - [ ] parse makefile targets
 - [ ] update URLs
 
-* Macros [0/7]
+* Macros [3/8]
 - [ ] use simplified version of c-point macro, allowing for different types of
       escaped newlines and not using `c-syntactic-ws` functions
 - [ ] aif
 - [ ] awhile
 - [ ] acond
-- [ ] nvp-file - like nvp-point for common file/directory names
-- [ ] it would be nice to separate out macros just necessary for setup/init
 - [ ] remove `nvp-install-on-demand` when a better options is found
+- [X] nvp-file - like nvp-point for common file/directory names
+- [X] nvp-ppss - wrap all the nvp-in-... syntax tests
+- [X] it would be nice to separate out macros just necessary for setup/init
 
 * Functions
 

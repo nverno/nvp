@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/yaml-tools
-;; Last modified: <2019-03-26 21:04:16>
+;; Last modified: <2019-03-31 08:51:22>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -50,8 +50,8 @@
   (if-let* ((travis (executable-find "travis")))
       (progn
         (set-process-filter
-         (start-process "travis" (nvp-comint-buffer nvp-yaml-lint-buffer-name
-                                                    (erase-buffer))
+         (start-process "travis" (nvp-comint-buffer :name nvp-yaml-lint-buffer-name
+                                   (erase-buffer))
                         travis "lint" buffer-file-name)
          #'nvp-yaml-travis-sentinel)
         ;; wont return on windows ionno
@@ -60,7 +60,7 @@
 
 (defun nvp-yaml-travis-sentinel (p m)
   (nvp-log (format "%s: %s" (process-name p) m) nvp-yaml-lint-buffer-name)
-  (nvp-with-comint-buffer nvp-yaml-lint-buffer-name
+  (nvp-with-comint-buffer :name nvp-yaml-lint-buffer-name
     (ansi-color-apply-on-region (point-min) (point-max))
     (goto-char (point-min))
     (if (looking-at-p ".*valid")

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 04:43:22>
+;; Last modified: <2019-03-31 08:37:29>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -275,9 +275,9 @@
   "Generic function to handle newline dwim syntactically."
   (let ((syntax (syntax-ppss)))
     (cond
-     ((nvp-in-string syntax)
+     ((nvp-ppss 'str nil syntax)
       (newline arg 'interactive))
-     ((nvp-in-comment syntax 'in-string)
+     ((nvp-ppss 'cmt nil syntax)
       (nvp-newline-dwim-comment arg))
      ;; default to adding newline between paren delimiters
      (t (nvp-newline-dwim--parens arg)))))
@@ -432,8 +432,6 @@ With double prefix, highlight changes that would occur."
 ;; -------------------------------------------------------------------
 ;;; Company
 
-;; FIXME: is it worth checking for nested copies in subgroups?
-;; I think probably not
 (defun nvp-company-local (backends)
   "Make a buffer-local company backend."
   (set (make-local-variable 'company-backends)

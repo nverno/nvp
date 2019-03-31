@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-26 05:25:46>
+;; Last modified: <2019-03-31 08:44:38>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -93,7 +93,7 @@
 ;;; Eldoc
 (defun nvp-perl-eldoc-function ()
   (ignore-errors
-    (nvp-unless-in-comment-or-string
+    (nvp-unless-ppss 'soc
       (car
        (let ((cperl-message-electric-keyword nil))
          (cperl-get-help))))))

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-27 23:57:11>
+;; Last modified: <2019-03-31 08:45:14>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -169,7 +169,7 @@ Used to set `end-of-defun-function'."
 ;; TODO: add thing-at-point for vars
 (defun nvp-sh-dynamic-complete-vars ()
   "Complete local variables, but fail if none match to delegate to bash completion."
-  (nvp-unless-in-comment
+  (nvp-unless-ppss 'cmt
     (save-excursion
         (skip-chars-forward "[:alnum:]_")
         (let ((end (point))
@@ -185,7 +185,7 @@ Used to set `end-of-defun-function'."
 
 (defun nvp-sh-dynamic-complete-bash ()
   "Bash dynamic completion for sh-script (doesn't get local variables)."
-  (nvp-unless-in-comment
+  (nvp-unless-ppss 'cmt
     (bash-completion-dynamic-complete-nocomint
      (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table)))
 

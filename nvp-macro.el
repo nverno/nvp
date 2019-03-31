@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 05:00:44>
+;; Last modified: <2019-03-31 09:02:04>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -13,35 +13,8 @@
 (require 'cl-lib)
 (require 'subr-x)
 (require 'macroexp)
-(require 'nvp-macs-common "macs/nvp-macs-common")
-(require 'nvp-macs-setup "macs/nvp-macs-setup")
-
-;; -------------------------------------------------------------------
-;;; Internal functions
-
-(defun nvp--normalize-modemap (mode &optional minor)
-  "Convert MODE to keymap symbol if necessary.
-If MINOR is non-nil, create minor mode map symbol."
-  (if (keymapp mode) mode
-    (and (symbolp mode) (setq mode (symbol-name mode)))
-    (let ((minor (or minor (string-match-p "-minor" mode))))
-      (if (not (or (string-match-p "-map\\'" mode)
-                   (string-match-p "-keymap\\'" mode)))
-          (intern
-           (concat (replace-regexp-in-string "\\(?:-minor\\)?-mode\\'" "" mode)
-                   (if minor "-minor-mode-map" "-mode-map")))
-        (intern mode)))))
-
-(defun nvp--normalize-hook (mode &optional minor)
-  "Convert MODE to canonical hook symbol.
-If MINOR is non-nil, convert to minor mode hook symbol."
-  (and (symbolp mode) (setq mode (symbol-name mode)))
-  (let ((minor (or minor (string-match-p "-minor" mode))))
-    (intern
-     (concat
-      (replace-regexp-in-string
-       "\\(?:-minor-\\)?\\(?:-mode\\)?\\(?:-hook\\)?\\'" "" mode)
-      (if minor "-minor-mode-hook" "-mode-hook")))))
+(require 'nvp-macs-common)
+(require 'nvp-macs-setup)
 
 ;; -------------------------------------------------------------------
 ;;; Messages
@@ -98,89 +71,86 @@ those are both specified."
      (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
              ,(and (not no-symbol) "\\_>"))))
 
-(defmacro nvp-bfn (&optional no-ext or-buffer)
-  "Short buffer file name.
-If NO-EXT is non-nil, remove file extension.  If OR-BUFFER is non-nil
-use either `buffer-file-name' or `buffer-name'."
-  (let ((buff (if or-buffer
-                  '(or (buffer-file-name) (buffer-name))
-                '(buffer-file-name))))
-    `(file-name-nondirectory
-      ,(if no-ext `(file-name-sans-extension ,buff)
-        buff))))
+(defmacro nvp-buff--1 (path no-def)
+  (if no-def
+      `(file-name-directory (file-truename ,path))
+    `(or (file-name-directory (file-truename ,path))
+         (file-truename default-directory))))
 
-(cl-defmacro nvp-dfn (&key file-path no-default)
-  "Directory name for FILE-PATH (default current buffer or `default-directory').
-If NO-DEFAULT is non-nil, don't use `default-directory' if buffer isn't
-associated with a file."
-  (or file-path (setq file-path 'buffer-file-name))
-  `(file-name-nondirectory
-    (directory-file-name
-     (file-name-directory
-      (file-name-sans-extension
-       ,(progn
-          `(or ,(and file-path `(file-truename ,file-path))
-               ,(and (null no-default) '(file-truename default-directory)))))))))
+(defmacro nvp-buff--2 (buff or-name)
+  (if or-name
+      `(or (buffer-file-name ,buff) (buffer-name ,buff))
+    `(buffer-file-name ,buff)))
+
+(cl-defmacro nvp-buff (type &key buffer path no-default or-name)
+  "Return file or directory name components specified by TYPE.
+If BUFFER is non-nil, use its associated file (default current).
+If PATH is non-nil, use it as the file path.
+If NO-DEFAULT is non-nil, don't use `default-directory' if `buffer-file-name'
+is nil.
+If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
+
+`bn'     -- Buffer's name
+`bfn'    -- Buffer file's full name
+`bfns'   -- Buffer file's short name (no directory)
+`bfne'   -- Buffer file's name w/o extension
+`bfnse'  -- Buffer file's short name w/o extension
+`ext'    -- Buffer file extension
+`dfn'    -- Full name of directory containing buffer file
+`dfns'   -- Directory's short name (just the containing directory)."
+  (let ((type (eval type)))
+    (cond
+     ((eq type 'bn) `(buffer-name ,buffer))
+     ((eq type 'bfn) `(nvp-buff--2 ,buffer ,or-name))
+     ((eq type 'bfns) `(file-name-nondirectory (nvp-buff--2 ,buffer ,or-name)))
+     ((eq type 'bfne) `(file-name-sans-extension (nvp-buff--2 ,buffer ,or-name)))
+     ((eq type 'bfnse) `(file-name-nondirectory
+                         (file-name-sans-extension (nvp-buff--2 ,buffer ,or-name))))
+     ((eq type 'dfn) (if (not path)
+                         `(directory-file-name
+                           (nvp-buff--1 buffer-file-name ,no-default))
+                       `(if (directory-name-p ,path)
+                            (file-name-directory (file-truename ,path))
+                          (directory-file-name
+                           (file-name-directory (file-truename ,path))))))
+     ((eq type 'dfns)
+      (if (not path)
+          `(file-name-nondirectory
+            (directory-file-name
+             (nvp-buff--1 buffer-file-name ,no-default)))
+        `(if (directory-name-p ,path)
+             (file-name-nondirectory
+              (file-name-directory (file-truename ,path)))
+           (directory-file-name
+            (file-name-directory (file-truename ,path)))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
-(defmacro nvp-ppss ())
+(defmacro nvp-ppss (type &optional point ppss)
+  "Return non-nil if syntax PPSS at POINT is of TYPE, one of the following.
 
-(defmacro nvp-in-string (&optional ppss)
-  "Non-nil if in string."
-  (let ((syn (if (and ppss (symbolp ppss)) ppss (make-symbol "syntax"))))
-    `(car (setq ,syn (nthcdr 3 ,(or ppss '(syntax-ppss)))))))
+`str'  -- Inside a string
+`cmt'  -- Inside a comment
+`soc'  -- Inside a string or comment"
+  (let ((type (eval type)))
+    (cond
+     ((eq type 'str) `(nth 3 ,(or ppss `(syntax-ppss ,point))))
+     ((eq type 'cmt) `(nth 4 ,(or ppss `(syntax-ppss ,point))))
+     ((eq type 'soc)
+      (macroexp-let2 nil syn (or ppss `(syntax-ppss ,point))
+        `(or (car (setq ,syn (nthcdr 3 ,syn)))
+             (car (setq ,syn (cdr ,syn)))
+             (nth 3 ,syn)))))))
 
-(defmacro nvp-in-comment (&optional ppss in-string)
-  "Non-nil if in comment."
-  (let ((syn (if (and ppss (symbolp ppss)) ppss (make-symbol "syntax"))))
-    (if (and ppss in-string)
-        `(car (setq ,syn (cdr ,syn)))
-      `(nth 4 ,(or ppss '(syntax-ppss))))))
+(defmacro nvp-if-ppss (type then &rest else)
+  "Do THEN if syntax at point is of TYPE, otherwise ELSE."
+  `(if (nvp-ppss ,type) ,then ,@else))
 
-(defmacro nvp-in-string-or-comment (&optional ppss)
-  "Non-nil if in string or comment."
-  (macroexp-let2 nil syntax (or ppss '(syntax-ppss))
-    `(or (nvp-in-string ,syntax)
-         (nvp-in-comment ,syntax 'in-string)
-         (nth 3 ,syntax))))
-
-(defmacro nvp-unless-in-comment (&rest body)
-  "Execute BODY unless in comment."
+(defmacro nvp-unless-ppss (type &rest body)
   (declare (indent defun) (debug t))
-  `(unless (nvp-in-comment)
+  `(unless (nvp-ppss ,type)
      ,@body))
-
-(defmacro nvp-if-in-comment (then &rest else)
-  "Do THEN if in comment, otherwise ELSE."
-  (declare (indent 1) (debug (sexp &rest form)))
-  `(if (nvp-in-comment) ,then
-     ,@else))
-
-(defmacro nvp-unless-in-string (&rest body)
-  "Execute BODY unless in string."
-  (declare (indent defun))
-  `(unless (nth 3 (syntax-ppss))
-     ,@body))
-
-(defmacro nvp-if-in-string (then &rest else)
-  "Do THEN if in string, otherwise ELSE."
-  (declare (indent 1) (debug (sexp &rest form)))
-  `(if (nvp-in-string) ,then
-     ,@else))
-
-(defmacro nvp-unless-in-comment-or-string (&rest body)
-  "Execute BODY unless currently in a string or comment."
-  (declare (indent defun))
-  `(unless (nvp-in-string-or-comment)
-     ,@body))
-
-(defmacro nvp-if-in-string-or-comment (then &rest else)
-  "Do THEN if in string or comment, otherwise ELSE."
-  (declare (indent 1) (debug (sexp &rest form)))
-  `(if (nvp-in-string-or-comment) ,then
-     ,@else))
 
 (defsubst nvp-between-empty-parens-p (&optional point)
   "Non-nil if POINT is between open/close syntax with only whitespace."
@@ -377,7 +347,7 @@ to it is returned.  This function does not modify the point or the mark."
 (defmacro nvp-region-or-batp (&optional thing no-pulse)
   "Region bounds if active or bounds of THING at point."
   (declare (indent defun) (debug t))
-  `(if (region-active-p) (car (region-bounds))
+  `(if (use-region-p) (car (region-bounds))
      (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse)))
 
 (defmacro nvp-region-str-or-thing (&optional thing no-pulse)
@@ -385,7 +355,7 @@ to it is returned.  This function does not modify the point or the mark."
   (declare (indent defun) (debug t))
   `(progn
      (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
-     (if (region-active-p)
+     (if (use-region-p)
          (buffer-substring-no-properties (region-beginning) (region-end))
        (when-let* ((bnds (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse))
                    (str (buffer-substring-no-properties (car bnds) (cdr bnds))))
@@ -404,7 +374,7 @@ If NO-PULSE, don't pulse region when using THING."
     (setq body (cdr (cdr body))))
   `(save-excursion
      (declare-function nvp-indicate-pulse-region-or-line "")
-     (if (not (region-active-p))
+     (if (not (use-region-p))
          (save-restriction
            (widen)
            (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
@@ -440,12 +410,6 @@ VAR is a symbol and FORM is evaluated."
 ;; -------------------------------------------------------------------
 ;;; Folding
 
-;;-- Hideshow
-(defmacro nvp-hs-blocks (start end)
-  `(progn
-     (setq hs-block-start-regexp ,start)
-     (setq hs-block-end-regexp ,end)))
-
 (defmacro nvp-with-hs-block (start end &rest body)
   "Do hideshow with START and END regexps."
   (declare (indent defun))
@@ -469,205 +433,6 @@ and set `this-command' to nil so opposite happens next time."
        ,then
      (prog1 (progn ,@rest)
        (setq this-command ,this-cmd))))
-
-;;; FIXME: unused
-(defmacro nvp-search-and-go (regexp &optional back &rest body)
-  "Search forward or backward for REGEXP, and move point to beginning of
-line at match (default) or do BODY at point if non-nil."
-  `(let ((start (point)))
-     (condition-case nil
-         (progn
-           (forward-line ,(if back -1 1))
-           (,(if back 're-search-backward 're-search-forward) ,regexp)
-           ,@(or body (list '(beginning-of-line))))
-       (error (goto-char start)))))
-
-;; -------------------------------------------------------------------
-;;; Conversions
-
-;;; FIXME: remove -- seem to just occur in C stuff
-(defmacro nvp-listify (args)
-  "Ensure ARGS is a list."
-  (let ((args (if (stringp args) (intern args) args)))
-    `(unless (consp ,args) (setq ,args (cons ,args nil)))))
-
-(defmacro nvp-string-or-symbol (sym)
-  "If SYM is string convert to symbol."
-  `(if (stringp ,sym) (intern ,sym) ,sym))
-
-(defmacro nvp-stringify (name)
-  "Sort of ensure that NAME symbol is a string."
-  `(progn
-     (pcase ,name
-       ((pred stringp) ,name)
-       ((pred symbolp) (symbol-name ,name))
-       (`(quote ,sym) (symbol-name sym))
-       (`(function ,sym) (symbol-name sym))
-       (_ (user-error "How to stringify %S?" ,name)))))
-
-;; -------------------------------------------------------------------
-;;; Programs / Paths
-(declare-function nvp-setup-program "nvp-setup")
-
-(defmacro nvp-w32-program (name)
-  "Name of cached program on shitty w32.e"
-  (and (symbolp name) (setq name (symbol-name name)))
-  `(intern (concat "nvp-" ,name "-program")))
-
-;; PATH can contain environment variables to expand
-;; if NO-COMPILE is defined the name is determined at runtime
-(defmacro nvp-program (name &optional no-compile path)
-  (declare (indent defun) (debug t))
-  (let* ((name (cond
-                ((symbolp name) (symbol-name name))
-                ((consp name)
-                 (pcase name
-                   (`(quote ,sym)
-                    (symbol-name sym))
-                   (_ name)))
-                ((stringp name) name)
-                (t (user-error "%S unmatched")))))
-    `(progn
-       (nvp-declare "" nvp-setup-program)
-       (or (,(if no-compile 'progn 'eval-when-compile)
-            (nvp-with-gnu/w32
-                (let ((exec-path (delq nil (cons ,path '("~/bin/"
-                                                         "~/.asdf/shims/"
-                                                         "~/.local/bin/"
-                                                         "/usr/local/bin/")))))
-                  (executable-find ,name))
-              (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
-            ;; otherwise try entire PATH
-            (executable-find ,name))
-           ;; fallback to runtime search
-           (when (require 'nvp-setup nil t)
-             (nvp-setup-program ,name ,path))))))
-
-(defmacro nvp-path (path &optional no-compile)
-  `(,(if no-compile 'progn 'eval-when-compile)
-     (let ((path (substitute-env-in-file-name ,path)))
-       (and path (file-exists-p path) path))))
-
-(defmacro nvp-mode-config-path (mode &optional ensure-string)
-  "Create path for MODE config file."
-  `(progn
-     (expand-file-name
-      (concat "nvp-" ,(if ensure-string (nvp-stringify mode) `,mode)
-              "-config.el")
-      nvp/config)))
-
-(defmacro nvp-cache-file-path (filename)
-  "Create cache path for FILENAME."
-  `(progn (expand-file-name ,(nvp-stringify filename) nvp/cache)))
-
-;; -------------------------------------------------------------------
-;;; REPLs
-
-;; FIXME: how to make more generic?
-(cl-defmacro nvp-hippie-shell-fn (name histfile
-                                       &key
-                                       (size 5000)
-                                       (history ''comint-input-ring)
-                                       (bol-fn ''comint-line-beginning-position)
-                                       history-fn expand-fn)
-  "Setup comint history ring read/write and hippie-expand for it."
-  (let ((fn (nvp-string-or-symbol name)))
-    `(progn
-       (eval-when-compile
-         (defvar comint-input-ring-file-name)
-         (defvar comint-input-ring-size))
-       (declare-function comint-read-input-ring "comint")
-       (declare-function comint-write-input-ring "comint")
-       (declare-function nvp-he-history-setup "nvp-hippie-history")
-       (defun ,fn ()
-         (setq comint-input-ring-file-name (expand-file-name ,histfile nvp/cache))
-         (setq comint-input-ring-size ,size)
-         (comint-read-input-ring)
-         (add-hook 'kill-buffer-hook 'comint-write-input-ring nil 'local)
-         (nvp-he-history-setup
-          :history ,history
-          :bol-fn ,bol-fn
-          :history-fn ,history-fn
-          :expand-fn ,expand-fn)))))
-
-;; switching between REPLs and source buffers -- maintain the name of the
-;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
-;; if supplied to find/create the REPL buffer, REPL-LIVE-P is called to check
-;; if it is alive (defaults to `buffer-live-p'
-;; if REPL-HISTORY is non-nil `nvp-comint-add-history-sentinel' is added before the
-;; buffers process-filter. REPL-INIT is called to create and return a new REPL
-;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
-(cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
-                                         repl-live-p repl-history repl-process
-                                         repl-config repl-wait
-                                         repl-doc (repl-switch-fn ''pop-to-buffer))
-                              &rest repl-init)
-  (declare (indent defun))
-  (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
-  (let ((fn (intern (format "nvp-%s-repl-switch" name))))
-    `(defun ,fn ()
-       ,(or repl-doc "Switch between source and REPL buffers")
-       (interactive)
-       (if ,(or (and repl-mode `(eq major-mode ,repl-mode))
-                (and repl-buffer-name `(equal ,repl-buffer-name (buffer-name))))
-           ;; in REPL buffer, switch back to source
-           (switch-to-buffer-other-window
-            ;; switch to set source buffer or the most recent other buffer
-            (or (process-get
-                 ,(or repl-process '(nvp-buffer-process)) :src-buffer)
-                (other-buffer (current-buffer) 'visible)))
-         ;; in source buffer, try to go to a REPL
-         (let ((src-buffer (current-buffer))
-               (repl-buffer
-                ;; Should there be a default?
-                (or ,(and repl-buffer-name
-                          `(get-buffer ,repl-buffer-name))
-                    ,(and repl-find-fn
-                          `(ignore-errors (funcall ,repl-find-fn))))))
-           ;; there is a REPL buffer, but is it alive?
-           (when (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
-             ;; no, so we need to start one somehow -- this should return the
-             ;; buffer object
-             (setq repl-buffer (progn ,@repl-init))
-             ,@(and repl-wait `((sit-for ,repl-wait)))
-             (and (processp repl-buffer)
-                  (setq repl-buffer (process-buffer repl-buffer))
-                  ;; add a sentinel to write comint histfile before other
-                  ;; sentinels that may be set by the mode
-                  ,(and repl-history
-                        '(nvp-comint-add-history-sentinel))))
-           ;; Now switch to REPL and set its properties to point back to the source
-           ;; buffer from whence we came
-           (if (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
-               (error (message "The REPL didnt start!!!")))
-           ,@(when repl-switch-fn
-               `((funcall ,repl-switch-fn repl-buffer)))
-           ;; only config first time through
-           (when (not (process-get ,(or repl-process
-                                        '(get-buffer-process repl-buffer))
-                                   :src-buffer))
-             ,(and repl-config `(funcall ,repl-config)))
-           (process-put ,(or repl-process
-                             '(get-buffer-process repl-buffer))
-                        :src-buffer src-buffer))))))
-
-;; -------------------------------------------------------------------
-;;; Files / Buffers
-
-(defmacro nvp-file-same (file-1 file-2)
-  "Return non-nil if FILE-1 and FILE-2 are the same."
-  (declare (indent defun))
-  `(when (and (file-exists-p ,file-1) (file-exists-p ,file-2))
-     (equal (file-truename ,file-1) (file-truename ,file-2))))
-
-;; modified from smartparens.el
-(defmacro nvp-with-buffers-using-mode (mode &rest body)
-  "Execute BODY in every existing buffer using `major-mode' MODE."
-  (declare (indent 1))
-  `(dolist (buff (buffer-list))
-     (when (provided-mode-derived-p ,mode (buffer-local-value 'major-mode buff))
-       (with-current-buffer buff
-         ,@body))))
 
 ;; -------------------------------------------------------------------
 ;;; Display Results
@@ -998,7 +763,7 @@ Optional :local key can be set to make the mappings buffer-local."
   "Get a new comint buffer from NAME and execute BODY there, returning buffer.
 If NEW is non-nil, use `generate-new-buffer', otherwise `get-buffer-create'.
 If RESULT is non-nil, return result of BODY instead of buffer."
-  (declare (indent 2) (indent 1) (debug body))
+  (declare (indent defun) (debug body))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
   (or name (setq name "*nvp*"))
@@ -1193,7 +958,7 @@ default help function."
             ,exit-fn))))))
 
 ;; -------------------------------------------------------------------
-;;; Building Interactive Functions
+;;; Wrapper functions
 
 ;;-- Wrapper functions to call mode-local values
 (defmacro nvp-wrapper-function (symbol &optional doc)
@@ -1216,7 +981,8 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
    (cl-loop for (sym . doc) in fun-docs
       collect `(nvp-wrapper-function ,sym ,doc))))
 
-;;-- functions with cached results
+;; -------------------------------------------------------------------
+;;; Caches 
 
 ;; Simple memoization / result caching
 (cl-defmacro nvp-define-cache (func arglist &optional docstring &rest body
@@ -1250,6 +1016,9 @@ or PREDICATE is non-nil and returns nil."
              (prog1 val
                (put ',fn ',cache val)))))))
 
+;; -------------------------------------------------------------------
+;;; Obsolete
+;; remove these
 ;;-- marking
 
 ;; FIXME: most of these should either be generic or act on local variables
@@ -1333,6 +1102,95 @@ or PREDICATE is non-nil and returns nil."
         (goto-char (region-end))
         (insert ,end)))))
 
+;;-- REPL/hippie setup
+;; FIXME: how to make more generic?
+(cl-defmacro nvp-hippie-shell-fn (name histfile
+                                       &key
+                                       (size 5000)
+                                       (history ''comint-input-ring)
+                                       (bol-fn ''comint-line-beginning-position)
+                                       history-fn expand-fn)
+  "Setup comint history ring read/write and hippie-expand for it."
+  (let ((fn (nvp-string-or-symbol name)))
+    `(progn
+       (eval-when-compile
+         (defvar comint-input-ring-file-name)
+         (defvar comint-input-ring-size))
+       (declare-function comint-read-input-ring "comint")
+       (declare-function comint-write-input-ring "comint")
+       (declare-function nvp-he-history-setup "nvp-hippie-history")
+       (defun ,fn ()
+         (setq comint-input-ring-file-name (expand-file-name ,histfile nvp/cache))
+         (setq comint-input-ring-size ,size)
+         (comint-read-input-ring)
+         (add-hook 'kill-buffer-hook 'comint-write-input-ring nil 'local)
+         (nvp-he-history-setup
+          :history ,history
+          :bol-fn ,bol-fn
+          :history-fn ,history-fn
+          :expand-fn ,expand-fn)))))
+
+;; switching between REPLs and source buffers -- maintain the name of the
+;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
+;; if supplied to find/create the REPL buffer, REPL-LIVE-P is called to check
+;; if it is alive (defaults to `buffer-live-p'
+;; if REPL-HISTORY is non-nil `nvp-comint-add-history-sentinel' is added before the
+;; buffers process-filter. REPL-INIT is called to create and return a new REPL
+;; buffer. REPL-CONFIG is executed in the new REPL buffer after creation
+(cl-defmacro nvp-repl-switch (name (&key repl-mode repl-buffer-name repl-find-fn
+                                         repl-live-p repl-history repl-process
+                                         repl-config repl-wait
+                                         repl-doc (repl-switch-fn ''pop-to-buffer))
+                              &rest repl-init)
+  (declare (indent defun))
+  (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
+  (let ((fn (intern (format "nvp-%s-repl-switch" name))))
+    `(defun ,fn ()
+       ,(or repl-doc "Switch between source and REPL buffers")
+       (interactive)
+       (if ,(or (and repl-mode `(eq major-mode ,repl-mode))
+                (and repl-buffer-name `(equal ,repl-buffer-name (buffer-name))))
+           ;; in REPL buffer, switch back to source
+           (switch-to-buffer-other-window
+            ;; switch to set source buffer or the most recent other buffer
+            (or (process-get
+                 ,(or repl-process '(nvp-buffer-process)) :src-buffer)
+                (other-buffer (current-buffer) 'visible)))
+         ;; in source buffer, try to go to a REPL
+         (let ((src-buffer (current-buffer))
+               (repl-buffer
+                ;; Should there be a default?
+                (or ,(and repl-buffer-name
+                          `(get-buffer ,repl-buffer-name))
+                    ,(and repl-find-fn
+                          `(ignore-errors (funcall ,repl-find-fn))))))
+           ;; there is a REPL buffer, but is it alive?
+           (when (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
+             ;; no, so we need to start one somehow -- this should return the
+             ;; buffer object
+             (setq repl-buffer (progn ,@repl-init))
+             ,@(and repl-wait `((sit-for ,repl-wait)))
+             (and (processp repl-buffer)
+                  (setq repl-buffer (process-buffer repl-buffer))
+                  ;; add a sentinel to write comint histfile before other
+                  ;; sentinels that may be set by the mode
+                  ,(and repl-history
+                        '(nvp-comint-add-history-sentinel))))
+           ;; Now switch to REPL and set its properties to point back to the source
+           ;; buffer from whence we came
+           (if (not (funcall ,(or repl-live-p ''comint-check-proc) repl-buffer))
+               (error (message "The REPL didnt start!!!")))
+           ,@(when repl-switch-fn
+               `((funcall ,repl-switch-fn repl-buffer)))
+           ;; only config first time through
+           (when (not (process-get ,(or repl-process
+                                        '(get-buffer-process repl-buffer))
+                                   :src-buffer))
+             ,(and repl-config `(funcall ,repl-config)))
+           (process-put ,(or repl-process
+                             '(get-buffer-process repl-buffer))
+                        :src-buffer src-buffer))))))
+
 ;; -------------------------------------------------------------------
 ;;; URL
 
@@ -1389,251 +1247,6 @@ or PREDICATE is non-nil and returns nil."
   `(progn
      (add-function :before-until (local 'eldoc-documentation-function) #',func)
      ,(when init '(eldoc-mode))))
-
-;; -------------------------------------------------------------------
-;;; Mode specific
-
-(defmacro nvp-mode-bind-1 (&optional mode &rest bindings)
-  "Attach BINDINGS globally to MODE."
-  (declare (indent defun) (debug bindings))
-  (or mode (setq mode (quote major-mode)))
-  (unless (equal 'quote (car-safe mode)) (setq mode `',mode))
-  `(if (not (get ,mode 'nvp))
-       (put ,mode 'nvp ,@bindings)
-     (put ,mode 'nvp
-          (cl-delete-duplicates
-           (append (get ,mode 'nvp) ,@bindings) :key #'car))))
-
-(defmacro nvp-mode-bind (&optional modes &rest bindings)
-  "Attach BINDINGS globally to MODES."
-  (declare (indent defun) (debug t))
-  ;; Allow for some various forms
-  (unless (null (cadr (car-safe bindings)))
-    (and (equal 'quote (car-safe modes))
-         (setq modes (cadr modes)))                       ; '(a b c)
-    (unless (listp modes) (setq modes (cons modes nil)))  ; some-mode
-    (setq modes (remq 'quote modes))                      ; ('mode-1 'mode-...)
-    (macroexp-progn
-     (cl-loop for mode in modes
-        collect `(nvp-mode-bind-1 ,mode ,@bindings)))))
-
-;; -------------------------------------------------------------------
-;;; Package
-
-(defmacro nvp-load-file-name ()
-  "Expand to the file's name."
-  '(cond
-    (load-in-progress load-file-name)
-    ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
-     byte-compile-current-file)
-    (t (buffer-file-name))))
-
-(defmacro nvp-package-root (&optional name)
-  "Expand to the default package directory with default prefix or NAME."
-  (let ((prefix
-         (if name
-             (if (symbolp name) (symbol-name name) name)
-           (file-name-nondirectory
-            (directory-file-name
-             (file-name-directory (nvp-load-file-name)))))))
-    (intern (concat prefix "--dir"))))
-
-(cl-defmacro nvp-package-define-root (&key name snippets dirs after-load)
-  "Define package root directory with default prefix as directory name or NAME.
-If SNIPPETS is non-nil, setup snippet loading for directory.
-If DIRS is non-nil it should be a list of variables to define as directories
-relative to the project root directory as symbols 'prefix--dir'.
-AFTER-LOAD is a form to execute after file is loaded during which the root
-directory is bound to `root' and all `dirs' are let-bound to their symbols."
-  (declare (indent 0) (debug t))
-  (let* ((file (cond
-                (load-in-progress load-file-name)
-                ((and (boundp 'byte-compile-current-file)
-                      byte-compile-current-file)
-                 byte-compile-current-file)
-                (t (buffer-file-name))))
-         (root-val (file-name-directory file))
-         (base (file-name-nondirectory (directory-file-name root-val)))
-         (prefix (if name (if (symbolp name) (symbol-name name) name) base))
-         (root (intern (concat prefix "--dir")))
-         (dirs (mapcar (lambda (d)
-                         (and (symbolp d) (setq d (symbol-name d)))
-                         (list (intern d)
-                               (intern (concat prefix "--" d))
-                               (expand-file-name d root-val)))
-                       dirs))
-         (mappings (cons `(root ,root) (mapcar 'butlast dirs))))
-    `(progn
-       (eval-and-compile
-         (defconst ,root ,root-val))
-       ,(when snippets `(nvp-package-load-snippets ,root))
-       ,(when dirs
-          `(progn
-             ,@(cl-loop for (_orig-sym dir-sym dir-val) in dirs
-                  collect `(defconst ,dir-sym ,dir-val))))
-       ,(when after-load
-          `(with-eval-after-load ,file
-             (let ,mappings
-               ,after-load))))))
-
-(defmacro nvp-package-load-snippets (dir)
-  "Add packages snippet directory to `yas-snippet-dirs' after loading
-`yasnippet'."
-  `(progn
-     (eval-when-compile (defvar yas-snippet-dirs))
-     (declare-function yas-load-directory "yasnippet")
-     (with-eval-after-load 'yasnippet
-       (let ((snippet-dir (expand-file-name "snippets" ,dir))
-             (dirs (or (and (consp yas-snippet-dirs) yas-snippet-dirs)
-                       (cons yas-snippet-dirs ()))))
-         (unless (member snippet-dir dirs)
-           (setq yas-snippet-dirs (delq nil (cons snippet-dir dirs))))
-         (yas-load-directory snippet-dir)))))
-
-;; -------------------------------------------------------------------
-;;; Setup / Build init
-
-;;-- Setup helper functions
-;; Find locations for init constants
-(defun nvp--setup-normalize-locs (locs &optional defaults)
-  "Ensure LOCS is a list.
-If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s)."
-  (if (null locs)
-      (or defaults (nvp-with-gnu/w32 '("~/") '("~/" "d:/" "c:/")))
-    (if (and (consp locs) (functionp (car locs)))
-        (list (eval locs))
-      (and (not (listp locs)) (setq locs (cons locs nil)))
-      (mapcar (lambda (l)
-                (cond
-                 ((consp l) l)
-                 ((symbolp l) (symbol-value l))
-                 (t l)))
-              locs))))
-
-(defun nvp--setup-find-loc (locs &optional places file)
-  "Find first existing location in LOCS."
-  (let ((locs (nvp--setup-normalize-locs locs nil))
-        (places (nvp--setup-normalize-locs places)))
-    (cl-loop for loc in locs
-       return (cl-loop for place in places
-                 as root = (if (symbolp place) (symbol-value place) place)
-                 as loc-name = (expand-file-name loc root)
-                 when (file-exists-p loc-name)
-                 return (if file (directory-file-name loc-name)
-                          (file-name-as-directory loc-name))))))
-
-(defun nvp--setup-subdirs (root &optional ignored)
-  (setq root
-        (cond
-         ((symbolp root) (setq root (symbol-value root)))
-         ((consp root) (eval root))))
-  (cl-remove-if
-   (lambda (f)
-     (or (not (file-directory-p f))
-         (cl-member (file-name-nondirectory f) ignored :test 'string=)))
-   (directory-files root t "^[^.]")))
-
-;;-- setup macros
-(cl-defmacro nvp-add-to-alist (&rest items
-                                     &key
-                                     (alist 'auto-mode-alist)
-                                     (test 'equal)
-                                     &allow-other-keys)
-  "Add ITEMS, a list of cons cells, to ALIST using TEST to check if item \
-is already present."
-  (declare (indent defun) (debug t))
-  (while (keywordp (car items))
-    (setq items (cdr (cdr items))))
-  (macroexp-progn
-   (cl-loop for (k . v) in items
-      with lst = (if (consp alist) alist (symbol-value alist))
-      unless (cl-member (cons k (quote v)) lst :test test)
-      collect `(push (cons ,k ',v) ,alist))))
-
-(defmacro nvp-setup-diminish (&rest modes)
-  "Diminish MODES in modeline.
-MODES is of form (feature . mode)."
-  (declare (indent 0))
-  `(progn
-     (eval-when-compile ,@(mapcar (lambda (f) `(defvar ,(cdr f))) modes))
-     ,(macroexp-progn
-       (cl-loop for (feat . mode) in modes
-          collect `(eval-after-load ',feat '(diminish ',mode))))))
-
-(defmacro nvp-setup-consts (&rest vars)
-  "Define consts in init."
-  (declare (indent 0) (debug t))
-  (macroexp-progn
-   (cl-loop for (v dir places file) in vars
-      as loc = (nvp--setup-find-loc dir places file)
-      do (eval `(defconst ,v ,loc)) ;so subsequent vars can use
-      collect `(defconst ,v ,loc))))
-
-(defmacro nvp-setup-load-files (&rest files)
-  (declare (indent 0))
-  (macroexp-progn
-   (cl-loop for f in files
-      collect `(load ,f 'noerror 'nomessage))))
-
-(defmacro nvp-setup-load-paths (&rest paths)
-  (declare (indent 0))
-  (macroexp-progn
-   (cl-loop for p in paths
-      collect `(add-to-list 'load-path ,p))))
-
-(defmacro nvp-setup-hooks (hook &rest modes)
-  "Add HOOK to all MODES hooks."
-  (declare (indent 1))
-  (macroexp-progn
-   (cl-loop for mode in modes
-      as mode-hook = (nvp--normalize-hook mode)
-      collect `(add-hook ',mode-hook #',hook))))
-
-(defmacro nvp-setup-add-subdir-load-paths (root &optional ignored)
-  "Add subdirs under ROOT to `load-path', ingnoring those listed in IGNORED."
-  (declare (indent defun))
-  (let* ((ignored (or ignored '("." ".." "unused" "ignored" "old")))
-         (dirs (nvp--setup-subdirs root ignored)))
-    (macroexp-progn
-     (cl-loop for d in dirs
-        collect `(add-to-list 'load-path ,d)))))
-
-(defmacro nvp-setup-cache (var filename)
-  "Set cache FILENAME location."
-  `(nvp-setq ,var (expand-file-name ,filename nvp/cache)))
-
-;; -------------------------------------------------------------------
-;;; Other modes
-
-;;-- Hydras
-(defmacro nvp-hydra-set-property (hydra-name &rest props)
-  "Apply PROPS to HYDRA-NAME after `hydra' is loaded.
-PROPS defaults to setting :verbosity to 1."
-  (declare (indent 1))
-  (unless props (setq props (list :verbosity 1)))
-  `(progn
-     (declare-function hydra-set-property "hydra")
-     (with-eval-after-load 'hydra
-      ,@(cl-loop for (k v) on props by #'cddr
-           collect `(hydra-set-property ,hydra-name ,k ,v)))))
-
-;;-- Smartparens
-(cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
-  (declare (indent defun) (debug defun))
-  (while (keywordp (car pairs))
-    (setq pairs (cdr (cdr pairs))))
-  `(progn
-     (eval-when-compile (require 'smartparens))
-     (declare-function sp-local-pair "smartparens")
-     ,(cond
-       (modes
-        `(sp-with-modes ,modes
-           ,@pairs))
-       ((equal 'quote (caar pairs)) `(sp-local-pair ,@pairs))
-       (t
-        (macroexp-progn
-         (cl-loop for pair in pairs
-            collect `(sp-local-pair ,@pair)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Locals - silence compiler

@@ -1,11 +1,8 @@
 ;;; nvp-mark.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 20:49:15>
-;; Package-Requires: 
+;; Last modified: <2019-03-31 06:26:59>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -41,7 +38,7 @@
                    (1+ (point)))))
         (cons start end)))))
 
-(put 'marker 'bounds-of-thing-at-point 'nvp-mark-bounds-of-marker-at-point)
+(put 'nvp-mark 'bounds-of-thing-at-point 'nvp-mark-bounds-of-marker-at-point)
 
 (defun nvp-mark--collect-marks ()
   (save-excursion
@@ -58,7 +55,7 @@
 A marker is of the form \
 '#<marker at [point/function-name] in [library/relative filename]>'."
   (interactive)
-  (when-let* ((bnds (bounds-of-thing-at-point 'marker)))
+  (when-let* ((bnds (bounds-of-thing-at-point 'nvp-mark)))
     (save-excursion
       (goto-char (car bnds))
       (save-match-data
@@ -109,16 +106,19 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
   (interactive)
   (nvp-mark-next 'previous))
 
-(eval-when-compile
-  ;; Do mark fontification
-  (defmacro nvp-mark--apply-font-lock ()
-    `'((,nvp-mark--regex
-        (0 (prog1 ()
-             (let* ((place (match-string-no-properties 1))
-                    (file (match-string-no-properties 2)))
-               (put-text-property (1+ (match-beginning 0)) (match-end 0)
-                                  'display (format "%s<%s>" file place)))))
-        (0 'font-lock-constant-face t)))))
+;; Font-lock
+(defvar nvp-mark-font-lock-keywords
+  `((,nvp-mark--regex
+     (0 (prog1 ()
+          (let* ((place (match-string-no-properties 1))
+                 (file (match-string-no-properties 2)))
+            (add-text-properties
+             (1+ (match-beginning 0)) (match-end 0)
+             'display (format "%s<%s>" file place)
+             'keymap nvp-mark-)
+            (put-text-property 
+             ))))
+     (0 'font-lock-constant-face t))))
 
 ;; remove special mark display when disabling fontification
 (defun nvp-mark--remove-display ()
@@ -135,7 +135,7 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
       (progn
         (nvp-mark--remove-display)
         (font-lock-refresh-defaults))
-    (font-lock-add-keywords nil (nvp-mark--apply-font-lock))
+    (font-lock-add-keywords nil nvp-mark-font-lock-keywords)
     (font-lock-flush)
     (font-lock-ensure)))
 
@@ -143,6 +143,8 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
   (let ((km (make-sparse-keymap)))
     (define-key km (kbd "M-s-p") #'nvp-mark-previous)
     (define-key km (kbd "M-s-n") #'nvp-mark-next)
+    (define-key km (kbd "M-s-<return>") #'nvp-mark-goto-marker-at-point)
+    (define-key km [mouse-1] #'nvp-mark-goto-marker-at-point)
     (easy-menu-define nil km nil
       '("NMark"
         ["Previous" nvp-mark-previous t]
@@ -156,25 +158,11 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
   :lighter " NMark"
   :keymap nvp-mark-mode-map
   (if nvp-mark-mode
-      (font-lock-add-keywords nil (nvp-mark--apply-font-lock))
+      (font-lock-add-keywords nil nvp-mark-font-lock-keywords)
     (nvp-mark--remove-display)
-    (font-lock-remove-keywords nil (nvp-mark--apply-font-lock)))
+    (font-lock-remove-keywords nil nvp-mark-font-lock-keywords))
   (font-lock-flush)
   (font-lock-ensure))
-
-;; -------------------------------------------------------------------
-;;; Advices
-
-;; ;; ;;; FIXME: why is this here? where did it come from?
-;; ;;;###autoload
-;; (defadvice pop-to-mark-command (around ensure-new-position activate)
-;;   (let ((p (point)))
-;;     (when (eq last-command 'save-region-or-current-line)
-;;       ad-do-it
-;;       ad-do-it
-;;       ad-do-it)
-;;     (dotimes (i 10)
-;;       (when (= p (point)) ad-do-it))))
 
 (provide 'nvp-mark)
 ;;; nvp-mark.el ends here

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-28 21:30:19>
+;; Last modified: <2019-03-31 07:52:36>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 18 January 2017
@@ -95,8 +95,8 @@ With prefix ARG, prompt for selector."
 
 ;; non-nil if current buffer is a test file
 (defsubst nvp-test-file-p ()
-  (and (cl-member (nvp-dfn) nvp-project--test-dir :test 'string=)
-       (let ((buff-name (nvp-bfn 'or-buffer)))
+  (and (cl-member (nvp-buff 'dfns) nvp-project--test-dir :test 'string=)
+       (let ((buff-name (nvp-buff 'bfnse)))
          (or (cl-some (lambda (prefix)
                         (string-prefix-p (regexp-quote prefix) buff-name))
                       nvp-test-prefixes)

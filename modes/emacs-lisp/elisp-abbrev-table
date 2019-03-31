@@ -119,6 +119,7 @@
     ("fm" "format-message" nil :system t)
     ("fr" "fill-region" nil :system t)
     ("fs" "forward-sexp" nil :system t)
+    ("ft" "file-truename" nil :system t)
     ("fw" "forward-word" nil :system t)
     ("ff" "find-file" nil :system t)
     ("fl" "forward-line" nil :system t)

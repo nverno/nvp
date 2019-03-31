@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-27 02:02:04>
+;; Last modified: <2019-03-31 08:10:45>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -42,7 +42,7 @@ When part of `before-save-hook', won't add condition on initial save."
   (cl-flet ((add-condition
              (pred)
              (nvp-snippet-add-field "condition" pred)))
-    (let ((dir (ignore-errors (or (nvp-dfn)
+    (let ((dir (ignore-errors (or (nvp-buff 'dfns)
                                   (file-name-directory (buffer-file-name))))))
       (when-let*
           ((test

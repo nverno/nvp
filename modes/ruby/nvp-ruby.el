@@ -1,6 +1,6 @@
 ;;; nvp-ruby.el --- rubls -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-22 00:19:28>
+;; Last modified: <2019-03-31 07:49:24>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -191,7 +191,7 @@
              "\n"))
 
 (defun nvp-ruby-yas-camelize-bfn ()
-  (nvp-ruby-camelize (nvp-bfn 'no-ext)))
+  (nvp-ruby-camelize (nvp-buff 'bfnse)))
 
 (provide 'nvp-ruby)
 

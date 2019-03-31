@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 00:33:29>
+;; Last modified: <2019-03-31 05:24:36>
 ;; Created:  2 December 2016
 
 ;;; Commentary:
@@ -112,7 +112,7 @@
 ;; FIXME: How to determine the number of C-u before numeric arg????
 ;; advice for copy/rename w/ multiple open direds
 (defun nvp-dired-w/o-dwim (cmd &optional _arg)
-  (message "%S" current-prefix-arg)
+  ;; (message "%S" current-prefix-arg)
   (let ((dired-dwim-target (equal '(4) current-prefix-arg)))
     ;; nil just assumes current or marked files
     ;; should be able to pass the numeric argument along properly
@@ -183,7 +183,7 @@
                   (let ((env (conda-env-read-env)))
                     (start-process-shell-command
                      "jupyter-notebook"
-                     (nvp-comint-buffer "*jupyter-notebook*")
+                     (nvp-comint-buffer :name "*jupyter-notebook*")
                      (format "source activate %s && jupyter-notebook &" env))))
                  (_ (start-process "" nil "xdg-open" path)))))
            files)  
@@ -207,8 +207,8 @@
   (interactive)
   (let ((files (dired-get-marked-files)))
     (dolist (file files)
-      (when-let* ((prog (assoc (file-name-extension file)
-                              nvp-dired-external-program)))
+      (when-let*
+          ((prog (assoc (file-name-extension file) nvp-dired-external-program)))
         (let ((cmd (cdr (assoc 'cmd prog))))
           (nvp-with-gnu/w32
               (start-process cmd nil cmd file)

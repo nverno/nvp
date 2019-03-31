@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-24 02:45:30>
+;; Last modified: <2019-03-31 09:15:19>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -28,10 +28,10 @@
   (or (eq last-command this-command) (region-active-p) (push-mark))
   (let ((case-fold-search t))
     (condition-case nil
-        (search-forward char (point-at-eol))
+        (search-forward char (nvp-point 'eol))
       (error (let ((pt (point)))
                (beginning-of-line)
-               (or (search-forward char (point-at-eol))
+               (or (search-forward char (nvp-point 'eol))
                    (goto-char pt))))))
   (nvp-bind-transient-key
    char (lambda () (interactive)
@@ -79,7 +79,7 @@
 ;;;###autoload
 (defun nvp-duplicate-line-or-region (arg)
   (interactive "p")
-  (if (region-active-p)
+  (if (use-region-p)
       (let ((beg (region-beginning))
             (end (region-end)))
         (nvp--duplicate-region arg beg end))
@@ -92,11 +92,11 @@
   (if (bound-and-true-p paredit-mode)
       (nvp--paredit-duplicate-current-line)
     (save-excursion
-      (when (eq (point-at-eol) (point-max))
+      (when (eq (nvp-point 'eol) (point-max))
         (goto-char (point-max))
         (newline)
         (forward-char -1))
-      (nvp--duplicate-region num (point-at-bol) (1+ (point-at-eol))))))
+      (nvp--duplicate-region num (nvp-point 'bol) (1+ (nvp-point 'eol))))))
 
 (defun nvp--duplicate-back-and-dupe ()
   (interactive)
@@ -126,16 +126,15 @@
                 (> (line-number-at-pos) 1))
       (forward-line -1)
       (setq back (1+ back)))
-    (when (eq (point-at-eol) (point-max))
+    (when (eq (nvp-point 'eol) (point-max))
       (goto-char (point-max))
       (newline)
       (forward-char -1))
-    (let ((region (buffer-substring (point-at-bol)
-                                    (1+ (point-at-eol)))))
+    (let ((region (buffer-substring (nvp-point 'bol) (1+ (nvp-point 'eol)))))
       (forward-line back)
       (dotimes (_i num)
         (insert region))))
-  (goto-char (point-at-eol)))
+  (goto-char (nvp-point 'eol)))
 
 (defun nvp--paredit-duplicate-current-line ()
   (back-to-indentation)
@@ -165,8 +164,8 @@
   (let (comt)
     (save-excursion
       (move-beginning-of-line (if arg 1 0))
-      (when (skip-syntax-forward "^<" (point-at-eol))
-        (setq comt (delete-and-extract-region (point) (point-at-eol))))
+      (when (skip-syntax-forward "^<" (nvp-point 'eol))
+        (setq comt (delete-and-extract-region (point) (nvp-point 'eol))))
       (delete-indentation arg)
       (when comt
         (save-excursion

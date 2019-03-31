@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-30 23:49:39>
+;; Last modified: <2019-03-31 10:22:43>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -26,13 +26,11 @@
              (nvp-lookup-password "localhost" (user-login-name) nil))
          (read-shell-command "Sudo command: ")
          "*sudo-command*"))
-  (let* (;; (default-directory "/sudo::")
-         (proc (nvp-with-process "bash"
+  (let* ((proc (nvp-with-process "bash"
                  :proc-buff buffer
                  :proc-args ("bash -l" "-c" command)
                  :buffer-fn nvp-proc-comint-buffer
                  :shell t)))
-    ;; (sit-for 1)
     (process-send-string proc password)
     (process-send-string proc "\r")
     (process-send-eof proc)

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 21:51:05>
+;; Last modified: <2019-03-31 10:00:59>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  6 February 2019
@@ -29,12 +29,18 @@
   "Create file path from list of ARGS (strings) components."
   (mapconcat #'file-name-as-directory args (if sep sep "")))
 
-(defun nvp-file-md5 (filename)
-  "Generate MD5 of FILENAME contents and prepend to `kill-ring'."
-  (interactive "f")
-  (with-temp-buffer
-    (insert-file-contents filename)
-    (kill-new (md5 (current-buffer)))))
+(defsubst nvp-file-owner-uid (file)
+  (nth 2 (file-attributes file 'integer)))
+
+(defsubst nvp-file-owned-by-user-p (file)
+  (equal (nvp-file-owner-uid file) (user-uid)))
+
+(defun nvp-already-root-p ()
+  (let ((remote-method (file-remote-p default-directory 'method))
+        (remote-user (file-remote-p default-directory 'user)))
+    (and remote-method
+         (or (member remote-method '("sudo" "su" "ksu" "doas"))
+             (string= remote-user "root")))))
 
 ;;; I/O
 ;; see f.el
@@ -88,6 +94,46 @@ FILE is created if it doesn't exist."
                     (setq y (expand-file-name x dir)))
                (cons x y))))
          (cl-set-difference (directory-files dir) '("." "..") :test #'equal))))
+
+;; -------------------------------------------------------------------
+;;; Commands
+
+(defun nvp-file-md5 (filename)
+  "Generate MD5 of FILENAME contents and prepend to `kill-ring'."
+  (interactive "f")
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (kill-new (md5 (current-buffer)))))
+
+;;-- sudo edit
+(eval-when-compile
+ (defmacro nvp-sudo-wrap (func &optional filename)
+   `(let ((remote-method (file-remote-p default-directory 'method))
+          (remote-host (file-remote-p default-directory 'host))
+          (remote-localname (file-remote-p default-directory 'localname)))
+      (,func (format "/%s:root:@%s:%s"
+                     (or remote-method "sudo")
+                     (or remote-host "localhost")
+                     (or remote-localname
+                         ,(or filename '(read-file-name "Find file (root): "))))))))
+
+;; https://github.com/bbatsov/crux/blob/master/crux.el
+(defun nvp-find-alternate-file-as-root (file)
+  "Wrap `find-alternate-file' to open FILE as root."
+  (nvp-sudo-wrap find-alternate-file file))
+
+;;;###autoload
+(defun nvp-file-sudo-edit (&optional arg)
+  "Edit current file as root.
+With prefix ARG, prompt for file to visit."
+  (interactive "P")
+  (if (or arg (not buffer-file-name))
+      (nvp-sudo-wrap find-file)
+    (if (nvp-already-root-p)
+        (message "Already editing file as root.")
+      (let ((place (point)))
+        (nvp-find-alternate-file-as-root buffer-file-name)
+        (goto-char place)))))
 
 (provide 'nvp-file)
 ;;; nvp-file.el ends here

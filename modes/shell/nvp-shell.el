@@ -1,6 +1,6 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-31 04:13:34>
+;; Last modified: <2019-03-31 10:30:14>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  4 November 2016
@@ -79,7 +79,6 @@ strings."
        nconc (mapcar (lambda (x) (expand-file-name x var))
                      '("sh.exe" "bash.exe" "fish.exe" "zsh.exe")))))
 
-;; FIXME: Isn't something similar defined elsewhere?
 ;; look for an active interactive shell process
 (defun nvp-shell-get-process (&optional proc-name buffer-name)
   (cl-loop for proc in (process-list)

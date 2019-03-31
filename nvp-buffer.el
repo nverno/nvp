@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-29 02:46:44>
+;; Last modified: <2019-03-31 09:31:19>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -113,29 +113,28 @@ With prefix, prompt for MODE buffers to kill."
 ;;;###autoload
 (defun nvp-buffer-delete-file ()
   (interactive)
-  (or (buffer-file-name) (error "No file is currently being edited"))
-  (when (y-or-n-p (format "Really delete '%s'? "
-                          (file-name-nondirectory buffer-file-name)))
-    (delete-file (buffer-file-name))
-    (kill-this-buffer)))
+  (if-let ((file (buffer-file-name)))
+      (when (y-or-n-p (format "Really delete '%s'? " (nvp-buff 'bfns)))
+        (if (vc-backend file)
+            (vc-delete-file file))
+        (delete-file file delete-by-moving-to-trash)
+        (kill-this-buffer))
+    (user-error "No file is currently being edited")))
 
 ;; Renames both the current buffer and file it's visiting to
 ;; `NEW-NAME'.
 ;;;###autoload
 (defun nvp-buffer-rename-file (new-name)
-  (interactive
-   (list (read-string "New name: " (file-name-nondirectory (buffer-file-name)))))
+  (interactive (list (read-from-minibuffer "New name: " (nvp-buff 'bfns))))
   (let ((name (buffer-name))
 	(filename (buffer-file-name)))
-    (unless filename
-      (error "Buffer '%s' is not visiting a file!" name))
-    (if (get-buffer new-name)
-	(message "A buffer named '%s' already exists!" new-name)
-      (progn 
-	(when (file-exists-p filename)
-	  (rename-file filename new-name 1))
-	(rename-buffer new-name)
-	(set-visited-file-name new-name)))))
+    (if (not (and filename (file-exists-p filename)))
+        (prog1 (rename-buffer new-name t)
+          (message "Buffer '%s' not visiting a file" name))
+      (when (file-exists-p filename)
+	(rename-file filename new-name t))
+      (rename-buffer new-name t)
+      (set-visited-file-name new-name t t))))
 
 ;; TODO: https://github.com/emacs-helm/helm/blob/master/helm-buffers.el
 ;; `helm-buffer-toggle-diff'

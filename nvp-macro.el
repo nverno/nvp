@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 09:02:04>
+;; Last modified: <2019-03-31.18>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -13,8 +13,8 @@
 (require 'cl-lib)
 (require 'subr-x)
 (require 'macroexp)
-(require 'nvp-macs-common)
-(require 'nvp-macs-setup)
+(require 'nvp-macs-common "macs/nvp-macs-common")
+(require 'nvp-macs-setup "macs/nvp-macs-setup")
 
 ;; -------------------------------------------------------------------
 ;;; Messages
@@ -161,9 +161,118 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
      (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
 
 
+;; -------------------------------------------------------------------
+;;; Positions 
+
+;; move backward across newline (\r or \r\n), returning non-nil if moved
+(defsubst nvp-backward-nl ()
+  (cond
+   ((eq (char-before) ?\r)
+    (backward-char)
+    t)
+   ((and (eq (char-before) ?\n)
+         (eq (char-before (1- (point))) ?\r))
+    (backward-char 2)
+    t)
+   (t nil)))
+
+;;-- Syntactic whitespace
+;; see `c-forward-comments'
+(defsubst nvp-forward-sws (&optional escape)
+  "Move past following whitespace and comments.
+Line continuations, recognized by ESCAPE, are treated as whitespace as well."
+  (and (integerp escape) (setq escape (char-to-string escape)))
+
+  (let ((escaped-nl (concat escape "[\n\r]")))
+    (while (or (forward-comment 5)
+               (when (and escape (looking-at escaped-nl))
+                 (forward-char (length escape))
+                 t)))))
+
+;; see `c-backward-comments'
+(defsubst nvp-backward-sws (&optional escape)
+  "Move backward across whitespace, comments, and line continuations."
+  (and escape (stringp escape) (setq escape (string-to-char escape)))
+
+  (let ((start (point)))
+    (while (and (not (bobp))
+                (if (let (moved-comment)
+                      (while (and
+                              (not (setq moved-comment (forward-comment -1)))
+                              (nvp-backward-nl))) ; skip \r or \r\n
+                      moved-comment)
+                    ;; line continuations
+                    (when (and escape
+                               (looking-at "[\n\r]")
+                               (eq (char-before) escape)
+                               (< (point) start))
+                      (backward-char)
+                      t))))))
+
+(defmacro nvp-skip-sws (direction &optional escape)
+  "Skip `forward' or `backward' across comments, whitespace, and line \
+continuations."
+  (and escape (stringp escape) (setq escape (string-to-char escape)))
+  (let ((direction (eval direction)))
+    (cond
+      ((eq direction 'forward) `(nvp-forward-sws ,escape))
+      ((eq direction 'backward) `(nvp-backward-sws ,escape))
+      (t (error "Don't know how to skip %S" direction)))))
+
+;;-- Whitespace
+(defmacro nvp-skip-ws-forward (escape &optional limit)
+  "Skip horizontal/vertical whitespace and escaped newlines following point."
+  (if limit
+      `(let ((limit (or ,limit) (point-max)))
+         (while (progn
+		  ;; skip-syntax-* doesn't count \n as whitespace..
+                  (skip-chars-forward " \t\n\r\f\v" limit)
+                  (when (and (eq (char-after) ,escape)
+                             (< (point) limit))
+                    (forward-char)
+                    (or (eolp)
+                        (progn (backward-char) nil))))))
+    `(while (progn
+              (skip-chars-forward " \t\n\r\f\v")
+              (when (and (eq (char-after) ,escape))
+                (forward-char)
+                (or (eolp)
+                    (progn (backward-char) nil)))))))
+
+(defmacro nvp-skip-ws-backward (escape &optional limit)
+  "Skip over any whitespace, comments, and escaped nls preceding point."
+  (if limit
+      `(let ((limit (or ,limit (point-min))))
+	 (while (progn
+		  ;; skip-syntax-* doesn't count \n as whitespace..
+		  (skip-chars-backward " \t\n\r\f\v" limit)
+		  (and (eolp)
+		       (eq (char-before) ?\\)
+		       (> (point) limit)))
+	   (backward-char)))
+    `(while (progn
+	      (skip-chars-backward " \t\n\r\f\v")
+	      (and (eolp)
+		   (eq (char-before) ,escape)))
+       (backward-char))))
+
+(defmacro nvp-skip-ws (direction &optional escape limit)
+  "Skip horizontal/vertical whitespace and escaped nls in DIRECTION from point.
+If ESCAPE is non-nil, treat as line continuation character (default '\\').
+LIMIT restricts the search space when non-nil.
+Direction is one of `forward', `backward'."
+  (if escape
+      (and (stringp escape) (setq escape (string-to-char escape)))
+    (setq escape ?\\))
+
+  (let ((direction (eval direction)))
+    (if (eq direction 'forward)
+        `(nvp-skip-ws-forward ,escape ,limit)
+      `(nvp-skip-ws-backward ,escape ,limit))))
+
+;;-- Point positions
 ;; cc-defs
 ;; #<marker at 34444 in cc-defs.el.gz>
-
 (defmacro nvp-point (position &optional point escape)
   "Return relative POSITION to POINT (default current point).
 ESCAPE can be a string to match escaped newlines (default '\\').
@@ -181,127 +290,146 @@ POSITION can be one of the following symbols:
 `eonl'  -- end of next line
 `bopl'  -- beginning of previous line
 `eopl'  -- end of previous line
-`bosws' -- beginning of syntactic whitespace
-`eosws' -- end of syntactic whitespace
+`bohws' -- beginning of horizontal whitespace (doesn't cross lines)
+`bows'  -- beginning of whitespace (crossing lines)
+`bosws' -- beginning of syntactic whitespace (ws, comments, escaped nls)
+`eohws' -- end of horizontal whitespace
+`eows'  -- end of whitespace (crossing lines)
+`eosws' -- end of syntactic whitespace (ws, comments, escaped nls)
 
 If the referenced position doesn't exist, the closest accessible point
 to it is returned.  This function does not modify the point or the mark."
   (or escape (setq escape "\\\\"))
+  (cl-assert (eq (car-safe position) 'quote) nil "Call with quoted 'position'")
 
-  (if (eq (car-safe position) 'quote)
-      (let ((position (eval position)))
-	(cond
+  (let ((position (eval position)))
+    (cond
 
-	 ((eq position 'bol)
-	  (if (not point)
-	      '(line-beginning-position)
-	    `(save-excursion
-	       ,@(if point `((goto-char ,point)))
-	       (beginning-of-line)
-	       (point))))
+     ((eq position 'bol)
+      (if (not point)
+	  '(line-beginning-position)
+	`(save-excursion
+	   ,@(if point `((goto-char ,point)))
+	   (beginning-of-line)
+	   (point))))
 
-	 ((eq position 'eol)
-	  (if (not point)
-	      '(line-end-position)
-	    `(save-excursion
-	       ,@(if point `((goto-char ,point)))
-	       (end-of-line)
-	       (point))))
+     ((eq position 'eol)
+      (if (not point)
+	  '(line-end-position)
+	`(save-excursion
+	   ,@(if point `((goto-char ,point)))
+	   (end-of-line)
+	   (point))))
 
-	 ((eq position 'eoll)
-	  `(save-excursion
-	     ,@(if point `((goto-char ,point)))
-	     (while (progn
-		      (end-of-line)
-		      (prog1 (eq (logand 1 (skip-chars-backward escape)) 1)))
-	       (beginning-of-line 2))
-	     (end-of-line)
-	     (point)))
+     ((eq position 'eoll)
+      `(save-excursion
+	 ,@(if point `((goto-char ,point)))
+	 (while (progn
+		  (end-of-line)
+		  (prog1 (eq (logand 1 (skip-chars-backward ,escape)) 1)))
+	   (beginning-of-line 2))
+	 (end-of-line)
+	 (point)))
 
-	 ((eq position 'boi)
-	  `(save-excursion
-	     ,@(if point `((goto-char ,point)))
-	     (back-to-indentation)
-	     (point)))
+     ((eq position 'boi)
+      `(save-excursion
+	 ,@(if point `((goto-char ,point)))
+	 (back-to-indentation)
+	 (point)))
 
-	 ((eq position 'bod)
-	  `(save-excursion
-	     ,@(if point `((goto-char ,point)))
-             (beginning-of-defun)
-             (and defun-prompt-regexp
-                  (looking-at defun-prompt-regexp)
-                  (goto-char (match-end 0)))
-	     (point)))
+     ((eq position 'bod)
+      `(save-excursion
+	 ,@(if point `((goto-char ,point)))
+         (beginning-of-defun)
+         (and defun-prompt-regexp
+              (looking-at defun-prompt-regexp)
+              (goto-char (match-end 0)))
+	 (point)))
 
-	 ((eq position 'eod)
-	  `(save-excursion
-	     ,@(if point `((goto-char ,point)))
-             (end-of-defun)
-	     (point)))
+     ((eq position 'eod)
+      `(save-excursion
+	 ,@(if point `((goto-char ,point)))
+         (end-of-defun)
+	 (point)))
 
-	 ((eq position 'bopl)
-	  (if (not point)
-	      '(line-beginning-position 0)
-	    `(save-excursion
-	       ,@(if point `((goto-char ,point)))
-	       (forward-line -1)
-	       (point))))
+     ((eq position 'bopl)
+      (if (not point)
+	  '(line-beginning-position 0)
+	`(save-excursion
+	   ,@(if point `((goto-char ,point)))
+	   (forward-line -1)
+	   (point))))
 
-	 ((eq position 'bonl)
-	  (if (not point)
-	      '(line-beginning-position 2)
-	    `(save-excursion
-	       ,@(if point `((goto-char ,point)))
-	       (forward-line 1)
-	       (point))))
+     ((eq position 'bonl)
+      (if (not point)
+	  '(line-beginning-position 2)
+	`(save-excursion
+	   ,@(if point `((goto-char ,point)))
+	   (forward-line 1)
+	   (point))))
 
-	 ((eq position 'eopl)
-	  (if (not point)
-	      '(line-end-position 0)
-	    `(save-excursion
-	       ,@(if point `((goto-char ,point)))
-	       (beginning-of-line)
-	       (or (bobp) (backward-char))
-	       (point))))
+     ((eq position 'eopl)
+      (if (not point)
+	  '(line-end-position 0)
+	`(save-excursion
+	   ,@(if point `((goto-char ,point)))
+	   (beginning-of-line)
+	   (or (bobp) (backward-char))
+	   (point))))
 
-	 ((eq position 'eonl)
-	  (if (not point)
-	      '(line-end-position 2)
-	    `(save-excursion
-	       ,@(if point `((goto-char ,point)))
-	       (forward-line 1)
-	       (end-of-line)
-	       (point))))
+     ((eq position 'eonl)
+      (if (not point)
+	  '(line-end-position 2)
+	`(save-excursion
+	   ,@(if point `((goto-char ,point)))
+	   (forward-line 1)
+	   (end-of-line)
+	   (point))))
 
-	 ((eq position 'iopl)
-	  `(save-excursion
-	     ,@(if point `((goto-char ,point)))
-	     (forward-line -1)
-	     (back-to-indentation)
-	     (point)))
+     ((eq position 'iopl)
+      `(save-excursion
+	 ,@(if point `((goto-char ,point)))
+	 (forward-line -1)
+	 (back-to-indentation)
+	 (point)))
 
-	 ((eq position 'ionl)
-	  `(save-excursion
-	     ,@(if point `((goto-char ,point)))
-	     (forward-line 1)
-	     (back-to-indentation)
-	     (point)))
+     ((eq position 'ionl)
+      `(save-excursion
+	 ,@(if point `((goto-char ,point)))
+	 (forward-line 1)
+	 (back-to-indentation)
+	 (point)))
 
-         ;; FIXME: don't use c-skip-* functions that skip
-         ;; whitespace/comments/macros
-	 ((eq position 'bosws)
-	  `(save-excursion
-	     ,@(if point `((goto-char ,point)))
-	     (c-backward-syntactic-ws)
-	     (point)))
+     ;; whitespace
+     ((eq position 'bohws)
+      `(save-excursion
+	 ,@(if point `((goto-char ,point)))
+         (skip-syntax-backward " ")
+	 (point)))
 
-	 ((eq position 'eosws)
-	  `(save-excursion
-	     ,@(if point `((goto-char ,point)))
-	     (c-forward-syntactic-ws)
-	     (point)))
+     ((eq position 'bows)
+      `(save-excursion
+         ,@(if point `((goto-char ,point)))
+         (nvp-skip-ws 'backward ,escape)))
 
-	 (t (error "Unknown buffer position requested: %s" position))))))
+     ((eq position 'eohws)
+      `(save-excursion
+         ,@(if point `((goto-char ,point)))
+         (skip-syntax-forward " ")))
+
+     ((eq position 'eows)
+      `(save-excursion
+	 ,@(if point `((goto-char ,point)))
+         (nvp-skip-ws 'forward ,escape)
+	 (point)))
+
+     ((eq position 'eosws)
+      `(save-excursion
+         ,@(if point `((goto-char ,point)))
+         (nvp-forward-sws)
+         (point)))
+
+     (t (error "Unknown buffer position requested: %s" position)))))
 
 ;; paredit splicing reindent doesn't account for prompts
 (defmacro nvp-preserving-column (&rest body)

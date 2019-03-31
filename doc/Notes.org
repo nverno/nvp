@@ -44,8 +44,8 @@ This doesn't seem to be too actively maintained
 - [ ] parse makefile targets
 - [ ] update URLs
 
-* Macros [3/8]
-- [ ] use simplified version of c-point macro, allowing for different types of
+* Macros [4/8]
+- [X] use simplified version of c-point macro, allowing for different types of
       escaped newlines and not using `c-syntactic-ws` functions
 - [ ] aif
 - [ ] awhile

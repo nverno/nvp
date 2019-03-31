@@ -1,8 +1,6 @@
 ;;; nvp-hook.el --- hooks -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-31 04:38:55>
+;; Last modified: <2019-03-31.16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 January 2019
@@ -23,8 +21,8 @@
          (or time-stamp-pattern
              (pcase major-mode
                (`org-mode "#\\+DATE: <%%>$")
-               (`sh-mode "10/scriptversion=%:y-%02m-%02d.%02H$")
-               (_ "15/Last modified: <%%>$")))))
+               (`sh-mode "scriptversion=\"%%\";")
+               (_ "Last modified: <%%>$")))))
     (time-stamp)))
 
 ;; Added to `find-file-not-found-functions'. Create new directories for new files.

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-31 02:10:11>
+;; Last modified: <2019-03-31.16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 22 March 2019
@@ -152,7 +152,7 @@ If the associated source buffer no longer exists, pop to next visible window.
 (defun nvp-repl-send-line ()
   (interactive)
   (nvp-repl-send-string
-   (buffer-substring-no-properties (c-point 'bol) (c-point 'eoll))))
+   (buffer-substring-no-properties (nvp-point 'bol) (nvp-point 'eoll))))
 
 (defun nvp-repl-send-buffer ()
   (interactive)

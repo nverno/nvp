@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-29 02:40:50>
+;; Last modified: <2019-03-30 22:48:17>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -13,7 +13,7 @@
 (require 'cl-lib)
 (require 'subr-x)
 (require 'macroexp)
-(defvar eieio--known-slot-names)
+(require 'nvp-macs-base "macs/nvp-macs-base")
 
 ;; -------------------------------------------------------------------
 ;;; Internal functions
@@ -88,64 +88,7 @@ those are both specified."
 ;; -------------------------------------------------------------------
 ;;; General
 
-;;-- OS
-(defmacro nvp-with-w32 (&rest body)
-  (declare (indent 0) (debug t))
-  (when (eq system-type 'windows-nt)
-    `(progn ,@body)))
-
-(defmacro nvp-with-gnu (&rest body)
-  (declare (indent 0) (debug t))
-  (when (not (eq system-type 'windows-nt))
-    `(progn ,@body)))
-
-(defmacro nvp-with-gnu/w32 (gnu w32)
-  (declare (indent 2) (indent 1) (debug t))
-  (if (eq system-type 'windows-nt)
-      `,@w32
-    `,@gnu))
-
-;;-- Compat
-
-(unless (fboundp 'ignore-errors)
-  (defmacro ignore-errors (&rest body)
-    `(condition-case nil (progn ,@body) (error nil))))
-
-(defmacro eieio-declare-slot (name)
-  (cl-pushnew name eieio--known-slot-names) nil)
-
-;;-- Declares / Autoloads
-(defalias 'nvp-decl 'nvp-declare)
-(eval-and-compile                       ;use in this file
-  (defmacro nvp-declare (package &rest funcs)
-   (declare (indent defun))
-   (macroexp-progn
-    (cl-loop for func in funcs
-       collect `(declare-function ,func ,package)))))
-
-(defmacro nvp-autoload (package &rest funcs)
-  (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for func in funcs
-      collect `(autoload ',func ,package))))
-
-;;-- Vars
-
-(defmacro nvp-defvar (&rest var-vals)
-  "Define VAR and eval VALUE during compile."
-  (declare (indent 0))
-  (macroexp-progn
-   (cl-loop for (var value) on var-vals by #'cddr
-      collect `(progn (defvar ,var (eval-when-compile ,value))))))
-
-(defmacro nvp-setq (&rest var-vals)
-  "Define VAR and eval VALUE during compile."
-  (declare (indent 0))
-  (macroexp-progn
-   (cl-loop for (var value) on var-vals by #'cddr
-      collect `(progn (eval-when-compile (defvar ,var))
-                 (setq ,var (eval-when-compile ,value))))))
-
+;; not that useful -- concat only happens one first load
 (defmacro nvp-concat (&rest body)
   `(eval-when-compile (concat ,@body)))
 

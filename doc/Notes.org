@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-03-29 00:07:05>
+#+DATE: <2019-03-30 23:27:01>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -49,6 +49,7 @@ This doesn't seem to be too actively maintained
       escaped newlines and not using `c-syntactic-ws` functions
 - [ ] aif
 - [ ] awhile
+- [ ] acond
 - [ ] it would be nice to separate out macros just necessary for setup/init
 - [ ] remove `nvp-install-on-demand` when a better options is found
 
@@ -67,8 +68,8 @@ This doesn't seem to be too actively maintained
 - [X] display long lines
 - [X] display / toggle trailing whitespace cleanup
 
-** Bookmarks [0/2]
-- [ ] incorporate bmk-to-bmk handler if useful
+** Bookmarks [1/2]
+- [X] incorporate bmk-to-bmk handler if useful
 - [ ] reconfigure settings
 
 ** Search [2/5]

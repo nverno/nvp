@@ -1,10 +1,10 @@
-;;; nvp-iedit.el ---  -*- lexical-binding: t; -*-
+;;; nvp-iedit.el --- mark/replace matches -*- lexical-binding: t; -*-
 
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-09 06:37:39>
+;; Last modified: <2019-03-30 22:25:12>
 ;; Created: 22 August 2018
 
 ;;; Commentary:
@@ -15,7 +15,7 @@
 
 ;; FIXME:
 ;; - Toggling region is pointless
-;; - Generic cycling interface
+;; - Integrate w/ generic cycling interface
 
 ;;; Code:
 (eval-when-compile

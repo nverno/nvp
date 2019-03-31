@@ -4,6 +4,6 @@
 # --
 if${1:n}def $2
   $0${3:
-else
+else # ${1:`(if (yas-text) "not " "")`} $2
   $4}
 endif

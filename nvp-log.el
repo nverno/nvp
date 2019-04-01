@@ -1,6 +1,6 @@
 ;;; nvp-log.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-28 22:22:47>
+;; Last modified: <2019-04-01.11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 November 2016
@@ -11,22 +11,32 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))
+(require 'nvp)
 
 (defvar nvp-log-buffer "*nvp-log*")
 
+;; initialize new log buffer and return it
+(defun nvp-log-get-buffer (&optional buffer-name)
+  (or buffer-name (setq buffer-name nvp-log-buffer))
+  (or (get-buffer buffer-name)
+      (let ((buff (get-buffer-create buffer-name)))
+       (prog1 buff
+         (set-buffer buff)
+         (nvp-log-mode)))))
+
+(defmacro nvp-with-log-buffer (&optional buffname &rest body)
+  `(with-current-buffer (nvp-log-get-buffer ,buffname)
+     (goto-char (point-max))
+     ,@body))
+
 ;;;###autoload
 (defun nvp-log (text &optional buffer-name &rest args)
-  (let ((buffer-name (or buffer-name
-                         (bound-and-true-p nvp-log-buffer)))
-        deactivate-mark)
-    (with-current-buffer (get-buffer-create buffer-name)
-      (nvp-log-mode)
-      (goto-char (point-max))
-      (insert-before-markers
-       (apply 'format 
-              (replace-regexp-in-string
-               "\n+" "\n" (concat text "\n"))
-              args)))))
+  (let (deactivate-mark)
+    (nvp-with-log-buffer buffer-name
+     (insert-before-markers
+      (apply #'format
+             (replace-regexp-in-string "[\r\n]+" "\n" (concat text "\n"))
+             args)))))
 
 ;; ------------------------------------------------------------
 ;;; Mode
@@ -51,8 +61,7 @@
 
 ;;;###autoload
 (define-derived-mode nvp-log-mode fundamental-mode "Log"
-  (setq-local font-lock-defaults
-              '(nvp-log-font-lock nil t nil nil)))
+  (setq-local font-lock-defaults '(nvp-log-font-lock nil t nil nil)))
 
 ;; -------------------------------------------------------------------
 ;;; View list - simple tabulated display

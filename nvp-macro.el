@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-01.07>
+;; Last modified: <2019-04-01.11>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -185,6 +185,96 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 ;; -------------------------------------------------------------------
 ;;; Positions 
 
+;; cc-defs `c-safe-scan-lists', paredit
+(defmacro nvp-scan-lists (from count depth &optional limit)
+  "`scan-lists', but return nil instead of errors."
+  (let ((res `(ignore-errors (scan-lists ,from ,count ,depth))))
+    (if limit
+        `(save-excursion
+           (when ,limit
+             ,(if (numberp count)
+                  (if (< count 0)
+                      `(narrow-to-region ,limit (point-max))
+                    `(narrow-to-region (point-min) ,limit))
+                `(if (< ,count 0)
+                     (narrow-to-region ,limit (point-max))
+                   (narrow-to-region (point-min) ,limit))))
+           ,res)
+      res)))
+
+(defmacro nvp-scan-1 (type &optional pos limit)
+  "Return position across various balanced expressions.
+Start at POS if non-nil. Returns point at new position, or nil on failure.
+
+`fl'  -- after forward balanced parens
+`bl'  -- after backward list
+`ufl' -- up forward list
+`ubl' -- up backward list
+`dfl' -- down forward list
+`dbl' -- down list backward
+"
+  (let ((type (eval type)))
+    (cond
+     ;; Return the point at different locations or nil
+     ((eq type 'fl)
+      `(when-let ((dest (nvp-scan-lists ,(or pos '(point)) 1 0 ,limit)))
+         (goto-char dest)
+         dest))
+     ((eq type 'bl)
+      `(when-let ((dest (nvp-scan-lists ,(or pos '(point)) -1 0 ,limit)))
+         (goto-char dest)
+         dest))
+     ((eq type 'ufl)
+      `(nvp-scan-lists ,(or pos '(point)) 1 1 ,limit))
+     ((eq type 'ubl)
+      `(nvp-scan-lists ,(or pos '(point)) -1 1 ,limit))
+     ((eq type 'dfl)
+      `(nvp-scan-lists ,(or pos '(point)) 1 -1 ,limit))
+     ((eq type 'dbl)
+      `(nvp-scan-lists ,(or pos '(point)) -1 -1 ,limit))
+
+     (t (user-error "%S unrecognized by `nvp-scan-point'" type)))))
+
+(defmacro nvp-scan (type &optional pos limit)
+  "Scan balanced expressions, moving and returning point on success.
+
+`fl'   -- move forward balanced parens
+`bl'   -- move backward list
+`ufl'  -- point up list forward
+`ubl'  -- point up list backward
+`dfl'  -- point down list forward
+`dbl'  -- point down list backward
+`gufl' -- move up forward list
+`gulb' -- move up backward list
+`gdlf' -- move down list forward
+`gdlb' -- move down list backward
+"
+  (let ((type (eval type)))
+    (cond
+     ((eq type 'fl) `(nvp-scan-1 'fl ,pos ,limit))
+     ((eq type 'bl) `(nvp-scan-1 'bl ,pos ,limit))
+     ((eq type 'ufl) `(nvp-scan-1 'ufl ,pos ,limit))
+     ((eq type 'ubl) `(nvp-scan-1 'ubl ,pos ,limit))
+     ((eq type 'dfl) `(nvp-scan-1 'dfl ,pos ,limit))
+     ((eq type 'dbl) `(nvp-scan-1 'dbl ,pos ,limit))
+     
+     ;; Move point
+     ((eq type 'gulf)
+      `(when-let ((dest (nvp-scan-1 'ufl ,pos ,limit)))
+         (goto-char dest) dest))
+     ((eq type 'gulb)
+      `(when-let ((dest (nvp-scan-1 'ubl ,pos ,limit)))
+         (goto-char dest) dest))
+     ((eq type 'gdlf)
+      `(when-let ((dest (nvp-scan-1 'lf ,pos ,limit)))
+         (goto-char dest) dest))
+     ((eq type 'gdlb)
+      `(when-let ((dest (nvp-scan-1 'lb ,pos ,limit)))
+         (goto-char dest) dest))
+     (t (user-error "%S unrecognized by `nvp-scan'" type)))))
+
+;;-- Syntactic whitespace
+
 ;; move backward across newline (\r or \r\n), returning non-nil if moved
 (defsubst nvp-backward-nl ()
   (cond
@@ -197,7 +287,6 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
     t)
    (t nil)))
 
-;;-- Syntactic whitespace
 ;; see `c-forward-comments'
 (defsubst nvp-forward-sws (&optional escape)
   "Move past following whitespace and comments.
@@ -517,7 +606,7 @@ below.
     (cond
      ((eq type 'rs)
       `(buffer-substring-no-properties
-        ,(or beg '(region-beginning)) ,(or beg '(region-end))))
+        ,(or beg '(region-beginning)) ,(or end '(region-end))))
      ((eq type 'rsp)
       `(buffer-substring ,(or beg '(region-beginning)) ,(or end '(region-end))))
      ((eq type 'rb)
@@ -554,63 +643,37 @@ below.
            (thing-at-point ,(or tap ''symbol)))))
 
      ((eq type 'bdwim)
-      `(if (use-region-p) (car (region-bounds))
-         (nvp-tap-bounds ,(or tap ''symbol) :pulse ,pulse)))
+      (if (and beg end) `(cons ,beg ,end)
+        `(if (use-region-p) (car (region-bounds))
+           (nvp-tap-bounds ,(or tap ''symbol) :pulse ,pulse))))
      
      (t (user-error "Unknown `nvp-tap' type %S" type)))))
 
 (cl-defmacro nvp-with-region (beg end &optional thing &rest body
-                                  &key pulse &allow-other-keys)
+                                  &key pulse widen type &allow-other-keys)
   "Bind BEG END to dwim region bounds.
-Uses region bounds if active, otherwise bounds of THING."
+Uses region bounds if active, otherwise bounds of THING.
+In WIDEN is non-nil, save restriction and widen before finding bounds."
   (declare (indent defun) (debug body))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
-  `(cl-destructuring-bind (,beg . ,end)
-       (nvp-tap 'bdwim ,(or thing ''paragraph) :pulse ,pulse)
-     ,@body))
-
-(defmacro nvp-region-or-batp (&optional thing pulse)
-  "Region bounds if active or bounds of THING at point."
-  (declare (indent defun) (debug t))
-  `(if (use-region-p) (car (region-bounds))
-     (nvp-tap-bounds (or ,thing 'symbol) ,pulse)))
-
-(defmacro nvp-region-str-or-thing (&optional thing pulse)
-  "Region string if active or THING at point."
-  (declare (indent defun) (debug t))
-  `(progn
-     (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
-     (if (use-region-p)
-         (buffer-substring-no-properties (region-beginning) (region-end))
-       (when-let* ((bnds (nvp-tap-bounds (or ,thing 'symbol) ,pulse))
-                   (str (buffer-substring-no-properties (car bnds) (cdr bnds))))
-         (if ,pulse str
-           (prog1 str
-             (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
-
-(cl-defmacro nvp-within-bounds-of-thing-or-region
-    (thing beg end &rest body &key pulse &allow-other-keys)
-  "Execute BODY with region widened to bounds of THING at point \
-unless region is active.
-BEG and END are symbols to bind to the region the bounds.
-If NO-PULSE, don't pulse region when using THING."
-  (declare (indent defun) (debug (sexp sexp sexp &rest form)))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
-  `(save-excursion
-     (declare-function nvp-indicate-pulse-region-or-line "")
-     (if (not (use-region-p))
-         (save-restriction
-           (widen)
-           (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
-             (cl-destructuring-bind (,beg . ,end) bnds
-               ,(unless pulse `(nvp-indicate-pulse-region-or-line ,beg ,end))
-               ,@body)))
-       ,@body)))
+  `(,@(if widen '(save-restriction (widen)) '(progn))
+    (if-let* ((bnds (nvp-tap ,(or type ''bdwim) ,(or thing ''paragraph)
+                             :pulse ,pulse)))
+        (cl-destructuring-bind (,beg . ,end) bnds
+          ,@body)
+      (user-error "nvp-with-region didn't find any bounds"))))
 
 ;; -------------------------------------------------------------------
 ;;; Save/Restore envs 
+
+(defmacro nvp-save-buffer-state (varlist &rest body)
+  "Bind variables, `let*', in VARLIST and execute BODY.
+State is then restored. See `c-save-buffer-state' and `save-buffer-state'."
+  (declare (indent 1) (debug t))
+  `(with-silent-modifications
+     (let* ,varlist
+       ,@body)))
 
 (defmacro nvp-with-preserved-vars (vars &rest body)
   "Let bind VARS then execute BODY, so VARS maintain their original values.

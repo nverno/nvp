@@ -1,6 +1,6 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-01.07>
+;; Last modified: <2019-04-01.10>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -47,26 +47,26 @@ With prefix sort in REVERSE."
 (defun nvp-sort-list (&optional start end reverse)
   "Sort list region in list at point or b/w START and END by words/symbols.
 With prefix sort in REVERSE."
-  (interactive "r\nP")
-  (nvp-within-bounds-of-thing-or-region 'list start end
-    (nvp-sort-with-defaults start end
-      (sort-regexp-fields reverse (nvp-concat "\\(?:"
-                                              "\\s\"\\S\"*\\s\"" ;quoted
-                                              "\\|\\sw+\\|\\s_+" ;word/symbol
-                                              "\\)")
-                          "\\(\\sw\\|\\s_\\)+" start end))))
+  (interactive (nvp-with-region start end 'list :pulse t :widen t
+                 (list start end current-prefix-arg)))
+  (nvp-sort-with-defaults start end
+    (sort-regexp-fields reverse (nvp-concat "\\(?:"
+                                            "\\s\"\\S\"*\\s\"" ;quoted
+                                            "\\|\\sw+\\|\\s_+" ;word/symbol
+                                            "\\)")
+                        "\\(\\sw\\|\\s_\\)+" start end)))
 
 ;; note uses 'cons/'alist at point defined in nvp-elisp
 ;;;###autoload
 (defun nvp-sort-alist (&optional start end reverse)
   "Sort alist by car of each element in list at point or b/w START and END."
-  (interactive "r\nP")
-  (nvp-within-bounds-of-thing-or-region 'alist start end
-    (nvp-sort-with-defaults start end
-      (sort-regexp-fields
-       reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)"
-       (if (looking-at-p "'") (+ 2 start) (1+ start)) ;skip over outer '('
-       (1- end)))))                                   ;stop before final ')'
+  (interactive (nvp-with-region start end 'alist :pulse t :widen t
+                 (list start end current-prefix-arg)))
+  (nvp-sort-with-defaults start end
+    (sort-regexp-fields
+     reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)"
+     (if (looking-at-p "'") (+ 2 start) (1+ start)) ;skip over outer '('
+     (1- end))))                                   ;stop before final ')'
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)
@@ -163,9 +163,8 @@ is useful, e.g, for use with `visual-line-mode'."
 (defun nvp-align-by-last-char (char &optional beg end)
   "Align BEG to END or bounds of paragraph by CHAR.
 With prefix or if char is '\\', ensure CHAR is at the end of the line."
-  (interactive
-   (nvp-with-region beg end 'paragraph :pulse t
-     (list (nvp-input 'lce) beg end)))
+  (interactive (nvp-with-region beg end 'paragraph :pulse t
+                 (list (nvp-input 'lce) beg end)))
   (let ((re (concat "\\(\\s-+\\)" (regexp-quote char)
                     (if (or current-prefix-arg (string= char "\\")) "$" ""))))
     (align-regexp beg end re)))
@@ -202,7 +201,7 @@ Prefix arg is passed to SP, wrapping the next _ARG elements."
 
 ;; Adds commas after numbers in list, like matlab -> R.
 (defun nvp-list-insert-commas (str &optional beg end)
-  (interactive (nvp-with-region beg end 'paragraph :pulse t (list nil beg end)))
+  (interactive (nvp-with-region beg end 'list :pulse t (list nil beg end)))
   (let ((res (replace-regexp-in-string
               "\\([0-9]\\)\\s-+" "\\1, "
               (or str (nvp-tap 'rs nil :beg beg :end end)))))

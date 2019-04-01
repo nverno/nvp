@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-01.00>
+;; Last modified: <2019-04-01.08>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 March 2019
@@ -60,6 +60,7 @@
 (defun nvp-proc-default-sentinel (&optional return)
   (lambda (p m)
     (let ((pname (process-name p)))
+      (nvp-log )
       (funcall nvp-default-log-function "%s: %s" nil pname m)
       (with-current-buffer (process-buffer p)
         (if (not (zerop (process-exit-status p)))

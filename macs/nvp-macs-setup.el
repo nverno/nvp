@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-31 08:59:49>
+;; Last modified: <2019-04-01.07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/macs
 ;; Created: 31 March 2019
@@ -72,13 +72,6 @@
            ;; fallback to runtime search
            (when (require 'nvp-setup nil t)
              (nvp-setup-program ,name ,path))))))
-
-(defmacro nvp-path (path)
-  "Use expanded path if it exists at compile time, otherwise just expand when
-it is loaded."
-  (let ((res (substitute-env-in-file-name path)))
-    (if (and res (file-exists-p res)) `,res
-      `(substitute-env-in-file-name ,path))))
 
 (defmacro nvp-mode-config-path (mode &optional ensure-string)
   "Create path for MODE config file."

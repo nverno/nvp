@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 09:34:28>
+;; Last modified: <2019-04-01.07>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -54,7 +54,7 @@
 With prefix ARG multi-occur in buffers of the same mode."
   (interactive "P")
   (if arg (nvp-multi-occur-in-this-mode)
-    (when-let* ((str (nvp-region-str-or-thing 'symbol)))
+    (when-let* ((str (nvp-tap 'dwim)))
       (push (if (stringp str) (regexp-quote str) str) regexp-history))
     (call-interactively 'occur)
     (if (get-buffer "*Occur*")

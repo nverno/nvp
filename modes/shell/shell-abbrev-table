@@ -4,6 +4,7 @@
   '(
     ("aa" "2>&1" nil :system t) 
     ("ae" ">&2" nil :system t)
+    ("a2" ">&2" nil :system t)
     ("dn" ">/dev/null" nil :system t)
     ("aadn" ">/dev/null 2>&1" nil :system t)
     ("21dn" ">/dev/null 2>&1" nil :system t)
@@ -141,4 +142,4 @@
 (define-abbrev-table 'bats-mode-abbrev-table
   '()
   "Bats-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list sh-mode-abbrev-table))

@@ -1,5 +1,9 @@
 #!/usr/bin/env bats
 
+setup() {
+    NUM1=2
+}
+
 @test "addition using bc" {
   result="$(echo 2+1 | bc)"
   [ "$result" -eq 3 ]

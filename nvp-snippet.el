@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-31 08:10:45>
+;; Last modified: <2019-04-01.07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  7 February 2019
@@ -42,8 +42,7 @@ When part of `before-save-hook', won't add condition on initial save."
   (cl-flet ((add-condition
              (pred)
              (nvp-snippet-add-field "condition" pred)))
-    (let ((dir (ignore-errors (or (nvp-buff 'dfns)
-                                  (file-name-directory (buffer-file-name))))))
+    (let ((dir (ignore-errors (or (nvp-path 'dn) (nvp-path 'dfn)))))
       (when-let*
           ((test
             (assoc-string dir (or (bound-and-true-p nvp-snippet-local-conditions)
@@ -127,7 +126,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 
 ;; de/in-crement snippet expansion numbers in selected region
 (defun nvp-snippet-increment-count (bounds)
-  (interactive (list (nvp-region-or-batp)))
+  (interactive (list (nvp-tap 'bdwim)))
   (cl-destructuring-bind (beg . end) bounds
     (goto-char beg)
     (while (re-search-forward "\$\{?\\([[:digit:]]\\)" end 'move)

@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-05 13:43:40>
+;; Last modified: <2019-03-31.19>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -14,6 +14,12 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'hippie-exp)
+
+;;;###autoload
+(defun nvp-he-local (&rest he-funcs)
+  (make-local-variable 'hippie-expand-try-functions-list)
+  (dolist (func he-funcs)
+    (cl-pushnew func hippie-expand-try-functions-list)))
 
 ;; https://github.com/magnars/.emacs.d/blob/master/settings/setup-hippie.el
 (defvar nvp-he-search-loc-backward (make-marker))

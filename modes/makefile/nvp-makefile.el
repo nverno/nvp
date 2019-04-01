@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-29 02:53:35>
+;; Last modified: <2019-04-01.01>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -33,6 +33,12 @@
   (let ((indent-tabs-mode nil))
     (apply orig-fn args)))
 
+;; -------------------------------------------------------------------
+;;; Things-at-point
+
+(defun nvp-makefile-bounds-of-macro-at-point ()
+  (save-excursion
+    (skip-chars-backward "^$)}:#= \t\n" ())))
 ;; -------------------------------------------------------------------
 ;;; Font-lock
 ;; TODO:
@@ -124,7 +130,7 @@ Skips to end of tabbed block."
     ;; fixup indent
     (nvp-makefile-indent)
     ;; align [?:]= before first rule
-    (align (point-min) (point-max))     ;use builtin align rules for now
+    ;; (align (point-min) (point-max))     ;use builtin align rules for now
     ;; (let ((end (save-excursion
     ;;              ;; find first rule
     ;;              (progn (goto-char (point-min))

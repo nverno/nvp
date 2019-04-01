@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 08:39:34>
+;; Last modified: <2019-04-01.07>
 ;; Created: 20 December 2016
 
 ;;; Commentary:
@@ -21,16 +21,17 @@
 ;; -------------------------------------------------------------------
 ;;; Buffers / files
 
-;; trimmed filename
+;; filename w/o directory
 (defsubst nvp-yas-bfn ()
-  (nvp-buff 'bfns :or-name t))
+  (nvp-path 'bfns :or-name t))
 
+;; filename w/o dir. or ext.
 (defsubst nvp-yas-bfn-no-ext ()
-  (nvp-buff 'bfnse :or-name t))
+  (nvp-path 'bfnse :or-name t))
 
-;; directory name
+;; containing directory name only
 (defsubst nvp-yas-dfn ()
-  (nvp-buff 'dfns))
+  (nvp-path 'dn))
 
 ;; current indentation
 (defsubst nvp-yas-indent ()
@@ -104,7 +105,7 @@
 
 ;; name of current function or script
 (defun nvp-yas-function-or-script ()
-  (or (nvp-parse-current-function) (nvp-buff 'bfnse :or-name t)))
+  (or (nvp-parse-current-function) (nvp-path 'bfnse :or-name t)))
 
 ;; build param strings: params range from BEG length LEN
 ;; each param is prepended by JOIN string

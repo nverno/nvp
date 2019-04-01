@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31.18>
+;; Last modified: <2019-04-01.07>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -82,7 +82,7 @@ those are both specified."
       `(or (buffer-file-name ,buff) (buffer-name ,buff))
     `(buffer-file-name ,buff)))
 
-(cl-defmacro nvp-buff (type &key buffer path no-default or-name)
+(cl-defmacro nvp-path (type &key buffer path no-default or-name)
   "Return file or directory name components specified by TYPE.
 If BUFFER is non-nil, use its associated file (default current).
 If PATH is non-nil, use it as the file path.
@@ -96,8 +96,12 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 `bfne'   -- Buffer file's name w/o extension
 `bfnse'  -- Buffer file's short name w/o extension
 `ext'    -- Buffer file extension
-`dfn'    -- Full name of directory containing buffer file
-`dfns'   -- Directory's short name (just the containing directory)."
+`dn'     -- Directory's short name (just the containing directory)
+`dfn'    -- Full name of directory containing buffer file (no trailing slash)
+`dfns'   -- Full directory name with trailing slash
+`env'    -- Try to substitute environment variables in path, otherwise try to 
+            expand path again when it is loaded.
+"
   (let ((type (eval type)))
     (cond
      ((eq type 'bn) `(buffer-name ,buffer))
@@ -106,14 +110,8 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
      ((eq type 'bfne) `(file-name-sans-extension (nvp-buff--2 ,buffer ,or-name)))
      ((eq type 'bfnse) `(file-name-nondirectory
                          (file-name-sans-extension (nvp-buff--2 ,buffer ,or-name))))
-     ((eq type 'dfn) (if (not path)
-                         `(directory-file-name
-                           (nvp-buff--1 buffer-file-name ,no-default))
-                       `(if (directory-name-p ,path)
-                            (file-name-directory (file-truename ,path))
-                          (directory-file-name
-                           (file-name-directory (file-truename ,path))))))
-     ((eq type 'dfns)
+     ;; directories
+     ((eq type 'dn)
       (if (not path)
           `(file-name-nondirectory
             (directory-file-name
@@ -122,7 +120,30 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
              (file-name-nondirectory
               (file-name-directory (file-truename ,path)))
            (directory-file-name
-            (file-name-directory (file-truename ,path)))))))))
+            (file-name-directory (file-truename ,path))))))
+
+     ((eq type 'dfn)
+      (if (not path)
+          `(directory-file-name
+            (nvp-buff--1 buffer-file-name ,no-default))
+        `(if (directory-name-p ,path)
+             (file-name-directory (file-truename ,path))
+           (directory-file-name
+            (file-name-directory (file-truename ,path))))))
+
+     ((eq type 'dfns)
+      (if (not path)
+          `(nvp-buff--1 buffer-file-name ,no-default)
+        `(if (directory-name-p ,path)
+             (file-truename ,path)
+           (file-name-directory (file-truename ,path)))))
+
+     ((eq type 'env)
+      (if (not path)
+          (user-error "No path supplied with `env' to `nvp-path'.")
+        (let ((res (substitute-env-in-file-name path)))
+          (if (and res (file-exists-p res)) `,res
+            `(substitute-env-in-file-name ,path))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -412,6 +433,11 @@ to it is returned.  This function does not modify the point or the mark."
          ,@(if point `((goto-char ,point)))
          (nvp-skip-ws 'backward ,escape)))
 
+     ((eq position 'bosws)
+      `(save-excursion
+         ,@(if point `((goto-char ,point)))
+         (nvp-skip-sws 'backward ,escape)))
+     
      ((eq position 'eohws)
       `(save-excursion
          ,@(if point `((goto-char ,point)))
@@ -426,7 +452,7 @@ to it is returned.  This function does not modify the point or the mark."
      ((eq position 'eosws)
       `(save-excursion
          ,@(if point `((goto-char ,point)))
-         (nvp-forward-sws)
+         (nvp-skip-ws 'forward ,escape)
          (point)))
 
      (t (error "Unknown buffer position requested: %s" position)))))
@@ -455,44 +481,116 @@ to it is returned.  This function does not modify the point or the mark."
 ;; -------------------------------------------------------------------
 ;;; Regions / things-at-point
 
-(defmacro nvp-thing-dwim (&optional thing)
-  "Thing / region at point DWIM."
-  `(cond
-    ((use-region-p)
-     (buffer-substring-no-properties (region-beginning) (region-end)))
-    ((thing-at-point ,(or thing ''symbol) 'noprop))))
-
-(defmacro nvp-bounds-of-thing (thing &optional no-pulse)
+(cl-defmacro nvp-tap-bounds (&optional thing &key pulse)
   "Return `bounds-of-thing-at-point' and pulse region unless NO-PULSE."
-  (declare (indent 0))
-  `(progn
-     (declare-function nvp-indicate-pulse-region-or-line "")
-     (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
-       (prog1 bnds
-         ,(unless no-pulse
-            `(nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds)))))))
+  (if (null pulse)
+      `(bounds-of-thing-at-point ,(or thing ''symbol))
+    `(progn
+       (declare-function nvp-indicate-pulse-region-or-line "")
+       (let ((bnds (bounds-of-thing-at-point ,(or thing ''symbol))))
+         (when bnds
+           (prog1 bnds
+             (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
 
-(defmacro nvp-region-or-batp (&optional thing no-pulse)
+(cl-defmacro nvp-tap (type &optional tap &key beg end pulse)
+  "Wrapper for region/buffer/thing-at-point strings.
+Things at point default to 'symbols unless TAP is non-nil.
+By regions of things at point are pulsed if PULSE is non-nil.
+If BEG and END are non-nil, they are used as region bounds instead of those listed
+below.
+
+`rs'    -- region string no props
+`rsp'   -- region string w/ props
+`rb'    -- region bounds
+`bsv'   -- buffer string in possibly restricted region, no props
+`bsvp'  -- same, but no props
+`bs'    -- full buffer string, no props
+`bsp'   -- full buffer string w/ props
+`tap'   -- Thing string, no props
+`tapp'  -- Thing string w/ props
+`btap'  -- Bounds of thing at point
+`dwim'  -- If region is active, region string, otherwise thing-at-point (no props)
+`dwimp' -- Same, but with props
+`bdwim' -- Bounds of region or thing at point
+"
+  (let ((type (eval type)))
+    (cond
+     ((eq type 'rs)
+      `(buffer-substring-no-properties
+        ,(or beg '(region-beginning)) ,(or beg '(region-end))))
+     ((eq type 'rsp)
+      `(buffer-substring ,(or beg '(region-beginning)) ,(or end '(region-end))))
+     ((eq type 'rb)
+      `(car (region-bounds)))
+     
+     ((eq type 'bsv)
+      `(buffer-substring-no-properties
+        ,(or beg '(point-min)) ,(or end '(point-max))))
+     ((eq type 'bsvp)
+      `(buffer-substring ,(or beg '(point-min)) ,(or end '(point-max))))
+     ((eq type 'bs)
+      `(save-restriction
+         (widen)
+         (buffer-substring-no-properties
+          ,(or beg '(point-min)) ,(or end '(point-max)))))
+     ((eq type 'bsp)
+      `(save-excursion
+         (widen)
+         (buffer-substring ,(or beg '(point-min)) ,(or end '(point-max)))))
+
+     ((eq type 'tap) `(thing-at-point ,(or tap ''symbol) 'no-props))
+     ((eq type 'tapp) `(thing-at-point ,(or tap ''symbol)))
+     ((eq type 'btap) `(nvp-tap-bounds ,tap :pulse ,pulse))
+
+     ((eq type 'dwim)
+      (if (and beg end) `(buffer-substring-no-properties ,beg ,end)
+        `(if (use-region-p)
+             (buffer-substring-no-properties (region-beginning) (region-end))
+           (thing-at-point ,(or tap ''symbol) 'noprops))))
+     ((eq type 'dwimp)
+      (if (and beg end) `(buffer-substring ,beg ,end)
+        `(if (use-region-p)
+             (buffer-substring (region-beginning) (region-end))
+           (thing-at-point ,(or tap ''symbol)))))
+
+     ((eq type 'bdwim)
+      `(if (use-region-p) (car (region-bounds))
+         (nvp-tap-bounds ,(or tap ''symbol) :pulse ,pulse)))
+     
+     (t (user-error "Unknown `nvp-tap' type %S" type)))))
+
+(cl-defmacro nvp-with-region (beg end &optional thing &rest body
+                                  &key pulse &allow-other-keys)
+  "Bind BEG END to dwim region bounds.
+Uses region bounds if active, otherwise bounds of THING."
+  (declare (indent defun) (debug body))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
+  `(cl-destructuring-bind (,beg . ,end)
+       (nvp-tap 'bdwim ,(or thing ''paragraph) :pulse ,pulse)
+     ,@body))
+
+(defmacro nvp-region-or-batp (&optional thing pulse)
   "Region bounds if active or bounds of THING at point."
   (declare (indent defun) (debug t))
   `(if (use-region-p) (car (region-bounds))
-     (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse)))
+     (nvp-tap-bounds (or ,thing 'symbol) ,pulse)))
 
-(defmacro nvp-region-str-or-thing (&optional thing no-pulse)
+(defmacro nvp-region-str-or-thing (&optional thing pulse)
   "Region string if active or THING at point."
   (declare (indent defun) (debug t))
   `(progn
      (declare-function nvp-indicate-pulse-region-or-line "nvp-indicate")
      (if (use-region-p)
          (buffer-substring-no-properties (region-beginning) (region-end))
-       (when-let* ((bnds (nvp-bounds-of-thing (or ,thing 'symbol) ,no-pulse))
+       (when-let* ((bnds (nvp-tap-bounds (or ,thing 'symbol) ,pulse))
                    (str (buffer-substring-no-properties (car bnds) (cdr bnds))))
-         (if ,no-pulse str
+         (if ,pulse str
            (prog1 str
              (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
 
 (cl-defmacro nvp-within-bounds-of-thing-or-region
-    (thing beg end &rest body &key no-pulse &allow-other-keys)
+    (thing beg end &rest body &key pulse &allow-other-keys)
   "Execute BODY with region widened to bounds of THING at point \
 unless region is active.
 BEG and END are symbols to bind to the region the bounds.
@@ -507,7 +605,7 @@ If NO-PULSE, don't pulse region when using THING."
            (widen)
            (when-let* ((bnds (bounds-of-thing-at-point ,thing)))
              (cl-destructuring-bind (,beg . ,end) bnds
-               ,(unless no-pulse `(nvp-indicate-pulse-region-or-line ,beg ,end))
+               ,(unless pulse `(nvp-indicate-pulse-region-or-line ,beg ,end))
                ,@body)))
        ,@body)))
 
@@ -624,6 +722,28 @@ If STRIP-CTRL, just return the last character, eg. M-* => *."
   (if strip-ctrl
       `(substring (key-description (vector last-command-event)) -1)
     `(key-description (vector last-command-event))))
+
+(defmacro nvp-input (type)
+  "Return user input by TYPE.
+
+`lce'  -- Last key entered during `last-command-event' with ctrl chars stripped.
+`lcef' -- Full key from `last-command-event', possibly with meta chars.
+`lic'  -- Last input char using `edemacro-format-keys' with `last-input-event'.
+`licf' -- Full key from `last-input-event' using `edmacro-format-keys'."
+  (let ((type (eval type)))
+    (cond
+     ;; `last-command-event'
+     ((eq type 'lce)
+      `(substring (key-description (vector last-command-event)) -1))
+     ((eq type 'lcef)
+      `(key-description (vector last-command-event)))
+     ;; `last-input-event'
+     ((eq type 'lic)
+      '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
+     ((eq type 'licf)
+      '(kbd (edmacro-format-keys (vector last-input-event))))
+
+     (t (message "Unknown type `nvp-input': %S" type)))))
 
 ;; -------------------------------------------------------------------
 ;;; Bindings

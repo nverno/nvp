@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 09:31:19>
+;; Last modified: <2019-04-01.07>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -114,7 +114,7 @@ With prefix, prompt for MODE buffers to kill."
 (defun nvp-buffer-delete-file ()
   (interactive)
   (if-let ((file (buffer-file-name)))
-      (when (y-or-n-p (format "Really delete '%s'? " (nvp-buff 'bfns)))
+      (when (y-or-n-p (format "Really delete '%s'? " (nvp-path 'bfns)))
         (if (vc-backend file)
             (vc-delete-file file))
         (delete-file file delete-by-moving-to-trash)
@@ -125,7 +125,7 @@ With prefix, prompt for MODE buffers to kill."
 ;; `NEW-NAME'.
 ;;;###autoload
 (defun nvp-buffer-rename-file (new-name)
-  (interactive (list (read-from-minibuffer "New name: " (nvp-buff 'bfns))))
+  (interactive (list (read-from-minibuffer "New name: " (nvp-path 'bfns))))
   (let ((name (buffer-name))
 	(filename (buffer-file-name)))
     (if (not (and filename (file-exists-p filename)))

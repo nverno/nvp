@@ -1,6 +1,6 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-28 20:44:15>
+;; Last modified: <2019-04-01.03>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 12 February 2019
@@ -103,18 +103,21 @@ With double prefix or more, use comint buffer for compilation."
         (xterm-color-colorize-buffer)
      (ansi-color-apply-on-region compilation-filter-start (point-max)))))
 
-(defun nvp-compile-add-local-bindings (buff _stat bindings)
-  (with-current-buffer buff
-    (dolist (b bindings)
-      (local-set-key (kbd (car b)) (cadr b)))))
-
 ;;;###autoload
-(defun nvp-compile-with-bindings (bindings &rest args)
+(defun nvp-compile-with-bindings (&rest bindings)
   "Run basic compile with local BINDINGS in output buffer.
 ARGS are passed to `nvp-compile'."
-  (let ((compilation-finish-functions
-         `(nvp-compile-add-local-bindings buff stat ,bindings)))
-    (funcall 'nvp-compile args)))
+  (let* ((orig-funcs compilation-finish-functions)
+         (lmap (make-sparse-keymap))
+         (setup-func
+          #'(lambda (&rest _ignored)
+              (set-keymap-parent lmap (current-local-map))
+              (use-local-map lmap)
+              (setq compilation-finish-functions orig-funcs))))
+    (pcase-dolist (`(,k . ,b) bindings)
+      (define-key lmap (if (vectorp k) k (kbd k)) b))
+    (setq compilation-finish-functions setup-func)
+    (call-interactively 'nvp-compile)))
 
 ;; ------------------------------------------------------------
 ;;; Cmake

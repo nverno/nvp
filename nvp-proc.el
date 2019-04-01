@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-30 18:42:31>
+;; Last modified: <2019-04-01.00>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 March 2019
@@ -23,11 +23,16 @@
 ;; -------------------------------------------------------------------
 ;;; Find processes
 
-;; find first process matching PRED function
+;; find first item using TEST function (default 'equal)
 (cl-defsubst nvp-proc-find (item &key test key)
   (let ((completion-ignore-case t)
         (case-fold-search t))
-    (cl-find item (process-list) :test test :key key)))
+    (cl-find item (process-list) :test (or test #'equal) :key key)))
+
+;; find first process matched by PRED function
+(cl-defsubst nvp-proc-find-if (pred &key key start end from-end)
+  (and pred (cl-find-if pred (process-list) :key key :start start :end end
+                        :from-end from-end)))
 
 ;; find all processes matching PRED
 (defun nvp-proc-find-all (pred)

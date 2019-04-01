@@ -1,2 +1,2 @@
 ;; snippet utilities
-(require 'nvp-makefile-auto)
+;; (require 'nvp-makefile-auto)

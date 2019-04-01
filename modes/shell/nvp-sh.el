@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-31 08:45:14>
+;; Last modified: <2019-03-31.19>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -364,7 +364,7 @@ Optionally return process specific to THIS-BUFFER."
   (:quoted ?\" "`\\s-*\\([[:alnum:]_\\-]+\\)" (1 'sh-quoted-exec prepend)))
 
 ;; -------------------------------------------------------------------
-;;; Local variables / Hooks
+;;; Hooks
 
 ;; enforce uft-8-unix and align when killing buffer
 (defun nvp-sh-tidy-buffer ()

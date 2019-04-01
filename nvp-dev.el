@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-29 02:45:13>
+;; Last modified: <2019-04-01.07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -220,8 +220,12 @@ delimiter or an Escaped or Char-quoted character."
   "Fontify region or `thing-at-point' with font FACE.
 With \\[universal-argument] prompt for THING at point."
   (interactive
-   (list (read-face-name "Fontifaction face: ")
-         (nvp-region-or-batp (eq 4 (prefix-numeric-value current-prefix-arg)))))
+   (let* ((thing
+           (if current-prefix-arg
+               (intern (read-from-minibuffer "Thing to fontify: "))
+             'symbol))
+          (bnds (nvp-tap 'btap thing)))
+     (list (read-face-name "Fontifaction face: ") (car bnds) (cdr bnds))))
   (put-text-property beg end 'font-lock-face face))
 
 ;; -------------------------------------------------------------------

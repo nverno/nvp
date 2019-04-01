@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-16 21:35:34>
+;; Last modified: <2019-04-01.07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 20 March 2017
@@ -53,12 +53,15 @@
   "Simple function to increment numbers in region. Decrement with prefix.
 Call repeatedly with 'i'."
   (interactive "P")
-  (or bnds (setq bnds (nvp-region-or-batp
-                        (if (eq 16 (car arg))
-                            (intern (read-from-minibuffer
-                                     "Thingatpt (default 'paragraph): "
-                                     nil nil nil nil 'paragraph))
-                          'paragraph))))
+  (unless bnds
+    (setq bnds
+          (nvp-tap 'btap
+                   (if (eq 16 (car arg))
+                       (intern (read-from-minibuffer
+                                "Thingatpt (default 'paragraph): "
+                                nil nil nil nil 'paragraph))
+                     'paragraph)
+                   :pulse t)))
   (unless bnds (user-error "No region to search in."))
   (setq inc (if (eq 4 (car arg)) -1 1))
   (let (deactivate-mark)

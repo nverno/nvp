@@ -4,8 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-31 00:53:02>
-;; Package-Requires: 
+;; Last modified: <2019-03-31.20>
 ;; Created:  1 January 2017
 
 ;; This file is not part of GNU Emacs.
@@ -31,14 +30,20 @@
 ;;
 ;; See
 ;; - https://github.com/sstephenson/bats
-;; - https://github.com/dougm/bats-mode
+;; - modified from https://github.com/dougm/bats-mode
 
 ;;; Code:
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'sh-script)
 
-(defvar bats-exe (executable-find "bats"))
+(defvar bats-exe (executable-find "bats") "Bats executable.")
 
-(defvar bats-indent-offset 2)
+(defvar bats-indent-offset sh-basic-offset "Bats indentation offset.")
+
+(defvar bats-check-program
+  (nvp-program "batscheck" nil "~/src/bats/libexec")
+  (executable-find "batscheck"))
 
 ;; -------------------------------------------------------------------
 ;;; Util

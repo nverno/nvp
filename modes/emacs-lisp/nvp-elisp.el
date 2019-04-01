@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-29 02:43:58>
+;; Last modified: <2019-04-01.03>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 October 2016
 
@@ -299,6 +299,19 @@ If in `declare-function', convert to autoload."
       (process-put (ielm-process) :src-buffer ielm-working-buffer)
       (setq default-directory
             (buffer-local-value 'default-directory ielm-working-buffer)))))
+
+;; -------------------------------------------------------------------
+;;; Compile
+;; (car )
+
+(defun nvp-elisp-compile ()
+  (interactive)
+  (nvp-compile-with-bindings
+   `([remap recompile] . 
+     (lambda ()
+       (interactive)
+       (with-current-buffer ,(current-buffer)
+         (emacs-lisp-byte-compile))))))
 
 ;; ------------------------------------------------------------
 ;;; Imenu

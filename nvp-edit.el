@@ -1,6 +1,6 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 15:20:29>
+;; Last modified: <2019-04-01.07>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -87,10 +87,9 @@ With prefix sort in REVERSE."
 (defun nvp-unfill-list (begin end &optional regexp)
   "Remove newlines in list, leaving single spaces."
   (interactive "r")
-  (setq regexp
-        (if current-prefix-arg
-            (read-regexp "Unfill regexp: " "[ \n\t\r]+")
-          "[ \n\t\r]+"))
+  (setq regexp (if current-prefix-arg
+                   (read-regexp "Unfill regexp: " "[ \n\t\r]+")
+                 "[ \n\t\r]+"))
   (save-excursion
     (narrow-to-region begin end)
     (goto-char begin)
@@ -130,8 +129,7 @@ is useful, e.g, for use with `visual-line-mode'."
 ;; is non-nil, justify to the right. If `AFTER', add whitespace to left
 ;; instead of right.
 ;;;###autoload
-(defun nvp-align-repeat (start end regexp
-                               &optional justify-right after)
+(defun nvp-align-repeat (start end regexp &optional justify-right after)
   (interactive "r\nsAlign regexp: ")
   (let ((complete-regexp (if after
                              (concat regexp "\\([ \t]*\\)")
@@ -166,8 +164,8 @@ is useful, e.g, for use with `visual-line-mode'."
   "Align BEG to END or bounds of paragraph by CHAR.
 With prefix or if char is '\\', ensure CHAR is at the end of the line."
   (interactive
-   (cl-destructuring-bind (beg . end) (nvp-region-or-batp 'paragraph)
-     (list (nvp-last-command-char 'strip) beg end)))
+   (nvp-with-region beg end 'paragraph :pulse t
+     (list (nvp-input 'lce) beg end)))
   (let ((re (concat "\\(\\s-+\\)" (regexp-quote char)
                     (if (or current-prefix-arg (string= char "\\")) "$" ""))))
     (align-regexp beg end re)))
@@ -191,9 +189,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
   "Wrap next sexp with CHAR (last key pressed in calling command).
 Override default `sp-pair-list' if CHAR isn't a leading member.
 Prefix arg is passed to SP, wrapping the next _ARG elements."
-  (interactive
-   (list (nvp-last-command-char 'strip)
-         current-prefix-arg))
+  (interactive (list (nvp-input 'lce) current-prefix-arg))
   (let ((sp-pair-list
          (if (not (cl-member char sp-pair-list :test #'string= :key #'car))
              `((,char . ,char))
@@ -205,18 +201,15 @@ Prefix arg is passed to SP, wrapping the next _ARG elements."
 ;;; Lists
 
 ;; Adds commas after numbers in list, like matlab -> R.
-(defun nvp-list-insert-commas (str &optional from to)
-  (interactive
-   (cl-destructuring-bind (from . to) (nvp-region-or-batp 'paragraph)
-     (list nil from to)))
-  (let ((res
-         (replace-regexp-in-string
-          "\\([0-9]\\)\\s-+" "\\1, "
-          (or str (buffer-substring-no-properties from to)))))
+(defun nvp-list-insert-commas (str &optional beg end)
+  (interactive (nvp-with-region beg end 'paragraph :pulse t (list nil beg end)))
+  (let ((res (replace-regexp-in-string
+              "\\([0-9]\\)\\s-+" "\\1, "
+              (or str (nvp-tap 'rs nil :beg beg :end end)))))
     (if str res
       (save-excursion
-        (delete-region from to)
-        (goto-char from)
+        (delete-region beg end)
+        (goto-char beg)
         (insert res)))))
 
 (eval-when-compile

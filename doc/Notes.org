@@ -44,13 +44,15 @@ This doesn't seem to be too actively maintained
 - [ ] parse makefile targets
 - [ ] update URLs
 
-* Macros [4/8]
-- [X] use simplified version of c-point macro, allowing for different types of
-      escaped newlines and not using `c-syntactic-ws` functions
+* Macros [6/10]
 - [ ] aif
 - [ ] awhile
 - [ ] acond
 - [ ] remove `nvp-install-on-demand` when a better options is found
+- [X] unify thing-at-point / region macros
+- [X] scan-lists
+- [X] use simplified version of c-point macro, allowing for different types of
+      escaped newlines and not using `c-syntactic-ws` functions
 - [X] nvp-file - like nvp-point for common file/directory names
 - [X] nvp-ppss - wrap all the nvp-in-... syntax tests
 - [X] it would be nice to separate out macros just necessary for setup/init
@@ -110,13 +112,13 @@ This doesn't seem to be too actively maintained
 - [ ] how to remove font-lock keywords added with mode-name?
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
 
-** Comint / Proc [0/6]
-- [ ] separate sentinels from comint
+** Comint / Proc [1/6]
 - [ ] use in nvp-ext to find shell procs
 - [ ] use in nvp-shell to find shell procs
 - [ ] use in nvp-inf
 - [ ] investigate ess-get-next-available-process
 - [ ] merge hippie history expansion with comint-setup-history
+- [X] separate sentinels from comint
 
 ** Install [1/4]
 - [ ] interface to install external deps
@@ -173,11 +175,10 @@ funcs: with-temp-message
 - [ ] add option to treat all warnings as errors to makefile
 - [ ] update nvp-log, not very useful - probably just remove
 
-** REPLs [4/8]
+** REPLs [4/7]
 - [ ] call indirect functions to modify regions as necessary
 - [ ] generic send dwim - last defun / sexp
 - [ ] extendable REPL props: eg. staus, cached completions, etc.
-- [ ] investigate ess-get-next-available-process
 - [X] generic send region
 - [X] generic send line
 - [X] generic send buffer

@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-22 23:19:18>
+;; Last modified: <2019-04-01.11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 February 2019
@@ -18,12 +18,13 @@
   (require 'cl-lib)
   (require 'subr-x)
   (require 'nvp-macro))
+(require 'nvp)
 (nvp-declare "define-word" define-word define-word-at-point)
 (autoload 'nvp-read-keymap "nvp-read")
 (autoload 'ispell-get-word "ispell")
 
 ;; -------------------------------------------------------------------
-;;; Lookup Words
+;;; Words
 
 ;; Define word at point, with single prefix prompt for word, 
 ;; with two prefix use lookup-word.
@@ -56,7 +57,8 @@
 
 ;; -------------------------------------------------------------------
 ;;; Chars
- 
+
+;; `list-block-of-chars' function does legwork
 ;;;###autoload
 (defun nvp-help-list-charsets (&optional arg)
   "List names of charsets."
@@ -64,26 +66,8 @@
   (if arg
       (list-character-sets nil)
     (let* ((table (mapcar (lambda (x) (list (symbol-name x))) charset-list))
-           (charset (ido-completing-read "Charset: " table)))
+           (charset (nvp-completing-read "Charset: " table)))
      (list-charset-chars (intern charset)))))
-
-;;; FIXME: unprintable characters
-;;;###autoload
-(defun nvp-help-ascii-table ()
-  "Print ASCII table values."
-  (interactive)
-  (nvp-with-results-buffer "*ASCII*"
-    (insert "              ASCII               \n"
-            "----------------------------------\n")
-    (cl-loop
-       for i from 0 to 15
-       do (cl-loop
-             for j from 0 to 15
-             as num = (+ i (* j 16))
-             do
-               (when (= j 0) (insert (format "%4d |" i)))
-               (insert (format " %c " num))
-               (when (= j 15) (insert "\n"))))))
 
 ;; -------------------------------------------------------------------
 ;;; Bindings

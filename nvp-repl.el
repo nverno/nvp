@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-01.07>
+;; Last modified: <2019-04-01.12>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 22 March 2019
@@ -27,53 +27,61 @@
 (require 'nvp)
 (require 'nvp-proc)
 (require 'nvp-display)
+(nvp-decl "" nvp-sh-get-process ielm-change-working-buffer)
 
 (eval-and-compile
-  (defvar nvp-repl-alist '() "Mapping modes to repls."))
+  (defvar nvp-repl-alist '() "Mapping modes to repls.")
 
-(cl-defstruct (nvp-repl (:constructor nvp-repl-make))
-  "Mode specific REPL variables"
-  modes                                 ; REPL major-modes to consider
-  bufname                               ; buffer name to search for
-  procname                              ; process name to search for
-  find-fn                               ; custom function to find REPL
-  (live 'comint-check-proc)             ; check if buffer is available
-  init                                  ; init REPL => return process
-  wait                                  ; time to wait for REPL
-  filters                               ; filters applied to text sent to REPL
-  cd                                    ; command to change REPL working dir
-  ;; set internally
-  proc                                  ; REPL process
-  )
-(put 'nvp-repl-make 'lisp-indent-function 'defun)
+  (cl-defstruct (nvp-repl (:constructor nvp-repl-make))
+    "Mode specific REPL variables"
+    modes                                 ; REPL major-modes to consider
+    bufname                               ; buffer name to search for
+    procname                              ; process name to search for
+    find-fn                               ; custom function to find REPL
+    (live 'comint-check-proc)             ; check if buffer is available
+    init                                  ; init REPL => return process
+    wait                                  ; time to wait for REPL
+    filters                               ; filters applied to text sent to REPL
+    cd                                    ; command to change REPL working dir
+    ;; set internally
+    proc                                  ; REPL process
+    )
+  (put 'nvp-repl-make 'lisp-indent-function 'defun)
 
-(eval-and-compile
+
+  ;; default REPL to use - shell
+  (defvar nvp-repl-default (apply #'nvp-repl-make
+                                  (list :init #'nvp-sh-get-process
+                                        :modes '(shell-mode)
+                                        :procname "shell"
+                                        :bufname "*shell")))
+
+  (defvar-local nvp-repl-buffer () "Current REPL buffer associated with source file.")
+  (defvar-local nvp-repl nvp-repl-default "REPL associated with current buffer.")
+
   (cl-defun nvp-repl-add (mmodes &rest args)
-   "Create new mappings of major modes MMODES to repl created from ARGS."
-   (unless (listp mmodes) (setq mmodes (cons mmodes nil)))
-   (let ((repl (apply #'nvp-repl-make args)))
-     (setq mmodes (cons mmodes repl))
-     (cl-pushnew mmodes nvp-repl-alist :test #'equal))))
-(put 'nvp-repl-add 'lisp-indent-function 'defun)
+    "Create new mappings of major modes MMODES to repl created from ARGS."
+    (unless (listp mmodes) (setq mmodes (cons mmodes nil)))
+    (let ((repl (apply #'nvp-repl-make args)))
+      (setq mmodes (cons mmodes repl))
+      (cl-pushnew mmodes nvp-repl-alist :test #'equal)))
+  (put 'nvp-repl-add 'lisp-indent-function 'defun)
 
-;; default REPL to use - shell
-(defvar nvp-repl-default (apply #'nvp-repl-make
-                                (list :init #'nvp-sh-get-process
-                                      :modes '(shell-mode)
-                                      :procname "shell"
-                                      :bufname "*shell")))
+  ;; initialize some REPLs
+  (eval-and-compile
+    (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
+      :init #'ielm
+      :modes '(inferior-emacs-lisp-mode)
+      :procname "ielm"
+      :bufname "*ielm"
+      :cd #'ielm-change-working-buffer)))
 
-(defvar-local nvp-repl-buffer () "Current REPL buffer associated with source file.")
-(defvar-local nvp-repl nvp-repl-default "REPL associated with current buffer.")
-
-;; initialize some REPLs
-(eval-and-compile
-  (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
-    :init #'ielm
-    :modes '(inferior-emacs-lisp-mode)
-    :procname "ielm"
-    :bufname "*ielm"
-    :cd #'ielm-change-working-buffer))
+;; may switch storage of REPL vars
+(eval-when-compile
+  (defmacro nvp-repl--val (val &optional repl)
+    (or (stringp val) (setq val (symbol-name val)))
+    (let ((fn (intern (concat "nvp-repl-" val))))
+      `(,fn ,(or repl nvp-repl nvp-repl-default)))))
 
 ;; return repl for MODE, or default
 (defsubst nvp-repl-for-mode (mode)
@@ -82,13 +90,6 @@
       when (memq mode modes)
       return repl)
    nvp-repl-default))
-
-;; may switch storage of REPL vars
-(eval-when-compile
-  (defmacro nvp-repl--val (val &optional repl)
-    (or (stringp val) (setq val (symbol-name val)))
-    (let ((fn (intern (concat "nvp-repl-" val))))
-      `(,fn (or ,repl nvp-repl nvp-repl-default)))))
 
 ;; -------------------------------------------------------------------
 ;;; Functions to find REPLs
@@ -103,34 +104,26 @@ Each function takes a process as an argument to test against.")
 
 ;; find REPL using a custom function
 (defsubst nvp-repl-find-custom (&optional repl)
-  (nvp-proc-find-if (nvp-repl--val find-fn repl)))
+  (when-let ((find-fn (nvp-repl--val find-fn repl)))
+    (funcall find-fn)))
 
 ;; match process buffer
 (defsubst nvp-repl-match-bufname (&optional repl)
   (when-let ((bname (nvp-repl--val bufname repl)))
-    (apply-partially 
-     (lambda (name _proc)
-       (nvp-proc-find
-        name :key (lambda (p) (buffer-name (process-buffer p))) :test #'string-match-p))
-     bname)))
+    (nvp-proc-find
+     bname :key (lambda (p) (buffer-name (process-buffer p))) :test #'string-match-p)))
 
 ;; match process name
 (defsubst nvp-repl-match-procname (&optional repl)
   (when-let ((pname (nvp-repl--val procname repl)))
-    (apply-partially
-     (lambda (name _proc)
-       (nvp-proc-find name :key #'process-name :test #'string-match-p))
-     pname)))
+    (nvp-proc-find pname :key #'process-name :test #'string-match-p)))
 
 ;; match major-mode
 (defsubst nvp-repl-match-modes (&optional repl)
   (when-let ((modes (nvp-repl--val modes repl)))
-    (apply-partially
-     (lambda (mmodes _proc)
-       (nvp-proc-find-if
-        (lambda (pbuff) (memq (buffer-local-value 'major-mode pbuff) mmodes))
-        :key #'process-buffer))
-     modes)))
+    (nvp-proc-find-if
+     (lambda (pbuff) (and pbuff (memq (buffer-local-value 'major-mode pbuff) modes)))
+     :key #'process-buffer)))
 
 ;; -------------------------------------------------------------------
 ;;; REPL processes
@@ -157,36 +150,42 @@ Each function takes a process as an argument to test against.")
 
 ;; get REPL buffer if it has a live process
 (defsubst nvp-repl-buffer (&optional repl)
-  (let ((proc (nvp-repl-process repl)))
-    (and (processp proc) (process-buffer proc))))
+  (when-let ((proc (nvp-repl-process repl)))
+    (process-buffer proc)))
+
+;; update REPLs proc and procs src-buffer property
+(defsubst nvp-repl-update (proc-or-buff &optional repl)
+  (if (processp proc-or-buff)
+      (setf (nvp-repl--val proc repl) proc-or-buff)
+    (setf (nvp-repl--val proc repl) (process-buffer proc-or-buff)))
+  (nvp-repl--attach (current-buffer) repl))
 
 ;; -------------------------------------------------------------------
 ;;; Initialize new REPLs
 
-(defun nvp-repl-get-buffer ()
+(cl-defgeneric nvp-repl-get-buffer (&optional repl &rest _args)
   "Return a REPL buffer if one exists, otherwise attempt to start one."
-  (or (nvp-repl-buffer)
-      (
-       (setq nvp-repl-buffer
-             (run-hook-with-args-until-success 'nvp-repl-find-functions)))
-      ;; return live REPL buffer
-      (if (nvp-repl-live-p nvp-repl-buffer) nvp-repl-buffer
-        ;; otherwise need to initialize a new one
-        (or (nvp-repl-start)
+  (or (nvp-repl-buffer repl)
+      (if-let ((proc (run-hook-with-args-until-success 'nvp-repl-find-functions)))
+          (when (nvp-repl-live-p proc repl)
+            ;; found an unregistered live one
+            (nvp-repl-update proc repl)
+            (if (processp proc)
+                (process-buffer proc)
+              proc))
+        ;; initialize a new REPL
+        (or (nvp-repl-start repl)
             (user-error "Failed to initialize REPL")))))
 
-(cl-defgeneric nvp-repl-start ()
+(cl-defgeneric nvp-repl-start (&optional repl &rest _args)
   "Initialize and return a new REPL buffer associated with current buffer."
-  (let ((wait (nvp-repl--val wait))
-        (init-fn (nvp-repl--val init))
-        (src-buff (current-buffer)))
-    (setq nvp-repl-buffer (funcall init-fn))
+  (let ((wait (nvp-repl--val wait repl))
+        (proc-or-buff (funcall (nvp-repl--val init repl))))
     (and wait (sit-for wait))
-    (and (processp nvp-repl-buffer)
-         (setq nvp-repl-buffer (process-buffer nvp-repl-buffer)))
-    (setf (nvp-repl--val proc) (get-buffer-process nvp-repl-buffer))
-    (nvp-repl--attach src-buff nvp-repl-buffer)
-    nvp-repl-buffer))
+    (nvp-repl-update proc-or-buff repl)
+    (if (processp proc-or-buff)
+        (process-buffer proc-or-buff)
+      proc-or-buff)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

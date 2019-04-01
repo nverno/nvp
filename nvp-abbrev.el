@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-28 19:03:04>
+;; Last modified: <2019-04-01.11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -59,7 +59,7 @@
 (cl-defgeneric nvp-abbrev--grab-region (beg end)
   "Generic function to return abbrev from region BEG to END.
 Should return sexp of form (abbrev . expansion)."
-  (let ((exp (buffer-substring-no-properties beg end)))
+  (let ((exp (nvp-tap 'bsv nil beg end)))
     (cons (read-string (format "Abbrev for %s: " exp)) exp)))
 
 (cl-defmethod nvp-abbrev--grab-region
@@ -67,12 +67,13 @@ Should return sexp of form (abbrev . expansion)."
   "Try to determine appropriate elisp abbrev from region.
 Remove any surrounding parens and use first chars with lisp transformer.
 With prefix, don't split region by whitespace."
-  (let* ((str (if current-prefix-arg
-                  (buffer-substring-no-properties beg end)
-                (car (split-string
-                      (buffer-substring-no-properties beg end) nil 'omit))))
-         (exp (string-trim str "[ \t\n\(]" "[ \t\n\)]")))
-    (cons (nvp-abbrev--lisp-transformer exp) exp)))
+  (let* ((str (if current-prefix-arg (nvp-tap 'bsv nil beg end)
+                (car (split-string (nvp-tap 'bsv nil beg end) nil 'omit))))
+         (exp (string-trim str "[ \t\n\(]" "[ \t\n\)]"))
+         (trans (nvp-abbrev--lisp-transformer exp)))
+    (if (string-prefix-p "cl-" exp)
+        (setq trans (concat "cl" (substring trans 1))))
+    (cons trans exp)))
 
 (cl-defgeneric nvp-abbrev--table-name (&optional local-table _abbrev _exp)
   "Generic function to return the name of abbrev file to use with given abbrev \
@@ -86,10 +87,9 @@ or expansion."
     (let* ((pref (or exp abbrev))
            (prefix
             (and pref
-                 (cdr (cl-find-if (lambda (pre) (string-prefix-p pre pref))
-                                  '(("cl"  . "emacs-lisp-cl")
-                                    ("nvp" . "emacs-lisp-nvp"))
-                                  :key #'car)))))
+                 (cdr (cl-find pref '(("cl"  . "emacs-lisp-cl")
+                                      ("nvp" . "emacs-lisp-nvp"))
+                               :key #'car :test #'string-prefix-p)))))
       (regexp-quote (format "%s-abbrev-table" (or prefix local-table major-mode))))))
 
 ;; insert starter abbrev table template

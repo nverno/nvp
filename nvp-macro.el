@@ -581,7 +581,7 @@ to it is returned.  This function does not modify the point or the mark."
            (prog1 bnds
              (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
 
-(cl-defmacro nvp-tap (type &optional tap &key beg end pulse)
+(cl-defmacro nvp-tap (type &optional tap beg end &key pulse)
   "Wrapper for region/buffer/thing-at-point strings.
 Things at point default to 'symbols unless TAP is non-nil.
 By regions of things at point are pulsed if PULSE is non-nil.

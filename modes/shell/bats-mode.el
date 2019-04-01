@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-31.20>
+;; Last modified: <2019-04-01.15>
 ;; Created:  1 January 2017
 
 ;; This file is not part of GNU Emacs.
@@ -34,87 +34,104 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'cl-lib))
 (require 'sh-script)
+(require 'nvp)
+(require 'nvp-sh)
 
-(defvar bats-exe (executable-find "bats") "Bats executable.")
+(defvar bats-exe (nvp-program "bats") "Bats executable.")
 
 (defvar bats-indent-offset sh-basic-offset "Bats indentation offset.")
 
-(defvar bats-check-program
-  (nvp-program "batscheck" nil "~/src/bats/libexec")
-  (executable-find "batscheck"))
+(defvar bats-check-program (nvp-program "batscheck" nil (file-truename "~/bin/sh")))
 
-;; -------------------------------------------------------------------
-;;; Util
+(defvar bats-function-re
+  (nvp-concat
+   "^\\s-*\\(?:"
+   ;; function FOO()
+   "function\\s-+\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*\\(?:()\\)?"
+   "\\|"
+   ;; FOO()
+   "\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*()"
+   "\\|"
+   ;; bats tests
+   "@test"
+   "\\)"))
 
 (eval-when-compile
   (defmacro re-opt (opts)
-    `(concat "\\_<" (regexp-opt ,opts t) "\\_>"))
+    `(concat "\\_<" (regexp-opt ,opts t) "\\_>")))
 
-  (defmacro bats--beginning-of-test ()
-    `(progn
-       (end-of-line)
-       (search-backward-regexp "^@test" nil 'move)))
-
-  (defmacro bats--end-of-test ()
-    `(progn
-       (bats--beginning-of-test)
-       (end-of-line)
-       (up-list)
-       (point)))
-
-  ;; return name of current bats test
-  (defmacro bats--current-test ()
-    `(save-excursion
-       (if (bats--beginning-of-test)
-           (and (re-search-forward "^@test \"\\(.*?\\)\" *{" (line-end-position))
-                (match-string 1))
-         (user-error "Unable to find current @test"))))
-
-  (defmacro bats--search (&optional back)
-    `(condition-case nil
-         (progn
-           (forward-line ,(if back -1 1))
-           (,(if back 're-search-backward 're-search-forward) "^@test")
-           (beginning-of-line))
-       (error (forward-line ,(if back 1 -1))))))
-
-(defun bats-run (file &optional name)
-  (let ((cmd (concat bats-exe " -t " file)))
-    (compile (if name (concat (format "BATS_TEST_PATTERN='^%s$' " name) cmd) cmd))))
+(defun bats-current-test ()
+  "Find current bats test."
+  (let (test-name)
+    (save-excursion
+      (end-of-line)
+      (unless (search-backward-regexp "^@test \"\\(.*?\\)\" {" nil t)
+        (error "Unable to find a @test"))
+      (setq test-name (match-string 1)))
+    test-name))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-(defun bats-next-test ()
-  (interactive)
-  (bats--search))
-
-(defun bats-previous-test ()
-  (interactive)
-  (bats--search 'back))
-
 ;; mark current test, keep marking successive tests when called
 ;; repeatedly
-(defun bats-mark-test ()
-  (interactive)
-  (if (or (and (eq last-command this-command) (mark t))
-          (and transient-mark-mode mark-active))
-      (set-mark
-       (save-excursion
-         (goto-char (mark))
-         (bats-next-test)
-         (bats--end-of-test)))
-    (let ((start (bats--beginning-of-test)))
-      (when start
-        (bats--end-of-test)
-        (push-mark nil t t)
-        (goto-char start)))))
+;; (defun bats-mark-test ()
+;;   (interactive)
+;;   (if (or (and (eq last-command this-command) (mark t))
+;;           (and transient-mark-mode mark-active))
+;;       (set-mark
+;;        (save-excursion
+;;          (goto-char (mark))
+;;          (bats-next-test)
+;;          (bats--end-of-test)))
+;;     (let ((start (bats--beginning-of-test)))
+;;       (when start
+;;         (bats--end-of-test)
+;;         (push-mark nil t t)
+;;         (goto-char start)))))
+
+;; Compilation
+
+(with-eval-after-load 'compile
+  (add-to-list 'compilation-error-regexp-alist 'bats t)
+  (add-to-list 'compilation-error-regexp-alist-alist
+               '(bats . ("file \\([^ \t\r\n(]+\\), line \\([0-9]+\\)" 1 2)) t))
+
+;; just highlight checkmarks
+(defun bats-compilation-filter ()
+  (save-excursion
+    (forward-line 0)
+    (let ((end (point)))
+      (goto-char compilation-filter-start)
+      (forward-line 0)
+      (when (< (point) end)
+        (setq end (copy-marker end))
+        (while (search-forward "✓" end 1)
+          (replace-match
+           (propertize (match-string 0) 'face 'bold 'font-lock-face 'compilation-info)
+           t t))))))
+
+;; align results by checkmarks
+(defun bats-compilation-finish (&rest _)
+  (let ((inhibit-read-only t))
+   (align-regexp (point-min) (point-max) "\\(\\s-+\\)✓" 1)))
+
+;; FIXME: Doesn't look like there is a BATS_TEST_PATTERN anymore
+(defun bats-run (file &optional name)
+  (let ((cmd (concat bats-exe " -p " file)))
+    (with-current-buffer 
+        (compile (if name
+                     (concat (format "BATS_TEST_PATTERN='^%s$' " name) cmd)
+                   cmd))
+      (add-hook 'compilation-filter-hook #'bats-compilation-filter nil t)
+      (add-hook 'compilation-finish-functions #'bats-compilation-finish nil t))))
 
 (defun bats-run-current-test ()
   (interactive)
-  (bats-run-current-file (bats--current-test)))
+  (bats-run-current-file (bats-current-test)))
 
 (defun bats-run-current-file (&optional name)
   (interactive)
@@ -133,20 +150,11 @@
 
 (defvar bats-font-lock-keywords
   `(("\\(@test\\)" 1 font-lock-keyword-face)
-    (,(re-opt '("load" "run" "skip")) 1 font-lock-function-name-face)))
-
-;; Compilation
-
-(with-eval-after-load 'compile
-  (add-to-list 'compilation-error-regexp-alist 'bats t)
-  (add-to-list 'compilation-error-regexp-alist-alist
-               '(bats . ("file \\([^ \t\r\n(]+\\), line \\([0-9]+\\)" 1 2)) t))
+    (,(re-opt '("load" "run" "skip")) 1 font-lock-function-name-face)
+    (,(re-opt '("setup" "teardown")) 1 'nvp-italic-type-face)))
 
 (defvar bats-mode-map
   (let ((km (make-sparse-keymap)))
-    (define-key km (kbd "M-N")     'bats-next-test)
-    (define-key km (kbd "M-P")     'bats-previous-test)
-    (define-key km (kbd "M-H")     'bats-mark-test)
     (define-key km (kbd "C-c C-b") 'bats-run-current-file)
     (define-key km (kbd "C-c C-a") 'bats-run-all)
     (define-key km (kbd "C-c C-c") 'bats-run-current-test)
@@ -163,7 +171,11 @@ Commands:
 \\{bats-mode-map}"
   (setq-local sh-shell "bash")
   (setq-local sh-basic-offset bats-indent-offset)
-  (font-lock-add-keywords 'bats-mode bats-font-lock-keywords))
+  (font-lock-add-keywords 'bats-mode bats-font-lock-keywords)
+  (setq-local nvp-sh-function-re bats-function-re)
+  (setq-local beginning-of-defun-function #'nvp-sh-beginning-of-defun)
+  (setq-local end-of-defun-function #'nvp-sh-end-of-defun)
+  (setq-local compile-command '(concat bats-check-program " " (buffer-file-name))))
 
 (provide 'bats-mode)
 ;;; bats-mode.el ends here

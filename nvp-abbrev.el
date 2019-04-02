@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-01.11>
+;; Last modified: <2019-04-01.15>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Package-Requires: 
@@ -59,7 +59,7 @@
 (cl-defgeneric nvp-abbrev--grab-region (beg end)
   "Generic function to return abbrev from region BEG to END.
 Should return sexp of form (abbrev . expansion)."
-  (let ((exp (nvp-tap 'bsv nil beg end)))
+  (let ((exp (nvp-s 'bs beg end)))
     (cons (read-string (format "Abbrev for %s: " exp)) exp)))
 
 (cl-defmethod nvp-abbrev--grab-region
@@ -67,8 +67,8 @@ Should return sexp of form (abbrev . expansion)."
   "Try to determine appropriate elisp abbrev from region.
 Remove any surrounding parens and use first chars with lisp transformer.
 With prefix, don't split region by whitespace."
-  (let* ((str (if current-prefix-arg (nvp-tap 'bsv nil beg end)
-                (car (split-string (nvp-tap 'bsv nil beg end) nil 'omit))))
+  (let* ((str (if current-prefix-arg (nvp-s 'bs beg end)
+                (car (split-string (nvp-s 'bs beg end) nil 'omit))))
          (exp (string-trim str "[ \t\n\(]" "[ \t\n\)]"))
          (trans (nvp-abbrev--lisp-transformer exp)))
     (if (string-prefix-p "cl-" exp)

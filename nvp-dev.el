@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-01.07>
+;; Last modified: <2019-04-01.16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -122,6 +122,40 @@
 ;;           (enable-recursive-minibuffers t)
 ;;           ()
 ;;           (type (completing-read "Type: " '("hash" "struct" "class" "default")))))))
+;; -------------------------------------------------------------------
+;;; Overlays
+
+;; https://www.emacswiki.org/emacs/EmacsOverlays
+(defun nvp-dev-list-overlays (&optional pos)
+  "Describe overlays at POS (default point)."
+  (interactive)
+  (setq pos (or pos (point)))
+  (let ((overlays (overlays-at pos))
+        (obuf (current-buffer))
+        (props '(priority window category face mouse-face display
+                          help-echo modification-hooks insert-in-front-hooks
+                          insert-behind-hooks invisible intangible
+                          isearch-open-invisible isearch-open-invisible-temporary
+                          before-string after-string evaporate local-map keymap
+                          field))
+        start end text)
+    (if (not overlays) (message "Nothing here :(")
+      (nvp-with-results-buffer (help-buffer) :font-lock t
+        (nvp-dev--princ-title (format "Overlays at %d in %S" pos (current-buffer)))
+        (dolist (o overlays)
+          (setq start (overlay-start o)
+                end (overlay-end o)
+                text (with-current-buffer obuf
+                       (nvp-s 'bs start end)))
+          (when (> (- end start) 13)
+            (setq text (concat (substring text 0 10) "...")))
+          (insert (propertize (format "From %d to %d: \"%s\":\n" start end text)
+                              'face nil 'font-lock-face 'compilation-info))
+          (dolist (prop props)
+            (when (overlay-get o prop)
+              (insert (propertize (format " %15S:" prop) 'face nil
+                                  'font-lock-face font-lock-constant-face))
+              (insert (format " %S\n" (overlay-get o prop))))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax

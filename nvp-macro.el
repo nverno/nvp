@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-01.11>
+;; Last modified: <2019-04-01.23>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -570,6 +570,42 @@ to it is returned.  This function does not modify the point or the mark."
 ;; -------------------------------------------------------------------
 ;;; Regions / things-at-point
 
+(defmacro nvp-s (type &optional beg end)
+  "Wrapper for region/buffer strings.
+
+`rs'   -- region string no props
+`rsp'  -- region string w/ props
+`rb'   -- region bounds
+`bs'   -- buffer string (no widening, no props)
+`bsp'  -- same with props
+`bsw'  -- buffer string w/ widening, no props
+`bswp' -- same but w/ props"
+  (let ((type (eval type)))
+    (cond
+     ((eq type 'rs)
+      `(buffer-substring-no-properties
+        ,(or beg '(region-beginning)) ,(or end '(region-end))))
+     ((eq type 'rsp)
+      `(buffer-substring ,(or beg '(region-beginning)) ,(or end '(region-end))))
+     ((eq type 'rb)
+      `(car (region-bounds)))
+     
+     ((eq type 'bs)
+      `(buffer-substring-no-properties
+        ,(or beg '(point-min)) ,(or end '(point-max))))
+     ((eq type 'bsp)
+      `(buffer-substring ,(or beg '(point-min)) ,(or end '(point-max))))
+     ((eq type 'bsw)
+      `(save-restriction
+         (widen)
+         (buffer-substring-no-properties
+          ,(or beg '(point-min)) ,(or end '(point-max)))))
+     ((eq type 'bswp)
+      `(save-excursion
+         (widen)
+         (buffer-substring ,(or beg '(point-min)) ,(or end '(point-max)))))
+     (t (user-error "%S unknown to `nvp-s'" type)))))
+
 (cl-defmacro nvp-tap-bounds (&optional thing &key pulse)
   "Return `bounds-of-thing-at-point' and pulse region unless NO-PULSE."
   (if (null pulse)
@@ -582,51 +618,20 @@ to it is returned.  This function does not modify the point or the mark."
              (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
 
 (cl-defmacro nvp-tap (type &optional tap beg end &key pulse)
-  "Wrapper for region/buffer/thing-at-point strings.
+  "Wrapper for bounds/contents of region/thing-at-points.
 Things at point default to 'symbols unless TAP is non-nil.
 By regions of things at point are pulsed if PULSE is non-nil.
 If BEG and END are non-nil, they are used as region bounds instead of those listed
 below.
 
-`rs'    -- region string no props
-`rsp'   -- region string w/ props
-`rb'    -- region bounds
-`bsv'   -- buffer string in possibly restricted region, no props
-`bsvp'  -- same, but no props
-`bs'    -- full buffer string, no props
-`bsp'   -- full buffer string w/ props
 `tap'   -- Thing string, no props
 `tapp'  -- Thing string w/ props
 `btap'  -- Bounds of thing at point
 `dwim'  -- If region is active, region string, otherwise thing-at-point (no props)
 `dwimp' -- Same, but with props
-`bdwim' -- Bounds of region or thing at point
-"
+`bdwim' -- Bounds of region or thing at point"
   (let ((type (eval type)))
     (cond
-     ((eq type 'rs)
-      `(buffer-substring-no-properties
-        ,(or beg '(region-beginning)) ,(or end '(region-end))))
-     ((eq type 'rsp)
-      `(buffer-substring ,(or beg '(region-beginning)) ,(or end '(region-end))))
-     ((eq type 'rb)
-      `(car (region-bounds)))
-     
-     ((eq type 'bsv)
-      `(buffer-substring-no-properties
-        ,(or beg '(point-min)) ,(or end '(point-max))))
-     ((eq type 'bsvp)
-      `(buffer-substring ,(or beg '(point-min)) ,(or end '(point-max))))
-     ((eq type 'bs)
-      `(save-restriction
-         (widen)
-         (buffer-substring-no-properties
-          ,(or beg '(point-min)) ,(or end '(point-max)))))
-     ((eq type 'bsp)
-      `(save-excursion
-         (widen)
-         (buffer-substring ,(or beg '(point-min)) ,(or end '(point-max)))))
-
      ((eq type 'tap) `(thing-at-point ,(or tap ''symbol) 'no-props))
      ((eq type 'tapp) `(thing-at-point ,(or tap ''symbol)))
      ((eq type 'btap) `(nvp-tap-bounds ,tap :pulse ,pulse))
@@ -726,10 +731,13 @@ and set `this-command' to nil so opposite happens next time."
 ;; -------------------------------------------------------------------
 ;;; Display Results
 
-(defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body)
+(cl-defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body
+                                                &key font-lock &allow-other-keys)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."
   (declare (indent defun) (debug (sexp &rest form)))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
   `(let (other-window-scroll-buffer)
      (nvp-window-configuration-save)
      (with-temp-buffer-window
@@ -739,6 +747,7 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
       (with-current-buffer standard-output
         (setq other-window-scroll-buffer (current-buffer))
         ,@body
+        ,@(when font-lock '((font-lock-mode) (font-lock-ensure)))
         (hl-line-mode)
         (view-mode-enter nil #'nvp-window-configuration-restore)))))
 
@@ -792,7 +801,9 @@ If STRIP-CTRL, just return the last character, eg. M-* => *."
 `lce'  -- Last key entered during `last-command-event' with ctrl chars stripped.
 `lcef' -- Full key from `last-command-event', possibly with meta chars.
 `lic'  -- Last input char using `edemacro-format-keys' with `last-input-event'.
-`licf' -- Full key from `last-input-event' using `edmacro-format-keys'."
+`licf' -- Full key from `last-input-event' using `edmacro-format-keys'.
+`tck'  -- Last key from `this-command-keys-vector'.
+"
   (let ((type (eval type)))
     (cond
      ;; `last-command-event'
@@ -805,11 +816,21 @@ If STRIP-CTRL, just return the last character, eg. M-* => *."
       '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
      ((eq type 'licf)
       '(kbd (edmacro-format-keys (vector last-input-event))))
-
+     ((eq type 'tck)
+      '(let* ((keys (this-command-keys-vector))
+              (last-key (and (vectorp keys)
+                             (aref keys (1- (length keys))))))
+         (and last-key (lookup-key (current-active-maps 'olp) (vector last-key)))))
      (t (message "Unknown type `nvp-input': %S" type)))))
 
 ;; -------------------------------------------------------------------
 ;;; Bindings
+
+(defmacro nvp-kbd (key)
+  "If key is a string, wrap with `kbd', otherwise leave it."
+  (and (symbolp key) (setq key (symbol-value key)))
+  (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
+  (if (or (vectorp key) (keymapp key)) key (kbd key)))
 
 (defmacro nvp-def-key (map key cmd)
   "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
@@ -820,7 +841,8 @@ If STRIP-CTRL, just return the last character, eg. M-* => *."
      (declare-function ,cmd "")
      (define-key
       ,(if (keymapp map) `',map map)
-      ,(if (or (vectorp key) (keymapp key)) key (kbd key))
+      (nvp-kbd ,key)
+      ;; ,(if (or (vectorp key) (keymapp key)) key (kbd key))
       ,(cond
         ((or (null cmd) (and (consp cmd)
                              (or (equal (cdr cmd) '(nil))
@@ -921,6 +943,14 @@ If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
                        `(set (make-local-variable ',keymap) lmap)))
         (if use '(use-local-map lmap)
           `(set (make-local-variable ',keymap) lmap)))))
+
+;;-- Conditional binding
+;; info: extended menu items
+;; http://endlessparentheses.com/define-context-aware-keys-in-emacs.html
+(defmacro nvp-defcond-key (map key def &rest body)
+  "Creates a binding in MAP that is conditional on BODY."
+  (declare (indent 3) (debug body))
+  `(define-key ,map ,key))
 
 ;;-- Create keymaps
 

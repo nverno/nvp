@@ -1,6 +1,6 @@
 ;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-01.11>
+;; Last modified: <2019-04-01.15>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -204,7 +204,7 @@ Prefix arg is passed to SP, wrapping the next _ARG elements."
   (interactive (nvp-with-region beg end 'list :pulse t (list nil beg end)))
   (let ((res (replace-regexp-in-string
               "\\([0-9]\\)\\s-+" "\\1, "
-              (or str (nvp-tap 'rs nil beg end)))))
+              (or str (nvp-s 'rs beg end)))))
     (if str res
       (save-excursion
         (delete-region beg end)

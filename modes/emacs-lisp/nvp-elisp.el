@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-04-01.03>
+;; Last modified: <2019-04-01.15>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 October 2016
 

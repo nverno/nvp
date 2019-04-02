@@ -1,6 +1,6 @@
 ;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-31 00:45:14>
+;; Last modified: <2019-04-01.23>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -15,8 +15,10 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'nvp)
+(require 'nvp-cache)
 (require 'bookmark)
 
+;; (define-advice bookmark-load-hook)
 ;; -------------------------------------------------------------------
 ;;; Jumping b/w bookmark files
 
@@ -33,16 +35,24 @@
 
 ;; store bookmark files
 (nvp-setup-cache nvp-bmk-default-directory "bookmarks")
+(nvp-setup-cache nvp-bmk-ring-file ".bmk_history")
+(put 'nvp-bmk-ring 'permanent-local t)
+
 (defvar nvp-bmk-regexp "^.*\\.bmk$" "Regexp to match bookmark entries.")
+(defvar nvp-bmk-idx 0)
 (defvar nvp-bmk-stack ())
+
+(defsubst nvp-bmk-update-history ()
+  (ring-insert nvp-bmk-ring (abbreviate-file-name bookmark-default-file))
+  (cl-incf nvp-bmk-idx))
 
 ;; Create bookmark record for bookmark-menu-list from current default
 (defun nvp-bmk-record-function ()
-  `((filename . ,bookmark-default-file)
+  `((filename . ,(bookmark-buffer-file-name))
     (handler  . nvp-bmk-handler)))
 
 (defun nvp-bmk-handler (bmk-record)
-  (push bookmark-default-file nvp-bmk-stack)
+  (nvp-bmk-update-history)
   (when (> bookmark-alist-modification-count 0)
     (bookmark-save))
   (setq bookmark-default-file (bookmark-get-filename bmk-record))
@@ -53,15 +63,16 @@
 
 (defun nvp-bmk-make-record (filename &optional name)
   (cons (or name nil)
-   `((filename . ,filename)
+   `((filename . ,(abbreviate-file-name filename))
      (handler  . nvp-bmk-handler))))
 
 (defun nvp-bmk-back ()
   "Go back to last bookmark file, saving current if modified."
   (interactive)
-  (when (> (length nvp-bmk-stack) 0)
+  (when (> (ring-length nvp-bmk-ring) 0)
     (when (> bookmark-alist-modification-count 0)
       (bookmark-save))
+    ;; FIXME: stack
     (setq bookmark-default-file (pop nvp-bmk-stack))
     (setq bookmark-alist nil)
     (let (bookmarks-already-loaded)
@@ -69,27 +80,27 @@
     (bookmark-bmenu-list)))
 
 (defun nvp-bmk-new (filename &optional current link)
-  "Create new bookmark file, prompting for FILENAME. If `current-prefix-arg' is 
-4 or CURRENT is non-nil, set new bookmark file as current default bookmark file.  
-If `current-prefix-arg' is 16 or LINK is non-nil, create link to new 
-bookmark file from current bookmark menu list."
+  "Create new bookmark file, prompting for FILENAME. 
+(4) prefix or CURRENT is non-nil, set new bookmark file as current 
+    default bookmark file.
+(16) prefix or LINK is non-nil, create link to new bookmark file from
+current bookmark menu list."
   (interactive
    (list
-    (let ((default-directory (or nvp-bmk-default-directory
-                                 default-directory)))
-      (read-file-name "Bookmark File: "))))
+    (let ((default-directory (or nvp-bmk-default-directory default-directory)))
+      (read-file-name "Bookmark File: "))
+    (eq 4 (car current-prefix-arg)) (eq 16 (car current-prefix-arg))))
   (when (not (file-exists-p filename))
     (message "Creating new bookmark file at %s" filename)
     (with-temp-buffer
       (let (bookmark-alist)
         (bookmark-save nil filename))))
-  (when (or link (equal current-prefix-arg '(16)))
+  (when link
     (let* ((name (read-from-minibuffer "Bookmark Link Name: "))
            (record (nvp-bmk-make-record filename)))
       (bookmark-store name (cdr record) t)))
-  (when (or current (equal current-prefix-arg '(4)))
-    (nvp-bmk-handler
-     (nvp-bmk-make-record filename))))
+  (when current
+    (nvp-bmk-handler (nvp-bmk-make-record filename))))
 
 ;; Font-lock
 (defvar-local nvp-bmk-highlighted nil)
@@ -132,10 +143,10 @@ and jumped between."
             ((kbd "n") . nvp-bmk-new)
             ((kbd "f") . nvp-bmk-toggle-highlight))
   :lighter " B2B"
-  (setq-local bookmark-make-record-function 'nvp-bmk-record-function))
-
-;;;###autoload
-(add-hook 'bookmark-bmenu-mode-hook #'nvp-bmk-to-bmk)
+  (setq-local bookmark-make-record-function 'nvp-bmk-record-function)
+  (when (null nvp-bmk-ring)
+    (setq nvp-bmk-ring (nvp-ring-read nvp-bmk-ring-file 20 'silent)
+          nvp-bmk-idx 0)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

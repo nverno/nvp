@@ -2,10 +2,15 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-03-31 08:44:38>
+;; Last modified: <2019-04-01.17>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
+
+;; Other:
+;; - perlcritic.el, Perl::Critic
+;; - Sepia, looks like old REPL
+;; - Emacs::PDE - tried it before
 
 ;; TODO:
 ;; - Abstract cycling chars

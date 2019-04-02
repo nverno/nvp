@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-23 00:00:47>
+;; Last modified: <2019-04-01.20>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 January 2019
@@ -30,7 +30,7 @@
 
 ;;;###autoload(autoload 'nvp-outline-hydra/body "nvp-outline")
 (nvp-hydra-set-property 'nvp-outline-hydra)
-(defhydra nvp-outline-hydra (:color red :hint t)
+(defhydra nvp-outline-hydra (:color red)
   "
 ^Hide^             ^Show^           ^Move
 ^^^^^^------------------------------------------------------

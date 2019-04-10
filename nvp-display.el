@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-28 22:34:21>
+;; Last modified: <2019-04-09.19>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 21 February 2019
@@ -70,7 +70,10 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
      ;; (and (marker-position (mark-marker))
      ;;      (goto-char (mark-marker)))
      )
-    ((or `(,:find-func . ,_) `(,:file . ,_))
+    (`(,:find-func . ,_)
+     (and (nvp-prefix action (setq action 1) :test '>=))
+     (funcall (nvp-display--get-action action type) location))
+    (`(,:file . ,_)
      (funcall (nvp-display--get-action action type) location))
     (`(:ido . ,_)
      (let* ((ido-default-file-method (nvp-display--get-action action :ido))

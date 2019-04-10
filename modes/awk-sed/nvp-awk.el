@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-02-27 01:55:39>
+;; Last modified: <2019-04-09.23>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 26 February 2019
@@ -10,8 +10,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
+  (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'nvp-font))
 (require 'nvp)
 
 ;; -------------------------------------------------------------------
@@ -22,10 +23,11 @@
 ;; -------------------------------------------------------------------
 ;;; Font-locking
 
-(font-lock-add-keywords
- 'awk-mode
- '(("\$\\([0-9]+\\)" (1 font-lock-variable-name-face prepend))
-   ("\\(@[[:alpha:]_]+\\)" (1 'nvp-italic-variable-face))))
+(nvp-font-lock-add-defaults 'awk-mode
+  ("\$\\([0-9]+\\)" (1 font-lock-variable-name-face prepend))
+  (`,(concat "\\<" (regexp-opt '("BEGINFILE" "ENDFILE") t) "\\>")
+   (1 font-lock-keyword-face))
+  ("\\(@[[:alpha:]_]+\\)" (1 'nvp-italic-variable-face)))
 
 ;; -------------------------------------------------------------------
 ;;; Completion

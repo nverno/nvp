@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-31 05:53:12>
+;; Last modified: <2019-04-09.20>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 30 March 2019
@@ -19,6 +19,7 @@
 (defun nvp--normalize-modemap (mode &optional minor)
   "Convert MODE to keymap symbol if necessary.
 If MINOR is non-nil, create minor mode map symbol."
+  (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
   (if (keymapp mode) mode
     (and (symbolp mode) (setq mode (symbol-name mode)))
     (let ((minor (or minor (string-match-p "-minor" mode))))
@@ -32,6 +33,7 @@ If MINOR is non-nil, create minor mode map symbol."
 (defun nvp--normalize-hook (mode &optional minor)
   "Convert MODE to canonical hook symbol.
 If MINOR is non-nil, convert to minor mode hook symbol."
+  (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
   (and (symbolp mode) (setq mode (symbol-name mode)))
   (let ((minor (or minor (string-match-p "-minor" mode))))
     (intern
@@ -136,6 +138,53 @@ If MINOR is non-nil, convert to minor mode hook symbol."
     ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
      byte-compile-current-file)
     (t (buffer-file-name))))
+
+;; -------------------------------------------------------------------
+;;; General
+
+;; not that useful -- concat only happens one first load
+(defmacro nvp-concat (&rest body)
+  `(eval-when-compile (concat ,@body)))
+
+(defmacro nvp-re-opt (opts &optional no-symbol)
+  `(eval-when-compile
+     (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
+             ,(and (not no-symbol) "\\_>"))))
+
+;; -------------------------------------------------------------------
+;;; Keys / IO
+
+;; FIXME: best way to get last input char?
+;; `key-description' is defined at C level and `edemacro-format-keys' does
+;; a lot of work. How to profile?
+;; - semantic-read-event : #<marker at 3072 in fw.el.gz>
+(defmacro nvp-input (type)
+  "Return user input by TYPE.
+
+`lce'  -- Last key entered during `last-command-event' with ctrl chars stripped.
+`lcef' -- Full key from `last-command-event', possibly with meta chars.
+`lic'  -- Last input char using `edemacro-format-keys' with `last-input-event'.
+`licf' -- Full key from `last-input-event' using `edmacro-format-keys'.
+`tck'  -- Last key from `this-command-keys-vector'.
+"
+  (let ((type (eval type)))
+    (cond
+     ;; `last-command-event'
+     ((eq type 'lce)
+      `(substring (key-description (vector last-command-event)) -1))
+     ((eq type 'lcef)
+      `(key-description (vector last-command-event)))
+     ;; `last-input-event'
+     ((eq type 'lic)
+      '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
+     ((eq type 'licf)
+      '(kbd (edmacro-format-keys (vector last-input-event))))
+     ((eq type 'tck)
+      '(let* ((keys (this-command-keys-vector))
+              (last-key (and (vectorp keys)
+                             (aref keys (1- (length keys))))))
+         (and last-key (lookup-key (current-active-maps 'olp) (vector last-key)))))
+     (t (message "Unknown type `nvp-input': %S" type)))))
 
 (provide 'nvp-macs-common)
 ;; Local Variables:

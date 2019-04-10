@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: install template
+# key: install
+# --
+#!/usr/bin/env bash
+
+set -e
+
+scriptverion="";
+
+# shellcheck source=/dev/null 
+. ~/bin/include/utils.sh
+# shellcheck source=/dev/null
+. ~/bin/include/install-utils.sh${1:
+# shellcheck source=/dev/null
+. ~/bin/include/git-utils.sh
+# shellcheck source=/dev/null
+. ~/bin/include/web-utils.sh}

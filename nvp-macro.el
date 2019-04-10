@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-01.23>
+;; Last modified: <2019-04-09.20>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -15,20 +15,28 @@
 (require 'macroexp)
 (require 'nvp-macs-common "macs/nvp-macs-common")
 (require 'nvp-macs-setup "macs/nvp-macs-setup")
+(require 'nvp-macs-bindings "macs/nvp-macs-bindings")
+(require 'nvp-macs-process "macs/nvp-macs-process")
 
+
+;; -------------------------------------------------------------------
+;;; Prefix args
+
+(cl-defmacro nvp-prefix (num &optional then &rest else &key test &allow-other-keys)
+  "If `current-prefix-arg' equals NUM do THEN otherwise ELSE."
+  (declare (indent 2) (debug t))
+  (while (keywordp (car else))
+    (setq else (cdr (cdr else))))
+  (let ((test-fn (if test (if (eq 'quote (car-safe test)) (cadr test)) 'eq)))
+    (if (or then else)
+        `(if (,test-fn ,num (prefix-numeric-value current-prefix-arg))
+             ,then
+           ,@else)
+      `(,test-fn ,num (prefix-numeric-value current-prefix-arg)))))
+
+
 ;; -------------------------------------------------------------------
 ;;; Messages
-
-(defun nvp--msg-from-bindings (bindings &optional prefix)
-  "Create message of 'PREFIX: [key] cmd, ...' from list of cons BINDINGS."
-  (or prefix (setq prefix "Transient: "))
-  (let ((msg (if (listp bindings)
-                 (concat
-                  prefix
-                  (mapconcat (lambda (b)
-                               (format "[%S] %S" (car b) (cdr b))) bindings ", "))
-               prefix)))
-    msg))
 
 (cl-defmacro nvp-msg (fmt &rest args &key keys delay duration &allow-other-keys)
   "Print message, optionally using `substitute-command-keys' if KEYS.
@@ -60,16 +68,7 @@ those are both specified."
                 `(and ,orig-msg (message ,orig-msg)))))))))
 
 ;; -------------------------------------------------------------------
-;;; General
-
-;; not that useful -- concat only happens one first load
-(defmacro nvp-concat (&rest body)
-  `(eval-when-compile (concat ,@body)))
-
-(defmacro nvp-re-opt (opts &optional no-symbol)
-  `(eval-when-compile
-     (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
-             ,(and (not no-symbol) "\\_>"))))
+;;; Buffer / Directory names
 
 (defmacro nvp-buff--1 (path no-def)
   (if no-def
@@ -94,6 +93,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 `bfn'    -- Buffer file's full name
 `bfns'   -- Buffer file's short name (no directory)
 `bfne'   -- Buffer file's name w/o extension
+`bfnd'   -- Buffer file's name or default directory
 `bfnse'  -- Buffer file's short name w/o extension
 `ext'    -- Buffer file extension
 `dn'     -- Directory's short name (just the containing directory)
@@ -104,12 +104,16 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 "
   (let ((type (eval type)))
     (cond
+     ;; buffer files
      ((eq type 'bn) `(buffer-name ,buffer))
      ((eq type 'bfn) `(nvp-buff--2 ,buffer ,or-name))
+     ((eq type 'bfnd) `(or (nvp-buff--2 ,buffer ,or-name) default-directory))
      ((eq type 'bfns) `(file-name-nondirectory (nvp-buff--2 ,buffer ,or-name)))
      ((eq type 'bfne) `(file-name-sans-extension (nvp-buff--2 ,buffer ,or-name)))
      ((eq type 'bfnse) `(file-name-nondirectory
                          (file-name-sans-extension (nvp-buff--2 ,buffer ,or-name))))
+     ((eq type 'ext) `(file-name-extension (nvp-buff--2 ,buffer ,or-name)))
+
      ;; directories
      ((eq type 'dn)
       (if (not path)
@@ -145,6 +149,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
           (if (and res (file-exists-p res)) `,res
             `(substitute-env-in-file-name ,path))))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
@@ -183,10 +188,10 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 
 
 ;; -------------------------------------------------------------------
-;;; Positions 
+;;; Scan lists
 
 ;; cc-defs `c-safe-scan-lists', paredit
-(defmacro nvp-scan-lists (from count depth &optional limit)
+(defmacro nvp-safe-scan-lists (from count depth &optional limit)
   "`scan-lists', but return nil instead of errors."
   (let ((res `(ignore-errors (scan-lists ,from ,count ,depth))))
     (if limit
@@ -217,24 +222,25 @@ Start at POS if non-nil. Returns point at new position, or nil on failure.
     (cond
      ;; Return the point at different locations or nil
      ((eq type 'fl)
-      `(when-let ((dest (nvp-scan-lists ,(or pos '(point)) 1 0 ,limit)))
+      `(when-let ((dest (nvp-safe-scan-lists ,(or pos '(point)) 1 0 ,limit)))
          (goto-char dest)
          dest))
      ((eq type 'bl)
-      `(when-let ((dest (nvp-scan-lists ,(or pos '(point)) -1 0 ,limit)))
+      `(when-let ((dest (nvp-safe-scan-lists ,(or pos '(point)) -1 0 ,limit)))
          (goto-char dest)
          dest))
      ((eq type 'ufl)
-      `(nvp-scan-lists ,(or pos '(point)) 1 1 ,limit))
+      `(nvp-safe-scan-lists ,(or pos '(point)) 1 1 ,limit))
      ((eq type 'ubl)
-      `(nvp-scan-lists ,(or pos '(point)) -1 1 ,limit))
+      `(nvp-safe-scan-lists ,(or pos '(point)) -1 1 ,limit))
      ((eq type 'dfl)
-      `(nvp-scan-lists ,(or pos '(point)) 1 -1 ,limit))
+      `(nvp-safe-scan-lists ,(or pos '(point)) 1 -1 ,limit))
      ((eq type 'dbl)
-      `(nvp-scan-lists ,(or pos '(point)) -1 -1 ,limit))
+      `(nvp-safe-scan-lists ,(or pos '(point)) -1 -1 ,limit))
 
      (t (user-error "%S unrecognized by `nvp-scan-point'" type)))))
 
+;; FIXME: use smie if available
 (defmacro nvp-scan (type &optional pos limit)
   "Scan balanced expressions, moving and returning point on success.
 
@@ -272,6 +278,11 @@ Start at POS if non-nil. Returns point at new position, or nil on failure.
       `(when-let ((dest (nvp-scan-1 'lb ,pos ,limit)))
          (goto-char dest) dest))
      (t (user-error "%S unrecognized by `nvp-scan'" type)))))
+
+
+;; -------------------------------------------------------------------
+;;; Positions 
+;; TODO: forward / backward comments only
 
 ;;-- Syntactic whitespace
 
@@ -329,7 +340,7 @@ continuations."
       ((eq direction 'backward) `(nvp-backward-sws ,escape))
       (t (error "Don't know how to skip %S" direction)))))
 
-;;-- Whitespace
+;;-- Whitespace only
 (defmacro nvp-skip-ws-forward (escape &optional limit)
   "Skip horizontal/vertical whitespace and escaped newlines following point."
   (if limit
@@ -380,7 +391,7 @@ Direction is one of `forward', `backward'."
         `(nvp-skip-ws-forward ,escape ,limit)
       `(nvp-skip-ws-backward ,escape ,limit))))
 
-;;-- Point positions
+;;-- Points
 ;; cc-defs
 ;; #<marker at 34444 in cc-defs.el.gz>
 (defmacro nvp-point (position &optional point escape)
@@ -567,8 +578,9 @@ to it is returned.  This function does not modify the point or the mark."
                      ((<= ci ,orig-col) ci)
                      (t ,orig-col)))))))))
 
+
 ;; -------------------------------------------------------------------
-;;; Regions / things-at-point
+;;; Strings
 
 (defmacro nvp-s (type &optional beg end)
   "Wrapper for region/buffer strings.
@@ -605,6 +617,10 @@ to it is returned.  This function does not modify the point or the mark."
          (widen)
          (buffer-substring ,(or beg '(point-min)) ,(or end '(point-max)))))
      (t (user-error "%S unknown to `nvp-s'" type)))))
+
+
+;; -------------------------------------------------------------------
+;;; Regions / things-at-point
 
 (cl-defmacro nvp-tap-bounds (&optional thing &key pulse)
   "Return `bounds-of-thing-at-point' and pulse region unless NO-PULSE."
@@ -669,6 +685,7 @@ In WIDEN is non-nil, save restriction and widen before finding bounds."
           ,@body)
       (user-error "nvp-with-region didn't find any bounds"))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Save/Restore envs 
 
@@ -777,309 +794,13 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
             (setq mode-name ,mode-name))
           (pop-to-buffer buff))))))
 
-;; -------------------------------------------------------------------
-;;; Keys / IO
-
-;; FIXME: which of these is better??
-;; `key-description' is defined at C level and `edemacro-format-keys' does
-;; a lot of work. How to profile?
-;; - semantic-read-event : #<marker at 3072 in fw.el.gz>
-(defmacro nvp-last-input-char ()
-  "Return the last character input as string."
-  '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
-
-(defmacro nvp-last-command-char (&optional strip-ctrl)
-  "Return string value from previous command.
-If STRIP-CTRL, just return the last character, eg. M-* => *."
-  (if strip-ctrl
-      `(substring (key-description (vector last-command-event)) -1)
-    `(key-description (vector last-command-event))))
-
-(defmacro nvp-input (type)
-  "Return user input by TYPE.
-
-`lce'  -- Last key entered during `last-command-event' with ctrl chars stripped.
-`lcef' -- Full key from `last-command-event', possibly with meta chars.
-`lic'  -- Last input char using `edemacro-format-keys' with `last-input-event'.
-`licf' -- Full key from `last-input-event' using `edmacro-format-keys'.
-`tck'  -- Last key from `this-command-keys-vector'.
-"
-  (let ((type (eval type)))
-    (cond
-     ;; `last-command-event'
-     ((eq type 'lce)
-      `(substring (key-description (vector last-command-event)) -1))
-     ((eq type 'lcef)
-      `(key-description (vector last-command-event)))
-     ;; `last-input-event'
-     ((eq type 'lic)
-      '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
-     ((eq type 'licf)
-      '(kbd (edmacro-format-keys (vector last-input-event))))
-     ((eq type 'tck)
-      '(let* ((keys (this-command-keys-vector))
-              (last-key (and (vectorp keys)
-                             (aref keys (1- (length keys))))))
-         (and last-key (lookup-key (current-active-maps 'olp) (vector last-key)))))
-     (t (message "Unknown type `nvp-input': %S" type)))))
-
-;; -------------------------------------------------------------------
-;;; Bindings
-
-(defmacro nvp-kbd (key)
-  "If key is a string, wrap with `kbd', otherwise leave it."
-  (and (symbolp key) (setq key (symbol-value key)))
-  (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
-  (if (or (vectorp key) (keymapp key)) key (kbd key)))
-
-(defmacro nvp-def-key (map key cmd)
-  "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
-  (declare (debug t))
-  (and (symbolp key) (setq key (symbol-value key)))
-  (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
-  `(progn
-     (declare-function ,cmd "")
-     (define-key
-      ,(if (keymapp map) `',map map)
-      (nvp-kbd ,key)
-      ;; ,(if (or (vectorp key) (keymapp key)) key (kbd key))
-      ,(cond
-        ((or (null cmd) (and (consp cmd)
-                             (or (equal (cdr cmd) '(nil))
-                                 (equal (cddr cmd) '(nil)))))
-         nil)
-        ((consp cmd)
-         (cond
-          ((equal (car cmd) 'function) `,cmd)
-          ((equal (car cmd) 'quote) `#',(cadr cmd))
-          (t `,cmd)))
-        (t `#',cmd)))))
-
-;;-- Local, Transient, Overriding maps
-
-(cl-defmacro nvp-with-temp-bindings ((&key (keep t) exit bindings)
-                                     &rest body)
-  "Execute BODY with BINDINGS set in transient map."
-  (declare (indent 0))
-  (let ((tmap (cl-gensym)))
-    `(let ((,tmap (make-sparse-keymap)))
-       ,@(cl-loop for (k . b) in bindings
-            collect `(nvp-def-key ,tmap ,k ,b))
-       (set-transient-map ,tmap ,keep ,exit)
-       ,@body)))
-
-(cl-defmacro nvp-use-transient-bindings
-    (&optional bindings
-               &key
-               (keep t)
-               (pre '(nvp-indicate-cursor-pre))
-               (exit '(lambda () (nvp-indicate-cursor-post)))
-               (repeat t) ;add repeat binding as last char
-               repeat-key) ;key to use instead of last char
-  "Set BINDINGS in transient map or REPEAT command.
-If both BINDINGS and REPEAT are nil, do nothing.
-Run PRE form prior to setting commands and EXIT on leaving transient map.
-If REPEAT is non-nil, add a binding to repeat command from the last input char
-or use REPEAT-KEY if specified."
-  (declare (indent defun) (debug defun))
-  (when (or bindings repeat)            ;w/o one of these, do nothing
-    (let ((msg (nvp--msg-from-bindings bindings)))
-     `(progn
-        (nvp-declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
-        ;; only set first time
-        (when (null overriding-terminal-local-map)
-          (let ((tmap (make-sparse-keymap))
-                (repeat-key ,(when repeat (or repeat-key '(nvp-last-command-char)))))
-            ,(when repeat
-               (prog1 nil
-                 (setq msg (concat msg (and bindings ", ") "[%s] repeat command"))))
-            (message ,msg repeat-key)   ;echo bindings on first pass
-            ,pre
-            ,@(cl-loop for (k . b) in bindings
-                 collect `(nvp-def-key tmap ,k ,b))
-            ,(when repeat '(define-key tmap (kbd repeat-key) this-command))
-            (set-transient-map
-             tmap
-             ,(if repeat `(lambda ()         ;conditions to continue
-                            (when (and (not (memq this-command
-                                                  '(handle-switch-frame
-                                                    keyboard-quit)))
-                                       (lookup-key tmap (this-single-command-keys)))
-                              (message ,msg repeat-key) t))
-                `,keep)
-             ,exit)))))))
-
-;; Overrides a minor mode keybinding for the local buffer by creating
-;; or altering keymaps stored in buffer-local variable
-;; `minor-mode-overriding-map-alist'.
-(cl-defmacro nvp-use-minor-mode-overriding-map (mode &rest bindings
-                                                     &key predicate
-                                                     &allow-other-keys)
-  "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'.
-If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  `(,@(if predicate `(when ,predicate) '(progn))
-    (let ((map (make-sparse-keymap)))
-      ,@(cl-loop for (k . b) in bindings
-           collect `(nvp-def-key map ,k ,b))
-      (push (cons ,mode map) minor-mode-overriding-map-alist))))
-
-(cl-defmacro nvp-set-local-keymap (&rest bindings
-                                   &key keymap buffer use &allow-other-keys)
-  "Use or create a local version of KEYMAP (default `current-local-map').
-If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (cl-assert (if (not use) (not (null keymap)) t))
-  `(let ((lmap (make-sparse-keymap)))
-     (set-keymap-parent lmap ,(or keymap '(current-local-map)))
-     ,@(cl-loop for (k . b) in bindings
-          collect `(nvp-def-key lmap ,k ,b))
-     ,(if buffer `(with-current-buffer ,buffer
-                    ,(if use '(use-local-map lmap)
-                       `(set (make-local-variable ',keymap) lmap)))
-        (if use '(use-local-map lmap)
-          `(set (make-local-variable ',keymap) lmap)))))
-
-;;-- Conditional binding
-;; info: extended menu items
-;; http://endlessparentheses.com/define-context-aware-keys-in-emacs.html
-(defmacro nvp-defcond-key (map key def &rest body)
-  "Creates a binding in MAP that is conditional on BODY."
-  (declare (indent 3) (debug body))
-  `(define-key ,map ,key))
-
-;;-- Create keymaps
-
-(defmacro nvp-create-keymaps (leader &rest maps)
-  "Create submaps from LEADER map. Optionally give name of keymap for
-menu entry."
-  (declare (indent defun))
-  `(progn
-     ,@(cl-loop for (key . args) in maps
-          as map = (pop args)
-          as name = (and args (pop args))
-          collect `(progn
-                     (eval-when-compile (declare-function ,map "")) ;compiler
-                     (define-prefix-command ',map nil ,name)
-                     (nvp-def-key ,leader ,key ',map)))))
-
-;;-- Global bindings
-(cl-defmacro nvp-global-bindings (&rest bindings &key no-override &allow-other-keys)
-  "Add BINDINGS to global keymap.
-If NO-OVERRIDE is non-nil, assert that the new binding isn't already defined."
-  (declare (indent defun) (debug t))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (macroexp-progn
-   (cl-loop for (k . b) in bindings
-      when no-override
-      do (when-let ((curr (lookup-key (current-global-map) (kbd k)))))
-        (cl-assert t 'show-args (format "%k is assigned %S globally" k curr))
-      collect `(nvp-def-key (current-global-map) ,k ,b))))
-
-;;-- General bindings
-(cl-defmacro nvp-bind-keys (map &rest bindings
-                                &key predicate after-load
-                                &allow-other-keys)
-  "Add BINDINGS to MAP.
-If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys.
-If AFTER-LOAD is non-nil, eval after loading feature/file."
-  (declare (indent defun) (debug t))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (let ((map (nvp--normalize-modemap map)))
-    `(progn
-       (eval-when-compile (defvar ,map))
-       (,@(if predicate `(when ,predicate)
-            (if after-load `(with-eval-after-load ,after-load) '(progn)))
-        ,@(cl-loop for (k . b) in bindings
-             collect `(nvp-def-key ,map ,k ,b))))))
-
-(cl-defmacro nvp-bindings (mode &optional feature &rest bindings
-                                &key local buff-local minor &allow-other-keys)
-  "Set MODE BINDINGS after FEATURE is loaded.
-If LOCAL is non-nil, make map buffer local."
-  (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (let ((modemap (nvp--normalize-modemap mode minor)))
-    `(progn
-       (eval-when-compile (defvar ,modemap))
-       ,(when local                     ;will change bindings for all mode buffers
-          `(make-local-variable ',modemap))
-       ,(when buff-local                ;HACK: but how to modify 
-          `(with-no-warnings             ; something like `company-active-map'
-             (make-variable-buffer-local ',modemap)))
-       (with-eval-after-load ,(or feature `',(intern mode))
-         ,@(cl-loop for (k . b) in bindings
-              collect `(nvp-def-key ,modemap ,k ,b))))))
-
-;;-- View mode default bindings
-;; general movement bindings for non-insert modes
-(defmacro nvp-bindings-view ()
-  ''(("j"     . next-line) ;; use instead of forward-line since it is often advised
-     ("k"     . previous-line)
-     ("h"     . backward-char)
-     ("l"     . forward-char)
-     ("e"     . end-of-line)
-     ("a"     . beginning-of-line)
-     ("A"     . beginning-of-buffer)
-     ("E"     . end-of-buffer)
-     ("/"     . isearch-forward)
-     ("?"     . isearch-backward)
-     ("SPC"   . scroll-down)
-     ("S-SPC" . scroll-up)
-     ("M-n"   . nil)
-     ("M-p"   . nil)
-     ("M-s-n" . nvp-move-forward-heading)
-     ("M-s-p" . nvp-move-previous-heading)
-     ("M-N"   . nvp-move-forward-paragraph)
-     ("M-P"   . nvp-move-backward-paragraph)))
-
-(defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
-(defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
-  (declare (indent defun))
-  (let ((bs `(,@(nvp-bindings-view) ,@bindings)))
-    `(nvp-bindings ,mode ,feature ,@bs)))
-
-(defmacro nvp-bindings-add-view (mode &optional feature)
-  `(progn (nvp-bindings ,mode ,feature ,@(nvp-bindings-view))))
-
-(defmacro nvp-with-view-bindings (&rest body)
-  `(nvp-with-temp-bindings
-     (:bindings ,@(nvp-bindings-view)
-                :keep t
-                :exit (lambda () (message "vim out")))
-     ,@body))
-
-;;-- Multiple mode bindings
-(cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings
-                                                &key view &allow-other-keys)
-  "Add shared BINDINGS to multiple MODES keymaps.
-MODES is of the form ((mode-name . feature) ...).
-Optional :local key can be set to make the mappings buffer-local."
-  (declare (indent 1))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  `(progn
-     ,@(cl-loop for (mode . feature) in modes
-          collect (if view
-                      `(nvp-bindings-with-view ,mode ',feature ,@bindings)
-                    `(nvp-bindings ,mode ',feature ,@bindings)))))
-
-;; -------------------------------------------------------------------
 ;;; Time
 
 (defmacro nvp-file-older-than-days (file days)
   "non-nil if FILE last modification was more than DAYS ago."
   (declare (indent defun) (debug t))
   `(< (time-to-seconds
-       (time-subtract (current-time)
-                      (nth 5 (file-attributes ,file))))
+       (time-subtract (current-time) (nth 5 (file-attributes ,file))))
       (* 60 60 24 ,days)))
 
 ;; Measure and return the running time of the code block.
@@ -1092,150 +813,7 @@ Optional :local key can be set to make the mappings buffer-local."
       ,@body
       (- (float-time) ,start))))
 
-;; -------------------------------------------------------------------
-;;; Processes
-
-(defmacro nvp-buffer-process (&optional buffer)
-  "Return BUFFER's process."
-  `(get-buffer-process ,(or buffer '(current-buffer))))
-
-(defalias 'nvp-with-comint-buffer 'nvp-comint-buffer)
-(cl-defmacro nvp-comint-buffer (&rest body &key name new result &allow-other-keys)
-  "Get a new comint buffer from NAME and execute BODY there, returning buffer.
-If NEW is non-nil, use `generate-new-buffer', otherwise `get-buffer-create'.
-If RESULT is non-nil, return result of BODY instead of buffer."
-  (declare (indent defun) (debug body))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
-  (or name (setq name "*nvp*"))
-  (let ((gen-fn (if new #'generate-new-buffer #'get-buffer-create)))
-    `(progn (with-current-buffer (,gen-fn ,name)
-              (comint-mode)
-              ,(if (not result)
-                   `(prog1 (current-buffer)
-                      ,@body))))))
-
-(defmacro nvp-with-process-filter (process &optional proc-filter)
-  "Run processs with `nvp-proc-default-filter'.
-Return process object."
-  (declare (indent defun))
-  (if (and proc-filter (eql proc-filter :none)) `,process
-    (and (not proc-filter) (setq proc-filter ''nvp-proc-default-filter))
-    (macroexp-let2* nil ((process process) (proc-filter proc-filter))
-      `(prog1 ,process
-         (set-process-filter ,process ,proc-filter)))))
-
-(cl-defmacro nvp-with-process-log (process &key
-                                           on-error
-                                           on-success
-                                           proc-filter
-                                           (display-action t))
-  "Log output in log buffer, if on-error is :pop-on-error, pop to log
-if process exit status isn't 0."
-  (declare (indent defun))
-  (macroexp-let2* nil ((proc `(nvp-with-process-filter ,process ,proc-filter))
-                       (on-err (if (keywordp on-error)
-                                   ;; (equal on-error :pop-on-error)
-                                   `(pop-to-buffer (process-buffer ,proc)
-                                                   ,display-action)
-                                 on-error)))
-    `(progn
-       (set-process-sentinel ,proc
-                             #'(lambda (p m)
-                                 (nvp-log "%s: %s" nil (process-name p) m)
-                                 (if (zerop (process-exit-status p))
-                                     ,on-success
-                                   ,on-error)))
-       (display-buffer (process-buffer ,proc) ,display-action))))
-
-(cl-defmacro nvp-with-process
-    (process
-     &key
-     (proc-name process)
-     (proc-buff `,(concat "*" proc-name "*"))
-     (proc-args nil)
-     (proc-filter t)
-     (buffer-fn 'get-buffer-create)
-     sync
-     shell
-     sentinel
-     (on-success `(progn
-                    (nvp-indicate-modeline-success
-                     ,(concat " " proc-name " success"))
-                    (kill-buffer (current-buffer))))
-     (on-failure '(pop-to-buffer (current-buffer))))
-  "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer."
-  (declare (indent defun) (debug t))
-  (let* ((proc (make-symbol "proc"))
-         (proc-cmd (intern (format "%s%s"
-                                   (if sync "call-process" "start-process")
-                                   (if shell "-shell-command" ""))))
-         (pbuf (if (and buffer-fn proc-buff) `(,buffer-fn ,proc-buff)
-                 `,proc-buff)))
-    `(progn
-       (declare-function nvp-indicate-modeline "")
-       (declare-function nvp-log "")
-       (let ((,proc
-              ,(if shell
-                   (if sync
-                       `(funcall
-                         ',proc-cmd (mapconcat 'identity (list ,@proc-args) " "))
-                     `(funcall ',proc-cmd ,process ,pbuf
-                               (mapconcat 'identity (list ,@proc-args) " ")))
-                 `(funcall ',proc-cmd
-                           ,(or proc-name process)
-                           ,pbuf ,process ,@proc-args))))
-         ,(if sync `,proc
-            ;; Async process filter
-            `(progn
-               ,(cond
-                 ((memq proc-filter '(:default t))
-                  `(set-process-filter ,proc 'nvp-proc-default-filter))
-                 (proc-filter
-                  `(set-process-filter ,proc ,proc-filter))
-                 (t nil))
-               ;; Process sentinel - just retrun process without sentinel
-               ,(cond
-                 ((eq sentinel ':default)
-                  `(set-process-sentinel ,proc 'nvp-proc-default-sentinel))
-                 ((eq sentinel t)
-                  `(set-process-sentinel ,proc
-                                         ;; FIXME: replace with default
-                                         (lambda (p m)
-                                           (nvp-log "%s: %s" nil (process-name p) m)
-                                           (with-current-buffer (process-buffer p)
-                                             (if (zerop (process-exit-status p))
-                                                 ,on-success
-                                               ,on-failure)))))
-                 ((null sentinel) `,proc))))))))
-
-(defmacro nvp-with-process-wrapper (wrapper &rest body)
-  "Wrap `set-process-sentinel' to so BODY is executed in environment
-where WRAPPER has effect, eg. `cl-letf' will have effect.
-Note: use lexical-binding."
-  (let ((sps (cl-gensym))
-        (proc (cl-gensym))
-        (fn (cl-gensym)))
-    (macroexp-let2 nil wrapper wrapper
-     `(let ((,sps (symbol-function 'set-process-sentinel)))
-        (cl-letf (((symbol-function 'set-process-sentinel))
-                  (lambda (,proc ,fn)
-                    (funcall ,sps ,proc (funcall wrapper ,fn))))
-          ,@body)))))
-
-(defmacro nvp-with-async-override (orig-fn new-fn &rest body)
-  "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of
-BODY."
-  (declare (indent defun))
-  (macroexp-let2 nil new-fn new-fn
-   `(with-sentinel-wrapper
-     (lambda (fn)
-       (let ((fun fn))
-         (lambda (p m)
-           (cl-letf (((symbol-function ,orig-fn) new-func))
-             (funcall fun p m)))))
-     ,@body)))
-
+
 ;; -------------------------------------------------------------------
 ;;; Toggled Tip
 (declare-function pos-tip-show "pos-tip")
@@ -1298,6 +876,7 @@ default help function."
             ,keep
             ,exit-fn))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Wrapper functions
 
@@ -1322,6 +901,7 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
    (cl-loop for (sym . doc) in fun-docs
       collect `(nvp-wrapper-function ,sym ,doc))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Caches 
 
@@ -1357,8 +937,9 @@ or PREDICATE is non-nil and returns nil."
              (prog1 val
                (put ',fn ',cache val)))))))
 
+
 ;; -------------------------------------------------------------------
-;;; Obsolete
+;;; Obsolete: function generators
 ;; remove these
 ;;-- marking
 
@@ -1532,6 +1113,7 @@ or PREDICATE is non-nil and returns nil."
                              '(get-buffer-process repl-buffer))
                         :src-buffer src-buffer))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; URL
 
@@ -1566,6 +1148,7 @@ or PREDICATE is non-nil and returns nil."
        ,@body)
      (kill-buffer)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Advice
 
@@ -1589,6 +1172,7 @@ or PREDICATE is non-nil and returns nil."
      (add-function :before-until (local 'eldoc-documentation-function) #',func)
      ,(when init '(eldoc-mode))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Locals - silence compiler
 

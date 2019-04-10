@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-01.07>
+;; Last modified: <2019-04-09.16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/macs
 ;; Created: 31 March 2019
@@ -302,6 +302,8 @@ MODES is of form (feature . mode)."
 (defmacro nvp-setup-hooks (hook &rest modes)
   "Add HOOK to all MODES hooks."
   (declare (indent 1))
+  (when (eq 'quote (car-safe hook))
+    (setq hook (eval hook)))
   (macroexp-progn
    (cl-loop for mode in modes
       as mode-hook = (nvp--normalize-hook mode)

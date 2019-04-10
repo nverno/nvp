@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-31.19>
+;; Last modified: <2019-04-09.22>
 ;; Created:  5 December 2016
 
 ;;; Commentary:

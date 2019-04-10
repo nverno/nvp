@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-28 21:59:15>
+;; Last modified: <2019-04-09.23>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -12,18 +12,17 @@
 ;; 0) Default jump to other window
 ;; 1) With single prefix, jump same window
 ;; 2) With double prefix, prompt or something else
+;; 3) Default action => dired location
 
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
-(nvp-declare "" nvp-scratch-minor-mode)
-(nvp-declare "yasnippet" yas-expand-snippet yas-lookup-snippet)
+(nvp-decl "" nvp-scratch-minor-mode)
+(nvp-decl "yasnippet" yas-expand-snippet yas-lookup-snippet)
 (autoload 'nvp-file-locate-first-dominating "nvp-file")
-(autoload 's-chop-suffix "s")
 
 ;; -------------------------------------------------------------------
 ;;; Modes
@@ -38,7 +37,7 @@
        file :file action
        :init-fn (lambda () (nvp-display-init-template
                        'mode-config 'emacs-lisp-mode nil nil
-                       `(modename ,(s-chop-suffix "-mode" mode))))))))
+                       `(modename ,(nvp-jump--mode-name mode))))))))
 
 ;; Jump to test with extension `STR'.  If it doesn't exist make a new
 ;; file, and if there are multiple matches offer ido choice.
@@ -51,13 +50,10 @@
 ;;;###autoload
 (defun nvp-jump-to-mode-hook (mode action)
   "Jump to location defining MODEs hook."
-  (interactive
-   (list (if (eq 16 (prefix-numeric-value current-prefix-arg)) (nvp-read-mode)
-           major-mode)
-         current-prefix-arg))
+  (interactive (list (nvp-prefix 16 (nvp-read-mode) major-mode) current-prefix-arg))
   (and (stringp mode) (setq mode (intern mode)))
   (let* ((str-mode-hook (format "%s-hook" mode))
-         (hook-fn-name (format "nvp-%s-hook" (substring (symbol-name mode) 0 -5)))
+         (hook-fn-name (format "nvp-%s-hook" (nvp-jump--mode-name mode)))
          (hook-fn (intern-soft hook-fn-name)))
     (if hook-fn                         ; probably in its own config file
         (nvp-display-location hook-fn :find-func action)
@@ -73,10 +69,10 @@
 (defun nvp-jump-to-mode-install (file action)
   "Jump to external installation files for MODE.
 With double prefix, prompt for mode."
-  (interactive (list (nvp-read--mode-install
-                      (if (eq 16 (prefix-numeric-value current-prefix-arg))
-                          (substring (nvp-read-mode) 0 -5)))
-                     current-prefix-arg))
+  (interactive
+   (list
+    (nvp-read--mode-install (nvp-prefix 16 (nvp-read--mode-name (nvp-read-mode))))
+    current-prefix-arg))
   (nvp-display-location file :file action))
 
 ;;;###autoload
@@ -112,9 +108,7 @@ With double prefix, prompt for mode."
 If `nvp-local-notes-file' is bound use that unless there is a prefix of 16. 
 Otherwise prompt, with default `nvp-default-org-file'."
   (interactive
-   (list (nvp-read--org-file
-          nil nil (eq 16 (prefix-numeric-value current-prefix-arg)))
-         current-prefix-arg))
+   (list (nvp-read--org-file nil nil (nvp-prefix 16)) current-prefix-arg))
   (prog1 (setq org-file (nvp-display-location org-file :file action))
     (when (bufferp org-file)
       (with-current-buffer org-file
@@ -139,10 +133,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
   "Jump to scratch buffer in MODE (default current `major-mode'). 
 With prefix, pop other window, with double prefix, prompt for MODE."
   (interactive
-   (list (if (eq 16 (prefix-numeric-value current-prefix-arg))
-             (intern (nvp-read-mode))
-           major-mode)
-         current-prefix-arg))
+   (list (nvp-prefix 16 (intern (nvp-read-mode)) major-mode) current-prefix-arg))
   (nvp-window-configuration-save)
   (let ((buff (get-buffer-create "*scratch*")))
     (with-current-buffer buff
@@ -205,16 +196,13 @@ With triple prefix, offer recursive results."
 (defun nvp-jump-to-nearest-notes-dwim (name action)
   "Jump to nearest notes/todo file, prompting with prefix."
   (interactive
-   (list (or (and (eq 16 (prefix-numeric-value current-prefix-arg))
-                  (read-file-name "File name: "))
+   (list (or (nvp-prefix 16 (read-file-name "File name: "))
              (bound-and-true-p nvp-local-notes-file)
              '("notes.org" "Notes.org" "todo.org" "Todo.org"))
          current-prefix-arg))
   (let* ((locate-fn (if (consp name) #'nvp-file-locate-first-dominating
                #'locate-dominating-file))
-         (dir (funcall locate-fn (or (buffer-file-name)
-                                     default-directory)
-                       name)))
+         (dir (funcall locate-fn (nvp-path 'bfnd) name)))
     (if dir (nvp-display-location (expand-file-name name dir) :file action)
       (user-error (format "%S not found up the directory tree." name)))))
 
@@ -223,7 +211,7 @@ With triple prefix, offer recursive results."
   "Jump to dotfile in other window.
 With single prefix, open in this window.
 With double prefix, set coding to utf-8."
-  (interactive (list nvp/dots current-prefix-arg))
+  (interactive (list nvp/dots (prefix-numeric-value current-prefix-arg)))
   (let ((buff (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir)))
     (when (eq 16 action)
       (with-current-buffer buff
@@ -233,15 +221,15 @@ With double prefix, set coding to utf-8."
 (defun nvp-jump-to-dir (dir action)
   "Jump to some common directories."
   (interactive
-   (list (if (eq (prefix-numeric-value current-prefix-arg) 16)
-             (nvp-completing-read
-              (format "Directory (default %s): " nvp/project)
-              (list "~/" nvp/project nvp/class nvp/bin nvp/install nvp/work
-                    nvp/devel nvp/modes nvp/nvp nvp/site nvp/emacs nvp/build
-                    nvp/private (expand-file-name "scratch" nvp/class))
-              nil nil nil 'nvp-read-config-history nvp/project)
-           nvp/project)
-         current-prefix-arg))
+   (list
+    (nvp-prefix 16 (nvp-completing-read
+                    (format "Directory (default %s): " nvp/scratch)
+                    (list "~/" nvp/project nvp/class nvp/bin nvp/install nvp/work
+                          nvp/devel nvp/modes nvp/nvp nvp/site nvp/emacs nvp/build
+                          nvp/private nvp/scratch)
+                    nil nil nil 'nvp-read-config-history nvp/scratch)
+      nvp/scratch)
+    current-prefix-arg))
   (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
 
 ;;;###autoload
@@ -249,7 +237,7 @@ With double prefix, set coding to utf-8."
   "Jump to local source or default devel directory."
   (interactive
    (list (cond
-          ((eq 16 (prefix-numeric-value current-prefix-arg)) "~")
+          ((nvp-prefix 16) "~")
           ((bound-and-true-p nvp-local-src-directories)
            (if (> 1 (length nvp-local-src-directories))
                (nvp-completing-read "Source directory: " nvp-local-src-directories

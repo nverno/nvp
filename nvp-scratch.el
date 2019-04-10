@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-24 23:55:33>
+;; Last modified: <2019-04-09.23>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 March 2019
@@ -47,6 +47,7 @@
   (when nvp-scratch-minor-mode
     (add-hook 'after-change-major-mode-hook #'nvp-scratch-minor-mode nil 'local)
     (erase-buffer)
+    (unless comment-start (setq comment-start "#"))
     (insert (nvp-comment-string "Jah lives chilren\n" 2))
     (setq mode-name (concat "scratch[" mode-name "]"))
     (nvp-msg "Press \\[nvp-scratch-kill-buffer] to kill this buffer \

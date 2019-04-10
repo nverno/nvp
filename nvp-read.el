@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 22:13:57>
+;; Last modified: <2019-04-09.21>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -15,14 +15,20 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
+  (require 'subr-x)                     ;string-remove-suffix
+  (require 'nvp-macro)
   (require 'nvp))
 (require 'nvp)                          ;nvp-prompt-default
 (declare-function function-called-at-point "help")
 (declare-function help--symbol-completion-table "help-fns")
 (autoload 'eldoc-minibuffer-message "eldoc")
 
+;; just MODE's name minus the "-mode"
+(defsubst nvp-read--mode-name (&optional mode)
+  (string-remove-suffix "-mode" (or mode (symbol-name major-mode))))
+
+;; list filenames relative to ROOT matching REGEXP
 (defsubst nvp-read--relative-files (root regexp)
   (mapcar (lambda (f) (file-relative-name f root))
           (directory-files-recursively root regexp)))
@@ -44,26 +50,26 @@
     (setq default (symbol-name major-mode)))
   (setq prompt (nvp-prompt-default (or prompt "Mode config: ") default))
   (catch 'dired
-    (ido-completing-read
+    (nvp-completing-read
      prompt
      (mapcar
       #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
           (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
       (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-     nil nil nil 'nvp-read-config-history (substring default 0 -5))))
+     nil nil nil 'nvp-read-config-history (nvp-read--mode-name default))))
 
 (defun nvp-read--info-files (&optional prompt default)
   (or default (and (string-prefix-p nvp/info default-directory)
-                   (setq default (file-name-nondirectory (buffer-file-name)))))
+                   (setq default (nvp-path 'bfns))))
   (expand-file-name 
    (nvp-completing-read
     (nvp-prompt-default (or prompt "Info file: ") default)
     (directory-files (expand-file-name "org" nvp/info) nil "\.org")
     nil nil nil 'nvp-read-config-history default)
-   (concat nvp/info "org")))
+   (expand-file-name "org" nvp/info)))
 
 (defun nvp-read--mode-test (&optional prompt default)
-  (let* ((ext (ignore-errors (file-name-extension (buffer-file-name))))
+  (let* ((ext (ignore-errors (nvp-path 'ext)))
          (default-directory nvp/test)
          (completion-ignored-extensions
           (cons "target" completion-ignored-extensions))
@@ -79,7 +85,7 @@
 ;; if LOCAL is non-nil use that
 (defun nvp-read--org-file (&optional prompt default nolocal)
   (when (derived-mode-p 'comint-mode)   ;jumping from shell
-    (hack-local-variables))
+    (hack-local-variables))             ;read .dir-locals.el if exist
   (let ((local (bound-and-true-p nvp-local-notes-file)))
     (if (and local (not nolocal)) local
       (or default (setq default nvp-default-org-file))
@@ -90,7 +96,7 @@
 ;; read mode installation files
 (defun nvp-read--mode-install (&optional mode prompt default)
   (or prompt (setq prompt "Install file: "))
-  (let* ((mode (or mode (substring (symbol-name major-mode) 0 -5)))
+  (let* ((mode (nvp-read--mode-name mode))
          (modedir (expand-file-name mode nvp/install))
          files)
     (if (not (file-exists-p modedir))

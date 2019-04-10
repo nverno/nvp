@@ -29,6 +29,7 @@
     ("lfn" "load-file-name" nil :system t)
     ("lie" "last-input-event" nil :system t)
     ("ncf" "no-case-fold" nil :system t)
+    ("pud" "package-user-dir" nil :system t)
     ("tmm" "transient-mark-mode" nil :system t)
     ("bfcs" "buffer-file-coding-system" nil :system t)
     ("csfw" "coding-system-for-write" nil :system t)

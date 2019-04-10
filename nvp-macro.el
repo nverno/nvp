@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-09.20>
+;; Last modified: <2019-04-10.15>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -24,15 +24,16 @@
 
 (cl-defmacro nvp-prefix (num &optional then &rest else &key test &allow-other-keys)
   "If `current-prefix-arg' equals NUM do THEN otherwise ELSE."
-  (declare (indent 2) (debug t))
+  (declare (indent defun) (debug t))
   (while (keywordp (car else))
     (setq else (cdr (cdr else))))
-  (let ((test-fn (if test (if (eq 'quote (car-safe test)) (cadr test)) 'eq)))
+  (and test (eq 'quote (car-safe test)) (setq test (cadr test)))
+  (let ((test-fn (or test (if (listp num) 'memq 'eq))))
     (if (or then else)
-        `(if (,test-fn ,num (prefix-numeric-value current-prefix-arg))
+        `(if (,test-fn (prefix-numeric-value current-prefix-arg) ,num)
              ,then
            ,@else)
-      `(,test-fn ,num (prefix-numeric-value current-prefix-arg)))))
+      `(,test-fn (prefix-numeric-value current-prefix-arg) ,num))))
 
 
 ;; -------------------------------------------------------------------
@@ -123,8 +124,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
         `(if (directory-name-p ,path)
              (file-name-nondirectory
               (file-name-directory (file-truename ,path)))
-           (directory-file-name
-            (file-name-directory (file-truename ,path))))))
+           (file-name-nondirectory (file-truename ,path)))))
 
      ((eq type 'dfn)
       (if (not path)
@@ -132,8 +132,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
             (nvp-buff--1 buffer-file-name ,no-default))
         `(if (directory-name-p ,path)
              (file-name-directory (file-truename ,path))
-           (directory-file-name
-            (file-name-directory (file-truename ,path))))))
+           (file-name-directory (file-truename ,path)))))
 
      ((eq type 'dfns)
       (if (not path)
@@ -633,25 +632,53 @@ to it is returned.  This function does not modify the point or the mark."
            (prog1 bnds
              (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))))))))
 
-(cl-defmacro nvp-tap (type &optional tap beg end &key pulse)
+(defmacro nvp-tap--i (form &optional prompt read-fn default hist)
+  "Prompt interactively for input if running interactively and nothing found."
+  (or prompt (setq prompt "Symbol: "))
+  (if (eq (car-safe read-fn) 'quote) (setq read-fn (cdr read-fn)))
+  (unless noninteractive
+    `(or ,form
+         ,(if read-fn `(,@read-fn ,prompt ,default ,hist)
+            `(read-from-minibuffer ,prompt ,default nil nil ,hist ,default)))))
+
+(cl-defmacro nvp-tap (type &optional tap beg end &key pulse hist)
   "Wrapper for bounds/contents of region/thing-at-points.
 Things at point default to 'symbols unless TAP is non-nil.
 By regions of things at point are pulsed if PULSE is non-nil.
 If BEG and END are non-nil, they are used as region bounds instead of those listed
 below.
 
-`tap'   -- Thing string, no props
-`tapp'  -- Thing string w/ props
-`btap'  -- Bounds of thing at point
-`dwim'  -- If region is active, region string, otherwise thing-at-point (no props)
-`dwimp' -- Same, but with props
-`bdwim' -- Bounds of region or thing at point"
+Trailing 'i' indicates to prompt for input if nothing is found.
+
+`tap'    -- Thing string, no props
+`tapi'   -- 
+`tapp'   -- Thing string w/ props
+`tappi'  -- 
+`btap'   -- Bounds of thing at point
+`btapi'  -- 
+`dwim'   -- If region is active, region string, otherwise thing-at-point (no props)
+`dwimp'  -- Same, but with props
+`bdwim'  -- Bounds of region or thing at point
+`evar'   -- Elisp `variable-at-point'
+`evari'  -- 
+`evaru'  -- Elisp variable, but accept unbound as well
+`evarui' --
+`efunc'  -- Elisp `function-called-at-point'
+`efunci' -- 
+`tag'    -- Tag at point using `find-tag-default'"
   (let ((type (eval type)))
     (cond
      ((eq type 'tap) `(thing-at-point ,(or tap ''symbol) 'no-props))
+     ((eq type 'tapi)
+      `(nvp-tap--i (thing-at-point ,(or tap ''symbol) 'no-props) nil nil nil ,hist))
      ((eq type 'tapp) `(thing-at-point ,(or tap ''symbol)))
+     ((eq type 'tappi)
+      `(nvp-tap--i (thing-at-point ,(or tap ''symbol)) nil nil nil ,hist))
      ((eq type 'btap) `(nvp-tap-bounds ,tap :pulse ,pulse))
+     ((eq type 'btapi)
+      `(nvp-tap--i (nvp-tap-bounds ,tap :pulse ,pulse) nil nil nil ,hist))
 
+     ;; DWIM: use regions if active, otherwise things-at-point
      ((eq type 'dwim)
       (if (and beg end) `(buffer-substring-no-properties ,beg ,end)
         `(if (use-region-p)
@@ -662,12 +689,31 @@ below.
         `(if (use-region-p)
              (buffer-substring (region-beginning) (region-end))
            (thing-at-point ,(or tap ''symbol)))))
-
      ((eq type 'bdwim)
       (if (and beg end) `(cons ,beg ,end)
         `(if (use-region-p) (car (region-bounds))
            (nvp-tap-bounds ,(or tap ''symbol) :pulse ,pulse))))
-     
+
+     ;; elisp specific
+     ((eq type 'evar) '(let ((var (variable-at-point)))
+                         (and (symbolp var) var)))
+     ((eq type 'evari)
+      `(nvp-tap--i (let ((var (variable-at-point)))
+                     (and (symbolp var) var))
+        "Variable: " 'nvp-read-elisp-variable :none ,hist))
+     ((eq type 'evaru) '(let ((var (variable-at-point 'any-symbol)))
+                          (and (symbolp var) var)))
+     ((eq type 'evarui)
+      `(nvp-tap--i (let ((var (variable-at-point 'any-symbol)))
+                     (and (symbolp var) var))
+                   "Variable: " 'nvp-read-elisp-symbol :none ,hist))
+     ((eq type 'efunc) '(function-called-at-point))
+     ((eq type 'efunci)
+      `(nvp-tap--i (function-called-at-point) "Function: "
+                   'nvp-read-elisp-function :none ,hist))
+
+     ;; tags
+     ((eq type 'tag) '(find-tag-default))
      (t (user-error "Unknown `nvp-tap' type %S" type)))))
 
 (cl-defmacro nvp-with-region (beg end &optional thing &rest body
@@ -680,7 +726,7 @@ In WIDEN is non-nil, save restriction and widen before finding bounds."
     (setq body (cdr (cdr body))))
   `(,@(if widen '(save-restriction (widen)) '(progn))
     (if-let* ((bnds (nvp-tap ,(or type ''bdwim) ,(or thing ''paragraph)
-                             :pulse ,pulse)))
+                             nil nil :pulse ,pulse)))
         (cl-destructuring-bind (,beg . ,end) bnds
           ,@body)
       (user-error "nvp-with-region didn't find any bounds"))))
@@ -803,16 +849,31 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
        (time-subtract (current-time) (nth 5 (file-attributes ,file))))
       (* 60 60 24 ,days)))
 
-;; Measure and return the running time of the code block.
-;; https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el#L83
-(defmacro nvp-measure-time (&rest body)
+;; modified from skeeto extras
+(defmacro nvp-measure-time (times &rest body)
+  "Rough measure of BODY run time, executing it TIMES and averaging results."
   (declare (indent defun))
   (garbage-collect)
-  (let ((start (make-symbol "start")))
-   `(let ((,start (float-time)))
-      ,@body
-      (- (float-time) ,start))))
+  (let ((start (make-symbol "start"))
+        (ts (make-symbol "times"))
+        (avg (make-symbol "avg")))
+    `(let ((,ts ,times)
+           (,avg 0))
+       (dotimes (_ ,ts)
+         (let ((,start (float-time)))
+           ,@body
+           (cl-callf + ,avg (- (float-time) ,start))))
+       (/ ,avg ,ts))))
 
+(defmacro nvp-compare-runtimes (reps block1 block2)
+  "Compare runtime averages of REPS for code BLOCK1 to BLOCK2."
+  (declare (indent defun))
+  (let ((avg1 (make-symbol "avg1"))
+        (avg2 (make-symbol "avg2")))
+    `(let ((,avg1 (nvp-measure-time ,reps ,block1))
+           (,avg2 (nvp-measure-time ,reps ,block2)))
+       (message "Reps(%d): (1) %g, (2) %g, ratio 1:2 => %g" ,reps ,avg1 ,avg2
+                (/ ,avg1 ,avg2)))))
 
 ;; -------------------------------------------------------------------
 ;;; Toggled Tip

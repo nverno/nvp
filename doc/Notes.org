@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-04-09.17>
+#+DATE: <2019-04-10.13>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -44,12 +44,12 @@ This doesn't seem to be too actively maintained
 - [ ] parse makefile targets
 - [ ] update URLs
 
-* Macros [7/12]
+* Macros [8/12]
 - [ ] aif
 - [ ] awhile
 - [ ] acond
 - [ ] remove `nvp-install-on-demand` when a better options is found
-- [ ] separate bindings macros
+- [X] separate bindings macros
 - [X] unify thing-at-point / region macros
 - [X] point ala c-point
 - [X] scan-lists
@@ -85,9 +85,11 @@ This doesn't seem to be too actively maintained
 - [ ] wrapper function
 - [ ] modes: elisp (disassemble), c+others (disaster), java, clojure, etc.
 
-** Editing [0/2]
+** Editing [0/4]
 - [ ] fix list wrapping to account for syntax
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
+- [ ] sorting by alist handle more than just lists of cons cells
+- [ ] indent thing at point
 
 ** Cycling [0/6]
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
@@ -97,29 +99,34 @@ This doesn't seem to be too actively maintained
 - [ ] abstract hook to start cycling after abbrev expansion
 - [ ] cycling / moving by indentation - pkg: indent-tools
 
-** Dev [0/3]
+** Dev [0/4]
 - [ ] remove all methods from generic for debugging
 - [ ] convert cl-defstruct to vector - formatting for output
 - [ ] describe different types of variables: hash, struct, class, default
+- [ ] pretty printing alists
 
-** Read/Display [0/2]
+** Read/Display [0/3]
 - [ ] read w/ popup help: `register-read-with-preview'
 - [ ] make use of nvp-view-list-mode -- pkgs: evil-view-list, tablist-filter
+- [ ] separate view/results macros
 
-** Repeat / Toggle [0/6]
+** Repeat / Toggle [1/6]
 - [ ] utility function to repeat command like kbdmacro-repeat
 - [ ] smartrep for toggled commands
 - [ ] define macro for toggle commands
 - [ ] reuse same keymap? like company-active-map, or expand-regions ???
-- [ ] how to remove font-lock keywords added with mode-name?
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
+- [X] how to remove font-lock keywords added with mode-name?
 
-** Comint / Proc [1/6]
+** Comint / Proc [1/9]
 - [ ] use in nvp-ext to find shell procs
 - [ ] use in nvp-shell to find shell procs
 - [ ] use in nvp-inf
 - [ ] investigate ess-get-next-available-process
 - [ ] merge hippie history expansion with comint-setup-history
+- [ ] move shell functions from ext to nvp-shell
+- [ ] use proc functions to find shells
+- [ ] fixup / remove nvp-ext script runners
 - [X] separate sentinels from comint
 
 ** Install [1/4]
@@ -257,9 +264,9 @@ Merge loose help packages
 - [X] determine project root
 
 
-** Profile [0/1]
+** Profile [1/2]
 - [ ] profiling script no longer works with compiled init
-
+- [X] compare runtimes b/w code chunks
 ** Generic template expansion [0/2]
 - [ ] default syntax
 - [ ] function to expand template - like grep-compute-defaults
@@ -277,9 +284,10 @@ Merge loose help packages
 - [X] parse: buffer provides
 - [X] parse: buffer includes
 
-** C/C++ [0/2]
+** C/C++ [3/22]
 - [X] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
 - [ ] font-lock: toggle doxygen
+- [ ] font-lock: toggle additional rules
 - [ ] align rules for doxygen ?
 - [ ] how to gather all includes needed for project?
 - [ ] fixup script to generate system includes
@@ -290,18 +298,17 @@ Merge loose help packages
 - [X] help: man 2/3 depending on function
 - [ ] abbrevs: from local functions
 - [ ] abbrevs: from includes via semantic ?
-
-*** TODO Parse [1/4]
-- [ ] includes
-- [ ] buffer local functions
-- [ ] lexical variables
-- [X] current function
-
-*** TODO Newline DWIM [1/4]
-- [ ] convert newline to generic
-- [ ] in normal comments
-- [ ] in doxygen comments
-- [X] default in code method
+- [ ] indirect compile command
+- [ ] indirect disassembly via disaster
+- [ ] need to be able to choose type of compile from options list
+- [ ] newline: use generic
+- [ ] newline: comment continuation
+semantic tags have parse info
+- [ ] parse: includes
+- [ ] parse: buffer local functions
+- [ ] parse: lexical variables
+- [X] parse: current function
+- [ ] REPL: fixup gdb REPL interface
 
 ** Makefile [0/8]
 *** TODO Align/Indent [0/2]
@@ -361,7 +368,7 @@ semantic support? seems fucked
 - [ ] hook
 - [ ] skeleton - srecode?
 
-** Awk/sed [0/4]
+** Awk/sed [1/4]
 *** refs
   + man.el uses to parse output
   + emacs source hooks / build-aux
@@ -370,10 +377,10 @@ semantic support? seems fucked
 - [ ] function to open src buffer from sh script
 - [ ] function to choose from useful oneliners
 - [ ] use awk-it??
-- [X] additional font-lock: indirect calls, fields
+- [X] additional font-lock: indirect calls, fields, keywords
 
-*** TODO Generics [1/2]
-- [ ] should be able to use norm beg/end/mark function from C
+*** DONE Generics [2/2]
+- [X] should be able to use norm beg/end/mark function from C
 - [X] function at point, other parse probably not important
 
 *** TODO Completion [0/2]
@@ -480,9 +487,15 @@ https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [X] package deps
 
 
-* Mode settings [0/2]
-- [ ] semantic - separate from cedet / update bindings
-- [ ] EDE
+* Mode settings [2/8]
+- [ ] cedet base settings separate from any specific mode stuff
+- [X] separate c specific settings from general semantic/cedet
+- [X] move c includes install to c config
+- [ ] c install/update includes async (already does?)
+- [ ] semantic add bindings to toggle disabled submodes
+- [ ] update semantic bindings related to tags / jumps
+- [ ] EDE - meh?
+- [ ] SRrecode -- worth using as well as snippets?
 
 * Elisp Packages [0/2]
 ** TODO Cookiecutter [2/3]

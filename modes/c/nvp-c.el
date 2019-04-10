@@ -1,6 +1,6 @@
 ;;; nvp-c.el --- c helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 15:32:56>
+;; Last modified: <2019-04-10.13>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp-c
 ;; Created: 11 November 2016
@@ -18,10 +18,11 @@
   (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-compile)
-  (defvar c/R-abbrev-table)
-  (defvar nvp-abbrev-local-table))
+  (require 'nvp-font)
+  (defvar c/R-abbrev-table))
+(require 'nvp-parse)
+(require 'nvp)
 (declare-function xref-push-marker-stack "xref")
-(nvp-declare "cc-cmds" c-mark-function c-beginning-of-defun)
 (nvp-declare "" nvp-compile)
 (autoload 'string-trim-right "subr-x")
 
@@ -67,9 +68,8 @@
 ;; pull out functions signatures from current buffer using ctags
 (defun nvp-c-function-signatures (&optional file ignore-main ignore-static)
   (when-let* ((sigs (process-lines
-               (nvp-program "ctags" 'no-compile) "-x" "--c-kinds=fp"
-               (or file buffer-file-name)))
-              
+                     (nvp-program "ctags") "-x" "--c-kinds=fp"
+                     (or file buffer-file-name)))
               (res (mapcar
                     (lambda (s)
                       (string-trim-left
@@ -82,6 +82,12 @@
     (if ignore-static
         (cl-remove-if #'(lambda (s) (string-match-p "\\_<static\\_>" s)) res)
       res)))
+
+;; -------------------------------------------------------------------
+;;; Generics
+
+(cl-defmethod nvp-parse-current-function (&context (major-mode c-mode) &rest _args)
+  (add-log-current-defun))
 
 ;; -------------------------------------------------------------------
 ;;; Environment
@@ -130,17 +136,6 @@
   (unless (eq (char-before) ?\;)
     (insert ";"))
   (newline-and-indent))
-
-;;;-- Marking --
-
-(defun nvp-c-mark-defun ()
-  (interactive)
-  (nvp--mark-defun                      ;FIXME: generic
-   ;; mark function on first invoke
-   (c-mark-function)
-   ;; successively extend to next functions
-   (c-beginning-of-defun -1)
-   (point)))
 
 (declare-function forward-ifdef "hideif")
 ;; https://github.com/abo-abo/oremacs/
@@ -334,9 +329,8 @@
 ;;; Font-lock
 
 (dolist (mode '(c-mode c++-mode))
-  (font-lock-add-keywords
-   mode
-   '(("\\<\\(assert\\|DEBUG\\)\\s-*(" 1 font-lock-warning-face t))))
+  (nvp-font-lock-add-defaults mode
+    ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
 
 ;; -------------------------------------------------------------------
 ;;; Doxygen

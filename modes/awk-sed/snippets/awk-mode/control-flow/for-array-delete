@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: for array delete
-# key: forard
-# --
-for (var in ${2:arr}) {
-  delete $1[var]
-}

@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-04-01.15>
+;; Last modified: <2019-04-10.00>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 October 2016
 
@@ -48,7 +48,7 @@
 ;; -------------------------------------------------------------------
 ;;; Things at point
 
-(defun nvp-elisp-bounds-of-cons ()
+(defun nvp-elisp-bounds-of-cons-cell ()
   "Return bounds of dotted cons cell, eg (sexp . sexp)."
   (save-excursion
     (let* ((ppss (parse-partial-sexp (point-min) (point)))
@@ -60,15 +60,15 @@
           (skip-chars-forward "^.)")
           (and (eq ?. (char-after))
                (cl-return (bounds-of-thing-at-point 'list))))))))
-(put 'cons 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons)
+(put 'cons-cell 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons-cell)
 
 (defun nvp-elisp-bounds-of-alist ()
   "Return bounds of alist at point."
   (save-excursion
     (let ((ppss (parse-partial-sexp (point-min) (point))))
       (if (= 1 (nth 0 ppss)) (bounds-of-thing-at-point 'list)
-        ;; otherwise check if in cons and back out of it
-        (when-let* ((bnds (bounds-of-thing-at-point 'cons)))
+        ;; otherwise check if in cons-cell and back out of it
+        (when-let* ((bnds (bounds-of-thing-at-point 'cons-cell)))
           (goto-char (1- (car bnds)))
           (bounds-of-thing-at-point 'list))))))
 (put 'alist 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-alist)

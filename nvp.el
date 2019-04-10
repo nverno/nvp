@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-01.11>
+;; Last modified: <2019-04-10.01>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -46,6 +46,7 @@
 (defvar nvp-read-config-history () "Minibuffer jumping history.")
 (defvar nvp-default-log-function #'nvp-log
   "Default logging function - called from process sentinels, etc.")
+(defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
 
 ;;-- Local
 ;; Abbrevs
@@ -73,7 +74,6 @@
 (defvar-local nvp-mode-header-regex nil "Regex to move b/w headers.")
 (defvar-local nvp-mode-snippet-dir nil "Mode's snippet directory.")
 (defvar-local nvp-mode-install-targets () "Mode's external install targets.")
-(defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
 
 ;; -------------------------------------------------------------------
 ;;; Functions

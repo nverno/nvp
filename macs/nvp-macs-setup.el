@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-09.16>
+;; Last modified: <2019-04-10.04>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/macs
 ;; Created: 31 March 2019
@@ -29,10 +29,12 @@
 (defmacro nvp-setq (&rest var-vals)
   "Define VAR and eval VALUE during compile."
   (declare (indent 0))
-  (macroexp-progn
-   (cl-loop for (var value) on var-vals by #'cddr
-      collect `(progn (eval-when-compile (defvar ,var))
-                 (setq ,var (eval-when-compile ,value))))))
+  `(progn
+     (,@(cons 'eval-when-compile
+              (cl-loop for (var _value) on var-vals by #'cddr
+                 collect `(defvar ,var))))
+     ,@(cl-loop for (var value) on var-vals by #'cddr
+          collect `(setq ,var (eval-when-compile ,value)))))
 
 ;; -------------------------------------------------------------------
 ;;; Programs / Paths

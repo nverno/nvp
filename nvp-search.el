@@ -1,13 +1,14 @@
 ;;; nvp-search.el --- search/replace -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-31 00:36:27>
+;; Last modified: <2019-04-10.11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 13 February 2019
 
 ;;; Commentary:
+
+;; TODO: ripgrep support
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
@@ -22,30 +23,46 @@
 ;; -------------------------------------------------------------------
 ;;; Rgrep
 
-;;;###autoload
-(defun nvp-rgrep-symbol (arg)
-  "Lookup SYM using rgrep with FILES regexp from ROOT directory.
-By default, lookup symbol at point in files matching current file's extension
-or '*' from emacs root, ignoring package directory.
-(1) prefix, includes package directory.
-(2) prefix just calls `rgrep' on all files (no ext).
-(3) prefix prompt for confirmation"
-  (interactive "P")
-  (require 'nvp-grep-config)
-  (let ((sym (or (thing-at-point 'symbol t)
-                 (read-string "Symbol: " nil 'nvp-search-history)))
-        (ext (and (/= (prefix-numeric-value arg) 16)
-                  (file-name-extension (or (buffer-file-name) (buffer-name)))))
-        (grep-find-ignored-directories
-         (if (not (equal '(4) arg))
-             (cons (file-name-nondirectory package-user-dir)
-                   grep-find-ignored-directories)
-           grep-find-ignored-directories)))
-    (grep-compute-defaults)
-    (rgrep (format "[ '\\(]%s[ \\)\\t\\n\\b]*" sym)
-           (if ext (concat "*." ext) "*")
-           nvp/emacs (equal '(64) current-prefix-arg))))
+(eval-when-compile
+  (defmacro nvp-rgrep-with-defaults (elisp &rest body)
+   "Defaults: symbol at point, file/buffer extension.
+(1) prefix: if ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
+    for `default-directory'.
+(2) prefix calls `rgrep' on all files, ignoring current file/buffer extension.
+(3) prompts for confirmation"
+   (declare (indent defun) (debug t))
+   `(let ((sym (nvp-tap 'tapi nil nil nil :hist 'nvp-search-history))
+          ,@(if elisp                                                 ; '(4)
+                '((grep-find-ignored-directories
+                   (nvp-prefix 4 (cons (nvp-path 'dn :path package-user-dir)
+                                       grep-find-ignored-directories)
+                     grep-find-ignored-directories)))
+              '((default-directory
+                  (nvp-prefix 4 (getenv "HOME") default-directory))))
+          (ext (nvp-prefix 16 (nvp-path 'ext :or-name t) :test '/=))  ; '(16)
+          (confirm (nvp-prefix 64)))                                  ; '(64)
+      ,@(if body `,@body
+          `((grep-compute-defaults)
+            (rgrep (format "\\b%s\\b" sym)
+                   (if ext (concat "*." ext "*"))
+                   ,(if elisp nvp/emacs 'default-directory)
+                   confirm))))))
 
+;;;###autoload
+(defun nvp-rgrep-symbol-at-point (arg)
+  "Rgrep for symbol at point. See `nvp-rgrep-with-defaults'."
+  (interactive "P")
+  (setq current-prefix-arg arg)
+  (nvp-rgrep-with-defaults nil))
+
+;;;###autoload
+(defun nvp-rgrep-elisp-symbol-at-point (arg)
+  "Rgrep for elisp symbol at point. See `nvp-rgrep-with-defaults'."
+  (interactive "P")
+  (setq current-prefix-arg arg)
+  (nvp-rgrep-with-defaults 'elisp))
+
+
 ;; -------------------------------------------------------------------
 ;;; wgrep
 
@@ -53,7 +70,6 @@ or '*' from emacs root, ignoring package directory.
 (defun nvp-wgrep-bind ()
   "Bind wgrep in current mode."
   (interactive)
-  (require 'nvp-grep-config)
   (let ((map (symbol-value (intern-soft (format "%s-map" major-mode)))))
     (define-key map (kbd "C-x C-n w") #'wgrep-change-to-wgrep-mode)))
 
@@ -68,6 +84,7 @@ or '*' from emacs root, ignoring package directory.
   ("t" wgrep-toggle-readonly-area "toggle r/o")
   ("m" wgrep-mark-deletion "mark deletion"))
 
+
 ;; -------------------------------------------------------------------
 ;;; Ag
 
@@ -129,42 +146,65 @@ or '*' from emacs root, ignoring package directory.
                       (cl-return t)))))
            1))))
 
-;;;###autoload
-(defun nvp-ag (str dir &optional regex)
-  "Search for STR from root DIR using ag.
-Defaults to symbol at point and emacs root.
+
+(eval-when-compile
+  (defmacro nvp-ag-with-defaults (elisp &rest body)
+    "Search for STR from root DIR using ag.
+Defaults to symbol at point and nvp/emacs if ELISP is non-nil, HOME otherwise.
+If BODY is non-nil, it is executed in place of the default search.
 (1) prefix prompts for STR and DIR
 (2) or more prefix args to treat STR as REGEX
 (3) prefix prompt and treat as REGEX"
-  (interactive
-   (let* ((arg (prefix-numeric-value current-prefix-arg))
-          (sym (thing-at-point 'symbol t))
-          (dir nvp/emacs)
-          (re (> (prefix-numeric-value current-prefix-arg) 4))
-          (elpa (file-name-nondirectory
-                 (directory-file-name user-package-dir))))
-     (require 'ag)
-     (if (< arg 16)
-         (cl-pushnew elpa ag-ignore-list :test #'equal)
-       (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal))
-     (cond
-      ((memq arg '(4 16))
-       (list (read-string
-              (format "Ag search%s: " (if sym (concat " ('" sym "')") ""))
-              nil 'nvp-search-history sym)
-             (read-directory-name
-              "Search directory(~/.emacs.d): " nvp/emacs nvp/emacs t "~/")
-             re))
-      ((null sym)
-       (list (read-string "Ag search string: " nil 'nvp-search-history)
-             nvp/emacs re))
-      (t
-       (add-to-history 'nvp-search-history sym)
-       (list sym dir re)))))
-  ;; just unset these to work with wgrep-ag
-  (let (compilation-environment
-        compilation-start-hook)
-    (ag/search str dir :regexp regex)))
+    (declare (indent defun))
+    `(let* ((dir (nvp-prefix '(4 64)
+                   (read-from-minibuffer
+                    "Root directory: " ,(if elisp 'nvp/emacs '(getenv "HOME")))
+                   ,(if elisp 'nvp/emacs '(getenv "HOME"))))
+            (sym (let ((tap (nvp-tap 'tap)))
+                   (if (or (nvp-prefix '(4 64)) (null tap))
+                       (read-from-minibuffer
+                        (format "Ag search%s: "
+                                (if tap (concat " ('" tap "')") ""))
+                        tap nil nil 'nvp-search-history tap)
+                     (add-to-history 'nvp-search-history tap)
+                     tap)))
+            (re (nvp-prefix 4 nil :test '>))
+            ,@(if elisp '((elpa (nvp-path 'dn :path package-user-dir)))
+                '((file-re (nvp-prefix 16))))
+            ;; nullify to allow ag output parsing
+            compilation-start-hook
+            compilation-environment)
+       (require 'ag)
+       ,@(if elisp
+             `((nvp-prefix 16 (cl-pushnew elpa ag-ignore-list :test #'equal)
+                 :test '<
+                 (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal))))
+       ,(if body `,@body
+          ;; integer prefix is used as context argument
+          ;; otherwise, prefix causes prompting with ag command
+          '(unless (or (integerp current-prefix-arg)
+                       (nvp-prefix 16 nil :test '>))
+             (setq current-prefix-arg nil))
+          (if elisp
+               '(ag/search sym dir :regexp re)
+             '(if file-re
+                  (ag/search sym dir :file-regex sym)
+                (ag/search sym dir :regexp re)))))))
+
+
+;;;###autoload
+(defun nvp-ag-elisp-symbol-at-point (&optional arg)
+  "Search for elisp symbol at point with ag. See `nvp-ag-with-defaults'."
+  (interactive "P")
+  (and arg (setq current-prefix-arg arg))
+  (nvp-ag-with-defaults 'elisp))
+
+;;;###autoload
+(defun nvp-ag-symbol-at-point (&optional arg)
+  "Search for symbol at point with ag. See `nvp-ag-with-defaults'."
+  (interactive "P")
+  (and arg (setq current-prefix-arg arg))
+  (nvp-ag-with-defaults nil))
 
 ;;;###autoload
 (defun nvp-ag-dired (arg)

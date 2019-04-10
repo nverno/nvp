@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-01.07>
+;; Last modified: <2019-04-10.01>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 20 March 2017
@@ -181,14 +181,25 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
 ;;; Font-lock
 
 ;;;###autoload
-(defun nvp-toggle-font-lock ()
-  "Toggle font-lock additions on/off."
-  (interactive)
-  (if (not (bound-and-true-p nvp-mode-font-lock))
-      (message "No additional font-lock rules for %s" major-mode)
-    (nvp-toggled-if (font-lock-refresh-defaults)
-      (font-lock-flush (point-min) (point-max))
-      (font-lock-ensure (point-min) (point-max)))))
+(defun nvp-toggle-font-lock (arg)
+  "Toggle font-lock additions on/off.
+With prefix ARG, just refresh defaults."
+  (interactive "P")
+  (if arg
+      (nvp-toggled-if (font-lock-refresh-defaults)
+        (font-lock-flush)
+        (font-lock-ensure))
+    ;; otherwise, remove fonts added via `font-lock-add-keywords'
+    (let ((mode-fonts (cdr (assq major-mode nvp-mode-font-additions))))
+      (if (null mode-fonts)
+          (user-error "No additional fonts for %S" major-mode)
+        (when-let ((fonts (cdr (assq major-mode font-lock-keywords-alist))))
+          (if (cl-some (lambda (elt)
+                         (cl-find elt fonts :key #'caar :test #'equal))
+                       mode-fonts)
+              (font-lock-remove-keywords major-mode mode-fonts)
+            (font-lock-add-keywords major-mode mode-fonts))
+          (font-lock-refresh-defaults))))))
 
 ;; -------------------------------------------------------------------
 ;;; Text case

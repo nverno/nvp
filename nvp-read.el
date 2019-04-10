@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-09.21>
+;; Last modified: <2019-04-10.15>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
@@ -150,43 +150,53 @@
                                   (string-prefix-p "nvp-" (symbol-name m))))
                            t nil 'nvp-read-config-history "nvp-keymap")))
 
-(defun nvp-read-obarray-regex (prompt &optional regexp default)
+(eval-when-compile
+  (defmacro nvp-read--default (default &rest body)
+    (macroexp-let2 nil def default
+     `(if (eq ,def :none) nil
+        (or ,def ,@body)))))
+
+(defun nvp-read-obarray-regex (prompt &optional regexp default hist)
   "Completing read for obarray with optional REGEXP filter."
   (completing-read prompt obarray
                    (lambda (sym) (string-match-p regexp (symbol-name sym)))
-                   t nil nil
+                   t nil hist
                    (and default (if (symbolp default) (symbol-name default)
                                   default))))
 
 ;; #<marker at 34938 in help-fns.el.gz>
-(defun nvp-read-elisp-symbol (prompt &optional predicate default)
+(defun nvp-read-elisp-symbol (prompt &optional predicate default hist)
   "Read symbol using `help--symbol-completion-table' using PROMPT with DEFAULT.
 Filter by PREDICATE if non-nil."
   (require 'help-fns)
+  (setq default (nvp-read--default default (nvp-tap 'tap)))
   (let ((enable-recursive-minibuffers t) val)
     (setq prompt (nvp-prompt-default prompt default))
     (setq val (completing-read prompt #'help--symbol-completion-table
-                               predicate t nil nil
-                               (if (and default (symbolp default))
-                                   (symbol-name default))))
+                               predicate t nil hist
+                               (when default
+                                 (if (symbolp default) (symbol-name default)
+                                   default))))
     (unless (equal val "")
       (intern val))))
 
-(defun nvp-read-elisp-variable (prompt &optional default)
+(defun nvp-read-elisp-variable (prompt &optional default hist)
   "Lookup elisp symbol using PROMPT and optional DEFAULT."
-  (unless default (setq default (variable-at-point)))
+  (setq default (nvp-read--default default (let ((var (variable-at-point)))
+                                             (and (symbolp var) var))))
   (let ((orig-buffer (current-buffer)))
     (nvp-read-elisp-symbol prompt
                            (lambda (vv)
                              (with-current-buffer orig-buffer
                                (or (get vv 'variable-documentation)
-                                   (and (boundp vv) (not (keywordp vv)))))))))
+                                   (and (boundp vv) (not (keywordp vv))))))
+                           (or default :none) hist)))
 
-(defun nvp-read-elisp-function (prompt &optional default)
+(defun nvp-read-elisp-function (prompt &optional default hist)
   "Lookup elisp function with PROMPT and optional DEFAULT."
-  (unless default (setq default (function-called-at-point)))
+  (setq default (nvp-read--default default (function-called-at-point)))
   (nvp-read-elisp-symbol
-   prompt (lambda (f) (or (fboundp f) (get f 'function-documentation))) default))
+   prompt (lambda (f) (or (fboundp f) (get f 'function-documentation))) default hist))
 
 ;;;###autoload
 (defun nvp-read-mode (&optional default)

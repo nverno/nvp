@@ -1,8 +1,6 @@
 ;;; nvp-scratch.el --- simple minor mode for scratch -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-09.23>
+;; Last modified: <2019-04-10.11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 March 2019
@@ -31,8 +29,7 @@
   "Kill buffer ignoring `kill-buffer-hook', `kill-buffer-query-functions'."
   (interactive)
   (let (kill-buffer-hook kill-buffer-query-functions)
-    (kill-this-buffer))
-  (nvp-window-configuration-restore))
+    (kill-this-buffer)))
 
 (defvar nvp-scratch-minor-mode-map
   (let ((km (make-sparse-keymap)))
@@ -45,7 +42,8 @@
   "Minor mode in scratch buffers."
   :lighter nil
   (when nvp-scratch-minor-mode
-    (add-hook 'after-change-major-mode-hook #'nvp-scratch-minor-mode nil 'local)
+    (add-hook 'after-change-major-mode-hook #'nvp-scratch-minor-mode nil t)
+    (add-hook 'kill-buffer-hook #'nvp-window-configuration-restore nil t)
     (erase-buffer)
     (unless comment-start (setq comment-start "#"))
     (insert (nvp-comment-string "Jah lives chilren\n" 2))

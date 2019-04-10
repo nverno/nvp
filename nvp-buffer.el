@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-01.07>
+;; Last modified: <2019-04-10.01>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -116,8 +116,8 @@ With prefix, prompt for MODE buffers to kill."
   (if-let ((file (buffer-file-name)))
       (when (y-or-n-p (format "Really delete '%s'? " (nvp-path 'bfns)))
         (if (vc-backend file)
-            (vc-delete-file file))
-        (delete-file file delete-by-moving-to-trash)
+            (vc-delete-file file)
+          (delete-file file delete-by-moving-to-trash))
         (kill-this-buffer))
     (user-error "No file is currently being edited")))
 

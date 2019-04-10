@@ -1,19 +1,22 @@
 ;;; nvp-scheme.el --- scheme helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/scheme-tools
-;; Last modified: <2019-03-08 06:34:43>
-;; Package-Requires: 
+;; Last modified: <2019-04-10.08>
 ;; Created: 14 May 2017
 
 ;;; Commentary:
+
+;; - sending REPL regions from different modules:
+;;   https://stackoverflow.com/questions/55546058/racket-mode-can-i-evaluate-a-single-form-within-a-given-namespace-at-the-repl
+
+;; TODO:
+;; - snippets => jump to snippet should depend on geiser-impl--implementation?
+
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (nvp-local-vars)
   (require 'cl-lib)
+  (require 'nvp-macro)
   (defvar company-selection)
   (defvar company-candidates)
   (defvar geiser-active-implementations)
@@ -21,13 +24,6 @@
   (defvar geiser-impl--implementations))
 (require 'geiser)
 (declare-function geiser-eval-last-sexp "geiser-mode")
-(declare-function nvp-ext-run-script "nvp-ext")
-(declare-function nvp-log "nvp-log")
-
-(nvp-package-define-root)
-
-;;; TODO:
-;; - snippets => jump to snippet should depend on geiser-impl--implementation?
 
 ;; -------------------------------------------------------------------
 ;;; Utils

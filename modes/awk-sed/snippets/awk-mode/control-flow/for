@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
-# name: for
+# name: for (v in arr)
 # key: for
 # --
-for (${1:i} = 1; $1 <= ${2:cond}; $1++) {
+for (${1:var} in ${2:arr}) {
   $0
 }

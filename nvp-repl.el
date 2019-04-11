@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-01.12>
+;; Last modified: <2019-04-11.11>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 22 March 2019
@@ -45,6 +45,7 @@
     cd                                    ; command to change REPL working dir
     ;; set internally
     proc                                  ; REPL process
+    buff                                  ; REPL buffer
     )
   (put 'nvp-repl-make 'lisp-indent-function 'defun)
 
@@ -68,20 +69,19 @@
   (put 'nvp-repl-add 'lisp-indent-function 'defun)
 
   ;; initialize some REPLs
-  (eval-and-compile
-    (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
-      :init #'ielm
-      :modes '(inferior-emacs-lisp-mode)
-      :procname "ielm"
-      :bufname "*ielm"
-      :cd #'ielm-change-working-buffer)))
+  (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
+    :init #'ielm
+    :modes '(inferior-emacs-lisp-mode)
+    :procname "ielm"
+    :bufname "*ielm"
+    :cd #'ielm-change-working-buffer))
 
 ;; may switch storage of REPL vars
 (eval-when-compile
   (defmacro nvp-repl--val (val &optional repl)
     (or (stringp val) (setq val (symbol-name val)))
     (let ((fn (intern (concat "nvp-repl-" val))))
-      `(,fn ,(or repl nvp-repl nvp-repl-default)))))
+      `(,fn (or ,repl nvp-repl nvp-repl-default)))))
 
 ;; return repl for MODE, or default
 (defsubst nvp-repl-for-mode (mode)
@@ -134,10 +134,9 @@ Each function takes a process as an argument to test against.")
     (when (and proc (not (process-get proc :src-buffer)))
       (process-put proc :src-buffer src-buffer))))
 
-;; non-nil if PROC-OR-BUFF is in a running state
-(defsubst nvp-repl-live-p (proc-or-buff &optional repl)
-  (and (not (null proc-or-buff))
-       (funcall (nvp-repl--val live repl) proc-or-buff)))
+;; non-nil if PROC is in a running state
+(defsubst nvp-repl-live-p (proc &optional repl)
+  (and proc (funcall (nvp-repl--val live repl) proc)))
 
 ;; check REPL has an associated process and it is alive
 ;; if it had a proc that died, this updates its proc to nil
@@ -154,10 +153,8 @@ Each function takes a process as an argument to test against.")
     (process-buffer proc)))
 
 ;; update REPLs proc and procs src-buffer property
-(defsubst nvp-repl-update (proc-or-buff &optional repl)
-  (if (processp proc-or-buff)
-      (setf (nvp-repl--val proc repl) proc-or-buff)
-    (setf (nvp-repl--val proc repl) (process-buffer proc-or-buff)))
+(defsubst nvp-repl-update (proc &optional repl)
+  (setf (nvp-repl--val proc repl) proc)
   (nvp-repl--attach (current-buffer) repl))
 
 ;; -------------------------------------------------------------------
@@ -167,12 +164,11 @@ Each function takes a process as an argument to test against.")
   "Return a REPL buffer if one exists, otherwise attempt to start one."
   (or (nvp-repl-buffer repl)
       (if-let ((proc (run-hook-with-args-until-success 'nvp-repl-find-functions)))
+          (and (bufferp proc) (setq proc (nvp-buffer-process proc)))
           (when (nvp-repl-live-p proc repl)
             ;; found an unregistered live one
             (nvp-repl-update proc repl)
-            (if (processp proc)
-                (process-buffer proc)
-              proc))
+            (process-buffer proc))
         ;; initialize a new REPL
         (or (nvp-repl-start repl)
             (user-error "Failed to initialize REPL")))))

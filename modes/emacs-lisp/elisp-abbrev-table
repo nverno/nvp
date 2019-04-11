@@ -17,6 +17,7 @@
     ("tc" "this-command" nil :system t)
 
     ("ama" "auto-mode-alist" nil :system t)
+    ("bdt" "buffer-display-table" nil :system t)
     ("bfn" "buffer-file-name" nil :system t)
     ("cfs" "case-fold-search" nil :system t)
     ("cla" "command-line-args" nil :system t)

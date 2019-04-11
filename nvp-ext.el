@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-04-10.07>
+;; Last modified: <2019-04-11.06>
 ;; URL: https://github.com/nverno/
 ;; Created: 11 November 2016
 
@@ -75,8 +75,6 @@
           (sudo (nvp-with-gnu (y-or-n-p "Sudo? "))))
      (list file funcs sudo nil)))
   (let ((cmd (nvp-ext--script-command file functions)))
-    (nvp-with-process "bash"
-      :proc )
     (nvp-with-process-filter
       (nvp-with-gnu/w32
           (if sudo

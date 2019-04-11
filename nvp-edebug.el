@@ -1,6 +1,6 @@
 ;;; nvp-edebug.el --- emacs/elisp debubgging helper -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-28 02:43:23>
+;; Last modified: <2019-04-11.01>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 20 February 2019
@@ -9,6 +9,8 @@
 
 ;; emacs/elisp debugging
 ;; - cc-engine: #<marker at 23505 in cc-engine.el.gz>
+;; it would be useful to highlight positions with overlays during debugging
+;; see #<marker at 63523 in cc-engine.el.gz>
 
 ;;; Code:
 (eval-when-compile

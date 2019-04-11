@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-10.01>
+;; Last modified: <2019-04-10.16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 20 March 2017
@@ -202,7 +202,15 @@ With prefix ARG, just refresh defaults."
           (font-lock-refresh-defaults))))))
 
 ;; -------------------------------------------------------------------
-;;; Text case
+;;; Text
+
+(defun nvp-toggle-tabify (&optional beg end)
+  "Tab/Untabify buffer regions - full visible buffer with prefix, otherwise \
+the current paragraph."
+  (interactive
+   (nvp-tap-or-region 'bdwim (nvp-prefix 1 'buffer :test '> 'paragraph) :pulse t))
+  (nvp-toggled-if (untabify beg end)
+    (tabify beg end)))
 
 ;; (defun nvp-toggle-case ()
 ;;   (interactive)

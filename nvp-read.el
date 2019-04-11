@@ -26,7 +26,10 @@
 
 ;; just MODE's name minus the "-mode"
 (defsubst nvp-read--mode-name (&optional mode)
-  (string-remove-suffix "-mode" (or mode (symbol-name major-mode))))
+  (if mode
+      (and (symbolp mode) (setq mode (symbol-name mode)))
+    (setq mode (symbol-name major-mode)))
+  (string-remove-suffix "-mode" mode))
 
 ;; list filenames relative to ROOT matching REGEXP
 (defsubst nvp-read--relative-files (root regexp)

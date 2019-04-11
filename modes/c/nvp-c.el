@@ -1,6 +1,6 @@
 ;;; nvp-c.el --- c helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-10.13>
+;; Last modified: <2019-04-10.19>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp-c
 ;; Created: 11 November 2016
@@ -86,6 +86,7 @@
 ;; -------------------------------------------------------------------
 ;;; Generics
 
+;; #<marker at 78109 in cc-cmds.el.gz>
 (cl-defmethod nvp-parse-current-function (&context (major-mode c-mode) &rest _args)
   (add-log-current-defun))
 

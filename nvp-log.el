@@ -1,13 +1,16 @@
 ;;; nvp-log.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-01.11>
+;; Last modified: <2019-04-11.04>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  2 November 2016
 
 ;;; Commentary:
+
 ;; FIXME: get rid of this, find better strategy
 ;; basic logging mode
+;; - ert message capturing: #<marker at 10762 in ert-x.el.gz>
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))

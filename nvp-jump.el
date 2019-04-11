@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-10.02>
+;; Last modified: <2019-04-10.15>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -37,7 +37,7 @@
        file :file action
        :init-fn (lambda () (nvp-display-init-template
                        'mode-config 'emacs-lisp-mode nil nil
-                       `(modename ,(nvp-jump--mode-name mode))))))))
+                       `(modename ,(nvp-read--mode-name mode))))))))
 
 ;; Jump to test with extension `STR'.  If it doesn't exist make a new
 ;; file, and if there are multiple matches offer ido choice.
@@ -53,7 +53,7 @@
   (interactive (list (nvp-prefix 16 (nvp-read-mode) major-mode) current-prefix-arg))
   (and (stringp mode) (setq mode (intern mode)))
   (let* ((str-mode-hook (format "%s-hook" mode))
-         (hook-fn-name (format "nvp-%s-hook" (nvp-jump--mode-name mode)))
+         (hook-fn-name (format "nvp-%s-hook" (nvp-read--mode-name mode)))
          (hook-fn (intern-soft hook-fn-name)))
     (if hook-fn                         ; probably in its own config file
         (nvp-display-location hook-fn :find-func action)

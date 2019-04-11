@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-10.01>
+;; Last modified: <2019-04-11.00>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -441,7 +441,7 @@ With double prefix, highlight changes that would occur."
 ;;; Advices
 
 ;; add smooth-scrolling
-(nvp-advise-commands 'do-smooth-scroll :after (nvp-move-next5 nvp-move-prev5))
+(nvp-advise-commands 'do-smooth-scroll :after '(nvp-move-next5 nvp-move-prev5))
 
 ;; don't run `shell-mode-hook' during `shell-command' calls
 (define-advice shell-command (:around (orig-fn &rest args) "no-hook")

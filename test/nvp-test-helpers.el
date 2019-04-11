@@ -1,5 +1,6 @@
 ;;; test helper functions/macros
 (require 'nvp)
+(require 'nvp-macro)
 (require 'ert)
 (require 'cl-lib)
 
@@ -34,6 +35,6 @@ If '|' is present in TO text, the point is expected to end there."
      (let ((end-char (nvp-test-set-mark-and-point)))
        ,@body
        (and end-char (insert end-char)))
-     (should (string= (buffer-string) ,to))))
+     (should (string= (nvp-s 'bs) ,to))))
 
 (provide 'nvp-test-helpers)

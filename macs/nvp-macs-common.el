@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-09.20>
+;; Last modified: <2019-04-11.00>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 30 March 2019
@@ -92,11 +92,24 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; -------------------------------------------------------------------
 ;;; Conversion
 
-;;; FIXME: remove -- seem to just occur in C stuff
-(defmacro nvp-listify (args)
-  "Ensure ARGS is a list."
-  (let ((args (if (stringp args) (intern args) args)))
-    `(unless (consp ,args) (setq ,args (cons ,args nil)))))
+;; unquote, unfunction, return as list
+(defsubst nvp--unquote (args)
+  (while (memq (car-safe args) '(function quote))
+    (setq args (cadr args)))
+  (delq nil (if (listp args)
+                (cl-remove 'quote args :test #'equal)
+              (cons args nil))))
+
+(defmacro nvp-listify (&rest args)
+  "Ensure all items in ARGS are lists."
+  `(progn
+     ,@(mapcar (lambda (arg)
+                 (and (stringp arg) (setq arg (intern-soft arg)))
+                 `(unless (and ,arg
+                               (listp ,arg)
+                               (not (functionp ,arg)))
+                    (setq ,arg (list ,arg))))
+               args)))
 
 (defmacro nvp-string-or-symbol (sym)
   "If SYM is string convert to symbol."

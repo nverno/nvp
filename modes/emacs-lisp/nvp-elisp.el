@@ -1,7 +1,7 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-04-10.00>
+;; Last modified: <2019-04-11.06>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 31 October 2016
 
@@ -62,6 +62,7 @@
                (cl-return (bounds-of-thing-at-point 'list))))))))
 (put 'cons-cell 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons-cell)
 
+;; FIXME: 
 (defun nvp-elisp-bounds-of-alist ()
   "Return bounds of alist at point."
   (save-excursion

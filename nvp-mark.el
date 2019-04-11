@@ -1,13 +1,17 @@
-;;; nvp-mark.el ---  -*- lexical-binding: t; -*-
+;;; nvp-mark.el --- Minor mode for quick xrefs -*- lexical-binding: t; -*-
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 06:26:59>
+;; Last modified: <2019-04-11.01>
 ;; Created: 29 November 2016
 
 ;;; Commentary:
 
 ;; Minor mode to create xrefs from marker text on the fly
+
+;; TODO:
+;; - use overlays
+;; - add jump bindings to overlays
 
 ;;; Code:
 (eval-when-compile
@@ -112,12 +116,8 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
      (0 (prog1 ()
           (let* ((place (match-string-no-properties 1))
                  (file (match-string-no-properties 2)))
-            (add-text-properties
-             (1+ (match-beginning 0)) (match-end 0)
-             'display (format "%s<%s>" file place)
-             'keymap nvp-mark-)
-            (put-text-property 
-             ))))
+            (put-text-property (1+ (match-beginning 0)) (match-end 0)
+                               'display (format "%s<%s>" file place)))))
      (0 'font-lock-constant-face t))))
 
 ;; remove special mark display when disabling fontification

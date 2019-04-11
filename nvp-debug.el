@@ -1,8 +1,6 @@
 ;;; nvp-debug.el --- gud -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-08 04:38:19>
+;; Last modified: <2019-04-10.20>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  8 March 2019

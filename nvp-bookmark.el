@@ -1,6 +1,6 @@
 ;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-01.23>
+;; Last modified: <2019-04-11.06>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 24 November 2016
@@ -37,7 +37,7 @@
 (nvp-setup-cache nvp-bmk-default-directory "bookmarks")
 (nvp-setup-cache nvp-bmk-ring-file ".bmk_history")
 (put 'nvp-bmk-ring 'permanent-local t)
-
+(defvar nvp-bmk-ring () "Persistent history ring to store bookmarks.")
 (defvar nvp-bmk-regexp "^.*\\.bmk$" "Regexp to match bookmark entries.")
 (defvar nvp-bmk-idx 0)
 (defvar nvp-bmk-stack ())

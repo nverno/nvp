@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-10.15>
+;; Last modified: <2019-04-11.03>
 ;; Created:  2 November 2016
 
 ;;; Commentary:
@@ -391,6 +391,22 @@ Direction is one of `forward', `backward'."
       `(nvp-skip-ws-backward ,escape ,limit))))
 
 ;;-- Points
+
+(defmacro nvp-point--cse (&optional point &rest body)
+  "Setup comments, save excursion and execute BODY."
+  (declare (indent defun))
+  `(save-excursion
+     (comment-normalize-vars)
+     ,@(if point `((goto-char ,point)))
+     ,@body))
+
+(defmacro nvp-point--se (&optional point &rest body)
+  "Save excursion, possibly moving to POINT and executing BODY."
+  (declare (indent defun))
+  `(save-excursion
+     ,@(if point `((goto-char ,point)))
+     ,@body))
+
 ;; cc-defs
 ;; #<marker at 34444 in cc-defs.el.gz>
 (defmacro nvp-point (position &optional point escape)
@@ -398,52 +414,91 @@ Direction is one of `forward', `backward'."
 ESCAPE can be a string to match escaped newlines (default '\\').
 POSITION can be one of the following symbols:
 
+~~ Comments ~~
+`cs'    -- start of current comment
+`ce'    -- end of next comment
+`csl'   -- start of comment on line
+`cel'   -- end of comment on line
+
+~~ Line positions ~~
 `bol'   -- beginning of line
 `eol'   -- end of line
 `eoll'  -- end of logical line (i.e. without escaped NL)
-`bod'   -- beginning of defun
-`eod'   -- end of defun
-`boi'   -- beginning of indentation
-`ionl'  -- indentation of next line
-`iopl'  -- indentation of previous line
 `bonl'  -- beginning of next line
 `eonl'  -- end of next line
 `bopl'  -- beginning of previous line
 `eopl'  -- end of previous line
+
+~~~ Sexps ~~~
+`bod'   -- beginning of defun
+`eod'   -- end of defun
+
+~~~ Indentation ~~~
+`boi'   -- beginning of indentation
+`ionl'  -- indentation of next line
+`iopl'  -- indentation of previous line
+
+~~ Whitespace / Syntactic whitespace ~~
 `bohws' -- beginning of horizontal whitespace (doesn't cross lines)
-`bows'  -- beginning of whitespace (crossing lines)
-`bosws' -- beginning of syntactic whitespace (ws, comments, escaped nls)
 `eohws' -- end of horizontal whitespace
+`bows'  -- beginning of whitespace (crossing lines)
 `eows'  -- end of whitespace (crossing lines)
+`bosws' -- beginning of syntactic whitespace (ws, comments, escaped nls)
 `eosws' -- end of syntactic whitespace (ws, comments, escaped nls)
 
 If the referenced position doesn't exist, the closest accessible point
 to it is returned.  This function does not modify the point or the mark."
+  (declare (debug t))
   (or escape (setq escape "\\\\"))
   (cl-assert (eq (car-safe position) 'quote) nil "Call with quoted 'position'")
 
   (let ((position (eval position)))
     (cond
+     ;;=== Comments ====
+     ((eq position 'cs)                 ;start of current comment
+      `(nvp-point--cse ,point (comment-beginning)))
+     
+     ((eq position 'ce)                 ;end of next comment
+      `(nvp-point--cse ,point
+         (skip-syntax-forward " ")
+         (if (looking-at-p comment-start-skip)
+             (and (comment-forward) (point))
+           (when-let ((beg (comment-beginning)))
+             (goto-char beg)
+             (and (comment-forward) (point))))))
+     
+     ((eq position 'cel)                ;end of comment on line
+      `(nvp-point--cse ,point
+         (beginning-of-line)
+         (when-let ((beg (comment-search-forward (line-end-position) t)))
+           (goto-char beg)
+           (save-restriction
+             (narrow-to-region (point) (line-end-position))
+             (when (or (comment-forward)
+                       (eolp)
+                       (looking-at-p comment-end-skip))
+               (point))))))
+     
+     ((eq position 'csl)                ;start of comment on line
+      `(nvp-point--cse ,point
+         (beginning-of-line)
+         (comment-search-forward (line-end-position) t)))
 
-     ((eq position 'bol)
-      (if (not point)
-	  '(line-beginning-position)
-	`(save-excursion
-	   ,@(if point `((goto-char ,point)))
+     ;;=== Line positions ===
+     ((eq position 'bol)                ;beginning of line
+      (if (not point) '(line-beginning-position)
+	`(nvp-point--se ,point
 	   (beginning-of-line)
 	   (point))))
 
-     ((eq position 'eol)
-      (if (not point)
-	  '(line-end-position)
-	`(save-excursion
-	   ,@(if point `((goto-char ,point)))
+     ((eq position 'eol)                ;end of line
+      (if (not point) '(line-end-position)
+	`(nvp-point--se ,point
 	   (end-of-line)
 	   (point))))
 
-     ((eq position 'eoll)
-      `(save-excursion
-	 ,@(if point `((goto-char ,point)))
+     ((eq position 'eoll)               ;end of logical line, w/o escaped NLs
+      `(nvp-point--se ,point
 	 (while (progn
 		  (end-of-line)
 		  (prog1 (eq (logand 1 (skip-chars-backward ,escape)) 1)))
@@ -451,106 +506,92 @@ to it is returned.  This function does not modify the point or the mark."
 	 (end-of-line)
 	 (point)))
 
-     ((eq position 'boi)
-      `(save-excursion
-	 ,@(if point `((goto-char ,point)))
+     ((eq position 'bopl)               ;beginning of previous line
+      (if (not point) '(line-beginning-position 0)
+	`(nvp-point--se ,point
+	   (forward-line -1)
+	   (point))))
+
+     ((eq position 'bonl)               ;beginning of next line
+      (if (not point) '(line-beginning-position 2)
+	`(nvp-point--se ,point
+	   (forward-line 1)
+	   (point))))
+
+     ((eq position 'eopl)               ;end of previous line
+      (if (not point) '(line-end-position 0)
+	`(nvp-point--se ,point
+	   (beginning-of-line)
+	   (or (bobp) (backward-char))
+	   (point))))
+
+     ((eq position 'eonl)               ;end of next line
+      (if (not point) '(line-end-position 2)
+	`(nvp-point--se ,point
+	   (forward-line 1)
+	   (end-of-line)
+	   (point))))
+
+     ;;=== Indentation ===
+     ((eq position 'boi)                ;beginning of indentation
+      `(nvp-point--se ,point
 	 (back-to-indentation)
 	 (point)))
 
-     ((eq position 'bod)
-      `(save-excursion
-	 ,@(if point `((goto-char ,point)))
+     ((eq position 'iopl)               ;indent of previous line
+      `(nvp-point--se ,point
+	 (forward-line -1)
+	 (back-to-indentation)
+	 (point)))
+
+     ((eq position 'ionl)               ;indent of next line
+      `(nvp-point--se ,point
+	 (forward-line 1)
+	 (back-to-indentation)
+	 (point)))
+
+     ;;=== Functions ===
+     ((eq position 'bod)                ;beginning of defun
+      `(nvp-point--se ,point
          (beginning-of-defun)
          (and defun-prompt-regexp
               (looking-at defun-prompt-regexp)
               (goto-char (match-end 0)))
 	 (point)))
 
-     ((eq position 'eod)
-      `(save-excursion
-	 ,@(if point `((goto-char ,point)))
+     ((eq position 'eod)                ;end of defun
+      `(nvp-point--se ,point
          (end-of-defun)
 	 (point)))
 
-     ((eq position 'bopl)
-      (if (not point)
-	  '(line-beginning-position 0)
-	`(save-excursion
-	   ,@(if point `((goto-char ,point)))
-	   (forward-line -1)
-	   (point))))
-
-     ((eq position 'bonl)
-      (if (not point)
-	  '(line-beginning-position 2)
-	`(save-excursion
-	   ,@(if point `((goto-char ,point)))
-	   (forward-line 1)
-	   (point))))
-
-     ((eq position 'eopl)
-      (if (not point)
-	  '(line-end-position 0)
-	`(save-excursion
-	   ,@(if point `((goto-char ,point)))
-	   (beginning-of-line)
-	   (or (bobp) (backward-char))
-	   (point))))
-
-     ((eq position 'eonl)
-      (if (not point)
-	  '(line-end-position 2)
-	`(save-excursion
-	   ,@(if point `((goto-char ,point)))
-	   (forward-line 1)
-	   (end-of-line)
-	   (point))))
-
-     ((eq position 'iopl)
-      `(save-excursion
-	 ,@(if point `((goto-char ,point)))
-	 (forward-line -1)
-	 (back-to-indentation)
-	 (point)))
-
-     ((eq position 'ionl)
-      `(save-excursion
-	 ,@(if point `((goto-char ,point)))
-	 (forward-line 1)
-	 (back-to-indentation)
-	 (point)))
-
-     ;; whitespace
-     ((eq position 'bohws)
-      `(save-excursion
-	 ,@(if point `((goto-char ,point)))
+     ;;=== Whitespace / Syntactic whitespace ===
+     ((eq position 'bohws)              ;beginning horizontal WS, same line
+      `(nvp-point--se ,point
          (skip-syntax-backward " ")
 	 (point)))
 
-     ((eq position 'bows)
-      `(save-excursion
-         ,@(if point `((goto-char ,point)))
-         (nvp-skip-ws 'backward ,escape)))
+     ((eq position 'eohws)              ;end of horizontal WS, same line
+      `(nvp-point--se ,point
+         (skip-syntax-forward " ")
+         (point)))
 
-     ((eq position 'bosws)
-      `(save-excursion
-         ,@(if point `((goto-char ,point)))
-         (nvp-skip-sws 'backward ,escape)))
+     ((eq position 'bows)               ;beginning WS across lines
+      `(nvp-point--se ,point
+         (nvp-skip-ws 'backward ,escape)
+         (point)))
+
+     ((eq position 'bosws)              ;beginning syntactic WS across lines
+      `(nvp-point--se ,point
+         (nvp-skip-sws 'backward ,escape)
+         (point)))
      
-     ((eq position 'eohws)
-      `(save-excursion
-         ,@(if point `((goto-char ,point)))
-         (skip-syntax-forward " ")))
-
-     ((eq position 'eows)
-      `(save-excursion
-	 ,@(if point `((goto-char ,point)))
+     ((eq position 'eows)               ;end of WS across lines
+      `(nvp-point--se ,point
          (nvp-skip-ws 'forward ,escape)
 	 (point)))
 
-     ((eq position 'eosws)
-      `(save-excursion
-         ,@(if point `((goto-char ,point)))
+     ((eq position 'eosws)              ;end of syntactic WS across lines
+      `(nvp-point--se ,point
          (nvp-skip-ws 'forward ,escape)
          (point)))
 
@@ -715,6 +756,12 @@ Trailing 'i' indicates to prompt for input if nothing is found.
      ;; tags
      ((eq type 'tag) '(find-tag-default))
      (t (user-error "Unknown `nvp-tap' type %S" type)))))
+
+(cl-defmacro nvp-tap-or-region (type &optional tap &key pulse hist)
+  "Return list of (beg end) of either active region or bounds of TAP."
+  (declare (indent defun))
+  `(when-let ((bnds (nvp-tap ,type ,tap nil nil :pulse ,pulse :hist ,hist)))
+     (list (car bnds) (cdr bnds))))
 
 (cl-defmacro nvp-with-region (beg end &optional thing &rest body
                                   &key pulse widen type &allow-other-keys)
@@ -1213,11 +1260,29 @@ or PREDICATE is non-nil and returns nil."
 ;; -------------------------------------------------------------------
 ;;; Advice
 
-(defmacro nvp-advise-commands (advice where funcs &optional props)
-  "Apply ADVICE at location WHERE to funcs."
+(defmacro nvp-advise-commands (advices where funcs &optional props)
+  "Apply ADVICES to FUNCS at WHERE with PROPS.
+Both ADVICES and FUNCS can be lists, quoted or not."
   (declare (indent defun))
-  `(progn
-     ,@(mapcar (lambda (fn) `(advice-add ',fn ,where ,advice ,props)) funcs)))
+  (setq advices (nvp--unquote advices)
+        funcs (nvp--unquote funcs))
+  (macroexp-progn
+   (cl-loop for advice in advices
+      nconc
+        (cl-loop for func in funcs
+           collect `(advice-add ',func ,where ',advice ,props)))))
+
+(defmacro nvp-unadvise-commands (advices funcs)
+  "Remove ADVICES from FUNCS.
+See `nvp-advise-commands'."
+  (declare (indent defun) (debug t))
+  (setq advices (nvp--unquote advices)
+        funcs (nvp--unquote funcs))
+  (macroexp-progn
+   (cl-loop for advice in advices
+      nconc
+        (cl-loop for func in funcs
+           collect `(advice-remove ',func ',advice)))))
 
 (defmacro nvp-remove-all-advice (funcs)
   "Remove all advice from list of FUNCS."

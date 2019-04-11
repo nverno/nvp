@@ -1,6 +1,6 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-10.15>
+;; Last modified: <2019-04-11.06>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 14 February 2019
@@ -15,6 +15,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
+(require 'nvp)
 (require 'nvp-display)
 (require 'help-mode)
 (nvp-declare "nadvice" advice-mapc advice-remove)
@@ -26,6 +27,59 @@
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
 
+;; https://github.com/noctuid/general.el/blob/master/general.el
+;; see `general-unbind-non-prefix-key'
+(defun nvp-unbind-non-prefix-key (define-key keymap key def)
+  (and (stringp key) (setq key (string-to-vector key)))
+  (while (numberp (lookup-key keymap key))
+    (setq key (cl-subseq key 0 -1)))
+  (funcall define-key keymap key nil)
+  (funcall define-key keymap key def))
+
+;; see `general-auto-unbind-keys'
+(defun nvp-auto-unbind-keys (&optional undo)
+  "Advices `define-key' to auto unbind keys that are subsequences of new
+bindings, avoiding errors from key sequences starting with non-prefix keys."
+  (if undo
+      (nvp-unadvise-commands #'nvp-unbind-non-prefix-key #'define-key)
+    (nvp-advise-commands #'nvp-unbind-non-prefix-key :around #'define-key)))
+
+;;;###autoload
+(defun nvp-dev-load (&optional _arg)
+  (interactive "P")
+  (nvp-auto-unbind-keys)        ; allow this to be a subsequence of new bindings
+  (let* ((keys (this-command-keys-vector))
+         (next-keys (append (listify-key-sequence keys) (list (read-event)))))
+    (message "this-command-keys: %S, vector: %S, keys: %S, next-keys: %S"
+             (this-command-keys) (this-command-keys-vector)
+             keys next-keys)
+    ;; (setq current-prefix-arg arg)
+    ;; (execute-kbd-macro (vconcat next-keys))
+    )
+  (nvp-auto-unbind-keys 'undo))
+
+(nvp-bind-keys nvp-dev-keymap
+  ("a"  . nvp-dev-advice-remove-all)
+  ("c"  . nvp-help-list-charsets)
+  ("D"  . describe-current-display-table) ; #<marker at 3963 in disp-table.el.gz>
+  ("Fr" . nvp-font-fontify-region-face)
+  ("Fl" . nvp-font-list)
+  ("h"  . nvp-dev-describe-hash)
+  ("H"  . nvp-hook-add-or-remove)
+  ("ld" . list-dynamic-libraries)
+  ("lf" . list-faces-display)
+  ("lF" . list-fontsets)
+  ("li" . list-command-history)
+  ("lc" . list-coding-systems)
+  ("ls" . list-load-path-shadows)
+  ("lt" . list-timers)
+  ("lT" . list-threads)
+  ("m"  . nvp-dev-make-and-reload)
+  ("o"  . nvp-dev-list-overlays)
+  ("s"  . nvp-syntax-at-point)
+  ("u"  . nvp-dev-stats-uniq)
+  ("v"  . nvp-dev-describe-variable))
+
 ;; -------------------------------------------------------------------
 ;;; Utils
 
@@ -36,6 +90,7 @@
   (princ (format "\n%s\n%s\n\n" (nvp-s-center width title)
                  (nvp-s-repeat width "~"))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Commands 
 
@@ -113,7 +168,8 @@
              (symbol-value variable))))
 
 ;; TODO: pretty printing `cl-defstruct'
-;; ;;;###autoload
+;; cl-prettyprint: #<marker at 22951 in cl-extra.el.gz>
+;;;###autoload
 (defun nvp-dev-describe-variable (variable)
   "Try to pretty print VARIABLE in temp buffer."
   (interactive (list (nvp-tap 'evari)))
@@ -122,6 +178,7 @@
      (nvp-dev-describe-hash variable))
     (_ (user-error "TOTO"))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Overlays
 

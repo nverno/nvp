@@ -3,8 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (require 'moe-theme)
 (require 'powerline)
 
@@ -19,14 +19,12 @@
   (setq moe-theme-mode-line-color 'blue)
   (powerline-moe-theme))
 
-;; toggle light/dark themes
 ;;;###autoload
 (defun nvp-theme-switch ()
+  "Toggle light/dark themes."
   (interactive)
-  (if (not (eq last-command this-command))
-      (nvp-theme-dark)
-    (nvp-theme-light)
-    (setq this-command nil)))
+  (nvp-toggled-if (nvp-theme-dark)
+    (nvp-theme-light)))
 
 (provide 'nvp-theme)
 ;;; nvp-theme.el ends here

@@ -2,7 +2,7 @@
 
 ;;; Commentary:
 
-;; Various caches
+;; Generic cache
 
 ;; FIXME: mostly unused
 ;; Hash table with expiring entries:
@@ -18,6 +18,7 @@
 (defvar nvp-ring-separator "\n")
 
 (defsubst nvp-cache--names (struct-type)
+  (declare (pure t) (side-effect-free t))
   (let* ((class (cl--struct-get-class struct-type))
          (slots (cl--struct-class-slots class)))
     (cl-loop for i across slots
@@ -29,12 +30,13 @@
   filename                            ;location to persist cache
   predicate                           ;determines if to save entry
   (separator "\n")                    ;separator used when writing entries
-  (default-size 13)                   ;default cache size (allowed to grow)
+  (default-size 65)                   ;default cache size (allowed to grow)
   (silent t))                         ;no read/write messages, eg. fail silently
 
 (cl-defstruct (nvp-cache-ring (:include nvp-cache)
                               (:constructor nvp-cache-ring-make)
                               (:copier nil))
+  "Cache using ring store."
   ;; cache using ring backend, idx is current index
   (idx 0))
 
@@ -42,44 +44,69 @@
                (:include nvp-cache)
                (:constructor nvp-cache-hash-make)
                (:copier nil))
-  "Hash table to store cache.")
+  "Cache using hash table store.")
 
 (cl-defun nvp-cache-create (backend &rest args)
+  "Create a generic cache."
   (pcase-exhaustive backend
     (`ring
-     (unless (plist-member args :default-size)
-       (setq args (plist-put args :default-size 50)))
      (let ((cache (apply #'nvp-cache-ring-make args)))
        (setf (nvp-cache-ring-data cache)
              (make-ring (nvp-cache-ring-default-size cache)))
        cache))
     (`hash
      (let ((test (cl-getf args :test 'equal))
-           (weakness (cl-getf args :weakness nil)))
+           (weakness (cl-getf args :weakness nil))
+           (size (cl-getf args :default-size 65)))
        (cl-remf args :test)
        (cl-remf args :weakness)
        (let ((cache (apply #'nvp-cache-hash-make args)))
         (setf (nvp-cache-hash-data cache)
-              (apply #'make-hash-table (list :test test :weakness weakness)))
+              (apply #'make-hash-table (list :test test
+                                             :weakness weakness
+                                             :size size)))
         cache)))))
 
-(cl-defgeneric nvp-cache-get ((_cache cache) _elem &optional _default)
-  "Retrieve element from cache.")
+(cl-defgeneric nvp-cache-length (cache)
+  "Number of elements in CACHE.")
 
-(cl-defmethod nvp-cache-get ((cache nvp-cache-ring) idx &optional _default)
+(cl-defmethod nvp-cache-length ((cache nvp-cache-ring))
+  (ring-length (nvp-cache-ring-data cache)))
+
+(cl-defmethod nvp-cache-length ((cache nvp-cache-hash))
+  (hash-table-count (nvp-cache-hash-data cache)))
+
+(cl-defgeneric nvp-cache-empty-p (cache)
+  "Non-nil if CACHE contains no elements."
+  (zerop (nvp-cache-length cache)))
+
+(cl-defgeneric nvp-cache-elt (elt cache &optional _default)
+  "Retrieve element from cache."
+  (declare (pure t) (side-effect-free t)))
+
+(cl-defmethod nvp-cache-elt (elt (cache nvp-cache-ring) &optional _default)
   "Retrieve element at IDX from ring CACHE."
-  (when (and (nvp-cache-ring-data cache)
-             (not (ring-empty-p (nvp-cache-ring-data cache))))
-    (ring-ref (nvp-cache-ring-data cache) idx)))
+  (ring-ref (nvp-cache-ring-data cache) elt))
 
-(cl-defmethod nvp-cache-get ((cache nvp-cache-hash) key &optional default)
+(cl-defmethod nvp-cache-elt (elt (cache nvp-cache-hash) &optional default)
   "Retrieve KEY's value from hash CACHE."
-  (declare (gv-define-setter ))
-  (gethash key (nvp-cache-hash-data cache) default))
+  (gethash elt (nvp-cache-hash-data cache) default))
 
+(cl-defmethod (setf (cache nvp-cache-elt)) (val cache key)
+  (puthash key val (nvp-cache-hash-data cache)))
 ;; (gv-define-setter nvp-cache-get (key val (cache nvp-cache-hash))
 ;;   "Add KEY-VAL pair to hash CACHE using `setf'."
 ;;   `(puthash ,key ,val (nvp-cache-hash-data ,cache)))
+
+(cl-defgeneric nvp-cache-map (f cache)
+  "Apply function F to elements of CACHE.")
+
+(cl-defmethod nvp-cache-map (f (cache nvp-cache-hash))
+  (maphash (lambda (k v) (funcall f k v)) (nvp-cache-hash-data cache)))
+
+(defun nvp-cache-count (cache)
+  "Return number of CACHE entries."
+  (hash-table-count (nvp-cache-table cache)))
 
 ;; -------------------------------------------------------------------
 ;;; Ring

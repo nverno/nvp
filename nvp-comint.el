@@ -28,7 +28,6 @@
 ;;;###autoload
 (defun nvp-comint-setup-history (filename &optional size write-history)
   ;; setup read/write for history file
-  (setq comint-input-ignoredups t)      ;FIXME: move to comint-hook
   (setq comint-input-ring-file-name (expand-file-name filename nvp/cache))
   (and size (setq-local comint-input-ring-size size))
   (comint-read-input-ring 'silent)

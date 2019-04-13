@@ -6,7 +6,7 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'nvp)
-(require 'nvp-string)
+(nvp-autoload "nvp-string" nvp-s-all-matches)
 
 ;; checkout part of a repo
 ;;;###autoload
@@ -37,6 +37,7 @@ git config core.sparseCheckout true" repo) nil nil nil)
                       (start-process "git" nil "git" "pull" "origin" "master")))
                 nil 'local))))
 
+
 ;; -------------------------------------------------------------------
 ;;; SVN 
 
@@ -59,6 +60,7 @@ git config core.sparseCheckout true" repo) nil nil nil)
           #'(lambda (_major-mode-name) "*git-svn*")))
     (compile (concat "git svn " command))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Magit 
 

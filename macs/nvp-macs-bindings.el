@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-09.20>
+;; Last modified: <2019-04-13.14>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp/macs
 ;; Created:  9 April 2019
@@ -139,11 +139,13 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
   (declare (indent defun))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
-  `(,@(if predicate `(when ,predicate) '(progn))
-    (let ((map (make-sparse-keymap)))
-      ,@(cl-loop for (k . b) in bindings
-           collect `(nvp-def-key map ,k ,b))
-      (push (cons ,mode map) minor-mode-overriding-map-alist))))
+  (let ((modemap (nvp--normalize-modemap mode)))
+   `(,@(if predicate `(when ,predicate) '(progn))
+     (let ((map (make-sparse-keymap)))
+       (set-keymap-parent map ,modemap)
+       ,@(cl-loop for (k . b) in bindings
+            collect `(nvp-def-key map ,k ,b))
+       (push (cons ,mode map) minor-mode-overriding-map-alist)))))
 
 (cl-defmacro nvp-set-local-keymap (&rest bindings
                                    &key keymap buffer use &allow-other-keys)

@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-04-10.13>
+#+DATE: <2019-04-13.14>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -95,9 +95,10 @@ This doesn't seem to be too actively maintained
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
 - [ ] how to mark cycling region -- overlays?
 - [ ] reuse cycle map
-- [ ] abstract out of nvp-perl
-- [ ] abstract hook to start cycling after abbrev expansion
+- [ ] generalize out of nvp-perl
+- [ ] hook to start cycling after abbrev expansion
 - [ ] cycling / moving by indentation - pkg: indent-tools
+- [ ] iedit cycle restrictions
 
 ** Dev [0/4]
 - [ ] remove all methods from generic for debugging
@@ -167,12 +168,16 @@ pkgs: smart-jump, dumb-jump, evil-jump-to-tag
 - [ ] allow multiple registered backends for each mode, like smart-jump
 - [ ] fallback to grep/ag/dumb-jump or something
 
-** Cache [3/7]
+** Cache [5/10]
 pkgs: memoize, stash
 - [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
 - [ ] frame cache - see which-func
 - [ ] cache w/ filenotify invalidation
 - [ ] cache w/ timeout
+- [X] generalized cache
+- [X] ring cache backend
+- [ ] hash cache backend
+- [ ] setf methods for generics, how?
 - [X] function wrappers to call local funs
 - [X] basic cache wrapper
 - [X] cache run once
@@ -253,9 +258,6 @@ Merge loose help packages
 - [ ] company-backend using info-lookup-completion-at-point
 - [ ] extract info locations
 - [ ] extract summary text for completion symbols
-
-** Dired [0/1]
-- [ ] pass numeric prefix to copy/rename???
 
 ** Project [1/4]
 - [ ] build project
@@ -487,8 +489,8 @@ https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [X] package deps
 
 
-* Mode settings [2/8]
-- [ ] cedet base settings separate from any specific mode stuff
+* Mode settings [3/8]
+- [X] cedet base settings separate from any specific mode stuff
 - [X] separate c specific settings from general semantic/cedet
 - [X] move c includes install to c config
 - [ ] c install/update includes async (already does?)

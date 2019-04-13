@@ -13,15 +13,21 @@
 (require 'nvp)
 (require 'nvp-display)
 (require 'help-mode)
-(nvp-declare :pkg "nadvice" advice-mapc advice-remove)
+(nvp-decl :pkg "nadvice" advice-mapc advice-remove)
 (nvp-autoload "nvp-string" nvp-s-wrap nvp-s-center nvp-s-repeat)
 (autoload 's-split-words "s")
+
 (defvar nvp-mode-cache)
+(defvar nvp-dev-keymap)
 
 (define-button-type 'help-marker
   :supertype 'help-xref
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
+
+
+;; -------------------------------------------------------------------
+;;; Bindings
 
 ;;;###autoload
 (defun nvp-dev-load (&optional _arg)
@@ -37,7 +43,6 @@
 
 ;; HACK: undefine `nvp-dev-load' from keymap when file is loaded
 ;; should replace this with a better system
-(defvar nvp-dev-keymap)
 (define-key nvp-dev-keymap (nvp-input 'lce) nil)
 (nvp-bind-keys nvp-dev-keymap
   ("a"  . nvp-dev-advice-remove-all)
@@ -194,6 +199,7 @@
                                   'font-lock-face font-lock-constant-face))
               (insert (format " %S\n" (overlay-get o prop))))))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
@@ -256,6 +262,7 @@ delimiter or an Escaped or Char-quoted character."
              (forward-line 1)))
          (hl-line-mode))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Keys
 
@@ -283,6 +290,7 @@ delimiter or an Escaped or Char-quoted character."
 ;;         (let ((inhibit-read-only t))
 ;;           (hl-line-mode))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Fonts
 
@@ -298,9 +306,6 @@ With \\[universal-argument] prompt for THING at point."
           (bnds (nvp-tap 'btap thing)))
      (list (read-face-name "Fontifaction face: ") (car bnds) (cdr bnds))))
   (put-text-property beg end 'font-lock-face face))
-
-;; -------------------------------------------------------------------
-;;; Display
 
 ;; https://gist.github.com/haxney/3055728
 ;; non-nil if monospaced font
@@ -337,6 +342,7 @@ With \\[universal-argument] prompt for THING at point."
                 (propertize str 'font-lock-face
                             `(:family ,ff :slant italic)) ff "\n")))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Assorted
 

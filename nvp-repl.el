@@ -33,7 +33,9 @@
   init                                  ; init REPL => return process
   wait                                  ; time to wait for REPL
   filters                               ; filters applied to text sent to REPL
+  (send-fn 'comint-send-string)         ; function to send string to REPL
   cd                                    ; command to change REPL working dir
+  cwd                                   ; get current working directory
   ;; set internally
   proc                                  ; REPL process
   buff                                  ; REPL buffer

@@ -6,7 +6,6 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <>
 ;; Author: `(concat user-full-name)` <`(concat user-mail-address)`>
 ;; URL: https://${2:github.com/nverno/}${3:`(nvp-yas-dfn)`}
 ;; Package-Requires: 

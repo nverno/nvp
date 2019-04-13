@@ -1,10 +1,5 @@
 ;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-11.06>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 24 November 2016
-
 ;;; Commentary:
 
 ;; - bookmark-to-bookmark jump handler
@@ -35,22 +30,28 @@
 
 ;; store bookmark files
 (nvp-setup-cache nvp-bmk-default-directory "bookmarks")
-(nvp-setup-cache nvp-bmk-ring-file ".bmk_history")
+(nvp-setup-cache nvp-bmk-ring-filename ".bmk_history")
 (put 'nvp-bmk-ring 'permanent-local t)
-(defvar nvp-bmk-ring () "Persistent history ring to store bookmarks.")
+(defvar nvp-bmk-ring () "Bookmark file history.")
 (defvar nvp-bmk-regexp "^.*\\.bmk$" "Regexp to match bookmark entries.")
-(defvar nvp-bmk-idx 0)
+(defvar nvp-bmk-idx 0 "Current index in bookmark ring.")
 (defvar nvp-bmk-stack ())
 
 (defsubst nvp-bmk-update-history ()
   (ring-insert nvp-bmk-ring (abbreviate-file-name bookmark-default-file))
   (cl-incf nvp-bmk-idx))
 
+;; only persist bookmark files that still exist
+(defun nvp-bmk-write-history ()
+  (when (and nvp-bmk-ring (not (ring-empty-p nvp-bmk-ring)))
+    (nvp-ring-write nvp-bmk-ring nvp-bmk-ring-filename 'silent #'file-exists-p)))
+
 ;; Create bookmark record for bookmark-menu-list from current default
 (defun nvp-bmk-record-function ()
   `((filename . ,(bookmark-buffer-file-name))
     (handler  . nvp-bmk-handler)))
 
+;; handle jumping to another bookmark file
 (defun nvp-bmk-handler (bmk-record)
   (nvp-bmk-update-history)
   (when (> bookmark-alist-modification-count 0)
@@ -73,7 +74,8 @@
     (when (> bookmark-alist-modification-count 0)
       (bookmark-save))
     ;; FIXME: stack
-    (setq bookmark-default-file (pop nvp-bmk-stack))
+    (setq nvp-bmk-idx (nvp-ring-previous-index nvp-bmk-ring nvp-bmk-idx))
+    (setq bookmark-default-file (ring-ref nvp-bmk-ring nvp-bmk-idx))
     (setq bookmark-alist nil)
     (let (bookmarks-already-loaded)
       (bookmark-maybe-load-default-file))
@@ -145,7 +147,7 @@ and jumped between."
   :lighter " B2B"
   (setq-local bookmark-make-record-function 'nvp-bmk-record-function)
   (when (null nvp-bmk-ring)
-    (setq nvp-bmk-ring (nvp-ring-read nvp-bmk-ring-file 20 'silent)
+    (setq nvp-bmk-ring (nvp-ring-read nvp-bmk-ring-filename 20 'silent)
           nvp-bmk-idx 0)))
 
 ;; -------------------------------------------------------------------

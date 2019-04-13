@@ -1,12 +1,5 @@
 ;;; nvp-proc.el --- process-related functions -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-01.11>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 24 March 2019
-
 ;;; Commentary:
 
 ;; - filters
@@ -18,7 +11,7 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'nvp)
-(nvp-declare "" nvp-indicate-modeline)
+(nvp-decl nvp-indicate-modeline)
 
 ;; -------------------------------------------------------------------
 ;;; Find processes

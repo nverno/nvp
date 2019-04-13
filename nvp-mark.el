@@ -1,10 +1,5 @@
 ;;; nvp-mark.el --- Minor mode for quick xrefs -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-11.01>
-;; Created: 29 November 2016
-
 ;;; Commentary:
 
 ;; Minor mode to create xrefs from marker text on the fly

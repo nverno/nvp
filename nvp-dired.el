@@ -1,12 +1,5 @@
 ;;; nvp-dired.el --- dired helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 05:24:36>
-;; Created:  2 December 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
@@ -15,8 +8,8 @@
   (require 'nvp-macro))
 (require 'dired)
 
-(nvp-declare "" nvp-shell nvp-shell-launch-terminal)
-(nvp-declare "dired-aux" dired-dwim-target-directory dired-read-shell-command)
+(nvp-decl nvp-shell nvp-shell-launch-terminal)
+(nvp-decl :pkg "dired-aux" dired-dwim-target-directory dired-read-shell-command)
 (declare-function dired-filename-at-point "dired-x")
 (declare-function w32-shell-execute "w32")
 
@@ -320,7 +313,7 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
       (w32-shell-execute "open" (expand-file-name file)))))
 
 ;;-- Org to PDF
-(nvp-declare "" org-latex-export-to-pdf)
+(nvp-declare org-latex-export-to-pdf)
 (defun nvp-dired-convert-org-to-pdf ()
   "Convert marked org files to PDF."
   (interactive)

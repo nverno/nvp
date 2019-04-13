@@ -1,12 +1,5 @@
 ;;; nvp-pkg.el --- Manage package compile/autloads -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-15 23:54:23>
-;; URL: https://github.com/nverno/nvp
-;; Created: 29 November 2016
-
 ;;; Commentary:
 
 ;;; TODO:

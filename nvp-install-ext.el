@@ -1,12 +1,5 @@
 ;;; nvp-installer-ext.el --- Install external deps -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-24 17:53:37>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 14 February 2019
-
 ;;; Commentary:
 
 ;; Interface to install external dependencies
@@ -21,8 +14,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x)
-  (require 'nvp-macro)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'make-mode)
 (require 'nvp)
 

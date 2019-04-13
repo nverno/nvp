@@ -1,13 +1,5 @@
 ;;; nvp-abbrev.el --- abbrev commands -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-01.15>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
-;; Created: 24 November 2016
-
 ;;; Commentary:
 
 ;; Jumping to abbrev files

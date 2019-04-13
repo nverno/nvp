@@ -1,13 +1,10 @@
 ;;; nvp-comint.el --- Comint helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-28 02:47:05>
-;; Created: 31 March 2017
-
 ;;; Commentary:
+
+;; - sentinels
+;; - manage history
+;; - redirect output
 
 ;; TODO:
 ;; - default `comint-input-filter-functions' to ignore blanks, compress newlines

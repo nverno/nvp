@@ -1,13 +1,5 @@
 ;;; nvp-apropos.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-22 17:43:49>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
-;; Created: 30 November 2016
-
 ;;; Commentary:
 ;; Apropos hydra from wiki
 ;;; Code:

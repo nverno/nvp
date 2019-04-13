@@ -1,12 +1,5 @@
 ;;; nvp.el --- base configs -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-11.00>
-;; Created:  2 November 2016
-
 ;;; Commentary:
 
 ;; [![Build Status](https://travis-ci.org/nverno/nvp.svg?branch=master)](https://travis-ci.org/nverno/nvp)
@@ -25,7 +18,7 @@
 (declare-function company-grab-symbol "company")
 (declare-function do-smooth-scroll "smooth-scrolling")
 (declare-function minibuffer-keyboard-quit "delsel")
-(nvp-declare "" nvp-log)
+(nvp-decls)
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'ido-completing-read)

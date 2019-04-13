@@ -3,8 +3,7 @@
 # key: pkg-macs
 # --
 (eval-when-compile
-  (require 'nvp-macro)${1:
-  (nvp-local-vars)}
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 ${2:
 (nvp-package-define-root ${3::snippets t})}

@@ -1,12 +1,5 @@
 ;;; nvp-display.el --- buffer/file display config -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-09.19>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 21 February 2019
-
 ;;; Commentary:
 
 ;; default configurations for displaying buffers/files
@@ -18,7 +11,7 @@
   (require 'macroexp))
 (require 'nvp)
 (declare-function find-function-other-window "find-func")
-(nvp-declare "yasnippet" yas-expand-snippet yas-lookup-snippet)
+(nvp-decl :pre "yas" expand-snippet lookup-snippet)
 
 (defvar nvp-display-fallback-function #'dired "Fallback for unhandled prefix.")
 

@@ -1,10 +1,5 @@
 ;;; nvp-hook.el --- hooks -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-31.16>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 14 January 2019
-
 ;;; Commentary:
 ;; random hook functions
 ;;; Code:

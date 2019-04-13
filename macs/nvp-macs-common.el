@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-11.00>
+;; Last modified: <2019-04-13.00>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 30 March 2019
@@ -64,40 +64,23 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; -------------------------------------------------------------------
 ;;; Compat 
 
-(unless (fboundp 'ignore-errors)
-  (defmacro ignore-errors (&rest body)
-    `(condition-case nil (progn ,@body) (error nil))))
-
 (defvar eieio--known-slot-names)
 (defmacro eieio-declare-slot (name)
   (cl-pushnew name eieio--known-slot-names) nil)
 
 ;; -------------------------------------------------------------------
-;;; Declares / Autoloads
-;; silence byte-compiler warnings
-
-(defalias 'nvp-decl 'nvp-declare)
-(defmacro nvp-declare (package &rest funcs)
-  (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for func in funcs
-      collect `(declare-function ,func ,package))))
-
-(defmacro nvp-autoload (package &rest funcs)
-  (declare (indent defun))
-  (macroexp-progn
-   (cl-loop for func in funcs
-      collect `(autoload ',func ,package))))
-
-;; -------------------------------------------------------------------
 ;;; Conversion
 
-;; unquote, unfunction, return as list
+;; unquote, unfunction, all elements in args - return as list
+;; eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)
 (defsubst nvp--unquote (args)
   (while (memq (car-safe args) '(function quote))
     (setq args (cadr args)))
   (delq nil (if (listp args)
-                (cl-remove 'quote args :test #'equal)
+                (cl-loop for arg in args
+                   do (while (memq (car-safe arg) '(function quote))
+                        (setq arg (cadr arg)))
+                   collect arg)
               (cons args nil))))
 
 (defmacro nvp-listify (&rest args)
@@ -124,6 +107,36 @@ If MINOR is non-nil, convert to minor mode hook symbol."
        (`(quote ,sym) (symbol-name sym))
        (`(function ,sym) (symbol-name sym))
        (_ (user-error "How to stringify %S?" ,name)))))
+
+;; -------------------------------------------------------------------
+;;; Declares / Autoloads
+;; silence byte-compiler warnings
+
+(defalias 'nvp-decl 'nvp-declare)
+(put 'nvp-decl 'lisp-indent-function 1)
+
+(cl-defmacro nvp-declare (&rest funcs &key pre &allow-other-keys)
+  (declare (indent defun))
+  (setq pkg (or (cl-getf funcs :pkg) ""))
+  (while (keywordp (car funcs))
+    (setq funcs (cdr (cdr funcs))))
+  (setq funcs (nvp--unquote funcs))
+  (when pre
+    (setq funcs (mapcar (lambda (fn)
+                          (let ((fn (if (symbolp fn) (symbol-name fn) fn)))
+                            (if (string-prefix-p pre fn) fn
+                              (intern (concat pre "-" fn)))))
+                        funcs)))
+  (macroexp-progn
+   (cl-loop for func in funcs
+      collect `(declare-function ,func ,pkg))))
+
+(defmacro nvp-autoload (package &rest funcs)
+  (declare (indent defun))
+  (setq funcs (nvp--unquote funcs))
+  (macroexp-progn
+   (cl-loop for func in funcs
+      collect `(autoload ',func ,package))))
 
 ;; -------------------------------------------------------------------
 ;;; Files / buffers
@@ -165,7 +178,7 @@ If MINOR is non-nil, convert to minor mode hook symbol."
              ,(and (not no-symbol) "\\_>"))))
 
 ;; -------------------------------------------------------------------
-;;; Keys / IO
+;;; Input keys / IO
 
 ;; FIXME: best way to get last input char?
 ;; `key-description' is defined at C level and `edemacro-format-keys' does
@@ -173,30 +186,48 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; - semantic-read-event : #<marker at 3072 in fw.el.gz>
 (defmacro nvp-input (type)
   "Return user input by TYPE.
+See Info node `(elisp) Input Events'.
 
+* ~~~ Last command keys
 `lce'  -- Last key entered during `last-command-event' with ctrl chars stripped.
 `lcef' -- Full key from `last-command-event', possibly with meta chars.
 `lic'  -- Last input char using `edemacro-format-keys' with `last-input-event'.
 `licf' -- Full key from `last-input-event' using `edmacro-format-keys'.
+
+* ~~~ Last command names
+`lrc'  -- For now, just `last-repeatable-command' - probably should filter out
+          uselss commands
 `tck'  -- Last key from `this-command-keys-vector'.
+
+* ~~~ Last event 
+`em'   -- event modifiers of `last-command-event'
+`ebt'  -- `event-basic-type' of `last-command-event'
 "
   (let ((type (eval type)))
     (cond
-     ;; `last-command-event'
+     ;; === Last input key ===
      ((eq type 'lce)
       `(substring (key-description (vector last-command-event)) -1))
      ((eq type 'lcef)
       `(key-description (vector last-command-event)))
-     ;; `last-input-event'
      ((eq type 'lic)
       '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
      ((eq type 'licf)
       '(kbd (edmacro-format-keys (vector last-input-event))))
+
+     ;; === Events ===
+     ((eq type 'em) (event-modifiers last-command-event))
+     ((eq type 'ebt) (event-basic-type last-command-event))
+     ((eq type 'ec) (event-click-count last-command-event))
+     
+     ;; === Last command (symbol) ===
+     ((eq type 'lrc) last-repeatable-command)
      ((eq type 'tck)
       '(let* ((keys (this-command-keys-vector))
               (last-key (and (vectorp keys)
                              (aref keys (1- (length keys))))))
          (and last-key (lookup-key (current-active-maps 'olp) (vector last-key)))))
+
      (t (message "Unknown type `nvp-input': %S" type)))))
 
 (provide 'nvp-macs-common)

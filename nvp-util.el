@@ -1,12 +1,5 @@
 ;;; nvp-util.el --- Various utility functinos -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-04-01.07>
-;; URL: https://github.com/nverno/nvp
-;; Created:  2 November 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

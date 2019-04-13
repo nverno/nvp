@@ -1,12 +1,5 @@
 ;;; nvp-inf.el --- inferior processes -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-24 04:42:36>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 29 November 2016
-
 ;;; Commentary:
 
 ;; TODO: cleanup
@@ -18,7 +11,7 @@
   (require 'subr-x)
   (require 'cl-lib)
   (require 'nvp-macro))
-(nvp-declare "" nvp-inf-read-process)
+(nvp-declare nvp-inf-read-process)
 
 ;; error signals
 (put 'nvp-inf-process-died 'error-conditions '(nvp-inf-process-died error))

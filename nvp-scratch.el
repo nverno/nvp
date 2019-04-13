@@ -1,10 +1,5 @@
 ;;; nvp-scratch.el --- simple minor mode for scratch -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-10.11>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 24 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

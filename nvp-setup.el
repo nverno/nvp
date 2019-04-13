@@ -1,12 +1,5 @@
 ;;; nvp-setup.el --- setup hooks/helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-22 16:39:04>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 13 February 2019
-
 ;;; Commentary:
 
 ;; Mode setup helpers
@@ -16,7 +9,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (nvp-local-vars)
   (require 'subr-x)
   (require 'nvp-macro)
   (require 'smie))

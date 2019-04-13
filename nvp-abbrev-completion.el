@@ -1,12 +1,5 @@
 ;;; nvp-abbrev-completion.el --- local abbrev completion -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-07 13:31:57>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  6 February 2019
-
 ;;; Commentary:
 
 ;; Completion functions for abbrevs that take into account local context

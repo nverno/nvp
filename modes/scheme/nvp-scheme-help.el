@@ -1,23 +1,16 @@
 ;;; nvp-scheme-help.el --- scheme help -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/scheme-tools
-;; Last modified: <2019-03-27 15:43:09>
-;; Created: 11 May 2017
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-hap)
   (defvar geiser-active-implementations)
   (defvar geiser-impl--implementation)
   (defvar geiser-impl--implementations))
 (require 'geiser)
 (require 'geiser-doc)
 (declare-function geiser-eval--get-module "geiser-eval")
-(declare-function nvp-bind-transient-key "nvp-bind")
 (autoload 'pos-tip-show "pos-tip")
 
 ;; -------------------------------------------------------------------

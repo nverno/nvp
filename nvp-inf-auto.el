@@ -1,10 +1,5 @@
 ;;; nvp-inf-auto.el --- autoloaded inf process commands -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-16 13:20:40>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 23 February 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

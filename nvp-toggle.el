@@ -1,12 +1,5 @@
 ;;; nvp-toggle.el --- toggle/insert stuff  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-10.16>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 20 March 2017
-
 ;;; Commentary:
 ;; - see repeat.el for repeating last command with last input
 ;; - helm real command: #<marker at 13548 in helm-lib.el>
@@ -21,6 +14,7 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'time-stamp))
+(nvp-decls)
 (require 'files-x)
 (declare-function time-stamp "time-stamp")
 (autoload 'nvp-regex-map-across-matches "nvp-util")

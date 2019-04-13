@@ -1,12 +1,5 @@
 ;;; nvp-find.el --- find stuff -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-01.07>
-;; Created: 24 November 2016
-
 ;;; Commentary:
 
 ;; Finding things:
@@ -15,8 +8,8 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
+  (require 'nvp-macro)
   (require 'replace)
   (defvar recentf-list))
 (require 'nvp-display)

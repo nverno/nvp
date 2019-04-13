@@ -1,13 +1,5 @@
 ;;; nvp-env.el --- environment management -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-22 19:34:47>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
-;; Created:  1 November 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
@@ -38,8 +30,7 @@ whitespace either way."
 (defsubst nvp-env-uniq (parts)
   (cl-remove-duplicates
    parts
-   :test (nvp-with-gnu/w32 'string=
-           '(lambda (x y) (string= (downcase x) (downcase y))))
+   :test (nvp-with-gnu/w32 'string= '(lambda (x y) (string= (downcase x) (downcase y))))
    :from-end t))
 
 ;; join env var with path-separator

@@ -1,19 +1,15 @@
 ;;; nvp-code.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-15 18:51:19>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 25 November 2016
-
 ;;; Commentary:
-;; code folding
+
+;; - code folding
+;; - hi-lock
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
-(nvp-declare "hideshow" hs-toggle-hiding hs-show-all hs-hide-all)
+(nvp-declare hs-toggle-hiding hs-show-all hs-hide-all)
 (defvar hs-minor-mode)
 
 ;; -------------------------------------------------------------------

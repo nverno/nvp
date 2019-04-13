@@ -1,10 +1,5 @@
 ;;; nvp-search.el --- search/replace -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-10.11>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 13 February 2019
-
 ;;; Commentary:
 
 ;; TODO: ripgrep support
@@ -14,9 +9,8 @@
   (require 'cl-lib)
   (require 'hydra)
   (require 'nvp-macro))
-(nvp-declare "wgrep" wgrep-exit wgrep-save-all-buffers wgrep-abort-changes
-  wgrep-remove-change wgrep-remove-all-change wgrep-toggle-readonly-area
-  wgrep-mark-deletion wgrep-change-to-wgrep-mode)
+(nvp-declare :pre "wgrep" exit save-all-buffers abort-changes remove-change
+  remove-all-change toggle-readonly-area mark-deletion change-to-wgrep-mode)
 
 (defvar nvp-search-history () "Store search history inputs.")
 
@@ -34,12 +28,12 @@
    `(let ((sym (nvp-tap 'tapi nil nil nil :hist 'nvp-search-history))
           ,@(if elisp                                                 ; '(4)
                 '((grep-find-ignored-directories
-                   (nvp-prefix 4 (cons (nvp-path 'dn :path package-user-dir)
+                   (nvp-prefix 4 (cons (nvp-path 'ds package-user-dir)
                                        grep-find-ignored-directories)
                      grep-find-ignored-directories)))
               '((default-directory
                   (nvp-prefix 4 (getenv "HOME") default-directory))))
-          (ext (nvp-prefix 16 (nvp-path 'ext :or-name t) :test '/=))  ; '(16)
+          (ext (nvp-prefix 16 (nvp-path 'ext nil :or-name t) :test '/=))  ; '(16)
           (confirm (nvp-prefix 64)))                                  ; '(64)
       ,@(if body `,@body
           `((grep-compute-defaults)
@@ -169,7 +163,7 @@ If BODY is non-nil, it is executed in place of the default search.
                      (add-to-history 'nvp-search-history tap)
                      tap)))
             (re (nvp-prefix 4 nil :test '>))
-            ,@(if elisp '((elpa (nvp-path 'dn :path package-user-dir)))
+            ,@(if elisp '((elpa (nvp-path 'ds package-user-dir)))
                 '((file-re (nvp-prefix 16))))
             ;; nullify to allow ag output parsing
             compilation-start-hook

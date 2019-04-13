@@ -1,10 +1,5 @@
 ;;; nvp-edebug.el --- emacs/elisp debubgging helper -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-11.01>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 20 February 2019
-
 ;;; Commentary:
 
 ;; emacs/elisp debugging
@@ -20,7 +15,7 @@
   (defvar tramp-verbose)
   (require 'hydra))
 (require 'edebug)
-(nvp-declare "" nvp-help-describe-keymap)
+(nvp-declare nvp-help-describe-keymap)
 
 ;; setup eval with elisp minibuffer eval hooks
 (defun nvp-edebug-eval-expression (expr)

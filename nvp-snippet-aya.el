@@ -1,19 +1,14 @@
 ;;; nvp-snippet-aya.el --- auto-snippets -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-24 04:49:59>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 12 February 2019
-
 ;;; Commentary:
 ;; auto yasnippets
 ;;; Code:
 (eval-when-compile
+  (require 'cl-lib)
+  (require 'nvp-macro)
   (defvar aya-current))
 (require 'auto-yasnippet)
-(nvp-declare "" nvp-jump-to-new-snippet)
+(nvp-declare nvp-jump-to-new-snippet)
 
 (defvar nvp-aya-new-template "\
 # -*- mode: snippet -*-

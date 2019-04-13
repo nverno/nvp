@@ -1,12 +1,5 @@
 ;;; nvp-file.el --- File helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-31 10:00:59>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  6 February 2019
-
 ;;; Commentary:
 ;; file utils
 ;;; Code:

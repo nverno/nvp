@@ -1,12 +1,5 @@
 ;;; nvp-help-auto.el --- help commands -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-01.11>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  2 February 2019
-
 ;;; Commentary:
 
 ;; Autoloaded help generic commands
@@ -19,7 +12,7 @@
   (require 'subr-x)
   (require 'nvp-macro))
 (require 'nvp)
-(nvp-declare "define-word" define-word define-word-at-point)
+(nvp-declare define-word define-word-at-point)
 (autoload 'nvp-read-keymap "nvp-read")
 (autoload 'ispell-get-word "ispell")
 

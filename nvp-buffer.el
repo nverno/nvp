@@ -1,16 +1,11 @@
 ;;; nvp-buffer.el --- buffer functions -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-10.01>
-;; Created: 24 November 2016
-
 ;;; Commentary:
 ;; buffer manipulation commands
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (require 'nvp)
 
 ;; ------------------------------------------------------------
@@ -114,7 +109,7 @@ With prefix, prompt for MODE buffers to kill."
 (defun nvp-buffer-delete-file ()
   (interactive)
   (if-let ((file (buffer-file-name)))
-      (when (y-or-n-p (format "Really delete '%s'? " (nvp-path 'bfns)))
+      (when (y-or-n-p (format "Really delete '%s'? " (nvp-path 'bfs)))
         (if (vc-backend file)
             (vc-delete-file file)
           (delete-file file delete-by-moving-to-trash))
@@ -125,7 +120,7 @@ With prefix, prompt for MODE buffers to kill."
 ;; `NEW-NAME'.
 ;;;###autoload
 (defun nvp-buffer-rename-file (new-name)
-  (interactive (list (read-from-minibuffer "New name: " (nvp-path 'bfns))))
+  (interactive (list (read-from-minibuffer "New name: " (nvp-path 'bfs))))
   (let ((name (buffer-name))
 	(filename (buffer-file-name)))
     (if (not (and filename (file-exists-p filename)))

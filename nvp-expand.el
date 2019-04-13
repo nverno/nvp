@@ -1,15 +1,10 @@
 ;;; nvp-expand.el --- expansion functions -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 19:02:10>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 10 January 2017
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
+  (require 'nvp-macro)
   (defvar tiny-beg))
 (declare-function tiny-expand "tiny")
 (autoload 'nvp-list-wrap-quotes "nvp-edit")

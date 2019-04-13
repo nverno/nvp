@@ -1,19 +1,11 @@
 ;;; nvp-snippet.el --- snippet mode -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-01.07>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  7 February 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x)
-  (require 'nvp-macro)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
 (declare-function nvp-read-mode "nvp-read")
@@ -42,7 +34,7 @@ When part of `before-save-hook', won't add condition on initial save."
   (cl-flet ((add-condition
              (pred)
              (nvp-snippet-add-field "condition" pred)))
-    (let ((dir (ignore-errors (or (nvp-path 'dn) (nvp-path 'dfn)))))
+    (let ((dir (ignore-errors (or (nvp-path 'ds) (nvp-path 'dn)))))
       (when-let*
           ((test
             (assoc-string dir (or (bound-and-true-p nvp-snippet-local-conditions)

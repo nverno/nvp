@@ -1,21 +1,13 @@
 ;;; nvp-session.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-24 04:52:26>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 30 March 2017
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (nvp-local-vars)
   (require 'cl-lib))
 (require 'nvp)
 (require 'desktop)
-(nvp-declare "nvp-buffer" nvp-buffer-kill-all-buffers)
+(nvp-declare nvp-buffer-kill-all-buffers)
 
 (defsubst nvp-session--read (prompt)
   (list

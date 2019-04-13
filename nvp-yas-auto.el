@@ -1,17 +1,11 @@
 ;;; nvp-yas-auto.el --- yas helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 19:03:01>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  7 February 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x)
-  (require 'nvp-macro)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
 

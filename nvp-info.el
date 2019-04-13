@@ -1,12 +1,5 @@
 ;;; nvp-info.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-26 21:48:01>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 31 January 2019
-
 ;;; Commentary:
 
 ;; info helpers
@@ -18,9 +11,8 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'info)
 (require 'filenotify)
@@ -64,7 +56,7 @@
   (interactive (list (nvp-read--info-files)))
   (let ((default-directory (expand-file-name "org" nvp/info))
         (target
-         (concat "install-"
+         (concat "install-" (nvp-path 'fse file)
                  (file-name-nondirectory (file-name-sans-extension file)))))
     (nvp-with-process "make"
       :proc-name "install-info"

@@ -1,12 +1,5 @@
 ;;; nvp-autoconf.el --- autoconf help at point -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 15:53:54>
-;; Created: 20 January 2017
-
 ;;; Commentary:
 
 ;; Help-at-point:
@@ -19,10 +12,10 @@
   (require 'cl-lib)
   (require 'subr-x)
   (require 'nvp-macro)
-  (require 'nvp-hap)
   (defvar company-autoconf-keywords))
 (require 'company-autoconf)
 (require 'nvp)
+(nvp-decls)
 
 ;; -------------------------------------------------------------------
 ;;; Locally available macros

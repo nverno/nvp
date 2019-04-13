@@ -1,11 +1,14 @@
-;;; nvp-edit.el --- editing autoloads -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-04-10.00>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 24 November 2016
+;;; nvp-edit.el --- editing / text manipulation -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+
+;; - Sorting
+;; - Align
+;; - Wrap text
+;; - Lists: modifiying elements, eg. insert commas, quote
+;; - Duplicate lines / regions
+;; - Rarely used paredit funcs
+;; - Filling regions
 
 ;; FIXME:
 ;; - fill functions are pretty useless
@@ -13,13 +16,16 @@
 
 ;;; Code:
 (eval-when-compile
+  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'smartparens)
-  (require 'cl-lib)
   (defvar sort-fold-case)
   (defvar align-to-tab-stop))
+(nvp-decls)
+(nvp-decl paredit-kill paredit-delete-indentation)
 (autoload 'sp-wrap-with-pair "smartparens")
 
+
 ;; -------------------------------------------------------------------
 ;;; Sort
 
@@ -82,6 +88,82 @@ With prefix sort in REVERSE."
   (nvp-sort-with-defaults start end
     (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
 
+
+;; -------------------------------------------------------------------
+;;; Duplicate
+
+;; Duplicates the current line or region arg times.
+;; if there's no region, the current line will be duplicated
+;; (or last non-empty).
+;;;###autoload
+(defun nvp-duplicate-line-or-region (arg)
+  (interactive "p")
+  (if (use-region-p)
+      (let ((beg (region-beginning))
+            (end (region-end)))
+        (nvp--duplicate-region arg beg end))
+    (nvp--duplicate-last-nonempty-line arg)
+    (nvp-use-transient-bindings nil :repeat-key "d")))
+
+;; duplicate the current line num times.
+(defun nvp-duplicate-current-line (&optional num)
+  (interactive "p")
+  (if (bound-and-true-p paredit-mode)
+      (nvp--paredit-duplicate-current-line)
+    (save-excursion
+      (when (eq (nvp-point 'eol) (point-max))
+        (goto-char (point-max))
+        (newline)
+        (forward-char -1))
+      (nvp--duplicate-region num (nvp-point 'bol) (1+ (nvp-point 'eol))))))
+
+(defun nvp--duplicate-back-and-dupe ()
+  (interactive)
+  (forward-line -1)
+  (nvp-duplicate-current-line))
+
+;; duplicates the region bounded by start and end num times.
+;; if no start and end is provided, the current region-beginning and
+;; region-end is used.
+(defun nvp--duplicate-region (&optional num start end)
+  (interactive "p")
+  (save-excursion
+    (let* ((start (or start (region-beginning)))
+	   (end (or end (region-end)))
+	   (region (buffer-substring start end)))
+      (goto-char end)
+      (dotimes (_i num)
+	(insert region)))))
+
+;; Duplicate the current of previous line that isn't blank.
+(defun nvp--duplicate-last-nonempty-line (&optional num)
+  (interactive "p")
+  (let ((back 0))
+    (while (and (save-excursion
+                  (beginning-of-line)
+                  (looking-at-p "[[:space:]]*$"))
+                (> (line-number-at-pos) 1))
+      (forward-line -1)
+      (setq back (1+ back)))
+    (when (eq (nvp-point 'eol) (point-max))
+      (goto-char (point-max))
+      (newline)
+      (forward-char -1))
+    (let ((region (buffer-substring (nvp-point 'bol) (1+ (nvp-point 'eol)))))
+      (forward-line back)
+      (dotimes (_i num)
+        (insert region))))
+  (goto-char (nvp-point 'eol)))
+
+(defun nvp--paredit-duplicate-current-line ()
+  (back-to-indentation)
+  (let (kill-ring kill-ring-yank-pointer)
+    (paredit-kill)
+    (yank)
+    (newline-and-indent)
+    (yank)))
+
+
 ;; -------------------------------------------------------------------
 ;;; Fill 
 
@@ -124,6 +206,7 @@ is useful, e.g, for use with `visual-line-mode'."
         (fill-column (nvp-toggled-if fill-column most-positive-fixnum)))
     (call-interactively 'fill-paragraph)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Align 
 
@@ -171,6 +254,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
                     (if (or current-prefix-arg (string= char "\\")) "$" ""))))
     (align-regexp beg end re)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Wrap text
 
@@ -198,6 +282,7 @@ Prefix arg is passed to SP, wrapping the next _ARG elements."
     (with-demoted-errors "Error in nvp-wrap-with-last-char: %S"
       (sp-wrap-with-pair char))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Lists
 
@@ -274,6 +359,34 @@ Prefix arg is passed to SP, wrapping the next _ARG elements."
 (defun nvp-unicode-insert (char)
   (interactive (list (read-quoted-char "Char: ")))
   (insert-char char))
+
+;; -------------------------------------------------------------------
+;;; Paredit -- little used commands
+
+;;;###autoload
+(defun nvp-paredit-remove-newlines ()
+  "Removes extra whitespace and newlines from current point to the next paren."
+  (interactive)
+  (let ((up-to (point)))
+    (backward-char)
+    (while (> (point) up-to)
+      (nvp-paredit-delete-indentation))))
+
+;; https://www.emacswiki.org/emacs/ParEdit
+(defun nvp-paredit-delete-indentation (&optional arg)
+  "Handle joining lines that end in a comment."
+  (interactive "P")
+  (let (comt)
+    (save-excursion
+      (move-beginning-of-line (if arg 1 0))
+      (when (skip-syntax-forward "^<" (nvp-point 'eol))
+        (setq comt (delete-and-extract-region (point) (nvp-point 'eol))))
+      (delete-indentation arg)
+      (when comt
+        (save-excursion
+          (move-end-of-line 1)
+          (insert " ")
+          (insert comt))))))
 
 (provide 'nvp-edit)
 ;;; nvp-edit.el ends here

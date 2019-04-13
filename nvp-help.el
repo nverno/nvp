@@ -1,12 +1,5 @@
 ;;; nvp-help.el --- help utils -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 24 November 2016
-;; Last modified: 2019-01-14 11:38:12 noah
-
 ;;; Commentary:
 ;; Utility functions to parse help output
 ;; - parse man output

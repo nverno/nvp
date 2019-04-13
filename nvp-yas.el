@@ -1,16 +1,10 @@
 ;;; nvp-yas.el --- snippet helpers -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-01.07>
-;; Created: 20 December 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
 (require 'nvp-comment)
@@ -23,15 +17,15 @@
 
 ;; filename w/o directory
 (defsubst nvp-yas-bfn ()
-  (nvp-path 'bfns :or-name t))
+  (nvp-path 'bfs nil :or-name t))
 
 ;; filename w/o dir. or ext.
 (defsubst nvp-yas-bfn-no-ext ()
-  (nvp-path 'bfnse :or-name t))
+  (nvp-path 'bfse nil :or-name t))
 
 ;; containing directory name only
 (defsubst nvp-yas-dfn ()
-  (nvp-path 'dn))
+  (nvp-path 'ds))
 
 ;; current indentation
 (defsubst nvp-yas-indent ()
@@ -105,7 +99,7 @@
 
 ;; name of current function or script
 (defun nvp-yas-function-or-script ()
-  (or (nvp-parse-current-function) (nvp-path 'bfnse :or-name t)))
+  (or (nvp-parse-current-function) (nvp-path 'bfse nil :or-name t)))
 
 ;; build param strings: params range from BEG length LEN
 ;; each param is prepended by JOIN string

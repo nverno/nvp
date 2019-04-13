@@ -1,18 +1,14 @@
 ;;; nvp-c-help.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 15:44:00>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/c-tools
-;; Created:  2 February 2017
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-hap)
   (defvar semantic-c-dependency-system-include-path))
 (require 'semantic/analyze)
+(require 'nvp-c)
+(nvp-decls)
 
 ;; -------------------------------------------------------------------
 ;;; Sources

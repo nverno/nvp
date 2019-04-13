@@ -1,12 +1,5 @@
 ;;; nvp-smerge.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-24 04:51:05>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 31 January 2019
-
 ;;; Commentary:
 ;;; Code:
 

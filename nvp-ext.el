@@ -1,22 +1,15 @@
 ;;; nvp-ext.el --- External programs -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-04-11.06>
-;; URL: https://github.com/nverno/
-;; Created: 11 November 2016
-
 ;;; Commentary:
 ;; - https://github.com/syohex/better-shell/blob/master/better-shell.el
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
+  (require 'nvp-macro)
   (defvar explicit-shell-file-name)
   (defvar epg-gpg-home-directory))
 (require 'nvp-proc)
-(nvp-declare "" nvp-lookup-password nvp-log)
+(nvp-decl nvp-lookup-password nvp-log)
 (declare-function imenu--make-index-alist "imenu")
 
 ;; do sudo command and return process object

@@ -1,12 +1,5 @@
 ;;; nvp-read.el --- Completing read for thangs -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-10.15>
-;; Created: 29 November 2016
-
 ;;; Commentary:
 
 ;; various completing read functions
@@ -63,7 +56,7 @@
 
 (defun nvp-read--info-files (&optional prompt default)
   (or default (and (string-prefix-p nvp/info default-directory)
-                   (setq default (nvp-path 'bfns))))
+                   (setq default (nvp-path 'bfs))))
   (expand-file-name 
    (nvp-completing-read
     (nvp-prompt-default (or prompt "Info file: ") default)

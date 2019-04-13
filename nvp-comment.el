@@ -1,20 +1,11 @@
 ;;; nvp-comment.el --- comment helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-07 19:12:37>
-;; Created: 26 December 2018
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
-(autoload 'string-trim "subr-x")
-(autoload 'string-trim-right "subr-x")
-(autoload 'string-trim-left "subr-x")
+(nvp-autoload "subr-x" string-trim 'string-trim-right 'string-trim-left)
 
 (defun nvp-comment-string (str &optional padlen)
   "Wrap STR with modes starting and ending comment delimiters.

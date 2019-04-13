@@ -1,12 +1,5 @@
 ;;; nvp-imenu.el --- imenu helpers  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-23 18:46:50>
-;; Created: 25 January 2017
-
 ;;; Commentary:
 
 ;; imenu extensions:

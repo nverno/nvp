@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-10.15>
+;; Last modified: <2019-04-13.01>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -20,8 +20,7 @@
   (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
-(nvp-decl "" nvp-scratch-minor-mode)
-(nvp-decl "yasnippet" yas-expand-snippet yas-lookup-snippet)
+(nvp-decl nvp-scratch-minor-mode yas-expand-snippet yas-lookup-snippet)
 (autoload 'nvp-file-locate-first-dominating "nvp-file")
 
 ;; -------------------------------------------------------------------
@@ -203,7 +202,9 @@ With triple prefix, offer recursive results."
          current-prefix-arg))
   (let* ((locate-fn (if (consp name) #'nvp-file-locate-first-dominating
                #'locate-dominating-file))
-         (dir (funcall locate-fn (nvp-path 'bfnd) name)))
+         (dir (funcall locate-fn (or
+                                  (buffer-file-name nil)
+                                  default-directory) name)))
     (if dir (nvp-display-location (expand-file-name name dir) :file action)
       (user-error (format "%S not found up the directory tree." name)))))
 

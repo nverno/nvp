@@ -1,19 +1,12 @@
 ;;; nvp-number.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-22 21:13:42>
-;; Created:  1 October 2017
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro))
-(autoload 'hexl-hex-string-to-integer "hexl")
-(autoload 'hexl-octal-string-to-integer "hexl")
+(nvp-decls)
+(nvp-autoload "hexl" 'hexl-octal-string-to-integer 'hexl-hex-string-to-integer)
 
 ;; -------------------------------------------------------------------
 ;;; Conversion

@@ -1,10 +1,5 @@
 ;;; nvp-abbrev-util.el --- shared abbrev utils -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-15 18:49:06>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  7 February 2019
-
 ;;; Commentary:
 
 ;; shared abbrev utils required by multiple files

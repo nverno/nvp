@@ -1,12 +1,5 @@
 ;;; nvp-abbrev-hooks.el --- abbrev expansion predicates -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-27 10:47:02>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  6 February 2019
-
 ;;; Commentary:
 
 ;; general abbrev hooks

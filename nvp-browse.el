@@ -1,12 +1,5 @@
 ;;; nvp-browse.el --- web browsing -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-23 00:37:34>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  2 December 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
@@ -15,9 +8,7 @@
   (defvar nvp-webjump-sites)
   (defvar webjump-sites))
 (require 'nvp)
-(declare-function thing-at-point-url-at-point "thingatpt")
-(nvp-declare "webjump" webjump-builtin webjump-url-fix)
-(declare-function web-mode "web-mode")
+(nvp-decl thing-at-point-url-at-point webjump-builtin webjump-url-fix web-mode)
 
 ;;;###autoload
 (defun nvp-browse-start ()

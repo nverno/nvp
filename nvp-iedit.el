@@ -1,12 +1,5 @@
 ;;; nvp-iedit.el --- mark/replace matches -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-30 22:25:12>
-;; Created: 22 August 2018
-
 ;;; Commentary:
 
 ;; iedit extensions:
@@ -22,7 +15,7 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'iedit)
-(nvp-declare "" nvp-mark-defun)
+(nvp-declare nvp-mark-defun)
 
 ;; Add iedit bindings
 (nvp-bind-keys iedit-mode-keymap
@@ -59,11 +52,6 @@
       (_))
     (nvp-msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
       :delay 1 :keys t)))
-
-(defun nvp-cycle-actions (actions)
-  (let ((idx (or (get 'nvp-cycle-actions 'idx) 0)))
-    (funcall (nth idx actions))
-    (put 'nvp-cycle-actions 'idx (if (> (1+ idx) (length actions)) 0 (1+ idx)))))
 
 ;; allow expanding of restricted region when in `iedit-mode'
 (defun nvp-iedit-cycle-regions ()

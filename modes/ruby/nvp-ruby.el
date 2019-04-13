@@ -1,27 +1,23 @@
 ;;; nvp-ruby.el --- rubls -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-01.07>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
-;; Created:  1 November 2016
-
 ;;; Commentary:
+;; FIXME:
+;; - use nvp-yas funcs
+;; - 
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (nvp-local-vars)
   (defvar projectile-tags-file-name))
 (require 'ruby-mode)
 (require 'inf-ruby nil t)
 (require 'robe nil t)
-(nvp-declare ""
-    robe-mode inf-ruby robe-start ruby-switch-to-inf
-    ruby-send-block-and-go ruby-switch-to-last-ruby-buffer
-    ruby-send-definition-and-go ruby-send-last-sexp ruby-send-region-and-go)
-(declare-function ruby-compilation-this-buffer "ruby-compilation")
-(declare-function projectile-rails-root "projectile-rails")
+(nvp-decl :pre "robe" mode start)
+(nvp-decl :pre "ruby" switch-to-inf send-block-and-go switch-to-last-ruby-buffer
+          send-definition-and-go send-last-sexp send-region-and-go)
+(nvp-decl :pre "hs" show-all show-block hide-all hide-block)
+(nvp-decl inf-ruby ruby-compilation-this-buffer projectile-rails-root)
+(nvp-decls)
 
 ;; (defun my-ruby-smart-return ()
 ;;   (interactive)
@@ -191,7 +187,7 @@
              "\n"))
 
 (defun nvp-ruby-yas-camelize-bfn ()
-  (nvp-ruby-camelize (nvp-path 'bfnse)))
+  (nvp-ruby-camelize (nvp-path 'bfse)))
 
 (provide 'nvp-ruby)
 

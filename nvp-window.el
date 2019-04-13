@@ -1,12 +1,5 @@
 ;;; nvp-window.el --- window hydra from git -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-02-24 04:48:55>
-;; Created: 20 December 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
@@ -14,7 +7,7 @@
   (require 'hydra))
 (require 'windmove)
 (declare-function ace-window "ace-window")
-(nvp-autoload "winner" winner-undo winner-redo)
+(nvp-autoload :pkg "winner" winner-undo winner-redo)
 
 ;;;###autoload
 (defun nvp-window-toggle-dedicated (window)

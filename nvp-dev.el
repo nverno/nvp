@@ -1,10 +1,5 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-11.06>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 14 February 2019
-
 ;;; Commentary:
 
 ;; TODO:
@@ -18,8 +13,9 @@
 (require 'nvp)
 (require 'nvp-display)
 (require 'help-mode)
-(nvp-declare "nadvice" advice-mapc advice-remove)
+(nvp-declare :pkg "nadvice" advice-mapc advice-remove)
 (nvp-autoload "nvp-string" nvp-s-wrap nvp-s-center nvp-s-repeat)
+(autoload 's-split-words "s")
 (defvar nvp-mode-cache)
 
 (define-button-type 'help-marker
@@ -27,27 +23,9 @@
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
 
-;; https://github.com/noctuid/general.el/blob/master/general.el
-;; see `general-unbind-non-prefix-key'
-(defun nvp-unbind-non-prefix-key (define-key keymap key def)
-  (and (stringp key) (setq key (string-to-vector key)))
-  (while (numberp (lookup-key keymap key))
-    (setq key (cl-subseq key 0 -1)))
-  (funcall define-key keymap key nil)
-  (funcall define-key keymap key def))
-
-;; see `general-auto-unbind-keys'
-(defun nvp-auto-unbind-keys (&optional undo)
-  "Advices `define-key' to auto unbind keys that are subsequences of new
-bindings, avoiding errors from key sequences starting with non-prefix keys."
-  (if undo
-      (nvp-unadvise-commands #'nvp-unbind-non-prefix-key #'define-key)
-    (nvp-advise-commands #'nvp-unbind-non-prefix-key :around #'define-key)))
-
 ;;;###autoload
 (defun nvp-dev-load (&optional _arg)
   (interactive "P")
-  (nvp-auto-unbind-keys)        ; allow this to be a subsequence of new bindings
   (let* ((keys (this-command-keys-vector))
          (next-keys (append (listify-key-sequence keys) (list (read-event)))))
     (message "this-command-keys: %S, vector: %S, keys: %S, next-keys: %S"
@@ -55,9 +33,12 @@ bindings, avoiding errors from key sequences starting with non-prefix keys."
              keys next-keys)
     ;; (setq current-prefix-arg arg)
     ;; (execute-kbd-macro (vconcat next-keys))
-    )
-  (nvp-auto-unbind-keys 'undo))
+    ))
 
+;; HACK: undefine `nvp-dev-load' from keymap when file is loaded
+;; should replace this with a better system
+(defvar nvp-dev-keymap)
+(define-key nvp-dev-keymap (nvp-input 'lce) nil)
 (nvp-bind-keys nvp-dev-keymap
   ("a"  . nvp-dev-advice-remove-all)
   ("c"  . nvp-help-list-charsets)
@@ -94,7 +75,6 @@ bindings, avoiding errors from key sequences starting with non-prefix keys."
 ;; -------------------------------------------------------------------
 ;;; Commands 
 
-;;;###autoload
 (defun nvp-dev-advice-remove-all (sym)
   "Remove all advice from SYM."
   (interactive "aFunction: ")
@@ -346,11 +326,10 @@ With \\[universal-argument] prompt for THING at point."
   (interactive)
   (let ((str "The quick brown fox jumps over the lazy dog \
 ´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
-        (font-families (cl-remove-duplicates 
-                        (sort (font-family-list) 
-                              #'(lambda (x y) (string< (upcase x)
-                                                  (upcase y))))
-                        :test 'string=)))
+        (font-families
+         (cl-remove-duplicates 
+          (sort (font-family-list) #'(lambda (x y) (string< (upcase x) (upcase y))))
+          :test 'string=)))
     (nvp-with-results-buffer (help-buffer)
       (font-lock-mode)
       (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
@@ -360,7 +339,6 @@ With \\[universal-argument] prompt for THING at point."
 
 ;; -------------------------------------------------------------------
 ;;; Assorted
-(autoload 's-split-words "s")
 
 ;;;###autoload
 (defun nvp-dev-stats-uniq (beg end &optional _arg)

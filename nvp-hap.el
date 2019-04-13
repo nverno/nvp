@@ -1,10 +1,5 @@
 ;;; nvp-hap.el --- help-at-point functions -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-31 04:45:07>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 10 February 2019
-
 ;;; Commentary:
 
 ;; Help at point:

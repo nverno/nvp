@@ -1,12 +1,5 @@
 ;;; nvp-project.el --- project management -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-29 02:52:22>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  2 December 2016
-
 ;;; Commentary:
 
 ;; TODO: get rid of all this, try out new builtin project.el

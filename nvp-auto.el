@@ -1,21 +1,21 @@
-;;; nvp-auto.el --- lesser used autos -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-31 09:15:19>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
-;; Created: 14 February 2019
+;;; nvp-auto.el --- some autoloads -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; Autos rarely called
+
+;; Random autoloads
+;; - some movement functions
+;; - hydras: yank/pop, goto-line
+;; - some other randoms
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
+  (require 'subr-x)
   (require 'nvp-macro)
   (require 'hydra))
 (require 'nvp)
+(nvp-decl nvp-move-previous-heading nvp-move-forward-heading nvp-mode-header-regex)
+(nvp-decl nvp-bind-transient-key)
 
 ;; -------------------------------------------------------------------
 ;;; Movement
@@ -39,17 +39,6 @@
           (nvp-move-char-this-line char))
    t))
 
-;; used recursively below so not a macro
-;;;###autoload
-(defun nvp-bind-transient-key (key cmd &optional keep exit)
-  "Bind KEY to CMD in transient map."
-  (set-transient-map
-   (let ((tmap (make-sparse-keymap)))
-     (define-key tmap (kbd key) cmd)
-     tmap)
-   (or keep t)
-   (or exit nil)))
-
 ;; see `paragraph-start' and `paragraph-separate' to extend
 ;;;###autoload
 (defun nvp-move-forward-paragraph (&optional arg)
@@ -69,109 +58,62 @@
   (nvp-move-forward-paragraph (- arg)))
 
 ;; -------------------------------------------------------------------
-;;; Duplicate lines 
-(nvp-declare "" nvp-bind-transient-key)
-(declare-function paredit-kill "paredit")
+;;; Hydras
 
-;; Duplicates the current line or region arg times.
-;; if there's no region, the current line will be duplicated
-;; (or last non-empty).
-;;;###autoload
-(defun nvp-duplicate-line-or-region (arg)
-  (interactive "p")
-  (if (use-region-p)
-      (let ((beg (region-beginning))
-            (end (region-end)))
-        (nvp--duplicate-region arg beg end))
-    (nvp--duplicate-last-nonempty-line arg)
-    (nvp-use-transient-bindings nil :repeat-key "d")))
+;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
+(nvp-hydra-set-property 'nvp-hydra-goto-line)
+(defhydra nvp-hydra-goto-line (goto-map) "line"
+  ("g" goto-line "go")
+  ("b" (push-mark (car mark-ring) nil 'activate) "mark to start")
+  ("m" set-mark-command "mark" :bind nil)
+  ("p" (set-mark-command 1) "pop" :bind nil)
+  ("e" exchange-point-and-mark "exchange")
+  ("q" nil "quit"))
 
-;; duplicate the current line num times.
-(defun nvp-duplicate-current-line (&optional num)
-  (interactive "p")
-  (if (bound-and-true-p paredit-mode)
-      (nvp--paredit-duplicate-current-line)
-    (save-excursion
-      (when (eq (nvp-point 'eol) (point-max))
-        (goto-char (point-max))
-        (newline)
-        (forward-char -1))
-      (nvp--duplicate-region num (nvp-point 'bol) (1+ (nvp-point 'eol))))))
-
-(defun nvp--duplicate-back-and-dupe ()
-  (interactive)
-  (forward-line -1)
-  (nvp-duplicate-current-line))
-
-;; duplicates the region bounded by start and end num times.
-;; if no start and end is provided, the current region-beginning and
-;; region-end is used.
-(defun nvp--duplicate-region (&optional num start end)
-  (interactive "p")
-  (save-excursion
-    (let* ((start (or start (region-beginning)))
-	   (end (or end (region-end)))
-	   (region (buffer-substring start end)))
-      (goto-char end)
-      (dotimes (_i num)
-	(insert region)))))
-
-;; Duplicate the current of previous line that isn't blank.
-(defun nvp--duplicate-last-nonempty-line (&optional num)
-  (interactive "p")
-  (let ((back 0))
-    (while (and (save-excursion
-                  (beginning-of-line)
-                  (looking-at-p "[[:space:]]*$"))
-                (> (line-number-at-pos) 1))
-      (forward-line -1)
-      (setq back (1+ back)))
-    (when (eq (nvp-point 'eol) (point-max))
-      (goto-char (point-max))
-      (newline)
-      (forward-char -1))
-    (let ((region (buffer-substring (nvp-point 'bol) (1+ (nvp-point 'eol)))))
-      (forward-line back)
-      (dotimes (_i num)
-        (insert region))))
-  (goto-char (nvp-point 'eol)))
-
-(defun nvp--paredit-duplicate-current-line ()
-  (back-to-indentation)
-  (let (kill-ring kill-ring-yank-pointer)
-    (paredit-kill)
-    (yank)
-    (newline-and-indent)
-    (yank)))
+;; Yank / Pop
+(declare-function helm-show-kill-ring "")
+;;;###autoload(autoload 'nvp-hydra-yank-pop/yank "nvp-auto")
+;;;###autoload(autoload 'nvp-hydra-yank-pop/yank-pop "nvp-auto")
+(defhydra nvp-hydra-yank-pop ()
+  "yank"
+  ("C-y" yank nil)
+  ("M-y" yank-pop nil)
+  ("y" (yank-pop 1) "next")
+  ("Y" (yank-pop -1) "prev"))
+  ;; ("l" helm-show-kill-ring "list" :color blue)
 
 ;; -------------------------------------------------------------------
-;;; Paredit -- little used commands
-(nvp-declare "paredit" paredit-delete-indentation)
+;;; Assorted
 
 ;;;###autoload
-(defun nvp-paredit-remove-newlines ()
-  "Removes extra whitespace and newlines from current point to the next paren."
+(defun nvp-mark-header-region ()
+  "Mark current header region."
   (interactive)
-  (let ((up-to (point)))
-    (backward-char)
-    (while (> (point) up-to)
-      (nvp-paredit-delete-indentation))))
-
-;; https://www.emacswiki.org/emacs/ParEdit
-(defun nvp-paredit-delete-indentation (&optional arg)
-  "Handle joining lines that end in a comment."
-  (interactive "P")
-  (let (comt)
-    (save-excursion
-      (move-beginning-of-line (if arg 1 0))
-      (when (skip-syntax-forward "^<" (nvp-point 'eol))
-        (setq comt (delete-and-extract-region (point) (nvp-point 'eol))))
-      (delete-indentation arg)
-      (when comt
+  (condition-case nil
+      ;; mark successive header
+      (if (use-region-p)
+          (set-mark
+           (save-excursion
+             (goto-char (mark))
+             (nvp-move-forward-heading)
+             (point)))
+        ;; first marking
+        (forward-line 0)
+        (or (looking-at (nvp-mode-header-regex))
+            (nvp-move-previous-heading 'error))
+        ;; headers are known at this point
         (save-excursion
-          (move-end-of-line 1)
-          (insert " ")
-          (insert comt))))))
+         (or (ignore-errors (nvp-move-forward-heading))
+             (prog1 (goto-char (point-max))
+               (message "Marked to end of buffer (no more headings)")))
+         (push-mark (point) nil 'activate)))
+    (error (user-error "Can't find header region to mark."))))
+
+;;;###autoload
+(defun nvp-kill-emacs ()
+  (interactive)
+  (save-some-buffers 'no-ask)
+  (kill-emacs))
 
 (provide 'nvp-auto)
 ;;; nvp-auto.el ends here

@@ -1,14 +1,8 @@
 ;;; nvp-macro.el --- compile time macros -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-11.03>
-;; Created:  2 November 2016
-
 ;;; Commentary:
+
 ;; info on declare - defun-declarations-alist, macro-declarations-alist
+
 ;;; Code:
 (require 'cl-lib)
 (require 'subr-x)
@@ -77,76 +71,109 @@ those are both specified."
     `(or (file-name-directory (file-truename ,path))
          (file-truename default-directory))))
 
-(defmacro nvp-buff--2 (buff or-name)
+(defmacro nvp-buff--2 (buff &optional or-name)
   (if or-name
       `(or (buffer-file-name ,buff) (buffer-name ,buff))
     `(buffer-file-name ,buff)))
 
-(cl-defmacro nvp-path (type &key buffer path no-default or-name)
-  "Return file or directory name components specified by TYPE.
-If BUFFER is non-nil, use its associated file (default current).
-If PATH is non-nil, use it as the file path.
+(cl-defmacro nvp-path (type &optional b-o-p &key no-default or-name)
+  "Return buffer or path names.
+If B-O-P is non-nil, it is used as the buffer or path instead of the current
+buffer, buffer-file, or default directory.
 If NO-DEFAULT is non-nil, don't use `default-directory' if `buffer-file-name'
 is nil.
 If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 
-`bn'     -- Buffer's name
-`bfn'    -- Buffer file's full name
-`bfns'   -- Buffer file's short name (no directory)
-`bfne'   -- Buffer file's name w/o extension
-`bfnd'   -- Buffer file's name or default directory
-`bfnse'  -- Buffer file's short name w/o extension
-`ext'    -- Buffer file extension
-`dn'     -- Directory's short name (just the containing directory)
-`dfn'    -- Full name of directory containing buffer file (no trailing slash)
-`dfns'   -- Full directory name with trailing slash
-`env'    -- Try to substitute environment variables in path, otherwise try to 
+* ~~~ Buffers
+`bn'     -- Buffer name
+`bf'     -- Buffer file name
+`bfa'    -- Buffer file name abbreviated
+`bfs'    -- Buffer file Short name (no directory)
+`bfse'   -- Buffer file name w/o extension
+`bfod'   -- Buffer file name or default directory
+`bfse'   -- Buffer file short name w/o extension
+
+* ~~~ Directories
+`ds'     -- Directory's short name (just the containing directory)
+`dn'     -- Full name of directory containing buffer file (no trailing slash)
+`dn/'    -- Same, with trailing slash
+`dna'    -- Directory name abbreviated
+`dna/'   -- Same, with trailing slash
+
+* ~~~ Paths
+`fa'     -- Abbreviated file name
+`fs'     -- Short file name (no directory)
+`fse'    -- same, w/o extension
+`ext'    -- File extension
+`exp'    -- Try to substitute environment variables in path, otherwise try to 
             expand path again when it is loaded.
 "
   (let ((type (eval type)))
     (cond
      ;; buffer files
-     ((eq type 'bn) `(buffer-name ,buffer))
-     ((eq type 'bfn) `(nvp-buff--2 ,buffer ,or-name))
-     ((eq type 'bfnd) `(or (nvp-buff--2 ,buffer ,or-name) default-directory))
-     ((eq type 'bfns) `(file-name-nondirectory (nvp-buff--2 ,buffer ,or-name)))
-     ((eq type 'bfne) `(file-name-sans-extension (nvp-buff--2 ,buffer ,or-name)))
-     ((eq type 'bfnse) `(file-name-nondirectory
-                         (file-name-sans-extension (nvp-buff--2 ,buffer ,or-name))))
-     ((eq type 'ext) `(file-name-extension (nvp-buff--2 ,buffer ,or-name)))
+     ((eq type 'bn) `(buffer-name ,b-o-p))
+     ((eq type 'bf) `(nvp-buff--2 ,b-o-p ,or-name))
+     ((eq type 'bfa) `(abbreviate-file-name (nvp-buff--2 ,b-o-p)))
+     ((eq type 'bfod) `(or (nvp-buff--2 ,b-o-p ,or-name) default-directory))
+     ((eq type 'bfs) `(file-name-nondirectory (nvp-buff--2 ,b-o-p ,or-name)))
+     ((eq type 'bfe) `(file-name-sans-extension (nvp-buff--2 ,b-o-p ,or-name)))
+     ((eq type 'bfse) `(file-name-base (nvp-buff--2 ,b-o-p ,or-name)))
 
      ;; directories
-     ((eq type 'dn)
-      (if (not path)
+     ((eq type 'ds)                     ;short name
+      (if (not b-o-p)
           `(file-name-nondirectory
             (directory-file-name
              (nvp-buff--1 buffer-file-name ,no-default)))
-        `(if (directory-name-p ,path)
+        `(if (directory-name-p ,b-o-p)
              (file-name-nondirectory
-              (file-name-directory (file-truename ,path)))
-           (file-name-nondirectory (file-truename ,path)))))
+              (file-name-directory (file-truename ,b-o-p)))
+           (file-name-nondirectory (file-truename ,b-o-p)))))
 
-     ((eq type 'dfn)
-      (if (not path)
+     ((eq type 'dn)                     ;full name no slash
+      (if (not b-o-p)
           `(directory-file-name
             (nvp-buff--1 buffer-file-name ,no-default))
-        `(if (directory-name-p ,path)
-             (file-name-directory (file-truename ,path))
-           (file-name-directory (file-truename ,path)))))
+        `(if (directory-name-p ,b-o-p)
+             (file-name-directory (file-truename ,b-o-p))
+           (file-name-directory (file-truename ,b-o-p)))))
 
-     ((eq type 'dfns)
-      (if (not path)
+     ((eq type 'dn/)                    ;full name w/ slash
+      (if (not b-o-p)
           `(nvp-buff--1 buffer-file-name ,no-default)
-        `(if (directory-name-p ,path)
-             (file-truename ,path)
-           (file-name-directory (file-truename ,path)))))
+        `(if (directory-name-p ,b-o-p)
+             (file-truename ,b-o-p)
+           (file-name-directory (file-truename ,b-o-p)))))
 
+     ((eq type 'dna)                    ;full name abbreviated
+      (if (not b-o-p)
+          `(abbreviate-file-name (nvp-buff--1 buffer-file-name ,no-default))
+        `(abbreviate-file-name
+          (if (directory-name-p ,b-o-p)
+              (file-name-directory (file-truename ,b-o-p))
+            (file-name-directory (file-truename ,b-o-p))))))
+
+     ((eq type 'dna/)                    ;full name abbrev. w/ slash
+      (if (not b-o-p)
+          `(abbreviate-file-name (nvp-buff--1 buffer-file-name ,no-default))
+        `(abbreviate-file-name
+          (if (directory-name-p ,b-o-p)
+              (file-truename ,b-o-p)
+            (file-name-directory (file-truename ,b-o-p))))))
+     
+     ;; === Paths ===
+     ((eq type 'fa) `(abbreviate-file-name ,b-o-p))
+     ((eq type 'fs) `(file-name-nondirectory ,b-o-p))
+     ((eq type 'fse) `(file-name-base (file-truename ,b-o-p)))
+     ((eq type 'ext) `(file-name-extension (nvp-buff--2 ,b-o-p ,or-name)))
      ((eq type 'env)
-      (if (not path)
+      (if (not b-o-p)
           (user-error "No path supplied with `env' to `nvp-path'.")
-        (let ((res (substitute-env-in-file-name path)))
+        (let ((res (substitute-env-in-file-name b-o-p)))
           (if (and res (file-exists-p res)) `,res
-            `(substitute-env-in-file-name ,path))))))))
+            `(substitute-env-in-file-name ,b-o-p)))))
+
+     (t (user-error "%S unknown to `nvp-path'" type)))))
 
 
 ;; -------------------------------------------------------------------
@@ -407,8 +434,9 @@ Direction is one of `forward', `backward'."
      ,@(if point `((goto-char ,point)))
      ,@body))
 
-;; cc-defs
-;; #<marker at 34444 in cc-defs.el.gz>
+;; expanded version from cc-defs - comment nav, no c-specific commands,
+;; different handling of ws/sws
+;; ref: #<marker at 34444 in cc-defs.el.gz>
 (defmacro nvp-point (position &optional point escape)
   "Return relative POSITION to POINT (default current point).
 ESCAPE can be a string to match escaped newlines (default '\\').
@@ -667,7 +695,6 @@ to it is returned.  This function does not modify the point or the mark."
   (if (null pulse)
       `(bounds-of-thing-at-point ,(or thing ''symbol))
     `(progn
-       (declare-function nvp-indicate-pulse-region-or-line "")
        (let ((bnds (bounds-of-thing-at-point ,(or thing ''symbol))))
          (when bnds
            (prog1 bnds
@@ -872,7 +899,6 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
   (declare (indent defun) (debug t))
   (let ((action (make-symbol "action")))
     `(progn
-       (declare-function nvp-view-list-mode "")
        (let ((,action ,select-action)
             (bufname (concat "*" ,name "*"))
             (inhibit-read-only t))
@@ -924,7 +950,6 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
 
 ;; -------------------------------------------------------------------
 ;;; Toggled Tip
-(declare-function pos-tip-show "pos-tip")
 
 ;; TODO:
 ;; - use help buffer with xref?
@@ -971,7 +996,6 @@ default help function."
                        (exit-fn '(lambda () (interactive) (x-hide-tip)))
                        (keep keep))
     `(progn
-       (declare-function pos-tip-show "pos-tip")
        (let ((x-gtk-use-system-tooltips ,use-gtk))
          (unless (x-hide-tip)
            (pos-tip-show ,str nil nil nil ,timeout)
@@ -1146,9 +1170,6 @@ or PREDICATE is non-nil and returns nil."
        (eval-when-compile
          (defvar comint-input-ring-file-name)
          (defvar comint-input-ring-size))
-       (declare-function comint-read-input-ring "comint")
-       (declare-function comint-write-input-ring "comint")
-       (declare-function nvp-he-history-setup "nvp-hippie-history")
        (defun ,fn ()
          (setq comint-input-ring-file-name (expand-file-name ,histfile nvp/cache))
          (setq comint-input-ring-size ,size)
@@ -1302,6 +1323,15 @@ See `nvp-advise-commands'."
 ;; -------------------------------------------------------------------
 ;;; Locals - silence compiler
 
+;; Doesn't work
+;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
+(when (functionp 'backtrace-frames)
+  (when (assoc '(t byte-compile-file-form-require
+                   ((require 'nvp-macro))
+                   nil)
+               (backtrace-frames))
+    (message "Warning: package 'nvp-macro required at runtime")))
+
 (defmacro nvp-local-vars ()
   '(progn
      (defvar nvp/abbrevs)
@@ -1327,6 +1357,7 @@ See `nvp-advise-commands'."
      (defvar nvp/data)
      (defvar nvp/template)
      (defvar nvp/snippet)
+     (defvar nvp/scratch)
      (defvar nvp/class)
      (defvar nvp/work)
      (defvar nvp/bookmark)
@@ -1337,16 +1368,17 @@ See `nvp-advise-commands'."
      (defvar nvp/install)
      (defvar nvp/private)))
 
-(nvp-local-vars)
+(defmacro nvp-decls ()
+  '(progn
+     (nvp-decl :pre "nvp-read" elisp-symbol elisp-function elisp-variable)
+     (nvp-decl :pre "comint" read-input-ring write-input-ring)
+     (nvp-decl nvp-view-list-mode nvp-window-configuration-restore
+               nvp-window-configuration-save nvp-log)
+     (nvp-decl nvp-he-history-setup nvp-indicate-pulse-region-or-line pos-tip-show)))
 
-;; Doesn't work
-;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
-(when (functionp 'backtrace-frames)
-  (when (assoc '(t byte-compile-file-form-require
-                   ((require 'nvp-macro))
-                   nil)
-               (backtrace-frames))
-    (message "Warning: package 'nvp-macro required at runtime")))
+;; declare these when compiling
+(nvp-decls)
+(nvp-local-vars)
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

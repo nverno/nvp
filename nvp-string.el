@@ -1,10 +1,5 @@
 ;;; nvp-string.el --- string manipulations -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-16 04:39:37>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 21 February 2019
-
 ;;; Commentary:
 ;; some functions from s.el that aren't covered in subr-x, various others
 ;;; Code:

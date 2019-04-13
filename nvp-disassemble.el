@@ -1,12 +1,5 @@
 ;;; nvp-disassemble.el --- disassembly -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-29 02:41:05>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  8 February 2019
-
 ;;; Commentary:
 ;; FIXME: all of it
 ;; Mode local functions
@@ -16,6 +9,7 @@
   (require 'subr-x)
   (require 'nvp-macro))
 (require 'nvp)
+(nvp-decls)
 
 ;; -------------------------------------------------------------------
 ;;; Disassemble code

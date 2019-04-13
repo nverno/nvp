@@ -1,12 +1,5 @@
 ;;; nvp-lsp.el --- unused -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-31 04:34:25>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 31 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
@@ -16,8 +9,7 @@
 (eval-when-compile
   (defvar eglot--saved-bindings))
 (declare-function flymake-mode "flymake")
-(nvp-decl "eglot" eglot-completion-at-point eglot--eldoc-message eglot-imenu
-  eglot-xref-backend)
+(nvp-decl :pre "eglot" completion-at-point -eldoc-message imenu xref-backend)
 
 ;;;###autoload
 (cl-defun nvp-hook-eglot-shutup (&key (completion t) (eldoc t) (flymake t) (imenu t)

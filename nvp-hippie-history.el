@@ -1,12 +1,5 @@
 ;;; nvp-hippie-history.el --- hippie expand from histories -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-22 20:02:55>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 20 February 2019
-
 ;;; Commentary:
 
 ;; Hippie expansion using histories, eg. shell history rings, minibuffer

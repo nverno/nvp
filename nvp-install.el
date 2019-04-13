@@ -1,12 +1,5 @@
 ;;; nvp-install.el --- -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-26 21:12:30>
-;; Created: 13 November 2016
-
 ;;; Commentary:
 
 ;;; TODO: complete overhaul
@@ -22,8 +15,7 @@
 (eval-when-compile
   (require 'nvp-local nil t)
   (require 'cl-lib)
-  (require 'nvp-macro)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'nvp)
 
 (declare-function w32-shell-execute "w32")

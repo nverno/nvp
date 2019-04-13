@@ -1,12 +1,5 @@
 ;;; nvp-parse.el --- Generics for parse -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-15 12:10:46>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  7 February 2019
-
 ;;; Commentary:
 
 ;; TODO:

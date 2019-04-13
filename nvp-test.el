@@ -1,12 +1,5 @@
 ;;; nvp-test.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-01.07>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 18 January 2017
-
 ;;; Commentary:
 ;; TODO: completely refactor
 ;;; Code:
@@ -15,7 +8,7 @@
   (require 'cl-lib)
   (require 'subr-x))
 (require 'nvp-project)
-(nvp-declare "ert" ert-run-tests-interactively)
+(nvp-declare :pkg "ert" ert-run-tests-interactively)
 
 ;; called when visiting new test buffer, passed name of matching source file
 (defvar nvp-test-init-function 'ignore)
@@ -95,8 +88,8 @@ With prefix ARG, prompt for selector."
 
 ;; non-nil if current buffer is a test file
 (defsubst nvp-test-file-p ()
-  (and (cl-member (nvp-path 'dn) nvp-project--test-dir :test 'string=)
-       (let ((buff-name (nvp-path 'bfnse)))
+  (and (cl-member (nvp-path 'ds) nvp-project--test-dir :test 'string=)
+       (let ((buff-name (nvp-path 'bfse)))
          (or (cl-some (lambda (prefix)
                         (string-prefix-p (regexp-quote prefix) buff-name))
                       nvp-test-prefixes)

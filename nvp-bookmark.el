@@ -161,7 +161,7 @@ and jumped between.
   :init-value nil
   :keymap nvp-bmk-to-bmk-mode-map
   :lighter " B2B"
-  (unless nvp-bmk-to-bmk-mode
+  (when nvp-bmk-to-bmk-mode
     (setq-local bookmark-make-record-function 'nvp-bmk-record-function)
     (nvp-bmk-toggle-highlight)
     (when (nvp-cache-empty-p nvp-bmk-cache)

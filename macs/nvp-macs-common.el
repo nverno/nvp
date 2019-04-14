@@ -1,12 +1,5 @@
 ;;; nvp-macs-common.el --- basic macros -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-13.17>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 30 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (require 'cl-lib)
@@ -167,6 +160,24 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 
 ;; -------------------------------------------------------------------
 ;;; General
+
+;; bind cl-defstruct slots
+(defsubst nvp-cache--names (struct-type)
+  (declare (pure t) (side-effect-free t))
+  (let* ((class (cl--struct-get-class struct-type))
+         (slots (cl--struct-class-slots class)))
+    (cl-loop for i across slots
+       collect (cl--slot-descriptor-name i))))
+
+;; (defmacro nvp-with-struct-slots (spec-list struct &rest body)
+;;   (macroexp-let2 nil struct struct
+;;     (let* ((descs (cl-struct-slot-info struct))
+;;            (type (pop descs)))
+;;      `(cl-symbol-macrolet
+;;           ,(mapcar (lambda (entry)
+;;                      (let ((var (if (listp entry) (car entry) entry))
+;;                            (slot (if (listp entry (cadr entry) entry))))
+;;                        (list var ))))))))
 
 ;; not that useful -- concat only happens one first load
 (defmacro nvp-concat (&rest body)

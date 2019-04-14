@@ -1362,6 +1362,7 @@ See `nvp-advise-commands'."
 
 (defmacro nvp-decls ()
   '(progn
+     (nvp-local-vars)
      (nvp-decl :pre "nvp-read" elisp-symbol elisp-function elisp-variable)
      (nvp-decl :pre "comint" read-input-ring write-input-ring)
      (nvp-decl
@@ -1372,18 +1373,17 @@ See `nvp-advise-commands'."
        nvp-he-history-setup
        nvp-indicate-pulse-region-or-line
        nvp-imenu-setup idomenu
+       nvp-toggle-local-variable
+       nvp-abbrev-grab
        ;; internal
        ielm
+       ielm-return
        ert-run-tests-interactively
        ;; external
        company-grab-symbol
        company-mode
        paredit-mode
        )))
-
-;; declare these when compiling
-(nvp-decls)
-(nvp-local-vars)
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

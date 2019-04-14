@@ -1,12 +1,5 @@
 ;;; nvp-macs-process.el --- process wrappers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-09.18>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  9 April 2019
-
 ;;; Commentary:
 
 ;; Functions called:

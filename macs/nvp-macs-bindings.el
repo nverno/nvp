@@ -1,12 +1,5 @@
 ;;; nvp-macs-bindings.el --- bindings -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-13.14>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp/macs
-;; Created:  9 April 2019
-
 ;;; Commentary:
 ;;; Code:
 (require 'cl-lib)

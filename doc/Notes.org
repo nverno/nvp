@@ -1,5 +1,5 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-04-13.14>
+#+DATE: <2019-04-13.22>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -85,13 +85,13 @@ This doesn't seem to be too actively maintained
 - [ ] wrapper function
 - [ ] modes: elisp (disassemble), c+others (disaster), java, clojure, etc.
 
-** Editing [0/4]
+** Editing [1/4]
 - [ ] fix list wrapping to account for syntax
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L616][fix column align to ignore trailing comments]]
-- [ ] sorting by alist handle more than just lists of cons cells
+- [X] sorting by alist handle more than just lists of cons cells
 - [ ] indent thing at point
 
-** Cycling [0/6]
+** Cycling [0/7]
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
 - [ ] how to mark cycling region -- overlays?
 - [ ] reuse cycle map
@@ -119,7 +119,7 @@ This doesn't seem to be too actively maintained
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
 - [X] how to remove font-lock keywords added with mode-name?
 
-** Comint / Proc [1/9]
+** Comint / Proc / Ext / Inf [1/9]
 - [ ] use in nvp-ext to find shell procs
 - [ ] use in nvp-shell to find shell procs
 - [ ] use in nvp-inf
@@ -168,7 +168,7 @@ pkgs: smart-jump, dumb-jump, evil-jump-to-tag
 - [ ] allow multiple registered backends for each mode, like smart-jump
 - [ ] fallback to grep/ag/dumb-jump or something
 
-** Cache [5/10]
+** Cache [7/11]
 pkgs: memoize, stash
 - [ ] memoize wrappers: [[https://github.com/skeeto/emacs-memoize][memoize]]
 - [ ] frame cache - see which-func
@@ -176,8 +176,8 @@ pkgs: memoize, stash
 - [ ] cache w/ timeout
 - [X] generalized cache
 - [X] ring cache backend
-- [ ] hash cache backend
-- [ ] setf methods for generics, how?
+- [X] hash cache backend
+- [X] setf methods for generics, how?
 - [X] function wrappers to call local funs
 - [X] basic cache wrapper
 - [X] cache run once
@@ -274,22 +274,22 @@ Merge loose help packages
 - [ ] function to expand template - like grep-compute-defaults
 
 * Modes
-** elisp [3/10]
+** elisp [4/10]
 - [ ] align rules are shitty - dots in double quotes get moved.
 - [ ] hap: convert to use generic interface
 - [ ] toggled tip: merge with general interface
 - [ ] parse: buffer variables -- ~load-history~?
 - [ ] abbrev: optionally abbrev library, buffer, or file
-- [ ] abbrev: fix jumping to proper table based on prefix
 - [ ] abbrev: determine variable / func table?
+- [X] abbrev: fix jumping to proper table based on prefix
 - [X] parse: buffer functions
 - [X] parse: buffer provides
 - [X] parse: buffer includes
 
-** C/C++ [3/22]
+** C/C++ [4/23]
 - [X] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
 - [ ] font-lock: toggle doxygen
-- [ ] font-lock: toggle additional rules
+- [X] font-lock: toggle additional rules
 - [ ] align rules for doxygen ?
 - [ ] how to gather all includes needed for project?
 - [ ] fixup script to generate system includes
@@ -318,8 +318,8 @@ semantic tags have parse info
 - [ ] add indentation b/w declarations
 *** TODO General functions [0/5]
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/makefile/nvp-makefile.el::(defun%20nvp-makefile-beginning-of-defun-function%20(&optional%20arg)][fix makefile beg/end of defuns]]
+- [ ] mark rules
 - [ ] [[file:/usr/local/share/emacs/27.0.50/lisp/cedet/semantic/bovine/make.el.gz::(defun%20semantic-default-make-setup%20()][semantic add anything to makefiles?]]
-- [ ] beginning/end-of-defun functions/marking
 - [ ] fold declarations
 - [ ] fold targets
 *** TODO REPL [1/2]
@@ -395,52 +395,33 @@ Separators,
 - [ ] sed lookup help
 - [ ] awk lookup help in info node
 
-** Perl [3/6]
-*** DONE General
-- [X] cache module paths
-*** DONE newline
-*** TODO HAP [0/1]
-- [ ] perldoc to popup
-*** DONE REPL [3/6]
-- [ ] comint-input-filter-functions to join lines
-- [ ] get completions from Reply?
-- [ ] sending buffer/region indirect function to remove junk
-- [X] choose / install REPL
-- [X] setup REPL config
-- [X] generic switching function
-*** TODO Parse [0/5]
-- [ ] current function
-- [ ] buffer functions
-- [ ] current module
-- [ ] includes
-- [ ] variables
-
-*** TODO Tests [0/2]
-- [ ] simple test setup
-- [ ] use script to associate source with test dir?
-** sh [1/5]
+** Perl [1/11]
+- [ ] help: perldoc to popup
+- [ ] repl: comint-input-filter-functions to join lines
+- [ ] repl: get completions from Reply?
+- [ ] repl: sending buffer/region indirect function to remove junk
+- [X] parse: current function
+- [ ] parse: buffer functions
+- [ ] parse: current module
+- [ ] parse: includes
+- [ ] parse: variables
+- [ ] test: simple test setup
+- [ ] test: use script to associate source with test dir?
+** sh [3/13]
 - [ ] use shell-cmd at point to do abbrev expansions / hippie exp
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
 - [ ] parse sh function documentation
 - [ ] quote wrapping moves '$' sometimes -- see smartparens-ess
 - [X] prefix hippie-shell-expand functions
 - [X] fix comanpy-active-map
-*** TODO Completion [0/2]
-- [ ] capf for lexical scoped variables
-- [ ] merge capf bash-completion/variable-completion, maybe
-  ~completion-merge-tables~ from minibuffer
-*** DONE Snippets [1/2]
+- [ ] comp: capf for lexical scoped variables
+- [ ] comp: merge capf bash-completion/variable-completion, maybe
+      ~completion-merge-tables~ from minibuffer
 - [X] split sh usage arguments in snippets
 - [ ] main fn snippet for parsing args - generate usage at same time
-*** TODO Jumps [1/2]
 - [ ] xref for company-bash sources
-- [X] etags
-*** TODO Tests [0/1]
 - [ ] jump to bat test
-
-*** TODO Newline [1/2]
-- [X] code method
-- [ ] doc comment
+- [ ] newline: doc comment
 
 ** Python [0/3]
 - [ ] convert newline
@@ -463,11 +444,9 @@ Separators,
 - [ ] tags
 - [ ] xrefs
 
-** Shell [0/1]
-- [X] wrapping with quotes is broken
-- [X] account for dir-locals when jumping from shell
-*** TODO Dynamic abbrevs [0/1]
-- [ ] fix
+** Shell [0/2]
+- [ ] expand git abbrevs
+- [ ] fix dynamic abbrevs
 ** Java [0/2]
 - [ ] new root package directory w/o creating new directory
 - [ ] fix newline

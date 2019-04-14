@@ -7,6 +7,8 @@
   (require 'cl-lib)
   (require 'subr-x)
   (require 'nvp-macro))
+(nvp-decls)
+(nvp-decl tramp-make-tramp-file-name tramp-dissect-file-name)
 
 ;; -------------------------------------------------------------------
 ;;; Utils
@@ -35,45 +37,6 @@
          (or (member remote-method '("sudo" "su" "ksu" "doas"))
              (string= remote-user "root")))))
 
-;;; I/O
-;; see f.el
-(defun nvp-file-bytes (file)
-  "Return FILE contents as bytes returning unibyte string."
-  (with-temp-buffer
-    (set-buffer-multibyte nil)
-    (setq buffer-file-coding-system 'binary)
-    (insert-file-contents-literally file)
-    (buffer-string)))
-
-(cl-defun nvp-file-string (file &optional (coding 'utf-8))
-  "Return FILE contents as string with default CODING utf-8."
-  (decode-coding-string (nvp-file-bytes file) coding))
-
-;; see f.el `f--write-bytes'
-(defun nvp-file-write-bytes (data file &optional append)
-  "Write binary DATA to FILE.
-If APPEND is non-nil, append DATA to existing contents."
-  (when (not (multibyte-string-p data))
-    (signal 'wrong-type-argument (list 'multibyte-string-p data)))
-  (let ((coding-system-for-write 'binary)
-        (write-region-annotate-functions nil)
-        (write-region-post-annotation-function nil))
-    (write-region data nil file append 'silent)
-    nil))
-
-(defun nvp-file-append-bytes (data file)
-  "Append binary DATA to FILE.
-FILE is created if it doesn't exist."
-  (nvp-file-write-bytes data file 'append))
-
-(cl-defun nvp-file-append (text file &optional (coding 'utf-8))
-  "Append TEXT to FILE with CODING."
-  (nvp-file-append-bytes (encode-coding-string text coding) file))
-
-(cl-defun nvp-file-write (text file &optional (coding 'utf-8))
-  "Write TEXT to FILE with CODING."
-  (nvp-file-write-bytes (encode-coding-string text coding) file))
-
 ;; -------------------------------------------------------------------
 ;;; Directories 
 
@@ -87,6 +50,16 @@ FILE is created if it doesn't exist."
                     (setq y (expand-file-name x dir)))
                (cons x y))))
          (cl-set-difference (directory-files dir) '("." "..") :test #'equal))))
+
+;; -------------------------------------------------------------------
+;;; Remote
+
+;; use if wanting to read history file over tramp connection
+(defun nvp-create-remote-filename (filename)
+  (if (file-remote-p default-directory)
+      (tramp-make-tramp-file-name
+       (tramp-dissect-file-name default-directory) filename)
+    filename))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

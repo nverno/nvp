@@ -4,9 +4,10 @@
 
 ;; Utils to add additional font-locking
 
+;; - https://github.com/ShingoFukuyama/ov.el
+
 ;; TODO:
 ;; - update a mode's additions w/o creating entire new entry
-;; - how to remove font locks added with mode via `font-lock-add-keywords'?
 
 ;;; Code:
 (eval-when-compile

@@ -1,12 +1,5 @@
 ;;; nvp-macs-setup.el --- setup/config macros -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-10.04>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/macs
-;; Created: 31 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (require 'cl-lib)

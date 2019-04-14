@@ -12,10 +12,9 @@
 (require 'nvp)
 (require 'nvp-cache)
 (require 'bookmark)
+(autoload 'f-same-p "f")
 
 ;; (define-advice bookmark-load-hook)
-;; -------------------------------------------------------------------
-;;; Jumping b/w bookmark files
 
 (defgroup nvp-bmk nil
   "Manage jumping between/bookmarking multiple bookmark files."
@@ -29,22 +28,19 @@
   :group 'nvp-bmk)
 
 ;; store bookmark files
-(nvp-setup-cache nvp-bmk-default-directory "bookmarks")
-(nvp-setup-cache nvp-bmk-ring-filename ".bmk_history")
-(put 'nvp-bmk-ring 'permanent-local t)
-(defvar nvp-bmk-ring () "Bookmark file history.")
+(nvp-setup-cache nvp-bmk-directory "bookmarks")
+(defvar nvp-bmk-cache
+  (nvp-cache-create 'ring
+    :filename ".bmk_history"
+    :insert-filter #'abbreviate-file-name
+    :save-predicate #'file-exists-p)
+  "Cache bookmark lists.")
+
 (defvar nvp-bmk-regexp "^.*\\.bmk$" "Regexp to match bookmark entries.")
-(defvar nvp-bmk-idx 0 "Current index in bookmark ring.")
-(defvar nvp-bmk-stack ())
 
-(defsubst nvp-bmk-update-history ()
-  (ring-insert nvp-bmk-ring (abbreviate-file-name bookmark-default-file))
-  (cl-incf nvp-bmk-idx))
-
-;; only persist bookmark files that still exist
-(defun nvp-bmk-write-history ()
-  (when (and nvp-bmk-ring (not (ring-empty-p nvp-bmk-ring)))
-    (nvp-ring-write nvp-bmk-ring nvp-bmk-ring-filename 'silent #'file-exists-p)))
+(defsubst nvp-bmk-update-history (&optional filename silent)
+  (nvp-cache-insert (or filename bookmark-default-file) nvp-bmk-cache)
+  (or silent (message "Current bookmark file: %s" (abbreviate-file-name filename))))
 
 ;; Create bookmark record for bookmark-menu-list from current default
 (defun nvp-bmk-record-function ()
@@ -67,33 +63,38 @@
    `((filename . ,(abbreviate-file-name filename))
      (handler  . nvp-bmk-handler))))
 
-(defun nvp-bmk-back ()
-  "Go back to last bookmark file, saving current if modified."
+(defun nvp-bmk-cycle-previous (&optional next)
+  "Cycle through bookmark history."
   (interactive)
-  (when (> (ring-length nvp-bmk-ring) 0)
-    (when (> bookmark-alist-modification-count 0)
-      (bookmark-save))
-    ;; FIXME: stack
-    (setq nvp-bmk-idx (nvp-ring-previous-index nvp-bmk-ring nvp-bmk-idx))
-    (setq bookmark-default-file (ring-ref nvp-bmk-ring nvp-bmk-idx))
-    (setq bookmark-alist nil)
-    (let (bookmarks-already-loaded)
-      (bookmark-maybe-load-default-file))
-    (bookmark-bmenu-list)))
+  (when-let
+      ((bmk
+        (funcall (if next #'nvp-cache-next #'nvp-cache-previous) nvp-bmk-cache)))
+    (unless (f-same-p bmk bookmark-default-file)
+      (when (> bookmark-alist-modification-count 0)
+        (bookmark-save))
+      (setq bookmark-default-file bmk)
+      (setq bookmark-alist nil)
+      (let (bookmarks-already-loaded)
+        (bookmark-maybe-load-default-file))
+      (bookmark-bmenu-list))))
 
-(defun nvp-bmk-new (filename &optional current link)
+(defun nvp-bmk-cycle-next ()
+  "Cycle forward through bookmark list."
+  (interactive)
+  (nvp-bmk-cycle-previous 'next))
+
+(defun nvp-bmk-create (filename &optional make-current link)
   "Create new bookmark file, prompting for FILENAME. 
-(4) prefix or CURRENT is non-nil, set new bookmark file as current 
+(4) prefix or MAKE-CURRENT is non-nil, set new bookmark file as current 
     default bookmark file.
 (16) prefix or LINK is non-nil, create link to new bookmark file from
 current bookmark menu list."
   (interactive
-   (list
-    (let ((default-directory (or nvp-bmk-default-directory default-directory)))
-      (read-file-name "Bookmark File: "))
-    (eq 4 (car current-prefix-arg)) (eq 16 (car current-prefix-arg))))
+   (list (let ((default-directory nvp-bmk-directory))
+           (read-file-name "Bookmark File: ")) (nvp-prefix 4) (nvp-prefix 16)))
   (when (not (file-exists-p filename))
     (message "Creating new bookmark file at %s" filename)
+    (nvp-bmk-update-history filename make-current)
     (with-temp-buffer
       (let (bookmark-alist)
         (bookmark-save nil filename))))
@@ -101,23 +102,21 @@ current bookmark menu list."
     (let* ((name (read-from-minibuffer "Bookmark Link Name: "))
            (record (nvp-bmk-make-record filename)))
       (bookmark-store name (cdr record) t)))
-  (when current
+  (when make-current
     (nvp-bmk-handler (nvp-bmk-make-record filename))))
 
-;; Font-lock
-(defvar-local nvp-bmk-highlighted nil)
+;; FIXME: store overlays?
+;; Highlight entries
+(defvar-local nvp-bmk-overlays nil)
 
 (defun nvp-bmk-toggle-highlight ()
   "Toggle highlighting of bookmark entries in *Bookmark List* buffer."
   (interactive)
-  (if (not nvp-bmk-highlighted)
-      (progn
-        (nvp-bmk-add-highlight nvp-bmk-regexp 'nvp-bmk-bookmark-highlight)
-        (setq nvp-bmk-highlighted t))
-    (nvp-bmk-remove-highlight)
-    (setq nvp-bmk-highlighted nil)))
+  (if (setq nvp-bmk-overlays (not nvp-bmk-overlays))
+      (nvp-bmk-add-overlays nvp-bmk-regexp 'nvp-bmk-bookmark-highlight)
+    (nvp-bmk-remove-overlays)))
 
-(defun nvp-bmk-add-highlight (regexp face)
+(defun nvp-bmk-add-overlays (regexp face)
   "Highlight bookmark entries in *Bookmark List* buffer."
   (save-excursion
     (goto-char (point-min))
@@ -126,13 +125,23 @@ current bookmark menu list."
         (overlay-put overlay 'face face))
       (goto-char (match-end 0)))))
 
-(defun nvp-bmk-remove-highlight ()
+(defun nvp-bmk-remove-overlays ()
   "Remove highlighting of bookmark entries."
   (remove-overlays))
 
 
+(defvar nvp-bmk-to-bmk-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "c"               #'nvp-bmk-create)
+    (define-key map (kbd "TAB")       #'nvp-bmk-cycle-next)
+    (define-key map (kbd "C-M-n")     #'nvp-bmk-cycle-next)
+    (define-key map (kbd "<backtab>") #'nvp-bmk-cycle-previous)
+    (define-key map (kbd "C-M-p")     #'nvp-bmk-cycle-previous)
+    (define-key map "f"               #'nvp-bmk-toggle-highlight)
+    map))
+
 ;;;###autoload
-(define-minor-mode nvp-bmk-to-bmk
+(define-minor-mode nvp-bmk-to-bmk-mode
   "Toggle `nvp-bmk-to-bmk' mode.
 Interactively with no arguments, this command toggles the mode.
 A positive prefix argument enables the mode, any other prefix 
@@ -140,31 +149,36 @@ argument disables it.  From lisp, argument omitted or nil enables
 the mode, `toggle' toggles the state.
 
 When `nvp-bmk-to-bmk' mode is enabled, bookmark menus can be both bookmarked
-and jumped between."
-  :keymap '(((kbd "b") . nvp-bmk-back)
-            ((kbd "n") . nvp-bmk-new)
-            ((kbd "f") . nvp-bmk-toggle-highlight))
-  :lighter " B2B"
-  (setq-local bookmark-make-record-function 'nvp-bmk-record-function)
-  (when (null nvp-bmk-ring)
-    (setq nvp-bmk-ring (nvp-ring-read nvp-bmk-ring-filename 20 'silent)
-          nvp-bmk-idx 0)))
+and jumped between.
 
+  \\{nvp-bmk-to-bmk-mode-map}"
+  :init-value nil
+  :keymap nvp-bmk-to-bmk-mode-map
+  :lighter " B2B"
+  (unless nvp-bmk-to-bmk-mode
+    (setq-local bookmark-make-record-function 'nvp-bmk-record-function)
+    (nvp-bmk-toggle-highlight)
+    (when (nvp-cache-empty-p nvp-bmk-cache)
+      (nvp-cache-load nvp-bmk-cache))))
+
+
 ;; -------------------------------------------------------------------
 ;;; Commands
 
 ;;;###autoload
 (defun nvp-bookmark-local (file)
+  "Load bookmark FILE.
+With prefix prompt for filename. Otherwise, try `nvp-local-bookmark-file'
+and fallback to `bookmark-default-file'."
   (interactive
-   (list (or (and current-prefix-arg
-                  (read-file-name "Location of bookmark file: "))
+   (list (or (and current-prefix-arg (read-file-name "Bookmark file: "))
              (and (bound-and-true-p nvp-local-bookmark-file)
                   (expand-file-name
                    nvp-local-bookmark-file
                    (locate-dominating-file default-directory dir-locals-file)))
              bookmark-default-file)))
-  (message "Using bookmark file: %s" file)
-  (when (not (string= bookmark-default-file file))
+  (nvp-bmk-update-history file)
+  (unless (f-same-p bookmark-default-file file)
     (nvp-bmk-handler (nvp-bmk-make-record file)))
   (call-interactively 'bookmark-bmenu-list))
 

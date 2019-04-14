@@ -114,16 +114,6 @@
 ;;                vconcat [("")])))
 ;;       (remhash mode nvp-mode-cache)))
 
-;; (defmacro nvp-with-struct-slots (spec-list struct &rest body)
-;;   (macroexp-let2 nil struct struct
-;;     (let* ((descs (cl-struct-slot-info struct))
-;;            (type (pop descs)))
-;;      `(cl-symbol-macrolet
-;;           ,(mapcar (lambda (entry)
-;;                      (let ((var (if (listp entry) (car entry) entry))
-;;                            (slot (if (listp entry (cadr entry) entry))))
-;;                        (list var ))))))))
-
 ;; https://github.com/abo-abo/oremacs
 ;;;###autoload
 (defun nvp-dev-describe-hash (variable)

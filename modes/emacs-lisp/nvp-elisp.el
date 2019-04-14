@@ -40,8 +40,8 @@
 ;; -------------------------------------------------------------------
 ;;; Things at point
 
-(defun nvp-elisp-bounds-of-cons-cell ()
-  "Return bounds of dotted cons cell, eg (sexp . sexp)."
+(defun nvp-elisp-bounds-of-cons ()
+  "Return bounds of dotted cons, eg (sexp . sexp)."
   (save-excursion
     (let* ((syntax (nvp-ppss 'partial))
            (parens (reverse (nth 9 syntax))))
@@ -53,20 +53,23 @@
           (and (eq ?. (char-after))
                (cl-return (bounds-of-thing-at-point 'list))))))))
 
-(put 'cons 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons-cell)
+(put 'cons 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons)
 
 (defun nvp-elisp-bounds-of-alist ()
   "Return bounds of alist at point.
 Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
   (cl-block nil
-    (save-excursion
-      (if (memq ?\' (list (char-before) (char-after)))
-          (bounds-of-thing-at-point 'list)
-        (while (nvp-goto 'bul) ;search backward up lists for a '(
+    (if (memq ?\' (list (char-before) (char-after)))
+        (and (nvp-goto 'fdl)
+             (bounds-of-thing-at-point 'list))
+      (save-excursion
+        (while (nvp-goto 'bul)         ;search backward up lists for a '(
           (and (eq (char-before) ?\')
-               (cl-return (bounds-of-thing-at-point 'list))))
-        ;; check if in cons-cell and back out of it
-        ;; eg. (macro (foo . bar) (goo . ber))
+               (nvp-goto 'fdl)
+               (cl-return (bounds-of-thing-at-point 'list)))))
+      ;; check if in cons-cell and back out of it
+      ;; eg. (macro (foo . bar) (goo . ber))
+      (save-excursion
         (when-let ((bnds (nvp-tap 'btap 'cons)))
           (goto-char (1- (car bnds)))
           (bounds-of-thing-at-point 'list))))))

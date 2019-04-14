@@ -41,9 +41,9 @@
       (executable-find name)))
 
 ;;;###autoload
-(defun nvp-setup-smie-bindings (&optional minor-mode)
+(defun nvp-setup-smie-bindings ()
   "Locally override minor mode bindings when smie functions are available."
-  (nvp-use-minor-mode-overriding-map (or minor-mode 'smartparens-mode)
+  (nvp-use-minor-mode-overriding-map 'smartparens-mode
     :predicate (not (null smie-closer-alist))
     ("C-M-f"    . smie-forward-sexp-command)
     ("C-M-b"    . smie-backward-sexp-command)

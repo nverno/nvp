@@ -160,7 +160,7 @@ Grows ring when necessary."
 
 (defun nvp-ring-read (cache)
   "Read and return ring from FILENAME."
-  (let 
+  (let (filename )
    (cond
     ((not (file-writable-p filename))
      (or silent (message "Cant read %S" filename)))

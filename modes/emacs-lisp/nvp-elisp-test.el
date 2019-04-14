@@ -1,12 +1,5 @@
 ;;; nvp-elisp-test.el --- elisp tests -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-03-15 09:24:59>
-;; Created:  2 December 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
@@ -14,7 +7,7 @@
   (require 'cl-lib))
 (require 'nvp-project)
 (require 'nvp-test)
-(declare-function ert-run-tests-interactively "ert")
+(nvp-decls)
 
 ;; -------------------------------------------------------------------
 ;;; Util 

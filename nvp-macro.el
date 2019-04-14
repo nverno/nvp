@@ -179,21 +179,31 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
-(defmacro nvp-ppss (type &optional point ppss)
+(defmacro nvp-ppss (type &optional ppss point beg)
   "Return non-nil if syntax PPSS at POINT is of TYPE, one of the following.
 
 `str'  -- Inside a string
 `cmt'  -- Inside a comment
-`soc'  -- Inside a string or comment"
+`soc'  -- Inside a string or comment
+
+`partial' -- `parse-partial-sexp' from min or BEG to current pos or POINT
+"
   (let ((type (eval type)))
     (cond
+     ;; ~~~ In comments/strings
      ((eq type 'str) `(nth 3 ,(or ppss `(syntax-ppss ,point))))
      ((eq type 'cmt) `(nth 4 ,(or ppss `(syntax-ppss ,point))))
      ((eq type 'soc)
       (macroexp-let2 nil syn (or ppss `(syntax-ppss ,point))
         `(or (car (setq ,syn (nthcdr 3 ,syn)))
              (car (setq ,syn (cdr ,syn)))
-             (nth 3 ,syn)))))))
+             (nth 3 ,syn))))
+     
+     ((eq type 'partial)
+      (if ppss ppss
+        `(parse-partial-sexp ,(or beg '(point-min)) ,(or point '(point)))))
+
+     (t (user-error "%S unrecognized by `nvp-ppss'." type)))))
 
 (defmacro nvp-if-ppss (type then &rest else)
   "Do THEN if syntax at point is of TYPE, otherwise ELSE."
@@ -233,82 +243,33 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
            ,res)
       res)))
 
-(defmacro nvp-scan-1 (type &optional pos limit)
+;; FIXME: use smie if available
+(defmacro nvp-scan (type &optional pos limit)
   "Return position across various balanced expressions.
 Start at POS if non-nil. Returns point at new position, or nil on failure.
 
 `fl'  -- after forward balanced parens
 `bl'  -- after backward list
-`ufl' -- up forward list
-`ubl' -- up backward list
-`dfl' -- down forward list
-`dbl' -- down list backward
+`ful' -- up forward list
+`bul' -- up backward list
+`fdl' -- down forward list
+`bdl' -- down list backward
 "
   (let ((type (eval type)))
     (cond
      ;; Return the point at different locations or nil
-     ((eq type 'fl)
-      `(when-let ((dest (nvp-safe-scan-lists ,(or pos '(point)) 1 0 ,limit)))
-         (goto-char dest)
-         dest))
-     ((eq type 'bl)
-      `(when-let ((dest (nvp-safe-scan-lists ,(or pos '(point)) -1 0 ,limit)))
-         (goto-char dest)
-         dest))
-     ((eq type 'ufl)
-      `(nvp-safe-scan-lists ,(or pos '(point)) 1 1 ,limit))
-     ((eq type 'ubl)
-      `(nvp-safe-scan-lists ,(or pos '(point)) -1 1 ,limit))
-     ((eq type 'dfl)
-      `(nvp-safe-scan-lists ,(or pos '(point)) 1 -1 ,limit))
-     ((eq type 'dbl)
-      `(nvp-safe-scan-lists ,(or pos '(point)) -1 -1 ,limit))
+     ((eq type 'fl) `(nvp-safe-scan-lists ,(or pos '(point)) 1 0 ,limit))
+     ((eq type 'bl) `(nvp-safe-scan-lists ,(or pos '(point)) -1 0 ,limit))
+     ((eq type 'ful) `(nvp-safe-scan-lists ,(or pos '(point)) 1 1 ,limit))
+     ((eq type 'bul) `(nvp-safe-scan-lists ,(or pos '(point)) -1 1 ,limit))
+     ((eq type 'fdl) `(nvp-safe-scan-lists ,(or pos '(point)) 1 -1 ,limit))
+     ((eq type 'bdl) `(nvp-safe-scan-lists ,(or pos '(point)) -1 -1 ,limit))
 
      (t (user-error "%S unrecognized by `nvp-scan-point'" type)))))
-
-;; FIXME: use smie if available
-(defmacro nvp-scan (type &optional pos limit)
-  "Scan balanced expressions, moving and returning point on success.
-
-`fl'   -- move forward balanced parens
-`bl'   -- move backward list
-`ufl'  -- point up list forward
-`ubl'  -- point up list backward
-`dfl'  -- point down list forward
-`dbl'  -- point down list backward
-`gufl' -- move up forward list
-`gulb' -- move up backward list
-`gdlf' -- move down list forward
-`gdlb' -- move down list backward
-"
-  (let ((type (eval type)))
-    (cond
-     ((eq type 'fl) `(nvp-scan-1 'fl ,pos ,limit))
-     ((eq type 'bl) `(nvp-scan-1 'bl ,pos ,limit))
-     ((eq type 'ufl) `(nvp-scan-1 'ufl ,pos ,limit))
-     ((eq type 'ubl) `(nvp-scan-1 'ubl ,pos ,limit))
-     ((eq type 'dfl) `(nvp-scan-1 'dfl ,pos ,limit))
-     ((eq type 'dbl) `(nvp-scan-1 'dbl ,pos ,limit))
-     
-     ;; Move point
-     ((eq type 'gulf)
-      `(when-let ((dest (nvp-scan-1 'ufl ,pos ,limit)))
-         (goto-char dest) dest))
-     ((eq type 'gulb)
-      `(when-let ((dest (nvp-scan-1 'ubl ,pos ,limit)))
-         (goto-char dest) dest))
-     ((eq type 'gdlf)
-      `(when-let ((dest (nvp-scan-1 'lf ,pos ,limit)))
-         (goto-char dest) dest))
-     ((eq type 'gdlb)
-      `(when-let ((dest (nvp-scan-1 'lb ,pos ,limit)))
-         (goto-char dest) dest))
-     (t (user-error "%S unrecognized by `nvp-scan'" type)))))
 
 
 ;; -------------------------------------------------------------------
 ;;; Positions 
-;; TODO: forward / backward comments only
 
 ;;-- Syntactic whitespace
 
@@ -437,9 +398,11 @@ Direction is one of `forward', `backward'."
 ;; expanded version from cc-defs - comment nav, no c-specific commands,
 ;; different handling of ws/sws
 ;; ref: #<marker at 34444 in cc-defs.el.gz>
-(defmacro nvp-point (position &optional point escape)
+(defalias 'nvp-p 'nvp-point)
+(defmacro nvp-point (position &optional point limit escape)
   "Return relative POSITION to POINT (default current point).
 ESCAPE can be a string to match escaped newlines (default '\\').
+LIMIT is passed to `scan-lists'.
 POSITION can be one of the following symbols:
 
 ~~ Comments ~~
@@ -458,10 +421,17 @@ POSITION can be one of the following symbols:
 `eopl'  -- end of previous line
 
 ~~~ Sexps ~~~
+`fl'    -- forward list
+`bl'    -- backward list
+`ful'   -- forward up list
+`bul'   -- backward up list
+`fdl'   -- forward down list
+`bdl'   -- backward down list
 `bod'   -- beginning of defun
 `eod'   -- end of defun
 
 ~~~ Indentation ~~~
+`ci'    -- current indentation
 `boi'   -- beginning of indentation
 `ionl'  -- indentation of next line
 `iopl'  -- indentation of previous line
@@ -561,6 +531,11 @@ to it is returned.  This function does not modify the point or the mark."
 	   (point))))
 
      ;;=== Indentation ===
+     ((eq position 'ci)                 ;current indentation
+      `(nvp-point--se ,point
+         (back-to-indentation)
+         (current-column)))
+     
      ((eq position 'boi)                ;beginning of indentation
       `(nvp-point--se ,point
 	 (back-to-indentation)
@@ -578,7 +553,10 @@ to it is returned.  This function does not modify the point or the mark."
 	 (back-to-indentation)
 	 (point)))
 
-     ;;=== Functions ===
+     ;;=== Sexps ===
+     ((memq position '(fl bl ful bul fdl bdl)) ;scan lists
+      `(nvp-scan ',position ,point ,limit))
+     
      ((eq position 'bod)                ;beginning of defun
       `(nvp-point--se ,point
          (beginning-of-defun)
@@ -625,26 +603,31 @@ to it is returned.  This function does not modify the point or the mark."
 
      (t (error "Unknown buffer position requested: %s" position)))))
 
+(defmacro nvp-goto (type &optional point limit escape)
+  "Goto point returned from `nvp-point' (which see).
+Returns nil if unsuccessful, point otherwise."
+  `(ignore-errors (goto-char (nvp-point ,type ,point ,limit ,escape))))
+
 ;; paredit splicing reindent doesn't account for prompts
 (defmacro nvp-preserving-column (&rest body)
   "Preserve point in column after executing BODY.
 `paredit-preserving-column' doesn't properly account for minibuffer prompts."
   (declare (indent defun) (debug body))
-  (let ((orig-indent (make-symbol "indentation"))
-        (orig-col (make-symbol "column")))
+  (let ((orig-indent (make-symbol "orig-indent"))
+        (orig-col (make-symbol "orig-column")))
     `(let ((,orig-col (if (eq major-mode 'minibuffer-inactive-mode)
                           (- (current-column) (minibuffer-prompt-width))
                         (current-column)))
-           (,orig-indent (current-indentation)))
-       (unwind-protect
-           (progn ,@body)
-         (let ((ci (current-indentation)))
-           (goto-char
-            (+ (point-at-bol)
-               (cond ((not (< ,orig-col ,orig-indent))
-                      (+ ,orig-col (- ci ,orig-indent)))
-                     ((<= ci ,orig-col) ci)
-                     (t ,orig-col)))))))))
+           (,orig-indent (nvp-point 'ci))
+           (result (progn ,@body)))
+       (let ((post-indent (nvp-point 'ci)))
+         (goto-char
+          (+ (nvp-point 'bol)
+             (cond ((not (< ,orig-col ,orig-indent))
+                    (+ ,orig-col (- post-indent ,orig-indent)))
+                   ((<= post-indent ,orig-col) post-indent)
+                   (t ,orig-col)))))
+       result)))
 
 
 ;; -------------------------------------------------------------------
@@ -1366,15 +1349,37 @@ See `nvp-advise-commands'."
      (defvar nvp/org)
      (defvar nvp/books)
      (defvar nvp/install)
-     (defvar nvp/private)))
+     (defvar nvp/private)
+     ;; my vars
+     (defvar nvp-abbrev-dynamic-table)
+     ;; emacs base
+     (defvar ielm-working-buffer)
+     (defvar ielm-dynamic-return)
+     (defvar imenu-generic-expression)
+     ;; external pkgs
+     (defvar company-backends)
+     (defvar yas-snippet-dirs)))
 
 (defmacro nvp-decls ()
   '(progn
      (nvp-decl :pre "nvp-read" elisp-symbol elisp-function elisp-variable)
      (nvp-decl :pre "comint" read-input-ring write-input-ring)
-     (nvp-decl nvp-view-list-mode nvp-window-configuration-restore
-               nvp-window-configuration-save nvp-log)
-     (nvp-decl nvp-he-history-setup nvp-indicate-pulse-region-or-line pos-tip-show)))
+     (nvp-decl
+       nvp-view-list-mode
+       nvp-log
+       pos-tip-show
+       nvp-window-configuration-restore nvp-window-configuration-save 
+       nvp-he-history-setup
+       nvp-indicate-pulse-region-or-line
+       nvp-imenu-setup idomenu
+       ;; internal
+       ielm
+       ert-run-tests-interactively
+       ;; external
+       company-grab-symbol
+       company-mode
+       paredit-mode
+       )))
 
 ;; declare these when compiling
 (nvp-decls)

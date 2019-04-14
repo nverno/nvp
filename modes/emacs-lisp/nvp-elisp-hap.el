@@ -1,10 +1,5 @@
 ;;; nvp-elisp-hap.el --- popup help at point -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-03-29 01:34:14>
-;; Created: 31 October 2016
-
 ;;; Commentary:
 
 ;; TODO:
@@ -13,8 +8,7 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-hap))
+  (require 'nvp-macro))
 (require 'pos-tip)
 
 ;; Number of lines to show in popup.

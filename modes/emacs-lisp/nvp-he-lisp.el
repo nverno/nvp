@@ -1,12 +1,5 @@
 ;;; nvp-he-lisp.el --- lisp hippie expansion -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-03-15 09:25:57>
-;; Created: 19 March 2017
-
 ;;; Commentary:
 
 ;; Fuzzy expansion for hyphen-separated commands, eg. i-p => in-package

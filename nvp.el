@@ -268,9 +268,9 @@
   "Generic function to handle newline dwim syntactically."
   (let ((syntax (syntax-ppss)))
     (cond
-     ((nvp-ppss 'str nil syntax)
+     ((nvp-ppss 'str syntax)
       (newline arg 'interactive))
-     ((nvp-ppss 'cmt nil syntax)
+     ((nvp-ppss 'cmt syntax)
       (nvp-newline-dwim-comment arg))
      ;; default to adding newline between paren delimiters
      (t (nvp-newline-dwim--parens arg)))))

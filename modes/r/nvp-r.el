@@ -1,24 +1,15 @@
 ;;; nvp-r.el --- r helpers -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/r-tools
-;; Last modified: <2019-03-27 15:43:34>
-;; Created: 27 September 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro)
-  (require 'nvp-hap))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'ess-site)
 (require 'ess-inf)
-
-(defvar nvp-r-rterm-program
-  (expand-file-name
-   (format "Rterm%s" (nvp-with-gnu/w32 "" ".exe"))
-   (file-name-directory inferior-R-program)))
+(declare-function tag-utils-tag-dir "tag-utils")
+(autoload 'nvp-list-intersection "nvp-util")
+(autoload 'nvp-s-match-positions "nvp-string")
 
 (defvar nvp-r-source-dir (expand-file-name "R/r-source" (getenv "DEVEL")))
 (defvar nvp-r-package-src (expand-file-name "R/src" (getenv "DEVEL")))
@@ -26,8 +17,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Utils
-(autoload 'nvp-list-intersection "nvp-util")
-(autoload 'nvp-s-match-positions "nvp-string")
 
 ;; Guess where the column breaks are located (assumes right-justified).
 (defun nvp-r-guess-column-breaks (str)
@@ -143,12 +132,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Imenu/headers
-(eval-when-compile
-  (defvar nvp-imenu-comment-headers-re)
-  (defvar nvp-imenu-comment-headers-re-1)
-  (defvar nvp-imenu-comment-headers-re-2)
-  (defvar nvp-mode-header-regex))
-(declare-function nvp-imenu-setup "nvp-imenu")
 
 (defun nvp-r-setup-headers ()
   ;; code blocks in spin docs
@@ -213,8 +196,6 @@
 ;; ------------------------------------------------------------
 ;;; Tags
 
-(declare-function tag-utils-tag-dir "tag-utils")
-
 ;; Create tags file [default c tags] for directory. Return process object.
 (defun nvp-r-tag-dir (&optional directory pattern)
   (interactive)
@@ -277,7 +258,7 @@
         (let ((rtags (format "rtags(path=\"%s\", ofile=\"%s\", recursive=TRUE)"
                              pkg tags)))
           (set-process-sentinel
-           (start-process "r-tags" "*R-tags*" nvp-r-rterm-program "-e" rtags)
+           (start-process "r-tags" "*R-tags*" inferior-R-program "-e" rtags)
            #'(lambda (_p m)
                (message "%s: %s" "r-tags" m)
                (nvp-r-rtags pkg t))))))
@@ -294,9 +275,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Completion
-
-(eval-when-compile
-  (defvar company-backends))
 
 ;; list libraries ahead of other options when in "require|library"
 (defun nvp-r-company-setup (&optional backends)

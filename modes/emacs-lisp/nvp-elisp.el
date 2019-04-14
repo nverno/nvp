@@ -1,10 +1,5 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-04-12.22>
-;; URL: https://github.com/nverno/nvp
-;; Created: 31 October 2016
-
 ;;; Commentary:
 
 ;;; Code:
@@ -13,11 +8,8 @@
   (require 'nvp-macro)
   (require 'nvp-parse))
 (require 'nvp-parse)
-(declare-function idomenu "idomenu")
-(declare-function paredit-mode "paredit")
-(nvp-declare "" nvp-toggle-local-variable)
-(nvp-declare "company-elisp" company-elisp--candidates-predicate
-  company-elisp--fns-regexp company-grab-symbol)
+(nvp-decls)
+(nvp-decl company-elisp--candidates-predicate company-elisp--fns-regexp)
 
 ;; -------------------------------------------------------------------
 ;;; Util
@@ -51,8 +43,8 @@
 (defun nvp-elisp-bounds-of-cons-cell ()
   "Return bounds of dotted cons cell, eg (sexp . sexp)."
   (save-excursion
-    (let* ((ppss (parse-partial-sexp (point-min) (point)))
-           (parens (reverse (nth 9 ppss))))
+    (let* ((syntax (nvp-ppss 'partial))
+           (parens (reverse (nth 9 syntax))))
       (cl-block nil
         (dolist (pos parens)
           (goto-char (1+ pos))
@@ -60,18 +52,25 @@
           (skip-chars-forward "^.)")
           (and (eq ?. (char-after))
                (cl-return (bounds-of-thing-at-point 'list))))))))
-(put 'cons-cell 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons-cell)
 
-;; FIXME: 
+(put 'cons 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons-cell)
+
 (defun nvp-elisp-bounds-of-alist ()
-  "Return bounds of alist at point."
-  (save-excursion
-    (let ((ppss (parse-partial-sexp (point-min) (point))))
-      (if (= 1 (nth 0 ppss)) (bounds-of-thing-at-point 'list)
-        ;; otherwise check if in cons-cell and back out of it
-        (when-let* ((bnds (bounds-of-thing-at-point 'cons-cell)))
+  "Return bounds of alist at point.
+Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
+  (cl-block nil
+    (save-excursion
+      (if (memq ?\' (list (char-before) (char-after)))
+          (bounds-of-thing-at-point 'list)
+        (while (nvp-goto 'bul) ;search backward up lists for a '(
+          (and (eq (char-before) ?\')
+               (cl-return (bounds-of-thing-at-point 'list))))
+        ;; check if in cons-cell and back out of it
+        ;; eg. (macro (foo . bar) (goo . ber))
+        (when-let ((bnds (nvp-tap 'btap 'cons)))
           (goto-char (1- (car bnds)))
           (bounds-of-thing-at-point 'list))))))
+
 (put 'alist 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-alist)
 
 ;; -------------------------------------------------------------------
@@ -257,7 +256,6 @@ If in `declare-function', convert to autoload."
 ;; Don't expand in strings, comments, function args, let bindings or after '-/'
 ;; Note: Could also account for dolist/dotimes/etc
 (eval-when-compile
-  (nvp-declare "" nvp-abbrev-grab)
   (defvar company-elisp-var-binding-regexp)
   (defmacro nvp-elisp-abbrev--expand-p (type)
     (declare (debug t))
@@ -280,8 +278,14 @@ If in `declare-function', convert to autoload."
 
 ;; ------------------------------------------------------------
 ;;; REPL / IELM
-(declare-function ielm "ielm")
-(defvar ielm-working-buffer)
+
+;; insert nl and indent - ielm-return always wants to eval when smartparens
+;; close sexps
+(defun nvp-ielm-nl (&optional arg)
+  (interactive "P")
+  (if (eolp) (ielm-return arg)
+   (let (ielm-dynamic-return)
+     (newline-and-indent))))
 
 ;; use `pop-to-buffer' and set local `ielm-working-buffer'
 (define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
@@ -301,9 +305,11 @@ If in `declare-function', convert to autoload."
       (setq default-directory
             (buffer-local-value 'default-directory ielm-working-buffer)))))
 
+(nvp-font-lock-add-defaults 'inferior-emacs-lisp-mode
+  ("Eval error" (0 font-lock-warning-face)))
+
 ;; -------------------------------------------------------------------
 ;;; Compile
-;; (car )
 
 (defun nvp-elisp-compile ()
   (interactive)

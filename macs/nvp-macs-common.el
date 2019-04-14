@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-04-13.00>
+;; Last modified: <2019-04-13.17>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created: 30 March 2019
@@ -113,7 +113,7 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; silence byte-compiler warnings
 
 (defalias 'nvp-decl 'nvp-declare)
-(put 'nvp-decl 'lisp-indent-function 1)
+(put 'nvp-decl 'lisp-indent-function 'defun)
 
 (cl-defmacro nvp-declare (&rest funcs &key pre &allow-other-keys)
   (declare (indent defun))

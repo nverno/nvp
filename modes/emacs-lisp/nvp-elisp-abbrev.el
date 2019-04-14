@@ -1,10 +1,5 @@
 ;;; nvp-elisp-abbrev.el --- create abbrevs -*- lexical-binding: t -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/elisp-utils
-;; Last modified: <2019-03-16 00:32:46>
-;; Created: 31 October 2016
-
 ;;; Commentary:
 
 ;; Generates abbrevs for elisp functions defined in buffer.
@@ -20,9 +15,8 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'company-elisp)
-  (defvar nvp-abbrev-dynamic-table)
-  (nvp-local-vars))
+  (require 'company-elisp))
+(nvp-decls)
 (require 'nvp-elisp)
 (require 'nvp-abbrev-dynamic)
 

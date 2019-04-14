@@ -40,7 +40,9 @@
 
 (defsubst nvp-bmk-update-history (&optional filename silent)
   (nvp-cache-insert (or filename bookmark-default-file) nvp-bmk-cache)
-  (or silent (message "Current bookmark file: %s" (abbreviate-file-name filename))))
+  (or silent
+      (message "Current bookmark file: %s"
+               (abbreviate-file-name (or filename bookmark-default-file)))))
 
 ;; Create bookmark record for bookmark-menu-list from current default
 (defun nvp-bmk-record-function ()
@@ -49,19 +51,22 @@
 
 ;; handle jumping to another bookmark file
 (defun nvp-bmk-handler (bmk-record)
-  (nvp-bmk-update-history)
   (when (> bookmark-alist-modification-count 0)
     (bookmark-save))
   (setq bookmark-default-file (bookmark-get-filename bmk-record))
+  (nvp-bmk-update-history)
+  ;; (kill-all-local-variables)
   (setq bookmark-alist nil)
   (let (bookmarks-already-loaded)
-    (bookmark-maybe-load-default-file))
-  (bookmark-bmenu-list))
+    (bookmark-maybe-load-default-file)
+    ;; (bookmark-bmenu-list)
+    ))
 
 (defun nvp-bmk-make-record (filename &optional name)
-  (cons (or name nil)
-   `((filename . ,(abbreviate-file-name filename))
-     (handler  . nvp-bmk-handler))))
+  `(,(or name nil)
+    ,@(bookmark-make-record-default 'no-file)
+    (filename . ,(abbreviate-file-name filename))
+    (handler  . nvp-bmk-handler)))
 
 (defun nvp-bmk-cycle-previous (&optional next)
   "Cycle through bookmark history."
@@ -75,8 +80,9 @@
       (setq bookmark-default-file bmk)
       (setq bookmark-alist nil)
       (let (bookmarks-already-loaded)
-        (bookmark-maybe-load-default-file))
-      (bookmark-bmenu-list))))
+        (bookmark-maybe-load-default-file)
+        ;; (bookmark-bmenu-list)
+        ))))
 
 (defun nvp-bmk-cycle-next ()
   "Cycle forward through bookmark list."

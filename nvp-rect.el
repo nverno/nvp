@@ -19,22 +19,22 @@ _h_   _l_   _y_ank      _o_pen    _e_xchange-point
 ^^^^        _K_ill      _c_lear   _g_ quit
 ^^^^        _u_ndo      ^ ^        ^ ^
 "
-  ("h" rectangle-backward-char nil)
-  ("l" rectangle-forward-char nil)
-  ("k" rectangle-previous-line nil)
-  ("j" rectangle-next-line nil)
-  ("w" copy-rectangle-as-kill nil)      ;C-x r M-w
-  ("K" kill-rectangle)                  ;C-x r k
-  ("d" delete-rectangle nil)            ;C-x r d
-  ("c" clear-rectangle)                 ;C-x r c
-  ("y" yank-rectangle nil)              ;C-x r y
-  ("t" string-rectangle nil)            ;C-x r t
-  ("o" open-rectangle nil)              ;C-x r o
-  ("N" rectangle-number-lines)          ;C-x r N
-  ("e" nvp-rect-ex-point-mark nil)
+  ("h" rectangle-backward-char)
+  ("l" rectangle-forward-char)
+  ("k" rectangle-previous-line)
+  ("j" rectangle-next-line)
+  ("w" copy-rectangle-as-kill)  ;C-x r M-w
+  ("K" kill-rectangle)          ;C-x r k
+  ("d" delete-rectangle)        ;C-x r d
+  ("c" clear-rectangle)         ;C-x r c
+  ("y" yank-rectangle)          ;C-x r y
+  ("t" string-rectangle)        ;C-x r t
+  ("o" open-rectangle)          ;C-x r o
+  ("N" rectangle-number-lines)  ;C-x r N
+  ("e" nvp-rect-ex-point-mark)
   ("r" (if (region-active-p)
            (deactivate-mark)
-         (rectangle-mark-mode 1)) nil)
+         (rectangle-mark-mode 1)))
   ("u" undo nil)
   ("g" nil))
 

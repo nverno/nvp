@@ -399,30 +399,6 @@ On error (read-only), quit without selecting."
         :repeat-key "h"))))
 
 ;; -------------------------------------------------------------------
-;;; Align
-(nvp-declare "" nvp-indicate-pulse-region-or-line)
-
-(defun nvp-align (&optional arg beg end)
-  "Align buffer region b/w BEG and END, or call `nvp-mark-defun' if nil.
-With a single prefix, align entire active region or buffer.
-With double prefix, highlight changes that would occur."
-  (interactive
-   (cons (prefix-numeric-value current-prefix-arg)
-         (if (region-active-p)
-             (list (region-beginning) (region-end)))))
-  (if (eq 4 arg)                        ;align entire region / buffer
-      (if (and beg end) (align beg end)
-        (align (point-min) (point-max)))
-    (save-mark-and-excursion
-      (unless (and beg end)
-        (nvp-mark-defun 1)
-        (setq beg (region-beginning) end (region-end)))
-        (nvp-indicate-pulse-region-or-line beg end)
-      (if (eq 16 arg)                     ;test alignment rule
-          (call-interactively 'align-highlight-rule)
-        (align beg end)))))
-
-;; -------------------------------------------------------------------
 ;;; Company
 
 (defun nvp-company-local (backends)
@@ -443,10 +419,6 @@ With double prefix, highlight changes that would occur."
 
 ;; ensure spaces when aligning
 (define-advice align-regexp (:around (old-fn &rest args) "no-tabs")
-  (let ((indent-tabs-mode nil))
-    (apply old-fn args)))
-
-(define-advice align (:around (old-fn &rest args) "no-tabs")
   (let ((indent-tabs-mode nil))
     (apply old-fn args)))
 

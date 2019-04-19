@@ -1,6 +1,6 @@
 ;;; nvp-org-expand.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-02-25 00:58:21>
+;; Last modified: <2019-04-19.13>
 ;; URL: https://github.com/nverno/md-tools
 ;; Created:  2 December 2016
 
@@ -47,10 +47,10 @@ _h_tml    ^ ^        _A_SCII:
 
 ;;;###autoload
 (defun nvp-org-src-maybe ()
-    (interactive)
-    (if (looking-back "^" (line-beginning-position))
-        (nvp-org-src-hydra/body)
-      (self-insert-command 1)))
+  (interactive)
+  (if (looking-back "^" (line-beginning-position))
+      (nvp-org-src-hydra/body)
+    (self-insert-command 1)))
 
 (provide 'nvp-org-expand)
 ;;; nvp-org-expand.el ends here

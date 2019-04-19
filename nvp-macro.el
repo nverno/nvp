@@ -781,12 +781,13 @@ In WIDEN is non-nil, save restriction and widen before finding bounds."
   (declare (indent defun) (debug body))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
-  `(,@(if widen '(save-restriction (widen)) '(progn))
-    (if-let* ((bnds (nvp-tap ,(or type ''bdwim) ,(or thing ''paragraph)
-                             nil nil :pulse ,pulse)))
-        (cl-destructuring-bind (,beg . ,end) bnds
-          ,@body)
-      (user-error "nvp-with-region didn't find any bounds"))))
+  (let ((bnds (make-symbol "bounds")))
+   `(,@(if widen '(save-restriction (widen)) '(progn))
+     (if-let* ((,bnds (nvp-tap ,(or type ''bdwim) ,(or thing ''paragraph)
+                               nil nil :pulse ,pulse)))
+         (cl-destructuring-bind (,beg . ,end) ,bnds
+           ,@body)
+       (user-error "nvp-with-region didn't find any bounds")))))
 
 
 ;; -------------------------------------------------------------------
@@ -1375,6 +1376,7 @@ See `nvp-advise-commands'."
        nvp-imenu-setup idomenu
        nvp-toggle-local-variable
        nvp-abbrev-grab
+       nvp-mark-defun
        ;; internal
        ielm
        ielm-return

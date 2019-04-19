@@ -3,11 +3,10 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (autoload 'lm-header "lisp-mnt")
-(autoload 'find-function-library "find-func")
-(autoload 'find-library-name "find-func")
+(nvp-autoload "find-func" 'find-function-library 'find-library-name)
 
 ;;;###autoload
 (defun nvp-elisp-jump-to-library (library &optional arg)
@@ -21,13 +20,18 @@
         (`(4) (dired (file-name-directory library)))
         (_ (find-file-other-window (if (file-exists-p el) el elgz)))))))
 
-(defun nvp-elisp-get-library-file (&optional lisp-only)
+(defun nvp-elisp-get-library-file (&optional lisp-only prompt)
   "Get defining file for current symbol or prompt for library.
 Optionally, search LISP-ONLY files (no C sources)."
-  (let* ((sym (or (symbol-at-point)
+  (let* ((curr (symbol-at-point))
+         (sym (if (or prompt (null curr))
                   (intern (ido-completing-read
-                           "Feature: "
-                           (mapcar #'symbol-name features) nil t))))
+                           (format "Feature%s: "
+                                   (if curr (concat " ('" (symbol-name curr) "')")
+                                     ""))
+                           (mapcar #'symbol-name features) nil t nil nil
+                           (symbol-name curr)))
+                curr))
          (lib (if (not (memq sym features))
                   (cdr (find-function-library sym lisp-only))
                 (find-library-name (symbol-name sym)))))
@@ -36,12 +40,12 @@ Optionally, search LISP-ONLY files (no C sources)."
 ;;;###autoload
 (defun nvp-elisp-jump-to-library-url (&optional choose)
   "Browse URL of either file defining symbol at point or prompt for library.
-If CHOOSE is non-nil, prompt for library."
+(1) prefix or CHOOSE, prompt for library."
   (interactive "P")
   (let (url)
     (if (and (not choose) (setq url (save-excursion (lm-header "URL"))))
         (browse-url url)                ;found URL in current buffer!!
-       (let ((lib (nvp-elisp-get-library-file 'lisp-only)))
+       (let ((lib (nvp-elisp-get-library-file 'lisp-only choose)))
          (if (and lib                   ;no URL in emacs sources
                   (member (file-name-extension lib) '("el" "elc")))
              (let ((file (concat (file-name-sans-extension lib) ".el")))

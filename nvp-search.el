@@ -60,19 +60,12 @@
 ;; -------------------------------------------------------------------
 ;;; wgrep
 
-;;;###autoload
-(defun nvp-wgrep-bind ()
-  "Bind wgrep in current mode."
-  (interactive)
-  (let ((map (symbol-value (intern-soft (format "%s-map" major-mode)))))
-    (define-key map (kbd "C-x C-n w") #'wgrep-change-to-wgrep-mode)))
-
 ;;;###autoload(autoload 'nvp-wgrep-hydra/body "nvp-search")
 (nvp-hydra-set-property 'nvp-wgrep-hydra)
 (defhydra nvp-wgrep-hydra (:color red)
   ("q" wgrep-exit "exit")
   ("s" wgrep-save-all-buffers "save all")
-  ("a" wgrep-abort-changes "abort")
+  ("a" wgrep-abort-changes "abort" )
   ("r" wgrep-remove-change "remove region change")
   ("R" wgrep-remove-all-change "remove all changes")
   ("t" wgrep-toggle-readonly-area "toggle r/o")
@@ -97,8 +90,8 @@
 ;; package and doesn't support wgrep. It also runs `shell-command' which
 ;; awkwardly invokes `shell-mode-hook' on the output results, which also
 ;; required fixes.
-(nvp-declare "ag" ag-project-dired ag-dired-regexp ag-dired
-  ag-project-dired-regexp ag/search)
+(nvp-decl ag-project-dired ag-dired-regexp ag-dired ag-project-dired-regexp
+  ag/search)
 (eval-when-compile
   (defvar ag/file-column-pattern-group)
   (defvar ag-ignore-list))

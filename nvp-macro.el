@@ -1353,6 +1353,10 @@ See `nvp-advise-commands'."
      (defvar nvp/private)
      ;; my vars
      (defvar nvp-abbrev-dynamic-table)
+     (defvar nvp-repl-alist)
+     (defvar nvp-repl-current)
+     (defvar nvp-repl-default)
+     (defvar nvp-repl-find-functions)
      ;; emacs base
      (defvar ielm-working-buffer)
      (defvar ielm-dynamic-return)
@@ -1371,12 +1375,14 @@ See `nvp-advise-commands'."
        nvp-log
        pos-tip-show
        nvp-window-configuration-restore nvp-window-configuration-save 
-       nvp-he-history-setup
+       nvp-he-history-setup nvp-comint-setup-history
        nvp-indicate-pulse-region-or-line
+       nvp-indicate-cursor-pre nvp-indicate-cursor-post
        nvp-imenu-setup idomenu
        nvp-toggle-local-variable
        nvp-abbrev-grab
        nvp-mark-defun
+       nvp-repl-add
        ;; internal
        ielm
        ielm-return

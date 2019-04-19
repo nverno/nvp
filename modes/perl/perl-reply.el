@@ -2,7 +2,7 @@
 
 ;; This is free and unencumbered software released into the public domain.
 
-;; Last modified: <2019-03-24 05:40:34>
+;; Last modified: <2019-04-19.18>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/perl-tools
 ;; Created: 15 November 2016
@@ -30,14 +30,14 @@
 
 (defun perl-reply-start (&optional prompt)
   "Create new REPL process and return it."
-  (set-buffer
-   (apply 'make-comint "reply" perl-reply-program nil
-          (if prompt
-              (split-string-and-unquote
-               (read-from-minibuffer "Reply switches: "))
-            ())))
-  (perl-reply-mode)
-  (get-buffer-process perl-reply-buffer))
+  (with-current-buffer 
+      (apply #'make-comint "reply" perl-reply-program nil
+             (if prompt
+                 (split-string-and-unquote
+                  (read-from-minibuffer "Reply switches: "))
+               ()))
+    (perl-reply-mode)
+    (get-buffer-process (current-buffer))))
 
 (defun perl-reply-input-filter (str)
   (not (string-match perl-reply-filter-regexp str)))

@@ -84,7 +84,7 @@
                 (all-completions
                  he-search-string
                  (funcall nvp-he-history-fn nvp-he-history))
-                :test 'string=
+                :test #'string=
                 :from-end t))))
   (while (and he-expand-list            ;remove seen candidates
               (he-string-member (car he-expand-list) he-tried-table))

@@ -1,6 +1,6 @@
 ;;; nvp-debug.el --- gud -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-10.20>
+;; Last modified: <2019-04-19.16>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  8 March 2019
@@ -17,8 +17,7 @@
   (require 'hydra))
 (require 'nvp)
 (require 'gud)
-(nvp-declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post
-  nvp-he-history-setup nvp-comint-setup-history)
+(nvp-decls)
 
 ;; -------------------------------------------------------------------
 ;;; GDB REPL
@@ -31,9 +30,7 @@
      (read-from-minibuffer
       (nvp-prompt-default "Mode: " default) nil nil nil nil default))))
   (or name (setq name (if gud-minor-mode (symbol-name gud-minor-mode) "gdb")))
-  (nvp-he-history-setup :history 'comint-input-ring
-                        :bol-fn 'comint-line-beginning-position)
-  (nvp-comint-setup-history (concat ".gud_" name "_history") nil 'write))
+  (nvp-comint-setup-history (concat ".gud_" name "_history")))
 
 ;;;###autoload(autoload 'nvp-gud-repl-switch "nvp-debug")
 (nvp-repl-switch "gud" (:repl-mode 'gud-mode

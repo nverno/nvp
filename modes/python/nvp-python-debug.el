@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-21 14:17:54>
+;; Last modified: <2019-04-19.16>
 ;; Created: 16 September 2018
 
 ;;; Commentary:
@@ -14,7 +14,6 @@
 (require 'gud)
 (require 'nose)
 (require 'nvp-python)
-(nvp-declare "" nvp-he-history-setup nvp-comint-setup-history)
 
 ;;; Debug
 
@@ -40,13 +39,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; GDB REPL 
-
-;;;###autoload
-(defun nvp-python-pdb-repl-setup ()
-  (require 'nvp-comint)
-  (nvp-he-history-setup :history 'comint-input-ring
-                        :bol-fn 'comint-line-beginning-position)
-  (nvp-comint-setup-history ".pdb_history"))
 
 (nvp-repl-switch "gud-pdb" (:repl-mode 'gud-mode
                             :repl-doc "Switch between PDB and source buffer."

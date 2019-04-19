@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-31 04:57:03>
+;; Last modified: <2019-04-19.16>
 ;; Created: 30 October 2016
 
 ;;; Commentary:
@@ -24,11 +24,11 @@
 (require 'tag-utils nil t)
 
 (declare-function projectile-project-name "projectile")
-(nvp-decl "pyenv" pyenv-mode-versions pyenv-mode-unset pyenv-mode-set pyenv-mode)
-(nvp-decl "anaconda-mode" anaconda-mode-complete-extract-names anaconda-mode-call)
+(nvp-decl :pkg "pyenv" pyenv-mode-versions pyenv-mode-unset pyenv-mode-set pyenv-mode)
+(nvp-decl :pkg "anaconda-mode" anaconda-mode-complete-extract-names
+  anaconda-mode-call)
 (declare-function company-complete "company")
-
-(nvp-declare "" nvp-abbrev-expand-not-after-punct-p nvp-comint-setup-history)
+(nvp-decl nvp-abbrev-expand-not-after-punct-p)
 
 ;;; Variables
 
@@ -298,19 +298,9 @@ the console."
           (kill-process proc)
         (interrupt-process proc)))))
 
-;;; Shell setup
-(defun nvp-python-shell-setup ()
-  (require 'nvp-comint)
-  ;; hippie expand shell history
-  (nvp-he-history-setup :history 'comint-input-ring
-                        :bol-fn 'comint-line-beginning-position)
-  ;; setup read/write for history file
-  (nvp-comint-setup-history ".python_history"))
-
 ;; switch betweeen source and REPL buffers
 (nvp-repl-switch "python" (:repl-mode 'inferior-python-mode
-                           :repl-find-fn 'python-shell-get-buffer
-                           :repl-config 'nvp-python-shell-setup)
+                           :repl-find-fn 'python-shell-get-buffer)
   ;; starts a new REPL if there isn't one running
   (call-interactively 'conda-env-send-buffer))
 

@@ -32,12 +32,12 @@
   (if (eq arg 16) (call-interactively 'align-highlight-rule)
     (align beg end)))
 
-(defun nvp-align-mode-rules (&optional mode)
-  "Display alignment rules applicable to MODE (default `major-mode').
-With prefix, prompt for mode."
-  (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
-  (nvp-with-results-buffer (help-buffer)
-    ))
+;; (defun nvp-align-mode-rules (&optional mode)
+;;   "Display alignment rules applicable to MODE (default `major-mode').
+;; With prefix, prompt for mode."
+;;   (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
+;;   (nvp-with-results-buffer (help-buffer)
+;;     ))
 
 (provide 'nvp-align)
 ;; Local Variables:

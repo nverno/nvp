@@ -64,11 +64,11 @@
 (nvp-hydra-set-property 'nvp-hydra-goto-line)
 (defhydra nvp-hydra-goto-line (goto-map) "line"
   ("g" goto-line "go")
-  ("b" (push-mark (car mark-ring) nil 'activate) "mark to start")
+  ("b" (push-mark (car mark-ring) nil 'activate) "mark to start" :bind nil)
   ("m" set-mark-command "mark" :bind nil)
   ("p" (set-mark-command 1) "pop" :bind nil)
-  ("e" exchange-point-and-mark "exchange")
-  ("q" nil "quit"))
+  ("e" exchange-point-and-mark "exchange" :bind nil)
+  ("q" nil "quit" :bind nil))
 
 ;; Yank / Pop
 (declare-function helm-show-kill-ring "")

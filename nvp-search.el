@@ -63,9 +63,9 @@
 ;;;###autoload(autoload 'nvp-wgrep-hydra/body "nvp-search")
 (nvp-hydra-set-property 'nvp-wgrep-hydra)
 (defhydra nvp-wgrep-hydra (:color red)
-  ("q" wgrep-exit "exit")
+  ("q" wgrep-exit "exit" :exit t)
   ("s" wgrep-save-all-buffers "save all")
-  ("a" wgrep-abort-changes "abort" )
+  ("a" wgrep-abort-changes "abort" :exit t)
   ("r" wgrep-remove-change "remove region change")
   ("R" wgrep-remove-all-change "remove all changes")
   ("t" wgrep-toggle-readonly-area "toggle r/o")
@@ -177,6 +177,11 @@ If BODY is non-nil, it is executed in place of the default search.
              '(if file-re
                   (ag/search sym dir :file-regex sym)
                 (ag/search sym dir :regexp re)))))))
+
+(defun nvp-ag-recompile ()
+  (interactive)
+  (let (compilation-start-hook)
+    (call-interactively 'recompile)))
 
 
 ;;;###autoload

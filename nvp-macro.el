@@ -1358,6 +1358,7 @@ See `nvp-advise-commands'."
      (defvar nvp-repl-default)
      (defvar nvp-repl-find-functions)
      ;; emacs base
+     (defvar explicit-shell-file-name)
      (defvar ielm-working-buffer)
      (defvar ielm-dynamic-return)
      (defvar imenu-generic-expression)
@@ -1376,7 +1377,7 @@ See `nvp-advise-commands'."
        pos-tip-show
        nvp-window-configuration-restore nvp-window-configuration-save 
        nvp-he-history-setup nvp-comint-setup-history
-       nvp-indicate-pulse-region-or-line
+       nvp-indicate-pulse-region-or-line nvp-indicate-modeline
        nvp-indicate-cursor-pre nvp-indicate-cursor-post
        nvp-imenu-setup idomenu
        nvp-toggle-local-variable

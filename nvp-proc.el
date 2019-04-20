@@ -11,7 +11,16 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'nvp)
-(nvp-decl nvp-indicate-modeline)
+(nvp-decls)
+
+(defmacro nvp-with-proc (proc &rest body)
+  "Execute BODY with current buffer PROC if process is live."
+  (declare (indent defun) (debug t))
+  `(if-let ((,proc (nvp-buffer-process)))
+       (if (not (process-live-p ,proc))
+           (user-error "Buffer process is not live.")
+         ,@body)
+     (user-error "Current buffer has no process.")))
 
 ;; -------------------------------------------------------------------
 ;;; Find processes

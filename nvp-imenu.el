@@ -15,7 +15,7 @@
 (require 'idomenu nil t)
 (declare-function idomenu "idomenu")
 (autoload 'nvp-comment-start "nvp-comment")
-(autoload 'nvp-list-flatten "nvp-util")
+(autoload 'nvp-flatten-tree "nvp-util")
 
 ;;; Local variables
 
@@ -53,9 +53,10 @@
   (or alist (setq alist imenu--index-alist))
   (cl-remove-if-not
    #'nvp-imenu-maybe-code-p
-   (nvp-list-flatten (if (and regex (stringp regex))
+   (nvp-flatten-tree (if (and regex (stringp regex))
                          (nvp-imenu-filter-regex regex alist)
-                       alist))))
+                       alist)
+                     'alist)))
 
 (defun nvp-imenu-maybe-code-p (elem)
   "Filter out probable non code things."

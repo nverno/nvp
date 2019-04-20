@@ -10,12 +10,29 @@
 ;; -------------------------------------------------------------------
 ;;; Lists
 
-(defun nvp-list-flatten (lst)
-  "Flatten nested list."
+;; if ELEM is a list and has a null cdr return its car, otherwise return it
+(defsubst nvp-flatten--elem (elem)
+  (if (and (consp elem) (null (cdr elem))) (car elem) elem))
+
+(defun nvp-flatten-to-alist (tree)
+  "Flatten tree, but leave cons cells."
   (declare (pure t) (side-effect-free t))
-  (if (and (listp lst) (listp (cdr lst)))
-      (apply #'append (mapcar (lambda (x) (nvp-list-flatten x)) lst))
-    (list lst)))
+  (let (elems)
+    (while (and (consp tree) (consp (cdr tree)))
+      (let ((elem (pop tree)))
+        (while (and (consp elem) (consp (cdr elem)))
+          (push (cdr elem) tree)
+          (setq elem (car elem)))
+        (if elem (push (nvp-flatten--elem elem) elems))))
+    (if tree (push (nvp-flatten--elem tree) elems))
+    (nreverse elems)))
+
+(defun nvp-flatten-tree (lst &optional alist)
+  "Flatten nested list.
+If ALIST is non-nil, leave cons cells intact."
+  (declare (pure t) (side-effect-free t))
+  (if alist (nvp-flatten-to-alist lst)
+    (flatten-tree lst)))
 
 ;; Intersection of multiple lists.
 (defun nvp-list-intersection (l)

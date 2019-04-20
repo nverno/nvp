@@ -1,5 +1,4 @@
 #+TITLE: Notes / Todos
-#+DATE: <2019-04-19.18>
 
 * Topics
 - optimizing startup time: has increased to nearly 2 sec. Better to have
@@ -119,15 +118,15 @@ This doesn't seem to be too actively maintained
 - [ ] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L863][toggle word to upper]]
 - [X] how to remove font-lock keywords added with mode-name?
 
-** Comint / Proc / Ext / Inf [2/9]
-- [ ] use in nvp-ext to find shell procs
-- [ ] use in nvp-shell to find shell procs
+** Comint / Proc / Ext / Inf [6/9]
 - [ ] use in nvp-inf
 - [ ] investigate ess-get-next-available-process
-- [X] merge hippie history expansion with comint-setup-history
-- [ ] move shell functions from ext to nvp-shell
-- [ ] use proc functions to find shells
 - [ ] fixup / remove nvp-ext script runners
+- [X] use in nvp-ext to find shell procs
+- [X] use in nvp-shell to find shell procs
+- [X] merge hippie history expansion with comint-setup-history
+- [X] move shell functions from ext to nvp-shell
+- [X] use proc functions to find shells
 - [X] separate sentinels from comint
 
 ** Install [1/4]

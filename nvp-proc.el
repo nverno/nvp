@@ -73,10 +73,9 @@
 
 ;; generate and return a new comint buffer
 (defsubst nvp-proc-comint-buffer (name)
-  (let ((buff (generate-new-buffer name)))
-    (set-buffer buff)
+  (with-current-buffer (generate-new-buffer name)
     (comint-mode)
-    buff))
+    (current-buffer)))
 
 (provide 'nvp-proc)
 ;; Local Variables:

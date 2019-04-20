@@ -40,13 +40,13 @@
 
 (defun nvp-ext--script-functions (file)
   (with-current-buffer (find-file-noselect file)
-    (mapcar 'car (cdr (imenu--make-index-alist)))))
+    (mapcar #'car (cdr (imenu--make-index-alist)))))
 
 ;; create command to run. If function is cons, first element is function and the
 ;; rest are its args
 (defun nvp-ext--script-command (file &optional functions)
   (let ((funcs (mapcar (lambda (f) (if (listp f)
-                                  (mapconcat 'identity f " ")
+                                  (mapconcat #'identity f " ")
                                 f))
                        functions)))
     (if functions
@@ -72,9 +72,9 @@
           (if sudo
               (nvp-ext-sudo-command passwd cmd)
             (start-process-shell-command
-             "bash" (nvp-comint-buffer file) (concat "bash -l " cmd)))
+             "bash" (nvp-comint-buffer :name file) (concat "bash -l " cmd)))
         (start-process-shell-command
-         "bash" (nvp-comint-buffer file) "bash -l " cmd)))))
+         "bash" (nvp-comint-buffer :name file) "bash -l " cmd)))))
 
 ;; -------------------------------------------------------------------
 ;;; Vagrant

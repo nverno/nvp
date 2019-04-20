@@ -61,31 +61,5 @@
 (define-derived-mode nvp-log-mode fundamental-mode "Log"
   (setq-local font-lock-defaults '(nvp-log-font-lock nil t nil nil)))
 
-;; -------------------------------------------------------------------
-;;; View list - simple tabulated display
-;; #<marker at 153343 in evil-common.el>
-;; `cl-struct-slot-info'
-
-(defvar-local nvp-view-list-select-action ())
-(put 'nvp-view-list-select-action 'permanent-local t)
-
-(defun nvp-view-list-goto-entry ()
-  (interactive)
-  (when (and nvp-view-list-select-action
-             (not (eobp)))
-    (let* ((line (line-number-at-pos (point)))
-           (entry (elt tabulated-list-entries (1- line))))
-      (funcall nvp-view-list-select-action (nth 1 entry)))))
-
-;;;###autoload
-(define-derived-mode nvp-view-list-mode tabulated-list-mode
-  "Simple list view."
-  (tabulated-list-init-header)
-  (tabulated-list-print))
-
-(nvp-bindings-with-view "nvp-view-list" nil
-  ([return] . nvp-view-list-goto-entry)
-  ("q"      . kill-this-buffer))
-
 (provide 'nvp-log)
 ;;; nvp-log.el ends here

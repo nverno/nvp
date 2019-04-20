@@ -7,7 +7,92 @@
 (require 'macroexp)
 
 ;; -------------------------------------------------------------------
-;;; Helpers
+;;; OS 
+
+(defmacro nvp-with-w32 (&rest body)
+  (declare (indent 0) (debug t))
+  (when (eq system-type 'windows-nt)
+    `(progn ,@body)))
+
+(defmacro nvp-with-gnu (&rest body)
+  (declare (indent 0) (debug t))
+  (when (not (eq system-type 'windows-nt))
+    `(progn ,@body)))
+
+(defmacro nvp-with-gnu/w32 (gnu w32)
+  (declare (indent 2) (indent 1) (debug t))
+  (if (eq system-type 'windows-nt)
+      `,@w32
+    `,@gnu))
+
+;; -------------------------------------------------------------------
+;;; Structs / CLOS
+
+(defvar eieio--known-slot-names)
+(defmacro eieio-declare-slot (name)
+  (cl-pushnew name eieio--known-slot-names) nil)
+
+;; bind cl-defstruct slots
+(defsubst nvp-cache--names (struct-type)
+  (declare (pure t) (side-effect-free t))
+  (let* ((class (cl--struct-get-class struct-type))
+         (slots (cl--struct-class-slots class)))
+    (cl-loop for i across slots
+       collect (cl--slot-descriptor-name i))))
+
+(defun nvp-struct--oref (struct slot)
+  (declare (compiler-macro
+            (lambda (exp)
+              (ignore struct slot)
+              exp)))
+  (aref struct (cl-struct-slot-offset (type-of struct) slot)))
+
+;; with-slots: #<marker at 12490 in eieio.el.gz>
+(defmacro with-struct-slots (spec-list inst &rest body)
+  "See `with-slots' for CLOS explanation."
+  (declare (indent 2) (debug t))
+  (macroexp-let2 nil inst inst
+    `(cl-symbol-macrolet
+         ,(mapcar (lambda (entry)
+                    (let* ((var (if (listp entry) (car entry) entry))
+                           (slot (if (listp entry) (cadr entry) entry))
+                           ;; (idx (cl-struct-slot-offset (type-of inst) slot))
+                           )
+                      (list var `(eieio-oref ,inst ',slot))))
+                  spec-list)
+       ,@body)))
+
+;; (defclass foo2 ()
+;;   ((a :initform "a")
+;;    (b :initform "b")
+;;    (c :initform nil)))
+;; (setq tst2 (make-instance 'foo2))
+;; (with-slots (a b c) tst2
+;;   (setq c (concat a b)))
+;; tst2
+
+;; (cl-defstruct foo a b c)
+;; (setq tst (make-foo :a "a" :b "B"))
+;; (with-slots (a b c) tst
+;;   (setq c (concat a b)))
+
+;; (with-struct-slots (a b c) tst
+;;   (setq c (concat a b)))
+
+;; -------------------------------------------------------------------
+;;; Conversion / Normalization
+
+;; unquote, unfunction, all elements in args - return as list
+;; eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)
+(defsubst nvp--unquote (args)
+  (while (memq (car-safe args) '(function quote))
+    (setq args (cadr args)))
+  (delq nil (if (listp args)
+                (cl-loop for arg in args
+                   do (while (memq (car-safe arg) '(function quote))
+                        (setq arg (cadr arg)))
+                   collect arg)
+              (cons args nil))))
 
 (defun nvp--normalize-modemap (mode &optional minor)
   "Convert MODE to keymap symbol if necessary.
@@ -34,47 +119,6 @@ If MINOR is non-nil, convert to minor mode hook symbol."
       (replace-regexp-in-string
        "\\(?:-minor-\\)?\\(?:-mode\\)?\\(?:-hook\\)?\\'" "" mode)
       (if minor "-minor-mode-hook" "-mode-hook")))))
-
-;; -------------------------------------------------------------------
-;;; OS 
-
-(defmacro nvp-with-w32 (&rest body)
-  (declare (indent 0) (debug t))
-  (when (eq system-type 'windows-nt)
-    `(progn ,@body)))
-
-(defmacro nvp-with-gnu (&rest body)
-  (declare (indent 0) (debug t))
-  (when (not (eq system-type 'windows-nt))
-    `(progn ,@body)))
-
-(defmacro nvp-with-gnu/w32 (gnu w32)
-  (declare (indent 2) (indent 1) (debug t))
-  (if (eq system-type 'windows-nt)
-      `,@w32
-    `,@gnu))
-
-;; -------------------------------------------------------------------
-;;; Compat 
-
-(defvar eieio--known-slot-names)
-(defmacro eieio-declare-slot (name)
-  (cl-pushnew name eieio--known-slot-names) nil)
-
-;; -------------------------------------------------------------------
-;;; Conversion
-
-;; unquote, unfunction, all elements in args - return as list
-;; eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)
-(defsubst nvp--unquote (args)
-  (while (memq (car-safe args) '(function quote))
-    (setq args (cadr args)))
-  (delq nil (if (listp args)
-                (cl-loop for arg in args
-                   do (while (memq (car-safe arg) '(function quote))
-                        (setq arg (cadr arg)))
-                   collect arg)
-              (cons args nil))))
 
 (defmacro nvp-listify (&rest args)
   "Ensure all items in ARGS are lists."
@@ -110,19 +154,19 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 
 (cl-defmacro nvp-declare (&rest funcs &key pre &allow-other-keys)
   (declare (indent defun))
-  (setq pkg (or (cl-getf funcs :pkg) ""))
-  (while (keywordp (car funcs))
-    (setq funcs (cdr (cdr funcs))))
-  (setq funcs (nvp--unquote funcs))
-  (when pre
-    (setq funcs (mapcar (lambda (fn)
-                          (let ((fn (if (symbolp fn) (symbol-name fn) fn)))
-                            (if (string-prefix-p pre fn) fn
-                              (intern (concat pre "-" fn)))))
-                        funcs)))
-  (macroexp-progn
-   (cl-loop for func in funcs
-      collect `(declare-function ,func ,pkg))))
+  (let ((pkg (or (cl-getf funcs :pkg) "")))
+   (while (keywordp (car funcs))
+     (setq funcs (cdr (cdr funcs))))
+   (setq funcs (nvp--unquote funcs))
+   (when pre
+     (setq funcs (mapcar (lambda (fn)
+                           (let ((fn (if (symbolp fn) (symbol-name fn) fn)))
+                             (if (string-prefix-p pre fn) fn
+                               (intern (concat pre "-" fn)))))
+                         funcs)))
+   (macroexp-progn
+    (cl-loop for func in funcs
+       collect `(declare-function ,func ,pkg)))))
 
 (defmacro nvp-autoload (package &rest funcs)
   (declare (indent defun))
@@ -130,6 +174,22 @@ If MINOR is non-nil, convert to minor mode hook symbol."
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(autoload ',func ,package))))
+
+;; -------------------------------------------------------------------
+;;; Strings / Regex
+
+(defmacro nvp-wrap-with (pre post &rest body)
+  (macroexp-let2* nil ((pre pre) (post post))
+    `(concat ,pre ,(macroexp-progn body) ,post)))
+
+;; not that useful -- concat only happens one first load
+(defmacro nvp-concat (&rest body)
+  `(eval-when-compile (concat ,@body)))
+
+(defmacro nvp-re-opt (opts &optional no-symbol)
+  `(eval-when-compile
+     ,(if no-symbol `(regexp-opt ,opts t)
+        `(nvp-wrap-with "\\_<" "\\_>" (regexp-opt ,opts t)))))
 
 ;; -------------------------------------------------------------------
 ;;; Files / buffers
@@ -157,36 +217,6 @@ If MINOR is non-nil, convert to minor mode hook symbol."
     ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
      byte-compile-current-file)
     (t (buffer-file-name))))
-
-;; -------------------------------------------------------------------
-;;; General
-
-;; bind cl-defstruct slots
-(defsubst nvp-cache--names (struct-type)
-  (declare (pure t) (side-effect-free t))
-  (let* ((class (cl--struct-get-class struct-type))
-         (slots (cl--struct-class-slots class)))
-    (cl-loop for i across slots
-       collect (cl--slot-descriptor-name i))))
-
-;; (defmacro nvp-with-struct-slots (spec-list struct &rest body)
-;;   (macroexp-let2 nil struct struct
-;;     (let* ((descs (cl-struct-slot-info struct))
-;;            (type (pop descs)))
-;;      `(cl-symbol-macrolet
-;;           ,(mapcar (lambda (entry)
-;;                      (let ((var (if (listp entry) (car entry) entry))
-;;                            (slot (if (listp entry (cadr entry) entry))))
-;;                        (list var ))))))))
-
-;; not that useful -- concat only happens one first load
-(defmacro nvp-concat (&rest body)
-  `(eval-when-compile (concat ,@body)))
-
-(defmacro nvp-re-opt (opts &optional no-symbol)
-  `(eval-when-compile
-     (concat ,(and (not no-symbol) "\\_<") (regexp-opt ,opts t)
-             ,(and (not no-symbol) "\\_>"))))
 
 ;; -------------------------------------------------------------------
 ;;; Input keys / IO

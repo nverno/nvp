@@ -73,9 +73,14 @@
       (nvp-grab-symbol)))
 
 ;; Return completion candidates, taking into account per-table :regexp
-(defun nvp-abbrev-completion-candidates (arg)
+(defun nvp-abbrev-completion-candidates (arg &optional annotate)
   (cl-loop for tab in (nvp-abbrev-completion--active-tables)
-     nconc (delete "" (all-completions arg (symbol-value tab)))))
+     as comps = (delete "" (all-completions arg (symbol-value tab)))
+     when annotate
+     do (mapc (lambda (comp)
+                (put-text-property 0 1 'annotation (symbol-name tab) comp))
+              comps)
+     nconc comps))
 
 ;; -------------------------------------------------------------------
 ;;; Abbrevs

@@ -19,28 +19,30 @@
 
 (eval-when-compile
   (defmacro nvp-rgrep-with-defaults (elisp &rest body)
-   "Defaults: symbol at point, file/buffer extension.
+    "Defaults: symbol at point, file/buffer extension.
 (1) prefix: if ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
     for `default-directory'.
 (2) prefix calls `rgrep' on all files, ignoring current file/buffer extension.
 (3) prompts for confirmation"
-   (declare (indent defun) (debug t))
-   `(let ((sym (nvp-tap 'tapi nil nil nil :hist 'nvp-search-history))
-          ,@(if elisp                                                 ; '(4)
-                '((grep-find-ignored-directories
-                   (nvp-prefix 4 (cons (nvp-path 'ds package-user-dir)
-                                       grep-find-ignored-directories)
-                     grep-find-ignored-directories)))
-              '((default-directory
-                  (nvp-prefix 4 (getenv "HOME") default-directory))))
-          (ext (nvp-prefix 16 (nvp-path 'ext nil :or-name t) :test '/=))  ; '(16)
-          (confirm (nvp-prefix 64)))                                  ; '(64)
-      ,@(if body `,@body
-          `((grep-compute-defaults)
-            (rgrep (format "\\b%s\\b" sym)
-                   (if ext (concat "*." ext "*"))
-                   ,(if elisp nvp/emacs 'default-directory)
-                   confirm))))))
+    (declare (indent defun) (debug t))
+    `(progn
+       (require 'nvp-grep-config)
+       (let ((sym (nvp-tap 'tapi nil nil nil :hist 'nvp-search-history))
+             ,@(if elisp                                                     ; '(4)
+                   '((grep-find-ignored-directories
+                      (nvp-prefix 4 (cons (nvp-path 'ds package-user-dir)
+                                          grep-find-ignored-directories)
+                        grep-find-ignored-directories)))
+                 '((default-directory
+                     (nvp-prefix 4 (getenv "HOME") default-directory))))
+             (ext (nvp-prefix 16 (nvp-path 'ext nil :or-name t) :test '/=))  ; '(16)
+             (confirm (nvp-prefix 64)))                                      ; '(64)
+         ,@(if body `,@body
+             `((grep-compute-defaults)
+               (rgrep (format "\\b%s\\b" sym)
+                      (if ext (concat "*." ext "*"))
+                      ,(if elisp nvp/emacs 'default-directory)
+                      confirm)))))))
 
 ;;;###autoload
 (defun nvp-rgrep-symbol-at-point (arg)
@@ -143,40 +145,42 @@ If BODY is non-nil, it is executed in place of the default search.
 (2) or more prefix args to treat STR as REGEX
 (3) prefix prompt and treat as REGEX"
     (declare (indent defun))
-    `(let* ((dir (nvp-prefix '(4 64)
-                   (read-from-minibuffer
-                    "Root directory: " ,(if elisp 'nvp/emacs '(getenv "HOME")))
-                   ,(if elisp 'nvp/emacs '(getenv "HOME"))))
-            (sym (let ((tap (nvp-tap 'tap)))
-                   (if (or (nvp-prefix '(4 64)) (null tap))
-                       (read-from-minibuffer
-                        (format "Ag search%s: "
-                                (if tap (concat " ('" tap "')") ""))
-                        tap nil nil 'nvp-search-history tap)
-                     (add-to-history 'nvp-search-history tap)
-                     tap)))
-            (re (nvp-prefix 4 nil :test '>))
-            ,@(if elisp '((elpa (nvp-path 'ds package-user-dir)))
-                '((file-re (nvp-prefix 16))))
-            ;; nullify to allow ag output parsing
-            compilation-start-hook
-            compilation-environment)
-       (require 'ag)
-       ,@(if elisp
-             `((nvp-prefix 16 (cl-pushnew elpa ag-ignore-list :test #'equal)
-                 :test '<
-                 (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal))))
-       ,(if body `,@body
-          ;; integer prefix is used as context argument
-          ;; otherwise, prefix causes prompting with ag command
-          '(unless (or (integerp current-prefix-arg)
-                       (nvp-prefix 16 nil :test '>))
-             (setq current-prefix-arg nil))
-          (if elisp
-               '(ag/search sym dir :regexp re)
-             '(if file-re
-                  (ag/search sym dir :file-regex sym)
-                (ag/search sym dir :regexp re)))))))
+    `(progn
+       (require 'nvp-ag-config)
+       (let* ((dir (nvp-prefix '(4 64)
+                     (read-from-minibuffer
+                      "Root directory: " ,(if elisp 'nvp/emacs '(getenv "HOME")))
+                     ,(if elisp 'nvp/emacs '(getenv "HOME"))))
+              (sym (let ((tap (nvp-tap 'tap)))
+                     (if (or (nvp-prefix '(4 64)) (null tap))
+                         (read-from-minibuffer
+                          (format "Ag search%s: "
+                                  (if tap (concat " ('" tap "')") ""))
+                          tap nil nil 'nvp-search-history tap)
+                       (add-to-history 'nvp-search-history tap)
+                       tap)))
+              (re (nvp-prefix 4 nil :test '>))
+              ,@(if elisp '((elpa (nvp-path 'ds package-user-dir)))
+                  '((file-re (nvp-prefix 16))))
+              ;; nullify to allow ag output parsing
+              compilation-start-hook
+              compilation-environment)
+         (require 'ag)
+         ,@(if elisp
+               `((nvp-prefix 16 (cl-pushnew elpa ag-ignore-list :test #'equal)
+                   :test '<
+                   (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal))))
+         ,(if body `,@body
+            ;; integer prefix is used as context argument
+            ;; otherwise, prefix causes prompting with ag command
+            '(unless (or (integerp current-prefix-arg)
+                         (nvp-prefix 16 nil :test '>))
+               (setq current-prefix-arg nil))
+            (if elisp
+                '(ag/search sym dir :regexp re)
+              '(if file-re
+                   (ag/search sym dir :file-regex sym)
+                 (ag/search sym dir :regexp re))))))))
 
 (defun nvp-ag-recompile ()
   (interactive)
@@ -206,6 +210,7 @@ If BODY is non-nil, it is executed in place of the default search.
 (2) `ag-dired-regexp'
 (3) `ag-dired'" 
   (interactive (list (prefix-numeric-value current-prefix-arg)))
+  (require 'nvp-ag-config)
   (call-interactively
    (pcase arg
      (`4  #'ag-project-dired)

@@ -1,12 +1,5 @@
 ;;; nvp-company-abbrev.el --- company backend for abbrevs -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-22 18:33:44>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  7 February 2019
-
 ;;; Commentary:
 
 ;; `company-abbrev' doesn't account for :regexp properties or :enable-function,
@@ -28,7 +21,7 @@ Respects abbrev table :regexp and :enable-function properties."
   (cl-case command
     (interactive (company-begin-backend 'nvp-company-abbrev))
     (prefix (nvp-abbrev-completion-prefix))
-    (candidates (nvp-abbrev-completion-candidates arg))
+    (candidates (nvp-abbrev-completion-candidates arg 'annotate))
     (meta (abbrev-expansion arg))
     (annotation (or (get-text-property 0 'annotation arg) "<abbrev>"))))
 

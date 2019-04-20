@@ -47,6 +47,9 @@
               exp)))
   (aref struct (cl-struct-slot-offset (type-of struct) slot)))
 
+(defsubst nvp-struct--tag (struct)
+  (aref struct 0))
+
 ;; with-slots: #<marker at 12490 in eieio.el.gz>
 (defmacro with-struct-slots (spec-list inst &rest body)
   "See `with-slots' for CLOS explanation."

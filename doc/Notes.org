@@ -43,11 +43,12 @@ This doesn't seem to be too actively maintained
 - [ ] parse makefile targets
 - [ ] update URLs
 
-* Macros [8/12]
+* Macros [8/13]
 - [ ] aif
 - [ ] awhile
 - [ ] acond
 - [ ] remove `nvp-install-on-demand` when a better options is found
+- [ ] with-struct-slots
 - [X] separate bindings macros
 - [X] unify thing-at-point / region macros
 - [X] point ala c-point

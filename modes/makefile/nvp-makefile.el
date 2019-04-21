@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-01.01>
+;; Last modified: <2019-04-21.17>
 ;; Created:  3 November 2016
 
 ;;; Commentary:
@@ -22,14 +22,15 @@
 
 ;;; Code:
 (eval-when-compile
+  (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'subr-x)
-  (require 'cl-lib))
+  (require 'subr-x))
 (require 'nvp)
 (require 'make-mode)
+(nvp-decls)
 
 ;; dont tab out when inserting comments
-(define-advice comment-dwim (:around (orig-fn &rest args) "space-to-comment")
+(define-advice (local comment-dwim) (:around (orig-fn &rest args) "space-to-comment")
   (let ((indent-tabs-mode nil))
     (apply orig-fn args)))
 
@@ -39,6 +40,7 @@
 (defun nvp-makefile-bounds-of-macro-at-point ()
   (save-excursion
     (skip-chars-backward "^$)}:#= \t\n" ())))
+
 ;; -------------------------------------------------------------------
 ;;; Font-lock
 ;; TODO:

@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-13.01>
+;; Last modified: <2019-04-21.17>
 ;; Created: 24 November 2016
 
 ;;; Commentary:
@@ -107,7 +107,8 @@ With double prefix, prompt for mode."
 If `nvp-local-notes-file' is bound use that unless there is a prefix of 16. 
 Otherwise prompt, with default `nvp-default-org-file'."
   (interactive
-   (list (nvp-read--org-file nil nil (nvp-prefix 16)) current-prefix-arg))
+   (list (nvp-read--org-file nil nil (nvp-prefix 16))
+         (nvp-prefix 16 1 :test #'>= current-prefix-arg)))
   (prog1 (setq org-file (nvp-display-location org-file :file action))
     (when (bufferp org-file)
       (with-current-buffer org-file

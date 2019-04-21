@@ -417,10 +417,11 @@ On error (read-only), quit without selecting."
   (let (shell-mode-hook)
     (apply orig-fn args)))
 
-;; ensure spaces when aligning
-(define-advice align-regexp (:around (old-fn &rest args) "no-tabs")
-  (let ((indent-tabs-mode nil))
+;; ensure spaces when aligning / commenting
+(defun nvp--no-tabs (old-fn &rest args)
+  (let (indent-tabs-mode)
     (apply old-fn args)))
+(nvp-advise-commands 'nvp--no-tabs :around '(align-regexp comment-dwim))
 
 (provide 'nvp)
 ;;; nvp.el ends here

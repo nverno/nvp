@@ -4,6 +4,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'nvp-results)
   (require 'cl-lib))
 (require 'nvp)
 (require 'nvp-display)
@@ -31,7 +32,7 @@
   (defmacro nvp--inf-message (proc var)
     "Display message about PROC's VAR."
     (macroexp-let2 nil proc proc
-      `(message "%s %S" (or ,proc "Current buffer")
+      `(message "%s %s" (or ,proc "Current buffer")
                 (if ,proc (format ": %S" ,var) "has no process")))))
 
 ;; -------------------------------------------------------------------
@@ -73,10 +74,11 @@
                (_ (condition-case var
                       (process-get proc var)
                     (error (format "Process attribute %s not found" var)))))))
-    (if (string= var "plist")
+    (if (and res (string= var "plist"))
         (nvp-with-results-buffer (help-buffer)
           (pp res)
-          (emacs-lisp-mode))
+          ;; (emacs-lisp-mode)
+          )
       (nvp--inf-message proc res))))
 
 (provide 'nvp-inf-auto)

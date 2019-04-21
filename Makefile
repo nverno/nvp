@@ -4,6 +4,9 @@ include default.mk
 .PHONY: test
 all: test
 
+blah:
+	@echo $${COMPILE}
+
 %.elc: %.el
 	@${COMPILE} $<
 

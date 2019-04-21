@@ -14,6 +14,18 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
+(nvp-autoload "nvp-string" nvp-s-repeat nvp-s-center)
+(nvp-decls)
+
+;; -------------------------------------------------------------------
+;;; Utils
+
+;; princ centered TITLE
+(defsubst nvp-results--princ-title (title &optional width char)
+  (or width (setq width 85))
+  (or char (setq char "~"))
+  (princ (format "\n%s\n%s\n\n" (nvp-s-center (- width (length title)) title)
+                 (nvp-s-repeat width "~"))))
 
 ;; -------------------------------------------------------------------
 ;;; View list - simple tabulated display

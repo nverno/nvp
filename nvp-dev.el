@@ -9,15 +9,16 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'nvp-results))
 (require 'nvp)
 (require 'nvp-display)
+(require 'nvp-results)
 (require 'help-mode)
 (nvp-decl :pkg "nadvice" advice-mapc advice-remove)
-(nvp-autoload "nvp-string" nvp-s-wrap nvp-s-center nvp-s-repeat)
+(nvp-autoload "nvp-string" nvp-s-wrap)
 (autoload 's-split-words "s")
-
-(defvar nvp-mode-cache)
+(nvp-decls)
 (defvar nvp-dev-keymap)
 
 (define-button-type 'help-marker
@@ -66,20 +67,11 @@
   ("u"  . nvp-dev-stats-uniq)
   ("v"  . nvp-dev-describe-variable))
 
-;; -------------------------------------------------------------------
-;;; Utils
-
-;; princ centered TITLE
-(defsubst nvp-dev--princ-title (title &optional width char)
-  (or width (setq width 85))
-  (or char (setq char "~"))
-  (princ (format "\n%s\n%s\n\n" (nvp-s-center width title)
-                 (nvp-s-repeat width "~"))))
-
 
 ;; -------------------------------------------------------------------
 ;;; Commands 
 
+;;;###autoload
 (defun nvp-dev-advice-remove-all (sym)
   "Remove all advice from SYM."
   (interactive "aFunction: ")
@@ -134,7 +126,7 @@
                             (if (hash-table-p v) (symbol-name v))))
                  (list (if (equal val "") v (intern val)))))
   (nvp-with-results-buffer (help-buffer)
-    (nvp-dev--princ-title (format "Hash: %S" variable))
+    (nvp-results--princ-title (format "Hash: %S" variable))
     (maphash (lambda (key value)
                (pp key)
                (princ " => ")
@@ -173,7 +165,7 @@
         start end text)
     (if (not overlays) (message "Nothing here :(")
       (nvp-with-results-buffer (help-buffer) :font-lock t
-        (nvp-dev--princ-title (format "Overlays at %d in %S" pos (current-buffer)))
+        (nvp-results--princ-title (format "Overlays at %d in %S" pos (current-buffer)))
         (dolist (o overlays)
           (setq start (overlay-start o)
                 end (overlay-end o)
@@ -224,11 +216,7 @@ delimiter or an Escaped or Char-quoted character."
                      (called-interactively-p 'interactive))
     (nvp-display-buffer-with-action action
       (with-help-window (help-buffer)
-        (princ
-         (format "\n%s\n%s\n\n"
-                 (nvp-s-center 60 "Syntax at <marker>")
-                 (nvp-s-repeat 85 "~")))
-      
+        (nvp-results--princ-title "Syntax at <marker>")
        (cl-loop
           for i from 0 upto (length ppss)
           do
@@ -348,7 +336,7 @@ With \\[universal-argument] prompt for THING at point."
     (maphash (lambda (key val) (push (cons val key) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
     (nvp-with-results-buffer (help-buffer)
-      (nvp-dev--princ-title "Word Counts")
+      (nvp-results--princ-title "Word Counts")
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
 

@@ -21,7 +21,7 @@
   (declare (indent defun) (debug t))
   (while (keywordp (car else))
     (setq else (cdr (cdr else))))
-  (and test (eq 'quote (car-safe test)) (setq test (cadr test)))
+  (and test (setq test (car (nvp--unquote test))))
   (let ((test-fn (or test (if (listp num) 'memq 'eq))))
     (if (or then else)
         `(if (,test-fn (prefix-numeric-value current-prefix-arg) ,num)
@@ -1352,6 +1352,7 @@ See `nvp-advise-commands'."
      (defvar nvp/install)
      (defvar nvp/private)
      ;; my vars
+     (defvar nvp-mode-cache)
      (defvar nvp-abbrev-dynamic-table)
      (defvar nvp-repl-alist)
      (defvar nvp-repl-current)

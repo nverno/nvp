@@ -421,7 +421,7 @@ On error (read-only), quit without selecting."
 (defun nvp--no-tabs (old-fn &rest args)
   (let (indent-tabs-mode)
     (apply old-fn args)))
-(nvp-advise-commands 'nvp--no-tabs :around '(align-regexp comment-dwim))
+(nvp-advise-commands 'nvp--no-tabs :around '(comment-dwim align align-regexp))
 
 (provide 'nvp)
 ;;; nvp.el ends here

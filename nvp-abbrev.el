@@ -26,12 +26,12 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (nvp-local-vars)
+  (require 'nvp-results)
   (defvar nvp-abbrev-completion-need-refresh))
 (require 'abbrev)
 (require 'nvp)
 (require 'nvp-abbrev-util)
-(declare-function yas-expand-snippet "yasnippet")
+(nvp-decls)
 
 ;; -------------------------------------------------------------------
 ;;; Utils
@@ -250,7 +250,7 @@ If FILE is non-nil, read abbrevs from FILE."
        (mapcar #'symbol-name (nvp-abbrev--nonempty))))))
   (let ((props (nvp-abbrev--get-plist (intern table))))
     (nvp-with-results-buffer nil
-      (princ (format "%S\n--------------------\n" table))
+      (nvp-results--princ-title table)
       (pcase-dolist (`(,k ,v) props)
         (princ (format "%S: %S\n" k v))))))
 

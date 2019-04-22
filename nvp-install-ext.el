@@ -14,7 +14,8 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'subr-x)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'nvp-results))
 (require 'make-mode)
 (require 'nvp)
 

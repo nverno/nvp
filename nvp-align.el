@@ -11,15 +11,11 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'nvp-results))
 (nvp-decls)
 (require 'nvp)
 (require 'nvp-read)
-
-;; align with spaces
-(define-advice align (:around (old-fn &rest args) "no-tabs")
-  (let ((indent-tabs-mode nil))
-    (apply old-fn args)))
 
 ;;;###autoload
 (defun nvp-align (&optional arg beg end)

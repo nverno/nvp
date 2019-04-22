@@ -1393,6 +1393,7 @@ See `nvp-advise-commands'."
        company-grab-symbol
        company-mode
        paredit-mode
+       yas-expand-snippet
        )))
 
 (provide 'nvp-macro)

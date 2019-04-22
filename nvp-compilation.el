@@ -1,18 +1,11 @@
 ;;; nvp-compilation.el --- compilation helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-15 19:01:21>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 11 November 2016
-
 ;;; Commentary:
-;; FIXME: merge with compile
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))
 (require 'compile)
+(nvp-decl comint-after-pmark-p)
 
 ;; move to next warning/error 
 (defun nvp-compilation-next (n)
@@ -24,6 +17,17 @@
 (defun nvp-compilation-previous (n)
   (interactive "p")
   (nvp-compilation-next (- n)))
+
+;; -------------------------------------------------------------------
+;;; compilation-shell-minor-mode 
+
+(defun nvp-compilation-next-or-complete (n)
+  "Unless after comint prompt, move to Nth next error, otherwise complete."
+  (interactive "p")
+  (if (comint-after-pmark-p)
+      (completion-at-point)
+    (nvp-compilation-next n)))
+
 
 (provide 'nvp-compilation)
 ;;; nvp-compilation.el ends here

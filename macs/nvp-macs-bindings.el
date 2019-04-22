@@ -27,6 +27,7 @@
 (defmacro nvp-kbd (key)
   "If key is a string, wrap with `kbd', otherwise leave it."
   (and (symbolp key) (setq key (symbol-value key)))
+  ;; (and prefix (stringp prefix) (setq prefix (listify-key-sequence )))
   (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
   (if (or (vectorp key) (keymapp key)) key (kbd key)))
 

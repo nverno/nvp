@@ -1385,6 +1385,7 @@ See `nvp-advise-commands'."
        nvp-abbrev-grab
        nvp-mark-defun
        nvp-repl-add
+       nvp-s-repeat nvp-s-center
        ;; internal
        ielm
        ielm-return

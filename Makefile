@@ -23,7 +23,7 @@ el2markdown.el:
 
 .PHONY: unicode
 unicode:  ## Generate latex/unicode abbrevs
-	@julia ${SCRIPT}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
+	@julia ${BIN}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
 .depend: $(EL) ## create depends for package .el files
 	$(info Computing depends)

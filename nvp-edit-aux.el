@@ -4,7 +4,6 @@
 
 ;; Lesser used stuff:
 ;; - list wrapping, insert commas, quote elements
-;; - more align commands
 ;; - fill/unfill
 ;; - rarely used paredit commands
 
@@ -99,31 +98,6 @@
 (nvp-wrap-list-items parens :wrap ("(" . ")"))
 (nvp-wrap-list-items brackets :wrap ("[" . "]"))
 (nvp-wrap-list-items squiggles :wrap ("{" . "}"))
-
-
-;; -------------------------------------------------------------------
-;;; Align
-
-;; Repeat alignment with respect to `REGEXP'. If `JUSTIFY-RIGHT'
-;; is non-nil, justify to the right. If `AFTER', add whitespace to left
-;; instead of right.
-;;;###autoload
-(defun nvp-align-repeat (start end regexp &optional justify-right after)
-  (interactive "r\nsAlign regexp: ")
-  (let ((complete-regexp (if after
-                             (concat regexp "\\([ \t]*\\)")
-                           (concat "\\([ \t]*\\)" regexp)))
-        (group (if justify-right -1 1)))
-    (align-regexp start end complete-regexp group 1 t)))
-
-;;; FIXME: ignore commented regions
-;; Align text as columns. Originally made for aligning abbrevs.
-;; Text is treated as anything between '', "", or non-spaces.
-;;;###autoload
-(defun nvp-align-cols (start end)
-  (interactive "r")
-  (nvp-align-repeat start end "\\(\"[^\"]+\"\\|\'[^\']+'\\|[^ ]+\\)")
-  (indent-region start end))
 
 
 ;; -------------------------------------------------------------------

@@ -26,6 +26,41 @@
     `,@gnu))
 
 ;; -------------------------------------------------------------------
+;;; Anamorphs
+(unless (fboundp 'with-gensyms)
+  (defmacro with-gensyms (syms &rest body)
+    "Create a bunch of `cl-gensyms'."
+    (declare (indent 1))
+    `(let ,(mapcar (lambda (s)
+                     ;; see helm-lib's `helm-with-gensym' for explanation
+                     ;; of using `cl-gensym' as opposed to `make-symbol'
+                     `(,s (cl-gensym (symbol-name ',s)))
+                     syms))
+       ,@body)))
+
+(unless (fboundp 'aif)
+  (defmacro aif (test-form then-form &rest else-forms)
+    "Anamorphic `if'."
+    (declare (indent 2) (debug t))
+    `(let ((it ,test-form))
+       (if it ,then-form ,@else-forms))))
+
+(unless (fboundp 'awhen)
+  (defmacro awhen (test-form &rest body)
+    "Anamorphic `when'."
+    (declare (indent 1) (debug t))
+    `(aif ,test-form ,(macroexp-progn body))))
+
+(unless (fboundp 'awhile)
+  (defmacro awhile (expr &rest body)
+    "Anamorphic `while'."
+    (declare (indent 1) (debug t))
+    `(macroexp-let2 nil expr expr
+       (cl-do ((it ,expr ,expr)
+               (not it))
+           ,@body))))
+
+;; -------------------------------------------------------------------
 ;;; Structs / CLOS
 
 (defvar eieio--known-slot-names)

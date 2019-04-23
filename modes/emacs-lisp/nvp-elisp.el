@@ -2,11 +2,16 @@
 
 ;;; Commentary:
 
+;; FIXME:
+;; - multi-line ielm history ==> how to change and use
+;;  `comint-input-ring-separator'
+
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-parse))
+  (require 'nvp-parse)
+  (require 'nvp-font))
 (require 'nvp-parse)
 (nvp-decls)
 (nvp-decl company-elisp--candidates-predicate company-elisp--fns-regexp)

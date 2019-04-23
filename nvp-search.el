@@ -23,7 +23,7 @@
 (1) prefix: if ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
     for `default-directory'.
 (2) prefix calls `rgrep' on all files, ignoring current file/buffer extension.
-(3) prompts for confirmation"
+(3) prompts for confirmation, default search from `default-directory'."
     (declare (indent defun) (debug t))
     `(progn
        (require 'nvp-grep-config)
@@ -143,13 +143,15 @@ Defaults to symbol at point and nvp/emacs if ELISP is non-nil, HOME otherwise.
 If BODY is non-nil, it is executed in place of the default search.
 (1) prefix prompts for STR and DIR
 (2) or more prefix args to treat STR as REGEX
-(3) prefix prompt and treat as REGEX"
+(3) prefix prompt, treat as REGEX, use `default-directory'."
     (declare (indent defun))
     `(progn
        (require 'nvp-ag-config)
        (let* ((dir (nvp-prefix '(4 64)
                      (read-from-minibuffer
-                      "Root directory: " ,(if elisp 'nvp/emacs '(getenv "HOME")))
+                      (format "Root directory ('%s'): " default-directory)
+                      default-directory nil nil 'nvp-search-history
+                      default-directory)
                      ,(if elisp 'nvp/emacs '(getenv "HOME"))))
               (sym (let ((tap (nvp-tap 'tap)))
                      (if (or (nvp-prefix '(4 64)) (null tap))

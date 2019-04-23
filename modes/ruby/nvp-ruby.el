@@ -107,9 +107,6 @@
 ;; -------------------------------------------------------------------
 ;;; REPL
 
-;; Save history and hippie expand from it
-(nvp-hippie-shell-fn nvp-ruby-inf-setup ".irb_history")
-
 (defun nvp-ruby-switch-to-repl (eob-p)
   (interactive "P")
   (if (buffer-live-p (bound-and-true-p inf-ruby-buffer))

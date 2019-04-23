@@ -1390,6 +1390,7 @@ See `nvp-advise-commands'."
        ielm
        ielm-return
        ert-run-tests-interactively
+       hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
        ;; external
        company-grab-symbol
        company-mode

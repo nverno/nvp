@@ -27,7 +27,14 @@
 
 ;; -------------------------------------------------------------------
 ;;; Anamorphs
-(unless (fboundp 'with-gensyms)
+
+(defmacro nvp-unless-bound (sym &rest body)
+  "Bind SYM unless previously `fbound'."
+  (declare (indent 1) (debug t))
+  `(unless (fboundp ,sym)
+     ,@body))
+
+(nvp-unless-bound 'with-gensyms
   (defmacro with-gensyms (syms &rest body)
     "Create a bunch of `cl-gensyms'."
     (declare (indent 1))
@@ -38,20 +45,20 @@
                      syms))
        ,@body)))
 
-(unless (fboundp 'aif)
+(nvp-unless-bound 'aif
   (defmacro aif (test-form then-form &rest else-forms)
     "Anamorphic `if'."
     (declare (indent 2) (debug t))
     `(let ((it ,test-form))
        (if it ,then-form ,@else-forms))))
 
-(unless (fboundp 'awhen)
+(nvp-unless-bound 'awhen
   (defmacro awhen (test-form &rest body)
     "Anamorphic `when'."
     (declare (indent 1) (debug t))
     `(aif ,test-form ,(macroexp-progn body))))
 
-(unless (fboundp 'awhile)
+(nvp-unless-bound 'awhile
   (defmacro awhile (expr &rest body)
     "Anamorphic `while'."
     (declare (indent 1) (debug t))
@@ -59,6 +66,13 @@
        (cl-do ((it ,expr ,expr)
                (not it))
            ,@body))))
+
+;; (nvp-unless-bound 'acond
+;;   (defmacro acond (&rest clauses)
+;;     "Anamorphic `cond'."
+;;     (unless (null clauses)
+;;       `(with-gensyms (csym)
+;;          (let ((it ,csym)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Structs / CLOS

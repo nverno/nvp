@@ -31,6 +31,16 @@
       (make-directory parent-directory t))))
 
 ;; -------------------------------------------------------------------
+;;; Cleanup hooks: `write-file-functions'
+
+;; remove trailing whitespace and untabify buffer
+;;;###autoload
+(defun nvp-cleanup-ws-default ()
+  (save-excursion
+    (untabify (point-min) (point-max))
+    (delete-trailing-whitespace)))
+
+;; -------------------------------------------------------------------
 ;;; Commands
 
 ;;;###autoload

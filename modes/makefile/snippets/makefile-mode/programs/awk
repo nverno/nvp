@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: awk
+# key: awk
+# --
+AWK ?= $(shell command -v gawk || printf awk)

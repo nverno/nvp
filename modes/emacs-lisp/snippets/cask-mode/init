@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: init
+# key: init
+# --
+(source gnu)
+(source melpa)
+
+(development
+${1:(depends-on "ert-runner")}
+ (depends-on "$2"))

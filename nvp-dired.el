@@ -3,16 +3,22 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'subr-x)
   (require 'cl-lib)
-  (require 'nvp-macro))
+  (require 'subr-x)
+  (require 'nvp-macro)
+  (defvar nvp-dired-external-filelist-cmd)
+  (defvar nvp-dired-external-program))
 (require 'dired)
+(nvp-decls)
 
-(nvp-decl nvp-shell nvp-shell-launch-terminal)
+(nvp-decl org-texinfo-export-to-info org-latex-export-to-pdf)
 (nvp-decl :pkg "dired-aux" dired-dwim-target-directory dired-read-shell-command)
 (declare-function dired-filename-at-point "dired-x")
-(declare-function w32-shell-execute "w32")
+(declare-function conda-env-read-env "conda-env")
 
+(nvp-auto "f" 'f-same-p)
+
+
 ;; -------------------------------------------------------------------
 ;;; Imenu
 
@@ -32,6 +38,7 @@
         (forward-line -1)))
     index-alist))
 
+
 ;; -------------------------------------------------------------------
 ;;; Movement 
 
@@ -83,10 +90,6 @@
   (scroll-down-command)
   (dired-move-to-filename))
 
-;; covers both next & previous
-(define-advice dired-next-dirline (:before (&rest _args) "push-mark")
-  (or (region-active-p) (push-mark)))
-
 (defhydra nvp-dired-hydra (:color red :hint nil)
   "move"
   ("M-n" nvp-dired-next5)
@@ -98,8 +101,13 @@
   ("l" dired-prev-dirline)
   ("j" dired-next-dirline))
 
+
 ;; -------------------------------------------------------------------
 ;;; Advices
+
+;; covers both next & previous
+(define-advice dired-next-dirline (:before (&rest _args) "push-mark")
+  (or (region-active-p) (push-mark)))
 
 ;; #<marker at 171949 in simple.el.gz>
 ;; FIXME: How to determine the number of C-u before numeric arg????
@@ -113,6 +121,7 @@
 
 (nvp-advise-commands 'nvp-dired-w/o-dwim :around (dired-do-rename dired-do-copy))
 
+
 ;; -------------------------------------------------------------------
 ;;; Dired actions
 
@@ -151,13 +160,9 @@
   (with-temp-buffer
     (write-file filename)))
 
+
 ;; -------------------------------------------------------------------
 ;;; External actions
-
-(eval-when-compile
-  (defvar nvp-dired-external-filelist-cmd)
-  (defvar nvp-dired-external-program))
-(declare-function conda-env-read-env "conda-env")
 
 ;;-- Open external files
 
@@ -208,19 +213,15 @@
             (w32-shell-execute (cdr (assoc 'cmd prog)) file)))))))
 
 ;;-- Install info
-(autoload 'org-texinfo-export-to-info "ox-texinfo")
 
 (defun nvp-dired-convert-and-install-info (info-dir &optional keep-info)
   "Convert marked .org files to .info and install.
 If marked files are already .info files, just install. By default, installs
 to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument]."
   (interactive
-   (let ((dir
-          (if current-prefix-arg
-              (read-directory-name "Install info to directory: ")
-            nvp/info)))
-     (list (directory-file-name dir)
-           (nvp-file-same dir default-directory))))
+   (let ((dir (nvp-prefix nil nvp/info
+                (read-directory-name "Install info to directory: "))))
+     (list (directory-file-name dir) (f-same-p dir default-directory))))
   ;; convert org files to .info
   (mapc (lambda (f)
           (when (string= "org" (file-name-extension f))
@@ -262,11 +263,9 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
                               files " ")))
     (if (= 1 (length files))
         ;; let* ((file (file-name-nondirectory (car files))))
-        (start-process "compress" "*compress*" "7za" "a" "-tzip"
-                       out-file in-files)
+        (start-process "compress" "*compress*" "7za" "a" "-tzip" out-file in-files)
       (start-process-shell-command
-       "compress" "*compress*" (format "7za a -tzip %s %s"
-                                       out-file in-files)))))
+       "compress" "*compress*" (format "7za a -tzip %s %s" out-file in-files)))))
 
 (defun nvp-dired-unzip ()
   (interactive)
@@ -287,12 +286,9 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
 (defun nvp-dired-start-process (cmd &optional file-list)
   "Call shell command CMD on FILE-LIST."
   (interactive
-   (let ((files (dired-get-marked-files
-                 t current-prefix-arg)))
+   (let ((files (dired-get-marked-files t current-prefix-arg)))
      (list
-      (nvp-with-gnu
-        (dired-read-shell-command "& on %s: "
-                                  current-prefix-arg files))
+      (nvp-with-gnu (dired-read-shell-command "& on %s: " current-prefix-arg files))
       files)))
   (nvp-with-gnu/w32
       (let (list-switch)
@@ -313,7 +309,6 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
       (w32-shell-execute "open" (expand-file-name file)))))
 
 ;;-- Org to PDF
-(nvp-declare org-latex-export-to-pdf)
 (defun nvp-dired-convert-org-to-pdf ()
   "Convert marked org files to PDF."
   (interactive)

@@ -15,13 +15,12 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp-local)
-(declare-function company-grab-symbol "company")
-(declare-function do-smooth-scroll "smooth-scrolling")
-(declare-function minibuffer-keyboard-quit "delsel")
 (nvp-decls)
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'ido-completing-read)
+(put 'nvp-completing-read 'lisp-indent-function 'defun)
+(defalias 'nvp-find-file-in-dir 'ido-find-file-in-dir)
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
 
 ;; root directory
@@ -70,8 +69,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Functions
-;; can be set as mode vars
-(nvp-declare "" nvp-ert-run-tests nvp-compile-default)
 
 ;;-- FIXME: Alists
 (defvar nvp-help-at-point-functions ()
@@ -289,7 +286,7 @@ Dispatches to generic handlers with ARG."
 ;; -------------------------------------------------------------------
 ;;; Paredit 
 (eval-when-compile (require 'paredit))
-(nvp-declare "paredit" paredit-move-past-close-and paredit-blink-paren-match
+(nvp-decl :pkg "paredit" paredit-move-past-close-and paredit-blink-paren-match
   paredit-indent-region paredit-splice-reindent)
 
 (defun nvp-paredit-close-round ()
@@ -336,7 +333,6 @@ Dispatches to generic handlers with ARG."
 
 ;; -------------------------------------------------------------------
 ;;; IDO
-(nvp-declare "delsel" minibuffer-keyboard-quit)
 
 ;; XXX: switch over to counsel+ivy, at least for some stuff like
 ;; info-lookup, ag, other interfaces that look good

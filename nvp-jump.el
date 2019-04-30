@@ -1,13 +1,9 @@
 ;;; nvp-jump.el --- jumping places -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-21.17>
-;; Created: 24 November 2016
-
 ;;; Commentary:
 
 ;; Functions to jump to locations
+;;
 ;; Prefix args should do the following:
 ;; 0) Default jump to other window
 ;; 1) With single prefix, jump same window
@@ -20,8 +16,9 @@
   (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
-(nvp-decl nvp-scratch-minor-mode yas-expand-snippet yas-lookup-snippet)
-(autoload 'nvp-file-locate-first-dominating "nvp-file")
+(nvp-decls)
+
+(nvp-auto "nvp-file" 'nvp-file-locate-first-dominating)
 
 ;; -------------------------------------------------------------------
 ;;; Modes
@@ -234,6 +231,12 @@ With double prefix, set coding to utf-8."
       nvp/scratch)
     current-prefix-arg))
   (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
+
+;;;###autoload
+(defun nvp-jump-to-mode-lib (action)
+  "Jump to mode LIB addons with ACTION."
+  (interactive "p")
+  (nvp-jump-to-dir nvp/modes action))
 
 ;;;###autoload
 (defun nvp-jump-to-source (dir action)

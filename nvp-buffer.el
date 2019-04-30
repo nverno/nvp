@@ -110,9 +110,9 @@ With prefix, prompt for MODE buffers to kill."
   (interactive)
   (if-let ((file (buffer-file-name)))
       (when (y-or-n-p (format "Really delete '%s'? " (nvp-path 'bfs)))
-        (if (vc-backend file)
-            (vc-delete-file file)
-          (delete-file file delete-by-moving-to-trash))
+        ;; if (vc-backend file)
+        ;; (vc-delete-file file)
+        (delete-file file delete-by-moving-to-trash)
         (kill-this-buffer))
     (user-error "No file is currently being edited")))
 

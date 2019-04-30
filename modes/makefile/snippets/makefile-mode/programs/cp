@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: cp
+# key: cp
+# --
+CP ?= install -p -m 644

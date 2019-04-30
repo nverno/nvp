@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mkdir
+# key: mkdir
+# --
+MKDIR ?= install -p -d -m 755

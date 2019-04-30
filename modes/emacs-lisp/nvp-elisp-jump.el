@@ -43,20 +43,22 @@ Optionally, search LISP-ONLY files (no C sources)."
 (1) prefix or CHOOSE, prompt for library."
   (interactive "P")
   (let (url)
-    (if (and (not choose) (setq url (save-excursion (lm-header "URL"))))
+    (if (and (not choose)
+             (eq major-mode 'emacs-lisp-mode)
+             (setq url (save-excursion (lm-header "URL"))))
         (browse-url url)                ;found URL in current buffer!!
-       (let ((lib (nvp-elisp-get-library-file 'lisp-only choose)))
-         (if (and lib                   ;no URL in emacs sources
-                  (member (file-name-extension lib) '("el" "elc")))
-             (let ((file (concat (file-name-sans-extension lib) ".el")))
-               (if (not (file-exists-p file))
-                   (user-error "Emacs source library - no URL: %s" lib)
-                 (with-temp-buffer
-                   (insert-file-contents file)
-                   (if (setq url (lm-header "URL"))
-                       (browse-url url)
-                     (user-error "Library %s has no URL header" lib)))))
-           (user-error "Library %s isn't elisp." lib))))))
+      (let ((lib (nvp-elisp-get-library-file 'lisp-only choose)))
+        (if (and lib                   ;no URL in emacs sources
+                 (member (file-name-extension lib) '("el" "elc")))
+            (let ((file (concat (file-name-sans-extension lib) ".el")))
+              (if (not (file-exists-p file))
+                  (user-error "Emacs source library - no URL: %s" lib)
+                (with-temp-buffer
+                  (insert-file-contents file)
+                  (if (setq url (lm-header "URL"))
+                      (browse-url url)
+                    (user-error "Library %s has no URL header" lib)))))
+          (user-error "Library %s isn't elisp." lib))))))
 
 ;;;###autoload
 (defun nvp-elisp-jump-to-cask (&optional this-window)

@@ -21,7 +21,7 @@
 (require 'nvp-proc)
 (require 'nvp-display)
 (nvp-decl ielm-change-working-buffer)
-(nvp-autoload "nvp-sh" nvp-sh-get-process)
+(nvp-auto "nvp-sh" nvp-sh-get-process)
 
 (cl-defstruct (nvp-repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"
@@ -142,8 +142,7 @@ Each function takes a process as an argument to test against.")
 ;; returns the live process when available
 (defsubst nvp-repl-process ()
   (when-let ((proc (nvp-repl--val proc)))
-    (if (funcall (nvp-repl--val live) proc)
-        proc
+    (if (funcall (nvp-repl--val live) proc) proc
       (setf (nvp-repl--val proc) nil))))
 
 ;; get REPL buffer if it has a live process

@@ -1,12 +1,5 @@
 ;;; nvp-sh.el --- sh script helpers -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-04-09.22>
-;; Created:  5 December 2016
-
 ;;; Commentary:
 
 ;; TODO:
@@ -24,21 +17,18 @@
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'subr-x)
-  (require 'nvp-sh-help)                ;defsubsts
-  (defvar explicit-shell-file-name))
+  (require 'nvp-sh-help))               ;defsubsts
 (eval-and-compile (require 'nvp-font))
+(nvp-decls)
 (require 'nvp-parse)
 (require 'company)
 (require 'company-quickhelp)
 (require 'sh-script)
 
-(nvp-autoload "nvp-sh-help" nvp-sh-help-bash-builtin-p nvp-sh-help-bash-builtin-sync)
-(nvp-autoload "nvp-shell" nvp-shell-get-process)
-
-(declare-function company-bash "company-bash")
-(declare-function company-shell "company-shell")
-(declare-function bash-completion-dynamic-complete "bash-completion")
-(declare-function bash-completion-dynamic-complete-nocomint "bash-completion")
+(nvp-decl company-bash company-shell
+  bash-completion-dynamic-complete bash-completion-dynamic-complete-nocomint)
+(nvp-auto "nvp-sh-help" nvp-sh-help-bash-builtin-p nvp-sh-help-bash-builtin-sync)
+(nvp-auto "nvp-shell" nvp-shell-get-process)
 
 ;; -------------------------------------------------------------------
 ;;; Variables
@@ -302,16 +292,6 @@ Optionally return process specific to THIS-BUFFER."
 
 ;; FIXME: do I always want a sh file to sending to its own shell?
 (setf (symbol-function 'sh-shell-process) 'nvp-sh-get-process)
-
-;; FIXME: remove - switch to generic
-;; switch to shell REPL, specific to this buffer with a prefix arg
-;; (nvp-repl-switch "sh"
-;;     (:repl-mode 'shell-mode
-;;      :repl-find-fn #'(lambda ()
-;;                        (process-buffer (nvp-sh-get-process current-prefix-arg)))
-;;      :repl-switch-fn 'pop-to-buffer)
-;;   (process-buffer
-;;    (setq sh-shell-process (nvp-sh-get-process current-prefix-arg))))
 
 ;; FIXME: remove, this is covered by generic REPL interface
 ;; send selected region and step

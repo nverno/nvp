@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: install_info
+# key: install_info
+# --
+INSTALL_INFO ?= $(shell command -v ginstall-info || printf install-info)

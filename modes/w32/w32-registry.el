@@ -3,7 +3,6 @@
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/w32-tools
 ;; Package-Requires: 
-;; Copyright (C) 2016, Noah Peart, all rights reserved.
 ;; Created:  8 November 2016
 
 ;; This file is not part of GNU Emacs.
@@ -78,20 +77,21 @@ buffers."
 
 
 ;; ------------------------------------------------------------
-;;* mode
-(defvar Reg-menu
+;;; Major-mode
+
+(defvar w32-registry-menu
   '("Registry"
-    ["Lookup" w32-registry-template :help "Show registry key in buffer" :keys "C-c C-?"]
-    ["List" w32-registry-list :help "Convert registry key contents to list" :keys "C-c C-l"]
-    ["Value" w32-registry-value :help "Show value of subkey" :keys "C-c C-v"]
+    ["Lookup" w32-registry-template :help "Show registry key in buffer" t]
+    ["List" w32-registry-list :help "Convert registry key contents to list" t]
+    ["Value" w32-registry-value :help "Show value of subkey" t]
     "--"
-    ["Regedit" w32-registry-regedit :help "Open regedit.exe" :keys "C-c C-e"]
+    ["Regedit" w32-registry-regedit :help "Open regedit.exe" t]
     "--"
-    ["Template" w32-registry-template :help "Insert template" :keys "C-c C-t"]))
+    ["Template" w32-registry-template :help "Insert template" t]))
 
 (defvar w32-registry-mode-map
   (let ((map (make-sparse-keymap)))
-    (easy-menu-define nil map nil Reg-menu)
+    (easy-menu-define nil map nil w32-registry-menu)
     (define-key map (kbd "C-c C-t") #'w32-registry-template)
     (define-key map (kbd "C-c C-?") #'w32-registry-lookup)
     (define-key map (kbd "C-c C-l") #'w32-registry-list)
@@ -101,7 +101,8 @@ buffers."
 
 ;;;###autoload
 (define-derived-mode w32-registry-mode conf-windows-mode "Reg"
-  "Major mode for editing windows registry files.\n
+  "Major mode for editing windows registry files.
+
 \\{w32-registry-mode-map}"
   (setq-local local-abbrev-table w32-registry-mode-abbrev-table)
   (setq-local imenu-generic-expression '((nil "^\\[\\([^\]]+\\)\\].*" 1)))
@@ -117,7 +118,7 @@ buffers."
 
 
 ;; ------------------------------------------------------------
-;;* functions
+;;; Commands
 
 (defun w32-registry-regedit ()
   "Open regedit.exe externally."

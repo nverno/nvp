@@ -34,6 +34,11 @@
   `(unless (fboundp ,sym)
      ,@body))
 
+(defmacro nvp-when-bound (sym &rest body)
+  (declare (indent 1) (debug t))
+  `(when (fboundp ,sym)
+     ,@body))
+
 (nvp-unless-bound 'with-gensyms
   (defmacro with-gensyms (syms &rest body)
     "Create a bunch of `cl-gensyms'."
@@ -197,6 +202,7 @@ If MINOR is non-nil, convert to minor mode hook symbol."
        (`(function ,sym) (symbol-name sym))
        (_ (user-error "How to stringify %S?" ,name)))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Declares / Autoloads
 ;; silence byte-compiler warnings
@@ -220,6 +226,8 @@ If MINOR is non-nil, convert to minor mode hook symbol."
     (cl-loop for func in funcs
        collect `(declare-function ,func ,pkg)))))
 
+(defalias 'nvp-auto 'nvp-autoload)
+(put 'nvp-auto 'lisp-indent-function 'defun)
 (defmacro nvp-autoload (package &rest funcs)
   (declare (indent defun))
   (setq funcs (nvp--unquote funcs))
@@ -227,6 +235,7 @@ If MINOR is non-nil, convert to minor mode hook symbol."
    (cl-loop for func in funcs
       collect `(autoload ',func ,package))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Strings / Regex
 
@@ -243,14 +252,9 @@ If MINOR is non-nil, convert to minor mode hook symbol."
      ,(if no-symbol `(regexp-opt ,opts t)
         `(nvp-wrap-with "\\_<" "\\_>" (regexp-opt ,opts t)))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Files / buffers
-
-(defmacro nvp-file-same (file-1 file-2)
-  "Return non-nil if FILE-1 and FILE-2 are the same."
-  (declare (indent defun))
-  `(when (and (file-exists-p ,file-1) (file-exists-p ,file-2))
-     (equal (file-truename ,file-1) (file-truename ,file-2))))
 
 ;; modified from smartparens.el
 ;; (defmacro nvp-with-buffers-using-mode (mode &rest body)
@@ -270,6 +274,7 @@ If MINOR is non-nil, convert to minor mode hook symbol."
      byte-compile-current-file)
     (t (buffer-file-name))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Input keys / IO
 

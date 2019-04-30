@@ -1,56 +1,46 @@
 ;;; nvp-cool.el --- cool compiler -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/compiler-tools
-;; Last modified: <2019-02-27 13:14:39>
-;; Created: 17 February 2017
-
 ;;; Commentary:
-;; COOL compiler !!!
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'nvp)
-(nvp-declare "" nvp-env-add nvp-env-path-add)
-
-(nvp-package-define-root :snippets t)
+(nvp-decls)
 
 (defvar nvp-cool-root-path "~/.local/cool/")
+(defvar nvp-cool-history () "Jumping history.")
 
 ;; -------------------------------------------------------------------
 ;;; Utils
 
 (eval-when-compile
-  (defmacro nvp-cool--read-dir (&optional dir msg)
-   `(ido-completing-read
-     ,(or msg "Directory: ")
-     (directory-files
-      ,(if dir `(expand-file-name ,dir nvp-cool-root-path) 'nvp-cool-root-path)
-      'full "[^.].*[^J]$"))))
+  (defmacro nvp-cool--read-dir (&optional dir prompt)
+    (macroexp-let2 nil dir (if dir `(expand-file-name ,dir nvp-cool-root-path)
+                             nvp-cool-root-path)
+      `(nvp-completing-read
+        (nvp-prompt-default ,(or prompt "Directory: ") ,dir)
+        (directory-files ,dir 'full "[^.].*[^J]$")
+        nil nil nil 'nvp-cool-history ,dir))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
-(defvar-local cool--last-jump nil)
 
-;; add headers/src to include path
 (defun nvp-cool-setenv (dir)
+  "Add headers/src to include path."
   (interactive (list (nvp-cool--read-dir "include" "Path to add: ")))
   (nvp-env-add "CPLUS_INCLUDE_PATH" dir)
   (nvp-env-add "CPLUS_INCLUDE_PATH"
    (replace-regexp-in-string "include" "cool/src" dir)))
 
-;; jump to source directory
 (defun nvp-cool-jump-to-src (dir)
-  (interactive
-   (list (or (and (not current-prefix-arg) cool--last-jump)
-             (setq cool--last-jump (nvp-cool--read-dir "include")))))
+  "Jump to source directory."
+  (interactive (list (or (and (not current-prefix-arg) (car nvp-cool-history))
+                         (nvp-cool--read-dir "include"))))
   (dired dir))
 
-;; add executables to path
 (defun nvp-cool-add-path (arg)
+  "Add cool executables to path"
   (interactive "P")
   (let ((dir (if arg (ido-read-directory-name
                       "Directory to add to path: " "/")
@@ -66,6 +56,23 @@
   (nvp-bindings "flex-mode" nil
     ("<f2> m j h" . nvp-cool-jump-to-src)
     ("<f2> m e c" . nvp-cool-setenv)))
+
+;;; FIXME: unused
+(defun nvp-cool-vm ()
+  "Tramp into vagrant VM with cool compiler setup (windows)."
+  (interactive)
+  (require 'tramp)
+  (add-to-list 'tramp-remote-path "/usr/class/cs143/cool/bin")
+  (setq-local tramp-default-user "vagrant")
+  (global-set-key [(control x) (control y)]
+		  (lambda ()
+		    (interactive)
+		    (find-file
+		     (read-file-name
+		      "find tramp file: "
+		      "/pscp:vagrant@192.168.32.14:~/"))))
+  ;; (setenv \"cool\" \"/plink:compilers@:192.168.56.101:~/\")
+  )
 
 (provide 'nvp-cool)
 ;;; nvp-cool.el ends here

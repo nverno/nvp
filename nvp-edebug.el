@@ -15,6 +15,7 @@
   (defvar tramp-verbose)
   (require 'hydra))
 (require 'edebug)
+(nvp-decls)
 (nvp-declare nvp-help-describe-keymap)
 
 ;; setup eval with elisp minibuffer eval hooks
@@ -38,29 +39,31 @@ toggle on _e_rror              _a_: all defuns         _t_ramp
 toggle on _q_uit               _l_: all local defs     _i_: ielm
 _n_ew emacs (in debug)         _f_: all forms          _SPC_: cancel
 _b_are emacs (-l bare-site)    _c_urrent defun         _d_ebugger
-toggle on entr_y_
-"
+toggle on entr_y_              _u_: unload"
   ("a" edebug-all-defs)
   ("b" nvp-edebug-launch-bare-emacs)
-  ("c" edebug-defun :color blue)
-  ("d" debug :color blue)
+  ("c" edebug-defun)
+  ("d" debug)
   ("e" toggle-debug-on-error)
   ("f" edebug-all-forms)
-  ("i" ielm :color blue)
+  ("i" ielm)
   ("l" nvp-edebug-toggle-all-local)
   ("n" nvp-edebug-launch-new-debug)
   ("q" toggle-debug-on-quit)
   ("SPC" nil)
   ("t" nvp-edebug-tramp-toggle-debug)
-  ("y" debug-on-entry :color blue))
+  ("u" edebug-uninstall-read-eval-functions)
+  ("y" debug-on-entry))
 
-(defvar nvp-ede-local-active nil)
+(defvar-local nvp-ede-local-active nil)
 (defun nvp-edebug-toggle-all-local ()
   "Toggle debugging of all defuns."
   (interactive)
   (make-local-variable 'edebug-all-defs)
+  (if (setq nvp-ede-local-active (not nvp-ede-local-active))
+      (edebug-install-read-eval-functions)
+    (edebug-uninstall-read-eval-functions))
   (edebug-all-defs)
-  (setq nvp-ede-local-active (not nvp-ede-local-active))
   (message "Local edebug-all-defs is %s." (if nvp-ede-local-active "on" "off")))
 
 (defun nvp-edebug-tramp-toggle-debug ()

@@ -1,7 +1,8 @@
 ;;; nvp-macro.el --- compile time macros -*- lexical-binding: t; -*-
+
 ;;; Commentary:
 
-;; info on declare - defun-declarations-alist, macro-declarations-alist
+;; declare refs: defun-declarations-alist, macro-declarations-alist
 
 ;;; Code:
 (require 'cl-lib)
@@ -11,6 +12,7 @@
 (require 'nvp-macs-setup "macs/nvp-macs-setup")
 (require 'nvp-macs-bindings "macs/nvp-macs-bindings")
 (require 'nvp-macs-process "macs/nvp-macs-process")
+(require 'nvp-macs-decls "macs/nvp-macs-decls")
 
 
 ;; -------------------------------------------------------------------
@@ -22,12 +24,18 @@
   (while (keywordp (car else))
     (setq else (cdr (cdr else))))
   (and test (setq test (car (nvp--unquote test))))
-  (let ((test-fn (or test (if (listp num) 'memq 'eq))))
+  (let ((test-fn (if test
+                     `(,test (prefix-numeric-value current-prefix-arg) ,num)
+                   (if (listp num)
+                       (if (eq nil num)
+                           '(not current-prefix-arg)
+                         `(memq (prefix-numeric-value current-prefix-arg) ,num))
+                     `(eq (prefix-numeric-value current-prefix-arg) ,num)))))
     (if (or then else)
-        `(if (,test-fn (prefix-numeric-value current-prefix-arg) ,num)
+        `(if ,test-fn
              ,then
            ,@else)
-      `(,test-fn (prefix-numeric-value current-prefix-arg) ,num))))
+      test-fn)))
 
 
 ;; -------------------------------------------------------------------
@@ -62,6 +70,7 @@ those are both specified."
                (eval
                 `(and ,orig-msg (message ,orig-msg)))))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Buffer / Directory names
 
@@ -1305,9 +1314,9 @@ See `nvp-advise-commands'."
 
 
 ;; -------------------------------------------------------------------
-;;; Locals - silence compiler
+;;; Warn when required at runtime
 
-;; Doesn't work
+;; FIXME: Doesn't work -- how to warn when required at runtime?
 ;; (put 'require 'byte-hunk-handler 'byte-compile-file-form-require)
 (when (functionp 'backtrace-frames)
   (when (assoc '(t byte-compile-file-form-require
@@ -1315,88 +1324,6 @@ See `nvp-advise-commands'."
                    nil)
                (backtrace-frames))
     (message "Warning: package 'nvp-macro required at runtime")))
-
-(defmacro nvp-local-vars ()
-  '(progn
-     (defvar nvp/abbrevs)
-     (defvar nvp/auto)
-     (defvar nvp/auto-site)
-     (defvar nvp/devel)
-     (defvar nvp/site)
-     (defvar nvp/modes)
-     (defvar nvp/emacs)
-     (defvar nvp/build)
-     (defvar nvp/project)
-     (defvar nvp/info)
-     (defvar nvp/bin)
-     (defvar nvp/binw)
-     (defvar nvp/msys)
-     (defvar nvp/cygwin)
-     (defvar nvp/vms)
-     (defvar nvp/git)
-     (defvar nvp/test)
-     (defvar nvp/lisp)
-     (defvar nvp/config)
-     (defvar nvp/custom)
-     (defvar nvp/data)
-     (defvar nvp/template)
-     (defvar nvp/snippet)
-     (defvar nvp/scratch)
-     (defvar nvp/class)
-     (defvar nvp/work)
-     (defvar nvp/bookmark)
-     (defvar nvp/cache)
-     (defvar nvp/backup)
-     (defvar nvp/org)
-     (defvar nvp/books)
-     (defvar nvp/install)
-     (defvar nvp/private)
-     ;; my vars
-     (defvar nvp-mode-cache)
-     (defvar nvp-abbrev-dynamic-table)
-     (defvar nvp-repl-alist)
-     (defvar nvp-repl-current)
-     (defvar nvp-repl-default)
-     (defvar nvp-repl-find-functions)
-     ;; emacs base
-     (defvar explicit-shell-file-name)
-     (defvar ielm-working-buffer)
-     (defvar ielm-dynamic-return)
-     (defvar imenu-generic-expression)
-     ;; external pkgs
-     (defvar company-backends)
-     (defvar yas-snippet-dirs)))
-
-(defmacro nvp-decls ()
-  '(progn
-     (nvp-local-vars)
-     (nvp-decl :pre "nvp-read" elisp-symbol elisp-function elisp-variable)
-     (nvp-decl :pre "comint" read-input-ring write-input-ring)
-     (nvp-decl
-       nvp-view-list-mode
-       nvp-log
-       pos-tip-show
-       nvp-window-configuration-restore nvp-window-configuration-save 
-       nvp-he-history-setup nvp-comint-setup-history
-       nvp-indicate-pulse-region-or-line nvp-indicate-modeline
-       nvp-indicate-cursor-pre nvp-indicate-cursor-post
-       nvp-imenu-setup idomenu
-       nvp-toggle-local-variable
-       nvp-abbrev-grab
-       nvp-mark-defun
-       nvp-repl-add
-       nvp-s-repeat nvp-s-center
-       ;; internal
-       ielm
-       ielm-return
-       ert-run-tests-interactively
-       hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
-       ;; external
-       company-grab-symbol
-       company-mode
-       paredit-mode
-       yas-expand-snippet
-       )))
 
 (provide 'nvp-macro)
 ;;; nvp-macro.el ends here

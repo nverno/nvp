@@ -1,10 +1,5 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-10.02>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 12 February 2019
-
 ;;; Commentary:
 
 ;; Possible packages:

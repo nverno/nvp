@@ -1,16 +1,14 @@
 ;;; nvp-shellcheck.el --- shellcheck compilation -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-01.15>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell-tools
-;; Created: 24 January 2019
-
 ;;; Commentary:
+
+;; Compilation for .sh and .bat files using shellcheck
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))
 (declare-function xterm-color-colorize-buffer "xterm-color")
-(nvp-declare "" nvp-compile)
+(nvp-decls)
 
 (defvar nvp-shellcheck-compile-command '(concat "shellcheck " (buffer-file-name)))
 

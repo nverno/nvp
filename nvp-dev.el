@@ -44,7 +44,7 @@
 
 ;; HACK: undefine `nvp-dev-load' from keymap when file is loaded
 ;; should replace this with a better system
-(define-key nvp-dev-keymap (nvp-input 'lce) nil)
+(define-key nvp-dev-keymap "l" nil)
 (nvp-bind-keys nvp-dev-keymap
   ("a"  . nvp-dev-advice-remove-all)
   ("c"  . nvp-help-list-charsets)

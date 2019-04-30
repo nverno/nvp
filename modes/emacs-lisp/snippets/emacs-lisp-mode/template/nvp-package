@@ -4,14 +4,6 @@
 # --
 ;;; `(nvp-yas-bfn)` --- $1 -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <>
-;; Author: `(concat user-full-name)` <`(concat user-mail-address)`>
-;; URL: https://${2:github.com/nverno/}${3:`
-(or (ignore-errors (project-curret)) (nvp-yas-dfn))`}
-;; Created: `(format-time-string "%e %B %Y")`
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

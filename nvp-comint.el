@@ -37,29 +37,18 @@
 (defun nvp-comint-setup-history (filename &rest args)
   (setq comint-input-ring-file-name (expand-file-name filename nvp/cache))
   (comint-read-input-ring 'silent)
-  (apply #'nvp-he-history-setup args)
-  ;; (when-let* ((proc (get-buffer-process (current-buffer))))
-  ;;   (and write-history (nvp-comint-add-history-sentinel proc)))
-  )
+  (apply #'nvp-he-history-setup args))
 
-;; FIXME: this is called too much. 
-;; (defun nvp-comint-add-history-sentinel (&optional proc)
-;;   (when-let* ((proc (or proc (nvp-buffer-process))))
-;;     (add-function :before (process-filter proc) #'nvp-comint-history-sentinel)))
-
-;; (defun nvp-comint-history-sentinel (proc _m)
-;;   (with-current-buffer (process-buffer proc)
-;;     (comint-write-input-ring)))
-
+;; evaluate STRING in PROC, but discard output silently
 (defun nvp-comint-redirect-silently (proc string &optional prompt)
-  (let* ((comint-redirect-perform-sanity-check))
+  (let ((comint-redirect-perform-sanity-check))
     (with-temp-buffer 
       (comint-redirect-send-command-to-process
        string (current-buffer) proc nil 'no-display)
       ;; wait for process to complete
-      (set-buffer (process-buffer proc))
-      (while (and (null comint-redirect-completed)   ;ignore output
-                  (accept-process-output proc 1))))
+      (with-current-buffer (process-buffer proc)
+        (while (and (null comint-redirect-completed) ;ignore output
+                    (accept-process-output proc 1)))))
     (with-current-buffer (process-buffer proc)
       (comint-redirect-cleanup)
       (while (and (null comint-redirect-completed)   ;wait for cleanup to finish

@@ -1,17 +1,12 @@
 ;;; nvp-w32.el --- completely unused -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-08 20:14:07>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  8 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+
+(nvp-package-define-root :name "nvp-w32")
 
 ;; ------------------------------------------------------------
 ;;; Utilities
@@ -55,6 +50,16 @@
       (insert script))
     (call-process "cscript" nil nil nil "/nologo" tmp)
     (delete-file tmp)))
+
+(cl-defun nvp-w32-create-msys-link
+    (&key link args description target-path icon wd)
+  (nvp-w32-create-link :link (expand-file-name "msys.lnk" w32-tools--dir)
+                       :args ("-i /msys2.ico /usr/bin/bash --login")
+                       :description "msys2 shell console"
+                       :target-path
+                       (expand-file-name "usr/bin/mintty.exe" (getenv "MSYS_HOME"))
+                       :icon (expand-file-name "msys2.ico" (getenv "MSYS_HOME"))
+                       :wd (getenv "HOME")))
 
 ;; ------------------------------------------------------------
 ;;; Shells

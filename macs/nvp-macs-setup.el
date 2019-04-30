@@ -29,10 +29,13 @@
      ,@(cl-loop for (var value) on var-vals by #'cddr
           collect `(setq ,var (eval-when-compile ,value)))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Programs / Paths
 
-(declare-function nvp-setup-program "nvp-setup")
+(defvar nvp-program-search-paths
+  '("~/bin/" "~/.asdf/shims/" "~/.local/bin/" "/usr/local/bin/")
+  "Default paths to search for executables.")
 
 (defmacro nvp-w32-program (name)
   "Name of cached program on shitty w32.e"
@@ -41,7 +44,12 @@
 
 ;; PATH can contain environment variables to expand
 ;; if NO-COMPILE is defined the name is determined at runtime
-(defmacro nvp-program (name &optional no-compile path)
+(cl-defmacro nvp-program (name &key path (default t) w32)
+  "Try to find program NAME at compile time.
+If PATH is non-nil, append to default search paths.
+If DEFAULT is non-nil, use NAME if other methods fail.
+If W32 is non-nil, on windows, use to find program instead of default.
+If program is not found at compile time, fallback to runtime search."
   (declare (indent defun) (debug t))
   (let* ((name (cond
                 ((symbolp name) (symbol-name name))
@@ -53,20 +61,19 @@
                 ((stringp name) name)
                 (t (user-error "%S unmatched")))))
     `(progn
-       (nvp-declare "" nvp-setup-program)
-       (or (,(if no-compile 'progn 'eval-when-compile)
-            (nvp-with-gnu/w32
-                (let ((exec-path (delq nil (cons ,path '("~/bin/"
-                                                         "~/.asdf/shims/"
-                                                         "~/.local/bin/"
-                                                         "/usr/local/bin/")))))
-                  (executable-find ,name))
-              (bound-and-true-p (intern (concat "nvp-" ,name "-program"))))
-            ;; otherwise try entire PATH
-            (executable-find ,name))
+       (nvp-decl nvp-setup-program)
+       (or (eval-when-compile
+             (nvp-with-gnu/w32
+                 (let ((exec-path (delq nil (cons ,path ',nvp-program-search-paths))))
+                   (executable-find ,name))
+               ,(if w32 `,w32
+                  `(bound-and-true-p (intern (concat "nvp-" ,name "-program")))))
+             ;; otherwise try entire PATH
+             (executable-find ,name))
            ;; fallback to runtime search
            (when (require 'nvp-setup nil t)
-             (nvp-setup-program ,name ,path))))))
+             (nvp-setup-program ,name ,path))
+           ,(if default `,name)))))
 
 (defmacro nvp-mode-config-path (mode &optional ensure-string)
   "Create path for MODE config file."

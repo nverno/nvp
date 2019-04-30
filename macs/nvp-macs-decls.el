@@ -82,9 +82,12 @@
     imenu-generic-expression
     tramp-remote-path
     tramp-default-user
+    org-babel-do-load-languages
+    org-src-lang-modes
     ;; external pkgs
     company-backends
-    yas-snippet-dirs))
+    yas-snippet-dirs
+    zeal-at-point-docset))
 
 (defmacro nvp-decls ()
   '(progn
@@ -107,7 +110,8 @@
        repl-add
        shell shell-launch-terminal
        s-repeat s-center
-       env-add env-path-add)
+       env-add env-path-add
+       setup-program)
      (nvp-decl                          ; builtins
        comint-read-input-ring comint-write-input-ring
        ielm ielm-return

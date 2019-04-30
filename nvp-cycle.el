@@ -1,15 +1,9 @@
 ;;; nvp-cycle.el --- smart cycling -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-13.02>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 25 March 2019
-
 ;;; Commentary:
 
 ;; Cycle between options with single keystroke
+;; refs: helm circular iterators: #<marker at 14458 in helm-lib.el>
 ;;
 ;; TODO:
 ;; - struct to hold options?

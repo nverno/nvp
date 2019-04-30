@@ -26,17 +26,17 @@
     `,@gnu))
 
 ;; -------------------------------------------------------------------
-;;; Anamorphs
+;;; General 
 
 (defmacro nvp-unless-bound (sym &rest body)
   "Bind SYM unless previously `fbound'."
   (declare (indent 1) (debug t))
-  `(unless (fboundp ,sym)
+  `(unless (or (fboundp ,sym) (boundp ,sym))
      ,@body))
 
 (defmacro nvp-when-bound (sym &rest body)
   (declare (indent 1) (debug t))
-  `(when (fboundp ,sym)
+  `(when (or (fboundp ,sym) (boundp ,sym))
      ,@body))
 
 (nvp-unless-bound 'with-gensyms
@@ -46,9 +46,12 @@
     `(let ,(mapcar (lambda (s)
                      ;; see helm-lib's `helm-with-gensym' for explanation
                      ;; of using `cl-gensym' as opposed to `make-symbol'
-                     `(,s (cl-gensym (symbol-name ',s)))
-                     syms))
+                     `(,s (cl-gensym (symbol-name ',s))))
+                   syms)
        ,@body)))
+
+;; -------------------------------------------------------------------
+;;; Anamorphs
 
 (nvp-unless-bound 'aif
   (defmacro aif (test-form then-form &rest else-forms)
@@ -235,6 +238,11 @@ If MINOR is non-nil, convert to minor mode hook symbol."
    (cl-loop for func in funcs
       collect `(autoload ',func ,package))))
 
+(defmacro nvp-setq-local (&rest var-vals)
+  (declare (indent 0))
+  (macroexp-progn
+   (cl-loop for (var val) on var-vals by #'cddr
+      collect `(setq-local ,var ,val))))
 
 ;; -------------------------------------------------------------------
 ;;; Strings / Regex

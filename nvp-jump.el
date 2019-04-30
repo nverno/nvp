@@ -19,6 +19,7 @@
 (nvp-decls)
 
 (nvp-auto "nvp-file" 'nvp-file-locate-first-dominating)
+(nvp-auto "nvp-scratch" 'nvp-scratch-switch-modes)
 
 ;; -------------------------------------------------------------------
 ;;; Modes
@@ -123,7 +124,6 @@ With prefix jump this window, otherwise `find-file-other-window'."
 
 ;; -------------------------------------------------------------------
 ;;; Scratch
-(autoload 'nvp-scratch-switch-modes "nvp-scratch")
 
 ;;;###autoload
 (defun nvp-jump-to-scratch (mode action)

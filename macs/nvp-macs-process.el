@@ -79,13 +79,16 @@ if process exit status isn't 0."
     (process
      &key
      (proc-name process)
-     (proc-buff `,(concat "*" proc-name "*"))
+     ;; return process buffer - when set, takes priority over combination of
+     ;; proc-bufname + buffer-fn
+     proc-buff
+     (proc-bufname `,(concat "*" proc-name "*"))
      (proc-args nil)
-     (proc-filter t)
      (buffer-fn 'get-buffer-create)
-     sync
-     shell
-     sentinel
+     sync                               ; run synchronously
+     shell                              ; call as shell command (inheriting env)
+     (proc-filter :default)
+     (proc-sentinel :default)
      (on-success `(progn
                     (nvp-indicate-modeline-success
                      ,(concat " " proc-name " success"))
@@ -97,43 +100,41 @@ if process exit status isn't 0."
          (proc-cmd (intern (format "%s%s"
                                    (if sync "call-process" "start-process")
                                    (if shell "-shell-command" ""))))
-         (pbuf (if (and buffer-fn proc-buff) `(,buffer-fn ,proc-buff)
-                 `,proc-buff)))
-    `(progn
-       (declare-function nvp-indicate-modeline "")
-       (declare-function nvp-log "")
-       (let ((,proc
-              ,(if shell
-                   (if sync
-                       `(funcall
-                         ',proc-cmd (mapconcat 'identity (list ,@proc-args) " "))
-                     `(funcall ',proc-cmd ,process ,pbuf
-                               (mapconcat 'identity (list ,@proc-args) " ")))
-                 `(funcall ',proc-cmd
-                           ,(or proc-name process)
-                           ,pbuf ,process ,@proc-args))))
-         ,(if sync `,proc
-            ;; Async process filter
-            `(progn
-               ,(cond
-                 ((memq proc-filter '(:default t))
-                  `(set-process-filter ,proc 'nvp-proc-default-filter))
-                 (proc-filter
-                  `(set-process-filter ,proc ,proc-filter))
-                 (t nil))
-               ;; Process sentinel - just retrun process without sentinel
-               ,(cond
-                 ((eq sentinel ':default)
-                  `(set-process-sentinel ,proc 'nvp-proc-default-sentinel))
-                 ((eq sentinel t)
-                  `(set-process-sentinel ,proc
-                                         (lambda (p m)
-                                           (nvp-log "%s: %s" nil (process-name p) m)
-                                           (with-current-buffer (process-buffer p)
-                                             (if (zerop (process-exit-status p))
-                                                 ,on-success
-                                               ,on-failure)))))
-                 ((null sentinel) `,proc))))))))
+         (pbuf (cond
+                (proc-buff `,proc-buff)
+                ((and buffer-fn proc-bufname) `(,buffer-fn ,proc-bufname))
+                (t `,proc-bufname))))
+    `(let ((,proc
+            ,(if shell
+                 (if sync
+                     `(funcall
+                       ',proc-cmd (mapconcat 'identity (list ,@proc-args) " "))
+                   `(funcall ',proc-cmd ,process ,pbuf
+                             (mapconcat 'identity (list ,@proc-args) " ")))
+               `(funcall ',proc-cmd
+                         ,(or proc-name process)
+                         ,pbuf ,process ,@proc-args))))
+       (progn
+         ,(cond            ; filter for sync/async
+           ((memq proc-filter '(:default t))
+            `(set-process-filter ,proc 'nvp-proc-default-filter))
+           (proc-filter
+            `(set-process-filter ,proc ,proc-filter))
+           (t nil))
+         ,(if sync `,proc  ; no sentinel for sync
+            (cond
+             ((memq proc-sentinel '(:default t))
+              `(set-process-sentinel ,proc ,(nvp-proc-default-sentinel)))
+             (proc-sentinel `(set-process-sentinel ,proc ,proc-sentinel))
+             ((or on-success on-failure)
+              `(set-process-sentinel ,proc
+                                     (lambda (p m)
+                                       (nvp-log "%s: %s" nil (process-name p) m)
+                                       (with-current-buffer (process-buffer p)
+                                         (if (zerop (process-exit-status p))
+                                             ,on-success
+                                           ,on-failure)))))
+             ((null proc-sentinel) `,proc)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Wrappers / Overrides
@@ -157,11 +158,11 @@ Note: use lexical-binding."
 BODY."
   (declare (indent defun))
   (macroexp-let2 nil new-fn new-fn
-   `(with-sentinel-wrapper
+   `(nvp-with-process-wrapper
      (lambda (fn)
        (let ((fun fn))
          (lambda (p m)
-           (cl-letf (((symbol-function ,orig-fn) new-func))
+           (cl-letf (((symbol-function ,orig-fn) new-fn))
              (funcall fun p m)))))
      ,@body)))
 

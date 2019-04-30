@@ -118,7 +118,8 @@
       (setq nvp-he-history-bol-fn bol)
       (and expand-fn (setq nvp-he-history-post-expand-fn expand-fn))
       (and history-fn (setq nvp-he-history-fn history-fn))
-      (make-local-variable 'hippie-expand-try-functions-list)
+      (unless (local-variable-p 'hippie-expand-try-functions-list)
+        (make-local-variable 'hippie-expand-try-functions-list))
       (add-to-list 'hippie-expand-try-functions-list 'nvp-he-try-expand-history))))
 
 (provide 'nvp-hippie-history)

@@ -1,7 +1,10 @@
-emacs ?= emacs
+EMACS ?= emacs
+
+LOAD_PATH ?=
+LOAD_PATH += -L .
+BATCH = ${EMACS} -Q -batch ${LOAD_PATH}
 
 .PHONY: test
 all: test
 test: 
-	$(emacs) -Q -batch -L . -l ert -l test/yaml-indent-tests.el \
-	-f ert-run-tests-batch-and-exit
+	$(BATCH) -l ert -l test/yaml-indent-test.el -f ert-run-tests-batch-and-exit

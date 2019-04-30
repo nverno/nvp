@@ -8,10 +8,9 @@
   (require 'subr-x)
   (require 'nvp-macro))
 (nvp-decls)
-(nvp-decl tramp-make-tramp-file-name tramp-dissect-file-name)
 
 ;; -------------------------------------------------------------------
-;;; Utils
+;;; General file utils
 
 (defun nvp-file-locate-first-dominating (file names)
   "Locate first name in NAMES using `locate-dominating-file' starting from FILE."
@@ -20,8 +19,8 @@
      when res
      return res))
 
-(defun nvp-file-create-path (args &optional sep)
-  "Create file path from list of ARGS (strings) components."
+;; Create file path from list of ARGS (strings) components.
+(defsubst nvp-file-create-path (args &optional sep)
   (mapconcat #'file-name-as-directory args (if sep sep "")))
 
 (defsubst nvp-file-owner-uid (file)
@@ -30,13 +29,7 @@
 (defsubst nvp-file-owned-by-user-p (file)
   (equal (nvp-file-owner-uid file) (user-uid)))
 
-(defun nvp-already-root-p ()
-  (let ((remote-method (file-remote-p default-directory 'method))
-        (remote-user (file-remote-p default-directory 'user)))
-    (and remote-method
-         (or (member remote-method '("sudo" "su" "ksu" "doas"))
-             (string= remote-user "root")))))
-
+
 ;; -------------------------------------------------------------------
 ;;; Directories 
 
@@ -51,6 +44,7 @@
                (cons x y))))
          (cl-set-difference (directory-files dir) '("." "..") :test #'equal))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Remote
 
@@ -61,17 +55,17 @@
        (tramp-dissect-file-name default-directory) filename)
     filename))
 
+
 ;; -------------------------------------------------------------------
-;;; Commands
+;;; Sudo edit
 
-(defun nvp-file-md5 (filename)
-  "Generate MD5 of FILENAME contents and prepend to `kill-ring'."
-  (interactive "f")
-  (with-temp-buffer
-    (insert-file-contents filename)
-    (kill-new (md5 (current-buffer)))))
+(defun nvp-already-root-p ()
+  (let ((remote-method (file-remote-p default-directory 'method))
+        (remote-user (file-remote-p default-directory 'user)))
+    (and remote-method
+         (or (member remote-method '("sudo" "su" "ksu" "doas"))
+             (string= remote-user "root")))))
 
-;;-- sudo edit
 (eval-when-compile
  (defmacro nvp-sudo-wrap (func &optional filename)
    `(let ((remote-method (file-remote-p default-directory 'method))
@@ -100,6 +94,17 @@ With prefix ARG, prompt for file to visit."
       (let ((place (point)))
         (nvp-find-alternate-file-as-root buffer-file-name)
         (goto-char place)))))
+
+
+;; -------------------------------------------------------------------
+;;; Assorted commands
+
+(defun nvp-file-md5 (filename)
+  "Generate MD5 of FILENAME contents and prepend to `kill-ring'."
+  (interactive "f")
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (kill-new (md5 (current-buffer)))))
 
 (provide 'nvp-file)
 ;;; nvp-file.el ends here

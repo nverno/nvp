@@ -29,29 +29,76 @@
 ;;; General 
 
 (defmacro nvp-unless-bound (sym &rest body)
-  "Bind SYM unless previously `fbound'."
+  "Execute BODY unless SYM is `fboundp' or `boundp'."
   (declare (indent 1) (debug t))
-  `(unless (or (fboundp ,sym) (boundp ,sym))
+  `(unless (fboundp ,sym)
      ,@body))
 
 (defmacro nvp-when-bound (sym &rest body)
+  "Execute BODY when SYM is `fbound' or `boundp'."
   (declare (indent 1) (debug t))
-  `(when (or (fboundp ,sym) (boundp ,sym))
+  `(when (fboundp ,sym)
      ,@body))
 
-(nvp-unless-bound 'with-gensyms
-  (defmacro with-gensyms (syms &rest body)
-    "Create a bunch of `cl-gensyms'."
-    (declare (indent 1))
-    `(let ,(mapcar (lambda (s)
-                     ;; see helm-lib's `helm-with-gensym' for explanation
-                     ;; of using `cl-gensym' as opposed to `make-symbol'
-                     `(,s (cl-gensym (symbol-name ',s))))
-                   syms)
-       ,@body)))
+(defmacro nvp-with-gensyms (syms &rest body)
+  "Execute BODY with SYMS bound to `cl-gensyms'."
+  (declare (indent 1))
+  `(let ,(mapcar (lambda (s)
+                   ;; see helm-lib's `helm-with-gensym' for explanation
+                   ;; of using `cl-gensym' as opposed to `make-symbol'
+                   `(,s (cl-gensym (symbol-name ',s))))
+                 syms)
+     ,@body))
+
+;; -------------------------------------------------------------------
+;;; Building functions
+
+(defmacro nvp-! (fun)
+  "Return function negating result of FUN."
+  `(lambda (&rest args) (not (apply ,fun args))))
+
+(defmacro nvp-with-letf (old-fn new-fn &rest body)
+  "Simple wrapper around `cl-letf' to execute BODY."
+  (declare (indent 2) (debug t))
+  `(cl-letf (((symbol-function ,old-fn) ,new-fn)) ,@body))
+
+(defmacro nvp-compose (expr)
+  "Combine functions in EXPR without explicit `funcall's."
+  `#',(nvp--rbuild expr))
+
+(defun nvp--compose (&rest fns)
+  "Compose FNS, eg. 𝔣𝔬𝔤(x) = "
+  (if fns
+      (let ((fn1 (car (last fns)))
+            (fns (butlast fns)))
+        #'(lambda (&rest args)
+            (cl-reduce #'funcall fns :from-end t :initial-value (apply fn1 args))))
+    #'identity))
+
+(defun nvp--rbuild (expr)
+  (if (or (atom expr) (eq (car expr) 'lambda)) expr
+    (if (eq (car expr) 'nvp--compose)
+        (nvp--build-compose (cdr expr))
+      (nvp--build-call (car expr) (cdr expr)))))
+
+(defun nvp--build-call (op fns)
+  (let ((g (cl-gensym)))
+    `(lambda (,g)
+       (,op ,@(mapcar #'(lambda (f) `(,(nvp--rbuild f) ,g)) fns)))))
+
+(defun nvp--build-compose (fns)
+  (let ((g (cl-gensym)))
+    `(lambda (,g)
+       ,(cl-labels ((rec (fns)
+                         (if fns
+                             `(,(nvp--rbuild (car fns))
+                               ,(rec (cdr fns)))
+                           g)))
+          (rec fns)))))
 
 ;; -------------------------------------------------------------------
 ;;; Anamorphs
+;; See ch. 14 of On Lisp
 
 (nvp-unless-bound 'aif
   (defmacro aif (test-form then-form &rest else-forms)
@@ -70,17 +117,35 @@
   (defmacro awhile (expr &rest body)
     "Anamorphic `while'."
     (declare (indent 1) (debug t))
-    `(macroexp-let2 nil expr expr
-       (cl-do ((it ,expr ,expr)
-               (not it))
-           ,@body))))
+    `(cl-do ((it ,expr ,expr))
+         ((not it))
+       ,@body)))
 
-;; (nvp-unless-bound 'acond
-;;   (defmacro acond (&rest clauses)
-;;     "Anamorphic `cond'."
-;;     (unless (null clauses)
-;;       `(with-gensyms (csym)
-;;          (let ((it ,csym)))))))
+(nvp-unless-bound 'acond
+  (defmacro acond (&rest clauses)
+    "Anamorphic `cond'."
+    (declare (debug cond))
+    (unless (null clauses)
+      (let ((cl1 (car clauses))
+            (sym (cl-gensym)))
+        `(let ((,sym ,(car cl1)))
+           (if ,sym
+               (let ((it ,sym)) ,@(cdr cl1))
+             (acond ,@(cdr clauses))))))))
+
+(nvp-unless-bound 'aand
+  (defmacro aand (&rest args)
+    "Anamorphic `and'."
+    (cond ((null args) t)
+          ((null (cdr args)) (car args))
+          (t `(aif ,(car args) (aand ,@(cdr args)))))))
+
+(nvp-unless-bound 'alambda
+  (defmacro alambda (params &rest body)
+    "Anamorphic `lambda', binding the function to 'self'"
+    (declare (indent defun) (debug t))
+    `(cl-labels ((self ,params ,@body))
+       #'self)))
 
 ;; -------------------------------------------------------------------
 ;;; Structs / CLOS
@@ -90,24 +155,26 @@
   (cl-pushnew name eieio--known-slot-names) nil)
 
 ;; bind cl-defstruct slots
-(defsubst nvp-cache--names (struct-type)
-  (declare (pure t) (side-effect-free t))
-  (let* ((class (cl--struct-get-class struct-type))
-         (slots (cl--struct-class-slots class)))
-    (cl-loop for i across slots
-       collect (cl--slot-descriptor-name i))))
+;; (defsubst nvp-cache--names (struct-type)
+;;   (declare (pure t) (side-effect-free t))
+;;   (let* ((class (cl--struct-get-class struct-type))
+;;          (slots (cl--struct-class-slots class)))
+;;     (cl-loop for i across slots
+;;        collect (cl--slot-descriptor-name i))))
 
-(defun nvp-struct--oref (struct slot)
-  (declare (compiler-macro
-            (lambda (exp)
-              (ignore struct slot)
-              exp)))
-  (aref struct (cl-struct-slot-offset (type-of struct) slot)))
+;; (defun nvp-struct--oref (struct slot)
+;;   (declare (compiler-macro
+;;             (lambda (exp)
+;;               (ignore struct slot)
+;;               exp)))
+;;   (aref struct (cl-struct-slot-offset (type-of struct) slot)))
 
-(defsubst nvp-struct--tag (struct)
-  (aref struct 0))
+;; (defsubst nvp-struct--tag (struct)
+;;   (aref struct 0))
 
-;; with-slots: #<marker at 12490 in eieio.el.gz>
+;; TODO: make this work like `with-slots', so type doesn't need to be
+;;       specified at compile-time. Problem is how to make the BODY setf-able.
+;; eieio with-slots: #<marker at 12490 in eieio.el.gz>
 (defmacro with-struct-slots (spec-list inst &rest body)
   "See `with-slots' for CLOS explanation."
   (declare (indent 2) (debug t))

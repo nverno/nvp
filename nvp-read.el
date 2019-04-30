@@ -56,7 +56,7 @@
 
 (defun nvp-read--info-files (&optional prompt default)
   (or default (and (string-prefix-p nvp/info default-directory)
-                   (setq default (nvp-path 'bfs))))
+                   (setq default (ignore-errors (nvp-path 'bfs)))))
   (expand-file-name 
    (nvp-completing-read
     (nvp-prompt-default (or prompt "Info file: ") default)

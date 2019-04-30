@@ -60,16 +60,16 @@
 ;; On failure, jump to process-buffer
 ;;;###autoload
 (defun nvp-proc-default-sentinel (&optional return)
-  (lambda (p m)
-    (let ((pname (process-name p)))
-      (funcall nvp-default-log-function "%s: %s" nil pname m)
-      (with-current-buffer (process-buffer p)
-        (if (not (zerop (process-exit-status p)))
-            (progn (nvp-indicate-modeline pname 'failure)
-                   (pop-to-buffer (current-buffer)))
-          (nvp-indicate-modeline pname)
-          (if return (current-buffer)
-            (kill-buffer (current-buffer))))))))
+  `(lambda (p m)
+     (let ((pname (process-name p)))
+       (funcall nvp-default-log-function "%s: %s" nil pname m)
+       (with-current-buffer (process-buffer p)
+         (if (not (zerop (process-exit-status p)))
+             (progn (nvp-indicate-modeline pname 'failure)
+                    (pop-to-buffer (current-buffer)))
+           (nvp-indicate-modeline pname)
+           ,(if return '(current-buffer)
+              '(kill-buffer (current-buffer))))))))
 
 ;; generate and return a new comint buffer
 (defsubst nvp-proc-comint-buffer (name)

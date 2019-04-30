@@ -16,7 +16,7 @@
 (require 'nvp)
 (require 'info)
 (require 'filenotify)
-(autoload 'nvp-read--info-files "nvp-read")
+(nvp-auto "nvp-read" 'nvp-read--info-files)
 
 (defvar nvp-info-nodes-need-refresh () "Update list when 'dir' changes.")
 (cl-eval-when (load compile eval)
@@ -55,9 +55,7 @@
   "Install org texinfo FILE into info directory."
   (interactive (list (nvp-read--info-files)))
   (let ((default-directory (expand-file-name "org" nvp/info))
-        (target
-         (concat "install-" (nvp-path 'fse file)
-                 (file-name-nondirectory (file-name-sans-extension file)))))
+        (target (concat "install-" (nvp-path 'fse file))))
     (nvp-with-process "make"
       :proc-name "install-info"
       :proc-args (target))))
@@ -71,8 +69,8 @@
 
 ;; -------------------------------------------------------------------
 ;;; Imenu support
-(require 'imenu)
 
+;; FIXME: what ???
 (defun nvp-info-imenu-create-index-function ()
   (goto-char (point-min))
   (search-forward "* Menu:")

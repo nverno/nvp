@@ -49,8 +49,7 @@
 ;; allow abbrevs to expand inside parens
 ;;;###autoload
 (defun nvp-abbrev-expand-in-paren-hook ()
-  (cl-letf (((symbol-function 'eolp)
-             #'(lambda () (not (eq (char-syntax (char-after)) ?w)))))
+  (nvp-with-letf #'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
     (expand-abbrev-hook)))
 
 ;; -------------------------------------------------------------------
@@ -59,15 +58,13 @@
 ;; dont expand in strings/comments
 ;;;###autoload
 (defun nvp-abbrev-expand-p ()
-  (let ((ppss (syntax-ppss)))
-    (not (or (elt ppss 3) (elt ppss 4)))))
+  (not (nvp-ppss 'soc)))
 
 ;; don't expand in strings/comments or after [_.-:]
 ;;;###autoload
 (defun nvp-abbrev-expand-not-after-punct-p ()
-  (and (not (memq last-input-event '(?_ ?. ?- ?:)))
-       (let ((ppss (syntax-ppss)))
-         (not (or (elt ppss 3) (elt ppss 4))))))
+  (not (or (memq last-input-event '(?_ ?. ?- ?:))
+           (nvp-ppss 'soc))))
 
 ;; -------------------------------------------------------------------
 ;;; Abbrev table modes

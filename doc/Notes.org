@@ -34,21 +34,24 @@ This doesn't seem to be too actively maintained
 - semantic-sticky-func minor mode for parse generics
 
 
-* Bin [0/7]
+* Bin [0/6]
 - [ ] [[file:~/bin/include/func-utils.sh::##][funcutils]] - debugging & adding function hooks looks useful
 - [ ] adapt help2man to parse switches + docs from man / --help output
-- [ ] remove local vars from all files from current directory
 - [ ] get usage from script args
 - [ ] parse sh function docs
 - [ ] parse makefile targets
-- [ ] update URLs
+- [ ] better depend extraction that handles cases with filepath given
 
-* Macros [8/13]
-- [ ] aif
-- [ ] awhile
-- [ ] acond
+* Hooks [0/1]
+- [ ] post-update hook to rebuild libs whose deps changed
+
+* Macros [12/14]
 - [ ] remove `nvp-install-on-demand` when a better options is found
 - [ ] with-struct-slots
+- [X] aif
+- [X] awhile
+- [X] acond
+- [X] aand
 - [X] separate bindings macros
 - [X] unify thing-at-point / region macros
 - [X] point ala c-point
@@ -91,10 +94,9 @@ This doesn't seem to be too actively maintained
 - [X] sorting by alist handle more than just lists of cons cells
 - [ ] indent thing at point
 
-** Cycling [0/7]
-- [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
+** Cycling [1/6]
+- [X] [[file:~/.emacs.d/site-lisp/nvp/modes/perl/nvp-perl.el::;;%20-%20Abstract%20cycling%20chars][generic cycle interface]]
 - [ ] how to mark cycling region -- overlays?
-- [ ] reuse cycle map
 - [ ] generalize out of nvp-perl
 - [ ] hook to start cycling after abbrev expansion
 - [ ] cycling / moving by indentation - pkg: indent-tools
@@ -139,7 +141,7 @@ This doesn't seem to be too actively maintained
 ** Compile [0/4]
 - [ ] better generic compile interface: indirect functions, prompt for multiple
   options 
-- [ ] completing read for compiler switches - GNU help2map (perl)
+- [ ] completing read for compiler switches - GNU help2man (perl)
 - [ ] completing read for makefile targets
 - [ ] nvp-compile-help: list compiler info / switches
 
@@ -259,22 +261,22 @@ Merge loose help packages
 - [ ] extract info locations
 - [ ] extract summary text for completion symbols
 
-** Project [1/4]
+** Project [0/4]
 - [ ] build project
 - [ ] navigate between source + tests
 - [ ] incorporate project-templates / maybe convert to cookiecutter
-- [X] determine project root
-
+- [ ] better way to determine project roots, account for nested roots
 
 ** Profile [1/2]
 - [ ] profiling script no longer works with compiled init
 - [X] compare runtimes b/w code chunks
+
 ** Generic template expansion [0/2]
 - [ ] default syntax
 - [ ] function to expand template - like grep-compute-defaults
 
 * Modes
-** elisp [4/10]
+** [#A] elisp [4/10]
 - [ ] align rules are shitty - dots in double quotes get moved.
 - [ ] hap: convert to use generic interface
 - [ ] toggled tip: merge with general interface
@@ -286,7 +288,7 @@ Merge loose help packages
 - [X] parse: buffer provides
 - [X] parse: buffer includes
 
-** C/C++ [4/23]
+** [#A] C/C++ [4/23]
 - [X] [[https://github.com/abo-abo/oremacs/blob/4eec097d5f6565131121a86479a7aee69e757e90/auto.el#L79][forward sexp]]
 - [ ] font-lock: toggle doxygen
 - [X] font-lock: toggle additional rules
@@ -312,7 +314,7 @@ semantic tags have parse info
 - [X] parse: current function
 - [ ] REPL: fixup gdb REPL interface
 
-** Makefile [0/8]
+** [#A] Makefile [0/8]
 *** TODO Align/Indent [0/2]
 - [ ] fix align rule for trailing \\
 - [ ] add indentation b/w declarations
@@ -333,9 +335,10 @@ semantic tags have parse info
 - [ ] use info-lookup-completion-at-point
 - [ ] dynamic variables
 - [ ] environment variables
-*** TODO macrostep [0/3]
+*** TODO macrostep [0/4]
 - [ ] fixup awk script to gather local variables for macrostep
 - [ ] update macrostep with additional variables + defaults
+- [ ] expand environment variables
 - [ ] optionally parse makefile commands?
 
 *** TODO Parsing [0/3]
@@ -347,7 +350,7 @@ semantic support? seems fucked
 *** TODO Jumps [0/1]
 - [ ] jump to source code for builtin functions
 
-** Autotools [0/3]
+** [#B] Autotools [0/3]
 - [ ] enable semantic support??
 - [ ] completion with info-lookup
 
@@ -370,7 +373,7 @@ semantic support? seems fucked
 - [ ] hook
 - [ ] skeleton - srecode?
 
-** Awk/sed [1/4]
+** [#A] Awk/sed [1/4]
 *** refs
   + man.el uses to parse output
   + emacs source hooks / build-aux
@@ -395,7 +398,7 @@ Separators,
 - [ ] sed lookup help
 - [ ] awk lookup help in info node
 
-** Perl [1/11]
+** [#B] Perl [1/11]
 - [ ] help: perldoc to popup
 - [ ] repl: comint-input-filter-functions to join lines
 - [ ] repl: get completions from Reply?
@@ -407,7 +410,7 @@ Separators,
 - [ ] parse: variables
 - [ ] test: simple test setup
 - [ ] test: use script to associate source with test dir?
-** sh [3/13]
+** [#A] sh [3/13]
 - [ ] use shell-cmd at point to do abbrev expansions / hippie exp
 - [ ] [[file:~/.emacs.d/site-lisp/nvp/modes/shell/sh-eldoc.el][namespace sh-eldoc and add support for shell]]
 - [ ] parse sh function documentation
@@ -423,31 +426,30 @@ Separators,
 - [ ] jump to bat test
 - [ ] newline: doc comment
 
-** Python [0/3]
+** [#A] Python [0/2]
 - [ ] convert newline
 - [ ] newline in string => parameters
-- [ ] namespace conda-env?
 
-** Julia [0/2]
+** [#A] Julia [0/2]
 - [ ] convert newline
 - [ ] update help with new functions
 
-** R [0/10]
+** [#A] R [0/7]
 - [ ] reusable region or string utility function - replace ~r-str-...~ macros
 - [ ] convert newline
-- [ ] newline in roxygen
-- [ ] update help with new layout
-- [ ] remove all the r-str-region bad macros
-- [ ] could possible use awk with fixedwith to parse column data?
+- [ ] newline in roxygen / comments
 - [ ] parse generics
 - [ ] update HAP
 - [ ] tags
 - [ ] xrefs
 
-** Shell [0/2]
+** [#B] Go [0/1]
+- [ ] merge
+** [#B] Shell [0/2]
 - [ ] expand git abbrevs
 - [ ] fix dynamic abbrevs
-** Java [0/2]
+
+** [#B] Java [0/2]
 - [ ] new root package directory w/o creating new directory
 - [ ] fix newline
 - [X] parse-current-function
@@ -459,6 +461,47 @@ Separators,
 *** TODO HAP [0/1]
 - [ ] web-backend?? javadoc-lookup
 
+** [#B] Haskell [4/5]
+- [X] merge
+- [X] use cycle for arrows
+- [X] remove install stuff
+- [ ] update install scripts
+- [X] fix asdf install
+
+** [#C] PHP [0/1]
+- [ ] merge
+
+** [#C] Ocaml [0/1]
+- [ ] fix install scripts
+
+** [#C] Elixir [0/1]
+- [ ] merge
+
+** [#C] Erlang [0/1]
+- [ ] merge
+
+** [#C] SML [2/9]
+- [ ] fix install scripts
+- [X] remove inf hippie function
+- [ ] use generic REPL interface
+- [ ] update newline dwim
+- [X] remove old elisp installs
+- [ ] remove/update tag-utils stuff
+- [ ] indirect compile function
+- [ ] generic beginning/end defun
+- [ ] generic mark-defun
+
+** [#B] Octave/Matlab [0/2]
+- [ ] merge
+- [ ] use REPL interface
+
+** [#B] Neo4j / Database [0/1]
+- [ ] merge
+
+** [#C] Csharp [1/2]
+- [X] merge
+- [ ] update install
+
 * Mode struct [2/5]
 https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [ ] support recipe fetcher
@@ -468,15 +511,15 @@ https://raw.githubusercontent.com/skeeto/.emacs.d/master/lisp/gpkg.el
 - [X] package deps
 
 
-* Mode settings [3/8]
+* Mode settings [5/8]
+- [ ] semantic add bindings to toggle disabled submodes
+- [ ] update semantic bindings related to tags / jumps
+- [ ] SRrecode -- worth using as well as snippets?
 - [X] cedet base settings separate from any specific mode stuff
 - [X] separate c specific settings from general semantic/cedet
 - [X] move c includes install to c config
-- [ ] c install/update includes async (already does?)
-- [ ] semantic add bindings to toggle disabled submodes
-- [ ] update semantic bindings related to tags / jumps
-- [ ] EDE - meh?
-- [ ] SRrecode -- worth using as well as snippets?
+- [X] c install/update includes async (already does?)
+- [X] EDE - meh?
 
 * Elisp Packages [0/2]
 ** TODO Cookiecutter [2/3]

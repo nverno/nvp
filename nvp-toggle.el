@@ -17,7 +17,7 @@
 (nvp-decls)
 (require 'files-x)
 (declare-function time-stamp "time-stamp")
-(autoload 'nvp-regex-map-across-matches "nvp-util")
+(nvp-auto "nvp-util" 'nvp-regex-map-across-matches)
 
 ;;; FIXME:
 ;; (defun nvp-toggle--repeat (arg)

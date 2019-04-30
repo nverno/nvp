@@ -76,13 +76,14 @@ or expansion."
   (&context (major-mode emacs-lisp-mode) &optional local-table abbrev exp)
   "Determine with abbrev table to use based on prefix and possibly context."
   (if (not abbrev) (cl-call-next-method)
-    (let* ((pref (or exp abbrev))
-           (prefix
-            (and pref
-                 (cdr (cl-find pref '(("cl"  . "emacs-lisp-cl")
-                                      ("nvp" . "emacs-lisp-nvp"))
-                               :key #'car :test #'string-prefix-p)))))
-      (regexp-quote (format "%s-abbrev-table" (or prefix local-table major-mode))))))
+    (let* ((abbr (or exp abbrev))
+           (table-prefix
+            (and abbr
+                 (cdr (cl-find-if (lambda (pref) (string-prefix-p pref abbr))
+                                  '(("cl-"  . "emacs-lisp-cl")
+                                    ("nvp-" . "emacs-lisp-nvp")) :key #'car)))))
+      (regexp-quote
+       (format "%s-abbrev-table" (or table-prefix local-table major-mode))))))
 
 ;; insert starter abbrev table template
 (defun nvp-abbrev--insert-template (table &optional parents)
@@ -127,7 +128,7 @@ When abbrev text is selected, searching is done first by length then lexically."
   (interactive "P")
   (let* ((local-abbrevs (bound-and-true-p nvp-abbrev-local-table))
          (prefix (cond
-                  ((region-active-p)
+                  ((use-region-p)
                    (nvp-abbrev--grab-region (region-beginning) (region-end)))
                   (arg (nvp-abbrev--grab-prev arg))
                   (t nil)))

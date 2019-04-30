@@ -13,6 +13,10 @@
 
 (defvar nvp-log-buffer "*nvp-log*")
 
+;;;###autoload
+(defun nvp-log (&rest args)
+  (apply nvp-default-log-function args))
+
 ;; initialize new log buffer and return it
 (defun nvp-log-get-buffer (&optional buffer-name)
   (or buffer-name (setq buffer-name nvp-log-buffer))
@@ -27,8 +31,7 @@
      (goto-char (point-max))
      ,@body))
 
-;;;###autoload
-(defun nvp-log (text &optional buffer-name &rest args)
+(defun nvp-log-default (text &optional buffer-name &rest args)
   (let (deactivate-mark)
     (nvp-with-log-buffer buffer-name
      (insert-before-markers

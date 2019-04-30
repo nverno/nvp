@@ -3,7 +3,6 @@
 # key: mode-config
 # expand-env: ((modename (bound-and-true-p modename)))
 # --
-;; Last modified: <>
 (nvp-install-on-demand$1)
 (eval-when-compile
   (require 'nvp-macro))

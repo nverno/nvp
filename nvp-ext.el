@@ -19,9 +19,8 @@
          (read-shell-command "Sudo command: ")
          "*sudo-command*"))
   (let* ((proc (nvp-with-process "bash"
-                 :proc-buff buffer
+                 :proc-buff (nvp-comint-buffer :name buffer :new t)
                  :proc-args ("bash -l" "-c" command)
-                 :buffer-fn nvp-proc-comint-buffer
                  :shell t)))
     (process-send-string proc password)
     (process-send-string proc "\r")
@@ -86,7 +85,7 @@ in buffer *vagrant-status*."
   (interactive "P")
   (unless nvp/vms (user-error "'nvp/vms' is nil" nvp/vms))
   (nvp-with-process "bash"
-    :proc-buff (and arg "*vagrant-status*")
+    :proc-bufname (and arg "*vagrant-status*")
     :proc-args ((expand-file-name "vms/vagrant-shizzle" nvp/bin) "-l" nvp/vms "-K"))
   (when (not arg)
     (message "Running vagrant-halt...")))

@@ -1,19 +1,40 @@
 ;;; nvp-haskell.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-22 01:27:19>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 21 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'nvp)
+(nvp-decls)
 (declare-function haskell-ident-at-point "")
+
+
+;; -------------------------------------------------------------------
+;;; Commands
+
+(defun nvp-haskell-arrow ()
+  (interactive)
+  (nvp-cycle (nvp-input 'lce) '("_" " -> ")))
+
+;; -------------------------------------------------------------------
+;;; Compilation
+
+;; Make compilation-mode understand "at blah.hs:11:34-50" lines
+;; output by GHC
+(with-eval-after-load 'compile
+  (let ((alias 'ghc-at-regexp))
+    (add-to-list
+     'compilation-error-regexp-alist-alist
+     (list
+      alias
+      " at \\(.*\\.\\(?:l?[gh]hs\\|hi\\)\\):\\([0-9]+\\):\\([0-9]+\\)-[0-9]+$"
+      1 2 3 0 1))
+    (add-to-list 'compilation-error-regexp-alist alias)))
+
+
+;; -------------------------------------------------------------------
+;;; Align
 
 ;; https://github.com/jwiegley/dot-emacs/init.el#L1954
 (with-eval-after-load 'align
@@ -28,6 +49,10 @@
               (haskell-arrows      . "\\(\\s-+\\)\\(->\\|→\\)\\s-+")
               (haskell-left-arrows . "\\(\\s-+\\)\\(<-\\|←\\)\\s-+")))))
 
+
+;; -------------------------------------------------------------------
+;;; Help 
+
 (defvar nvp-hoogle-server-process nil)
 (defun nvp-haskell-hoogle (query &optional _arg)
   "Do a Hoogle search for QUERY."
@@ -39,21 +64,18 @@
                           "Hoogle query: ")
                         nil nil def)
            current-prefix-arg)))
-  (let ((pe process-environment)
-        (ep exec-path))
-    (unless (and nvp-hoogle-server-process
-                 (process-live-p nvp-hoogle-server-process))
-      (message "Starting local Hoogle server on port 8687...")
-      (with-current-buffer (get-buffer-create " *hoogle-web*")
-        (cd temporary-file-directory)
-        (let ((process-environment pe)
-              (exec-path ep))
-          (setq nvp-hoogle-server-process
-                (start-process "hoogle-web" (current-buffer)
-                               (executable-find "hoogle")
-                               "server" "--local" "--port=8687"))))
-      (message "Starting local Hoogle server on port 8687...done")))
+  (unless (and nvp-hoogle-server-process
+               (process-live-p nvp-hoogle-server-process))
+    (message "Starting local Hoogle server on port 8687...")
+    (with-current-buffer (get-buffer-create " *hoogle-web*")
+      (cd temporary-file-directory)
+      (setq nvp-hoogle-server-process
+            (start-process "hoogle-web" (current-buffer)
+                           (executable-find "hoogle")
+                           "server" "--local" "--port=8687")))
+    (message "Starting local Hoogle server on port 8687...done"))
   (browse-url
+   ;; url-hexify-string?
    (format "http://127.0.0.1:8687/?hoogle=%s"
            (replace-regexp-in-string
             " " "+" (replace-regexp-in-string "\\+" "%2B" query)))))

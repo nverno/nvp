@@ -86,6 +86,7 @@
     org-src-lang-modes
     ;; external pkgs
     company-backends
+    company-dabbrev-code-modes
     yas-snippet-dirs
     zeal-at-point-docset))
 
@@ -93,31 +94,56 @@
   '(progn
      (nvp-local-vars)
      (nvp-decl :pre "nvp"
+       ;; general generics
+       mark-defun
+       ;; movement
+       move-previous-heading move-forward-heading mode-header-regex
+       ;; bindings
+       bind-transient-key
+       ;; reading
        read-elisp-symbol read-elisp-function read-elisp-variable
        completing-read find-file-in-dir
+       ;; modes
        view-list-mode scratch-minor-mode
-       log
+       ;; logging
+       log-mode log log-default
+       ;; windows
        window-configuration-restore window-configuration-save
-       he-history-setup comint-setup-history
+       ;; hippie
+       he-try-expand-history he-history-setup comint-setup-history
+       he-try-expand-flex-lisp try-expand-dabbrev-closest-first
+       ;; indication
        indicate-pulse-region-or-line indicate-modeline
        indicate-cursor-pre indicate-cursor-post
+       ;; procs
+       proc-default-filter proc-default-sentinel
+       ;; imenu
        imenu-setup idomenu
+       ;; toggle
        toggle-local-variable
+       ;; abbrev
        abbrev-grab grab-symbol
-       mark-defun
+       ;; test / compile
        ert-run-tests
        compile compile-default compile-cmake
+       ;; repls / shell
        repl-add
        shell shell-launch-terminal
+       ;; strings
        s-repeat s-center
+       ;; environment
        env-add env-path-add
+       ;; setup
        setup-program)
+
      (nvp-decl                          ; builtins
        comint-read-input-ring comint-write-input-ring
        ielm ielm-return
        ert-run-tests-interactively
        hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
+       tramp-dissect-file-name tramp-make-tramp-file-name
        w32-shell-execute)
+
      (nvp-decl                          ; external packages
        pos-tip-show
        do-smooth-scroll
@@ -125,7 +151,7 @@
        company-grab-symbol company-mode
        sp-local-pair
        paredit-mode
-       yas-minor-mode yas-expand-snippet yas-lookup-snippet)))
+       yas-minor-mode yas-expand-snippet yas-lookup-snippet yas-load-directory)))
 
 (provide 'nvp-macs-decls)
 ;; Local Variables:

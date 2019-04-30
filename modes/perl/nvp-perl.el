@@ -1,10 +1,5 @@
 ;;; nvp-perl.el --- perl helpers  -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/perl-tools
-;; Last modified: <2019-04-01.17>
-;; Created:  3 November 2016
-
 ;;; Commentary:
 
 ;; Other:
@@ -28,15 +23,12 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (require 'cperl-mode)
-
-(declare-function yas-expand-snippet "yasnippet")
+(nvp-decls)
 (declare-function auto-complete-mode "autocomplete")
-(declare-function company-mode "company")
-(declare-function plsense-setup-current-buffer "plsense")
-(declare-function plsense-server-start "plsense")
+(nvp-decl :pkg "plsense" plsense-setup-current-buffer plsense-server-start)
 
-(autoload 'find-lisp-find-files "find-lisp")
-(autoload 'nvp-back-chars-then-look "nvp-util")
+(nvp-auto "find-lisp" 'find-lisp-find-files)
+(nvp-auto "nvp-util" 'nvp-back-chars-then-look)
 
 (nvp-with-w32
   ;; load windows environment helpers
@@ -127,9 +119,8 @@
 (defun nvp-perl-my-exit ()
   (let ((char (char-before)))
     (pcase char
-      (`?% (yas-expand-snippet
-            "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
-            '((yas-indent-line 'auto)))))))
+      (`?% (yas-expand-snippet "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
+                               '((yas-indent-line 'auto)))))))
 
 (defvar nvp-perl-my-map
   (let ((km (make-sparse-keymap)))

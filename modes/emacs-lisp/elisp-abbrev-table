@@ -65,6 +65,7 @@
 (define-abbrev-table 'emacs-lisp-nvp-abbrev-table
   '(("nb" "nvp-bindings" nil :system t)
     ("nd" "nvp-decl" nil :system t)
+    ("nds" "nvp-decls" nil :system t)
     ("nbk" "nvp-bind-keys" nil :system t)
     ("ncr" "nvp-completing-read" nil :system t)
     ("ndl" "nvp-display-location" nil :system t)

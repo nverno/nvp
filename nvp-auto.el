@@ -14,8 +14,7 @@
   (require 'nvp-macro)
   (require 'hydra))
 (require 'nvp)
-(nvp-decl nvp-move-previous-heading nvp-move-forward-heading nvp-mode-header-regex)
-(nvp-decl nvp-bind-transient-key)
+(nvp-decls)
 
 ;; -------------------------------------------------------------------
 ;;; Movement
@@ -114,6 +113,14 @@
   (interactive)
   (save-some-buffers 'no-ask)
   (kill-emacs))
+
+;;;###autoload
+(defun nvp-insert-date (date)
+  "Insert DATE string, defaulting to current date.
+With prefix, prompts for DATE."
+  (interactive
+   (list (nvp-prefix 1 (calendar-read-date) :test '> (calendar-current-date))))
+  (insert (calendar-date-string date)))
 
 (provide 'nvp-auto)
 ;;; nvp-auto.el ends here

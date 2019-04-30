@@ -38,6 +38,7 @@
   (setq comint-input-ring-file-name (expand-file-name filename nvp/cache))
   (comint-read-input-ring 'silent)
   (apply #'nvp-he-history-setup args))
+(put 'nvp-comint-setup-history 'lisp-indent-function 1)
 
 ;; evaluate STRING in PROC, but discard output silently
 (defun nvp-comint-redirect-silently (proc string &optional prompt)

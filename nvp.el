@@ -36,7 +36,7 @@
 (defvar nvp-default-org-file "gtd.org" "Default org file.")
 (defvar nvp-window-configuration-stack () "Store window configurations.")
 (defvar nvp-read-config-history () "Minibuffer jumping history.")
-(defvar nvp-default-log-function #'nvp-log
+(defvar nvp-default-log-function #'nvp-log-default
   "Default logging function - called from process sentinels, etc.")
 (defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
 

@@ -56,7 +56,9 @@
 (define-abbrev-table 'global-abbrev-table
   '(
     ("gitn" "https://github.com/nverno" nil :system t)
+    ("gitu" "https://github.com" nil :system t)
     ("bitn" "https://bitbucket.org/nverno" nil :system t)
+    ("bitu" "https://bitbucket.org" nil :system t)
     ))
 
 (define-abbrev-table 'grep-mode-abbrev-table '())

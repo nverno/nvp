@@ -31,7 +31,7 @@
 
 
 ;; -------------------------------------------------------------------
-;;; Programs / Paths
+;;; Programs
 
 (defvar nvp-program-search-paths
   '("~/bin/" "~/.asdf/shims/" "~/.local/bin/" "/usr/local/bin/")
@@ -75,18 +75,21 @@ If program is not found at compile time, fallback to runtime search."
              (nvp-setup-program ,name ,path))
            ,(if default `,name)))))
 
+
+;; -------------------------------------------------------------------
+;;; Paths
+
 (defmacro nvp-mode-config-path (mode &optional ensure-string)
   "Create path for MODE config file."
-  `(progn
-     (expand-file-name
-      (concat "nvp-" ,(if ensure-string (nvp-stringify mode) `,mode)
-              "-config.el")
-      nvp/config)))
+  `(expand-file-name
+    (concat "nvp-" ,(if ensure-string (nvp-stringify mode) `,mode) "-config.el")
+    nvp/config))
 
 (defmacro nvp-cache-file-path (filename)
   "Create cache path for FILENAME."
-  `(progn (expand-file-name ,(nvp-stringify filename) nvp/cache)))
+  `(expand-file-name ,(nvp-stringify filename) nvp/cache))
 
+
 ;; -------------------------------------------------------------------
 ;;; Mode bind
 
@@ -114,6 +117,7 @@ If program is not found at compile time, fallback to runtime search."
      (cl-loop for mode in modes
         collect `(nvp-mode-bind-1 ,mode ,@bindings)))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Package
 
@@ -177,6 +181,7 @@ directory is bound to `root' and all `dirs' are let-bound to their symbols."
            (setq yas-snippet-dirs (delq nil (cons snippet-dir dirs))))
          (yas-load-directory snippet-dir)))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Other modes
 
@@ -210,6 +215,17 @@ PROPS defaults to setting :verbosity to 1."
          (cl-loop for pair in pairs
             collect `(sp-local-pair ,@pair)))))))
 
+(defmacro nvp-diminish (&rest modes)
+  "Diminish MODES in modeline.
+MODES is of form (feature . mode)."
+  (declare (indent 0))
+  `(progn
+     (eval-when-compile ,@(mapcar (lambda (f) `(defvar ,(cdr f))) modes))
+     ,(macroexp-progn
+       (cl-loop for (feat . mode) in modes
+          collect `(eval-after-load ',feat '(diminish ',mode))))))
+
+
 ;; -------------------------------------------------------------------
 ;;; Setup / Build init
 
@@ -269,16 +285,6 @@ is already present."
       with lst = (if (consp alist) alist (symbol-value alist))
       unless (cl-member (cons k (quote v)) lst :test test)
       collect `(push (cons ,k ',v) ,alist))))
-
-(defmacro nvp-setup-diminish (&rest modes)
-  "Diminish MODES in modeline.
-MODES is of form (feature . mode)."
-  (declare (indent 0))
-  `(progn
-     (eval-when-compile ,@(mapcar (lambda (f) `(defvar ,(cdr f))) modes))
-     ,(macroexp-progn
-       (cl-loop for (feat . mode) in modes
-          collect `(eval-after-load ',feat '(diminish ',mode))))))
 
 (defmacro nvp-setup-consts (&rest vars)
   "Define consts in init."

@@ -4,21 +4,27 @@
 
 ;; Fuzzy expansion for hyphen-separated commands, eg. i-p => in-package
 
+;; TODO:
+;; - generalize flex expansion to use arbitrary regex / cache
+
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (require 'hippie-exp)
 
 ;; collect matches for REGEXP. If BUFFER is non-nil, collect matches from
 ;; BUFFER (default current buffer)
-(defun nvp-he-lisp-matches (regexp &optional buffer)
+(nvp-define-cache nvp-he-lisp-matches (regexp &optional buffer)
+  "Collect matches in buffer, invalidating when candidates are exhausted."
+  :local t
   (and buffer (set-buffer buffer))
   (let (res)
    (save-excursion
      (goto-char (point-min))
      (while (re-search-forward regexp nil 'move)
-       (push (match-string 0) res)))
-   res))
+       (push (match-string-no-properties 0) res)))
+   (cl-remove-duplicates res :test #'equal)))
 
 ;; create regexp from STR matching expansions around hypens, eg
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
@@ -42,9 +48,9 @@
               (he-string-member (car he-expand-list) he-tried-table))
     (setq he-expand-list (cdr he-expand-list)))
   (prog1 (not (null he-expand-list))    ;return t if expansion is found
-    (if (not he-expand-list)
-        (and old (he-reset-string))
-      (he-substitute-string (pop he-expand-list)))))
+    (if he-expand-list (he-substitute-string (pop he-expand-list))
+      (and old (he-reset-string))
+      (setq nvp-he-lisp-matches nil)))) ;invalidate cache
 
 (provide 'nvp-he-lisp)
 ;;; nvp-he-lisp.el ends here

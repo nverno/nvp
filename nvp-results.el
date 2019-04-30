@@ -14,7 +14,7 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
-(nvp-autoload "nvp-string" nvp-s-repeat nvp-s-center)
+(nvp-auto "nvp-string" nvp-s-repeat nvp-s-center)
 (nvp-decls)
 
 ;; -------------------------------------------------------------------
@@ -29,7 +29,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; View list - simple tabulated display
-;; `cl-struct-slot-info'
 
 (defvar-local nvp-view-list-select-action ())
 (put 'nvp-view-list-select-action 'permanent-local t)

@@ -1,33 +1,6 @@
 ;;; nvp-sml.el --- smluts -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp-sml
-;; Last modified: <2019-03-27 14:45:47>
-;; Package-Requires: 
-;; Created:  2 November 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
-
-;; [![Build Status](https://travis-ci.org/nverno/nvp-sml.svg?branch=master)](https://travis-ci.org/nverno/nvp-sml)
 
 ;;; Code:
 (eval-when-compile
@@ -43,13 +16,7 @@
 ;; ------------------------------------------------------------
 ;;; Install / Tags
 
-;; (defun nvp-sml-install ()
-;;   (interactive)
-;;   (nvp-with-install-script nvp-sml--dir "install_sml_deps" 'sudo
-;;     (nvp-with-install-script nvp-sml--dir "install" nil
-;;       (nvp-with-install-script nvp-sml--dir "install_sml_source" nil
-;;         (comint-mode)))))
-
+;; FIXME: source installed externally, remove tag-utils stuff
 ;; clone / update source, tag it
 ;; with two prefix arg, reinstall source if already have it
 ;; with single prefix, force retag
@@ -77,10 +44,13 @@
 ;; ------------------------------------------------------------
 ;;; Interactive
 
+;; FIXME: use newline-dwim
 (nvp-newline nvp-sml-newline-dwim
   "Newline dwim for `sml-mode'"
   :comment-re (" *\\(?:(\\*\\|\\*\\)" . "\\*) *")
   :comment-start "* ")
+
+;; FIXME: just use beginning/end of defun for movement/marking/folding
 
 ;; mark defuns successively when called repeatedly
 (defun nvp-sml-mark-defun ()
@@ -131,6 +101,7 @@
   (insert ";")
   (comint-send-input))
 
+;; FIXME: replace with REPL interface
 ;; (nvp-repl-switch "sml" (:repl-mode 'inferior-sml-mode
 ;;                                    ))
 (defvar nvp-sml--last-buffer nil)
@@ -141,13 +112,6 @@
       (switch-to-buffer-other-window nvp-sml--last-buffer)
     (setq nvp-sml--last-buffer (current-buffer))
     (sml-prog-proc-switch-to)))
-
-;; manage/hippie-expand on shell history
-;;;###autoload(autoload 'nvp-sml-inf-hippie "nvp-sml")
-(nvp-hippie-shell-fn nvp-sml-inf-hippie ".sml_history")
-
-;;;###autoload
-(add-hook 'inferior-sml-mode-hook 'nvp-sml-inf-hippie)
 
 (provide 'nvp-sml)
 ;;; nvp-sml.el ends here

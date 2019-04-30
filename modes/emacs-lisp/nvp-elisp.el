@@ -1,17 +1,11 @@
 ;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
-;; FIXME:
-;; - multi-line ielm history ==> how to change and use
-;;  `comint-input-ring-separator'
-
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (require 'nvp-parse)
-  (require 'nvp-font))
+  (require 'nvp-parse))
 (require 'nvp-parse)
 (nvp-decls)
 (nvp-decl company-elisp--candidates-predicate company-elisp--fns-regexp)
@@ -175,15 +169,16 @@ If in `lisp-interaction-mode' or with prefix ARG, pretty-print the results."
     (if arg (pp-eval-expression expr)
       (when (eq 'lisp-interaction-mode major-mode)
         (let ((standard-output (current-buffer)))
-          (pp (eval expr)))))))
+          (cl-prettyprint (eval expr)))))))
 
 ;; Jump to end of line and try eval if not looking back at `)'.
-(defun nvp-elisp-eval-last-sexp-or-eol (arg)
+(defun nvp-elisp-eval-last-sexp-dwim (arg)
+  "Eval last sexp if directly after one, otherwise skip forward up list or sexp.
+ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
   (interactive "P")
   (if (not (looking-back "\\s-*)" (line-beginning-position)))
-      (end-of-line))
-  (nvp-elisp-eval-last-sexp-or-region nil)
-  (and arg (forward-sexp)))
+      (or (nvp-goto 'ful) (forward-sexp))) ; forward up list or sexp
+  (nvp-elisp-eval-last-sexp-or-region arg))
 
 (defun nvp-elisp-eval-and-replace ()
   "Replace preceding sexp with its evaluated value."
@@ -269,8 +264,7 @@ If in `declare-function', convert to autoload."
     (declare (debug t))
     `(and (or (memq this-command '(expand-abbrev nvp-abbrev-expand-after-symbols))
               (not (memq last-input-event '(?/ ?- ?= ?> ?<))))
-          (not (or (let ((ppss (syntax-ppss)))
-                     (or (elt ppss 3) (elt ppss 4)))
+          (not (or (nvp-ppss 'soc)      ; in string or comment
                    (let ((company-elisp-var-binding-regexp
                           nvp-elisp-var-binding-regexp))
                      (eq (company-elisp--candidates-predicate (nvp-abbrev-grab))
@@ -285,48 +279,29 @@ If in `declare-function', convert to autoload."
   (nvp-elisp-abbrev--expand-p 'fboundp))
 
 ;; ------------------------------------------------------------
-;;; REPL / IELM
-
-;; insert nl and indent - ielm-return always wants to eval when smartparens
-;; close sexps
-(defun nvp-ielm-nl (&optional arg)
-  (interactive "P")
-  (if (eolp) (ielm-return arg)
-   (let (ielm-dynamic-return)
-     (newline-and-indent))))
+;;; Advices
 
 ;; use `pop-to-buffer' and set local `ielm-working-buffer'
 (define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
   (let ((orig-buff (current-buffer)))
    (with-current-buffer (get-buffer-create "*ielm*")
-     (cl-letf (((symbol-function 'pop-to-buffer-same-window) #'ignore))
+     (nvp-with-letf #'pop-to-buffer-same-window #'ignore
        (funcall orig-fn))
      (prog1 (current-buffer)
        (setq-local ielm-working-buffer orig-buff)
        (and current-prefix-arg (pop-to-buffer (current-buffer)))))))
 
-(with-eval-after-load 'ielm
-  ;; synchronize with default switching function and update default-directory
-  (with-no-warnings
-    (define-advice ielm-change-working-buffer (:after (&rest _args) "update-src")
-      (process-put (ielm-process) :src-buffer ielm-working-buffer)
-      (setq default-directory
-            (buffer-local-value 'default-directory ielm-working-buffer)))))
-
-(nvp-font-lock-add-defaults 'inferior-emacs-lisp-mode
-  ("Eval error" (0 font-lock-warning-face)))
-
 ;; -------------------------------------------------------------------
 ;;; Compile
 
-(defun nvp-elisp-compile ()
-  (interactive)
-  (nvp-compile-with-bindings
-   `([remap recompile] . 
-     (lambda ()
-       (interactive)
-       (with-current-buffer ,(current-buffer)
-         (emacs-lisp-byte-compile))))))
+;; (defun nvp-elisp-compile ()
+;;   (interactive)
+;;   (nvp-compile-with-bindings
+;;    `([remap recompile] . 
+;;      (lambda ()
+;;        (interactive)
+;;        (with-current-buffer ,(current-buffer)
+;;          (emacs-lisp-byte-compile))))))
 
 ;; ------------------------------------------------------------
 ;;; Imenu
@@ -342,11 +317,10 @@ If in `declare-function', convert to autoload."
                    "\\|.*\\.el\\)")))
      ;; don't include default package headers, beginning/end of file
      `((nil (lambda ()
-              (cl-block nil
-                (while (and (not (bobp))
-                            (re-search-backward ,hdr-regex nil t))
-                  (unless (looking-at-p ,pkg-hdrs)
-                    (cl-return t)))))
+              (awhile (and (not (bobp))
+                           (re-search-backward ,hdr-regex nil t))
+                (unless (looking-at-p ,pkg-hdrs)
+                  (cl-return t))))
             1))))
 
  (nvp-setq nvp-elisp-imenu-headers-1

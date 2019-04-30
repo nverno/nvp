@@ -1,5 +1,5 @@
-(require 'yaml-indent)
 (require 'ert)
+(require 'yaml-indent)
 
 (defmacro yaml--should-indent (from to)
   `(with-temp-buffer

@@ -2,12 +2,9 @@
 
 ;;; Commentary:
 
-;; Cycle between options with single keystroke
-;; refs: helm circular iterators: #<marker at 14458 in helm-lib.el>
+;; Cycle between options with repeated keypress
 ;;
 ;; TODO:
-;; - struct to hold options?
-;; - set temporary overlay map
 ;; - after abbrev/snippet hook
 ;; Using overlays to mark regions like wgrep seems like it might work well.
 
@@ -26,38 +23,54 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
+(nvp-decls)
 
-;; TODO: bind cycle key to local overriding map when cycling in progress
 (defvar-local nvp-cycling nil "Non-nil if cycle in progress")
 
-(defvar-local nvp-cycle-index 0)
-(defsubst nvp-cycle-next (actions &optional backward)
-  (nth (mod (if backward (cl-decf nvp-cycle-index)
-              (cl-incf nvp-cycle-index))
-            (length actions))
-       actions))
+;; see `helm-iter-circular'
+(defun nvp-cycle-iter (seq)
+  "Circular iterator over SEQ."
+  (let ((lis seq))
+    (lambda ()
+      (let ((elm (car lis)))
+        (setq lis (pcase lis (`(,_ . ,ll) (or ll seq))))
+        elm))))
+
+(defun nvp-cycle-next (iterator)
+  "Next element of ITERATOR."
+  (and iterator (funcall iterator)))
+
+(defun nvp-cycle-elem (elem &rest args)
+  (pcase elem
+    ((pred functionp) (funcall-interactively elem args))
+    ((and (pred listp) (pred (functionp (car elem))))
+     (apply (car elem) (cdr elem)))
+    ((pred stringp) (insert elem))
+    (_ (user-error "unhandled cycle item: %S" elem))))
+
+(defun nvp-cycle-stop ()
+  (setq nvp-cycling nil))
+
+(defun nvp-cycle-step (iterator &rest args)
+  (let ((iter iterator))
+    (lambda ()
+      (interactive)
+      (undo)
+      (undo-boundary)
+      (let ((elem (nvp-cycle-next iter)))
+        (nvp-cycle-elem elem args)))))
 
 ;;;###autoload
-(defun nvp-cycle (&optional thing _backward)
-  "Cycle through THING's actions.
-Actions are list elements:
-* function              - called with no args
-* (function &rest args) - apply function to args
-* otherwise             - just return element"
-  (interactive)
-  (let ((action (get thing 'nvp-cycle-actions)))
-    (pcase action
-      ((pred functionp) (funcall action))
-      ((pred listp)
-       (if (functionp (car action))
-           (apply (car action) (cdr action))
-         action))
-      (_ action))))
-
-;; (defun nvp-cycle-actions (actions)
-;;   (let ((idx (or (get 'nvp-cycle-actions 'idx) 0)))
-;;     (funcall (nth idx actions))
-;;     (put 'nvp-cycle-actions 'idx (if (> (1+ idx) (length actions)) 0 (1+ idx)))))
+(defun nvp-cycle (key seq &rest args)
+  (let* ((iter (nvp-cycle-iter seq))
+         (fn (nvp-cycle-step iter args)))
+    (nvp-cycle-elem (nvp-cycle-next iter) args)
+    (setq nvp-cycling t)
+    (set-transient-map
+     (let ((map (make-sparse-keymap)))
+       (define-key map key fn)
+       map)
+     t #'nvp-cycle-stop)))
 
 (provide 'nvp-cycle)
 ;; Local Variables:

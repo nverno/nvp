@@ -10,8 +10,9 @@
 
 ;;;###autoload
 (defun nvp-he-local (&rest he-funcs)
-  (make-local-variable 'hippie-expand-try-functions-list)
-  (dolist (func he-funcs)
+  (unless (local-variable-p 'hippie-expand-try-functions-list)
+    (make-local-variable 'hippie-expand-try-functions-list))
+  (dolist (func (reverse he-funcs))
     (cl-pushnew func hippie-expand-try-functions-list)))
 
 ;; https://github.com/magnars/.emacs.d/blob/master/settings/setup-hippie.el

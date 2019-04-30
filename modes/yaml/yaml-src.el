@@ -1,29 +1,5 @@
 ;;; yaml-src.el --- formatting code sections in yaml -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/yaml-tools
-;; Last modified: <2019-01-15 21:04:39>
-;; Package-Requires: 
-;; Copyright (C) 2016, Noah Peart, all rights reserved.
-;; Created:  4 November 2016
-
-;; This file is not part of GNU Emacs.
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
 
 ;; Edit code sections in separate buffer in the corresponding
@@ -31,19 +7,19 @@
 
 ;;; Code:
 (eval-when-compile
+  (require 'cl-lib)
+  (require 'nvp-macro)
   (defvar yaml-src--prev-buffer))
+(nvp-auto "nvp-read" 'nvp-read-mode)
 
 ;; amount to indent source blocks in addition to
 ;; baseline yaml indent at location
 (defvar yaml-src-indent-offset 4)
 
-;; ------------------------------------------------------------
-
 ;; move point back to previous item: - [lang]:
 (defun yaml-src--back-to-item ()
   (beginning-of-line)
-  (while (not (or (bobp)
-                  (looking-at-p "^\\s-*-")))
+  (while (not (or (bobp) (looking-at-p "^\\s-*-")))
     (forward-line -1)))
 
 ;; find what type of code this should be
@@ -71,7 +47,7 @@
         ("hs" 'haskell-mode)
         ("sql" 'sql-mode)
         ("js" 'js2-mode)
-        (_ nil)))))
+        (_ (intern (nvp-read-mode)))))))
 
 ;; find the baseline indentation, add OFFSET or 4 by default
 (defun yaml-src--indent ()
@@ -82,9 +58,9 @@
 
 ;; make a buffer for editing source code in `mode' and pop to it
 (defun yaml-src--buffer (mode &optional code)
-  (let ((buff (get-buffer-create
-               (concat "*yaml-src [" (symbol-name mode) "]*")))
-        (prev (current-buffer)))
+  (let ((prev (current-buffer))
+        (buff (get-buffer-create
+               (concat "*yaml-src [" (symbol-name mode) "]*"))))
     (with-current-buffer buff
       (kill-all-local-variables)
       (funcall mode)
@@ -99,7 +75,7 @@
 ;;;###autoload
 (defun yaml-src-edit-src (&optional start end)
   (interactive
-   (if (region-active-p)
+   (if (use-region-p)
        (list (region-beginning) (region-end))))
   (let ((lang (yaml-src--lang))
         (code (if (and start end)
@@ -107,8 +83,8 @@
     (if (not lang)
         (user-error "Language not recognized.")
       (when code
-         (delete-region start end))
-       (yaml-src--buffer lang code))))
+        (delete-region start end))
+      (yaml-src--buffer lang code))))
 
 ;; ------------------------------------------------------------
 ;;; Minor mode
@@ -120,7 +96,8 @@
 
 (define-minor-mode yaml-src-mode
   "Yaml code minor mode."
-  nil " YamlCode")
+  nil
+  :lighter " YamlCode")
 
 ;; kill editing buffer and insert code back into OG
 (defun yaml-src-edit-exit ()

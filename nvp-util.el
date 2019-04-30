@@ -18,7 +18,7 @@
   "Flatten tree, but leave cons cells."
   (declare (pure t) (side-effect-free t))
   (let (elems)
-    (while (and (consp tree) (consp (cdr tree)))
+    (while (and (consp tree))
       (let ((elem (pop tree)))
         (while (and (consp elem) (consp (cdr elem)))
           (push (cdr elem) tree)

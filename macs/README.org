@@ -4,26 +4,50 @@ Note: these are currently all required by nvp-macro.el, so that file should be
 recompiled anytime any of these change. It would be nice to remove the setup
 macros to just be required during init/config compiling.
 
+* nvp-macs-common.el
+included by other macros, but shouldn't include any others to avoid cyclics.
+- OS
+- classic anamorphs: aif, awhen, awhile, acond, alambda, etc.
+  see ch. 14 of On Lisp
+- TODO: cl-defstruct / CLOS helpers - with-slots equivalent for defstructs
+- conversions
+- helper funcs to normalize variables / macro arguments
+- declare / autoload wrappers
+- simple string / regex wrappers
+- get load-file-name
+- input wrapper: get last input char, command, event
+
 * nvp-macs-setup.el
 these are not necessarily hygenic, stuff in here should just be used for
 compilation of init/configs.
+- setq/defvar with compiled values
+- find programs at compile time
+- paths
+- FIXME: mode bindings - probably remove this
+- package setup: root / load snippets / run code after package is loaded
+- wrappers for external modes: smartparens, hydra, diminish
+- setup macros eval consts, add to lists, etc. during init compilation
 
 * nvp-macs-bindings.el
 binding related macros - probably try to consolodate these to a couple of
 generally useful ones. would be nice to get down to just `nvp-bindings`
-
-* nvp-macs-common.el
-included by other macros, but shouldn't include any others to avoid cyclics.
-- OS
-- classic anamorphs:
-  - if, when, 
-- cl-defstruct / CLOS helpers
-- conversions
-- helper funcs to normalize variables / macro arguments
-- declare / autoload wrappers
-- simple string/regex wrappers
-- get load-file
-- input wrapper to get last input char/command/event
+- kbd wrapper
+- conditional keybindings
+- wrapper to generate prefix maps
+- FIXME: wrapper to bind keys to map - merge with multiple keymap bindings,
+  allow for conditional bindings and unbind non-prefix key
+- transient bindings
+- buffer local bindings
+- overriding bindings
+- FIXME: default view bindings - define once as keymap
 
 * nvp-macs-process.el
 process macros - probably slim this down to one or two useful ones as well.
+- get process buffers
+- FIXME: process-filter wrapper - remove
+- FIXME: log process wrapper - remove
+- nvp-with-process - main entry point
+- wrap async processes to eval variables in sentinels
+
+* nvp-macs-decls.el
+Just defines variables / functions to silence byte-compiler warnings.

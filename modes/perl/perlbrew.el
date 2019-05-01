@@ -1,12 +1,5 @@
 ;;; perlbrew.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-16 05:57:35>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  2 January 2017
-
 ;;; Commentary:
 ;; FIXME: remove all the macros
 ;;; Code:
@@ -18,7 +11,7 @@
 (eval-and-compile
   (defvar perlbrew-root (or (getenv "PERLBREW_ROOT")
                             (expand-file-name "perl5/perlbrew" (getenv "HOME"))))
-  (defvar perlbrew-exe (nvp-program "perlbrew" nil perlbrew-root)))
+  (defvar perlbrew-exe (nvp-program "perlbrew" :path perlbrew-root)))
 
 ;; -------------------------------------------------------------------
 ;;; Utils

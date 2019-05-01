@@ -16,6 +16,7 @@
 (require 'nvp)
 (require 'info)
 (require 'filenotify)
+(nvp-decls)
 (nvp-auto "nvp-read" 'nvp-read--info-files)
 
 (defvar nvp-info-nodes-need-refresh () "Update list when 'dir' changes.")

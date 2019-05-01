@@ -12,11 +12,11 @@
 (require 'ruby-mode)
 (require 'inf-ruby nil t)
 (require 'robe nil t)
-(nvp-decl :pre "robe" mode start)
+
 (nvp-decl :pre "ruby" switch-to-inf send-block-and-go switch-to-last-ruby-buffer
           send-definition-and-go send-last-sexp send-region-and-go)
-(nvp-decl :pre "hs" show-all show-block hide-all hide-block)
-(nvp-decl inf-ruby ruby-compilation-this-buffer projectile-rails-root)
+(nvp-decl inf-ruby ruby-compilation-this-buffer projectile-rails-root
+          robe-mode robe-start)
 (nvp-decls)
 
 ;; (defun my-ruby-smart-return ()

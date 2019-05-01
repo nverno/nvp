@@ -3,9 +3,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
-
+  (require 'cl-lib)
+  (require 'nvp-macro))
+(nvp-decls)
 (nvp-package-define-root :name "nvp-w32")
 
 ;; ------------------------------------------------------------

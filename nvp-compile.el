@@ -71,7 +71,7 @@ With double prefix or more, use comint buffer for compilation."
   (interactive "P")
   (setq current-prefix-arg arg)
   (let ((compile-fn (or (bound-and-true-p nvp-local-compile-function)
-                        (nvp-mode-val 'compile-fn)
+                        (bound-and-true-p nvp-compile-function)
                         #'nvp-compile-default)))
     (call-interactively compile-fn)))
 

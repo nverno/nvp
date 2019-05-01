@@ -1,12 +1,12 @@
 (require 'ert)
-(require 'yaml-indent)
+(require 'nvp-yaml-indent)
 
 (defmacro yaml--should-indent (from to)
   `(with-temp-buffer
-     (let ((yaml-indent-offset 2)
-           (yaml-indent-cont-offset 2)
-           (indent-line-function 'yaml-indent-indent-line)
-           (indent-region-function 'yaml-indent-indent-region))
+     (let ((nvp-yaml-indent-offset 2)
+           (nvp-yaml-indent-cont-offset 2)
+           (indent-line-function 'nvp-yaml-indent-line)
+           (indent-region-function 'nvp-yaml-indent-region))
        (insert ,from)
        (indent-region (point-min) (point-max))
        (should (string= (buffer-substring-no-properties (point-min) (point-max))
@@ -102,4 +102,4 @@ script:
       (ert-run-tests-interactively "yaml--test")
     (message "cant run without ert.")))
 
-(provide 'yaml-indent-tests)
+(provide 'nvp-yaml-indent-tests)

@@ -1,0 +1,12 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'php-mode-abbrev-table
+  '(
+    ("ar"  "array"              nil :system t) 
+    ("pr"  "protected"          nil :system t) 
+    ("pu"  "public"             nil :system t) 
+    ("prf" "protected function" nil :system t)   
+    ("puf" "public function"    nil :system t) 
+    )
+  "Php-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

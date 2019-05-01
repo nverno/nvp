@@ -1,18 +1,13 @@
 ;;; nvp-c-install.el --- install -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/c-tools
-;; Last modified: <2019-04-11.06>
-;; Created: 12 January 2019
-
 ;;; Commentary:
 ;; TODO: remove
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (require 'nvp-c)
-(declare-function nvp-log "nvp-log")
+(nvp-decls)
 
 (defvar nvp-c--dir (nvp-package-root))
 

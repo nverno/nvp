@@ -1,20 +1,11 @@
 ;;; nvp-rfc.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/web-tools
-;; Last modified: <2019-03-28 22:20:56>
-;; Created: 30 July 2017
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))
 (require 'irfc nil t)
-(declare-function irfc-visit "irfc")
-(declare-function irfc-render-buffer-hide-blank-line "irfc")
-(declare-function irfc-head-move "irfc")
+(nvp-decl :pkg "irfc" irfc-visit irfc-render-buffer-hide-blank-line irfc-head-move) 
 
 ;; load RFC config prior to visiting rfs
 ;;;###autoload

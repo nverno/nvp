@@ -461,23 +461,31 @@ Separators,
 *** TODO HAP [0/1]
 - [ ] web-backend?? javadoc-lookup
 
-** [#B] Haskell [4/5]
+** [#B] Haskell [5/6]
+- [ ] stack bash completion?
 - [X] merge
 - [X] use cycle for arrows
 - [X] remove install stuff
-- [ ] update install scripts
+- [X] update install scripts
 - [X] fix asdf install
 
-** [#C] PHP [0/1]
+** [#D] PHP [1/1]
+- [X] merge
+** [#C] D [0/1]
 - [ ] merge
-
+** [#C] Opt [0/1]
+- [ ] merge
+** [#D] Coffee [0/1]
+- [ ] merge
+** [#D] Powershell [0/1]
+- [ ] merge
 ** [#C] Ocaml [0/1]
 - [ ] fix install scripts
 
-** [#C] Elixir [0/1]
+** [#D] Elixir [0/1]
 - [ ] merge
 
-** [#C] Erlang [0/1]
+** [#D] Erlang [0/1]
 - [ ] merge
 
 ** [#C] SML [2/9]
@@ -495,10 +503,10 @@ Separators,
 - [ ] merge
 - [ ] use REPL interface
 
-** [#B] Neo4j / Database [0/1]
+** [#C] Neo4j / Database [0/1]
 - [ ] merge
 
-** [#C] Csharp [1/2]
+** [#D] Csharp [1/2]
 - [X] merge
 - [ ] update install
 

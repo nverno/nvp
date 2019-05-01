@@ -98,6 +98,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
   (setq-local imenu-generic-expression
               (append imenu-generic-expression
                       extra nvp-imenu-comment-headers-re-1)))
+(put 'nvp-imenu-setup 'lisp-indent-function 'defun)
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -106,22 +107,17 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 (defun nvp-imenu-idomenu (arg)
   (interactive "P")
   (with-demoted-errors "Error in nvp-imenu-idomenu: %S"
-   (pcase arg
-     (`(4)                              ; headers only
-      (let ((imenu-generic-expression
-             (or nvp-imenu-comment-headers-re
-                 (symbol-value (nvp-mode-val 'imenu-hdrs))))
-            (imenu-create-index-function 'imenu-default-create-index-function))
-        (ido/imenu)))
-     (`(16)                             ; headers + sub-headers only
-      (let ((imenu-generic-expression
-             (append (or nvp-imenu-comment-headers-re
-                         (symbol-value (nvp-mode-val 'imenu-hdrs)))
-                     (or nvp-imenu-comment-headers-re-2
-                         (symbol-value (nvp-mode-val 'imenu-hdrs-2)))))
-            (imenu-create-index-function 'imenu-default-create-index-function))
-        (ido/imenu)))
-     (_ (ido/imenu)))))
+    (pcase arg
+      (`(4)                              ; headers only
+       (let ((imenu-generic-expression nvp-imenu-comment-headers-re)
+             (imenu-create-index-function 'imenu-default-create-index-function))
+         (ido/imenu)))
+      (`(16)                             ; headers + sub-headers only
+       (let ((imenu-generic-expression
+              (append nvp-imenu-comment-headers-re nvp-imenu-comment-headers-re-2))
+             (imenu-create-index-function 'imenu-default-create-index-function))
+         (ido/imenu)))
+      (_ (ido/imenu)))))
 
 (provide 'nvp-imenu)
 ;;; nvp-imenu.el ends here

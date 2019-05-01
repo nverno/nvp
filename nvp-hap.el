@@ -35,7 +35,7 @@
     ;; cycle, but not really sure)
     ;; #<marker at 8895 in company-quickhelp.el>
     (nvp-toggled-if
-      (if-let ((fn (nvp-mode-local-or-val 'nvp-doc-toggle-fn)))
+      (if-let ((fn (bound-and-true-p nvp-doc-toggle-fn)))
           (funcall fn 'company)
         (company-quickhelp-manual-begin))
       :this-cmd 'company-quickhelp-manual-begin

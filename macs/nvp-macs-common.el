@@ -66,6 +66,7 @@
   "Combine functions in EXPR without explicit `funcall's."
   `#',(nvp--rbuild expr))
 
+;;; TODO: !!
 (defun nvp--compose (&rest fns)
   "Compose FNS, eg. 𝔣𝔬𝔤(x) = "
   (if fns

@@ -22,7 +22,7 @@
   (require 'cl-lib)
   (require 'nvp-macro)
   (require 'subr-x))
-(require 'yaml-indent)
+(require 'nvp-yaml-indent)
 (nvp-decls)
 
 (defvar nvp-yaml-lint-buffer-name "*travis*")

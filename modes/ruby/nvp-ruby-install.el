@@ -7,12 +7,12 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (require 'nvp-ruby)
+(nvp-decls)
 
 (nvp-autoload "nvp-env" 'nvp-env-path-add 'nvp-env-setenv!)
-(declare-function nvp-log "nvp-log")
 
 ;; ------------------------------------------------------------
 ;;; Install / Environment

@@ -1,10 +1,5 @@
 ;;; nvp-j.el --- from abo-abo config I think -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-22 01:34:34>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  8 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

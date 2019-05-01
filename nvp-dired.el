@@ -17,6 +17,7 @@
 (declare-function conda-env-read-env "conda-env")
 
 (nvp-auto "f" 'f-same-p)
+(nvp-auto "nvp-proc" 'nvp-proc-default-sentinel)
 
 
 ;; -------------------------------------------------------------------

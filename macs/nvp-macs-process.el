@@ -124,7 +124,7 @@ if process exit status isn't 0."
          ,(if sync `,proc  ; no sentinel for sync
             (cond
              ((memq proc-sentinel '(:default t))
-              `(set-process-sentinel ,proc ,(nvp-proc-default-sentinel)))
+              `(set-process-sentinel ,proc (nvp-proc-default-sentinel)))
              (proc-sentinel `(set-process-sentinel ,proc ,proc-sentinel))
              ((or on-success on-failure)
               `(set-process-sentinel ,proc

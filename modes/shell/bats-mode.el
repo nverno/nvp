@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-04-01.15>
+;; Last modified: <2019-05-01.00>
 ;; Created:  1 January 2017
 
 ;; This file is not part of GNU Emacs.
@@ -44,7 +44,8 @@
 
 (defvar bats-indent-offset sh-basic-offset "Bats indentation offset.")
 
-(defvar bats-check-program (nvp-program "batscheck" nil (file-truename "~/bin/sh")))
+(defvar bats-check-program
+  (nvp-program "batscheck" :path (file-truename "~/bin/sh")))
 
 (defvar bats-function-re
   (nvp-concat

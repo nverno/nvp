@@ -8,7 +8,8 @@
   (require 'nvp-macro)
   (defvar epg-gpg-home-directory))
 (require 'nvp-proc)
-(nvp-decl nvp-lookup-password nvp-log)
+(nvp-decls)
+
 (declare-function imenu--make-index-alist "imenu")
 
 ;; do sudo command and return process object

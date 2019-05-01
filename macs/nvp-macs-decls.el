@@ -134,7 +134,8 @@
        ;; environment
        env-add env-path-add
        ;; setup
-       setup-program)
+       setup-program
+       lookup-password)
 
      (nvp-decl                          ; builtins
        comint-read-input-ring comint-write-input-ring

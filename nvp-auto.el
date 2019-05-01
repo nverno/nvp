@@ -15,6 +15,7 @@
   (require 'hydra))
 (require 'nvp)
 (nvp-decls)
+(nvp-auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
 
 ;; -------------------------------------------------------------------
 ;;; Movement

@@ -110,8 +110,13 @@
        ;; windows
        window-configuration-restore window-configuration-save
        ;; hippie
-       he-try-expand-history he-history-setup comint-setup-history
+       he-try-expand-history he-history-setup he-history-remove-trailing-paren
        he-try-expand-flex-lisp try-expand-dabbrev-closest-first
+       he-try-expand-local-abbrevs
+       ;; repls / shell
+       comint-setup-history
+       repl-add
+       shell shell-launch-terminal
        ;; indication
        indicate-pulse-region-or-line indicate-modeline
        indicate-cursor-pre indicate-cursor-post
@@ -126,9 +131,6 @@
        ;; test / compile
        ert-run-tests
        compile compile-default compile-cmake
-       ;; repls / shell
-       repl-add
-       shell shell-launch-terminal
        ;; strings
        s-repeat s-center
        ;; environment
@@ -150,7 +152,7 @@
        do-smooth-scroll
        minibuffer-keyboard-quit
        company-grab-symbol company-mode
-       sp-local-pair
+       smartparens-mode sp-local-pair
        paredit-mode
        yas-minor-mode yas-expand-snippet yas-lookup-snippet yas-load-directory)))
 

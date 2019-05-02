@@ -24,8 +24,9 @@
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
 
 ;; root directory
-(nvp-package-define-root :snippets t)
+(nvp-package-define-root)
 
+
 ;; -------------------------------------------------------------------
 ;;; Variables
 
@@ -67,6 +68,7 @@
 (defvar-local nvp-mode-snippet-dir nil "Mode's snippet directory.")
 (defvar-local nvp-mode-install-targets () "Mode's external install targets.")
 
+
 ;; -------------------------------------------------------------------
 ;;; Functions
 
@@ -94,6 +96,7 @@
  (nvp-test-function         . nil)
  (nvp-tag-function          . nil))
 
+
 ;; -------------------------------------------------------------------
 ;;; Faces
 
@@ -131,6 +134,7 @@
   "Gaudy type face - bold & italicized."
   :group 'nvp)
 
+
 ;; -------------------------------------------------------------------
 ;;; general read helpers
 
@@ -151,6 +155,7 @@
                            match initial hist default inherit)
     (read-from-minibuffer prompt nil nil nil nil default)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Window configuration
 
@@ -186,6 +191,7 @@
 ;;   (or (eval `(bound-and-true-p ,(intern-soft key)))
 ;;       (nvp-mode-val key all)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Movement
 
@@ -239,6 +245,7 @@
   (interactive)
   (nvp-move-forward-heading 'back error))
 
+
 ;; -------------------------------------------------------------------
 ;;; Newline DWIM 
 
@@ -283,6 +290,7 @@ Dispatches to generic handlers with ARG."
   (interactive "*P")
   (funcall-interactively 'nvp-newline-dwim-default arg))
 
+
 ;; -------------------------------------------------------------------
 ;;; Paredit 
 (eval-when-compile (require 'paredit))
@@ -331,6 +339,7 @@ Dispatches to generic handlers with ARG."
   ;; to do with this file being required in the init which is then compiled??
   (setf (symbol-function 'paredit-splice-reindent) #'nvp-paredit-splice-reindent))
 
+
 ;; -------------------------------------------------------------------
 ;;; IDO
 
@@ -367,6 +376,7 @@ On error (read-only), quit without selecting."
   (interactive)
   (throw 'dired t))
 
+
 ;; -------------------------------------------------------------------
 ;;; Marks
 
@@ -394,6 +404,7 @@ On error (read-only), quit without selecting."
         (("c" . nvp-mark-expand-to-previous-comments))
         :repeat-key "h"))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Company
 
@@ -402,6 +413,7 @@ On error (read-only), quit without selecting."
   (set (make-local-variable 'company-backends)
        (delete-dups (cl-pushnew backends company-backends :test #'equal))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Advices
 

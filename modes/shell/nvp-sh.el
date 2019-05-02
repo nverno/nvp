@@ -14,9 +14,10 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
   (require 'cl-lib)
   (require 'subr-x)
+  (require 'nvp-macro)
+  (require 'nvp-shell-macs "macs/nvp-shell-macs")
   (require 'nvp-sh-help))               ;defsubsts
 (eval-and-compile (require 'nvp-font))
 (nvp-decls)
@@ -24,11 +25,10 @@
 (require 'company)
 (require 'company-quickhelp)
 (require 'sh-script)
-
+(require 'nvp-shell-common)
 (nvp-decl company-bash company-shell
   bash-completion-dynamic-complete bash-completion-dynamic-complete-nocomint)
 (nvp-auto "nvp-sh-help" nvp-sh-help-bash-builtin-p nvp-sh-help-bash-builtin-sync)
-(nvp-auto "nvp-shell" nvp-shell-get-process)
 
 ;; -------------------------------------------------------------------
 ;;; Variables

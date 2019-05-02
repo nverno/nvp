@@ -5,12 +5,13 @@
   multiple autoload files or combined? Use package-quickstart? Monolithic
   libraries or keep current organization?
 - optimizing mode-local variables
-- profiling: current script won't work on compiled init
+- profiling: how to profile with compiled init? profile-emacs.el won't work
 - git-hooks: reconfigure updated git packages
 - autotools management: for external deps? probably overkill
 - org tags
 - optimize org loadding time: parts can be separated
 - texi/info: formatting, tools for parsing/navigating tags
+- How to create concept index / tags in info files created from org-mode?
 - convert docs to html
 - analyzing defgenerics perfomance
 - when to prefer defsubst over macro/defun - when is a function too big
@@ -27,8 +28,11 @@
 - Porcelains/Buffers: transient
 - Packages: straight, package-build, package-recipe-mode
 - Lex/Parsing: tablist-filter using wisent for simple grammar
+- Folding: is hideshow/hideif good enough? or something like origami.el?
+
 ** semantic stuff
-This doesn't seem to be too actively maintained
+This doesn't seem to be too actively maintained - haven't seen changes in past
+few months.
 - srecode
 - ede
 - semantic-sticky-func minor mode for parse generics
@@ -474,11 +478,11 @@ Separators,
 ** [#C] D [0/1]
 - [ ] merge
 ** [#C] Opt [0/1]
-- [ ] merge
+- [ ] merge opt
 ** [#D] Coffee [0/1]
-- [ ] merge
+- [ ] merge coffee-extras
 ** [#D] Powershell [0/1]
-- [ ] merge
+- [ ] merge posh-utils
 ** [#C] Ocaml [0/1]
 - [ ] fix install scripts
 

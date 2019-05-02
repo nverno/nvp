@@ -123,5 +123,18 @@ With prefix, prompts for DATE."
    (list (nvp-prefix 1 (calendar-read-date) :test '> (calendar-current-date))))
   (insert (calendar-date-string date)))
 
+;;;###autoload
+(defun nvp-lookup-password (host user port)
+  "Get password from `auth-sources'."
+  (require 'auth-source)
+  (require 'auth-source-pass)
+  (let ((auth (auth-source-search :host host :user user :port port)))
+    (if auth
+        (let ((secretf (plist-get (car auth) :secret)))
+          (if secretf
+              (funcall secretf)
+            (error "Auth entry for %s@%s:%s has no secret" user host port)))
+      (error "No auth entry found for %s@%s:%s" user host port))))
+
 (provide 'nvp-auto)
 ;;; nvp-auto.el ends here

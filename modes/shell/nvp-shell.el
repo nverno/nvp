@@ -8,43 +8,13 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-proc)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'nvp-shell-macs "macs/nvp-shell-macs"))
 (require 'comint)
+(require 'nvp-shell-common)
 (require 'nvp)
-(nvp-autoload "f" f-same-p)
-(declare-function tramp-dissect-file-name "tramp")
-
-;; dont expand when prefixed by [-/_.]
-(defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
-
-;; -------------------------------------------------------------------
-;;; Utils
-
-(eval-when-compile
- (defmacro nvp-shell-goto-command-start (start &optional limit delims)
-   "Move point to beginning of current command.
-START is the initial point, LIMIT is an optional search bound.
-DELIMS are chars that will delimit commands and won't be skipped outside of
-strings."
-   (or delims (setq delims "^)(|&\`;\["))
-   (macroexp-let2 nil limit limit
-     `(let (ppss done)
-        (while (and (not done) ,(if limit `(> (point) ,limit) t))
-          (skip-chars-backward ,delims ,(or limit '(line-beginning-position)))
-          (if (eq (char-before) ?\))
-              (forward-sexp -1)         ; jump back over a possible subshell
-            (setq ppss (parse-partial-sexp ,(or limit '(point-min)) (point)))
-            (cond
-             ;; presumably reached the beginning of a command
-             ((or (not (nth 3 ppss))
-                  (eq (char-before) ?\`)
-                  (and (eq (char-before) ?\()
-                       (eq (char-before (1- (point))) ?$)))
-              (setq done t))
-             ;; move backward out of enclosing string that shouldn't be a quoted
-             ;; command
-             (t (up-list -1 t t)))))
-        (skip-syntax-forward " " ,start)))))
+(nvp-decls)
+(nvp-auto "f" f-same-p)
 
 ;; -------------------------------------------------------------------
 ;;; Things-at-point
@@ -78,18 +48,6 @@ strings."
                     ,(expand-file-name "bin" (getenv "CYGWIN_HOME")))
        nconc (mapcar (lambda (x) (expand-file-name x var))
                      '("sh.exe" "bash.exe" "fish.exe" "zsh.exe")))))
-
-;; look for an active interactive shell process
-(defun nvp-shell-get-process (&optional proc-name buffer-name)
-  (cl-loop for proc in (process-list)
-     when (and (process-live-p proc)
-               (cond
-                (proc-name (string= (process-name proc) proc-name))
-                (buffer-name (string= (buffer-name (process-buffer proc))
-                                      buffer-name))
-                (t (process-command proc)
-                   (cl-find "-i" (process-command proc) :test 'string=))))
-     return proc))
 
 ;; -------------------------------------------------------------------
 ;;; Aliases
@@ -146,7 +104,6 @@ Each cell is a cons (SYM . HASH)."
   (interactive)
   (nvp-with-proc proc
     ;; FIXME: inherit environment??
-    (widen)
     (let* ((cmd (funcall comint-get-old-input))
            ;; FIXME: doesn't work -- how to pass env from gnome-shell => bash
            (process-environment

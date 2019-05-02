@@ -59,7 +59,9 @@
     ("gitu" "https://github.com" nil :system t)
     ("bitn" "https://bitbucket.org/nverno" nil :system t)
     ("bitu" "https://bitbucket.org" nil :system t)
-    ))
+    )
+  ;; not prefixed by "-"
+  :regexp "\\(\\_<[_:\\.A-Za-z0-9/=<>]+\\)")
 
 (define-abbrev-table 'grep-mode-abbrev-table '())
 

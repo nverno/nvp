@@ -46,9 +46,9 @@
   "Call `occur' with either region or symbol-at-point.
 With prefix ARG multi-occur in buffers of the same mode."
   (interactive "P")
+  (when-let* ((str (nvp-tap 'dwim)))
+    (push (if (stringp str) (regexp-quote str) str) regexp-history))
   (if arg (nvp-multi-occur-in-this-mode)
-    (when-let* ((str (nvp-tap 'dwim)))
-      (push (if (stringp str) (regexp-quote str) str) regexp-history))
     (call-interactively 'occur)
     (if (get-buffer "*Occur*")
         (switch-to-buffer-other-window "*Occur*"))))

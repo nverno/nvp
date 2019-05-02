@@ -87,7 +87,7 @@
     ;; external pkgs
     company-backends
     company-dabbrev-code-modes
-    yas-snippet-dirs
+    yas-snippet-dirs yas-text yas-moving-away-p yas-modified-p
     zeal-at-point-docset))
 
 (defmacro nvp-decls ()

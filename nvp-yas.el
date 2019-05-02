@@ -6,7 +6,6 @@
   (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
-(require 'yasnippet)
 (require 'nvp-comment)
 (autoload 'nvp-parse-current-function "nvp-parse")
 

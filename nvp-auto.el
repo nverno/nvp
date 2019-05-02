@@ -15,6 +15,7 @@
   (require 'hydra))
 (require 'nvp)
 (nvp-decls)
+(nvp-decl auth-source-search)
 (nvp-auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
 
 ;; -------------------------------------------------------------------

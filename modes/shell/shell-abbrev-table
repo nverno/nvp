@@ -102,8 +102,7 @@
   :parents (list shell-mode-abbrev-table))
 
 (define-abbrev-table 'sh-mode-abbrev-table
-  '(
-    ("ro" "readonly" nil :system t)
+  '(("ro" "readonly" nil :system t)
     ("here" "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd)\""
      nil :system t)
     ("ret" "return" nil :system t)

@@ -198,8 +198,7 @@ Filter by PREDICATE if non-nil."
 (defun nvp-read-mode (&optional default)
   "Lookup name of mode using PROMPT and optional DEFAULT."
   (unless default (setq default major-mode))
-  (let ((prompt (if default (format "Mode (default \"%s\"): " default)
-                  "Mode: ")))
+  (let ((prompt (if default (format "Mode (default \"%s\"): " default) "Mode: ")))
     (nvp-read-obarray-regex prompt "-mode\\'" default)))
 
 (provide 'nvp-read)

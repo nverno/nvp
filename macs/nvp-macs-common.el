@@ -101,52 +101,46 @@
 ;;; Anamorphs
 ;; See ch. 14 of On Lisp
 
-(nvp-unless-bound 'aif
-  (defmacro aif (test-form then-form &rest else-forms)
-    "Anamorphic `if'."
-    (declare (indent 2) (debug t))
-    `(let ((it ,test-form))
-       (if it ,then-form ,@else-forms))))
+(defmacro aif (test-form then-form &rest else-forms)
+  "Anamorphic `if'."
+  (declare (indent 2) (debug t))
+  `(let ((it ,test-form))
+     (if it ,then-form ,@else-forms)))
 
-(nvp-unless-bound 'awhen
-  (defmacro awhen (test-form &rest body)
-    "Anamorphic `when'."
-    (declare (indent 1) (debug t))
-    `(aif ,test-form ,(macroexp-progn body))))
+(defmacro awhen (test-form &rest body)
+  "Anamorphic `when'."
+  (declare (indent 1) (debug t))
+  `(aif ,test-form ,(macroexp-progn body)))
 
-(nvp-unless-bound 'awhile
-  (defmacro awhile (expr &rest body)
-    "Anamorphic `while'."
-    (declare (indent 1) (debug t))
-    `(cl-do ((it ,expr ,expr))
-         ((not it))
-       ,@body)))
+(defmacro awhile (expr &rest body)
+  "Anamorphic `while'."
+  (declare (indent 1) (debug t))
+  `(cl-do ((it ,expr ,expr))
+       ((not it))
+     ,@body))
 
-(nvp-unless-bound 'acond
-  (defmacro acond (&rest clauses)
-    "Anamorphic `cond'."
-    (declare (debug cond))
-    (unless (null clauses)
-      (let ((cl1 (car clauses))
-            (sym (cl-gensym)))
-        `(let ((,sym ,(car cl1)))
-           (if ,sym
-               (let ((it ,sym)) ,@(cdr cl1))
-             (acond ,@(cdr clauses))))))))
+(defmacro acond (&rest clauses)
+  "Anamorphic `cond'."
+  (declare (debug cond))
+  (unless (null clauses)
+    (let ((cl1 (car clauses))
+          (sym (cl-gensym)))
+      `(let ((,sym ,(car cl1)))
+         (if ,sym
+             (let ((it ,sym)) ,@(cdr cl1))
+           (acond ,@(cdr clauses)))))))
 
-(nvp-unless-bound 'aand
-  (defmacro aand (&rest args)
-    "Anamorphic `and'."
-    (cond ((null args) t)
-          ((null (cdr args)) (car args))
-          (t `(aif ,(car args) (aand ,@(cdr args)))))))
+(defmacro aand (&rest args)
+  "Anamorphic `and'."
+  (cond ((null args) t)
+        ((null (cdr args)) (car args))
+        (t `(aif ,(car args) (aand ,@(cdr args))))))
 
-(nvp-unless-bound 'alambda
-  (defmacro alambda (params &rest body)
-    "Anamorphic `lambda', binding the function to 'self'"
-    (declare (indent defun) (debug t))
-    `(cl-labels ((self ,params ,@body))
-       #'self)))
+(defmacro alambda (params &rest body)
+  "Anamorphic `lambda', binding the function to 'self'"
+  (declare (indent defun) (debug t))
+  `(cl-labels ((self ,params ,@body))
+     #'self))
 
 ;; -------------------------------------------------------------------
 ;;; Structs / CLOS

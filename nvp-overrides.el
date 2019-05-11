@@ -2,7 +2,7 @@
 
 ;;; Commentary:
 ;; Overriding global and buffer-local bindings
-;; refs: evil, general
+;; refs: evil, general, allout.el, modalka
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)

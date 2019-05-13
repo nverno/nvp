@@ -1,23 +1,12 @@
 ;;; nvp-scala.el ---  -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-08 06:28:41>
-;; Package-Requires: 
-;; Created:  1 December 2016
-
 ;;; Commentary:
-;;; Description:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (require 'ensime)
 (autoload 'projectile-project-p "projectile")
-
-(nvp-package-define-root)
 
 ;; -------------------------------------------------------------------
 ;;; Ensime

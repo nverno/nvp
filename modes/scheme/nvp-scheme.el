@@ -1,10 +1,5 @@
 ;;; nvp-scheme.el --- scheme helpers -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/scheme-tools
-;; Last modified: <2019-04-10.08>
-;; Created: 14 May 2017
-
 ;;; Commentary:
 
 ;; - sending REPL regions from different modules:

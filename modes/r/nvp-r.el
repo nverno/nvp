@@ -286,7 +286,8 @@
     (push (or backends
               '(company-R-args :with company-R-library company-R-objects :separate))
           comps)
-    (set (make-local-variable 'company-backends) comps)))
+    (setq-local company-backends comps)
+    (delq 'company-capf company-backends)))
 
 (provide 'nvp-r)
 

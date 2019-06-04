@@ -127,6 +127,7 @@ or use REPEAT-KEY if specified."
 ;; `minor-mode-overriding-map-alist'.
 (cl-defmacro nvp-use-minor-mode-overriding-map (mode &rest bindings
                                                      &key predicate
+                                                     after-load
                                                      &allow-other-keys)
   "Override minor MODE BINDINGS using `minor-mode-overriding-map-alist'.
 If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil."
@@ -134,12 +135,13 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
   (let ((modemap (nvp--normalize-modemap mode)))
-   `(,@(if predicate `(when ,predicate) '(progn))
-     (let ((map (make-sparse-keymap)))
-       (set-keymap-parent map ,modemap)
-       ,@(cl-loop for (k . b) in bindings
-            collect `(nvp-def-key map ,k ,b))
-       (push (cons ,mode map) minor-mode-overriding-map-alist)))))
+    `(,@(if after-load `(with-eval-after-load ,after-load) '(progn))
+      ,@(if predicate `((when ,predicate)))
+      (let ((map (make-sparse-keymap)))
+        (set-keymap-parent map ,modemap)
+        ,@(cl-loop for (k . b) in bindings
+             collect `(nvp-def-key map ,k ,b))
+        (push (cons ,mode map) minor-mode-overriding-map-alist)))))
 
 (cl-defmacro nvp-set-local-keymap (&rest bindings
                                    &key keymap buffer use &allow-other-keys)

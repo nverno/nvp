@@ -1,9 +1,13 @@
-;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+;; -*- coding: utf-8; no-byte-compile: t; -*-
 
 (define-abbrev-table 'ruby-mode-abbrev-table
   '(
     ("inc" "include" nil :system t)
     ("mod" "module" nil :system t)
+
+    ("stdin" "STDIN" nil :system t)
+    ("stderr" "STDERR" nil :system t)
+    ("stdout" "STDOUT" nil :system t)
     )
   "Ruby-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

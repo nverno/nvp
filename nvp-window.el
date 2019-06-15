@@ -7,7 +7,7 @@
   (require 'hydra))
 (require 'windmove)
 (declare-function ace-window "ace-window")
-(nvp-autoload :pkg "winner" winner-undo winner-redo)
+(nvp-autoload "winner" winner-undo winner-redo)
 
 ;;;###autoload
 (defun nvp-window-toggle-dedicated (window)

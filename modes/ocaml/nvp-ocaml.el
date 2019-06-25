@@ -1,10 +1,5 @@
 ;;; nvp-ocaml.el ---  -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-29 02:38:20>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  4 November 2016
-
 ;;; Commentary:
 ;; FIXME: remove lots of install stuff, cleanup
 ;;; Code:
@@ -17,7 +12,7 @@
 (declare-function utop "utop")
 (declare-function ocaml-module-alist "caml-help")
 (declare-function smie-forward-sexp "smie")
-(nvp-declare "tuareg" tuareg-opam-current-compiler tuareg-beginning-of-defun)
+(nvp-decl tuareg-opam-current-compiler tuareg-beginning-of-defun)
 (autoload 'nvp-ext-run-script "nvp-ext")
 (autoload 'tuareg-opam-update-env "tuareg")
 (autoload 'expand-abbrev-hook "expand")

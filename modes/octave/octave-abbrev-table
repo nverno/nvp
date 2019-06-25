@@ -1,0 +1,8 @@
+
+(define-abbrev-table 'octave-abbrev-table
+  '(
+    ("mm" "" nvp-octave-matrix :system t)
+    ("pr" "printf" nil :system t)
+    )
+  "Octave-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

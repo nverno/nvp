@@ -43,10 +43,10 @@
 (defun nvp-cycle-elem (elem &rest args)
   (pcase elem
     ((pred functionp) (funcall-interactively elem args))
-    ((and (pred listp) (pred (functionp (car elem))))
-     (apply (car elem) (cdr elem)))
     ((pred stringp) (insert elem))
-    (_ (user-error "unhandled cycle item: %S" elem))))
+    (_ (if (and (listp elem) (functionp (car elem)))
+           (apply (car elem) (cdr elem))
+         (user-error "unhandled cycle item: %S" elem)))))
 
 (defun nvp-cycle-stop ()
   (setq nvp-cycling nil))

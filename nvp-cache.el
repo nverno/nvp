@@ -178,7 +178,7 @@ Grows ring when necessary."
         (size (ring-size ring))
         (vect (cddr ring)))
     (dotimes (var (cadr ring))
-      (funcall f (aref vect (mod (+ start var size)))))))
+      (funcall f (aref vect (mod (+ start var) size))))))
 
 (defun nvp-ring-read (filename default-size &optional ring silent separator)
   "Read and return ring from FILENAME."

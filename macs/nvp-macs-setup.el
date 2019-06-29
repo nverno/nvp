@@ -220,6 +220,7 @@ PROPS defaults to setting :verbosity to 1."
 MODES is of form (feature . mode)."
   (declare (indent 0))
   `(progn
+     (declare-function diminish "diminish")
      (eval-when-compile ,@(mapcar (lambda (f) `(defvar ,(cdr f))) modes))
      ,(macroexp-progn
        (cl-loop for (feat . mode) in modes

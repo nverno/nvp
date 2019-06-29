@@ -24,7 +24,7 @@
     for `default-directory'.
 (2) prefix calls `rgrep' on all files, ignoring current file/buffer extension.
 (3) prompts for confirmation, default search from `default-directory'."
-    (declare (indent defun) (debug t))
+    (declare (indent defun) (debug defun))
     `(progn
        (require 'nvp-grep-config)
        (let ((sym (nvp-tap 'tapi nil nil nil :hist 'nvp-search-history))
@@ -40,7 +40,7 @@
          ,@(if body `,@body
              `((grep-compute-defaults)
                (rgrep (format "\\b%s\\b" sym)
-                      (if ext (concat "*." ext "*"))
+                      (if ext (concat "*." ext "*") "*")
                       ,(if elisp nvp/emacs 'default-directory)
                       confirm)))))))
 

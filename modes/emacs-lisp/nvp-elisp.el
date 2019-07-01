@@ -6,6 +6,7 @@
   (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-parse))
+(require 'pp)
 (require 'nvp-parse)
 (nvp-decls)
 (nvp-decl company-elisp--candidates-predicate company-elisp--fns-regexp)
@@ -167,9 +168,10 @@ If in `lisp-interaction-mode' or with prefix ARG, pretty-print the results."
         (print-length (window-total-height))
         (print-level))
     (if arg (pp-eval-expression expr)
-      (when (eq 'lisp-interaction-mode major-mode)
-        (let ((standard-output (current-buffer)))
-          (cl-prettyprint (eval expr)))))))
+      (if (eq 'lisp-interaction-mode major-mode)
+          (let ((standard-output (current-buffer)))
+            (cl-prettyprint (eval expr)))
+        (eval-expression expr)))))
 
 ;; Jump to end of line and try eval if not looking back at `)'.
 (defun nvp-elisp-eval-last-sexp-dwim (arg)

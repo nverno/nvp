@@ -258,7 +258,7 @@ With prefix ARG recompile all extension files.
 With double prefix, FORCE compile all .el files with associated .elc file."
   (interactive "P")
   (cl-loop for (defs . dirs) in `(,(cons nvp/auto (list nvp/config))
-                                  ,(cons nvp/auto-site (list nvp/site)))
+                                  ,(cons nvp/auto-site (list nvp/site nvp/modes)))
      for generated-autoload-file = defs
      do
        (package-autoload-ensure-default-file defs)

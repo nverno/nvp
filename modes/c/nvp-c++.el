@@ -1,6 +1,6 @@
 ;;; nvp-c++.el --- C++ helpers -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-27 15:32:33>
+;; Last modified: <2019-07-20.13>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/c-tools
 ;; Created: 11 November 2016
@@ -31,8 +31,8 @@
 
 (defun nvp-c++-compile-and-run (keep)
   (interactive "P")
-  (funcall-interactively 'c-tools-compile-and-run keep
-                         (nvp-program "g++") "-std=c++14 -O3 -s"))
+  (funcall-interactively
+   #'nvp-c-compile-and-run keep (nvp-program "g++") "-std=c++14 -O3 -s"))
 
 ;; -------------------------------------------------------------------
 ;;; Font-lock

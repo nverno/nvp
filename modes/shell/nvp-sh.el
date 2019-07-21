@@ -176,9 +176,9 @@ Used to set `end-of-defun-function'."
 (defun nvp-sh-dynamic-complete-bash ()
   "Bash dynamic completion for sh-script (doesn't get local variables)."
   (nvp-unless-ppss 'cmt
-    (completion-table-merge
-     (bash-completion-dynamic-complete-nocomint
-      (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table))))
+    ;; completion-table-merge
+    (bash-completion-dynamic-complete-nocomint
+     (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table)))
 
 ;; FIXME: generalize toggle to call indirectly
 (defvar nvp-sh-company-active-map
@@ -199,7 +199,8 @@ Used to set `end-of-defun-function'."
       ;; use bash-completion + completion for variables / sourced functions
       (add-hook 'completion-at-point-functions 'nvp-sh-dynamic-complete-bash nil t)
       ;; allow completion of local variables as well
-      (add-hook 'completion-at-point-functions 'nvp-sh-dynamic-complete-vars nil t)))
+      ;; (add-hook 'completion-at-point-functions 'nvp-sh-dynamic-complete-vars nil t)
+      ))
   ;; use local version of `company-active-map' to rebind
   ;; functions to show popup help and jump to help buffer
   (set (make-local-variable 'company-active-map) nvp-sh-company-active-map)

@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-02-26 20:55:57>
+;; Last modified: <2019-07-21.10>
 ;; URL: https://github.com/nverno/shell-tools
 ;; Created:  8 November 2016
 
@@ -76,8 +76,9 @@
     (let ((index (cdr (imenu--make-index-alist))))
       (when index
         (cl-loop for (k . v) in index
+           when (markerp v)
            do (put-text-property 0 1 'marker v k)
-           collect k)))))
+           and collect k)))))
 
 ;; gather functions from current/sourced files with imenu
 (defun company-bash--make-index ()

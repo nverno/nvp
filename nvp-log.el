@@ -31,6 +31,7 @@
      (goto-char (point-max))
      ,@body))
 
+;;;###autoload
 (defun nvp-log-default (text &optional buffer-name &rest args)
   (let (deactivate-mark)
     (nvp-with-log-buffer buffer-name

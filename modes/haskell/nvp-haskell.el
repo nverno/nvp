@@ -7,7 +7,7 @@
   (require 'cl-lib))
 (require 'nvp)
 (nvp-decls)
-(declare-function haskell-ident-at-point "")
+(nvp-decl haskell-ident-at-point nvp-cycle)
 
 
 ;; -------------------------------------------------------------------

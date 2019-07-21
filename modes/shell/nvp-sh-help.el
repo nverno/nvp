@@ -2,7 +2,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-31 02:17:51>
+;; Last modified: <2019-07-21.13>
 ;; Created:  5 December 2016
 
 ;;; Commentary:
@@ -294,7 +294,7 @@
      (list (completing-read "Switch: " nvp-sh-help-conditional-cache))))
   (when (not ignore)
     (nvp-with-toggled-tip
-      (nvp-sh-help--conditional-string switch) :help-fn :none)))
+      (nvp-sh-help--conditional-string switch) :help-fn :none :use-gtk t)))
 
 ;; popup help for thing at point
 ;; - with C-u, show help for thing directly at point

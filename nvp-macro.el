@@ -958,7 +958,7 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
                                    (help-key "h") ;key-binding for help-fn
                                    (help-fn t)    ;more help (t is default)
                                    bindings       ;additional bindings
-                                   (timeout 45)   ;pos-tip timeout
+                                   (timeout 120)  ;pos-tip timeout
                                    keep           ;keep transient map
                                    use-gtk        ;use gtk tooltips
                                    (help-buffer '(help-buffer)))
@@ -994,18 +994,17 @@ default help function."
                               (t nil)))
                        (exit-fn '(lambda () (interactive) (x-hide-tip)))
                        (keep keep))
-    `(progn
-       (let ((x-gtk-use-system-tooltips ,use-gtk))
-         (unless (x-hide-tip)
-           (pos-tip-show ,str nil nil nil ,timeout)
-           (set-transient-map
-            (let ((tmap (make-sparse-keymap)))
-              (define-key tmap ,h-key ,h-fn)
-              ,@(cl-loop for (k . b) in bindings
-                   collect `(define-key tmap ,k ,b))
-              tmap)
-            ,keep
-            ,exit-fn))))))
+    `(let ((x-gtk-use-system-tooltips ,use-gtk))
+       (unless (x-hide-tip)
+         (pos-tip-show ,str nil nil nil ,timeout)
+         (set-transient-map
+          (let ((tmap (make-sparse-keymap)))
+            (define-key tmap ,h-key ,h-fn)
+            ,@(cl-loop for (k . b) in bindings
+                 collect `(define-key tmap ,k ,b))
+            tmap)
+          ,keep
+          ,exit-fn)))))
 
 
 ;; -------------------------------------------------------------------

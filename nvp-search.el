@@ -18,7 +18,7 @@
 ;;; Rgrep
 
 (eval-when-compile
-  (defmacro nvp-rgrep-with-defaults (elisp &rest body)
+  (defmacro nvp-rgrep-with-defaults (&optional elisp &rest body)
     "Defaults: symbol at point, file/buffer extension.
 (1) prefix: if ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
     for `default-directory'.
@@ -49,7 +49,7 @@
   "Rgrep for symbol at point. See `nvp-rgrep-with-defaults'."
   (interactive "P")
   (setq current-prefix-arg arg)
-  (nvp-rgrep-with-defaults nil))
+  (nvp-rgrep-with-defaults))
 
 ;;;###autoload
 (defun nvp-rgrep-elisp-symbol-at-point (arg)

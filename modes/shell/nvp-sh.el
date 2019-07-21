@@ -142,6 +142,7 @@ Used to set `end-of-defun-function'."
 (when (require 'bash-completion nil t)
   (setq nvp-sh-company-backends '(company-bash :with company-capf)))
 
+;; #<marker at 14695 in elisp-mode.el.gz>
 (defun nvp-sh-vars-before-point ()
   "Collect variables in current lexical context and globals."
   (save-excursion
@@ -165,25 +166,32 @@ Used to set `end-of-defun-function'."
 (defun nvp-sh-dynamic-complete-vars ()
   "Complete local variables, but fail if none match to delegate to bash completion."
   (nvp-unless-ppss 'cmt
-    (save-excursion
-      (skip-chars-forward "[:alnum:]_")
-      (let ((end (point))
-            (_ (skip-chars-backward "[:alnum:]_"))
-            (start (point)))
-        (when (or (eq (char-before) ?$)
-                  (and (eq (char-before) ?{)
-                       (eq (char-before (1- start)) ?$)))
-          (list start end
-                (completion-table-dynamic
-                 (lambda (s) (all-completions s (sh--vars-before-point))))
-                :exclusive 'no))))))
+    (when-let* ((bnds (bounds-of-thing-at-point 'shell-var)))
+      (list (car bnds) (cdr bnds)
+            (completion-table-dynamic (lambda (_) (nvp-sh-vars-before-point)))
+            :annotation-function
+            (lambda (s) (ignore-errors (get-text-property 0 'annotation s)))))
+    ;; (save-excursion
+    ;;   (skip-chars-forward "[:alnum:]_")
+    ;;   (let ((end (point))
+    ;;         (_ (skip-chars-backward "[:alnum:]_"))
+    ;;         (start (point)))
+    ;;     (when (or (eq (char-before) ?$)
+    ;;               (and (eq (char-before) ?{)
+    ;;                    (eq (char-before (1- start)) ?$)))
+    ;;       (list start end
+    ;;             (completion-table-dynamic
+    ;;              (lambda (s) (all-completions s (sh--vars-before-point))))
+    ;;             :exclusive 'no))))
+    ))
 
 (defun nvp-sh-dynamic-complete-bash ()
   "Bash dynamic completion for sh-script (doesn't get local variables)."
   (nvp-unless-ppss 'cmt
-    ;; completion-table-merge
-    (bash-completion-dynamic-complete-nocomint
-     (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table)))
+    (completion-table-in-turn
+     (nvp-sh-dynamic-complete-vars)
+     (bash-completion-dynamic-complete-nocomint
+      (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table))))
 
 ;; FIXME: generalize toggle to call indirectly
 (defvar nvp-sh-company-active-map

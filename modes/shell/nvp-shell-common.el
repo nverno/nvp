@@ -11,6 +11,20 @@
 ;; dont expand when prefixed by [-/_.]
 (defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
 
+(defun nvp-shell-bounds-of-variable-at-point ()
+  (save-excursion
+    (let ((end (progn
+                 (and (eq (char-after) ?$) (forward-char 1))
+                 (and (eq (char-after) ?{) (forward-char 1))
+                 (skip-syntax-forward "w_") (point)))
+          (_ (skip-syntax-backward "w_"))
+          (beg (if (or (eq (char-before) ?$)
+                       (and (eq (char-before) ?{)
+                            (eq (char-before (1- (point))) ?$)))
+                   (point))))
+      (and beg (cons beg end)))))
+(put 'shell-var 'bounds-of-thing-at-point #'nvp-shell-bounds-of-variable-at-point)
+
 ;; look for an active interactive shell process
 (defun nvp-shell-get-process (&optional proc-name buffer-name)
   (cl-loop for proc in (process-list)

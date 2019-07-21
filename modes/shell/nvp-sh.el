@@ -143,35 +143,40 @@ Used to set `end-of-defun-function'."
   (setq nvp-sh-company-backends '(company-bash :with company-capf)))
 
 (defun nvp-sh-vars-before-point ()
-  "Collect variables in current lexical context."
+  "Collect variables in current lexical context and globals."
   (save-excursion
     (if (not (string= sh-shell "bash"))
         (sh--vars-before-point)
-      (let ((func-start (nvp-sh-narrow-lexically))
+      (let ((beg (point))
+            (func-start (nvp-sh-narrow-lexically))
             vars)
         (widen)
         ;; collect local variables
         (while (re-search-backward "[ \t]*local[ \t]\\([^=\n]+\\)" func-start 'move)
           (dolist (var (split-string (match-string 1) " \t" 'omit " \t"))
+            (put-text-property 0 1 'annotation " <v>" var)
             (push var vars)))
-        vars))))
+        (goto-char beg)
+        (dolist (var (sh--vars-before-point))
+          (put-text-property 0 1 'annotation " <v>" var)
+          (push var vars))
+        (delete-dups vars)))))
 
-;; TODO: add thing-at-point for vars
 (defun nvp-sh-dynamic-complete-vars ()
   "Complete local variables, but fail if none match to delegate to bash completion."
   (nvp-unless-ppss 'cmt
     (save-excursion
-        (skip-chars-forward "[:alnum:]_")
-        (let ((end (point))
-              (_ (skip-chars-backward "[:alnum:]_"))
-              (start (point)))
-          (when (or (eq (char-before) ?$)
-                    (and (eq (char-before) ?{)
-                         (eq (char-before (1- start)) ?$)))
-            (list start end
-                  (completion-table-dynamic
-                   (lambda (s) (all-completions s (sh--vars-before-point))))
-                  :exclusive 'no))))))
+      (skip-chars-forward "[:alnum:]_")
+      (let ((end (point))
+            (_ (skip-chars-backward "[:alnum:]_"))
+            (start (point)))
+        (when (or (eq (char-before) ?$)
+                  (and (eq (char-before) ?{)
+                       (eq (char-before (1- start)) ?$)))
+          (list start end
+                (completion-table-dynamic
+                 (lambda (s) (all-completions s (sh--vars-before-point))))
+                :exclusive 'no))))))
 
 (defun nvp-sh-dynamic-complete-bash ()
   "Bash dynamic completion for sh-script (doesn't get local variables)."

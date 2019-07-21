@@ -76,28 +76,32 @@ Assumes the list is flattened and only elements with markers remain."
 ;; -------------------------------------------------------------------
 ;;; Hook
 
+(defun nvp-imenu--create-regex (&optional headers headers-1 headers-2)
+  (or headers
+      (setq headers
+            `((nil ,(concat "^" (regexp-quote (nvp-comment-start 3)))
+                   "\\s-*\\(.*\\)\\s-*$"))))
+  (or headers-1
+      (setq headers-1 `(("Headers" ,(cadr (car nvp-imenu-comment-headers-re)) 1))))
+  (or headers-2
+      (setq headers-2
+            `(("Sub-Headers"
+               ,(concat "^" (nvp-comment-start 2) "-+\\s-*\\(.*\\)[ -]*$") 1))))
+  (list headers headers-1 headers-2))
+
 ;; make header from comment
 ;;;###autoload
 (cl-defun nvp-imenu-setup (&key headers headers-1 headers-2 extra)
   "Sets up imenu regexps including those to recognize HEADERS and any \
 EXTRA regexps to add to `imenu-generic-expression'.
 Any extra regexps should be an alist formatted as `imenu-generic-expression'."
-  (setq nvp-imenu-comment-headers-re
-        (or headers 
-            `((nil ,(concat "^" (regexp-quote (nvp-comment-start 3))
-                            "\\s-*\\(.*\\)\\s-*$")
-                   1))))
-  (setq nvp-imenu-comment-headers-re-1
-        (or headers-1 `(("Headers" ,(cadr (car nvp-imenu-comment-headers-re))
-                         1))))
-  (setq nvp-imenu-comment-headers-re-2
-        (or headers-2
-            `(("Sub-Headers"
-               ,(concat "^" (nvp-comment-start 2) "-+\\s-*\\(.*\\)[ -]*$")
-               1))))
-  (setq-local imenu-generic-expression
-              (append imenu-generic-expression
-                      extra nvp-imenu-comment-headers-re-1)))
+  (cl-destructuring-bind (h h1 h2)
+      (nvp-imenu--create-regex headers headers-1 headers-2)
+    (setq nvp-imenu-comment-headers-re h
+          nvp-imenu-comment-headers-re-1 h1
+          nvp-imenu-comment-headers-re-2 h2))
+  (cl-callf append imenu-generic-expression extra nvp-imenu-comment-headers-re-1))
+
 (put 'nvp-imenu-setup 'lisp-indent-function 'defun)
 
 ;; -------------------------------------------------------------------
@@ -106,6 +110,8 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 ;;;###autoload
 (defun nvp-imenu-idomenu (arg)
   (interactive "P")
+  (when (null nvp-imenu-comment-headers-re)
+    (nvp-imenu-setup))
   (with-demoted-errors "Error in nvp-imenu-idomenu: %S"
     (pcase arg
       (`(4)                              ; headers only

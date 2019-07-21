@@ -16,6 +16,9 @@
 (nvp-decls)
 (nvp-auto "f" f-same-p)
 
+;; update default-directory on remote login
+(defvar nvp-shell-ssh-regexp (nvp-re-opt '("ssh" "hssh")))
+
 ;; -------------------------------------------------------------------
 ;;; Things-at-point
 
@@ -121,6 +124,21 @@ Each cell is a cons (SYM . HASH)."
   (interactive)
   (nvp-with-proc proc
     (comint-send-string proc "nautilus . 2>/dev/null\n")))
+
+;; -------------------------------------------------------------------
+;;; Remote
+
+(defun nvp-shell-remote-filter (string)
+  "Update `default-directory' on remote login.
+Add to `comint-input-filter-functions'."
+  (when (string-match-p nvp-shell-ssh-regexp string)
+    (when-let* ((loc (comint-arguments string 1 1))
+                (fullname (expand-file-name (concat "/ssh:" loc ":~/"))))
+      (setq default-directory fullname
+            list-buffers-directory fullname))))
+
+(defun nvp-shell-tramp-name (&optional directory)
+  (or directory (setq directory default-directory)))
 
 ;; -------------------------------------------------------------------
 ;;; Launch shells

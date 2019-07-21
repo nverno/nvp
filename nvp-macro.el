@@ -70,6 +70,12 @@ those are both specified."
                (eval
                 `(and ,orig-msg (message ,orig-msg)))))))))
 
+;; `org-no-popups'
+(defmacro nvp-no-popups (&rest body)
+  "Suppress popup windows."
+  `(let (pop-up-frames display-buffer-alist)
+     ,@body))
+
 
 ;; -------------------------------------------------------------------
 ;;; Buffer / Directory names

@@ -100,6 +100,7 @@
 ;; -------------------------------------------------------------------
 ;;; Anamorphs
 ;; See ch. 14 of On Lisp
+;; FIXME: just use dash when possible here
 
 (defmacro aif (test-form then-form &rest else-forms)
   "Anamorphic `if'."
@@ -203,6 +204,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Conversion / Normalization
+;; TODO: steal normalization stuff from use-package
 
 ;; unquote, unfunction, all elements in args - return as list
 ;; eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)

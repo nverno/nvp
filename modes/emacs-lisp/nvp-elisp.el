@@ -310,21 +310,22 @@ If in `declare-function', convert to autoload."
 
 (eval-and-compile
   (nvp-setq nvp-elisp-imenu-headers
-   (let* ((prefix "^;;\\(?:;\\|[*]+\\| |\\)\\s-*")
-          (hdr-regex (concat prefix "\\([^#].*\\)\\s-*$"))
-          (pkg-hdrs
-           (concat prefix "\\("
-                   (regexp-opt '("Commentary:" "Code:" "Documentation:"
-                                 "History:" "ChangeLog:" "Change Log:"))
-                   "\\|.*\\.el\\)")))
-     ;; don't include default package headers, beginning/end of file
-     `((nil (lambda ()
-              (awhile (and (not (bobp))
-                           (re-search-backward ,hdr-regex nil t))
-                (unless (looking-at-p ,pkg-hdrs)
-                  (cl-return t))))
-            1))))
-
+            (let* ((prefix "^;;\\(?:;\\|[*]+\\| |\\)\\s-*")
+                   (hdr-regex (concat prefix "\\([^#].*\\)\\s-*$"))
+                   (pkg-hdrs
+                    (concat prefix "\\("
+                            (regexp-opt '("Commentary:" "Code:" "Documentation:"
+                                          "History:" "ChangeLog:" "Change Log:"))
+                            "\\|.*\\.el\\)")))
+              ;; don't include default package headers, beginning/end of file
+              `((nil ,(macroexpand-all
+                       (lambda ()
+                         (awhile (and (not (bobp))
+                                      (re-search-backward hdr-regex nil t))
+                           (unless (looking-at-p pkg-hdrs)
+                             (cl-return t)))))
+                     1))))
+  
  (nvp-setq nvp-elisp-imenu-headers-1
    `(("Headers" ,(cadar nvp-elisp-imenu-headers) 1)
      ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)))

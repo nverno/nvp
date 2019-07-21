@@ -16,6 +16,17 @@
 (autoload 'nvp-read-keymap "nvp-read")
 (autoload 'ispell-get-word "ispell")
 
+;;;###autoload
+(defun nvp-push-button (&optional same-window)
+  (interactive "P")
+  (if same-window
+      (let ((display-buffer-overriding-action
+             '(display-buffer-same-window
+               ((inhibit-switch-frame . t)
+                (inhibit-same-window  . nil)))))
+        (call-interactively #'push-button))
+    (call-interactively #'push-button)))
+
 ;; -------------------------------------------------------------------
 ;;; Words
 

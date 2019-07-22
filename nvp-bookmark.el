@@ -4,6 +4,7 @@
 
 ;; - bookmark-to-bookmark jump handler
 ;; - assorted bookmark functions
+;; #<marker at 210151 in info.el.gz>
 
 ;;; Code:
 (eval-when-compile
@@ -50,10 +51,10 @@
     (handler  . nvp-bmk-handler)))
 
 ;; handle jumping to another bookmark file
-(defun nvp-bmk-handler (bmk-record)
+(defun nvp-bmk-handler (bmk)
   (when (> bookmark-alist-modification-count 0)
     (bookmark-save))
-  (setq bookmark-default-file (bookmark-get-filename bmk-record))
+  (setq bookmark-default-file (bookmark-get-filename bmk))
   (nvp-bmk-update-history)
   ;; (kill-all-local-variables)
   (setq bookmark-alist nil)

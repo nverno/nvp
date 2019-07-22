@@ -53,7 +53,7 @@
 ;;-- Conditional binding
 ;; info: extended menu items
 ;; http://endlessparentheses.com/define-context-aware-keys-in-emacs.html
-(defmacro nvp-defcond-key (map key def &rest body)
+(defmacro nvp-def-ckey (map key def &rest body)
   "Creates a binding in MAP that is conditional on BODY."
   (declare (indent 3) (debug body))
   `(define-key ,map ,key

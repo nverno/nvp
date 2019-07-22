@@ -29,6 +29,15 @@
      ,@(cl-loop for (var value) on var-vals by #'cddr
           collect `(setq ,var (eval-when-compile ,value)))))
 
+(defmacro nvp-cset (&rest var-vals)
+  (declare (indent 0))
+  `(progn
+     (,@(cons 'eval-when-compile
+              (cl-loop for (var _val) on var-vals by #'cddr
+                 collect `(defvar ,var))))
+     ,@(cl-loop for (var val) on var-vals by #'cddr
+          collect `(funcall (or (get ',var 'custom-set) 'set-default)
+                            ',var ,val))))
 
 ;; -------------------------------------------------------------------
 ;;; Programs

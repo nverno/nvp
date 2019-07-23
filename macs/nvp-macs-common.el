@@ -280,18 +280,18 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 (cl-defmacro nvp-declare (&rest funcs &key pre &allow-other-keys)
   (declare (indent defun))
   (let ((pkg (or (cl-getf funcs :pkg) "")))
-   (while (keywordp (car funcs))
-     (setq funcs (cdr (cdr funcs))))
-   (setq funcs (nvp--unquote funcs))
-   (when pre
-     (setq funcs (mapcar (lambda (fn)
-                           (let ((fn (if (symbolp fn) (symbol-name fn) fn)))
-                             (if (string-prefix-p pre fn) fn
-                               (intern (concat pre "-" fn)))))
-                         funcs)))
-   (macroexp-progn
-    (cl-loop for func in funcs
-       collect `(declare-function ,func ,pkg)))))
+    (while (keywordp (car funcs))
+      (setq funcs (cdr (cdr funcs))))
+    (setq funcs (nvp--unquote funcs))
+    (when pre
+      (setq funcs (mapcar (lambda (fn)
+                            (let ((fn (if (symbolp fn) (symbol-name fn) fn)))
+                              (if (string-prefix-p pre fn) fn
+                                (intern (concat pre "-" fn)))))
+                          funcs)))
+    (macroexp-progn
+     (cl-loop for func in funcs
+        collect `(declare-function ,func ,pkg)))))
 
 (defalias 'nvp-auto 'nvp-autoload)
 (put 'nvp-auto 'lisp-indent-function 'defun)
@@ -356,43 +356,51 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; - semantic-read-event : #<marker at 3072 in fw.el.gz>
 (defmacro nvp-input (type)
   "Return user input by TYPE.
+Trailing 's' indicates a string is returned. 
 See Info node `(elisp) Input Events'.
 
-* ~~~ Last command keys
-`lce'  -- Last key entered during `last-command-event' with ctrl chars stripped.
-`lcef' -- Full key from `last-command-event', possibly with meta chars.
-`lic'  -- Last input char using `edemacro-format-keys' with `last-input-event'.
-`licf' -- Full key from `last-input-event' using `edmacro-format-keys'.
+* ~~~ Last command/input keys
+`lcs'  -- last char from `last-command-event'
+`lis'  -- last char from `last-input-event'
+`lcks' -- keys (string) from `last-command-event' w/ ctrl chars stripped
+`liks' -- keys (string) from `last-input-event'
+
+* ~~~ Basic chars (no caps)
+`lbi'  -- Last basic input char: `event-basic-type', `last-input-event'
+`lbis' 
+`lbc'  -- Last basic command char
+`lbcs' 
+
+* ~~~ Events
+`lem'   -- `last-command-event' modifiers
+`lec'   -- `last-command-event' click count 
 
 * ~~~ Last command names
-`lrc'  -- For now, just `last-repeatable-command' - probably should filter out
+`lrcn' -- For now, just `last-repeatable-command' - probably should filter out
           uselss commands
-`tck'  -- Last key from `this-command-keys-vector'.
-
-* ~~~ Last event 
-`em'   -- event modifiers of `last-command-event'
-`ebt'  -- `event-basic-type' of `last-command-event'
-"
+`lcn'  -- Last command from last key in `this-command-keys-vector'."
   (let ((type (eval type)))
     (cond
      ;; === Last input key ===
-     ((eq type 'lce)
-      `(substring (key-description (vector last-command-event)) -1))
-     ((eq type 'lcef)
-      `(key-description (vector last-command-event)))
-     ((eq type 'lic)
-      '(kbd (substring (edmacro-format-keys (vector last-input-event)) -1)))
-     ((eq type 'licf)
-      '(kbd (edmacro-format-keys (vector last-input-event))))
+     ((eq type 'lcs) '(substring (key-description (vector last-command-event)) -1))
+     ((eq type 'lcks) '(key-description (vector last-command-event)))
+     ((eq type 'lis) '(substring (key-description (vector last-input-event)) -1))
+     ((eq type 'liks) '(key-description (vector last-input-event)))
+     ;;              '(kbd (edmacro-format-keys (vector last-input-event)))
 
+     ;; === Basic ====
+     ((eq type 'lbi) `(event-basic-type last-input-event))
+     ((eq type 'lbis) '(single-key-description (event-basic-type last-input-event)))
+     ((eq type 'lbc) '(event-basic-type last-command-event))
+     ((eq type 'lbcs) '(single-key-description (event-basic-type last-command-event)))
+     
      ;; === Events ===
-     ((eq type 'em) (event-modifiers last-command-event))
-     ((eq type 'ebt) (event-basic-type last-command-event))
-     ((eq type 'ec) (event-click-count last-command-event))
+     ((eq type 'lem) (event-modifiers last-command-event))
+     ((eq type 'lec) (event-click-count last-command-event))
      
      ;; === Last command (symbol) ===
-     ((eq type 'lrc) last-repeatable-command)
-     ((eq type 'tck)
+     ((eq type 'lrcn) 'last-repeatable-command)
+     ((eq type 'lcn)
       '(let* ((keys (this-command-keys-vector))
               (last-key (and (vectorp keys)
                              (aref keys (1- (length keys))))))

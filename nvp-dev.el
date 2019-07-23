@@ -85,6 +85,10 @@
   (let ((file (car (directory-files (expand-file-name ".") t "autoloads.el"))))
     (load-file file)))
 
+
+;; -------------------------------------------------------------------
+;;; Pretty print data
+
 ;; (defun nvp-dev-mode-cache (mode)
 ;;   "Examine, refresh MODE's config cache.
 ;; With prefix, examine contents instead of resetting them."

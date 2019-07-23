@@ -15,7 +15,7 @@
 
 (defun nvp-haskell-arrow ()
   (interactive)
-  (nvp-cycle (nvp-input 'lce) '("_" " -> ")))
+  (nvp-cycle (nvp-input 'lcs) '("_" " -> ")))
 
 ;; -------------------------------------------------------------------
 ;;; Compilation

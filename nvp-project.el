@@ -10,6 +10,10 @@
   (require 'cl-lib)
   (require 'subr-x))
 (require 'projectile)
+(autoload 'vc-git-root "vc-git")
+(autoload 'vc-hg-root "vc-hg")
+(autoload 'vc-bzr-root "vc-bzr")
+(autoload 'vc-svn-root "vc-svn")
 
 ;; dynamic local variables
 (defvar-local nvp-project--root '(".git" ".projectile" "test" "tests"))
@@ -23,19 +27,16 @@
 (defvar-local nvp-project-root-function ()
   "Function to determine root directory of current project.")
 
-(defsubst nvp-longest-string (&rest strs)
+(defsubst nvp-longest-elem (&rest strs)
   (cl-reduce (lambda (a b) (if (> (length a) (length b)) a b)) strs))
 
-(autoload 'vc-git-root "vc-git")
-(autoload 'vc-hg-root "vc-hg")
-(autoload 'vc-bzr-root "vc-bzr")
-(autoload 'vc-svn-root "vc-svn")
+;;;###autoload
 (defun nvp-project-root (path)
   "Try `nvp-project-root-function' if it is defined.
 Otherwise, look for version control directories, returing the longest path."
   (if nvp-project-root-function
       (funcall nvp-project-root-function)
-    (or (nvp-longest-string
+    (or (nvp-longest-elem
          (vc-git-root path)
          (vc-svn-root path)
          (vc-hg-root path)

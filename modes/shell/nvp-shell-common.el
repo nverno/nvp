@@ -11,6 +11,39 @@
 ;; dont expand when prefixed by [-/_.]
 (defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
 
+;; name of current command
+(defun nvp-shell-current-command ()
+  (let ((ppss (syntax-ppss))
+        (start (or (cdr (bounds-of-thing-at-point 'symbol)) (point))))
+    ;; ignore comments
+    (when (not (nth 4 ppss))
+      (save-excursion
+        (catch 'done
+          (while t
+            (skip-chars-backward "^:<>)(|&\`;\[" (line-beginning-position))
+            (if (or (not (nth 3 (syntax-ppss)))
+                    (eq (char-before) ?\`)
+                    (and (eq (char-before) ?\()
+                         (eq (char-before (1- (point))) ?$)))
+                (throw 'done nil)
+              ;; move backward out of enclosing string that shouldn't be a quoted
+              ;; command
+              (up-list -1 t t))))
+        (skip-syntax-forward " " start)
+        (cond
+         ;; '[[' or '['
+         ((looking-back "\\(?:^\\|[^[]\\)\\(\\[+\\)[ \t]*" (line-beginning-position))
+          (match-string 1))
+         ;; 'if' => if in situation like 'if ! hash', then
+         ;; return 'hash'
+         ((looking-at-p "if\\_>")
+          (if (looking-at "if[ \t]+!?[ \t]*\\([-+[:alnum:]]+\\)")
+              (match-string 1)
+            "if"))
+         ;; otherwise, return first symbol
+         (t (and (looking-at "[:+_\[\.[:alnum:]-]+")
+                 (match-string 0))))))))
+
 (defun nvp-shell-bounds-of-variable-at-point ()
   (save-excursion
     (let ((end (progn

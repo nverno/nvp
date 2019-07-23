@@ -25,8 +25,7 @@ If PADLEN is non-nil, start with PADLEN comment starters."
 Accounts for multi-character comments by recycling the second character."
   (let* ((comment (or start (string-trim-right comment-start)))
          (cont (if (> (length comment) 1) (aref comment 1) (aref comment 0))))
-    (concat (substring comment 0 1)
-            (make-string (max 0 (- length (length comment))) cont))))
+    (concat comment (make-string (max 0 (- length (length comment))) cont))))
 
 (defun nvp-comment-continued (length)
   "Make a comment continuation with LENGTH padding concated with `comment-end'."

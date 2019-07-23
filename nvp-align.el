@@ -46,7 +46,7 @@
   "Align BEG to END or bounds of paragraph by CHAR.
 With prefix or if char is '\\', ensure CHAR is at the end of the line."
   (interactive (nvp-with-region beg end 'paragraph :pulse t
-                 (list (nvp-input 'lce) beg end)))
+                 (list (nvp-input 'lcs) beg end)))
   (let ((re (concat "\\(\\s-+\\)" (regexp-quote char)
                     (if (or current-prefix-arg (string= char "\\")) "$" ""))))
     (align-regexp beg end re)))

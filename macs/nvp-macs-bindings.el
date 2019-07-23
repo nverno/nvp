@@ -102,7 +102,7 @@ or use REPEAT-KEY if specified."
         ;; only set first time
         (when (null overriding-terminal-local-map)
           (let ((tmap (make-sparse-keymap))
-                (repeat-key ,(when repeat (or repeat-key `(nvp-input 'lce)))))
+                (repeat-key ,(when repeat (or repeat-key `(nvp-input 'lcs)))))
             ,(when repeat
                (prog1 nil
                  (setq msg (concat msg (and bindings ", ") "[%s] repeat command"))))

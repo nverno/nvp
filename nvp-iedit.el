@@ -6,10 +6,6 @@
 ;; - toggle match restriction b/w global, defun, line
 ;; - expand regions during iedit
 
-;; FIXME:
-;; - Toggling region is pointless
-;; - Integrate w/ generic cycling interface
-
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -53,6 +49,10 @@
     (nvp-msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
       :delay 1 :keys t)))
 
+(defsubst nvp-iedit-report ()
+  (message "Restricted to current %s, %d matches."
+           nvp-iedit-restriction (length iedit-occurrences-overlays)))
+
 ;; allow expanding of restricted region when in `iedit-mode'
 (defun nvp-iedit-cycle-regions ()
   "Cycle `iedit-mode' region restrictions."
@@ -63,26 +63,29 @@
           (progn
             (setq nvp-iedit-restriction 'region)
             (iedit-restrict-region (region-beginning) (region-end)))
-       (pcase nvp-iedit-restriction
-         ((or 'line 'region)            ;restrict to defun
-          (setq nvp-iedit-restriction 'defun)
-          (save-mark-and-excursion
-            (setq mark-active nil)
-            (nvp-mark-defun)
-            (let ((beg (region-beginning))
-                  (end (region-end)))
-              (goto-char beg)
-              (while (and (< (point) end)
-                          (condition-case nil
-                              (iedit-add-occurrence-overlay occ-regexp
-                                                            nil 'forward end)
-                            (error (forward-word))))))))
-         (`defun                        ;expand to buffer
-             (setq nvp-iedit-restriction 'buffer)
-             (iedit-make-occurrences-overlays occ-regexp (point-min) (point-max)))
-         (_                             ;currently buffer => recycle
-          (setq nvp-iedit-restriction 'line)
-          (iedit-restrict-current-line)))))))
+        (pcase nvp-iedit-restriction
+          ((or 'line 'region)            ;restrict to defun
+           (setq nvp-iedit-restriction 'defun)
+           (save-mark-and-excursion
+             (setq mark-active nil)
+             (nvp-mark-defun)
+             (let ((beg (region-beginning))
+                   (end (region-end)))
+               (goto-char beg)
+               (while (and (< (point) end)
+                           (condition-case nil
+                               (iedit-add-occurrence-overlay occ-regexp
+                                                             nil 'forward end)
+                             (error (forward-word)))))))
+           (nvp-iedit-report))
+          (`defun                        ;expand to buffer
+              (setq nvp-iedit-restriction 'buffer)
+              (iedit-make-occurrences-overlays occ-regexp (point-min) (point-max))
+            (nvp-iedit-report))
+          (_                             ;currently buffer => recycle
+           (setq nvp-iedit-restriction 'line)
+           (iedit-restrict-current-line)))))
+    (nvp-repeat-command)))
 
 (provide 'nvp-iedit)
 ;;; nvp-iedit.el ends here

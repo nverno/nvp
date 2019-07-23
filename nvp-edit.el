@@ -175,7 +175,7 @@ With prefix sort in REVERSE."
   "Wrap next sexp with CHAR (last key pressed in calling command).
 Override default `sp-pair-list' if CHAR isn't a leading member.
 Prefix arg is passed to SP, wrapping the next _ARG elements."
-  (interactive (list (nvp-input 'lce) current-prefix-arg))
+  (interactive (list (nvp-input 'lcs) current-prefix-arg))
   (let ((sp-pair-list
          (if (not (cl-member char sp-pair-list :test #'string= :key #'car))
              `((,char . ,char))

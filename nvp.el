@@ -136,7 +136,7 @@
 
 
 ;; -------------------------------------------------------------------
-;;; general read helpers
+;;; Utils
 
 ;; add default to prompt in non-nil
 (defsubst nvp-prompt-default (prompt &optional default)
@@ -154,6 +154,11 @@
       (nvp-completing-read (nvp-prompt-default prompt default) collection pred
                            match initial hist default inherit)
     (read-from-minibuffer prompt nil nil nil nil default)))
+
+(defun nvp-company-local (backends)
+  "Make a buffer-local company backend."
+  (set (make-local-variable 'company-backends)
+       (delete-dups (cl-pushnew backends company-backends :test #'equal))))
 
 
 ;; -------------------------------------------------------------------
@@ -294,7 +299,7 @@ Dispatches to generic handlers with ARG."
 ;; -------------------------------------------------------------------
 ;;; Paredit 
 (eval-when-compile (require 'paredit))
-(nvp-decl :pkg "paredit" paredit-move-past-close-and paredit-blink-paren-match
+(nvp-decl paredit-move-past-close-and paredit-blink-paren-match
   paredit-indent-region paredit-splice-reindent)
 
 (defun nvp-paredit-close-round ()
@@ -343,8 +348,6 @@ Dispatches to generic handlers with ARG."
 ;; -------------------------------------------------------------------
 ;;; IDO
 
-;; XXX: switch over to counsel+ivy, at least for some stuff like
-;; info-lookup, ag, other interfaces that look good
 (defun nvp-ido-refresh-homedir ()
   "Refresh completion for homedir while ido is finding a file."
   (interactive)
@@ -378,6 +381,29 @@ On error (read-only), quit without selecting."
 
 
 ;; -------------------------------------------------------------------
+;;; Repeat
+
+(defvar nvp-repeat-key-enabled t)
+
+;; enable transient map for calling command
+;; defaults to last basic char (no caps)
+(defun nvp-repeat-command (&optional key no-indicator)
+  (when (and nvp-repeat-key-enabled
+             (null overriding-terminal-local-map)
+             (not (memq this-command `(nvp-repeat-command ,last-command))))
+    (let* ((repeat-key (or key (nvp-input 'lbi)))
+           (repeat-key-str (single-key-description repeat-key)))
+      (when repeat-key
+        (unless no-indicator (nvp-indicate-cursor-pre))
+        (set-transient-map
+         (let ((map (make-sparse-keymap)))
+           (define-key map (vector repeat-key) this-command)
+           map)
+         t
+         (unless no-indicator
+           (lambda () (nvp-indicate-cursor-post))))))))
+
+;; -------------------------------------------------------------------
 ;;; Marks
 
 ;; FIXME:
@@ -392,9 +418,10 @@ On error (read-only), quit without selecting."
   (beginning-of-defun-comments))
 
 ;; FIXME: on repeats the point moves back one line for some reason.
-(defun nvp-mark-defun (arg &optional interactive-p)
+(defun nvp-mark-defun (&optional arg interactive-p)
   "Mark defun, skipping preceding comments."
   (interactive (list (prefix-numeric-value current-prefix-arg) 'interactive))
+  (or arg (setq arg 1))
   (let ((skip-comments (not (region-active-p))))
     (setq prefix-arg (max 1 (/ (lsh arg -1) 4)))
     (funcall nvp-mark-defun-function prefix-arg)
@@ -403,15 +430,6 @@ On error (read-only), quit without selecting."
       (nvp-use-transient-bindings
         (("c" . nvp-mark-expand-to-previous-comments))
         :repeat-key "h"))))
-
-
-;; -------------------------------------------------------------------
-;;; Company
-
-(defun nvp-company-local (backends)
-  "Make a buffer-local company backend."
-  (set (make-local-variable 'company-backends)
-       (delete-dups (cl-pushnew backends company-backends :test #'equal))))
 
 
 ;; -------------------------------------------------------------------
@@ -430,6 +448,10 @@ On error (read-only), quit without selecting."
   (let (indent-tabs-mode)
     (apply old-fn args)))
 (nvp-advise-commands 'nvp--no-tabs :around '(comment-dwim align align-regexp))
+
+;; -------------------------------------------------------------------
+;;; Repeats
+
 
 (provide 'nvp)
 ;;; nvp.el ends here

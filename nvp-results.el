@@ -18,7 +18,7 @@
 (nvp-decls)
 
 ;; -------------------------------------------------------------------
-;;; Utils
+;;; Pretty printing
 
 ;; princ centered TITLE
 (defsubst nvp-results--princ-title (title &optional width char)
@@ -26,6 +26,30 @@
   (or char (setq char "~"))
   (princ (format "\n%s\n%s\n\n" (nvp-s-center (- width (length title)) title)
                  (nvp-s-repeat width "~"))))
+
+;; FIXME: just use `cl-prettyprint'?
+;; see `ido-pp' && `smex-pp'
+(defun nvp-pp-list (list)
+  (let (print-level eval-expression-print-level print-length
+                    eval-expression-print-length)
+    (while list
+      (let* ((elt (car list))
+             (s (if (consp elt) (car elt) elt)))
+        (if (and (stringp s) (= (length s) 0))
+            (setq s nil))
+        (if s
+            (prin1 elt (current-buffer)))
+        (if (and (setq list (cdr list)) s)
+            (insert "\n "))))
+    (insert "\n)\n")))
+
+(defun nvp-pp-hash (hash)
+  (maphash (lambda (key val)
+             (pp key)
+             (princ " => ")
+             (pp val)
+             (terpri))
+           (symbol-value variable)))
 
 ;; -------------------------------------------------------------------
 ;;; View list - simple tabulated display

@@ -1,10 +1,5 @@
 ;;; nvp-complete.el --- random completion -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-15 19:00:12>
-;; Created: 29 November 2016
-
 ;;; Commentary:
 
 ;; FIXME: this should be cleaned up to be of any use

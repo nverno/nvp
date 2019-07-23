@@ -52,6 +52,10 @@
 
 ;; Get documentation for SYMBOL
 (defun nvp-elisp-hap--elisp-doc (symbol)
+  ;; (let ((display-buffer-alist '(("\\`\\*Help\\*\\'" display-buffer-no-window))))
+  ;;   (if (fboundp symbol)
+  ;;       (describe-function symbol)
+  ;;     (documentation-property symbol 'variable-documentation)))
   (let* ((doc (if (fboundp symbol)
                   (documentation symbol)
                 (documentation-property symbol 'variable-documentation))))

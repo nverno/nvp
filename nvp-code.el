@@ -31,7 +31,7 @@
 (defun nvp-hs-init (&optional arg)
   (interactive "P")
   (hs-minor-mode)
-  (nvp-bind-keys nvp-narrow/fold-keymap
+  (nvp-bind-keys narrow-map
     ("f"   . nil)
     ("f f" . nvp-hs-toggle)
     ("f a" . hs-hide-all)

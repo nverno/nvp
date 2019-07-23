@@ -23,7 +23,7 @@
 (defun nvp-edit-aux-load ())
 
 (defvar nvp-list-keymap)
-(define-key nvp-list-keymap (nvp-input 'lce) nil)
+(define-key nvp-list-keymap (nvp-input 'lcs) nil)
 (nvp-bind-keys nvp-list-keymap
   ("c"  . nvp-list-insert-commas)
   ("("  . nvp-list-wrap-parens)

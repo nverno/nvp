@@ -1,11 +1,4 @@
-;;; sh-eldoc.el --- eldoc for bash/sh  -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-15 14:09:00>
-;; Created:  4 December 2016
+;;; nvp-sh-eldoc.el --- eldoc for bash/sh  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -18,14 +11,15 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro))
+(require 'nvp-shell-common)
 (require 'nvp-sh-help)
 (require 'eldoc)
 
-(defvar sh-eldoc-cache (make-hash-table :test 'equal))
+(defvar nvp-sh-eldoc-cache (make-hash-table :test 'equal))
 
 ;; return formatted doc string for bash builtins
-(defun sh-eldoc-builtin-string (cmd)
-  (or (gethash cmd sh-eldoc-cache)
+(defun nvp-sh-eldoc-builtin-string (cmd)
+  (or (gethash cmd nvp-sh-eldoc-cache)
       (let ((str (nvp-sh-help-bash-builtin-sync cmd 'synopsis)))
         ;; remove 'cmd: ' and trailing newline
         (setq str (substring str (+ 2 (length cmd)) (1- (length str))))
@@ -33,11 +27,11 @@
         (add-text-properties
          0 (length cmd)
          (list 'face 'font-lock-function-name-face) str)
-        (puthash cmd str sh-eldoc-cache))))
+        (puthash cmd str nvp-sh-eldoc-cache))))
 
 ;; get synopsis from man output asynchronously and cache it
-(defun sh-eldoc--man (cmd)
-  (sh-with-man-help cmd nil "*sh-eldoc*"
+(defun nvp-sh-eldoc--man (cmd)
+  (sh-with-man-help cmd nil
     (goto-char (point-min))
     (ignore-errors
       (when (search-forward "SYNOPSIS")
@@ -54,23 +48,23 @@
           ;; (buffer-substring
           ;;  (+ (length cmd) (point)) (point-at-eol))
           )
-         sh-eldoc-cache)
+         nvp-sh-eldoc-cache)
         (erase-buffer)))))
 
 ;; get doc string from man
-(defun sh-eldoc-man-string (cmd)
-  (or (gethash cmd sh-eldoc-cache)
-      (ignore (sh-eldoc--man cmd))))
+(defun nvp-sh-eldoc-man-string (cmd)
+  (or (gethash cmd nvp-sh-eldoc-cache)
+      (ignore (nvp-sh-eldoc--man cmd))))
 
 ;;;###autoload
-(defun sh-eldoc-function ()
+(defun nvp-sh-eldoc-function ()
   "Return eldoc string for bash functions (builtins and those avaliable \
 from `man %s'."
-  (let ((func (nvp-sh-help-current-command)))
+  (let ((func (nvp-shell-current-command)))
     (and func
          (sh-with-bash/man func
-           (sh-eldoc-builtin-string func) ;; synchronously
-           (sh-eldoc-man-string func))))) ;; async
+           (nvp-sh-eldoc-builtin-string func) ;; synchronously
+           (nvp-sh-eldoc-man-string func))))) ;; async
 
-(provide 'sh-eldoc)
-;;; sh-eldoc.el ends here
+(provide 'nvp-sh-eldoc)
+;;; nvp-sh-eldoc.el ends here

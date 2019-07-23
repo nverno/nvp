@@ -148,11 +148,10 @@ If BODY is non-nil, it is executed in place of the default search.
     `(progn
        (require 'nvp-ag-config)
        (let* ((dir (nvp-prefix '(4 64)
-                     (read-from-minibuffer
+                     (read-directory-name 
                       (format "Root directory ('%s'): " default-directory)
-                      default-directory nil nil 'nvp-search-history
-                      default-directory)
-                     ,(if elisp 'nvp/emacs '(getenv "HOME"))))
+                      default-directory nil 'match)
+                     ,(if elisp 'nvp/emacs 'default-directory)))
               (sym (let ((tap (nvp-tap 'tap)))
                      (if (or (nvp-prefix '(4 64)) (null tap))
                          (read-from-minibuffer

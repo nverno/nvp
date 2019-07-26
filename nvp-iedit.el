@@ -11,7 +11,7 @@
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'iedit)
-(nvp-declare nvp-mark-defun)
+(nvp-decls)
 
 ;; Add iedit bindings
 (nvp-bind-keys iedit-mode-keymap
@@ -74,8 +74,8 @@
                (goto-char beg)
                (while (and (< (point) end)
                            (condition-case nil
-                               (iedit-add-occurrence-overlay occ-regexp
-                                                             nil 'forward end)
+                               (iedit-add-occurrence-overlay
+                                occ-regexp nil 'forward end)
                              (error (forward-word)))))))
            (nvp-iedit-report))
           (`defun                        ;expand to buffer

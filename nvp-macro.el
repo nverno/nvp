@@ -838,33 +838,6 @@ VAR is a symbol and FORM is evaluated."
          ,@body))))
 
 ;; -------------------------------------------------------------------
-;;; Folding
-
-(defmacro nvp-with-hs-block (start end &rest body)
-  "Do hideshow with START and END regexps."
-  (declare (indent defun))
-  `(progn
-     (require 'hideshow)
-     (unless hs-minor-mode (hs-minor-mode))
-     (let ((hs-block-start-regexp ,start)
-           (hs-block-end-regexp ,end))
-       ,@(or body (list '(hs-toggle-hiding))))))
-
-;; -------------------------------------------------------------------
-;;; Control flow
-
-(cl-defmacro nvp-toggled-if (then &rest rest &key this-cmd &allow-other-keys)
-  "Do THEN if `last-command' wasn't `this-command', otherwise do REST \
-and set `this-command' to nil so opposite happens next time."
-  (declare (indent 1))
-  (while (keywordp (car rest))
-    (setq rest (cdr (cdr rest))))
-  `(if (not (eq this-command last-command))
-       ,then
-     (prog1 (progn ,@rest)
-       (setq this-command ,this-cmd))))
-
-;; -------------------------------------------------------------------
 ;;; Display Results
 
 (cl-defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body
@@ -1069,25 +1042,51 @@ or PREDICATE is non-nil and returns nil."
 
 
 ;; -------------------------------------------------------------------
-;;; Obsolete: function generators
-;; remove these
-;;-- marking
+;;; Function building
 
-;; FIXME: most of these should either be generic or act on local variables
-;; instead of being defined many times
-;; Marks
+;;-- Toggle
+(cl-defmacro nvp-toggled-if (then &rest rest &key this-cmd &allow-other-keys)
+  "Do THEN if `last-command' wasn't `this-command', otherwise do REST \
+and set `this-command' to nil so opposite happens next time."
+  (declare (indent 1))
+  (while (keywordp (car rest))
+    (setq rest (cdr (cdr rest))))
+  `(if (not (eq this-command last-command))
+       ,then
+     (prog1 (progn ,@rest)
+       (setq this-command ,(or this-cmd ''nvp-toggled-if)))))
+
+;;-- Marks
 (defmacro nvp--mark-defun (&optional first-time &rest rest)
   "Mark blocks, expanding successively."
-  `(if (or (and (eq last-command this-command) (mark t))
-           (and transient-mark-mode mark-active))
-       (set-mark
-        (save-excursion
-          (goto-char (mark))
-          ,@(or rest
-                (list
-                 '(smie-forward-sexp 'halfsexp)
-                 '(point)))))
-     ,(or first-time '(mark-defun))))
+  `(let (deactivate-mark)
+     (if (and (called-interactively-p 'any)
+              (or (and (eq last-command this-command) (mark t))
+                  (and transient-mark-mode mark-active)))
+         (set-mark
+          (save-excursion
+            (goto-char (mark))
+            ,@(or rest
+                  (list
+                   '(smie-forward-sexp 'halfsexp)
+                   '(point)))))
+       ,(or first-time '(mark-defun)))))
+
+;;-- Folding
+(defmacro nvp-with-hs-block (start end &rest body)
+  "Do hideshow with START and END regexps."
+  (declare (indent defun))
+  `(progn
+     (require 'hideshow)
+     (unless hs-minor-mode (hs-minor-mode))
+     (let ((hs-block-start-regexp ,start)
+           (hs-block-end-regexp ,end))
+       ,@(or body (list '(hs-toggle-hiding))))))
+
+;; -------------------------------------------------------------------
+;;; *Obsolete* Function generators
+;; FIXME: most of these should either be generic or act on local variables
+;; instead of being defined many times
 
 ;;-- Newline
 

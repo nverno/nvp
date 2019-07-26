@@ -148,17 +148,6 @@
     (when target
       (nvp-makefile-add-dep ".PHONY" target 'toggle))))
 
-;;; Compile
-;;;###autoload
-(defun nvp-makefile-save-and-compile (&optional arg)
-  "Save and compile.
-With prefix ARG, run `helm-make'."
-  (interactive "P")
-  (save-buffer)
-  (if arg (call-interactively 'helm-make)
-    (call-interactively 'nvp-compile))
-  (pop-to-buffer next-error-last-buffer))
-
 ;; -------------------------------------------------------------------
 ;;; Snippets
 

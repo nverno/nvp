@@ -385,9 +385,24 @@ On error (read-only), quit without selecting."
 
 (defvar nvp-repeat-key-enabled t)
 
+(defun nvp-repeat-msg (repeat-key &optional bindings)
+  (concat
+   (format "[%S] repeat" repeat-key)
+   (and bindings ", ")
+   (mapconcat (lambda (b)
+                (if-let* ((msg (plist-get b :msg)))
+                    (format "[%S] %s" (car b) msg)
+                  (pcase (cadr b)
+                    (`(,(or 'function 'quote) ,sym)
+                     (if (symbolp sym)
+                         (format "[%S] %S" (car b) sym)
+                       (format "[%S]" (car b))))
+                    (_ (format "[%S]" (car b))))))
+              bindings ", ")))
+
 ;; enable transient map for calling command
 ;; defaults to last basic char (no caps)
-(defun nvp-repeat-command (&optional key no-indicator)
+(defun nvp-repeat-command (&optional key no-indicator bindings &rest args)
   (when (and nvp-repeat-key-enabled
              (null overriding-terminal-local-map)
              (not (memq this-command `(nvp-repeat-command ,last-command))))
@@ -397,11 +412,20 @@ On error (read-only), quit without selecting."
         (unless no-indicator (nvp-indicate-cursor-pre))
         (set-transient-map
          (let ((map (make-sparse-keymap)))
-           (define-key map (vector repeat-key) this-command)
+           (pcase-dolist (`(,k ,b) bindings)
+             (define-key map (kbd k) (eval b)))
+           (define-key map (vector repeat-key)
+             (if args
+               `(lambda () (interactive)
+                  (setq this-command ',this-command)
+                  (funcall-interactively #',this-command ,@args))
+               this-command))
            map)
          t
          (unless no-indicator
-           (lambda () (nvp-indicate-cursor-post))))))))
+           (lambda () (nvp-indicate-cursor-post)
+             (setq prefix-arg nil))))
+        (or (minibufferp) (message (nvp-repeat-msg repeat-key-str bindings)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Marks
@@ -418,18 +442,17 @@ On error (read-only), quit without selecting."
   (beginning-of-defun-comments))
 
 ;; FIXME: on repeats the point moves back one line for some reason.
-(defun nvp-mark-defun (&optional arg interactive-p)
+(defun nvp-mark-defun (&optional arg interactive)
   "Mark defun, skipping preceding comments."
   (interactive (list (prefix-numeric-value current-prefix-arg) 'interactive))
-  (or arg (setq arg 1))
   (let ((skip-comments (not (region-active-p))))
-    (setq prefix-arg (max 1 (/ (lsh arg -1) 4)))
-    (funcall nvp-mark-defun-function prefix-arg)
+    ;; (when interactive
+    ;;   (setq prefix-arg (max 1 (/ (lsh arg -1) 4))))
+    (funcall nvp-mark-defun-function arg)
     (and skip-comments (comment-forward (point-max)))
-    (when interactive-p
-      (nvp-use-transient-bindings
-        (("c" . nvp-mark-expand-to-previous-comments))
-        :repeat-key "h"))))
+    (when interactive
+      (nvp-repeat-command nil nil
+        '(("c" #'nvp-mark-expand-to-previous-comments))))))
 
 
 ;; -------------------------------------------------------------------

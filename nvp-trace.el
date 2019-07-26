@@ -36,11 +36,8 @@
   (dolist (fn (cdr (assoc (intern group) nvp-trace-group-alist)))
     (untrace-function fn)))
 
-;; FIXME:
 (defun nvp-trace-buffer ()
   (interactive)
-  ;; (let (other-window-scroll-buffer)
-  ;;   )
   (view-buffer-other-window trace-buffer))
 
 (provide 'nvp-trace)

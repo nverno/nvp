@@ -1,13 +1,5 @@
 ;;; nvp-java.el --- ... -*- lexical-binding: t-*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-27 15:42:40>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/java-tools
-;; Package-Requires: 
-;; Created: 12 November 2016
-
 ;;; Commentary:
 
 ;;; TODO:
@@ -21,7 +13,7 @@
 (require 'eclim)
 (require 'eclimd)
 (require 'nvp-parse)
-(nvp-declare "" nvp-compile nvp-abbrev-expand-p nvp-maven-compile)
+(nvp-decl nvp-compile nvp-abbrev-expand-p nvp-maven-compile)
 
 (declare-function eclim--maven-pom-path "eclim-maven")
 (declare-function eclim--project-read "eclim-project")

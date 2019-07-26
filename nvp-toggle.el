@@ -1,32 +1,16 @@
 ;;; nvp-toggle.el --- toggle/insert stuff  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; - see repeat.el for repeating last command with last input
-;; - helm real command: #<marker at 13548 in helm-lib.el>
-;; - edmacro
-;; - prefix commands in simple.el #<marker at 170851 in simple.el.gz>
-;; - `suppress-keymap', `key-description (this-single-command-keys)'
-;;   #<marker at 30452 in subr.el.gz>
-;; - semantic also uses suppress keymap
-;; - event manipulation: #<marker at 44624 in subr.el.gz>
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib)
   (require 'time-stamp))
-(nvp-decls)
+(require 'nvp)
 (require 'files-x)
 (declare-function time-stamp "time-stamp")
+(nvp-decls)
 (nvp-auto "nvp-util" 'nvp-regex-map-across-matches)
-
-;;; FIXME:
-;; (defun nvp-toggle--repeat (arg)
-;;   (and (consp arg) (setq arg (car arg)))
-;;   (let ((repeat-key last-input-event))
-;;     (unless (current-message)
-;;       (message "(Type %s to repeat %s)"
-;;                (format-kbd-macro (vector repeat-key))
-;;                ()))))
 
 ;;;###autoload
 (defun nvp-toggle-timestamp (arg)
@@ -40,50 +24,23 @@
                                   (_ "15/Last modified: <%%>$")))))
     (time-stamp)))
 
-;; FIXME: cleanup repeated calling
-;; In/De-crement numbers in region,  decremnent with prefix argument
 ;;;###autoload
 (defun nvp-toggle-increment-numbers (arg &optional bnds inc)
-  "Simple function to increment numbers in region. Decrement with prefix.
-Call repeatedly with 'i'."
+  "Iincrement numbers in region. 
+Decrement with prefix."
   (interactive "P")
   (unless bnds
-    (setq bnds
-          (nvp-tap 'btap
-                   (if (eq 16 (car arg))
-                       (intern (read-from-minibuffer
-                                "Thingatpt (default 'paragraph): "
-                                nil nil nil nil 'paragraph))
-                     'paragraph)
-                   :pulse t)))
+    (setq bnds (nvp-tap 'bdwim 'paragraph)))
   (unless bnds (user-error "No region to search in."))
-  (setq inc (if (eq 4 (car arg)) -1 1))
+  (or inc (setq inc (if arg -1 1)))
   (let (deactivate-mark)
     (nvp-regex-map-across-matches
      (lambda (ms)
        (replace-match (number-to-string (+ inc (string-to-number ms)))))
-     "\\([-]?[[:digit:]]+\\)" bnds nil 1)
-    ;; #<marker at 13548 in helm-lib.el>
-    ;; repeating the command
-    (if (null arg) (message "No prefix arg")
-      (setq current-prefix-arg arg)
-      (message "Prefix: %S" arg))
-    (setq prefix-arg arg)
-    (set-transient-map
-     (let ((km (make-composed-keymap `(,(make-sparse-keymap) universal-argument-map)
-                                     universal-argument-map)))
-       ;; (define-key km (kbd "C-u") #'universal-argument)
-       ;; (define-key km (kbd "C-u C-u") #'universal-argument-more)
-       (define-key km (vector last-command-event)
-         (lambda ()
-           (interactive)
-           (call-interactively 'nvp-toggle-increment-numbers)))
-       (define-key km "d" (lambda ()
-                            (interactive)
-                            (setq current-prefix-arg '(4))
-                            (call-interactively 'nvp-toggle-increment-numbers)))
-       km)
-     t)))
+     "\\([-]?[[:digit:]]+\\)" bnds nil 1))
+  (nvp-repeat-command nil nil
+    `(("-" (nvp-ifn nil (nvp-toggle-increment-numbers 1 ',bnds -1))
+       :msg "decrement"))))
 
 ;; -------------------------------------------------------------------
 ;;; Toggle file/directory local variables
@@ -198,7 +155,8 @@ With prefix ARG, just refresh defaults."
               ;; were never added
               (font-lock-add-keywords major-mode mode-fonts))
           (font-lock-add-keywords major-mode mode-fonts))
-        (font-lock-refresh-defaults)))))
+        (font-lock-refresh-defaults)))
+    (nvp-repeat-command)))
 
 ;; -------------------------------------------------------------------
 ;;; Text
@@ -209,7 +167,8 @@ the current paragraph."
   (interactive
    (nvp-tap-or-region 'bdwim (nvp-prefix 1 'buffer :test '> 'paragraph) :pulse t))
   (nvp-toggled-if (untabify beg end)
-    (tabify beg end)))
+    (tabify beg end))
+  (nvp-repeat-command nil nil nil beg end))
 
 ;; (defun nvp-toggle-case ()
 ;;   (interactive)

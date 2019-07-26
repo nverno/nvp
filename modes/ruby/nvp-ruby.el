@@ -76,12 +76,11 @@
   (other-window 1))
 
 ;; Movement
-(defsubst nvp-ruby-beginning-of-block ()
+(defun nvp-ruby-beginning-of-block ()
   (interactive)
   (ruby-end-of-block -1))
 
-;; FIXME: Marking
-(defsubst nvp-ruby-mark-block ()
+(defun nvp-ruby-mark-block ()
   (interactive)
   (nvp--mark-defun))
 

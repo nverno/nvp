@@ -113,6 +113,50 @@ Skips to end of tabbed block."
 ;;      ("\\${\\s-*}")
 ;;     ))
 
+;; -------------------------------------------------------------------
+;;; Compile
+
+(defun nvp-makefile-save-and-compile (&optional arg)
+  "Save and compile.
+With prefix ARG, run `helm-make'."
+  (interactive "P")
+  (save-buffer)
+  (if arg (call-interactively 'helm-make)
+    (call-interactively 'nvp-compile))
+  (pop-to-buffer next-error-last-buffer))
+
+;; modified `helm--make-target-list-qp'
+;; read targets from 'make -prqnR' output
+(defun nvp-makefile-targets--make (makefile)
+  (let ((dir (if (file-directory-p makefile) makefile
+               (file-name-directory makefile)))
+        target targets)
+    (with-temp-buffer
+      (insert (shell-command-to-string (concat "make -prqnRs -C " dir)))
+      (goto-char (point-min))
+      ;; (re-search-forward "^# Files")
+      (while (re-search-forward "^\\([^#:\n\t ]+\\):\\([^=]\\|$\\)" nil t)
+        (setq target (match-string-no-properties 1))
+        (unless (or (save-excursion
+                      (goto-char (match-beginning 0))
+                      (forward-line -1)
+                      (looking-at "^# Not a target:"))
+                    (string-match "^\\([/a-zA-Z0-9_. -]+/\\)?\\." target))
+          (push target targets)))
+      targets)))
+
+;; read targets from source
+(defun nvp-makefile-targets--source (makefile)
+  (let (targets)
+    (with-temp-buffer
+      (insert-file-contents makefile)
+      (goto-char (point-min))
+      (while (re-search-forward "^\\([^#: \n]+\\):" nil t)
+        (let ((str (match-string 1)))
+          (unless (string-match "^\\." str)
+            (push str targets)))))
+    (nreverse targets)))
+
 ;; ------------------------------------------------------------
 ;;; Hooks
 

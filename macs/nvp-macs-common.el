@@ -5,6 +5,7 @@
 (require 'cl-lib)
 (require 'subr-x)
 (require 'macroexp)
+(require 'dash)
 
 ;; -------------------------------------------------------------------
 ;;; OS 
@@ -52,6 +53,22 @@
 
 ;; -------------------------------------------------------------------
 ;;; Building functions
+
+(defmacro nvp-ifn (match-form &rest body)
+  "Return interactive lambda, destructuring with `-lambda'."
+  (declare (indent defun) (debug t))
+  (cond
+   ((null match-form)
+    `(lambda nil (interactive) ,@body))
+   ((-all? 'symbolp match-form)
+    `(lambda (interactive) ,match-form ,@body))
+   (t
+    (let* ((inputs
+            (--map-indexed
+             (list it (make-symbol (format "input%d" it-index))) match-form)))
+      `(lambda ,(--map (cadr it) inputs)
+         (interactive)
+         (-let* ,inputs ,@body))))))
 
 (defmacro nvp-! (fun)
   "Return function negating result of FUN."

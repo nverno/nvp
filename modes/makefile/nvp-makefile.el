@@ -26,16 +26,22 @@
 
 ;; -------------------------------------------------------------------
 ;;; Things-at-point
-
-(defun nvp-makefile-bounds-of-macro-at-point ()
-  (save-excursion
-    (skip-chars-backward "^$)}:#= \t\n" ())))
+;; macro => `make-macro' `macrostep-make-bounds-of-macro-at-point'
 
 ;; -------------------------------------------------------------------
 ;;; Font-lock
 ;; TODO:
 ;; - info/warn/error
 ;; - remove string fontification in #define blocks where it is incorrect.
+;; (defun nvp-makefile-font-lock-args (limit)
+;;   (let (res)
+;;     (goto-char (match-beginning 0))
+;;     (forward-sexp)))
+
+(nvp-font-lock-add-defaults 'makefile-gmake-mode
+  ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
+  ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
+  ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend)))
 
 ;; ------------------------------------------------------------
 ;;; Web topics

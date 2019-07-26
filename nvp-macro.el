@@ -1070,7 +1070,7 @@ and set `this-command' to nil so opposite happens next time."
                   (list
                    '(smie-forward-sexp 'halfsexp)
                    '(point)))))
-       ,(or first-time '(mark-defun)))))
+       ,(or first-time '(nvp-mark-defun)))))
 
 ;;-- Folding
 (defmacro nvp-with-hs-block (start end &rest body)

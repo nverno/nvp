@@ -54,8 +54,12 @@
 (defun nvp-help-font-face (pos)
   "Info on char face at POS."
   (interactive "d")
-  (let ((face (or (get-char-property (point) 'read-face-name)
-                  (get-char-property (point) 'face))))
+  (let ((face (if current-prefix-arg
+                  (read-face-name "Face: ")
+                (or (get-char-property (point) 'read-face-name)
+                    (get-char-property (point) 'face)
+                    (read-face-name "Face: ")))))
+    (describe-face face)
     (if face (message "Face: %s" face)
       (message "No face at %d" pos))))
 

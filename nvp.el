@@ -134,6 +134,18 @@
   "Gaudy type face - bold & italicized."
   :group 'nvp)
 
+(defface nvp-info-face `((t (:inherit font-lock-variable-name-face :slant italic)))
+  "Slanted info face."
+  :group 'nvp)
+
+(defface nvp-warning-face `((t (:inherit font-lock-keyword-face :slant italic)))
+  "Slanted warning face."
+  :group 'nvp)
+
+(defface nvp-error-face `((t (:inherit font-lock-warning-face :slant italic)))
+  "Slanted error face."
+  :group 'nvp)
+
 
 ;; -------------------------------------------------------------------
 ;;; Utils
@@ -471,10 +483,6 @@ On error (read-only), quit without selecting."
   (let (indent-tabs-mode)
     (apply old-fn args)))
 (nvp-advise-commands 'nvp--no-tabs :around '(comment-dwim align align-regexp))
-
-;; -------------------------------------------------------------------
-;;; Repeats
-
 
 (provide 'nvp)
 ;;; nvp.el ends here

@@ -1,15 +1,5 @@
 ;;; nvp-erlang.el ---  -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-08 06:36:19>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/erlang-tools
-;; Package-Requires: 
-;; Created: 20 December 2016
-
 ;;; Commentary:
-
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -19,8 +9,6 @@
 (declare-function erlang-mark-clause "erlang")
 (declare-function erlang-mark-function "erlang")
 (declare-function erlang-compile "erlang")
-
-(nvp-package-define-root)
 
 ;; -------------------------------------------------------------------
 ;;; Tag

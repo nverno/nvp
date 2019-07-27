@@ -166,9 +166,10 @@ Used to set `end-of-defun-function'."
 (defun nvp-sh-dynamic-complete-vars ()
   "Complete local variables, but fail if none match to delegate to bash completion."
   (nvp-unless-ppss 'cmt
-    (when-let* ((bnds (bounds-of-thing-at-point 'shell-var)))
-      (list (car bnds) (cdr bnds)
+    (-when-let ((beg . end) (bounds-of-thing-at-point 'shell-var))
+      (list beg end
             (completion-table-dynamic (lambda (_) (nvp-sh-vars-before-point)))
+            :exclusive 'no
             :annotation-function
             (lambda (s) (ignore-errors (get-text-property 0 'annotation s)))))
     ;; (save-excursion

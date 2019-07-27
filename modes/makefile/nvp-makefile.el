@@ -24,14 +24,16 @@
 
 ;; -------------------------------------------------------------------
 ;;; Completion
-(defun nvp-makefile-env-table ()
-  (with-temp-buffer
-    (insert
-     (shell-command-to-string
-      (format "make -nspf %s | awk 'f{print; f=0} /^# environment|^# makefile/{f=1}"
-              (buffer-file-name))))
-    (goto-char (point-min))
-    ()))
+
+;; (defun nvp-makefile-env-table ()
+;;   (with-temp-buffer
+;;     (insert
+;;      (shell-command-to-string
+;;       (format "make -nspf %s | awk 'f{print; f=0} /^# environment|^# makefile/{f=1}"
+;;               (buffer-file-name))))
+;;     (goto-char (point-min))
+;;     ()))
+
 ;; -------------------------------------------------------------------
 ;;; Things-at-point
 ;; macro => `make-macro' `macrostep-make-bounds-of-macro-at-point'

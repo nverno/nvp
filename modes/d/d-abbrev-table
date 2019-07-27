@@ -1,0 +1,8 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'd-mode-abbrev-table
+  '(
+    ("imp" ["import ;" 1 nil nil] expand-abbrev-hook :system t)
+    )
+  "D-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

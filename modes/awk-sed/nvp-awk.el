@@ -1,12 +1,5 @@
 ;;; nvp-awk.el --- awk extensions -*- lexical-binding: t; -*-
 
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-09.23>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 26 February 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
@@ -32,6 +25,41 @@
 ;; -------------------------------------------------------------------
 ;;; Completion
 ;; PROCINFO['identifiers'], FUNCTAB
+
+(defvar nvp-awk-builtins
+  (eval-when-compile
+    (with-temp-buffer
+      (insert-file-contents
+       (expand-file-name
+        "doc/builtins.el" (file-name-directory (nvp-load-file-name))))
+      (car (read-from-string (buffer-string))))))
+
+(defvar nvp-awk-eldoc-cache (make-hash-table :test 'equal))
+
+(defun nvp-awk-eldoc--string (cmd)
+  (or (gethash cmd nvp-awk-eldoc-cache)
+      (when-let ((plist (cdr (assoc-string cmd nvp-awk-builtins))))
+        (let ((pars (plist-get plist :param)))
+          (setf (gethash cmd nvp-awk-eldoc-cache)
+                (format "%s: %s" (propertize cmd 'face 'font-lock-function-name-face)
+                        (if pars (concat "(" (mapconcat 'identity pars ", ") ")")
+                          (plist-get plist :desc))))))))
+
+(defun nvp-awk-eldoc-function ()
+  (when-let ((sym (thing-at-point 'symbol)))
+    (nvp-awk-eldoc--string sym)))
+
+(defun nvp-awk-command-completion ()
+  (-when-let ((beg . end) (bounds-of-thing-at-point 'symbol))
+    (list beg end (completion-table-merge
+                   nvp-awk-builtins
+                   (info-lookup->completions 'symbol 'awk-mode))
+          :exclusive 'no
+          :company-docsig
+          (lambda (s) (plist-get (cdr (assoc-string s nvp-awk-builtins)) :desc))
+          :company-doc-buffer
+          (lambda (s) (company-doc-buffer
+                  (plist-get (cdr (assoc-string s nvp-awk-builtins)) :desc))))))
 
 (provide 'nvp-awk)
 ;; Local Variables:

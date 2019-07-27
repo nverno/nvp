@@ -5,14 +5,12 @@
 ;; make -q foo => exit 0 if foo is up-to-date
 
 ;; TODO:
-;; - font-lock-doc-face for info/warning/error?
 ;; - incorporate semantic stuff?
-;; - use info-completition-at-point function
-;;   #<marker at 25312 in info-look.el.gz>
+;; - use info-completition-at-point function #<marker at 25312 in info-look.el.gz>
 ;; - align rules => similar to sh-mode rules
 
 ;; FIXME:
-;; - beginning/end of defun functions don't work
+;; - beg/end account for if/endif, define, escaped lines
 ;; - collect remote info async
 
 ;;; Code:
@@ -25,19 +23,25 @@
 (nvp-decls)
 
 ;; -------------------------------------------------------------------
+;;; Completion
+(defun nvp-makefile-env-table ()
+  (with-temp-buffer
+    (insert
+     (shell-command-to-string
+      (format "make -nspf %s | awk 'f{print; f=0} /^# environment|^# makefile/{f=1}"
+              (buffer-file-name))))
+    (goto-char (point-min))
+    ()))
+;; -------------------------------------------------------------------
 ;;; Things-at-point
 ;; macro => `make-macro' `macrostep-make-bounds-of-macro-at-point'
 
 ;; -------------------------------------------------------------------
 ;;; Font-lock
 ;; TODO:
-;; - info/warn/error
 ;; - remove string fontification in #define blocks where it is incorrect.
-;; (defun nvp-makefile-font-lock-args (limit)
-;;   (let (res)
-;;     (goto-char (match-beginning 0))
-;;     (forward-sexp)))
 
+;; better to fontify using `forward-sexp' to allow for closing parens in command
 (nvp-font-lock-add-defaults 'makefile-gmake-mode
   ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
   ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
@@ -64,21 +68,44 @@
 ;; -------------------------------------------------------------------
 ;;; General mode variables
 
-;; FIXME: these don't work correctly at all
-(defun nvp-makefile-beginning-of-defun-function (&optional arg)
-  "See `beginning-of-defun'.
-Treats target blocks as defuns."
-  (when (or (null arg) (= 0 arg)) (setq arg 1))
-  (while (and (not (= 0 arg))
-              (makefile-previous-dependency))
-    (setq arg (if (> arg 0) (1- arg) (1+ arg)))))
+(defsubst nvp-makefile--at-beginning ()
+  (save-excursion
+    (beginning-of-line 1)
+    (looking-at-p "^[^#\t\n ]")))
 
-(defun nvp-makefile-end-of-defun-function ()
-  "See `end-of-defun'.
-Skips to end of tabbed block."
-  (forward-line 1)                   ;called when point is at beginning of block
-  (while (looking-at-p "^\t")
-    (forward-line 1)))
+(defun nvp-makefile--beginning-of-defun (arg)
+  (let ((search-fn (if (> arg 0) #'re-search-backward #'re-search-forward))
+        (pos (point-marker)))
+    (and (< arg 0)                          ;searching forward -- skip initial beg. 
+         (nvp-makefile--at-beginning)
+         (end-of-line 1))
+    (funcall search-fn "^[^#\t\n ]" nil 'move)
+    (if (nvp-makefile--at-beginning)
+        (or (beginning-of-line 1) (point))  ;found beg
+      (and (goto-char pos) nil))))          ;failed
+
+(defun nvp-makefile-beginning-of-defun (&optional arg)
+  "Treats target blocks as defuns."
+  (when (or (null arg) (zerop arg)) (setq arg 1))
+  (let (found)
+    (while (and (not (zerop arg))
+                (let ((searching-p (nvp-makefile--beginning-of-defun arg)))
+                  (when (and searching-p (null found))
+                    (setq found t))
+                  searching-p))
+      (setq arg (if (> arg 0) (1- arg) (1+ arg))))
+    found))
+
+(defun nvp-makefile-end-of-defun ()
+  "Skips to end of tabbed block."
+  (when (or (nvp-makefile--at-beginning)
+            (nvp-makefile-beginning-of-defun 1)
+            (nvp-makefile-beginning-of-defun -1))
+    (beginning-of-line)
+    (forward-line)
+    (while (and (not (eobp))
+                (looking-at-p "^#\\|^[ \t]+"))
+      (forward-line))))
 
 ;; -------------------------------------------------------------------
 ;;; Indent 

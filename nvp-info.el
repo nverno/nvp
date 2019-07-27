@@ -71,7 +71,6 @@
 ;; -------------------------------------------------------------------
 ;;; Imenu support
 
-;; FIXME: what ???
 (defun nvp-info-imenu-create-index-function ()
   (goto-char (point-min))
   (search-forward "* Menu:")

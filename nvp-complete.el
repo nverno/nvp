@@ -2,13 +2,44 @@
 
 ;;; Commentary:
 
-;; FIXME: this should be cleaned up to be of any use
-;; Completion for command line switches
+;; FIXME:
+;; - cleanup/generalize command-switch completion to be usable
+;;
+;; TODO:
+;; - readline completions: how to get in shell-mode?
+;; - gud completions have complete cmd - #<marker at 32128 in gud.el.gz>
 
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
+
+;; -------------------------------------------------------------------
+;;; Info
+
+;;;###autoload
+(defun nvp-info-completion-at-point ()
+  (require 'info-look)
+  (-when-let* ((modes (info-lookup-quick-all-modes 'symbol major-mode)))
+    (let ((start (point)) try mode)
+      (while (and (not try) modes)
+        (setq mode (car modes)
+              modes (cdr modes)
+              try (info-lookup-guess-default* 'symbol mode))
+        (goto-char start))
+      (when try
+        (-when-let (completions (info-lookup->completions 'symbol mode))
+          (when (info-lookup->ignore-case 'symbol mode)
+            (setq completions
+                  (lambda (string pred action)
+                    (let ((completion-ignore-case t))
+                      (complete-with-action
+                       action completions string pred)))))
+          (save-excursion
+            (goto-char start)
+            (while (and (search-backward try nil t)
+                        (< start (point))))
+            (list (match-beginning 0) (match-end 0) completions :exclusive 'no)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Command line switches 

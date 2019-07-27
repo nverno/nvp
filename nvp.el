@@ -439,6 +439,8 @@ On error (read-only), quit without selecting."
              (setq prefix-arg nil))))
         (or (minibufferp) (message (nvp-repeat-msg repeat-key-str bindings)))))))
 
+(put 'nvp-repeat-command 'lisp-indent-function 'defun)
+
 ;; -------------------------------------------------------------------
 ;;; Marks
 

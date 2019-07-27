@@ -1,10 +1,5 @@
 ;;; nvp-debug.el --- gud -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-04-19.16>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  8 March 2019
-
 ;;; Commentary:
 
 ;;; FIXME: gud-mode seems to clobber kill-buffer-hooks,

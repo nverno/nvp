@@ -1,10 +1,5 @@
 ;;; nvp-python.el --- python helpers -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-04-19.16>
-;; Created: 30 October 2016
-
 ;;; Commentary:
 
 ;; TODO:
@@ -36,6 +31,10 @@
 
 ;; -------------------------------------------------------------------
 ;;; Util
+
+(cl-defmethod nvp-parse-current-function
+  (&context (major-mode python-mode) &rest _args)
+  (add-log-current-defun))
 
 ;; goto beginning of current class if in one
 (defun nvp-python-beginning-of-class ()

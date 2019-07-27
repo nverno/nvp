@@ -38,8 +38,8 @@ Decrement with prefix."
      (lambda (ms)
        (replace-match (number-to-string (+ inc (string-to-number ms)))))
      "\\([-]?[[:digit:]]+\\)" bnds nil 1))
-  (nvp-repeat-command nil nil
-    `(("-" (nvp-ifn nil (nvp-toggle-increment-numbers 1 ',bnds -1))
+  (nvp-repeat-command ?= nil
+    `(("-" (nvp-ilam nil (nvp-toggle-increment-numbers 1 ',bnds -1))
        :msg "decrement"))))
 
 ;; -------------------------------------------------------------------

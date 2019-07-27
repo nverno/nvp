@@ -118,14 +118,12 @@
 ;;                 (split-string (cadr var) path-separator)))))))
 
 ;; opam-share
-(defun nvp-ocaml-opam-share ()
-  (let ((reply
-         (shell-command-to-string "opam config var share --safe")))
-    (and reply
-         (substring reply 0 -1))))
+(defsubst nvp-ocaml-opam-share ()
+  (let ((reply (shell-command-to-string "opam config var share --safe")))
+    (and reply (substring reply 0 -1))))
 
 ;; check / set variables
-(defun nvp-ocaml-setenv ()
+(defsubst nvp-ocaml-setenv ()
   ;; make sure opam binaries are on path
   (and (not (executable-find "ocamlbuild"))
        (tuareg-opam-update-env
@@ -175,7 +173,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Interactive
-(nvp-declare "" tuareg-beginning-of-defun)
+(nvp-decl tuareg-beginning-of-defun)
 
 ;;-- Movement
 (defun nvp-ocaml-previous-defun ()

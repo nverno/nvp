@@ -4,7 +4,7 @@
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/r-tools
-;; Last modified: <2019-02-23 00:37:02>
+;; Last modified: <2019-07-26.20>
 ;; Package-Requires: 
 ;; Created: 11 December 2018
 
@@ -40,18 +40,16 @@
 
 ;; Mark paragraphs, successively on repeated commands
 ;;;###autoload
-(defun nvp-ess-mark-defun ()
+(defun nvp-ess-mark-defun (&optional _arg)
   (interactive)
-  (nvp--mark-defun                      ;FIXME
+  (nvp--mark-defun
    ;; first mark
    (ess-mark-function-or-para)
    ;; repeated calls
    (condition-case nil
        (progn
          (forward-line 1)
-         (end-of-defun)
-         ;; (ess-end-of-function)
-         )
+         (end-of-defun))
      (error (forward-paragraph)))
    (point)))
 

@@ -1,0 +1,21 @@
+# -*- mode: makefile-gmake -*-
+TEST = 1234
+
+.PHONY: esc test all
+all: esc
+esc:
+	$(in\
+fo testing ${TE\
+ST})
+
+test:
+	@echo \
+${TEST}
+	$(call baba,boo)
+
+tst-%:
+	${info running $(subst tst-,,$@)}
+
+define baba
+	@echo ${CURDIR}/${1}
+endef

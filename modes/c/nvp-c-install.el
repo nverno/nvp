@@ -9,7 +9,7 @@
 (require 'nvp-c)
 (nvp-decls)
 
-(defvar nvp-c--dir (nvp-package-root))
+(nvp-package-define-root :name nvp-c)
 
 ;; make includes.el and install dependencies or dont with NODEPS
 ;; force includes.el refresh with ARG

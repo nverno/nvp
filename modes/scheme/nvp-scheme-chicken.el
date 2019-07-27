@@ -70,8 +70,7 @@
 
 (defun nvp-scheme-chicken-setup ()
   (setq font-lock-extend-region-functions
-        (cons 'nvp-scheme-region-extend-function
-              font-lock-extend-region-functions)))
+        (cons 'nvp-scheme-region-extend-function font-lock-extend-region-functions)))
 
 ;; (add-hook 'scheme-mode-hook 'nvp-scheme-chicken-setup)
 

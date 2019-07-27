@@ -1,0 +1,8 @@
+
+(define-abbrev-table 'go-mode-abbrev-table
+  '(
+    ("fprf" "fmt.Fprintf(os.Stderr, \"%s: %v\\n\", os.Args[0], err)" nil :system t)
+    ("ret" "return" nil :system t)
+    )
+  "Go-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table unicode-abbrev-table))

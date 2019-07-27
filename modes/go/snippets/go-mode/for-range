@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for in range
+# key: forr
+# --
+for ${1:_}${1:$(if (> (length yas-text) 0) ", ")}${2:val} := range ${3:collection} {
+	$0
+}

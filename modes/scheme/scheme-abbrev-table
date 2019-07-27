@@ -1,4 +1,3 @@
-;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
 
 (define-abbrev-table 'scheme-mode-abbrev-table
   '(

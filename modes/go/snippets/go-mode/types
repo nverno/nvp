@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: types
+# key: types
+# --
+int[,8,16,32,64] uint[,8,16,32,64] uintptr float[32,64] complex[64,128] bool byte rune string error

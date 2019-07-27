@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Fprintf
+# key: fprf
+# --
+fmt.Fprintf($1, "${2:%q\n}", $3)

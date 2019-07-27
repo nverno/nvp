@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: make
+# key: make
+# --
+make(${1:Type}, ${2:startingSize}, ${3:memorySize})$0

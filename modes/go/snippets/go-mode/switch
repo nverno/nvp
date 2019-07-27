@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: switch
+# key: swi
+# --
+switch $1 {
+case $2: $0
+default:
+}

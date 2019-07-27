@@ -69,7 +69,7 @@ if process exit status isn't 0."
                                  (nvp-log "%s: %s" nil (process-name p) m)
                                  (if (zerop (process-exit-status p))
                                      ,on-success
-                                   ,on-error)))
+                                   ,on-err)))
        (display-buffer (process-buffer ,proc) ,display-action))))
 
 ;; -------------------------------------------------------------------

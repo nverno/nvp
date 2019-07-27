@@ -1,10 +1,4 @@
 ;;; nvp-clojure.el ---  -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/clojure-tools
-;; Last modified: <2019-03-15 23:34:22>
-;; Created:  1 December 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

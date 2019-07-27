@@ -76,14 +76,13 @@
 ;; set local abbrev table according to implementation
 (eval-when-compile
   (defvar nvp-abbrev-local-table))
-(defun nvp-scheme-abbrev-table ()
+(defun nvp-scheme-sync-abbrev-table ()
   (setq-local nvp-abbrev-local-table (format "%s-mode" geiser-impl--implementation))
   (setq local-abbrev-table
-        (symbol-value (intern (format "%s-abbrev-table"
-                                      nvp-abbrev-local-table)))))
+        (symbol-value (intern (format "%s-abbrev-table" nvp-abbrev-local-table)))))
 
-(defadvice geiser-set-scheme (after set-abbrev-table activate)
-  (nvp-scheme-abbrev-table))
+(define-advice geiser-set-scheme (:after (&rest _args) "sync-abbrev-table")
+  (nvp-scheme-sync-abbrev-table))
 
 ;; -------------------------------------------------------------------
 ;;; Hippie Expand
@@ -91,7 +90,7 @@
 (eval-when-compile
   (defvar hippie-expand-try-functions-list)
   (defvar hippie-expand-only-buffers))
-(nvp-declare "" nvp-he-history-setup nvp-he-try-expand-flex-lisp
+(nvp-decl nvp-he-history-setup nvp-he-try-expand-flex-lisp
   nvp-he-try-expand-local-abbrevs)
 (autoload 'yas-hippie-try-expand "yasnippet")
 
@@ -118,7 +117,7 @@
 
 (eval-when-compile
   (defvar local-abbrev-table))
-(nvp-declare "abbrev" abbrev-table-put abbrev-table-get)
+(nvp-decl abbrev-table-put abbrev-table-get)
 
 ;; enable abbrevs according to scheme implementiation
 ;; since `geiser-impl--implementation' isn't available when this

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: forargv
+# key: forargv
+# --
+for _, ${1:arg} := range os.Args[1:] {
+	$0
+}

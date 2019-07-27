@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: atoi
+# key: atoi
+# --
+strconv.Atoi($0)

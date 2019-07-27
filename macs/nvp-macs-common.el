@@ -133,10 +133,10 @@
   `(let ((it ,test-form))
      (if it ,then-form ,@else-forms)))
 
-(defmacro awhen (test-form &rest body)
-  "Anamorphic `when'."
-  (declare (indent 1) (debug t))
-  `(aif ,test-form ,(macroexp-progn body)))
+;; (defmacro awhen (test-form &rest body)
+;;   "Anamorphic `when'."
+;;   (declare (indent 1) (debug t))
+;;   `(aif ,test-form ,(macroexp-progn body)))
 
 (defmacro awhile (expr &rest body)
   "Anamorphic `while'."

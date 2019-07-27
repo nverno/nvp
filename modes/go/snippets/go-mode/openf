@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: open-file
+# key: openf
+# --
+${1:f}, err := ioutil.ReadFile(${2:"$3"})
+if err != nil { panic(err) }$0

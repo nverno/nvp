@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: read ints from io.Reader
+# key: readint
+# --
+${1:scanner} := bufio.NewScanner(${2:reader})
+$1.Split(bufio.ScanWords)
+for scanner.Scan() {
+	${3:x}, err := strconv.Atoi($1.Text())
+	if err != nil {
+		${4:return err}
+	}
+}

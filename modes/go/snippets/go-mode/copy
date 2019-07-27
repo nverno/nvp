@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: copy
+# key: copy
+# --
+nbytes, err := io.Copy(${1:os.Stdout}, ${2:src})

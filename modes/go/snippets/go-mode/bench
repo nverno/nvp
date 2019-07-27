@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: bench
+# key: bench
+# --
+func Benchmark${1:Feature}(b *testing.B) {
+	$0
+}

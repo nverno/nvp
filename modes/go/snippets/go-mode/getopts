@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: getopts
+# key: getopts
+# --
+var ${1:opt} = flag.${2:Bool}("${3:flag}", ${4:false}, "${5:description}")
+
+func main() {
+	flag.Parse()
+	${6:if !*$1 {
+		$0
+	}}
+}

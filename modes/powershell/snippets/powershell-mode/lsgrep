@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: lsgrep
+# key: lsgrep
+# --
+ls | ?{$_.Name -like "*$1*" }

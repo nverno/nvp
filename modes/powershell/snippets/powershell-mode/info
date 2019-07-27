@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: info
+# key: info
+# --
+<# 
+.SYNOPSIS
+  $1
+.DESCRIPTION
+  $2
+.PARAMETER ${3:name}
+  ${4:what it odo}
+.NOTES
+  $5
+.LINK
+  $6
+#>

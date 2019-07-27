@@ -144,7 +144,7 @@ Special floats: NaN, +Inf, -Inf. Use math.IsNaN, math.NaN"))
                 "\\(?:fmt\\|log\\).*f$" (thing-at-point 'symbol))
                (nvp-go-help-string-format))))
        ;; Types
-       ((string-match-p go-tools-type-re sym)
+       ((string-match-p nvp-go-type-re sym)
         (nvp-go-help-types))
        ;; call popup versions of godoc or gogetdoc
        ;; use point at end of symbol so fm|t.Printf returns help for

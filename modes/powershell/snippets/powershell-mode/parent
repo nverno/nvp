@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: parent dir
+# key: parent
+# --
+$parent = (Split-Path -Parent $MyInvocation.MyCommand.Definition)

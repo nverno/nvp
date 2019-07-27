@@ -1,0 +1,4 @@
+(define-abbrev-table 'coffee-mode-abbrev-table
+  '()
+  "Coffee-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

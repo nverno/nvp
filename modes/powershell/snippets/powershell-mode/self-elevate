@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: self-elevate script
+# key: self-elevate
+# --
+if (!([Security.Principal.WindowsPrincipal]`
+  [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+      [Security.Principal.WindowsBuiltInRole] "Administrator")) { 
+          Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass \`
+            -File $SCRIPT:MyInvocation.MyCommand.Path -Verb RunAs;"
+          exit 
+      }$0

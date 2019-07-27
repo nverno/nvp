@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: forr
+# key: forr
+# --
+for ${1:name} in [${2:start}${3:...}${4:finish}]${5: by ${6:step}}
+  ${7:# body...}

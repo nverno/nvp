@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: temp
+# key: temp
+# --
+[System.IO.Path]::GetTempFileName()$0

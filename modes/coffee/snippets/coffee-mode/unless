@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: unless
+# key: unl
+# --
+${1:action} unless ${2:condition}

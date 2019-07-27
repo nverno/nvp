@@ -1,0 +1,5 @@
+
+(define-abbrev-table 'minizinc-mode-abbrev-table
+  '()
+  "Minizinc-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

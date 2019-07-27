@@ -49,7 +49,7 @@
              (princ " => ")
              (pp val)
              (terpri))
-           (symbol-value variable)))
+           (symbol-value hash)))
 
 ;; -------------------------------------------------------------------
 ;;; View list - simple tabulated display

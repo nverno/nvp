@@ -1,10 +1,4 @@
 ;;; nvp-neo.el --- neo4j -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-03-09 06:22:36>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created: 12 September 2017
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

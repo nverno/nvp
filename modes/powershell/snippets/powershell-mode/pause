@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: pause
+# key: pause
+# --
+$x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")$0

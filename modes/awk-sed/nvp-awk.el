@@ -7,6 +7,7 @@
   (require 'nvp-macro)
   (require 'nvp-font))
 (require 'nvp)
+(require 'info-look)
 
 ;; -------------------------------------------------------------------
 ;;; Syntax

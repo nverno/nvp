@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: bound function
+# key: funb
+# --
+(${1:args}) =>
+  ${2:# body...}

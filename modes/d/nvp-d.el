@@ -1,4 +1,4 @@
-;;; nvp-tools.el ---  -*- lexical-binding: t; -*-
+;;; nvp-d.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
@@ -7,7 +7,7 @@
   (require 'cl-lib)
   (defvar yas-snippet-dirs))
 (nvp-decls)
-(autoload 'nvp-env-exec-add "nvp-env")
+(autoload 'nvp-env-path-add "nvp-env")
 
 ;; server binaries
 (defvar nvp-d-dcd-bin-dir
@@ -33,12 +33,12 @@
 ;;       (and post-action (funcall post-action)))))
 
 ;; init environment variables
-(defsubst nvp-d-ensure-process-env ()
-  (if (file-exists-p nvp-d-dcd-bin-dir)
-      (nvp-env-exec-add nvp-d-dcd-bin-dir)
-    (if (y-or-n-p "Install dcd? ")
-        (nvp-d-install-dcd)
-      (user-error "No dcd-server... aborting."))))
+;; (defsubst nvp-d-ensure-process-env ()
+;;   (if (file-exists-p nvp-d-dcd-bin-dir)
+;;       (nvp-env-path-add nvp-d-dcd-bin-dir)
+;;     (if (y-or-n-p "Install dcd? ")
+;;         (nvp-d-install-dcd)
+;;       (user-error "No dcd-server... aborting."))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands 
@@ -112,12 +112,13 @@
 (defun nvp-d-compile ()
   (interactive)
   (nvp-complete-compile "dmd" "dmd -g -wi %s" '("--help")
-    'nvp-d--dmd-switches "dmd" "dmd args: "))
+                        ;; 'nvp-d--dmd-switches
+                        "dmd" "dmd args: "))
 
 ;; FIXME:
 (defun nvp-d-compile-and-run (arg)
   (interactive "P")
   (ignore arg))
 
-(provide 'nvp-tools.el)
-;;; d-tools.el ends here
+(provide 'nvp-d)
+;;; nvp-d.el ends here

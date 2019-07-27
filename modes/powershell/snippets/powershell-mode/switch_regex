@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: switch
+# key: swi
+# expand-env: ((yas-indent-line 'fixed))
+# --
+switch -regex (${1:i.GetType().Name}) {
+  ${2:'type'} {
+    $0
+  }
+}

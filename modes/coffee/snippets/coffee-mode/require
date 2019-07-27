@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: require
+# key: req
+# --
+${2/^.*?([\w_]+).*$/\L$1/} = require ${2:'${1:sys}'}$3

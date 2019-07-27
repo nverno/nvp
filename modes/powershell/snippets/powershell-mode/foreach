@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: foreach
+# key: fe
+# expand-env: ((yas-indent-line 'fixed))
+# --
+foreach (${1:$i} in ${2:$list}) {
+  $0
+}

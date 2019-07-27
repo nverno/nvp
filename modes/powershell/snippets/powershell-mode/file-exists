@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: file exists
+# key: fep
+# --
+if ($1[System.IO.File]::Exists($2)) {
+    $0
+}

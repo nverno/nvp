@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: class
+# key: class
+# --
+class ${1:ClassName}${2: extends ${3:Ancestor}}
+  ${4:constructor: (${5:args}) ->
+    ${6:# body...}}

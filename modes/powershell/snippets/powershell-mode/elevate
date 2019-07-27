@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: elevate
+# key: elevate
+# --
+$parent = (Split-Path -Parent $MyInvocation.MyCommand.Definition)
+$elevate = Join-Path $parent "Invoke-RequireAdmin.ps1"
+. $elevate
+Invoke-RequireAdmin $SCRIPT:MyInvocation

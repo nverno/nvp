@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: start-process as admin
+# key: runas
+# --
+Start-Process powershell -Verb runAs

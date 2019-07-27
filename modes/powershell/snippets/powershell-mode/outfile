@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: outfile
+# key: outfile
+# --
+if (${1:$outfile} -eq $null) {
+    ${1:$outfile} = [System.IO.Path]::GetFullPath(${2:"$PSScriptroot\${3:file"}})
+} else {
+    ${1:$outfile} = [System.IO.Path]::GetFullPath("${1:$outfile}")
+}$0

@@ -324,6 +324,7 @@
     ("mvbl" "make-variable-buffer-local" nil :system t)
     ("rris" "replace-regexp-in-string" nil :system t)
     ("scts" "shell-command-to-string" nil :system t)
+    ("sifn" "substitute-in-file-name" nil :system t)
     ("smae" "save-mark-and-excursion" nil :system t)
     ("spsc" "start-process-shell-command" nil :system t)
     ("symf" "symbol-function" nil :system t)

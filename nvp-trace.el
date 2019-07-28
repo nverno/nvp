@@ -36,6 +36,7 @@
   (dolist (fn (cdr (assoc (intern group) nvp-trace-group-alist)))
     (untrace-function fn)))
 
+;;;###autoload
 (defun nvp-trace-buffer ()
   (interactive)
   (view-buffer-other-window trace-buffer))

@@ -153,7 +153,8 @@ Used to set `end-of-defun-function'."
             vars)
         (widen)
         ;; collect local variables
-        (while (re-search-backward "[ \t]*local[ \t]\\([^=\n]+\\)" func-start 'move)
+        (while (re-search-backward
+                "[ \t]*local[ \t]\\([^=\n]+\\)" func-start 'move)
           (dolist (var (split-string (match-string 1) " \t" 'omit " \t"))
             (put-text-property 0 1 'annotation " <v>" var)
             (push var vars)))
@@ -189,10 +190,8 @@ Used to set `end-of-defun-function'."
 (defun nvp-sh-dynamic-complete-bash ()
   "Bash dynamic completion for sh-script (doesn't get local variables)."
   (nvp-unless-ppss 'cmt
-    (completion-table-in-turn
-     (nvp-sh-dynamic-complete-vars)
-     (bash-completion-dynamic-complete-nocomint
-      (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table))))
+    (bash-completion-dynamic-complete-nocomint
+     (save-excursion (sh-beginning-of-command)) (point) 'dynamic-table)))
 
 ;; FIXME: generalize toggle to call indirectly
 (defvar nvp-sh-company-active-map

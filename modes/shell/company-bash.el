@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-07-21.10>
+;; Last modified: <2019-07-28.03>
 ;; URL: https://github.com/nverno/shell-tools
 ;; Created:  8 November 2016
 
@@ -34,11 +34,36 @@
 (require 'company)
 (require 'imenu)
 
+;; track candidates from sourced files
+(defvar bash-source-db (make-hash-table :test 'equal))
+
+(cl-defstruct (bash-source-dbfile
+               (:constructor bash-source-make-dbfile)
+               (:copier nil))
+  candidates
+  sources
+  modtime)
+
 ;; time of last index creation
 (defvar-local company-bash-last-index nil)
 
 ;; cached completion candidates
 (defvar-local company-bash-candidates nil)
+
+;; gather functions from current/sourced files with imenu
+(defun company-bash--make-index ()
+  (let ((srcs (bash-source--buffer-sources))
+        (res (bash-source--buffer-candidates)))
+    (when srcs
+      (mapc
+       #'(lambda (file)
+           (setq file (substitute-in-file-name file))
+           (and (file-exists-p file)
+                (with-current-buffer (find-file-noselect file)
+                  (and (eq major-mode 'sh-mode)
+                       (setq res (nconc res (bash-source--buffer-candidates)))))))
+       srcs))
+    res))
 
 ;; return list of completion candidates
 (defun company-bash-candidates ()
@@ -50,50 +75,88 @@
     (setq company-bash-last-index (float-time))
     (setq company-bash-candidates (company-bash--make-index))))
 
-;; gather sourced files
-(defun company-bash--sources ()
+;; gather sourced files from buffer
+(defun bash-source--buffer-sources ()
   (save-excursion
     (goto-char (point-min))
-    (let (srcs)
-      (while (re-search-forward "\\_<\\(source\\|\\.\\)\\_>" nil 'move)
-        (let ((syntax (syntax-ppss)))
-          ;; ignore commented out / in strings
-          (and (not (nth 3 syntax))
-               (not (nth 4 syntax))
-               (looking-at
-                (eval-when-compile
-                  (concat
-                   ;; quoted
-                   "[ \t]*\\(?:\"\\(?1:[^\"]+\\)\\|"
-                   ;; or unquoted
-                   "\\(?1:[^\n\t ]+\\)\\)")))
-               (push (match-string-no-properties 1) srcs))))
-      srcs)))
+    ;; might not be called in a `sh-mode' buffer
+    (with-syntax-table sh-mode-syntax-table
+      (let (srcs)
+        (while (re-search-forward "\\_<\\(source\\|\\.\\)\\_>" nil 'move)
+          (let ((syntax (syntax-ppss)) file)
+            ;; ignore commented out / in strings
+            (and (not (nth 3 syntax))
+                 (not (nth 4 syntax))
+                 (looking-at
+                  (eval-when-compile
+                    (concat
+                     ;; quoted
+                     "[ \t]*\\(?:\"\\(?1:[^\"]+\\)\\|"
+                     ;; or unquoted
+                     "\\(?1:[^\n\t ]+\\)\\)")))
+                 (setq file (expand-file-name
+                             (substitute-in-file-name
+                              (match-string 1))))
+                 (when (file-exists-p file)
+                   (push file srcs)))))
+        srcs))))
 
-;; imenu -> target list
-(defun company-bash--imenu ()
+;; use imenu to create candidate list from buffer
+(defun bash-source--buffer-candidates ()
   (ignore-errors 
-    (let ((index (cdr (imenu--make-index-alist))))
+    (let* ((imenu-use-markers (buffer-file-name))
+           (index (cdr (imenu--make-index-alist))))
       (when index
         (cl-loop for (k . v) in index
-           when (markerp v)
+           if (markerp v)
            do (put-text-property 0 1 'marker v k)
            and collect k)))))
 
-;; gather functions from current/sourced files with imenu
-(defun company-bash--make-index ()
-  (let ((srcs (company-bash--sources))
-        (res (company-bash--imenu)))
-    (when srcs
-      (mapc
-       #'(lambda (file)
-           (setq file (substitute-in-file-name file))
-           (and (file-exists-p file)
-                (with-current-buffer (find-file-noselect file)
-                  (and (eq major-mode 'sh-mode)
-                       (setq res (nconc res (company-bash--imenu)))))))
-       srcs))
-    res))
+;; update sources/candidates for FILE in DBFILE entry
+(defun bash-source--file-update (file dbfile &optional recurse imenu-regexp)
+  (or imenu-regexp (setq imenu-regexp imenu-generic-expression))
+  (with-temp-buffer
+    (insert-file-contents file)
+    (let* ((imenu-generic-expression (or imenu-regexp imenu-generic-expression))
+           (imenu-create-index-function #'imenu-default-create-index-function)
+           (srcs (bash-source--buffer-sources)))
+      (setf (bash-source-dbfile-candidates dbfile) (bash-source--buffer-candidates))
+      (setf (bash-source-dbfile-sources dbfile) srcs)
+      (puthash file dbfile bash-source-db)
+      (when recurse
+        (dolist (src srcs)
+          (when (not (equal src file))
+             (bash-source--file-candidates src recurse imenu-regexp 'no-return)))))))
+
+;; Get/cache candidates for FILE
+;; Cache is created when empty or the file's modification time has changed
+;; if RECURSE is non-nil, return candidates from all files sourced recursively
+(defun bash-source--file-candidates (file &optional recurse imenu-regexp no-return)
+  (let* ((attr (file-attributes file 'integer))
+         (modtime (and attr (nth 5 attr)))
+         (dbfile (or (gethash file bash-source-db nil) (bash-source-make-dbfile))))
+    (when (not (equal modtime (bash-source-dbfile-modtime dbfile)))
+      (setf (bash-source-dbfile-modtime dbfile) modtime)
+      (bash-source--file-update file dbfile recurse imenu-regexp))
+    (unless no-return
+      (if (not recurse)
+          (bash-source-dbfile-candidates dbfile)
+        (let (res srcs)
+          (cl-labels ((build-res
+                       (srcfile)
+                       (let ((db (gethash srcfile bash-source-db)))
+                         (setq res (append res (bash-source-dbfile-candidates db)))
+                         (dolist (s (bash-source-dbfile-sources db))
+                           (unless (member s srcs)
+                             (push s srcs)
+                             (build-res s))))))
+            (build-res file))
+          res)))))
+
+(defun bash-source-candidates ()
+  "List of completion targets from current buffer and all recursively \
+sourced files."
+  (bash-source--file-candidates (buffer-file-name) 'recurse))
 
 ;; ------------------------------------------------------------
 ;;; Company things

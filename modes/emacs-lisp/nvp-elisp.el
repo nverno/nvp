@@ -326,12 +326,13 @@ If in `declare-function', convert to autoload."
                              (cl-return t)))))
                      1))))
   
- (nvp-setq nvp-elisp-imenu-headers-1
-   `(("Headers" ,(cadar nvp-elisp-imenu-headers) 1)
-     ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)))
+  (nvp-setq
+    nvp-elisp-imenu-headers-1
+    `(("Headers" ,(cadar nvp-elisp-imenu-headers) 1)
+      ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)))
 
- (defvar nvp-elisp-imenu-headers-2
-   '(("Sub-Headers" "^;;---*\\s-*\\([^-\n]+\\)\\s-*-*$" 1))))
+  (defvar nvp-elisp-imenu-headers-2
+    '(("Sub-Headers" "^;;---*\\s-*\\([^-\n]+\\)\\s-*-*$" 1))))
 
 (provide 'nvp-elisp)
 ;;; nvp-elisp.el ends here

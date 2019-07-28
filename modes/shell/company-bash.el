@@ -3,7 +3,7 @@
 ;; This is free and unencumbered software released into the public domain.
 
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-07-28.03>
+;; Last modified: <2019-07-28.04>
 ;; URL: https://github.com/nverno/shell-tools
 ;; Created:  8 November 2016
 
@@ -108,9 +108,10 @@
            (index (cdr (imenu--make-index-alist))))
       (when index
         (cl-loop for (k . v) in index
-           if (markerp v)
-           do (put-text-property 0 1 'marker v k)
-           and collect k)))))
+           collect k
+           ;; do (put-text-property 0 1 'marker v (copy-sequence k))
+           ;; and collect k
+             )))))
 
 ;; update sources/candidates for FILE in DBFILE entry
 (defun bash-source--file-update (file dbfile &optional recurse imenu-regexp)
@@ -140,7 +141,7 @@
       (bash-source--file-update file dbfile recurse imenu-regexp))
     (unless no-return
       (if (not recurse)
-          (bash-source-dbfile-candidates dbfile)
+          (bash-source-dbfile-candidates (gethash file bash-source-db))
         (let (res srcs)
           (cl-labels ((build-res
                        (srcfile)
@@ -156,7 +157,8 @@
 (defun bash-source-candidates ()
   "List of completion targets from current buffer and all recursively \
 sourced files."
-  (bash-source--file-candidates (buffer-file-name) 'recurse))
+  (bash-source--file-candidates
+   (buffer-file-name) 'recurse imenu-generic-expression))
 
 ;; ------------------------------------------------------------
 ;;; Company things
@@ -174,7 +176,7 @@ sourced files."
     (cons (marker-buffer marker) (marker-position marker))))
 
 (defun company-bash--candidates (arg)
-  (all-completions arg (company-bash-candidates)))
+  (all-completions arg (bash-source-candidates)))
 
 ;;;###autoload
 (defun company-bash (command &optional arg &rest _args)

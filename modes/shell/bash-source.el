@@ -19,20 +19,29 @@
 (require 'imenu)
 
 (defvar bash-source-use-bash-completion t
-  "Non-nil to add `bash-completion' to completion-at-point.")
+  "Non-nil to use `bash-completion' during completion at point.")
+
+(eval-when-compile
+ ;; mapping for symbols to annotations
+ (defvar bash-source-symbol-annotation
+   '((function " <f>") (local " <v>") (global " <V>") (envvar " <E>")))
+
+ (defmacro bash-source:annotation (symbol)
+   `(eval-when-compile (cadr (assoc ',symbol bash-source-symbol-annotation)))))
 
 ;; imenu regexp used to gather completion candidates
 ;; car of entry used to match type
 (defvar bash-source-imenu-expression
-  '(("<f>"
+  `((,(bash-source:annotation function)
      ;; function FOO
      ;; function FOO()
      "^\\s-*function\\s-+\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*\\(?:()\\)?" 1)
-    ("<f>"
+    (,(bash-source:annotation function)
      ;; FOO()
      "^\\s-*\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*()" 1)
     ;; Global variables
-    ("<V>" "^\\([[:alpha:]_][[:alnum:]_]*\\)=" 1)))
+    (,(bash-source:annotation global)
+     "^\\([[:alpha:]_][[:alnum:]_]*\\)=" 1)))
 
 ;; track candidates from sourced files
 (defvar bash-source-db (make-hash-table :test 'equal))
@@ -81,8 +90,7 @@
           (cl-loop for (type . vals) in index
              do
                (cl-loop for (elem . pos) in vals
-                  do (add-text-properties
-                      0 1 (list 'marker pos 'annot type) elem)))
+                  do (add-text-properties 0 1 (list 'annot type) elem)))
           index)))))
 
 ;; update sources/candidates for FILE in DBFILE entry
@@ -94,8 +102,10 @@
            (imenu-create-index-function #'imenu-default-create-index-function)
            (srcs (bash-source--buffer-sources))
            (cands (bash-source--buffer-candidates)))
-      (setf (bash-source-dbfile-functions dbfile) (cdr (assoc "<f>" cands)))
-      (setf (bash-source-dbfile-variables dbfile) (cdr (assoc "<V>" cands)))
+      (setf (bash-source-dbfile-functions dbfile)
+            (cdr (assoc (bash-source:annotation function) cands)))
+      (setf (bash-source-dbfile-variables dbfile)
+            (cdr (assoc (bash-source:annotation global) cands)))
       (setf (bash-source-dbfile-sources dbfile) srcs)
       (puthash file dbfile bash-source-db)
       (when recurse
@@ -103,6 +113,12 @@
           (when (not (equal src file))
             (bash-source-file-candidates
              src nil recurse imenu-regexp 'no-return)))))))
+
+(defsubst bash-source--getter (type)
+  (if (eq type 'all)
+      (lambda (db) (append (bash-source-dbfile-functions db)
+                      (bash-source-dbfile-variables db)))
+    (intern (concat "bash-source-dbfile-" (symbol-name type)))))
 
 ;; Get/cache candidates for FILE
 ;; Cache is created when empty or the file's modification time has changed
@@ -116,7 +132,7 @@
       (setf (bash-source-dbfile-modtime dbfile) modtime)
       (bash-source--file-update file dbfile recurse imenu-regexp))
     (unless no-return
-      (let ((getter (intern (concat "bash-source-dbfile-" (symbol-name type))))
+      (let ((getter (bash-source--getter type))
             res srcs)
         (if (null recurse) (funcall getter dbfile)
           (cl-labels ((build-res
@@ -132,7 +148,7 @@
 
 ;;;###autoload
 (defun bash-source-candidates (type &optional file)
-  "List of completion targets from current buffer and all recursively \
+  "List of completion targets from current buffer or FILE and all recursively \
 sourced files."
   (bash-source-file-candidates
    (or file (buffer-file-name)) type 'recurse bash-source-imenu-expression))
@@ -215,7 +231,6 @@ sourced files."
                        (lambda (s) (or (get-text-property 0 'annot s) " <S>")))))
                (list :exclusive 'no))))))
 
-;; -------------------------------------------------------------------
 ;;; Company
 
 ;;;###autoload
@@ -236,6 +251,68 @@ sourced files."
        (all-completions arg (bash-source-candidates 'functions))))
     (require-match 'never)
     (duplicates nil)))
+
+;; -------------------------------------------------------------------
+;;; Xref
+
+(defun bash-source--xref-backend () 'bash-source)
+
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql bash-source)))
+  (completion-table-dynamic
+   (lambda (_string) (bash-source-candidates 'all (buffer-file-name))) 'switch))
+
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql bash-source)))
+  (thing-at-point 'symbol))
+
+(defun bash-source--make-xref-location (ident file)
+  (cl-labels ((getter
+               (f)
+               (let ((db (gethash f bash-source-db)))
+                 (-when-let (id (or (cl-find ident (bash-source-dbfile-functions db)
+                                             :test #'string= :key #'car)
+                                    (cl-find ident (bash-source-dbfile-variables db)
+                                             :test #'string= :key #'car)))
+                   (xref-make-bash-location f (cdr id))))))
+    (-if-let (xref (getter file)) xref
+      (let* ((srcs (bash-source-candidates 'sources file)))
+        (cl-find-if #'getter srcs)))))
+
+(cl-defmethod xref-backend-definitions ((_backend (eql bash-source)) identifier)
+  (list
+   (xref-make
+    identifier
+    ;; (eval-when-compile
+    ;;   (macroexpand-all
+    ;;    `(pcase (get-text-property 0 'annot identifier)
+    ;;       (,(bash-source:annotation global)
+    ;;        (put-text-property 0 1 'face 'font-lock-variable-name-face identifier))
+    ;;       (,(bash-source:annotation local)
+    ;;        (put-text-property 0 1 'face 'font-lock-variable-name-face identifier))
+    ;;       (,(bash-source:annotation function)
+    ;;        (put-text-property 0 1 'face 'font-lock-function-name-face identifier))
+    ;;       (_ identifier))))
+    (bash-source--make-xref-location identifier (buffer-file-name)))))
+
+(defclass xref-bash-location (xref-location)
+  ((pos :type fixnum :initarg :pos)
+   (file :type string :initarg :file
+         :reader xref-location-group))
+  :documentation "Location of bash-source tag.")
+
+(defun xref-make-bash-location (file pos)
+  (make-instance 'xref-bash-location :file file :pos pos))
+
+(cl-defmethod xref-location-marker ((l xref-bash-location))
+  (with-slots (file pos) l
+    (let ((buffer (find-file-noselect file)))
+      (with-current-buffer buffer
+        (save-excursion
+          (goto-char pos)
+          (point-marker))))))
+
+;; (cl-defstruct (xref-bash-location
+;;                (:constructor xref-make-bash-location (symbol type))
+;;                (:copier nil)))
 
 (provide 'bash-source)
 ;;; bash-source.el ends here

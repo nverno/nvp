@@ -77,30 +77,35 @@ Assumes the list is flattened and only elements with markers remain."
 ;;; Hook
 
 (defun nvp-imenu--create-regex (&optional headers headers-1 headers-2)
-  (or headers
-      (setq headers
-            `((nil ,(concat "^" (regexp-quote (nvp-comment-start 3)))
-                   "\\s-*\\(.*\\)\\s-*$"))))
-  (or headers-1 (setq headers-1 `(("Headers" ,(cadr (car headers)) 1))))
-  (or headers-2
-      (setq headers-2
-            `(("Sub-Headers"
-               ,(concat "^" (nvp-comment-start 2) "-+\\s-*\\(.*\\)[ -]*$") 1))))
-  (list headers headers-1 headers-2))
+  (if (equal headers ':none)
+      (list :none nil nil)
+    (or headers
+        (setq headers
+              `((nil ,(concat "^" (regexp-quote (nvp-comment-start 3))
+                              "\\s-*\\(.*\\)\\s-*$")
+                     1))))
+    (or headers-1 (setq headers-1 `(("Headers" ,(cadr (car headers)) 1))))
+    (or headers-2
+        (setq headers-2
+              `(("Sub-Headers"
+                 ,(concat "^" (nvp-comment-start 2) "-+\\s-*\\(.*\\)[ -]*$") 1))))
+    (list headers headers-1 headers-2)))
 
 ;; make header from comment
 ;;;###autoload
-(cl-defun nvp-imenu-setup (&key headers headers-1 headers-2 extra)
+(cl-defun nvp-imenu-setup (&key headers headers-1 headers-2 extra default)
   "Sets up imenu regexps including those to recognize HEADERS and any \
 EXTRA regexps to add to `imenu-generic-expression'.
 Any extra regexps should be an alist formatted as `imenu-generic-expression'."
+  (when default
+    (setq imenu-generic-expression default))
   (when (or headers comment-start)
     (cl-destructuring-bind (h h1 h2)
         (nvp-imenu--create-regex headers headers-1 headers-2)
       (setq nvp-imenu-comment-headers-re h
             nvp-imenu-comment-headers-re-1 h1
-            nvp-imenu-comment-headers-re-2 h2))
-    (cl-callf append imenu-generic-expression extra nvp-imenu-comment-headers-re-1)))
+            nvp-imenu-comment-headers-re-2 h2)))
+  (cl-callf append imenu-generic-expression extra nvp-imenu-comment-headers-re-1))
 
 (put 'nvp-imenu-setup 'lisp-indent-function 'defun)
 
@@ -114,20 +119,22 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
                      #'imenu-default-create-index-function)))
     (when (and default (null nvp-imenu-comment-headers-re) comment-start)
       (nvp-imenu-setup))
-    (when (or (not default) imenu-generic-expression)
-      (with-demoted-errors "Error in nvp-imenu-idomenu: %S"
-        (pcase arg
-          (`(4)                            ; headers only
-           (let ((imenu-generic-expression nvp-imenu-comment-headers-re)
-                 (imenu-create-index-function 'imenu-default-create-index-function))
-             (ido/imenu)))
-          (`(16)                           ; headers + sub-headers only
-           (let ((imenu-generic-expression
-                  (append nvp-imenu-comment-headers-re
-                          nvp-imenu-comment-headers-re-2))
-                 (imenu-create-index-function 'imenu-default-create-index-function))
-             (ido/imenu)))
-          (_ (ido/imenu)))))))
+    (with-demoted-errors "Error in nvp-imenu-idomenu: %S"
+      (if (and (not (equal ':none nvp-imenu-comment-headers-re))
+               (or (not default) imenu-generic-expression))
+          (pcase arg
+            (`(4)                       ; headers only
+             (let ((imenu-generic-expression nvp-imenu-comment-headers-re)
+                   (imenu-create-index-function 'imenu-default-create-index-function))
+               (ido/imenu)))
+            (`(16)                      ; headers + sub-headers only
+             (let ((imenu-generic-expression
+                    (append nvp-imenu-comment-headers-re
+                            nvp-imenu-comment-headers-re-2))
+                   (imenu-create-index-function 'imenu-default-create-index-function))
+               (ido/imenu)))
+            (_ (ido/imenu)))
+        (ido/imenu)))))
 
 (provide 'nvp-imenu)
 ;;; nvp-imenu.el ends here

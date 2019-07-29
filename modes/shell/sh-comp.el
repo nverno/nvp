@@ -1,53 +1,59 @@
-;;; bash-source.el --- Completion for sources in sh script -*- lexical-binding: t; -*-
+;;; sh-comp.el --- Completion for sources in sh script -*- lexical-binding: t; -*-
 ;;; Commentary:
 
 ;; Caches completion candidates from sourced files.
-;; Candidates are determined using imenu w/ `bash-source-imenu-expression'.
+;; Candidates are determined using imenu w/ `sh-comp-imenu-expression'.
 ;; Cache is recalculated for a file when its modification time changes.
 ;;
 ;; Completion at point:
-;; - variables => bash-source + environment variables since bash-completion
+;; - variables => sh-comp + environment variables since bash-completion
 ;;                doesn't account for variables defined in scripts
+;; - local vars
 ;; - flags => bash-completion
-;; - commands => bash-completion + bash-source; bash-completion doesn't account
+;; - commands => bash-completion + sh-comp; bash-completion doesn't account
 ;;               for sourced functions
+;;
+;; Xref:
+;; Backend jumps to sourced functions/variables + functions/globals defined
+;; in current buffer (ignores local variables)
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib))
+  (require 'cl-lib)
+  (require 'nvp-macro))
 (require 'company)
 (require 'imenu)
 
-(defvar bash-source-use-bash-completion t
+(defvar sh-comp-use-bash-completion t
   "Non-nil to use `bash-completion' during completion at point.")
 
 (eval-when-compile
  ;; mapping for symbols to annotations
- (defvar bash-source-symbol-annotation
+ (defvar sh-comp-symbol-annotation
    '((function " <f>") (local " <v>") (global " <V>") (envvar " <E>")))
 
- (defmacro bash-source:annotation (symbol)
-   `(eval-when-compile (cadr (assoc ',symbol bash-source-symbol-annotation)))))
+ (defmacro sh-comp:annotation (symbol)
+   `(eval-when-compile (cadr (assoc ',symbol sh-comp-symbol-annotation)))))
 
 ;; imenu regexp used to gather completion candidates
 ;; car of entry used to match type
-(defvar bash-source-imenu-expression
-  `((,(bash-source:annotation function)
+(defvar sh-comp-imenu-expression
+  `((,(sh-comp:annotation function)
      ;; function FOO
      ;; function FOO()
      "^\\s-*function\\s-+\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*\\(?:()\\)?" 1)
-    (,(bash-source:annotation function)
+    (,(sh-comp:annotation function)
      ;; FOO()
      "^\\s-*\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*()" 1)
     ;; Global variables
-    (,(bash-source:annotation global)
+    (,(sh-comp:annotation global)
      "^\\([[:alpha:]_][[:alnum:]_]*\\)=" 1)))
 
 ;; track candidates from sourced files
-(defvar bash-source-db (make-hash-table :test 'equal))
+(defvar sh-comp-db (make-hash-table :test 'equal))
 
-(cl-defstruct (bash-source-dbfile
-               (:constructor bash-source-make-dbfile)
+(cl-defstruct (sh-comp-dbfile
+               (:constructor sh-comp-make-dbfile)
                (:copier nil))
   functions
   variables
@@ -55,7 +61,7 @@
   modtime)
 
 ;; gather sourced files from buffer
-(defun bash-source--buffer-sources ()
+(defun sh-comp--buffer-sources ()
   (save-excursion
     (goto-char (point-min))
     ;; might not be called in a `sh-mode' buffer
@@ -81,7 +87,7 @@
         srcs))))
 
 ;; use imenu to create candidate list from buffer
-(defun bash-source--buffer-candidates ()
+(defun sh-comp--buffer-candidates ()
   (ignore-errors 
     (with-syntax-table sh-mode-syntax-table
       (let* ((imenu-use-markers (buffer-file-name))
@@ -94,52 +100,52 @@
           index)))))
 
 ;; update sources/candidates for FILE in DBFILE entry
-(defun bash-source--file-update (file dbfile &optional recurse imenu-regexp)
-  (or imenu-regexp (setq imenu-regexp bash-source-imenu-expression))
+(defun sh-comp--file-update (file dbfile &optional recurse imenu-regexp)
+  (or imenu-regexp (setq imenu-regexp sh-comp-imenu-expression))
   (with-temp-buffer
     (insert-file-contents file)
-    (let* ((imenu-generic-expression (or imenu-regexp bash-source-imenu-expression))
+    (let* ((imenu-generic-expression (or imenu-regexp sh-comp-imenu-expression))
            (imenu-create-index-function #'imenu-default-create-index-function)
-           (srcs (bash-source--buffer-sources))
-           (cands (bash-source--buffer-candidates)))
-      (setf (bash-source-dbfile-functions dbfile)
-            (cdr (assoc (bash-source:annotation function) cands)))
-      (setf (bash-source-dbfile-variables dbfile)
-            (cdr (assoc (bash-source:annotation global) cands)))
-      (setf (bash-source-dbfile-sources dbfile) srcs)
-      (puthash file dbfile bash-source-db)
+           (srcs (sh-comp--buffer-sources))
+           (cands (sh-comp--buffer-candidates)))
+      (setf (sh-comp-dbfile-functions dbfile)
+            (cdr (assoc (sh-comp:annotation function) cands)))
+      (setf (sh-comp-dbfile-variables dbfile)
+            (cdr (assoc (sh-comp:annotation global) cands)))
+      (setf (sh-comp-dbfile-sources dbfile) srcs)
+      (puthash file dbfile sh-comp-db)
       (when recurse
         (dolist (src srcs)
           (when (not (equal src file))
-            (bash-source-file-candidates
+            (sh-comp-file-candidates
              src nil recurse imenu-regexp 'no-return)))))))
 
-(defsubst bash-source--getter (type)
+(defsubst sh-comp--getter (type)
   (if (eq type 'all)
-      (lambda (db) (append (bash-source-dbfile-functions db)
-                      (bash-source-dbfile-variables db)))
-    (intern (concat "bash-source-dbfile-" (symbol-name type)))))
+      (lambda (db) (append (sh-comp-dbfile-functions db)
+                      (sh-comp-dbfile-variables db)))
+    (intern (concat "sh-comp-dbfile-" (symbol-name type)))))
 
 ;; Get/cache candidates for FILE
 ;; Cache is created when empty or the file's modification time has changed
 ;; if RECURSE is non-nil, return candidates from all files sourced recursively
-(defun bash-source-file-candidates (file type &optional
+(defun sh-comp-file-candidates (file type &optional
                                          recurse imenu-regexp no-return)
   (let* ((attr (file-attributes file 'integer))
          (modtime (and attr (nth 5 attr)))
-         (dbfile (or (gethash file bash-source-db nil) (bash-source-make-dbfile))))
-    (when (not (equal modtime (bash-source-dbfile-modtime dbfile)))
-      (setf (bash-source-dbfile-modtime dbfile) modtime)
-      (bash-source--file-update file dbfile recurse imenu-regexp))
+         (dbfile (or (gethash file sh-comp-db nil) (sh-comp-make-dbfile))))
+    (when (not (equal modtime (sh-comp-dbfile-modtime dbfile)))
+      (setf (sh-comp-dbfile-modtime dbfile) modtime)
+      (sh-comp--file-update file dbfile recurse imenu-regexp))
     (unless no-return
-      (let ((getter (bash-source--getter type))
+      (let ((getter (sh-comp--getter type))
             res srcs)
         (if (null recurse) (funcall getter dbfile)
           (cl-labels ((build-res
                        (srcfile)
-                       (let ((db (gethash srcfile bash-source-db)))
+                       (let ((db (gethash srcfile sh-comp-db)))
                          (setq res (append res (funcall getter db)))
-                         (dolist (s (bash-source-dbfile-sources db))
+                         (dolist (s (sh-comp-dbfile-sources db))
                            (unless (member s srcs)
                              (push s srcs)
                              (build-res s))))))
@@ -147,27 +153,88 @@
           (delete-dups res))))))
 
 ;;;###autoload
-(defun bash-source-candidates (type &optional file)
+(defun sh-comp-candidates (type &optional file)
   "List of completion targets from current buffer or FILE and all recursively \
 sourced files."
-  (bash-source-file-candidates
-   (or file (buffer-file-name)) type 'recurse bash-source-imenu-expression))
+  (sh-comp-file-candidates
+   (or file (buffer-file-name)) type 'recurse sh-comp-imenu-expression))
 
 ;; -------------------------------------------------------------------
 ;;; Completion
 
-(defvar bash-source-syntax-table
+(defvar sh-comp-syntax-table
   (let ((tab sh-mode-syntax-table))
     (modify-syntax-entry ?$ "'" tab)
     tab))
 
-(defsubst bash-source-variable-p (pos)
+;;; Locals: lexical + globals
+
+;; Like `narrow-to-defun', but only narrow if point is actually inside a function.
+;; Retrun point at start of function if narrowing was done.
+(defun sh-comp--narrow-lexically ()
+  (save-excursion
+    (widen)
+    (when-let* ((ppss (syntax-ppss))
+                (parens (nth 9 ppss)))   ;start of outermost parens
+      (goto-char (car parens))
+      (and (eq (char-after) ?{)
+           (progn
+             (narrow-to-region (point) (progn (forward-sexp) (point)))
+             (car parens))))))
+
+;; variables before point in current function:
+;; local ...
+;; or anything like: '<varname>='
+;; so it may get non-locals as well.
+(defun sh-comp--local-variables (&optional pos)
+  (when pos (goto-char pos))
+  (save-excursion
+    (with-syntax-table sh-mode-syntax-table
+      (let* ((beg (point))
+             (func-start (sh-comp--narrow-lexically))
+             vars)
+        (widen)
+        (when func-start
+          ;; collect local variables
+          (while (re-search-backward
+                  "^[ \t]*local[ \t]+\\([^=\n]+\\)\\|\\(\\_<[[:alnum:]_]+\\)="
+                  func-start t)
+            ;; skip strings/comments
+            (unless (nth 8 (syntax-ppss))
+              (-if-let (var (match-string 2))
+                  (progn
+                    (put-text-property 0 1 'annot (sh-comp:annotation local) var)
+                    (push var vars))
+                (dolist (var (split-string (match-string 1) " \t" 'omit " \t"))
+                  (put-text-property 0 1 'annot (sh-comp:annotation local) var)
+                  (push var vars)))))
+          (delete-dups vars))))))
+
+;; only update once while writing a symbol
+;; see #<marker at 14695 in elisp-mode.el.gz>
+(defvar sh-comp--local-variables-completion-table
+  (let (lastpos lastvars)
+    (letrec ((hookfun (lambda ()
+                        (setq lastpos nil)
+                        (remove-hook 'post-command-hook hookfun))))
+      (completion-table-dynamic
+       (lambda (_string)
+         (save-excursion
+           (skip-syntax-backward "_w")
+           (let ((newpos (cons (point) (current-buffer))))
+             (unless (equal lastpos newpos)
+               (add-hook 'post-command-hook hookfun)
+               (setq lastpos newpos)
+               (setq lastvars (sh-comp--local-variables)))))
+         lastvars)))))
+
+(defsubst sh-comp-variable-p (pos)
   (or (eq (char-before pos) ?$)
       (and (eq (char-before pos) ?{)
            (eq (char-before (1- pos)) ?$))))
 
-(defun bash-source-completion-at-point ()
-  (with-syntax-table bash-source-syntax-table
+(defun sh-comp-completion-at-point ()
+  (with-syntax-table sh-comp-syntax-table
     (let* ((pos (point))
            (beg (condition-case nil
                     (save-excursion
@@ -175,9 +242,9 @@ sourced files."
                       (skip-syntax-forward "'")
                       (point))
                   (scan-error pos)))
-           (var (bash-source-variable-p beg))
+           (var (sh-comp-variable-p beg))
            (flag (eq (char-after beg) ?-))
-           (use-comp (and bash-source-use-bash-completion
+           (use-comp (and sh-comp-use-bash-completion
                           (null var)))
            (proc (and use-comp (bash-completion-require-process)))
            (comp (when use-comp
@@ -215,10 +282,11 @@ sourced files."
                         (lambda (_) (bash-completion-comm comp proc)))))
                 (var
                  (list (completion-table-merge
+                        sh-comp--local-variables-completion-table
                         (completion-table-dynamic
                          (lambda (_string) (completion--make-envvar-table)))
                         (completion-table-dynamic
-                         (lambda (_string) (bash-source-candidates 'variables))))
+                         (lambda (_string) (sh-comp-candidates 'variables))))
                        :annotation-function
                        (lambda (s) (or (get-text-property 0 'annot s) " <E>"))))
                 (t
@@ -226,7 +294,7 @@ sourced files."
                         (bash-completion--completion-table-with-cache
                          (lambda (_) (bash-completion-comm comp proc)))
                         (completion-table-dynamic
-                         (lambda (_string) (bash-source-candidates 'functions))))
+                         (lambda (_string) (sh-comp-candidates 'functions))))
                        :annotation-function
                        (lambda (s) (or (get-text-property 0 'annot s) " <S>")))))
                (list :exclusive 'no))))))
@@ -234,10 +302,10 @@ sourced files."
 ;;; Company
 
 ;;;###autoload
-(defun company-bash-source (command &optional arg &rest _args)
+(defun company-sh-comp (command &optional arg &rest _args)
   (interactive (list 'interactive))
   (cl-case command
-    (interactive (company-begin-backend 'company-bash-source))
+    (interactive (company-begin-backend 'company-sh-comp))
     (prefix (nvp-unless-ppss 'cmt
               (and (derived-mode-p 'sh-mode)
                    (company-grab-symbol))))
@@ -246,63 +314,57 @@ sourced files."
                   (and (markerp marker)
                        (cons (marker-buffer marker) (marker-position marker)))))
     (candidates
-     (if (bash-source-variable-p (- (point) (length arg)))
-         (all-completions arg (bash-source-candidates 'variables))
-       (all-completions arg (bash-source-candidates 'functions))))
+     (if (sh-comp-variable-p (- (point) (length arg)))
+         (all-completions arg (sh-comp-candidates 'variables))
+       (all-completions arg (sh-comp-candidates 'functions))))
     (require-match 'never)
     (duplicates nil)))
 
 ;; -------------------------------------------------------------------
 ;;; Xref
 
-(defun bash-source--xref-backend () 'bash-source)
+;;;###autoload
+(defun sh-comp--xref-backend () 'sh-comp)
 
-(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql bash-source)))
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql sh-comp)))
   (completion-table-dynamic
-   (lambda (_string) (bash-source-candidates 'all (buffer-file-name))) 'switch))
+   (lambda (_string) (sh-comp-candidates 'all (buffer-file-name))) 'switch))
 
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql bash-source)))
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql sh-comp)))
   (thing-at-point 'symbol))
 
-(defun bash-source--make-xref-location (ident file)
+(defun sh-comp--make-xref-location (ident file)
   (cl-labels ((getter
                (f)
-               (let ((db (gethash f bash-source-db)))
-                 (-when-let (id (or (cl-find ident (bash-source-dbfile-functions db)
+               (let ((db (gethash f sh-comp-db)))
+                 (unless db
+                   (sh-comp-file-candidates f 'all 'recurse nil t))
+                 (-when-let (id (or (cl-find ident (sh-comp-dbfile-functions db)
                                              :test #'string= :key #'car)
-                                    (cl-find ident (bash-source-dbfile-variables db)
+                                    (cl-find ident (sh-comp-dbfile-variables db)
                                              :test #'string= :key #'car)))
-                   (xref-make-bash-location f (cdr id))))))
+                   (xref-make-sh-location f (cdr id))))))
     (-if-let (xref (getter file)) xref
-      (let* ((srcs (bash-source-candidates 'sources file)))
-        (cl-find-if #'getter srcs)))))
+      (let* ((srcs (sh-comp-candidates 'sources file)) done xref)
+        (while (and srcs (not done))
+          (when (setq xref (getter (pop srcs)))
+            (setq done t)))
+        xref))))
 
-(cl-defmethod xref-backend-definitions ((_backend (eql bash-source)) identifier)
-  (list
-   (xref-make
-    identifier
-    ;; (eval-when-compile
-    ;;   (macroexpand-all
-    ;;    `(pcase (get-text-property 0 'annot identifier)
-    ;;       (,(bash-source:annotation global)
-    ;;        (put-text-property 0 1 'face 'font-lock-variable-name-face identifier))
-    ;;       (,(bash-source:annotation local)
-    ;;        (put-text-property 0 1 'face 'font-lock-variable-name-face identifier))
-    ;;       (,(bash-source:annotation function)
-    ;;        (put-text-property 0 1 'face 'font-lock-function-name-face identifier))
-    ;;       (_ identifier))))
-    (bash-source--make-xref-location identifier (buffer-file-name)))))
+(cl-defmethod xref-backend-definitions ((_backend (eql sh-comp)) identifier)
+  (-when-let (loc (sh-comp--make-xref-location identifier (buffer-file-name)))
+    (list (xref-make identifier loc))))
 
-(defclass xref-bash-location (xref-location)
+(defclass xref-sh-location (xref-location)
   ((pos :type fixnum :initarg :pos)
    (file :type string :initarg :file
          :reader xref-location-group))
-  :documentation "Location of bash-source tag.")
+  :documentation "Location of sh-comp tag.")
 
-(defun xref-make-bash-location (file pos)
-  (make-instance 'xref-bash-location :file file :pos pos))
+(defun xref-make-sh-location (file pos)
+  (make-instance 'xref-sh-location :file file :pos pos))
 
-(cl-defmethod xref-location-marker ((l xref-bash-location))
+(cl-defmethod xref-location-marker ((l xref-sh-location))
   (with-slots (file pos) l
     (let ((buffer (find-file-noselect file)))
       (with-current-buffer buffer
@@ -310,9 +372,5 @@ sourced files."
           (goto-char pos)
           (point-marker))))))
 
-;; (cl-defstruct (xref-bash-location
-;;                (:constructor xref-make-bash-location (symbol type))
-;;                (:copier nil)))
-
-(provide 'bash-source)
-;;; bash-source.el ends here
+(provide 'sh-comp)
+;;; sh-comp.el ends here

@@ -3,12 +3,7 @@
 ;;; Commentary:
 
 ;; TODO:
-;; Completion:
-;;  - somehow merge local variable completion with bash-completion
-;;  - restrict local variable candidates to the current context + globals
-;; bash-source:
-;;  - jump to sourced functions - works fine with TAGs file, but sourced scripts
-;;     can come from anywhere, so an xref backend would be useful
+;; sh-comp:
 ;;  - create docstrings from function headers
 
 ;;; Code:
@@ -17,14 +12,14 @@
   (require 'subr-x)
   (require 'nvp-macro)
   (require 'nvp-shell-macs "macs/nvp-shell-macs")
-  (require 'nvp-sh-help))               ;defsubsts
-(eval-and-compile (require 'nvp-font))
-(nvp-decls)
+  (require 'nvp-sh-help)               ;defsubsts
+  (require 'nvp-font))
 (require 'nvp-parse)
 (require 'company)
 (require 'company-quickhelp)
 (require 'sh-script)
 (require 'nvp-shell-common)
+(nvp-decls)
 (nvp-decl company-bash company-shell
   bash-completion-dynamic-complete bash-completion-dynamic-complete-nocomint)
 (nvp-auto "nvp-sh-help" nvp-sh-help-bash-builtin-p nvp-sh-help-bash-builtin-sync)
@@ -54,16 +49,14 @@
 ;; -------------------------------------------------------------------
 ;;; Generics
 
-;; TODO:
-;; - local variables
 (eval-when-compile
-  (defmacro nvp:bash-source-candidates (type args)
+  (defmacro nvp:sh-comp-candidates (type args)
     (macroexp-let2 nil args args 
       `(let* ((buff (plist-get ,args :buffer))
               (file (if buff (buffer-file-name (get-buffer buff))
                        (or (plist-get ,args :file)
                            (buffer-file-name)))))
-         (bash-source-candidates ',type file)))))
+         (sh-comp-candidates ',type file)))))
 
 (cl-defmethod nvp-parse-current-function (&context (major-mode sh-mode) &rest _args)
   "Find name of function containing point.
@@ -76,33 +69,20 @@ Like `sh-current-defun-name' but ignore variables."
 
 (cl-defmethod nvp-parse-functions (&context (major-mode sh-mode) &rest args)
   "Functions available in buffer/file, including sources."
-  (nvp:bash-source-candidates functions args))
+  (nvp:sh-comp-candidates functions args))
 
 (cl-defmethod nvp-parse-variables (&context (major-mode sh-mode) &rest args)
   "Global variables available in file including sources."
-  (nvp:bash-source-candidates variables args))
+  (nvp:sh-comp-candidates variables args))
 
 (cl-defmethod nvp-parse-includes (&context (major-mode sh-mode) &rest args)
   "Sourced files, recursively."
-  (nvp:bash-source-candidates sources args))
+  (nvp:sh-comp-candidates sources args))
 
 ;; -------------------------------------------------------------------
 ;;; Navigation
 ;; commands to enable `beginning-of-defun', `end-of-defun', `narrow-to-defun',
 ;; etc. to work properly in sh buffers
-
-(defun nvp-sh-narrow-lexically ()
-  "Like `narrow-to-defun', but only narrow if point is actually inside a function.
-Retrun point at start of function if narrowing was done."
-  (save-excursion
-    (widen)
-    (when-let* ((ppss (syntax-ppss))
-                (parens (nth 9 ppss)))   ;start of outermost parens
-      (goto-char (car parens))
-      (and (eq (char-after) ?{)
-           (progn
-             (narrow-to-region (point) (progn (forward-sexp) (point)))
-             (car parens))))))
 
 (defsubst nvp-sh-looking-at-beginning-of-defun ()
   (save-excursion
@@ -151,53 +131,8 @@ Used to set `end-of-defun-function'."
       (forward-list)
       (point))))
 
-;; ------------------------------------------------------------
-;;; Completion
-
-;; #<marker at 14695 in elisp-mode.el.gz>
-(defun nvp-sh-vars-before-point ()
-  "Collect variables in current lexical context and globals."
-  (save-excursion
-    (if (not (string= sh-shell "bash"))
-        (sh--vars-before-point)
-      (let ((beg (point))
-            (func-start (nvp-sh-narrow-lexically))
-            vars)
-        (widen)
-        ;; collect local variables
-        (while (re-search-backward
-                "[ \t]*local[ \t]\\([^=\n]+\\)" func-start 'move)
-          (dolist (var (split-string (match-string 1) " \t" 'omit " \t"))
-            (put-text-property 0 1 'annotation " <v>" var)
-            (push var vars)))
-        (goto-char beg)
-        (dolist (var (sh--vars-before-point))
-          (put-text-property 0 1 'annotation " <v>" var)
-          (push var vars))
-        (delete-dups vars)))))
-
-(defun nvp-sh-dynamic-complete-vars ()
-  "Complete local variables, but fail if none match to delegate to bash completion."
-  (nvp-unless-ppss 'cmt
-    (-when-let ((beg . end) (bounds-of-thing-at-point 'shell-var))
-      (list beg end
-            (completion-table-dynamic (lambda (_) (nvp-sh-vars-before-point)))
-            :exclusive 'no
-            :annotation-function
-            (lambda (s) (ignore-errors (get-text-property 0 'annotation s)))))
-    ;; (save-excursion
-    ;;   (skip-chars-forward "[:alnum:]_")
-    ;;   (let ((end (point))
-    ;;         (_ (skip-chars-backward "[:alnum:]_"))
-    ;;         (start (point)))
-    ;;     (when (or (eq (char-before) ?$)
-    ;;               (and (eq (char-before) ?{)
-    ;;                    (eq (char-before (1- start)) ?$)))
-    ;;       (list start end
-    ;;             (completion-table-dynamic
-    ;;              (lambda (s) (all-completions s (sh--vars-before-point))))
-    ;;             :exclusive 'no))))
-    ))
+;; -------------------------------------------------------------------
+;;; Company / Help
 
 ;; FIXME: generalize toggle to call indirectly
 (defvar nvp-sh-company-active-map
@@ -208,14 +143,11 @@ Used to set `end-of-defun-function'."
     km))
 
 ;; with prefix, only complete for sourced / local functions
-(defun nvp-sh-company-bash (arg)
+(defun nvp-sh-company-complete (arg)
   "Temporarily use only sourced / local functions for completion."
   (interactive "P")
-  (if arg (call-interactively 'company-bash-source)
+  (if arg (call-interactively 'company-sh-comp)
     (company-complete)))
-
-;; -------------------------------------------------------------------
-;;; Documentaion
 
 ;; Since no doc-buffer is returned by company-capf, rewrite
 ;; company-quickhelp doc retrieval method to just call man on the
@@ -357,14 +289,15 @@ Optionally return process specific to THIS-BUFFER."
 
 (defun nvp-sh-locals ()
   "Define local variables to be called in hook."
-  (setq-local beginning-of-defun-function 'nvp-sh-beginning-of-defun)
-  (setq-local end-of-defun-function 'nvp-sh-end-of-defun)
+  (setq-local beginning-of-defun-function #'nvp-sh-beginning-of-defun)
+  (setq-local end-of-defun-function #'nvp-sh-end-of-defun)
   (setq-local align-rules-list nvp-sh-align-rules-list)
   (make-local-variable 'hippie-expand-try-functions-list)
   (cl-pushnew 'nvp-he-try-expand-shell-alias hippie-expand-try-functions-list)
-  (add-hook 'kill-buffer-hook 'nvp-sh-tidy-buffer nil 'local)
+  (add-hook 'kill-buffer-hook #'nvp-sh-tidy-buffer nil 'local)
+  (add-hook 'xref-backend-functions #'sh-comp--xref-backend nil t)
   ;; Completion
-  (add-hook 'completion-at-point-functions #'bash-source-completion-at-point nil t)
+  (add-hook 'completion-at-point-functions #'sh-comp-completion-at-point nil t)
   ;; local version of `company-active-map' to rebind popup/help functions
   (setq-local company-active-map nvp-sh-company-active-map)
   (setq-local company-backends (remq 'company-capf company-backends))

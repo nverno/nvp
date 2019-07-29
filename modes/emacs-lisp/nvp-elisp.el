@@ -127,7 +127,7 @@ Forms are read from :filename if present in ARGS, otherwise current buffer file.
             (push (cadr form) forms))))
       (delq nil forms))))
 
-(cl-defmethod nvp-parse-function-names
+(cl-defmethod nvp-parse-functions
     (&context (major-mode emacs-lisp-mode) &rest args)
   "Accepts additional ARGS, :do-load to `load-file' prior to parsing."
   (or (nvp-elisp--get-forms nvp-elisp--defun-forms args)

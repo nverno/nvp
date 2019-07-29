@@ -1,12 +1,4 @@
 ;;; nvp-sh-auto.el --- autoload lesser used things -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-31 02:17:25>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell
-;; Created: 27 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

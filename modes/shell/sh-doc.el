@@ -1,12 +1,4 @@
 ;;; sh-doc.el --- documentation for sh functions -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-15 18:24:52>
-;; Created: 17 August 2018
-
 ;;; Commentary:
 
 ;; TODO:

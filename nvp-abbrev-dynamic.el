@@ -38,7 +38,7 @@ If APPEND is non-nil, add abbrevs to current buffer-local dynamic table."
   "Function to create and add dynamic abbrevs from current buffer.
 If APPEND is non-nil, add abbrevs to current buffer-local dynamic table."
   (unless (consp parents) (setq parents (cons parents nil)))
-  (when-let ((fns (nvp-parse-function-names)))
+  (when-let ((fns (nvp-parse-functions)))
     (when (and (not append) (bound-and-true-p nvp-abbrev-dynamic-table))
       (clear-abbrev-table nvp-abbrev-dynamic-table))
     (unless (abbrev-table-p nvp-abbrev-dynamic-table)

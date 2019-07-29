@@ -1,8 +1,4 @@
 ;;; nvp-term.el --- term mode -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-03-31 01:59:40>
-;; Created: 13 January 2019
-
 ;;; Commentary:
 ;;; Code:
 (require 'term)
@@ -18,6 +14,12 @@
                (= 32 (char-before))))
       (term-send-eof)
     (delete-char 1)))
+
+(defun nvp-term-toggle-mode ()
+  (interactive)
+  (if (term-in-char-mode)
+      (term-line-mode)
+    (term-char-mode)))
 
 (provide 'nvp-term)
 ;;; nvp-term.el ends here

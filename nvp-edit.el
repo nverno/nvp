@@ -2,6 +2,7 @@
 
 ;;; Commentary:
 
+;; - Indent
 ;; - Sorting
 ;; - Wrap text
 ;; - Duplicate lines / regions
@@ -15,6 +16,16 @@
 (nvp-decls)
 (nvp-decl paredit-kill)
 (autoload 'sp-wrap-with-pair "smartparens")
+
+;; -------------------------------------------------------------------
+;;; Indent
+
+;;;###autoload
+(defun nvp-indent-dwim (&optional beg end)
+  "Indent `thing-at-point' or region between BEG and END.
+Defaults to `paragraph' at point."
+  (interactive (nvp-with-region beg end 'paragraph :pulse t (list beg end)))
+  (indent-region beg end))
 
 
 ;; -------------------------------------------------------------------

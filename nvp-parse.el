@@ -47,11 +47,12 @@ Kills buffer if opened."
           (and opened-p (kill-this-buffer)))))))
 
 ;; default just tries to use imenu
-(cl-defgeneric nvp-parse-function-names (&rest args)
+(cl-defgeneric nvp-parse-functions (&rest args)
   "Default method to gather function names from current buffer.
-Additionally recognized ARGS to specify locations to gather functions from:
- - :buffer 
- - :filename"
+Recognized arguments:
+  :buffer <buffer-or-name> - location to search
+  :filename <filename>     - location to search
+  :local t                 - find functions local to location"
   ;; just loops through alist and gathers names
   (nvp-parse-with-buffer-or-file args
     (nvp--parse-ensure-imenu)
@@ -65,6 +66,14 @@ First tries closest imenu entry, then `add-log-current-defun'."
   (let ((func (nvp-imenu-sort-relative-positions (point) (nvp-imenu-cleaned-alist))))
     (if func (caar func)
       (add-log-current-defun))))
+
+(cl-defgeneric nvp-parse-variables (&rest _args)
+  "Gather variables from buffer or file.
+Recognized arguments:
+ :buffer <buffername> to search
+ :file <filename> to search
+ :local <point> - find local variables at POINT"
+  nil)
 
 (cl-defgeneric nvp-parse-library (&rest _args)
   "Generic function to return the name of the current library, module, ..."

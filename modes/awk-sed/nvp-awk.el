@@ -1,6 +1,12 @@
 ;;; nvp-awk.el --- awk extensions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;; - Completion-at-point => merges builtins w/ completion from info manual
+;; - when completion finishes and function arguments are available, expans w/
+;;   yasnippet
+;; - eldoc
+;;
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -34,21 +40,6 @@
         "doc/builtins.el" (file-name-directory (nvp-load-file-name))))
       (car (read-from-string (buffer-string))))))
 
-(defvar nvp-awk-eldoc-cache (make-hash-table :test 'equal))
-
-(defun nvp-awk-eldoc--string (cmd)
-  (or (gethash cmd nvp-awk-eldoc-cache)
-      (-when-let (plist (cdr (assoc-string cmd nvp-awk-builtins)))
-        (let ((pars (plist-get plist :param)))
-          (setf (gethash cmd nvp-awk-eldoc-cache)
-                (format "%s: %s" (propertize cmd 'face 'font-lock-function-name-face)
-                        (if pars (concat "(" (mapconcat 'identity pars ", ") ")")
-                          (plist-get plist :desc))))))))
-
-(defun nvp-awk-eldoc-function ()
-  (-when-let (sym (thing-at-point 'symbol))
-    (nvp-awk-eldoc--string sym)))
-
 (defun nvp-awk-command-completion ()
   (-when-let ((beg . end) (bounds-of-thing-at-point 'symbol))
     (list beg end (completion-table-merge
@@ -63,27 +54,36 @@
           :exit-function
           (lambda (str status)
             (when (eq 'finished status)
-              (nvp-awk--post-capf))))))
+              (-when-let* ((plist (cdr (assoc str nvp-awk-builtins)))
+                           (params (plist-get plist :param)))
+                (nvp-awk--post-complete-snippet params)))))))
 
 ;;; Snippets
 
-(defun nvp-awk-snippet-expand (snippet &optional pos)
-  (when pos (goto-char pos))
-  (yas-expand-snippet snippet))
+;; expand function arguments after completion
+(defun nvp-awk--post-complete-snippet (params)
+  (yas-expand-snippet 
+   (concat
+    "(" (mapconcat
+         'identity (--map-indexed (format "${%d:%s}" (1+ it-index) it) params)
+         ", ") ")")))
 
-;; #<marker at 5118 in irony-completion.el>
-(defun nvp-awk--post-complete-snippet (str placeholders)
-  (let ((ph-count 0)
-        (from 0)
-        to snippet)
-    (while (setq to (car placeholders)
-                 snippet (concat snippet (substring str from to)
-                                 (format "${%d:%s}" (cl-incf ph-count)
-                                         (substring str (car placeholders)
-                                                    (cadr placeholders))))
-                 from (cadr placeholders)
-                 placeholders (cddr placeholders)))
-    (concat snippet (substring str from) "$0")))
+;;; Eldoc
+
+(defvar nvp-awk-eldoc-cache (make-hash-table :test 'equal))
+
+(defun nvp-awk-eldoc--string (cmd)
+  (or (gethash cmd nvp-awk-eldoc-cache)
+      (-when-let (plist (cdr (assoc-string cmd nvp-awk-builtins)))
+        (let ((pars (plist-get plist :param)))
+          (setf (gethash cmd nvp-awk-eldoc-cache)
+                (format "%s: %s" (propertize cmd 'face 'font-lock-function-name-face)
+                        (if pars (concat "(" (mapconcat 'identity pars ", ") ")")
+                          (plist-get plist :desc))))))))
+
+(defun nvp-awk-eldoc-function ()
+  (-when-let (sym (thing-at-point 'symbol))
+    (nvp-awk-eldoc--string sym)))
 
 (provide 'nvp-awk)
 ;; Local Variables:

@@ -7,7 +7,7 @@ BEGIN { }
 
 s==1 && /^# '?(override|environment|automatic|makefile|default)/ {
     count++;
-    match
+    ANSI
     vars[$1]
     print;
 # f {

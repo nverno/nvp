@@ -14,12 +14,10 @@
 (require 'nvp)
 (require 'info-look)
 
-;; -------------------------------------------------------------------
 ;;; Syntax
 
 (modify-syntax-entry ?@ "'" (syntax-table))
 
-;; -------------------------------------------------------------------
 ;;; Font-locking
 
 (nvp-font-lock-add-defaults 'awk-mode
@@ -30,6 +28,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Completion
+
 ;; PROCINFO['identifiers'], FUNCTAB
 
 (defvar nvp-awk-builtins

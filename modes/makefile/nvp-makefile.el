@@ -14,10 +14,7 @@
 ;; - collect remote info async
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro)
-  (require 'subr-x))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'make-mode)
 (nvp-decls)
@@ -48,6 +45,16 @@
   ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
   ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
   ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend)))
+
+;; `makefile-dependency-regex' => note this doesn't take into account quoting
+;; `makefile-macroassign-regex' => doesn't handle #defines
+
+;; (let ((io-funs
+;;        (concat "\\${\\s-*" (regexp-opt '("info" "warn" "error"))
+;;                "\\(.*\\)}")))
+;;   `(nvp-font-lock-add-defaults 'makefile-mode
+;;      ("\\${\\s-*}")
+;;     ))
 
 ;; ------------------------------------------------------------
 ;;; Web topics
@@ -135,18 +142,6 @@
               (delete-horizontal-space)
               (indent-to nvp-makefile-indent-offset))
             (forward-line 1)))))))
-
-;; -------------------------------------------------------------------
-;;; Font-locks
-;; `makefile-dependency-regex' => note this doesn't take into account quoting
-;; `makefile-macroassign-regex' => doesn't handle #defines
-
-;; (let ((io-funs
-;;        (concat "\\${\\s-*" (regexp-opt '("info" "warn" "error"))
-;;                "\\(.*\\)}")))
-;;   `(nvp-font-lock-add-defaults 'makefile-mode
-;;      ("\\${\\s-*}")
-;;     ))
 
 ;; -------------------------------------------------------------------
 ;;; Compile

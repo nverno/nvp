@@ -1,9 +1,7 @@
 ;;; nvp-neo.el --- neo4j -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (declare-function n4js-start "n4js")
 (declare-function n4js-switch-to-buffer "n4js")
 (autoload 'nvp-abbrev-expand-p "nvp-abbrev")

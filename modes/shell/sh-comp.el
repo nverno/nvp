@@ -231,6 +231,7 @@ sourced files."
       (and (eq (char-before pos) ?{)
            (eq (char-before (1- pos)) ?$))))
 
+;;;###autoload
 (defun sh-comp-completion-at-point ()
   (with-syntax-table sh-comp-syntax-table
     (let* ((pos (point))

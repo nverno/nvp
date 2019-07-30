@@ -6,9 +6,7 @@
 ;; so doesn't work properly in context, eg. ie "\\degree" or "#inc"
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
 (require 'company)
 (require 'nvp-abbrev-completion)

@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (nvp-autoload "subr-x" string-trim 'string-trim-right 'string-trim-left)
 
 (defun nvp-comment-string (str &optional padlen)

@@ -3,9 +3,7 @@
 ;;; Commentary:
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'sml-mode)
 (declare-function tag-utils-tag-dir "tag-utils")
 (declare-function smie-forward-sexp "smie")

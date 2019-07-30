@@ -6,7 +6,6 @@
 ;; TODO: expand git aliases as well
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-proc)
   (require 'nvp-macro)
   (require 'nvp-shell-macs "macs/nvp-shell-macs"))

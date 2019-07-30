@@ -1,14 +1,7 @@
 ;;; nvp-ocaml-help.el ---  -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/ocaml-tools
-;; Last modified: <2019-03-29 02:28:21>
-;; Created:  8 December 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-hap)
   (require 'nvp-ocaml))

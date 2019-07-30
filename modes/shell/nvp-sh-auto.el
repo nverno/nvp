@@ -1,9 +1,7 @@
 ;;; nvp-sh-auto.el --- autoload lesser used things -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'sh-script)
 (require 'nvp)
 

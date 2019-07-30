@@ -4,7 +4,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (defvar nvp-webjump-sites)
   (defvar webjump-sites))
 (require 'nvp)

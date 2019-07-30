@@ -12,7 +12,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar Man--sections))
 (require 'nvp-shell-common)

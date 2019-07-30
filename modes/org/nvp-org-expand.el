@@ -1,9 +1,4 @@
 ;;; nvp-org-expand.el ---  -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-04-19.13>
-;; URL: https://github.com/nverno/md-tools
-;; Created:  2 December 2016
-
 ;;; Commentary:
 ;; from wiki
 ;;; Code:

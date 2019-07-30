@@ -1,10 +1,7 @@
 ;;; nvp-scala.el ---  -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'ensime)
 (autoload 'projectile-project-p "projectile")
 

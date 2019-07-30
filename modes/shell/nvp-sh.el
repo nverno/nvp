@@ -8,8 +8,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
   (require 'nvp-macro)
   (require 'nvp-shell-macs "macs/nvp-shell-macs")
   (require 'nvp-sh-help)               ;defsubsts

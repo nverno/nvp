@@ -1,25 +1,13 @@
 ;;; nvp-lisp.el --- lisp helpers  -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; Last modified: <2019-03-21 20:29:00>
-;; URL: https://github.com/nverno/nvp
-;; Created: 21 November 2016
-
 ;;; Commentary:
-
 ;; TODO:
 ;; - auto-abbrevs
 ;; - sbcl: jump to source
 ;; - hap
 ;; - pophelp
 ;; - info
-
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'slime)
 
 (declare-function slime-repl-eval-string "slime-repl")

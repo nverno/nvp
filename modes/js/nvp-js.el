@@ -1,15 +1,8 @@
 ;;; nvp-js.el ---  -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-02-27 13:16:55>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/js-tools
-;; Created:  1 November 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (defvar nodejs-repl-process-name))
 (declare-function nodejs-repl-send-region "nodejs")
 (declare-function nodejs-repl-send-last-sexp "nodejs")

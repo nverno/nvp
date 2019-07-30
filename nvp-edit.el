@@ -9,7 +9,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'smartparens)
   (defvar sort-fold-case))

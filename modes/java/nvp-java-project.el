@@ -1,17 +1,8 @@
 ;;; nvp-java-project.el --- java project -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-06 18:06:52>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  6 March 2019
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (require 'hydra))
 (require 'eclim)
 (require 'nvp-java)

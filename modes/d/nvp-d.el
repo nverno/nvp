@@ -4,7 +4,6 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-complete)
-  (require 'cl-lib)
   (defvar yas-snippet-dirs))
 (nvp-decls)
 (autoload 'nvp-env-path-add "nvp-env")

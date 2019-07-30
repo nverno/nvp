@@ -11,9 +11,7 @@
 ;; More generalization is good
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (declare-function xterm-color-colorize-buffer "xterm-color")
 (autoload 'ansi-color-apply-on-region "ansi-color")
 

@@ -7,7 +7,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (defvar godoc-command))
 (require 'nvp-go)
 (declare-function godoc-and-godef "go-mode")

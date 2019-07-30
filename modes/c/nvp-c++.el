@@ -1,10 +1,4 @@
 ;;; nvp-c++.el --- C++ helpers -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-07-20.13>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/c-tools
-;; Created: 11 November 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

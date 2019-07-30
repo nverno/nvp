@@ -1,14 +1,7 @@
 ;;; nvp-fish.el --- fish shell helpers -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-16 00:10:57>
-;; Created:  4 November 2016
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'fish-mode)
 

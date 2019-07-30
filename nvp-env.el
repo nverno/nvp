@@ -3,9 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib)
-  (require 'subr-x))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-log)
 (declare-function w32-shell-execute "w32")

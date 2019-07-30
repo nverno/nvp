@@ -4,7 +4,6 @@
 ;; - https://github.com/syohex/better-shell/blob/master/better-shell.el
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar epg-gpg-home-directory))
 (require 'nvp-proc)

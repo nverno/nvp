@@ -6,8 +6,7 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'nvp-macro))
 
 (defconst nvp-fixme-keywords
   (eval-when-compile

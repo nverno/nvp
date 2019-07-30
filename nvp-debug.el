@@ -8,7 +8,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (require 'hydra))
 (require 'nvp)
 (require 'gud)

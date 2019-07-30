@@ -5,8 +5,6 @@
 ;; Mode local functions
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
   (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)

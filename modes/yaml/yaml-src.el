@@ -7,7 +7,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar yaml-src--prev-buffer))
 (nvp-auto "nvp-read" 'nvp-read-mode)

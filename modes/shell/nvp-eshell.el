@@ -1,5 +1,4 @@
 ;;; nvp-eshell.el --- eshell helpers -*- lexical-binding: t; -*-
-;; Last modified: <2019-03-31 02:14:34>
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

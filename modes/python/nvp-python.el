@@ -11,7 +11,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar company-candidates)
   (defvar company-backends))

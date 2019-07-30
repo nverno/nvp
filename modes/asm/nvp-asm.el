@@ -1,15 +1,7 @@
 ;;; nvp-asm.el --- assembly things  -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-04-11.01>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/asm-tools
-;; Created: 19 December 2016
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
 ;; FIXME: this is handled in installs

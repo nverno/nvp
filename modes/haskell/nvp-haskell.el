@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)
 (nvp-decl haskell-ident-at-point nvp-cycle)

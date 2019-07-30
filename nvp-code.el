@@ -7,9 +7,7 @@
 ;; - narrow
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (nvp-declare hs-toggle-hiding hs-show-all hs-hide-all)
 (defvar hs-minor-mode)
 

@@ -11,9 +11,7 @@
 ;; Used to produce completion candidates for company and hippie-exp.
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
 (require 'nvp)
 (require 'nvp-abbrev-util)

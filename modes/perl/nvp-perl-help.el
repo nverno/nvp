@@ -1,6 +1,6 @@
 ;;; nvp-perl-help.el --- help-at-point -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-03-24 03:25:05>
+;; Last modified: <2019-07-29.23>
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
 ;; URL: https://github.com/nverno/nvp
 ;; Created:  9 November 2016
@@ -17,9 +17,7 @@
 ;; - https://github.com/genehack/emacs/blob/master/etc/perl.el
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-perl)
 (require 'cperl-mode)
 (require 'man)

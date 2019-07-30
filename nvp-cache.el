@@ -10,9 +10,7 @@
 ;; https://github.com/skeeto/skewer-mode/blob/master/cache-table.el
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (nvp-decls)
 
 (cl-defstruct (nvp-cache (:constructor nvp-cache-make)

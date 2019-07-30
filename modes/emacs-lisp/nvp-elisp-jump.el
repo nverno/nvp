@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (autoload 'lm-header "lisp-mnt")
 (nvp-autoload "find-func" 'find-function-library 'find-library-name)
 

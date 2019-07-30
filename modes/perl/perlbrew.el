@@ -3,9 +3,7 @@
 ;;; Commentary:
 ;; FIXME: remove all the macros
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (autoload 'string-trim "subr-x")
 
 (eval-and-compile

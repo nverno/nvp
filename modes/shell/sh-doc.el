@@ -8,8 +8,7 @@
 ;; - eldoc support
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'sh-script)
 
 (eval-and-compile

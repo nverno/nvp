@@ -8,9 +8,7 @@
 ;; - generalize flex expansion to use arbitrary regex / cache
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
 
 ;; collect matches for REGEXP. If BUFFER is non-nil, collect matches from

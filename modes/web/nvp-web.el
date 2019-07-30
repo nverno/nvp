@@ -1,17 +1,9 @@
 ;;; nvp-web.el --- web helpers -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-28 22:21:54>
-;; Created: 31 December 2016
-
 ;;; Commentary:
 ;; FIXME: documentation, fixup nav functions
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
-  (require 'subr-x)
   (defvar httpd-root)
   (defvar httpd-port))
 (autoload 'nvp-jinja-url-for "nvp-jinja")

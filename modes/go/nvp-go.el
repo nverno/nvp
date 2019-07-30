@@ -7,7 +7,6 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-complete)
-  (require 'cl-lib)
   (defvar go-use-gocheck-for-testing))
 (declare-function go--in-anonymous-funcion-p "go-mode")
 (declare-function go-goto-function-name "go-mode")

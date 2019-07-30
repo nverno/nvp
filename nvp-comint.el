@@ -10,10 +10,7 @@
 ;; - default `comint-input-filter-functions' to ignore blanks, compress newlines
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro)
-  (require 'subr-x))
+(eval-when-compile (require 'nvp-macro))
 (require 'comint)
 (nvp-decls)
 

@@ -1,15 +1,11 @@
 ;;; nvp-java.el --- ... -*- lexical-binding: t-*-
-
 ;;; Commentary:
-
 ;;; TODO:
 ;; - abbrevs for includes / file-local things only?
-
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-hap)
-  (require 'cl-lib))
+  (require 'nvp-hap))
 (require 'eclim)
 (require 'eclimd)
 (require 'nvp-parse)

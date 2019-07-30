@@ -7,9 +7,7 @@
 ;; #<marker at 210151 in info.el.gz>
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-cache)
 (require 'bookmark)

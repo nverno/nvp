@@ -18,10 +18,7 @@
 ;; XXX: possibly look into YSH?
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro)
-  (require 'subr-x))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-yaml-indent)
 (nvp-decls)
 

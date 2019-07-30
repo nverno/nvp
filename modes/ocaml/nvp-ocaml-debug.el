@@ -1,18 +1,10 @@
 ;;; nvp-ocaml-debug.el ---  -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Package-Requires: 
-;; Created: 13 December 2016
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-ocaml)
 (require 'ocamldebug nil t)
-(nvp-declare "" ocamldebug)
+(nvp-decl ocamldebug)
 
 ;; ocamldebug.el doesn't define a prefix key like gud-gdb
 (defvar ocaml-debug-key-prefix (kbd "<f2> d"))

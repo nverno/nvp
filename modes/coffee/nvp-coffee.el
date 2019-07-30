@@ -3,9 +3,7 @@
 ;; - https://github.com/purcell/flymake-coffee
 ;; - https://github.com/jashkenas/coffeescript
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 
 ;; -------------------------------------------------------------------
 ;;; Utils

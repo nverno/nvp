@@ -4,9 +4,7 @@
 ;;  Interface to jump to sections at http://coffeescript.org to lookup
 ;;  help documentation from emacs.
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 
 (defvar nvp-coffee-help--data-location nil)
 (setq nvp-coffee-help--data-location

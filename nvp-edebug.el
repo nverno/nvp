@@ -9,7 +9,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar tramp-debug-on-error)
   (defvar tramp-verbose)

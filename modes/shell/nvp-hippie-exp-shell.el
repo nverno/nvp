@@ -1,15 +1,7 @@
 ;;; nvp-hippie-exp-shell.el --- expand shell aliases -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-03-31 00:58:29>
-;; Created:  7 December 2016
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
 (require 'nvp-shell)
 

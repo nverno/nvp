@@ -1,17 +1,7 @@
 ;;; nvp-flex.el --- flex helpers -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/compiler-tools
-;; Last modified: <2019-02-26 01:52:12>
-;; Created: 17 February 2017
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-compiler)
 (declare-function nvp-env-add "nvp-env")
 

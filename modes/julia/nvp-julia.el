@@ -1,20 +1,9 @@
 ;;; nvp-julia.el --- julia mode utilities -*- lexical-binding: t -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp-julia
-;; Last modified: <2019-03-27 15:45:33>
-;; Created: 28 September 2016
-
 ;;; Commentary:
-
 ;; TODO:
 ;; - add company jump to location function
-
 ;;; Code:
-
 (eval-when-compile
-  (require 'subr-x)
-  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-hap))
 (require 'company)

@@ -1,18 +1,8 @@
 ;;; nvp-rust.el --- rustls -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/rust-tools
-;; Last modified: <2019-03-16 00:11:36>
-;; Created: 26 October 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
-  (require 'subr-x)
-  ;; FIXME: get rid of dash
-  (require 'dash)
   (defvar toml-mode-map))
 (require 'tag-utils)                    ;remove
 (require 'rust-mode)

@@ -1,10 +1,8 @@
 ;;; nvp-ocaml.el ---  -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;; FIXME: remove lots of install stuff, cleanup
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-complete)
   (defvar utop-buffer-name)

@@ -10,7 +10,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar company-selection)
   (defvar company-candidates)

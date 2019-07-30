@@ -3,9 +3,7 @@
 ;; Call perltidy DWIM
 ;; modified from https://github.com/genehack/perl-elisp/blob/master/perltidy.el
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'cperl-mode)
 (nvp-decls)
 

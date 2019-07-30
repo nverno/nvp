@@ -9,8 +9,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
   (require 'nvp-macro)
   (defvar company-autoconf-keywords))
 (require 'company-autoconf)

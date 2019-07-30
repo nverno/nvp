@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar tiny-beg))
 (declare-function tiny-expand "tiny")

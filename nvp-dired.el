@@ -3,8 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
   (require 'nvp-macro)
   (defvar nvp-dired-external-filelist-cmd)
   (defvar nvp-dired-external-program))

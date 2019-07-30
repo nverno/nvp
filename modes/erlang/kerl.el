@@ -3,7 +3,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (defvar eshell-path-env))
 
 ;; non-nil kerl speaks about changes

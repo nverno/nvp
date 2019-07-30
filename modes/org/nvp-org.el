@@ -1,15 +1,7 @@
 ;;; nvp-org.el --- org helpers -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-04-10.08>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/md-tools
-;; Created: 20 February 2019
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'org)
 (require 'nvp)
 

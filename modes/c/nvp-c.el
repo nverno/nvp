@@ -1,10 +1,4 @@
 ;;; nvp-c.el --- c helpers -*- lexical-binding: t; -*-
-
-;; Last modified: <2019-04-10.19>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp-c
-;; Created: 11 November 2016
-
 ;;; Commentary:
 
 ;; TODO:
@@ -15,7 +9,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-compile)
   (require 'nvp-font)

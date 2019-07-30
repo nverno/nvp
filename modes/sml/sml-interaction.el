@@ -1,13 +1,4 @@
 ;;; sml-interaction.el --- Show sml results in overlay -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/sml-utils
-;; Last modified: <2019-03-16 00:00:57>
-;; Created: 6 September 2016
-;; Package-Requires ((emacs "24.1") (cl-lib "0.5") (sml-mode "6.4"))
-
 ;;; Commentary:
 
 ;; Show results from evaluating next paragraph in SML process as overlays in
@@ -28,8 +19,7 @@
 ;; ![overlay](ex/overlay.png)
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'comint)
 (require 'sml-mode)
 

@@ -1,12 +1,10 @@
 ;;; nvp-ruby.el --- rubls -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;; FIXME:
 ;; - use nvp-yas funcs
 ;; - 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar projectile-tags-file-name))
 (require 'ruby-mode)

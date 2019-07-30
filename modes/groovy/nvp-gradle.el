@@ -1,17 +1,7 @@
 ;;; nvp-gradle.el --- gradle-mode ext -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-06 18:56:34>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  6 March 2019
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'groovy-mode)
 
 (defvar nvp-gradle-imenu-regexp

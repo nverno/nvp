@@ -1,9 +1,7 @@
 ;;; nvp-erlang.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (declare-function expand-abbrev-hook "expand")
 (declare-function asdf-use "asdf")
 (declare-function erlang-mark-clause "erlang")

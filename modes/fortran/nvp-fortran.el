@@ -4,8 +4,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-compile)
-  (require 'cl-lib))
+  (require 'nvp-compile))
 
 ;; -founds-check: check for array access out of bounds
 (nvp-make-or-compile-fn nvp-fortran-compile

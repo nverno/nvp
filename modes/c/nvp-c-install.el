@@ -3,9 +3,7 @@
 ;;; Commentary:
 ;; TODO: remove
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-c)
 (nvp-decls)
 

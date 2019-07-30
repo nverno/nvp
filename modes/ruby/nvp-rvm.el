@@ -1,13 +1,4 @@
 ;;; nvp-rvm.el ---  -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/ruby-tools
-;; Last modified: <2019-03-08 06:25:37>
-;; Package-Requires: 
-;; Created:  6 December 2016
-
 ;;; Commentary:
 
 ;; TODO: unused
@@ -16,7 +7,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (defvar eshell-path-env))
 (require 'nvp-ruby)
 (autoload 'nvp-log "nvp-log")

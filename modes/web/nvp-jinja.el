@@ -1,10 +1,7 @@
 ;;; nvp-jinja.el ---  -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'subr-x)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (nvp-decl web-mode-block-beginning web-mode-element-beginning)
 (nvp-auto "projectile" 'projectile-project-root)
 

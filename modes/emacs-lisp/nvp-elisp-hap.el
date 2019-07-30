@@ -7,8 +7,7 @@
 ;; - generic method to get documentation / help-at-point
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'pos-tip)
 
 ;; Number of lines to show in popup.

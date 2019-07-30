@@ -24,7 +24,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-results)
   (defvar nvp-abbrev-completion-need-refresh))

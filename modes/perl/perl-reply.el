@@ -1,16 +1,7 @@
 ;;; perl-reply.el --- interact with reply repl -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-04-19.18>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/perl-tools
-;; Created: 15 November 2016
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'cperl-mode)
 
 (defvar perl-reply-font-lock-keywords (cperl-load-font-lock-keywords-2))

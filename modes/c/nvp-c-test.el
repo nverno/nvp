@@ -1,10 +1,4 @@
 ;;; nvp-c-test.el --- C tests -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-27 23:36:02>
-;; Created: 20 January 2017
-
 ;;; Commentary:
 
 ;;; TODO:
@@ -14,7 +8,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (defvar check-abbrev-table)
   (defvar cunit-abbrev-table)
   (defvar unity-abbrev-table)

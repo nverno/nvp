@@ -1,17 +1,8 @@
 ;;; nvp-pdf.el ---  -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-02-27 13:22:28>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/md-tools
-;; Created: 13 November 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (defvar pdf-info-epdfinfo-program))
 (require 'pdf-tools)
 

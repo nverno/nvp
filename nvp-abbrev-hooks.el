@@ -12,10 +12,7 @@
 ;; - function to grab previous abbrev
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (declare-function expand-abbrev-hook "expand")
 

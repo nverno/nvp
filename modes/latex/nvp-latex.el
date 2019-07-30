@@ -1,17 +1,7 @@
 ;;; nvp-latex.el ---  -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-22 01:35:07>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/md-tools
-;; Created: 31 January 2019
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'latex nil t)
 (require 'tex-site nil t)

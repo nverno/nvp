@@ -4,8 +4,6 @@
 ;; file utils
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
   (require 'nvp-macro))
 (nvp-decls)
 

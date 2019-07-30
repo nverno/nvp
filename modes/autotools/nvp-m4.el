@@ -1,12 +1,4 @@
 ;;; nvp-m4.el --- m4 -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-08 04:24:34>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/make-tools
-;; Created:  8 February 2019
-
 ;;; Commentary:
 
 ;; m4 add-ons to autoconf
@@ -16,7 +8,6 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'lisp-mode)
   (require 'autoconf))

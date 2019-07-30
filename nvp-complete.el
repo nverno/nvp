@@ -12,7 +12,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (require 'info-look))
 (nvp-decl info-lookup-quick-all-modes info-lookup-guess-default*
   info-lookup->completions)

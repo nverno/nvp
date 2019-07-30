@@ -2,11 +2,9 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'j-mode nil t)
-(nvp-declare "" j-console-execute-line j-console-execute-buffer)
+(nvp-decl j-console-execute-line j-console-execute-buffer)
 
 ;; provided j-atoms
 ;; (custom-set-faces

@@ -3,9 +3,7 @@
 ;;; Commentary:
 ;; stuff required by numerous modes
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (nvp-decls)
 
 ;; dont expand when prefixed by [-/_.]

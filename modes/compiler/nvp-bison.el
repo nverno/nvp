@@ -1,17 +1,7 @@
 ;;; nvp-bison.el --- bison helpers -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/compiler-tools
-;; Last modified: <2019-02-25 21:39:07>
-;; Created: 17 February 2017
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'bison-mode)
 
 ;; semantic bunghole

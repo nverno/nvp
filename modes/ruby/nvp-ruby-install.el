@@ -1,14 +1,9 @@
 ;;; nvp-ruby-install.el ---  -*- lexical-binding: t; -*-
-
 ;;; Commentary:
-
 ;; FIXME:
 ;; - gem paths are wrong with asdf
-
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-ruby)
 (nvp-decls)
 

@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (defvar semantic-c-dependency-system-include-path))
 (require 'semantic/analyze)

@@ -1,15 +1,9 @@
 ;;; nvp-rmd.el --- Rmarkdown helpers -*- lexical-binding: t; -*-
 
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/r-tools
-;; Last modified: <2019-03-30 22:46:36>
-;; Created:  4 December 2016
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (require 'polymode-core nil t)
   (defvar pm/chunkmode))
 (declare-function pm-with-narrowed-to-span "polymode")

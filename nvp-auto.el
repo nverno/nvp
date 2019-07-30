@@ -15,6 +15,7 @@
 (nvp-decls)
 (nvp-decl auth-source-search)
 (nvp-auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
+(nvp-auto "nvp-outline" nvp-outline-hydra/body)
 
 ;; -------------------------------------------------------------------
 ;;; Movement
@@ -32,11 +33,7 @@
                (beginning-of-line)
                (or (search-forward char (nvp-point 'eol))
                    (goto-char pt))))))
-  (nvp-bind-transient-key
-   char (lambda () (interactive)
-          (setq this-command 'nvp-move-char-this-line)
-          (nvp-move-char-this-line char))
-   t))
+  (nvp-repeat-command nil nil nil char))
 
 ;; see `paragraph-start' and `paragraph-separate' to extend
 ;;;###autoload
@@ -56,8 +53,16 @@
   (or arg (setq arg 1))
   (nvp-move-forward-paragraph (- arg)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Hydras
+
+;;;###autoload(autoload 'nvp-hydra-page/backward-page "nvp-auto")
+;;;###autoload(autoload 'nvp-hydra-page/forward-page "nvp-auto")
+(defhydra nvp-hydra-page () "page"
+  ("[" forward-page)
+  ("]" backward-page)
+  ("o" nvp-outline-hydra/body :exit t))
 
 ;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
 (nvp-hydra-set-property 'nvp-hydra-goto-line)
@@ -81,6 +86,7 @@
   ("Y" (yank-pop -1) "prev"))
   ;; ("l" helm-show-kill-ring "list" :color blue)
 
+
 ;; -------------------------------------------------------------------
 ;;; Assorted
 

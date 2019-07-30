@@ -72,15 +72,15 @@ bindings, avoiding errors from key sequences starting with non-prefix keys."
     (define-key newmap key def)))
 
 ;; used recursively below so not a macro
-;;;###autoload
-(defun nvp-bind-transient-key (key cmd &optional keep exit)
-  "Bind KEY to CMD in transient map."
-  (set-transient-map
-   (let ((tmap (make-sparse-keymap)))
-     (define-key tmap (kbd key) cmd)
-     tmap)
-   (or keep t)
-   (or exit nil)))
+;; ;;;###autoload
+;; (defun nvp-bind-transient-key (key cmd &optional keep exit)
+;;   "Bind KEY to CMD in transient map."
+;;   (set-transient-map
+;;    (let ((tmap (make-sparse-keymap)))
+;;      (define-key tmap (kbd key) cmd)
+;;      tmap)
+;;    (or keep t)
+;;    (or exit nil)))
 
 (provide 'nvp-overrides)
 ;; Local Variables:

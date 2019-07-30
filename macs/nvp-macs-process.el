@@ -9,9 +9,7 @@
 ;; `nvp-indicate-modeline'
 
 ;;; Code:
-(require 'cl-lib)
-(require 'subr-x)
-(eval-when-compile (require 'nvp-macs-common))
+(require 'nvp-macs-common)
 
 ;; -------------------------------------------------------------------
 ;;; Buffers / Processes 

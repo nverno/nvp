@@ -25,6 +25,7 @@
    (cons (prefix-numeric-value current-prefix-arg)
          (nvp-tap-or-region 'bdwim (nvp-prefix 4 'buffer 'defun) :pulse t)))
   (if (eq arg 16) (call-interactively 'align-highlight-rule)
+    (indent-region beg end)
     (align beg end)))
 
 ;; Align single end-of-line comments within marked regions. 

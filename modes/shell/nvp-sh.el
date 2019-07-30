@@ -18,8 +18,8 @@
 (require 'sh-script)
 (require 'nvp-shell-common)
 (nvp-decls)
-(nvp-decl company-bash company-shell
-  bash-completion-dynamic-complete bash-completion-dynamic-complete-nocomint)
+(nvp-decl company-shell sh-comp-candidates sh-comp--xref-backend
+  sh-comp-completion-at-point)
 (nvp-auto "nvp-sh-help" nvp-sh-help-bash-builtin-p nvp-sh-help-bash-builtin-sync)
 
 ;; -------------------------------------------------------------------
@@ -44,6 +44,44 @@
   '(("Sources" "^\\(?:\\\.\\|source\\)\\s-+\\(.+\\)\\s-*$" 1)
     ("Globals" "^\\([[:alpha:]_][[:alnum:]_]*\\)=" 1)))
 
+;;; Font-locks
+
+;; Add font-locking & register additions
+(nvp-font-lock-add-defaults 'sh-mode
+  ;; gaudy array faces
+  ("\\${\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
+   (1 'nvp-italic-variable-face prepend))
+  ;; redirections
+  ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-italic-type-face prepend))
+  ;; quoted vars, special vars, function arguments
+  (:quoted ?\" "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)"
+           (1 font-lock-variable-name-face prepend))
+  ;; first function in quoted backquote expressions, "`cmd ...`"
+  (:quoted ?\" "`\\s-*\\([[:alnum:]_\\-]+\\)" (1 'sh-quoted-exec prepend)))
+
+;;; Toggle
+
+;; toggle variable default assignment
+(defun nvp-sh-toggle-variable ()
+  (interactive)
+  (when (re-search-backward
+         "\\(\\_<[[:alnum:]_]+\\)=.*" (line-beginning-position) t)
+    (let* ((var (concat "${" (match-string 1) ":-")))
+      (goto-char (match-end 1))
+      (skip-chars-forward "=\"")
+      (if (looking-at (regexp-quote var))
+          (progn
+            (save-match-data
+              (skip-syntax-forward "'")
+              (forward-sexp 1)
+              (and (eq (char-before) ?})
+                   (delete-char -1)))
+            (replace-match ""))
+        (insert var)
+        (forward-sexp 1)
+        (insert "}")))))
+
+
 ;; -------------------------------------------------------------------
 ;;; Generics
 
@@ -73,7 +111,7 @@ Like `sh-current-defun-name' but ignore variables."
   "Sourced files, recursively."
   (nvp-sh:candidates sources args))
 
-;; -------------------------------------------------------------------
+
 ;;; Navigation
 ;; commands to enable `beginning-of-defun', `end-of-defun', `narrow-to-defun',
 ;; etc. to work properly in sh buffers
@@ -125,7 +163,7 @@ Used to set `end-of-defun-function'."
       (forward-list)
       (point))))
 
-;; -------------------------------------------------------------------
+
 ;;; Company / Help
 
 ;; FIXME: generalize toggle to call indirectly
@@ -194,7 +232,7 @@ Used to set `end-of-defun-function'."
                  (nvp-sh-doc-buffer selected) "*company-documentation*")))
     (company-show-doc-buffer)))
 
-;; -------------------------------------------------------------------
+
 ;;; REPL
 
 ;; FIXME: replace with nvp-proc function
@@ -210,13 +248,13 @@ Optionally return process specific to THIS-BUFFER."
                            (process-buffer sh-shell-process))
                           buffname)
                t))
-       sh-shell-process
-     (setq sh-shell-process
-           (let ((proc (nvp-shell-get-process nil buffname)))
-             (or proc
-                 (get-buffer-process
-                  (let ((explicit-shell-file-name sh-shell-file))
-                    (shell buffname)))))))))
+        sh-shell-process
+      (setq sh-shell-process
+            (let ((proc (nvp-shell-get-process nil buffname)))
+              (or proc
+                  (get-buffer-process
+                   (let ((explicit-shell-file-name sh-shell-file))
+                     (shell buffname)))))))))
 
 ;; FIXME: do I always want a sh file to sending to its own shell?
 (setf (symbol-function 'sh-shell-process) 'nvp-sh-get-process)
@@ -230,7 +268,7 @@ Optionally return process specific to THIS-BUFFER."
                       (concat (buffer-substring beg end) "\n"))
   (goto-char end))
 
-;; ------------------------------------------------------------
+
 ;;; Cleanup / Align
 
 (require 'align)
@@ -255,23 +293,7 @@ Optionally return process specific to THIS-BUFFER."
                          (and (not (bolp))
                               (not (nth 3 (syntax-ppss)))))))))))
 
-;; -------------------------------------------------------------------
-;;; Font-locks
-
-;; Add font-locking & register additions
-(nvp-font-lock-add-defaults 'sh-mode
-  ;; gaudy array faces
-  ("\\${\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
-   (1 'nvp-italic-variable-face prepend))
-  ;; redirections
-  ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-italic-type-face prepend))
-  ;; quoted vars, special vars, function arguments
-  (:quoted ?\" "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)"
-           (1 font-lock-variable-name-face prepend))
-  ;; first function in quoted backquote expressions, "`cmd ...`"
-  (:quoted ?\" "`\\s-*\\([[:alnum:]_\\-]+\\)" (1 'sh-quoted-exec prepend)))
-
-;; -------------------------------------------------------------------
+
 ;;; Hooks
 
 ;; enforce uft-8-unix and align when killing buffer

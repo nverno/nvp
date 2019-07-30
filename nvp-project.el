@@ -3,12 +3,13 @@
 ;;; Commentary:
 
 ;; TODO: get rid of all this, try out new builtin project.el
+;; Frameworks:
+;; - project.el
+;; - projectile.el
+;; - eproject.el
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib)
-  (require 'subr-x))
+(eval-when-compile (require 'nvp-macro))
 (require 'projectile)
 (autoload 'vc-git-root "vc-git")
 (autoload 'vc-hg-root "vc-hg")

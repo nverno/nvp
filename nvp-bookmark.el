@@ -6,6 +6,9 @@
 ;; - assorted bookmark functions
 ;; #<marker at 210151 in info.el.gz>
 
+;; TODO:
+;; - bug: wrong formatting with xrefs
+
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

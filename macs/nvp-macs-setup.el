@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(require 'cl-lib)
-(require 'subr-x)
-(eval-when-compile (require 'nvp-macs-common))
+(require 'nvp-macs-common)
 
 ;; default suffix appended when defining package location variables
 (defvar nvp-package-root-suffix "--dir")

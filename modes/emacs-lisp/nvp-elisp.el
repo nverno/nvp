@@ -318,8 +318,8 @@ If in `declare-function', convert to autoload."
               ;; don't include default package headers, beginning/end of file
               `((nil ,(macroexpand-all
                        (lambda ()
-                         (awhile (and (not (bobp))
-                                      (re-search-backward hdr-regex nil t))
+                         (nvp-awhile (and (not (bobp))
+                                          (re-search-backward hdr-regex nil t))
                            (unless (looking-at-p pkg-hdrs)
                              (cl-return t)))))
                      1))))

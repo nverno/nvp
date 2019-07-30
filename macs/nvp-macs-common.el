@@ -7,6 +7,8 @@
 (require 'macroexp)
 (require 'dash)
 
+(defvar nvp-macs-verbose nil)
+
 ;; -------------------------------------------------------------------
 ;;; OS 
 
@@ -26,6 +28,97 @@
       `,@w32
     `,@gnu))
 
+;; -------------------------------------------------------------------
+;;; Utils: Conversion / Normalization
+
+;; #<marker at 7449 in use-package-core.el>
+(defvar nvp-macs-merge-key-alist
+  '((:if . (lambda (new old) `(and ,new ,old)))
+    (:after . (lambda (new old) `(:all ,new ,old)))))
+
+;; unquote, unfunction, all elements in args - return as list
+;; eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)
+(defsubst nvp--unquote (args)
+  (while (memq (car-safe args) '(function quote))
+    (setq args (cadr args)))
+  (delq nil (if (listp args)
+                (cl-loop for arg in args
+                   do (while (memq (car-safe arg) '(function quote))
+                        (setq arg (cadr arg)))
+                   collect arg)
+              (cons args nil))))
+
+;; use-package helpers
+(defsubst nvp--concat (&rest elems)
+  "Remove empty lists from ELEMS and append."
+  (apply #'append (delete nil (delete (list nil) elems))))
+
+(defsubst nvp--stringify (string-or-symbol)
+  (if (stringp string-or-symbol) string-or-symbol
+    (symbol-name string-or-symbol)))
+
+;; use-package-is-pair
+(defsubst nvp--pair-p (x car-pred cdr-pred)
+  "Return non-nil if X is a cons satisfying predicates applied to elems."
+  (and (consp x)
+       (funcall car-pred (car x))
+       (funcall cdr-pred (cdr x))))
+
+;;; TODO: #<marker at 13907 in use-package-core.el>
+;; (defun nvp--normalize-keywords ())
+
+(defun nvp--normalize-modemap (mode &optional minor)
+  "Convert MODE to keymap symbol if necessary.
+If MINOR is non-nil, create minor mode map symbol."
+  (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
+  (if (keymapp mode) mode
+    (and (symbolp mode) (setq mode (symbol-name mode)))
+    (let ((minor (or minor (string-match-p "-minor" mode))))
+      (if (not (or (string-match-p "-map\\'" mode)
+                   (string-match-p "-keymap\\'" mode)))
+          (intern
+           (concat (replace-regexp-in-string "\\(?:-minor\\)?-mode\\'" "" mode)
+                   (if minor "-minor-mode-map" "-mode-map")))
+        (intern mode)))))
+
+(defun nvp--normalize-hook (mode &optional minor)
+  "Convert MODE to canonical hook symbol.
+If MINOR is non-nil, convert to minor mode hook symbol."
+  (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
+  (and (symbolp mode) (setq mode (symbol-name mode)))
+  (let ((minor (or minor (string-match-p "-minor" mode))))
+    (intern
+     (concat
+      (replace-regexp-in-string
+       "\\(?:-minor-\\)?\\(?:-mode\\)?\\(?:-hook\\)?\\'" "" mode)
+      (if minor "-minor-mode-hook" "-mode-hook")))))
+
+(defmacro nvp-listify (&rest args)
+  "Ensure all items in ARGS are lists."
+  `(progn
+     ,@(mapcar (lambda (arg)
+                 (and (stringp arg) (setq arg (intern-soft arg)))
+                 `(unless (and ,arg
+                               (listp ,arg)
+                               (not (functionp ,arg)))
+                    (setq ,arg (list ,arg))))
+               args)))
+
+(defmacro nvp-string-or-symbol (sym)
+  "If SYM is string convert to symbol."
+  `(if (stringp ,sym) (intern ,sym) ,sym))
+
+(defmacro nvp-stringify (name)
+  "Sort of ensure that NAME symbol is a string."
+  `(progn
+     (pcase ,name
+       ((pred stringp) ,name)
+       ((pred symbolp) (symbol-name ,name))
+       (`(quote ,sym) (symbol-name sym))
+       (`(function ,sym) (symbol-name sym))
+       (_ (user-error "How to stringify %S?" ,name)))))
+
+
 ;; -------------------------------------------------------------------
 ;;; General 
 
@@ -130,25 +223,17 @@
 ;; -------------------------------------------------------------------
 ;;; Anamorphs
 ;; See ch. 14 of On Lisp
-;; FIXME: just use dash when possible here
 
-(defmacro aif (test-form then-form &rest else-forms)
-  "Anamorphic `if'."
-  (declare (indent 2) (debug t))
-  `(let ((it ,test-form))
-     (if it ,then-form ,@else-forms)))
-
-;; (defmacro awhen (test-form &rest body)
-;;   "Anamorphic `when'."
-;;   (declare (indent 1) (debug t))
-;;   `(aif ,test-form ,(macroexp-progn body)))
-
-(defmacro awhile (expr &rest body)
+(defmacro nvp-awhile (expr &rest body)
   "Anamorphic `while'."
   (declare (indent 1) (debug t))
-  `(cl-do ((it ,expr ,expr))
-       ((not it))
-     ,@body))
+  (nvp-with-gensyms (flag)
+    `(let ((,flag t))
+       (cl-block nil
+         (while ,flag
+           (--if-let ,expr
+               (progn ,@body)
+             (setq ,flag nil)))))))
 
 (defmacro acond (&rest clauses)
   "Anamorphic `cond'."
@@ -232,74 +317,6 @@
 ;; (with-struct-slots (a b c) tst
 ;;   (setq c (concat a b)))
 
-;; -------------------------------------------------------------------
-;;; Conversion / Normalization
-;; TODO: steal normalization stuff from use-package
-
-;; unquote, unfunction, all elements in args - return as list
-;; eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)
-(defsubst nvp--unquote (args)
-  (while (memq (car-safe args) '(function quote))
-    (setq args (cadr args)))
-  (delq nil (if (listp args)
-                (cl-loop for arg in args
-                   do (while (memq (car-safe arg) '(function quote))
-                        (setq arg (cadr arg)))
-                   collect arg)
-              (cons args nil))))
-
-(defun nvp--normalize-modemap (mode &optional minor)
-  "Convert MODE to keymap symbol if necessary.
-If MINOR is non-nil, create minor mode map symbol."
-  (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
-  (if (keymapp mode) mode
-    (and (symbolp mode) (setq mode (symbol-name mode)))
-    (let ((minor (or minor (string-match-p "-minor" mode))))
-      (if (not (or (string-match-p "-map\\'" mode)
-                   (string-match-p "-keymap\\'" mode)))
-          (intern
-           (concat (replace-regexp-in-string "\\(?:-minor\\)?-mode\\'" "" mode)
-                   (if minor "-minor-mode-map" "-mode-map")))
-        (intern mode)))))
-
-(defun nvp--normalize-hook (mode &optional minor)
-  "Convert MODE to canonical hook symbol.
-If MINOR is non-nil, convert to minor mode hook symbol."
-  (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
-  (and (symbolp mode) (setq mode (symbol-name mode)))
-  (let ((minor (or minor (string-match-p "-minor" mode))))
-    (intern
-     (concat
-      (replace-regexp-in-string
-       "\\(?:-minor-\\)?\\(?:-mode\\)?\\(?:-hook\\)?\\'" "" mode)
-      (if minor "-minor-mode-hook" "-mode-hook")))))
-
-(defmacro nvp-listify (&rest args)
-  "Ensure all items in ARGS are lists."
-  `(progn
-     ,@(mapcar (lambda (arg)
-                 (and (stringp arg) (setq arg (intern-soft arg)))
-                 `(unless (and ,arg
-                               (listp ,arg)
-                               (not (functionp ,arg)))
-                    (setq ,arg (list ,arg))))
-               args)))
-
-(defmacro nvp-string-or-symbol (sym)
-  "If SYM is string convert to symbol."
-  `(if (stringp ,sym) (intern ,sym) ,sym))
-
-(defmacro nvp-stringify (name)
-  "Sort of ensure that NAME symbol is a string."
-  `(progn
-     (pcase ,name
-       ((pred stringp) ,name)
-       ((pred symbolp) (symbol-name ,name))
-       (`(quote ,sym) (symbol-name sym))
-       (`(function ,sym) (symbol-name sym))
-       (_ (user-error "How to stringify %S?" ,name)))))
-
-
 ;; -------------------------------------------------------------------
 ;;; Declares / Autoloads
 ;; silence byte-compiler warnings

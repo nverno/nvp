@@ -7,6 +7,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(require 'magit nil t)
 (nvp-decls)
 (nvp-autoload "nvp-string" nvp-s-all-matches)
 
@@ -61,30 +62,6 @@ git config core.sparseCheckout true" repo) nil nil nil)
          (compilation-buffer-name-function
           #'(lambda (_major-mode-name) "*git-svn*")))
     (compile (concat "git svn " command))))
-
-
-;; -------------------------------------------------------------------
-;;; Magit 
-
-(defvar nvp-magit-section-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "q" #'magit-section-cycle-global)
-    (define-key map "w" #'magit-section-cycle-diffs)
-    (define-key map "e" #'magit-section-cycle)
-    (define-key map "a" #'magit-section-toggle)
-    (define-key map "s" #'magit-section-toggle-children)
-    (define-key map "l" #'recenter-top-bottom)
-    (define-key map "u" #'beginning-of-buffer)
-    (define-key map "b" #'end-of-buffer)
-    (define-key map "j" #'magit-section-forward)
-    (define-key map "k" #'magit-section-backward)
-    map))
-
-(defun nvp-magit-section ()
-  (interactive)
-  (magit-section-cycle-global)
-  (nvp-indicate-cursor-pre)
-  (set-transient-map nvp-magit-section-map t #'nvp-indicate-cursor-post))
 
 (provide 'nvp-vc)
 ;;; nvp-vc.el ends here

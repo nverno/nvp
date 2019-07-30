@@ -18,7 +18,10 @@
 ;; in current buffer (ignores local variables)
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'eieio))
+(require 'sh-script)
 (require 'company)
 (require 'imenu)
 
@@ -160,6 +163,9 @@ sourced files."
 ;; -------------------------------------------------------------------
 ;;; Completion
 
+(nvp-decl :pre "bash-completion" require-process -parse -stub-start -customize
+  -completion-table-with-cache comm)
+
 (defvar sh-comp-syntax-table
   (let ((tab sh-mode-syntax-table))
     (modify-syntax-entry ?$ "'" tab)
@@ -188,8 +194,7 @@ sourced files."
   (when pos (goto-char pos))
   (save-excursion
     (with-syntax-table sh-mode-syntax-table
-      (let* ((beg (point))
-             (func-start (sh-comp--narrow-lexically))
+      (let* ((func-start (sh-comp--narrow-lexically))
              vars)
         (widen)
         (when func-start
@@ -322,6 +327,8 @@ sourced files."
 
 ;; -------------------------------------------------------------------
 ;;; Xref
+
+(nvp-decl xref-make xref-location)
 
 ;;;###autoload
 (defun sh-comp--xref-backend () 'sh-comp)

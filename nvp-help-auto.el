@@ -14,6 +14,7 @@
 (require 'nvp)
 (nvp-declare define-word define-word-at-point)
 (autoload 'nvp-read-keymap "nvp-read")
+(autoload 'nvp-sort-lines-first-symbol "nvp-edit")
 (autoload 'ispell-get-word "ispell")
 
 ;;;###autoload

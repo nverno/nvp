@@ -73,8 +73,7 @@ With prefix ARG display the tidy results in separate buffer before applying them
 (defun nvp-perltidy-function ()
   "Call perltidy on function at point."
   (interactive)
-  (nvp-perltidy-region (progn (beginning-of-defun) (point))
-                       (progn (end-of-defun) (point))))
+  (nvp-perltidy-region (nvp-point 'bod) (nvp-point 'eod)))
 
 (provide 'nvp-perltidy)
 ;; Local Variables:

@@ -9,7 +9,10 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'hippie-exp)
+(require 'nvp-hippie)
+
+;; (defvar nvp-he-flex-matches
+;;   (nvp-he-lazy-completion-table nvp-he-flex-matches))
 
 ;; collect matches for REGEXP. If BUFFER is non-nil, collect matches from
 ;; BUFFER (default current buffer)
@@ -28,13 +31,14 @@
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
 ;; so it matches replace-regexp-in-string, for example
 (defsubst nvp-he-lisp-regexpify (str)
-  (concat "\\b" (replace-regexp-in-string "-" "\\\\w*-" str) "[A-Za-z0-9-]*\\b"))
+  (concat "\\b" (replace-regexp-in-string "-" "\\\\w*-" str) "[:A-Za-z0-9-]*\\b"))
 
 ;;;###autoload
 (defun nvp-he-try-expand-flex-lisp (old)
   "Try to complete lisp symbol from current buffer, using fuzzy matching around
 '-' separators, eg. \"i-p\" => \"in-package\"."
   (unless old
+    (setq nvp-he-lisp-matches nil)      ;in case of previous call
     ;; possibly, slime-symbol-start-pos, slime-symbol-end-pos
     (he-init-string (he-lisp-symbol-beg) (point))
     (unless (he-string-member he-search-string he-tried-table)
@@ -47,8 +51,7 @@
     (setq he-expand-list (cdr he-expand-list)))
   (prog1 (not (null he-expand-list))    ;return t if expansion is found
     (if he-expand-list (he-substitute-string (pop he-expand-list))
-      (and old (he-reset-string))
-      (setq nvp-he-lisp-matches nil)))) ;invalidate cache
+      (and old (he-reset-string)))))
 
 (provide 'nvp-he-lisp)
 ;;; nvp-he-lisp.el ends here

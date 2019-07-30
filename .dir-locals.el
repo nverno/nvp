@@ -5,7 +5,7 @@
   (projectile-project-type . emacs-cask)
   (nvp-local-notes-file . "~/org/code/emacs.org"))
  (emacs-lisp-mode
-  (outline-regexp . "\f\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*")
+  ;; (outline-regexp . "\f\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*")
   (indent-tabs-mode . nil)
   (fill-column . 80)
   (emacs-lisp-docstring-fill-column . 75))

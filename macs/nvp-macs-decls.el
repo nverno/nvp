@@ -2,8 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(require 'cl-lib)
-(eval-when-compile (require 'nvp-macs-common))
+(require 'nvp-macs-common)
 
 (defmacro nvp-local-defvars (&rest defvars)
   (macroexp-progn

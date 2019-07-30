@@ -338,9 +338,9 @@ continuations."
   (and escape (stringp escape) (setq escape (string-to-char escape)))
   (let ((direction (eval direction)))
     (cond
-      ((eq direction 'forward) `(nvp-forward-sws ,escape))
-      ((eq direction 'backward) `(nvp-backward-sws ,escape))
-      (t (error "Don't know how to skip %S" direction)))))
+     ((eq direction 'forward) `(nvp-forward-sws ,escape))
+     ((eq direction 'backward) `(nvp-backward-sws ,escape))
+     (t (error "Don't know how to skip %S" direction)))))
 
 ;;-- Whitespace only
 (defmacro nvp-skip-ws-forward (escape &optional limit)
@@ -766,7 +766,7 @@ Trailing 'i' indicates to prompt for input if nothing is found.
      ((eq type 'evari)
       `(nvp-tap--i (let ((var (variable-at-point)))
                      (and (symbolp var) var))
-        "Variable: " 'nvp-read-elisp-variable :none ,hist))
+                   "Variable: " 'nvp-read-elisp-variable :none ,hist))
      ((eq type 'evaru) '(let ((var (variable-at-point 'any-symbol)))
                           (and (symbolp var) var)))
      ((eq type 'evarui)
@@ -797,12 +797,12 @@ In WIDEN is non-nil, save restriction and widen before finding bounds."
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
   (let ((bnds (make-symbol "bounds")))
-   `(,@(if widen '(save-restriction (widen)) '(progn))
-     (if-let* ((,bnds (nvp-tap ,(or type ''bdwim) ,(or thing ''paragraph)
-                               nil nil :pulse ,pulse)))
-         (cl-destructuring-bind (,beg . ,end) ,bnds
-           ,@body)
-       (user-error "nvp-with-region didn't find any bounds")))))
+    `(,@(if widen '(save-restriction (widen)) '(progn))
+      (if-let* ((,bnds (nvp-tap ,(or type ''bdwim) ,(or thing ''paragraph)
+                                nil nil :pulse ,pulse)))
+          (cl-destructuring-bind (,beg . ,end) ,bnds
+            ,@body)
+        (user-error "nvp-with-region didn't find any bounds")))))
 
 
 ;; -------------------------------------------------------------------
@@ -872,18 +872,18 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
   (let ((action (make-symbol "action")))
     `(progn
        (let ((,action ,select-action)
-            (bufname (concat "*" ,name "*"))
-            (inhibit-read-only t))
-        (and (get-buffer bufname)
-             (kill-buffer bufname))
-        (let ((buf (get-buffer-create bufname)))
-          (with-current-buffer buf
-            (setq tabulated-list-format ,format
-                  tabulated-list-entries ,entries
-                  action ,action)
-            (nvp-view-list-mode)        ;inits lists
-            (setq mode-name ,mode-name))
-          (pop-to-buffer buff))))))
+             (bufname (concat "*" ,name "*"))
+             (inhibit-read-only t))
+         (and (get-buffer bufname)
+              (kill-buffer bufname))
+         (let ((buf (get-buffer-create bufname)))
+           (with-current-buffer buf
+             (setq tabulated-list-format ,format
+                   tabulated-list-entries ,entries
+                   action ,action)
+             (nvp-view-list-mode)        ;inits lists
+             (setq mode-name ,mode-name))
+           (pop-to-buffer buff))))))
 
 ;;; Time
 
@@ -1010,8 +1010,8 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 
 ;; Simple memoization / result caching
 (cl-defmacro nvp-define-cache (func arglist &optional docstring &rest body
-                                           &key local predicate cache
-                                           &allow-other-keys)
+                                    &key local predicate cache
+                                    &allow-other-keys)
   "Create a simple cache for FUNC results named FUNC or CACHE if non-nil. 
 Cache is either defvar (possibly local) so is updated when set to nil,
 or PREDICATE is non-nil and returns nil."
@@ -1055,6 +1055,16 @@ and set `this-command' to nil so opposite happens next time."
        ,then
      (prog1 (progn ,@rest)
        (setq this-command ,(or this-cmd ''nvp-toggled-if)))))
+
+(defmacro nvp-toggle-variable (variable &optional message)
+  (declare (indent 1))
+  `(if (progn
+         (custom-load-symbol ',variable)
+         (let ((set (or (get ',variable 'custom-set) 'set-default))
+               (get (or (get ',variable 'custom-get) 'default-value)))
+           (funcall set ',variable (not (funcall get ',variable)))))
+       ,(if message `(message ,message "enabled")
+          `(message ,message "disabled"))))
 
 ;;-- Marks
 (defmacro nvp--mark-defun (&optional first-time &rest rest)
@@ -1147,11 +1157,11 @@ and set `this-command' to nil so opposite happens next time."
        ,@(when interact-p
            '(interactive "r"))
        (when (region-active-p)
-        (save-excursion
-          (goto-char (region-beginning))
-          (insert ,begin))
-        (goto-char (region-end))
-        (insert ,end)))))
+         (save-excursion
+           (goto-char (region-beginning))
+           (insert ,begin))
+         (goto-char (region-end))
+         (insert ,end)))))
 
 ;;-- REPL/hippie setup
 ;; FIXME: how to make more generic?
@@ -1189,7 +1199,7 @@ and set `this-command' to nil so opposite happens next time."
                                          repl-live-p repl-history repl-process
                                          repl-config repl-wait
                                          repl-doc (repl-switch-fn ''pop-to-buffer))
-                              &rest repl-init)
+                                   &rest repl-init)
   (declare (indent defun))
   (autoload 'nvp-comint-add-history-sentinel "nvp-comint")
   (let ((fn (intern (format "nvp-%s-repl-switch" name))))

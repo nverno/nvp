@@ -13,7 +13,8 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'hydra)
-  (defvar recentf-list))
+  (defvar recentf-list)
+  (defvar package-user-dir))
 (require 'nvp-display)
 (require 'nvp)
 

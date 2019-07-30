@@ -2,11 +2,41 @@
 
 ;;; Commentary:
 ;;; Code:
-(require 'cl-lib)
-(require 'subr-x)
-(eval-when-compile (require 'nvp-macs-common))
+(require 'nvp-macs-common)
 
-;; -------------------------------------------------------------------
+;;; Keys
+
+(eval-and-compile
+  (defvar nvp--bindings-hjkl
+   '(("j" . next-line) ;; `next-line' often advised, unlike `forward-line'
+     ("k" . previous-line)
+     ("h" . backward-char)
+     ("l" . forward-char)))
+
+  (defvar nvp--bindings-move
+    '(("M-n"   . nil) ;; use global defs.
+      ("M-p"   . nil)
+      ("M-s-n" . nil)
+      ("M-s-p" . nil)
+      ;; XXX: conditionally use `nvp-move-forward-defun' ??
+      ;;      could check `beginning-of-defun-function', `defun-prompt-regexp'
+      ;;      and if mode is a lisp derivative maybe
+      ("M-N"   . nvp-move-forward-paragraph)
+      ("M-P"   . nvp-move-backward-paragraph)))
+
+  (defvar nvp--bindings-view
+    (append
+     nvp--bindings-hjkl
+     nvp--bindings-move
+     '(("e"     . end-of-line)
+       ("a"     . beginning-of-line)
+       ("A"     . beginning-of-buffer)
+       ("E"     . end-of-buffer)
+       ("/"     . isearch-forward)
+       ("?"     . isearch-backward)
+       ("SPC"   . scroll-down)
+       ("S-SPC" . scroll-up)))))
+
 ;;; Helpers
 
 (defsubst nvp--msg-from-bindings (bindings &optional prefix)
@@ -36,19 +66,19 @@
   `(progn
      (declare-function ,cmd "")
      (define-key
-      ,(if (keymapp map) `',map map)
-      (nvp-kbd ,key)
-      ,(cond
-        ((or (null cmd) (and (consp cmd)
-                             (or (equal (cdr cmd) '(nil))
-                                 (equal (cddr cmd) '(nil)))))
-         nil)
-        ((consp cmd)
-         (cond
-          ((equal (car cmd) 'function) `,cmd)
-          ((equal (car cmd) 'quote) `#',(cadr cmd))
-          (t `,cmd)))
-        (t `#',cmd)))))
+       ,(if (keymapp map) `',map map)
+       (nvp-kbd ,key)
+       ,(cond
+         ((or (null cmd) (and (consp cmd)
+                              (or (equal (cdr cmd) '(nil))
+                                  (equal (cddr cmd) '(nil)))))
+          nil)
+         ((consp cmd)
+          (cond
+           ((equal (car cmd) 'function) `,cmd)
+           ((equal (car cmd) 'quote) `#',(cadr cmd))
+           (t `,cmd)))
+         (t `#',cmd)))))
 
 ;;-- Conditional binding
 ;; info: extended menu items
@@ -80,7 +110,6 @@
        (set-transient-map ,tmap ,keep ,exit)
        ,@body)))
 
-
 (cl-defmacro nvp-use-transient-bindings
     (&optional bindings
                &key
@@ -97,30 +126,30 @@ or use REPEAT-KEY if specified."
   (declare (indent defun) (debug defun))
   (when (or bindings repeat)            ;w/o one of these, do nothing
     (let ((msg (nvp--msg-from-bindings bindings)))
-     `(progn
-        (nvp-declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
-        ;; only set first time
-        (when (null overriding-terminal-local-map)
-          (let ((tmap (make-sparse-keymap))
-                (repeat-key ,(when repeat (or repeat-key `(nvp-input 'lcs)))))
-            ,(when repeat
-               (prog1 nil
-                 (setq msg (concat msg (and bindings ", ") "[%s] repeat command"))))
-            (message ,msg repeat-key)   ;echo bindings on first pass
-            ,pre
-            ,@(cl-loop for (k . b) in bindings
-                 collect `(nvp-def-key tmap ,k ,b))
-            ,(when repeat '(define-key tmap (kbd repeat-key) this-command))
-            (set-transient-map
-             tmap
-             ,(if repeat `(lambda ()         ;conditions to continue
-                            (when (and (not (memq this-command
-                                                  '(handle-switch-frame
-                                                    keyboard-quit)))
-                                       (lookup-key tmap (this-single-command-keys)))
-                              (message ,msg repeat-key) t))
-                `,keep)
-             ,exit)))))))
+      `(progn
+         (nvp-declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
+         ;; only set first time
+         (when (null overriding-terminal-local-map)
+           (let ((tmap (make-sparse-keymap))
+                 (repeat-key ,(when repeat (or repeat-key `(nvp-input 'lcs)))))
+             ,(when repeat
+                (prog1 nil
+                  (setq msg (concat msg (and bindings ", ") "[%s] repeat command"))))
+             (message ,msg repeat-key)   ;echo bindings on first pass
+             ,pre
+             ,@(cl-loop for (k . b) in bindings
+                  collect `(nvp-def-key tmap ,k ,b))
+             ,(when repeat '(define-key tmap (kbd repeat-key) this-command))
+             (set-transient-map
+              tmap
+              ,(if repeat `(lambda ()         ;conditions to continue
+                             (when (and (not (memq this-command
+                                                   '(handle-switch-frame
+                                                     keyboard-quit)))
+                                        (lookup-key tmap (this-single-command-keys)))
+                               (message ,msg repeat-key) t))
+                 `,keep)
+              ,exit)))))))
 
 ;; Overrides a minor mode keybinding for the local buffer by creating
 ;; or altering keymaps stored in buffer-local variable
@@ -144,7 +173,7 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
         (push (cons ,mode map) minor-mode-overriding-map-alist)))))
 
 (cl-defmacro nvp-set-local-keymap (&rest bindings
-                                   &key keymap buffer use &allow-other-keys)
+                                         &key keymap buffer use &allow-other-keys)
   "Use or create a local version of KEYMAP (default `current-local-map').
 If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
   (declare (indent defun))
@@ -234,37 +263,14 @@ If LOCAL is non-nil, make map buffer local."
          ,@(cl-loop for (k . b) in bindings
               collect `(nvp-def-key ,modemap ,k ,b))))))
 
-
-;; -------------------------------------------------------------------
 ;;; View bindings
-
-;;; FIXME: define a keymap to inherit from, no need to define everytime
-;; general movement bindings for non-insert modes
-(defmacro nvp-bindings-view ()
-  ''(("j"     . next-line) ;; use instead of forward-line since it is often advised
-     ("k"     . previous-line)
-     ("h"     . backward-char)
-     ("l"     . forward-char)
-     ("e"     . end-of-line)
-     ("a"     . beginning-of-line)
-     ("A"     . beginning-of-buffer)
-     ("E"     . end-of-buffer)
-     ("/"     . isearch-forward)
-     ("?"     . isearch-backward)
-     ("SPC"   . scroll-down)
-     ("S-SPC" . scroll-up)
-     ("M-n"   . nil)
-     ("M-p"   . nil)
-     ("M-s-n" . nvp-move-forward-heading)
-     ("M-s-p" . nvp-move-previous-heading)
-     ("M-N"   . nvp-move-forward-paragraph)
-     ("M-P"   . nvp-move-backward-paragraph)))
 
 (defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
 (defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
   (declare (indent defun))
-  (let ((bs `(,@(nvp-bindings-view) ,@bindings)))
-    `(nvp-bindings ,mode ,feature ,@bs)))
+  `(nvp-bindings ,mode ,feature
+     ,@(eval-when-compile nvp--view-bindings)
+     ,@bindings))
 
 (defmacro nvp-bindings-add-view (mode &optional feature)
   `(progn (nvp-bindings ,mode ,feature ,@(nvp-bindings-view))))
@@ -276,9 +282,7 @@ If LOCAL is non-nil, make map buffer local."
                 :exit (lambda () (message "vim out")))
      ,@body))
 
-
-;; -------------------------------------------------------------------
-;;; Bindings to multiple modes
+;;; Multiple Modes
 
 (cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings
                                                 &key view &allow-other-keys)

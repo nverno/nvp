@@ -96,22 +96,21 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
      collect (if (consp (cdr elt)) (cadr elt) (cdr elt))))
 
 (eval-when-compile
-  (defmacro nvp-elisp--get-forms (elems args)
+  (defmacro nvp-elisp:get-forms (elems args)
     "Filter matching ELEMS from file's forms (possibly loading file).
-Forms are read from :filename if present in ARGS, otherwise current buffer file."
+Forms are read from :file if present in ARGS, otherwise current buffer file."
     (declare (indent defun))
-    (macroexp-let2 nil pargs args
-      `(let ((filename (plist-get ,pargs :filename))
-             (buffer (plist-get ,pargs :buffer))
-             (lib (plist-get ,pargs :library)))
-         (if buffer
-             (with-current-buffer buffer
+    (nvp-with-syms (fname buff lib pargs)
+      `(-let* ((,pargs ,args)
+               ((&plist :file ,fname :buffer ,buff :library ,lib) ,pargs))
+         (if ,buff
+             (with-current-buffer ,buff
                (nvp-elisp--filter-forms ,elems (buffer-file-name)))
            (when (plist-get ,pargs :do-load)
-             (and filename (load-file filename))
-             (and lib `(require ,lib ,filename t)))
-           (and lib (setq filename (file-name-sans-extension (locate-library lib))))
-           (nvp-elisp--filter-forms ,elems (or filename (buffer-file-name))))))))
+             (and ,fname (load-file ,fname))
+             (and ,lib (require ,lib ,fname t)))
+           (and ,lib (setq ,fname (file-name-sans-extension (locate-library ,lib))))
+           (nvp-elisp--filter-forms ,elems (or ,fname (buffer-file-name))))))))
 
 ;; try(not very hard) to gather buffer functions/macros at top level
 ;; from current buffer, optionally in region specified by BEG END
@@ -128,11 +127,11 @@ Forms are read from :filename if present in ARGS, otherwise current buffer file.
       (delq nil forms))))
 
 (cl-defmethod nvp-parse-functions
-    (&context (major-mode emacs-lisp-mode) &rest args)
+  (&context (major-mode emacs-lisp-mode) &rest args)
   "Accepts additional ARGS, :do-load to `load-file' prior to parsing."
-  (or (nvp-elisp--get-forms nvp-elisp--defun-forms args)
+  (or (nvp-elisp:get-forms nvp-elisp--defun-forms args)
       ;; gather functions from unloaded buffer / file
-      (nvp-parse-with-buffer-or-file args
+      (nvp-parse:buffer-file t nil args
         (nvp-elisp--buffer-defuns))))
 
 (cl-defmethod nvp-parse-current-function
@@ -142,12 +141,12 @@ Forms are read from :filename if present in ARGS, otherwise current buffer file.
 ;; file could have multiple provides
 (cl-defmethod nvp-parse-library
   (&context (major-mode emacs-lisp-mode) &rest args)
-  (when-let* ((libs (nvp-elisp--get-forms '(provide) args)))
+  (-when-let (libs (nvp-elisp:get-forms '(provide) args))
     (if (= 1 (length libs)) (car libs) libs)))
 
 (cl-defmethod nvp-parse-includes
   (&context (major-mode emacs-lisp-mode) &rest args)
-  (nvp-elisp--get-forms '(require) args))
+  (nvp-elisp:get-forms '(require) args))
 
 ;; ------------------------------------------------------------
 ;;; Eval

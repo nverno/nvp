@@ -45,7 +45,8 @@ Optionally, search LISP-ONLY files (no C sources)."
   (let (url)
     (if (and (not choose)
              (eq major-mode 'emacs-lisp-mode)
-             (setq url (save-excursion (lm-header "URL"))))
+             (setq url (save-excursion (or (lm-header "URL")
+                                           (lm-header "Homepage")))))
         (browse-url url)                ;found URL in current buffer!!
       (let ((lib (nvp-elisp-get-library-file 'lisp-only choose)))
         (if (and lib                   ;no URL in emacs sources

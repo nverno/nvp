@@ -1,11 +1,13 @@
 ;;; nvp-vc.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;; ghub?
+;; https://github.com/jwiegley/dot-emacs/blob/0e07f471036d6f3ec4f3cbd38fe3277be072747b/init.el#L180
+
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(nvp-decls)
 (nvp-autoload "nvp-string" nvp-s-all-matches)
 
 ;; checkout part of a repo
@@ -64,12 +66,25 @@ git config core.sparseCheckout true" repo) nil nil nil)
 ;; -------------------------------------------------------------------
 ;;; Magit 
 
-(defsubst nvp-vc-magit-ref ()
-  (interactive)
-  (browse-url "https://magit.vc/manual/magit-refcard.pdf"))
+(defvar nvp-magit-section-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "q" #'magit-section-cycle-global)
+    (define-key map "w" #'magit-section-cycle-diffs)
+    (define-key map "e" #'magit-section-cycle)
+    (define-key map "a" #'magit-section-toggle)
+    (define-key map "s" #'magit-section-toggle-children)
+    (define-key map "l" #'recenter-top-bottom)
+    (define-key map "u" #'beginning-of-buffer)
+    (define-key map "b" #'end-of-buffer)
+    (define-key map "j" #'magit-section-forward)
+    (define-key map "k" #'magit-section-backward)
+    map))
 
-;; TODO: ghub
-;; https://github.com/jwiegley/dot-emacs/blob/0e07f471036d6f3ec4f3cbd38fe3277be072747b/init.el#L180
+(defun nvp-magit-section ()
+  (interactive)
+  (magit-section-cycle-global)
+  (nvp-indicate-cursor-pre)
+  (set-transient-map nvp-magit-section-map t #'nvp-indicate-cursor-post))
 
 (provide 'nvp-vc)
 ;;; nvp-vc.el ends here

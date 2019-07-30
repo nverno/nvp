@@ -139,10 +139,11 @@ When abbrev text is selected, searching is done first by length then lexically."
       (with-current-buffer (nvp-abbrev--get-table
                             table (or (bound-and-true-p nvp-abbrev-local-file)
                                       (expand-file-name table nvp/abbrevs)))
-        (if (not prefix)                ;blank start: no prefix or expansion
-            (ignore-errors
-              (down-list)
-              (yas-expand-snippet "(\"$1\" \"$2\" nil :system t)\n"))
+        (if (not prefix)      ;blank start: no prefix or expansion
+            (progn
+              (ignore-errors (down-list))
+              (when (y-or-n-p "Expand new snippet?")
+                (yas-expand-snippet "(\"$1\" \"$2\" nil :system t)\n")))
           (narrow-to-defun)
           (let ((end (save-excursion (forward-list) (1- (point)))))
             (when prefix

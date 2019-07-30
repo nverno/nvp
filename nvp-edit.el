@@ -23,8 +23,14 @@
 ;;;###autoload
 (defun nvp-indent-dwim (&optional beg end)
   "Indent `thing-at-point' or region between BEG and END.
-Defaults to `paragraph' at point."
-  (interactive (nvp-with-region beg end 'paragraph :pulse t (list beg end)))
+Defaults to `defun' at point."
+  (interactive
+   (nvp-with-region beg end
+     (intern
+      (cadr (read-multiple-choice "Indent: " '((?i "buffer")
+                                               (?d "defun")
+                                               (?p "paragraph")))))
+     :pulse t (list beg end)))
   (indent-region beg end))
 
 
@@ -51,6 +57,30 @@ With prefix sort in REVERSE."
   (interactive "r\nP")
   (nvp-sort-with-defaults start end
     (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
+
+;;;###autoload
+(defun nvp-sort-lines-first-symbol (beg end &optional reverse no-fold)
+  "Sort lines by first symbol.  Symbols are first compared by length and
+then using `compare-buffer-substrings'."
+  (interactive "r\nP")
+  (save-excursion
+    (save-restriction
+      (narrow-to-region beg end)
+      (goto-char (point-min))
+      (let ((sort-fold-case (not no-fold))
+            (inhibit-field-text-motion t))
+        (sort-subr reverse 'forward-line 'end-of-line nil
+                   (lambda () (skip-syntax-forward "^ "))
+                   (lambda (a b)
+                     (let ((l1 (- (cdr a) (car a)))
+                           (l2 (- (cdr b) (car b))))
+                       (if (= l1 l2)
+                           (let ((v (compare-strings
+                                     (buffer-substring (car a) (cdr a)) nil nil
+                                     (buffer-substring (car b) (cdr b)) nil nil
+                                     sort-fold-case)))
+                             (or (eq t v) (< v 0)))
+                         (<= l1 l2)))))))))
 
 ;;;###autoload
 (defun nvp-sort-list (&optional start end reverse)

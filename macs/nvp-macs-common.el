@@ -51,6 +51,11 @@
                  syms)
      ,@body))
 
+(defmacro nvp-with-syms (syms &rest body)
+  (declare (indent 1) (debug t))
+  `(let ,(mapcar (lambda (s) `(,s (make-symbol (symbol-name ',s)))) syms)
+     ,@body))
+
 ;; -------------------------------------------------------------------
 ;;; Building functions
 

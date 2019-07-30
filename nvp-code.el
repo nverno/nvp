@@ -18,6 +18,7 @@
 
 (defvar nvp-hs--hidden nil)
 
+;;;###autoload
 (defun nvp-hs-toggle (&optional arg)
   "Toggle hideshow on block.  With prefix toggle all."
   (interactive "P")

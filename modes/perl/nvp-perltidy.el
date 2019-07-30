@@ -1,22 +1,13 @@
 ;;; nvp-perltidy.el --- perltidy -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Last modified: <2019-03-27 23:36:28>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  8 March 2019
-
 ;;; Commentary:
-
 ;; Call perltidy DWIM
 ;; modified from https://github.com/genehack/perl-elisp/blob/master/perltidy.el
-
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'cl-lib))
 (require 'cperl-mode)
+(nvp-decls)
 
 (defvar nvp-perltidy "perltidy" "perltidy executable.")
 ;; FIXME: redirect stderr

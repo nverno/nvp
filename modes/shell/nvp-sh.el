@@ -13,8 +13,8 @@
   (require 'nvp-macro)
   (require 'nvp-shell-macs "macs/nvp-shell-macs")
   (require 'nvp-sh-help)               ;defsubsts
-  (require 'nvp-font))
-(require 'nvp-parse)
+  (require 'nvp-font)
+  (require 'nvp-parse))
 (require 'company)
 (require 'company-quickhelp)
 (require 'sh-script)
@@ -50,13 +50,9 @@
 ;;; Generics
 
 (eval-when-compile
-  (defmacro nvp:sh-comp-candidates (type args)
-    (macroexp-let2 nil args args 
-      `(let* ((buff (plist-get ,args :buffer))
-              (file (if buff (buffer-file-name (get-buffer buff))
-                       (or (plist-get ,args :file)
-                           (buffer-file-name)))))
-         (sh-comp-candidates ',type file)))))
+  (defmacro nvp-sh:candidates (type args)
+    `(nvp-parse:buffer-file nil nil ,args
+       (sh-comp-candidates ',type file))))
 
 (cl-defmethod nvp-parse-current-function (&context (major-mode sh-mode) &rest _args)
   "Find name of function containing point.
@@ -69,15 +65,15 @@ Like `sh-current-defun-name' but ignore variables."
 
 (cl-defmethod nvp-parse-functions (&context (major-mode sh-mode) &rest args)
   "Functions available in buffer/file, including sources."
-  (nvp:sh-comp-candidates functions args))
+  (nvp-sh:candidates functions args))
 
 (cl-defmethod nvp-parse-variables (&context (major-mode sh-mode) &rest args)
   "Global variables available in file including sources."
-  (nvp:sh-comp-candidates variables args))
+  (nvp-sh:candidates variables args))
 
 (cl-defmethod nvp-parse-includes (&context (major-mode sh-mode) &rest args)
   "Sourced files, recursively."
-  (nvp:sh-comp-candidates sources args))
+  (nvp-sh:candidates sources args))
 
 ;; -------------------------------------------------------------------
 ;;; Navigation

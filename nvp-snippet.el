@@ -2,10 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
 (declare-function nvp-read-mode "nvp-read")
@@ -23,7 +20,12 @@
 
 ;; -------------------------------------------------------------------
 ;;; Hooks
-(nvp-declare "" nvp-yas-in-string nvp-yas-in-comment)
+(nvp-decl nvp-yas-in-string nvp-yas-in-comment)
+
+(define-advice yas-maybe-load-snippet-buffer
+    (:around (orig-fn &rest args) "save-excursion")
+  (save-excursion
+    (apply orig-fn args)))
 
 (defun nvp-snippet-save-hook ()
   "Add conditions based on directory names.
@@ -33,6 +35,7 @@ When part of `before-save-hook', won't add condition on initial save."
       (save-buffer)))
   (cl-flet ((add-condition
              (pred)
+             (remove-hook 'before-save-hook #'nvp-snippet-save-hook t)
              (nvp-snippet-add-field "condition" pred)))
     (let ((dir (ignore-errors (or (nvp-path 'ds) (nvp-path 'dn)))))
       (when-let*
@@ -43,17 +46,15 @@ When part of `before-save-hook', won't add condition on initial save."
 
 (defun nvp-snippet-add-field (field value)
   "Add FIELD with VALUE unless FIELD is already defined."
-  (save-excursion
+  (save-mark-and-excursion
     (goto-char (point-min))
     (let ((end (nvp-snippet-header-end)))
-      (condition-case nil
-          (when (re-search-forward (concat "^#\\s-*" field ":") end)
-            (message "%s already defined: %S" field
-                     (buffer-substring-no-properties (point) (point-at-eol))))
-        (error
-         (goto-char end)
-         (beginning-of-line)
-         (insert (format "# %s: %S\n" field value)))))))
+      (if (re-search-forward (concat "^#\\s-*" field ":") end t)
+          (message "%s already defined: %S" field
+                   (buffer-substring (point) (point-at-eol)))
+        (goto-char end)
+        (beginning-of-line)
+        (insert (format "# %s: %S\n" field value))))))
 
 ;; ------------------------------------------------------------
 ;;; Jump to new snippet
@@ -61,7 +62,7 @@ When part of `before-save-hook', won't add condition on initial save."
 ;; #<marker at 95724 in yasnippet.el>
 ;;;###autoload
 (defun nvp-jump-to-new-snippet (mode snippet-dir &optional do-dired text
-                                                   default-new-snippet)
+                                     default-new-snippet)
   "Jump to a new snippet for MODE in snippet SNIPPET-DIR (creating if necessary).
  If DO-DIRED is non-nil, `dired' that directory instead of creating snippet.
 If TEXT is non-nil use as `yas-selected-text'.
@@ -105,10 +106,10 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
     (if (region-active-p)
         (setq beg (or beg (region-beginning))
               end (or end (region-end)))
-     (setq beg (point-min) end (point-max)))
-   (setq-local indent-line-function iline)
-   (setq-local indent-region-function iregion)
-   (indent-region beg end)))
+      (setq beg (point-min) end (point-max)))
+    (setq-local indent-line-function iline)
+    (setq-local indent-region-function iregion)
+    (indent-region beg end)))
 
 (defun nvp-snippet-indent-line ()
   (interactive)

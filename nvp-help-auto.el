@@ -86,6 +86,16 @@
   (interactive (list (read-string "Bindings prefix (enter as for 'kbd'): ")))
   (describe-bindings (kbd prefix)))
 
+(defsubst nvp-help--sort-keymap (map-name)
+  (with-temp-buffer
+    (insert (substitute-command-keys (format "\\{%s\}" map-name)))
+    (goto-char (point-min))
+    (forward-line 3)                    ;to first key def. line
+    (let ((beg (point))                 ;sort first group of keys
+          (end (progn (re-search-forward "^\\s-*$" nil t) (point))))
+      (nvp-sort-lines-first-symbol beg end))
+    (buffer-string)))
+
 ;;;###autoload
 (defun nvp-help-describe-keymap (keymap)
   "Describe KEYMAP readably."
@@ -104,7 +114,7 @@
         ;; see https://www.emacswiki.org/emacs/help-fns%2b.el
         ;; Use `insert' instead of `princ', so control chars (e.g. \377) insert
         ;; correctly.
-        (insert (substitute-command-keys (concat "\\{" name "}")))))))
+        (insert (nvp-help--sort-keymap name))))))
 
 ;;; https://www.emacswiki.org/emacs/help-fns%2b.el
 ;; describe-package ?

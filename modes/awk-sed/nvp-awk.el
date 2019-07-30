@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
   (require 'nvp-font))
 (require 'nvp)
@@ -39,7 +38,7 @@
 
 (defun nvp-awk-eldoc--string (cmd)
   (or (gethash cmd nvp-awk-eldoc-cache)
-      (when-let ((plist (cdr (assoc-string cmd nvp-awk-builtins))))
+      (-when-let (plist (cdr (assoc-string cmd nvp-awk-builtins)))
         (let ((pars (plist-get plist :param)))
           (setf (gethash cmd nvp-awk-eldoc-cache)
                 (format "%s: %s" (propertize cmd 'face 'font-lock-function-name-face)
@@ -47,7 +46,7 @@
                           (plist-get plist :desc))))))))
 
 (defun nvp-awk-eldoc-function ()
-  (when-let ((sym (thing-at-point 'symbol)))
+  (-when-let (sym (thing-at-point 'symbol))
     (nvp-awk-eldoc--string sym)))
 
 (defun nvp-awk-command-completion ()
@@ -60,7 +59,31 @@
           (lambda (s) (plist-get (cdr (assoc-string s nvp-awk-builtins)) :desc))
           :company-doc-buffer
           (lambda (s) (company-doc-buffer
-                  (plist-get (cdr (assoc-string s nvp-awk-builtins)) :desc))))))
+                  (plist-get (cdr (assoc-string s nvp-awk-builtins)) :desc)))
+          :exit-function
+          (lambda (str status)
+            (when (eq 'finished status)
+              (nvp-awk--post-capf))))))
+
+;;; Snippets
+
+(defun nvp-awk-snippet-expand (snippet &optional pos)
+  (when pos (goto-char pos))
+  (yas-expand-snippet snippet))
+
+;; #<marker at 5118 in irony-completion.el>
+(defun nvp-awk--post-complete-snippet (str placeholders)
+  (let ((ph-count 0)
+        (from 0)
+        to snippet)
+    (while (setq to (car placeholders)
+                 snippet (concat snippet (substring str from to)
+                                 (format "${%d:%s}" (cl-incf ph-count)
+                                         (substring str (car placeholders)
+                                                    (cadr placeholders))))
+                 from (cadr placeholders)
+                 placeholders (cddr placeholders)))
+    (concat snippet (substring str from) "$0")))
 
 (provide 'nvp-awk)
 ;; Local Variables:

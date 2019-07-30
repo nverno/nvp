@@ -258,6 +258,7 @@ sourced files."
                  ((and var (memq (char-syntax (char-after beg)) '(?> ?\))))
                   beg)
                  ;; use bash completion after '--'
+                 ;; XXX: any way to get completion for '-' ???
                  (flag
                   (setq beg (bash-completion--stub-start comp))
                   pos)

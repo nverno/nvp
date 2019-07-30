@@ -21,7 +21,8 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'nvp-parse))
 (require 'cperl-mode)
 (nvp-decls)
 (declare-function auto-complete-mode "autocomplete")
@@ -38,21 +39,39 @@
                             (or load-file-name (buffer-file-name)))))
   (require 'perl-w32tools))
 
-;; -------------------------------------------------------------------
 ;;; Things at point
 
-;; Perl module at point
-(defun nvp-perl--perl-module ()
+(defun nvp-perl--module ()
   (nvp-back-chars-then-look "_[:alpha:]:\\->" "[_[:alpha:]:]+"))
 
-;; Perl variable at point
-(defun nvp-perl--perl-var ()
+(defun nvp-perl--variable ()
   (nvp-back-chars-then-look "[:alpha:]_$@#%*&=" "[[:alpha:]_$@#%*&]+"))
 
-(put 'perl-module 'bounds-of-thing-at-point 'nvp-perl--perl-module)
-(put 'perl-variable 'bounds-of-thing-at-point 'nvp-perl--perl-var)
+(put 'perl-module 'bounds-of-thing-at-point 'nvp-perl--module)
+(put 'perl-variable 'bounds-of-thing-at-point 'nvp-perl--var)
 
-;; ------------------------------------------------------------
+;;; Generics
+
+;; list modules used and imports
+;; (("module" import1 import2 ...) ("module2" ... ))
+(cl-defmethod nvp-parse-includes (&context (major-mode cperl-mode) &rest args)
+  (nvp-parse:buffer-file 'buffer nil args
+    (save-excursion
+      (goto-char (point-min))
+      (let (res imports)
+        (while (re-search-forward
+                (nvp-concat
+                 ;; Module 
+                 "\\<use\\>[ \t]*\\([.0-9A-Za-z:]+\\);?[ \t]*"
+                 ;; Imports
+                 "\\(?:qw(\\(?2:[^\)]+\\))\\|\\(?2:[^ \t]\\)\\)")
+                nil 'move)
+          (setq imports (match-string-no-properties 2))
+          (push (cons (match-string-no-properties 1)
+                      (if imports (split-string imports) nil))
+                res))
+        res))))
+
 ;;; Cpanm
 
 ;; Install module using cpanm
@@ -111,16 +130,17 @@
   (interactive)
   (let ((char (char-before)))
     (pcase char
-      (`?$ (delete-char -1) (insert "@"))
-      (`?@ (delete-char -1) (insert "%"))
-      (`?% (delete-char -1) (insert "$")))))
+      (?$ (delete-char -1) (insert "@"))
+      (?@ (delete-char -1) (insert "%"))
+      (?% (delete-char -1) (insert "$")))))
 
 ;; hook run after 'my' abbrev toggle is done
 (defun nvp-perl-my-exit ()
-  (let ((char (char-before)))
-    (pcase char
-      (`?% (yas-expand-snippet "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
-                               '((yas-indent-line 'auto)))))))
+  (unless (eq this-command 'keyboard-quit)
+    (let ((char (char-before)))
+      (pcase char
+        (`?% (yas-expand-snippet "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
+                                 '((yas-indent-line 'auto))))))))
 
 (defvar nvp-perl-my-map
   (let ((km (make-sparse-keymap)))
@@ -129,28 +149,9 @@
 
 (defun nvp-perl-my-toggle ()
   (set-transient-map nvp-perl-my-map t 'nvp-perl-my-exit))
+
 ;; don't insert a space after expanding 
 (put 'nvp-perl-my-toggle 'no-self-insert t)
-
-;; TODO: Convert to generic
-;; list modules used and imports
-;; (("module" import1 import2 ...) ("module2" ... ))
-(defun nvp-perl-used ()
-  (save-excursion
-    (goto-char (point-min))
-    (let (res imports)
-      (while (re-search-forward
-              (nvp-concat
-               ;; Module 
-               "\\<use\\>[ \t]*\\([.0-9A-Za-z:]+\\);?[ \t]*"
-               ;; Imports
-               "\\(?:qw(\\(?2:[^\)]+\\))\\|\\(?2:[^ \t]\\)\\)")
-              nil 'move)
-        (setq imports (match-string-no-properties 2))
-        (push (cons (match-string-no-properties 1)
-                    (if imports (split-string imports) nil))
-              res))
-      res)))
 
 ;; FIXME: inserts in weird places
 ;; Add a new perl use statement after the existing use statements.
@@ -158,7 +159,7 @@
   (interactive
    (list
     (read-from-minibuffer "Module: " (thing-at-point 'perl-module))))
-  (if (not (assoc-string module (nvp-perl-used)))
+  (if (not (assoc-string module (nvp-parse-includes)))
       (save-excursion
         (goto-char (point-min))
         ;; goto end of last use declaration

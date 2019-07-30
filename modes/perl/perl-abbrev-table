@@ -19,7 +19,8 @@
   "Cperl-Mode Abbrevs."
   :parents (list ;; cperl-mode-electric-keywords-abbrev-table
                  prog-mode-abbrev-table)
-  :regexp "\\(\\_<[:\_A-Za-z0-9-]+\\)")
+  :regexp "\\(\\_<[:\_A-Za-z0-9-]+\\)"
+  :enable-function #'nvp-abbrev-expand-p)
 
 (define-abbrev-table 'perl-mode-abbrev-table
   '()

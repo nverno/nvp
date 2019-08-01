@@ -269,7 +269,7 @@ If LOCAL is non-nil, make map buffer local."
 (defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
   (declare (indent defun))
   `(nvp-bindings ,mode ,feature
-     ,@(eval-when-compile nvp--view-bindings)
+     ,@(eval-when-compile nvp--bindings-view)
      ,@bindings))
 
 (defmacro nvp-bindings-add-view (mode &optional feature)

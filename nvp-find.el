@@ -48,6 +48,7 @@
 ;;; Grep / Rgrep
 
 (eval-when-compile
+  (defvar package-user-dir)
   (defmacro nvp-rgrep-with-defaults (elisp &rest body)
     "Defaults: symbol at point, file/buffer extension.
 (1) prefix: if ELISP is non-nil includes `package-user-dir', otherwise uses HOME 

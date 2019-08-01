@@ -1056,15 +1056,13 @@ and set `this-command' to nil so opposite happens next time."
      (prog1 (progn ,@rest)
        (setq this-command ,(or this-cmd ''nvp-toggled-if)))))
 
-(defmacro nvp-toggle-variable (variable &optional message)
+(defmacro nvp-toggle-variable (variable)
   (declare (indent 1))
-  `(if (progn
-         (custom-load-symbol ',variable)
-         (let ((set (or (get ',variable 'custom-set) 'set-default))
-               (get (or (get ',variable 'custom-get) 'default-value)))
-           (funcall set ',variable (not (funcall get ',variable)))))
-       ,(if message `(message ,message "enabled")
-          `(message ,message "disabled"))))
+  `(progn
+     (custom-load-symbol ',variable)
+     (let ((set (or (get ',variable 'custom-set) 'set-default))
+           (get (or (get ',variable 'custom-get) 'default-value)))
+       (funcall set ',variable (not (funcall get ',variable))))))
 
 ;;-- Marks
 (defmacro nvp--mark-defun (&optional first-time &rest rest)

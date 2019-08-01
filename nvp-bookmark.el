@@ -190,5 +190,18 @@ and fallback to `bookmark-default-file'."
     (nvp-bmk-handler (nvp-bmk-make-record file)))
   (call-interactively 'bookmark-bmenu-list))
 
+;;;###autoload
+(defun nvp-bookmark-list (&optional reload)
+  "With arg reload defaults."
+  (interactive "P")
+  (when reload
+    (setq bookmarks-already-loaded nil
+          bookmark-default-file
+          (expand-file-name
+           "bookmarks-linux.bmk" (nvp-path 'dn bookmark-default-file))
+          bookmark-alist nil)
+    (message "Reloaded: %s" bookmark-default-file))
+  (call-interactively #'bookmark-bmenu-list))
+
 (provide 'nvp-bookmark)
 ;;; nvp-bookmark.el ends here

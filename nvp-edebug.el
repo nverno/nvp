@@ -10,58 +10,40 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'hydra)
   (defvar tramp-debug-on-error)
-  (defvar tramp-verbose)
-  (require 'hydra))
+  (defvar tramp-verbose))
 (require 'edebug)
 (nvp-decls)
 (nvp-declare nvp-help-describe-keymap)
 
 ;;; Completion
 
-;; completion table for locals in current frame
+;; gather locals relevant to frame at point:
+;; this is locals in the frames at higher indices
+;;; FIXME: can't access *Backtrace* from `debugger-eval-expression'
 (defvar nvp-backtrace-locals-completion-table
-  (completion-table-in-turn
-   (completion-table-dynamic
-    (lambda (_string)
-      (-when-let* ((idx (backtrace-get-index))
-                   (frame (nth idx backtrace-frames)))
-        (backtrace-frame-locals frame)))
-    'do-switch-buffer)
-   elisp--local-variables-completion-table))
+  (completion-table-dynamic
+   (lambda (_string)
+     (when backtrace-frames
+       (--mapcat
+        (-some->> (backtrace-frame-locals it) (--map (car it)))
+        (nthcdr (1+ (backtrace-get-index)) backtrace-frames))))))
 
 (defun nvp-backtrace-capf ()
   (-when-let ((beg . end) (bounds-of-thing-at-point 'symbol))
-    (list beg end
-          nvp-backtrace-locals-completion-table
-          :exclusive 'no)))
+    (and backtrace-frames
+         (list beg end
+               nvp-backtrace-locals-completion-table
+               :exclusive 'no))))
 
-;; (remove-hook 'completion-at-point-functions #'nvp-backtrace-capf)
-;; (remove-hook 'eval-expression-minibuffer-setup-hook #'nvp-backtrace-capf)
-;; (setq-local completion-at-point-functions '(elisp-completion-at-point t))
-
-;; (add-hook 'completion-at-point-functions #'nvp-backtrace-capf nil t)
-;; (remove-hook 'eval-expression-minibuffer-setup-hook
-;;           (lambda ()
-;;             (setq-local completion-at-point-functions
-;;                         '(nvp-backtrace-capf t))))
-
-(define-advice debugger-eval-expression
-    (:around (orig-fn &rest args) "local-completion")
-  (let ((_capf completion-at-point-functions)
-        (completion-at-point-functions '(nvp-backtrace-capf t))))
-  (cl-letf (((symbol-value 'elisp--local-variables-completion-table)
-             (symbol-value 'nvp-backtrace-locals-completion-table)))
-    (funcall-interactively orig-fn args)))
-
-
-;; (defun nvp-edebug-minibuffer-hook ()
-
-;;   (add-hook 'completion-at-point-functions
-;;             #'nvp-edebug-locals-completion-at-point nil t))
-
-;; (add-hook 'eval-expression-minibuffer-setup-hook
-;;           #'nvp-edebug-minibuffer-hook)
+;; (define-advice debugger-eval-expression
+;;     (:around (orig-fn &rest args) "local-completion")
+;; (let ((_capf completion-at-point-functions)
+;;       (completion-at-point-functions '(nvp-backtrace-capf t))))
+;; (cl-letf (((symbol-value 'elisp--local-variables-completion-table)
+;;            (symbol-value 'nvp-backtrace-locals-completion-table)))
+;;   (funcall-interactively orig-fn args)))
 
 ;; setup eval with elisp minibuffer eval hooks
 (defun nvp-edebug-eval-expression (expr)

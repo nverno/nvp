@@ -164,7 +164,9 @@ If in `lisp-interaction-mode' or with prefix ARG, pretty-print the results."
                  (read (current-buffer))))
            (pp-last-sexp)))
         (print-length (window-total-height))
-        (print-level))
+        (print-level)
+        (print-circle t)
+        (debug-on-error t))
     (if arg (pp-eval-expression expr)
       (if (eq 'lisp-interaction-mode major-mode)
           (let ((standard-output (current-buffer)))
@@ -260,7 +262,7 @@ If in `declare-function', convert to autoload."
 ;; Note: Could also account for dolist/dotimes/etc
 (eval-when-compile
   (defvar company-elisp-var-binding-regexp)
-  (defmacro nvp-elisp-abbrev--expand-p (type)
+  (defmacro nvp-elisp:abbrev-expand-p (type)
     (declare (debug t))
     `(and (or (memq this-command '(expand-abbrev nvp-abbrev-expand-after-symbols))
               (not (memq last-input-event '(?/ ?- ?= ?> ?<))))
@@ -272,11 +274,11 @@ If in `declare-function', convert to autoload."
 
 ;; function expansion
 (defun nvp-elisp-abbrev-expand-fn-p ()
-  (nvp-elisp-abbrev--expand-p 'boundp))
+  (nvp-elisp:abbrev-expand-p 'boundp))
 
 ;; variable expansion
 (defun nvp-elisp-abbrev-expand-var-p ()
-  (nvp-elisp-abbrev--expand-p 'fboundp))
+  (nvp-elisp:abbrev-expand-p 'fboundp))
 
 ;; ------------------------------------------------------------
 ;;; Advices

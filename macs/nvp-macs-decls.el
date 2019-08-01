@@ -139,6 +139,8 @@
        lookup-password)
 
      (nvp-decl                          ; builtins
+       package-user-dir
+       recentf-list
        comint-read-input-ring comint-write-input-ring
        ielm ielm-return
        ert-run-tests-interactively

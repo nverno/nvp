@@ -12,13 +12,11 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'hydra)
-  (defvar recentf-list)
-  (defvar package-user-dir))
+  (require 'hydra))
 (require 'nvp-display)
 (require 'nvp)
-
-(nvp-declare :pre "wgrep" exit save-all-buffers abort-changes remove-change
+(nvp-decls)
+(nvp-decl :pre "wgrep" exit save-all-buffers abort-changes remove-change
   remove-all-change toggle-readonly-area mark-deletion change-to-wgrep-mode)
 
 (defvar nvp-search-history () "Store search history inputs.")
@@ -50,7 +48,7 @@
 ;;; Grep / Rgrep
 
 (eval-when-compile
-  (defmacro nvp-rgrep-with-defaults (&optional elisp &rest body)
+  (defmacro nvp-rgrep-with-defaults (elisp &rest body)
     "Defaults: symbol at point, file/buffer extension.
 (1) prefix: if ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
     for `default-directory'.
@@ -81,7 +79,7 @@
   "Rgrep for symbol at point. See `nvp-rgrep-with-defaults'."
   (interactive "P")
   (setq current-prefix-arg arg)
-  (nvp-rgrep-with-defaults))
+  (nvp-rgrep-with-defaults nil))
 
 ;;;###autoload
 (defun nvp-rgrep-elisp-symbol-at-point (arg)

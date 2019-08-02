@@ -129,11 +129,9 @@
                             (if (hash-table-p v) (symbol-name v))))
                  (list (if (equal val "") v (intern val)))))
   (nvp-with-results-buffer (help-buffer)
-    (nvp-results--princ-title (format "Hash: %S" variable))
+    (nvp-results-title (format "Hash: %S" variable))
     (nvp-pp-hash variable)))
 
-;; TODO: pretty printing `cl-defstruct'
-;; cl-prettyprint: #<marker at 22951 in cl-extra.el.gz>
 ;;;###autoload
 (defun nvp-dev-describe-variable (variable)
   "Try to pretty print VARIABLE in temp buffer."
@@ -142,18 +140,9 @@
         (print-escape-newlines t)
         (print-circle t))
     (nvp-with-results-buffer (help-buffer)
-      (nvp-results--princ-title
+      (nvp-results-title
        (format "Variable(%s): %S" (type-of val) variable))
-      (pcase val
-        ((pred hash-table-p)
-         (nvp-pp-hash variable))
-        (_
-         (insert
-          (with-temp-buffer
-            (set-syntax-table emacs-lisp-mode-syntax-table)
-            (cl-prettyprint val)
-            (pp-buffer)
-            (buffer-string)))))
+      (princ (nvp-pp-variable-to-string variable))
       (emacs-lisp-mode))))
 
 
@@ -176,7 +165,7 @@
         start end text)
     (if (not overlays) (message "Nothing here :(")
       (nvp-with-results-buffer (help-buffer) :font-lock t
-        (nvp-results--princ-title (format "Overlays at %d in %S" pos (current-buffer)))
+        (nvp-results-title (format "Overlays at %d in %S" pos (current-buffer)))
         (dolist (o overlays)
           (setq start (overlay-start o)
                 end (overlay-end o)
@@ -227,7 +216,7 @@ delimiter or an Escaped or Char-quoted character."
                      (called-interactively-p 'interactive))
     (nvp-display-buffer-with-action action
       (with-help-window (help-buffer)
-        (nvp-results--princ-title "Syntax at <marker>")
+        (nvp-results-title "Syntax at <marker>")
        (cl-loop
           for i from 0 upto (length ppss)
           do
@@ -347,7 +336,7 @@ With \\[universal-argument] prompt for THING at point."
     (maphash (lambda (key val) (push (cons val key) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
     (nvp-with-results-buffer (help-buffer)
-      (nvp-results--princ-title "Word Counts")
+      (nvp-results-title "Word Counts")
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
 

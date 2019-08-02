@@ -4,17 +4,18 @@
 
 ;; Alignment:
 ;; - interactive align commands
-;; - TODO: describe rules applicable for mode
+;; - show rules applicable for mode
 ;; - additional alignment rules
 
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-results))
-(nvp-decls)
 (require 'nvp)
+(require 'nvp-results)
 (require 'nvp-read)
 (require 'align)
+(nvp-decls)
 
 ;;;###autoload
 (defun nvp-align (&optional arg beg end)
@@ -78,16 +79,27 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; `align-exclude-rules-list'
 ;; `align-rules-list'
 
-(defun nvp-align-mode-rules (&optional mode)
-  "Display alignment rules applicable to MODE (default `major-mode').
-With prefix, prompt for mode."
-  (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
+;; Collect align rules from VAR for MODE
+(defun nvp-align--mode-rules (var &optional mode)
+  (or mode (setq mode major-mode))
   (--filter
-   (-some->> (cdr (assoc 'modes (cddr it)))
-             (if () (memq mode)))
-   align-rules-list))
+   (--> (cdr (assoc 'modes (cddr it)))
+        (memq mode (if (symbolp it) (symbol-value it) it)))
+   var))
 
-(memq 'emacs-lisp-mode (symbol-value (cdr (assoc 'modes (cdr (cdr (car align-rules-list)))))))
+;;;###autoload
+(defun nvp-align-show-rules (&optional mode)
+  "Show align/exclude rules applicable to `major-mode' or MODE."
+  (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
+  (let ((rules (nvp-align--mode-rules align-rules-list mode))
+        (excludes (nvp-align--mode-rules align-exclude-rules-list mode)))
+    (nvp-with-results-buffer nil
+      (nvp-results-title (format "Align rules for %s" mode))
+      (insert (pp-to-string rules))
+      (terpri)
+      (insert (pp-to-string excludes))
+      (emacs-lisp-mode))))
+
 (provide 'nvp-align)
 ;; Local Variables:
 ;; coding: utf-8

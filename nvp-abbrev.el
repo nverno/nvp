@@ -248,7 +248,7 @@ If FILE is non-nil, read abbrevs from FILE."
        (mapcar #'symbol-name (nvp-abbrev--nonempty))))))
   (let ((props (nvp-abbrev--get-plist (intern table))))
     (nvp-with-results-buffer nil
-      (nvp-results--princ-title table)
+      (nvp-results-title table)
       (pcase-dolist (`(,k ,v) props)
         (princ (format "%S: %S\n" k v))))))
 

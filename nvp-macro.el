@@ -837,54 +837,6 @@ VAR is a symbol and FORM is evaluated."
            (mapcar (lambda (k-v) (eval (cadr k-v))) ,envvar)
          ,@body))))
 
-;; -------------------------------------------------------------------
-;;; Display Results
-
-(cl-defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body
-                                                &key font-lock &allow-other-keys)
-  "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
-Make the temp buffer scrollable, in `view-mode' and kill when finished."
-  (declare (indent defun) (debug (sexp &rest form)))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
-  `(let (other-window-scroll-buffer)
-     (nvp-window-configuration-save)
-     (with-temp-buffer-window
-      ,(or buffer-or-name '(help-buffer))
-      t
-      nil
-      (with-current-buffer standard-output
-        (setq other-window-scroll-buffer (current-buffer))
-        ,@body
-        ,@(when font-lock '((font-lock-mode) (font-lock-ensure)))
-        (hl-line-mode)
-        (view-mode-enter nil #'nvp-window-configuration-restore)))))
-
-;; evil-with-view-list: #<marker at 154076 in evil-common.el>
-(cl-defmacro nvp-with-view-list (&key
-                                 name           ;buffer name
-                                 mode-name      ;mode-line name
-                                 format         ;`tabulated-list-format'
-                                 entries        ;`tabulated-list-entries'
-                                 select-action) ;function applied to row
-  "View buffer in `tabulated-list-mode'."
-  (declare (indent defun) (debug t))
-  (let ((action (make-symbol "action")))
-    `(progn
-       (let ((,action ,select-action)
-             (bufname (concat "*" ,name "*"))
-             (inhibit-read-only t))
-         (and (get-buffer bufname)
-              (kill-buffer bufname))
-         (let ((buf (get-buffer-create bufname)))
-           (with-current-buffer buf
-             (setq tabulated-list-format ,format
-                   tabulated-list-entries ,entries
-                   action ,action)
-             (nvp-view-list-mode)        ;inits lists
-             (setq mode-name ,mode-name))
-           (pop-to-buffer buff))))))
-
 ;;; Time
 
 (defmacro nvp-file-older-than-days (file days)

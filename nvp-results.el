@@ -19,35 +19,37 @@
 ;; -------------------------------------------------------------------
 ;;; Pretty printing
 
-;; princ centered TITLE
-(defsubst nvp-results--princ-title (title &optional width char)
+;; print centered TITLE
+;;;###autoload
+(defun nvp-results-title (title &optional width char)
   (or width (setq width 85))
   (or char (setq char "~"))
   (princ (format "\n%s\n%s\n\n" (nvp-s-center (- width (length title)) title)
                  (nvp-s-repeat width "~"))))
 
-;; see `ido-pp' && `smex-pp'
-;; (defun nvp-pp-list (list)
-;;   (let (print-level eval-expression-print-level print-length
-;;                     eval-expression-print-length)
-;;     (while list
-;;       (let* ((elt (car list))
-;;              (s (if (consp elt) (car elt) elt)))
-;;         (if (and (stringp s) (= (length s) 0))
-;;             (setq s nil))
-;;         (if s
-;;             (prin1 elt (current-buffer)))
-;;         (if (and (setq list (cdr list)) s)
-;;             (insert "\n "))))
-;;     (insert "\n)\n")))
+(defun nvp-pp-variable-to-string (variable)
+  (let ((print-escape-newlines t)
+        (print-quoted t)
+        (val (if (symbolp variable) (symbol-value variable)
+               variable)))
+    (pcase val
+      ((pred hash-table-p)
+       (nvp-pp-hash variable))
+      ;; TODO: structs/classes
+      (_
+       (pp-to-string (symbol-value variable))))))
 
 (defun nvp-pp-hash (hash)
-  (maphash (lambda (key val)
-             (pp key)
-             (princ " => ")
-             (pp val)
-             (terpri))
-           (symbol-value hash)))
+  (with-temp-buffer
+    (lisp-mode-variables nil)
+    (set-syntax-table emacs-lisp-mode-syntax-table)
+    (maphash (lambda (key val)
+               (pp key)
+               (princ " => ")
+               (pp val)
+               (terpri))
+             (symbol-value hash))
+    (buffer-string)))
 
 ;; -------------------------------------------------------------------
 ;;; View list - simple tabulated display
@@ -72,6 +74,55 @@
 (nvp-bindings-with-view "nvp-view-list" nil
   ([return] . nvp-view-list-goto-entry)
   ("q"      . kill-this-buffer))
+
+
+;; -------------------------------------------------------------------
+;;; Output
+
+(cl-defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body
+                                                &key font-lock &allow-other-keys)
+  "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
+Make the temp buffer scrollable, in `view-mode' and kill when finished."
+  (declare (indent defun) (debug (sexp &rest form)))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
+  `(let (other-window-scroll-buffer)
+     (nvp-window-configuration-save)
+     (with-temp-buffer-window
+      ,(or buffer-or-name '(help-buffer))
+      t
+      nil
+      (with-current-buffer standard-output
+        (setq other-window-scroll-buffer (current-buffer))
+        ,@body
+        ,@(when font-lock '((font-lock-mode) (font-lock-ensure)))
+        (hl-line-mode)
+        (view-mode-enter nil #'nvp-window-configuration-restore)))))
+
+;; evil-with-view-list: #<marker at 154076 in evil-common.el>
+(cl-defmacro nvp-with-view-list (&key
+                                 name           ;buffer name
+                                 mode-name      ;mode-line name
+                                 format         ;`tabulated-list-format'
+                                 entries        ;`tabulated-list-entries'
+                                 select-action) ;function applied to row
+  "View buffer in `tabulated-list-mode'."
+  (declare (indent defun) (debug t))
+  (let ((action (make-symbol "action")))
+    `(progn
+       (let ((,action ,select-action)
+             (bufname (concat "*" ,name "*"))
+             (inhibit-read-only t))
+         (and (get-buffer bufname)
+              (kill-buffer bufname))
+         (let ((buf (get-buffer-create bufname)))
+           (with-current-buffer buf
+             (setq tabulated-list-format ,format
+                   tabulated-list-entries ,entries
+                   action ,action)
+             (nvp-view-list-mode)        ;inits lists
+             (setq mode-name ,mode-name))
+           (pop-to-buffer buff))))))
 
 (provide 'nvp-results)
 ;; Local Variables:

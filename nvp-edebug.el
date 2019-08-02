@@ -35,7 +35,6 @@
 (defvar nvp-backtrace-locals-completion-table
   (completion-table-dynamic #'nvp-backtrace--local-variables 'do-switch-buffer))
 
-
 ;;; Debugger
 
 ;; override interactive spec of `debugger-eval-expression' to use

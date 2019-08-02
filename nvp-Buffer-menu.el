@@ -2,7 +2,8 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'hydra)
 
 ;;;###autoload(autoload 'nvp-hydra-buffer-menu/body "nvp-Buffer-menu")

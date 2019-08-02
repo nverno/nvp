@@ -31,11 +31,10 @@
 ;;     (goto-char (point-min))
 ;;     ()))
 
-;; -------------------------------------------------------------------
 ;;; Things-at-point
 ;; macro => `make-macro' `macrostep-make-bounds-of-macro-at-point'
 
-;; -------------------------------------------------------------------
+
 ;;; Font-lock
 ;; TODO:
 ;; - remove string fontification in #define blocks where it is incorrect.
@@ -49,15 +48,8 @@
 ;; `makefile-dependency-regex' => note this doesn't take into account quoting
 ;; `makefile-macroassign-regex' => doesn't handle #defines
 
-;; (let ((io-funs
-;;        (concat "\\${\\s-*" (regexp-opt '("info" "warn" "error"))
-;;                "\\(.*\\)}")))
-;;   `(nvp-font-lock-add-defaults 'makefile-mode
-;;      ("\\${\\s-*}")
-;;     ))
-
-;; ------------------------------------------------------------
-;;; Web topics
+
+;;; Special targets
 
 ;; FIXME: run async
 ;; collect matches from url
@@ -74,8 +66,8 @@
   "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
   "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
 
-;; -------------------------------------------------------------------
-;;; General mode variables
+
+;;; Beginning / end of defun
 
 (defsubst nvp-makefile--at-beginning ()
   (save-excursion
@@ -116,7 +108,7 @@
                 (looking-at-p "^#\\|^[ \t]+"))
       (forward-line))))
 
-;; -------------------------------------------------------------------
+
 ;;; Indent 
 
 (defvar nvp-makefile-indent-offset 2)
@@ -143,7 +135,7 @@
               (indent-to nvp-makefile-indent-offset))
             (forward-line 1)))))))
 
-;; -------------------------------------------------------------------
+
 ;;; Compile
 
 (defun nvp-makefile-save-and-compile (&optional arg)

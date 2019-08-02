@@ -4,7 +4,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'cl-lib)
   (require 'time-stamp))
 (require 'nvp)
 (require 'files-x)
@@ -29,15 +28,15 @@
   "Iincrement numbers in region. 
 Decrement with prefix."
   (interactive "P")
-  (unless bnds
-    (setq bnds (nvp-tap 'bdwim 'paragraph)))
-  (unless bnds (user-error "No region to search in."))
+  (or bnds
+      (setq bnds (nvp-tap 'bdwim 'paragraph))
+      (user-error "No region to search in."))
   (or inc (setq inc (if arg -1 1)))
   (let (deactivate-mark)
     (nvp-regex-map-across-matches
      (lambda (ms)
        (replace-match (number-to-string (+ inc (string-to-number ms)))))
-     "\\([-]?[[:digit:]]+\\)" bnds nil 1))
+     "\\([-]?[[:digit:]]+\\)" bnds 1))
   (nvp-repeat-command ?= nil
     `(("-" (nvp-ilam nil (nvp-toggle-increment-numbers 1 ',bnds -1))
        :msg "decrement"))))

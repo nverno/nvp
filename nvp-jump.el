@@ -12,13 +12,12 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
 (nvp-decls)
 
-(nvp-auto "nvp-file" 'nvp-file-locate-first-dominating)
+(nvp-auto "nvp-util" 'nvp-file-locate-first-dominating)
 (nvp-auto "nvp-scratch" 'nvp-scratch-switch-modes)
 
 ;; -------------------------------------------------------------------

@@ -158,5 +158,12 @@ in buffer *vagrant-status*."
       :proc-filter nil
       :on-success (kill-buffer))))
 
+(defun nvp-md5-file (filename)
+  "Generate MD5 of FILENAME contents and prepend to `kill-ring'."
+  (interactive "f")
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (kill-new (md5 (current-buffer)))))
+
 (provide 'nvp-ext)
 ;;; nvp-ext.el ends here

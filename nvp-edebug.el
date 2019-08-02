@@ -1,15 +1,14 @@
 ;;; nvp-edebug.el --- emacs/elisp debubgging helper -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
-;; emacs/elisp debugging
-;; - cc-engine: #<marker at 23505 in cc-engine.el.gz>
-;; it would be useful to highlight positions with overlays during debugging
-;; see #<marker at 63523 in cc-engine.el.gz>
+;; Emacs/elisp debugging
 
 ;;; TODO:
 ;; - add frame-local completion for `edebug-eval-expression'
-
+;;; Notes
+;; - cc-engine: #<marker at 23505 in cc-engine.el.gz>
+;; it would be useful to highlight positions with overlays during debugging
+;; see #<marker at 63523 in cc-engine.el.gz>
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

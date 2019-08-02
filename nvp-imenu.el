@@ -9,12 +9,11 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
 (require 'idomenu nil t)
 (declare-function idomenu "idomenu")
-(autoload 'nvp-comment-start "nvp-comment")
+(nvp-decl nvp-comment-start)
 (autoload 'nvp-flatten-tree "nvp-util")
 
 ;;; Local variables

@@ -15,7 +15,7 @@
 (require 'nvp-results)
 (require 'help-mode)
 (nvp-decl :pkg "nadvice" advice-mapc advice-remove)
-(nvp-autoload "nvp-string" nvp-s-wrap)
+(nvp-auto "nvp-util" nvp-s-wrap)
 (autoload 's-split-words "s")
 (nvp-decls)
 (defvar nvp-dev-keymap)

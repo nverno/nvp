@@ -5,8 +5,8 @@
 ;; - make --warn-undefined-variables
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
+(require 'compile)
 (require 'nvp)
 
 ;;;###autoload

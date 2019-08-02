@@ -5,11 +5,12 @@
 ;; https://github.com/jwiegley/dot-emacs/blob/0e07f471036d6f3ec4f3cbd38fe3277be072747b/init.el#L180
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'magit nil t)
 (nvp-decls)
-(nvp-autoload "nvp-string" nvp-s-all-matches)
+(nvp-auto "nvp-util" nvp-s-all-matches)
 
 ;; checkout part of a repo
 ;;;###autoload

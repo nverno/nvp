@@ -10,7 +10,8 @@
 ;; - default `comint-input-filter-functions' to ignore blanks, compress newlines
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'comint)
 (nvp-decls)
 
@@ -22,6 +23,13 @@
 
 ;; -------------------------------------------------------------------
 ;;; History
+
+;; use if wanting to read history file over tramp connection
+;; (defun nvp-create-remote-filename (filename)
+;;   (if (file-remote-p default-directory)
+;;       (tramp-make-tramp-file-name
+;;        (tramp-dissect-file-name default-directory) filename)
+;;     filename))
 
 ;; write comint-input-ring when buffer is killed: in kill-buffer-hook
 (defun nvp-comint-write-history-on-kill ()

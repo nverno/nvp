@@ -9,7 +9,8 @@
 ;; - generic to create table
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-parse)
 (require 'nvp-abbrev-util)

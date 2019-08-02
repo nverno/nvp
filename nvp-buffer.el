@@ -1,7 +1,7 @@
-;;; nvp-buffer.el --- buffer functions -*- lexical-binding: t; -*-
+;;; nvp-buffer.el --- buffer/file functions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; buffer manipulation commands
+;; buffer/buffer-file commands
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -134,6 +134,42 @@ With prefix, prompt for MODE buffers to kill."
 (defun nvp-buffer-toggle-diff ()
   "Diff buffer with its file."
   ())
+
+
+;;; Sudo
+
+(eval-when-compile
+ (defmacro nvp-sudo:wrap (func &optional filename)
+   "Wrap file finding FUNC to open FILENAME as root."
+   `(let ((remote-method (file-remote-p default-directory 'method))
+          (remote-host (file-remote-p default-directory 'host))
+          (remote-localname (file-remote-p default-directory 'localname)))
+      (,func (format "/%s:root:@%s:%s"
+                     (or remote-method "sudo")
+                     (or remote-host "localhost")
+                     (or remote-localname
+                         ,(or filename '(read-file-name "Find file (root): "))))))))
+
+(defun nvp-sudo-already-root-p ()
+  (let ((remote-method (file-remote-p default-directory 'method))
+        (remote-user (file-remote-p default-directory 'user)))
+    (and remote-method
+         (or (member remote-method '("sudo" "su" "ksu" "doas"))
+             (string= remote-user "root")))))
+
+;; https://github.com/bbatsov/crux/blob/master/crux.el
+;;;###autoload
+(defun nvp-sudo-edit (&optional arg)
+  "Edit current file as root.
+With prefix ARG, prompt for file to visit."
+  (interactive "P")
+  (if (or arg (not buffer-file-name))
+      (nvp-sudo:wrap find-file)
+    (if (nvp-sudo-already-root-p)
+        (message "Already editing file as root.")
+      (let ((place (point)))
+        (nvp-sudo:wrap find-alternate-file (buffer-file-name))
+        (goto-char place)))))
 
 ;; -------------------------------------------------------------------
 ;;; Encoding 

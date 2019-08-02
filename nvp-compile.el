@@ -11,8 +11,10 @@
 ;; More generalization is good
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
-(declare-function xterm-color-colorize-buffer "xterm-color")
+(eval-when-compile
+  (require 'nvp-macro))
+(require 'compile)
+(nvp-decl comint-after-pmark-p xterm-color-colorize-buffer)
 (autoload 'ansi-color-apply-on-region "ansi-color")
 
 ;; FIXME: Obsolete
@@ -142,6 +144,30 @@ ARGS are passed to `nvp-compile'."
 ;;;###autoload
 (defun nvp-compile-help ()
   (interactive))
+
+
+;; -------------------------------------------------------------------
+;;; Compilation
+
+;; move to next warning/error 
+(defun nvp-compilation-next (n)
+  "Move to next warning, error, or info message."
+  (interactive "p")
+  (let ((compilation-skip-threshold 0))
+    (compilation-next-error n)))
+
+(defun nvp-compilation-previous (n)
+  (interactive "p")
+  (nvp-compilation-next (- n)))
+
+;;; Compilation-shell-minor-mode
+
+(defun nvp-compilation-next-or-complete (n)
+  "Unless after comint prompt, move to Nth next error, otherwise complete."
+  (interactive "p")
+  (if (comint-after-pmark-p)
+      (completion-at-point)
+    (nvp-compilation-next n)))
 
 (provide 'nvp-compile)
 ;;; nvp-compile.el ends here

@@ -11,10 +11,9 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
-(nvp-auto "nvp-string" nvp-s-repeat nvp-s-center)
+(nvp-auto "nvp-util" nvp-s-repeat nvp-s-center)
 (nvp-decls)
 
 ;; -------------------------------------------------------------------

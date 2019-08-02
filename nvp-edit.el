@@ -37,7 +37,7 @@ Defaults to `defun' at point."
 ;;; Sort
 
 (eval-when-compile
-  (defmacro nvp-sort-with-defaults (start end &rest body)
+  (defmacro nvp-sort:defaults (start end &rest body)
     "Sort region between START and END by BODY, using defaults and indent \
 region afterward."
     (declare (indent defun) (debug (sexp sexp &rest form)))
@@ -54,7 +54,7 @@ region afterward."
   "Sort lines b/w START and END by first alphanumeric characters.
 With prefix sort in REVERSE."
   (interactive "r\nP")
-  (nvp-sort-with-defaults start end
+  (nvp-sort:defaults start end
     (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
 
 ;;;###autoload
@@ -87,7 +87,7 @@ then using `compare-buffer-substrings'."
 With prefix sort in REVERSE."
   (interactive (nvp-with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
-  (nvp-sort-with-defaults start end
+  (nvp-sort:defaults start end
     (sort-regexp-fields reverse (nvp-concat "\\(?:"
                                             "\\s\"\\S\"*\\s\"" ;quoted
                                             "\\|\\sw+\\|\\s_+" ;word/symbol
@@ -100,7 +100,7 @@ With prefix sort in REVERSE."
   "Sort alist by car of each element in list at point or b/w START and END."
   (interactive (nvp-with-region start end 'alist :pulse t :widen t
                  (list start end current-prefix-arg)))
-  (nvp-sort-with-defaults start end
+  (nvp-sort:defaults start end
     (sort-regexp-fields
      reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)"
      (if (looking-at-p "'") (+ 2 start) (1+ start)) ;skip over outer '('
@@ -110,14 +110,14 @@ With prefix sort in REVERSE."
 (defun nvp-sort-words (start end &optional reverse)
   (interactive (nvp-with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
-  (nvp-sort-with-defaults start end
+  (nvp-sort:defaults start end
     (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
 
 ;;;###autoload
 (defun nvp-sort-symbols (start end &optional reverse)
   (interactive (nvp-with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
-  (nvp-sort-with-defaults start end
+  (nvp-sort:defaults start end
     (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
 
 

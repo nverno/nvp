@@ -6,7 +6,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (defvar time-stamp-pattern))
-(nvp-autoload "nvp-read" nvp-read-obarray-regex nvp-read-elisp-function)
+(nvp-auto "nvp-read" 'nvp-read-obarray-regex 'nvp-read-elisp-function)
 
 ;;;###autoload
 (defun nvp-hook-update-timestamp ()

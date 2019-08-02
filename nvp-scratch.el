@@ -3,11 +3,10 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
-(autoload 'nvp-comment-string "nvp-comment")
+(nvp-decl nvp-comment-string)
 
 (defun nvp-scratch-switch-modes (mode)
   "Switch major modes in scratch buffer."

@@ -116,8 +116,15 @@ or expansion."
     (nvp-abbrev--insert-template table))
   (current-buffer))
 
-;; -------------------------------------------------------------------
-;;; Jumping to abbrev
+;;;###autoload
+(define-derived-mode abbrev-table-mode emacs-lisp-mode "Abbrev-Table"
+  "Simple abbrev table extension mode."
+  :abbrev-table nil
+  (setq-local imenu-generic-expression
+              '((nil "^(define-abbrev-table '\\([^ \n]+\\)" 1))))
+
+
+;;; Commands
 
 ;;;###autoload
 (defun nvp-abbrev-jump-to-file (arg)
@@ -165,16 +172,6 @@ When abbrev text is selected, searching is done first by length then lexically."
                      ;; refresh cached active abbrev tables
                      (setq nvp-abbrev-completion-need-refresh t)))
           (add-hook 'after-save-hook #'nvp-abbrev-save-hook t 'local))))))
-
-;; -------------------------------------------------------------------
-;;; Abbrev table mode
-
-;;;###autoload
-(define-derived-mode abbrev-table-mode emacs-lisp-mode "Abbrev-Table"
-  "Simple abbrev table extension mode."
-  :abbrev-table nil
-  (setq-local imenu-generic-expression
-              '((nil "^(define-abbrev-table '\\([^ \n]+\\)" 1))))
 
 ;; add unicode abbrevs to local table parents
 ;;;###autoload

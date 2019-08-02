@@ -12,7 +12,8 @@
 ;; - function to grab previous abbrev
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'nvp)
 (declare-function expand-abbrev-hook "expand")
 
@@ -46,7 +47,7 @@
 ;; allow abbrevs to expand inside parens
 ;;;###autoload
 (defun nvp-abbrev-expand-in-paren-hook ()
-  (nvp-with-letf #'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
+  (nvp-with-letf 'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
     (expand-abbrev-hook)))
 
 ;; -------------------------------------------------------------------

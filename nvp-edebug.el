@@ -7,6 +7,11 @@
 ;; it would be useful to highlight positions with overlays during debugging
 ;; see #<marker at 63523 in cc-engine.el.gz>
 
+;;; TODO:
+;; - new `read--expression' w/ completion-at-point for locals
+;; - `debugger-eval-expression'
+;; - `edebug-eval-expression'
+
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -52,7 +57,8 @@
 
 ;;; Debugger
 
-(defvar nvp-backtrace--multi nil)
+;; starts off as single-line
+(defvar-local nvp-backtrace--multi t)
 (defun nvp-backtrace-toggle-multi ()
   (interactive)
   (if (nvp-toggle-variable nvp-backtrace--multi)

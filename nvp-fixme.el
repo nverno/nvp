@@ -10,7 +10,7 @@
 
 (defconst nvp-fixme-keywords
   (eval-when-compile
-    (concat "\\<" (regexp-opt '("TODO" "FIXME" "HACK") 'paren) ":")))
+    (concat "\\<" (regexp-opt '("TODO" "FIXME" "HACK" "XXX") 'paren) ":")))
 
 (defconst nvp-fixme-font-lock-keywords
   `((,nvp-fixme-keywords 1 'font-lock-warning-face prepend)))

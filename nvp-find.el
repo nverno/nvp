@@ -49,7 +49,7 @@
 
 (eval-when-compile
   (defvar package-user-dir)
-  (defmacro nvp-rgrep-with-defaults (elisp &rest body)
+  (defmacro nvp-rgrep:with-defaults (elisp &rest body)
     "Defaults: symbol at point, file/buffer extension.
 (1) prefix: if ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
     for `default-directory'.
@@ -58,7 +58,12 @@
     (declare (indent defun) (debug defun))
     `(progn
        (require 'nvp-grep-config)
-       (let ((sym (nvp-tap 'tapi nil nil nil :hist 'nvp-search-history))
+       (let ((sym (let ((tap (nvp-tap 'tap)))
+                    (if (null tap)
+                        (read-from-minibuffer
+                         "Rgrep search: " nil nil nil 'nvp-search-history)
+                      (add-to-history 'nvp-search-history tap))
+                    tap))
              ,@(if elisp                                                     ; '(4)
                    '((grep-find-ignored-directories
                       (nvp-prefix 4 (cons (nvp-path 'ds package-user-dir)
@@ -77,17 +82,17 @@
 
 ;;;###autoload
 (defun nvp-rgrep-symbol-at-point (arg)
-  "Rgrep for symbol at point. See `nvp-rgrep-with-defaults'."
+  "Rgrep for symbol at point. See `nvp-rgrep:with-defaults'."
   (interactive "P")
   (setq current-prefix-arg arg)
-  (nvp-rgrep-with-defaults nil))
+  (nvp-rgrep:with-defaults nil))
 
 ;;;###autoload
 (defun nvp-rgrep-elisp-symbol-at-point (arg)
-  "Rgrep for elisp symbol at point. See `nvp-rgrep-with-defaults'."
+  "Rgrep for elisp symbol at point. See `nvp-rgrep:with-defaults'."
   (interactive "P")
   (setq current-prefix-arg arg)
-  (nvp-rgrep-with-defaults 'elisp))
+  (nvp-rgrep:with-defaults 'elisp))
 
 
 ;; -------------------------------------------------------------------
@@ -168,7 +173,7 @@
 
 
 (eval-when-compile
-  (defmacro nvp-ag-with-defaults (elisp &rest body)
+  (defmacro nvp-ag:with-defaults (elisp &rest body)
     "Search for STR from root DIR using ag.
 Defaults to symbol at point and nvp/emacs if ELISP is non-nil, HOME otherwise.
 If BODY is non-nil, it is executed in place of the default search.
@@ -222,17 +227,17 @@ If BODY is non-nil, it is executed in place of the default search.
 
 ;;;###autoload
 (defun nvp-ag-elisp-symbol-at-point (&optional arg)
-  "Search for elisp symbol at point with ag. See `nvp-ag-with-defaults'."
+  "Search for elisp symbol at point with ag. See `nvp-ag:with-defaults'."
   (interactive "P")
   (and arg (setq current-prefix-arg arg))
-  (nvp-ag-with-defaults 'elisp))
+  (nvp-ag:with-defaults 'elisp))
 
 ;;;###autoload
 (defun nvp-ag-symbol-at-point (&optional arg)
-  "Search for symbol at point with ag. See `nvp-ag-with-defaults'."
+  "Search for symbol at point with ag. See `nvp-ag:with-defaults'."
   (interactive "P")
   (and arg (setq current-prefix-arg arg))
-  (nvp-ag-with-defaults nil))
+  (nvp-ag:with-defaults nil))
 
 ;;;###autoload
 (defun nvp-ag-dired (arg)

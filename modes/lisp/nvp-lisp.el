@@ -81,13 +81,13 @@ currently under the curser."
   (defvar hippie-expand-only-buffers))
 (declare-function slime-fuzzy-completions "slime-fuzzy")
 (nvp-declare "" nvp-he-history-setup nvp-he-try-expand-local-abbrevs
-  nvp-he-try-expand-flex-lisp nvp-he-history-remove-trailing-paren)
+  nvp-he-try-expand-flex nvp-he-history-remove-trailing-paren)
 (autoload 'yas-hippie-try-expand "yasnippet")
 
 (defvar nvp-lisp-he-expand-functions
   '(nvp-he-try-expand-dabbrev-closest-first
     nvp-he-try-expand-local-abbrevs
-    nvp-he-try-expand-flex-lisp
+    nvp-he-try-expand-flex
     yas-hippie-try-expand
     try-expand-dabbrev-all-buffers
     try-expand-dabbrev-from-kill

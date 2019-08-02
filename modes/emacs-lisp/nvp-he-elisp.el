@@ -9,7 +9,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
 (autoload 'string-prefix-p "subr-x")
-(declare-function nvp-he-try-expand-flex-lisp "nvp-he-lisp")
+(declare-function nvp-he-try-expand-flex "nvp-hippie")
 
 ;;; Variables
 (defvar-local nvp-he-elisp--prefixes nil)
@@ -121,7 +121,7 @@ onto the next one."
   (setq hippie-expand-try-functions-list
         (cons 'nvp-he-try-elisp-with-local-namespace    ;try '-' prefixed first
               hippie-expand-try-functions-list)) ;defaults setup in init
-  (add-to-list 'hippie-expand-try-functions-list #'nvp-he-try-expand-flex-lisp t)
+  (add-to-list 'hippie-expand-try-functions-list #'nvp-he-try-expand-flex t)
   (add-to-list 'hippie-expand-try-functions-list ;using add-to-list since
                #'try-complete-lisp-symbol t)     ;some may already be in there
   (add-to-list 'hippie-expand-try-functions-list

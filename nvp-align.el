@@ -75,13 +75,19 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; -------------------------------------------------------------------
 ;;; Alignment rules
 
-;; (defun nvp-align-mode-rules (&optional mode)
-;;   "Display alignment rules applicable to MODE (default `major-mode').
-;; With prefix, prompt for mode."
-;;   (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
-;;   (nvp-with-results-buffer (help-buffer)
-;;     ))
+;; `align-exclude-rules-list'
+;; `align-rules-list'
 
+(defun nvp-align-mode-rules (&optional mode)
+  "Display alignment rules applicable to MODE (default `major-mode').
+With prefix, prompt for mode."
+  (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
+  (--filter
+   (-some->> (cdr (assoc 'modes (cddr it)))
+             (if () (memq mode)))
+   align-rules-list))
+
+(memq 'emacs-lisp-mode (symbol-value (cdr (assoc 'modes (cdr (cdr (car align-rules-list)))))))
 (provide 'nvp-align)
 ;; Local Variables:
 ;; coding: utf-8

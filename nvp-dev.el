@@ -18,7 +18,6 @@
 (nvp-auto "nvp-util" nvp-s-wrap)
 (autoload 's-split-words "s")
 (nvp-decls)
-(defvar nvp-dev-keymap)
 
 (define-button-type 'help-marker
   :supertype 'help-xref
@@ -43,6 +42,7 @@
 
 ;; HACK: undefine `nvp-dev-load' from keymap when file is loaded
 ;; should replace this with a better system
+(defvar nvp-dev-keymap)
 (define-key nvp-dev-keymap "l" nil)
 (nvp-bind-keys nvp-dev-keymap
   ("a"  . nvp-dev-advice-remove-all)
@@ -130,12 +130,7 @@
                  (list (if (equal val "") v (intern val)))))
   (nvp-with-results-buffer (help-buffer)
     (nvp-results--princ-title (format "Hash: %S" variable))
-    (maphash (lambda (key value)
-               (pp key)
-               (princ " => ")
-               (pp value)
-               (terpri))
-             (symbol-value variable))))
+    (nvp-pp-hash variable)))
 
 ;; TODO: pretty printing `cl-defstruct'
 ;; cl-prettyprint: #<marker at 22951 in cl-extra.el.gz>
@@ -143,10 +138,23 @@
 (defun nvp-dev-describe-variable (variable)
   "Try to pretty print VARIABLE in temp buffer."
   (interactive (list (nvp-tap 'evari)))
-  (pcase variable
-    ((pred hash-table-p)
-     (nvp-dev-describe-hash variable))
-    (_ (user-error "TOTO"))))
+  (let ((val (symbol-value variable))
+        (print-escape-newlines t)
+        (print-circle t))
+    (nvp-with-results-buffer (help-buffer)
+      (nvp-results--princ-title
+       (format "Variable(%s): %S" (type-of val) variable))
+      (pcase val
+        ((pred hash-table-p)
+         (nvp-pp-hash variable))
+        (_
+         (insert
+          (with-temp-buffer
+            (set-syntax-table emacs-lisp-mode-syntax-table)
+            (cl-prettyprint val)
+            (pp-buffer)
+            (buffer-string)))))
+      (emacs-lisp-mode))))
 
 
 ;; -------------------------------------------------------------------

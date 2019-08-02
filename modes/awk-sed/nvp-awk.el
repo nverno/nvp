@@ -71,18 +71,39 @@
 
 (defvar nvp-awk-eldoc-cache (make-hash-table :test 'equal))
 
+(defun nvp-awk-current-command ()
+  (save-excursion
+    (let ((lbp (line-beginning-position))
+          open)
+      (while (or (and (setq open (nth 8 (syntax-ppss)))
+                      (goto-char open))
+                 (condition-case nil
+                     (and (eq (char-before) ?\))
+                          (forward-sexp -2)
+                          t)
+                   (scan-error nil))
+                 (/= 0 (skip-chars-backward "^({;=" lbp))))
+      (when (eq (char-before) ?\()
+        (forward-char -1)
+        (skip-syntax-backward " " lbp)
+        (skip-chars-backward "[A-Za-z0-9_]" lbp))
+      (and (looking-at "\\s-*\\([A-Za-z][A-Za-z0-9_]*\\)")
+           (match-string-no-properties 1)))))
+
 (defun nvp-awk-eldoc--string (cmd)
   (or (gethash cmd nvp-awk-eldoc-cache)
-      (-when-let (plist (cdr (assoc-string cmd nvp-awk-builtins)))
-        (let ((pars (plist-get plist :param)))
+      (-let (((&plist :param pars :desc desc)
+              (cdr (assoc-string cmd nvp-awk-builtins))))
+        (when (or pars desc)
           (setf (gethash cmd nvp-awk-eldoc-cache)
-                (format "%s: %s" (propertize cmd 'face 'font-lock-function-name-face)
+                (format "%s: %s"
+                        (propertize cmd 'face 'font-lock-function-name-face)
                         (if pars (concat "(" (mapconcat 'identity pars ", ") ")")
-                          (plist-get plist :desc))))))))
+                          desc)))))))
 
 (defun nvp-awk-eldoc-function ()
-  (-when-let (sym (thing-at-point 'symbol))
-    (nvp-awk-eldoc--string sym)))
+  (--when-let (nvp-awk-current-command)
+    (nvp-awk-eldoc--string it)))
 
 (provide 'nvp-awk)
 ;; Local Variables:

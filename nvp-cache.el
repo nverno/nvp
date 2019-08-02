@@ -10,9 +10,23 @@
 ;; https://github.com/skeeto/skewer-mode/blob/master/cache-table.el
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (nvp-decls)
 
+;;; Hash tests
+
+(defsubst case-fold-string= (a b)
+  (eq t (compare-strings a nil nil b nil nil t)))
+
+(defsubst case-fold-string-hash (a)
+  (sxhash (upcase a)))
+
+;; case-insensitive hash-table
+(define-hash-table-test 'case-fold #'case-fold-string= #'case-fold-string-hash)
+
+
+;;; Cache
 (cl-defstruct (nvp-cache (:constructor nvp-cache-make)
                          (:copier nil))
   data                                ;data structure storing cache

@@ -11,13 +11,45 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
 (require 'info)
 (require 'filenotify)
 (nvp-decls)
 (nvp-auto "nvp-read" 'nvp-read--info-files)
+
+;;;###autoload
+(defun nvp-info-lookup-node ()
+  "Lookup node in info associated with current mode."
+  (interactive)
+  (-some-->
+   (info-lookup-select-mode)
+   (info-lookup->doc-spec 'symbol it)
+   (car (nth 0 it))
+   (with-current-buffer (generate-new-buffer "*info*")
+     (Info-mode)
+     (Info-goto-node it)
+     (call-interactively #'Info-goto-node)
+     (pop-to-buffer (current-buffer)))))
+
+;;; Imenu support
+
+(defun nvp-info-imenu-create-index-function ()
+  (goto-char (point-min))
+  (search-forward "* Menu:")
+  (let ((pat "\\*note[ \n\t]+\\([^:]+\\):\\|^\\* .*:\\|[hf]t?tps?://")
+        (case-fold-search t)
+        node index-alist)
+    (or (eobp) (forward-char 1))
+    (while (and (not (eobp)) (Info-next-reference-or-link pat 'link))
+      (and (setq node (Info-extract-menu-node-name))
+           (push (cons node (copy-marker (point)))
+                 index-alist))
+      (forward-line 1))
+    index-alist))
+
+
+;;; Mine
 
 (defvar nvp-info-nodes-need-refresh () "Update list when 'dir' changes.")
 (cl-eval-when (load compile eval)
@@ -36,11 +68,12 @@
         nodes))))
 
 (cl-eval-when (load)
-  (file-notify-add-watch (expand-file-name "dir" nvp/info) (list 'change)
-                         #'(lambda (&rest _args) (setq nvp-info-nodes-need-refresh t))))
+  (file-notify-add-watch
+   (expand-file-name "dir" nvp/info) (list 'change)
+   #'(lambda (&rest _args) (setq nvp-info-nodes-need-refresh t))))
 
 ;;;###autoload
-(defun nvp-info-open (topic &optional bname)
+(defun nvp-info-open-mine (topic &optional bname)
   "Open info on TOPIC in BNAME."
   (interactive (list (nvp-completing-read "Topic: " (nvp-info-nodes))))
   (let ((buff (or bname (concat "*" topic " info*"))))
@@ -52,7 +85,7 @@
       (info topic buff))))
 
 ;;;###autoload
-(defun nvp-info-install (file)
+(defun nvp-info-install-mine (file)
   "Install org texinfo FILE into info directory."
   (interactive (list (nvp-read--info-files)))
   (let ((default-directory (expand-file-name "org" nvp/info))
@@ -67,23 +100,6 @@
    (let ((fname (concat "org/" (file-name-nondirectory Info-current-file) ".org")))
      (list (expand-file-name fname nvp/info) current-prefix-arg)))
   (nvp-display-location file :file action))
-
-;; -------------------------------------------------------------------
-;;; Imenu support
-
-(defun nvp-info-imenu-create-index-function ()
-  (goto-char (point-min))
-  (search-forward "* Menu:")
-  (let ((pat "\\*note[ \n\t]+\\([^:]+\\):\\|^\\* .*:\\|[hf]t?tps?://")
-        (case-fold-search t)
-        node index-alist)
-    (or (eobp) (forward-char 1))
-    (while (and (not (eobp)) (Info-next-reference-or-link pat 'link))
-      (and (setq node (Info-extract-menu-node-name))
-           (push (cons node (copy-marker (point)))
-                 index-alist))
-      (forward-line 1))
-    index-alist))
 
 (provide 'nvp-info)
 ;;; nvp-info.el ends here

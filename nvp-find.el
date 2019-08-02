@@ -58,7 +58,7 @@
     (declare (indent defun) (debug defun))
     `(progn
        (require 'nvp-grep-config)
-       (let ((sym (let ((tap (nvp-tap 'tap)))
+       (let ((sym (let ((tap (nvp-tap 'dwim)))
                     (if (null tap)
                         (read-from-minibuffer
                          "Rgrep search: " nil nil nil 'nvp-search-history)

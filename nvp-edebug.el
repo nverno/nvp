@@ -8,9 +8,7 @@
 ;; see #<marker at 63523 in cc-engine.el.gz>
 
 ;;; TODO:
-;; - new `read--expression' w/ completion-at-point for locals
-;; - `debugger-eval-expression'
-;; - `edebug-eval-expression'
+;; - add frame-local completion for `edebug-eval-expression'
 
 ;;; Code:
 (eval-when-compile
@@ -18,44 +16,39 @@
   (require 'hydra)
   (defvar tramp-debug-on-error)
   (defvar tramp-verbose))
+(require 'elisp-mode)
+(require 'backtrace)
 (require 'edebug)
 (nvp-decls)
-(nvp-declare nvp-help-describe-keymap)
+(nvp-decl nvp-help-describe-keymap)
 
-;;; Completion
+
+;;; Completion from backtrace
 
 ;; gather locals relevant to frame at point:
-;; this is locals in the frames at higher indices
-;;; FIXME: can't access *Backtrace* from `debugger-eval-expression'
+;; this is locals in the frames at higher indices (not including index at point)
+(defun nvp-backtrace--local-variables (_string)
+  (when backtrace-frames
+    (--mapcat
+     (-some->> (backtrace-frame-locals it) (--map (car it)))
+     (nthcdr (1+ (backtrace-get-index)) backtrace-frames))))
+
 (defvar nvp-backtrace-locals-completion-table
-  (completion-table-dynamic
-   (lambda (_string)
-     (when backtrace-frames
-       (--mapcat
-        (-some->> (backtrace-frame-locals it) (--map (car it)))
-        (nthcdr (1+ (backtrace-get-index)) backtrace-frames))))))
+  (completion-table-dynamic #'nvp-backtrace--local-variables 'do-switch-buffer))
 
-(defun nvp-backtrace-capf ()
-  (-when-let ((beg . end) (bounds-of-thing-at-point 'symbol))
-    (and backtrace-frames
-         (list beg end
-               nvp-backtrace-locals-completion-table
-               :exclusive 'no))))
-
-;; (define-advice debugger-eval-expression
-;;     (:around (orig-fn &rest args) "local-completion")
-;; (let ((_capf completion-at-point-functions)
-;;       (completion-at-point-functions '(nvp-backtrace-capf t))))
-;; (cl-letf (((symbol-value 'elisp--local-variables-completion-table)
-;;            (symbol-value 'nvp-backtrace-locals-completion-table)))
-;;   (funcall-interactively orig-fn args)))
-
-;; setup eval with elisp minibuffer eval hooks
-(defun nvp-edebug-eval-expression (expr)
-  (interactive (list (read--expression "Eval: ")))
-  (edebug-eval-expression expr))
-
+
 ;;; Debugger
+
+;; override interactive spec of `debugger-eval-expression' to use
+;; `nvp-backtrace-eval' instead
+(defun nvp-backtrace-eval (orig-fn exp &optional nframes)
+  (interactive
+   (let ((elisp--local-variables-completion-table
+          nvp-backtrace-locals-completion-table))
+     (list (read--expression "[nvp] Eval in stack frame: "))))
+  (apply orig-fn (list exp nframes)))
+
+(advice-add 'debugger-eval-expression :around #'nvp-backtrace-eval)
 
 ;; starts off as single-line
 (defvar-local nvp-backtrace--multi t)
@@ -65,18 +58,13 @@
       (backtrace-single-line)
     (backtrace-multi-line)))
 
-(defun nvp-edebug-tramp-toggle-debug ()
-  "Toggle `tramp-debug-on-error' on/off."
-  (interactive)
-  (ignore-errors
-    (when (and (file-remote-p (buffer-file-name)))
-      (let ((action (and (not (null tramp-debug-on-error))
-                         tramp-debug-on-error)))
-        (setq tramp-debug-on-error (not action))
-        (setq tramp-verbose (if action 0 10))
-        (message "Tramp debug on error %s" (if action "disabled" "enabled"))))))
-
+
 ;;; Edebug
+
+;; setup eval with elisp minibuffer eval hooks
+(defun nvp-edebug-eval-expression (expr)
+  (interactive (list (read--expression "Eval: ")))
+  (edebug-eval-expression expr))
 
 (defun nvp-edebug-help ()
   (interactive)
@@ -95,7 +83,18 @@
            (if nvp-edebug--all-defs "enabled" "disabled")))
 
 
-;;; Launching new emacs instances
+;;; Emacs / Tramp
+
+(defun nvp-edebug-tramp-toggle-debug ()
+  "Toggle `tramp-debug-on-error' on/off."
+  (interactive)
+  (ignore-errors
+    (when (and (file-remote-p (buffer-file-name)))
+      (let ((action (and (not (null tramp-debug-on-error))
+                         tramp-debug-on-error)))
+        (setq tramp-debug-on-error (not action))
+        (setq tramp-verbose (if action 0 10))
+        (message "Tramp debug on error %s" (if action "disabled" "enabled"))))))
 
 (eval-when-compile
   (defmacro nvp-debug:launch-emacs (&rest args)

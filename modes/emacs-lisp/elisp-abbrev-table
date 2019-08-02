@@ -192,6 +192,7 @@
     ("bul" "backward-up-list" nil :system t)
     ("cip" "called-interactively-p" nil :system t)
     ("cpr" "call-process-region" nil :system t)
+    ("ctd" "completion-table-dynamic" nil :system t)
     ("cwc" "current-window-configuration" nil :system t)
     ("dat" "define-abbrev-table" nil :system t)
     ("ddm" "define-derived-mode" nil :system t)

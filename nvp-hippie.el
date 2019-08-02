@@ -1,11 +1,15 @@
-;;; nvp-hippie.el --- general hippie expanders -*- lexical-binding: t; -*-
+;;; nvp-hippie.el --- hippie expansions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; Base hippie expansion functions
+;; - cached completion tables
+;; - sort candidates by weighting function
+;; Expanders:
+;; - fuzzy matching
+;; - dabbrevs, closest first
+
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'nvp-macro))
 (require 'company)
 (require 'hippie-exp)
 
@@ -38,7 +42,7 @@
         ,var)
       ,test)))
 
-(defun nvp-he-completion-table (fun &optional test no-switch)
+(defun nvp-he-completion-table (fun &optional test)
   "Like `completion-table-with-cache' for hippie expansions.
 Wrap FUN to only recompute the candidates when arg not equal to last prefix.
 TEST is applied to last candidate and current to determine equality.
@@ -50,12 +54,8 @@ See `completion-table-dynamic' for NO-SWITCH."
           (lambda (arg)
             (if (and last-arg (funcall test last-arg arg))
                 last-result
-              (with-current-buffer (if no-switch (current-buffer)
-                                     (let ((win (minibuffer-selected-window)))
-                                       (if (window-live-p win) (window-buffer win)
-                                         (current-buffer))))
-                (prog1 (setq last-result (funcall fun arg))
-                  (setq last-arg arg)))))))
+              (prog1 (setq last-result (funcall fun arg))
+                (setq last-arg arg))))))
     new-fun))
 
 
@@ -129,17 +129,20 @@ doesn't exceed LIMIT."
 ;; - elisp: he-lisp-symbol-beg
 (defvar nvp-he-flex-symbol-beg #'he-lisp-symbol-beg)
 
+;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
+;; only recompute `nvp-he-buffer-matches' when prefix has changed
+(defvar nvp-he-flex-completion-table
+  (nvp-he-completion-table
+   (lambda (arg)
+     (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
+
 ;; create regexp from STR matching expansions around hypens, eg
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
 ;; so it matches replace-regexp-in-string, for example
 (defun nvp-he-flex-lisp (str)
   (concat
-   "\\b" (replace-regexp-in-string "[-:]" "\\\\w*-" str) "[:A-Za-z0-9-]*\\b"))
-
-;; only recompute `nvp-he-buffer-matches' when prefix has changed
-(defvar nvp-he-flex-completion-table
-  (nvp-he-completion-table
-   (lambda (arg) (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
+   "\\b" (replace-regexp-in-string "[-:]" "\\\\w*-" str)
+   "[:A-Za-z0-9-]*\\b"))
 
 ;;;###autoload
 (defun nvp-he-try-expand-flex (old)
@@ -161,7 +164,7 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
 
 
 ;;; Dabbrevs
-;; FIXME: refactor this
+;; TODO: refactor this
 
 ;; https://github.com/magnars/.emacs.d/blob/master/settings/setup-hippie.el
 (defvar nvp-he-search-loc-forward (make-marker))
@@ -301,6 +304,10 @@ string).  It returns t if a new completion is found, nil otherwise."
       (progn
         (he-substitute-string expansion t)
         t))))
+
+
+;; -------------------------------------------------------------------
+;;; Commands
 
 ;;;###autoload
 (defun nvp-hippie-expand-lines ()

@@ -152,29 +152,41 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; -------------------------------------------------------------------
 ;;; Building functions
 
-(defmacro nvp-ilam (match-form &rest body)
+(defmacro nvp-lam (match-form &rest body)
   "Return interactive lambda, destructuring with `-lambda'."
   (declare (indent defun) (debug t))
-  (let ((doc (if (stringp (car body)) (list (pop body)))))
-    (cond
-     ((null match-form)
-      `(lambda nil ,@doc (interactive) ,@body))
-     ((-all? 'symbolp match-form)
-      `(lambda ,match-form (interactive) ,@doc ,@body))
-     (t
-      (let* ((inputs
-              (--map-indexed
-               (list it (make-symbol (format "input%d" it-index))) match-form)))
-        `(lambda ,(--map (cadr it) inputs)
-           ,@doc
-           (interactive)
-           (-let* ,inputs ,@body)))))))
+  (let (ispec doc)
+    (when (and (> (length body) 1)
+               (stringp (car-safe body)))
+      (setq doc (pop body)))
+    (when (eq (car-safe (car-safe body)) 'interactive)
+      (setq ispec (pop body)))
+    (delq
+     nil
+     (cond
+      ((null match-form)
+       `(lambda nil ,doc ,ispec ,@body))
+      ((-all? 'symbolp match-form)
+       `(lambda ,match-form ,doc ,ispec ,@body))
+      (t
+       (let* ((inputs
+               (--map-indexed
+                (list it (make-symbol (format "input%d" it-index))) match-form)))
+         `(lambda ,(--map (cadr it) inputs)
+            ,doc
+            ,ispec
+            (-let* ,inputs ,@body))))))))
 
 (defmacro nvp-def (func match-form &rest body)
-  "Define interactive function."
-  (declare (indent defun) (debug t))
+  "Define function and return it."
+  (declare (indent defun)
+           (debug (&define name lambda-list
+                           [&optional stringp]
+                           [&rest sexp]
+                           def-body)))
   `(progn
-     (defalias ',func (nvp-ilam ,match-form ,@body))))
+     (defalias ',func (nvp-lam ,match-form ,@body))
+     #',func))
 
 (defmacro nvp-! (fun)
   "Return function negating result of FUN."

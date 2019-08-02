@@ -3,8 +3,6 @@
 ;;; Commentary:
 ;; Emacs/elisp debugging
 
-;;; TODO:
-;; - add frame-local completion for `edebug-eval-expression'
 ;;; Notes
 ;; - cc-engine: #<marker at 23505 in cc-engine.el.gz>
 ;; it would be useful to highlight positions with overlays during debugging
@@ -22,8 +20,9 @@
 (nvp-decl nvp-help-describe-keymap)
 
 
-;;; Completion from backtrace
+;;; Debugger
 
+;; Completion for frame locals in *Backtrace*
 ;; gather locals relevant to frame at point:
 ;; this is locals in the frames at higher indices (not including index at point)
 (defun nvp-backtrace--local-variables (_string)
@@ -35,18 +34,16 @@
 (defvar nvp-backtrace-locals-completion-table
   (completion-table-dynamic #'nvp-backtrace--local-variables 'do-switch-buffer))
 
-;;; Debugger
-
 ;; override interactive spec of `debugger-eval-expression' to use
-;; `nvp-backtrace-eval' instead
-(defun nvp-backtrace-eval (orig-fn exp &optional nframes)
+;; `nvp@backtrace-eval' instead
+(defun nvp@backtrace-eval (orig-fn exp &optional nframes)
   (interactive
    (let ((elisp--local-variables-completion-table
           nvp-backtrace-locals-completion-table))
      (list (read--expression "[nvp] Eval in stack frame: "))))
   (apply orig-fn (list exp nframes)))
 
-(advice-add 'debugger-eval-expression :around #'nvp-backtrace-eval)
+(advice-add 'debugger-eval-expression :around #'nvp@backtrace-eval)
 
 ;; starts off as single-line
 (defvar-local nvp-backtrace--multi t)
@@ -59,10 +56,19 @@
 
 ;;; Edebug
 
-;; setup eval with elisp minibuffer eval hooks
-(defun nvp-edebug-eval-expression (expr)
-  (interactive (list (read--expression "Eval: ")))
-  (edebug-eval-expression expr))
+;; Completion for frame-locals in edebug buffer
+;; needs to switch buffer before completing in minibuffer
+(advice-add 'edebug-eval-expression :around
+            (nvp-def nvp@edebug-locals (orig-fn expr)
+              (interactive
+               (let ((eval-expression-minibuffer-setup-hook
+                      (lambda ()
+                        (add-function
+                         :around
+                         (local 'elisp--local-variables-completion-table)
+                         #'nvp@do-switch-buffer))))
+                 (list (read--expression "[nvp] Eval in stack: "))))
+              (funcall orig-fn expr)))
 
 (defun nvp-edebug-help ()
   (interactive)

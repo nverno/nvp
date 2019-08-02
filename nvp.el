@@ -487,7 +487,7 @@ On error (read-only), quit without selecting."
 (nvp-advise-commands 'nvp@no-tabs :around '(comment-dwim align align-regexp))
 
 ;; apply function in calling buffer when currently in minibuffer
-(defun nvp@switch-buffer (old-fn &rest args)
+(defun nvp@do-switch-buffer (old-fn &rest args)
   (with-current-buffer (let ((win (minibuffer-selected-window)))
                          (if (window-live-p win) (window-buffer win)
                            (current-buffer)))

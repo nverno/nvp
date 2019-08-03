@@ -51,33 +51,38 @@
   (defvar package-user-dir)
   (defmacro nvp-rgrep:with-defaults (elisp &rest body)
     "Defaults: symbol at point, file/buffer extension.
-(1) prefix: if ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
-    for `default-directory'.
-(2) prefix calls `rgrep' on all files, ignoring current file/buffer extension.
-(3) prompts for confirmation, default search from `default-directory'."
+Prompt with any prefix.
+(4)  Prompt with defaults
+(16) If ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
+     for `default-directory'.
+(64) Ignoring current file/buffer extension."
     (declare (indent defun) (debug defun))
     `(progn
        (require 'nvp-grep-config)
-       (let ((sym (let ((tap (nvp-tap 'dwim)))
-                    (if (null tap)
+       (let ((sym (let ((tap (nvp-tap 'dwim))) 
+                    (if (or (null tap) (nvp-prefix 4))                       ; '(4)
                         (read-from-minibuffer
-                         "Rgrep search: " nil nil nil 'nvp-search-history)
-                      (add-to-history 'nvp-search-history tap))
-                    tap))
-             ,@(if elisp                                                     ; '(4)
+                         (format "Rgrep%s: "
+                                 (if tap (concat " ('" tap "')") ""))
+                         nil nil nil 'nvp-search-history)
+                      (prog1 tap (add-to-history 'nvp-search-history tap)))))
+             ,@(if elisp                                                     ; '(16)
                    '((grep-find-ignored-directories
-                      (nvp-prefix 4 (cons (nvp-path 'ds package-user-dir)
-                                          grep-find-ignored-directories)
-                        grep-find-ignored-directories)))
+                      (nvp-prefix 16 (cons (nvp-path 'ds package-user-dir)
+                                           grep-find-ignored-directories)
+                        grep-find-ignored-directories))
+                     (default-directory
+                       (nvp-prefix 4 default-directory :test '>= nvp/emacs)))
                  '((default-directory
-                     (nvp-prefix 4 (getenv "HOME") default-directory))))
-             (ext (nvp-prefix 16 (nvp-path 'ext nil :or-name t) :test '/=))  ; '(16)
-             (confirm (nvp-prefix 64)))                                      ; '(64)
+                     (nvp-prefix 16 (getenv "HOME") default-directory))))
+             (ext (nvp-prefix 64 (nvp-path 'ext nil :or-name t) :test '/=))  ; '(64)
+             (confirm (nvp-prefix 4 nil :test #'>=)))
          ,@(if body `,@body
              `((grep-compute-defaults)
                (rgrep (format "\\b%s\\b" sym)
                       (if ext (concat "*." ext "*") "*")
-                      ,(if elisp nvp/emacs 'default-directory)
+                      default-directory
+                      ;; ,(if elisp nvp/emacs 'default-directory)
                       confirm)))))))
 
 ;;;###autoload

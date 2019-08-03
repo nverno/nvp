@@ -3,8 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'time-stamp))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'files-x)
 (declare-function time-stamp "time-stamp")
@@ -15,6 +14,7 @@
 (defun nvp-toggle-timestamp (arg)
   "Insert/update timestamp for current buffer."
   (interactive "P")
+  (require 'time-stamp)
   (let ((time-stamp-active t)
         (time-stamp-count (if arg (read-number "Max time stamps: ") 1))
         (time-stamp-pattern (or time-stamp-pattern

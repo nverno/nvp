@@ -111,6 +111,13 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 ;; -------------------------------------------------------------------
 ;;; Commands
 
+;; ;;;###autoload
+;; (defun nvp-imenu-flat ()
+;;   (interactive)
+;;   (-when-let (lst (or imenu--index-alist (imenu--make-index-alist)))
+;;     (imenu (imenu-choose-buffer-index
+;;             "Imenu flat:" (--map (nvp-flatten-to-alist it) lst)))))
+
 ;;;###autoload
 (defun nvp-imenu-idomenu (arg)
   (interactive "P")

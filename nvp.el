@@ -481,13 +481,13 @@ On error (read-only), quit without selecting."
     (apply orig-fn args)))
 
 ;; ensure spaces when aligning / commenting
-(defun nvp@no-tabs (old-fn &rest args)
+(defun nvp/no-tabs (old-fn &rest args)
   (let (indent-tabs-mode)
     (apply old-fn args)))
-(nvp-advise-commands 'nvp@no-tabs :around '(comment-dwim align align-regexp))
+(nvp-advise-commands 'nvp/no-tabs :around '(comment-dwim align align-regexp))
 
 ;; apply function in calling buffer when currently in minibuffer
-(defun nvp@do-switch-buffer (old-fn &rest args)
+(defun nvp/do-switch-buffer (old-fn &rest args)
   (with-current-buffer (let ((win (minibuffer-selected-window)))
                          (if (window-live-p win) (window-buffer win)
                            (current-buffer)))

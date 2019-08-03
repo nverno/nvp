@@ -6,7 +6,7 @@
   (require 'nvp-macro)
   (defvar tiny-beg))
 (declare-function tiny-expand "tiny")
-(autoload 'nvp-list-wrap-quotes "nvp-edit")
+(autoload 'nvp-list-wrap-quotes "nvp-edit-aux")
 
 ;;;###autoload
 (defun nvp-expand-range (&optional sep)

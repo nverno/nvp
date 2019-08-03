@@ -7,7 +7,12 @@
 (require 'macroexp)
 (require 'dash)
 
-(defvar nvp-macs-verbose nil)
+(defvar nvp-debug-level nil)
+
+;; (defun nvp-debug (&rest args)
+;;   (and nvp-debug-level (apply #'message args)))
+
+(defmacro nvp-debug (&rest _args))
 
 ;; -------------------------------------------------------------------
 ;;; OS 

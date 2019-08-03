@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: car
+# key: .
+# --
+(car $0)

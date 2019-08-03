@@ -49,10 +49,11 @@
 interactively."
   (interactive
    (let* ((func (if current-prefix-arg 'remove-hook 'add-hook))
-          (hook (intern (nvp-read-obarray-regex
-                         (format "Hook variable to %s (before-save-hook): "
-                                 (if (eq func 'remove-hook) "remove from" "add to"))
-                         "-hook$" "before-save-hook"))))
+          (hook (nvp-read-elisp-symbol
+                 (format "Hook variable to %s hook: "
+                         (if (eq func 'remove-hook)
+                             "remove from" "add to"))
+                 nil "before-save-hook")))
      (list func hook
            (if (eq func 'remove-hook)
                (intern (completing-read
@@ -62,7 +63,7 @@ interactively."
            nil t)))
   (if (eq func 'remove-hook)
       (remove-hook hook-var hook-fn local)
-   (funcall func hook-var hook-fn append local)))
+    (funcall func hook-var hook-fn append local)))
 
 (provide 'nvp-hook)
 ;;; nvp-hook.el ends here

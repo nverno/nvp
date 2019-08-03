@@ -12,7 +12,6 @@
   (require 'nvp-macro)
   (require 'nvp-results))
 (require 'nvp)
-(require 'nvp-results)
 (require 'nvp-read)
 (require 'align)
 (nvp-decls)
@@ -79,26 +78,79 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; `align-exclude-rules-list'
 ;; `align-rules-list'
 
-;; Collect align rules from VAR for MODE
-(defun nvp-align--mode-rules (var &optional mode)
+(defvar nvp-align--groups
+  '(;; All predefined mode groupings
+    align-dq-string-modes align-sq-string-modes align-open-comment-modes
+    align-c++-modes align-perl-modes align-lisp-modes align-tex-modes))
+
+;; Collect align/exclude rules for MODE
+(defun nvp-align--mode-rules (&optional mode)
   (or mode (setq mode major-mode))
-  (--filter
-   (--> (cdr (assoc 'modes (cddr it)))
-        (memq mode (if (symbolp it) (symbol-value it) it)))
-   var))
+  (--map
+   (--filter
+    (--> (eval (cdr (assoc 'modes (cddr it))))
+         (or (memq mode it) (apply #'provided-mode-derived-p mode it)))
+    it)
+   `(,align-rules-list ,align-exclude-rules-list)))
 
 ;;;###autoload
 (defun nvp-align-show-rules (&optional mode)
   "Show align/exclude rules applicable to `major-mode' or MODE."
-  (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
-  (let ((rules (nvp-align--mode-rules align-rules-list mode))
-        (excludes (nvp-align--mode-rules align-exclude-rules-list mode)))
+  (interactive (list (nvp-prefix 4 (intern (nvp-read-mode)) major-mode)))
+  (or mode (setq mode major-mode))
+  (-let (((rules excludes) (nvp-align--mode-rules mode))
+         (groups (--filter (apply #'provided-mode-derived-p mode (eval it))
+                           nvp-align--groups)))
     (nvp-with-results-buffer nil
       (nvp-results-title (format "Align rules for %s" mode))
-      (insert (pp-to-string rules))
-      (terpri)
-      (insert (pp-to-string excludes))
+      (princ ";;; Member groups\n")
+      (pp groups)
+      (princ "\n;;; Align Rules\n")
+      (princ ";; ") (pp (--map (car it) rules))
+      (pp rules)
+      (princ "\n;;; Exclude Rules\n")
+      (princ ";; ") (pp (--map (car it) excludes))
+      (pp excludes)
+      (princ "\n;;; All Groups")
+      (dolist (group nvp-align--groups)
+        (princ "\n;; ")
+        (princ group)
+        (cl-prettyprint (symbol-value group)))
       (emacs-lisp-mode))))
+
+
+;;; Mode rules
+;; #<marker at 13440 in align.el>
+
+;; sh
+
+;; makefile => align-open-comment-modes
+;; rules: open-comment, make-assignment, basic-line-continuation
+;; exclude: exc-open-comment
+;; setf (assoc 'make-assignment align-rules-list)
+;; (defun nvp-align-mode (mode)
+;;   (interactive (list (nvp-prefix 4 (intern (nvp-read-mode)) major-mode)))
+;;   ())
+
+;; FIXME: these rules can be useful for other modes: makefile, automake, etc.
+;; alignment rules to align '\' not in strings/comments and
+;; align end-of-line comments
+(defvar nvp-sh-align-rules-list
+  `((sh-line-continuation
+     (regexp . "\\(\\s-*\\)\\\\\\s-*$")
+     (modes  . '(sh-mode))
+     (valid  . ,(function
+                 (lambda () (save-excursion
+                         (not (sh-in-comment-or-string (point))))))))
+    (sh-eol-comments
+     (regexp . "[^ #\t\n\\\\]\\(\\s-+\\)#+.*$")
+     (group  . 1)
+     (modes  . '(sh-mode))
+     (valid  . ,(function
+                 (lambda () (save-excursion
+                         (goto-char (match-beginning 1))
+                         (and (not (bolp))
+                              (not (nth 3 (syntax-ppss)))))))))))
 
 (provide 'nvp-align)
 ;; Local Variables:

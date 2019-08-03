@@ -2,9 +2,19 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (autoload 'lm-header "lisp-mnt")
-(nvp-autoload "find-func" 'find-function-library 'find-library-name)
+(nvp-auto "find-func" 'find-function-library 'find-library-name)
+
+;; ;;;###autoload
+;; (defun nvp-elisp-jump-to-library-source (library)
+;;   "Jump to git source for builtin library."
+;;   (interactive (list (call-interactively #'locate-library)))
+;;   (when package
+;;     (if (not (package-built-in-p package))
+;;         (message "%s isn't builtin" package)
+;;       ())))
 
 ;;;###autoload
 (defun nvp-elisp-jump-to-library (library &optional arg)

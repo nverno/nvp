@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: car-nth
+# key: .n
+# --
+(car (nthcdr $0))

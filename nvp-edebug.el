@@ -35,15 +35,15 @@
   (completion-table-dynamic #'nvp-backtrace--local-variables 'do-switch-buffer))
 
 ;; override interactive spec of `debugger-eval-expression' to use
-;; `nvp@backtrace-eval' instead
-(defun nvp@backtrace-eval (orig-fn exp &optional nframes)
+;; `nvp/backtrace-eval' instead
+(defun nvp/backtrace-eval (orig-fn exp &optional nframes)
   (interactive
    (let ((elisp--local-variables-completion-table
           nvp-backtrace-locals-completion-table))
      (list (read--expression "[nvp] Eval in stack frame: "))))
   (apply orig-fn (list exp nframes)))
 
-(advice-add 'debugger-eval-expression :around #'nvp@backtrace-eval)
+(advice-add 'debugger-eval-expression :around #'nvp/backtrace-eval)
 
 ;; starts off as single-line
 (defvar-local nvp-backtrace--multi t)
@@ -59,15 +59,19 @@
 ;; Completion for frame-locals in edebug buffer
 ;; needs to switch buffer before completing in minibuffer
 (advice-add 'edebug-eval-expression :around
-            (nvp-def nvp@edebug-locals (orig-fn expr)
+            (nvp-def nvp/edebug-locals (orig-fn expr)
               (interactive
-               (let ((eval-expression-minibuffer-setup-hook
+               (let ((hookfun
                       (lambda ()
                         (add-function
                          :around
                          (local 'elisp--local-variables-completion-table)
-                         #'nvp@do-switch-buffer))))
-                 (list (read--expression "[nvp] Eval in stack: "))))
+                         #'nvp/do-switch-buffer))))
+                 (unwind-protect
+                     (progn
+                       (add-hook 'eval-expression-minibuffer-setup-hook hookfun)
+                       (list (read--expression "[nvp] Eval in stack: ")))
+                   (remove-hook 'eval-expression-minibuffer-setup-hook hookfun))))
               (funcall orig-fn expr)))
 
 (defun nvp-edebug-help ()

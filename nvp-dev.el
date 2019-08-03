@@ -136,13 +136,15 @@
 (defun nvp-dev-describe-variable (variable)
   "Try to pretty print VARIABLE in temp buffer."
   (interactive (list (nvp-tap 'evari)))
-  (let ((val (symbol-value variable))
+  (let ((val (if (symbolp variable) (eval variable)
+               variable))
         (print-escape-newlines t)
-        (print-circle t))
+        (print-circle t)
+        ;; (print-gensym t)
+        (inhibit-read-only t))
     (nvp-with-results-buffer (help-buffer)
-      (nvp-results-title
-       (format "Variable(%s): %S" (type-of val) variable))
-      (princ (nvp-pp-variable-to-string variable))
+      (nvp-results-title (format "Variable ('%s'): %S" (type-of val) variable))
+      (princ (nvp-pp-variable-to-string val))
       (emacs-lisp-mode))))
 
 

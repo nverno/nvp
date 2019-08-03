@@ -19,6 +19,8 @@
 ;; -------------------------------------------------------------------
 ;;; Pretty printing
 
+;; ielm's nice formatting: #<marker at 14912 in ielm.el.gz>
+
 ;; print centered TITLE
 ;;;###autoload
 (defun nvp-results-title (title &optional width char)
@@ -30,14 +32,15 @@
 (defun nvp-pp-variable-to-string (variable)
   (let ((print-escape-newlines t)
         (print-quoted t)
-        (val (if (symbolp variable) (symbol-value variable)
+        (var (if (symbolp variable) (eval variable)
                variable)))
-    (pcase val
+    (pcase var
       ((pred hash-table-p)
-       (nvp-pp-hash variable))
+       (nvp-pp-hash var))
       ;; TODO: structs/classes
       (_
-       (pp-to-string (symbol-value variable))))))
+       ;; (cl-prin1-to-string var)
+       (pp-to-string var)))))
 
 (defun nvp-pp-hash (hash)
   (with-temp-buffer
@@ -48,7 +51,7 @@
                (princ " => ")
                (pp val)
                (terpri))
-             (symbol-value hash))
+             hash)
     (buffer-string)))
 
 ;; -------------------------------------------------------------------

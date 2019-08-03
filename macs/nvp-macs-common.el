@@ -191,6 +191,7 @@ If MINOR is non-nil, convert to minor mode hook symbol."
                            def-body)))
   `(progn
      (defalias ',func (nvp-lam ,match-form ,@body))
+     (declare-function ,func "")
      #',func))
 
 (defmacro nvp-! (fun)

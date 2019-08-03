@@ -7,6 +7,7 @@
 (autoload 'lm-header "lisp-mnt")
 (nvp-auto "find-func" 'find-function-library 'find-library-name)
 
+;; TODO:
 ;; ;;;###autoload
 ;; (defun nvp-elisp-jump-to-library-source (library)
 ;;   "Jump to git source for builtin library."

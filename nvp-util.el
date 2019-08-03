@@ -106,7 +106,8 @@ Like `s-center' but allow for CHAR."
   (if (and (consp elem) (null (cdr elem))) (car elem) elem))
 
 (defun nvp-flatten-to-alist (tree)
-  "Flatten tree, but leave cons cells."
+  "Flatten tree, but leave cons cells. 
+The result may also contain atoms that where head of subalists."
   (declare (pure t) (side-effect-free t))
   (let (elems)
     (while (and (consp tree))

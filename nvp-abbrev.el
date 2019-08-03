@@ -31,6 +31,7 @@
 (require 'nvp)
 (require 'nvp-abbrev-util)
 (nvp-decls)
+(nvp-decl nvp-results-title)
 
 ;; -------------------------------------------------------------------
 ;;; Utils

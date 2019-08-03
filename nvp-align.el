@@ -135,22 +135,22 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; FIXME: these rules can be useful for other modes: makefile, automake, etc.
 ;; alignment rules to align '\' not in strings/comments and
 ;; align end-of-line comments
-(defvar nvp-sh-align-rules-list
-  `((sh-line-continuation
-     (regexp . "\\(\\s-*\\)\\\\\\s-*$")
-     (modes  . '(sh-mode))
-     (valid  . ,(function
-                 (lambda () (save-excursion
-                         (not (sh-in-comment-or-string (point))))))))
-    (sh-eol-comments
-     (regexp . "[^ #\t\n\\\\]\\(\\s-+\\)#+.*$")
-     (group  . 1)
-     (modes  . '(sh-mode))
-     (valid  . ,(function
-                 (lambda () (save-excursion
-                         (goto-char (match-beginning 1))
-                         (and (not (bolp))
-                              (not (nth 3 (syntax-ppss)))))))))))
+;; (defvar nvp-sh-align-rules-list
+;;   `((sh-line-continuation
+;;      (regexp . "\\(\\s-*\\)\\\\\\s-*$")
+;;      (modes  . '(sh-mode))
+;;      (valid  . ,(function
+;;                  (lambda () (save-excursion
+;;                          (not (sh-in-comment-or-string (point))))))))
+;;     (sh-eol-comments
+;;      (regexp . "[^ #\t\n\\\\]\\(\\s-+\\)#+.*$")
+;;      (group  . 1)
+;;      (modes  . '(sh-mode))
+;;      (valid  . ,(function
+;;                  (lambda () (save-excursion
+;;                          (goto-char (match-beginning 1))
+;;                          (and (not (bolp))
+;;                               (not (nth 3 (syntax-ppss)))))))))))
 
 (provide 'nvp-align)
 ;; Local Variables:

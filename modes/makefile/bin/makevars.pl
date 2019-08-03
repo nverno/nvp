@@ -5,6 +5,4 @@ use warnings;
 use 5.014;
 use utf8;
 
-while (<>) {
-  /
-}
+while (<>) {}

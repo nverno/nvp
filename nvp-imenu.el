@@ -111,12 +111,16 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-;; ;;;###autoload
-;; (defun nvp-imenu-flat ()
-;;   (interactive)
-;;   (-when-let (lst (or imenu--index-alist (imenu--make-index-alist)))
-;;     (imenu (imenu-choose-buffer-index
-;;             "Imenu flat:" (--map (nvp-flatten-to-alist it) lst)))))
+;; TODO:
+;; - idomenu out-of-date => use `ido-setup-completion-map'
+;; - fallback to `nvp-imenu-flattened', \C-x\C-b in `ido-buffer-completion-map'
+;;   #<marker at 102574 in ido.el.gz>
+;;;###autoload
+(defun nvp-imenu-flattened ()
+  (interactive)
+  (-when-let (lst (or imenu--index-alist (imenu--make-index-alist)))
+    (imenu (imenu-choose-buffer-index
+            "Imenu: " (--filter (consp it) (nvp-flatten-to-alist lst))))))
 
 ;;;###autoload
 (defun nvp-imenu-idomenu (arg)

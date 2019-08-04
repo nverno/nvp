@@ -14,57 +14,15 @@
 ;; - collect remote info async
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-font))
 (require 'nvp)
 (require 'make-mode)
 (nvp-decls)
 
-;; -------------------------------------------------------------------
-;;; Completion
-
-;; (defun nvp-makefile-env-table ()
-;;   (with-temp-buffer
-;;     (insert
-;;      (shell-command-to-string
-;;       (format "make -nspf %s | awk 'f{print; f=0} /^# environment|^# makefile/{f=1}"
-;;               (buffer-file-name))))
-;;     (goto-char (point-min))
-;;     ()))
-
 ;;; Things-at-point
 ;; macro => `make-macro' `macrostep-make-bounds-of-macro-at-point'
-
-
-;;; Font-lock
-;; TODO:
-;; - remove string fontification in #define blocks where it is incorrect.
-
-;; better to fontify using `forward-sexp' to allow for closing parens in command
-(nvp-font-lock-add-defaults 'makefile-gmake-mode
-  ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
-  ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
-  ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend)))
-
-;; `makefile-dependency-regex' => note this doesn't take into account quoting
-;; `makefile-macroassign-regex' => doesn't handle #defines
-
-
-;;; Special targets
-
-;; FIXME: run async
-;; collect matches from url
-(defun nvp-makefile-collect-topics (url regex)
-  (let (res)
-    (nvp-while-scanning-url url regex
-      (push (match-string-no-properties 1) res))
-    res))
-
-(nvp-define-cache-runonce nvp-makefile-special-targets ()
-  "List of special make targets."
- ;; propertize :manual (concat url (match-string 1))
- (nvp-makefile-collect-topics
-  "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
-  "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
 
 
 ;;; Beginning / end of defun
@@ -109,31 +67,48 @@
       (forward-line))))
 
 
-;;; Indent 
+;;; Font-lock
+;; TODO:
+;; - remove string fontification in #define blocks where it is incorrect.
 
-(defvar nvp-makefile-indent-offset 2)
+;; better to fontify using `forward-sexp' to allow for closing parens in command
+(nvp-font-lock-add-defaults 'makefile-gmake-mode
+  ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
+  ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
+  ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend)))
 
-;; indent ifeq ... endif regions
-(defun nvp-makefile-indent ()
-  (save-excursion
-    (goto-char (point-min))
-    ;; get first rule
-    (let ((end (save-excursion
-                 (progn
-                   (re-search-forward makefile-dependency-regex nil t)
-                   (point)))))
-      (while (search-forward "ifeq" end 'move)
-        ;; indent if block
-        (forward-line 1)
-        (let ((close (save-excursion
-                       (search-forward "endif")
-                       (line-number-at-pos))))
-          (while (< (line-number-at-pos) close)
-            (beginning-of-line)
-            (unless (looking-at-p "\\s-*else")
-              (delete-horizontal-space)
-              (indent-to nvp-makefile-indent-offset))
-            (forward-line 1)))))))
+;; `makefile-dependency-regex' => note this doesn't take into account quoting
+;; `makefile-macroassign-regex' => doesn't handle #defines
+
+
+;; -------------------------------------------------------------------
+;;; Completion
+
+;; (defun nvp-makefile-env-table ()
+;;   (with-temp-buffer
+;;     (insert
+;;      (shell-command-to-string
+;;       (format "make -nspf %s | awk 'f{print; f=0} /^# environment|^# makefile/{f=1}"
+;;               (buffer-file-name))))
+;;     (goto-char (point-min))
+;;     ()))
+
+;;; Special targets
+
+;; FIXME: run async
+;; collect matches from url
+(defun nvp-makefile-collect-topics (url regex)
+  (let (res)
+    (nvp-while-scanning-url url regex
+      (push (match-string-no-properties 1) res))
+    res))
+
+(nvp-define-cache-runonce nvp-makefile-special-targets ()
+  "List of special make targets."
+ ;; propertize :manual (concat url (match-string 1))
+ (nvp-makefile-collect-topics
+  "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
+  "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
 
 
 ;;; Compile
@@ -179,8 +154,32 @@ With prefix ARG, run `helm-make'."
             (push str targets)))))
     (nreverse targets)))
 
-;; ------------------------------------------------------------
-;;; Hooks
+
+;;; Tidy
+
+(defvar nvp-makefile-indent-offset 2)
+
+;; indent ifeq ... endif regions
+(defun nvp-makefile-indent ()
+  (save-excursion
+    (goto-char (point-min))
+    ;; get first rule
+    (let ((end (save-excursion
+                 (progn
+                   (re-search-forward makefile-dependency-regex nil t)
+                   (point)))))
+      (while (search-forward "ifeq" end 'move)
+        ;; indent if block
+        (forward-line 1)
+        (let ((close (save-excursion
+                       (search-forward "endif")
+                       (line-number-at-pos))))
+          (while (< (line-number-at-pos) close)
+            (beginning-of-line)
+            (unless (looking-at-p "\\s-*else")
+              (delete-horizontal-space)
+              (indent-to nvp-makefile-indent-offset))
+            (forward-line 1)))))))
 
 ;; cleanup buffer before save
 (defun nvp-makefile-cleanup-buffer ()

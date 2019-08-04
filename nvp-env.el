@@ -8,7 +8,7 @@
 (require 'nvp-log)
 (declare-function w32-shell-execute "w32")
 (declare-function nvp-read-with-message "nvp-read")
-(autoload 'substitute-env-vars "env")
+(nvp-auto "env" 'substitute-env-vars 'read-envvar-name 'setenv)
 
 (defun nvp-env-substitute-vars (string &optional unquote)
   "Substitute environment variables in STRING.
@@ -77,34 +77,18 @@ If ENV-VAR is nil, set with new VALUE."
            (setenv env-var (nvp-env-join (list value env))))
     (setenv env-var value)))
 
-(defsubst nvp-env-list-vars ()
-  "Return alist of (env-var value) defined in `process-environment'."
-  (mapcar (lambda (e) (split-string e "=" 'omit)) process-environment))
-
 ;; -------------------------------------------------------------------
 ;;; Interactive
-
-;;;###autoload
-(defun nvp-env-lookup (&optional interactive-p)
-  "Lookup value of environment variable."
-  (interactive (list t))
-  (let* ((lst (nvp-env-list-vars))
-         (var (ido-completing-read "Environment variable: " lst nil 'match))
-         (val (car (alist-get var lst))))
-    (if interactive-p
-        (prog1 val (message "%s=%s" var val))
-      (cons var val))))
 
 ;;;###autoload
 (defun nvp-env-set-var (env-var value &optional clobber)
   "Add VALUE to ENV-VAR interactively.
 With prefix, overwrite value instead of appending by default."
   (interactive
-   (pcase-let ((`(,var . ,val) (nvp-env-lookup)))
-     (list
-      var (nvp-read-with-message "Value: " "Current: %s" val)
-      (and current-prefix-arg
-           (y-or-n-p "Clobber current value? ")))))
+   (let* ((var (read-envvar-name "Environment variable: " t))
+          (current-val (getenv var)))
+     (list var (nvp-read-with-message "Value: " "Current: %s" current-val)
+           (y-or-n-p "Clobber current value? "))))
   (if clobber (setenv env-var value)
     (nvp-env-add env-var value))
   (message "%s=%s" env-var (getenv env-var)))

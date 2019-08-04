@@ -12,6 +12,7 @@
 (eval-when-compile
   (require 'nvp-macro))
 (require 'nvp)
+(require 'imenu)
 (require 'ido)
 (nvp-decl nvp-comment-start)
 (autoload 'nvp-flatten-tree "nvp-util")
@@ -133,10 +134,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
                   (mapcar #'car index-alist) nil t nil 'imenu--history-list name)))
     (if (eq ido-exit 'fallback)
         ;; call in minibuf's calling buffer
-        (nvp/do-switch-buffer
-         #'nvp-idomenu
-         (setq nvp-imenu--flattened (not nvp-imenu--flattened))
-         index-alist)
+        (nvp/do-switch-buffer #'nvp-idomenu nil index-alist t)
       (setq choice (assoc name index-alist))
       (if (imenu--subalist-p choice)
 	  (nvp-idomenu--read (cdr choice))
@@ -149,15 +147,17 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
          (cdr (imenu--make-index-alist))))
 
 ;;;###autoload
-(defun nvp-idomenu (&optional flat alist)
+(defun nvp-idomenu (&optional flat alist toggle)
   "Call imenu with ido-completion.  If FLAT is non-nil, flatten index alist
 before prompting."
   (interactive (list current-prefix-arg (nvp-idomenu--index-alist)))
   (ido-common-initialization)
   (-when-let (alist (or alist (nvp-idomenu--index-alist)))
-    (when flat
-      (setq nvp-imenu--flattened t)
-      (setq alist (--filter (consp it) (nvp-flatten-to-alist alist))))
+    (when (or flat toggle)
+      (setq nvp-imenu--flattened (or flat (not nvp-imenu--flattened)))
+      (setq alist (if nvp-imenu--flattened
+                      (--filter (consp it) (nvp-flatten-to-alist alist))
+                    (nvp-idomenu--index-alist))))
     (imenu (nvp-idomenu--read alist))))
 
 ;; -------------------------------------------------------------------
@@ -166,9 +166,9 @@ before prompting."
 ;;;###autoload
 (defun nvp-imenu-idomenu (arg)
   (interactive "P")
+  (setq nvp-imenu--flattened nil)
   (let ((default (eq imenu-create-index-function
-                     #'imenu-default-create-index-function))
-        (ido-fallback #'nvp-imenu-flattened))
+                     #'imenu-default-create-index-function)))
     (when (and default (null nvp-imenu-comment-headers-re) comment-start)
       (nvp-imenu-setup))
     (with-demoted-errors "Error in nvp-imenu-idomenu: %S"

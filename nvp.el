@@ -505,5 +505,12 @@ On error (read-only), quit without selecting."
                            (current-buffer)))
     (apply old-fn args)))
 
+;; use ido-completing-read
+(defun nvp/read-with-ido (old-fn &rest args)
+  (nvp-with-letf 'completing-read #'ido-completing-read
+    (apply old-fn args)))
+;; use ido-completion when reading environment variables interactively
+(advice-add 'read-envvar-name :around #'nvp/read-with-ido)
+
 (provide 'nvp)
 ;;; nvp.el ends here

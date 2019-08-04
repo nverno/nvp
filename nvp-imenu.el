@@ -11,8 +11,7 @@
 (eval-when-compile
   (require 'nvp-macro))
 (require 'nvp)
-(require 'idomenu nil t)
-(declare-function idomenu "idomenu")
+(require 'ido)
 (nvp-decl nvp-comment-start)
 (autoload 'nvp-flatten-tree "nvp-util")
 
@@ -34,9 +33,6 @@
 ;; -------------------------------------------------------------------
 ;;; Util
 ;; #<marker at 12739 in which-func.el.gz>
-(eval-when-compile
-  (defmacro ido/imenu ()
-    (if (featurep 'idomenu) '(idomenu) '(imenu))))
 
 (defun nvp-imenu-filter-regex (regex &optional alist)
   "Remove entries from ALIST matching REGEX."
@@ -104,30 +100,73 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
       (setq nvp-imenu-comment-headers-re h
             nvp-imenu-comment-headers-re-1 h1
             nvp-imenu-comment-headers-re-2 h2)))
-  (cl-callf append imenu-generic-expression extra nvp-imenu-comment-headers-re-1))
+  (setq imenu-generic-expression
+        (append imenu-generic-expression extra nvp-imenu-comment-headers-re-1)))
 
 (put 'nvp-imenu-setup 'lisp-indent-function 'defun)
 
+
+;; -------------------------------------------------------------------
+;;; Ido
+
+(defvar nvp-imenu--flattened nil)
+
+(defvar nvp-imenu-completion-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-f") #'ido-fallback-command)
+    (define-key map (kbd "C-<return>") #'ido-fallback-command)
+    (set-keymap-parent map ido-common-completion-map)
+    map))
+
+;; modified `imenu--completion-buffer'
+(defun nvp-idomenu--read (index-alist)
+  (let* ((name (thing-at-point 'symbol))
+         choice
+         (prepared-index-alist
+          (--map (cons (subst-char-in-string
+                        ?\s (aref imenu-space-replacement 0) (car it))
+                       (cdr it))
+                 index-alist)))
+    (when (stringp name)
+      (setq name (or (imenu-find-default name prepared-index-alist) name)))
+    (nvp-with-letf 'ido-setup-completion-map
+        #'(lambda () (setq ido-completion-map nvp-imenu-completion-map))
+      (setq name (ido-completing-read
+                  (if name (format "Imenu ('%s'): " name) "Imenu: ")
+                  (mapcar #'car index-alist) nil t nil 'imenu--history-list name)))
+    (if (eq ido-exit 'fallback)
+        ;; call in minibuf's calling buffer
+        (nvp/do-switch-buffer
+         #'nvp-idomenu
+         (setq nvp-imenu--flattened (not nvp-imenu--flattened))
+         index-alist)
+      (when (stringp name)
+        (setq choice (assoc name prepared-index-alist))
+        (if (imenu--subalist-p choice)
+	    (nvp-idomenu--read (cdr choice))
+	  choice)))))
+
+;;;###autoload
+(defun nvp-idomenu (&optional flat alist)
+  "Call imenu with ido-completion.  If FLAT is non-nil, flatten index alist
+before prompting."
+  (interactive "P")
+  (ido-common-initialization)
+  (-when-let (alist (or alist (cdr (imenu--make-index-alist))))
+    (when flat
+      (setq nvp-imenu--flattened t)
+      (setq alist (--filter (consp it) (nvp-flatten-to-alist alist))))
+    (imenu (nvp-idomenu--read alist))))
+
 ;; -------------------------------------------------------------------
 ;;; Commands
-
-;; TODO:
-;; - idomenu out-of-date => use `ido-setup-completion-map'
-;; - fallback to `nvp-imenu-flattened', \C-x\C-b in `ido-buffer-completion-map'
-;;   #<marker at 102574 in ido.el.gz>
-;; (let ((ido-fallback 'nvp-imenu-flattened)) (...))
-;;;###autoload
-(defun nvp-imenu-flattened ()
-  (interactive)
-  (-when-let (lst (or imenu--index-alist (imenu--make-index-alist)))
-    (imenu (imenu-choose-buffer-index
-            "Imenu: " (--filter (consp it) (nvp-flatten-to-alist lst))))))
 
 ;;;###autoload
 (defun nvp-imenu-idomenu (arg)
   (interactive "P")
   (let ((default (eq imenu-create-index-function
-                     #'imenu-default-create-index-function)))
+                     #'imenu-default-create-index-function))
+        (ido-fallback #'nvp-imenu-flattened))
     (when (and default (null nvp-imenu-comment-headers-re) comment-start)
       (nvp-imenu-setup))
     (with-demoted-errors "Error in nvp-imenu-idomenu: %S"
@@ -137,15 +176,15 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
             (`(4)                       ; headers only
              (let ((imenu-generic-expression nvp-imenu-comment-headers-re)
                    (imenu-create-index-function 'imenu-default-create-index-function))
-               (ido/imenu)))
+               (nvp-idomenu)))
             (`(16)                      ; headers + sub-headers only
              (let ((imenu-generic-expression
                     (append nvp-imenu-comment-headers-re
                             nvp-imenu-comment-headers-re-2))
                    (imenu-create-index-function 'imenu-default-create-index-function))
-               (ido/imenu)))
-            (_ (ido/imenu)))
-        (ido/imenu)))))
+               (nvp-idomenu)))
+            (_ (nvp-idomenu)))
+        (nvp-idomenu)))))
 
 (provide 'nvp-imenu)
 ;;; nvp-imenu.el ends here

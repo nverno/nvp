@@ -13,6 +13,7 @@
   (require 'nvp-sh-help)               ;defsubsts
   (require 'nvp-font)
   (require 'nvp-parse))
+(require 'nvp)
 (require 'company)
 (require 'company-quickhelp)
 (require 'sh-script)

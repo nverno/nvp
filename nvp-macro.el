@@ -2,12 +2,15 @@
 
 ;;; Commentary:
 
-;; declare refs: defun-declarations-alist, macro-declarations-alist
+;; **only required at compile time**
+;; declare forms: defun-declarations-alist, macro-declarations-alist
+;; byte comp: byte-compile-macro-environment
 
 ;;; Code:
 (require 'cl-lib)
 (require 'subr-x)
 (require 'macroexp)
+(require 'dash)
 (require 'nvp-macs-common "macs/nvp-macs-common")
 (require 'nvp-macs-setup "macs/nvp-macs-setup")
 (require 'nvp-macs-bindings "macs/nvp-macs-bindings")

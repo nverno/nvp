@@ -7,9 +7,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
+(nvp-decls)
 $0
 
 (provide '`(nvp-yas-bfn-no-ext)`)

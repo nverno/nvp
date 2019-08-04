@@ -41,6 +41,21 @@
   "Default logging function - called from process sentinels, etc.")
 (defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
 
+;; overrides to display result in current or other window
+(defvar nvp-display-actions
+  '(
+    :buffer ((4 display-buffer-same-window
+                ((inhibit-switch-frame . nil))
+                ((inhibit-same-window  . nil)))
+             (1 display-buffer-pop-up-window
+                ((inhibit-same-window  . t))))
+    :file ((4 find-file)
+           (1 find-file-other-window))
+    :ido ((4 raise-frame)
+          (1 other-window))
+    :find-func ((4 find-function)
+                (1 find-function-other-window))))
+
 ;;-- Local
 ;; Abbrevs
 (defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
@@ -72,18 +87,15 @@
 ;; -------------------------------------------------------------------
 ;;; Functions
 
-;;-- FIXME: Alists
+;; use add-function, any reason to run hooks?
 (defvar nvp-help-at-point-functions ()
   "List of functions to return help at point.")
-(defvar nvp-check-buffer-function #'checkdoc
-  "List of functions to check buffer.")
+(defvar nvp-check-buffer-function #'checkdoc)
 (defvar nvp-disassemble-function #'disassemble)
-(defvar nvp-test-function #'nvp-ert-run-tests
-  "Functions called to run applicable tests in current context.")
-(defvar nvp-tag-function () "Functions called to create tags.")
-(defvar-local nvp-compile-function #'nvp-compile-default
-  "Function to compile file.")
-(defvar-local nvp-mark-defun-function #'mark-defun)
+(defvar nvp-test-function #'nvp-ert-run-tests)
+(defvar nvp-tag-function nil)
+(defvar nvp-compile-function #'nvp-compile-default)
+(defvar nvp-mark-defun-function #'mark-defun)
 
 ;; TODO:
 ;; - test/tag functions should call hooks

@@ -14,7 +14,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-local nil t)
-  (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp)
 

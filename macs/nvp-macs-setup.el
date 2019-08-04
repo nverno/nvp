@@ -7,7 +7,7 @@
 ;; default suffix appended when defining package location variables
 (defvar nvp-package-root-suffix "--dir")
 
-;; -------------------------------------------------------------------
+
 ;;; Define 
 
 (defmacro nvp-defvar (&rest var-vals)
@@ -82,8 +82,6 @@ If program is not found at compile time, fallback to runtime search."
              (nvp-setup-program ,name ,path))
            ,(if default `,name)))))
 
-
-;; -------------------------------------------------------------------
 ;;; Paths
 
 (defmacro nvp-mode-config-path (mode &optional ensure-string)
@@ -91,38 +89,6 @@ If program is not found at compile time, fallback to runtime search."
   `(expand-file-name
     (concat "nvp-" ,(if ensure-string (nvp-stringify mode) `,mode) "-config.el")
     nvp/config))
-
-(defmacro nvp-cache-file-path (filename)
-  "Create cache path for FILENAME."
-  `(expand-file-name ,(nvp-stringify filename) nvp/cache))
-
-
-;; -------------------------------------------------------------------
-;;; Mode bind
-
-(defmacro nvp-mode-bind-1 (&optional mode &rest bindings)
-  "Attach BINDINGS globally to MODE."
-  (declare (indent defun) (debug bindings))
-  (or mode (setq mode (quote major-mode)))
-  (unless (equal 'quote (car-safe mode)) (setq mode `',mode))
-  `(if (not (get ,mode 'nvp))
-       (put ,mode 'nvp ,@bindings)
-     (put ,mode 'nvp
-          (cl-delete-duplicates
-           (append (get ,mode 'nvp) ,@bindings) :key #'car))))
-
-(defmacro nvp-mode-bind (&optional modes &rest bindings)
-  "Attach BINDINGS globally to MODES."
-  (declare (indent defun) (debug t))
-  ;; Allow for some various forms
-  (unless (null (cadr (car-safe bindings)))
-    (and (equal 'quote (car-safe modes))
-         (setq modes (cadr modes)))                       ; '(a b c)
-    (unless (listp modes) (setq modes (cons modes nil)))  ; some-mode
-    (setq modes (remq 'quote modes))                      ; ('mode-1 'mode-...)
-    (macroexp-progn
-     (cl-loop for mode in modes
-        collect `(nvp-mode-bind-1 ,mode ,@bindings)))))
 
 
 ;; -------------------------------------------------------------------
@@ -201,8 +167,8 @@ PROPS defaults to setting :verbosity to 1."
   `(progn
      (declare-function hydra-set-property "hydra")
      (with-eval-after-load 'hydra
-      ,@(cl-loop for (k v) on props by #'cddr
-           collect `(hydra-set-property ,hydra-name ,k ,v)))))
+       ,@(cl-loop for (k v) on props by #'cddr
+            collect `(hydra-set-property ,hydra-name ,k ,v)))))
 
 ;;-- Smartparens
 (cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
@@ -283,16 +249,23 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
                                      (alist 'auto-mode-alist)
                                      (test 'equal)
                                      &allow-other-keys)
-  "Add ITEMS, a list of cons cells, to ALIST using TEST to check if item \
-is already present."
+  "Add ITEMS, to ALIST when they aren't members, using TEST to check.
+*Note*: evaled at compile time => (setq alist (append new-vals alist))."
   (declare (indent defun) (debug t))
+  ;; (cl-assert (eq (car-safe alist) 'quote) nil "Call with quoted 'alist")
   (while (keywordp (car items))
     (setq items (cdr (cdr items))))
-  (macroexp-progn
-   (cl-loop for (k . v) in items
-      with lst = (if (consp alist) alist (symbol-value alist))
-      unless (cl-member (cons k (quote v)) lst :test test)
-      collect `(push (cons ,k ',v) ,alist))))
+  (let* ((lval (eval alist))
+         (new-vals
+          (cl-loop for item in (macroexpand-all items)
+             as ival = (if (and (symbolp (car item))
+                                (fboundp (car item)))
+                           (eval item)
+                         item)
+             unless (cl-member ival lval :test test)
+             collect ival)))
+    (when new-vals
+      `(setq ,alist (append ',new-vals ,alist)))))
 
 (defmacro nvp-setup-consts (&rest vars)
   "Define consts in init."
@@ -325,6 +298,7 @@ is already present."
       as mode-hook = (nvp--normalize-hook mode)
       collect `(add-hook ',mode-hook #',hook))))
 
+;;; FIXME: minimize `add-to-list' calls
 (defmacro nvp-setup-add-subdir-load-paths (root &optional ignored)
   "Add subdirs under ROOT to `load-path', ingnoring those listed in IGNORED."
   (declare (indent defun))

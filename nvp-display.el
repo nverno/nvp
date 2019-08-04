@@ -6,34 +6,17 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'macroexp))
-(require 'nvp)
-(declare-function find-function-other-window "find-func")
-(nvp-decl :pre "yas" expand-snippet lookup-snippet)
+  (require 'nvp-macro))
+(require 'nvp)                          ;nvp-display-actions
+(nvp-decl yas-expand-snippet yas-lookup-snippet find-function-other-window)
 
 (defvar nvp-display-fallback-function #'dired "Fallback for unhandled prefix.")
 
-;; overrides to display result in current or other window
-(defvar nvp-display--actions
-  '(
-    :buffer ((4 display-buffer-same-window
-                ((inhibit-switch-frame . nil))
-                ((inhibit-same-window  . nil)))
-             (1 display-buffer-pop-up-window
-                ((inhibit-same-window  . t))))
-    :file ((4 find-file)
-           (1 find-file-other-window))
-    :ido ((4 raise-frame)
-          (1 other-window))
-    :find-func ((4 find-function)
-                (1 find-function-other-window))))
-
 (eval-and-compile
-  (defmacro nvp-display--get-action (action type)
+  (defmacro nvp-display:get-action (action type)
     (and (consp action) (setq action (prefix-numeric-value action)))
     `(or (,(if (eq type :buffer) 'cdr 'cadr)
-          (assq ,action (plist-get nvp-display--actions ,type)))
+          (assq ,action (plist-get nvp-display-actions ,type)))
          nvp-display-fallback-function)))
 
 (defsubst nvp-display-init-template (template &optional mode start end &rest bindings)
@@ -58,17 +41,17 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
     (if (consp action) (setq action (prefix-numeric-value action))))
   (pcase (cons type action)
     (`(:buffer . ,_)
-     (pop-to-buffer location (nvp-display--get-action action :buffer))
+     (pop-to-buffer location (nvp-display:get-action action :buffer))
      ;; (and (marker-position (mark-marker))
      ;;      (goto-char (mark-marker)))
      )
     (`(,:find-func . ,_)
      (and (nvp-prefix action (setq action 1) :test '>=))
-     (funcall (nvp-display--get-action action type) location))
+     (funcall (nvp-display:get-action action type) location))
     (`(,:file . ,_)
-     (funcall (nvp-display--get-action action type) location))
+     (funcall (nvp-display:get-action action type) location))
     (`(:ido . ,_)
-     (let* ((ido-default-file-method (nvp-display--get-action action :ido))
+     (let* ((ido-default-file-method (nvp-display:get-action action :ido))
             (ido-default-buffer-method ido-default-file-method))
        (if find-fn (funcall find-fn location)
          (user-error "Which ido to call for %S" location))))
@@ -82,9 +65,9 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
   (declare (indent defun) (debug (sexp &rest form)))
   (macroexp-let2 nil action action
     `(let* ((display-buffer-overriding-action
-             (nvp-display--get-action ,action :buffer))
-            (file-fn (nvp-display--get-action ,action :file))
-            (ido-default-file-method (nvp-display--get-action ,action :ido))
+             (nvp-display:get-action ,action :buffer))
+            (file-fn (nvp-display:get-action ,action :file))
+            (ido-default-file-method (nvp-display:get-action ,action :ido))
             (ido-default-buffer-method ido-default-file-method))
        (cl-letf (((symbol-function 'find-file)
                   (symbol-function file-fn)))
@@ -94,8 +77,8 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
 ;   "Execute BODY with jump ACTION file defaults."
 ;   (declare (indent defun) (debug (sexp &rest form)))
 ;   (macroexp-let2 nil action action
-;     `(let* ((file-fn (nvp-display--get-action ,action :file))
-;             (ido-default-file-method (nvp-display--get-action ,action :ido)))
+;     `(let* ((file-fn (nvp-display:get-action ,action :file))
+;             (ido-default-file-method (nvp-display:get-action ,action :ido)))
 ;        (cl-letf (((symbol-function 'find-file)
 ;                   (symbol-function file-fn)))
 ;          ,@body))))
@@ -104,8 +87,8 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
   (declare (indent defun) (debug (sexp &rest form)))
   (macroexp-let2 nil action action
     `(let* ((display-buffer-overriding-action
-             (nvp-display--get-action ,action :buffer))
-            (ido-default-buffer-method (nvp-display--get-action ,action :ido))
+             (nvp-display:get-action ,action :buffer))
+            (ido-default-buffer-method (nvp-display:get-action ,action :ido))
             (help-window-select 'other))
        ,@body)))
 

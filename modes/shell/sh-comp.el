@@ -337,26 +337,32 @@ sourced files."
   (completion-table-dynamic
    (lambda (_string) (sh-comp-candidates 'all (buffer-file-name))) 'switch))
 
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql sh-comp)))
-  (thing-at-point 'symbol))
+;; (cl-defmethod xref-backend-identifier-at-point ((_backend (eql sh-comp)))
+;;   (or (thing-at-point 'symbol)
+;;       ()))
 
 (defun sh-comp--make-xref-location (ident file)
-  (cl-labels ((getter
-               (f)
-               (let ((db (gethash f sh-comp-db)))
-                 (unless db
-                   (sh-comp-file-candidates f 'all 'recurse nil t))
-                 (-when-let (id (or (cl-find ident (sh-comp-dbfile-functions db)
-                                             :test #'string= :key #'car)
-                                    (cl-find ident (sh-comp-dbfile-variables db)
-                                             :test #'string= :key #'car)))
-                   (xref-make-sh-location f (cdr id))))))
-    (-if-let (xref (getter file)) xref
-      (let* ((srcs (sh-comp-candidates 'sources file)) done xref)
-        (while (and srcs (not done))
-          (when (setq xref (getter (pop srcs)))
-            (setq done t)))
-        xref))))
+  (let ((db (gethash file sh-comp-db)))
+    (unless db
+      (sh-comp-file-candidates file 'all 'recurse nil t))
+    (if (and (file-exists-p ident)
+             (cl-member (expand-file-name (substitute-in-file-name ident))
+                        (sh-comp-dbfile-sources db) :test #'equal))
+        (xref-make-sh-location ident 0)
+      (cl-labels ((getter
+                   (f)
+                   (let ((db (gethash f sh-comp-db)))
+                     (-when-let (id (or (cl-find ident (sh-comp-dbfile-functions db)
+                                                 :test #'string= :key #'car)
+                                        (cl-find ident (sh-comp-dbfile-variables db)
+                                                 :test #'string= :key #'car)))
+                       (xref-make-sh-location f (cdr id))))))
+        (-if-let (xref (getter file)) xref
+          (let* ((srcs (sh-comp-candidates 'sources file)) done xref)
+            (while (and srcs (not done))
+              (when (setq xref (getter (pop srcs)))
+                (setq done t)))
+            xref))))))
 
 (cl-defmethod xref-backend-definitions ((_backend (eql sh-comp)) identifier)
   (-when-let (loc (sh-comp--make-xref-location identifier (buffer-file-name)))

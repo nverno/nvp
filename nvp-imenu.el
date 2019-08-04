@@ -6,6 +6,7 @@
 ;; - add support for mode specific headers
 ;; - wrapper function to call imenu/idomenu with additional options
 ;; - utilities to manipulate index-alist
+;; - wrapper for ido-completion w/ fallback to flattened alist
 
 ;;; Code:
 (eval-when-compile
@@ -111,6 +112,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 
 (defvar nvp-imenu--flattened nil)
 
+;;--- ido map
 (defvar nvp-imenu-completion-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-f") #'ido-fallback-command)
@@ -120,15 +122,10 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 
 ;; modified `imenu--completion-buffer'
 (defun nvp-idomenu--read (index-alist)
-  (let* ((name (thing-at-point 'symbol))
-         choice
-         (prepared-index-alist
-          (--map (cons (subst-char-in-string
-                        ?\s (aref imenu-space-replacement 0) (car it))
-                       (cdr it))
-                 index-alist)))
+  (let ((name (thing-at-point 'symbol))
+        choice)
     (when (stringp name)
-      (setq name (or (imenu-find-default name prepared-index-alist) name)))
+      (setq name (or (imenu-find-default name index-alist) name)))
     (nvp-with-letf 'ido-setup-completion-map
         #'(lambda () (setq ido-completion-map nvp-imenu-completion-map))
       (setq name (ido-completing-read
@@ -140,19 +137,24 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
          #'nvp-idomenu
          (setq nvp-imenu--flattened (not nvp-imenu--flattened))
          index-alist)
-      (when (stringp name)
-        (setq choice (assoc name prepared-index-alist))
-        (if (imenu--subalist-p choice)
-	    (nvp-idomenu--read (cdr choice))
-	  choice)))))
+      (setq choice (assoc name index-alist))
+      (if (imenu--subalist-p choice)
+	  (nvp-idomenu--read (cdr choice))
+	choice))))
+
+(defun nvp-idomenu--index-alist ()
+  (--map (cons
+          (subst-char-in-string ?\s (aref imenu-space-replacement 0) (car it))
+          (cdr it))
+         (cdr (imenu--make-index-alist))))
 
 ;;;###autoload
 (defun nvp-idomenu (&optional flat alist)
   "Call imenu with ido-completion.  If FLAT is non-nil, flatten index alist
 before prompting."
-  (interactive "P")
+  (interactive (list current-prefix-arg (nvp-idomenu--index-alist)))
   (ido-common-initialization)
-  (-when-let (alist (or alist (cdr (imenu--make-index-alist))))
+  (-when-let (alist (or alist (nvp-idomenu--index-alist)))
     (when flat
       (setq nvp-imenu--flattened t)
       (setq alist (--filter (consp it) (nvp-flatten-to-alist alist))))

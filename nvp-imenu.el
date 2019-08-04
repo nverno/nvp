@@ -115,6 +115,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 ;; - idomenu out-of-date => use `ido-setup-completion-map'
 ;; - fallback to `nvp-imenu-flattened', \C-x\C-b in `ido-buffer-completion-map'
 ;;   #<marker at 102574 in ido.el.gz>
+;; (let ((ido-fallback 'nvp-imenu-flattened)) (...))
 ;;;###autoload
 (defun nvp-imenu-flattened ()
   (interactive)

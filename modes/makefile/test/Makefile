@@ -3,5 +3,5 @@ include $(CURDIR)/config.mk
 SED = gsed
 
 test: 
-	@echo ${AWK}, ${SED}, ${R}
+	@echo ${AWK}, ${SED}, ${ROOT}
 	@echo ${GNUMAKEFLAGS} ${ROOT}

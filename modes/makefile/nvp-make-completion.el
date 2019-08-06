@@ -2,7 +2,7 @@
 
 ;;; Commentary:
 ;;
-;; Completion and Xref backends for makefiles
+;; Completion, Eldoc, and Xref backends for makefiles
 ;;
 ;; * Builtin function completion/docs from make-doc info files.
 ;; * Dynamic completion for variables/rules come from make's internal database:
@@ -27,6 +27,7 @@
   (require 'eieio))
 (require 'nvp)
 (nvp-auto "info-look" 'info-lookup->completions)
+(nvp-auto "s" 's-lowercase-p)
 (nvp-decl xref-make xref-location)
 
 (nvp-package-define-root :name nvp-makefile)
@@ -54,7 +55,8 @@
   (-when-let (data (car
                     (read-from-string
                      (shell-command-to-string
-                      (format "make %s -f %s | %s"
+                      ;; when no targets in file there is output to stderr
+                      (format "make %s -f %s 2>/dev/null | %s"
                               nvp-makecomp-program-switches
                               file nvp-makecomp-program)))))
     (setf (nvp-makecomp-file-variables dbfile) (alist-get 'variables data))
@@ -121,12 +123,6 @@ TYPE is one of \\='all, \\='variables or \\='rules."
     (beginning-of-line)
     (looking-at-p "^[^ \t\n]*:")))
 
-(defun nvp-makecomp-var-or-func-botap ()
-  (let ((bnds (bounds-of-thing-at-point 'symbol)))
-    (when (and bnds (nvp-makecomp-variable-or-function-p (car bnds)))
-      bnds)))
-(put 'makesym 'bounds-of-thing-at-point 'nvp-makecomp-var-or-func-botap)
-
 ;;;###autoload
 (defun nvp-makecomp-completion-at-point ()
   (-when-let* (((beg . end) (bounds-of-thing-at-point 'symbol)))
@@ -168,6 +164,21 @@ TYPE is one of \\='all, \\='variables or \\='rules."
         (nconc (list beg end)
                table
                (list :exclusive 'no))))))
+
+;;; Eldoc
+
+(defun nvp-makecomp-var-or-func-botap ()
+  (let ((bnds (bounds-of-thing-at-point 'symbol)))
+    (when (and bnds (nvp-makecomp-variable-or-function-p (car bnds)))
+      bnds)))
+(put 'makesym 'bounds-of-thing-at-point 'nvp-makecomp-var-or-func-botap)
+
+;;;###autoload
+(defun nvp-makecomp-eldoc-function ()
+  (-when-let* ((sym (thing-at-point 'makesym))
+               (val (assoc sym (nvp-makecomp-candidates 'variables))))
+    (concat (propertize sym 'face 'font-lock-variable-name-face)
+            ": " (nth 1 val))))
 
 
 ;; -------------------------------------------------------------------

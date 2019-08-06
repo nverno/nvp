@@ -141,18 +141,7 @@ With prefix ARG, run `helm-make'."
 ;; -------------------------------------------------------------------
 ;;; Help
 
-;; (defun nvp-makefile-env-table ()
-;;   (with-temp-buffer
-;;     (insert
-;;      (shell-command-to-string
-;;       (format "make -nspf %s | awk 'f{print; f=0} /^# environment|^# makefile/{f=1}"
-;;               (buffer-file-name))))
-;;     (goto-char (point-min))
-;;     ()))
-
-;;; Special targets
-
-;; collect matches from url
+;; Special targets: collect matches from url
 (defun nvp-makefile-collect-topics (url regex)
   (let (res)
     (nvp-while-scanning-url url regex
@@ -171,8 +160,14 @@ With prefix ARG, run `helm-make'."
 ;;; Extra
 
 ;;; Indent
+(require 'smie)
 
 (defvar nvp-makefile-indent-offset 2)
+
+(defconst nvp-makefile-grammar
+  (smie-bnf->prec2
+   '((stmt)
+     (dec ("ifeq" stmt )))))
 
 ;; indent ifeq ... endif regions
 (defun nvp-makefile-indent ()

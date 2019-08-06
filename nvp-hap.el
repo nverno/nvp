@@ -8,19 +8,16 @@
 ;; popup.el/pos-tip.el/quickhelp.el to truncate pop-tips
 ;; #<marker at 84732 in etags.el.gz>
 ;; #<marker at 8769 in cl-generic.el.gz>
+;;
+;; Notes:
+;; - doc-buffer: returns list (buffer start end)
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
-(declare-function company-quickhelp-manual-begin "company-quickhelp")
-
-(defvar nvp-hap-functions nil
-  "Special hook to find first applicable help at point.")
-
-;;;###autoload
-(defun nvp-hap-find-backend ()
-  (run-hook-with-args-until-success 'nvp-hap-functions))
+(require 'nvp)
+(require 'pos-tip)
+(require 'company)
 
 ;;; Toggle
 ;;;###autoload
@@ -41,69 +38,155 @@
       :this-cmd 'company-quickhelp-manual-begin
       (x-hide-tip))))
 
-;; -------------------------------------------------------------------
+
+;;; Help-at-point
+
+(defvar nvp-hap-popup-max-lines 25 "Max lines to display in popup.")
+(defvar nvp-hap-popup-timeout 60)
+
+(defvar nvp-hap-keymap
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "M-v")   #'scroll-other-window)
+    (define-key map (kbd "M-S-v") #'scroll-other-window-down)
+    (define-key map "h"           #'nvp-hap-pop-to-buffer)
+    (define-key map (kbd "C-h")   #'nvp-hap-show-doc-buffer)
+    map))
+
+(defvar nvp-hap--doc-buffer nil)
+(defvar nvp-hap--saved-window-configuration ())
+(defvar nvp-hap--electric-commands
+  '(scroll-other-window scroll-other-window-down mwheel-scroll))
+
+(defun nvp-hap-install-keymap ()
+  (nvp-indicate-cursor-pre)
+  (set-transient-map
+   nvp-hap-keymap t
+   (lambda ()
+     (nvp-indicate-cursor-post)
+     (setq nvp-hap--doc-buffer nil)
+     (nvp-hap--electric-restore-windows))))
+
+(defsubst nvp-hap--call (&rest args)
+  (let ((result
+         (apply #'run-hook-with-args-until-success
+                'nvp-help-at-point-functions args)))
+    (and result (eq (car args) 'doc-buffer)
+         (setq nvp-hap--doc-buffer result))
+    result))
+
+(defun nvp-hap--electric-restore-windows ()
+  (when (and nvp-hap--saved-window-configuration
+             (not (memq this-command nvp-hap--electric-commands)))
+    (set-window-configuration nvp-hap--saved-window-configuration)
+    (setq nvp-hap--saved-window-configuration nil)))
+
+;; `company--electric-do'
+(defmacro nvp-hap--electric-do (&rest body)
+  (declare (indent 0) (debug t))
+  `(progn
+     (setq nvp-hap--saved-window-configuration (current-window-configuration))
+     ,@body))
+
+;;; Help Buffer
+
+(defun nvp-hap-pop-to-buffer (thing)
+  (interactive (list (nvp-hap--call 'thingatpt)))
+  (-when-let (buff (or nvp-hap--doc-buffer
+                       (nvp-hap--call 'doc-buffer thing)))
+    (setq nvp-hap--saved-window-configuration nil)
+    (pop-to-buffer (car buff))
+    (goto-char (or (cadr buff) (point-min)))))
+
+(defun nvp-hap-show-doc-buffer (thing)
+  (interactive (list (nvp-hap--call 'thingatpt)))
+  (setq nvp-hap--saved-window-configuration nil)
+  (let (other-window-scroll-buffer)
+    (nvp-hap--electric-do
+      (-when-let (buff (or nvp-hap--doc-buffer
+                           (nvp-hap--call 'doc-buffer thing)))
+        (setq other-window-scroll-buffer (get-buffer (car buff)))
+        (let ((win (display-buffer (car buff) t)))
+          (set-window-start win (or (cadr buff) (point-min))))))))
+
+
+;;; Popup
+
+(defsubst nvp-hap--skip-footers ()
+  (beginning-of-line)
+  (while (and (not (bobp))
+              (looking-at-p "\\[back\\]\\|\\[source\\]\\|^\\s-*$"))
+    (forward-line -1)))
+
+(defun nvp-hap--docstring-from-buffer (beg &optional end)
+  (goto-char beg)
+  (and end (narrow-to-region beg end))
+  (let* ((end (progn
+                (forward-line nvp-hap-popup-max-lines)
+                (point-at-eol)))
+         (truncated (> (point-max) end)))
+    (nvp-hap--skip-footers)
+    (if truncated
+        (concat (buffer-substring-no-properties beg (point)) "\n\n[...]")
+      (buffer-substring-no-properties beg (point)))))
+
+(defun nvp-hap--docstring (thing)
+  (-if-let (doc (nvp-hap--call 'doc-string thing))
+      (with-temp-buffer
+        (insert doc)
+        (nvp-hap--docstring-from-buffer (point-min)))
+    (-when-let (buff (or nvp-hap--doc-buffer
+                         (nvp-hap--call 'doc-buffer thing)))
+      (with-current-buffer (car buff)
+        (nvp-hap--docstring-from-buffer
+         (or (cadr buff) (point-min)) (caddr buff))))))
+
+(defun nvp-hap-show-popup (thing)
+  (interactive (list (nvp-hap--call 'thingatpt)))
+  (-when-let (doc (nvp-hap--docstring thing))
+    (let ((x-gtk-use-system-tooltips nil))
+      (unless (x-hide-tip)
+        (pos-tip-show doc nil nil nil nvp-hap-popup-timeout)))))
+
+
 ;;; Backends
 
-(cl-defstruct (nvp-doc (:constructor nvp-doc-make)
-                       (:copier nil))
-  "Documentation location information.
-Location could be a buffer, file, or a function to call with no args.
-START and END can be specify relevant region."
-  buffer file func start end)
-
-
-(cl-defgeneric nvp-doc-backend-identifier-at-point (_backend)
-  "Return identifier at point, a string or nil."
-  (when-let ((ident (thing-at-point 'symbol)))
-    (substring-no-properties ident)))
-
-(cl-defgeneric nvp-doc-backend-identifier-completion-table (_backend)
-  "Returns the completion table for identifiers."
-  nil)
-
-(cl-defgeneric nvp-doc-backend-doc (backend identifier)
-  "Return doc for IDENTIFIER.")
-
-(defvar nvp-doc--read-identifier-history nil)
-
-(defun nvp-doc--read-identifier (prompt)
-  "Return identifier at point or read from minibuffer."
-  (let* ((backend (nvp-hap-find-backend))
-         (id (nvp-doc-backend-identifier-at-point)))
-    (cond ((or current-prefix-arg (not id))
-           (completing-read
-            (if id (format "%s (default %s): "
-                           (substring prompt 0 (string-match "[ :]+\\'" prompt))
-                           id)
-              prompt)
-            (nvp-doc-backend-identifier-completion-table backend)
-            nil nil nil
-            'nvp-doc--read-identifier-history id))
-          (t id))))
+;;;###autoload
+(defun nvp-hap-info (command &optional arg)
+  (cl-case command
+    (thingatpt
+     (-when-let (mode (info-lookup-select-mode))
+       (info-lookup-guess-default 'symbol mode)))
+    (doc-buffer
+     (save-window-excursion
+       (let ((display-buffer-overriding-action
+              '(nil . ((inhibit-switch-frame . t))))
+             (info-lookup-other-window-flag nil))
+         (ignore-errors
+           (info-lookup-symbol arg)
+           (list (current-buffer) (point) nil)))))))
 
 ;;;###autoload
-(defun nvp-doc-at-point (identifier &optional arg action)
-  (interactive
-   (list (nvp-doc--read-identifier "Documentation for: ") current-prefix-arg t))
-  (nvp-doc--find-doc identifier 'popup arg action))
+(defun nvp-hap-elisp (command &optional arg)
+  (cl-case command
+    (thingatpt (symbol-at-point))
+    ;; (doc-string (if (fboundp arg) (documentation arg)
+    ;;               (documentation-property arg 'variable-documentation)))
+    (doc-buffer
+     (save-window-excursion
+       (let ((display-buffer-overriding-action
+              '(nil . ((inhibit-switch-frame . t)))))
+         (when (cond
+                ((fboundp arg) (describe-function arg))
+                ((boundp arg) (describe-variable arg))
+                (t nil))
+           (list (help-buffer) (point-min) nil)))))))
 
-(defun nvp-doc--show-doc (_doc _display-action)
-  "Show DOC according to DISPLAY-ACTION.")
-
-(defun nvp-doc--find-doc (input kind arg display-action)
-  (let ((doc (funcall (intern (format "nvp-doc-backend-%s" kind))
-                      (nvp-hap-find-backend)
-                      arg)))
-    (unless doc
-      (user-error "No %s found for: %s" (symbol-name kind) input))
-    (nvp-doc--show-doc doc display-action)))
-
-;; -------------------------------------------------------------------
-;;; Company backend
-(defun nvp-doc--company-backend () 'company)
-(cl-defmethod nvp-doc-backend-identifier-at-point ((_backend (eql company)))
-  
-  (nth company-selection company-candidates))
+;;;###autoload
+(defun nvp-help-at-point (thing)
+  (interactive (list (nvp-hap--call 'thingatpt)))
+  (nvp-hap-install-keymap)
+  (or (nvp-hap-show-popup thing)
+      (nvp-hap-show-doc-buffer thing)))
 
 (provide 'nvp-hap)
 ;;; nvp-hap.el ends here

@@ -79,8 +79,7 @@
 ;;; Functions
 
 ;; use add-function, any reason to run hooks?
-(defvar-local nvp-help-at-point-functions ()
-  "List of functions to return help at point.")
+(defvar nvp-help-at-point-functions '(nvp-hap-info))
 (defvar-local nvp-check-buffer-function #'checkdoc)
 (defvar-local nvp-disassemble-function #'disassemble)
 (defvar-local nvp-test-function #'nvp-ert-run-tests)

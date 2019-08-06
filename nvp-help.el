@@ -5,8 +5,7 @@
 ;; - parse man output
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'man)
 

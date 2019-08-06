@@ -1,0 +1,24 @@
+# -*- mode: makefile-gmake -*-
+ABC_DEF_GHI  = "abc"  # cmt
+TEST = 1234                                       # balakajdk
+
+.PHONY: esc test all
+all: esc
+esc:
+	$(in\
+fo testing ${TE\
+ST})
+
+test:
+	@echo \
+${TEST} !!
+	$(call baba,boo)
+	$(info a $${TEST} bc)
+
+tst-%: ts
+	${info running $(subst tst-,,$@)}
+	$(call baba)
+
+define baba
+	@echo ${CURDIR}/${1}
+endef

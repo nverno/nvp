@@ -1,0 +1,1 @@
+AWK = /some/other/awk

@@ -1,16 +1,22 @@
 # -*- mode: makefile-gmake -*-
 ABC_DEF_GHI  = "abc"  # cmt
-TEST = 1234                                       # balakajdk
+
+ifneq ($(OS),Windows_NT)
+  TEST = asdfkasd
+  ABC_DEF_GHI  = "abc"  # cmt
+else
+  TEST = 1234                                       # balakajdk
+endif
 
 .PHONY: esc test all
 all: esc
 esc:
-	$(in\
-fo testing ${TE\
+	$(in    \
+fo testing ${TE \
 ST})
 
 test:
-	@echo \
+	@echo   \
 ${TEST} !!
 	$(call baba,boo)
 	$(info a $${TEST} bc)
@@ -20,5 +26,6 @@ tst-%: ts
 	$(call baba)
 
 define baba
-	@echo ${CURDIR}/${1}
+  @echo ${CURDIR}/${1}
+  @echo "abc"
 endef

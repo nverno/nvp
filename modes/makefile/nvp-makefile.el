@@ -8,17 +8,10 @@
 ;; Base:
 ;; - generic compile targets
 ;; - additional font-locking: shell/define/info/warn/error
-;; Help:
-;; - completion: use dyn. table for variables, merge info completion table
-;; - help-at-point: info lookup
-;; - xref: variables/rules from dynamic table
-;; - incorporate semantic stuff?
-;; - use info-completition-at-point function #<marker at 25312 in info-look.el.gz>
-;; - align rules => similar to sh-mode rules
 ;; Extra:
 ;; - debug?
 ;; - fold: directives, rules, comments
-;; - align: equals, EOL comments/backslashes
+;; - align: similar to sh-mode rules => equals, EOL comments/backslashes
 ;; - indent: directives
 ;; - macrostep: update w/ dyn. table
 
@@ -30,32 +23,49 @@
 (require 'make-mode)
 (nvp-decls)
 
-;;; Things-at-point
-;; macro => `make-macro' `macrostep-make-bounds-of-macro-at-point'
-
 ;; -------------------------------------------------------------------
 ;;; Base
 
 
 ;;; Navigation
 
-(defsubst nvp-makefile--at-beginning ()
+(defvar nvp-makefile-open/close
+  (eval-when-compile
+    (let ((openers (concat "^" (regexp-opt '("ifeq" "ifneq" "define"))))
+          (closers (concat "^" (regexp-opt '("endif" "endef")))))
+      `(,openers ,closers))))
+
+(defvar nvp-makefile-defun-regexp
+  (concat (car nvp-makefile-open/close) "\\|" "^[^# \t\n]+:"))
+
+(defun nvp-makefile--match-opener (search-fn)
+  (beginning-of-line)
+  (let ((index (if (eq search-fn 're-search-backward) (cons 1 0)
+                 (cons 0 1))))
+    (if (looking-at (concat "^else\\|" (nth (car index) nvp-makefile-open/close)))
+        (funcall search-fn (nth (cdr index) nvp-makefile-open/close) nil t))))
+
+(defsubst nvp-makefile--defun-line-p ()
   (save-excursion
     (beginning-of-line 1)
-    (looking-at-p "^[^#\t\n ]")))
+    (looking-at-p nvp-makefile-defun-regexp)))
+
+(defsubst nvp-makefile--skip-escapes (search-fn)
+  (if (eq search-fn 're-search-backward)
+      (eq (point-at-bol) (nvp-goto 'boll))
+    (eq (point-at-eol) (nvp-goto 'eoll))))
 
 (defun nvp-makefile--beginning-of-defun (arg)
   (let ((search-fn (if (> arg 0) #'re-search-backward #'re-search-forward))
         (pos (point-marker)))
-    (and (< arg 0)                          ;searching forward -- skip initial beg . 
-         (nvp-makefile--at-beginning)
-         (nvp-point 'boll))
-    (while (and (funcall search-fn "^[^#\t\n ]" nil 'move)
-                (goto-char (match-beginning 0))
-                (not (eq (point) (nvp-goto 'boll)))))
-    (if (nvp-makefile--at-beginning)
+    (and (< arg 0)                   ;searching forward -- skip initial beg . 
+         (nvp-makefile--defun-line-p)
+         (end-of-line))
+    (while (and (funcall search-fn nvp-makefile-defun-regexp nil 'move)
+                (not (nvp-makefile--skip-escapes search-fn))))
+    (if (nvp-makefile--defun-line-p)
         (or (nvp-point 'boll) (point))  ;found beg
-      (and (goto-char pos) nil))))          ;failed
+      (and (goto-char pos) nil))))     ;failed
 
 (defun nvp-makefile-beginning-of-defun (&optional arg)
   "Treats target blocks as defuns."
@@ -71,13 +81,12 @@
 
 (defun nvp-makefile-end-of-defun ()
   "Skips to end of tabbed block."
-  (when (or (nvp-makefile--at-beginning)
-            (nvp-makefile-beginning-of-defun 1)
-            (nvp-makefile-beginning-of-defun -1))
+  (unless (nvp-makefile--match-opener 're-search-forward)
     (while (and (not (eobp))
                 (nvp-goto 'bonll)
-                (looking-at-p "^#\\|^[ \t]+")))
-    (end-of-line)))
+                (not (looking-at-p
+                      (concat "^\\s-*$\\|" nvp-makefile-defun-regexp)))))
+    (point)))
 
 
 ;;; Font-lock
@@ -150,54 +159,52 @@ With prefix ARG, run `helm-make'."
 
 (nvp-define-cache-runonce nvp-makefile-special-targets ()
   "List of special make targets."
- ;; propertize :manual (concat url (match-string 1))
- (nvp-makefile-collect-topics
-  "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
-  "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
+  ;; propertize :manual (concat url (match-string 1))
+  (nvp-makefile-collect-topics
+   "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
+   "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
 
 
 ;; -------------------------------------------------------------------
 ;;; Extra
 
 ;;; Indent
-(require 'smie)
-
 (defvar nvp-makefile-indent-offset 2)
 
-(defconst nvp-makefile-grammar
-  (smie-bnf->prec2
-   '((stmt)
-     (dec ("ifeq" stmt )))))
-
 ;; indent ifeq ... endif regions
-(defun nvp-makefile-indent ()
+(defun nvp-makefile-indent (&optional start finish)
+  (or finish (setq finish (point-max)))
   (save-excursion
-    (goto-char (point-min))
-    ;; get first rule
-    (let ((end (save-excursion
-                 (progn
-                   (re-search-forward makefile-dependency-regex nil t)
-                   (point)))))
-      (while (search-forward "ifeq" end 'move)
-        ;; indent if block
-        (forward-line 1)
-        (let ((close (save-excursion
-                       (search-forward "endif")
-                       (line-number-at-pos))))
-          (while (< (line-number-at-pos) close)
-            (beginning-of-line)
-            (unless (looking-at-p "\\s-*else")
-              (delete-horizontal-space)
-              (indent-to nvp-makefile-indent-offset))
-            (forward-line 1)))))))
+    (goto-char (or start (point-min)))
+    (while (re-search-forward (car nvp-makefile-open/close) finish t)
+      (let ((beg (match-beginning 0)) end)
+        (when (re-search-forward
+               (concat "^else\\|" (cadr nvp-makefile-open/close)) finish t)
+          (setq end (nvp-point 'boll))
+          (goto-char beg)
+          (while (and (nvp-goto 'bonll)
+                      (< (point) end)
+                      (not (looking-at makefile-dependency-regex)))
+            (delete-horizontal-space)
+            (indent-to-column nvp-makefile-indent-offset))
+          (goto-char end))))))
 
 ;;; Tidy
+
+(defun nvp-makefile-format-buffer (&optional beg end)
+  (interactive "r")
+  (unless (and (use-region-p) beg end (> end beg))
+    (setq beg (point-min)
+          end (point-max)))
+  (nvp-makefile-indent beg end)
+  (align nil beg end))
 
 ;; cleanup buffer before save
 (defun nvp-makefile-cleanup-buffer ()
   (unless (or buffer-read-only (not (buffer-modified-p)))
+    t
     ;; fixup indent
-    (nvp-makefile-indent)
+    ;; (nvp-makefile-indent)
     ;; align [?:]= before first rule
     ;; (align (point-min) (point-max))     ;use builtin align rules for now
     ;; (let ((end (save-excursion

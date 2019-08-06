@@ -4,4 +4,4 @@
 # condition: (nvp-yas-in-string)
 # --
 Key bindings:
-\\{${1}-mode-map}
+\\\\{${1}-mode-map}

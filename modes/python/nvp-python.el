@@ -5,24 +5,17 @@
 ;; TODO:
 ;; - remove tag-utils
 ;; - remove newline
-;; - namespace conda-env?
+;; - remove pyenv stuff
 ;; - generics
-;; - remove pyenv-mode stuff
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (defvar company-candidates)
-  (defvar company-backends))
+  (require 'nvp-macro))
 (require 'python)
 (require 'tag-utils nil t)
-
-(declare-function projectile-project-name "projectile")
 (nvp-decl :pkg "pyenv" pyenv-mode-versions pyenv-mode-unset pyenv-mode-set pyenv-mode)
-(nvp-decl :pkg "anaconda-mode" anaconda-mode-complete-extract-names
-  anaconda-mode-call)
-(declare-function company-complete "company")
-(nvp-decl nvp-abbrev-expand-not-after-punct-p)
+(nvp-decl anaconda-mode-complete-extract-names anaconda-mode-call)
+(nvp-decls)
 
 ;;; Variables
 

@@ -60,9 +60,7 @@
     nvp-default-org-file
     nvp-window-configuration-stack
     nvp-program-search-paths
-    nvp-abbrev-dynamic-table
-    nvp-abbrev-local-file
-    nvp-abbrev-local-table
+    nvp-abbrev-dynamic-table nvp-abbrev-local-file nvp-abbrev-local-table
     nvp-abbrev-prefix-chars
     nvp-repl-alist
     nvp-repl-current
@@ -76,16 +74,14 @@
     nvp-mark-defun-function
     ;; emacs base
     explicit-shell-file-name
-    ielm-working-buffer
-    ielm-dynamic-return
+    package-user-dir
+    recentf-list
+    ielm-working-buffer ielm-dynamic-return
     imenu-generic-expression
-    tramp-remote-path
-    tramp-default-user
-    org-babel-do-load-languages
-    org-src-lang-modes
+    tramp-remote-path tramp-default-user
+    org-babel-do-load-languages org-src-lang-modes
     ;; external pkgs
-    company-backends
-    company-dabbrev-code-modes
+    company-backends company-candidates company-dabbrev-code-modes
     yas-snippet-dirs yas-text yas-moving-away-p yas-modified-p
     zeal-at-point-docset))
 
@@ -126,7 +122,7 @@
        ;; toggle
        toggle-local-variable
        ;; abbrev
-       abbrev-grab grab-symbol
+       abbrev-grab grab-symbol abbrev-expand-not-after-punct-p
        ;; test / compile
        ert-run-tests
        compile compile-default compile-cmake
@@ -139,8 +135,7 @@
        lookup-password)
 
      (nvp-decl                          ; builtins
-       package-user-dir
-       recentf-list
+       minibuffer-keyboard-quit
        comint-read-input-ring comint-write-input-ring
        ielm ielm-return
        ert-run-tests-interactively
@@ -150,9 +145,9 @@
 
      (nvp-decl                          ; external packages
        pos-tip-show
+       projectile-project-name
        do-smooth-scroll
-       minibuffer-keyboard-quit
-       company-grab-symbol company-mode
+       company-grab-symbol company-mode company-complete
        smartparens-mode sp-local-pair
        paredit-mode
        yas-minor-mode yas-expand-snippet yas-lookup-snippet yas-load-directory)))

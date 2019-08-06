@@ -1,18 +1,9 @@
 ;;; nvp.el --- base configs -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
 ;; [![Build Status](https://travis-ci.org/nverno/nvp.svg?branch=master)](https://travis-ci.org/nverno/nvp)
-
-;; - Global variables / variables set by modes
-;; - Some general aliases that haven't made it to init
-;; - Local site variables - compiled in init
-;; - basic functions
-;; - font faces
-
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
 (require 'nvp-local)
 (nvp-decls)
@@ -88,14 +79,14 @@
 ;;; Functions
 
 ;; use add-function, any reason to run hooks?
-(defvar nvp-help-at-point-functions ()
+(defvar-local nvp-help-at-point-functions ()
   "List of functions to return help at point.")
-(defvar nvp-check-buffer-function #'checkdoc)
-(defvar nvp-disassemble-function #'disassemble)
-(defvar nvp-test-function #'nvp-ert-run-tests)
-(defvar nvp-tag-function nil)
-(defvar nvp-compile-function #'nvp-compile-default)
-(defvar nvp-mark-defun-function #'mark-defun)
+(defvar-local nvp-check-buffer-function #'checkdoc)
+(defvar-local nvp-disassemble-function #'disassemble)
+(defvar-local nvp-test-function #'nvp-ert-run-tests)
+(defvar-local nvp-tag-function nil)
+(defvar-local nvp-compile-function #'nvp-compile-default)
+(defvar-local nvp-mark-defun-function #'mark-defun)
 
 ;; TODO:
 ;; - test/tag functions should call hooks

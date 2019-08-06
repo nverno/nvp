@@ -5,13 +5,22 @@
 ;; make -q foo => exit 0 if foo is up-to-date
 
 ;; TODO:
+;; Base:
+;; - generic compile targets
+;; - additional font-locking: shell/define/info/warn/error
+;; Help:
+;; - completion: use dyn. table for variables, merge info completion table
+;; - help-at-point: info lookup
+;; - xref: variables/rules from dynamic table
 ;; - incorporate semantic stuff?
 ;; - use info-completition-at-point function #<marker at 25312 in info-look.el.gz>
 ;; - align rules => similar to sh-mode rules
-
-;; FIXME:
-;; - beg/end account for if/endif, define, escaped lines
-;; - collect remote info async
+;; Extra:
+;; - debug?
+;; - fold: directives, rules, comments
+;; - align: equals, EOL comments/backslashes
+;; - indent: directives
+;; - macrostep: update w/ dyn. table
 
 ;;; Code:
 (eval-when-compile
@@ -24,8 +33,11 @@
 ;;; Things-at-point
 ;; macro => `make-macro' `macrostep-make-bounds-of-macro-at-point'
 
+;; -------------------------------------------------------------------
+;;; Base
+
 
-;;; Beginning / end of defun
+;;; Navigation
 
 (defsubst nvp-makefile--at-beginning ()
   (save-excursion
@@ -35,12 +47,14 @@
 (defun nvp-makefile--beginning-of-defun (arg)
   (let ((search-fn (if (> arg 0) #'re-search-backward #'re-search-forward))
         (pos (point-marker)))
-    (and (< arg 0)                          ;searching forward -- skip initial beg. 
+    (and (< arg 0)                          ;searching forward -- skip initial beg . 
          (nvp-makefile--at-beginning)
-         (end-of-line 1))
-    (funcall search-fn "^[^#\t\n ]" nil 'move)
+         (nvp-point 'boll))
+    (while (and (funcall search-fn "^[^#\t\n ]" nil 'move)
+                (goto-char (match-beginning 0))
+                (not (eq (point) (nvp-goto 'boll)))))
     (if (nvp-makefile--at-beginning)
-        (or (beginning-of-line 1) (point))  ;found beg
+        (or (nvp-point 'boll) (point))  ;found beg
       (and (goto-char pos) nil))))          ;failed
 
 (defun nvp-makefile-beginning-of-defun (&optional arg)
@@ -60,11 +74,10 @@
   (when (or (nvp-makefile--at-beginning)
             (nvp-makefile-beginning-of-defun 1)
             (nvp-makefile-beginning-of-defun -1))
-    (beginning-of-line)
-    (forward-line)
     (while (and (not (eobp))
-                (looking-at-p "^#\\|^[ \t]+"))
-      (forward-line))))
+                (nvp-goto 'bonll)
+                (looking-at-p "^#\\|^[ \t]+")))
+    (end-of-line)))
 
 
 ;;; Font-lock
@@ -79,36 +92,6 @@
 
 ;; `makefile-dependency-regex' => note this doesn't take into account quoting
 ;; `makefile-macroassign-regex' => doesn't handle #defines
-
-
-;; -------------------------------------------------------------------
-;;; Completion
-
-;; (defun nvp-makefile-env-table ()
-;;   (with-temp-buffer
-;;     (insert
-;;      (shell-command-to-string
-;;       (format "make -nspf %s | awk 'f{print; f=0} /^# environment|^# makefile/{f=1}"
-;;               (buffer-file-name))))
-;;     (goto-char (point-min))
-;;     ()))
-
-;;; Special targets
-
-;; FIXME: run async
-;; collect matches from url
-(defun nvp-makefile-collect-topics (url regex)
-  (let (res)
-    (nvp-while-scanning-url url regex
-      (push (match-string-no-properties 1) res))
-    res))
-
-(nvp-define-cache-runonce nvp-makefile-special-targets ()
-  "List of special make targets."
- ;; propertize :manual (concat url (match-string 1))
- (nvp-makefile-collect-topics
-  "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
-  "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
 
 
 ;;; Compile
@@ -155,7 +138,39 @@ With prefix ARG, run `helm-make'."
     (nreverse targets)))
 
 
-;;; Tidy
+;; -------------------------------------------------------------------
+;;; Help
+
+;; (defun nvp-makefile-env-table ()
+;;   (with-temp-buffer
+;;     (insert
+;;      (shell-command-to-string
+;;       (format "make -nspf %s | awk 'f{print; f=0} /^# environment|^# makefile/{f=1}"
+;;               (buffer-file-name))))
+;;     (goto-char (point-min))
+;;     ()))
+
+;;; Special targets
+
+;; collect matches from url
+(defun nvp-makefile-collect-topics (url regex)
+  (let (res)
+    (nvp-while-scanning-url url regex
+      (push (match-string-no-properties 1) res))
+    res))
+
+(nvp-define-cache-runonce nvp-makefile-special-targets ()
+  "List of special make targets."
+ ;; propertize :manual (concat url (match-string 1))
+ (nvp-makefile-collect-topics
+  "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
+  "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
+
+
+;; -------------------------------------------------------------------
+;;; Extra
+
+;;; Indent
 
 (defvar nvp-makefile-indent-offset 2)
 
@@ -180,6 +195,8 @@ With prefix ARG, run `helm-make'."
               (delete-horizontal-space)
               (indent-to nvp-makefile-indent-offset))
             (forward-line 1)))))))
+
+;;; Tidy
 
 ;; cleanup buffer before save
 (defun nvp-makefile-cleanup-buffer ()

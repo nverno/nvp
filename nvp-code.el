@@ -20,7 +20,7 @@
 (defun nvp-hs-toggle (&optional arg)
   "Toggle hideshow on block.  With prefix toggle all."
   (interactive "P")
-  (unless hs-minor-mode
+  (unless (bound-and-true-p hs-minor-mode)
     (hs-minor-mode))
   (if arg
       (if (setq nvp-hs--hidden (not nvp-hs--hidden))

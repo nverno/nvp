@@ -3,4 +3,4 @@
 # key: __
 # condition: (nvp-yas-in-string)
 # --
-\\='
+\\\\='

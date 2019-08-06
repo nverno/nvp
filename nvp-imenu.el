@@ -156,7 +156,7 @@ before prompting."
     (when (or flat toggle)
       (setq nvp-imenu--flattened (or flat (not nvp-imenu--flattened)))
       (setq alist (if nvp-imenu--flattened
-                      (--filter (consp it) (nvp-flatten-to-alist alist))
+                      (--filter (consp it) (nvp-flatten-tree alist 'alist))
                     (nvp-idomenu--index-alist))))
     (imenu (nvp-idomenu--read alist))))
 

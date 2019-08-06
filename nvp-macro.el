@@ -431,9 +431,11 @@ POSITION can be one of the following symbols:
 
 ~~ Line positions ~~
 `bol'   -- beginning of line
+`boll'  -- beginning of logical line (skipping escaped NL)
 `eol'   -- end of line
 `eoll'  -- end of logical line (i.e. without escaped NL)
 `bonl'  -- beginning of next line
+`bonll' -- beginning of next logical line
 `eonl'  -- end of next line
 `bopl'  -- beginning of previous line
 `eopl'  -- end of previous line
@@ -507,6 +509,17 @@ to it is returned.  This function does not modify the point or the mark."
 	   (beginning-of-line)
 	   (point))))
 
+     ((eq position 'boll)               ;beginning of logical line
+      `(nvp-point--se ,point
+         (while (progn
+                  (beginning-of-line)
+                  (unless (bobp)
+                   (save-excursion
+                     (forward-char -1)
+                     (eq (logand 1 (skip-chars-backward ,escape)) 1))))
+           (beginning-of-line 0))
+         (point)))
+
      ((eq position 'eol)                ;end of line
       (if (not point) '(line-end-position)
 	`(nvp-point--se ,point
@@ -533,6 +546,15 @@ to it is returned.  This function does not modify the point or the mark."
 	`(nvp-point--se ,point
 	   (forward-line 1)
 	   (point))))
+
+     ((eq position 'bonll)              ;beginning of next logical line
+      `(nvp-point--se ,point
+         (while (progn
+                  (end-of-line)
+                  (prog1 (eq (logand 1 (skip-chars-backward "\\\\")) 1)))
+           (beginning-of-line 2))
+         (forward-line 1)
+         (point)))
 
      ((eq position 'eopl)               ;end of previous line
       (if (not point) '(line-end-position 0)
@@ -705,8 +727,8 @@ Returns nil if unsuccessful, point otherwise."
   "Prompt interactively for input if running interactively and nothing found."
   (or prompt (setq prompt "Symbol: "))
   (if (eq (car-safe read-fn) 'quote) (setq read-fn (cdr read-fn)))
-  (unless noninteractive
-    `(or ,form
+  `(unless noninteractive
+     (or ,form
          ,(if read-fn `(,@read-fn ,prompt ,default ,hist)
             `(read-from-minibuffer ,prompt ,default nil nil ,hist ,default)))))
 

@@ -40,10 +40,7 @@
     ;; (execute-kbd-macro (vconcat next-keys))
     ))
 
-;; HACK: undefine `nvp-dev-load' from keymap when file is loaded
-;; should replace this with a better system
-(defvar nvp-dev-keymap)
-(define-key nvp-dev-keymap "l" nil)
+(defvar nvp-dev-keymap (make-sparse-keymap))
 (nvp-bind-keys nvp-dev-keymap
   ("a"  . nvp-dev-advice-remove-all)
   ("c"  . nvp-help-list-charsets)
@@ -60,9 +57,10 @@
   ("ls" . list-load-path-shadows)
   ("lt" . list-timers)
   ("lT" . list-threads)
-  ("m"  . nvp-dev-make-and-reload)
+  ("m"  . nvp-dev-describe-mode)
   ("o"  . nvp-dev-list-overlays)
   ("s"  . nvp-syntax-at-point)
+  ("S"  . smie-config-show-indent)
   ("u"  . nvp-dev-stats-uniq)
   ("v"  . nvp-dev-describe-variable))
 
@@ -76,13 +74,13 @@
   (interactive "aFunction: ")
   (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
 
-;;;###autoload
-(defun nvp-dev-make-and-reload ()
-  "Make and reload package autoloads."
-  (interactive)
-  (call-process "make" nil 0 nil "-k")
-  (let ((file (car (directory-files (expand-file-name ".") t "autoloads.el"))))
-    (load-file file)))
+;; ;;;###autoload
+;; (defun nvp-dev-make-and-reload ()
+;;   "Make and reload package autoloads."
+;;   (interactive)
+;;   (call-process "make" nil 0 nil "-k")
+;;   (let ((file (car (directory-files (expand-file-name ".") t "autoloads.el"))))
+;;     (load-file file)))
 
 
 ;; -------------------------------------------------------------------
@@ -145,6 +143,59 @@
     (nvp-with-results-buffer (help-buffer)
       (nvp-results-title (format "Variable ('%s'): %S" (type-of val) variable))
       (princ (nvp-pp-variable-to-string val))
+      (emacs-lisp-mode))))
+
+(defun nvp-dev-describe-mode (&optional mode)
+  (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
+  (let ((print-escape-newlines t)
+        (print-circle t)
+        (inhibit-read-only t)
+        (funcs
+         (--map (cons (symbol-name it) (symbol-value it))
+                '(beginning-of-defun-function
+                  end-of-defun-function
+                  nvp-compile-function
+                  nvp-mark-defun-function
+                  nvp-check-buffer-function
+                  nvp-help-at-point-functions
+                  nvp-disassemble-function
+                  nvp-test-function)))
+        (vars
+         (--map (cons (symbol-name it) (symbol-value it))
+                '(nvp-abbrev-local-file
+                  nvp-abbrev-local-table
+                  nvp-mode-header-regex
+                  nvp-mode-snippet-dir
+                  nvp-mode-install-targets
+                  completion-at-point-functions
+                  company-backends
+                  hippie-expand-try-functions-list)))
+        (keys
+         (--map (cons it (lookup-key (current-active-maps) (kbd it)))
+                '("RET" "<f5>" "M-?"
+                  "<f2>mzz" "C-c C-z"
+                  "<f2>mc" "<f2>mt" "<f2>mT" "<f2>md" "<f2>mD")))
+        (fonts (assoc mode nvp-mode-font-additions))
+        (print-fn
+         (lambda (lst &optional values)
+           (dolist (i lst)
+             (if (not values)
+                 (princ (format ";; %s => %S\n" (car i) (cdr i)))
+               (princ (format ";; %s" (car i)))
+               (cl-prettyprint (cdr i))
+               (princ "\n"))))))
+    (nvp-with-results-buffer (help-buffer)
+      (nvp-results-title (format "%S variables" mode))
+      (princ ";;; Variables\n")
+      (funcall print-fn vars 'values)
+      (princ ";;; Functions\n")
+      (funcall print-fn funcs)
+      (princ ";;; Keys\n")
+      (funcall print-fn keys)
+      (when fonts
+        (princ "\n;;; Fonts\n")
+        (cl-prettyprint fonts)
+        (princ "\n"))
       (emacs-lisp-mode))))
 
 

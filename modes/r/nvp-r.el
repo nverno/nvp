@@ -6,8 +6,7 @@
 (require 'ess-site)
 (require 'ess-inf)
 (declare-function tag-utils-tag-dir "tag-utils")
-(autoload 'nvp-list-intersection "nvp-util")
-(autoload 'nvp-s-match-positions "nvp-string")
+(nvp-auto "nvp-util" 'nvp-list-intersection 'nvp-s-match-all-positions)
 
 (defvar nvp-r-source-dir (expand-file-name "R/r-source" (getenv "DEVEL")))
 (defvar nvp-r-package-src (expand-file-name "R/src" (getenv "DEVEL")))
@@ -21,7 +20,7 @@
   (let* ((res (mapcar
                #'(lambda (x)
                    (mapcar
-                    #'cdr (nvp-s-match-positions "\'.*?\'\\|[-0-9.A-Za-z]+" x)))
+                    #'cdr (nvp-s-match-all-positions "\'.*?\'\\|[-0-9.A-Za-z]+" x)))
                (split-string str "\n")))
          (res (cl-remove-if-not #'(lambda (x)
                                     (> (length x) 0))

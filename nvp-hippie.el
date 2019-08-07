@@ -33,7 +33,7 @@
 
 (defmacro nvp-he-lazy-completion-table (var fun &optional test)
   "See `lazy-completion-table'."
-  (declare (debug (symbolp lambda-expr)))
+  (declare (indent defun) (debug (symbolp lambda-expr)))
   (let ((str (make-symbol "string")))
     `(nvp-he-completion-table
       (lambda (,str)

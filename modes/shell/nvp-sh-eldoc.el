@@ -20,7 +20,7 @@
 ;; return formatted doc string for bash builtins
 (defun nvp-sh-eldoc-builtin-string (cmd)
   (or (gethash cmd nvp-sh-eldoc-cache)
-      (let ((str (nvp-sh-help-bash-builtin-sync cmd 'synopsis)))
+      (let ((str (nvp-sh-bash-builtin-help-sync cmd 'synopsis)))
         ;; remove 'cmd: ' and trailing newline
         (setq str (substring str (+ 2 (length cmd)) (1- (length str))))
         ;; propertize CMD
@@ -31,7 +31,7 @@
 
 ;; get synopsis from man output asynchronously and cache it
 (defun nvp-sh-eldoc--man (cmd)
-  (sh-with-man-help cmd nil
+  (nvp-sh:with-man-help cmd nil
     (goto-char (point-min))
     (ignore-errors
       (when (search-forward "SYNOPSIS")
@@ -62,7 +62,7 @@
 from `man %s'."
   (let ((func (nvp-shell-current-command)))
     (and func
-         (sh-with-bash/man func
+         (nvp-sh:with-bash/man func
            (nvp-sh-eldoc-builtin-string func) ;; synchronously
            (nvp-sh-eldoc-man-string func))))) ;; async
 

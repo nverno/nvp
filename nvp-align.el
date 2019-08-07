@@ -121,6 +121,11 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 
 ;;; Mode rules
 ;; #<marker at 13440 in align.el>
+;; Buggy rules:
+;; - exc-dq-string
+;;   - doesn't account for multiline strings
+;;   - is fooled by escaped quotes
+;; - exc-open-comment treats quoted comment starters as normal
 
 ;; sh
 
@@ -138,8 +143,8 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; (defvar nvp-sh-align-rules-list
 ;;   `((sh-line-continuation
 ;;      (regexp . "\\(\\s-*\\)\\\\\\s-*$")
-;;      (modes  . '(sh-mode))
-;;      (valid  . ,(function
+;;      (modes  . '(sh-mode))              ; abc
+;;      (valid  . ,(function ; one two three
 ;;                  (lambda () (save-excursion
 ;;                          (not (sh-in-comment-or-string (point))))))))
 ;;     (sh-eol-comments

@@ -55,7 +55,7 @@ Should return sexp of form (abbrev . expansion)."
     (cons (read-string (format "Abbrev for %s: " exp)) exp)))
 
 (cl-defmethod nvp-abbrev--grab-region
-    (beg end &context (major-mode emacs-lisp-mode))
+  (beg end &context (major-mode emacs-lisp-mode))
   "Try to determine appropriate elisp abbrev from region.
 Remove any surrounding parens and use first chars with lisp transformer.
 With prefix, don't split region by whitespace."

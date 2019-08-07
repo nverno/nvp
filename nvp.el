@@ -430,9 +430,9 @@ On error (read-only), quit without selecting."
              (define-key map (kbd k) (eval b)))
            (define-key map (vector repeat-key)
              (if args
-               `(lambda () (interactive)
-                  (setq this-command ',this-command)
-                  (funcall-interactively #',this-command ,@args))
+                 `(lambda () (interactive)
+                    (setq this-command ',this-command)
+                    (funcall-interactively #',this-command ,@args))
                this-command))
            map)
          t

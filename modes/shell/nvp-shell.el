@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;; FIXME:
 ;; - reuse `nvp-shell-goto-command-start' for `sh-mode' as well
-;; TODO: expand git aliases as well
 ;;; Code:
 (eval-when-compile
   (require 'nvp-proc)
@@ -18,7 +17,6 @@
 ;; update default-directory on remote login
 (defvar nvp-shell-ssh-regexp (nvp-re-opt '("ssh" "hssh")))
 
-;; -------------------------------------------------------------------
 ;;; Things-at-point
 
 ;; guess bounds from beginning of current command to end of symbol/word at point
@@ -38,7 +36,6 @@
     (bounds-of-thing-at-point 'symbol)))
 (put 'shell-cmd 'bounds-of-thing-at-point #'nvp-shell-bounds-of-cmd-at-point)
 
-;; -------------------------------------------------------------------
 ;;; Processes
 
 ;; return some available shells
@@ -50,56 +47,8 @@
                     ,(expand-file-name "bin" (getenv "CYGWIN_HOME")))
        nconc (mapcar (lambda (x) (expand-file-name x var))
                      '("sh.exe" "bash.exe" "fish.exe" "zsh.exe")))))
-
-;; -------------------------------------------------------------------
-;;; Aliases
-
-(defun nvp-shell-get-aliases (shell-cmd regex key val)
-  "SHELL-CMD is a string passed to `call-process-shell-command' to print \
-aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
-  (let ((ht (make-hash-table :size 129 :test #'equal)))
-    (with-temp-buffer
-      (let ((standard-output (current-buffer)))
-        (call-process-shell-command shell-cmd nil t nil)
-        (goto-char (point-min))
-        (while (re-search-forward regex nil 'move)
-          (puthash (match-string-no-properties key)
-                   (match-string-no-properties val) ht))
-        ht))))
-
-(nvp-define-cache-runonce nvp-shell-alias-table ()
-  "Holds alist of hash tables mapping aliases to expansions.
-Each cell is a cons (SYM . HASH)."
-  ;; for bash assume all aliases are of the form
-  ;; alias ..='cd ..'
-  ;; eg. the start and end with "'" that way don't have to
-  ;; worry about escaped single quotes when parsing
-  ;; aliases
-  (list (cons 'bash (nvp-shell-get-aliases
-                     "bash -ci alias" "^alias\\s-*\\([^=]+\\)='\\(.*\\)'$" 1 2))
-        (cons 'git (nvp-shell-get-aliases
-                    "git alias" "^\\([^=]+\\)=\\(.+\\)$" 1 2))))
-
-;; get alias expansion for key, return nil if none
-(defsubst nvp-shell-get-alias (key alias)
-  (gethash alias (cdr (assoc key (nvp-shell-alias-table))) nil))
-
-;; -------------------------------------------------------------------
-;;; Shell mode commands
-
-;; TODO: expand git aliases as well
-(defun nvp-shell-expand-alias ()
-  "Expand shell alias at/before point."
-  (interactive)
-  (skip-syntax-backward " " (comint-line-beginning-position))
-  (unless (eq (point) (comint-line-beginning-position))
-    (pcase-let* ((`(,start . ,end) (bounds-of-thing-at-point 'symbol))
-                 (exp (nvp-shell-get-alias
-                       'bash
-                       (buffer-substring-no-properties start end))))
-      (when exp
-        (delete-region start end)
-        (insert exp)))))
+
+;;; Commands
 
 (defun nvp-shell-run-external ()
   "Run input on current line in external shell (gnome)"
@@ -124,7 +73,6 @@ Each cell is a cons (SYM . HASH)."
   (nvp-with-proc proc
     (comint-send-string proc "nautilus . 2>/dev/null\n")))
 
-;; -------------------------------------------------------------------
 ;;; Remote
 
 (defun nvp-shell-remote-filter (string)
@@ -139,6 +87,7 @@ Add to `comint-input-filter-functions'."
 (defun nvp-shell-tramp-name (&optional directory)
   (or directory (setq directory default-directory)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Launch shells
 

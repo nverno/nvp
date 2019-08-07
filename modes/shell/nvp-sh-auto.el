@@ -5,7 +5,29 @@
 (require 'sh-script)
 (require 'nvp)
 
-;; -------------------------------------------------------------------
+;;; Toggle
+
+;; toggle variable default assignment
+;;;###autoload
+(defun nvp-sh-toggle-variable ()
+  (interactive)
+  (when (re-search-backward
+         "\\(\\_<[[:alnum:]_]+\\)=.*" (line-beginning-position) t)
+    (let* ((var (concat "${" (match-string 1) ":-")))
+      (goto-char (match-end 1))
+      (skip-chars-forward "=\"")
+      (if (looking-at (regexp-quote var))
+          (progn
+            (save-match-data
+              (skip-syntax-forward "'")
+              (forward-sexp 1)
+              (and (eq (char-before) ?})
+                   (delete-char -1)))
+            (replace-match ""))
+        (insert var)
+        (forward-sexp 1)
+        (insert "}")))))
+
 ;;; Here docs
 
 ;; FIXME: does sh-script have builtin functions to get bounds of here-docs?
@@ -34,9 +56,6 @@
           (forward-line -1)
           (back-to-indentation))
         (point)))))
-
-;; -------------------------------------------------------------------
-;;; Commands
 
 ;; FIXME: broken
 ;;;###autoload

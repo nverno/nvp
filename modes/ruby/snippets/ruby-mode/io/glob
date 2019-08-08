@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: glob
-# key: glo
+# key: glob
 # --
 glob(${1:"${2:path}"}) do |${3:path}|
   $0

@@ -26,70 +26,6 @@
 
 ;;; Code:
 (require 'ruby-mode)
-(defvar hs-set-up-overlay)
-
-;; setup align for ruby-mode
-(defconst align-ruby-modes '(ruby-mode)
-  "align-perl-modes is a variable defined in `align.el'.")
-
-(defconst ruby-align-rules-list
-  '((ruby-comma-delimiter
-     (regexp . ",\\(\\s-*\\)[^/ \t\n]")
-     (modes  . align-ruby-modes)
-     (repeat . t))
-    (ruby-string-after-func
-     (regexp . "^\\s-*[a-zA-Z0-9.:?_]+\\(\\s-+\\)['\"]\\w+['\"]")
-     (modes  . align-ruby-modes)
-     (repeat . t))
-    (ruby-symbol-after-func
-     (regexp . "^\\s-*[a-zA-Z0-9.:?_]+\\(\\s-+\\):\\w+")
-     (modes  . align-ruby-modes)))
-  "Alignment rules specific to the ruby mode.
-See the variable `align-rules-list' for more details.")
-
-(with-no-warnings
-  (with-eval-after-load 'align
-    (add-to-list 'align-perl-modes 'ruby-mode)
-    (add-to-list 'align-dq-string-modes 'ruby-mode)
-    (add-to-list 'align-sq-string-modes 'ruby-mode)
-    (add-to-list 'align-open-comment-modes 'ruby-mode)
-    (dolist (it ruby-align-rules-list)
-      (add-to-list 'align-rules-list it))))
-
-;; hideshow ruby support
-
-(defun display-code-line-counts (ov)
-  (when (eq 'code (overlay-get ov 'hs))
-    (overlay-put ov 'face 'font-lock-comment-face)
-    (overlay-put ov 'display
-                 (format " ... %d lines"
-                         (count-lines (overlay-start ov)
-                                      (overlay-end ov))))))
-
-(with-eval-after-load "hideshow"
-  (unless 'hs-set-up-overlay
-    (setq hs-set-up-overlay 'display-code-line-counts))
-
-  (add-hook 'hs-minor-mode-hook
-            (lambda ()
-              (unless hs-set-up-overlay
-                (setq hs-set-up-overlay 'display-code-line-counts)))))
-
-(defun ruby-hs-minor-mode (&optional arg)
-  (interactive)
-  (require 'hideshow)
-  (unless (assoc 'ruby-mode hs-special-modes-alist)
-    (setq
-     hs-special-modes-alist
-     (cons (list 'ruby-mode
-                 "\\(def\\|do\\)"
-                 "end"
-                 "#"
-                 (lambda (&rest args) (ruby-end-of-block))
-                 ;;(lambda (&rest args) (ruby-beginning-of-defun))
-                 )
-           hs-special-modes-alist)))
-  (hs-minor-mode arg))
 
 ;; other stuff
 
@@ -98,6 +34,7 @@ See the variable `align-rules-list' for more details.")
 ;;   (newline)
 ;;   (smie-indent-line))
 
+;;;###autoload
 (defun ruby-toggle-string<>simbol ()
   "Easy to switch between strings and symbols."
   (interactive)
@@ -131,7 +68,7 @@ See the variable `align-rules-list' for more details.")
     (goto-char initial-pos)))
 
 ;; FIXME: rails-ruby-command, el4r-ruby-eval => just evaluate, capital-word-p
-(nvp-declare "" el4r-ruby-eval capital-word-p inf-ruby-mode)
+(nvp-decl el4r-ruby-eval capital-word-p inf-ruby-mode)
 (defvar rails-ruby-command)
 (defvar inf-ruby-first-prompt-pattern)
 (defvar inf-ruby-prompt-pattern)

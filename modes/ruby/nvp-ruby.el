@@ -17,49 +17,47 @@
           robe-mode robe-start)
 (nvp-decls)
 
-;; (defun my-ruby-smart-return ()
-;;   (interactive)
-;;   (when (memq (char-after) '(?\| ?\" ?\'))
-;;     (forward-char))
-;;   (call-interactively 'newline-and-indent))
-
-;; -------------------------------------------------------------------
-;;; Utils
-
-(defsubst nvp-ruby-version ()
-  (let ((str (shell-command-to-string "ruby --version")))
-    (and (string-match "\\([0-9.]+\\)" str)
-         (match-string-no-properties 1 str))))
-
-;; convert file[_-.]name to FileName
 (defsubst nvp-ruby-camelize (str &optional seps)
   (mapconcat 'identity
              (mapcar 'capitalize (split-string str (or seps "[._-]"))) ""))
 
-;; gather required libs in file
-(defun nvp-ruby-requires ()
+(defun nvp-ruby--buffer-requires ()
   (save-excursion
     (goto-char (point-min))
     (let (res)
-      (while (re-search-forward
-              "^require +\\(?:['\"]\\)\\([^\n\"']+\\)" nil 'move)
+      (while
+          (re-search-forward "^require +\\(?:['\"]\\)\\([^\n\"']+\\)" nil 'move)
         (push (match-string 1) res))
       res)))
 
-;; insert require
-(defun nvp-ruby-insert-require (lib)
-  (save-excursion
-    (goto-char (point-min))
-    (forward-comment (point-max))
-    (skip-syntax-backward " >")
-    (insert (concat "\nrequire '" lib "'"))))
+(defun nvp-ruby-require (lib)
+  (unless (cl-member lib (nvp-ruby--buffer-requires) :test 'string=)
+    (save-excursion
+      (goto-char (point-min))
+      (forward-comment (point-max))
+      (skip-syntax-backward " >")
+      (insert (concat "\nrequire \"" lib "\"")))))
 
-(defsubst nvp-ruby-require (lib)
-  (unless (cl-member lib (nvp-ruby-requires) :test 'string=)
-    (nvp-ruby-insert-require lib)))
+;;; Snippets
 
-;; ------------------------------------------------------------
-;;; Commands
+;; create arg initializtion from yas-text
+;; (i,j) => @i = i\n@j = j
+(defsubst nvp-ruby-yas-init-args ()
+  (mapconcat (lambda (s) (concat "@" s " = " s))
+             (split-string yas-text "[() ,]+" t " ")
+             "\n"))
+
+(defun nvp-ruby-yas-camelize-bfn ()
+  (nvp-ruby-camelize (nvp-path 'bfse)))
+
+
+;; -------------------------------------------------------------------
+;;; Base
+
+;; Movement
+(defun nvp-ruby-beginning-of-block ()
+  (interactive)
+  (ruby-end-of-block -1))
 
 (defun nvp-ruby-start-robe ()
   (interactive)
@@ -67,41 +65,15 @@
   (inf-ruby)
   (robe-start))
 
-;; Compile
 (defun nvp-ruby-compile ()
   (interactive)
   (ruby-compilation-this-buffer)
   (other-window 1))
 
-;; Movement
-(defun nvp-ruby-beginning-of-block ()
-  (interactive)
-  (ruby-end-of-block -1))
-
-(defun nvp-ruby-mark-block ()
-  (interactive)
-  (nvp--mark-defun))
-
-;; code-folding
-(eval-when-compile
-  (require 'hideshow)
-  (defmacro fold-show (&optional all)
-    `(if (hs-already-hidden-p)
-         (if ,all (hs-show-all) (hs-show-block))
-       (if ,all (hs-hide-all) (hs-hide-block)))))
-
-;; Fold classes/defs or just defs with prefix.
-(defun nvp-ruby-fold-class/def (arg)
-  (interactive "P")
-  (nvp-with-hs-block "\\(?:def\\|class\\)" "\\(?:end\\)"
-    (fold-show arg)))
-
-(defun nvp-ruby-fold (arg)
-  (interactive "P")
-  (nvp-with-hs-block "\\(?:def\\)" "\\(?:end\\)"
-    (fold-show arg)))
-
+
 ;; -------------------------------------------------------------------
+;;; Help
+
 ;;; REPL
 
 (defun nvp-ruby-switch-to-repl (eob-p)
@@ -134,30 +106,6 @@
    (point-min)
    (point-max)))
 
-;; -------------------------------------------------------------------
-;;; Debug
-
-;; insert breakpoint
-(defun nvp-ruby-insert-breakpoint ()
-  (nvp-ruby-require "pry")
-  (insert "binding.pry"))
-
-;; remove pry stuff
-(defun nvp-ruby-remove-breakpoints ()
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward
-            "\\(^require ['\"]pry['\"]\\|binding\.pry\\)\\s-*" nil 'move)
-      (replace-match "")
-      (delete-blank-lines))))
-
-;; insert breakpoint, with prefix remove all pry stuff
-(defun nvp-ruby-breakpoint (arg)
-  (interactive "P")
-  (if arg (nvp-ruby-remove-breakpoints)
-    (nvp-ruby-insert-breakpoint)))
-
-;; ------------------------------------------------------------
 ;;; Tags
 
 (defun nvp-ruby-update-rails-ctags ()
@@ -170,18 +118,67 @@
              projectile-tags-file-name
              " --tag-relative -R app lib vender test"))))
 
-;; -------------------------------------------------------------------
-;;; Snippets
+
+;; ------------------------------------------------------------
+;;; Extra
 
-;; create arg initializtion from yas-text
-;; (i,j) => @i = i\n@j = j
-(defsubst nvp-ruby-yas-init-args ()
-  (mapconcat (lambda (s) (concat "@" s " = " s))
-             (split-string yas-text "[() ,]+" t " ")
-             "\n"))
+;;; Fold
 
-(defun nvp-ruby-yas-camelize-bfn ()
-  (nvp-ruby-camelize (nvp-path 'bfse)))
+(defvar hs-special-modes-alist)
+(with-eval-after-load 'hideshow
+  (unless (assoc 'ruby-mode hs-special-modes-alist)
+    (push (list 'ruby-mode "\\(def\\|do\\)" "end" "#") hs-special-modes-alist)))
+
+;;; Tidy / Align
+
+;; ruby-hacks.el
+;; setup align for ruby-mode
+(defconst align-ruby-modes '(ruby-mode)
+  "align-perl-modes is a variable defined in `align.el'.")
+
+(defconst ruby-align-rules-list
+  '((ruby-comma-delimiter
+     (regexp . ",\\(\\s-*\\)[^/ \t\n]")
+     (modes  . align-ruby-modes)
+     (repeat . t))
+    (ruby-string-after-func
+     (regexp . "^\\s-*[a-zA-Z0-9.:?_]+\\(\\s-+\\)['\"]\\w+['\"]")
+     (modes  . align-ruby-modes)
+     (repeat . t))
+    (ruby-symbol-after-func
+     (regexp . "^\\s-*[a-zA-Z0-9.:?_]+\\(\\s-+\\):\\w+")
+     (modes  . align-ruby-modes)))
+  "Alignment rules specific to the ruby mode.
+See the variable `align-rules-list' for more details.")
+
+(with-no-warnings
+  (with-eval-after-load 'align
+    (add-to-list 'align-perl-modes 'ruby-mode)
+    (add-to-list 'align-dq-string-modes 'ruby-mode)
+    (add-to-list 'align-sq-string-modes 'ruby-mode)
+    (add-to-list 'align-open-comment-modes 'ruby-mode)
+    (dolist (it ruby-align-rules-list)
+      (add-to-list 'align-rules-list it))))
+
+;;; Debug
+
+(defun nvp-ruby--insert-breakpoint ()
+  (nvp-ruby-require "pry")
+  (insert "binding.pry"))
+
+(defun nvp-ruby--remove-breakpoints ()
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward
+            "\\(^require ['\"]pry['\"]\\|binding\.pry\\)\\s-*" nil 'move)
+      (replace-match "")
+      (delete-blank-lines))))
+
+(defun nvp-ruby-breakpoint (arg)
+  "Insert breakpoint, with prefix remove all pry stuff."
+  (interactive "P")
+  (if arg (nvp-ruby--remove-breakpoints)
+    (nvp-ruby--insert-breakpoint)))
 
 (provide 'nvp-ruby)
 

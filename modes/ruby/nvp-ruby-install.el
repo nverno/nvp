@@ -1,13 +1,17 @@
 ;;; nvp-ruby-install.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; FIXME:
-;; - gem paths are wrong with asdf
+;; FIXME: gem paths are wrong with asdf
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'nvp-ruby)
 (nvp-decls)
+(nvp-auto "nvp-env" 'nvp-env-path-add 'nvp-env-setenv!)
 
-(nvp-autoload "nvp-env" 'nvp-env-path-add 'nvp-env-setenv!)
+(defsubst nvp-ruby-version ()
+  (let ((str (shell-command-to-string "ruby --version")))
+    (and (string-match "\\([0-9.]+\\)" str)
+         (match-string-no-properties 1 str))))
 
 ;; ------------------------------------------------------------
 ;;; Install / Environment
@@ -47,9 +51,10 @@
      (gems '("rake" "bundler" "pry" "pry-doc" "method_source")))
   ;; need lexical binding here for process sentinels
   (let ((mods gems))
-    (cl-flet ((install-gems ()
-                (nvp-with-process "gem"
-                  :proc-args ("install" "-q" mods))))
+    (cl-flet ((install-gems
+               ()
+               (nvp-with-process "gem"
+                 :proc-args ("install" "-q" mods))))
       (if update
           (nvp-with-process "gem"
             :proc-args ("update" "--system")

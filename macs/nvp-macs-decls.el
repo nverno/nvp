@@ -101,7 +101,7 @@
        ;; modes
        view-list-mode scratch-minor-mode
        ;; logging
-       log-mode log log-default
+       results-title log-mode log log-default
        ;; windows
        window-configuration-restore window-configuration-save
        ;; hippie

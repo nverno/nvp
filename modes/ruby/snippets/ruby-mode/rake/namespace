@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: namespace
-# key: nam
+# key: ns
 # --
 namespace :${1:`(downcase (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))`} do
   $0

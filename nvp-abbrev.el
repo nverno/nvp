@@ -27,11 +27,10 @@
   (require 'nvp-macro)
   (require 'nvp-results)
   (defvar nvp-abbrev-completion-need-refresh))
-(require 'abbrev)
 (require 'nvp)
+(require 'abbrev)
 (require 'nvp-abbrev-util)
 (nvp-decls)
-(nvp-decl nvp-results-title)
 
 ;; -------------------------------------------------------------------
 ;;; Utils

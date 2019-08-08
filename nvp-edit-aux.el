@@ -18,11 +18,7 @@
 (nvp-decls)
 (nvp-decl paredit-delete-indentation)
 
-;;;###autoload
-(defun nvp-edit-aux-load ())
-
-(defvar nvp-list-keymap)
-(define-key nvp-list-keymap (nvp-input 'lcs) nil)
+(defvar nvp-list-keymap (make-sparse-keymap))
 (nvp-bind-keys nvp-list-keymap
   ("c"  . nvp-list-insert-commas)
   ("("  . nvp-list-wrap-parens)

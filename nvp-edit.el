@@ -135,7 +135,7 @@ With prefix sort in REVERSE."
             (end (region-end)))
         (nvp--duplicate-region arg beg end))
     (nvp--duplicate-last-nonempty-line arg)
-    (nvp-use-transient-bindings nil :repeat-key "d")))
+    (nvp-repeat-command)))
 
 ;; duplicate the current line num times.
 (defun nvp-duplicate-current-line (&optional num)
@@ -147,7 +147,8 @@ With prefix sort in REVERSE."
         (goto-char (point-max))
         (newline)
         (forward-char -1))
-      (nvp--duplicate-region num (nvp-point 'bol) (1+ (nvp-point 'eol))))))
+      (nvp--duplicate-region num (nvp-point 'bol) (1+ (nvp-point 'eol)))))
+  (nvp-repeat-command))
 
 (defun nvp--duplicate-back-and-dupe ()
   (interactive)

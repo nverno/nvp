@@ -5,9 +5,10 @@
 ;; shared abbrev utils required by multiple files
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
-(require 'abbrev)
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'nvp)
+(require 'abbrev)
 
 ;; get the value of the local abbrev table
 (defun nvp-abbrev--local-table ()

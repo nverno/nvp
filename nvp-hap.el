@@ -45,6 +45,7 @@
 
 ;;; Help-at-point
 
+;; see `company--group-lighter' for idea to display current backend in mode-line
 (defvar nvp-hap-popup-max-lines 25 "Max lines to display in popup.")
 (defvar nvp-hap-popup-timeout 60)
 

@@ -25,26 +25,14 @@
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
 
 
-;; -------------------------------------------------------------------
 ;;; Bindings
-
-;;;###autoload
-(defun nvp-dev-load (&optional _arg)
-  (interactive "P")
-  (let* ((keys (this-command-keys-vector))
-         (next-keys (append (listify-key-sequence keys) (list (read-event)))))
-    (message "this-command-keys: %S, vector: %S, keys: %S, next-keys: %S"
-             (this-command-keys) (this-command-keys-vector)
-             keys next-keys)
-    ;; (setq current-prefix-arg arg)
-    ;; (execute-kbd-macro (vconcat next-keys))
-    ))
 
 (defvar nvp-dev-keymap (make-sparse-keymap))
 (nvp-bind-keys nvp-dev-keymap
   ("a"  . nvp-dev-advice-remove-all)
   ("c"  . nvp-help-list-charsets)
   ("D"  . describe-current-display-table) ; #<marker at 3963 in disp-table.el.gz>
+  ("f"  . nvp-dev-features)
   ("Fr" . nvp-font-fontify-region-face)
   ("Fl" . nvp-font-list)
   ("h"  . nvp-dev-describe-hash)
@@ -108,7 +96,6 @@
 ;;       (remhash mode nvp-mode-cache)))
 
 ;; https://github.com/abo-abo/oremacs
-;;;###autoload
 (defun nvp-dev-describe-hash (variable)
   "Display the full documentation of VARIABLE (a symbol)."
   (interactive (let ((v (variable-at-point))
@@ -130,7 +117,6 @@
     (nvp-results-title (format "Hash: %S" variable))
     (nvp-pp-hash variable)))
 
-;;;###autoload
 (defun nvp-dev-describe-variable (variable)
   "Try to pretty print VARIABLE in temp buffer."
   (interactive (list (nvp-tap 'evari)))
@@ -197,6 +183,15 @@
         (cl-prettyprint fonts)
         (princ "\n"))
       (emacs-lisp-mode))))
+
+;; list my packages that have loaded
+(defun nvp-dev-features ()
+  (interactive)
+  (nvp-with-results-buffer (help-buffer)
+    (cl-prettyprint
+     (sort 
+      (--filter (string-prefix-p "nvp-" (symbol-name it)) features)
+      #'string-lessp))))
 
 
 ;; -------------------------------------------------------------------
@@ -325,7 +320,6 @@ delimiter or an Escaped or Char-quoted character."
 ;; -------------------------------------------------------------------
 ;;; Fonts
 
-;;;###autoload
 (defun nvp-font-fontify-region-face (face &optional beg end)
   "Fontify region or `thing-at-point' with font FACE.
 With \\[universal-argument] prompt for THING at point."
@@ -356,7 +350,6 @@ With \\[universal-argument] prompt for THING at point."
      (eq l-width m-width))))
 
 ;; https://www.emacswiki.org/emacs/GoodFonts
-;;;###autoload
 (defun nvp-font-list ()
   "Display various available fonts."
   (interactive)
@@ -377,7 +370,6 @@ With \\[universal-argument] prompt for THING at point."
 ;; -------------------------------------------------------------------
 ;;; Assorted
 
-;;;###autoload
 (defun nvp-dev-stats-uniq (beg end &optional _arg)
   "Print counts (case-insensitive) of unique words in region BEG to END."
   (interactive "r\nP")

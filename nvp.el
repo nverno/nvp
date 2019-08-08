@@ -502,5 +502,25 @@ On error (read-only), quit without selecting."
 ;; use ido-completion when reading environment variables interactively
 (advice-add 'read-envvar-name :around #'nvp/read-with-ido)
 
+
+;; -------------------------------------------------------------------
+;;; Bindings
+
+;; don't require use-package
+(defun nvp-autoload-keymap (keymap-symbol package &optional binding-map)
+  "Autoload KEYMAP-SYMBOL from PACKAGE, binding calling keys as prefix
+in `global-map' or BINDING-MAP if non-nil."
+  (require package)
+  (if (and (boundp keymap-symbol)
+           (keymapp (symbol-value keymap-symbol)))
+      (let* ((kv (this-command-keys-vector))
+             (key (key-description kv))
+             (keymap (symbol-value keymap-symbol)))
+        (define-key (or binding-map global-map) (kbd key) keymap)
+        (setq unread-command-events
+              (--map (cons t it) (listify-key-sequence kv))))
+    (error (format "package.el %s failed to define keymap %s"
+                   package keymap-symbol))))
+
 (provide 'nvp)
 ;;; nvp.el ends here

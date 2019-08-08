@@ -20,6 +20,8 @@
   "Local keymap to take priority over `nvp-override-mode-map'.")
 (put 'nvp-override-local-mode-map 'permanent-local t)
 
+;; `company-emulation-alist' #<marker at 34809 in company.el>
+;; `global-override-mode' in bind-key
 (define-minor-mode nvp-override-mode
   "Minor mode to enable overriding key bindings."
   :lighter ""
@@ -70,17 +72,6 @@ bindings, avoiding errors from key sequences starting with non-prefix keys."
                        (set-keymap-parent map oldmap)
                        (push `(,mode . ,map) minor-mode-overriding-map-alist)))))
     (define-key newmap key def)))
-
-;; used recursively below so not a macro
-;; ;;;###autoload
-;; (defun nvp-bind-transient-key (key cmd &optional keep exit)
-;;   "Bind KEY to CMD in transient map."
-;;   (set-transient-map
-;;    (let ((tmap (make-sparse-keymap)))
-;;      (define-key tmap (kbd key) cmd)
-;;      tmap)
-;;    (or keep t)
-;;    (or exit nil)))
 
 (provide 'nvp-overrides)
 ;; Local Variables:

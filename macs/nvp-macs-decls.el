@@ -94,7 +94,7 @@
        ;; movement
        move-previous-heading move-forward-heading mode-header-regex
        ;; bindings
-       bind-transient-key
+       autoload-keymap
        ;; reading
        read-elisp-symbol read-elisp-function read-elisp-variable
        completing-read find-file-in-dir

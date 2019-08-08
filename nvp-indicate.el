@@ -12,9 +12,8 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro))
-(nvp-declare :pkg "pulse"
+(nvp-decl :pkg "pulse"
   pulse-momentary-highlight-region pulse-momentary-highlight-one-line)
 
 ;; indicatation colors
@@ -82,15 +81,17 @@
 (defun nvp-indicate-long-lines (arg)
   "Toggle indication of long lines (length with prefix ARG, default 80)."
   (interactive "P")
-  (nvp-toggled-if (font-lock-refresh-defaults)
-    (let ((len (if arg (read-number "Length: ") 60))
-          (font-lock-multiline t))
-      (font-lock-add-keywords
-       nil
-       `((,(format "^[^\n]\\{%d\\}\\([^\n]+\\)$" len)
-          (1 font-lock-warning-face t))))
-      (font-lock-flush)
-      (font-lock-ensure))))
+  (nvp-toggled-if 
+      (let ((len (if arg (read-number "Length: ") 80))
+            (font-lock-multiline t))
+        (font-lock-add-keywords
+         nil
+         `((,(format "^[^\n]\\{%d\\}\\([^\n]+\\)$" len)
+            (1 font-lock-warning-face t))))
+        (font-lock-flush)
+        (font-lock-ensure))
+    (font-lock-refresh-defaults))
+  (nvp-repeat-command))
 
 ;;;###autoload
 (defun nvp-indicate-trailing-whitespace ()
@@ -100,7 +101,7 @@
   (font-lock-flush)
   (font-lock-ensure)
   ;; when show-trailing-whitespace
-  (nvp-use-transient-bindings (("d" . delete-trailing-whitespace))))
+  (nvp-repeat-command nil nil '(("d" 'delete-trailing-whitespace))))
 
 (provide 'nvp-indicate)
 ;;; nvp-indicate.el ends here

@@ -1,4 +1,4 @@
-;;; nvp-he-elisp.el --- elisp hippie expansion -*- lexical-binding: t; -*-
+;;; nvp-hippie-elisp.el --- elisp hippie expansion -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -6,7 +6,8 @@
 ;; - generalize try-with-local-namespace and sans-namespace for different langs
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro))
 (require 'hippie-exp)
 (autoload 'string-prefix-p "subr-x")
 (declare-function nvp-he-try-expand-flex "nvp-hippie")
@@ -129,5 +130,5 @@ onto the next one."
   (add-to-list 'hippie-expand-try-functions-list 
   	       #'nvp-he-try-elisp-symbol-sans-namespace t))
 
-(provide 'nvp-he-elisp)
-;;; nvp-he-elisp.el ends here
+(provide 'nvp-hippie-elisp)
+;;; nvp-hippie-elisp.el ends here

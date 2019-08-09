@@ -16,7 +16,6 @@
 (nvp-decl paredit-kill)
 (autoload 'sp-wrap-with-pair "smartparens")
 
-;; -------------------------------------------------------------------
 ;;; Indent
 
 ;;;###autoload

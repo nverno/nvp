@@ -126,7 +126,10 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
   (let ((name (thing-at-point 'symbol))
         choice)
     (when (stringp name)
-      (setq name (or (imenu-find-default name index-alist) name)))
+      (setq name
+            (let ((name (or (imenu-find-default name index-alist) name)))
+              (and (imenu--in-alist name index-alist)
+                   name))))
     (nvp-with-letf 'ido-setup-completion-map
         #'(lambda () (setq ido-completion-map nvp-imenu-completion-map))
       (setq name (ido-completing-read

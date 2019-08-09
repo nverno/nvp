@@ -57,48 +57,6 @@ With prefix, prompt for MODE buffers to kill."
   (pcase-dolist (`(,bmode . ,buff) (or buffs (nvp-buffer-matching-mode mode)))
     (and (eq mode bmode) (kill-buffer buff))))
 
-;; ------------------------------------------------------------
-;;; Rearrange buffer windows
-
-;; Transpose the buffers shown in two windows.
-;;;###autoload
-(defun nvp-buffer-transpose-windows (arg)
-  (interactive "p")
-  (let ((selector (if (>= arg 0) 'next-window 'previous-window)))
-    (while (/= arg 0)
-      (let ((this-win (window-buffer))
-	    (next-win (window-buffer (funcall selector))))
-	(set-window-buffer (selected-window) next-win)
-	(set-window-buffer (funcall selector) this-win)
-	(select-window (funcall selector)))
-      (setq arg (if (cl-plusp arg) (1- arg) (1+ arg))))))
-
-;;;###autoload
-(defun nvp-buffer-swap-windows ()
-  (interactive)
-  (if (= (count-windows) 2)
-      (let* ((this-win (window-buffer))
-             (next-win (window-buffer (next-window)))
-             (this-edge (window-edges (selected-window)))
-             (next-edge (window-edges (next-window)))
-             (this-win-2nd (not (and (<= (car this-edge)
-                                         (car next-edge))
-                                     (<= (cadr this-edge)
-                                         (cadr next-edge)))))
-             (splitter
-              (if (= (car this-edge)
-                     (car (window-edges (next-window))))
-                  #'split-window-horizontally
-                #'split-window-vertically)))
-        (delete-other-windows)
-        (let ((first-win (selected-window)))
-          (funcall splitter)
-          (if this-win-2nd (other-window 1))
-          (set-window-buffer (selected-window) this-win)
-          (set-window-buffer (next-window) next-win)
-          (select-window first-win)
-          (if this-win-2nd (other-window 1))))))
-
 ;; -------------------------------------------------------------------
 ;;; Buffer files 
 

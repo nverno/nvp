@@ -10,9 +10,7 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib)
-  (require 'subr-x))
+  (require 'nvp-macro))
 (autoload 'find-library-name "find-func")
 
 (eval-and-compile

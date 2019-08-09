@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (nvp-decls)
 (nvp-autoload "hexl" 'hexl-octal-string-to-integer 'hexl-hex-string-to-integer)
 

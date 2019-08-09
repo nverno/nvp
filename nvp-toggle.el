@@ -3,7 +3,10 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (defvar time-stamp-pattern)
+  (defvar time-stamp-count)
+  (defvar time-stamp-active))
 (require 'nvp)
 (require 'files-x)
 (declare-function time-stamp "time-stamp")

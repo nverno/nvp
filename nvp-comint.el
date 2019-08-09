@@ -10,8 +10,7 @@
 ;; - default `comint-input-filter-functions' to ignore blanks, compress newlines
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'comint)
 (nvp-decls)
 
@@ -21,7 +20,7 @@
     (when (processp proc)
       (delete-process proc))))
 
-;; -------------------------------------------------------------------
+
 ;;; History
 
 ;; use if wanting to read history file over tramp connection
@@ -45,6 +44,8 @@
   (apply #'nvp-he-history-setup args))
 (put 'nvp-comint-setup-history 'lisp-indent-function 1)
 
+
+;;; I/O
 ;; evaluate STRING in PROC, but discard output silently
 (defun nvp-comint-redirect-silently (proc string &optional prompt)
   (let ((comint-redirect-perform-sanity-check))
@@ -60,6 +61,29 @@
       (while (and (null comint-redirect-completed)   ;wait for cleanup to finish
                   (accept-process-output proc 1)))
       (and prompt (comint-send-string proc "\n"))))) ;optionally print a new prompt
+
+
+;;; Font-locking
+;; http://www.modernemacs.com/post/comint-highlighting/
+;; https://github.com/hylang/hy-mode/blob/master/hy-font-lock.el
+(defun nvp-comint-font-lock-keywords (kwd)
+  (-let (((matcher . match-highlights) kwd))
+    ;; matcher can be function or regexp
+    (macroexpand-all
+     `((lambda (limit)
+         (when ,(if (symbolp matcher)
+                    `(,matcher limit)
+                  `(re-search-forward ,matcher limit t))
+           ;; while SUBEXP can be anything, this search always can use zero
+           (-let ((start (match-beginning 0))
+                  ((comint-last-start . comint-last-end) comint-last-prompt)
+                  (state (syntax-ppss)))
+             (and (> start comint-last-start)
+                  ;; make sure not in comment/string
+                  ;; have to manually do this in custom MATCHERs
+                  (not (or (nth 3 state) (nth 4 state)))))))
+       ,@match-highlights))))
+
 
 (provide 'nvp-comint)
 ;;; nvp-comint.el ends here

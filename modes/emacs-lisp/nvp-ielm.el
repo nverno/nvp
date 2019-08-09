@@ -1,4 +1,4 @@
-;;; nvp-elisp-inf.el --- ielm/lisp-interaction -*- lexical-binding: t; -*-
+;;; nvp-ielm.el --- ielm/lisp-interaction -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -9,7 +9,9 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-font))
+(require 'lisp-mode)
 (require 'ielm)
+(require 'nvp-comint)
 
 (defvar nvp-ielm-hippie-expanders
   '(nvp-he-try-expand-history
@@ -36,12 +38,20 @@
     (setq default-directory
           (buffer-local-value 'default-directory ielm-working-buffer))))
 
-(nvp-font-lock-add-defaults 'inferior-emacs-lisp-mode
-  ((nvp-re-opt '("Eval error" "Read error")) (0 font-lock-warning-face)))
+
+;;; Fonts
 
-(provide 'nvp-elisp-inf)
+(defconst nvp-ielm-font-lock-keywords
+  `(,@(mapcar #'nvp-comint-font-lock-keywords lisp-el-font-lock-keywords-2)
+    ,@(mapcar #'nvp-comint-font-lock-keywords lisp-cl-font-lock-keywords-2)))
+
+(nvp-font-lock-add-defaults 'inferior-emacs-lisp-mode
+  ((nvp-re-opt '("IELM error" "Eval error" "Read error")) (0 font-lock-warning-face))
+  (nvp-ielm-font-lock-keywords))
+
+(provide 'nvp-ielm)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-elisp-inf.el ends here
+;;; nvp-ielm.el ends here

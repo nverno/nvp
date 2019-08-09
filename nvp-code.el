@@ -11,6 +11,13 @@
   (require 'nvp-macro))
 (nvp-declare hs-toggle-hiding hs-show-all hs-hide-all)
 
+(nvp-bindings nvp-fold-keymap nil
+  :create t
+  ("f" . nvp-hs-toggle)
+  ("a" . hs-hide-all)
+  ("s" . hs-show-all)
+  ("l" . hs-hide-level))
+
 ;;; Hideshow
 
 (defvar hs-minor-mode)

@@ -118,7 +118,7 @@
     ;; should be able to pass the numeric argument along properly
     (apply cmd nil)))
 
-(nvp-advise-commands 'nvp-dired-w/o-dwim :around (dired-do-rename dired-do-copy))
+(nvp-advise-commands #'nvp-dired-w/o-dwim :around (dired-do-rename dired-do-copy))
 
 
 ;; -------------------------------------------------------------------

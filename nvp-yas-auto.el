@@ -2,10 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
 

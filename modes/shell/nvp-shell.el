@@ -57,13 +57,18 @@
     ;; FIXME: inherit environment??
     (let* ((cmd (funcall comint-get-old-input))
            ;; FIXME: doesn't work -- how to pass env from gnome-shell => bash
-           (process-environment
-            (cons (format "PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"'" cmd)
-                  process-environment)))
+           ;; (process-environment
+           ;;  (cons (format "PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"'" cmd)
+           ;;        process-environment))
+           )
       (and (not (string-blank-p cmd))
            (comint-send-string
             proc
-            (format "gnome-terminal --tab -e \"bash -c '%s;bash'\"\n" cmd)))
+            (format
+             (concat "gnome-terminal --tab -- bash -c '"
+                     ;; "export PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"';"
+                     "%s; bash'\n")
+             cmd)))
       (comint-add-to-input-history cmd)
       (comint-delete-input))))
 

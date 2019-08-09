@@ -6,6 +6,7 @@
 (eval-when-compile
   (require 'nvp-macro))
 (require 'nvp-local)
+(nvp-decl winner-redo winner-undo)
 (nvp-decls)
 
 ;;; Aliases
@@ -476,7 +477,7 @@ On error (read-only), quit without selecting."
 ;;; Advices
 
 ;; add smooth-scrolling
-(nvp-advise-commands 'do-smooth-scroll :after '(nvp-move-next5 nvp-move-prev5))
+(nvp-advise-commands #'do-smooth-scroll :after '(nvp-move-next5 nvp-move-prev5))
 
 ;; don't run `shell-mode-hook' during `shell-command' calls
 (define-advice shell-command (:around (orig-fn &rest args) "no-hook")
@@ -487,7 +488,7 @@ On error (read-only), quit without selecting."
 (defun nvp/no-tabs (old-fn &rest args)
   (let (indent-tabs-mode)
     (apply old-fn args)))
-(nvp-advise-commands 'nvp/no-tabs :around '(comment-dwim align align-regexp))
+(nvp-advise-commands #'nvp/no-tabs :around '(comment-dwim align align-regexp))
 
 ;; apply function in calling buffer when currently in minibuffer
 (defun nvp/do-switch-buffer (old-fn &rest args)
@@ -502,6 +503,28 @@ On error (read-only), quit without selecting."
     (apply old-fn args)))
 ;; use ido-completion when reading environment variables interactively
 (advice-add 'read-envvar-name :around #'nvp/read-with-ido)
+
+;; after advice: repeat command with last basic input, or install transient MAP
+(defun nvp/repeat (&optional map &rest args)
+  (set-transient-map
+   (or map
+       (let ((km (make-sparse-keymap)))
+         (define-key km (vector (nvp-input 'lbi))
+           `(lambda ()
+              (interactive)
+              (apply #',this-command ,args)))
+         km))
+   t))
+
+(with-eval-after-load 'winner
+ (defvar nvp-winner-map
+   (let ((map (make-sparse-keymap)))
+     (define-key map "p" #'winner-undo)
+     (define-key map "n" #'winner-redo)
+     map))
+
+ (nvp-advise-commands (apply-partially #'nvp/repeat nvp-winner-map)
+   :after '(winner-undo winner-redo)))
 
 
 ;; -------------------------------------------------------------------

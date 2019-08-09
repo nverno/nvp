@@ -7,9 +7,7 @@
 ;; - find processes
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)
 

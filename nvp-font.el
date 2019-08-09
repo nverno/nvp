@@ -46,7 +46,7 @@
 (defmacro nvp-font-lock-keywords (&rest forms)
   "Create list of font-lock additions.
 Each element of FORMS is a list ([:quoted char] regex font-spec)."
-  (declare (indent defun))
+  (declare (indent defun) (debug t))
   `(list
     ,@(cl-loop for form in forms
          as quoted = (plist-get form :quoted)
@@ -55,7 +55,9 @@ Each element of FORMS is a list ([:quoted char] regex font-spec)."
          if quoted
          collect `(nvp-fontify-quoted :char ,quoted ,form)
          else
-         collect `(cons ,(car form) ',(cdr form)))))
+         collect (if (consp form)
+                     `(cons ,(car form) ',(cdr form))
+                   `(symbol-value ,form)))))
 
 (defmacro nvp-font-lock-add-defaults (mode &rest forms)
   "Add font-lock additions to MODE."

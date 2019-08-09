@@ -8,10 +8,10 @@
 
 (eval-and-compile
   (defvar nvp--bindings-hjkl
-   '(("j" . next-line) ;; `next-line' often advised, unlike `forward-line'
-     ("k" . previous-line)
-     ("h" . backward-char)
-     ("l" . forward-char)))
+    '(("j" . next-line) ;; `next-line' often advised, unlike `forward-line'
+      ("k" . previous-line)
+      ("h" . backward-char)
+      ("l" . forward-char)))
 
   (defvar nvp--bindings-move
     '(("M-n"   . nil) ;; use global defs.
@@ -63,7 +63,7 @@
    ((consp key) key)                    ;maybe '(kbd ...) already
    (t (kbd key))))
 
-; Conditional binding
+                                        ; Conditional binding
 ;; info: extended menu items
 ;; http://endlessparentheses.com/define-context-aware-keys-in-emacs.html
 (defmacro nvp-bind (map key cmd &rest predicate)
@@ -188,7 +188,7 @@ If AFTER-LOAD is non-nil, eval after loading feature/file."
              collect `(nvp-bind ,map ,k ,b))))))
 
 (cl-defmacro nvp-bindings (mode &optional feature &rest bindings
-                                &key local buff-local minor autoload
+                                &key local buff-local minor autoload create prefix
                                 &allow-other-keys)
   "Set MODE BINDINGS after FEATURE is loaded.
 If LOCAL is non-nil, make map buffer local.
@@ -196,24 +196,31 @@ AUTOLOAD specifies prefix key which autoloads map."
   (declare (indent defun))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
+  (and (symbolp mode) (setq mode (symbol-name mode)))
   (let ((modemap (nvp--normalize-modemap mode minor)))
     `(progn
        (eval-when-compile (defvar ,modemap))
+       ,(when prefix
+          `(define-prefix-command ',modemap nil ,(and (stringp prefix) `,prefix)))
+       ,(when create
+          `(defvar ,modemap (make-sparse-keymap)))
        ,(when autoload
           `(nvp-bind global-map ,autoload
-                        (nvp-lam ()
-                          (interactive)
-                          (nvp-autoload-keymap
-                           ',modemap ,(or feature `',(intern mode))))))
+                     (nvp-lam ()
+                       (interactive)
+                       (nvp-autoload-keymap
+                        ',modemap ,(or feature `',(intern mode))))))
        ,(when local           ; will change bindings for all mode buffers
           `(make-local-variable ',modemap))
        ,(when buff-local      ; HACK: but how to modify 
           `(with-no-warnings  ; something like `company-active-map'
              (make-variable-buffer-local ',modemap)))
        ,(when bindings
-          `(with-eval-after-load ,(or feature `',(intern mode))
-             ,@(cl-loop for (k . b) in bindings
-                  collect `(nvp-bind ,modemap ,k ,b)))))))
+          `(,@(if (or create prefix) '(progn)
+                `(with-eval-after-load ,(or feature `',(intern mode))))
+            ;; with-eval-after-load ,(or feature `',(intern mode))
+            ,@(cl-loop for (k . b) in bindings
+                 collect `(nvp-bind ,modemap ,k ,b)))))))
 
 ;;; View bindings
 

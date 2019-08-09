@@ -1,12 +1,16 @@
 ;;; nvp-edebug.el --- emacs/elisp debubgging helper -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;;
 ;; Emacs/elisp debugging
-
+;;
 ;;; Notes
 ;; - cc-engine: #<marker at 23505 in cc-engine.el.gz>
 ;; it would be useful to highlight positions with overlays during debugging
 ;; see #<marker at 63523 in cc-engine.el.gz>
+;;
+;; edebug-x.el: tabulated list of breakpoints looks useful
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

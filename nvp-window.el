@@ -5,9 +5,10 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'hydra))
+(require 'nvp)
 (require 'windmove)
 (declare-function ace-window "ace-window")
-(nvp-autoload "winner" winner-undo winner-redo)
+(nvp-auto "winner" winner-undo winner-redo)
 
 ;;;###autoload
 (defun nvp-window-toggle-dedicated (window)
@@ -16,6 +17,60 @@
   (let ((dedicated-p (window-dedicated-p window)))
     (set-window-dedicated-p window (not dedicated-p))))
 
+;; Transpose the buffers shown in two windows.
+;; from https://github.com/re5et/.emacs.d/blob/master/my/my-functions.el
+;;;###autoload
+(defun nvp-window-transpose (arg)
+  (interactive "p")
+  (let ((selector (if (>= arg 0) 'next-window 'previous-window)))
+    (while (/= arg 0)
+      (let ((this-win (window-buffer))
+	    (next-win (window-buffer (funcall selector))))
+	(set-window-buffer (selected-window) next-win)
+	(set-window-buffer (funcall selector) this-win)
+	(select-window (funcall selector)))
+      (setq arg (if (cl-plusp arg) (1- arg) (1+ arg)))))
+  (nvp-repeat-command))
+
+;;;###autoload
+(defun nvp-window-rotate ()
+  (interactive)
+  (let ((windows-and-buffers
+         (--map (cons it (window-buffer (next-window it))) (window-list))))
+    (dolist (window-and-buffer windows-and-buffers)
+      (-let (((wnd . buf) window-and-buffer))
+        (select-window wnd)
+        (switch-to-buffer buf))))
+  (nvp-repeat-command))
+
+;;;###autoload
+(defun nvp-window-swap ()
+  (interactive)
+  (if (= (count-windows) 2)
+      (let* ((this-win (window-buffer))
+             (next-win (window-buffer (next-window)))
+             (this-edge (window-edges (selected-window)))
+             (next-edge (window-edges (next-window)))
+             (this-win-2nd (not (and (<= (car this-edge)
+                                         (car next-edge))
+                                     (<= (cadr this-edge)
+                                         (cadr next-edge)))))
+             (splitter
+              (if (= (car this-edge)
+                     (car (window-edges (next-window))))
+                  #'split-window-horizontally
+                #'split-window-vertically)))
+        (delete-other-windows)
+        (let ((first-win (selected-window)))
+          (funcall splitter)
+          (if this-win-2nd (other-window 1))
+          (set-window-buffer (selected-window) this-win)
+          (set-window-buffer (next-window) next-win)
+          (select-window first-win)
+          (if this-win-2nd (other-window 1)))))
+  (nvp-repeat-command))
+
+;; Hydra wiki
 ;;;###autoload(autoload 'nvp-window-hydra/body "nvp-window")
 (nvp-hydra-set-property 'nvp-window-hydra)
 (defhydra nvp-window-hydra (:color red)

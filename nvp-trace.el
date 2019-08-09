@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'hydra)
   (require 'nvp-macro))
 (require 'trace)

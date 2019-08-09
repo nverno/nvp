@@ -1263,29 +1263,23 @@ and set `this-command' to nil so opposite happens next time."
 ;; -------------------------------------------------------------------
 ;;; Advice
 
-(defmacro nvp-advise-commands (advices where funcs &optional props)
-  "Apply ADVICES to FUNCS at WHERE with PROPS.
-Both ADVICES and FUNCS can be lists, quoted or not."
+(defmacro nvp-advise-commands (advice where funcs &optional props)
+  "Apply ADVICE to FUNCS at WHERE with PROPS. 
+FUNCS can be a list, quoted or not."
   (declare (indent defun))
-  (setq advices (nvp--unquote advices)
-        funcs (nvp--unquote funcs))
+  (setq funcs (nvp--unquote funcs))
   (macroexp-progn
-   (cl-loop for advice in advices
-      nconc
-        (cl-loop for func in funcs
-           collect `(advice-add ',func ,where ',advice ,props)))))
+   (cl-loop for func in funcs
+      collect `(advice-add ',func ,where ,advice ,props))))
 
-(defmacro nvp-unadvise-commands (advices funcs)
-  "Remove ADVICES from FUNCS.
+(defmacro nvp-unadvise-commands (advice funcs)
+  "Remove ADVICE from FUNCS.
 See `nvp-advise-commands'."
   (declare (indent defun) (debug t))
-  (setq advices (nvp--unquote advices)
-        funcs (nvp--unquote funcs))
+  (setq funcs (nvp--unquote funcs))
   (macroexp-progn
-   (cl-loop for advice in advices
-      nconc
-        (cl-loop for func in funcs
-           collect `(advice-remove ',func ',advice)))))
+   (cl-loop for func in funcs
+      collect `(advice-remove ',func ',advice))))
 
 (defmacro nvp-remove-all-advice (funcs)
   "Remove all advice from list of FUNCS."

@@ -9,14 +9,14 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-results))
+  (require 'nvp-results)
+  (require 'nvp-display))
 (require 'nvp)
-(require 'nvp-display)
-(require 'nvp-results)
 (require 'help-mode)
 (nvp-decl :pkg "nadvice" advice-mapc advice-remove)
 (nvp-auto "nvp-util" nvp-s-wrap)
-(autoload 's-split-words "s")
+(nvp-auto "nvp-read" 'nvp-read-elisp-variable)
+(nvp-auto "s" 's-split-words)
 (nvp-decls)
 
 (define-button-type 'help-marker
@@ -114,7 +114,7 @@
                             (if (hash-table-p v) (symbol-name v))))
                  (list (if (equal val "") v (intern val)))))
   (nvp-with-results-buffer (help-buffer)
-    (nvp-results-title (format "Hash: %S" variable))
+    :title (format "Hash: %S" variable)
     (nvp-pp-hash variable)))
 
 (defun nvp-dev-describe-variable (variable)
@@ -127,7 +127,7 @@
         ;; (print-gensym t)
         (inhibit-read-only t))
     (nvp-with-results-buffer (help-buffer)
-      (nvp-results-title (format "Variable ('%s'): %S" (type-of val) variable))
+      :title (format "Variable ('%s'): %S" (type-of val) variable)
       (princ (nvp-pp-variable-to-string val))
       (emacs-lisp-mode))))
 
@@ -171,7 +171,7 @@
                (cl-prettyprint (cdr i))
                (princ "\n"))))))
     (nvp-with-results-buffer (help-buffer)
-      (nvp-results-title (format "%S variables" mode))
+      :title (format "%S variables" mode)
       (princ ";;; Variables\n")
       (funcall print-fn vars 'values)
       (princ ";;; Functions\n")
@@ -185,12 +185,13 @@
       (emacs-lisp-mode))))
 
 ;; list my packages that have loaded
-(defun nvp-dev-features ()
-  (interactive)
+(defun nvp-dev-features (prefix)
+  (interactive (list (nvp-prefix 4 (read-string "Prefix: ") "nvp")))
   (nvp-with-results-buffer (help-buffer)
+    :title (format "Loaded '%s' features" prefix)
     (cl-prettyprint
      (sort 
-      (--filter (string-prefix-p "nvp-" (symbol-name it)) features)
+      (--filter (string-prefix-p prefix (symbol-name it)) features)
       #'string-lessp))))
 
 
@@ -213,7 +214,7 @@
         start end text)
     (if (not overlays) (message "Nothing here :(")
       (nvp-with-results-buffer (help-buffer) :font-lock t
-        (nvp-results-title (format "Overlays at %d in %S" pos (current-buffer)))
+        :title (format "Overlays at %d in %S" pos obuf)
         (dolist (o overlays)
           (setq start (overlay-start o)
                 end (overlay-end o)
@@ -373,15 +374,15 @@ With \\[universal-argument] prompt for THING at point."
 (defun nvp-dev-stats-uniq (beg end &optional _arg)
   "Print counts (case-insensitive) of unique words in region BEG to END."
   (interactive "r\nP")
-  (require 'nvp-hash)
+  (require 'nvp-cache)
   (let ((ht (make-hash-table :test 'case-fold))
         (words (s-split-words (buffer-substring-no-properties beg end)))
         lst)
-    (mapc (lambda (w) (cl-callf + (gethash w ht 0) 1)) words)
+    (mapc (lambda (w) (cl-callf 1+ (gethash w ht 0))) words)
     (maphash (lambda (key val) (push (cons val key) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
     (nvp-with-results-buffer (help-buffer)
-      (nvp-results-title "Word Counts")
+      :title "Word Counts"
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
 

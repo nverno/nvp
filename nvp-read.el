@@ -161,6 +161,7 @@
                                   default))))
 
 ;; #<marker at 34938 in help-fns.el.gz>
+;;;###autoload
 (defun nvp-read-elisp-symbol (prompt &optional predicate default hist)
   "Read symbol using `help--symbol-completion-table' using PROMPT with DEFAULT.
 Filter by PREDICATE if non-nil."
@@ -176,6 +177,7 @@ Filter by PREDICATE if non-nil."
     (unless (equal val "")
       (intern val))))
 
+;;;###autoload
 (defun nvp-read-elisp-variable (prompt &optional default hist)
   "Lookup elisp symbol using PROMPT and optional DEFAULT."
   (setq default (nvp-read--default default (let ((var (variable-at-point)))
@@ -188,6 +190,7 @@ Filter by PREDICATE if non-nil."
                                    (and (boundp vv) (not (keywordp vv))))))
                            (or default :none) hist)))
 
+;;;###autoload
 (defun nvp-read-elisp-function (prompt &optional default hist)
   "Lookup elisp function with PROMPT and optional DEFAULT."
   (setq default (nvp-read--default default (function-called-at-point)))

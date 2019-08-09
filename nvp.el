@@ -33,6 +33,7 @@
 (defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
 
 ;; overrides to display result in current or other window
+(defvar nvp-display-fallback-function #'dired "Fallback for unhandled prefix.")
 (defvar nvp-display-actions
   '(
     :buffer ((4 display-buffer-same-window

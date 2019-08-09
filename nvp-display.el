@@ -10,8 +10,6 @@
 (require 'nvp)                          ;nvp-display-actions
 (nvp-decl yas-expand-snippet yas-lookup-snippet find-function-other-window)
 
-(defvar nvp-display-fallback-function #'dired "Fallback for unhandled prefix.")
-
 (eval-and-compile
   (defmacro nvp-display:get-action (action type)
     (and (consp action) (setq action (prefix-numeric-value action)))

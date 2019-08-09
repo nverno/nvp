@@ -83,7 +83,8 @@
 ;;; Output
 
 (cl-defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body
-                                                &key font-lock &allow-other-keys)
+                                                &key font-lock title
+                                                &allow-other-keys)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."
   (declare (indent defun) (debug (sexp &rest form)))
@@ -97,6 +98,7 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
       nil
       (with-current-buffer standard-output
         (setq other-window-scroll-buffer (current-buffer))
+        ,(if title `(funcall #'nvp-results-title ,title))
         ,@body
         ,@(when font-lock '((font-lock-mode) (font-lock-ensure)))
         (hl-line-mode)

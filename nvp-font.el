@@ -43,21 +43,49 @@
 ;; -------------------------------------------------------------------
 ;;; Create font-lock additions
 
+;; (defun org-plist-delete (plist property)
+;;   "Delete PROPERTY from PLIST.
+;; This is in contrast to merely setting it to 0."
+;;   (let (p)
+;;     (while plist
+;;       (if (not (eq property (car plist)))
+;; 	  (setq p (plist-put p (car plist) (nth 1 plist))))
+;;       (setq plist (cddr plist)))
+;;     p))
+
+;; (setq tst '(a d :splice b c))
+;; (member :splices tst)
+
+;; remove symbol PROP from LST
+;; (defun nvp--remove-prop (lst prop)
+;;   (--remove-first (eq prop))
+;;   (-when-let (rest (cdr (member prop lst)))
+;;     (append (reverse (cdr (member prop (reverse lst)))) rest)))
+
 (defmacro nvp-font-lock-keywords (&rest forms)
   "Create list of font-lock additions.
 Each element of FORMS is a list ([:quoted char] regex font-spec)."
   (declare (indent defun) (debug t))
-  `(list
+  `(append
     ,@(cl-loop for form in forms
          as quoted = (plist-get form :quoted)
+         as splice = (plist-get form :splice)
+         when (consp form)
          do (while (keywordp (car form))
-              (setq form (cdr (cdr form))))
+              (if (memq (car form) '(:splice)) ; ill-formed plist keys
+                  (setq form (cdr form))
+                (setq form (cdr (cdr form)))))
+         if (and splice (consp form))
+         collect (car form)
+         else
+         ;; collect `,(car form)
+         ;; else
          if quoted
-         collect `(nvp-fontify-quoted :char ,quoted ,form)
+         collect `(list (nvp-fontify-quoted :char ,quoted ,form))
          else
          collect (if (consp form)
-                     `(cons ,(car form) ',(cdr form))
-                   `(symbol-value ,form)))))
+                     `(list (cons ,(car form) ',(cdr form)))
+                   `(list ,form)))))
 
 (defmacro nvp-font-lock-add-defaults (mode &rest forms)
   "Add font-lock additions to MODE."

@@ -22,7 +22,7 @@
 
 (nvp-font-lock-add-defaults 'awk-mode
   ("\$\\([0-9]+\\)" (1 font-lock-variable-name-face prepend))
-  (`,(concat "\\<" (regexp-opt '("BEGINFILE" "ENDFILE") t) "\\>")
+  ((concat "\\<" (regexp-opt '("BEGINFILE" "ENDFILE") t) "\\>")
    (1 font-lock-keyword-face))
   ("\\(@[[:alpha:]_]+\\)" (1 'nvp-italic-variable-face)))
 

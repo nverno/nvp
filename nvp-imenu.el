@@ -74,18 +74,21 @@ Assumes the list is flattened and only elements with markers remain."
 ;;; Hook
 
 (defun nvp-imenu--create-regex (&optional headers headers-1 headers-2)
-  (if (equal headers ':none)
+  (if (eq headers ':none)
       (list :none nil nil)
     (or headers
         (setq headers
-              `((nil ,(concat "^" (regexp-quote (nvp-comment-start 3))
-                              "\\s-*\\(.*\\)\\s-*$")
+              `((nil ,(concat
+                       "^" (regexp-quote (nvp-comment-start 3)) "\\{1,2\\}"
+                       "\\s-+\\(.*\\)\\s-*$")
                      1))))
     (or headers-1 (setq headers-1 `(("Headers" ,(cadr (car headers)) 1))))
     (or headers-2
         (setq headers-2
               `(("Sub-Headers"
-                 ,(concat "^" (nvp-comment-start 2) "-+\\s-*\\(.*\\)[ -]*$") 1))))
+                 ,(concat
+                   "^" (nvp-comment-start 2) "-\\{1,2\\}\\s-+\\(.*\\)[ -]*$")
+                 1))))
     (list headers headers-1 headers-2)))
 
 ;; make header from comment

@@ -310,8 +310,8 @@ If in `declare-function', convert to autoload."
 
 (eval-and-compile
   (nvp-setq nvp-elisp-imenu-headers
-            (let* ((prefix "^;;\\(?:;\\|[*]+\\| |\\)\\s-*")
-                   (hdr-regex (concat prefix "\\([^#].*\\)\\s-*$"))
+            (let* ((prefix "^;;\\(?:;\\{1,2\\}\\|[*]\\{1,2\\}\\| |\\)\\s-+")
+                   (hdr-regex (concat prefix "\\([^#;].*\\)\\s-*$"))
                    (pkg-hdrs
                     (concat prefix "\\("
                             (regexp-opt '("Commentary:" "Code:" "Documentation:"

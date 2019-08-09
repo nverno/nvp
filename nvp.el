@@ -3,8 +3,7 @@
 ;;; Commentary:
 ;; [![Build Status](https://travis-ci.org/nverno/nvp.svg?branch=master)](https://travis-ci.org/nverno/nvp)
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-local)
 (nvp-decl winner-redo winner-undo)
 (nvp-decls)
@@ -33,8 +32,8 @@
   "Default logging function - called from process sentinels, etc.")
 (defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
 
-;; overrides to display result in current or other window
-(defvar nvp-display-fallback-function #'dired "Fallback for unhandled prefix.")
+(defvar nvp-display-fallback-function #'nvp-display-fallback-dired
+  "Fallback for unhandled prefix.")
 (defvar nvp-display-actions
   '(
     :buffer ((4 display-buffer-same-window

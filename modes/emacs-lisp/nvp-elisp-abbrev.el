@@ -1,16 +1,13 @@
 ;;; nvp-elisp-abbrev.el --- create abbrevs -*- lexical-binding: t -*-
 
 ;;; Commentary:
-
 ;; Generates abbrevs for elisp functions defined in buffer.
 ;; By default, abbrevs are created from the first letters of
 ;; hyphenated words, ie. file-name-nondirectory => fnd.  The generated
 ;; abbrev table is made the local abbrev table with
 ;; `emacs-lisp-mode-abbrev-table' as its parent.
-
-;; TODO:
-;; - generic methods for dynamic abbrevs
-
+;;
+;; TODO: generic methods for dynamic abbrevs
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

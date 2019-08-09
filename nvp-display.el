@@ -3,10 +3,13 @@
 ;;; Commentary:
 
 ;; default configurations for displaying buffers/files
+;; actions to take jumping to buffers/files
+;; nil => other window (default)
+;; 4   => same window
+;; >4  => call fallback
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)                          ;nvp-display-actions
 (nvp-decl yas-expand-snippet yas-lookup-snippet find-function-other-window)
 
@@ -24,16 +27,28 @@ MODE and BINDINGS are passed to `yas-expand-snippet'."
     (yas-expand-snippet
      (yas-lookup-snippet template mode) start end)))
 
-;; actions to take jumping to buffers/files
-;; 4 => same window
-;; _ => other window (default)
+;; fallback to dired
+;;;###autoload
+(defun nvp-display-fallback-dired (location &rest _args)
+  (let ((dir (pcase location
+               ((pred file-exists-p)
+                (file-name-directory location))
+               ((pred bufferp)
+                (file-name-directory (buffer-file-name location)))
+               (_ (-if-let (buff (get-buffer location))
+                      (file-name-directory
+                       (buffer-file-name location))
+                    default-directory)))))
+    (dired dir)))
+
 ;;;###autoload
 (cl-defun nvp-display-location (location type action &key find-fn init-fn)
   "Display LOCATION of TYPE using ACTION.
 Currently supported TYPEs are :buffer, :find-func, :file, and :ido.
-Action decides how to display location: 
-  - with prefix => same window
-  - otherwise   => other window (default)
+Action decides how to display location depending on prefix: 
+  - none        => other window (default)
+  - C-u         => same window
+  - C-uC-u...   => fallback
 In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
   (if (not action) (setq action 1)
     (if (consp action) (setq action (prefix-numeric-value action))))
@@ -67,9 +82,7 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
             (file-fn (nvp-display:get-action ,action :file))
             (ido-default-file-method (nvp-display:get-action ,action :ido))
             (ido-default-buffer-method ido-default-file-method))
-       (cl-letf (((symbol-function 'find-file)
-                  (symbol-function file-fn)))
-         ,@body))))
+       (nvp-with-letf 'find-file file-fn ,@body))))
 
 ; (defmacro nvp-display-file-with-action (action &rest body)
 ;   "Execute BODY with jump ACTION file defaults."

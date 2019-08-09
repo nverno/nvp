@@ -6,8 +6,7 @@
 ;; - generalize try-with-local-namespace and sans-namespace for different langs
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
 (autoload 'string-prefix-p "subr-x")
 (declare-function nvp-he-try-expand-flex "nvp-hippie")

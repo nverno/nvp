@@ -7,14 +7,9 @@
 ;; - read w/ popup help: see `register-read-with-preview'
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)                     ;string-remove-suffix
-  (require 'nvp-macro)
-  (require 'nvp))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)                          ;nvp-prompt-default
-(declare-function function-called-at-point "help")
-(declare-function help--symbol-completion-table "help-fns")
+(nvp-decl help--symbol-completion-table function-called-at-point)
 (autoload 'eldoc-minibuffer-message "eldoc")
 
 ;; just MODE's name minus the "-mode"

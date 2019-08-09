@@ -12,15 +12,95 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'nvp-macro))
+  (require 'nvp-macro)
+  (require 'nvp-display))
 (require 'nvp)
 (require 'nvp-read)
-(nvp-decls)
-
+(autoload 'lm-header "lisp-mnt")
+(nvp-auto "find-func" 'find-function-library 'find-library-name)
 (nvp-auto "nvp-util" 'nvp-file-locate-first-dominating)
 (nvp-auto "nvp-scratch" 'nvp-scratch-switch-modes)
+(nvp-decls)
 
-;; -------------------------------------------------------------------
+
+;;; Libraries
+
+;;;###autoload
+(defun nvp-jump-to-library (library &optional action)
+  "Jump to LIBRARY file."
+  (interactive (list (call-interactively 'locate-library) current-prefix-arg))
+  (when library
+    (let* ((el (concat (file-name-sans-extension library) ".el"))
+           (elgz (concat el ".gz")))
+      (nvp-display-location (if (file-exists-p el) el elgz) :file action))))
+
+(defun nvp--get-library-file (&optional lisp-only prompt)
+  "Get defining file for current symbol or prompt for library.
+Optionally, search LISP-ONLY files (no C sources)."
+  (let* ((curr (symbol-at-point))
+         (sym (if (or prompt (null curr))
+                  (intern (nvp-completing-read
+                            (format "Feature%s: "
+                                    (if curr (concat " ('" (symbol-name curr) "')")
+                                      ""))
+                            (mapcar #'symbol-name features) nil t nil nil
+                            (symbol-name curr)))
+                curr))
+         (lib (if (not (memq sym features))
+                  (cdr (find-function-library sym lisp-only))
+                (find-library-name (symbol-name sym)))))
+    lib))
+
+;;;###autoload
+(defun nvp-jump-to-library-url (&optional choose)
+  "Browse URL of either file defining symbol at point or prompt for library.
+(1) prefix or CHOOSE, prompt for library."
+  (interactive "P")
+  (let (url)
+    (if (and (not choose)
+             (eq major-mode 'emacs-lisp-mode)
+             (setq url (save-excursion (or (lm-header "URL")
+                                           (lm-header "Homepage")))))
+        (browse-url url)                ;found URL in current buffer!!
+      (let ((lib (nvp--get-library-file 'lisp-only choose)))
+        (if (and lib                   ;no URL in emacs sources
+                 (member (file-name-extension lib) '("el" "elc")))
+            (let ((file (concat (file-name-sans-extension lib) ".el")))
+              (if (not (file-exists-p file))
+                  (user-error "Emacs source library - no URL: %s" lib)
+                (with-temp-buffer
+                  (insert-file-contents file)
+                  (if (setq url (lm-header "URL"))
+                      (browse-url url)
+                    (user-error "Library %s has no URL header" lib)))))
+          (user-error "Library %s isn't elisp." lib))))))
+
+(defun nvp--locate-library-source (library)
+  (let* ((name (file-name-nondirectory library))
+         (locs
+          (split-string
+           (shell-command-to-string
+            (format
+             "find %s -type f -name %s.el"
+             (or source-directory
+                 (expand-file-name "emacs" (getenv "DEVEL")))
+             name))
+           nil t " ")))
+    (when locs
+      (if (> (length locs) 1)
+          (nvp-completing-read "Source file: " locs)
+        (car locs)))))
+
+;;;###autoload
+(defun nvp-jump-to-emacs-source (library &optional action)
+  "Jump to git source for emacs builtin library."
+  (interactive (list (call-interactively #'locate-library) current-prefix-arg))
+  (setq library (file-name-sans-extension library))
+  (-if-let (src (nvp--locate-library-source library))
+      (nvp-display-location src :file action)
+    (user-error "No source found for %s" library)))
+
+
 ;;; Modes
 
 ;;;###autoload
@@ -58,7 +138,13 @@
       (goto-char (point-min))
       (search-forward str-mode-hook nil 'move 1))))
 
-;; -------------------------------------------------------------------
+;;;###autoload
+(defun nvp-jump-to-mode-lib (action)
+  "Jump to mode LIB addons with ACTION."
+  (interactive "p")
+  (nvp-jump-to-dir nvp/modes action))
+
+
 ;;; Install / build files
 
 ;;;###autoload
@@ -79,23 +165,7 @@ With double prefix, prompt for mode."
          current-prefix-arg))
   (nvp-display-location file :file action))
 
-;;;###autoload
-(defun nvp-jump-to-nvp-keymap (keymap action)
-  "Jump to one of my defined keymaps."
-  (interactive (list (nvp-read-nvp-keymap) current-prefix-arg))
-  (and (symbolp keymap) (setq keymap (symbol-name keymap)))
-  (let ((buff (find-file-noselect
-               (expand-file-name "base/nvp-bindings.el" nvp/build))))
-    (with-current-buffer buff
-      (goto-char (point-min))           ;might already be open
-     (condition-case nil
-         (when (re-search-forward
-                (concat "^(nvp-bind-keys[ ]+" (regexp-quote keymap)))
-           (set-marker (mark-marker) (match-end 0)))
-       (error (goto-char (point-min)))))
-   (nvp-display-location buff :buffer action)))
-
-;; -------------------------------------------------------------------
+
 ;;; Org / Info
 
 ;;;###autoload
@@ -121,7 +191,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
    file :file action
    :init-fn (lambda () (nvp-display-init-template 'texinfo 'org-mode))))
 
-;; -------------------------------------------------------------------
+
 ;;; Scratch
 
 ;;;###autoload
@@ -139,7 +209,7 @@ With prefix, pop other window, with double prefix, prompt for MODE."
         (nvp-scratch-switch-modes mode)
         (nvp-scratch-minor-mode)))))
 
-;; -------------------------------------------------------------------
+
 ;;; Books / PDFs
 
 ;;;###autoload
@@ -181,7 +251,7 @@ With triple prefix, offer recursive results."
       ;; otherwise recurse in subdirs
       (t (nvp-jump-to-book fullname action)))))
 
-;; -------------------------------------------------------------------
+
 ;;; Files/Directories
 
 ;; Open nearest file up the directory tree named:
@@ -193,7 +263,7 @@ With triple prefix, offer recursive results."
 (defun nvp-jump-to-nearest-notes-dwim (name action)
   "Jump to nearest notes/todo file, prompting with prefix."
   (interactive
-   (list (or (nvp-prefix 16 (read-file-name "File name: "))
+   (list (or (nvp-prefix 16 (read-file-name "File name: ") :test #'>)
              (bound-and-true-p nvp-local-notes-file)
              '("notes.org" "Notes.org" "todo.org" "Todo.org"))
          current-prefix-arg))
@@ -207,14 +277,9 @@ With triple prefix, offer recursive results."
 
 ;;;###autoload
 (defun nvp-jump-to-dotfile (dir action)
-  "Jump to dotfile in other window.
-With single prefix, open in this window.
-With double prefix, set coding to utf-8."
+  "Jump to dotfile in other window."
   (interactive (list nvp/dots (prefix-numeric-value current-prefix-arg)))
-  (let ((buff (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir)))
-    (when (eq 16 action)
-      (with-current-buffer buff
-        (set-buffer-file-coding-system 'utf-8-unix nil t)))))
+  (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
 
 ;;;###autoload
 (defun nvp-jump-to-dir (dir action)
@@ -232,12 +297,6 @@ With double prefix, set coding to utf-8."
   (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
 
 ;;;###autoload
-(defun nvp-jump-to-mode-lib (action)
-  "Jump to mode LIB addons with ACTION."
-  (interactive "p")
-  (nvp-jump-to-dir nvp/modes action))
-
-;;;###autoload
 (defun nvp-jump-to-source (dir action)
   "Jump to local source or default devel directory."
   (interactive
@@ -252,8 +311,24 @@ With double prefix, set coding to utf-8."
          current-prefix-arg))
   (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
 
-;; -------------------------------------------------------------------
+
 ;;; Other
+
+;;;###autoload
+(defun nvp-jump-to-nvp-keymap (keymap action)
+  "Jump to one of my defined keymaps."
+  (interactive (list (nvp-read-nvp-keymap) current-prefix-arg))
+  (and (symbolp keymap) (setq keymap (symbol-name keymap)))
+  (let ((buff (find-file-noselect
+               (expand-file-name "base/nvp-bindings.el" nvp/build))))
+    (with-current-buffer buff
+      (goto-char (point-min))           ;might already be open
+     (condition-case nil
+         (when (re-search-forward
+                (concat "^(nvp-bind-keys[ ]+" (regexp-quote keymap)))
+           (set-marker (mark-marker) (match-end 0)))
+       (error (goto-char (point-min)))))
+   (nvp-display-location buff :buffer action)))
 
 ;;;###autoload
 (defun nvp-jump-to-register (action)

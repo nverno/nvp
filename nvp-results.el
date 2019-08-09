@@ -74,7 +74,8 @@
   (tabulated-list-init-header)
   (tabulated-list-print))
 
-(nvp-bindings-with-view "nvp-view-list" nil
+(nvp-bindings "nvp-view-list" nil
+  :with view
   ([return] . nvp-view-list-goto-entry)
   ("q"      . kill-this-buffer))
 

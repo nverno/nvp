@@ -39,6 +39,12 @@
 
 ;;; Helpers
 
+(defun nvp--with-bindings (type)
+  (let ((var (intern (concat "nvp--bindings-" (symbol-name type)))))
+    (unless (boundp var)
+      (error "%s bindings unknown" var))
+    (symbol-value var)))
+
 (defsubst nvp--msg-from-bindings (bindings &optional prefix)
   "Create message of 'PREFIX: [key] cmd, ...' from list of cons BINDINGS."
   (or prefix (setq prefix "Transient: "))
@@ -189,6 +195,7 @@ If AFTER-LOAD is non-nil, eval after loading feature/file."
 
 (cl-defmacro nvp-bindings (mode &optional feature &rest bindings
                                 &key local buff-local minor autoload create prefix
+                                with
                                 &allow-other-keys)
   "Set MODE BINDINGS after FEATURE is loaded.
 If LOCAL is non-nil, make map buffer local.
@@ -196,6 +203,7 @@ AUTOLOAD specifies prefix key which autoloads map."
   (declare (indent defun))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
+  (and with (setq bindings (append (nvp--with-bindings with) bindings)))
   (and (symbolp mode) (setq mode (symbol-name mode)))
   (let ((modemap (nvp--normalize-modemap mode minor)))
     `(progn
@@ -221,15 +229,6 @@ AUTOLOAD specifies prefix key which autoloads map."
             ;; with-eval-after-load ,(or feature `',(intern mode))
             ,@(cl-loop for (k . b) in bindings
                  collect `(nvp-bind ,modemap ,k ,b)))))))
-
-;;; View bindings
-
-(defalias 'nvp-bindings-with-view 'nvp-bindings-modal-view)
-(defmacro nvp-bindings-modal-view (mode &optional feature &rest bindings)
-  (declare (indent defun))
-  `(nvp-bindings ,mode ,feature
-     ,@(eval-when-compile nvp--bindings-view)
-     ,@bindings))
 
 ;;; Multiple Modes
 

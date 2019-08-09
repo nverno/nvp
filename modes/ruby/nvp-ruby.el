@@ -1,25 +1,11 @@
 ;;; nvp-ruby.el --- rubls -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; FIXME:
-;; - use nvp-yas funcs
-;; - 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar projectile-tags-file-name))
+(eval-when-compile (require 'nvp-macro))
 (require 'ruby-mode)
-(require 'inf-ruby nil t)
-(require 'robe nil t)
-
-(nvp-decl :pre "ruby" switch-to-inf send-block-and-go switch-to-last-ruby-buffer
-          send-definition-and-go send-last-sexp send-region-and-go)
-(nvp-decl inf-ruby ruby-compilation-this-buffer projectile-rails-root
-          robe-mode robe-start)
+(require 'inf-ruby)
+(nvp-decl ruby-compilation-this-buffer projectile-rails-root robe-mode robe-start)
 (nvp-decls)
-
-(defsubst nvp-ruby-camelize (str &optional seps)
-  (mapconcat 'identity
-             (mapcar 'capitalize (split-string str (or seps "[._-]"))) ""))
 
 (defun nvp-ruby--buffer-requires ()
   (save-excursion
@@ -46,9 +32,6 @@
   (mapconcat (lambda (s) (concat "@" s " = " s))
              (split-string yas-text "[() ,]+" t " ")
              "\n"))
-
-(defun nvp-ruby-yas-camelize-bfn ()
-  (nvp-ruby-camelize (nvp-path 'bfse)))
 
 
 ;; -------------------------------------------------------------------
@@ -105,18 +88,6 @@
   (ruby-send-region-and-go
    (point-min)
    (point-max)))
-
-;;; Tags
-
-(defun nvp-ruby-update-rails-ctags ()
-  "Update ctags for rails project."
-  (interactive)
-  (let ((default-directory
-         (or (projectile-rails-root) default-directory)))
-    (shell-command
-     (concat "ctags -a -e -f "
-             projectile-tags-file-name
-             " --tag-relative -R app lib vender test"))))
 
 
 ;; ------------------------------------------------------------

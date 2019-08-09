@@ -47,6 +47,8 @@
 
 ;;; I/O
 ;; evaluate STRING in PROC, but discard output silently
+;; TODO: check if this would work better
+;; https://github.com/hylang/hy-mode/blob/8699b744c03e0399c049757b7819d69768cac3bc/hy-shell.el#L156
 (defun nvp-comint-redirect-silently (proc string &optional prompt)
   (let ((comint-redirect-perform-sanity-check))
     (with-temp-buffer 

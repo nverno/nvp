@@ -2,6 +2,6 @@
 # name: module
 # key: mod
 # --
-module ${1:`(let ((dir (nvp-yas-dfn))) (if (string= dir "lib") (nvp-ruby-yas-camelize-bfn) (nvp-ruby-camelize dir)))`}
+module ${1:`(let ((dir (nvp-yas-dfn))) (s-upper-camel-case (if (string= dir "lib") (nvp-yas-bfn) dir)))`}
   $0
 end

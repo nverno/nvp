@@ -39,8 +39,11 @@ var == 1 {
         }
         printf "(\"%s\" %s %s %s %s)\n", 
             m[1], value, type, file, line;
+    } else if (match($0, /^define (\S+)/, m)) {
+        printf "(\"%s\" \"<define>\" %s %s %s)\n",
+            m[1], type, file, line;
     } else {
-        print "('!BAD!", "\""$0"\"";
+        print "('!BAD!", "\""$0"\"";  # parse error
     }
 
     type = ""; file = ""; line = "";

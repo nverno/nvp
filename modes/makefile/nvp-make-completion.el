@@ -6,7 +6,7 @@
 ;;
 ;; * Builtin function completion/docs from make-doc info files.
 ;; * Dynamic completion for variables/rules come from make's internal database:
-;; make -pqrns
+;; make -prns -f %s .DEFAULT_GOAL=
 ;; -p [--print-data-base] -s [--silent] -n [--just-print]
 ;; -q [--question]
 ;; -r [--no-builtin-rules]
@@ -34,7 +34,7 @@
 (defconst nvp-makecomp-program
   (expand-file-name "bin/makevars.awk" nvp-makefile--dir))
 
-(defvar nvp-makecomp-program-switches "-pqrns")
+(defvar nvp-makecomp-program-switches "-prns")
 
 (eval-when-compile
   (defvar nvp-makecomp--annotation
@@ -56,7 +56,7 @@
                     (read-from-string
                      (shell-command-to-string
                       ;; when no targets in file there is output to stderr
-                      (format "make %s -f %s 2>/dev/null | %s"
+                      (format "make %s -f %s .DEFAULT_GOAL= 2>/dev/null | %s"
                               nvp-makecomp-program-switches
                               file nvp-makecomp-program)))))
     (setf (nvp-makecomp-file-variables dbfile) (alist-get 'variables data))

@@ -1,7 +1,7 @@
 ;;; nvp-pkg.el --- Manage package compile/autloads -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;; FIXME: expand arbitrary macros in autoloaded forms?
 ;;; TODO:
 ;; Archive:
 ;; - create pkg recipes and populate cache
@@ -28,12 +28,11 @@
 
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro)
-  (require 'autoload)
-  (nvp-local-vars))
+  (require 'nvp-macro))
 (require 'nvp)
 (require 'package)
+(require 'autoload)
+(nvp-decls)
 
 (defvar nvp-pkg-directory nvp/modes)
 

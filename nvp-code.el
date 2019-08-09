@@ -43,11 +43,12 @@
   (unless (not (eq 'ignore hs-set-up-overlay))
     (setq hs-set-up-overlay 'nvp-hs-display-line-counts)))
 
-;;;;;###autoload
-(add-hook 'hs-minor-mode-hook
-          (nvp-def nvp-hs-mode-hook ()
-            (unless hs-set-up-overlay
-              (setq hs-set-up-overlay 'nvp-hs-display-line-counts))))
+(defun nvp-hs-mode-hook ()
+  (unless hs-set-up-overlay
+    (setq hs-set-up-overlay 'nvp-hs-display-line-counts)))
+
+;;;###autoload
+(add-hook 'hs-minor-mode-hook #'nvp-hs-mode-hook)
 
 (provide 'nvp-code)
 ;;; nvp-code.el ends here

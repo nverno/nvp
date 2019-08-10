@@ -27,8 +27,8 @@
 
 ;;; Bindings
 
-(defvar nvp-dev-keymap (make-sparse-keymap))
-(nvp-bind-keys nvp-dev-keymap
+(nvp-bindings nvp-dev-keymap nil
+  :create t
   ("a"  . nvp-dev-advice-remove-all)
   ("c"  . nvp-help-list-charsets)
   ("D"  . describe-current-display-table) ; #<marker at 3963 in disp-table.el.gz>

@@ -23,7 +23,8 @@
 
 ;; add fontification to REGEX up to LIMIT in quoted area by CHAR
 ;; (default double-quotes)
-(defsubst nvp-fontify-quoted-1 (regex char limit)
+;;;###autoload
+(defun nvp-fontify-quoted-1 (regex char limit)
   (let (res)
     (while (and (setq res (re-search-forward regex limit 'move))
                 (not (nvp-font-lock-quoted-p char))))
@@ -42,25 +43,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Create font-lock additions
-
-;; (defun org-plist-delete (plist property)
-;;   "Delete PROPERTY from PLIST.
-;; This is in contrast to merely setting it to 0."
-;;   (let (p)
-;;     (while plist
-;;       (if (not (eq property (car plist)))
-;; 	  (setq p (plist-put p (car plist) (nth 1 plist))))
-;;       (setq plist (cddr plist)))
-;;     p))
-
-;; (setq tst '(a d :splice b c))
-;; (member :splices tst)
-
-;; remove symbol PROP from LST
-;; (defun nvp--remove-prop (lst prop)
-;;   (--remove-first (eq prop))
-;;   (-when-let (rest (cdr (member prop lst)))
-;;     (append (reverse (cdr (member prop (reverse lst)))) rest)))
 
 (defmacro nvp-font-lock-keywords (&rest forms)
   "Create list of font-lock additions.

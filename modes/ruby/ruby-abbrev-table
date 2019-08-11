@@ -1,16 +1,22 @@
-;; -*- coding: utf-8; no-byte-compile: t; -*-
+;; -*- coding: utf-8; -*-
 
 (define-abbrev-table 'ruby-mode-abbrev-table
   '(
-    ("inc" "include" nil :system t)
-    ("mod" "module" nil :system t)
-
-    ("stdin" "STDIN" nil :system t)
-    ("stderr" "STDERR" nil :system t)
-    ("stdout" "STDOUT" nil :system t)
+    ("inc"    "include" nil   :system t)  
+    ("mod"    "module"  nil   :system t)  
+    ("req"    ["require \"\"" 1 nil nil] expand-abbrev-hook :system t) 
+    ("stdin"  "STDIN"   nil   :system t)  
+    ("stderr" "STDERR"  nil   :system t)  
+    ("stdout" "STDOUT"  nil   :system t)  
     )
   "Ruby-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list prog-mode-abbrev-table)
+  :enable-function
+  (lambda ()
+    ;; not prefixed by [@$.]
+    (save-excursion
+      (skip-syntax-backward "w_")
+      (not (memq (char-before) '(?@ ?$ ?.))))))
 
 (define-abbrev-table 'inf-ruby-mode-abbrev-table
   '()

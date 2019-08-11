@@ -238,71 +238,73 @@ sourced files."
 
 ;;;###autoload
 (defun sh-comp-completion-at-point ()
+  ;; XXX: in comments complete for docs only
   (with-syntax-table sh-comp-syntax-table
-    (let* ((pos (point))
-           (beg (condition-case nil
-                    (save-excursion
-                      (backward-sexp 1)
-                      (skip-syntax-forward "'")
-                      (point))
-                  (scan-error pos)))
-           (var (sh-comp-variable-p beg))
-           (flag (eq (char-after beg) ?-))
-           (use-comp (and sh-comp-use-bash-completion
-                          (null var)))
-           (proc (and use-comp (bash-completion-require-process)))
-           (comp (when use-comp
-                   (bash-completion--parse
-                    (or (save-excursion (sh-beginning-of-command)) beg)
-                    pos
-                    (process-get proc 'wordbreaks)
-                    (process-get proc 'bash-major-version))))
-           (end (cond
-                 ;; complete after '$'
-                 ((and var (memq (char-syntax (char-after beg)) '(?> ?\))))
-                  beg)
-                 ;; use bash completion after '--'
-                 ;; XXX: any way to get completion for '-' ???
-                 (flag
-                  (setq beg (bash-completion--stub-start comp))
-                  pos)
-                 (t
-                  (unless (or (eq beg (point-max))
-                              (member (char-syntax (char-after beg))
-                                      '(?\s ?\" ?\( ?\))))
-                    (condition-case nil
-                        (save-excursion
-                          (goto-char beg)
-                          (forward-sexp 1)
-                          (when (>= (point) pos)
-                            (point)))
-                      (scan-error pos)))))))
-      (when use-comp
-        (bash-completion--customize comp proc))
-      (when (and beg end)
-        (nconc (list beg end)
-               (cond
-                ((and use-comp flag)
-                 (list (bash-completion--completion-table-with-cache
-                        (lambda (_) (bash-completion-comm comp proc)))))
-                (var
-                 (list (completion-table-merge
-                        sh-comp--local-variables-completion-table
-                        (completion-table-dynamic
-                         (lambda (_string) (completion--make-envvar-table)))
-                        (completion-table-dynamic
-                         (lambda (_string) (sh-comp-candidates 'variables))))
-                       :annotation-function
-                       (lambda (s) (or (get-text-property 0 'annot s) " <E>"))))
-                (t
-                 (list (completion-table-merge
-                        (bash-completion--completion-table-with-cache
-                         (lambda (_) (bash-completion-comm comp proc)))
-                        (completion-table-dynamic
-                         (lambda (_string) (sh-comp-candidates 'functions))))
-                       :annotation-function
-                       (lambda (s) (or (get-text-property 0 'annot s) " <S>")))))
-               (list :exclusive 'no))))))
+    (nvp-unless-ppss 'cmt
+      (let* ((pos (point))
+             (beg (condition-case nil
+                      (save-excursion
+                        (backward-sexp 1)
+                        (skip-syntax-forward "'")
+                        (point))
+                    (scan-error pos)))
+             (var (sh-comp-variable-p beg))
+             (flag (eq (char-after beg) ?-))
+             (use-comp (and sh-comp-use-bash-completion
+                            (null var)))
+             (proc (and use-comp (bash-completion-require-process)))
+             (comp (when use-comp
+                     (bash-completion--parse
+                      (or (save-excursion (sh-beginning-of-command)) beg)
+                      pos
+                      (process-get proc 'wordbreaks)
+                      (process-get proc 'bash-major-version))))
+             (end (cond
+                   ;; complete after '$'
+                   ((and var (memq (char-syntax (char-after beg)) '(?> ?\))))
+                    beg)
+                   ;; use bash completion after '--'
+                   ;; XXX: any way to get completion for '-' ???
+                   (flag
+                    (setq beg (bash-completion--stub-start comp))
+                    pos)
+                   (t
+                    (unless (or (eq beg (point-max))
+                                (member (char-syntax (char-after beg))
+                                        '(?\s ?\" ?\( ?\))))
+                      (condition-case nil
+                          (save-excursion
+                            (goto-char beg)
+                            (forward-sexp 1)
+                            (when (>= (point) pos)
+                              (point)))
+                        (scan-error pos)))))))
+        (when use-comp
+          (bash-completion--customize comp proc))
+        (when (and beg end)
+          (nconc (list beg end)
+                 (cond
+                  ((and use-comp flag)
+                   (list (bash-completion--completion-table-with-cache
+                          (lambda (_) (bash-completion-comm comp proc)))))
+                  (var
+                   (list (completion-table-merge
+                          sh-comp--local-variables-completion-table
+                          (completion-table-dynamic
+                           (lambda (_string) (completion--make-envvar-table)))
+                          (completion-table-dynamic
+                           (lambda (_string) (sh-comp-candidates 'variables))))
+                         :annotation-function
+                         (lambda (s) (or (get-text-property 0 'annot s) " <E>"))))
+                  (t
+                   (list (completion-table-merge
+                          (bash-completion--completion-table-with-cache
+                           (lambda (_) (bash-completion-comm comp proc)))
+                          (completion-table-dynamic
+                           (lambda (_string) (sh-comp-candidates 'functions))))
+                         :annotation-function
+                         (lambda (s) (or (get-text-property 0 'annot s) " <S>")))))
+                 (list :exclusive 'no)))))))
 
 ;;; Company
 

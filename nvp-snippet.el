@@ -5,7 +5,6 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
-(declare-function nvp-read-mode "nvp-read")
 
 (defvar nvp-snippet-default-conditions
   '(("comment" (nvp-yas-in-comment))
@@ -68,13 +67,14 @@ When part of `before-save-hook', won't add condition on initial save."
 If TEXT is non-nil use as `yas-selected-text'.
 DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (interactive
-   (let ((mode-name (if (equal current-prefix-arg '(64)) (nvp-read-mode)
-                      (symbol-name major-mode))))
-     (list mode-name
-           (if (or (equal current-prefix-arg '(16)) (not nvp-mode-snippet-dir))
+   (let* ((mode-name (nvp-prefix 16 (nvp-read-mode) (symbol-name major-mode)))
+          (snippet-dir
+           (if (not nvp-mode-snippet-dir)
                (expand-file-name mode-name nvp/snippet)
-             nvp-mode-snippet-dir)
-           (and (equal current-prefix-arg '(4)) 'do-dired)
+             (nvp-read-mode-var "snippets" mode-name))))
+     (list mode-name
+           snippet-dir
+           (nvp-prefix 4 'do-dired)
            (or yas-selected-text
                (and (region-active-p)
                     (buffer-substring-no-properties

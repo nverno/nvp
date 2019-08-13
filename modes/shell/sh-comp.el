@@ -339,6 +339,7 @@ sourced files."
   (completion-table-dynamic
    (lambda (_string) (sh-comp-candidates 'all (buffer-file-name))) 'switch))
 
+;;; FIXME: detect variable in path, jump to path in source line
 ;; (cl-defmethod xref-backend-identifier-at-point ((_backend (eql sh-comp)))
 ;;   (or (thing-at-point 'symbol)
 ;;       ()))

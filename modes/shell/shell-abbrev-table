@@ -6,6 +6,7 @@
     ("ae" ">&2" nil :system t)
     ("a2" ">&2" nil :system t)
     ("dn" ">/dev/null" nil :system t)
+    ("adn" "&>/dev/null" nil :system t)
     ("aadn" ">/dev/null 2>&1" nil :system t)
     ("21dn" ">/dev/null 2>&1" nil :system t)
     ("edn" "2>/dev/null" nil :system t)

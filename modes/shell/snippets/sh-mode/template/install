@@ -6,8 +6,6 @@
 
 set -e
 
-scriptverion="";
-
 # shellcheck source=/dev/null 
 . ~/bin/include/utils.sh
 # shellcheck source=/dev/null

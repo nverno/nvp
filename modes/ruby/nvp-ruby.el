@@ -27,10 +27,11 @@
 ;;; Snippets
 
 ;; create arg initializtion from yas-text
-;; (i,j) => @i = i\n@j = j
+;; (i,j) => @i = i\n@j = j or (io=$stdin, ...) => @io = io\n...
 (defsubst nvp-ruby-yas-init-args ()
   (mapconcat (lambda (s) (concat "@" s " = " s))
-             (split-string yas-text "[() ,]+" t " ")
+             (--map (car (split-string it "=" t " "))
+                    (split-string yas-text "[() ,]+" t " "))
              "\n"))
 
 

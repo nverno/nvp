@@ -12,13 +12,6 @@
 (nvp-decl help--symbol-completion-table function-called-at-point)
 (autoload 'eldoc-minibuffer-message "eldoc")
 
-;; just MODE's name minus the "-mode"
-(defsubst nvp-read--mode-name (&optional mode)
-  (if mode
-      (and (symbolp mode) (setq mode (symbol-name mode)))
-    (setq mode (symbol-name major-mode)))
-  (string-remove-suffix "-mode" mode))
-
 ;; list filenames relative to ROOT matching REGEXP
 (defsubst nvp-read--relative-files (root regexp)
   (mapcar (lambda (f) (file-relative-name f root))
@@ -35,20 +28,6 @@
     'nvp-read-config-history default)
    root))
 
-;; some completing reads for general config files
-(defun nvp-read-mode-config (&optional prompt default)
-  (unless default
-    (setq default (symbol-name major-mode)))
-  (setq prompt (nvp-prompt-default (or prompt "Mode config: ") default))
-  (catch 'dired
-    (nvp-completing-read
-     prompt
-     (mapcar
-      #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
-          (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
-      (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-     nil nil nil 'nvp-read-config-history (nvp-read--mode-name default))))
-
 (defun nvp-read--info-files (&optional prompt default)
   (or default (and (string-prefix-p nvp/info default-directory)
                    (setq default (ignore-errors (nvp-path 'bfs)))))
@@ -58,20 +37,6 @@
     (directory-files (expand-file-name "org" nvp/info) nil "\.org")
     nil nil nil 'nvp-read-config-history default)
    (expand-file-name "org" nvp/info)))
-
-(defun nvp-read--mode-test (&optional prompt default)
-  (let* ((ext (ignore-errors (nvp-path 'ext)))
-         (default-directory nvp/test)
-         (completion-ignored-extensions
-          (cons "target" completion-ignored-extensions))
-         (files (nvp-read--relative-files nvp/test "^[^.][^.]")))
-    (unless default
-      (setq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files))))
-    (setq prompt (nvp-prompt-default (or prompt "Test: ") default))
-    (expand-file-name
-     (nvp-completing-read
-      prompt files nil nil nil 'nvp-read-config-history default)
-     nvp/test)))
 
 ;; if LOCAL is non-nil use that
 (defun nvp-read--org-file (&optional prompt default nolocal)
@@ -84,32 +49,6 @@
       (nvp-read-relative-recursively
        nvp/org "\.org$" (or prompt "Org file: ") default))))
 
-;; read mode installation files
-(defun nvp-read--mode-install (&optional mode prompt default)
-  (or prompt (setq prompt "Install file: "))
-  (let* ((mode (nvp-read--mode-name mode))
-         (modedir (expand-file-name mode nvp/install))
-         files)
-    (if (not (file-exists-p modedir))
-        (nvp-read-relative-recursively nvp/install "^[^.]+$" prompt)
-      (setq files (directory-files modedir nil "^[^.]+$"))
-      (if (eq 1 (length files))
-          (expand-file-name (concat mode "/" (car files)) nvp/install)
-        (unless default
-          (setq prompt
-                (nvp-prompt-default
-                 prompt (cl-some (lambda (f)
-                                   (member
-                                    f `(,(format "install-%s" mode) "install")))
-                                 files))))
-        (expand-file-name
-         (concat
-          mode "/"
-          (nvp-completing-read
-           prompt files nil nil nil 'nvp-read-config-history default))
-         nvp/install)))))
-
-;; -------------------------------------------------------------------
 ;;; Minibuffer input
 
 ;;;###autoload
@@ -119,6 +58,7 @@
       (:append (lambda () (eldoc-minibuffer-message format-string args)))
     (read-from-minibuffer prompt)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Elisp objects 
 
@@ -192,12 +132,91 @@ Filter by PREDICATE if non-nil."
   (nvp-read-elisp-symbol
    prompt (lambda (f) (or (fboundp f) (get f 'function-documentation))) default hist))
 
+
+;; -------------------------------------------------------------------
+;;; Modes 
+
+(eval-when-compile
+  (defvar nvp-mode-cache))
+
+;; just MODE's name minus the "-mode"
+(defsubst nvp-read--mode-name (&optional mode)
+  (if mode
+      (and (symbolp mode) (setq mode (symbol-name mode)))
+    (setq mode (symbol-name major-mode)))
+  (string-remove-suffix "-mode" mode))
+
 ;;;###autoload
 (defun nvp-read-mode (&optional default)
   "Lookup name of mode using PROMPT and optional DEFAULT."
   (unless default (setq default major-mode))
   (let ((prompt (if default (format "Mode (default \"%s\"): " default) "Mode: ")))
     (nvp-read-obarray-regex prompt "-mode\\'" default)))
+
+;;;###autoload
+(defun nvp-read-mode-var (variable &optional mode)
+  "Lookup MODE's VARIABLE."
+  (require 'nvp-setup)
+  (cl-assert (member variable '("dir" "snippets" "abbr-file" "abbr-table")))
+  (unless mode (setq mode major-mode))
+  (and (stringp mode) (setq mode (intern-soft mode)))
+  (-if-let (data (gethash mode nvp-mode-cache))
+      (funcall (intern (concat "nvp-mode-vars-" variable)) data)
+    (user-error "%s not in nvp-mode-cache" mode)))
+
+
+;; read mode installation files
+(defun nvp-read--mode-install (&optional mode prompt default)
+  (or prompt (setq prompt "Install file: "))
+  (let* ((mode (nvp-read--mode-name mode))
+         (modedir (expand-file-name mode nvp/install))
+         files)
+    (if (not (file-exists-p modedir))
+        (nvp-read-relative-recursively nvp/install "^[^.]+$" prompt)
+      (setq files (directory-files modedir nil "^[^.]+$"))
+      (if (eq 1 (length files))
+          (expand-file-name (concat mode "/" (car files)) nvp/install)
+        (unless default
+          (setq prompt
+                (nvp-prompt-default
+                 prompt (cl-some (lambda (f)
+                                   (member
+                                    f `(,(format "install-%s" mode) "install")))
+                                 files))))
+        (expand-file-name
+         (concat
+          mode "/"
+          (nvp-completing-read
+           prompt files nil nil nil 'nvp-read-config-history default))
+         nvp/install)))))
+
+;; some completing reads for general config files
+(defun nvp-read-mode-config (&optional prompt default)
+  (unless default
+    (setq default (symbol-name major-mode)))
+  (setq prompt (nvp-prompt-default (or prompt "Mode config: ") default))
+  (catch 'dired
+    (nvp-completing-read
+     prompt
+     (mapcar
+      #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
+          (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
+      (directory-files nvp/config nil "^[^\\.].*\\.el$"))
+     nil nil nil 'nvp-read-config-history (nvp-read--mode-name default))))
+
+(defun nvp-read--mode-test (&optional prompt default)
+  (let* ((ext (ignore-errors (nvp-path 'ext)))
+         (default-directory nvp/test)
+         (completion-ignored-extensions
+          (cons "target" completion-ignored-extensions))
+         (files (nvp-read--relative-files nvp/test "^[^.][^.]")))
+    (unless default
+      (setq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files))))
+    (setq prompt (nvp-prompt-default (or prompt "Test: ") default))
+    (expand-file-name
+     (nvp-completing-read
+      prompt files nil nil nil 'nvp-read-config-history default)
+     nvp/test)))
 
 (provide 'nvp-read)
 ;;; nvp-read.el ends here

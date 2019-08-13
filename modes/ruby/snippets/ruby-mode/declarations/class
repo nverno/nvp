@@ -2,6 +2,6 @@
 # name: class
 # key: class
 # --
-class ${1:`(s-upper-camel-case (nvp-yas-bfn))`}${2:$(if (> (length yas-text) 0) " < " "")}${2:ParentClass}
+class ${1:`(s-upper-camel-case (nvp-yas-bfn-no-ext))`}${2:$(if (> (length yas-text) 0) " < " "")}${2:ParentClass}
   ${3:def initialize ${4:args}}$0${4:$(if (> (length yas-text) 0) (concat "\n" (nvp-ruby-yas-init-args)))}${3:$(if (> (length yas-text) 0) "\nend" "")}
 end

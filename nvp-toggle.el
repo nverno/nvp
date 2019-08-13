@@ -47,6 +47,20 @@ Decrement with prefix."
 ;; -------------------------------------------------------------------
 ;;; Toggle file/directory local variables
 
+;;;###autoload
+(defun nvp-toggle-interpreter (interpreter)
+  (interactive (list (read-string "Interpreter: ")))
+  (let ((line (concat "#!/usr/bin/env " interpreter)))
+    (save-excursion
+      (goto-char (point-min))
+      (if (looking-at-p line)
+          (message "interpreter already %s" interpreter)
+        (when (looking-at "^#!")
+          (delete-region (point) (point-at-eol)))
+        (insert line)
+        (save-buffer)
+        (revert-buffer 'ignore-auto 'noconfirm)))))
+
 ;; remove empty prop-line -- point should be in -*- -*-
 (defun nvp-toggle--cleanup-prop-line ()
   "Remove empty prop-line."

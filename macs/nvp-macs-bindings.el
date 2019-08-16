@@ -233,7 +233,7 @@ AUTOLOAD specifies prefix key which autoloads map."
 ;;; Multiple Modes
 
 (cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings
-                                                &key view &allow-other-keys)
+                                                &key with &allow-other-keys)
   "Add shared BINDINGS to multiple MODES keymaps.
 MODES is of the form ((mode-name . feature) ...).
 Optional :local key can be set to make the mappings buffer-local."
@@ -242,9 +242,8 @@ Optional :local key can be set to make the mappings buffer-local."
     (setq bindings (cdr (cdr bindings))))
   `(progn
      ,@(cl-loop for (mode . feature) in modes
-          collect (if view
-                      `(nvp-bindings-with-view ,mode ',feature ,@bindings)
-                    `(nvp-bindings ,mode ',feature ,@bindings)))))
+          collect
+            `(nvp-bindings ,mode ',feature :with ,with ,@bindings))))
 
 
 (provide 'nvp-macs-bindings)

@@ -198,8 +198,19 @@ If AFTER-LOAD is non-nil, eval after loading feature/file."
                                 with
                                 &allow-other-keys)
   "Set MODE BINDINGS after FEATURE is loaded.
-If LOCAL is non-nil, make map buffer local.
-AUTOLOAD specifies prefix key which autoloads map."
+BINDINGS are conses of (key . command).
+
+Optional:
+  AUTOLOAD specifies prefix key which autoloads map.
+  CREATE, if non-nil, map is initialized as sparse keymap.
+  PREFIX defines map as a prefix command with PREFIX as its name if it is a string.
+  WITH specifies sets of bindings, from 'nvp--bindings-*', to add to map. These
+       bindings are overwritten by any conflicts in BINDINGS.
+
+Buggy:
+  LOCAL makes map local var.        -- changes bindings for ALL mode buffers!!
+  BUFF-LOCAL makes map buffer-local -- INCORRECT
+"
   (declare (indent defun))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))

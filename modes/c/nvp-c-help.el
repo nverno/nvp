@@ -5,7 +5,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (defvar semantic-c-dependency-system-include-path))
-(require 'semantic/analyze)
+(require 'nvp-hap-semantic)
 (require 'nvp-c)
 (nvp-decls)
 
@@ -31,12 +31,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Util
-
-;; semantic tag at point
-(defsubst nvp-c-help-tag-at (point)
-  (condition-case nil
-      (car (reverse (oref (semantic-analyze-current-context point) prefix)))
-    (error (message "No symbol found at point"))))
 
 ;; return name of function at point and if it is static
 (defsubst nvp-c-help-function-at-point ()
@@ -86,41 +80,11 @@
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-(nvp-declare "xref" xref-pop-marker-stack xref-push-marker-stack)
-
-;; wrapper function: use xref marker stack before `semantic-ia-fast-jump'
-;;;###autoload
-(defun nvp-c-help-semantic-ia-fast-jump (point)
-  (interactive "d")
-  (xref-push-marker-stack)
-  (condition-case nil
-      (semantic-ia-fast-jump point)
-    (error (xref-pop-marker-stack))))
-
-;; get semantic-ia snarfed doc
-(declare-function semanticdb-includes-in-table "semantic/db-ref")
-(eval-when-compile (defvar semanticdb-current-table))
-(defun nvp-c-help-semantic-ia-doc (point)
-  (when-let* ((ctxt (semantic-analyze-current-context point))
-              (pf (reverse (oref ctxt prefix)))) ; 'prefix
-    (when (semantic-tag-p pf)
-      (or (semantic-documentation-for-tag (car pf))
-          ;; TODO: try includes
-          (when-let* ((tab semanticdb-current-table)
-                      (inc (semanticdb-includes-in-table tab))))))))
-
-;;;###autoload
-(defun nvp-c-help-semantic-ia-popup-doc (point)
-  (interactive "d")
-  (let ((doc (nvp-c-help-semantic-ia-doc point)))
-    (when doc
-      (nvp-with-toggled-tip doc))))
-
 ;; Lookup info in man or online for thing at point
 ;;;###autoload
 (defun nvp-c-help-at-point (point &optional online)
   (interactive "d")
-  (let* ((tag (nvp-c-help-tag-at point))
+  (let* ((tag (nvp-semantic-tag-at point))
          (file (and (semantic-tag-p tag)
                     (semantic-tag-file-name tag))))
     (if (or online current-prefix-arg)

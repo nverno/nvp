@@ -1,20 +1,33 @@
 ;;; nvp-hap.el --- help-at-point functions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;; 
 ;; Help at point:
-;; - display help for context around point in popup window
-;; - use transient bindings to execute actions from there
-;; popup.el/pos-tip.el/quickhelp.el to truncate pop-tips
-;; #<marker at 84732 in etags.el.gz>
-;; #<marker at 8769 in cl-generic.el.gz>
+;; - display help for context around point in first applicable (1) popup tooltip,
+;;   (2) help buffer, or (3) external application
+;; - use transient bindings to execute actions (unless external)
 ;;
-;; Notes:
-;; - doc-buffer: returns list (buffer start end)
-
+;; Backends are expected to (1) determine thing at point, (2) respond to either
+;; 'doc-string or 'doc-buffer, providing a string or buffer containing help for
+;; the thing at point.
+;; A response to 'doc-buffer should be a list of '(buffer start end),
+;; where start and end, if non-nil delimit the region containing relevant info.
+;; When nil, point-min/max are used.
+;;
+;; Backend commands and expected results:
+;; - thingatpt => string or nil
+;; - doc-string => string
+;; - doc-buffer => list '(<buffer> [start] [end])
+;;
+;; Backends defined here:
+;; - info
+;; - elisp
+;; TODO: man
+;;
+;; Refs:
+;; popup.el/pos-tip.el/quickhelp.el to truncate pop-tips
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'pos-tip)
 (require 'company)
@@ -49,6 +62,36 @@
 (defvar nvp-hap-popup-max-lines 25 "Max lines to display in popup.")
 (defvar nvp-hap-popup-timeout 60)
 
+;; cache doc-buffer to jump from popup
+(defvar nvp-hap--doc-buffer nil)
+(defvar nvp-hap--saved-window-configuration ())
+(defvar nvp-hap--electric-commands
+  '(scroll-other-window scroll-other-window-down mwheel-scroll))
+
+;; get first result from `nvp-help-at-point-functions'
+(defsubst nvp-hap--call (&rest args)
+  (let ((result (apply #'run-hook-with-args-until-success
+                       'nvp-help-at-point-functions args)))
+    (and result (eq (car args) 'doc-buffer)
+         (setq nvp-hap--doc-buffer result))
+    result))
+
+;;; Window configurations
+;; `company--electric-restore-window-configuration', `company--electric-do'
+;; FIXME: this very simple window config. fails often
+(defun nvp-hap--electric-restore-windows ()
+  (when (and nvp-hap--saved-window-configuration
+             (not (memq this-command nvp-hap--electric-commands)))
+    (set-window-configuration nvp-hap--saved-window-configuration)
+    (setq nvp-hap--saved-window-configuration nil)))
+
+(defmacro nvp-hap--electric-do (&rest body)
+  (declare (indent 0) (debug t))
+  `(progn
+     (setq nvp-hap--saved-window-configuration (current-window-configuration))
+     ,@body))
+
+;;; Keymap
 (defvar nvp-hap-keymap
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "M-v")   #'scroll-other-window)
@@ -57,42 +100,28 @@
     (define-key map (kbd "C-h")   #'nvp-hap-show-doc-buffer)
     map))
 
-(defvar nvp-hap--doc-buffer nil)
-(defvar nvp-hap--saved-window-configuration ())
-(defvar nvp-hap--electric-commands
-  '(scroll-other-window scroll-other-window-down mwheel-scroll))
+;; Manage the transient map. On exit, reset the cached doc-buffer and
+;; restore prior window configuration.
+(defun nvp-hap-uninstall-keymap (&optional kill-map)
+  (nvp-indicate-cursor-post)
+  (setq nvp-hap--doc-buffer nil)
+  (nvp-hap--electric-restore-windows)
+  (and kill-map (setq overriding-terminal-local-map nil)))
 
 (defun nvp-hap-install-keymap ()
   (nvp-indicate-cursor-pre)
-  (set-transient-map
-   nvp-hap-keymap t
-   (lambda ()
-     (nvp-indicate-cursor-post)
-     (setq nvp-hap--doc-buffer nil)
-     (nvp-hap--electric-restore-windows))))
-
-(defsubst nvp-hap--call (&rest args)
-  (let ((result (apply #'run-hook-with-args-until-success
-                       'nvp-help-at-point-functions args)))
-    (and result (eq (car args) 'doc-buffer)
-         (setq nvp-hap--doc-buffer result))
-    result))
-
-(defun nvp-hap--electric-restore-windows ()
-  (when (and nvp-hap--saved-window-configuration
-             (not (memq this-command nvp-hap--electric-commands)))
-    (set-window-configuration nvp-hap--saved-window-configuration)
-    (setq nvp-hap--saved-window-configuration nil)))
-
-;; `company--electric-do'
-(defmacro nvp-hap--electric-do (&rest body)
-  (declare (indent 0) (debug t))
-  `(progn
-     (setq nvp-hap--saved-window-configuration (current-window-configuration))
-     ,@body))
+  (set-transient-map nvp-hap-keymap t #'nvp-hap-uninstall-keymap))
 
 
+;; -------------------------------------------------------------------
 ;;; Help Buffer
+
+(defun nvp-hap-doc-buffer (&optional string)
+  (with-current-buffer (get-buffer-create "*hap-documentation*")
+    (erase-buffer)
+    (when string
+      (save-excursion (insert string)))
+    (current-buffer)))
 
 (defun nvp-hap-pop-to-buffer (thing &optional arg)
   (interactive (list (nvp-hap--call 'thingatpt current-prefix-arg)))
@@ -117,7 +146,6 @@
                    (window-point win)
                  (or (cadr buff) (point-min)))))))))
 
-
 ;;; Popup
 ;; popup looks for (1) doc-string then (2) doc-buffer
 
@@ -125,7 +153,8 @@
   (beginning-of-line)
   (while (and (not (bobp))
               (looking-at-p "\\[back\\]\\|\\[source\\]\\|^\\s-*$"))
-    (forward-line -1)))
+    (forward-line -1))
+  (end-of-line))
 
 (defun nvp-hap--docstring-from-buffer (beg &optional end)
   (goto-char beg)
@@ -160,6 +189,7 @@
         (pos-tip-show doc nil nil nil nvp-hap-popup-timeout)))))
 
 
+;; -------------------------------------------------------------------
 ;;; Backends
 
 ;;;###autoload
@@ -169,12 +199,11 @@
                  (info-lookup-guess-default 'symbol mode)))
     (doc-buffer
      (save-window-excursion
-       (let ((display-buffer-overriding-action
-              '(nil . ((inhibit-switch-frame . t))))
+       (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t))))
              (info-lookup-other-window-flag nil))
          (ignore-errors
            (info-lookup-symbol arg)
-           (list (current-buffer) (point) nil)))))))
+           (list (current-buffer) (point-at-bol) nil)))))))
 
 ;;;###autoload
 (defun nvp-hap-elisp (command &optional arg &rest _args)
@@ -194,11 +223,17 @@
 
 ;;;###autoload
 (defun nvp-help-at-point (thing &optional prefix)
+  "Show help for THING at point in a popup tooltip or help buffer."
   (interactive
    (list (nvp-hap--call 'thingatpt current-prefix-arg) current-prefix-arg))
+  (unless thing
+    (user-error "Nothing found at point"))
   (nvp-hap-install-keymap)
   (or (nvp-hap-show-popup thing prefix)
-      (nvp-hap-show-doc-buffer thing prefix)))
+      (nvp-hap-show-doc-buffer thing prefix)
+      (progn
+        (nvp-hap-uninstall-keymap 'kill-map)
+        (user-error "No help found for %s" thing))))
 
 (provide 'nvp-hap)
 ;;; nvp-hap.el ends here

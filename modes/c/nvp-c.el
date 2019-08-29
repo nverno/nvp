@@ -16,12 +16,14 @@
 (require 'nvp-parse)
 (require 'nvp)
 (nvp-decls)
-(declare-function xref-push-marker-stack "xref")
+(nvp-decl xref-pop-marker-stack xref-push-marker-stack)
+(declare-function forward-ifdef "hideif")
 (autoload 'string-trim-right "subr-x")
 
 (defvar-local nvp-c-local-include-paths nil)
 (setq-default nvp-c-local-include-paths '("." ".." "../include"))
 
+
 ;; -------------------------------------------------------------------
 ;;; Util
 
@@ -76,42 +78,24 @@
         (cl-remove-if #'(lambda (s) (string-match-p "\\_<static\\_>" s)) res)
       res)))
 
-;; -------------------------------------------------------------------
-;;; Generics
+;; convert functions args to doxygen params
+(defun c-yas-args-docstring (text)
+  (let ((args (nvp-c-split-string text)))
+    (and args
+         (mapconcat 'identity
+                    (mapcar (lambda (s) (concat "\n * @param " s)) args) ""))))
 
-;; #<marker at 78109 in cc-cmds.el.gz>
-(cl-defmethod nvp-parse-current-function (&context (major-mode c-mode) &rest _args)
-  (add-log-current-defun))
+(defun nvp-c-abbrev-expand-p ()
+  (not (memq last-input-event '(?_))))
 
-;; -------------------------------------------------------------------
-;;; Environment
+;;; Font-lock
 
-(declare-function asdf-where "asdf")
-(declare-function nvp-env-add "nvp-env")
+(dolist (mode '(c-mode c++-mode))
+  (nvp-font-lock-add-defaults mode
+    ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
 
-(defvar nvp-c-ext-includes
-  '(("unity" (expand-file-name ".local/include/unity/src" (getenv "HOME"))
-     "/unity/src")
-    ("R"     (expand-file-name "lib/R/include" (asdf-where "R")) "/R/include")
-    ("emacs" emacs-src-dir "/emacs/src"))
-  "Paths to external includes.")
-
-;; set environment stuff for macro expanding
-;; could also set local `c-macro-preprocessor'?
-(defun nvp-c-setenv (type)
-  "Add include path of TYPE to macroexpand all the shittles."
-  (interactive
-   (list (ido-completing-read "Add include path for: " nvp-c-ext-includes)))
-  (cl-destructuring-bind (kind loc regex) (assoc-string type nvp-c-ext-includes)
-    (pcase kind
-      (`"R"
-       (setq-local local-abbrev-table c/R-abbrev-table)
-       (setq-local nvp-abbrev-local-table "c/R"))
-      (_ nil))
-    (nvp-env-add "C_INCLUDE_PATH" (eval loc) regex)))
-
-;; ------------------------------------------------------------
-;;; Commands
+
+;;; Movement
 
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
@@ -131,7 +115,6 @@
     (insert ";"))
   (newline-and-indent))
 
-(declare-function forward-ifdef "hideif")
 ;; https://github.com/abo-abo/oremacs/
 (defun nvp-c-forward-sexp-function (arg)
   (if (looking-at "^#if")
@@ -145,7 +128,7 @@
       (forward-char)
       (skip-chars-forward "0-9"))))
 
-;; -------------------------------------------------------------------
+
 ;;; Compile
 
 ;; run make / cmake if there are corresponding makefiles,
@@ -255,14 +238,55 @@
                             nil 'local))
                 nil 'local))))
   
-;; -------------------------------------------------------------------
+;;; XREFs
+
+;;;###autoload
+(define-advice semantic-ia-fast-jump (:around (orig-fn &rest args) "push-mark")
+  (xref-push-marker-stack)
+  (condition-case nil
+      (apply orig-fn args)
+    (error (xref-pop-marker-stack))))
+
+;;; Parse
+
+;; #<marker at 78109 in cc-cmds.el.gz>
+(cl-defmethod nvp-parse-current-function (&context (major-mode c-mode) &rest _args)
+  (add-log-current-defun))
+
+
+;;; Environment
+
+(declare-function asdf-where "asdf")
+(declare-function nvp-env-add "nvp-env")
+
+(defvar nvp-c-ext-includes
+  '(("unity" (expand-file-name ".local/include/unity/src" (getenv "HOME"))
+     "/unity/src")
+    ("R"     (expand-file-name "lib/R/include" (asdf-where "R")) "/R/include")
+    ("emacs" emacs-src-dir "/emacs/src"))
+  "Paths to external includes.")
+
+;; set environment stuff for macro expanding
+;; could also set local `c-macro-preprocessor'?
+(defun nvp-c-setenv (type)
+  "Add include path of TYPE to macroexpand all the shittles."
+  (interactive
+   (list (ido-completing-read "Add include path for: " nvp-c-ext-includes)))
+  (cl-destructuring-bind (kind loc regex) (assoc-string type nvp-c-ext-includes)
+    (pcase kind
+      (`"R"
+       (setq-local local-abbrev-table c/R-abbrev-table)
+       (setq-local nvp-abbrev-local-table "c/R"))
+      (_ nil))
+    (nvp-env-add "C_INCLUDE_PATH" (eval loc) regex)))
+
+
 ;;; Headers
 
 (eval-when-compile
   (defvar yas-selected-text)
   (defvar yas-wrap-around-region))
-(declare-function yas-expand-snippet "yasnippet")
-(declare-function yas-lookup-snippet "yasnippet")
+(nvp-decl yas-expand-snippet yas-lookup-snippet)
 
 ;; jump to associated header, with arg create and/or update it as well
 (defun nvp-c-jump-or-update-header (update)
@@ -270,7 +294,6 @@
   (if update
       (call-interactively 'nvp-c-create-or-update-header)
     (condition-case nil
-        
         (find-file-other-window (nvp-c--header-file-name)))))
 
 ;; Create/update header file with function signatures
@@ -319,14 +342,6 @@
         (goto-char (point-max))
         (insert (format "\n#endif /* _%s */" guard))))))
 
-;; -------------------------------------------------------------------
-;;; Font-lock
-
-(dolist (mode '(c-mode c++-mode))
-  (nvp-font-lock-add-defaults mode
-    ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
-
-;; -------------------------------------------------------------------
 ;;; Doxygen
 
 (defun nvp-c-toggle-doxygen ()
@@ -343,6 +358,7 @@
           (delete-horizontal-space)
           (insert " */"))))))
 
+;;; Align/tidy
 ;; align comment start / end for doxygen region
 (eval-when-compile
   (defvar align-to-tab-stop))
@@ -351,22 +367,6 @@
   (let (indent-tabs-mode align-to-tab-stop)
     (align-regexp beg end "\\(\\s-*\\)/\\*\\*")
     (align-regexp beg end "\\(\\s-*\\)\\*/")))
-
-;; -------------------------------------------------------------------
-;;; Snippets / Yas
-
-;; convert functions args to doxygen params
-(defun c-yas-args-docstring (text)
-  (let ((args (nvp-c-split-string text)))
-    (and args
-         (mapconcat 'identity
-                    (mapcar (lambda (s) (concat "\n * @param " s)) args) ""))))
-
-;; -------------------------------------------------------------------
-;;; Abbrevs
-
-(defun nvp-c-abbrev-expand-p ()
-  (not (memq last-input-event '(?_))))
 
 (provide 'nvp-c)
 ;;; nvp-c.el ends here

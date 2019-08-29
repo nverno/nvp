@@ -7,7 +7,7 @@
 set -e
 
 # shellcheck source=/dev/null
-. "$HOME/bin/install/vars.sh"
+. ../vars.sh
 # shellcheck source=/dev/null
 . "$INCDIR/build-utils.sh"
   

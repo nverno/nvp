@@ -1,7 +1,6 @@
 ;;; nvp-shell-common.el --- shared utils/vars -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; stuff required by numerous modes
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

@@ -2,10 +2,9 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-parse))
+(eval-when-compile (require 'nvp-macro))
 (require 'pp)
+(require 'company-elisp)
 (require 'nvp-parse)
 (nvp-decls)
 (nvp-decl company-elisp--candidates-predicate company-elisp--fns-regexp)
@@ -15,7 +14,6 @@
 
 ;; modified from company-elisp to incorporate more things
 ;; used to determine abbrev expansion / toggling
-(eval-when-compile (require 'company-elisp))
 (let-when-compile
     ((el-defs '("defun" "defmacro" "defsubst" "defmethod" "defclass" "defgeneric"
                 "define-advice" "defadvice" "add-advice" "add-function"

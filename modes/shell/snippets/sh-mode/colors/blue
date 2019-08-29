@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: blue
+# key: blue
+# --
+"\\e[36m${1:info}$0\\e[0m"

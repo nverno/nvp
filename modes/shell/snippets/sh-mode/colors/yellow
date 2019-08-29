@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: yellow
+# key: yellow
+# --
+"\\e[01;33m${1:warn}$0\\e[0m"

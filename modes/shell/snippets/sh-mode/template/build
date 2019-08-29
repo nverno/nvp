@@ -7,13 +7,13 @@
 set -e
 
 # shellcheck source=/dev/null
-. "$HOME/bin/install/build/vars.sh"
+. "$HOME/bin/install/vars.sh"
 # shellcheck source=/dev/null
 . "$INCDIR/build-utils.sh"
   
 case "\$1" in
-    "--install") shift && $1_install "${@}";;
-    "--uninstall") shift && $1_uninstall "${@}";;
-    "--update") shift && $1_update "${@}";;
-    *) $1_install "${@}";;
+    "--install") shift && $1_install "\${@}";;
+    "--uninstall") shift && $1_uninstall "\${@}";;
+    "--update") shift && $1_update "\${@}";;
+    *) $1_install "\${@}";;
 esac

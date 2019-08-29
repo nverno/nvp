@@ -15,8 +15,8 @@
   (defvar c/R-abbrev-table))
 (require 'nvp-parse)
 (require 'nvp)
+(nvp-decls)
 (declare-function xref-push-marker-stack "xref")
-(nvp-declare "" nvp-compile)
 (autoload 'string-trim-right "subr-x")
 
 (defvar-local nvp-c-local-include-paths nil)

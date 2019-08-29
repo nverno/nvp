@@ -1,13 +1,10 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; FIXME:
-;; - reuse `nvp-shell-goto-command-start' for `sh-mode' as well
 ;;; Code:
 (eval-when-compile
   (require 'nvp-proc)
-  (require 'nvp-macro)
-  (require 'nvp-shell-macs "macs/nvp-shell-macs"))
+  (require 'nvp-macro))
 (require 'comint)
 (require 'nvp-shell-common)
 (require 'nvp)
@@ -16,25 +13,6 @@
 
 ;; update default-directory on remote login
 (defvar nvp-shell-ssh-regexp (nvp-re-opt '("ssh" "hssh")))
-
-;;; Things-at-point
-
-;; guess bounds from beginning of current command to end of symbol/word at point
-(defun nvp-shell-bounds-of-stmt-at-point ()
-  (save-excursion
-    (let* ((bol (comint-line-beginning-position))
-           (end (progn (skip-syntax-forward "w_\"") (point)))
-           (beg (progn (nvp-shell-goto-command-start end bol) (point))))
-      (cons beg end))))
-(put 'shell-stmt 'bounds-of-thing-at-point #'nvp-shell-bounds-of-stmt-at-point)
-
-;; bounds for current active shell command
-(defun nvp-shell-bounds-of-cmd-at-point ()
-  (save-excursion
-    (goto-char (car (bounds-of-thing-at-point 'shell-stmt)))
-    (skip-syntax-forward "\"")
-    (bounds-of-thing-at-point 'symbol)))
-(put 'shell-cmd 'bounds-of-thing-at-point #'nvp-shell-bounds-of-cmd-at-point)
 
 ;;; Processes
 
@@ -78,7 +56,11 @@
   (nvp-with-proc proc
     (comint-send-string proc "nautilus . 2>/dev/null\n")))
 
+;; -------------------------------------------------------------------
 ;;; Remote
+;; TODO:
+;; - use tramp in remote directory
+;; - filter to update default-directory when ssh in shell
 
 (defun nvp-shell-remote-filter (string)
   "Update `default-directory' on remote login.
@@ -95,11 +77,11 @@ Add to `comint-input-filter-functions'."
 
 ;; -------------------------------------------------------------------
 ;;; Launch shells
-
+;;
 ;; Switch to a terminal or launch one, if remote use bash.
-;; With prefix, create a shell in the current `default-directory'.
-;; On remote hosts, ensure that the shell is created properly
-;; (windows).
+;; With prefix, create or get a shell in the current `default-directory'.
+;; On remote hosts, ensure that the shell is created properly (windows).
+
 (defun nvp-shell-in-dir-maybe (&optional directory proc-name)
   "Return a terminal buffer running in DIRECTORY (default-directory by default).
 If none found, return list of all terminal buffers."

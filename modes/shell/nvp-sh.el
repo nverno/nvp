@@ -92,6 +92,7 @@ Used to set `end-of-defun-function'."
     (beginning-of-line)
     (when (search-forward "{" nil 'move) ;move to opening '{' and jump sexp
       (forward-char -1)
+      ;; Note: will error on malformed sexps
       (forward-list)
       (point))))
 

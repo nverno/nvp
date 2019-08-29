@@ -2,4 +2,4 @@
 # name: #include "..."
 # key: inc.
 # --
-#include "${1:$(nvp-yas-bfn-no-ext)}.h"
+#include "${1:`(nvp-yas-bfn-no-ext)`}.h"

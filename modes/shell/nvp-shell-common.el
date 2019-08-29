@@ -3,7 +3,9 @@
 ;;; Commentary:
 ;; stuff required by numerous modes
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-shell-macs "macs/nvp-shell-macs"))
 (nvp-decls)
 
 ;; dont expand when prefixed by [-/_.]
@@ -41,6 +43,25 @@
          ;; otherwise, return first symbol
          (t (and (looking-at "[:+_\[\.[:alnum:]-]+")
                  (match-string 0))))))))
+
+;;; Things-at-point
+
+;; guess bounds from beginning of current command to end of symbol/word at point
+(defun nvp-shell-bounds-of-stmt-at-point ()
+  (save-excursion
+    (let* ((bol (comint-line-beginning-position))
+           (end (progn (skip-syntax-forward "w_\"") (point)))
+           (beg (progn (nvp-shell-goto-command-start end bol) (point))))
+      (cons beg end))))
+(put 'shell-stmt 'bounds-of-thing-at-point #'nvp-shell-bounds-of-stmt-at-point)
+
+;; bounds for current active shell command
+(defun nvp-shell-bounds-of-cmd-at-point ()
+  (save-excursion
+    (goto-char (car (bounds-of-thing-at-point 'shell-stmt)))
+    (skip-syntax-forward "\"")
+    (bounds-of-thing-at-point 'symbol)))
+(put 'shell-cmd 'bounds-of-thing-at-point #'nvp-shell-bounds-of-cmd-at-point)
 
 (defun nvp-shell-bounds-of-variable-at-point ()
   (save-excursion

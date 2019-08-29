@@ -81,6 +81,7 @@
                      ;; or unquoted
                      "\\(?1:[^\n\t ]+\\)\\)")))
                  (setq file (expand-file-name
+                             ;; FIXME: need to add known globals to process env.
                              (substitute-in-file-name
                               (match-string 1))))
                  (when (file-exists-p file)

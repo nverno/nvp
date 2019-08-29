@@ -1,2 +1,2 @@
 (("unused"
-  . ((nil (byte-compile-file . nil)))))
+  . ((nil (no-byte-compile . t)))))

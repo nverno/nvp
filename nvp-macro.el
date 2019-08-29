@@ -867,9 +867,9 @@ VAR is a symbol and FORM is evaluated."
 (defmacro nvp-file-older-than-days (file days)
   "non-nil if FILE last modification was more than DAYS ago."
   (declare (indent defun) (debug t))
-  `(< (time-to-seconds
-       (time-subtract (current-time) (nth 5 (file-attributes ,file))))
-      (* 60 60 24 ,days)))
+  `(< (* 60 60 24 ,days)
+      (time-to-seconds
+       (time-subtract (current-time) (nth 5 (file-attributes ,file))))))
 
 ;; modified from skeeto extras
 (defmacro nvp-measure-time (times &rest body)

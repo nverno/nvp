@@ -2,12 +2,11 @@
 # name: includes
 # key: inc
 # --
-set -e
 # shellcheck source=/dev/null 
+
+set -eo pipefail
+
 . ~/bin/include/utils.sh
-# shellcheck source=/dev/null 
 . ~/bin/include/web-utils.sh
-# shellcheck source=/dev/null
 . ~/bin/include/install-utils.sh
-# shellcheck source=/dev/null
 . ~/bin/include/git-utils.sh

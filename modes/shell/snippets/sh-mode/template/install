@@ -2,15 +2,11 @@
 # name: install template
 # key: install
 # --
-#!/usr/bin/env bash
-
-set -e
-
 # shellcheck source=/dev/null 
+
+set -eo pipefail
+
 . ~/bin/include/utils.sh
-# shellcheck source=/dev/null
 . ~/bin/include/install-utils.sh${1:
-# shellcheck source=/dev/null
 . ~/bin/include/git-utils.sh
-# shellcheck source=/dev/null
 . ~/bin/include/web-utils.sh}

@@ -59,7 +59,7 @@
   (nvp-bmk-update-history)
   ;; (kill-all-local-variables)
   (setq bookmark-alist nil)
-  (let (bookmarks-already-loaded)
+  (let (bookmark-bookmarks-timestamp)
     (bookmark-maybe-load-default-file)
     ;; (bookmark-bmenu-list)
     ))
@@ -81,7 +81,7 @@
         (bookmark-save))
       (setq bookmark-default-file bmk)
       (setq bookmark-alist nil)
-      (let (bookmarks-already-loaded)
+      (let (bookmark-bookmarks-timestamp)
         (bookmark-maybe-load-default-file)
         ;; (bookmark-bmenu-list)
         ))))
@@ -195,7 +195,7 @@ and fallback to `bookmark-default-file'."
   "With arg reload defaults."
   (interactive "P")
   (when reload
-    (setq bookmarks-already-loaded nil
+    (setq bookmark-bookmarks-timestamp nil
           bookmark-default-file
           (expand-file-name
            "bookmarks-linux.bmk" (nvp-path 'dn bookmark-default-file))

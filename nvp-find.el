@@ -48,6 +48,7 @@
 ;;; Grep / Rgrep
 
 (eval-when-compile
+  (defvar grep-find-ignored-directories)
   (defvar package-user-dir)
   (defmacro nvp-rgrep:with-defaults (elisp &rest body)
     "Defaults: symbol at point, file/buffer extension.

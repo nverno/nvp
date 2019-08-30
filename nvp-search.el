@@ -6,12 +6,12 @@
 ;; - hi-lock
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'replace)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(nvp-decls)
+(nvp-decl occur-read-primary-args)
 (nvp-auto "nvp-buffer" 'nvp-buffer-matching-mode)
+(nvp-auto "replace" 'multi-occur)
 
 ;; -------------------------------------------------------------------
 ;;; Occur 

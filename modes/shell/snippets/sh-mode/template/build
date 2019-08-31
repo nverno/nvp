@@ -6,8 +6,9 @@
 
 set -eo pipefail
 
-. ../vars.sh
+DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd)"
+. "$DIR/../vars.sh"
 . "$INCDIR/build-utils.sh"
 
 $0
-_process_args ${1:`(nvp-yas-bfn-no-ext)`}_install $1_update $1_uninstall "\$@"
+_process_args ${1:`(nvp-yas-bfn-no-ext)`}_install $1_${2:update} $1_${3:uninstall} "\$@"

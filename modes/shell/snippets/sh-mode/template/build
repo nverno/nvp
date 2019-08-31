@@ -8,11 +8,10 @@ set -eo pipefail
 
 . ../vars.sh
 . "$INCDIR/build-utils.sh"
-  
-case "\$1" in
-    "--install") shift && ${1:`(nvp-yas-bfn-no-ext)`}_install "\${@}";;
-    "--uninstall") shift && $1_uninstall "\${@}";;
-    "--update") shift && $1_update "\${@}";;
-    *) [[ -n "$1" ]] && _error "unrecognized argument: $1"
-       $1_install --install;;
-esac
+
+$0
+_process_args 
+    ${1:`(nvp-yas-bfn-no-ext)`}_install \
+    $1_update \
+    $1_uninstall \
+    "\$@"

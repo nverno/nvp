@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: traptmp
+# key: traptmp
+# --
+trap 'exit 1' HUP INT PIPE TERM
+trap 'rm -rf \$${1:tmpdir}' EXIT
+
+$1=\$(_tempdir "${2:prefix}")

@@ -9,12 +9,14 @@
 ;; - jump to source
 ;; - imenu support
 
+;; TODO: node lookup should allow fuzzy matching
+
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'info)
 (require 'filenotify)
+(require 'info-look)
 (nvp-decls)
 (nvp-auto "nvp-read" 'nvp-read--info-files)
 

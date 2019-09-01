@@ -9,6 +9,18 @@ set -eo pipefail
 DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd)"
 . "$DIR/../vars.sh"
 . "$INCDIR/build-utils.sh"
-
 $0
-_process_args ${1:`(nvp-yas-bfn-no-ext)`}_install $1_${2:update} $1_${3:uninstall} "\$@"
+${1:`(nvp-yas-bfn-no-ext)`}_install() {
+    _info "running $1 \$*"
+    case "\$1" in
+        --install)
+        ;;
+        --update)
+        ;;
+        --uninstall)
+        ;;
+    esac
+    _success "$1 \$1"
+}
+
+_process_args $1_install "\$@"

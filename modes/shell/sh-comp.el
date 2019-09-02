@@ -28,6 +28,14 @@
 (defvar sh-comp-use-bash-completion t
   "Non-nil to use `bash-completion' during completion at point.")
 
+;; This is useful for including local sources that are included via non-constant
+;; expressions, e.g
+;;    . "$DIR/../inc.sh"
+;; where $DIR is not in the `process-environment', and wouldn't be expanded.
+(defvar sh-comp-additional-sources ()
+  "List of additional files to include. ")
+(put 'sh-comp-additional-sources 'safe-local-variable 'listp)
+
 (eval-when-compile
  ;; mapping for symbols to annotations
  (defvar sh-comp-symbol-annotation
@@ -61,15 +69,21 @@
   sources
   modtime)
 
+(defsubst sh-comp--expand-file-names (stubs)
+  (cl-loop for stub in stubs
+     as file = (expand-file-name (substitute-in-file-name stub))
+     when (file-exists-p file)
+     collect file))
+
 ;; gather sourced files from buffer
 (defun sh-comp--buffer-sources ()
-  (save-excursion
-    (goto-char (point-min))
-    ;; might not be called in a `sh-mode' buffer
-    (with-syntax-table sh-mode-syntax-table
-      (let (srcs)
+  (let ((srcs sh-comp-additional-sources))
+    (save-excursion
+      (goto-char (point-min))
+      ;; might not be called in a `sh-mode' buffer
+      (with-syntax-table sh-mode-syntax-table
         (while (re-search-forward "\\_<\\(source\\|\\.\\)\\_>" nil 'move)
-          (let ((syntax (syntax-ppss)) file)
+          (let ((syntax (syntax-ppss)))
             ;; ignore commented out / in strings
             (and (not (nth 3 syntax))
                  (not (nth 4 syntax))
@@ -80,13 +94,9 @@
                      "[ \t]*\\(?:\"\\(?1:[^\"]+\\)\\|"
                      ;; or unquoted
                      "\\(?1:[^\n\t ]+\\)\\)")))
-                 (setq file (expand-file-name
-                             ;; FIXME: need to add known globals to process env.
-                             (substitute-in-file-name
-                              (match-string 1))))
-                 (when (file-exists-p file)
-                   (push file srcs)))))
-        srcs))))
+                 ;; FIXME: add known globals to process env. ?
+                 (push (match-string 1) srcs))))))
+    (cl-remove-duplicates (sh-comp--expand-file-names srcs))))
 
 ;; use imenu to create candidate list from buffer
 (defun sh-comp--buffer-candidates ()
@@ -102,25 +112,28 @@
           index)))))
 
 ;; update sources/candidates for FILE in DBFILE entry
+;; Note: make sure local vars get lexically bound in temp buffer
 (defun sh-comp--file-update (file dbfile &optional recurse imenu-regexp)
   (or imenu-regexp (setq imenu-regexp sh-comp-imenu-expression))
-  (with-temp-buffer
-    (insert-file-contents file)
-    (let* ((imenu-generic-expression (or imenu-regexp sh-comp-imenu-expression))
-           (imenu-create-index-function #'imenu-default-create-index-function)
-           (srcs (sh-comp--buffer-sources))
-           (cands (sh-comp--buffer-candidates)))
-      (setf (sh-comp-dbfile-functions dbfile)
-            (cdr (assoc (sh-comp:annotation function) cands)))
-      (setf (sh-comp-dbfile-variables dbfile)
-            (cdr (assoc (sh-comp:annotation global) cands)))
-      (setf (sh-comp-dbfile-sources dbfile) srcs)
-      (puthash file dbfile sh-comp-db)
-      (when recurse
-        (dolist (src srcs)
-          (when (not (equal src file))
-            (sh-comp-file-candidates
-             src nil recurse imenu-regexp 'no-return)))))))
+  (let ((additional-sources sh-comp-additional-sources))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (let* ((imenu-generic-expression (or imenu-regexp sh-comp-imenu-expression))
+             (imenu-create-index-function #'imenu-default-create-index-function)
+             (sh-comp-additional-sources additional-sources)
+             (srcs (sh-comp--buffer-sources))
+             (cands (sh-comp--buffer-candidates)))
+        (setf (sh-comp-dbfile-functions dbfile)
+              (cdr (assoc (sh-comp:annotation function) cands)))
+        (setf (sh-comp-dbfile-variables dbfile)
+              (cdr (assoc (sh-comp:annotation global) cands)))
+        (setf (sh-comp-dbfile-sources dbfile) srcs)
+        (puthash file dbfile sh-comp-db)
+        (when recurse
+          (dolist (src srcs)
+            (when (not (equal src file))
+              (sh-comp-file-candidates
+               src nil recurse imenu-regexp 'no-return))))))))
 
 (defsubst sh-comp--getter (type)
   (if (eq type 'all)
@@ -165,7 +178,7 @@ sourced files."
 ;;; Completion
 
 (nvp-decl :pre "bash-completion" require-process -parse -stub-start -customize
-  -completion-table-with-cache comm)
+  -completion-table-with-cache comm reset)
 
 (defvar sh-comp-syntax-table
   (let ((tab sh-mode-syntax-table))
@@ -180,11 +193,16 @@ sourced files."
   (save-excursion
     (widen)
     (when-let* ((ppss (syntax-ppss))
-                (parens (nth 9 ppss)))   ;start of outermost parens
+                (parens (nth 9 ppss))  ;start of outermost parens
+                (start (point)))
       (goto-char (car parens))
       (and (eq (char-after) ?{)
            (progn
-             (narrow-to-region (point) (progn (forward-sexp) (point)))
+             (narrow-to-region
+              (point)
+              (condition-case nil      ;unterminated sexps
+                  (progn (forward-sexp) (point))
+                (scan-error start)))
              (car parens))))))
 
 ;; variables before point in current function:
@@ -242,7 +260,8 @@ sourced files."
   ;; XXX: in comments complete for docs only
   (with-syntax-table sh-comp-syntax-table
     (nvp-unless-ppss 'cmt
-      (let* ((pos (point))
+      (let* ((bash-completion-process-timeout 0.5)
+             (pos (point))
              (beg (condition-case nil
                       (save-excursion
                         (backward-sexp 1)
@@ -299,8 +318,10 @@ sourced files."
                          (lambda (s) (or (get-text-property 0 'annot s) " <E>"))))
                   (t
                    (list (completion-table-merge
-                          (bash-completion--completion-table-with-cache
-                           (lambda (_) (bash-completion-comm comp proc)))
+                          (condition-case nil
+                              (bash-completion--completion-table-with-cache
+                               (lambda (_) (bash-completion-comm comp proc)))
+                            (error (prog1 nil (bash-completion-reset))))
                           (completion-table-dynamic
                            (lambda (_string) (sh-comp-candidates 'functions))))
                          :annotation-function

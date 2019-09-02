@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: var-array
+# key: __
+# --
+"\${$1[@]}"$0

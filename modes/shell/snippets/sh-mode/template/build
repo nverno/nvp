@@ -9,6 +9,9 @@ set -eo pipefail
 _${1:$(upcase yas-text)}_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd)"
 . "\$_${1:$(upcase yas-text)}_DIR/../vars.sh"
 . "$INCDIR/build-utils.sh"
+DRY_RUN=\${DRY_RUN:-false}
+DEBUG=${DEBUG:-false}
+
 $0
 ${1:`(nvp-yas-bfn-no-ext)`}_install() {
     _info "running $1 \$*"

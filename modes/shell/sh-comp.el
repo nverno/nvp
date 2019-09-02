@@ -361,10 +361,15 @@ sourced files."
   (completion-table-dynamic
    (lambda (_string) (sh-comp-candidates 'all (buffer-file-name))) 'switch))
 
-;;; FIXME: detect variable in path, jump to path in source line
-;; (cl-defmethod xref-backend-identifier-at-point ((_backend (eql sh-comp)))
-;;   (or (thing-at-point 'symbol)
-;;       ()))
+;;; TODO: if at a source => detect variable in path, jump to path in source line
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql sh-comp)))
+  (save-excursion
+    (skip-chars-forward "[:alnum:]_")
+    (let ((end (point))
+          (beg (progn (skip-chars-backward "[:alnum:]_")
+                      (point))))
+      (when (> end beg)
+        (buffer-substring beg end)))))
 
 (defun sh-comp--make-xref-location (ident file)
   (let ((db (gethash file sh-comp-db)))

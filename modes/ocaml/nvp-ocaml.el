@@ -18,34 +18,6 @@
 (defvar ocaml--dir (nvp-load-file-name))
 
 ;; -------------------------------------------------------------------
-;;; Install 
-;; opam, ocp-indent, utop, merlin
-
-; (nvp-with-gnu
-;   ;; FIXME: install aspcud external solver
-;   ;; https://opam.ocaml.org/doc/Install.html#GettingtheSources
-;   (defun nvp-ocaml-install (what)
-;     (interactive
-;      (list (ido-completing-read
-;             "Install: " '("opam" "packages" "src" "info"))))
-;     (let ((script (expand-file-name "tools/install.sh" (nvp-package-root))))
-;      (pcase what
-;        (`"opam"
-;         (set-process-sentinel
-;          (nvp-ext-run-script script '("install_opam") 'sudo)
-;          #'(lambda (p _m)
-;              (when (zerop (process-exit-status p))
-;                ;; run non-sudoed
-;                (nvp-ext-run-script '("install_opam_init"))))))
-;        (`"packages"
-;         (nvp-ext-run-script script '("install_ocaml_pkgs")))
-;        (`"src"
-;         (nvp-ext-run-script script '("install_ocaml_src")))
-;        (`"info"
-;         (nvp-ext-run-script script '("install_ocaml_info") 'sudo))
-;        (_ ())))))
-
-;; -------------------------------------------------------------------
 ;;; Utils 
 
 ;; read input in various ways

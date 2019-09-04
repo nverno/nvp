@@ -1,20 +1,13 @@
 ;;; nvp-ocaml-abbrev.el ---  -*- lexical-binding: t; -*-
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Last modified: <2019-03-29 02:15:39>
-;; Created: 14 December 2016
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 
 ;; get functions and type signatures for MODULE
 (defun nvp-ocaml-abbrev-module-sig (module)
   (with-temp-buffer
-    (let ((proc (start-process "ocaml" (current-buffer) "ocaml"))
+    (let ((proc (start-process "ocaml" (current-buffer)
+                               "opam" "config" "exec" "--" "ocaml"))
           res)
       (process-send-string
        proc (format "module type S = module type of %s;;\n" module))

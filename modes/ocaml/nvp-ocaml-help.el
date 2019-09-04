@@ -7,7 +7,7 @@
   (require 'nvp-ocaml))
 (require 'nvp-ocaml)
 (require 'merlin-company nil t)
-(nvp-declare "" merlin/complete zeal-at-point)
+(nvp-decl merlin/complete zeal-at-point)
 (autoload 'ocaml-module-alist "caml-help")
 
 ;; #<marker at 103230 in tuareg.el>

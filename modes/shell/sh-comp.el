@@ -34,6 +34,7 @@
 ;; where $DIR is not in the `process-environment', and wouldn't be expanded.
 (defvar sh-comp-additional-sources ()
   "List of additional files to include. ")
+;;;###autoload
 (put 'sh-comp-additional-sources 'safe-local-variable 'listp)
 
 (eval-when-compile

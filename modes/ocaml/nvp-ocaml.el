@@ -10,15 +10,32 @@
 (declare-function utop "utop")
 (declare-function ocaml-module-alist "caml-help")
 (declare-function smie-forward-sexp "smie")
-(nvp-decl tuareg-opam-current-compiler tuareg-beginning-of-defun)
+(nvp-decl string-trim-right tuareg-opam-current-compiler tuareg-beginning-of-defun
+  tuareg-opam-update-env)
 (autoload 'nvp-ext-run-script "nvp-ext")
-(autoload 'tuareg-opam-update-env "tuareg")
-(autoload 'expand-abbrev-hook "expand")
-
-(defvar ocaml--dir (nvp-load-file-name))
 
 ;; -------------------------------------------------------------------
 ;;; Utils 
+
+(defun nvp-ocaml-library-path ()
+  (when (executable-find "opam")
+    (--when-let
+        (shell-command-to-string
+         "eval $(opam config env); opam config exec -- echo $CAML_LD_LIBRARY_PATH")
+      (string-trim-right it))))
+
+;; get version
+(defun nvp-ocaml-compiler-version ()
+  (let ((ver (shell-command-to-string "opam switch show -s")))
+    (and ver (string-match "\\([0-9.]+\\)" ver)
+         (match-string 1 ver))))
+
+;; check tools, return those that are installed
+(defun nvp-ocaml-installed-tools (&optional tools)
+  (let ((tools (or tools '("merlin" "utop" "ocp-indent"))))
+    (shell-command-to-string
+     (format "opam list --installed --short --safe --color=never %s"
+             (mapconcat 'identity tools " ")))))
 
 ;; read input in various ways
 (defmacro nvp-ocaml-read (prompt &optional thing &rest args)
@@ -44,29 +61,6 @@
     ((pred consp)
      `(ido-completing-read ,prompt ,thing))
     (_ `(read-from-minibuffer ,prompt))))
-
-;; get version
-(defun nvp-ocaml-compiler-version ()
-  (let ((ver (shell-command-to-string "opam switch show -s")))
-    (and ver (string-match "\\([0-9.]+\\)" ver)
-         (match-string 1 ver))))
-
-;; check tools, return those that are missing
-(defun nvp-ocaml-missing-tools (&optional tools)
-  (let ((tools (or tools '("merlin" "utop" "ocp-indent"))))
-    (delq
-     nil
-     (mapcar
-      #'(lambda (tool)
-          (let ((res
-                 (shell-command-to-string
-                  (concat
-                   (eval-when-compile
-                     (concat "opam list --installed --short "
-                             "--safe --color=never "))
-                   tool))))
-            (and (string= "" res) tool)))
-      tools))))
 
 ;;; Environment
 
@@ -214,8 +208,8 @@
 (defun nvp-ocaml-merlin-init ()
   "Create .merlin with all ocamlfind packages / .opam sources."
   (interactive)
-  (let ((script (expand-file-name "bin/merlin-init" ocaml--dir)))
-    (nvp-ext-run-script script)))
+  (-when-let (script (expand-file-name "emacs/merlin-init" nvp/bin))
+    (start-process-shell-command "bash" nil (concat "bash -l " script))))
 
 ;;; inf shell
 

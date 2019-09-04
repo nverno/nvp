@@ -2,4 +2,4 @@
 # name: OS
 # key: OS
 # --
-OS = \$(shell . /etc/os-release && echo $$NAME | awk '{print $$1}')
+OS := \$(shell . /etc/os-release && echo $$NAME | awk '{print $$1}')

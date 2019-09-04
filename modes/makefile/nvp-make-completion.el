@@ -19,7 +19,7 @@
 ;; - type is one of: [environment, makefile, default, automatic, override]
 ;;
 ;; Xref
-;; - makefile variables and rules have filenames + locations
+;; - makefile variables, rules, and defines have filenames + locations
 ;;
 ;;; Code:
 (eval-when-compile

@@ -23,10 +23,6 @@
 (require 'make-mode)
 (nvp-decls)
 
-;; -------------------------------------------------------------------
-;;; Base
-
-
 ;;; Navigation
 
 (defvar nvp-makefile-open/close
@@ -88,7 +84,6 @@
                       (concat "^\\s-*$\\|" nvp-makefile-defun-regexp)))))
     (point)))
 
-
 ;;; Font-lock
 ;; TODO:
 ;; - remove string fontification in #define blocks where it is incorrect.
@@ -146,10 +141,6 @@ With prefix ARG, run `helm-make'."
             (push str targets)))))
     (nreverse targets)))
 
-
-;; -------------------------------------------------------------------
-;;; Help
-
 ;; Special targets: collect matches from url
 (defun nvp-makefile-collect-topics (url regex)
   (let (res)
@@ -163,10 +154,6 @@ With prefix ARG, run `helm-make'."
   (nvp-makefile-collect-topics
    "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
    "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
-
-
-;; -------------------------------------------------------------------
-;;; Extra
 
 ;;; Indent
 (defvar nvp-makefile-indent-offset 2)

@@ -1,14 +1,16 @@
 ;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
 ;; - bookmark-to-bookmark jump handler
 ;; - assorted bookmark functions
 ;; #<marker at 210151 in info.el.gz>
-
+;; FIXME:
+;; - wrong formatting with xrefs
 ;; TODO:
-;; - bug: wrong formatting with xrefs
-
+;; - create new bookmark files
+;; - interface to list bookmark files
+;; - show bookmarks for a given file
+;; - update with new bookmark.el modifications
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

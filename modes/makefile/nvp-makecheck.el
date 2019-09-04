@@ -4,8 +4,7 @@
 ;; - https://github.com/mrtazz/checkmake
 ;; - make --warn-undefined-variables
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'compile)
 (require 'nvp)
 

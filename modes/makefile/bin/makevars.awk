@@ -1,9 +1,10 @@
 #!/usr/bin/awk -f
 
-# convert output from 'make -pqrRns' to lisp-readable list:
+# Convert output from 'make -pqrRns' to lisp-readable list.
+# Used for completion, macroexpansion, and XREF backend.
+# Result format:
 # ((variables (<varname> [value] <type> [file] [lineno]))
-#  (rules ())
-
+#  (rules (<rulename> [file] [lineno])))
 
 BEGIN { print "(" }
 
@@ -40,6 +41,7 @@ var == 1 {
         printf "(\"%s\" %s %s %s %s)\n", 
             m[1], value, type, file, line;
     } else if (match($0, /^define (\S+)/, m)) {
+        # ignore bodies of defines, they are still xref-ed
         printf "(\"%s\" \"<define>\" %s %s %s)\n",
             m[1], type, file, line;
     } else {

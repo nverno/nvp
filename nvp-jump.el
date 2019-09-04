@@ -263,16 +263,19 @@ With triple prefix, offer recursive results."
 (defun nvp-jump-to-nearest-notes-dwim (name action)
   "Jump to nearest notes/todo file, prompting with prefix."
   (interactive
-   (list (or (nvp-prefix 16 (read-file-name "File name: ") :test #'>)
-             (bound-and-true-p nvp-local-notes-file)
-             '("notes.org" "Notes.org" "todo.org" "Todo.org"))
-         current-prefix-arg))
+   (list  (or (nvp-prefix 16 (read-file-name "File name: ") :test #'>)
+              (bound-and-true-p nvp-local-notes-file)
+              '("notes.org" "Notes.org" "todo.org" "Todo.org"))
+          current-prefix-arg))
   (let* ((locate-fn (if (consp name) #'nvp-file-locate-first-dominating
-               #'locate-dominating-file))
-         (dir (funcall locate-fn (or
-                                  (buffer-file-name nil)
-                                  default-directory) name)))
-    (if dir (nvp-display-location (expand-file-name name dir) :file action)
+                      #'locate-dominating-file))
+         (dir (funcall
+               locate-fn (or (buffer-file-name) default-directory) name))
+         (fname
+          (if (stringp name) name
+            (cl-some (lambda (f) (and (file-exists-p (expand-file-name dir f)) f))
+                     name))))
+    (if dir (nvp-display-location (expand-file-name fname dir) :file action)
       (user-error (format "%S not found up the directory tree." name)))))
 
 ;;;###autoload

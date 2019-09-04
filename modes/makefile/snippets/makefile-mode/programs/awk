@@ -2,4 +2,4 @@
 # name: awk
 # key: awk
 # --
-AWK ?= $(shell command -v gawk || printf awk)
+AWK := $(shell command -v gawk || printf awk)

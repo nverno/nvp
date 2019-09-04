@@ -7,15 +7,40 @@
   (require 'hydra))
 (require 'nvp)
 (require 'windmove)
-(declare-function ace-window "ace-window")
-(nvp-auto "winner" winner-undo winner-redo)
+(nvp-decl winner-undo winner-redo ace-window ace-swap-window)
+
+(defvar nvp-window--interactive-stack ())
+(defvar nvp-window-fast-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "," #'nvp-window-configuration-pop)
+    (define-key map "d" #'nvp-window-toggle-dedicated)
+    (define-key map "s" #'ace-swap-window)
+    (define-key map "j" #'ace-window)
+    map))
+
+(nvp-advise-commands (apply-partially #'nvp/repeat nvp-window-fast-map)
+  :after '(nvp-window-configuration-pop))
+
+;;;###autoload
+(defun nvp-window-configuration-push ()
+  (interactive)
+  (push (current-window-configuration) nvp-window--interactive-stack)
+  (message "windows configuration saved"))
+
+;;;###autoload
+(defun nvp-window-configuration-pop (&rest _args)
+  (interactive)
+  (if-let* ((conf (pop nvp-window--interactive-stack)))
+      (set-window-configuration conf)
+    (message "window configuration stack empty")))
 
 ;;;###autoload
 (defun nvp-window-toggle-dedicated (window)
   "Toggle WINDOW strongly dedicated."
   (interactive (list (selected-window)))
   (let ((dedicated-p (window-dedicated-p window)))
-    (set-window-dedicated-p window (not dedicated-p))))
+    (set-window-dedicated-p window (not dedicated-p))
+    (message "window dedicated: %s" (if dedicated-p "off" "on"))))
 
 ;; Transpose the buffers shown in two windows.
 ;; from https://github.com/re5et/.emacs.d/blob/master/my/my-functions.el

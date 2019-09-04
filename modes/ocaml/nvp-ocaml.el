@@ -170,6 +170,10 @@
 
 ;;; Newlines
 
+(cl-defmethod nvp-newline-dwim-comment
+  (&context (major-mode tuareg-mode) syntax arg &optional _cont)
+  (nvp-newline-dwim--comment syntax arg))
+
 (nvp-newline nvp-ocaml-newline-dwim
   "Newline dwim for ocaml."
   :pairs (("{" "}"))

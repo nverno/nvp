@@ -175,23 +175,6 @@
   (set (make-local-variable 'company-backends)
        (delete-dups (cl-pushnew backends company-backends :test #'equal))))
 
-
-;; -------------------------------------------------------------------
-;;; Window configuration
-
-;; save / restore window configurations
-(defun nvp-window-configuration-save ()
-  (interactive)
-  (push (current-window-configuration) nvp-window-configuration-stack))
-
-(defun nvp-window-configuration-restore (&rest _args)
-  (interactive)
-  (if-let* ((conf (pop nvp-window-configuration-stack)))
-      (set-window-configuration conf)
-    (if (> (length (window-list)) 1)
-        (delete-window)
-      (bury-buffer))))
-
 ;; -------------------------------------------------------------------
 ;;; Mode variables
 
@@ -277,25 +260,31 @@
   (newline arg 'interactive))
 
 ;; add a comment continuation string when in nestable doc comments
-(defun nvp-newline-dwim--comment (&optional _comment-continue))
+(defun nvp-newline-dwim--comment (syntax &optional arg cmt-cont)
+  (if (not (integerp (nth 4 syntax)))
+      (newline arg 'interactive)
+    (let ((beg (point)))
+      (cl-loop repeat arg
+         do (insert ?\n (or cmt-cont comment-continue)))
+      (indent-region beg (point)))))
 
 ;; generics with defaults - lisp modes don't do anything special
 (cl-defgeneric nvp-newline-dwim-prefix (&optional arg)
   "Generic function to handle newline dwim in special contexts."
   (newline arg 'interactive))
 
-(cl-defgeneric nvp-newline-dwim-comment (&optional arg _comment-cont)
+(cl-defgeneric nvp-newline-dwim-comment (_syntax arg &optional _comment-cont)
   "Generic function to handle newline dwim in comments."
   (newline arg 'interactive))
 
 (cl-defgeneric nvp-newline-dwim-default (&optional arg)
   "Generic function to handle newline dwim syntactically."
-  (let ((syntax (syntax-ppss)))
+  (let ((syntax (parse-partial-sexp (point-min) (point))))
     (cond
      ((nvp-ppss 'str syntax)
       (newline arg 'interactive))
      ((nvp-ppss 'cmt syntax)
-      (nvp-newline-dwim-comment arg))
+      (nvp-newline-dwim-comment syntax arg))
      ;; default to adding newline between paren delimiters
      (t (nvp-newline-dwim--parens arg)))))
 
@@ -544,6 +533,21 @@ in `global-map' or BINDING-MAP if non-nil."
               (--map (cons t it) (listify-key-sequence kv))))
     (error (format "package.el %s failed to define keymap %s"
                    package keymap-symbol))))
+
+
+;; -------------------------------------------------------------------
+;;; Window configuration
+
+;; save / restore window configurations
+(defun nvp-window-configuration-save ()
+  (push (current-window-configuration) nvp-window-configuration-stack))
+
+(defun nvp-window-configuration-restore (&rest _args)
+  (if-let* ((conf (pop nvp-window-configuration-stack)))
+      (set-window-configuration conf)
+    (if (> (length (window-list)) 1)
+        (delete-window)
+      (bury-buffer))))
 
 (provide 'nvp)
 ;;; nvp.el ends here

@@ -164,32 +164,6 @@ Filter by PREDICATE if non-nil."
       (funcall (intern (concat "nvp-mode-vars-" variable)) data)
     (user-error "%s not in nvp-mode-cache" mode)))
 
-
-;; read mode installation files
-(defun nvp-read--mode-install (&optional mode prompt default)
-  (or prompt (setq prompt "Install file: "))
-  (let* ((mode (nvp-read--mode-name mode))
-         (modedir (expand-file-name mode nvp/install))
-         files)
-    (if (not (file-exists-p modedir))
-        (nvp-read-relative-recursively nvp/install "^[^.]+$" prompt)
-      (setq files (directory-files modedir nil "^[^.]+$"))
-      (if (eq 1 (length files))
-          (expand-file-name (concat mode "/" (car files)) nvp/install)
-        (unless default
-          (setq prompt
-                (nvp-prompt-default
-                 prompt (cl-some (lambda (f)
-                                   (member
-                                    f `(,(format "install-%s" mode) "install")))
-                                 files))))
-        (expand-file-name
-         (concat
-          mode "/"
-          (nvp-completing-read
-           prompt files nil nil nil 'nvp-read-config-history default))
-         nvp/install)))))
-
 ;; some completing reads for general config files
 (defun nvp-read-mode-config (&optional prompt default)
   (unless default

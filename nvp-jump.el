@@ -148,12 +148,11 @@ Optionally, search LISP-ONLY files (no C sources)."
 ;;; Install / build files
 
 ;;;###autoload
-(defun nvp-jump-to-mode-install (file action)
-  "Jump to external installation files for MODE.
-With double prefix, prompt for mode."
+(defun nvp-jump-to-installer (file action)
+  "Jump to external installation files."
   (interactive
    (list
-    (nvp-read--mode-install (nvp-prefix 16 (nvp-read--mode-name (nvp-read-mode))))
+    (nvp-read-relative-recursively nvp/install "^[^.]+$" "Install file: ")
     current-prefix-arg))
   (nvp-display-location file :file action))
 

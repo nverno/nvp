@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
-# name: let-fun
-# key: letfun
+# name: function-case
+# key: func
 # --
-let ${1:rec} ${2:fun} = function
+let ${1:rec }${2:fun} = function
   | ${3:[] -> []}
   | $4 -> $0`(ocaml-yas-end)`

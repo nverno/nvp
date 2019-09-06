@@ -264,7 +264,7 @@
   (if (not (integerp (nth 4 syntax)))
       (newline arg 'interactive)
     (let ((beg (point)))
-      (cl-loop repeat arg
+      (cl-loop repeat (or arg 1)
          do (insert ?\n (or cmt-cont comment-continue)))
       (indent-region beg (point)))))
 

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: Array length
-# key: lena
+# key: arrl
 # --
 Array.length $0`(ocaml-yas-end)`

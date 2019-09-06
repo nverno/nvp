@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: fun
+# key: fun
+# --
+let ${1:rec }${2:name} ${3:args} = $0

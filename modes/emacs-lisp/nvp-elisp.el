@@ -111,7 +111,7 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
 
 ;; try(not very hard) to gather buffer functions/macros at top level
 ;; from current buffer, optionally in region specified by BEG END
-(defun nvp-elisp--buffer-defuns (&optional beg end)
+(defun nvp-elisp-matching-forms (match-forms &optional beg end)
   (or end (setq end (point-max)))
   (save-excursion
     (let (forms form)
@@ -119,7 +119,7 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
       (ignore-errors
         (while (and (setq form (read (current-buffer)))
                     (< (point) end))
-          (when (and (consp form) (memq (car form) nvp-elisp--defun-forms))
+          (when (and (consp form) (memq (car form) match-forms))
             (push (cadr form) forms))))
       (delq nil forms))))
 
@@ -129,7 +129,7 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
   (or (nvp-elisp:get-forms nvp-elisp--defun-forms args)
       ;; gather functions from unloaded buffer / file
       (nvp-parse:buffer-file t nil args
-        (nvp-elisp--buffer-defuns))))
+        (nvp-elisp-matching-forms nvp-elisp--defun-forms))))
 
 (cl-defmethod nvp-parse-current-function
   (&context (major-mode emacs-lisp-mode) &rest _args)

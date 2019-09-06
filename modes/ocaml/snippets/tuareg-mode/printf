@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: printf
-# key: pr
+# key: prf
 # --
 Printf.printf "${1:string}" ${2:vals}`(ocaml-yas-end)`

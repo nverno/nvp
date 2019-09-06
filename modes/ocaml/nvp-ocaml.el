@@ -1,21 +1,18 @@
 ;;; nvp-ocaml.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; FIXME: remove lots of install stuff, cleanup
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-complete)
   (defvar utop-buffer-name)
   (defvar opam-share))
+(require 'nvp)
 (declare-function utop "utop")
 (declare-function ocaml-module-alist "caml-help")
 (declare-function smie-forward-sexp "smie")
 (nvp-decl string-trim-right tuareg-opam-current-compiler tuareg-beginning-of-defun
   tuareg-opam-update-env)
-(autoload 'nvp-ext-run-script "nvp-ext")
 
-;; -------------------------------------------------------------------
-;;; Utils 
 
 (defun nvp-ocaml-library-path ()
   (when (executable-find "opam")
@@ -171,14 +168,8 @@
 ;;; Newlines
 
 (cl-defmethod nvp-newline-dwim-comment
-  (&context (major-mode tuareg-mode) syntax arg &optional _cont)
+  (&context (major-mode tuareg-mode) &optional syntax arg _cont)
   (nvp-newline-dwim--comment syntax arg))
-
-(nvp-newline nvp-ocaml-newline-dwim
-  "Newline dwim for ocaml."
-  :pairs (("{" "}"))
-  :comment-re (" *\\(?:(\\*\\|\\*\\)" . "\\*) *")
-  :comment-start "* ")
 
 (defun nvp-ocaml-newline-or-insert ()
   (interactive)

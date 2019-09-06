@@ -3,6 +3,6 @@
 # key: try
 # --
 try
-        $0
+  $0
 with
-        $1
+  $1

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: fun
-# key: fun
+# name: lambda
+# key: fn
 # --
 fun ${1:args} -> $0

@@ -9,9 +9,7 @@
 ;; #<marker at 19142 in semantic/imenu.el.gz>
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-imenu)
 
 (put 'nvp-parse-bad-location 'error-conditions '(nvp-parse-bad-location error))

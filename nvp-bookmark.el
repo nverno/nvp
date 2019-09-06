@@ -18,6 +18,50 @@
 (require 'bookmark)
 (autoload 'f-same-p "f")
 
+(defvar nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
+
+(defun nvp-bookmark-locate-file (file &optional ignore-local ok-not-exists)
+  (or file (setq file bookmark-default-file))
+  (if (file-name-absolute-p file) file
+    (if (or ignore-local (not (bound-and-true-p nvp-local-bookmark-file)))
+        (expand-file-name file nvp-bookmark-directory)
+      (let ((f (expand-file-name
+                nvp-local-bookmark-file
+                (locate-dominating-file default-directory dir-locals-file))))
+        (if (or ok-not-exists (file-exists-p f)) f
+          (expand-file-name nvp-local-bookmark-file nvp-bookmark-directory))))))
+
+;;;###autoload
+(defun nvp-bookmark-local (file)
+  "Load bookmark FILE.
+With prefix prompt for filename. Otherwise, try `nvp-local-bookmark-file'
+and fallback to `bookmark-default-file'."
+  (interactive
+   (list (or (and current-prefix-arg (read-file-name "Bookmark file: "))
+             (nvp-bookmark-locate-file nvp-local-bookmark-file))))
+  (nvp-bmk-update-history file)
+  (unless (f-same-p bookmark-default-file file)
+    (nvp-bmk-handler (nvp-bmk-make-record file)))
+  (call-interactively 'bookmark-bmenu-list))
+
+;;;###autoload
+(defun nvp-bookmark-list (&optional reload)
+  "With arg reload defaults."
+  (interactive "P")
+  (when reload
+    (setq bookmark-bookmarks-timestamp nil
+          bookmark-default-file
+          (expand-file-name
+           "bookmarks-linux.bmk" (nvp-path 'dn bookmark-default-file))
+          bookmark-alist nil)
+    (message "Reloaded: %s" bookmark-default-file))
+  (let ((bookmark-default-file (nvp-bookmark-locate-file nvp-local-bookmark-file)))
+    (call-interactively #'bookmark-bmenu-list)))
+
+
+;; -------------------------------------------------------------------
+;;; BMK handling
+
 ;; (define-advice bookmark-load-hook)
 
 (defgroup nvp-bmk nil
@@ -170,40 +214,6 @@ and jumped between.
     (nvp-bmk-toggle-highlight)
     (when (nvp-cache-empty-p nvp-bmk-cache)
       (nvp-cache-load nvp-bmk-cache))))
-
-
-;; -------------------------------------------------------------------
-;;; Commands
-
-;;;###autoload
-(defun nvp-bookmark-local (file)
-  "Load bookmark FILE.
-With prefix prompt for filename. Otherwise, try `nvp-local-bookmark-file'
-and fallback to `bookmark-default-file'."
-  (interactive
-   (list (or (and current-prefix-arg (read-file-name "Bookmark file: "))
-             (and (bound-and-true-p nvp-local-bookmark-file)
-                  (expand-file-name
-                   nvp-local-bookmark-file
-                   (locate-dominating-file default-directory dir-locals-file)))
-             bookmark-default-file)))
-  (nvp-bmk-update-history file)
-  (unless (f-same-p bookmark-default-file file)
-    (nvp-bmk-handler (nvp-bmk-make-record file)))
-  (call-interactively 'bookmark-bmenu-list))
-
-;;;###autoload
-(defun nvp-bookmark-list (&optional reload)
-  "With arg reload defaults."
-  (interactive "P")
-  (when reload
-    (setq bookmark-bookmarks-timestamp nil
-          bookmark-default-file
-          (expand-file-name
-           "bookmarks-linux.bmk" (nvp-path 'dn bookmark-default-file))
-          bookmark-alist nil)
-    (message "Reloaded: %s" bookmark-default-file))
-  (call-interactively #'bookmark-bmenu-list))
 
 (provide 'nvp-bookmark)
 ;;; nvp-bookmark.el ends here

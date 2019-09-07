@@ -1,8 +1,7 @@
 ;;; nvp-hippie-shell.el --- expand shell aliases -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-hippie)
 (require 'nvp-shell)
 

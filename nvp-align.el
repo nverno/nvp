@@ -12,9 +12,26 @@
   (require 'nvp-macro)
   (require 'nvp-results))
 (require 'nvp)
-(require 'nvp-read)
 (require 'align)
 (nvp-decls)
+
+(nvp-bindings nvp-align-keymap nil
+  :create t
+  ("A"   . align)
+  ("a"   . nvp-align)
+  ("C"   . nvp-align-cols)
+  ("c"   . align-current)
+  ("Dh"  . align-highlight-rule)
+  ("Du"  . align-unhighlight-rule)
+  ("e"   . align-entire)
+  ("M-?" . nvp-align-show-rules)
+  (";"   . nvp-align-comments)
+  ("r"   . align-repeat))
+
+(mapc
+ (lambda (key)
+   (define-key nvp-align-keymap `[,key] #'nvp-align-by-last-char))
+ (string-to-list "#=.,|\\"))
 
 ;;;###autoload
 (defun nvp-align (&optional arg beg end)

@@ -11,13 +11,12 @@
 ;; - special variables
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar Man--sections))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
 (require 'nvp-help) ;; parse 'man' stuff
 (autoload 'Man-build-section-list "man")
 (autoload 'pos-tip-show "pos-tip")
+(defvar Man--sections)
 
 ;; ignore ':', not symbolized to match strings
 (defvar nvp-sh--bash-builtins

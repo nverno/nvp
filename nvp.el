@@ -27,7 +27,6 @@
     `(,nvp/bin ,nvp/binw)))
 (defvar nvp-default-org-file "gtd.org" "Default org file.")
 (defvar nvp-window-configuration-stack () "Store window configurations.")
-(defvar nvp-read-config-history () "Minibuffer jumping history.")
 (defvar nvp-default-log-function #'nvp-log-default
   "Default logging function - called from process sentinels, etc.")
 (defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
@@ -251,6 +250,14 @@
 
 ;; -------------------------------------------------------------------
 ;;; Newline DWIM 
+
+(defsubst nvp-between-empty-parens-p (&optional point)
+  "Non-nil if POINT is between open/close syntax with only whitespace."
+  (ignore-errors
+    (and point (goto-char point))
+    (and
+     (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
+     (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
 
 ;; add additional newline when between syntactic open/closer
 (defun nvp-newline-dwim--parens (&optional arg)
@@ -504,15 +511,10 @@ On error (read-only), quit without selecting."
          km))
    t))
 
-(with-eval-after-load 'winner
- (defvar nvp-winner-map
-   (let ((map (make-sparse-keymap)))
-     (define-key map "p" #'winner-undo)
-     (define-key map "n" #'winner-redo)
-     map))
-
- (nvp-advise-commands (apply-partially #'nvp/repeat nvp-winner-map)
-   :after '(winner-undo winner-redo)))
+(nvp-bindings nvp-winner-map 'winner
+  :create t :repeat t :indicate t
+  ("p" . winner-undo)
+  ("n" . winner-redo))
 
 
 ;; -------------------------------------------------------------------

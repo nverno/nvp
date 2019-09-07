@@ -6,8 +6,7 @@
 ;; Links shellcheck output to source location and SC**** warnings/errors to wiki
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'compile)
 (require 'help-mode)
 (declare-function xterm-color-colorize-buffer "xterm-color")

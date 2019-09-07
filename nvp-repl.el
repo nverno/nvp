@@ -14,8 +14,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'subr-x)
-  (require 'cl-lib)
   (require 'comint))
 (require 'nvp)
 (require 'nvp-proc)

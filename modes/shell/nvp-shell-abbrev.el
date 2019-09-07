@@ -4,13 +4,12 @@
 ;; TODO: Add option to merge to tables
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar nvp-shell-abbrev-table)
-  (defvar shells-abbrev-table))
+(eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
 (require 'nvp-shell)
 (declare-function nvp-abbrev-expand-not-after-punct-p "nvp-abbrev")
+(defvar nvp-shell-abbrev-table)
+(defvar shells-abbrev-table)
 
 ;; read aliases from bash_aliases to alist ((alias . expansion) ... )
 (defun nvp-shell-read-aliases (file &optional merge os)

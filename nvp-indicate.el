@@ -11,8 +11,7 @@
 ;; - trailing white space
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (nvp-decl :pkg "pulse"
   pulse-momentary-highlight-region pulse-momentary-highlight-one-line)
 
@@ -54,6 +53,11 @@
 ;;;###autoload
 (defun nvp-indicate-cursor-post ()
   (set-cursor-color (nvp-indicate-cache 'cursor-color)))
+
+;;;###autoload
+(defun nvp-indicate-abort ()
+  (interactive)
+  (nvp-indicate-cursor-post))
 
 ;; ------------------------------------------------------------
 ;;; Temporarily change modeline color

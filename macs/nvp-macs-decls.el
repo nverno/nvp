@@ -141,6 +141,7 @@
        ert-run-tests-interactively
        hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
        tramp-dissect-file-name tramp-make-tramp-file-name
+       smie-forward-sexp
        w32-shell-execute)
 
      (nvp-decl                          ; external packages

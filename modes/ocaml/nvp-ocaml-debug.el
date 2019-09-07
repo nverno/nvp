@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-ocaml)
-(require 'ocamldebug nil t)
+(require 'ocamldebug)
 (nvp-decl ocamldebug)
 
 ;; ocamldebug.el doesn't define a prefix key like gud-gdb
@@ -11,7 +11,7 @@
 
 (defmacro ocaml-debug-bindings (&rest bindings)
   (declare (indent defun))
-  `(eval-after-load 'ocamldebug
+  `(with-eval-after-load 'ocamldebug
      (progn
        ,@(cl-loop for (name . k) in bindings
             collect `(define-key tuareg-mode-map

@@ -232,14 +232,6 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
   `(unless (nvp-ppss ,type)
      ,@body))
 
-(defsubst nvp-between-empty-parens-p (&optional point)
-  "Non-nil if POINT is between open/close syntax with only whitespace."
-  (ignore-errors
-    (and point (goto-char point))
-    (and
-     (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
-     (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
-
 
 ;; -------------------------------------------------------------------
 ;;; Scan lists

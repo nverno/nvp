@@ -11,14 +11,19 @@
 (require 'nvp)
 (nvp-decls)
 
-(defmacro nvp-with-proc (proc &rest body)
-  "Execute BODY with current buffer PROC if process is live."
-  (declare (indent defun) (debug t))
-  `(if-let ((,proc (nvp-buffer-process)))
-       (if (not (process-live-p ,proc))
-           (user-error "Buffer process is not live.")
-         ,@body)
-     (user-error "Current buffer has no process.")))
+;;;###autoload
+(defun nvp-async-shell-command-to-string (command &optional callback)
+  (unless callback
+    (setq callback (lambda (p _m)
+                     (message
+                      (with-current-buffer (process-buffer p)
+                        (prog1 (string-trim-right (buffer-string))
+                          (kill-this-buffer)))))))
+  (nvp-with-process "async-string"
+    :proc-buff (generate-new-buffer-name " *temp*")
+    :proc-args (command)
+    :shell t
+    :callback callback))
 
 ;; -------------------------------------------------------------------
 ;;; Find processes

@@ -12,6 +12,10 @@
 (nvp-decl help--symbol-completion-table function-called-at-point)
 (autoload 'eldoc-minibuffer-message "eldoc")
 
+;; minibuffer histories
+(defvar nvp-read-config-history ())
+(defvar nvp-read-keymap-history ())
+
 ;; list filenames relative to ROOT matching REGEXP
 (defsubst nvp-read--relative-files (root regexp)
   (mapcar (lambda (f) (file-relative-name f root))
@@ -70,7 +74,7 @@
                                   (keymapp (symbol-value m))
                                   (not (equal (symbol-value m)
                                               (make-sparse-keymap)))))
-                           t nil nil nil)))
+                           t nil 'nvp-read-keymap-history nil)))
 
 (defun nvp-read-nvp-keymap ()
   "Read one of my keymaps."
@@ -79,7 +83,7 @@
                              (and (boundp m)
                                   (keymapp (symbol-value m))
                                   (string-prefix-p "nvp-" (symbol-name m))))
-                           t nil 'nvp-read-config-history "nvp-keymap")))
+                           t nil 'nvp-read-keymap-history "nvp-keymap")))
 
 (eval-when-compile
   (defmacro nvp-read--default (default &rest body)

@@ -9,8 +9,7 @@
 ;;   in region more than once
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
 (require 'nvp-sh-help)
 (require 'eldoc)

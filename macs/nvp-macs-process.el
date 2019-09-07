@@ -18,6 +18,15 @@
   "Return BUFFER's process."
   `(get-buffer-process ,(or buffer '(current-buffer))))
 
+(defmacro nvp-with-proc (proc &rest body)
+  "Execute BODY with current buffer PROC if process is live."
+  (declare (indent defun) (debug t))
+  `(if-let ((,proc (nvp-buffer-process)))
+       (if (not (process-live-p ,proc))
+           (user-error "Buffer process is not live.")
+         ,@body)
+     (user-error "Current buffer has no process.")))
+
 (defalias 'nvp-with-comint-buffer 'nvp-comint-buffer)
 (cl-defmacro nvp-comint-buffer (&rest body &key name new result &allow-other-keys)
   "Get a new comint buffer from NAME and execute BODY there, returning buffer.
@@ -81,17 +90,15 @@ if process exit status isn't 0."
      ;; proc-bufname + buffer-fn
      proc-buff
      (proc-bufname `,(concat "*" proc-name "*"))
-     (proc-args nil)
+     proc-args
      (buffer-fn 'get-buffer-create)
      sync                               ; run synchronously
      shell                              ; call as shell command (inheriting env)
+     callback                           ; do this instead of sentinels
+     on-success
+     on-failure
      (proc-filter :default)
-     (proc-sentinel :default)
-     (on-success `(progn
-                    (nvp-indicate-modeline-success
-                     ,(concat " " proc-name " success"))
-                    (kill-buffer (current-buffer))))
-     (on-failure '(pop-to-buffer (current-buffer))))
+     (proc-sentinel :default))
   "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer."
   (declare (indent defun) (debug t))
   (let* ((proc (make-symbol "proc"))
@@ -121,9 +128,7 @@ if process exit status isn't 0."
            (t nil))
          ,(if sync `,proc  ; no sentinel for sync
             (cond
-             ((memq proc-sentinel '(:default t))
-              `(set-process-sentinel ,proc (nvp-proc-default-sentinel)))
-             (proc-sentinel `(set-process-sentinel ,proc ,proc-sentinel))
+             (callback `(set-process-sentinel ,proc ,callback))
              ((or on-success on-failure)
               `(set-process-sentinel ,proc
                                      (lambda (p m)
@@ -132,6 +137,9 @@ if process exit status isn't 0."
                                          (if (zerop (process-exit-status p))
                                              ,on-success
                                            ,on-failure)))))
+             ((memq proc-sentinel '(:default t))
+              `(set-process-sentinel ,proc (nvp-proc-default-sentinel)))
+             (proc-sentinel `(set-process-sentinel ,proc ,proc-sentinel))
              ((null proc-sentinel) `,proc)))))))
 
 ;; -------------------------------------------------------------------
@@ -152,8 +160,7 @@ Note: use lexical-binding."
            ,@body)))))
 
 (defmacro nvp-with-async-override (orig-fn new-fn &rest body)
-  "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of
-BODY."
+  "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of BODY."
   (declare (indent defun))
   (macroexp-let2 nil new-fn new-fn
    `(nvp-with-process-wrapper

@@ -63,8 +63,7 @@
 \\{dotmerlin-mode-map}"
   (set (make-local-variable 'comment-start) "# ")
   (set (make-local-variable 'comment-start-skip) "#+\\s-*")
-  (set (make-local-variable 'font-lock-defaults)
-       '(dotmerlin-mode-lock-keywords)))
+  (set (make-local-variable 'font-lock-defaults) '(dotmerlin-mode-lock-keywords)))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.merlin\\'" . dotmerlin-mode))

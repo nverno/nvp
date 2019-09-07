@@ -193,19 +193,29 @@ If AFTER-LOAD is non-nil, eval after loading feature/file."
         ,@(cl-loop for (k . b) in bindings
              collect `(nvp-bind ,map ,k ,b))))))
 
-(cl-defmacro nvp-bindings (mode &optional feature &rest bindings
-                                &key local buff-local minor autoload create prefix
-                                with
-                                &allow-other-keys)
-  "Set MODE BINDINGS after FEATURE is loaded.
+(cl-defmacro nvp-bindings (keymap &optional feature &rest bindings
+                                  &key
+                                  local buff-local minor
+                                  autoload create prefix
+                                  repeat indicate
+                                  with
+                                  &allow-other-keys)
+  "Set KEYMAP BINDINGS after FEATURE is loaded.
 BINDINGS are conses of (key . command).
 
 Optional:
   AUTOLOAD specifies prefix key which autoloads map.
-  CREATE, if non-nil, map is initialized as sparse keymap.
-  PREFIX defines map as a prefix command with PREFIX as its name if it is a string.
-  WITH specifies sets of bindings, from 'nvp--bindings-*', to add to map. These
-       bindings are overwritten by any conflicts in BINDINGS.
+  CREATE   if non-nil, map is initialized as sparse keymap.
+  PREFIX   defines map as a prefix command with PREFIX as its name if it is a string.
+  WITH     specifies sets of bindings, from 'nvp--bindings-*', to add to map. These
+           bindings are overwritten by any conflicts in BINDINGS.
+
+Transient:
+  REPEAT   if non-nil, a list of functions which will be advised to enter 
+           transient KEYMAP after they are called. If REPEAT is \\='all, all
+           functions in bindings will repeat.
+  INDICATE if non-nil, cursor changes color when transient bindings are active
+           only effective with REPEAT.
 
 Buggy:
   LOCAL makes map local var.        -- changes bindings for ALL mode buffers!!
@@ -215,8 +225,8 @@ Buggy:
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
   (and with (setq bindings (append (nvp--with-bindings with) bindings)))
-  (and (symbolp mode) (setq mode (symbol-name mode)))
-  (let ((modemap (nvp--normalize-modemap mode minor)))
+  (and (symbolp keymap) (setq keymap (symbol-name keymap)))
+  (let ((modemap (nvp--normalize-modemap keymap minor)))
     `(progn
        (eval-when-compile (defvar ,modemap))
        ,(when prefix
@@ -228,7 +238,7 @@ Buggy:
                      (nvp-lam ()
                        (interactive)
                        (nvp-autoload-keymap
-                        ',modemap ,(or feature `',(intern mode))))))
+                        ',modemap ,(or feature `',(intern keymap))))))
        ,(when local           ; will change bindings for all mode buffers
           `(make-local-variable ',modemap))
        ,(when buff-local      ; HACK: but how to modify 
@@ -236,10 +246,24 @@ Buggy:
              (make-variable-buffer-local ',modemap)))
        ,(when bindings
           `(,@(if (or create prefix) '(progn)
-                `(with-eval-after-load ,(or feature `',(intern mode))))
+                `(with-eval-after-load ,(or feature `',(intern keymap))))
             ;; with-eval-after-load ,(or feature `',(intern mode))
             ,@(cl-loop for (k . b) in bindings
-                 collect `(nvp-bind ,modemap ,k ,b)))))))
+                 collect `(nvp-bind ,modemap ,k ,b))))
+       ,(when repeat
+          (when (equal t repeat)
+            (setq repeat (--map (cdr it) bindings)))
+          (let ((repeat-fn (intern (concat "nvp/repeat-" keymap))))
+            `(progn
+               (nvp-def ,repeat-fn (&rest _args)
+                 ,(and indicate `(nvp-indicate-cursor-pre))
+                 (set-transient-map
+                  ,modemap t
+                  ,(when indicate
+                     `(lambda () (nvp-indicate-cursor-post)))))
+               ,(macroexp-progn
+                 (cl-loop for fn in repeat
+                    collect `(advice-add ',fn :after #',repeat-fn)))))))))
 
 ;;; Multiple Modes
 

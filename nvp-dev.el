@@ -24,9 +24,6 @@
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
 
-
-;;; Bindings
-
 (nvp-bindings nvp-dev-keymap nil
   :create t
   ("a"  . nvp-dev-advice-remove-all)

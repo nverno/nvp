@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-proc)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'comint)
 (require 'nvp-shell-common)
 (require 'nvp)

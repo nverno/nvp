@@ -6,12 +6,14 @@
 ;; Expanders:
 ;; - fuzzy matching
 ;; - dabbrevs, closest first
+;; - tags
+;; - lines
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'hippie-exp)
+(nvp-decl ggtags-try-complete-tag)
 
 ;; args: active position, match-beg, match-end
 (defvar nvp-he-weight-function #'company-occurrence-prefer-any-closest
@@ -161,6 +163,23 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
   (prog1 (not (null he-expand-list))    ;return t if expansion is found
     (if he-expand-list (he-substitute-string (pop he-expand-list))
       (and old (he-reset-string)))))
+
+
+;;; Tags
+
+;;;###autoload
+(defun nvp-he-try-expand-tags (_old)
+  "Placeholder for tag expansion function.  
+If active tags are found, it replaces itself in `hippie-expand-try-functions-list'
+with the active backend, otherwise it removes itself."
+  (cond
+   (ggtags-mode
+    (let ((splt (assoc 'nvp-he-try-expand-tags hippie-expand-try-functions-list)))
+      (when splt
+        (setcar splt 'ggtags-try-complete-tag))))
+   (t (setq hippie-expand-try-functions-list
+            (delq 'nvp-he-try-expand-tags hippie-expand-try-functions-list))))
+  nil)
 
 
 ;;; Dabbrevs

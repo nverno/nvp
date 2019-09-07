@@ -20,6 +20,15 @@
 
 (defvar nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
 
+;; if FILE is nil, use bookmark-default-file
+;; search order:
+;; 1. if absolute file name, just use it
+;; 2. if IGNORE-LOCAL is non-nil or no local-bookmark is bound,
+;;    use FILE in `nvp-bookmark-directory'
+;; 3. there is a local-bookmark:
+;;    - if OK-NOT-EXISTS is non-nil or the file exists in first directory containing
+;;      .dir-locals, return path to that file
+;;    - otherwise, path to local-bookmark in `nvp-bookmark-directory'
 (defun nvp-bookmark-locate-file (file &optional ignore-local ok-not-exists)
   (or file (setq file bookmark-default-file))
   (if (file-name-absolute-p file) file
@@ -45,17 +54,19 @@ and fallback to `bookmark-default-file'."
   (call-interactively 'bookmark-bmenu-list))
 
 ;;;###autoload
-(defun nvp-bookmark-list (&optional reload)
-  "With arg reload defaults."
-  (interactive "P")
-  (when reload
+(defun nvp-bookmark-list (&optional arg)
+  "With single prefix force reloading, allowing for local settings to have effect.
+With double prefix, reload defaults"
+  (interactive "p")
+  (when (> arg 1)
     (setq bookmark-bookmarks-timestamp nil
-          bookmark-default-file
-          (expand-file-name
-           "bookmarks-linux.bmk" (nvp-path 'dn bookmark-default-file))
-          bookmark-alist nil)
+          bookmark-alist nil))
+  (when (> arg 4)
+    (setq bookmark-default-file
+          (expand-file-name "bookmarks-linux.bmk" nvp-bookmark-directory))
     (message "Reloaded: %s" bookmark-default-file))
-  (let ((bookmark-default-file (nvp-bookmark-locate-file nvp-local-bookmark-file)))
+  (let ((bookmark-bookmarks-timestamp nil)
+        (bookmark-default-file (nvp-bookmark-locate-file nvp-local-bookmark-file)))
     (call-interactively #'bookmark-bmenu-list)))
 
 

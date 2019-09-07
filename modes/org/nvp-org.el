@@ -5,7 +5,7 @@
 (require 'org)
 (require 'nvp)
 
-(nvp-decl "org-table" org-table-check-inside-data-field org-table-end-of-field
+(nvp-decl org-table-check-inside-data-field org-table-end-of-field
   org-table-beginning-of-field)
 (declare-function org-babel-execute:dot "ob-dot")
 (declare-function outline-show-subtree "outline")
@@ -132,9 +132,7 @@ See `org-element-all-elements' for possible item types."
     ;; nodes
     (mapconcat
      (lambda (x)
-       (format 
-        (nvp-concat "%s [ label=\"%s\" shape=%s style=\"filled\" "
-                    "fillcolor=\"%s\"]")
+       (format "%s [ label=\"%s\" shape=%s style=\"filled\" fillcolor=\"%s\"]"
         (car x)
         (nth 1 x)
         (if (string= "" (nth 2 x)) "box" (nth 2 x))

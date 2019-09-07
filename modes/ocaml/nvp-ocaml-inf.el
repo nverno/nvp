@@ -1,6 +1,12 @@
 ;;; nvp-ocaml-inf.el --- ocaml REPL -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;; TODO:
+;; - macro to dump utop history
+;; - company-complete in REPL erases modifier
+;; - no capf backend in REPL
+;; - hippie-exp from hist
+;; - C-c C-d to change dir
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

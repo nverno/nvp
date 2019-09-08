@@ -25,7 +25,7 @@
 (require 'cperl-mode)
 (nvp-decls)
 (declare-function auto-complete-mode "autocomplete")
-(nvp-decl :pkg "plsense" plsense-setup-current-buffer plsense-server-start)
+(nvp-decl "plsense" plsense-setup-current-buffer plsense-server-start)
 
 (nvp-auto "find-lisp" 'find-lisp-find-files)
 (nvp-auto "nvp-util" 'nvp-back-chars-then-look)

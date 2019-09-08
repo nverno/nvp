@@ -13,7 +13,7 @@
   (require 'nvp-macro))
 (require 'python)
 (require 'tag-utils nil t)
-(nvp-decl :pkg "pyenv" pyenv-mode-versions pyenv-mode-unset pyenv-mode-set pyenv-mode)
+(nvp-decl "pyenv" pyenv-mode-versions pyenv-mode-unset pyenv-mode-set pyenv-mode)
 (nvp-decl anaconda-mode-complete-extract-names anaconda-mode-call)
 (nvp-decls)
 

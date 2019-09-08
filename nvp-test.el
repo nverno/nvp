@@ -8,7 +8,7 @@
   (require 'cl-lib)
   (require 'subr-x))
 (require 'nvp-project)
-(nvp-declare :pkg "ert" ert-run-tests-interactively)
+(nvp-decl "ert" ert-run-tests-interactively)
 
 ;; called when visiting new test buffer, passed name of matching source file
 (defvar nvp-test-init-function 'ignore)

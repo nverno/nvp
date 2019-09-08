@@ -5,7 +5,7 @@
 (eval-when-compile
   (require 'nvp-macro))
 (require 'irfc nil t)
-(nvp-decl :pkg "irfc" irfc-visit irfc-render-buffer-hide-blank-line irfc-head-move) 
+(nvp-decl "irfc" irfc-visit irfc-render-buffer-hide-blank-line irfc-head-move) 
 
 ;; load RFC config prior to visiting rfs
 ;;;###autoload

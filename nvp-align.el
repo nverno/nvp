@@ -13,6 +13,7 @@
   (require 'nvp-results))
 (require 'nvp)
 (require 'align)
+(nvp-decl nvp-read-mode)
 (nvp-decls)
 
 (nvp-bindings nvp-align-keymap nil

@@ -10,7 +10,7 @@
 (nvp-decls)
 
 (nvp-decl org-texinfo-export-to-info org-latex-export-to-pdf)
-(nvp-decl :pkg "dired-aux" dired-dwim-target-directory dired-read-shell-command)
+(nvp-decl "dired-aux" dired-dwim-target-directory dired-read-shell-command)
 (declare-function dired-filename-at-point "dired-x")
 (declare-function conda-env-read-env "conda-env")
 

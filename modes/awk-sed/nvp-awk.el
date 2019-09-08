@@ -27,6 +27,12 @@
    (1 font-lock-keyword-face))
   ("\\(@[[:alpha:]_]+\\)" (1 'nvp-italic-variable-face)))
 
+(defvar nvp-awk-imenu-expression
+  `((nil
+     ,(concat "^\\s-*" (regexp-opt '("BEGIN" "BEGINFILE" "END" "ENDFILE") 'paren))
+     0)
+    (nil "^\\s-*function\\s-+\\([[:alpha:]][[:alpha:]]+\\)\\s-*(" 1)))
+
 ;; -------------------------------------------------------------------
 ;;; Completion
 
@@ -40,7 +46,7 @@
         "doc/builtins.el" (file-name-directory (nvp-load-file-name))))
       (car (read-from-string (buffer-string))))))
 
-(defun nvp-awk-command-completion ()
+(defun nvp-awk-completion-at-point ()
   (-when-let ((beg . end) (bounds-of-thing-at-point 'symbol))
     (list beg end (completion-table-merge
                    nvp-awk-builtins

@@ -24,6 +24,7 @@
 (require 'sh-script)
 (require 'company)
 (require 'imenu)
+(defvar bash-completion-process-timeout)
 
 (defvar sh-comp-use-bash-completion t
   "Non-nil to use `bash-completion' during completion at point.")

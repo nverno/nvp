@@ -2,9 +2,10 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'nvp)
 (require 'nvp-python)
 (require 'python)
-
+(declare-function nvp-setup-local "nvp-setup")
 (declare-function w32-shell-execute "w32")
 (declare-function conda-env-activate "conda-env")
 

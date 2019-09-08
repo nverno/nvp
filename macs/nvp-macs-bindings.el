@@ -196,7 +196,8 @@ Buggy:
     (setq bindings (cdr (cdr bindings))))
   (and with (setq bindings (append (nvp--with-bindings with) bindings)))
   ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
-  (let ((modemap (nvp--normalize-modemap keymap minor)))
+  (let ((modemap (nvp--normalize-modemap keymap minor))
+        (mapname (if (stringp keymap) keymap (symbol-name keymap))))
     `(progn
        ,(when (symbolp modemap)
           `(eval-when-compile (defvar ,modemap)))
@@ -209,7 +210,7 @@ Buggy:
                      (nvp-lam ()
                        (interactive)
                        (nvp-autoload-keymap
-                        ',modemap ,(or feature `',(intern keymap))))))
+                        ',modemap ,(or feature `',(intern mapname))))))
        ,(when local           ; will change bindings for all mode buffers
           `(make-local-variable ',modemap))
        ,(when buff-local      ; HACK: but how to modify 
@@ -217,14 +218,14 @@ Buggy:
              (make-variable-buffer-local ',modemap)))
        ,(when bindings
           `(,@(if (or create prefix (equal feature :now)) '(progn)
-                `(with-eval-after-load ,(or feature `',(intern keymap))))
+                `(with-eval-after-load ,(or feature `',(intern mapname))))
             ;; with-eval-after-load ,(or feature `',(intern mode))
             ,@(cl-loop for (k . b) in bindings
                  collect `(nvp-bind ,modemap ,k ,b))))
        ,(when repeat
           (when (equal t repeat)
             (setq repeat (--map (cdr it) bindings)))
-          (let ((repeat-fn (intern (concat "nvp/repeat-" keymap))))
+          (let ((repeat-fn (intern (concat "nvp/repeat-" mapname))))
             `(progn
                (nvp-def ,repeat-fn (&rest _args)
                  ,(and indicate `(nvp-indicate-cursor-pre))

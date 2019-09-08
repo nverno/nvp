@@ -133,12 +133,12 @@ See `org-element-all-elements' for possible item types."
     (mapconcat
      (lambda (x)
        (format "%s [ label=\"%s\" shape=%s style=\"filled\" fillcolor=\"%s\"]"
-        (car x)
-        (nth 1 x)
-        (if (string= "" (nth 2 x)) "box" (nth 2 x))
-        (if (string= "" (nth 3 x)) "none" (nth 3 x))
-        ;; (nth 4 x)
-        ))                     ;ranked left->right
+               (car x)
+               (nth 1 x)
+               (if (string= "" (nth 2 x)) "box" (nth 2 x))
+               (if (string= "" (nth 3 x)) "none" (nth 3 x))
+               ;; (nth 4 x)
+               ))                     ;ranked left->right
      nodes "\n")
     "\n"
     ;; edges

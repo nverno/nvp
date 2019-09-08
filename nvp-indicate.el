@@ -12,7 +12,7 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decl :pkg "pulse"
+(nvp-decl "pulse"
   pulse-momentary-highlight-region pulse-momentary-highlight-one-line)
 
 ;; indicatation colors

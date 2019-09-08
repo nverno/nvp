@@ -9,8 +9,9 @@
 ;; - C-c C-d to change dir
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
+(require 'tuareg)
 (require 'utop)
+(require 'nvp)
 (nvp-decls)
 
 ;; default syntax breaks motions
@@ -31,7 +32,7 @@
   (let ((paragraph-start nvp-utop-prompt-regexp))
     (end-of-line (if (> n 0) 1 0))
     (forward-paragraph n)
-    (if (and (looking-at nvp-utop-promp-regexp)
+    (if (and (looking-at nvp-utop-prompt-regexp)
              (<= (match-end 0) (line-end-position)))
         (goto-char (match-end 0)))))
 
@@ -67,11 +68,10 @@
   (interactive "P")
   (if arg (tuareg-eval-phrase)
     (utop-prepare-for-eval)
-    (let (end)
-      (save-excursion
-        (-let (((beg . end) (funcall utop-discover-phrase)))
-          (nvp-indicate-pulse-region-or-line beg end)
-          (utop-eval beg end))))))
+    (save-excursion
+      (-let (((beg . end) (funcall utop-discover-phrase)))
+        (nvp-indicate-pulse-region-or-line beg end)
+        (utop-eval beg end)))))
 
 (provide 'nvp-ocaml-inf)
 ;; Local Variables:

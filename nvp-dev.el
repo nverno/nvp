@@ -13,10 +13,11 @@
   (require 'nvp-display))
 (require 'nvp)
 (require 'help-mode)
-(nvp-decl :pkg "nadvice" advice-mapc advice-remove)
+(nvp-decl "nadvice" advice-mapc advice-remove)
 (nvp-auto "nvp-util" nvp-s-wrap)
 (nvp-auto "nvp-read" 'nvp-read-elisp-variable)
 (nvp-auto "s" 's-split-words)
+(nvp-decl nvp-read-mode)
 (nvp-decls)
 
 (define-button-type 'help-marker

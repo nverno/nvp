@@ -15,13 +15,8 @@
 ;; #<marker at 84484 in etags.el.gz>
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
-  (require 'nvp-macro)
-  (require 'tramp))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(defvar imenu-generic-expression)
 
 ;; find-tag default functions: #<marker at 114864 in subr.el.gz>
 (defun nvp-tag-get-default ()

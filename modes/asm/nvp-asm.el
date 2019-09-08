@@ -4,13 +4,6 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
-;; FIXME: this is handled in installs
-;; Download the nasm instruction PDF
-(defun nvp-asm-init ()
-  (let ((pdf (expand-file-name "intel_dev.pdf" "~/.local/share/doc")))
-    (unless (file-exists-p pdf)
-      (message "%S" pdf))))
-
 ;; TODO: i don't like the default DWIM, i want two comments on blank lines
 ;; so the indentation doesn't get messed up
 

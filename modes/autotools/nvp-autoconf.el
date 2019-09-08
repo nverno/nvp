@@ -8,9 +8,7 @@
 ;; - Basic eldoc function for autoconf/m4
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar company-autoconf-keywords))
+(eval-when-compile (require 'nvp-macro))
 (require 'company-autoconf)
 (require 'nvp)
 (nvp-decls)

@@ -4,9 +4,7 @@
 ;; - info-lookup-add-help
 ;; - see helm-info
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'sed-mode nil t)
 
 (defun nvp-sed-help ()

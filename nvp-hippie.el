@@ -6,14 +6,15 @@
 ;; Expanders:
 ;; - fuzzy matching
 ;; - dabbrevs, closest first
-;; - tags
+;; - tags => no tag libraries are loaded, local variables are just checked
 ;; - lines
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'hippie-exp)
-(nvp-decl ggtags-try-complete-tag)
+(nvp-decl "ggtags" ggtags-try-complete-tag ggtags-mode)
+(nvp-decl "etags" tags-completion-table)
 
 ;; args: active position, match-beg, match-end
 (defvar nvp-he-weight-function #'company-occurrence-prefer-any-closest
@@ -147,7 +148,7 @@ doesn't exceed LIMIT."
    "[:A-Za-z0-9-]*\\b"))
 
 ;;;###autoload
-(defun nvp-he-try-expand-flex (old)
+(defun nvp-try-expand-flex (old)
   "Try to complete symbols from current buffer using fuzzy matching.
 Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
   (unless old
@@ -167,19 +168,46 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
 
 ;;; Tags
 
+;; destructively replace OLD-ELEM with NEW-ELEM in expanders list
+(defsubst nvp-he--replace-in-list (old-elem new-elem)
+  (--when-let (memq old-elem hippie-expand-try-functions-list)
+    (setcar it new-elem)))
+
 ;;;###autoload
-(defun nvp-he-try-expand-tags (_old)
+(defun nvp-try-expand-tags (_old)
   "Placeholder for tag expansion function.  
 If active tags are found, it replaces itself in `hippie-expand-try-functions-list'
 with the active backend, otherwise it removes itself."
   (cond
-   (ggtags-mode
-    (let ((splt (assoc 'nvp-he-try-expand-tags hippie-expand-try-functions-list)))
-      (when splt
-        (setcar splt 'ggtags-try-complete-tag))))
+   ((bound-and-true-p ggtags-mode)
+    (nvp-he--replace-in-list 'nvp-try-expand-tags 'ggtags-try-complete-tag))
+   ((bound-and-true-p tags-file-name)
+    (nvp-he--replace-in-list 'nvp-try-expand-tags 'nvp-try-expand-etags))
    (t (setq hippie-expand-try-functions-list
-            (delq 'nvp-he-try-expand-tags hippie-expand-try-functions-list))))
+            (delq 'nvp-try-expand-tags hippie-expand-try-functions-list))))
   nil)
+
+;; `tags-completion-table' caches a local table
+(defvar-local nvp-he-etags-completion-table
+  (nvp-he-completion-table
+   (lambda (arg)
+     (all-completions arg (tags-completion-table (current-buffer))))))
+
+(defun nvp-try-expand-etags (old)
+  "Try expansions from TAGS file."
+  (unless old
+    (he-init-string (or (car (find-tag-default-bounds)) (point))
+                    (point))
+    (setq he-expand-list
+          (and (not (equal he-search-string ""))
+               (funcall nvp-he-etags-completion-table he-search-string))))
+  (if (null he-expand-list)
+      (progn
+        (and old (he-reset-string))
+        nil)
+    (he-substitute-string (car he-expand-list))
+    (setq he-expand-list (cdr he-expand-list))
+    t))
 
 
 ;;; Dabbrevs
@@ -190,7 +218,7 @@ with the active backend, otherwise it removes itself."
 (defvar nvp-he-search-loc-backward (make-marker))
 
 ;;;###autoload
-(defun nvp-he-try-expand-dabbrev-closest-first (old)
+(defun nvp-try-expand-dabbrev-closest-first (old)
   "Try to expand word \"dynamically\", searching the current buffer.
 The argument OLD has to be nil the first call of this function, and t
 for subsequent calls (for further possible expansions of the same
@@ -249,7 +277,7 @@ string).  It returns t if a new expansion is found, nil otherwise."
         t))))
 
 ;;;###autoload
-(defun nvp-he-try-expand-line-closest-first (old)
+(defun nvp-try-expand-line-closest-first (old)
   "Try to complete the current line to an entire line in the buffer.
 The argument OLD has to be nil the first call of this function, and t
 for subsequent calls (for further possible completions of the same
@@ -332,7 +360,7 @@ string).  It returns t if a new completion is found, nil otherwise."
 (defun nvp-hippie-expand-lines ()
   (interactive)
   (let ((hippie-expand-try-functions-list 
-	 '(nvp-he-try-expand-line-closest-first
+	 '(nvp-try-expand-line-closest-first
 	   try-expand-line-all-buffers)))
     (end-of-line)
     (hippie-expand nil)))

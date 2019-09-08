@@ -12,14 +12,13 @@
 ;; - fill toggle doesn't work much
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)
 (nvp-decl paredit-delete-indentation)
 
-(defvar nvp-list-keymap (make-sparse-keymap))
-(nvp-bind-keys nvp-list-keymap
+(nvp-bindings nvp-list-keymap :now
+  :create t
   ("c"  . nvp-list-insert-commas)
   ("("  . nvp-list-wrap-parens)
   ("["  . nvp-list-wrap-brackets)

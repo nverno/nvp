@@ -101,6 +101,7 @@
 
 ;;; Local, Transient, Overriding maps
 
+;;; TODO: get rid of these
 ;; Overrides a minor mode keybinding for the local buffer by creating
 ;; or altering keymaps stored in buffer-local variable
 ;; `minor-mode-overriding-map-alist'.
@@ -159,40 +160,9 @@ menu entry."
 ;; -------------------------------------------------------------------
 ;;; General bindings
 
-;; FIXME: merge all these to one generic macro
-
-;;--- Global bindings
-(cl-defmacro nvp-global-bindings (&rest bindings &key no-override &allow-other-keys)
-  "Add BINDINGS to global keymap.
-If NO-OVERRIDE is non-nil, assert that the new binding isn't already defined."
-  (declare (indent defun) (debug t))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (macroexp-progn
-   (cl-loop for (k . b) in bindings
-      when no-override
-      do (when-let ((curr (lookup-key (current-global-map) `(nvp-kbd ,k)))))
-        (cl-assert t 'show-args (format "%k is assigned %S globally" k curr))
-      collect `(nvp-bind (current-global-map) ,k ,b))))
-
-
-(cl-defmacro nvp-bind-keys (map &rest bindings
-                                &key predicate after-load
-                                &allow-other-keys)
-  "Add BINDINGS to MAP.
-If PRED-FORM is non-nil, evaluate PRED-FROM before binding keys.
-If AFTER-LOAD is non-nil, eval after loading feature/file."
-  (declare (indent defun) (debug t))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (let ((map (nvp--normalize-modemap map)))
-    `(progn
-       (eval-when-compile (defvar ,map))
-       (,@(if predicate `(when ,predicate)
-            (if after-load `(with-eval-after-load ,after-load) '(progn)))
-        ,@(cl-loop for (k . b) in bindings
-             collect `(nvp-bind ,map ,k ,b))))))
-
+;; option to check for override?
+;; do (when-let ((curr (lookup-key (current-global-map) `(nvp-kbd ,k)))))
+;; (cl-assert t 'show-args (format "%k is assigned %S globally" k curr))
 (cl-defmacro nvp-bindings (keymap &optional feature &rest bindings
                                   &key
                                   local buff-local minor
@@ -225,10 +195,11 @@ Buggy:
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
   (and with (setq bindings (append (nvp--with-bindings with) bindings)))
-  (and (symbolp keymap) (setq keymap (symbol-name keymap)))
+  ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
   (let ((modemap (nvp--normalize-modemap keymap minor)))
     `(progn
-       (eval-when-compile (defvar ,modemap))
+       ,(when (symbolp modemap)
+          `(eval-when-compile (defvar ,modemap)))
        ,(when prefix
           `(define-prefix-command ',modemap nil ,(and (stringp prefix) `,prefix)))
        ,(when create
@@ -245,7 +216,7 @@ Buggy:
           `(with-no-warnings  ; something like `company-active-map'
              (make-variable-buffer-local ',modemap)))
        ,(when bindings
-          `(,@(if (or create prefix) '(progn)
+          `(,@(if (or create prefix (equal feature :now)) '(progn)
                 `(with-eval-after-load ,(or feature `',(intern keymap))))
             ;; with-eval-after-load ,(or feature `',(intern mode))
             ,@(cl-loop for (k . b) in bindings

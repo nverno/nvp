@@ -1,14 +1,40 @@
 -include config.mk
 include default.mk
 
-.PHONY: test
-all: test
+MODEDIRS := $(shell find modes/ -mindepth 1 -maxdepth 1 -type d)
+MODES := $(sort $(notdir ${MODEDIRS}))
+MODE_EL := $(shell find modes/ -type f -name \*.el \
+		\! \( -path \*/snippets/* -o -name .\* -o -path \*/unused/* \
+		-o -path \*/test/\* -o -path \*/etc/\* -o -name \*w32\* \))
+MODE_ELC := $(addsuffix c,${MODE_EL})
 
-blah:
-	@echo $${COMPILE}
+FILTER_MODE = $(filter $(addprefix modes/,$(1))/%,$(2))
+CLEAN_MODE = $(info cleaning $(1)) \
+	$(RM) $(call FILTER_MODE,$(1),${MODE_ELC})
+BUILD_MODE = $(info building $(1)) \
+	$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
+MAP_MODES = $(foreach mode,${MODES},$(call $(1),$(mode)))
+
+.PHONY: test
+all: 
 
 %.elc: %.el
 	@${COMPILE} $<
+
+# Manage modes
+.PHONY: ${MODES}
+clean-%: %
+	$(call CLEAN_MODE,$^)
+
+build-%: %
+	$(call BUILD_MODE,$^)
+
+.PHONY: clean-modes build-modes
+clean-modes:
+	$(call MAP_MODES,${CLEAN_MODE})
+
+build-modes:
+	$(call MAP_MODES,${BUILD_MODE})
 
 test: ## Run tests
 	$(BATCH) -l ert -l test/nvp-tests.el -f ert-run-tests-batch-and-exit

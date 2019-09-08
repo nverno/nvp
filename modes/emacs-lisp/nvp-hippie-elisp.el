@@ -9,7 +9,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
 (autoload 'string-prefix-p "subr-x")
-(declare-function nvp-he-try-expand-flex "nvp-hippie")
+(declare-function nvp-try-expand-flex "nvp-hippie")
 
 ;;; Variables
 (defvar-local nvp-he-elisp--prefixes nil)
@@ -63,7 +63,7 @@
   (or (bound-and-true-p nvp-he-elisp--prefixes)
       (setq nvp-he-elisp--prefixes (nvp-he-elisp--get-namespaces))))
 
-(defun nvp-he-try-elisp-with-local-namespace (old)
+(defun nvp-try-elisp-with-local-namespace (old)
   "Try to complete as emacs lisp symbol by adding local namespace prefix.
 The current search string must be prefixed with '-', or returns nil and 
 onto the next one."
@@ -91,7 +91,7 @@ onto the next one."
 ;; This version doesn't need a '-' prefix, but instead tries all the symbols
 ;; found in the local namespaces. Thus, it does a lot more work, so is
 ;; tried last.
-(defun nvp-he-try-elisp-symbol-sans-namespace (old)
+(defun nvp-try-elisp-symbol-sans-namespace (old)
   (let ((expansion)
         (prefs (nvp-he-elisp--namespaces)))
     (unless old
@@ -119,15 +119,15 @@ onto the next one."
   "Setup hippie expand functions for source buffers."
   (make-local-variable 'hippie-expand-try-functions-list)
   (setq hippie-expand-try-functions-list
-        (cons 'nvp-he-try-elisp-with-local-namespace    ;try '-' prefixed first
+        (cons 'nvp-try-elisp-with-local-namespace    ;try '-' prefixed first
               hippie-expand-try-functions-list)) ;defaults setup in init
-  (add-to-list 'hippie-expand-try-functions-list #'nvp-he-try-expand-flex t)
+  (add-to-list 'hippie-expand-try-functions-list #'nvp-try-expand-flex t)
   (add-to-list 'hippie-expand-try-functions-list ;using add-to-list since
                #'try-complete-lisp-symbol t)     ;some may already be in there
   (add-to-list 'hippie-expand-try-functions-list
                #'try-complete-lisp-symbol-partially t)
   (add-to-list 'hippie-expand-try-functions-list 
-  	       #'nvp-he-try-elisp-symbol-sans-namespace t))
+  	       #'nvp-try-elisp-symbol-sans-namespace t))
 
 (provide 'nvp-hippie-elisp)
 ;;; nvp-hippie-elisp.el ends here

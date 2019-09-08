@@ -12,6 +12,10 @@
 ;; -------------------------------------------------------------------
 ;;; Util
 
+(eval-when-compile
+  (defvar nvp-elisp-defuns-regexp)
+  (defvar nvp-elisp-var-binding-regexp))
+
 ;; modified from company-elisp to incorporate more things
 ;; used to determine abbrev expansion / toggling
 (let-when-compile

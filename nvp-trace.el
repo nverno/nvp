@@ -7,6 +7,7 @@
   (require 'nvp-macro))
 (require 'trace)
 (nvp-auto "find-func" 'read-library-name 'find-library-name)
+(nvp-auto "nvp-elisp" 'nvp-elisp-matching-forms)
 (nvp-decl flatten-tree)
 
 ;;;###autoload(autoload 'nvp-trace-hydra/body "nvp-trace")

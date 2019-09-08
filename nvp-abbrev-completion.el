@@ -86,7 +86,7 @@
 
 ;; #<marker at 30147 in hippie-exp.el.gz>
 ;;;###autoload
-(defun nvp-he-try-expand-local-abbrevs (old)
+(defun nvp-try-expand-local-abbrevs (old)
   "Try to expand word from locally active abbrev tables.
 Accounts for :enable-function and :regexp table properties when selecting
 candidates."

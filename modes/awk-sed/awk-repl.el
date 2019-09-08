@@ -2,9 +2,8 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
+(require 'comint)
 (require 'nvp)
 
 (defun awk-repl-start ()

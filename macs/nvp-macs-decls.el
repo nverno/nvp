@@ -148,7 +148,7 @@
        pos-tip-show
        projectile-project-name
        do-smooth-scroll
-       company-grab-symbol company-mode company-complete
+       company-grab-symbol company-mode company-complete company-doc-buffer
        smartparens-mode sp-local-pair
        paredit-mode
        yas-minor-mode yas-expand-snippet yas-lookup-snippet yas-load-directory)))

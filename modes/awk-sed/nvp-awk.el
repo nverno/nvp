@@ -13,6 +13,7 @@
   (require 'nvp-font))
 (require 'nvp)
 (require 'info-look)
+(nvp-decls)
 
 ;;; Syntax
 

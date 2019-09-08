@@ -76,15 +76,18 @@
   "Convert MODE to keymap symbol if necessary.
 If MINOR is non-nil, create minor mode map symbol."
   (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
-  (if (keymapp mode) mode
-    (and (symbolp mode) (setq mode (symbol-name mode)))
-    (let ((minor (or minor (string-match-p "-minor" mode))))
-      (if (not (or (string-match-p "-map\\'" mode)
-                   (string-match-p "-keymap\\'" mode)))
-          (intern
-           (concat (replace-regexp-in-string "\\(?:-minor\\)?-mode\\'" "" mode)
-                   (if minor "-minor-mode-map" "-mode-map")))
-        (intern mode)))))
+  (cond
+   ((and (stringp mode) (eq (intern mode) 'global-map))
+    (list 'current-global-map))
+   ((keymapp mode) mode)
+   (t (and (symbolp mode) (setq mode (symbol-name mode)))
+      (let ((minor (or minor (string-match-p "-minor" mode))))
+        (if (not (or (string-match-p "-map\\'" mode)
+                     (string-match-p "-keymap\\'" mode)))
+            (intern
+             (concat (replace-regexp-in-string "\\(?:-minor\\)?-mode\\'" "" mode)
+                     (if minor "-minor-mode-map" "-mode-map")))
+          (intern mode))))))
 
 (defun nvp--normalize-hook (mode &optional minor)
   "Convert MODE to canonical hook symbol.
@@ -340,9 +343,12 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 (defalias 'nvp-decl 'nvp-declare)
 (put 'nvp-decl 'lisp-indent-function 'defun)
 
-(cl-defmacro nvp-declare (&rest funcs &key pre &allow-other-keys)
+(cl-defmacro nvp-declare (&rest funcs &key pre pkg &allow-other-keys)
   (declare (indent defun))
-  (let ((pkg (or (cl-getf funcs :pkg) "")))
+  (and (stringp (car funcs))
+       (setq pkg (car funcs)
+             funcs (cdr funcs)))
+  (let ((pkg (or pkg (cl-getf funcs :pkg) "")))
     (while (keywordp (car funcs))
       (setq funcs (cdr (cdr funcs))))
     (setq funcs (nvp--unquote funcs))

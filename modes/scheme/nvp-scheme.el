@@ -89,14 +89,14 @@
 (eval-when-compile
   (defvar hippie-expand-try-functions-list)
   (defvar hippie-expand-only-buffers))
-(nvp-decl nvp-he-history-setup nvp-he-try-expand-flex
-  nvp-he-try-expand-local-abbrevs)
+(nvp-decl nvp-he-history-setup nvp-try-expand-flex
+  nvp-try-expand-local-abbrevs)
 (autoload 'yas-hippie-try-expand "yasnippet")
 
 (defvar nvp-scheme-he-expand-functions
-  '(nvp-he-try-expand-dabbrev-closest-first
-    nvp-he-try-expand-local-abbrevs
-    nvp-he-try-expand-flex
+  '(nvp-try-expand-dabbrev-closest-first
+    nvp-try-expand-local-abbrevs
+    nvp-try-expand-flex
     yas-hippie-try-expand
     try-expand-dabbrev-from-kill
     try-expand-dabbrev-all-buffers

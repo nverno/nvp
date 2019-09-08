@@ -7,13 +7,12 @@
 ;; - expand regions during iedit
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'iedit)
 (nvp-decls)
 
 ;; Add iedit bindings
-(nvp-bind-keys iedit-mode-keymap
+(nvp-bindings iedit-mode-keymap :now
   ("C-=" . nvp-iedit-cycle-regions))
 
 ;; current level of iedit restriction: line, defun, buffer, region

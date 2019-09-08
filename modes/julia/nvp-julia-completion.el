@@ -76,5 +76,5 @@
 ;;; nvp-julia-completion.el ends here
 
 ;; Local Variables:
-;; byte-compile-warnings: '(cl-functions)
+;; byte-compile-warnings: (not cl-functions)
 ;; End:

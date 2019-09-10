@@ -4,8 +4,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-results)
-  (require 'cl-lib))
+  (require 'nvp-results))
 (require 'nvp)
 (require 'nvp-display)
 

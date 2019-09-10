@@ -7,10 +7,7 @@
 ;; lots of unused stuff
 
 ;;; Code:
-(eval-when-compile
-  (require 'subr-x)
-  (require 'cl-lib)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (nvp-declare nvp-inf-read-process)
 
 ;; error signals

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: directory
+# key: dir
+# --
+#directory "${1:_build}";;

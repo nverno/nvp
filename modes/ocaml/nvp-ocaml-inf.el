@@ -89,6 +89,18 @@
   (interactive "P")
   (funcall-interactively 'nvp-utop-eval-phrase arg 'step))
 
+
+;;; Utop Process
+
+(defun nvp-utop-redirect-output (cmd)
+  (utop-set-state 'wait)
+  (let ((comint-prompt-regexp "^prompt:")
+        comint-redirect-perform-sanity-check
+        mode-line-process)
+    (comint-redirect-send-command-to-process
+     (format "input:\ndata:%s\nend:\n" cmd) "*utop-redirect*" utop-process nil))
+  (utop-set-state 'edit))
+
 (provide 'nvp-ocaml-inf)
 ;; Local Variables:
 ;; coding: utf-8

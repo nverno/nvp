@@ -14,11 +14,13 @@
 (require 'nvp)
 (nvp-decls)
 
+;;; Syntax
 ;; default syntax breaks motions
 (let ((tab utop-mode-syntax-table))
   (dolist (c (string-to-list ";.,_-^:@#%!~"))
     (modify-syntax-entry c "_" tab)))
 
+;;; REPL commands
 (nvp-bindings nvp-utop-fast-map nil
   :create t :repeat t :indicate t
   ("n" . nvp-utop-next-prompt)
@@ -63,15 +65,29 @@
   (insert ";;")
   (call-interactively 'utop-eval-input-or-newline))
 
+(defun nvp-utop-change-directory ()
+  (interactive)
+  (let ((dir (if (eq major-mode 'utop-mode)
+                 (read-directory-name "Change directory to: ")
+               default-directory)))
+    (utop-eval-string (format "#cd \"%s\";;" dir))))
+
+;;; Eval commands
 ;; (9/7/19) bug in utop-eval-phrase
-(defun nvp-utop-eval-phrase (&optional arg)
+(defun nvp-utop-eval-phrase (&optional arg step)
   (interactive "P")
   (if arg (tuareg-eval-phrase)
     (utop-prepare-for-eval)
-    (save-excursion
-      (-let (((beg . end) (funcall utop-discover-phrase)))
-        (nvp-indicate-pulse-region-or-line beg end)
-        (utop-eval beg end)))))
+    (-let (((beg . end) (funcall utop-discover-phrase)))
+      (nvp-indicate-pulse-region-or-line beg end)
+      (utop-eval beg end)
+      (when step
+        (goto-char end)
+        (forward-line 1)))))
+
+(defun nvp-utop-eval-phrase-and-step (&optional arg)
+  (interactive "P")
+  (funcall-interactively 'nvp-utop-eval-phrase arg 'step))
 
 (provide 'nvp-ocaml-inf)
 ;; Local Variables:

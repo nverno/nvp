@@ -105,9 +105,16 @@
 
 ;;; Move
 
+(defsubst nvp-ocaml--beginning-of-comment ()
+  (let ((ppss (parse-partial-sexp (point-min) (point))))
+    (and (nth 8 ppss)
+         (goto-char (nth 8 ppss)))))
+
 (defun nvp-ocaml-previous-defun ()
   (interactive)
   (let ((bl (point-at-bol)))
+    (nvp-ocaml--beginning-of-comment)
+    (forward-comment (- (point-max)))
     (tuareg-beginning-of-defun)
     (when (<= bl (point))
       ;; gets stuck here on cases like this w/o beginning-of-line, cursor at '|'
@@ -118,6 +125,7 @@
 
 (defun nvp-ocaml-next-defun ()
   (interactive)
+  (nvp-ocaml--beginning-of-comment)
   (tuareg-beginning-of-defun -1))
 
 ;;; Tag

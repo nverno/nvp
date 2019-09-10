@@ -192,66 +192,57 @@ Buggy:
   BUFF-LOCAL makes map buffer-local -- INCORRECT
 "
   (declare (indent defun))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  (and with (setq bindings (append (nvp--with-bindings with) bindings)))
-  ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
-  (let ((modemap (nvp--normalize-modemap keymap minor))
-        (mapname (if (stringp keymap) keymap (symbol-name keymap))))
-    `(progn
-       ,(when (symbolp modemap)
-          `(eval-when-compile (defvar ,modemap)))
-       ,(when prefix
-          `(define-prefix-command ',modemap nil ,(and (stringp prefix) `,prefix)))
-       ,(when create
-          `(defvar ,modemap (make-sparse-keymap)))
-       ,(when autoload
-          `(nvp-bind global-map ,autoload
-                     (nvp-lam ()
-                       (interactive)
-                       (nvp-autoload-keymap
-                        ',modemap ,(or feature `',(intern mapname))))))
-       ,(when local           ; will change bindings for all mode buffers
-          `(make-local-variable ',modemap))
-       ,(when buff-local      ; HACK: but how to modify 
-          `(with-no-warnings  ; something like `company-active-map'
-             (make-variable-buffer-local ',modemap)))
-       ,(when bindings
-          `(,@(if (or create prefix (equal feature :now)) '(progn)
-                `(with-eval-after-load ,(or feature `',(intern mapname))))
-            ;; with-eval-after-load ,(or feature `',(intern mode))
-            ,@(cl-loop for (k . b) in bindings
-                 collect `(nvp-bind ,modemap ,k ,b))))
-       ,(when repeat
-          (when (equal t repeat)
-            (setq repeat (--map (cdr it) bindings)))
-          (let ((repeat-fn (intern (concat "nvp/repeat-" mapname))))
-            `(progn
-               (nvp-def ,repeat-fn (&rest _args)
-                 ,(and indicate `(nvp-indicate-cursor-pre))
-                 (set-transient-map
-                  ,modemap t
-                  ,(when indicate
-                     `(lambda () (nvp-indicate-cursor-post)))))
-               ,(macroexp-progn
-                 (cl-loop for fn in repeat
-                    collect `(advice-add ',fn :after #',repeat-fn)))))))))
-
-;;; Multiple Modes
-
-(cl-defmacro nvp-bindings-multiple-modes (modes &rest bindings
-                                                &key with &allow-other-keys)
-  "Add shared BINDINGS to multiple MODES keymaps.
-MODES is of the form ((mode-name . feature) ...).
-Optional :local key can be set to make the mappings buffer-local."
-  (declare (indent 1))
-  (while (keywordp (car bindings))
-    (setq bindings (cdr (cdr bindings))))
-  `(progn
-     ,@(cl-loop for (mode . feature) in modes
-          collect
-            `(nvp-bindings ,mode ',feature :with ,with ,@bindings))))
-
+  (if (listp keymap)
+      (macroexp-progn
+       (cl-loop for km in keymap
+          if (listp km)
+          collect `(nvp-bindings ,(car km) ',(cdr km) ,@bindings)
+          else
+          collect `(nvp-bindings ,km ,feature ,@bindings)))
+    (while (keywordp (car bindings))
+      (setq bindings (cdr (cdr bindings))))
+    (and with (setq bindings (append (nvp--with-bindings with) bindings)))
+    ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
+    (let ((modemap (nvp--normalize-modemap keymap minor))
+          (mapname (if (stringp keymap) keymap (symbol-name keymap))))
+      `(progn
+         ,(when (symbolp modemap)
+            `(eval-when-compile (defvar ,modemap)))
+         ,(when prefix
+            `(define-prefix-command ',modemap nil ,(and (stringp prefix) `,prefix)))
+         ,(when create
+            `(defvar ,modemap (make-sparse-keymap)))
+         ,(when autoload
+            `(nvp-bind global-map ,autoload
+                       (nvp-lam ()
+                         (interactive)
+                         (nvp-autoload-keymap
+                          ',modemap ,(or feature `',(intern mapname))))))
+         ,(when local           ; will change bindings for all mode buffers
+            `(make-local-variable ',modemap))
+         ,(when buff-local      ; HACK: but how to modify 
+            `(with-no-warnings  ; something like `company-active-map'
+               (make-variable-buffer-local ',modemap)))
+         ,(when bindings
+            `(,@(if (or create prefix (equal feature :now)) '(progn)
+                  `(with-eval-after-load ,(or feature `',(intern mapname))))
+              ;; with-eval-after-load ,(or feature `',(intern mode))
+              ,@(cl-loop for (k . b) in bindings
+                   collect `(nvp-bind ,modemap ,k ,b))))
+         ,(when repeat
+            (when (equal t repeat)
+              (setq repeat (--map (cdr it) bindings)))
+            (let ((repeat-fn (intern (concat "nvp/repeat-" mapname))))
+              `(progn
+                 (nvp-def ,repeat-fn (&rest _args)
+                   ,(and indicate `(nvp-indicate-cursor-pre))
+                   (set-transient-map
+                    ,modemap t
+                    ,(when indicate
+                       `(lambda () (nvp-indicate-cursor-post)))))
+                 ,(macroexp-progn
+                   (cl-loop for fn in repeat
+                      collect `(advice-add ',fn :after #',repeat-fn))))))))))
 
 (provide 'nvp-macs-bindings)
 ;; Local Variables:

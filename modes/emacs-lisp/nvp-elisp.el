@@ -100,7 +100,7 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
   (defmacro nvp-elisp:get-forms (elems args)
     "Filter matching ELEMS from file's forms (possibly loading file).
 Forms are read from :file if present in ARGS, otherwise current buffer file."
-    (declare (indent defun))
+    (declare (indent defun) (debug t))
     (nvp-with-syms (fname buff lib pargs)
       `(-let* ((,pargs ,args)
                ((&plist :file ,fname :buffer ,buff :library ,lib) ,pargs))
@@ -124,7 +124,8 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
         (while (and (setq form (read (current-buffer)))
                     (< (point) end))
           (when (and (consp form) (memq (car form) match-forms))
-            (push (cadr form) forms))))
+            (let ((sym (cadr form)))
+              (push (if (eq 'quote (car-safe sym)) (cadr sym) sym) forms)))))
       (delq nil forms))))
 
 (cl-defmethod nvp-parse-functions
@@ -142,7 +143,9 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
 ;; file could have multiple provides
 (cl-defmethod nvp-parse-library
   (&context (major-mode emacs-lisp-mode) &rest args)
-  (-when-let (libs (nvp-elisp:get-forms '(provide) args))
+  (-when-let (libs (or (nvp-elisp:get-forms '(provide) args)
+                       (nvp-parse:buffer-file t nil args
+                         (nvp-elisp-matching-forms '(provide)))))
     (if (= 1 (length libs)) (car libs) libs)))
 
 (cl-defmethod nvp-parse-includes

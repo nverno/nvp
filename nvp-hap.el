@@ -1,6 +1,8 @@
 ;;; nvp-hap.el --- help-at-point functions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;;
+;; TODO: call same backend on subsequent callbacks
 ;; 
 ;; Help at point:
 ;; - display help for context around point in first applicable (1) popup tooltip,
@@ -33,6 +35,8 @@
 (require 'company)
 (require 'company-quickhelp)
 (nvp-decls)
+(nvp-auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
+(defvar info-lookup-other-window-flag)
 
 ;; local override function to get doc for quickhelp-toggle
 (defvar nvp-quickhelp-toggle-function #'company-quickhelp-manual-begin)

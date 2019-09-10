@@ -2,14 +2,13 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar semanticdb-current-table))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-hap)
 (require 'semantic/analyze)
 (nvp-decls)
 (declare-function semanticdb-includes-in-table "semantic/db-ref")
+(defvar semanticdb-current-table)
 
 (defsubst nvp-semantic-tag-at (point)
   (ignore-errors

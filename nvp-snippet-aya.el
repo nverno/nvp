@@ -4,11 +4,11 @@
 ;; auto yasnippets
 ;;; Code:
 (eval-when-compile
-  (require 'cl-lib)
   (require 'nvp-macro)
-  (defvar aya-current))
+  (require 'hydra))
 (require 'auto-yasnippet)
-(nvp-declare nvp-jump-to-new-snippet)
+(defvar aya-current)
+(nvp-decl "nvp-snippet" nvp-jump-to-new-snippet)
 
 (defvar nvp-aya-new-template "\
 # -*- mode: snippet -*-

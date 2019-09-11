@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(require 'cl-lib)
 (require 'nvp-macro)
-(require 'macroexp)
 
 (defmacro nvp-shell-goto-command-start (start &optional limit delims)
   "Move point to beginning of current command.

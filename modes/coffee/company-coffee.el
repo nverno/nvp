@@ -2,8 +2,7 @@
 ;;; Commentary:
 ;; Complete coffeescript keywords with company.
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib))
+(eval-when-compile (require 'cl-lib))
 (require 'company)
 
 (defgroup company-coffee nil

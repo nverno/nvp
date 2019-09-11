@@ -9,8 +9,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'lisp-mode)
-  (require 'autoconf))
+  (require 'lisp-mode))
 (require 'autoconf)
 (require 'm4-mode)
 (require 'nvp-autoconf)

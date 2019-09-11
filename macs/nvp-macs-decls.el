@@ -73,85 +73,75 @@
     nvp-compile-function
     nvp-mark-defun-function
     ;; emacs base
-    explicit-shell-file-name
     package-user-dir
     recentf-list
     ielm-working-buffer ielm-dynamic-return
-    imenu-generic-expression
-    tramp-remote-path tramp-default-user
     org-babel-do-load-languages org-src-lang-modes
     ;; external pkgs
-    company-backends company-candidates company-dabbrev-code-modes
-    yas-snippet-dirs yas-text yas-moving-away-p yas-modified-p
     zeal-at-point-docset))
 
 (defmacro nvp-decls ()
   '(progn
      (nvp-local-vars)
-     (nvp-decl :pre "nvp"
+     (nvp-decl
        ;; general generics
-       mark-defun
+       nvp-mark-defun
        ;; movement
-       move-previous-heading move-forward-heading mode-header-regex
+       nvp-move-previous-heading nvp-move-forward-heading nvp-mode-header-regex
        ;; bindings
-       autoload-keymap
+       nvp-autoload-keymap
        ;; reading
-       read-elisp-symbol read-elisp-function read-elisp-variable
-       completing-read find-file-in-dir
+       nvp-read-elisp-symbol nvp-read-elisp-function nvp-read-elisp-variable
+       nvp-completing-read nvp-find-file-in-dir
        ;; modes
-       view-list-mode scratch-minor-mode
+       nvp-view-list-mode nvp-scratch-minor-mode
        ;; logging
-       results-title log-mode log log-default
+       nvp-results-title nvp-log-mode nvp-log nvp-log-default
+       nvp-display-fallback-function nvp-display-fallback-dired
        ;; windows
-       window-configuration-restore window-configuration-save
+       nvp-window-configuration-restore nvp-window-configuration-save
        ;; hippie
-       he-try-expand-history he-history-setup he-history-remove-trailing-paren
-       he-try-expand-flex-lisp try-expand-dabbrev-closest-first
-       he-try-expand-local-abbrevs
+       nvp-try-expand-history nvp-he-history-setup
+       nvp-he-history-remove-trailing-paren
+       nvp-try-expand-flex-lisp nvp-try-expand-dabbrev-closest-first
+       nvp-try-expand-local-abbrevs
        ;; repls / shell
-       comint-setup-history
-       repl-add
-       shell shell-launch-terminal
+       nvp-comint-setup-history
+       nvp-repl-add
+       nvp-shell nvp-shell-launch-terminal
        ;; indication
-       indicate-pulse-region-or-line indicate-modeline
-       indicate-cursor-pre indicate-cursor-post
+       nvp-indicate-pulse-region-or-line nvp-indicate-modeline
+       nvp-indicate-cursor-pre nvp-indicate-cursor-post
        ;; procs
-       proc-default-filter proc-default-sentinel
+       nvp-proc-default-filter nvp-proc-default-sentinel
        ;; imenu
-       imenu-setup idomenu
+       nvp-imenu-setup nvp-idomenu
        ;; toggle
-       toggle-local-variable
+       nvp-toggle-local-variable
        ;; abbrev
-       abbrev-grab grab-symbol abbrev-expand-not-after-punct-p
+       nvp-abbrev-grab nvp-grab-symbol nvp-abbrev-expand-not-after-punct-p
        ;; test / compile
-       ert-run-tests
-       compile compile-default compile-cmake
+       nvp-ert-run-tests
+       nvp-compile nvp-compile-default nvp-compile-cmake
        ;; strings
-       s-repeat s-center
+       nvp-s-repeat nvp-s-center
        ;; environment
-       env-add env-path-add
+       nvp-env-add nvp-env-path-add
        ;; setup
-       setup-program
-       lookup-password)
+       nvp-setup-program
+       nvp-lookup-password)
 
      (nvp-decl                          ; builtins
        minibuffer-keyboard-quit
-       comint-read-input-ring comint-write-input-ring
        ielm ielm-return
        ert-run-tests-interactively
        hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
-       tramp-dissect-file-name tramp-make-tramp-file-name
-       smie-forward-sexp
        w32-shell-execute)
 
      (nvp-decl                          ; external packages
        pos-tip-show
        projectile-project-name
-       do-smooth-scroll
-       company-grab-symbol company-mode company-complete company-doc-buffer
-       smartparens-mode sp-local-pair
-       paredit-mode
-       yas-minor-mode yas-expand-snippet yas-lookup-snippet yas-load-directory)))
+       do-smooth-scroll)))
 
 (provide 'nvp-macs-decls)
 ;; Local Variables:

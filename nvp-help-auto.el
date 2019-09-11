@@ -7,10 +7,7 @@
 ;; - list package dependencies: see `package--get-deps'
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'subr-x)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-declare define-word define-word-at-point)
 (autoload 'nvp-read-keymap "nvp-read")

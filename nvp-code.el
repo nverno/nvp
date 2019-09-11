@@ -7,9 +7,8 @@
 ;; - narrow
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
-(nvp-declare hs-toggle-hiding hs-show-all hs-hide-all)
+(eval-when-compile (require 'nvp-macro))
+(nvp-decl "hideshow" hs-toggle-hiding hs-show-all hs-hide-all)
 
 (nvp-bindings nvp-fold-keymap nil
   :create t

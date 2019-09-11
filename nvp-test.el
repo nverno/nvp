@@ -3,10 +3,7 @@
 ;;; Commentary:
 ;; TODO: completely refactor
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib)
-  (require 'subr-x))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-project)
 (nvp-decl "ert" ert-run-tests-interactively)
 

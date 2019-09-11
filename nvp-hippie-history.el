@@ -6,8 +6,7 @@
 ;; history, etc.
 
 ;;; Code:
-(eval-when-compile
-  (require 'cl-lib))
+(eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
 (declare-function eshell-beginning-of-input "esh-mode")
 (declare-function comint-line-beginning-position "comint")

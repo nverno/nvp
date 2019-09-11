@@ -5,7 +5,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-local)
-(nvp-decl winner-redo winner-undo)
+(nvp-decl "winner" winner-redo winner-undo)
 (nvp-decls)
 
 ;;; Aliases

@@ -18,9 +18,8 @@
 ;; in current buffer (ignores local variables)
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'eieio))
+(eval-when-compile (require 'nvp-macro))
+(require 'xref)
 (require 'sh-script)
 (require 'company)
 (require 'imenu)

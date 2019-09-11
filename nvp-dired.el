@@ -4,18 +4,18 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'hydra)
   (defvar nvp-dired-external-filelist-cmd)
   (defvar nvp-dired-external-program))
 (require 'dired)
 (nvp-decls)
+(nvp-auto "f" 'f-same-p)
+(nvp-auto "nvp-proc" 'nvp-proc-default-sentinel)
 
-(nvp-decl org-texinfo-export-to-info org-latex-export-to-pdf)
+(nvp-decl org-texinfo-export-to-info org-latex-export-to-pdf comint-mode)
 (nvp-decl "dired-aux" dired-dwim-target-directory dired-read-shell-command)
 (declare-function dired-filename-at-point "dired-x")
 (declare-function conda-env-read-env "conda-env")
-
-(nvp-auto "f" 'f-same-p)
-(nvp-auto "nvp-proc" 'nvp-proc-default-sentinel)
 
 
 ;; -------------------------------------------------------------------

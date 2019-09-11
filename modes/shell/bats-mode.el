@@ -33,7 +33,9 @@
 ;; - modified from https://github.com/dougm/bats-mode
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'compile))
 (require 'sh-script)
 (require 'nvp)
 (require 'nvp-sh)

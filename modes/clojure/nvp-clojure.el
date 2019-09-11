@@ -3,8 +3,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'subr-x)
 (require 'cider)
+(nvp-decl "org" org-bookmark-jump-unhide)
 
 ;; -------------------------------------------------------------------
 ;;; Util

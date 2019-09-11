@@ -5,8 +5,14 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(nvp-decls)
 (nvp-auto "nvp-parse" 'nvp-parse-current-function)
 (nvp-auto "s" 's-upper-camel-case 's-snake-case 's-trim 's-trim-right)
+
+(eval-when-compile
+  (defvar yas-moving-away-p)
+  (defvar yas-modified-p))
+
 (defalias 'yas-comment-string 'nvp-yas-comment)
 
 ;; yas-inside-string uses `font-lock-string-face'
@@ -132,7 +138,8 @@ Accounts for multi-character comments by recycling the second character."
 
 ;; name of current function or script
 (defun nvp-yas-function-or-script ()
-  (or (nvp-parse-current-function) (nvp-path 'bfse nil :or-name t)))
+  (or (nvp-parse-current-function)
+      (nvp-path 'bfse nil :or-name t)))
 
 ;; build param strings: params range from BEG length LEN
 ;; each param is prepended by JOIN string

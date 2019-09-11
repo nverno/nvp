@@ -5,36 +5,36 @@ MODEDIRS := $(shell find modes/ -mindepth 1 -maxdepth 1 -type d)
 MODES := $(sort $(notdir ${MODEDIRS}))
 MODE_EL := $(shell find modes/ -type f -name \*.el \
 		\! \( -path \*/snippets/* -o -name .\* -o -path \*/unused/* \
-		-o -path \*/test/\* -o -path \*/etc/\* -o -name \*w32\* \))
-MODE_ELC := $(addsuffix c,${MODE_EL})
+		-o -path \*/test/\* -o -path \*/etc/\* -o -path \*/w32/\* \
+		-o -path \*/ext/\* -o -path \*/build/\* -o -path \*/scratch/\* \))
+MODE_ELC := ${MODE_EL:.el=.elc}
 
 FILTER_MODE = $(filter $(addprefix modes/,$(1))/%,$(2))
 CLEAN_MODE = $(info cleaning $(1)) \
-	$(RM) $(call FILTER_MODE,$(1),${MODE_ELC})
+	@$(RM) $(call FILTER_MODE,$(1),${MODE_ELC})
 BUILD_MODE = $(info building $(1)) \
-	$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
-MAP_MODES = $(foreach mode,${MODES},$(call $(1),$(mode)))
+	@$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
 
 .PHONY: test
-all: 
+all: ${ELC} ${MODE_ELC}
 
 %.elc: %.el
-	@${COMPILE} $<
-
-# Manage modes
-.PHONY: ${MODES}
-clean-%: %
-	$(call CLEAN_MODE,$^)
-
-build-%: %
-	$(call BUILD_MODE,$^)
+	${COMPILE} $^
 
 .PHONY: clean-modes build-modes
-clean-modes:
-	$(call MAP_MODES,${CLEAN_MODE})
+clean-modes: ## Clean all modes
+	$(foreach mode,${MODES},$(call CLEAN_MODE,$(mode)))
 
-build-modes:
-	$(call MAP_MODES,${BUILD_MODE})
+build-modes: ## Build all modes
+	$(foreach mode,${MODES},$(call BUILD_MODE,$(mode)))
+
+.PHONY: ${MODES}
+clean-%: %   ## Clean mode
+	$(call CLEAN_MODE,$^)
+
+build-%: %   ## Build mode
+	$(call CLEAN_MODE,$^)
+	$(call BUILD_MODE,$^)
 
 test: ## Run tests
 	$(BATCH) -l ert -l test/nvp-tests.el -f ert-run-tests-batch-and-exit
@@ -51,14 +51,10 @@ el2markdown.el:
 unicode:  ## Generate latex/unicode abbrevs
 	@julia ${BIN}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
-.depend: $(EL) ## create depends for package .el files
+.depend: $(EL) $(MODE_EL) ## create depends for *.el files
 	$(info Computing depends)
 	@rm -f .depend
-	@for f in $(EL); do                                                  \
-	    sed -n                                                           \
-		"s/.*(require '\(${PKG}[^) ]*\).*).*$$/$${f}c: \1.elc/p" $$f \
-		>> .depend;                                                  \
-	done
+	@${BIN}/depends.awk $^ >> .depend
 
 -include .depend
 
@@ -93,10 +89,10 @@ ${PKG}-autoloads.el: ${EL} ## Generate package autoloads
 	(setq find-file-visit-truename t)                          \
 	(update-directory-autoloads default-directory))"
 
-TAGS: ${EL}
+TAGS: ${EL} ${MODE_EL}
 	$(RM) $@
 	@touch $@
-	ls $(EL) | xargs $(ETAGS) -a -o $@
+	ls $^ | xargs $(ETAGS) -a -o $@
 
 .PHONY: clean distclean
 clean:  ## clean temp files

@@ -27,13 +27,10 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'cl-lib)
-  (defvar python-shell-virtualenv-root))
+(eval-when-compile (require 'nvp-macro))
 (require 'python)
-(autoload 'pythonic-activate "pythonic")
-(autoload 'pythonic-deactivate "pythonic")
+(nvp-auto "pythonic" 'pythonic-activate 'pythonic-deactivate)
+(defvar python-shell-virtualenv-root)
 
 ;; conda envs directory
 (defvar conda-env-home (expand-file-name "miniconda3" (getenv "HOME")))

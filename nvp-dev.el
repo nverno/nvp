@@ -17,6 +17,7 @@
 (nvp-auto "nvp-util" nvp-s-wrap)
 (nvp-auto "nvp-read" 'nvp-read-elisp-variable)
 (nvp-auto "s" 's-split-words)
+(nvp-auto "nvp-results" 'nvp-pp-hash 'nvp-pp-variable-to-string)
 (nvp-decl nvp-read-mode)
 (nvp-decls)
 

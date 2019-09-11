@@ -1,12 +1,16 @@
 #!/usr/bin/gawk -f
 
+# Create .depends for *.el files
+# only adds dependencies for libraries found in current search,
+# the rest are listed, but commented out as non-local depends
+
 # What a terrible failure.
 function wtf(text) {
     print "\33[1m\33[31m" text "\33[22m" > "/dev/stderr"
 }
 
 BEGIN {
-    pos = 0
+    pos = 0; status = 0
     while (ARGV[++pos]) {
         match(ARGV[pos], /^--output(=(.*)?)?$/, group)
         if (RSTART) {
@@ -35,14 +39,36 @@ BEGIN {
         break
     }
 
-    if (!output || !root) {
-        wtf("need root and output")
-        exit 1
-    }
+    # if (!output || !root) {
+    #     wtf("--root and --output required")
+    #     status = 1
+    #     exit status
+    # }
 }
 
-{print}
+BEGINFILE { len = 0 }
+
+/^\s*;/ { next }
+
+match($0, /\(require\s+'([[:alnum:]-]+)\s*("[^"]+")?\)/, l) {
+    deps[FILENAME,len++] = l[1]
+    next
+}
+
+match($0, /\(provide\s+'([[:alnum:]-]+)\)/, p) {
+    libs[p[1]] = FILENAME
+    next
+}
 
 END {
-    print "dumped to " output " (from " root ")"
+    if (status) exit status
+
+    for (dep in deps) {
+        split(dep, pair, SUBSEP)
+        if (libs[deps[dep]])
+            print pair[1] "c: " libs[deps[dep]]
+        else
+            # non-local dependencies
+            print "# " pair[1] "c: " deps[dep]
+    }
 }

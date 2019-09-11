@@ -8,10 +8,9 @@
   (require 'nvp-macro)
   (require 'nvp-complete)
   (defvar go-use-gocheck-for-testing))
-(declare-function go--in-anonymous-funcion-p "go-mode")
-(declare-function go-goto-function-name "go-mode")
-(declare-function go-beginning-of-defun "go-mode")
-(declare-function go-end-of-defun "go-mode")
+(nvp-decl "go-mode"
+  go--in-anonymous-funcion-p go-goto-function-name
+  go-beginning-of-defun go-end-of-defun)
 (nvp-decls)
 
 (autoload 'tag-utils-tag-dir "tag-utils")

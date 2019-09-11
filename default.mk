@@ -33,8 +33,9 @@ LOAD_PATH += -L $(CURDIR)/test
 LOAD_PATH += -L $(ELPADIR)
 LOAD_PATH += -L $(SITEDIR)/nvp
 LOAD_PATH += -L $(SITEDIR)/company-autoconf
+LOAD_PATH += -L $(SITEDIR)/tag-utils
 
-BATCH   = ${EMACS} -Q --batch ${LOAD_PATH} \
+BATCH   = ${EMACS} -Q --batch ${LOAD_PATH}\
 	-l $(SITEDIR)/nvp-build-site.el -f nvp-build-paths
 COMPILE = ${BATCH} -f batch-byte-compile $(1)
 ifdef USE_CASK

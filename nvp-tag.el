@@ -64,11 +64,11 @@ Placeholders:
 ;;   (let* ((find-cmd
 ;;           (format "find %s -type f -size 1M \\( -regex \".*\\.\"")))))
 
-(defun nvp-xref-find-etags ()
-  (interactive)
-  (let* ((xref-backend-functions '(etags--xref-backend))
-         (thing (xref-backend-identifier-at-point 'etags)))
-    (xref-find-definitions-other-window thing)))
+;; (defun nvp-xref-find-etags ()
+;;   (interactive)
+;;   (let* ((xref-backend-functions '(etags--xref-backend))
+;;          (thing (xref-backend-identifier-at-point 'etags)))
+;;     (xref-find-definitions-other-window thing)))
 
 (provide 'nvp-tag)
 ;;; nvp-tag.el ends here

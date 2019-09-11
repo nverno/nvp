@@ -16,7 +16,8 @@ BUILD_MODE = $(info building $(1)) \
 	@$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
 
 .PHONY: test
-all: ${ELC} ${MODE_ELC}
+all: 
+	${COMPILE} ${EL} ${MODE_EL}
 
 %.elc: %.el
 	${COMPILE} $^
@@ -51,6 +52,7 @@ el2markdown.el:
 unicode:  ## Generate latex/unicode abbrevs
 	@julia ${BIN}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
+.PHONY: .depend
 .depend: $(EL) $(MODE_EL) ## create depends for *.el files
 	$(info Computing depends)
 	@rm -f .depend

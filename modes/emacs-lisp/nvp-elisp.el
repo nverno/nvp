@@ -155,7 +155,6 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
 ;; ------------------------------------------------------------
 ;;; Eval
 
-;; Eval region from BEG to END if active, otherwise the last sexp.
 (defun nvp-elisp-eval-last-sexp-or-region (arg)
   "Eval region if active, otherwise last sexp.
 If in `lisp-interaction-mode' or with prefix ARG, pretty-print the results."
@@ -168,23 +167,23 @@ If in `lisp-interaction-mode' or with prefix ARG, pretty-print the results."
                  (narrow-to-region beg end)
                  (read (current-buffer))))
            (pp-last-sexp)))
-        (print-length (window-total-height))
+        (print-length)                  ; (window-total-height)
         (print-level)
         (print-circle t)
         (debug-on-error t))
     (if arg (pp-eval-expression expr)
       (if (eq 'lisp-interaction-mode major-mode)
-          (let ((standard-output (current-buffer)))
-            (cl-prettyprint (eval expr)))
+          (insert (pp-to-string (eval expr lexical-binding)))
         (eval-expression expr)))))
 
-;; Jump to end of line and try eval if not looking back at `)'.
 (defun nvp-elisp-eval-last-sexp-dwim (arg)
-  "Eval last sexp if directly after one, otherwise skip forward up list or sexp.
+  "Eval from outermost sexp, moving point there.
 ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
   (interactive "P")
-  (if (not (looking-back "\\s-*)" (line-beginning-position)))
-      (or (nvp-goto 'ful) (forward-sexp))) ; forward up list or sexp
+  (let ((ppss (parse-partial-sexp (point-min) (point))))
+    (when (nth 9 ppss)
+      (goto-char (car (nth 9 ppss)))    ;end of outermost sexp
+      (forward-sexp)))
   (nvp-elisp-eval-last-sexp-or-region arg))
 
 (defun nvp-elisp-eval-and-replace ()

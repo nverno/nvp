@@ -2,8 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
 (nvp-decl nvp-comment-string)
@@ -15,14 +14,14 @@
    ((provided-mode-derived-p mode 'emacs-lisp-mode)
     (setq mode 'lisp-interaction-mode))
    ((provided-mode-derived-p mode 'comint-mode)
-    (setq mode 'sh-mode)))
-  (funcall mode)
+    (setq mode 'sh-mode))
+   (t (setq mode 'lisp-interaction-mode)))
   (nvp-scratch-minor-mode))
 
 (defun nvp-scratch-kill-buffer ()
-  "Kill buffer ignoring `kill-buffer-hook', `kill-buffer-query-functions'."
+  "Kill buffer ignoring `kill-buffer-query-functions'."
   (interactive)
-  (let (kill-buffer-hook kill-buffer-query-functions)
+  (let (kill-buffer-query-functions)
     (kill-this-buffer)))
 
 (defvar nvp-scratch-minor-mode-map

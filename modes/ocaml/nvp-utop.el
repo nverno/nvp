@@ -111,7 +111,7 @@
 
 (defun nvp-utop-redirect-output (cmd &optional output-buffer no-display)
   (let* ((proc (nvp-utop-process))
-         (orig-buf (process-buffer proc)))
+         (_orig-buf (process-buffer proc)))
     (setq nvp-utop-redirect-buffer
           (get-buffer-create (or output-buffer "*utop-redirect*")))
     ;; XXX: check state is open first

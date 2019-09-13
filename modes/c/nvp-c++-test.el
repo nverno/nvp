@@ -1,29 +1,11 @@
 ;;; nvp-c++-test.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-c)
-  (require 'nvp-c-test) ;; setup macros
-  (defvar boost-test-abbrev-table))
+(eval-when-compile (require 'nvp-c-macros "macs/nvp-c-macros"))
+(require 'nvp-c)
 (require 'nvp-test)
 (autoload 'yas-expand "yasnippet")
-
-;; -------------------------------------------------------------------
-;;; Util
-
-(eval-when-compile
- (defmacro nvp-with-c++-vars (&rest body)
-   (declare (indent defun))
-   `(nvp-with-project (:test-re ".*test.*\.cpp"
-                       :root '("test" "tests" ".git" ".projectile"))
-      ,@body))
-
- (defmacro nvp-c++-test--setup-buffer ()
-   `(progn
-      (setq-local local-abbrev-table boost-test-abbrev-table)
-      (nvp-set-local-keymap :use t
-        ("C-c C-c" . nvp-c++-test-run-unit-test)))))
+(defvar boost-test-abbrev-table)
 
 ;; -------------------------------------------------------------------
 ;;; Setup Test
@@ -54,12 +36,11 @@
   (interactive)
   (browse-url "https://github.com/jsankey/boost.test-examples/"))
 
-(eval-and-compile
-  (nvp-c-test--runner-fn nvp-c++-test-run-unit-test 'c++
-    ;; flags
-    "-std=c++14 -O3 -s"
-    ;; link
-    "-lboost_unit_test_framework"))
+(nvp-c-test--runner-fn nvp-c++-test-run-unit-test 'c++
+  ;; flags
+  "-std=c++14 -O3 -s"
+  ;; link
+  "-lboost_unit_test_framework")
 
 (provide 'nvp-c++-test)
 ;;; nvp-c++-test.el ends here

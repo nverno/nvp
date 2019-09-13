@@ -16,10 +16,13 @@
               (not (file-exists-p includes))
               (nvp-file-older-than-days includes 20))
       (nvp-with-process "bash"
-        :proc-name "c-vars"
+        :proc-buff " *c-vars*"
         :proc-args (prog "-o" includes)
-        :proc-sentinel nil
-        :on-success (load includes)))))
+        :callback (lambda (p _m)
+                    (when (zerop (process-exit-status p))
+                      (load includes)
+                      (message "loaded %s" includes))
+                    (kill-buffer (process-buffer p)))))))
 
 ;; make includes.el and install dependencies or dont with NODEPS
 ;; force includes.el refresh with ARG

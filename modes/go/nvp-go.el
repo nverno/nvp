@@ -11,6 +11,7 @@
 (nvp-decl "go-mode"
   go--in-anonymous-funcion-p go-goto-function-name
   go-beginning-of-defun go-end-of-defun)
+(nvp-decl "nvp-complete" nvp-complete-read-switch)
 (nvp-decls)
 
 (autoload 'tag-utils-tag-dir "tag-utils")

@@ -1,18 +1,12 @@
 ;;; nvp-js.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar nodejs-repl-process-name))
+(eval-when-compile (require 'nvp-macro))
+(defvar nodejs-repl-process-name)
 (declare-function nodejs-repl-send-region "nodejs")
 (declare-function nodejs-repl-send-last-sexp "nodejs")
 (declare-function nodejs-repl-switch-to-repl "nodejs-repl")
 (declare-function nodejs-repl "nodejs-repl")
-
-(nvp-package-define-root :snippets t)
-
-;; -------------------------------------------------------------------
-;;; Utils
 
 ;; syntax helpers
 
@@ -42,11 +36,6 @@
 ;;                                               (match-end 1)
 ;;                                               "\u0192"))))))
 ;; (font-lock-add-keywords 'js2-mode keyword-function)
-
-;; -------------------------------------------------------------------
-;;; Commands
-
-(nvp-newline nvp-js-newline-dwim nil :pairs (("{" "}")))
 
 ;; -------------------------------------------------------------------
 ;;; REPL

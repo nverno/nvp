@@ -13,8 +13,6 @@
 (require 'company)
 (require 'mips-mode nil t)
 
-(nvp-package-define-root :snippets t)
-
 (defvar nvp-mips-header-re "^[a-zA-Z0-9_.]+:")
 
 ;; -------------------------------------------------------------------

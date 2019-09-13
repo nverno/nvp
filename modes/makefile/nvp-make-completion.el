@@ -22,9 +22,8 @@
 ;; - makefile variables, rules, and defines have filenames + locations
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'eieio))
+(eval-when-compile (require 'nvp-macro))
+(require 'xref)
 (require 'nvp)
 (nvp-auto "info-look" 'info-lookup->completions)
 (nvp-auto "s" 's-lowercase-p)

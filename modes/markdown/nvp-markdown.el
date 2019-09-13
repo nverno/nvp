@@ -1,11 +1,9 @@
 ;;; nvp-markdown.el --- markdown helpers  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar imenu-generic-expression))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-package-define-root :snippets t)
+(defvar imenu-generic-expression)
 
 ;; -------------------------------------------------------------------
 ;;; Imenu

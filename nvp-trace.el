@@ -46,7 +46,7 @@
 ;;;###autoload
 (defun nvp-trace-buffer ()
   (interactive)
-  (view-buffer-other-window trace-buffer))
+  (display-buffer trace-buffer))
 
 ;;;###autoload
 (defun nvp-trace-library (library &optional arg)

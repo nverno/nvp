@@ -92,9 +92,9 @@ if process exit status isn't 0."
      (proc-bufname `,(concat "*" proc-name "*"))
      proc-args
      (buffer-fn 'get-buffer-create)
-     sync                               ; run synchronously
-     shell                              ; call as shell command (inheriting env)
-     callback                           ; do this instead of sentinels
+     sync                 ; run synchronously
+     shell                ; call as shell command (inheriting env)
+     callback             ; do this instead of sentinels
      on-success
      on-failure
      (proc-filter :default)
@@ -113,20 +113,21 @@ if process exit status isn't 0."
             ,(if shell
                  (if sync
                      `(funcall
-                       ',proc-cmd (mapconcat 'identity (list ,@proc-args) " "))
+                       ',proc-cmd (mapconcat
+                                   'identity (list ,process ,@proc-args) " "))
                    `(funcall ',proc-cmd ,process ,pbuf
-                             (mapconcat 'identity (list ,@proc-args) " ")))
+                             (mapconcat 'identity (list ,process ,@proc-args) " ")))
                `(funcall ',proc-cmd
                          ,(or proc-name process)
                          ,pbuf ,process ,@proc-args))))
        (progn
-         ,(cond            ; filter for sync/async
+         ,(cond           ; filter for sync/async
            ((memq proc-filter '(:default t))
             `(set-process-filter ,proc 'nvp-proc-default-filter))
            (proc-filter
             `(set-process-filter ,proc ,proc-filter))
            (t nil))
-         ,(if sync `,proc  ; no sentinel for sync
+         ,(unless sync    ; no sentinel for sync
             (cond
              (callback `(set-process-sentinel ,proc ,callback))
              ((or on-success on-failure)
@@ -140,7 +141,8 @@ if process exit status isn't 0."
              ((memq proc-sentinel '(:default t))
               `(set-process-sentinel ,proc (nvp-proc-default-sentinel)))
              (proc-sentinel `(set-process-sentinel ,proc ,proc-sentinel))
-             ((null proc-sentinel) `,proc)))))))
+             ((null proc-sentinel) `,proc)))
+         ,proc))))  ;return process object
 
 ;; -------------------------------------------------------------------
 ;;; Wrappers / Overrides
@@ -163,13 +165,13 @@ Note: use lexical-binding."
   "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of BODY."
   (declare (indent defun))
   (macroexp-let2 nil new-fn new-fn
-   `(nvp-with-process-wrapper
-     (lambda (fn)
-       (let ((fun fn))
-         (lambda (p m)
-           (cl-letf (((symbol-function ,orig-fn) new-fn))
-             (funcall fun p m)))))
-     ,@body)))
+    `(nvp-with-process-wrapper
+      (lambda (fn)
+        (let ((fun fn))
+          (lambda (p m)
+            (cl-letf (((symbol-function ,orig-fn) new-fn))
+              (funcall fun p m)))))
+      ,@body)))
 
 (provide 'nvp-macs-process)
 ;; Local Variables:

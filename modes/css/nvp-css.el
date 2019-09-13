@@ -4,8 +4,6 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
-(nvp-package-define-root :snippets t)
-
 ;; -------------------------------------------------------------------
 ;;; SCSS
 

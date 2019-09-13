@@ -8,14 +8,12 @@
 (require 'rust-mode)
 ;; FIXME: declare functions for s/f -- dont want these
 (require 'racer)
-(nvp-declare "" nvp-setup-program)
+(nvp-decl "nvp-setup" nvp-setup-program)
 
 ;; TODO:
 ;; - macroexp: rustc --pretty expanded, or rustc --pretty expanded,hygiene
 ;;   https://doc.rust-lang.org/book/macros.html#debugging-macro-code
 ;; - deps
-
-(nvp-package-define-root)
 
 (defvar nvp-rust-src-repo "https://github.com/rust-lang/rust")
 (defvar nvp-rust-rust-home (or (getenv "RUST_SRC_PATH")

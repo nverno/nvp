@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ocamlinit
+# key: ocamlinit
+# --
+Topdirs.dir_use Format.err_formatter
+  (Filename.concat (Sys.getenv "HOME") ".ocamlinit")

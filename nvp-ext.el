@@ -20,7 +20,7 @@
          "*sudo-command*"))
   (let* ((proc (nvp-with-process "bash"
                  :proc-buff (nvp-comint-buffer :name buffer :new t)
-                 :proc-args ("bash -l" "-c" command)
+                 :proc-args ("-l" "-c" command)
                  :shell t)))
     (process-send-string proc password)
     (process-send-string proc "\r")

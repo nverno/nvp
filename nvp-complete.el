@@ -95,7 +95,6 @@
   "Evaluate BODY with local PROGRAM and ARGS bound."
   (declare (indent defun) (debug (sexp sexp &rest form)))
   `(progn
-     (eval-when-compile (require 'nvp-complete))
      (let ((nvp-complete--switch-program ,program)
            (nvp-complete--switch-args ,args))
        ,@body)))

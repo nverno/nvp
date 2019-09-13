@@ -8,10 +8,12 @@
   (require 'nvp-macro)
   (require 'nvp-complete))
 (require 'nvp)
-(declare-function ocaml-module-alist "caml-help")
-(nvp-decl string-trim-right tuareg-opam-current-compiler tuareg-beginning-of-defun
-  tuareg-opam-update-env)
+(nvp-decl "tuareg"
+  tuareg-opam-current-compiler tuareg-beginning-of-defun tuareg-opam-update-env)
+(nvp-decl string-trim-right)
 (nvp-decls)
+
+(nvp-package-define-root :name nvp-ocaml :dirs ("etc"))
 
 ;;; Config
 

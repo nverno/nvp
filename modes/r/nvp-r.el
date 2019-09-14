@@ -51,6 +51,11 @@
 ;; ------------------------------------------------------------
 ;;; Commands
 
+(defun nvp-r-dev-off ()
+  (interactive)
+  (let ((proc (ess-get-process)))
+    (ess-send-string proc "dev.off()")))
+
 ;; Align single hashtags for end-of-line R comments. Must be a single
 ;; '#' preceded by space, ignores the '##' so they align with code.
 (defun nvp-r-comment-align (beg end)

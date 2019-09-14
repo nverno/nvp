@@ -10,16 +10,12 @@
 (nvp-decl winner-undo winner-redo ace-window ace-swap-window)
 
 (defvar nvp-window--interactive-stack ())
-(defvar nvp-window-fast-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "," #'nvp-window-configuration-pop)
-    (define-key map "d" #'nvp-window-toggle-dedicated)
-    (define-key map "s" #'ace-swap-window)
-    (define-key map "j" #'ace-window)
-    map))
-
-(nvp-advise-commands (apply-partially #'nvp/repeat nvp-window-fast-map)
-  :after '(nvp-window-configuration-pop))
+(nvp-bindings nvp-window-fast-map nil
+  :create t :repeat (nvp-window-configuration-pop) :indicate t
+  ("," . nvp-window-configuration-pop)
+  ("d" . nvp-window-toggle-dedicated)
+  ("s" . ace-swap-window)
+  ("j" . ace-window))
 
 ;;;###autoload
 (defun nvp-window-configuration-push ()

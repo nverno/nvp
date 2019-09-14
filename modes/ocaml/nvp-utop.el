@@ -1,14 +1,19 @@
 ;;; nvp-utop.el --- ocaml REPL -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; TODO:
-;; - macro to dump utop history
-;; - hippie-exp from hist
+;; - utop-mode syntax
+;; - navigate b/w prompts - like comint-next/previous-prompt
+;; - switch b/w source and REPL
+;; - various REPL commands
+;; - eval phrase from source buffer in utop
+;; - redirection form utop process output
+;; - load/track utop history to provide hippie expansion
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'tuareg)
 (require 'utop)
 (require 'nvp)
+(require 'nvp-hippie-history)
 (nvp-decls)
 
 ;;; Syntax
@@ -167,6 +172,38 @@ Redirection is handled by `comint-redirect-send-command-to-process', (which see)
      'utop-start :after
      #'nvp-utop-redirect-output 'edit command output-buffer echo no-display)
     (utop-prepare-for-eval)))
+
+
+;;; History
+(defvar nvp-utop-history ())
+
+;; XXX: save / restore instead of reading from utop each time
+(defun nvp-utop-load-history ()
+  (with-temp-buffer
+    (nvp-utop-redirect-output
+     (format "#use \"%s\"" (expand-file-name "hist-dump.ml" nvp-ocaml--etc))
+     (current-buffer) nil t)
+    (erase-buffer)
+    (nvp-utop-redirect-output "LTerm_history.dump_lisp()" (current-buffer) nil t)
+    (goto-char (point-min))
+    (setq nvp-utop-history
+          (cl-remove-duplicates
+           (read (current-buffer)) :test #'equal :from-end t))))
+
+(define-advice utop-eval-input (:around (fn &optional ai ae add-hist im)
+                                        "add-history")
+  (when (and nvp-utop-history add-hist)
+    (push (buffer-substring-no-properties utop-prompt-max (point-max))
+          nvp-utop-history))
+  (funcall fn ai ae add-hist im))
+
+(defun nvp-utop-hippie-setup ()
+  (unless nvp-utop-history
+    (nvp-utop-load-history))
+  (with-current-buffer utop-buffer-name
+    (setq nvp-he-history nvp-utop-history
+          nvp-he-history-bol-fn (lambda () utop-prompt-max)))
+  (add-to-list 'hippie-expand-try-functions-list #'nvp-he-try-expand-history))
 
 (provide 'nvp-utop)
 ;; Local Variables:

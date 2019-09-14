@@ -52,10 +52,11 @@
     (comint-mode              . comint-line-beginning-position))
   "Mapping of modes to functions returning line beginning position.")
 
-;; default function to retrieve history elements
-(defun nvp-he-history-default-fn (&optional history)
-  (if (ring-p history) (ring-elements history)
-    history))
+;; default function to retrieve history elements for prefix
+(defun nvp-he-history-default-fn (prefix &optional history)
+  (cl-remove-duplicates
+   (all-completions prefix (if (ring-p history) (ring-elements history) history))
+   :test #'string= :from-end t))
 
 ;; -------------------------------------------------------------------
 ;;; Post expansion transforms
@@ -79,12 +80,7 @@
       (setq he-tried-table (cons he-search-string he-tried-table)))
     (setq he-expand-list                ;build expansion list
           (and (not (equal "" he-search-string))
-               (cl-remove-duplicates
-                (all-completions
-                 he-search-string
-                 (funcall nvp-he-history-fn nvp-he-history))
-                :test #'string=
-                :from-end t))))
+               (funcall nvp-he-history-fn he-search-string nvp-he-history))))
   (while (and he-expand-list            ;remove seen candidates
               (he-string-member (car he-expand-list) he-tried-table))
     (setq he-expand-list (cdr he-expand-list)))
@@ -110,7 +106,8 @@
                   (cdr (assoc major-mode nvp-he-history-bol-alist))
                   (and comint-p
                        (cdr (assoc 'comint-mode nvp-he-history-bol-alist))))))
-    (when (and (fboundp bol) (or history-fn (not (null history))))
+    (when (and (or (functionp bol) (fboundp bol))
+               (or history-fn (not (null history))))
       (while (and history (symbolp history) (boundp history)) ;minibuffer
         (setq history (symbol-value history)))
       (setq nvp-he-history history)

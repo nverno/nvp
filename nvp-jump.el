@@ -205,8 +205,7 @@ With prefix, pop other window, with double prefix, prompt for MODE."
     (with-current-buffer buff
       (nvp-display-location buff :buffer action)
       (with-current-buffer buff
-        (nvp-scratch-switch-modes mode)
-        (nvp-scratch-minor-mode)))))
+        (nvp-scratch-switch-modes mode 'activate)))))
 
 
 ;;; Books / PDFs

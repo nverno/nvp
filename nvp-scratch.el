@@ -7,7 +7,7 @@
 (require 'nvp-read)
 (nvp-decl nvp-comment-string)
 
-(defun nvp-scratch-switch-modes (mode)
+(defun nvp-scratch-switch-modes (mode &optional activate)
   "Switch major modes in scratch buffer."
   (interactive (list (intern (nvp-read-mode))))
   (cond
@@ -15,13 +15,16 @@
     (setq mode 'lisp-interaction-mode))
    ((provided-mode-derived-p mode 'comint-mode)
     (setq mode 'sh-mode))
-   (t (setq mode 'lisp-interaction-mode)))
+   (t (and activate                     ;default when jumping to new scratch
+           (setq mode 'lisp-interaction-mode))))
+  (funcall mode)
   (nvp-scratch-minor-mode))
 
 (defun nvp-scratch-kill-buffer ()
   "Kill buffer ignoring `kill-buffer-query-functions'."
   (interactive)
-  (let (kill-buffer-query-functions)
+  (let ((kill-buffer-hook '(nvp-window-configuration-restore))
+        kill-buffer-query-functions)
     (kill-this-buffer)))
 
 (defvar nvp-scratch-minor-mode-map
@@ -33,14 +36,12 @@
 ;;;###autoload
 (define-minor-mode nvp-scratch-minor-mode
   "Minor mode in scratch buffers."
-  :lighter nil
+  :lighter " 𝓢"
   (when nvp-scratch-minor-mode
-    (add-hook 'after-change-major-mode-hook #'nvp-scratch-minor-mode nil t)
-    (add-hook 'kill-buffer-hook #'nvp-window-configuration-restore nil t)
+    (setq-local kill-buffer-hook '(nvp-window-configuration-restore))
     (erase-buffer)
     (unless comment-start (setq comment-start "#"))
     (insert (nvp-comment-string "Jah lives chilren\n" 2))
-    (setq mode-name (concat "scratch[" mode-name "]"))
     (nvp-msg "Press \\[nvp-scratch-kill-buffer] to kill this buffer \
 or \\[nvp-scratch-switch-modes] to switch major modes. " :keys t)))
 

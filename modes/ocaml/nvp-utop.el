@@ -84,55 +84,89 @@
 
 
 ;;; Utop Process
-;; filter: utop-output-filter
-;; sentinel: utop-sentinel
+(with-eval-after-load 'nvp-trace
+  (cl-pushnew '(utop utop-process-output
+                     comint-redirect-cleanup
+                     nvp-utop-redirect-filter)
+              nvp-trace-group-alist))
 
-(defvar nvp-utop-redirect-buffer nil)
-(defvar nvp-utop-trace
-  '(utop-set-state utop-))
+(defun nvp-utop-run-once (func where callback &optional state &rest args)
+  "Execute CALLBACK applied to ARGS once before or after FUNC is called.
+WHERE can be :before or :after and is passed to `advice-add'.
+Optionally, if STATE specifies one of `utop-state''s, the CALLBACK will run once 
+after both FUNC is called and `utop-state' is set to STATE."
+  (advice-add func where
+              (progn
+                (let ((name (intern (concat (symbol-name callback) "@once"))))
+                  (defalias `,name
+                    `(lambda (&rest _)
+                       (,@(if (and state (eq func 'utop-set-state))
+                              `(when (eq ',state utop-state)) '(progn))
+                        (advice-remove ',func ',name)
+                        ,(if (and state (not (eq func 'utop-set-state)))
+                             `(nvp-utop-run-once
+                               'utop-set-state :after ',callback ',state ,@args)
+                           `(funcall ',callback ,@args)))))
+                  name))))
 
-;; return live utop process, creating if necessary
-(defsubst nvp-utop-process ()
-  (let ((proc (get-buffer-process utop-buffer-name)))
-    (if (process-live-p proc) proc
-      (get-buffer-process (call-interactively #'utop)))))
+;; see `utop-process-line'; called from `comint-redirect-filter'
+(defun nvp-utop-redirect-filter (lines)
+  "Process utop output to insert in redirect buffer."
+  (save-match-data
+    (mapconcat
+     #'identity
+     (cl-loop for line in (split-string lines "\n" t " \n")
+        if (string-match "\\`\\([a-z-]*\\):\\(.*\\)\\'" line)
+        collect
+          (let ((command (match-string 1 line))
+                (argument (match-string 2 line)))
+            (pcase command
+              ((or "stderr" "stdout") argument)
+              ;; don't output any other responses from utop
+              (_))))
+     "\n")))
 
-(defun nvp-utop-redirect-filter (_old-filt _proc line)
-  (with-current-buffer nvp-utop-redirect-buffer
-    (string-match "\\`\\([a-z-]*\\):\\(.*\\)\\'" line)
-    (let ((command (match-string 1 line))
-          (argument (match-string 2 line)))
-      (message "%s" command)
-      (pcase command
-        ("stderr" (insert argument "\n"))
-        ("stdout" (insert argument "\n"))
-        ("prompt" (signal 'nvp-utop-redirect-finished nil))
-        (_)))))
+(defun nvp-utop-redirect-cleanup ()
+  "Restore utop process filter and state."
+  (interactive)
+  (with-current-buffer utop-buffer-name
+    (interrupt-process utop-process)
+    (comint-redirect-cleanup)
+    (utop-set-state 'edit)))
 
-(defun nvp-utop-redirect-output (cmd &optional output-buffer no-display)
-  (let* ((proc (nvp-utop-process))
-         (_orig-buf (process-buffer proc)))
-    (setq nvp-utop-redirect-buffer
-          (get-buffer-create (or output-buffer "*utop-redirect*")))
-    ;; XXX: check state is open first
-    ;; (utop-set-state 'wait)
-    (unwind-protect
-        (progn
-          (set-process-buffer proc nvp-utop-redirect-buffer)
-          (add-function :around (process-filter proc) #'nvp-utop-redirect-filter)
-          (process-send-string proc (format "input:\ndata:%s\nend:\n" cmd))
-          ;; (condition-case nil
-          ;;     (while (accept-process-output proc 0.5))
-          ;;   (nvp-utop-redirect-finished))
-          )
-      ;; restore process
-      ;; (set-process-buffer proc orig-buf)
-      ;; (remove-function (process-filter proc) #'nvp-utop-redirect-filter)
-      )
-    (or no-display
-        (display-buffer (get-buffer-create nvp-utop-redirect-buffer)))
-    ;; (utop-set-state 'edit)
-    ))
+(defun nvp-utop-redirect-output (command output-buffer echo &optional no-display)
+  "Send COMMAND to utop process with output to OUTPUT-BUFFER.
+With prefix arg ECHO, echo output in utop buffer.
+Redirection is handled by `comint-redirect-send-command-to-process', (which see)."
+  (interactive "sCommand: \nBOutput Buffer: \nP")
+  (if (get-buffer-process utop-buffer-name)
+      (let ((proc (get-buffer-process utop-buffer-name))) ;lexical
+        (unless (string-match-p ";;\\'" command)
+          (setq command (concat command ";;")))
+        (with-current-buffer utop-buffer-name
+          ;; could just add this to utop's hook
+          (add-hook 'comint-redirect-filter-functions
+                    #'nvp-utop-redirect-filter nil t)
+          (utop-prepare-for-eval)
+          (let ((comint-prompt-regexp "^\\(?:__unused__\\)")
+                ;; don't let comint check for prompt regexp in *utop* buffer
+                comint-redirect-perform-sanity-check
+                ;; comint's attempts to change mode-line fail with utop format
+                mode-line-process)
+            (comint-redirect-send-command-to-process
+             (format "input:\ndata:%s\nend:" command)
+             output-buffer proc echo no-display)))
+        (while-no-input (while (accept-process-output proc 0.2)))
+        (nvp-utop-redirect-cleanup))
+    ;; the rest is only necessary to be able to call `nvp-utop-redirect-output'
+    ;; before there is an active utop process
+    ;; it starts `utop' via normal `utop-prepare-for-eval' sequence
+    ;; delaying execution of `nvp-utop-redirect-output' until after both
+    ;; `utop-start' is run and `utop-set-state' set's the state to 'edit
+    (nvp-utop-run-once
+     'utop-start :after
+     #'nvp-utop-redirect-output 'edit command output-buffer echo no-display)
+    (utop-prepare-for-eval)))
 
 (provide 'nvp-utop)
 ;; Local Variables:

@@ -160,6 +160,18 @@ menu entry."
 ;; -------------------------------------------------------------------
 ;;; General bindings
 
+(defsubst nvp-wrap--make-name (def)
+  (intern (concat "nvp/" (symbol-name def))))
+
+(defmacro nvp-wrap-command (def)
+  "Creates wrapper for command DEF. Useful when advising a command for
+repetition that may get called by other unwanted routines."
+  (let ((name (nvp-wrap--make-name def)))
+    `(defun ,name ()
+       (interactive)
+       (setq this-command ',def)
+       (call-interactively ',def))))
+
 ;; option to check for override?
 ;; do (when-let ((curr (lookup-key (current-global-map) `(nvp-kbd ,k)))))
 ;; (cl-assert t 'show-args (format "%k is assigned %S globally" k curr))
@@ -167,7 +179,7 @@ menu entry."
                                   &key
                                   local buff-local minor
                                   autoload create prefix
-                                  repeat indicate
+                                  repeat indicate wrap
                                   with
                                   &allow-other-keys)
   "Set KEYMAP BINDINGS after FEATURE is loaded.
@@ -181,11 +193,13 @@ Optional:
            bindings are overwritten by any conflicts in BINDINGS.
 
 Transient:
-  REPEAT   if non-nil, a list of functions which will be advised to enter 
-           transient KEYMAP after they are called. If REPEAT is \\='all, all
-           functions in bindings will repeat.
-  INDICATE if non-nil, cursor changes color when transient bindings are active
-           only effective with REPEAT.
+  REPEAT   A list of functions which will be advised to enter transient KEYMAP
+            after they are called. 
+           If REPEAT is t or \\='all, all functions in bindings will repeat.
+  INDICATE Make cursor change color when transient bindings are active.
+           Only effective with REPEAT.
+  WRAP     A list of functions to create wrappers around. 
+           If t or \\='all, create wrappers for all commands.
 
 Buggy:
   LOCAL makes map local var.        -- changes bindings for ALL mode buffers!!
@@ -223,14 +237,27 @@ Buggy:
          ,(when buff-local      ; HACK: but how to modify 
             `(with-no-warnings  ; something like `company-active-map'
                (make-variable-buffer-local ',modemap)))
+
+         ,(when wrap
+            (when (memq wrap '(all t))
+              (setq wrap (--map (cdr it) bindings)))
+            (dolist (b bindings)
+              (and (memq (cdr b) wrap)
+                   (setf (cdr b) (nvp-wrap--make-name (cdr b)))))
+            `(progn
+               ,(macroexp-progn
+                 (cl-loop for fn in wrap
+                    collect `(nvp-wrap-command ,fn)))))
+         
          ,(when bindings
             `(,@(if (or create prefix (equal feature :now)) '(progn)
                   `(with-eval-after-load ,(or feature `',(intern mapname))))
               ;; with-eval-after-load ,(or feature `',(intern mode))
               ,@(cl-loop for (k . b) in bindings
                    collect `(nvp-bind ,modemap ,k ,b))))
+
          ,(when repeat
-            (when (equal t repeat)
+            (when (memq repeat '(all t))
               (setq repeat (--map (cdr it) bindings)))
             (let ((repeat-fn (intern (concat "nvp/repeat-" mapname))))
               `(progn

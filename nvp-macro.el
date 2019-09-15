@@ -1049,17 +1049,6 @@ and set `this-command' to nil so opposite happens next time."
                    '(point)))))
        ,(or first-time '(nvp-mark-defun)))))
 
-;;-- Folding
-(defmacro nvp-with-hs-block (start end &rest body)
-  "Do hideshow with START and END regexps."
-  (declare (indent defun))
-  `(progn
-     (require 'hideshow)
-     (unless hs-minor-mode (hs-minor-mode))
-     (let ((hs-block-start-regexp ,start)
-           (hs-block-end-regexp ,end))
-       ,@(or body (list '(hs-toggle-hiding))))))
-
 ;; -------------------------------------------------------------------
 ;;; *Obsolete* Function generators
 ;; FIXME: most of these should either be generic or act on local variables
@@ -1109,51 +1098,6 @@ and set `this-command' to nil so opposite happens next time."
                    (save-excursion
                      (newline-and-indent)))))
            (indent-according-to-mode)))))))
-
-;;-- Wrap
-
-;; Create function to wrap region, inserting BEGIN at beginning,
-;; AFTER at the end.
-(defmacro nvp-wrap-fn (name doc begin end &optional interact-p)
-  (declare (indent defun))
-  (let ((fn (intern (if (symbolp name)
-                        (symbol-name name)
-                      name))))
-    `(defun ,fn ()
-       ,doc
-       ,@(when interact-p
-           '(interactive "r"))
-       (when (region-active-p)
-         (save-excursion
-           (goto-char (region-beginning))
-           (insert ,begin))
-         (goto-char (region-end))
-         (insert ,end)))))
-
-;;-- REPL/hippie setup
-;; FIXME: how to make more generic?
-(cl-defmacro nvp-hippie-shell-fn (name histfile
-                                       &key
-                                       (size 5000)
-                                       (history ''comint-input-ring)
-                                       (bol-fn ''comint-line-beginning-position)
-                                       history-fn expand-fn)
-  "Setup comint history ring read/write and hippie-expand for it."
-  (let ((fn (nvp-string-or-symbol name)))
-    `(progn
-       (eval-when-compile
-         (defvar comint-input-ring-file-name)
-         (defvar comint-input-ring-size))
-       (defun ,fn ()
-         (setq comint-input-ring-file-name (expand-file-name ,histfile nvp/cache))
-         (setq comint-input-ring-size ,size)
-         (comint-read-input-ring)
-         (add-hook 'kill-buffer-hook 'comint-write-input-ring nil 'local)
-         (nvp-he-history-setup
-          :history ,history
-          :bol-fn ,bol-fn
-          :history-fn ,history-fn
-          :expand-fn ,expand-fn)))))
 
 ;; switching between REPLs and source buffers -- maintain the name of the
 ;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
@@ -1219,19 +1163,6 @@ and set `this-command' to nil so opposite happens next time."
 
 ;; -------------------------------------------------------------------
 ;;; URL
-
-(defmacro nvp-path-to-uri (path)
-  "Convert PATH to URI."
-  `(url-hexify-string
-    (concat "file://" (nvp-with-w32 "/") (file-truename ,path))
-    url-path-allowed-chars))
-
-(defmacro nvp-uri-to-path (uri)
-  "Convert URI to file path."
-  `(progn
-     (when (keywordp ,uri) (setq ,uri (substring (symbol-name ,uri) 1)))
-     (let ((retval (url-filename (url-generic-parse-url (url-unhex-string ,uri)))))
-       (nvp-with-gnu/w32 retval (substring retval 1)))))
 
 ;; FIXME: Asyncify
 (defmacro nvp-with-url-buffer (url &rest body)

@@ -82,9 +82,17 @@ Delete all space to the left beforehand."
     (delete-region (match-beginning 0)
                    (match-end 0))))
 
-(nvp-wrap-fn j-wrap-region-parens
+(defun j-wrap-region-parens ()
   "Wrap region with parens."
-  "(" ")")
+  (when
+      (region-active-p)
+    (save-excursion
+      (goto-char
+       (region-beginning))
+      (insert "("))
+    (goto-char
+     (region-end))
+    (insert ")")))
 
 (defun j-ins-parens ()
   "Insert (), taking case of spaces.

@@ -9,8 +9,7 @@
 ;; - wrapper for ido-completion w/ fallback to flattened alist
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'imenu)
 (require 'ido)
@@ -50,10 +49,11 @@
   (or alist (setq alist imenu--index-alist))
   (cl-remove-if-not
    #'nvp-imenu-maybe-code-p
-   (nvp-flatten-tree (if (and regex (stringp regex))
-                         (nvp-imenu-filter-regex regex alist)
-                       alist)
-                     'alist)))
+   (nvp-flatten-tree
+    (if (and regex (stringp regex))
+        (nvp-imenu-filter-regex regex alist)
+      alist)
+    'alist)))
 
 (defun nvp-imenu-maybe-code-p (elem)
   "Filter out probable non code things."

@@ -34,31 +34,28 @@
                     (split-string yas-text "[() ,]+" t " "))
              "\n"))
 
-
-;; -------------------------------------------------------------------
-;;; Base
-
-;; Movement
+;;; Movement
 (defun nvp-ruby-beginning-of-block ()
   (interactive)
   (ruby-end-of-block -1))
 
+;;; Robe
 (defun nvp-ruby-start-robe ()
   (interactive)
   (robe-mode)
   (inf-ruby)
   (robe-start))
 
+;;; Compile
 (defun nvp-ruby-compile ()
   (interactive)
   (ruby-compilation-this-buffer)
   (other-window 1))
 
-
-;; -------------------------------------------------------------------
-;;; Help
-
 ;;; REPL
+;; add compilation jumps in traceback output from REPL
+(defvar nvp-ruby-inf-compilation-regexp
+  '("^\\s-+[0-9]+: from \\([^\(][^:]+\\):\\([0-9]+\\)" 1 2))
 
 (defun nvp-ruby-switch-to-repl (eob-p)
   (interactive "P")
@@ -89,10 +86,6 @@
   (ruby-send-region-and-go
    (point-min)
    (point-max)))
-
-
-;; ------------------------------------------------------------
-;;; Extra
 
 ;;; Fold
 

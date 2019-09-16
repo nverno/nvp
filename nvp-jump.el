@@ -11,10 +11,9 @@
 ;; 3) Default action => dired location
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-display))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(require 'nvp-display)
 (require 'nvp-read)
 (autoload 'lm-header "lisp-mnt")
 (nvp-auto "find-func" 'find-function-library 'find-library-name)
@@ -203,9 +202,8 @@ With prefix, pop other window, with double prefix, prompt for MODE."
   (let ((buff (get-buffer-create "*scratch*"))
         (default-directory nvp/scratch))
     (with-current-buffer buff
-      (nvp-display-location buff :buffer action)
-      (with-current-buffer buff
-        (nvp-scratch-switch-modes mode 'activate)))))
+      (nvp-scratch-switch-modes mode 'activate)
+      (nvp-display-location buff :buffer action))))
 
 
 ;;; Books / PDFs

@@ -175,13 +175,14 @@
              (let ((process-connection-type nil)
                    (ext (file-name-extension path)))
                (pcase ext
-                 ('"ipynb";; (pred (string= "ipynb"))
+                 ("ipynb"
                   (require 'conda-env)
                   (let ((env (conda-env-read-env)))
                     (start-process-shell-command
                      "jupyter-notebook"
                      (nvp-comint-buffer :name "*jupyter-notebook*")
-                     (format "source activate %s && jupyter-notebook &" env))))
+                     (format "cd %s && source activate %s && jupyter-notebook &"
+                             (read-directory-name "Jupyter root: ") env))))
                  (_ (start-process "" nil "xdg-open" path)))))
            files)  
      (mapc (lambda (path)

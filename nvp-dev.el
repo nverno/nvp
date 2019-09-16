@@ -218,7 +218,7 @@
           (setq start (overlay-start o)
                 end (overlay-end o)
                 text (with-current-buffer obuf
-                       (nvp-s 'bs start end)))
+                       (buffer-substring-no-properties start end)))
           (when (> (- end start) 13)
             (setq text (concat (substring text 0 10) "...")))
           (insert (propertize (format "From %d to %d: \"%s\":\n" start end text)

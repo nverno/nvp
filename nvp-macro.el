@@ -663,46 +663,6 @@ Returns nil if unsuccessful, point otherwise."
 
 
 ;; -------------------------------------------------------------------
-;;; Strings
-
-(defmacro nvp-s (type &optional beg end)
-  "Wrapper for region/buffer strings.
-
-`rs'   -- region string no props
-`rsp'  -- region string w/ props
-`rb'   -- region bounds
-`bs'   -- buffer string (no widening, no props)
-`bsp'  -- same with props
-`bsw'  -- buffer string w/ widening, no props
-`bswp' -- same but w/ props"
-  (let ((type (eval type)))
-    (cond
-     ((eq type 'rs)
-      `(buffer-substring-no-properties
-        ,(or beg '(region-beginning)) ,(or end '(region-end))))
-     ((eq type 'rsp)
-      `(buffer-substring ,(or beg '(region-beginning)) ,(or end '(region-end))))
-     ((eq type 'rb)
-      `(car (region-bounds)))
-     
-     ((eq type 'bs)
-      `(buffer-substring-no-properties
-        ,(or beg '(point-min)) ,(or end '(point-max))))
-     ((eq type 'bsp)
-      `(buffer-substring ,(or beg '(point-min)) ,(or end '(point-max))))
-     ((eq type 'bsw)
-      `(save-restriction
-         (widen)
-         (buffer-substring-no-properties
-          ,(or beg '(point-min)) ,(or end '(point-max)))))
-     ((eq type 'bswp)
-      `(save-excursion
-         (widen)
-         (buffer-substring ,(or beg '(point-min)) ,(or end '(point-max)))))
-     (t (user-error "%S unknown to `nvp-s'" type)))))
-
-
-;; -------------------------------------------------------------------
 ;;; Regions / things-at-point
 
 (cl-defmacro nvp-tap-bounds (&optional thing &key pulse)

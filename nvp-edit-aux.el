@@ -34,7 +34,7 @@
   (interactive (nvp-with-region beg end 'list :pulse t (list nil beg end)))
   (let ((res (replace-regexp-in-string
               "\\([0-9]\\)\\s-+" "\\1, "
-              (or str (nvp-s 'rs beg end)))))
+              (or str (buffer-substring-no-properties beg end)))))
     (if str res
       (save-excursion
         (delete-region beg end)

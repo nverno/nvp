@@ -35,6 +35,6 @@ If '|' is present in TO text, the point is expected to end there."
      (let ((end-char (nvp-test-set-mark-and-point)))
        ,@body
        (and end-char (insert end-char)))
-     (should (string= (nvp-s 'bs) ,to))))
+     (should (string= (buffer-string) ,to))))
 
 (provide 'nvp-test-helpers)

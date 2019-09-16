@@ -50,7 +50,7 @@
 (cl-defgeneric nvp-abbrev--grab-region (beg end)
   "Generic function to return abbrev from region BEG to END.
 Should return sexp of form (abbrev . expansion)."
-  (let ((exp (nvp-s 'bs beg end)))
+  (let ((exp (buffer-substring-no-properties beg end)))
     (cons (read-string (format "Abbrev for %s: " exp)) exp)))
 
 (cl-defmethod nvp-abbrev--grab-region
@@ -58,8 +58,9 @@ Should return sexp of form (abbrev . expansion)."
   "Try to determine appropriate elisp abbrev from region.
 Remove any surrounding parens and use first chars with lisp transformer.
 With prefix, don't split region by whitespace."
-  (let* ((str (if current-prefix-arg (nvp-s 'bs beg end)
-                (car (split-string (nvp-s 'bs beg end) nil 'omit))))
+  (let* ((str (if current-prefix-arg (buffer-substring-no-properties beg end)
+                (car (split-string
+                      (buffer-substring-no-properties beg end) nil 'omit))))
          (exp (string-trim str "[ \t\n\(]" "[ \t\n\)]"))
          (trans (nvp-abbrev--lisp-transformer exp)))
     (if (string-prefix-p "cl-" exp)

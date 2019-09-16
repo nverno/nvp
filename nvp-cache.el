@@ -213,7 +213,7 @@ Grows ring when necessary."
                   (if (re-search-backward sep nil t)
                       (match-end 0)
                     (point-min)))
-            (setq history (nvp-s 'bs start end))
+            (setq history (buffer-substring-no-properties start end))
             (goto-char start)
             ;; skip dupes
             (when (not (string= (ring-ref ring 0) history))

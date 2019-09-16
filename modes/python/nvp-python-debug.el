@@ -12,14 +12,14 @@
 ;;; Debug
 
 ;;;###autoload
-(defun nvp-python-debug-annotate-pdb ()
+(defun nvp-python-debug-annotate ()
   "Highlight break point lines."
   (interactive)
   (highlight-lines-matching-regexp "import i?pu?db")
   (highlight-lines-matching-regexp "i?pu?db.set_trace()"))
 
 ;;;###autoload
-(defun nvp-python-debug-toggle-breakpoint ()
+(defun nvp-python-toggle-breakpoint ()
   "Add or remove a debugging breakpoint at point."
   (interactive)
   (let ((line (thing-at-point 'line)))
@@ -48,6 +48,7 @@
 ;; -------------------------------------------------------------------
 ;;; PDB Hydra
 
+(nvp-hydra-set-property 'nvp-pdb-hydra :verbosity 1)
 (with-no-warnings
   (defhydra nvp-pdb-hydra (:color amaranth
                            :pre nvp-indicate-cursor-pre
@@ -58,7 +59,7 @@
     ("k" previous-line nil)
     ("l" forward-char nil)
     ;; pdb
-    ("b" nvp-python-debug-toggle-breakpoint "pdb break")
+    ("b" nvp-python-toggle-breakpoint "pdb break")
     ;; gud
     ("C-b" gud-break "break")
     ("c" gud-remove "clear")
@@ -68,7 +69,6 @@
     ("o" nosetests-pdb-one "nose1")
     ;; quit
     ("q" nil "exit")))
-(nvp-hydra-set-property 'nvp-pdb-hydra :verbosity 1)
 
 (provide 'nvp-python-debug)
 ;;; nvp-python-debug.el ends here

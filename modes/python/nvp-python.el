@@ -13,8 +13,6 @@
 
 (defvar nvp-python-cython-repo "https://github.com/python/cpython")
 
-;;; Util
-
 (cl-defmethod nvp-parse-current-function
   (&context (major-mode python-mode) &rest _args)
   (add-log-current-defun))
@@ -92,23 +90,19 @@
   (interactive)
   (setq-local compilation-read-command nil)
   (let ((compile-command
-         (format "python %s" (file-name-directory buffer-file-name))))
+         (format "python %s" buffer-file-name)))
     (call-interactively 'compile)))
 
-;;; FIXME: update to new advice system
-;; Mastering emacs
-;; Advises `compile' so it sets the argument COMINT to t
-;; if breakpoints are present in `python-mode' files
-(defadvice compile (before ad-compile-smart activate)
+;; if debug breakpoint is detected in source, then compile in comint mode
+(define-advice compile (:around (orig cmd &optional comint) "py-maybe-debug")
   (when (derived-mode-p major-mode 'python-mode)
     (save-excursion
       (save-match-data
         (goto-char (point-min))
         (if (re-search-forward
-             (concat "^\\s-*" nvp-python-debug-breakpoint-string "$")
-             (point-max) t)
-            ;; set COMINT argument to `t'.
-            (ad-set-arg 1 t))))))
+             (concat "^\\s-*" nvp-python-debug-breakpoint-string "$") nil t)
+            (funcall orig cmd t)
+          (funcall orig cmd comint))))))
 
 ;;; XREF
 (with-eval-after-load 'anaconda-mode
@@ -205,7 +199,7 @@ the console."
     (easy-menu-define nil km nil nvp-python-menu)
     (define-key km (kbd "C-c C-z")  'nvp-python-repl-switch)
     (define-key km (kbd "<f5>")     'nvp-python-basic-compile)
-    (define-key km (kbd "C-<f5>")   'nvp-python-toggle-breakpoint)
+    (define-key km (kbd "<f2>d C-b") 'nvp-python-toggle-breakpoint)
     (define-key km (kbd "<f2> m t") 'nvp-python-test-keymap)
     (define-key km (kbd "<f2> m d") 'nvp-python-debug-keymap)
     km))
@@ -220,14 +214,14 @@ the console."
 
 ;; debugging
 (let ((pmap nvp-python-debug-keymap))
-  (define-key pmap (kbd "C-b")      'nvp-python-debug-toggle-breakpoint)
+  (define-key pmap (kbd "C-b")      'nvp-python-toggle-breakpoint)
   (define-key pmap "a"              'nosestest-pdb-all)
   (define-key pmap "m"              'nosestest-pdb-module)
   (define-key pmap "s"              'nosestest-pdb-suite)
   (define-key pmap "c"              'nosestest-pdb-one)
   (define-key pmap "h"              'nvp-pdb-hydra/body)
   (define-key pmap (kbd "<f2> m z") 'nvp-gud-pdb-repl-switch)
-  (define-key pmap "H"              'nvp-python-debug-annotate-pdb))
+  (define-key pmap "H"              'nvp-python-debug-annotate))
 
 (easy-menu-define nil nvp-python-mode-map nil
   `(,@nvp-python-menu
@@ -242,8 +236,8 @@ the console."
     ("Debug"
      ["pdb" pdb t]
      ["switch to gud-pdb repl" nvp-gud-pdb-switch t]
-     ["toggle pdb breakpoint" nvp-python-debug-toggle-breakpoint t]
-     ["highlight traces" nvp-python-debug-annotate-pdb t]
+     ["toggle pdb breakpoint" nvp-python-toggle-breakpoint t]
+     ["highlight traces" nvp-python-debug-annotate t]
      ["pdb hydra" nvp-pdb-hydra/body]
      "--"
      ("Nose"

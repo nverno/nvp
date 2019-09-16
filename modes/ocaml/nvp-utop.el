@@ -10,11 +10,18 @@
 ;; - load/track utop history to provide hippie expansion
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'tuareg)
-(require 'utop)
 (require 'nvp)
+(require 'nvp-ocaml)
+(require 'utop)
 (require 'nvp-hippie-history)
-(nvp-decls)
+(nvp-decls :v (nvp-trace-group-alist))
+
+;; debugging
+(with-eval-after-load 'nvp-trace
+  (cl-pushnew '(utop utop-process-output
+                     comint-redirect-cleanup
+                     nvp-utop-redirect-filter)
+              nvp-trace-group-alist))
 
 ;;; Syntax
 ;; default syntax (fundamental) breaks motions
@@ -89,11 +96,6 @@
 
 
 ;;; Utop Process
-(with-eval-after-load 'nvp-trace
-  (cl-pushnew '(utop utop-process-output
-                     comint-redirect-cleanup
-                     nvp-utop-redirect-filter)
-              nvp-trace-group-alist))
 
 (defun nvp-utop-run-once (func where callback &optional state &rest args)
   "Execute CALLBACK applied to ARGS once before or after FUNC is called.

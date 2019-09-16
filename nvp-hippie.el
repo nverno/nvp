@@ -1,4 +1,4 @@
-;;; nvp-hippie.el --- hippie expansions -*- lexical-binding: t; -*-
+;;; nvp-hippie.el --- hippie expansions  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; - cached completion tables
@@ -373,3 +373,7 @@ string).  It returns t if a new completion is found, nil otherwise."
 
 (provide 'nvp-hippie)
 ;;; nvp-hippie.el ends here
+
+;; Local Variables:
+;; byte-compile-warnings: (not redefine)
+;; End:

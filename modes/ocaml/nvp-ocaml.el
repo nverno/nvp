@@ -8,11 +8,8 @@
   (require 'nvp-macro)
   (require 'nvp-complete))
 (require 'nvp)
-(nvp-decl "tuareg"
-  tuareg-opam-current-compiler tuareg-beginning-of-defun tuareg-opam-update-env)
-(nvp-decl string-trim-right)
-(nvp-decls)
-
+(require 'tuareg)
+(nvp-decls :f (string-trim-right nvp-async-shell-command-to-string))
 (nvp-package-define-root :name nvp-ocaml :dirs ("etc"))
 
 ;;; Config

@@ -199,7 +199,8 @@ Transient:
   INDICATE Make cursor change color when transient bindings are active.
            Only effective with REPEAT.
   WRAP     A list of functions to create wrappers around. 
-           If t or \\='all, create wrappers for all commands.
+           If t, create wrappers for all REPEAT commands,
+           or, if \\='all, create wrappers for all commands.
 
 Buggy:
   LOCAL makes map local var.        -- changes bindings for ALL mode buffers!!
@@ -238,9 +239,15 @@ Buggy:
             `(with-no-warnings  ; something like `company-active-map'
                (make-variable-buffer-local ',modemap)))
 
+         ;; Transient bindings
          ,(when wrap
-            (when (memq wrap '(all t))
+            (cond
+             ((eq wrap 'all)
               (setq wrap (--map (cdr it) bindings)))
+             ((eq wrap t)
+              (if (memq repeat '(all t))
+                  (setq wrap (--map (cdr it) bindings))
+                (setq wrap repeat))))
             (dolist (b bindings)
               (and (memq (cdr b) wrap)
                    (setf (cdr b) (nvp-wrap--make-name (cdr b)))))
@@ -249,14 +256,8 @@ Buggy:
                  (cl-loop for fn in wrap
                     collect `(nvp-wrap-command ,fn)))))
          
-         ,(when bindings
-            `(,@(if (or create prefix (equal feature :now)) '(progn)
-                  `(with-eval-after-load ,(or feature `',(intern mapname))))
-              ;; with-eval-after-load ,(or feature `',(intern mode))
-              ,@(cl-loop for (k . b) in bindings
-                   collect `(nvp-bind ,modemap ,k ,b))))
-
          ,(when repeat
+            ;; 
             (when (memq repeat '(all t))
               (setq repeat (--map (cdr it) bindings)))
             (let ((repeat-fn (intern (concat "nvp/repeat-" mapname))))
@@ -269,7 +270,14 @@ Buggy:
                        `(lambda () (nvp-indicate-cursor-post)))))
                  ,(macroexp-progn
                    (cl-loop for fn in repeat
-                      collect `(advice-add ',fn :after #',repeat-fn))))))))))
+                      collect `(advice-add ',fn :after #',repeat-fn))))))
+
+         ,(when bindings
+            `(,@(if (or create prefix (equal feature :now)) '(progn)
+                  `(with-eval-after-load ,(or feature `',(intern mapname))))
+              ;; with-eval-after-load ,(or feature `',(intern mode))
+              ,@(cl-loop for (k . b) in bindings
+                   collect `(nvp-bind ,modemap ,k ,b))))))))
 
 (provide 'nvp-macs-bindings)
 ;; Local Variables:

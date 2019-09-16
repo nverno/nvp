@@ -80,9 +80,13 @@
     ;; external pkgs
     zeal-at-point-docset))
 
-(defmacro nvp-decls ()
-  '(progn
+(cl-defmacro nvp-decls (&key v f)
+  `(progn
      (nvp-local-vars)
+     ,(when v
+        `(nvp-local-defvars ,@v))
+     ,(when f
+        `(nvp-decl ,@f))
      (nvp-decl
        ;; general generics
        nvp-mark-defun

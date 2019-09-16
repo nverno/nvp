@@ -2,10 +2,10 @@
 include default.mk
 
 MODEDIRS := $(shell find modes/ -mindepth 1 -maxdepth 1 -type d)
-MODES := $(sort $(notdir ${MODEDIRS}))
-MODE_EL := $(shell find modes/ -type f -name \*.el \
+MODES    := $(sort $(notdir ${MODEDIRS}))
+MODE_EL := $(shell find modes/ -type f -name \*.el                          \
 		\! \( -path \*/snippets/* -o -name .\* -o -path \*/unused/* \
-		-o -path \*/test/\* -o -path \*/etc/\* -o -path \*/w32/\* \
+		-o -path \*/test/\* -o -path \*/etc/\* -o -path \*/w32/\*   \
 		-o -path \*/ext/\* -o -path \*/build/\* -o -path \*/scratch/\* \))
 MODE_ELC := ${MODE_EL:.el=.elc}
 
@@ -37,6 +37,9 @@ build-%: %   ## Build mode
 	$(call CLEAN_MODE,$^)
 	$(call BUILD_MODE,$^)
 
+dep-%: %  ## print depends for package
+	@grep "$^" .depend
+
 test: ## Run tests
 	$(BATCH) -l ert -l test/nvp-tests.el -f ert-run-tests-batch-and-exit
 
@@ -52,7 +55,7 @@ el2markdown.el:
 unicode:  ## Generate latex/unicode abbrevs
 	@julia ${BIN}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
-.PHONY: .depend
+# .PHONY: .depend
 .depend: $(EL) $(MODE_EL) ## create depends for *.el files
 	$(info Computing depends)
 	@rm -f .depend
@@ -104,7 +107,10 @@ distclean: clean ## clean all generated files including compiled & autoloads
 	$(RM) *loaddefs?.el *autoloads.el TAGS GPATH GTAGS
 
 .PHONY: help
-help:  ## Show help for targets
-	@grep -E '^[/.%0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-	| sort | ${AWK} \
-	'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+help:  ## Display this help message
+	@for mfile in $(MAKEFILE_LIST); do                  \
+	  grep -E '^[a-zA-Z_%-]+:.*?## .*$$' $$mfile |      \
+	  sort | ${AWK}                                     \
+	  'BEGIN {FS = ":.*?## "};                          \
+	   {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'; \
+	done

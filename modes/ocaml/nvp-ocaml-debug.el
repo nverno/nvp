@@ -4,7 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-ocaml)
 (require 'ocamldebug)
-(nvp-decl ocamldebug)
+(nvp-decls :f (ocamldebug))
 
 ;; ocamldebug.el doesn't define a prefix key like gud-gdb
 (defvar ocaml-debug-key-prefix (kbd "<f2> d"))

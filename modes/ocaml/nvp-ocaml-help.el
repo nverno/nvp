@@ -10,8 +10,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-hap)
 (require 'nvp-ocaml)
-(require 'merlin-company nil t)
-(nvp-decl merlin/complete zeal-at-point)
+(with-no-warnings (require 'merlin-company nil t))
+(nvp-decls :f (merlin/complete zeal-at-point))
 
 (defvar nvp-ocaml-help-syntax-table
   (let ((st (make-syntax-table)))

@@ -104,10 +104,6 @@
             (funcall orig cmd t)
           (funcall orig cmd comint))))))
 
-;;; XREF
-(with-eval-after-load 'anaconda-mode
-  (advice-add 'anaconda-mode-find-definitions :before 'xref-push-marker-stack))
-
 ;; -------------------------------------------------------------------
 ;;; REPL
 (eval-when-compile

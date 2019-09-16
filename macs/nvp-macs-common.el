@@ -376,6 +376,12 @@ If MINOR is non-nil, convert to minor mode hook symbol."
   (macroexp-progn
    (cl-loop for (var val) on var-vals by #'cddr
       collect `(setq-local ,var ,val))))
+
+(defmacro nvp-defv (&rest vars)
+  (declare (indent 0))
+  (macroexp-progn
+   (cl-loop for var in vars
+      collect `(defvar ,var))))
 
 ;; -------------------------------------------------------------------
 ;;; Strings / Regex

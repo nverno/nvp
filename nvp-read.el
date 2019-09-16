@@ -1,16 +1,15 @@
 ;;; nvp-read.el --- Completing read for thangs -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
 ;; various completing read functions
 ;;; TODO:
 ;; - read w/ popup help: see `register-read-with-preview'
-
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)                          ;nvp-prompt-default
-(nvp-decl help--symbol-completion-table function-called-at-point)
 (autoload 'eldoc-minibuffer-message "eldoc")
+(nvp-decl help--symbol-completion-table function-called-at-point)
+(nvp-defv ido-exit ido-fallback ido-text)
 
 ;; minibuffer histories
 (defvar nvp-read-config-history ())
@@ -21,26 +20,41 @@
   (mapcar (lambda (f) (file-relative-name f root))
           (directory-files-recursively root regexp)))
 
+;; return default-directory on `ido-fallback-command'
+(defsubst nvp-read--ido-fallback (&rest _)
+  (interactive)
+  (setq ido-text (or (file-name-directory ido-text) ""))
+  (setq ido-exit 'done)
+  (exit-minibuffer))
+
+(eval-when-compile
+  (defmacro nvp-read:with-fallback (&rest body)
+    (declare (indent defun))
+    `(nvp-with-letf 'ido-fallback-command 'nvp-read--ido-fallback
+       ,@body)))
+
 ;;;###autoload
 (defun nvp-read-relative-recursively (root regexp &optional prompt default)
   "Return full filepath prompting with file matching REGEXP from ROOT with\
 `directory-files-recursively'."
-  (expand-file-name
-   (nvp-completing-read
-    (nvp-prompt-default (or prompt "File: ") default)
-    (nvp-read--relative-files root regexp) nil nil nil
-    'nvp-read-config-history default)
-   root))
+  (nvp-read:with-fallback
+    (expand-file-name
+     (nvp-completing-read
+       (nvp-prompt-default (or prompt "File: ") default)
+       (nvp-read--relative-files root regexp) nil nil nil
+       'nvp-read-config-history default)
+     root)))
 
 (defun nvp-read--info-files (&optional prompt default)
   (or default (and (string-prefix-p nvp/info default-directory)
                    (setq default (ignore-errors (nvp-path 'bfs)))))
-  (expand-file-name 
-   (nvp-completing-read
-    (nvp-prompt-default (or prompt "Info file: ") default)
-    (directory-files (expand-file-name "org" nvp/info) nil "\.org")
-    nil nil nil 'nvp-read-config-history default)
-   (expand-file-name "org" nvp/info)))
+  (nvp-read:with-fallback
+    (expand-file-name 
+     (nvp-completing-read
+       (nvp-prompt-default (or prompt "Info file: ") default)
+       (directory-files (expand-file-name "org" nvp/info) nil "\.org")
+       nil nil nil 'nvp-read-config-history default)
+     (expand-file-name "org" nvp/info))))
 
 ;; if LOCAL is non-nil use that
 (defun nvp-read--org-file (&optional prompt default nolocal)
@@ -50,8 +64,9 @@
     (if (and local (not nolocal)) local
       (or default (setq default nvp-default-org-file))
       (setq prompt (nvp-prompt-default (or prompt "Org file: ") default))
-      (nvp-read-relative-recursively
-       nvp/org "\.org$" (or prompt "Org file: ") default))))
+      (nvp-read:with-fallback
+        (nvp-read-relative-recursively
+         nvp/org "\.org$" (or prompt "Org file: ") default)))))
 
 ;;; Minibuffer input
 

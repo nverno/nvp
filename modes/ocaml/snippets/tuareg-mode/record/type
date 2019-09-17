@@ -2,4 +2,4 @@
 # name: record-type
 # key: typer
 # --
-type ${1:name} = {${2:var}: ${3:int};$0}`(ocaml-yas-end)`
+type ${1:name} = {${2:var}: ${3:int};$0}

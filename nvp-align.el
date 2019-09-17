@@ -145,6 +145,12 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;;   - is fooled by escaped quotes
 ;; - exc-open-comment treats quoted comment starters as normal
 
+;; better make macro regexp:  allow _ in macro names and '?='
+(setf
+ (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
+ (concat "^\\s-*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
+         "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
+
 ;; sh
 
 ;; makefile => align-open-comment-modes

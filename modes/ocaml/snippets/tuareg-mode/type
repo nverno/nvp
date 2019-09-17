@@ -3,4 +3,4 @@
 # key: type
 # --
 type ${1:expr} =
-     | $0`(ocaml-yas-end)`
+     | $0

@@ -2,4 +2,4 @@
 # name: let-in 
 # key: leti
 # --
-let ${1:i} = $2 in $0`(ocaml-yas-end)`
+let ${1:i} = $2 in $0

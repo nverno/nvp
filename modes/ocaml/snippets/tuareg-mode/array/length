@@ -2,4 +2,4 @@
 # name: Array length
 # key: arrl
 # --
-Array.length $0`(ocaml-yas-end)`
+Array.length $0

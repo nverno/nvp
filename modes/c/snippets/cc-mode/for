@@ -2,6 +2,6 @@
 # name: for
 # key: for
 # --
-for (${1:int i = 0}; ${1:$(nvp-c-yas-var yas-text)}${2: < N}; ${3:++}${1:$(nvp-c-yas-var yas-text)}) {
+for (${1:int i = 0}; ${1:$(nvp-yas-var yas-text)}${2: < N}; ${3:++}${1:$(nvp-yas-var yas-text)}) {
     $0
 }

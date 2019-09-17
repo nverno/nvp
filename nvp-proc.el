@@ -19,9 +19,9 @@
                       (with-current-buffer (process-buffer p)
                         (prog1 (string-trim-right (buffer-string))
                           (kill-this-buffer)))))))
-  (nvp-with-process "async-string"
+  (nvp-with-process command
+    :proc-name "async-string"
     :proc-buff (generate-new-buffer-name " *temp*")
-    :proc-args (command)
     :shell t
     :callback callback))
 

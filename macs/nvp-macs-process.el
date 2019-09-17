@@ -85,7 +85,7 @@ if process exit status isn't 0."
 (cl-defmacro nvp-with-process
     (process
      &key
-     (proc-name process)
+     proc-name
      ;; return process buffer - when set, takes priority over combination of
      ;; proc-bufname + buffer-fn
      proc-buff
@@ -115,19 +115,19 @@ if process exit status isn't 0."
                      `(funcall
                        ',proc-cmd (mapconcat
                                    'identity (list ,process ,@proc-args) " "))
-                   `(funcall ',proc-cmd ,process ,pbuf
+                   `(funcall ',proc-cmd ,(or proc-name process) ,pbuf
                              (mapconcat 'identity (list ,process ,@proc-args) " ")))
                `(funcall ',proc-cmd
                          ,(or proc-name process)
                          ,pbuf ,process ,@proc-args))))
        (progn
-         ,(cond           ; filter for sync/async
+         ,(cond                        ; filter for sync/async
            ((memq proc-filter '(:default t))
             `(set-process-filter ,proc 'nvp-proc-default-filter))
            (proc-filter
             `(set-process-filter ,proc ,proc-filter))
            (t nil))
-         ,(unless sync    ; no sentinel for sync
+         ,(unless sync                 ; no sentinel for sync
             (cond
              (callback `(set-process-sentinel ,proc ,callback))
              ((or on-success on-failure)

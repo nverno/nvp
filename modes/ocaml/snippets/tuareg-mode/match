@@ -3,4 +3,4 @@
 # key: match
 # --
 match ${1:to_match} with
-      | ${2:matching} -> $0`(ocaml-yas-end)`
+      | ${2:matching} -> $0

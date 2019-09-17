@@ -2,4 +2,4 @@
 # name: open
 # key: open
 # --
-open ${1:Module}`(ocaml-yas-end)`
+open ${1:Module}

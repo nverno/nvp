@@ -2,4 +2,4 @@
 # name: length
 # key: listl
 # --
-List.length $0`(ocaml-yas-end)`
+List.length $0

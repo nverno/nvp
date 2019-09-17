@@ -4,4 +4,4 @@
 # --
 let ${1:rec }${2:fun} = function
   | ${3:[] -> []}
-  | $4 -> $0`(ocaml-yas-end)`
+  | $4 -> $0

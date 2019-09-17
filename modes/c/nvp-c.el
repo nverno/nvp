@@ -11,14 +11,12 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-compile)
-  (require 'nvp-font)
-  (defvar c/R-abbrev-table))
+  (require 'nvp-font))
 (require 'nvp-parse)
 (require 'nvp)
-(nvp-decls)
-(nvp-decl xref-pop-marker-stack xref-push-marker-stack)
-(declare-function forward-ifdef "hideif")
-(autoload 'string-trim-right "subr-x")
+(nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef)
+           :v (c/R-abbrev-table))
+(nvp-auto "subr-x" 'string-trim-right)
 
 (defvar-local nvp-c-local-include-paths nil)
 (setq-default nvp-c-local-include-paths '("." ".." "../include"))

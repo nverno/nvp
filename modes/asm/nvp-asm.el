@@ -1,11 +1,20 @@
 ;;; nvp-asm.el --- assembly things  -*- lexical-binding: t; -*-
 ;;; Commentary:
+;; TODO:
+;; - i don't like the default DWIM, i want two comments on blank lines so the
+;;   indentation doesn't get messed up
+;; - add smart tab behaviour, eg. `mips-indent-line', to nasm
+;; - x86-lookup could find longest common substring of thing-at-point
+;;   with the mnemonics since it misses common things like pushq
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
-;; TODO: i don't like the default DWIM, i want two comments on blank lines
-;; so the indentation doesn't get messed up
+(defconst nvp-asm-imenu-expression
+  '((nil "^\\s-*\\(\\_<[a-zA-Z_?][a-zA-Z0-9_$#@~?]*\\_>\\)\\s-*:" 1)))
+
+(with-eval-after-load 'asm-mode
+  (modify-syntax-entry ?% "'" asm-mode-syntax-table))
 
 ;; nasm comment-dwim -- modified `nasm-comment'
 ; (defun nvp-nasm-comment-dwim (&optional arg)

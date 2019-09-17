@@ -2,4 +2,4 @@
 # name: Array init
 # key: arri
 # --
-Array.init ${1:size} ${2:function}`(ocaml-yas-end)`$0
+Array.init ${1:size} ${2:function}$0

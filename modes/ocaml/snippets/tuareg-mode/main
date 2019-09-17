@@ -3,4 +3,4 @@
 # key: main
 # --
 let main =
-    $0`(ocaml-yas-end)`
+    $0

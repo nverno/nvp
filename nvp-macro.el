@@ -94,7 +94,6 @@ those are both specified."
       `(or (buffer-file-name ,buff) (buffer-name ,buff))
     `(buffer-file-name ,buff)))
 
-(defalias 'nvp-p 'nvp-path)
 (cl-defmacro nvp-path (type &optional b-o-p &key no-default or-name)
   "Return buffer or path names.
 If B-O-P is non-nil, it is used as the buffer or path instead of the current

@@ -53,7 +53,10 @@
   "Mapping of modes to functions returning line beginning position.")
 
 ;; default function to retrieve history elements for prefix
-(defun nvp-he-history-default-fn (prefix &optional history)
+(defun nvp-he-history-default-fn (prefix history)
+  ;; eg. minibuffer-history-variable -> read-expression-history -> contents
+  (while (and (symbolp history) (boundp history))
+    (setq history (symbol-value history)))
   (cl-remove-duplicates
    (all-completions prefix (if (ring-p history) (ring-elements history) history))
    :test #'string= :from-end t))
@@ -108,8 +111,6 @@
                        (cdr (assoc 'comint-mode nvp-he-history-bol-alist))))))
     (when (and (or (functionp bol) (fboundp bol))
                (or history-fn (not (null history))))
-      (while (and history (symbolp history) (boundp history)) ;minibuffer
-        (setq history (symbol-value history)))
       (setq nvp-he-history history)
       (setq nvp-he-history-bol-fn bol)
       (and expand-fn (setq nvp-he-history-post-expand-fn expand-fn))

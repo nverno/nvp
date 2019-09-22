@@ -203,7 +203,7 @@ Redirection is handled by `comint-redirect-send-command-to-process', (which see)
   (unless nvp-utop-history
     (nvp-utop-load-history))
   (with-current-buffer utop-buffer-name
-    (setq nvp-he-history nvp-utop-history
+    (setq nvp-he-history 'nvp-utop-history
           nvp-he-history-bol-fn (lambda () utop-prompt-max)))
   (add-to-list 'hippie-expand-try-functions-list #'nvp-he-try-expand-history))
 

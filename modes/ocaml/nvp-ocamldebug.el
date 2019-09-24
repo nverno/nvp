@@ -1,4 +1,4 @@
-;;; nvp-ocaml-debug.el ---  -*- lexical-binding: t; -*-
+;;; nvp-ocamldebug.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -6,19 +6,20 @@
 (require 'ocamldebug)
 (nvp-decls :f (ocamldebug))
 
-;; ocamldebug.el doesn't define a prefix key like gud-gdb
+;; ocamldebug.el has `ocamldebug-prefix-map'
 (defvar ocaml-debug-key-prefix (kbd "<f2> d"))
 
-(defmacro ocaml-debug-bindings (&rest bindings)
-  (declare (indent defun))
-  `(with-eval-after-load 'ocamldebug
-     (progn
-       ,@(cl-loop for (name . k) in bindings
-            collect `(define-key tuareg-mode-map
-                       (vconcat ocaml-debug-key-prefix ,k)
-                       ',(intern (concat "ocamldebug-" name)))))))
+(eval-when-compile
+  (defmacro ocaml-debug:bindings (&rest bindings)
+    (declare (indent defun))
+    `(with-eval-after-load 'ocamldebug
+       (progn
+         ,@(cl-loop for (name . k) in bindings
+              collect `(define-key tuareg-mode-map
+                         (vconcat ocaml-debug-key-prefix ,k)
+                         ',(intern (concat "ocamldebug-" name))))))))
 
-(ocaml-debug-bindings
+(ocaml-debug:bindings
   ("run"       . "\C-r")
   ("reverse"   . "\C-v")
   ("last"      . "\C-l")
@@ -30,6 +31,7 @@
   ("next"      . "\C-n")
   ("up"        . "<")
   ("down"      . ">")
+  ("step"      . "s")
   ("break"     . "\C-b"))
 
 (defun nvp-ocaml-debug-help ()
@@ -43,5 +45,5 @@
   (funcall-interactively 'nvp-ocaml-compile '("-g" "-o a.out"))
   (ocamldebug "a.out"))
 
-(provide  'nvp-ocaml-debug)
-;;; nvp-ocaml-debug.el ends here
+(provide  'nvp-ocamldebug)
+;;; nvp-ocamldebug.el ends here

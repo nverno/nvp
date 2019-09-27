@@ -200,6 +200,7 @@ Redirection is handled by `comint-redirect-send-command-to-process', (which see)
   (funcall fn ai ae add-hist im))
 
 (defun nvp-utop-hippie-setup ()
+  (interactive)
   (unless nvp-utop-history
     (nvp-utop-load-history))
   (with-current-buffer utop-buffer-name

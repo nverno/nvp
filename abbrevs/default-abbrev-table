@@ -1,1 +1,6 @@
 ;;-*-coding: utf-8;-*-
+(define-abbrev-table 'awk-mode-abbrev-table
+  '(
+    ("ret" "return" nil :count 0)
+   ))
+

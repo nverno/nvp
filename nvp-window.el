@@ -7,7 +7,7 @@
   (require 'hydra))
 (require 'nvp)
 (require 'windmove)
-(nvp-decl winner-undo winner-redo ace-window ace-swap-window)
+(nvp-decls :f (winner-undo winner-redo ace-window ace-swap-window))
 
 (defvar nvp-window--interactive-stack ())
 (nvp-bindings nvp-window-fast-map nil

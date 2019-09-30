@@ -1,6 +1,148 @@
-;;-*-coding: utf-8;-*-
-(define-abbrev-table 'awk-mode-abbrev-table
-  '(
-    ("ret" "return" nil :count 0)
-   ))
+;; -*-coding: utf-8; -*-
+(define-abbrev-table 'Buffer-menu-mode-abbrev-table '())
 
+(define-abbrev-table 'Custom-mode-abbrev-table '())
+
+(define-abbrev-table 'Info-edit-mode-abbrev-table '())
+
+(define-abbrev-table 'Rd-mode-abbrev-table '())
+
+(define-abbrev-table 'bibtex-mode-abbrev-table '())
+
+(define-abbrev-table 'bmkp-edit-bookmark-record-mode-abbrev-table '())
+
+(define-abbrev-table 'bmkp-edit-bookmark-records-mode-abbrev-table '())
+
+(define-abbrev-table 'bmkp-edit-tags-mode-abbrev-table '())
+
+(define-abbrev-table 'bookmark-bmenu-mode-abbrev-table '())
+
+(define-abbrev-table 'bookmark-edit-annotation-mode-abbrev-table '())
+
+(define-abbrev-table 'bookmark-show-annotation-mode-abbrev-table '())
+
+(define-abbrev-table 'calendar-mode-abbrev-table '())
+
+(define-abbrev-table 'comint-mode-abbrev-table '())
+
+(define-abbrev-table 'completion-list-mode-abbrev-table '())
+
+(define-abbrev-table 'debugger-mode-abbrev-table '())
+
+(define-abbrev-table 'diff-mode-abbrev-table '())
+
+(define-abbrev-table 'diredp-w32-drives-mode-abbrev-table '())
+
+(define-abbrev-table 'edit-abbrevs-mode-abbrev-table '())
+
+(define-abbrev-table 'eieio-custom-mode-abbrev-table '())
+
+(define-abbrev-table 'elisp-byte-code-mode-abbrev-table '())
+
+(define-abbrev-table 'emacs-lisp-mode-abbrev-table '())
+
+(define-abbrev-table 'emacs-lisp-vars-abbrev-table '())
+
+(define-abbrev-table 'ert-results-mode-abbrev-table '())
+
+(define-abbrev-table 'ert-simple-view-mode-abbrev-table '())
+
+(define-abbrev-table 'eshell-mode-abbrev-table '())
+
+(define-abbrev-table 'fish-mode-abbrev-table '())
+
+(define-abbrev-table 'fundamental-mode-abbrev-table '())
+
+(define-abbrev-table 'global-abbrev-table
+  '(
+    ("gitn" "https://github.com/nverno" nil :system t)
+    ("gitu" "https://github.com" nil :system t)
+    ("bitn" "https://bitbucket.org/nverno" nil :system t)
+    ("bitu" "https://bitbucket.org" nil :system t)
+    )
+  ;; not prefixed by "-"
+  :regexp "\\(\\_<[_:\\.A-Za-z0-9/=<>]+\\)")
+
+(define-abbrev-table 'grep-mode-abbrev-table '())
+
+(define-abbrev-table 'help-mode-abbrev-table '())
+
+(define-abbrev-table 'html-mode-abbrev-table '())
+
+(define-abbrev-table 'ibuffer-mode-abbrev-table '())
+
+(define-abbrev-table 'ielm-mode-abbrev-table '())
+
+(define-abbrev-table 'image-dired-display-image-mode-abbrev-table '())
+
+(define-abbrev-table 'image-dired-thumbnail-mode-abbrev-table '())
+
+(define-abbrev-table 'inferior-emacs-lisp-mode-abbrev-table '())
+
+(define-abbrev-table 'lisp-mode-abbrev-table '())
+
+(define-abbrev-table 'message-mode-abbrev-table '())
+
+(define-abbrev-table 'messages-buffer-mode-abbrev-table '())
+
+(define-abbrev-table 'minibuffer-inactive-mode-abbrev-table
+  '()
+  "Minibuffer-Inactive-Mode Abbrevs."
+  :parents (list emacs-lisp-mode-abbrev-table))
+
+(define-abbrev-table 'occur-edit-mode-abbrev-table '())
+
+(define-abbrev-table 'occur-mode-abbrev-table '())
+
+(define-abbrev-table 'org-export-stack-mode-abbrev-table '())
+
+(define-abbrev-table 'org-mode-abbrev-table '())
+
+(define-abbrev-table 'outline-mode-abbrev-table '())
+
+(define-abbrev-table 'package-menu-mode-abbrev-table '())
+
+(define-abbrev-table 'process-menu-mode-abbrev-table '())
+
+(define-abbrev-table 'prog-mode-abbrev-table '())
+
+(define-abbrev-table 'select-tags-table-mode-abbrev-table '())
+
+(define-abbrev-table 'sgml-mode-abbrev-table '())
+
+(define-abbrev-table 'sh-mode-abbrev-table '())
+
+(define-abbrev-table 'shell-alias-abbrev-table'())
+
+(define-abbrev-table 'shell-mode-abbrev-table '())
+
+(define-abbrev-table 'shell-tools-abbrev-table '())
+
+(define-abbrev-table 'shells-abbrev-table '())
+
+(define-abbrev-table 'snippet-mode-abbrev-table
+  '(
+    ("yt" "yas-text" nil :system t)
+    ("yil" "yas-indent-line" nil :system t)
+    ("ywar" "yas-wrap-around-region" nil :system t)
+    )
+  "Snippet-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'special-mode-abbrev-table '())
+
+(define-abbrev-table 'speedbar-mode-abbrev-table '())
+
+(define-abbrev-table 'tabulated-list-mode-abbrev-table '())
+
+(define-abbrev-table 'text-mode-abbrev-table '())
+
+(define-abbrev-table 'url-cookie-mode-abbrev-table '())
+
+(define-abbrev-table 'vc-git-log-edit-mode-abbrev-table '())
+
+(define-abbrev-table 'vc-git-log-view-mode-abbrev-table '())
+
+(define-abbrev-table 'vc-git-region-history-mode-abbrev-table '())
+
+(define-abbrev-table 'xref--xref-buffer-mode-abbrev-table '())

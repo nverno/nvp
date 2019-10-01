@@ -8,3 +8,8 @@
     )
   "Org-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'org-agenda-mode-abbrev-table
+  '()
+  "Org-Agenda-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

@@ -2,5 +2,17 @@
 # name: ocamlinit
 # key: ocamlinit
 # --
+(* include ~/.ocamlinit *)
 Topdirs.dir_use Format.err_formatter
   (Filename.concat (Sys.getenv "HOME") ".ocamlinit")
+;;
+
+(* set directory to the project root *)
+let root =
+  let rec search path =
+    match Sys.file_exists (path ^ "/.ocamlinit") with
+    | false -> search (Filename.dirname path)
+    | true -> path
+  in search (Sys.getcwd ())
+    in Sys.chdir root
+;;

@@ -21,6 +21,12 @@
    (concat "opam config exec -- bash -c "
            (expand-file-name "emacs/merlin-init" nvp/bin))))
 
+(defun nvp-ocaml-init ()
+  "Create local .ocamlinit."
+  (interactive)
+  (nvp-async-shell-command-to-string
+   (expand-file-name "emacs/ocaml-init" nvp/bin)))
+
 (defun nvp-ocaml-library-path ()
   (when (executable-find "opam")
     (--when-let

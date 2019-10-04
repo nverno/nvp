@@ -2,8 +2,10 @@
 
 (define-abbrev-table 'ocaml-mode-abbrev-table
   '(
+    ;; builtins
     ("fn" "function" nil :system t)
-    ("ass" ["assert ;;" 2 nil nil] expand-abbrev-hook :system t)
+    ("fw" "failwith" nil :system t)
+    ("ass" "assert" nil :system t)
     ("inf" "infinity" nil :system t)
     ;; conversion
     ("ioc" "int_of_char" nil :system t)
@@ -35,8 +37,10 @@
     ("Aol" "Array.of_list" nil :system t)
     ("As" "Array.sort" nil :system t)
     ;; List
-    ("Li" "List.iter" nil :system t)
-    ("Ll" "List.length" nil :system t)
+    ("liter" "List.iter" nil :system t)
+    ("llen" "List.length" nil :system t)
+    ("foldl" "List.fold_left" nil :system t)
+    ("foldr" "List.fold_right" nil :system t)
     ;; Hash
     ("Hf" "Hashtbl.find" nil :system t)
     ("Hr" "Hashtbl.replace" nil :system t)

@@ -13,7 +13,12 @@
 
 ;; Add iedit bindings
 (nvp-bindings iedit-mode-keymap :now
-  ("C-=" . nvp-iedit-cycle-regions))
+  ("C-=" . nvp-iedit-cycle-regions)
+  ("M-o" . nvp-iedit-occur))
+
+(defun nvp-iedit-occur ()
+  (interactive)
+  (occur (regexp-quote (iedit-current-occurrence-string))))
 
 ;; current level of iedit restriction: line, defun, buffer, region
 (defvar-local nvp-iedit-restriction 'buffer)

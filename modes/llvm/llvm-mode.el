@@ -59,6 +59,7 @@
 
 (defconst llvm-font-lock-keywords
   (list
+   
    ;; Attributes
    `(,(regexp-opt
        '("alwaysinline" "argmemonly" "builtin" "cold" "convergent" "immarg"
@@ -151,7 +152,10 @@
    `(,(regexp-opt '("distinct") 'symbols) . font-lock-keyword-face)
    ;; Use-list order directives
    `(,(regexp-opt '("uselistorder" "uselistorder_bb") 'symbols)
-     . font-lock-keyword-face))
+     . font-lock-keyword-face)
+   ;; Comparisons
+   `(,(regexp-opt '("eq" "ne" "ugt" "uge" "ult" "sgt" "sge" "slt" "sle") 'syms)
+     . font-lock-builtin-face))
   "Syntax highlighting for LLVM.")
 
 

@@ -5,8 +5,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-local)
-(nvp-decl "winner" winner-redo winner-undo)
-(nvp-decls)
+(nvp-decls
+ :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward))
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'ido-completing-read)
@@ -515,6 +515,15 @@ On error (read-only), quit without selecting."
   :create t :repeat t :indicate t
   ("p" . winner-undo)
   ("n" . winner-redo))
+
+(nvp-bindings nvp-isearch-fast-map 'isearch
+  :create t :repeat t :wrap t :indicate t
+  ("]" . isearch-repeat-forward)
+  ("[" . isearch-repeat-backward))
+
+(nvp-bindings isearch-mode-map 'isearch
+  ("C-s" . nvp/isearch-repeat-forward)
+  ("C-r" . nvp/isearch-repeat-backward))
 
 
 ;; -------------------------------------------------------------------

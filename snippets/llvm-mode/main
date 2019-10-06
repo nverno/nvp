@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: main
+# key: main
+# --
+define i64 @main(i64 %argc, i8** %argv) {
+  %1 = $0
+  ret i64 0
+}

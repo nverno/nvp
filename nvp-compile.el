@@ -81,7 +81,7 @@ With double prefix or more, use comint buffer for compilation."
      (list (>= arg 16) (or (eq arg 4) (> arg 16)))))
   (setq-local compilation-read-command read-command)
   (when compilation-read-command
-    (setq-local compile-command (compilation-read-command compile-command)))
+    (setq-local compile-command (compilation-read-command (eval compile-command))))
   (funcall-interactively
    'compile (if (functionp compile-command) (funcall compile-command)
               (eval compile-command))

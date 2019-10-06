@@ -13,6 +13,7 @@
 ;; - completion:
 ;;  + global variables
 ;;  + global declares/defines
+;;  + types
 ;; TODO:
 ;;  + keywords / attributes
 ;;  + could add labels / %uids as well
@@ -48,10 +49,10 @@
 
 (defvar llvm-mode-syntax-table
   (let ((table (make-syntax-table)))
-    (modify-syntax-entry ?% "_" table)
     (modify-syntax-entry ?. "_" table)
     (modify-syntax-entry ?\; "< " table)
     (modify-syntax-entry ?\n "> " table)
+    (modify-syntax-entry ?% "." table)
     (modify-syntax-entry ?: "." table)
     (modify-syntax-entry ?* "." table)
     table)
@@ -205,6 +206,16 @@
               res)))
     res))
 
+;; global type declarations
+(defun llvm-mode-types ()
+  (let (res)
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^\\s-*%\\([[:alpha:]_][[:alnum:]]*\\)" nil t)
+        (unless (nth 9 (parse-partial-sexp (point-min) (point)))
+          (push (match-string-no-properties 1) res))))
+    res))
+
 ;; basic completion at point 
 (defun llvm-mode-completion-at-point ()
   (when-let ((bnds (bounds-of-thing-at-point 'symbol)))
@@ -214,7 +225,12 @@
              (list
               (completion-table-with-cache
                (lambda (_string) (llvm-mode-globals)))
-              :annotation-function (lambda (_s) " <g>"))))))
+              :annotation-function (lambda (_s) " <g>")))
+            ((eq ?% (char-before (car bnds)))
+             (list
+              (completion-table-with-cache
+               (lambda (_string) (llvm-mode-types)))
+              :annotation-function (lambda (_s) " <t>"))))))
       (when table
         (nconc (list (car bnds) (cdr bnds))
                table

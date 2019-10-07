@@ -41,6 +41,7 @@
     ("llen" "List.length" nil :system t)
     ("foldl" "List.fold_left" nil :system t)
     ("foldr" "List.fold_right" nil :system t)
+    ("lmap" "List.map" nil :system t)
     ;; Hash
     ("Hf" "Hashtbl.find" nil :system t)
     ("Hr" "Hashtbl.replace" nil :system t)

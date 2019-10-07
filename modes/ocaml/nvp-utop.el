@@ -97,6 +97,9 @@
 
 ;;; Utop Process
 
+;; store unfinished output
+(defvar nvp-utop-output "")
+
 (defun nvp-utop-run-once (func where callback &optional state &rest args)
   "Execute CALLBACK applied to ARGS once before or after FUNC is called.
 WHERE can be :before or :after and is passed to `advice-add'.
@@ -116,22 +119,27 @@ after both FUNC is called and `utop-state' is set to STATE."
                            `(funcall ',callback ,@args)))))
                   name))))
 
-;; see `utop-process-line'; called from `comint-redirect-filter'
-(defun nvp-utop-redirect-filter (lines)
+;; see `utop-process-output' and `utop-process-line'
+;; called from `comint-redirect-filter'
+(defun nvp-utop-redirect-filter (output)
   "Process utop output to insert in redirect buffer."
-  (save-match-data
-    (mapconcat
-     #'identity
-     (cl-loop for line in (split-string lines "\n" t " \n")
-        if (string-match "\\`\\([a-z-]*\\):\\(.*\\)\\'" line)
-        collect
-          (let ((command (match-string 1 line))
-                (argument (match-string 2 line)))
-            (pcase command
-              ((or "stderr" "stdout") argument)
-              ;; don't output any other responses from utop
-              (_))))
-     "\n")))
+  ;; add unprocessed output
+  (setq nvp-utop-output (concat utop-output output))
+  (let ((lines (split-string output "\n" t " \n"))
+        res)
+    (save-match-data
+      (while (>= (length lines) 2)
+        (let ((line (car lines)))
+          (if (string-match "\\`\\([a-z-]*\\):\\(.*\\)\\'" line)
+              (let ((command (match-string 1 line))
+                    (argument (match-string 2 line)))
+                (pcase command
+                  ((or "stderr" "stdout") (push argument res))
+                  ;; don't output any other responses from utop
+                  (_)))))
+        (setq lines (cdr lines)))
+      (setq nvp-utop-output (car lines)) ;see `utop-process-output'
+      (mapconcat 'identity (nreverse res) "\n"))))
 
 (defun nvp-utop-redirect-cleanup ()
   "Restore utop process filter and state."
@@ -202,7 +210,7 @@ Redirection is handled by `comint-redirect-send-command-to-process', (which see)
 (defun nvp-utop-hippie-setup ()
   (interactive)
   (unless nvp-utop-history
-    (nvp-utop-load-history))
+    (nvp-utop-run-once 'utop-insert-prompt :after 'nvp-utop-load-history 'edit))
   (with-current-buffer utop-buffer-name
     (setq nvp-he-history 'nvp-utop-history
           nvp-he-history-bol-fn (lambda () utop-prompt-max)))

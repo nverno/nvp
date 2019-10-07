@@ -201,6 +201,7 @@ Transient:
   WRAP     A list of functions to create wrappers around. 
            If t, create wrappers for all REPEAT commands,
            or, if \\='all, create wrappers for all commands.
+           Note: only wrapped commands will be advised.
 
 Buggy:
   LOCAL makes map local var.        -- changes bindings for ALL mode buffers!!
@@ -247,10 +248,13 @@ Buggy:
              ((eq wrap t)
               (if (memq repeat '(all t))
                   (setq wrap (--map (cdr it) bindings))
-                (setq wrap repeat))))
+                (setq wrap (copy-sequence repeat)))))
             (dolist (b bindings)
               (and (memq (cdr b) wrap)
                    (setf (cdr b) (nvp-wrap--make-name (cdr b)))))
+            (dolist (fn wrap)
+              (--when-let (memq fn repeat)
+                (setf (car it) (nvp-wrap--make-name fn))))
             `(progn
                ,(macroexp-progn
                  (cl-loop for fn in wrap

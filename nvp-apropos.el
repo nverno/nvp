@@ -1,12 +1,12 @@
 ;;; nvp-apropos.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; Apropos hydra from wiki
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'hydra))
 
+;; Apropos hydra from github wiki
 ;;;###autoload(autoload 'nvp-apropos-hydra/body "nvp-apropos")
 (nvp-hydra-set-property 'nvp-apropos-hydra)
 (defhydra nvp-apropos-hydra (:color blue)

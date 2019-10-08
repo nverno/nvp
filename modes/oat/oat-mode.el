@@ -43,8 +43,7 @@
 (c-lang-defconst c-primitive-type-kwds oat '("void" "int" "string" "bool" "var"))
 (c-lang-defconst c-simple-stmt-kwds oat '("return"))
 (c-lang-defconst c-type-list-kwds oat '("new"))
-(c-lang-defconst c-prefix-spec-kwds oat '("global"))
-(c-lang-defconst c-ref-list oat nil)
+;; (c-lang-defconst c-modifier-kwds oat '("global"))
 (c-lang-defconst c-block-stmt-kwds oat '("else" "for" "if" "while"))
 (c-lang-defconst c-keywords
   oat '("else" "false" "for" "global" "if" "new" "null" "return" "true" "void"
@@ -72,7 +71,9 @@
  c-other-decl-kwds
  c-defun-type-name-decl-kwds
  c-case-kwds
- c-postfix-decl-spec-kwds)
+ c-postfix-decl-spec-kwds
+ c-ref-list
+ c-modifier-kwds)
 
 (defconst oat-font-lock-keywords-1 (c-lang-const c-matchers-1 oat))
 (defconst oat-font-lock-keywords-2 (c-lang-const c-matchers-2 oat))

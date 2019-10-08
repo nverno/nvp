@@ -193,6 +193,26 @@
       (--filter (string-prefix-p prefix (symbol-name it)) features)
       #'string-lessp))))
 
+;; dump lang's `c-lang-constants'
+
+(defun nvp-dev-c-lang-constants (&optional mode)
+  (interactive (list (nvp-read-mode)))
+  (require 'cc-mode)
+  (setq mode (intern (string-remove-suffix "-mode" (or mode major-mode))))
+  (let ((print-escape-newlines t)
+        (print-circle t)
+        (inhibit-read-only t))
+    (nvp-with-results-buffer (help-buffer)
+      :title (format "c-lang-constants for %s" mode)
+      (dolist (v (append c-lang-constants ()))
+        (when (symbolp v)
+          (princ v)
+          (princ ": ")
+          (condition-case nil
+              (eval `(prin1 (c-lang-const ,v ,mode)))
+            (error (princ "<failed>")))
+          (terpri))))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Overlays

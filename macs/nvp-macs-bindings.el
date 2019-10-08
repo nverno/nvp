@@ -248,7 +248,7 @@ Buggy:
              ((eq wrap t)
               (if (memq repeat '(all t))
                   (setq wrap (--map (cdr it) bindings)
-                        repeat wrap)
+                        repeat (copy-sequence wrap))
                 (setq wrap (copy-sequence repeat)))))
             (dolist (b bindings)
               (and (memq (cdr b) wrap)

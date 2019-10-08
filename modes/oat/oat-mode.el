@@ -81,6 +81,8 @@
 (defvar oat-font-lock-keywords oat-font-lock-keywords-3
   "Default expressions to highlight in `oat-mode'.")
 
+(defvar oat-mode-syntax-table nil)
+
 ;;;###autoload
 (define-derived-mode oat-mode prog-mode "Oat"
   "Major mode for editing oat files.

@@ -195,6 +195,7 @@
 
 ;; dump lang's `c-lang-constants'
 
+;;;###autoload
 (defun nvp-dev-c-lang-constants (&optional mode)
   (interactive (list (nvp-read-mode)))
   (require 'cc-mode)

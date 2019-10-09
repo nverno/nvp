@@ -3,10 +3,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'bison-mode)
-
 ;; semantic bunghole
-(eval-when-compile
-  (defvar bison-imenu-regex))
+(nvp-decls :v (bison-imenu-regex))
 
 ;;;###autoload
 (defun nvp-bison-load-imenu ()

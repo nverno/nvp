@@ -78,8 +78,15 @@
 (defconst oat-font-lock-keywords-1 (c-lang-const c-matchers-1 oat))
 (defconst oat-font-lock-keywords-2 (c-lang-const c-matchers-2 oat))
 (defconst oat-font-lock-keywords-3 (c-lang-const c-matchers-3 oat))
-(defvar oat-font-lock-keywords oat-font-lock-keywords-3
+(defvar oat-font-lock-keywords oat-font-lock-keywords-2
   "Default expressions to highlight in `oat-mode'.")
+
+(defun oat-font-lock-keywords-2 ()
+  (c-compose-keywords-list oat-font-lock-keywords-2))
+(defun oat-font-lock-keywords-3 ()
+  (c-compose-keywords-list oat-font-lock-keywords-3))
+(defun oat-font-lock-keywords ()
+  (c-compose-keywords-list oat-font-lock-keywords))
 
 (defvar oat-mode-syntax-table nil)
 

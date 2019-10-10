@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: main
+# key: main
+# --
+int program (int argc, string[] argv) {
+  $0
+  return 0;
+}

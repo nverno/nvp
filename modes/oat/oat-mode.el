@@ -109,6 +109,8 @@ initialization, then `oat-mode-hook'.
   (c-initialize-cc-mode t)
   (c-init-language-vars oat-mode)
   (c-common-init 'oat-mode)
+  (setq-local comment-start "/* ")
+  (setq-local comment-end " */")
   (c-run-mode-hooks 'c-mode-common-hook))
 
 ;;;###autoload(add-to-list 'auto-mode-alist '("\\.oat\\'" . oat-mode))

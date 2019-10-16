@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: pickle dump/load
+# key: pickle
+# --
+with open("$1.pkl", "${2:w}b") as f:
+    pickle.${2:$(if (string= yas-text "w") "dump" "load")`}(${3:obj-to-dump}, f)

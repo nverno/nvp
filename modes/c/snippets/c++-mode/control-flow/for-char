@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: forc
+# key: forc
+# --
+for (char const &c: ${1:str}) {
+    $0
+}

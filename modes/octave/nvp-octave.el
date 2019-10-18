@@ -4,25 +4,6 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'octave)
 
-;; ------------------------------------------------------------
-;;; Install
-
-; (nvp-with-gnu
-;   ;; checks current / available versions and builds/installs if
-;   ;; necessary (non windows)
-;   (defun nvp-octave-install (arg)
-;     (interactive "P")
-;     (nvp-with-install-script mm-tools--dir "install_octave_deps" 'sudo
-;       (nvp-with-asdf-install arg mm-tools--dir "octave")))
-  
-;   (defun nvp-octave-install-octave ()
-;     (let ((script (expand-file-name "tools/install.sh" mm-tools--dir)))
-;       (nvp-with-process-log
-;         (nvp-ext-run-script script '("install_octave") 'sudo)
-;         :pop-on-error)))
-;   (defun nvp-octave-octave-build ()
-;     (async-shell-command ". ~/bin/install/get-octave.sh" (nvp-process-buffer))))
-
 ;; -------------------------------------------------------------------
 ;;; Commands
 

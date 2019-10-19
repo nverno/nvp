@@ -70,5 +70,5 @@
            (mapconcat 'identity inferior-octave-output-list "\n"))
     :help-fn #'(lambda (fn) (interactive) (octave-help fn))))
 
-(provide 'nvp-octave.el)
+(provide 'nvp-octave)
 ;;; nvp-octave.el ends here

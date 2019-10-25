@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-sizet
+# key: fors
+# --
+for (size_t ${1:i} = ${2:0}; ${1:$(nvp-yas-var yas-text)} < ${3:MAXIMUM}; ${4:++}${1:$(nvp-yas-var yas-text)}) {
+    $0
+}

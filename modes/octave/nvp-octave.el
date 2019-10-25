@@ -1,5 +1,11 @@
 ;;; nvp-octave.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
+
+;;; TODO:
+;; - quickhelp for completion candidates in source buffers
+;; - complete for scalar structure fields - fieldnames(var)
+;; - '?' for help from repl
+
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'octave)
@@ -68,7 +74,7 @@
     (progn (inferior-octave-send-list-and-digest
             (list (format "help ('%s');\n" fn)))
            (mapconcat 'identity inferior-octave-output-list "\n"))
-    :help-fn #'(lambda (fn) (interactive) (octave-help fn))))
+    :help-fn #'(lambda () (interactive) (octave-help fn))))
 
 (provide 'nvp-octave)
 ;;; nvp-octave.el ends here

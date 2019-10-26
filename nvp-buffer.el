@@ -28,7 +28,7 @@
 (defun nvp-buffer-kill-all-buffers ()
   "Kill all buffers including this one, calling `save-some-buffers' first."
   (interactive)
-  (save-some-buffers)
+  (save-some-buffers 'no-ask)
   (let ((kill-buffer-query-functions ()))
     (nvp-buffer-kill-other-buffers)
     (kill-buffer (current-buffer))))

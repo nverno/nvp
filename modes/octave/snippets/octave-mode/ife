@@ -2,8 +2,8 @@
 # name: if
 # key: if
 # --
-if ${1:cond}
+if ${1:cond},
    $2
 else
    $0
-endif
+end;

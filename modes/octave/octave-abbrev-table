@@ -1,8 +1,13 @@
-
+;; -*- coding: utf-8 -*-
 (define-abbrev-table 'octave-abbrev-table
   '(
     ("mm" "" nvp-octave-matrix :system t)
     ("pr" "printf" nil :system t)
     )
   "Octave-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'inferior-octave-mode-abbrev-table
+  '()
+  "Inferior-Octave-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

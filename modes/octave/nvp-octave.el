@@ -35,17 +35,23 @@
 ;;; REPL
 
 ;; switch between inferior / source buffer
-(defvar nvp-octave--buffer)
 (defun nvp-octave-switch ()
   (interactive)
-  (if (eq major-mode 'inferior-octave-mode)
-      (and nvp-octave--buffer
-           (switch-to-buffer-other-window
-            nvp-octave--buffer))
-    (setq nvp-octave--buffer (current-buffer))
-    (unless (buffer-live-p inferior-octave-buffer)
-      (inferior-octave))
-    (octave-show-process-buffer)))
+  (let ((display-buffer-overriding-action
+         '(display-buffer-pop-up-window ((inhibit-same-window  . t)))))
+    (pop-to-buffer
+     (if (eq major-mode 'inferior-octave-mode)
+         (-if-let (proc (nvp-buffer-process))
+             (let ((src-buf (process-get proc :src-buffer)))
+               (or (and (buffer-live-p src-buf) src-buf)
+                   (other-buffer (current-buffer) 'visible)))
+           (other-buffer (current-buffer) 'visible))
+       (let ((src-buf (current-buffer)))
+         (unless (buffer-live-p inferior-octave-buffer)
+           (inferior-octave))
+         (process-put
+          (get-buffer-process inferior-octave-buffer) :src-buffer src-buf)
+         inferior-octave-buffer)))))
 
 (defun nvp-octave-send-dwim (arg)
   (interactive "P")

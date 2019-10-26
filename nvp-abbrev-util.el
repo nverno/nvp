@@ -5,8 +5,7 @@
 ;; shared abbrev utils required by multiple files
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'abbrev)
 
@@ -47,9 +46,11 @@
 ;; list all active, nonempty tables:
 ;; - dynamic table, local table, all parents, global table
 (defun nvp-abbrev--active-tables (&optional allow-empty)
-  (let ((tabs (append (list local-abbrev-table)
-                      (nvp-abbrev--all-parents local-abbrev-table)
-                      (list global-abbrev-table))))
+  (let ((tabs
+         (append (if (null local-abbrev-table) ()
+                   (cons local-abbrev-table
+                         (nvp-abbrev--all-parents local-abbrev-table)))
+                 (list global-abbrev-table))))
     (when (and nvp-abbrev-dynamic-table
                (abbrev-table-p nvp-abbrev-dynamic-table))
       (setq tabs (cons nvp-abbrev-dynamic-table tabs)))

@@ -3,7 +3,6 @@
 
 ;;; TODO:
 ;; - quickhelp for completion candidates in source buffers
-;; - complete for scalar structure fields - fieldnames(var)
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -40,6 +39,48 @@
         (octave-help help-str)
         (process-send-string proc "\n"))
     (comint-simple-send proc str)))
+
+;; Fixes completion-at-point to work for fieldnames of structs/objects
+(defun nvp-octave-bounds-of-object-at-point (&optional lim)
+  (let ((beg (save-excursion
+               (skip-syntax-backward "w_" lim)
+               (when (eq ?. (char-before))
+                 (forward-char -1)
+                 (and (eq ?\) (char-before)) ; struct(i).
+                      (ignore-errors (backward-sexp)))
+                 (skip-syntax-backward "w_" lim))
+               (point)))
+        (end (point)))
+    (when (< beg end)                   ; extends region past point
+      (save-excursion
+        (skip-syntax-forward "w_")
+        (setq end (point))))
+    (when (> end beg)
+      (cons beg end))))
+
+(defun nvp-octave-completion-at-point ()
+  (-let (((beg . end)
+          (nvp-octave-bounds-of-object-at-point (line-beginning-position))))
+    (when beg
+      (list beg end
+            (or (and (inferior-octave-process-live-p)
+                     (inferior-octave-completion-table))
+                octave-reserved-words)))))
+
+(defun nvp-inferior-octave-completion-at-point ()
+  (unless (string-match-p "/" (or (comint--match-partial-filename) ""))
+    (-let (((beg . end)
+            (nvp-octave-bounds-of-object-at-point
+             (comint-line-beginning-position))))
+      (when beg
+        (list beg end (completion-table-in-turn
+                       (inferior-octave-completion-table)
+                       'comint-completion-file-name-table))))))
+
+;; override octave's completion
+(defalias 'octave-completion-at-point #'nvp-octave-completion-at-point)
+(defalias 'inferior-octave-completion-at-point
+  #'nvp-inferior-octave-completion-at-point)
 
 ;; -------------------------------------------------------------------
 ;;; Commands

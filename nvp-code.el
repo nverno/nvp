@@ -10,6 +10,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'hideshow))
+(require 'nvp)
 (nvp-decls
  :f (hs-toggle-hiding hs-show-all hs-hide-all hs-discard-overlays
                       hs-inside-comment-p hs-hide-block-at-point)
@@ -17,11 +18,14 @@
 
 (nvp-bindings nvp-fold-keymap nil
   :create t
-  ("a" . hs-hide-all)
-  ("c" . nvp-hs-hide-comments)
-  ("f" . nvp-hs-toggle)
-  ("l" . hs-hide-level)
-  ("s" . hs-show-all))
+  :repeat (nvp-hs-hide-comments hs-toggle-hiding)
+  :indicate t
+  ("TAB" . hs-toggle-hiding)
+  ("a"   . hs-hide-all)
+  ("c"   . nvp-hs-hide-comments)
+  ("f"   . nvp-hs-toggle)
+  ("l"   . hs-hide-level)
+  ("s"   . hs-show-all))
 
 ;;; Hideshow
 

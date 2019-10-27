@@ -8,7 +8,24 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'nvp)
 (require 'octave)
+(nvp-decls)
+
+;; -------------------------------------------------------------------
+;;; REPL
+
+(defun nvp-octave-send-dwim (arg)
+  (interactive "P")
+  (if arg (octave-send-block) (octave-send-line)))
+
+(nvp-repl-add '(octave-mode)
+  :modes '(inferior-octave-mode)
+  :bufname inferior-octave-buffer
+  :init (lambda ()
+          (save-window-excursion
+            (inferior-octave)
+            (get-buffer-process inferior-octave-buffer))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -30,32 +47,6 @@
          (concat (nvp-with-gnu/w32 "./" "octave ")
                  (file-name-nondirectory buffer-file-name))))
     (call-interactively 'compile)))
-
-;; -------------------------------------------------------------------
-;;; REPL
-
-;; switch between inferior / source buffer
-(defun nvp-octave-switch ()
-  (interactive)
-  (let ((display-buffer-overriding-action
-         '(display-buffer-pop-up-window ((inhibit-same-window  . t)))))
-    (pop-to-buffer
-     (if (eq major-mode 'inferior-octave-mode)
-         (-if-let (proc (nvp-buffer-process))
-             (let ((src-buf (process-get proc :src-buffer)))
-               (or (and (buffer-live-p src-buf) src-buf)
-                   (other-buffer (current-buffer) 'visible)))
-           (other-buffer (current-buffer) 'visible))
-       (let ((src-buf (current-buffer)))
-         (unless (buffer-live-p inferior-octave-buffer)
-           (inferior-octave))
-         (process-put
-          (get-buffer-process inferior-octave-buffer) :src-buffer src-buf)
-         inferior-octave-buffer)))))
-
-(defun nvp-octave-send-dwim (arg)
-  (interactive "P")
-  (if arg (octave-send-block) (octave-send-line)))
 
 ;; ------------------------------------------------------------
 ;;; Insert / Toggle

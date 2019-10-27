@@ -17,9 +17,8 @@
   (require 'comint))
 (require 'nvp)
 (require 'nvp-proc)
-(require 'nvp-display)
-(nvp-decl ielm-change-working-buffer)
 (nvp-auto "nvp-sh" nvp-sh-get-process)
+(nvp-decls :f (ielm-change-working-buffer))
 
 (cl-defstruct (nvp-repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"
@@ -84,13 +83,14 @@
       nvp-repl-default))
 
 (defun nvp-repl-ensure (&optional mode)
-  "Ensure there is a REPL associated with MODE or current `major-mode'."
+  "Ensure buffer has a REPL associated with MODE or current `major-mode'."
   (or nvp-repl-current
       (setq nvp-repl-current (nvp-repl-for-mode (or mode major-mode)))))
 
 ;; -------------------------------------------------------------------
 ;;; Functions to find REPLs
 
+;;; XXX: this list could be determined when REPL is defined
 (defvar nvp-repl-find-functions
   '(nvp-repl-find-custom
     nvp-repl-match-bufname
@@ -181,6 +181,7 @@ Each function takes a process as an argument to test against.")
     (nvp-repl-update proc-or-buff)
     (nvp-repl--val buff)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Commands
 
@@ -193,10 +194,19 @@ Each function takes a process as an argument to test against.")
 ;; - send current defun
 ;; - sending buffer should call indirect hook to clean input
 
+;; `display-buffer' action for popping between REPL/source buffers
+(defvar nvp-repl--display-action
+  '((display-buffer-use-some-window
+     display-buffer-pop-up-window
+     (inhibit-switch-frame . t)
+     (inhibit-same-window  . t))))
+
 ;;;###autoload
-(defun nvp-repl-jump (&optional action)
+(defun nvp-repl-jump (&optional _action)
   "Jump between source and REPL buffers, staring if necessary.
 If the associated source buffer no longer exists, pop to next visible window.
+
+TODO:
 (1) prefix arg  => set REPL's working directory to same as source if possible.
 (2) prefix args => Open REPL in project root directory."
   (interactive "P")
@@ -205,7 +215,7 @@ If the associated source buffer no longer exists, pop to next visible window.
                     (or (and (buffer-live-p src-buf) src-buf)
                         (other-buffer (current-buffer) 'visible)))
                 (nvp-repl-get-buffer))))
-    (nvp-display-location buff :buffer action)))
+    (pop-to-buffer buff nvp-repl--display-action)))
 
 (defun nvp-repl-send-string (str)
   (comint-send-string (nvp-repl-process) str))

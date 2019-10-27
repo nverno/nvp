@@ -4,7 +4,16 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'octave)
-(nvp-decls :f (nvp-hap--docstring-from-buffer))
+(nvp-decls :f (nvp-hap--docstring-from-buffer)
+           :v (hs-special-modes-alist))
+
+(with-eval-after-load 'hideshow
+  (unless (assoc 'octave-mode hs-special-modes-alist)
+    (push (list 'octave-mode
+                (nvp-re-opt '("function" "for" "while" "if"))
+                (nvp-re-opt '("end" "endfunction" "endfor" "endwhile" "endif"))
+                "[%#]")
+          hs-special-modes-alist)))
 
 ;; -------------------------------------------------------------------
 ;;; REPL

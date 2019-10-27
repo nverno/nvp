@@ -4,7 +4,6 @@
 ;;; TODO:
 ;; - quickhelp for completion candidates in source buffers
 ;; - complete for scalar structure fields - fieldnames(var)
-;; - '?' for help from repl
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -26,6 +25,21 @@
           (save-window-excursion
             (inferior-octave)
             (get-buffer-process inferior-octave-buffer))))
+
+;; special processing for help commands, which are one of:
+;; > help ("%s")
+;; > help "%s"
+;; > ? %s
+(defun nvp-octave-input-sender (proc str)
+  (-if-let
+      (help-str
+       (and (string-match "^ *help *(?\"\\([^\"]*\\)\")?\\|^ *\\? *\\(.+\\)" str)
+            (or (match-string 1 str)
+                (match-string 2 str))))
+      (progn
+        (octave-help help-str)
+        (process-send-string proc "\n"))
+    (comint-simple-send proc str)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

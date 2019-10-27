@@ -1,14 +1,10 @@
 ;;; nvp-octave.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
-
-;;; TODO:
-;; - quickhelp for completion candidates in source buffers
-
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'octave)
-(nvp-decls)
+(nvp-decls :f (nvp-hap--docstring-from-buffer))
 
 ;; -------------------------------------------------------------------
 ;;; REPL
@@ -40,6 +36,9 @@
         (process-send-string proc "\n"))
     (comint-simple-send proc str)))
 
+;; -------------------------------------------------------------------
+;;; Completion
+
 ;; Fixes completion-at-point to work for fieldnames of structs/objects
 (defun nvp-octave-bounds-of-object-at-point (&optional lim)
   (let ((beg (save-excursion
@@ -58,6 +57,16 @@
     (when (> end beg)
       (cons beg end))))
 
+(defun nvp-octave--doc-buffer (str)
+  (save-window-excursion
+    ;; no need to call `octave-help' if help for STR is already being displayed
+    ;; in buffer
+    (unless (and (get-buffer octave-help-buffer)
+                 (with-current-buffer octave-help-buffer
+                   (string= str (cadr help-xref-stack-item))))
+      (octave-help str))
+    octave-help-buffer))
+
 (defun nvp-octave-completion-at-point ()
   (-let (((beg . end)
           (nvp-octave-bounds-of-object-at-point (line-beginning-position))))
@@ -65,7 +74,8 @@
       (list beg end
             (or (and (inferior-octave-process-live-p)
                      (inferior-octave-completion-table))
-                octave-reserved-words)))))
+                octave-reserved-words)
+            :company-doc-buffer #'nvp-octave--doc-buffer))))
 
 (defun nvp-inferior-octave-completion-at-point ()
   (unless (string-match-p "/" (or (comint--match-partial-filename) ""))
@@ -75,12 +85,28 @@
       (when beg
         (list beg end (completion-table-in-turn
                        (inferior-octave-completion-table)
-                       'comint-completion-file-name-table))))))
+                       'comint-completion-file-name-table)
+              :company-doc-buffer #'nvp-octave--doc-buffer)))))
 
 ;; override octave's completion
 (defalias 'octave-completion-at-point #'nvp-octave-completion-at-point)
 (defalias 'inferior-octave-completion-at-point
   #'nvp-inferior-octave-completion-at-point)
+
+;; -------------------------------------------------------------------
+;;; Help
+
+(defun nvp-octave--docstring (fn)
+  (with-current-buffer (nvp-octave--doc-buffer fn)
+    (nvp-hap--docstring-from-buffer (point-min))))
+
+;; display for thing at point in popup tooltip
+(defun nvp-octave-help-at-point (fn)
+  (interactive (list (thing-at-point 'symbol)))
+  (nvp-with-toggled-tip (nvp-octave--docstring fn)
+    :help-fn (lambda ()
+               (interactive)
+               (display-buffer (nvp-octave--doc-buffer fn) t))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -115,18 +141,6 @@
     (yas-expand-snippet
      (concat "[" (mapconcat #'(lambda (i) (format "[ $%d ]" i))
                             (number-sequence 1 m) ";\n") "]"))))
-
-;; -------------------------------------------------------------------
-;;; Help
-
-;; display for thing at point in popup tooltip
-(defun nvp-octave-help-at-point (fn)
-  (interactive (list (thing-at-point 'symbol)))
-  (nvp-with-toggled-tip
-    (progn (inferior-octave-send-list-and-digest
-            (list (format "help ('%s');\n" fn)))
-           (mapconcat 'identity inferior-octave-output-list "\n"))
-    :help-fn #'(lambda () (interactive) (octave-help fn))))
 
 (provide 'nvp-octave)
 ;;; nvp-octave.el ends here

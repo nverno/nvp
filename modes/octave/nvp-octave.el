@@ -41,7 +41,9 @@
             (or (match-string 1 str)
                 (match-string 2 str))))
       (progn
-        (octave-help help-str)
+        (condition-case nil
+            (octave-help help-str)
+          (error (message "no help found for '%s'" help-str)))
         (process-send-string proc "\n"))
     (comint-simple-send proc str)))
 

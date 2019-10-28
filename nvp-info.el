@@ -21,11 +21,12 @@
 (nvp-auto "nvp-read" 'nvp-read--info-files)
 
 ;;;###autoload
-(defun nvp-info-lookup-node ()
+(defun nvp-info-lookup-node (&optional arg)
   "Lookup node in info associated with current mode."
-  (interactive)
+  (interactive "P")
   (-some-->
-   (info-lookup-select-mode)
+   (or (and arg (intern (nvp-read-mode)))
+       (info-lookup-select-mode))
    (info-lookup->doc-spec 'symbol it)
    (car (nth 0 it))
    (with-current-buffer (generate-new-buffer "*info*")

@@ -1,5 +1,8 @@
 ;;; nvp-octave.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
+;;; TODO:
+;; - compilation error regex for repl error
+;;   need to use 'which' to association filename with function
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

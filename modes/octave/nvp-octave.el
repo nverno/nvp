@@ -57,7 +57,8 @@
 (defun nvp-octave-bounds-of-object-at-point (&optional lim)
   (let ((beg (save-excursion
                (skip-syntax-backward "w_" lim)
-               (when (eq ?. (char-before))
+               (while (and (not (<= (point) (or lim (line-beginning-position))))
+                           (eq ?. (char-before)))
                  (forward-char -1)
                  (and (eq ?\) (char-before)) ; struct(i).
                       (ignore-errors (backward-sexp)))

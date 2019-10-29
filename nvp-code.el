@@ -39,14 +39,6 @@
                          (count-lines (overlay-start ov)
                                       (overlay-end ov))))))
 
-(with-eval-after-load "hideshow"
-  (unless (not (eq 'ignore hs-set-up-overlay))
-    (setq hs-set-up-overlay 'nvp-hs-display-line-counts)))
-
-(defun nvp-hs-mode-hook ()
-  (unless hs-set-up-overlay
-    (setq hs-set-up-overlay 'nvp-hs-display-line-counts)))
-
 ;;;###autoload
 (defun nvp-hs-toggle (&optional arg)
   "Toggle hideshow on block.  With prefix toggle all."
@@ -86,6 +78,11 @@ Move point to the beginning of the line, and run the normal hook
        (progress-reporter-done spew)))
    (beginning-of-line)
    (run-hooks 'hs-hide-hook)))
+
+;;;###autoload
+(defun nvp-hs-mode-hook ()
+  (unless (not (eq 'ignore hs-set-up-overlay))
+    (setq hs-set-up-overlay 'nvp-hs-display-line-counts)))
 
 ;;;###autoload
 (add-hook 'hs-minor-mode-hook #'nvp-hs-mode-hook)

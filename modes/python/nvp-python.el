@@ -7,9 +7,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
 (require 'python)
-(nvp-decl "pyenv" pyenv-mode-versions pyenv-mode-unset pyenv-mode-set pyenv-mode)
-(nvp-decl anaconda-mode-complete-extract-names anaconda-mode-call)
-(nvp-decls)
+(nvp-decls :f (anaconda-mode-complete-extract-names anaconda-mode-call))
 
 (defvar nvp-python-cython-repo "https://github.com/python/cpython")
 
@@ -111,6 +109,14 @@
   (defvar comint-input-ring-size))
 (nvp-decl nvp-he-history-setup conda-env)
 
+;; switch betweeen source and REPL buffers
+(nvp-repl-add '(python-mode inferior-python-mode)
+  :modes '(inferior-python-mode)
+  :find-fn #'python-shell-get-process
+  :init (lambda ()
+          (save-window-excursion
+            (call-interactively #'conda-env-send-buffer))))
+
 ;; add regexp for errors in code sent to REPL
 (defvar nvp-python-compilation-regexp
   '("^\\([^<\n]+\\) in <[^>]+>\n\\(?:\\s-*[0-9]+.*\n\\)*---> \\([0-9]+\\)" 1 2))
@@ -169,12 +175,6 @@ the console."
           (kill-process proc)
         (interrupt-process proc)))))
 
-;; switch betweeen source and REPL buffers
-(nvp-repl-switch "python" (:repl-mode 'inferior-python-mode
-                           :repl-find-fn 'python-shell-get-buffer)
-  ;; starts a new REPL if there isn't one running
-  (call-interactively 'conda-env-send-buffer))
-
 ;; -------------------------------------------------------------------
 ;;; Minor mode
 
@@ -193,7 +193,6 @@ the console."
 (defvar nvp-python-mode-map
   (let ((km (make-sparse-keymap)))
     (easy-menu-define nil km nil nvp-python-menu)
-    (define-key km (kbd "C-c C-z")  'nvp-python-repl-switch)
     (define-key km (kbd "<f5>")     'nvp-python-basic-compile)
     (define-key km (kbd "<f2>d C-b") 'nvp-python-toggle-breakpoint)
     (define-key km (kbd "<f2> m t") 'nvp-python-test-keymap)

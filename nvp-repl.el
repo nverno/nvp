@@ -71,6 +71,7 @@
 ;; may switch storage of REPL vars
 (eval-when-compile
   (defmacro nvp-repl--val (val)
+    (declare (debug t))
     (or (stringp val) (setq val (symbol-name val)))
     (let ((fn (intern (concat "nvp-repl-" val))))
       `(,fn nvp-repl-current))))

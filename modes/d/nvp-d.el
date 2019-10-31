@@ -1,16 +1,12 @@
 ;;; nvp-d.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-complete)
-  (defvar yas-snippet-dirs))
+(eval-when-compile (require 'nvp-macro))
 (nvp-decls)
 (autoload 'nvp-env-path-add "nvp-env")
 
 ;; server binaries
-(defvar nvp-d-dcd-bin-dir
-  (expand-file-name "dcd/bin" (getenv "DEVEL")))
+(defvar nvp-d-dcd-bin-dir (expand-file-name "dcd/bin" (getenv "DEVEL")))
 
 ;; -------------------------------------------------------------------
 ;;; Install 
@@ -98,21 +94,22 @@
 
 ;;; Run/Compile
 
-(eval-when-compile
-  (defmacro nvp-d-compile-with-completion (args cache cmd prompt
-                                                  &rest body)
-    (declare (indent defun))
-    `(nvp-complete-compile-with-completion "dmd" ,args ,cache
-       ,cmd ,prompt ,body)))
+;; (eval-when-compile
+;;   (defmacro nvp-d-compile-with-completion (args cache cmd prompt
+;;                                                   &rest body)
+;;     (declare (indent defun))
+;;     `(nvp-complete-compile-with-completion "dmd" ,args ,cache
+;;        ,cmd ,prompt ,body)))
 
-(defvar nvp-d--dmd-switches nil)
+;; (defvar nvp-d--dmd-switches nil)
 
 ;; compile with minibuffer completion for dmd switches
 (defun nvp-d-compile ()
   (interactive)
-  (nvp-complete-compile "dmd" "dmd -g -wi %s" '("--help")
-                        ;; 'nvp-d--dmd-switches
-                        "dmd" "dmd args: "))
+  ;; (nvp-complete-compile "dmd" "dmd -g -wi %s" '("--help")
+  ;;                       ;; 'nvp-d--dmd-switches
+  ;;                       "dmd" "dmd args: ")
+  )
 
 ;; FIXME:
 (defun nvp-d-compile-and-run (arg)

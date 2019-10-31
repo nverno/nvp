@@ -13,13 +13,12 @@
   (require 'nvp-display))
 (require 'nvp)
 (require 'help-mode)
-(nvp-decl "nadvice" advice-mapc advice-remove)
+(nvp-decls :f (nvp-read-mode advice-mapc advice-remove)
+           :v (c-lang-constants))
 (nvp-auto "nvp-util" nvp-s-wrap)
 (nvp-auto "nvp-read" 'nvp-read-elisp-variable)
 (nvp-auto "s" 's-split-words)
 (nvp-auto "nvp-results" 'nvp-pp-hash 'nvp-pp-variable-to-string)
-(nvp-decl nvp-read-mode)
-(nvp-decls)
 
 (define-button-type 'help-marker
   :supertype 'help-xref

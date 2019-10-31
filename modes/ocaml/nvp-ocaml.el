@@ -4,9 +4,7 @@
 ;; - dump lisp-readable env.: opam config env --safe --sexp
 ;; - share directory: opam config var --safe
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-complete))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'tuareg)
 (nvp-decls :f (string-trim-right nvp-async-shell-command-to-string
@@ -43,7 +41,32 @@
         (shell-command-to-string "eval $(opam config env); opam config var lib")
       (string-trim-right it))))
 
-
+
+;;; Move
+
+(defsubst nvp-ocaml--beginning-of-comment ()
+  (let ((ppss (parse-partial-sexp (point-min) (point))))
+    (and (nth 8 ppss)
+         (goto-char (nth 8 ppss)))))
+
+(defun nvp-ocaml-previous-defun ()
+  (interactive)
+  (let ((bl (point-at-bol)))
+    (nvp-ocaml--beginning-of-comment)
+    (forward-comment (- (point-max)))
+    (tuareg-beginning-of-defun)
+    (when (<= bl (point))
+      ;; gets stuck here on cases like this w/o beginning-of-line, cursor at '|'
+      ;;> blah ;; |blah ;;
+      (beginning-of-line)
+      (forward-comment (- (point-max)))
+      (tuareg-beginning-of-defun))))
+
+(defun nvp-ocaml-next-defun ()
+  (interactive)
+  (nvp-ocaml--beginning-of-comment)
+  (tuareg-beginning-of-defun -1))
+
 ;;; Newlines
 
 ;; default newline-dwim + comment continuation in nested comments
@@ -117,49 +140,6 @@
         (kill-word 1)
       (delete-horizontal-space)
       (insert " rec "))))
-
-;;; Move
-
-(defsubst nvp-ocaml--beginning-of-comment ()
-  (let ((ppss (parse-partial-sexp (point-min) (point))))
-    (and (nth 8 ppss)
-         (goto-char (nth 8 ppss)))))
-
-(defun nvp-ocaml-previous-defun ()
-  (interactive)
-  (let ((bl (point-at-bol)))
-    (nvp-ocaml--beginning-of-comment)
-    (forward-comment (- (point-max)))
-    (tuareg-beginning-of-defun)
-    (when (<= bl (point))
-      ;; gets stuck here on cases like this w/o beginning-of-line, cursor at '|'
-      ;;> blah ;; |blah ;;
-      (beginning-of-line)
-      (forward-comment (- (point-max)))
-      (tuareg-beginning-of-defun))))
-
-(defun nvp-ocaml-next-defun ()
-  (interactive)
-  (nvp-ocaml--beginning-of-comment)
-  (tuareg-beginning-of-defun -1))
-
-;;; Tag
-
-(defun nvp-ocaml-tag-source ()
-  (interactive)
-  ;; (let* ((dir (expand-file-name ""))))
-  )
-
-;;; Compile 
-
-;; Run compile, with prefix offers completing read for command line
-;; switches to ocamlc
-(defun nvp-ocaml-compile (&optional args)
-  (interactive)
-  (nvp-complete-compile "ocamlc"
-    (if args
-        (concat "ocamlc " (mapconcat 'identity args " ") " %s")
-      "ocamlc -g %s")))
 
 (provide 'nvp-ocaml)
 ;;; nvp-ocaml.el ends here

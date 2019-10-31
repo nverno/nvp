@@ -4,15 +4,12 @@
 ;; TODO:
 ;; - delve debugger setup
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-complete)
-  (defvar go-use-gocheck-for-testing))
+(eval-when-compile (require 'nvp-macro))
 (nvp-decl "go-mode"
   go--in-anonymous-funcion-p go-goto-function-name
   go-beginning-of-defun go-end-of-defun)
-(nvp-decl "nvp-complete" nvp-complete-read-switch)
 (nvp-decls)
+(defvar go-use-gocheck-for-testing)
 
 (autoload 'tag-utils-tag-dir "tag-utils")
 (autoload 'asdf-current-version "asdf")
@@ -170,23 +167,24 @@
   :comment-start " * ")
 
 ;;; Compile / Run
-(eval-when-compile
-  (defmacro nvp-go-compile-with-completion (args cmd prompt &rest body)
-   (declare (indent defun) (debug t))
-   `(nvp-compile-with-switch-completion "go" ,args ,cmd ,prompt
-      ,@body)))
+;; (eval-when-compile
+;;   (defmacro nvp-go-compile-with-completion (args cmd prompt &rest body)
+;;    (declare (indent defun) (debug t))
+;;    `(nvp-compile-with-switch-completion "go" ,args ,cmd ,prompt
+;;       ,@body)))
 
 ;; compile with minibuffer completion for command line switches
 ;; (defvar go-build--switches nil)
-(defun nvp-go-compile (arg)
+(defun nvp-go-compile (_arg)
   (interactive "P")
-  (if (not arg)
-      (let ((compile-command (format "go build %s" buffer-file-name))
-            (compilation-read-command))
-        (call-interactively 'compile))
-    (nvp-go-compile-with-completion '("build" "--help")
-      ;; 'go-build--switches
-      "go build" "go build args: ")))
+  ;; (if (not arg)
+  ;;     (let ((compile-command (format "go build %s" buffer-file-name))
+  ;;           (compilation-read-command))
+  ;;       (call-interactively 'compile))
+  ;;   (nvp-go-compile-with-completion '("build" "--help")
+  ;;     ;; 'go-build--switches
+  ;;     "go build" "go build args: "))
+  )
 
 (defun nvp-go-run-main ()
   (interactive)
@@ -204,7 +202,8 @@
   (interactive "P")
   (if (not arg)
       (compile "go test -v")
-    (nvp-go-compile-with-completion '("test" "--help") "go test" "go test args: ")))
+    ;; (nvp-go-compile-with-completion '("test" "--help") "go test" "go test args: ")
+    ))
 
 (defun nvp-go-run-tests (args)
   (interactive)

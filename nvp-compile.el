@@ -88,13 +88,15 @@ With double prefix or more, use comint buffer for compilation."
    comint))
 
 ;;;###autoload
-(defun nvp-compile-colorize ()
-  (interactive)
-  (let ((inhibit-read-only t))
-    ;; prefer xterm when available
-    (if (boundp 'xterm-color-colorize-buffer)
-        (xterm-color-colorize-buffer)
-     (ansi-color-apply-on-region compilation-filter-start (point-max)))))
+(defun nvp-compile-with-switches (set-p &optional cmd &rest args)
+  "Read compilation command with switch completion for CMD ARGS.
+With prefix, SET-P is passed to `nvp-read-switch' to set local values."
+  (interactive "P")
+  (let ((compile-command
+         (apply 
+          #'nvp-read-switch "Compile: " (or cmd (eval compile-command))
+          cmd set-p args)))
+    (funcall-interactively #'nvp-compile)))
 
 ;;;###autoload
 (defun nvp-compile-with-bindings (&rest bindings)
@@ -147,6 +149,15 @@ ARGS are passed to `nvp-compile'."
 
 ;; -------------------------------------------------------------------
 ;;; Compilation
+
+;;;###autoload
+(defun nvp-compile-colorize ()
+  (interactive)
+  (let ((inhibit-read-only t))
+    ;; prefer xterm when available
+    (if (boundp 'xterm-color-colorize-buffer)
+        (xterm-color-colorize-buffer)
+     (ansi-color-apply-on-region compilation-filter-start (point-max)))))
 
 ;; move to next warning/error 
 (defun nvp-compilation-next (n)

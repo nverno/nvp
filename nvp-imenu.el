@@ -150,7 +150,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
   (--map (cons
           (subst-char-in-string ?\s (aref imenu-space-replacement 0) (car it))
           (cdr it))
-         (cdr (imenu--make-index-alist))))
+         (imenu--make-index-alist)))
 
 ;;;###autoload
 (defun nvp-idomenu (&optional flat alist toggle)

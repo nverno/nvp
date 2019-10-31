@@ -31,6 +31,9 @@
     (unless (string-blank-p cmd)
       (and add-history (comint-add-to-input-history cmd))
       (comint-delete-input)
+      ;; update current spot in history ring
+      (setq comint-save-input-ring-index comint-input-ring-index)
+      (setq comint-input-ring-index nil)
       cmd)))
 
 (defun nvp-shell-run-external ()

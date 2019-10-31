@@ -47,7 +47,9 @@
 (c-lang-defconst c-block-stmt-kwds oat '("else" "for" "if" "while"))
 (c-lang-defconst c-keywords
   oat '("else" "false" "for" "global" "if" "new" "null" "return" "true" "void"
-        "while"))
+        "while" "struct"))
+(c-lang-defconst c-prefix-spec-kwds oat '("struct"))
+(c-lang-defconst c-defun-type-name-decl-kwds oat '("struct"))
 (c-lang-defconst c-arithmetic-operators
   oat '("*" "+" "-" "~" "<<" ">>" ">>>" "<" "<=" ">" ">=" "==" "!=" "&" "|"
         "[&]" "[|]"))
@@ -67,9 +69,7 @@
  c-block-stmt-1-2-kwds
  c-ref-list-kwds
  c-label-kwds
- c-prefix-spec-kwds
  c-other-decl-kwds
- c-defun-type-name-decl-kwds
  c-case-kwds
  c-postfix-decl-spec-kwds
  c-ref-list
@@ -78,7 +78,7 @@
 (defconst oat-font-lock-keywords-1 (c-lang-const c-matchers-1 oat))
 (defconst oat-font-lock-keywords-2 (c-lang-const c-matchers-2 oat))
 (defconst oat-font-lock-keywords-3 (c-lang-const c-matchers-3 oat))
-(defvar oat-font-lock-keywords oat-font-lock-keywords-2
+(defvar oat-font-lock-keywords oat-font-lock-keywords-3
   "Default expressions to highlight in `oat-mode'.")
 
 (defun oat-font-lock-keywords-2 ()
@@ -88,22 +88,21 @@
 (defun oat-font-lock-keywords ()
   (c-compose-keywords-list oat-font-lock-keywords))
 
+;; handles indentation in struct fields, since the last element
+;; has no trailing semicolon
+(defun oat-lineup-statement (langelem)
+  (let ((in-assign (c-lineup-assignments langelem)))
+    (if (not in-assign) '- '+)))
+
 (defvar oat-mode-syntax-table nil)
 
 ;;;###autoload
 (define-derived-mode oat-mode prog-mode "Oat"
   "Major mode for editing oat files.
-The hook `c-mode-common-hook' is run with no args at mode
-initialization, then `oat-mode-hook'.
 
 \\{oat-mode-map}"
   :after-hook (c-update-modeline)
   :syntax-table c-mode-syntax-table     ; C-style comments
-
-  ;; indentation
-  (setq c-basic-offset oat-indent-offset)
-  (make-local-variable 'c-offsets-alist)
-  ;; (c-set-offset 'knr-argdecl-intro 0)
 
   ;; initialize cc-mode stuff
   (c-initialize-cc-mode t)
@@ -111,7 +110,16 @@ initialization, then `oat-mode-hook'.
   (c-common-init 'oat-mode)
   (setq-local comment-start "/* ")
   (setq-local comment-end " */")
-  (c-run-mode-hooks 'c-mode-common-hook))
+
+  ;; indentation
+  (setq c-basic-offset oat-indent-offset)
+  ;; (c-set-offset 'knr-argdecl-intro 0)
+  ;; This handles indentation after last struct field
+  (c-set-offset 'inher-cont 'c-lineup-multi-inher)
+  (c-set-offset 'statement-cont #'oat-lineup-statement)
+  (c-set-offset 'statement 0)
+  ;; (c-run-mode-hooks 'c-mode-common-hook)
+  )
 
 ;;;###autoload(add-to-list 'auto-mode-alist '("\\.oat\\'" . oat-mode))
 

@@ -25,13 +25,14 @@
   (interactive "P")
   (if arg (octave-send-block) (octave-send-line)))
 
-(nvp-repl-add '(octave-mode)
-  :modes '(inferior-octave-mode)
-  :bufname inferior-octave-buffer
-  :init (lambda ()
-          (save-window-excursion
-            (inferior-octave)
-            (get-buffer-process inferior-octave-buffer))))
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(octave-mode)
+    :modes '(inferior-octave-mode)
+    :bufname inferior-octave-buffer
+    :init (lambda ()
+            (save-window-excursion
+              (inferior-octave)
+              (get-buffer-process inferior-octave-buffer)))))
 
 ;; special processing for help commands, which are one of:
 ;; > help ("%s")

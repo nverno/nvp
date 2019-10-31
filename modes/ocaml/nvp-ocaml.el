@@ -14,12 +14,13 @@
            :v (utop-buffer-name))
 (nvp-package-define-root :name nvp-ocaml :dirs ("etc"))
 
-(nvp-repl-add '(tuareg-mode utop-mode)
-  :modes '(utop-mode)
-  :find-fn (lambda () (get-buffer utop-buffer-name))
-  :init (lambda ()
-          (utop-prepare-for-eval)
-          (get-buffer-process utop-buffer-name)))
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(tuareg-mode utop-mode)
+    :modes '(utop-mode)
+    :find-fn (lambda () (get-buffer utop-buffer-name))
+    :init (lambda ()
+            (utop-prepare-for-eval)
+            (get-buffer-process utop-buffer-name))))
 
 ;;; Config
 

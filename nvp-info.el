@@ -17,7 +17,7 @@
 (require 'info)
 (require 'filenotify)
 (require 'info-look)
-(nvp-decls)
+(nvp-decls :f (nvp-read-mode))
 (nvp-auto "nvp-read" 'nvp-read--info-files)
 
 ;;;###autoload

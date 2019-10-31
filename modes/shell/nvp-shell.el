@@ -26,27 +26,37 @@
 
 ;;; Commands
 
+(defun nvp-shell--get-input (&optional add-history)
+  (let ((cmd (funcall comint-get-old-input)))
+    (unless (string-blank-p cmd)
+      (and add-history (comint-add-to-input-history cmd))
+      (comint-delete-input)
+      cmd)))
+
 (defun nvp-shell-run-external ()
   "Run input on current line in external shell (gnome)"
   (interactive)
   (nvp-with-proc proc
-    ;; FIXME: inherit environment??
-    (let* ((cmd (funcall comint-get-old-input))
-           ;; FIXME: doesn't work -- how to pass env from gnome-shell => bash
-           ;; (process-environment
-           ;;  (cons (format "PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"'" cmd)
-           ;;        process-environment))
-           )
-      (and (not (string-blank-p cmd))
-           (comint-send-string
-            proc
-            (format
-             (concat "gnome-terminal --tab -- bash -c '"
-                     ;; "export PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"';"
-                     "%s; bash'\n")
-             cmd)))
-      (comint-add-to-input-history cmd)
-      (comint-delete-input))))
+    (-when-let (cmd (nvp-shell--get-input 'add))
+      ;; FIXME: inherit environment?
+      ;; this doesn't work -- how to pass env from gnome-shell => bash
+      ;; (process-environment
+      ;;  (cons (format "PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"'" cmd)
+      ;;        process-environment))
+      (comint-send-string
+       proc
+       (format
+        (concat "gnome-terminal --tab -- bash -c '"
+                ;; "export PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"';"
+                "%s; bash'\n")
+        cmd)))))
+
+(defun nvp-shell-compile ()
+  "Run current input in compilation buffer."
+  (interactive)
+  (nvp-with-proc proc
+    (-when-let (compile-command (nvp-shell--get-input 'add))
+      (call-interactively #'nvp-compile))))
 
 (defun nvp-shell-nautilus ()
   "Open nautilus in current directory."

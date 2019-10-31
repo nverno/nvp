@@ -1,13 +1,12 @@
 ;;; nvp-python.el --- python helpers -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; TODO:
-;; - remove newline
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
 (require 'python)
-(nvp-decls :f (anaconda-mode-complete-extract-names anaconda-mode-call))
+(nvp-decls :f (anaconda-mode-complete-extract-names anaconda-mode-call
+                                                    conda-env-send-buffer))
 
 (defvar nvp-python-cython-repo "https://github.com/python/cpython")
 
@@ -21,10 +20,10 @@
   (set-buffer-file-coding-system 'utf-8-unix))
 
 ;; from prelude to guess encoding
-(defun nvp-python-encoding-comment-required-p ()
+(defsubst nvp-python-encoding-comment-required-p ()
   (re-search-forward "[^\0-\177]" nil t))
 
-(defun nvp-python-detect-encoding ()
+(defsubst nvp-python-detect-encoding ()
   (let ((coding-system
 	 (or save-buffer-coding-system
 	     buffer-file-coding-system)))
@@ -34,7 +33,7 @@
 	     (coding-system-change-eol-conversion coding-system nil)))
       "ascii-8bit")))
 
-(defun nvp-python-insert-coding-comment (encoding)
+(defsubst nvp-python-insert-coding-comment (encoding)
   (let ((newlines (if (looking-at "^\\s *$") "\n" "\n\n")))
     (insert (format "# coding: %s" encoding) newlines)))
 
@@ -104,18 +103,15 @@
 
 ;; -------------------------------------------------------------------
 ;;; REPL
-(eval-when-compile
-  (defvar comint-input-ring-file-name)
-  (defvar comint-input-ring-size))
-(nvp-decl nvp-he-history-setup conda-env)
 
 ;; switch betweeen source and REPL buffers
-(nvp-repl-add '(python-mode inferior-python-mode)
-  :modes '(inferior-python-mode)
-  :find-fn #'python-shell-get-process
-  :init (lambda ()
-          (save-window-excursion
-            (call-interactively #'conda-env-send-buffer))))
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(python-mode)
+    :modes '(inferior-python-mode)
+    :find-fn #'python-shell-get-process
+    :init (lambda ()
+            (save-window-excursion
+              (call-interactively #'conda-env-send-buffer)))))
 
 ;; add regexp for errors in code sent to REPL
 (defvar nvp-python-compilation-regexp

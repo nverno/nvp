@@ -9,8 +9,17 @@
   (require 'nvp-complete))
 (require 'nvp)
 (require 'tuareg)
-(nvp-decls :f (string-trim-right nvp-async-shell-command-to-string))
+(nvp-decls :f (string-trim-right nvp-async-shell-command-to-string
+                                 utop-prepare-for-eval utop-mode)
+           :v (utop-buffer-name))
 (nvp-package-define-root :name nvp-ocaml :dirs ("etc"))
+
+(nvp-repl-add '(tuareg-mode utop-mode)
+  :modes '(utop-mode)
+  :find-fn (lambda () (get-buffer utop-buffer-name))
+  :init (lambda ()
+          (utop-prepare-for-eval)
+          (get-buffer-process utop-buffer-name)))
 
 ;;; Config
 

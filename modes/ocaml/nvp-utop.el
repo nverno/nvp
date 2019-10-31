@@ -47,23 +47,6 @@
   (interactive "p")
   (nvp-utop-next-prompt (- n)))
 
-;; switch b/w inferior and source buffers
-;;;###autoload
-(defun nvp-utop-switch-buffers ()
-  (interactive)
-  (switch-to-buffer-other-window
-   (if (eq major-mode 'utop-mode)
-       (-if-let (proc (nvp-buffer-process))
-           (let ((src-buf (process-get proc :src-buffer)))
-             (or (and (buffer-live-p src-buf) src-buf)
-                 (other-buffer (current-buffer) 'visible)))
-         (other-buffer (current-buffer) 'visible))
-     (let ((src (current-buffer)))
-       (utop-prepare-for-eval)
-       (with-current-buffer (get-buffer utop-buffer-name)
-         (process-put (nvp-buffer-process) :src-buffer src)
-         (current-buffer))))))
-
 (defun nvp-utop-return ()
   (interactive)
   (goto-char (line-end-position))

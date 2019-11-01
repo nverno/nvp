@@ -55,7 +55,7 @@
 ;; default function to retrieve history elements for prefix
 (defun nvp-he-history-default-fn (prefix history)
   ;; eg. minibuffer-history-variable -> read-expression-history -> contents
-  (while (and (symbolp history) (boundp history))
+  (while (and history (symbolp history) (boundp history))
     (setq history (symbol-value history)))
   (cl-remove-duplicates
    (all-completions prefix (if (ring-p history) (ring-elements history) history))

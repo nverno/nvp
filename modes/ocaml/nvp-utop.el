@@ -193,7 +193,7 @@ Redirection is handled by `comint-redirect-send-command-to-process', (which see)
 (defun nvp-utop-hippie-setup ()
   (interactive)
   (unless nvp-utop-history
-    (nvp-utop-run-once 'utop-insert-prompt :after 'nvp-utop-load-history 'edit))
+    (nvp-utop-run-once 'hippie-expand :before #'nvp-utop-load-history))
   (with-current-buffer utop-buffer-name
     (setq nvp-he-history 'nvp-utop-history
           nvp-he-history-bol-fn (lambda () utop-prompt-max)))

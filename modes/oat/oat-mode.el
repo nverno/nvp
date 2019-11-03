@@ -28,7 +28,7 @@
   :type 'integer
   :group 'oat)
 
-(defcustom oat-font-lock-extra-types nil
+(defcustom oat-font-lock-extra-types java-font-lock-extra-types
   "List of extra types to recognize (regexps)."
   :type 'sexp
   :group 'oat)
@@ -78,7 +78,8 @@
 (defconst oat-font-lock-keywords-1 (c-lang-const c-matchers-1 oat))
 (defconst oat-font-lock-keywords-2 (c-lang-const c-matchers-2 oat))
 (defconst oat-font-lock-keywords-3 (c-lang-const c-matchers-3 oat))
-(defvar oat-font-lock-keywords oat-font-lock-keywords-3
+(defvar oat-font-lock-keywords
+  (append '(("\\?" . 'font-lock-preprocessor-face)) oat-font-lock-keywords-3)
   "Default expressions to highlight in `oat-mode'.")
 
 (defun oat-font-lock-keywords-2 ()
@@ -110,6 +111,10 @@
   (c-common-init 'oat-mode)
   (setq-local comment-start "/* ")
   (setq-local comment-end " */")
+
+  ;; if?
+  (modify-syntax-entry ?? "_")
+  ;; (font-lock-add-keywords 'oat-mode '(("\\?" . 'font-lock-preprocessor-face)))
 
   ;; indentation
   (setq c-basic-offset oat-indent-offset)

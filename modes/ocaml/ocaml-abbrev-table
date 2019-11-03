@@ -3,7 +3,6 @@
 (define-abbrev-table 'ocaml-mode-abbrev-table
   '(
     ;; builtins
-    ("fn" "function" nil :system t)
     ("fw" "failwith" nil :system t)
     ("ass" "assert" nil :system t)
     ("inf" "infinity" nil :system t)

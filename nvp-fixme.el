@@ -10,7 +10,9 @@
 
 (defconst nvp-fixme-keywords
   (eval-when-compile
-    (concat "\\<" (regexp-opt '("TODO" "FIXME" "HACK" "XXX") 'paren) ":")))
+    (let ((words '("TODO" "FIXME" "HACK" "XXX")))
+      (concat "\\<"
+              (regexp-opt (append words (mapcar #'downcase words)) 'paren) ":"))))
 
 (defconst nvp-fixme-font-lock-keywords
   `((,nvp-fixme-keywords 1 'font-lock-warning-face prepend)))

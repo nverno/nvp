@@ -79,6 +79,7 @@
 (defconst oat-font-lock-keywords-2 (c-lang-const c-matchers-2 oat))
 (defconst oat-font-lock-keywords-3 (c-lang-const c-matchers-3 oat))
 (defvar oat-font-lock-keywords
+  ;; XXX: how to add '?' here -- this doesn't work
   (append '(("\\?" . 'font-lock-preprocessor-face)) oat-font-lock-keywords-3)
   "Default expressions to highlight in `oat-mode'.")
 
@@ -114,7 +115,7 @@
 
   ;; if?
   (modify-syntax-entry ?? "_")
-  ;; (font-lock-add-keywords 'oat-mode '(("\\?" . 'font-lock-preprocessor-face)))
+  (font-lock-add-keywords 'oat-mode '(("\\?" . 'font-lock-preprocessor-face)))
 
   ;; indentation
   (setq c-basic-offset oat-indent-offset)

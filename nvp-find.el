@@ -160,6 +160,10 @@ Prompt with any prefix.
       (and (looking-at nvp-ag-grouped-file-regex)
            (list (match-string 1))))))
 
+;; (with-eval-after-load 'rg-result
+;;   (setf (symbol-function 'rg-match-grouped-filename)
+;;         #'nvp-ag-match-grouped-filename))
+
 (with-eval-after-load 'ag
   ;; override ag's function
   (setf (symbol-function 'ag/compilation-match-grouped-filename)

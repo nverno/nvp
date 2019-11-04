@@ -65,5 +65,24 @@ With prefix, trace macros and substs as well."
       (trace-function-background fn))
     (message "tracing: %S" forms)))
 
+;;;###autoload
+(defun nvp-trace-hooks (&optional library)
+  "Trace all hooks defined with `add-hook' in LIBRARY."
+  (interactive
+   (list (if current-prefix-arg (read-library-name) "nvp-mode-hooks")))
+  (require 'nvp-elisp)
+  (unless library (setq library "nvp-mode-hooks"))
+  (cl-flet ((hook-p
+             (form)
+             (and (eq (car form) 'add-hook)
+                  (eval (nth 2 form)))))
+    (let ((forms (with-temp-buffer
+                   (insert-file-contents (find-library-name library))
+                   (with-syntax-table emacs-lisp-mode-syntax-table
+                     (nvp-elisp-matching-forms #'hook-p)))))
+      (dolist (fn forms)
+        (trace-function-background fn))
+      (message "tracing: %S" forms))))
+
 (provide 'nvp-trace)
 ;;; nvp-trace.el ends here

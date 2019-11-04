@@ -123,9 +123,14 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
       (ignore-errors
         (while (and (setq form (read (current-buffer)))
                     (< (point) end))
-          (when (and (consp form) (memq (car form) match-forms))
-            (let ((sym (cadr form)))
-              (push (if (eq 'quote (car-safe sym)) (cadr sym) sym) forms)))))
+          (pcase match-forms
+            (`t (push form forms))
+            ((pred functionp)
+             (-when-let (res (funcall match-forms form))
+               (push res forms)))
+            ((pred (and (consp form) (memq (car form) match-forms)))
+             (let ((sym (cadr form)))
+               (push (if (eq 'quote (car-safe sym)) (cadr sym) sym) forms))))))
       (delq nil forms))))
 
 (cl-defmethod nvp-parse-functions

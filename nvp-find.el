@@ -7,7 +7,7 @@
 ;; - grep/rgrep/lgrep/zgrep
 ;; - wgrep
 ;; - ag / wgrep-ag
-;; - TODO: rgrep
+;; - rgrep
 
 ;;; Code:
 (eval-when-compile
@@ -42,6 +42,41 @@
     (when filename
       (nvp-display-location (cdr (assoc filename file-assoc-list))
                             :file (car action)))))
+
+;; -------------------------------------------------------------------
+;;; Ripgrep
+
+(nvp-decls :f (rg-filter) :v (rg-mode-hook))
+
+;; Override rg's `compilation-error-regexp-alist' matching
+;; to use with `xterm-color-filter'
+(defconst nvp-rg-file-column-pattern-group-xc
+  "^\\([0-9]+\\):\\([0-9]+\\):")
+
+(defconst nvp-rg-grouped-file-regex-xc
+  "^\\(?:File:\\s-*\\)?\\([^ 	].*\\)$")
+
+(defun nvp-rg-match-grouped-filename-xc ()
+  "Match grouped filename in compilation output."
+  (save-match-data
+    (save-excursion
+      (beginning-of-line)
+      (while (and (not (bobp))
+                  (looking-at-p nvp-rg-file-column-pattern-group-xc))
+        (forward-line -1))
+      (and (looking-at nvp-rg-grouped-file-regex-xc)
+           (list (match-string 1))))))
+
+(defun nvp-rg-use-xterm-color ()
+  ;; (setq-local compilation-transform-file-match-alist nil)
+  (push 'nvp-rg-group-xc compilation-error-regexp-alist)
+  (push (cons 'nvp-rg-group-xc
+                     (list nvp-rg-file-column-pattern-group-xc
+                           'nvp-rg-match-grouped-filename-xc 1 2))
+        compilation-error-regexp-alist-alist))
+
+(defalias 'rg-filter 'ignore)
+(add-hook 'rg-mode-hook #'nvp-rg-use-xterm-color)
 
 
 ;; -------------------------------------------------------------------
@@ -159,10 +194,6 @@ Prompt with any prefix.
         (forward-line -1))
       (and (looking-at nvp-ag-grouped-file-regex)
            (list (match-string 1))))))
-
-;; (with-eval-after-load 'rg-result
-;;   (setf (symbol-function 'rg-match-grouped-filename)
-;;         #'nvp-ag-match-grouped-filename))
 
 (with-eval-after-load 'ag
   ;; override ag's function

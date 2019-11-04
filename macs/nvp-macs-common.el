@@ -98,7 +98,7 @@ If MINOR is non-nil, convert to minor mode hook symbol."
     (intern
      (concat
       (replace-regexp-in-string
-       "\\(?:-minor-\\)?\\(?:-mode\\)?\\(?:-hook\\)?\\'" "" mode)
+       "\\(?:-minor\\)?\\(?:-mode\\)?\\(?:-hook\\)?\\'" "" mode)
       (if minor "-minor-mode-hook" "-mode-hook")))))
 
 (defmacro nvp-listify (&rest args)

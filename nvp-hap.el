@@ -196,11 +196,26 @@
 ;; -------------------------------------------------------------------
 ;;; Backends
 
+(defvar-local nvp-hap-company-backend nil)
+
+;;;###autoload
+(defun nvp-hap-company (command &optional arg &rest _args)
+  (-when-let (company-backend nvp-hap-company-backend)
+    (cl-case command
+      (thingatpt (symbol-at-point))
+      (doc-buffer
+       (unless (stringp arg) (setq arg (symbol-name arg)))
+       (when (eq company-backend 'company-cmake)
+         ;; cmake needs to construct help arguments for candidate prior to call
+         ;; to cmake
+         (company-call-backend 'candidates arg))
+       (list (company-call-backend 'doc-buffer arg))))))
+
 ;;;###autoload
 (defun nvp-hap-info (command &optional arg &rest _args)
   (cl-case command
     (thingatpt (-when-let (mode (info-lookup-select-mode))
-                 (info-lookup-guess-default 'symbol mode)))
+                 (ignore-errors (info-lookup-guess-default 'symbol mode))))
     (doc-buffer
      (save-window-excursion
        (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t))))

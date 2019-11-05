@@ -47,6 +47,5 @@
         (--when-let (nvp-cmake-current-function)
           (nvp-cmake--get-eldoc-string it 'command)))))
 
-
 (provide 'nvp-cmake)
 ;;; nvp-cmake.el ends here

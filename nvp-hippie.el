@@ -170,6 +170,8 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
 
 ;; destructively replace OLD-ELEM with NEW-ELEM in expanders list
 (defsubst nvp-he--replace-in-list (old-elem new-elem)
+  (setq hippie-expand-try-functions-list
+        (copy-sequence hippie-expand-try-functions-list))
   (--when-let (memq old-elem hippie-expand-try-functions-list)
     (setcar it new-elem)))
 
@@ -184,7 +186,7 @@ with the active backend, otherwise it removes itself."
    ((bound-and-true-p tags-file-name)
     (nvp-he--replace-in-list 'nvp-try-expand-tags 'nvp-try-expand-etags))
    (t (setq hippie-expand-try-functions-list
-            (delq 'nvp-try-expand-tags hippie-expand-try-functions-list))))
+            (remove 'nvp-try-expand-tags hippie-expand-try-functions-list))))
   nil)
 
 ;; `tags-completion-table' caches a local table

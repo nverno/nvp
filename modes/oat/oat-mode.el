@@ -118,6 +118,7 @@
   (font-lock-add-keywords 'oat-mode '(("\\?" . 'font-lock-preprocessor-face)))
 
   ;; indentation
+  (c-set-style "linux")
   (setq c-basic-offset oat-indent-offset)
   ;; (c-set-offset 'knr-argdecl-intro 0)
   ;; This handles indentation after last struct field

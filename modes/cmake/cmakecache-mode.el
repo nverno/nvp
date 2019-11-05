@@ -21,6 +21,7 @@
     (modify-syntax-entry ?\n "> b" st)
     st))
 
+;;;###autoload
 (define-derived-mode cmakecache-mode text-mode "CMCache"
   "Major mode for CMakeCache.txt files."
   :abbrev-table nil

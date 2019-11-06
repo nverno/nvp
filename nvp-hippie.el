@@ -142,9 +142,11 @@ doesn't exceed LIMIT."
 ;; create regexp from STR matching expansions around hypens, eg
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
 ;; so it matches replace-regexp-in-string, for example
+(defvar nvp-he-flex-from-re "[-:]")
+(defvar nvp-he-flex-to-re "\\\\w*-")
 (defun nvp-he-flex-lisp (str)
   (concat
-   "\\b" (replace-regexp-in-string "[-:]" "\\\\w*-" str)
+   "\\b" (replace-regexp-in-string nvp-he-flex-from-re nvp-he-flex-to-re str)
    "[:A-Za-z0-9-]*\\b"))
 
 ;;;###autoload

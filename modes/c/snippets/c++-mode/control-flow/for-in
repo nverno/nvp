@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-in
+# key: fori
+# --
+for (auto& ${1:x} : ${2:collection}) {
+    $0
+}

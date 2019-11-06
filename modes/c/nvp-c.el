@@ -14,12 +14,12 @@
   (require 'nvp-font))
 (require 'nvp-parse)
 (require 'nvp)
-(nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef)
-           :v (c/R-abbrev-table))
+(nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef
+                                     nvp-company-local clang-complete-load-args)
+           :v (c/R-abbrev-table company-backends company-clang-arguments))
 (nvp-auto "subr-x" 'string-trim-right)
 
-(defvar-local nvp-c-local-include-paths nil)
-(setq-default nvp-c-local-include-paths '("." ".." "../include"))
+(defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
 
 ;; -------------------------------------------------------------------
@@ -91,6 +91,19 @@
 (dolist (mode '(c-mode c++-mode))
   (nvp-font-lock-add-defaults mode
     ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
+
+;;; Company
+(defun nvp-c-load-company-backend (backend)
+  (interactive
+   (list
+    (eval
+     (cadr
+      (read-multiple-choice
+       "Load: "
+       '((?c 'company-clang)
+         (?i 'company-irony)))))))
+  (nvp-company-local backend)
+  (setq company-clang-arguments (clang-complete-load-args)))
 
 
 ;;; Movement

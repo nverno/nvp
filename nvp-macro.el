@@ -11,6 +11,7 @@
 (require 'subr-x)
 (require 'macroexp)
 (require 'dash)
+(require 'cc-defs)
 (require 'nvp-macs-common "macs/nvp-macs-common")
 (require 'nvp-macs-setup "macs/nvp-macs-setup")
 (require 'nvp-macs-bindings "macs/nvp-macs-bindings")

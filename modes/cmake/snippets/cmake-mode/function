@@ -2,6 +2,6 @@
 # name: function
 # key: fun
 # --
-function(${1:name})
-         $2
-endfunction($1)$0
+function(${1:name}${2:ARGS})
+         $3
+endfunction($1)

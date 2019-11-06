@@ -2,6 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'cmake-mode)
 
 (defun nvp-cmake-current-function ()
   (let ((ppss (parse-partial-sexp (point-min) (point))))
@@ -41,11 +42,32 @@
   (let ((case-fold-search nil)
         (sym (thing-at-point 'symbol)))
     (or (when sym
-          (or (and (string-match-p "^[A-Z]+" sym) ; variable
-                   (nvp-cmake--get-eldoc-string sym 'variable))
+          (or (and (string-match-p "^[A-Z]+" sym) ; variable/property
+                   (or (nvp-cmake--get-eldoc-string sym 'variable)
+                       (nvp-cmake--get-eldoc-string sym 'property)))
               (nvp-cmake--get-eldoc-string sym 'command)))
         (--when-let (nvp-cmake-current-function)
           (nvp-cmake--get-eldoc-string it 'command)))))
+
+;;; Abbrevs
+
+(defvar nvp-cmake-abbrev-syntax-table
+  (let ((tab (copy-syntax-table cmake-mode-syntax-table)))
+    (modify-syntax-entry ?_ "w" tab)
+    (modify-syntax-entry ?- "w" tab)
+    tab))
+
+(defun nvp-cmake-expand-abbrev ()
+  (nvp-with-letf 'forward-word 'forward-word-strictly
+    (c-with-syntax-table nvp-cmake-abbrev-syntax-table
+      (abbrev--default-expand))))
+
+(defun nvp-cmake-add-abbrevs ()
+  (let ((prog (concat (file-name-directory (locate-library "nvp-cmake"))
+                      "etc/dump-vars")))
+    (mapc
+     (lambda (a) (define-abbrev cmake-mode-abbrev-table (downcase a) a))
+     (process-lines prog))))
 
 (provide 'nvp-cmake)
 ;;; nvp-cmake.el ends here

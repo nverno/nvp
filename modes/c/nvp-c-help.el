@@ -2,12 +2,11 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar semantic-c-dependency-system-include-path))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-hap-semantic)
 (require 'nvp-c)
-(nvp-decls)
+
+(nvp-decls :v (semantic-c-dependency-system-include-path))
 
 ;; -------------------------------------------------------------------
 ;;; Sources

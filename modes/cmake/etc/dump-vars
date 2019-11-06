@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# substitute CXX/C for <LANG>
+# remove rest of entries containing <..>
+filter() {
+    sed -e '/<LANG>/ { s/\(.*\)<LANG>\(.*\)/\1CXX\2\n\1C\2/g; }' \
+        -e '/</d'
+}
+
+cmake --help-variable-list | filter
+cmake --help-property-list | filter    

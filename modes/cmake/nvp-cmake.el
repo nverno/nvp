@@ -63,6 +63,7 @@
       (abbrev--default-expand))))
 
 (defun nvp-cmake-add-abbrevs ()
+  (interactive)
   (let ((prog (concat (file-name-directory (locate-library "nvp-cmake"))
                       "etc/dump-vars")))
     (mapc

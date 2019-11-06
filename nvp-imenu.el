@@ -16,6 +16,12 @@
 (nvp-decl nvp-comment-start)
 (autoload 'nvp-flatten-tree "nvp-util")
 
+(defvar nvp-imenu-guess nil
+  "If non-nil, suggest `thing-at-point' if it is in the imenu alist.")
+
+(defvar nvp-imenu-default-filter-regex (regexp-opt '("Headers" "Sub-Headers"))
+  "Regex to match sublist headers to filter out of cleaned imenu alist.")
+
 ;;; Local variables
 
 ;; top-level header regexp
@@ -27,9 +33,6 @@
 
 ;; sub-headers
 (defvar-local nvp-imenu-comment-headers-re-2 nil "Imenu sub-header regexp.")
-
-(defvar nvp-imenu-default-filter-regex (regexp-opt '("Headers" "Sub-Headers"))
-  "Regex to match sublist headers to filter out of cleaned imenu alist.")
 
 ;; -------------------------------------------------------------------
 ;;; Util
@@ -126,7 +129,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 
 ;; modified `imenu--completion-buffer'
 (defun nvp-idomenu--read (index-alist)
-  (let ((name (thing-at-point 'symbol))
+  (let ((name (and nvp-imenu-guess (thing-at-point 'symbol)))
         choice)
     (when (stringp name)
       (setq name

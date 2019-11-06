@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+ref=$(locate llvm-8-doc/html/_sources/LangRef.rst)
+
+"${DIR}/keywords.py" "${ref}" 2>/dev/null | sort

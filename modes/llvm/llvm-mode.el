@@ -60,7 +60,10 @@
 
 (defconst llvm-font-lock-keywords
   (list
-   
+   ;; debug
+   `(,(regexp-opt '("dbg") t) . font-lock-preprocessor-face)
+   ;; Metadata types
+   `(,(regexp-opt '("distinct") 'symbols) . font-lock-keyword-face)
    ;; Attributes
    `(,(regexp-opt
        '("alwaysinline" "argmemonly" "builtin" "cold" "convergent" "immarg"
@@ -108,7 +111,10 @@
          ;; Calling conventions
          "ccc" "fastcc" "coldcc" "webkit_jscc" "anyregcc" "preserve_mostcc"
          "preserve_allcc" "cxx_fast_tlscc" "swiftcc" "atomic" "volatile"
-         "personality" "prologue" "section")
+         "personality" "prologue" "section"
+         ;; other?
+         "align" 
+         )
        'symbols)
      . font-lock-keyword-face)
    ;; Arithmetic and Logical Operators
@@ -149,8 +155,6 @@
      . font-lock-keyword-face)
    ;; Aggregate ops
    `(,(regexp-opt '("extractvalue" "insertvalue") 'symbols) . font-lock-keyword-face)
-   ;; Metadata types
-   `(,(regexp-opt '("distinct") 'symbols) . font-lock-keyword-face)
    ;; Use-list order directives
    `(,(regexp-opt '("uselistorder" "uselistorder_bb") 'symbols)
      . font-lock-keyword-face)

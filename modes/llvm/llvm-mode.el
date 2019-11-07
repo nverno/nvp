@@ -60,10 +60,6 @@
 
 (defconst llvm-font-lock-keywords
   (list
-   ;; debug
-   `(,(regexp-opt '("dbg") t) . font-lock-preprocessor-face)
-   ;; Metadata types
-   `(,(regexp-opt '("distinct") 'symbols) . font-lock-keyword-face)
    ;; Attributes
    `(,(regexp-opt
        '("alwaysinline" "argmemonly" "builtin" "cold" "convergent" "immarg"
@@ -77,7 +73,7 @@
        'symbols)
      . font-lock-constant-face)
    ;; Globals
-   '("@[[:alnum:]_]+" . font-lock-function-name-face)
+   '("@[[:alnum:]_.]+" . font-lock-function-name-face)
    ;; Variables
    '("%[-a-zA-Z$._][-a-zA-Z$._0-9]*" . font-lock-variable-name-face)
    ;; Labels
@@ -160,7 +156,12 @@
      . font-lock-keyword-face)
    ;; Comparisons
    `(,(regexp-opt '("eq" "ne" "ugt" "uge" "ult" "sgt" "sge" "slt" "sle") 'syms)
-     . font-lock-builtin-face))
+     . font-lock-builtin-face)
+   ;; Metadata types
+   `(,(regexp-opt '("distinct" "metadata") 'symbols) . font-lock-keyword-face)
+   ;; debug
+   '("llvm.[[:alpha:].]+" . font-lock-function-name-face)
+   `(,(regexp-opt '("dbg") t) . font-lock-function-name-face))
   "Syntax highlighting for LLVM.")
 
 

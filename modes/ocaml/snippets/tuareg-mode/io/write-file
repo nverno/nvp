@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: write-file
+# key: writef
+# --
+let write_file (file:string) (out:string) =
+  let channel = open_out file in
+  fprintf channel "%s" out;
+  close_out channel

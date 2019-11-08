@@ -60,6 +60,18 @@
 
 (defconst llvm-font-lock-keywords
   (list
+   ;; Globals
+   '("@[[:alnum:]_.]+" . font-lock-function-name-face)
+   ;; Variables
+   '("%[-a-zA-Z$._][-a-zA-Z$._0-9]*" . font-lock-variable-name-face)
+   ;; Labels
+   '("[-a-zA-Z$._0-9]+:" . font-lock-variable-name-face)
+   ;; Unnamed variable slots
+   '("%[-]?[0-9]+" . font-lock-variable-name-face)
+   ;; debug
+   '("\\(?:DI\\|llvm.\\)[[:alpha:].]+" . font-lock-function-name-face)
+   `(,(regexp-opt '("dbg") 'symbols) . font-lock-function-name-face)
+   '("DW_[[:alnum:]_]+" . font-lock-constant-face) ; Dwarf flags
    ;; Attributes
    `(,(regexp-opt
        '("alwaysinline" "argmemonly" "builtin" "cold" "convergent" "immarg"
@@ -72,14 +84,6 @@
          "ssp" "sspreq" "sspstrong" "strictfp" "uwtable" "writeonly")
        'symbols)
      . font-lock-constant-face)
-   ;; Globals
-   '("@[[:alnum:]_.]+" . font-lock-function-name-face)
-   ;; Variables
-   '("%[-a-zA-Z$._][-a-zA-Z$._0-9]*" . font-lock-variable-name-face)
-   ;; Labels
-   '("[-a-zA-Z$._0-9]+:" . font-lock-variable-name-face)
-   ;; Unnamed variable slots
-   '("%[-]?[0-9]+" . font-lock-variable-name-face)
    ;; Types
    `(,(regexp-opt
        '("void" "i1" "i8" "i16" "i32" "i64" "i128" "float" "double" "type"
@@ -95,7 +99,7 @@
    ;; Keywords
    `(,(regexp-opt
        '(;; Toplevel entities
-         "declare" "define" "module" "target" "source_filename" "global"
+         "declare" "define" "module" "target" "triple" "source_filename" "global"
          "constant" "const" "attributes" "uselistorder" "uselistorder_bb"
          ;; Linkage types
          "private" "internal" "weak" "weak_odr" "linkonce" "linkonce_odr"
@@ -155,13 +159,10 @@
    `(,(regexp-opt '("uselistorder" "uselistorder_bb") 'symbols)
      . font-lock-keyword-face)
    ;; Comparisons
-   `(,(regexp-opt '("eq" "ne" "ugt" "uge" "ult" "sgt" "sge" "slt" "sle") 'syms)
+   `(,(regexp-opt '("eq" "ne" "ugt" "uge" "ult" "sgt" "sge" "slt" "sle") 'symbols)
      . font-lock-builtin-face)
    ;; Metadata types
-   `(,(regexp-opt '("distinct" "metadata") 'symbols) . font-lock-keyword-face)
-   ;; debug
-   '("llvm.[[:alpha:].]+" . font-lock-function-name-face)
-   `(,(regexp-opt '("dbg") t) . font-lock-function-name-face))
+   `(,(regexp-opt '("distinct" "metadata") 'symbols) . font-lock-keyword-face))
   "Syntax highlighting for LLVM.")
 
 

@@ -2,8 +2,7 @@
 # name: module
 # key: mod
 # --
-module ${1:A} =
-       struct
-       ${2:type t = { name : string; phone : string }}
-       $0
+module ${1:A} = struct
+  ${2:type t = { name : string; phone : string }}
+  $0
 end

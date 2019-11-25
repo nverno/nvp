@@ -83,12 +83,12 @@
         (t "import pdb; pdb.set_trace()"))
   "Breakpoint string to highlight.")
 
-(defun nvp-python-basic-compile ()
-  (interactive)
-  (setq-local compilation-read-command nil)
-  (let ((compile-command
-         (format "python %s" buffer-file-name)))
-    (call-interactively 'compile)))
+;; (defun nvp-python-basic-compile ()
+;;   (interactive)
+;;   (setq-local compilation-read-command nil)
+;;   (let ((compile-command
+;;          (format "python %s" buffer-file-name)))
+;;     (call-interactively 'compile)))
 
 ;; if debug breakpoint is detected in source, then compile in comint mode
 (define-advice compile (:around (orig cmd &optional comint) "py-maybe-debug")
@@ -132,7 +132,7 @@ the console."
   (let ((bnds (nvp-python-statement-bounds)))
     (when (and (not (bolp))                   ; maybe directly after statement
                (equal (car bnds) (cdr bnds))) ; and not in a statement
-      (setq bnds (progn (beginning-of-line)   ;so, try from beginning of line
+      (setq bnds (progn (beginning-of-line)   ; so, try from beginning of line
                         (nvp-python-statement-bounds))))
     (if (and (not arg) (not (equal (car bnds) (cdr bnds))))
         (python-shell-send-region (car bnds) (cdr bnds))
@@ -180,16 +180,8 @@ the console."
 (define-prefix-command 'nvp-python-test-keymap nil "Test")
 (define-prefix-command 'nvp-python-debug-keymap nil "Debug")
 
-(defvar nvp-python-menu
-  '("PU"
-    ("Run"
-     ["Compile" nvp-python-basic-compile t]
-     ["REPL" nvp-python-repl-switch t])))
-
 (defvar nvp-python-mode-map
   (let ((km (make-sparse-keymap)))
-    (easy-menu-define nil km nil nvp-python-menu)
-    (define-key km (kbd "<f5>")     'nvp-python-basic-compile)
     (define-key km (kbd "<f2>d C-b") 'nvp-python-toggle-breakpoint)
     (define-key km (kbd "<f2> m t") 'nvp-python-test-keymap)
     (define-key km (kbd "<f2> m d") 'nvp-python-debug-keymap)
@@ -215,14 +207,13 @@ the console."
   (define-key pmap "H"              'nvp-python-debug-annotate))
 
 (easy-menu-define nil nvp-python-mode-map nil
-  `(,@nvp-python-menu
-    "--"
+  `("PU"
     ("Test"
-       ["run all nosetests" nosetests-all t]
-       ["run all w/ --failed" nosetests-failed t]
-       ["run module tests" nosetests-module t]
-       ["run test suite" nosetests-suite t]
-       ["run this test" nosetests-one t])
+     ["run all nosetests" nosetests-all t]
+     ["run all w/ --failed" nosetests-failed t]
+     ["run module tests" nosetests-module t]
+     ["run test suite" nosetests-suite t]
+     ["run this test" nosetests-one t])
     "--"
     ("Debug"
      ["pdb" pdb t]

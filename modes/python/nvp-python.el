@@ -83,13 +83,6 @@
         (t "import pdb; pdb.set_trace()"))
   "Breakpoint string to highlight.")
 
-;; (defun nvp-python-basic-compile ()
-;;   (interactive)
-;;   (setq-local compilation-read-command nil)
-;;   (let ((compile-command
-;;          (format "python %s" buffer-file-name)))
-;;     (call-interactively 'compile)))
-
 ;; if debug breakpoint is detected in source, then compile in comint mode
 (define-advice compile (:around (orig cmd &optional comint) "py-maybe-debug")
   (when (derived-mode-p major-mode 'python-mode)

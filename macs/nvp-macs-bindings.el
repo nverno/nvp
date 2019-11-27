@@ -69,7 +69,7 @@
    ((consp key) key)                    ;maybe '(kbd ...) already
    (t (kbd key))))
 
-                                        ; Conditional binding
+;;; Conditional binding
 ;; info: extended menu items
 ;; http://endlessparentheses.com/define-context-aware-keys-in-emacs.html
 (defmacro nvp-bind (map key cmd &rest predicate)

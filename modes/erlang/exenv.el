@@ -2,7 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(autoload 'string-trim "subr-x")
 
 (defvar exenv-dir "~/.exenv")
 

@@ -4,7 +4,6 @@
 ;; FIXME: remove all the macros
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(autoload 'string-trim "subr-x")
 
 (eval-and-compile
   (defvar perlbrew-root (or (getenv "PERLBREW_ROOT")

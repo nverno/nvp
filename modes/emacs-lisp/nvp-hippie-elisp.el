@@ -8,7 +8,6 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
-(autoload 'string-prefix-p "subr-x")
 (declare-function nvp-try-expand-flex "nvp-hippie")
 
 ;;; Variables

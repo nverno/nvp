@@ -17,7 +17,6 @@
 (nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef
                                      nvp-company-local clang-complete-load-args)
            :v (c/R-abbrev-table company-backends company-clang-arguments))
-(nvp-auto "subr-x" 'string-trim-right)
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 

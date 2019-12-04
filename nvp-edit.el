@@ -10,10 +10,8 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'smartparens)
-  (defvar sort-fold-case))
-(nvp-decls)
-(nvp-decl paredit-kill)
+  (require 'smartparens))
+(nvp-decls :f (paredit-kill) :v (sort-fold-case))
 (autoload 'sp-wrap-with-pair "smartparens")
 
 ;;; Indent

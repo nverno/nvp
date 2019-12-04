@@ -14,8 +14,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
-(nvp-decl paredit-delete-indentation)
+(nvp-decls :f (paredit-delete-indentation))
 
 (nvp-bindings nvp-list-keymap :now
   :create t

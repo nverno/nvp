@@ -2,4 +2,4 @@
 # name: print-vector
 # key: prvec
 # --
-std::copy(${1:vec}.begin(), vec.end(), std::ostream_iterator<${2:int}>(std::cout, ${3:" "}));
+std::copy(${1:vec}.begin(), $1.end(), std::ostream_iterator<${2:int}>(std::cout, ${3:" "}));

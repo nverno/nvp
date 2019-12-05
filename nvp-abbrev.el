@@ -25,12 +25,11 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-results)
-  (defvar nvp-abbrev-completion-need-refresh))
+  (require 'nvp-results))
 (require 'nvp)
 (require 'abbrev)
 (require 'nvp-abbrev-util)
-(nvp-decls)
+(nvp-decls :v (nvp-abbrev-completion-need-refresh))
 
 ;; -------------------------------------------------------------------
 ;;; Utils

@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra))
+(eval-when-compile (require 'nvp-macro))
 
 ;; Apropos hydra from github wiki
 ;;;###autoload(autoload 'nvp-apropos-hydra/body "nvp-apropos")

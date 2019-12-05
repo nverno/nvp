@@ -11,6 +11,7 @@
 (require 'subr-x)
 (require 'macroexp)
 (require 'dash)
+(require 'hydra)
 (require 'cc-defs)
 (require 'nvp-macs-common "macs/nvp-macs-common")
 (require 'nvp-macs-setup "macs/nvp-macs-setup")

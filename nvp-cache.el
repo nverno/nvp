@@ -10,8 +10,7 @@
 ;; https://github.com/skeeto/skewer-mode/blob/master/cache-table.el
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (nvp-decls)
 
 ;;; Hash tests

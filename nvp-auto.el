@@ -8,12 +8,9 @@
 ;; - some other randoms
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
-(nvp-decl auth-source-search)
+(nvp-decls :f (auth-source-search))
 (nvp-auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
 (nvp-auto "nvp-outline" nvp-outline-hydra/body)
 

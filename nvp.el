@@ -251,6 +251,9 @@
 ;; -------------------------------------------------------------------
 ;;; Newline DWIM 
 
+(defvar-local nvp-newline-comment-continue t
+  "Use comment continuations in applicable modes.")
+
 (defsubst nvp-between-empty-parens-p (&optional point)
   "Non-nil if POINT is between open/close syntax with only whitespace."
   (ignore-errors
@@ -268,12 +271,12 @@
 
 ;; add a comment continuation string when in nestable doc comments
 (defun nvp-newline-dwim--comment (syntax &optional arg cmt-cont)
-  (if (not (integerp (nth 4 syntax)))
-      (newline arg 'interactive)
-    (let ((beg (point)))
-      (cl-loop repeat (or arg 1)
-         do (insert ?\n (or cmt-cont comment-continue)))
-      (indent-region beg (point)))))
+  (if (not (and nvp-newline-comment-continue
+                (integerp (nth 4 syntax))))
+      (newline-and-indent arg)
+    (dotimes (_ (or arg 1))
+      (insert ?\n (or cmt-cont comment-continue " "))
+      (indent-according-to-mode))))
 
 ;; generics with defaults - lisp modes don't do anything special
 (cl-defgeneric nvp-newline-dwim-prefix (&optional arg)

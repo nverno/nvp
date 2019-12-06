@@ -269,10 +269,23 @@
       (newline-and-indent)))
   (newline arg 'interactive))
 
+;; decide if newlines should add comment continuations in the
+;; current comment block
+(defun nvp-newline--comment-continue-p (syntax)
+  (when comment-continue
+    (save-excursion
+      (beginning-of-line)
+      (let ((start (<= (point) (nth 8 syntax))))
+        (or (and start (goto-char (line-beginning-position 2))
+                 (not (eq (get-char-property (point) 'face)
+                          'font-lock-comment-face)))
+            (looking-at-p (regexp-quote comment-continue)))))))
+
 ;; add a comment continuation string when in nestable doc comments
 (defun nvp-newline-dwim--comment (syntax &optional arg cmt-cont)
   (if (not (and nvp-newline-comment-continue
-                (integerp (nth 4 syntax))))
+                (integerp (nth 4 syntax))
+                (nvp-newline--comment-continue-p syntax)))
       (newline-and-indent arg)
     (dotimes (_ (or arg 1))
       (insert ?\n (or cmt-cont comment-continue " "))

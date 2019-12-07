@@ -279,7 +279,7 @@
         (or (and start (goto-char (line-beginning-position 2))
                  (not (eq (get-char-property (point) 'face)
                           'font-lock-comment-face)))
-            (looking-at-p (regexp-quote comment-continue)))))))
+            (looking-at-p (concat "\\s-*" (regexp-quote comment-continue))))))))
 
 ;; add a comment continuation string when in nestable doc comments
 (defun nvp-newline-dwim--comment (syntax &optional arg cmt-cont)

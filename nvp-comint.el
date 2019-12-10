@@ -18,6 +18,8 @@
 (defun nvp-comint-kill-proc-before-buffer ()
   (let ((proc (nvp-buffer-process)))
     (when (processp proc)
+      (and (derived-mode-p 'comint-mode)
+           (comint-write-input-ring))
       (delete-process proc))))
 
 
@@ -33,8 +35,7 @@
 ;; write comint-input-ring when buffer is killed: in kill-buffer-hook
 (defun nvp-comint-write-history-on-kill ()
   ;; make sure the buffer exists before calling the process sentinel
-  (add-hook 'kill-buffer-hook 'nvp-comint-kill-proc-before-buffer nil 'local)
-  (advice-add 'nvp-comint-kill-proc-before-buffer :before 'comint-write-input-ring))
+  (add-hook 'kill-buffer-hook 'nvp-comint-kill-proc-before-buffer nil 'local))
 
 ;; Setup history file and hippie expansion
 ;;;###autoload

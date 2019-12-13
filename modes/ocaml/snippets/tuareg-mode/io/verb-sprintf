@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: verb @@ sprintf
+# key: prfd
+# --
+Platform.verb @@
+  Printf.sprintf "$1\n" $2;

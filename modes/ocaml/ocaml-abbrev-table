@@ -2,6 +2,7 @@
 
 (define-abbrev-table 'ocaml-mode-abbrev-table
   '(
+
     ;; builtins
     ("fw" "failwith" nil :system t)
     ("ass" "assert" nil :system t)
@@ -36,6 +37,8 @@
     ("Aol" "Array.of_list" nil :system t)
     ("As" "Array.sort" nil :system t)
     ;; List
+    ("hd" "List.hd" nil :system t)
+    ("tl" "List.tl" nil :system t)
     ("liter" "List.iter" nil :system t)
     ("llen" "List.length" nil :system t)
     ("foldl" "List.fold_left" nil :system t)

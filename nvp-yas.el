@@ -79,7 +79,7 @@ Accounts for multi-character comments by recycling the second character."
 (defun nvp-comment-end (&optional trim)
   "Return a TRIMmed version `comment-end' or \"\" if not defined."
   (if (bound-and-true-p comment-end)
-      (and trim (s-trim comment-end))
+      (if trim (s-trim comment-end) comment-end)
     ""))
 
 

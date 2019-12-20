@@ -5,6 +5,7 @@
 ;; TODO:
 ;; - function to remove all methods from generic
 ;; - how to remove all notifications (filenotify) without storing them?
+;; - useful smie debugging output: #<marker at 7444 in tuareg-opam.el>
 
 ;;; Code:
 (eval-when-compile

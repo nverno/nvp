@@ -61,12 +61,11 @@
     (utop-eval-string (format "#cd \"%s\";;" dir))))
 
 ;;; Eval commands
-;; (9/7/19) utop-eval-phrase errors in source buffers
 (defun nvp-utop-eval-phrase (&optional arg step)
   (interactive "P")
   (if arg (tuareg-eval-phrase)
     (utop-prepare-for-eval)
-    (-let (((beg . end) (funcall utop-discover-phrase)))
+    (-let (((beg end _end-with-cmts) (funcall utop-discover-phrase)))
       (nvp-indicate-pulse-region-or-line beg end)
       (utop-eval beg end)
       (when step
@@ -183,8 +182,8 @@ Redirection is handled by `comint-redirect-send-command-to-process', (which see)
           (cl-remove-duplicates
            (read (current-buffer)) :test #'equal :from-end t))))
 
-(define-advice utop-eval-input (:around (fn &optional ai ae add-hist im)
-                                        "add-history")
+(define-advice utop-eval-input
+    (:around (fn &optional ai ae add-hist im) "add-history")
   (when (and nvp-utop-history add-hist)
     (push (buffer-substring-no-properties utop-prompt-max (point-max))
           nvp-utop-history))

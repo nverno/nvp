@@ -1,5 +1,7 @@
 ;;; nvp-ocaml-abbrev.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
+;; can just get module symbols from ocaml-help.el
+;; eg. (ocaml-module-symbols (assoc "List" ocaml-module-alist))
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-ocaml)

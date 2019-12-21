@@ -1,10 +1,9 @@
 ;;; nvp-ocaml-help.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; #<marker at 103230 in tuareg.el>
+;;
 ;; #<marker at 5437 in caml-help.el>
 ;; caml-help:  ocaml-module-alist, ocaml-visible-modules,
 ;;             ocaml-module-symbols, ocaml-open-module
-;; #<marker at 99381 in tuareg.el>
 ;; names: tuareg-current-fun-name
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))

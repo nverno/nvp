@@ -77,8 +77,11 @@
     recentf-list
     ielm-working-buffer ielm-dynamic-return
     org-babel-do-load-languages org-src-lang-modes
+    hippie-expand-try-functions-list hippie-expand-only-buffers
+    local-abbrev-table
     ;; external pkgs
-    zeal-at-point-docset))
+    zeal-at-point-docset
+    company-candidates company-selection))
 
 (cl-defmacro nvp-decls (&key v f)
   `(progn
@@ -91,46 +94,71 @@
        ;; general generics
        nvp-mark-defun
        ;; movement
-       nvp-move-previous-heading nvp-move-forward-heading nvp-mode-header-regex
+       nvp-move-previous-heading
+       nvp-move-forward-heading
+       nvp-mode-header-regex
        ;; bindings
        nvp-autoload-keymap
        ;; reading
-       nvp-read-elisp-symbol nvp-read-elisp-function nvp-read-elisp-variable
-       nvp-completing-read nvp-find-file-in-dir
+       nvp-read-elisp-symbol
+       nvp-read-elisp-function
+       nvp-read-elisp-variable
+       nvp-completing-read
+       nvp-find-file-in-dir
        ;; modes
-       nvp-view-list-mode nvp-scratch-minor-mode
+       nvp-view-list-mode
+       nvp-scratch-minor-mode
        ;; logging
-       nvp-results-title nvp-log-mode nvp-log nvp-log-default
-       nvp-display-fallback-function nvp-display-fallback-dired
+       nvp-results-title
+       nvp-log-mode
+       nvp-log
+       nvp-log-default
+       nvp-display-fallback-function
+       nvp-display-fallback-dired
        ;; windows
-       nvp-window-configuration-restore nvp-window-configuration-save
+       nvp-window-configuration-restore
+       nvp-window-configuration-save
        ;; hippie
-       nvp-try-expand-history nvp-he-history-setup
+       nvp-try-expand-history
+       nvp-he-history-setup
        nvp-he-history-remove-trailing-paren
-       nvp-try-expand-flex-lisp nvp-try-expand-dabbrev-closest-first
+       nvp-try-expand-flex
+       nvp-try-expand-flex-lisp
+       nvp-try-expand-dabbrev-closest-first
        nvp-try-expand-local-abbrevs
        ;; repls / shell
        nvp-comint-setup-history
        nvp-repl-add
-       nvp-shell nvp-shell-launch-terminal
+       nvp-shell
+       nvp-shell-launch-terminal
        ;; indication
-       nvp-indicate-pulse-region-or-line nvp-indicate-modeline
-       nvp-indicate-cursor-pre nvp-indicate-cursor-post
+       nvp-indicate-pulse-region-or-line
+       nvp-indicate-modeline
+       nvp-indicate-cursor-pre
+       nvp-indicate-cursor-post
        ;; procs
-       nvp-proc-default-filter nvp-proc-default-sentinel
+       nvp-proc-default-filter
+       nvp-proc-default-sentinel
        ;; imenu
-       nvp-imenu-setup nvp-idomenu
+       nvp-imenu-setup
+       nvp-idomenu
        ;; toggle
        nvp-toggle-local-variable
        ;; abbrev
-       nvp-abbrev-grab nvp-grab-symbol nvp-abbrev-expand-not-after-punct-p
+       nvp-abbrev-grab
+       nvp-grab-symbol
+       nvp-abbrev-expand-not-after-punct-p
        ;; test / compile
        nvp-ert-run-tests
-       nvp-compile nvp-compile-default nvp-compile-cmake
+       nvp-compile
+       nvp-compile-default
+       nvp-compile-cmake
        ;; strings
-       nvp-s-repeat nvp-s-center
+       nvp-s-repeat
+       nvp-s-center
        ;; environment
-       nvp-env-add nvp-env-path-add
+       nvp-env-add
+       nvp-env-path-add
        ;; setup
        nvp-setup-program
        nvp-lookup-password)
@@ -145,7 +173,8 @@
      (nvp-decl                          ; external packages
        pos-tip-show
        projectile-project-name
-       do-smooth-scroll)))
+       do-smooth-scroll
+       yas-hippie-try-expand)))
 
 (provide 'nvp-macs-decls)
 ;; Local Variables:

@@ -9,18 +9,14 @@
 ;; - snippets => jump to snippet should depend on geiser-impl--implementation?
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar company-selection)
-  (defvar company-candidates)
-  (defvar geiser-active-implementations)
-  (defvar geiser-impl--implementation)
-  (defvar geiser-impl--implementations))
+(eval-when-compile (require 'nvp-macro))
 (require 'geiser)
-(declare-function geiser-eval-last-sexp "geiser-mode")
-
-;; -------------------------------------------------------------------
-;;; Utils
+(nvp-decls
+ :f (geiser-eval-last-sexp
+     abbrev-table-put abbrev-table-get)
+ :v (geiser-active-implementations
+     geiser-impl--implementation
+     geiser-impl--implementations))
 
 ;;; FIXME: use proper paths
 ;; determine available scheme implementations
@@ -45,36 +41,27 @@
 (defun nvp-scheme-abbrev-expand-p ()
   (when (not (memq last-input-event '(?/ ?- ?\?)))
     (or (memq this-command '(expand-abbrev))
-        (let ((ppss (syntax-ppss)))
-          (unless (or (elt ppss 3)      ;not in strings/comments
-                      (elt ppss 4))
-            (save-match-data
-              (and (looking-back "([[:alnum:]]*"
-                                 (line-beginning-position))
-                   (save-excursion
-                     (goto-char (match-beginning 0))
-                     (and
-                      ;; don't expand in function/lambda arguments
-                      (not (looking-back "(\\(?:lambda\\|define\\) +"
-                                         (line-beginning-position))
-                           ;; (looking-back
-                           ;;  "(define +\\(?:\\sw\\|\\s_\\)+ +"
-                           ;;  (line-beginning-position))
-                           )
-                      (condition-case nil
-                          (progn
-                            (up-list)
-                            (backward-sexp)
-                            (not
-                             (or
-                              (looking-back
-                               "(let\\*? *"
-                               (line-beginning-position)))))
-                        (error t)))))))))))
+        (nvp-unless-ppss 'soc         ;not in strings/comments
+          (save-match-data
+            (and (looking-back "([[:alnum:]]*" (line-beginning-position))
+                 (save-excursion
+                   (goto-char (match-beginning 0))
+                   (and
+                    ;; don't expand in function/lambda arguments
+                    (not (looking-back "(\\(?:lambda\\|define\\) +"
+                                       (line-beginning-position))
+                         ;; (looking-back
+                         ;;  "(define +\\(?:\\sw\\|\\s_\\)+ +"
+                         ;;  (line-beginning-position))
+                         )
+                    (condition-case nil
+                        (progn
+                          (up-list)
+                          (backward-sexp)
+                          (not (looking-back "(let\\*? *" (line-beginning-position))))
+                      (error t))))))))))
 
 ;; set local abbrev table according to implementation
-(eval-when-compile
-  (defvar nvp-abbrev-local-table))
 (defun nvp-scheme-sync-abbrev-table ()
   (setq-local nvp-abbrev-local-table (format "%s-mode" geiser-impl--implementation))
   (setq local-abbrev-table
@@ -85,13 +72,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Hippie Expand
-
-(eval-when-compile
-  (defvar hippie-expand-try-functions-list)
-  (defvar hippie-expand-only-buffers))
-(nvp-decl nvp-he-history-setup nvp-try-expand-flex
-  nvp-try-expand-local-abbrevs)
-(autoload 'yas-hippie-try-expand "yasnippet")
 
 (defvar nvp-scheme-he-expand-functions
   '(nvp-try-expand-dabbrev-closest-first
@@ -113,10 +93,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; REPL
-
-(eval-when-compile
-  (defvar local-abbrev-table))
-(nvp-decl abbrev-table-put abbrev-table-get)
 
 ;; enable abbrevs according to scheme implementiation
 ;; since `geiser-impl--implementation' isn't available when this

@@ -169,10 +169,11 @@ is useful, e.g, for use with `visual-line-mode'."
     (fill-region beg end)))
 
 ;;;###autoload
-(defun nvp-fill-paragraph-toggle ()
-  (interactive)
-  (let (deactivate-mark
-        (fill-column (nvp-toggled-if fill-column most-positive-fixnum)))
+(defun nvp-fill-paragraph-toggle (&optional column)
+  "Toggle paragraph filling. With prefix, prompt for `fill-column'."
+  (interactive (list (and current-prefix-arg (read-number "Fill column: "))))
+  (let ((fill-column (or column (nvp-toggled-if fill-column most-positive-fixnum))))
+    (deactivate-mark t)
     (call-interactively 'fill-paragraph)))
 
 (provide 'nvp-edit-aux)

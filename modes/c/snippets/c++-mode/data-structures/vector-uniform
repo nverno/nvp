@@ -2,4 +2,4 @@
 # name: vector-uniform
 # key: vec
 # --
-std::vector<${1:type}> ${2:var}${3:(${4:10}, $1($5))};
+std::vector<${1:int}> ${2:var}${3:(${4:10}, $1($5))};

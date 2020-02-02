@@ -2,4 +2,4 @@
 # name: vector<vector<>>
 # key: vv
 # --
-vector<vector<$1>>
+vector<vector<${1:int}>>

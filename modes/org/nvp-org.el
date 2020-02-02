@@ -212,5 +212,15 @@ See `org-element-all-elements' for possible item types."
         (insert " [/]"))
       (org-update-checkbox-count))))
 
+;;; XXX: it would be nice to get completion like the old hydra
+(defun nvp-org-src-maybe ()
+  "When '<' is entered at the beginning of a line, load org-tempo.el."
+  (interactive)
+  (when (and (looking-back "^" (line-beginning-position))
+             (require 'org-tempo))    ; load shortcuts
+    (org-tempo-setup)
+    (define-key org-mode-map "<" #'self-insert-command))
+  (self-insert-command 1))
+
 (provide 'nvp-org)
 ;;; nvp-org.el ends here

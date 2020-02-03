@@ -4,8 +4,7 @@
 # expand-env: ((modename (bound-and-true-p modename)))
 # --
 (nvp-install-on-demand$1)
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 
 ;; -------------------------------------------------------------------
 ;;; Settings

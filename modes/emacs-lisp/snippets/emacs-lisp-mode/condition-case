@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: condition-case
+# key: cc
+# --
+(condition-case nil
+      ${1:(progn
+        $2)}
+    (error $3))

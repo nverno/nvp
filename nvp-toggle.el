@@ -2,15 +2,11 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar time-stamp-pattern)
-  (defvar time-stamp-count)
-  (defvar time-stamp-active))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'files-x)
-(declare-function time-stamp "time-stamp")
-(nvp-decls)
+(nvp-decls :v (time-stamp-pattern time-stamp-count time-stamp-active)
+           :f (time-stamp))
 (nvp-auto "nvp-util" 'nvp-regex-map-across-matches)
 
 ;;;###autoload
@@ -189,6 +185,30 @@ the current paragraph."
 ;; (defun nvp-toggle-case ()
 ;;   (interactive)
 ;;   (nvp-toggled-if nil nil))
+
+;; -------------------------------------------------------------------
+;;; Brackets
+
+;; translation table 
+(nvp-define-cache-runonce nvp-toggle-brackets-table () nil
+  (let ((tbl (make-string 256 0)))
+    (cl-loop for i from 0 upto 255
+       do (aset tbl i i))
+    tbl))
+
+;;;###autoload
+(defun nvp-toggle-brackets (&optional beg end)
+  "Toggle b/w open/close syntax."
+  (interactive (nvp-tap-or-region 'bdwim 'list :pulse t))
+  (let ((bs '(?\[ ?\{))
+        (tbl (nvp-toggle-brackets-table)))
+    (-when-let (b (car (memq (char-after) bs)))
+      (pcase b
+        (?\[ (aset tbl ?\[ ?\{)
+             (aset tbl ?\] ?\}))
+        (?\{ (aset tbl ?\{ ?\[)
+             (aset tbl ?\} ?\])))
+      (translate-region beg end tbl))))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

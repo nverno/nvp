@@ -148,8 +148,9 @@
        nvp-abbrev-grab
        nvp-grab-symbol
        nvp-abbrev-expand-not-after-punct-p
-       ;; test / compile
+       ;; test
        nvp-ert-run-tests
+       ;; compile
        nvp-compile
        nvp-compile-default
        nvp-compile-cmake

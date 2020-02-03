@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: dotimes-i
-# key: doi
+# key: do
 # --
 (dotimes (i ($1))
   $0)

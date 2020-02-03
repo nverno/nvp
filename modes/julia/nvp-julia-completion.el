@@ -10,9 +10,9 @@
 
 ;; (defvar julia--latex-completion-table
 ;;   (apply-partially #'completion-table-with-predicate
-;;                    julia-latexsubs
+;;                    julia-mode-latexsubs
 ;;                    (lambda (sym)
-;;                      (intern-soft sym julia-latexsubs))
+;;                      (intern-soft sym julia-mode-latexsubs))
 ;;                    'strict))
 
 ;; Beginnings of a completion at point function
@@ -24,10 +24,10 @@
        ;; complete latex symbol when current symbol is prefixed
        ;; by '\'
        ((eq (char-before (car bnds)) ?\\)
-        (list (1- (car bnds)) (cdr bnds) julia-latexsubs
+        (list (1- (car bnds)) (cdr bnds) julia-mode-latexsubs
               :annotation-function
               #'(lambda (arg)
-                  (gethash arg julia-latexsubs ""))))))))
+                  (gethash arg julia-mode-latexsubs ""))))))))
 
 ;; only complete latex for a moment
 ;;;###autoload

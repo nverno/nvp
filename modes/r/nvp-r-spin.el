@@ -17,7 +17,7 @@
   (let ((proc (and (fboundp 'ess-get-process)
                    (ignore-errors (ess-get-process nil t))))
         (cmd (nvp-concat "local({ "
-                         "out <- rmarkdown::render(\"%s\");"
+                         "out <- rmarkdown::render(\"%s\", \"all\");"
                          "if (tools::file_ext(out) == \"html\") {"
                          "    browseURL(out);"
                          "} else {"

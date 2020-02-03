@@ -1,9 +1,8 @@
 ;;; 4clojure-x.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
-(require '4clojure)
+(eval-when-compile (require 'nvp-macro))
+(require '4clojure nil t)
 (require 'request)
 (nvp-decls)
 (autoload 'nvp-netrc "nvp-conf")
@@ -133,4 +132,9 @@ opening a 4clojure question."
 (ad-activate '4clojure-open-question)
 
 (provide '4clojure-x)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; no-byte-compile: t
+;; End:
 ;;; 4clojure-x.el ends here

@@ -187,7 +187,7 @@ the current paragraph."
 ;;   (nvp-toggled-if nil nil))
 
 ;; -------------------------------------------------------------------
-;;; Brackets
+;;; Delimiters: brackets / strings
 
 ;; translation table 
 (nvp-define-cache-runonce nvp-toggle-brackets-table () nil
@@ -198,7 +198,7 @@ the current paragraph."
 
 ;;;###autoload
 (defun nvp-toggle-brackets (&optional beg end)
-  "Toggle b/w open/close syntax."
+  "Toggle b/w open/close braces, eg. '{' <=> '['."
   (interactive (nvp-tap-or-region 'bdwim 'list :pulse t))
   (let ((bs '(?\[ ?\{))
         (tbl (nvp-toggle-brackets-table)))
@@ -208,7 +208,36 @@ the current paragraph."
              (aset tbl ?\] ?\}))
         (?\{ (aset tbl ?\{ ?\[)
              (aset tbl ?\} ?\])))
-      (translate-region beg end tbl))))
+      (translate-region beg end tbl)))
+  (nvp-repeat-command nil nil nil beg end))
+
+;; toggle between quotes
+(nvp-define-cache-runonce nvp-toggle-strings-table () nil
+  (let ((tbl (make-string 256 0)))
+    (cl-loop for i from 0 upto 255
+       do (aset tbl i i))
+    tbl))
+
+(defun nvp-bounds-of-string-at-point (&optional pt)
+  (let ((ppss (nvp-ppss 'partial nil (or pt (point)))))
+    (when (nth 3 ppss)
+      (save-excursion
+        (goto-char (nth 8 ppss))
+        (cons (point) (progn (forward-sexp) (point)))))))
+
+(put 'string 'bounds-of-thing-at-point 'nvp-bounds-of-string-at-point)
+
+;;;###autoload
+(defun nvp-toggle-quotes (&optional beg end)
+  "Toggle b/w quote styles."
+  (interactive (nvp-tap-or-region 'bdwim 'string :pulse t))
+  (when (and beg end)
+    (let ((tbl (nvp-toggle-strings-table)))
+      (pcase (char-after beg)
+        (?\" (aset tbl ?\" ?\'))
+        (?\' (aset tbl ?\' ?\")))
+      (translate-region beg end tbl))
+    (nvp-repeat-command nil nil nil beg end)))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

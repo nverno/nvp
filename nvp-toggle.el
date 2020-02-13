@@ -223,10 +223,11 @@ the current paragraph."
     (when (nth 3 ppss)
       (save-excursion
         (goto-char (nth 8 ppss))
-        (cons (point) (progn (forward-sexp) (point)))))))
+        (ignore-errors (cons (point) (progn (forward-sexp) (point))))))))
 
 (put 'string 'bounds-of-thing-at-point 'nvp-bounds-of-string-at-point)
 
+;;; XXX: escape / unescape toggle quotes
 ;;;###autoload
 (defun nvp-toggle-quotes (&optional beg end)
   "Toggle b/w quote styles."

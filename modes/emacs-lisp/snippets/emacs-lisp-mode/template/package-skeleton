@@ -31,16 +31,16 @@
 ;;; Commentary:
 ${4:
 ;; [![Build Status](https://travis-ci.org/nverno/$3.svg?branch=master)](https://travis-ci.org/nverno/$3)
-
+;;
 ;;; Description:
-
+;;
 ;;  $5
-
+;;
 ;;; Installation:
-
+;;
 ;; \`\`\`lisp
 ;; \`\`\`
-
+;;
 };;; Code:
 
 $0

@@ -1,5 +1,7 @@
 ;;; nvp-c++-help.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
+;; XXX: semantic needs some tweeks to be more effective at jumping to
+;;      references
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'semantic/analyze)
@@ -9,6 +11,7 @@
 ;; - local sources
 ;; - help determined by filepath
 
+;; https://en.cppreference.com/w/
 (defvar nvp-c++-help-online-sources
   '(("std::" .
      "http://en.cppreference.com/mwiki/index.php?title=Special:Search&search=%s")

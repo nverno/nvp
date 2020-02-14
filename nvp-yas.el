@@ -1,7 +1,8 @@
 ;;; nvp-yas.el --- snippet helpers -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-;; - snippet helpers
+;;; FIXME: separate subrs -- make `yas-text' optional for generally usefule
+;;         functions
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -14,32 +15,15 @@
   (defvar yas-modified-p))
 
 (defalias 'yas-comment-string 'nvp-yas-comment)
-
 ;; yas-inside-string uses `font-lock-string-face'
-(defsubst nvp-yas-in-string ()
-  (nth 3 (syntax-ppss)))
-
-(defsubst nvp-yas-in-comment ()
-  (nth 4 (syntax-ppss)))
-
-(defsubst nvp-yas-in-string-or-comment ()
-  (nvp-ppss 'soc))
-
-;; filename w/o directory
-(defsubst nvp-yas-bfn ()
-  (nvp-path 'bfs nil :or-name t))
-
-;; filename w/o dir. or ext.
-(defsubst nvp-yas-bfn-no-ext ()
-  (nvp-path 'bfse nil :or-name t))
-
-;; containing directory name only
-(defsubst nvp-yas-dfn ()
-  (nvp-path 'ds))
-
-;; current indentation
-(defsubst nvp-yas-indent ()
-  (current-indentation))
+(defsubst nvp-yas-in-string () (nth 3 (syntax-ppss)))
+(defsubst nvp-yas-in-comment () (nth 4 (syntax-ppss)))
+(defsubst nvp-yas-in-string-or-comment () (nvp-ppss 'soc))
+(defsubst nvp-yas-bfn () (nvp-path 'bfs nil :or-name t))
+(defsubst nvp-yas-bfn-no-ext () (nvp-path 'bfse nil :or-name t))
+(defsubst nvp-yas-dfn () (nvp-path 'ds))
+(defsubst nvp-yas-ext () (nvp-path 'ext))
+(defsubst nvp-yas-indent () (current-indentation))
 
 ;; Or patterns
 (defsubst nvp-yas-or-values (str &optional seps)

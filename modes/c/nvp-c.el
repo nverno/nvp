@@ -11,7 +11,8 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-compile)
-  (require 'nvp-font))
+  (require 'nvp-font)
+  (require 'nvp-yas))
 (require 'nvp-parse)
 (require 'nvp)
 (nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef
@@ -82,9 +83,13 @@
          (mapconcat 'identity
                     (mapcar (lambda (s) (concat "\n * @param " s)) args) ""))))
 
+(defun nvp-header-file-p ()
+  (string-match-p "h[xp]*" (nvp-yas-ext)))
+
 (defun nvp-c-abbrev-expand-p ()
   (not (memq last-input-event '(?_))))
 
+;; -------------------------------------------------------------------
 ;;; Font-lock
 
 (dolist (mode '(c-mode c++-mode))
@@ -112,10 +117,10 @@
 ;; (cl-defmethod nvp-newline-dwim-comment
 ;;   (&context (major-mode c-mode) &optional arg))
 
-(nvp-newline nvp-c-newline-dwim nil
-  :pairs (("{" "}"))
-  :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
-  :comment-start "* ")
+;; (nvp-newline nvp-c-newline-dwim nil
+;;   :pairs (("{" "}"))
+;;   :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
+;;   :comment-start "* ")
 
 (defun nvp-c-newline-x ()
   (interactive)

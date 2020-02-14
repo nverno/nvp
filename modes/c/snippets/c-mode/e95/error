@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: error
-# key: error
-# --
-++error_count;
-compiler_print_error(
-    ast->location, "${1:invalid operand}$2");

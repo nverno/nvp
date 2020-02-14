@@ -36,8 +36,7 @@
   :parents (list c-common-abbrev-table))
 
 (define-abbrev-table 'c/R-abbrev-table
-  '(
-    ("cv" ["coerceVector();" 2 nil nil] expand-abbrev-hook :system t)
+  '(("cv" ["coerceVector();" 2 nil nil] expand-abbrev-hook :system t)
     ("rint" "INTEGER" nil :system t)
     ("rnil" "R_NilValue" nil :system t)
     ("rreal" "REAL" nil :system t)
@@ -46,15 +45,19 @@
   :parents (list c-mode-abbrev-table))
 
 (define-abbrev-table 'c++-mode-abbrev-table
-  '(
-    ("th" "this" nil :system t)
+  '(("th" "this" nil :system t)
+    ("np" "nullptr" nil :system t)
+    ("del" "delete" nil :system t)
+    ("inl" "inline" nil :system t)
+    ("fri" "friend" nil :system t)
     ("usi" ["using std::;" 1 nil nil] expand-abbrev-hook :system t)
+    ("dela" "delete[]" nil :system t)
     ("veci" "std::vector<int>" nil :system t)
     ("vecd" "std::vector<double>" nil :system t)
     ("vecs" "std::vector<std::string>" nil :system t)
-    ("vecp" ["std::vector<std::pair<>>" 2 nil nil] expand-abbrev-hook :system t)
-    )
+    ("vecp" ["std::vector<std::pair<>>" 2 nil nil] expand-abbrev-hook :system t))
   "C++-mode abbrevs."
+  :enable-function #'nvp-c-abbrev-expand-p
   :parents (list c-common-abbrev-table))
 
 (define-abbrev-table 'boost-test-abbrev-table

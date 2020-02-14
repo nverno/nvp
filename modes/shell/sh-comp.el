@@ -104,7 +104,8 @@
   (ignore-errors 
     (with-syntax-table sh-mode-syntax-table
       (let* ((imenu-use-markers (buffer-file-name))
-             (index (cdr (imenu--make-index-alist))))
+             (index (if imenu-auto-rescan (imenu--make-index-alist)
+                      (cdr (imenu--make-index-alist)))))
         (when index
           (cl-loop for (type . vals) in index
              do

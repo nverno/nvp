@@ -169,10 +169,14 @@
                            match initial hist default inherit)
     (read-from-minibuffer prompt nil nil nil nil default)))
 
-(defun nvp-company-local (backends)
+(defun nvp-company-local (&rest backends)
   "Make a buffer-local company backend."
   (set (make-local-variable 'company-backends)
-       (delete-dups (cl-pushnew backends company-backends :test #'equal))))
+       (delete-dups
+        (progn
+          (dolist (b backends)
+            (push b company-backends))
+          company-backends))))
 
 ;; -------------------------------------------------------------------
 ;;; Mode variables

@@ -47,7 +47,9 @@
 ;;;###autoload
 (defun nvp-abbrev-expand-in-paren-hook ()
   (nvp-with-letf 'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
+    (setq this-command 'expand-abbrev-hook)
     (expand-abbrev-hook)))
+(put 'nvp-abbrev-expand-in-paren-hook 'no-self-insert t)
 
 ;; -------------------------------------------------------------------
 ;;; Expansion predicates

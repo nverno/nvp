@@ -14,7 +14,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(declare-function expand-abbrev-hook "expand")
+(nvp-decls :f (expand-abbrev-hook expand-do-expansion expand-build-marks
+                                  expand-list-to-markers)
+           :v (expand-point expand-list expand-index expand-pos))
 
 ;;;###autoload
 (defun nvp-abbrev-grab ()
@@ -44,11 +46,34 @@
 ;;; Expand Hooks
 
 ;; allow abbrevs to expand inside parens
+;; (2/14/20) for some reason, can no longer wrap `eolp' around
+;; `expand-abbrev-hook' with `cl-letf' without needing to reevaluate
+;; `expand-abbrev-hook' in order for it to work...
 ;;;###autoload
 (defun nvp-abbrev-expand-in-paren-hook ()
-  (nvp-with-letf 'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
-    (setq this-command 'expand-abbrev-hook)
-    (expand-abbrev-hook)))
+  (require 'expand)
+  ;; this used to work fine:
+  ;; (nvp-with-letf #'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
+  ;;   (expand-abbrev-hook))
+  (if (not (eq (char-syntax (char-after)) ?w))
+      (let ((p (point)))
+        (setq expand-point nil)
+        (if (and (eq (char-syntax (preceding-char)) ?w)
+                 (expand-do-expansion))
+            (progn
+              (if expand-point
+                  (progn
+                    (if (vectorp expand-list)
+                        (expand-build-marks expand-point))
+                    (indent-region p expand-point nil))
+                (if (listp expand-list)
+                    (setq expand-index 0
+                          expand-pos (expand-list-to-markers expand-list)
+                          expand-list nil)))
+              (run-hooks 'expand-expand-hook)
+              t)
+          nil))
+    nil))
 (put 'nvp-abbrev-expand-in-paren-hook 'no-self-insert t)
 
 ;; -------------------------------------------------------------------

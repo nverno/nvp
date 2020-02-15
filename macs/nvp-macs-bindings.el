@@ -284,10 +284,12 @@ Buggy:
             `(,@(if (or create prefix (equal feature :now)) '(progn)
                   `(with-eval-after-load ,(or feature `',(intern mapname))))
               ;; with-eval-after-load ,(or feature `',(intern mode))
+              ;; the `prefix-key' may be a variable defined after package is loaded
+              ;; ,(when prefix-key `(progn (setq prefix-key (eval ,prefix-key))))
               ,@(cl-loop for (k . b) in bindings
                    collect `(nvp-bind ,modemap
                                       ,(if prefix-key
-                                           `(vconcat (nvp-kbd ,(eval prefix-key))
+                                           `(vconcat (nvp-kbd ,prefix-key)
                                                      (nvp-kbd ,k))
                                          k)
                                       ,b))))))))

@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: Initialize constructor
-# key: init
-# --
-initialize: function($1) {
-  $0
-}

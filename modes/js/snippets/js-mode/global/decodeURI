@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: decodeURI
+# key: duri
+# --
+decodeURI($1)

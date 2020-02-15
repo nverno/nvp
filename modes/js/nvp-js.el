@@ -1,14 +1,39 @@
 ;;; nvp-js.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
+;; - setup REPLs (nodejs-repl, skewer-repl)
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(defvar nodejs-repl-process-name)
-(declare-function nodejs-repl-send-region "nodejs")
-(declare-function nodejs-repl-send-last-sexp "nodejs")
-(declare-function nodejs-repl-switch-to-repl "nodejs-repl")
-(declare-function nodejs-repl "nodejs-repl")
+(nvp-decls :f (nodejs-repl-switch-to-repl
+               nodejs-repl-send-region nodejs-repl-send-last-expression)
+           :v (nodejs-repl-process-name))
 
-;; syntax helpers
+;; -------------------------------------------------------------------
+;;; REPL
+
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(js2-mode js2-jsx-mode js-mode js-jsx-mode)
+    :modes '(nodejs-repl-mode)
+    :procname (bound-and-true-p nodejs-repl-process-name)
+    :init (lambda ()
+            (save-window-excursion
+              (ignore-errors
+                (call-interactively #'nodejs-repl-switch-to-repl))))))
+
+(defun nvp-js-nodejs-region-or-sexp ()
+  (interactive)
+  (if (and transient-mark-mode mark-active)
+      (call-interactively 'nodejs-repl-send-region)
+      (call-interactively 'nodejs-repl-send-last-expression))
+  (forward-line))
+
+;; nodejs-repl doesn't manage comint history files
+(with-eval-after-load 'nodejs-repl
+  (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
+    (comint-write-input-ring)))
+
+;; -------------------------------------------------------------------
+;;; Snippet helpers
+;;; FIXME: unused
 
 (defun nvp-js-method-p ()
   (save-excursion
@@ -36,40 +61,6 @@
 ;;                                               (match-end 1)
 ;;                                               "\u0192"))))))
 ;; (font-lock-add-keywords 'js2-mode keyword-function)
-
-;; -------------------------------------------------------------------
-;;; REPL
-
-;; track working buffer when switching to node buffer
-(defvar nodejs-working-buffer)
-
-;; (defadvice nodejs-repl (before set-nodejs-working-buffer activate)
-;;   (setq nodejs-working-buffer (current-buffer))
-;;   ad-do-it)
-
-;; (defadvice nodejs-repl-switch-to-repl
-;;     (before set-nodejs-working-buffer activate)
-;;   (setq nodejs-working-buffer (current-buffer))
-;;   ad-do-it)
-
-;; switch b/w repl and working buffer
-(defun nvp-js-nodejs-switch-to-repl ()
-  (interactive)
-  (if (not (boundp 'nodejs-repl-process-name))
-      (nodejs-repl)
-    (if (eq (get-process nodejs-repl-process-name)
-            (get-buffer-process (current-buffer)))
-        (and (buffer-live-p nodejs-working-buffer)
-             (switch-to-buffer-other-window
-              nodejs-working-buffer))
-      (nodejs-repl-switch-to-repl))))
-
-(defun nvp-js-nodejs-region-or-sexp ()
-  (interactive)
-  (if (and transient-mark-mode mark-active)
-      (call-interactively 'nodejs-repl-send-region)
-      (call-interactively 'nodejs-repl-send-last-sexp))
-  (forward-line))
 
 ;; -------------------------------------------------------------------
 ;;; Help

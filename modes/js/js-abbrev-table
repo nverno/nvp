@@ -1,10 +1,10 @@
-;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
-
+;; -*- coding: utf-8;-*-
 (define-abbrev-table 'js-mode-abbrev-table
   '(
-    ("cl" "console.log" nil :system t)
-    ("pf" ["parseFloat()" 1 nil nil] expand-abbrev-hook :system t)
+    ("nan" "NaN" nil :system t)
     ("ret" "return" nil :system t)
+    ("undef" "undefined" nil :system t)
+    ("infinity" "Infinity" nil :system t)
     )
   "Js-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))
@@ -12,4 +12,9 @@
 (define-abbrev-table 'nodejs-repl-mode-abbrev-table
   '()
   "Nodejs-Repl-Mode Abbrevs."
+  :parents (list js-mode-abbrev-table))
+
+(define-abbrev-table 'js2-mode-abbrev-table
+  '()
+  "Js2-Mode Abbrevs."
   :parents (list js-mode-abbrev-table))

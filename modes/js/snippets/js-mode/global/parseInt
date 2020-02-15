@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: parseInt
+# key: pi
+# --
+parseInt($1)

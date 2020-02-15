@@ -65,6 +65,7 @@
   (and (symbolp key) (setq key (symbol-value key)))
   ;; (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
   (cond
+   ((null key) nil)
    ((or (vectorp key) (keymapp key)) key)
    ((consp key) key)                    ;maybe '(kbd ...) already
    (t (kbd key))))
@@ -181,6 +182,7 @@ repetition that may get called by other unwanted routines."
                                   autoload create prefix
                                   repeat indicate wrap
                                   with
+                                  prefix-key
                                   &allow-other-keys)
   "Set KEYMAP BINDINGS after FEATURE is loaded.
 BINDINGS are conses of (key . command).
@@ -191,6 +193,7 @@ Optional:
   PREFIX   defines map as a prefix command with PREFIX as its name if it is a string.
   WITH     specifies sets of bindings, from 'nvp--bindings-*', to add to map. These
            bindings are overwritten by any conflicts in BINDINGS.
+  PREFIX-KEY append sequence to each binding in map
 
 Transient:
   REPEAT   A list of functions which will be advised to enter transient KEYMAP
@@ -282,7 +285,12 @@ Buggy:
                   `(with-eval-after-load ,(or feature `',(intern mapname))))
               ;; with-eval-after-load ,(or feature `',(intern mode))
               ,@(cl-loop for (k . b) in bindings
-                   collect `(nvp-bind ,modemap ,k ,b))))))))
+                   collect `(nvp-bind ,modemap
+                                      ,(if prefix-key
+                                           `(vconcat (nvp-kbd ,(eval prefix-key))
+                                                     (nvp-kbd ,k))
+                                         k)
+                                      ,b))))))))
 
 (provide 'nvp-macs-bindings)
 ;; Local Variables:

@@ -6,7 +6,8 @@
 (nvp-decls :v (pdf-info-epdfinfo-program
                pdf-tools-auto-mode-alist-entry
                pdf-annot-default-annotation-properties)
-           :f (pdf-annot-add-text-annotation))
+           :f (pdf-annot-add-text-annotation
+               pdf-history-forward pdf-history-backward))
 
 ;; build if necessary
 (defun nvp-pdf-setup ()

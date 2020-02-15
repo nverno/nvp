@@ -1,15 +1,34 @@
 ;;; nvp-js.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; - setup REPLs (nodejs-repl, skewer-repl)
+;; - REPLs => nodejs, skewer
+;; - newline
+;; - xrefs => tern
+;; - help  => tern
+;; - snippet stuff
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp-decls :f (nodejs-repl-switch-to-repl
-               nodejs-repl-send-region nodejs-repl-send-last-expression)
+               nodejs-repl-send-region nodejs-repl-send-last-expression
+               skewer-eval-print-last-expression skewer-eval-last-expression)
            :v (nodejs-repl-process-name))
 
-;; -------------------------------------------------------------------
-;;; REPL
+;; when in /* continued comments or doxygen, add comment continuation for
+;; newline-dwim
+(cl-defmethod nvp-newline-dwim-comment
+  (&context (major-mode js2-mode) &optional syntax arg)
+  (nvp-newline-dwim--comment syntax arg " * "))
 
+(cl-defmethod nvp-newline-dwim-comment
+  (&context (major-mode js2-jsx-mode) &optional syntax arg)
+  (nvp-newline-dwim--comment syntax arg " * "))
+
+;; (with-eval-after-load 'tern
+;;   (define-advice tern-find-definition (:around (fn &rest args) "push-mark")))
+
+;; -------------------------------------------------------------------
+;;; REPLs
+
+;;; Nodejs REPL
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(js2-mode js2-jsx-mode js-mode js-jsx-mode)
     :modes '(nodejs-repl-mode)
@@ -30,6 +49,14 @@
 (with-eval-after-load 'nodejs-repl
   (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
     (comint-write-input-ring)))
+
+;;; Skewer
+
+(defun nvp-skewer-eval-last-expression (&optional print)
+  (interactive "P")
+  (call-interactively 
+   (if print #'skewer-eval-print-last-expression
+     #'skewer-eval-last-expression)))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers

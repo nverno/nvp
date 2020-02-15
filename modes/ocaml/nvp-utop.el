@@ -11,8 +11,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'nvp-ocaml)
 (require 'utop)
+(require 'tuareg)
+(require 'nvp-ocaml)
 (require 'nvp-hippie-history)
 (nvp-decls :v (nvp-trace-group-alist))
 
@@ -61,6 +62,7 @@
     (utop-eval-string (format "#cd \"%s\";;" dir))))
 
 ;;; Eval commands
+
 (defun nvp-utop-eval-phrase (&optional arg step)
   (interactive "P")
   (if arg (tuareg-eval-phrase)

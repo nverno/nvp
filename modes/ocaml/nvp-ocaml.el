@@ -7,16 +7,17 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'tuareg)
-(nvp-decls :f (string-trim-right nvp-async-shell-command-to-string
-                                 utop-prepare-for-eval utop-mode)
+(nvp-decls :f (nvp-async-shell-command-to-string utop-mode utop-prepare-for-eval)
            :v (utop-buffer-name))
+
 (nvp-package-define-root :name nvp-ocaml :dirs ("etc"))
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(tuareg-mode utop-mode)
     :modes '(utop-mode)
-    :find-fn (lambda () (get-buffer utop-buffer-name))
+    :find-fn (lambda () (ignore-errors (get-buffer utop-buffer-name)))
     :init (lambda ()
+            (require 'utop)
             (utop-prepare-for-eval)
             (get-buffer-process utop-buffer-name))))
 
@@ -71,9 +72,10 @@
 
 ;; default newline-dwim + comment continuation in nested comments
 (cl-defmethod nvp-newline-dwim-comment
-  (&context (major-mode tuareg-mode) &optional syntax arg _cont)
+  (&context (major-mode tuareg-mode) &optional syntax arg)
   (nvp-newline-dwim--comment syntax arg))
 
+;;; XXX: remove these?
 (defsubst nvp-ocaml-match-p ()
   (save-excursion
     (beginning-of-line)

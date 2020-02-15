@@ -67,7 +67,7 @@
   (cond
    ((null key) nil)
    ((or (vectorp key) (keymapp key)) key)
-   ((consp key) key)                    ;maybe '(kbd ...) already
+   ((consp key) (eval key))             ;maybe '(kbd ...) already or symbol
    (t (kbd key))))
 
 ;;; Conditional binding
@@ -221,6 +221,7 @@ Buggy:
     (while (keywordp (car bindings))
       (setq bindings (cdr (cdr bindings))))
     (and with (setq bindings (append (nvp--with-bindings with) bindings)))
+    (and prefix-key (setq prefix-key (eval prefix-key))) ;can be symbol
     ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
     (let ((modemap (nvp--normalize-modemap keymap minor))
           (mapname (if (stringp keymap) keymap (symbol-name keymap))))
@@ -285,7 +286,6 @@ Buggy:
                   `(with-eval-after-load ,(or feature `',(intern mapname))))
               ;; with-eval-after-load ,(or feature `',(intern mode))
               ;; the `prefix-key' may be a variable defined after package is loaded
-              ;; ,(when prefix-key `(progn (setq prefix-key (eval ,prefix-key))))
               ,@(cl-loop for (k . b) in bindings
                    collect `(nvp-bind ,modemap
                                       ,(if prefix-key

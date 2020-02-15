@@ -275,21 +275,23 @@
 
 ;; decide if newlines should add comment continuations in the
 ;; current comment block
-(defun nvp-newline--comment-continue-p (syntax)
-  (when comment-continue
+(defun nvp-newline--comment-continue-p (syntax &optional cmt-cont)
+  (setq cmt-cont (or cmt-cont comment-continue))
+  (when cmt-cont
     (save-excursion
       (beginning-of-line)
       (let ((start (<= (point) (nth 8 syntax))))
         (or (and start (goto-char (line-beginning-position 2))
                  (not (eq (get-char-property (point) 'face)
                           'font-lock-comment-face)))
-            (looking-at-p (concat "\\s-*" (regexp-quote comment-continue))))))))
+            (looking-at-p (concat "\\s-*" (regexp-quote cmt-cont))))))))
 
 ;; add a comment continuation string when in nestable doc comments
 (defun nvp-newline-dwim--comment (syntax &optional arg cmt-cont)
   (if (not (and nvp-newline-comment-continue
-                (integerp (nth 4 syntax))
-                (nvp-newline--comment-continue-p syntax)))
+                (or (integerp (nth 4 syntax))         ; nestable comments, eg. ocaml
+                    (not (integerp (nth 7 syntax))))  ; /* */ style comments
+                (nvp-newline--comment-continue-p syntax cmt-cont)))
       (newline-and-indent arg)
     (dotimes (_ (or arg 1))
       (insert ?\n (or cmt-cont comment-continue " "))
@@ -300,7 +302,7 @@
   "Generic function to handle newline dwim in special contexts."
   (newline arg 'interactive))
 
-(cl-defgeneric nvp-newline-dwim-comment (_syntax arg &optional _comment-cont)
+(cl-defgeneric nvp-newline-dwim-comment (_syntax arg)
   "Generic function to handle newline dwim in comments."
   (newline arg 'interactive))
 
@@ -495,6 +497,7 @@ On error (read-only), quit without selecting."
 (nvp-advise-commands #'do-smooth-scroll :after '(nvp-move-next5 nvp-move-prev5))
 
 ;; don't run `shell-mode-hook' during `shell-command' calls
+(defvar shell-mode-hook)
 (define-advice shell-command (:around (orig-fn &rest args) "no-hook")
   (let (shell-mode-hook)
     (apply orig-fn args)))

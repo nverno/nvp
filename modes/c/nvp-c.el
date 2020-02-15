@@ -114,14 +114,11 @@
 
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
-;; (cl-defmethod nvp-newline-dwim-comment
-;;   (&context (major-mode c-mode) &optional arg))
+(cl-defmethod nvp-newline-dwim-comment
+  (&context (major-mode c-mode) &optional syntax arg)
+  (nvp-newline-dwim--comment syntax arg " * "))
 
-;; (nvp-newline nvp-c-newline-dwim nil
-;;   :pairs (("{" "}"))
-;;   :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
-;;   :comment-start "* ")
-
+;;; XXX: remove
 (defun nvp-c-newline-x ()
   (interactive)
   (end-of-line)

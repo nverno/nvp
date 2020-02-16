@@ -1,12 +1,15 @@
 ;;; nvp-c.el --- c helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
-
+;;
 ;; TODO:
 ;; - Move env setup ffi - R, lisp - to separate file.
 ;;   Should do env., snippets, abbrevs, etc all together.
+;; - factor out subrs
+;; - move any additional newline behaviour to normal newline with prefix
+;; - merge all the compile stuff and remove compile macros
 ;; FIXME:
 ;; - function signatures => generic parsing method
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -32,6 +35,9 @@
 ;; associated header file name
 (defsubst nvp-c--header-file-name (&optional buffer)
   (concat (file-name-sans-extension (or buffer buffer-file-name)) ".h"))
+
+(defsubst nvp-header-file-p ()
+  (string-match-p "h[xp]*" (nvp-yas-ext)))
 
 ;; split string STR on commas, but only when not between <..>
 ;; eg., "std::vector<std::pair<int,int>> i, int j" =>
@@ -83,9 +89,6 @@
          (mapconcat 'identity
                     (mapcar (lambda (s) (concat "\n * @param " s)) args) ""))))
 
-(defun nvp-header-file-p ()
-  (string-match-p "h[xp]*" (nvp-yas-ext)))
-
 (defun nvp-c-abbrev-expand-p ()
   (not (memq last-input-event '(?_))))
 
@@ -110,7 +113,10 @@
   (setq company-clang-arguments (clang-complete-load-args)))
 
 
+;; -------------------------------------------------------------------
 ;;; Movement
+
+;; (cl-defmethod nvp-newline-dwim-default (&context (major-mode )))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
@@ -141,6 +147,7 @@
       (skip-chars-forward "0-9"))))
 
 
+;; -------------------------------------------------------------------
 ;;; Compile
 
 ;; run make / cmake if there are corresponding makefiles,
@@ -372,8 +379,7 @@
 
 ;;; Align/tidy
 ;; align comment start / end for doxygen region
-(eval-when-compile
-  (defvar align-to-tab-stop))
+(eval-when-compile (defvar align-to-tab-stop))
 (defun nvp-c-align-doxygen (beg end)
   (interactive "*r")
   (let (indent-tabs-mode align-to-tab-stop)

@@ -14,9 +14,9 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'comint))
+  (require 'comint)
+  (require 'nvp-proc))
 (require 'nvp)
-(require 'nvp-proc)
 (nvp-auto "nvp-sh" nvp-sh-get-process)
 (nvp-decls :f (ielm-change-working-buffer))
 
@@ -27,6 +27,8 @@
   procname                              ; process name to search for
   find-fn                               ; custom function to find REPL
   (live 'process-live-p)                ; check if REPL process is alive
+  (buff->proc #'get-buffer-process)     ; get buffer associated with process
+  (proc->buff #'process-buffer)         ; process associated w/ buffer
   init                                  ; init REPL => return process
   wait                                  ; time to wait for REPL
   filters                               ; filters applied to text sent to REPL
@@ -77,7 +79,7 @@
       `(,fn nvp-repl-current))))
 
 ;; return repl for MODE, or default
-(defsubst nvp-repl-for-mode (mode)
+(defun nvp-repl-for-mode (mode)
   (or (cl-loop for (modes . repl) in nvp-repl-alist
          when (memq mode modes)
          return repl)
@@ -109,7 +111,8 @@ Each function takes a process as an argument to test against.")
 (defsubst nvp-repl-match-bufname ()
   (when-let ((bname (nvp-repl--val bufname)))
     (nvp-proc-find
-     bname :key (lambda (p) (buffer-name (process-buffer p))) :test #'string-match-p)))
+     bname :key (lambda (p) (buffer-name (funcall (nvp-repl--val proc->buff) p)))
+     :test #'string-match-p)))
 
 ;; match process name
 (defsubst nvp-repl-match-procname ()
@@ -121,7 +124,7 @@ Each function takes a process as an argument to test against.")
   (when-let ((modes (nvp-repl--val modes)))
     (nvp-proc-find-if
      (lambda (pbuff) (and pbuff (memq (buffer-local-value 'major-mode pbuff) modes)))
-     :key #'process-buffer)))
+     :key (lambda () (nvp-repl--val proc->buff)))))
 
 ;; -------------------------------------------------------------------
 ;;; REPL processes
@@ -147,12 +150,12 @@ Each function takes a process as an argument to test against.")
 ;; get REPL buffer if it has a live process
 (defsubst nvp-repl-buffer ()
   (when-let ((proc (nvp-repl-process)))
-    (process-buffer proc)))
+    (funcall (nvp-repl--val proc->buff) proc)))
 
 ;; update REPLs proc and procs src-buffer property
 (defsubst nvp-repl-update (proc)
   (setf (nvp-repl--val proc) proc
-        (nvp-repl--val buff) (process-buffer proc))
+        (nvp-repl--val buff) (funcall (nvp-repl--val proc->buff) proc))
   (nvp-repl--attach (current-buffer)))
 
 ;; -------------------------------------------------------------------
@@ -163,7 +166,9 @@ Each function takes a process as an argument to test against.")
   (nvp-repl-ensure)
   (or (nvp-repl-buffer)
       (when-let ((proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
-                 (buff (if (processp proc) (process-buffer proc) proc)))
+                 (buff (if (processp proc)
+                           (funcall (nvp-repl--val proc->buff) proc)
+                         proc)))
         (when (nvp-repl-live-p proc)
           ;; found an unregistered live one
           (nvp-repl-update proc)
@@ -178,7 +183,7 @@ Each function takes a process as an argument to test against.")
         (proc-or-buff (funcall (nvp-repl--val init))))
     (and wait (sit-for wait))
     (and (bufferp proc-or-buff)
-         (setq proc-or-buff (get-buffer-process proc-or-buff)))
+         (setq proc-or-buff (funcall (nvp-repl--val buff->proc) proc-or-buff)))
     (nvp-repl-update proc-or-buff)
     (nvp-repl--val buff)))
 

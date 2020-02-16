@@ -1,4 +1,4 @@
-;;; cl-info.el --- Do quick HyperSpec lookup in Emacs using the Info pages
+;;; cl-info.el --- Do quick HyperSpec lookup in Emacs using the Info pages  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2007 John Wiegley <johnw@newartisans.com>
 
@@ -72,11 +72,10 @@
 ;; Common Lisp
 ;; * HyperSpec: (gcl).     The Common Lisp HyperSpec.
 ;; <END>
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar common-lisp-hyperspec-symbols))
-(nvp-declare "" slime-symbol-name-at-point common-lisp-hyperspec-strip-cl-package
-  concatenate)
+(eval-when-compile (require 'nvp-macro))
+(require 'slime)
+(defvar common-lisp-hyperspec-symbols)
+(nvp-decls :f (slime-symbol-name-at-point common-lisp-hyperspec-strip-cl-package))
 
 (defvar cl-info-symbols (make-hash-table :test #'equal))
 (defvar cl-info-urls (make-hash-table :test #'equal))
@@ -1091,9 +1090,6 @@
     (when symbol
       (info-other-window (cl-concatenate 'string "(gcl) " symbol)))))
 
-;; (eval-after-load "lisp-mode"
-;;   '(progn
-;;      (define-key lisp-mode-map [(control ?h) ?f] 'cl-info)))
 (define-advice Info-exit (:after (&rest _args) "remove-info-window")
   "Kill info window after exit."
   (when (> (length (window-list)) 1)

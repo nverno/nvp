@@ -306,12 +306,16 @@
   "Generic function to handle newline dwim in comments."
   (newline arg 'interactive))
 
+(cl-defgeneric nvp-newline-dwim-string (_syntax arg)
+  "Generic function to handle newline dwim in strings."
+  (newline arg 'interactive))
+
 (cl-defgeneric nvp-newline-dwim-default (&optional arg)
   "Generic function to handle newline dwim syntactically."
   (let ((syntax (parse-partial-sexp (point-min) (point))))
     (cond
      ((nvp-ppss 'str syntax)
-      (newline arg 'interactive))
+      (nvp-newline-dwim-string arg syntax))
      ((nvp-ppss 'cmt syntax)
       (nvp-newline-dwim-comment syntax arg))
      ;; default to adding newline between paren delimiters

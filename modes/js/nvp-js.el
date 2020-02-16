@@ -22,9 +22,6 @@
   (&context (major-mode js2-jsx-mode) &optional syntax arg)
   (nvp-newline-dwim--comment syntax arg " * "))
 
-;; (with-eval-after-load 'tern
-;;   (define-advice tern-find-definition (:around (fn &rest args) "push-mark")))
-
 ;; -------------------------------------------------------------------
 ;;; REPLs
 
@@ -46,9 +43,8 @@
   (forward-line))
 
 ;; nodejs-repl doesn't manage comint history files
-(with-eval-after-load 'nodejs-repl
-  (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
-    (comint-write-input-ring)))
+(define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
+  (comint-write-input-ring))
 
 ;;; Skewer
 

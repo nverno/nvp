@@ -35,12 +35,12 @@
 ;;; Commands
 
 ;;;###autoload
-(defun nvp-boost-version (arg)
+(defun nvp-boost-version (&optional arg)
   (interactive "P")
   (message "Boost version: %s" (nvp-boost--version-string arg)))
 
 ;;;###autoload
-(defun nvp-boost-lookup-help (arg)
+(defun nvp-boost-lookup-help (&optional arg)
   (interactive "P")
   (browse-url (concat "www.boost.org/doc/libs/" (nvp-boost--version-string arg))))
 

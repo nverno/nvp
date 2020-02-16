@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+;; -*- coding: utf-8; -*-
 
 (define-abbrev-table 'lisp-mode-vars-abbrev-table
   '()
@@ -6,9 +6,7 @@
   :enable-function 'nvp-elisp-abbrev-expand-var-p)
 
 (define-abbrev-table 'lisp-mode-abbrev-table
-  '(
-    ("d" "defun" nil :system t)
-
+  '(("d" "defun" nil :system t)
     ("db" "destructuring-bind" nil :system t)
     ("dc" "defclass" nil :system t)
     ("dg" "defgeneric" nil :system t)

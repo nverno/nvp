@@ -40,7 +40,7 @@
                         :from-end from-end)))
 
 ;; find all processes matching PRED
-(defun nvp-proc-find-all (pred)
+(defsubst nvp-proc-find-all (pred)
   (cl-loop for proc in (process-list)
      when (funcall pred proc)
      collect proc))

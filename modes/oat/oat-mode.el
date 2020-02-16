@@ -14,7 +14,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (require 'cc-langs)
+  (with-no-warnings (require 'cc-langs))
   (require 'cc-fonts))
 (require 'cc-mode)
 
@@ -97,6 +97,7 @@
     (if (not in-assign) '- '+)))
 
 (defvar oat-mode-syntax-table nil)
+(defalias c-open-c-comment-on-logical-line-re 'c-last-open-c-comment-start-on-line-re)
 
 ;;;###autoload
 (define-derived-mode oat-mode prog-mode "Oat"
@@ -108,6 +109,8 @@
 
   ;; initialize cc-mode stuff
   (c-initialize-cc-mode t)
+  ;; (2/15/20) `c-last-open-c-comment-start-on-line-re' declared obsolete,
+  ;; but, I don't see a 
   (c-init-language-vars oat-mode)
   (c-common-init 'oat-mode)
   (setq-local comment-start "/* ")
@@ -118,7 +121,7 @@
   (font-lock-add-keywords 'oat-mode '(("\\?" . 'font-lock-preprocessor-face)))
 
   ;; indentation
-  (c-set-style "linux")
+  ;; (c-set-style "linux")
   (setq c-basic-offset oat-indent-offset)
   ;; (c-set-offset 'knr-argdecl-intro 0)
   ;; This handles indentation after last struct field

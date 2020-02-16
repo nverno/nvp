@@ -9,41 +9,67 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'slime)
+(nvp-decls :f (slime-repl-eval-string
+               slime-repl-buffer slime-switch-to-output-buffer
+               slime-fuzzy-completions
+               yas-hippie-try-expand)
+           :v (slime-repl-input))
+(nvp-auto "nvp-elisp" 'nvp-elisp-abbrev-expand-var-p 'nvp-elisp-abbrev-expand-fn-p)
 
-(declare-function slime-repl-eval-string "slime-repl")
-(declare-function slime-switch-to-output-buffer "slime-repl")
-(declare-function slime-repl-buffer "slime-repl")
+;; return list of available lisps and their arguments
+(defun nvp-lisp-implementations ()
+  (let ((impls
+         '(("sbcl"  sbcl ("sbcl" "--noinform") :coding-system utf-8-unix)
+           ("clisp" clisp ("clisp" "-q"))
+           ("lisp"  cmucl ("cmucl" "-quiet") :coding-system iso-latin-1-unix)
+           ("ccl"   ccl ("ccl")))))
+    (cl-loop for (name . args) in impls
+       when (eval `(nvp-program ,name :default nil))
+       collect args)))
 
-(autoload 'nvp-elisp-abbrev-expand-var-p "nvp-elisp")
-(autoload 'nvp-elisp-abbrev-expand-fn-p "nvp-elisp")
+(defun nvp-lisp-start-slime ()
+  (interactive)
+  (if (slime-connected-p)
+      (if (< (length slime-net-processes) 2)
+          (slime)
+        (slime-list-connections))
+    (slime)))
 
 ;; -------------------------------------------------------------------
-;;; Util
+;;; REPL
 
-(defun nvp-lisp-slime-port (process)
-  (let ((slime-port (or (process-id process)
-                        (process-contact process))))
-    (setq slime-port (cadr slime-port))
-    slime-port))
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(lisp-mode)
+    :modes '(slime-repl-mode)
+    :live #'(lambda (proc) (buffer-live-p (slime-connection-output-buffer proc)))
+    :find-fn #'slime-connection
+    :buff->proc #'slime-connection
+    :proc->buff #'slime-connection-output-buffer
+    :init #'(lambda ()
+              (with-current-buffer (slime-output-buffer t)
+                slime-buffer-connection))))
 
-(defun nvp-lisp-slime-buffer-list ()
-  (let ((buf-list nil))
-    (dolist (b (buffer-list))
-      (when (string-match "*slime-repl sbcl*" (buffer-name b))
-        (push (buffer-name b) buf-list)))
-    buf-list))
-
-;; -------------------------------------------------------------------
-;;; Commands
+;; (nvp-repl-switch "lisp" (:repl-mode 'slime-repl-mode
+;;                          :repl-live-p #'(lambda (&rest _i) t)
+;;                          :repl-find-fn
+;;                          #'(lambda ()
+;;                              (slime-switch-to-output-buffer)
+;;                              (slime-repl-buffer nil slime-buffer-connection))
+;;                          :repl-switch-fn nil
+;;                          :repl-process slime-buffer-connection))
 
 ;; evaluate buffer - if in .asd file, call asdf:load-system on it,
 ;; otherwise do regular slime eval-buffer
-(defun nvp-lisp-eval-buffer (buffer-name)
-  (interactive (list (buffer-name (current-buffer))))
-  (if (not (string-match-p "asd" (file-name-extension buffer-name)))
-      (call-interactively 'slime-eval-buffer)
+(defun nvp-lisp-eval-buffer (&optional buffer-name)
+  (interactive (list (buffer-name)))
+  (if (not (string-match-p
+            "asd" (file-name-extension (or buffer-name (buffer-name)))))
+      (call-interactively #'slime-eval-buffer)
     (let ((system (file-name-sans-extension buffer-name)))
       (slime-repl-eval-string (format "(asdf:load-system \"%s\")" system)))))
+
+;; -------------------------------------------------------------------
+;;; Help
 
 ;; From http://bc.tech.coop/blog/070515.html
 (defun nvp-lisp-lispdoc ()
@@ -64,9 +90,7 @@ currently under the curser."
       (let ((search-type (read-from-minibuffer
 			  "full-text (f) or basic (b) search (default b)? ")))
 	(browse-url (concat "http://lispdoc.com?q="
-			    (if (string= inp "")
-				default
-			      inp)
+			    (if (string= inp "") default inp)
 			    "&search="
 			    (if (string-equal search-type "f")
 				"full+text+search"
@@ -74,15 +98,6 @@ currently under the curser."
 
 ;; -------------------------------------------------------------------
 ;;; Hippie Expand
-
-(eval-when-compile
-  (defvar slime-repl-input-history)
-  (defvar hippie-expand-try-functions-list)
-  (defvar hippie-expand-only-buffers))
-(declare-function slime-fuzzy-completions "slime-fuzzy")
-(nvp-decl nvp-he-history-setup nvp-try-expand-local-abbrevs
-  nvp-try-expand-flex nvp-he-history-remove-trailing-paren)
-(autoload 'yas-hippie-try-expand "yasnippet")
 
 (defvar nvp-lisp-he-expand-functions
   '(nvp-try-expand-dabbrev-closest-first
@@ -96,38 +111,13 @@ currently under the curser."
     try-complete-file-name))
 
 ;; pass to `nvp-he-try-expand-history-trans'
-(defsubst nvp-lisp-get-history-fn ()
-  slime-repl-input-history)
-
 (defun nvp-lisp-hippie-expand-setup (&optional repl)
   (setq-local hippie-expand-try-functions-list nvp-lisp-he-expand-functions)
   (setq-local hippie-expand-only-buffers '(lisp-mode))
   (when repl
     (nvp-he-history-setup :history 'slime-repl-input-history
                           :bol-fn #'line-beginning-position
-                          :history-fn #'nvp-lisp-get-history-fn
                           :expand-fn #'nvp-he-history-remove-trailing-paren)))
-
-;; -------------------------------------------------------------------
-;;; REPL
-
-(defun nvp-lisp-start-slime ()
-  (interactive)
-  (if (slime-connected-p)
-      (if (< (length slime-net-processes) 2)
-          (slime)
-        (slime-list-connections))
-    (slime)))
-
-;; switch b/w repl and source
-(nvp-repl-switch "lisp" (:repl-mode 'slime-repl-mode
-                         :repl-live-p #'(lambda (&rest _i) t)
-                         :repl-find-fn
-                         #'(lambda ()
-                             (slime-switch-to-output-buffer)
-                             (slime-repl-buffer nil slime-buffer-connection))
-                         :repl-switch-fn nil
-                         :repl-process slime-buffer-connection))
 
 (provide 'nvp-lisp)
 ;;; nvp-lisp.el ends here

@@ -9,7 +9,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decl "define-word" define-word define-word-at-point)
+(nvp-decl define-word define-word-at-point)
 (nvp-auto "nvp-read" 'nvp-read-keymap)
 (nvp-auto "nvp-edit" 'nvp-sort-lines-first-symbol)
 (nvp-auto "ispell" 'ispell-get-word)
@@ -24,6 +24,19 @@
                 (inhibit-same-window  . nil)))))
         (call-interactively #'push-button))
     (call-interactively #'push-button)))
+
+;;;###autoload
+(defun nvp-push-button-and-go (&optional n)
+  "Push the Nth button and stay in same frame."
+  (interactive "p")
+  (or n (setq n 1))
+  (cl-block nil
+    (goto-char (point-min))
+    (while (and (> n 0) (< (point) (point-max)))
+      (goto-char (next-char-property-change (point)))
+      (cl-decf n)
+      (if (and (= n 0) (get-text-property (point) 'button))
+          (cl-return (nvp-push-button 'same-window))))))
 
 ;; -------------------------------------------------------------------
 ;;; Words

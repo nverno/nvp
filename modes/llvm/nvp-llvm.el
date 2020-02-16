@@ -3,21 +3,11 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'llvm-mode)
 (require 'nvp)
-(nvp-decls :f (c-lineup-assignments) :v (c-basic-offset))
+(nvp-decls :f (c-lineup-assignments c-set-style) :v (c-basic-offset))
 
 ;;; Help
-
-;;;###autoload
-(defun nvp-llvm-lookup-online (instr)
-  "Lookup help for INSTR, default to thing at point, in online manual.
-With prefix, query for INSTR."
-  (interactive
-   (list
-    (or (and (not current-prefix-arg) (thing-at-point 'symbol))
-        (read-from-minibuffer "LLVM help for: "))))
-  (browse-url
-   (format "https://llvm.org/docs/LangRef.html#%s-instruction" instr)))
 
 (defun nvp-llvm-help-at-point ()
   (interactive)

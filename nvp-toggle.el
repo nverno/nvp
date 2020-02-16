@@ -1,5 +1,5 @@
 ;;; nvp-toggle.el --- toggle/insert stuff  -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -182,9 +182,14 @@ the current paragraph."
     (tabify beg end))
   (nvp-repeat-command nil nil nil beg end))
 
-;; (defun nvp-toggle-case ()
-;;   (interactive)
-;;   (nvp-toggled-if nil nil))
+;; from https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el
+(defun nvp-toggle-tab-width ()
+  (interactive)
+  (let* ((widths [8 4 2])
+         (m (or (cl-position tab-width widths) -1)))
+    (setf tab-width (aref widths (mod (1+ m) (length widths)))))
+  (message (format "tab-width: %d" tab-width))
+  (nvp-repeat-command))
 
 ;; -------------------------------------------------------------------
 ;;; Delimiters: brackets / strings

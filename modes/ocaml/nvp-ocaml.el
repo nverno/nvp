@@ -72,7 +72,7 @@
 
 ;; default newline-dwim + comment continuation in nested comments
 (cl-defmethod nvp-newline-dwim-comment
-  (&context (major-mode tuareg-mode) &optional syntax arg)
+  (syntax arg &context (major-mode tuareg-mode))
   (nvp-newline-dwim--comment syntax arg))
 
 ;;; XXX: remove these?

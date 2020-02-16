@@ -120,8 +120,9 @@
 
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
+
 (cl-defmethod nvp-newline-dwim-comment
-  (&context (major-mode c-mode) &optional syntax arg)
+  (syntax arg &context (major-mode c-mode c++-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;;; XXX: remove

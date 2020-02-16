@@ -15,11 +15,7 @@
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
 (cl-defmethod nvp-newline-dwim-comment
-  (&context (major-mode js2-mode) &optional syntax arg)
-  (nvp-newline-dwim--comment syntax arg " * "))
-
-(cl-defmethod nvp-newline-dwim-comment
-  (&context (major-mode js2-jsx-mode) &optional syntax arg)
+  (syntax arg &context (major-mode js2-mode js2-jsx-mode js-mode js-jsx-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;; -------------------------------------------------------------------

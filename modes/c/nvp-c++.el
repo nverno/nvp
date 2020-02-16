@@ -9,10 +9,6 @@
 (require 'nvp-c)
 (nvp-decls)
 
-(cl-defmethod nvp-newline-dwim-comment
-  (&context (major-mode c++-mode) &optional syntax arg)
-  (nvp-newline-dwim--comment syntax arg " * "))
-
 ;; -------------------------------------------------------------------
 ;;; Commands 
 

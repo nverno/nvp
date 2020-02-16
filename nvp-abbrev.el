@@ -47,8 +47,8 @@
       (buffer-substring-no-properties start end))))
 
 (cl-defgeneric nvp-abbrev--grab-region (beg end)
-  "Generic function to return abbrev from region BEG to END.
-Should return sexp of form (abbrev . expansion)."
+  "Generic function to return abbrev from region BEG to END . 
+Should return sexp of form (abbrev                          . expansion)."
   (let ((exp (buffer-substring-no-properties beg end)))
     (cons (read-string (format "Abbrev for %s: " exp)) exp)))
 

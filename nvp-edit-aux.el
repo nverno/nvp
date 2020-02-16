@@ -1,16 +1,12 @@
 ;;; nvp-edit-aux.el --- rarely used -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
 ;; Lesser used stuff:
 ;; - list wrapping, insert commas, quote elements
 ;; - fill/unfill
 ;; - rarely used paredit commands
-
-;; FIXME:
-;; - fill functions are pretty useless
-;; - fill toggle doesn't work much
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -24,7 +20,6 @@
   ("{"  . nvp-list-wrap-squiggles)
   ("\"" . nvp-list-wrap-quotes))
 
-
 ;; -------------------------------------------------------------------
 ;;; Lists
 
@@ -174,7 +169,8 @@ is useful, e.g, for use with `visual-line-mode'."
   (interactive (list (and current-prefix-arg (read-number "Fill column: "))))
   (let ((fill-column (or column (nvp-toggled-if fill-column most-positive-fixnum))))
     (deactivate-mark t)
-    (call-interactively 'fill-paragraph)))
+    (call-interactively 'fill-paragraph))
+  (nvp-repeat-command))
 
 (provide 'nvp-edit-aux)
 ;; Local Variables:

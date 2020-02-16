@@ -3,7 +3,7 @@
 # key: npkg
 # --
 ;;; `(nvp-yas-bfn)` --- $1 -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))

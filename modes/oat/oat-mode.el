@@ -14,7 +14,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'cl-lib)
-  (with-no-warnings (require 'cc-langs))
+  (require 'cc-langs)
   (require 'cc-fonts))
 (require 'cc-mode)
 
@@ -97,7 +97,6 @@
     (if (not in-assign) '- '+)))
 
 (defvar oat-mode-syntax-table nil)
-(defalias c-open-c-comment-on-logical-line-re 'c-last-open-c-comment-start-on-line-re)
 
 ;;;###autoload
 (define-derived-mode oat-mode prog-mode "Oat"
@@ -110,8 +109,8 @@
   ;; initialize cc-mode stuff
   (c-initialize-cc-mode t)
   ;; (2/15/20) `c-last-open-c-comment-start-on-line-re' declared obsolete,
-  ;; but, I don't see a 
-  (c-init-language-vars oat-mode)
+  ;; but, I don't see a way to avoid the warning
+  (with-no-warnings (c-init-language-vars oat-mode))
   (c-common-init 'oat-mode)
   (setq-local comment-start "/* ")
   (setq-local comment-end " */")
@@ -128,8 +127,7 @@
   (c-set-offset 'inher-cont 'c-lineup-multi-inher)
   (c-set-offset 'statement-cont #'oat-lineup-statement)
   (c-set-offset 'statement 0)
-  ;; (c-run-mode-hooks 'c-mode-common-hook)
-  )
+  (c-run-mode-hooks 'c-mode-common-hook))
 
 ;;;###autoload(add-to-list 'auto-mode-alist '("\\.oat\\'" . oat-mode))
 

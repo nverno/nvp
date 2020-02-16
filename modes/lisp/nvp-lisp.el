@@ -1,5 +1,7 @@
 ;;; nvp-lisp.el --- lisp helpers  -*- lexical-binding: t; -*-
 ;;; Commentary:
+;; FIXME:
+;; - generic REPL is broken since the interactive REPL buffer has no process
 ;; TODO:
 ;; - auto-abbrevs
 ;; - sbcl: jump to source
@@ -11,6 +13,7 @@
 (require 'slime)
 (nvp-decls :f (slime-repl-eval-string
                slime-repl-buffer slime-switch-to-output-buffer
+               slime-connection-output-buffer slime-output-buffer
                slime-fuzzy-completions
                yas-hippie-try-expand)
            :v (slime-repl-input))

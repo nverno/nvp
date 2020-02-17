@@ -69,7 +69,17 @@
   (delete-file (expand-file-name (tabulated-list-get-id)))
   (revert-buffer))
 
-(define-key nvp-sessions-mode-map "d" #'nvp-sessions-list-delete)
+(defun nvp-sessions-list-load ()
+  (interactive)
+  (let ((session (tabulated-list-get-id)))
+    (nvp-session-load (file-name-directory session)
+                      (file-name-nondirectory session))))
+
+(nvp-bindings nvp-sessions-mode :now
+  :create t
+  ("d" . nvp-sessions-list-delete)
+  ("o" . nvp-sessions-list-open)
+  ("l" . nvp-sessions-list-open))
 
 (provide 'nvp-session)
 ;;; nvp-session.el ends here

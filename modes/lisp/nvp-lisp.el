@@ -1,7 +1,5 @@
 ;;; nvp-lisp.el --- lisp helpers  -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; FIXME:
-;; - generic REPL is broken since the interactive REPL buffer has no process
 ;; TODO:
 ;; - auto-abbrevs
 ;; - sbcl: jump to source
@@ -44,13 +42,17 @@
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(lisp-mode)
     :modes '(slime-repl-mode)
-    :live #'(lambda (proc) (buffer-live-p (slime-connection-output-buffer proc)))
-    :find-fn #'slime-connection
+    :live #'(lambda (p)
+              (and (process-buffer p)
+                   (let ((buff (slime-connection-output-buffer p)))
+                     (buffer-live-p buff))))
+    ;; :find-fn #'slime-connection
     :buff->proc #'slime-connection
-    :proc->buff #'slime-connection-output-buffer
+    :proc->buff #'(lambda (_p) (slime-output-buffer t))
     :init #'(lambda ()
-              (with-current-buffer (slime-output-buffer t)
-                slime-buffer-connection))))
+              (save-window-excursion
+                (with-current-buffer (slime-output-buffer t)
+                  slime-buffer-connection)))))
 
 ;; (nvp-repl-switch "lisp" (:repl-mode 'slime-repl-mode
 ;;                          :repl-live-p #'(lambda (&rest _i) t)

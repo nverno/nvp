@@ -34,6 +34,8 @@ LOAD_PATH += -L $(ELPADIR)
 LOAD_PATH += -L $(SITEDIR)/nvp
 LOAD_PATH += -L $(SITEDIR)/company-autoconf
 LOAD_PATH += -L $(SITEDIR)/tag-utils
+LOAD_PATH += -L $(SITEDIR)/llvm-mode
+LOAD_PATH += -L $(SITEDIR)/oat-mode
 
 BATCH   = ${EMACS} -Q --batch ${LOAD_PATH}\
 	-l $(SITEDIR)/nvp-build-site.el -f nvp-build-paths

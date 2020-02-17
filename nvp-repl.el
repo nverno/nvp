@@ -77,7 +77,9 @@
   (or (cl-loop for (modes . repl) in nvp-repl-alist
          when (memq mode modes)
          return repl)
-      nvp-repl-default))
+      (user-error "%S not associated with any REPLs" mode)
+      ;; nvp-repl-default
+      ))
 
 (defun nvp-repl-ensure (&optional mode)
   "Ensure buffer has a REPL associated with MODE or current `major-mode'."
@@ -122,7 +124,7 @@ Each function takes a process as an argument to test against.")
 (defun nvp-repl-find-modes ()
   (--when-let (repl:val "modes")
     (nvp-proc-find-if
-     (lambda (p-buf) (memq (buffer-local-value 'major-mode p-buf) it))
+     (lambda (p-buf) (and p-buf (memq (buffer-local-value 'major-mode p-buf) it)))
      :key (lambda (p) (funcall (repl:val "proc->buff") p)))))
 
 ;; -------------------------------------------------------------------
@@ -140,8 +142,9 @@ Each function takes a process as an argument to test against.")
 ;; returns the live process when available
 (defun nvp-repl-process ()
   (--when-let (repl:val "proc")
-    (if (nvp-repl-live-p it) it
-      (setf (repl:val "proc") nil))))
+    (if (ignore-errors (nvp-repl-live-p it)) it
+      (setf (repl:val "proc") nil
+            (repl:val "buff") nil))))
 
 ;; get REPL buffer if it has a live process
 (defun nvp-repl-buffer ()
@@ -215,10 +218,9 @@ TODO:
 (1) prefix arg  => set REPL's working directory to same as source if possible.
 (2) prefix args => Open REPL in project root directory."
   (interactive "P")
-  (let ((buff (--if-let (gethash (or (nvp-buffer-process) (current-buffer))
-                                 nvp-repl--process-buffers)
-                  (or (and (buffer-live-p it) it)
-                      (other-buffer (current-buffer) 'visible))
+  (let ((buff (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
+                  (if (buffer-live-p it) it
+                    (other-buffer (current-buffer) 'visible))
                 (nvp-repl-get-buffer))))
     (pop-to-buffer buff nvp-repl--display-action)))
 

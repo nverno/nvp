@@ -6,15 +6,8 @@
 (require 'pp)
 (require 'company-elisp)
 (require 'nvp-parse)
-(nvp-decls)
-(nvp-decl company-elisp--candidates-predicate company-elisp--fns-regexp)
-
-;; -------------------------------------------------------------------
-;;; Util
-
-(eval-when-compile
-  (defvar nvp-elisp-defuns-regexp)
-  (defvar nvp-elisp-var-binding-regexp))
+(nvp-decls :f (company-elisp--candidates-predicate company-elisp--fns-regexp)
+           :v (nvp-elisp-defuns-regexp nvp-elisp-var-binding-regexp))
 
 ;; modified from company-elisp to incorporate more things
 ;; used to determine abbrev expansion / toggling

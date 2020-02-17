@@ -1,18 +1,19 @@
 ;;; nvp-llvm.el --- LLVM IR -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'llvm-mode)
+(require 'llvm-mode nil t)
 (require 'nvp)
-(nvp-decls :f (c-lineup-assignments c-set-style) :v (c-basic-offset))
+(nvp-decls :f (llvm-mode-lookup-instruction-online
+               c-lineup-assignments c-set-style)
+           :v (c-basic-offset))
 
 ;;; Help
 
 (defun nvp-llvm-help-at-point ()
   (interactive)
   ;; TODO: local lookup -- index sphinx docs?
-  (call-interactively #'nvp-llvm-lookup-online))
+  (call-interactively #'llvm-mode-lookup-instruction-online))
 
 ;;; C-related
 

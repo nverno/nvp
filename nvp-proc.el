@@ -18,7 +18,7 @@
                      (message
                       (with-current-buffer (process-buffer p)
                         (prog1 (string-trim-right (buffer-string))
-                          (kill-this-buffer)))))))
+                          (kill-buffer (current-buffer))))))))
   (nvp-with-process command
     :proc-name "async-string"
     :proc-buff (generate-new-buffer-name " *temp*")
@@ -30,12 +30,14 @@
 
 ;; find first item using TEST function (default 'equal)
 (cl-defsubst nvp-proc-find (item &key test key)
+  (declare (indent defun))
   (let ((completion-ignore-case t)
         (case-fold-search t))
     (cl-find item (process-list) :test (or test #'equal) :key key)))
 
 ;; find first process matched by PRED function
 (cl-defsubst nvp-proc-find-if (pred &key key start end from-end)
+  (declare (indent defun))
   (and pred (cl-find-if pred (process-list) :key key :start start :end end
                         :from-end from-end)))
 

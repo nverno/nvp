@@ -21,7 +21,8 @@
             (utop-prepare-for-eval)
             (get-buffer-process utop-buffer-name))))
 
-;;; Config
+;; -------------------------------------------------------------------
+;;;  Config
 
 (defun nvp-ocaml-merlin-init ()
   "Create .merlin with all ocamlfind packages / .opam sources."
@@ -42,8 +43,8 @@
         (shell-command-to-string "eval $(opam config env); opam config var lib")
       (string-trim-right it))))
 
-
-;;; Move
+;; -------------------------------------------------------------------
+;;;  Move
 
 (defsubst nvp-ocaml--beginning-of-comment ()
   (let ((ppss (parse-partial-sexp (point-min) (point))))
@@ -68,6 +69,7 @@
   (nvp-ocaml--beginning-of-comment)
   (tuareg-beginning-of-defun -1))
 
+;; -------------------------------------------------------------------
 ;;; Newlines
 
 ;; default newline-dwim + comment continuation in nested comments
@@ -130,7 +132,8 @@
       (insert ";;"))
     (newline-and-indent))))
 
-;;; Insert / Toggle
+;; -------------------------------------------------------------------
+;;;  Insert / Toggle
 
 (defun nvp-ocaml-toggle-rec ()
   (interactive)

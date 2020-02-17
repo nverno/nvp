@@ -40,7 +40,8 @@
 (16) prefix, highlight changes that would occur."
   (interactive
    (cons (prefix-numeric-value current-prefix-arg)
-         (nvp-tap-or-region 'bdwim (nvp-prefix 4 'buffer 'defun) :pulse t)))
+         (or (nvp-tap-or-region 'bdwim (nvp-prefix 4 'buffer 'defun) :pulse t)
+             (nvp-tap-or-region 'bdwim 'paragraph :pulse t))))
   (if (eq arg 16) (call-interactively 'align-highlight-rule)
     (indent-region beg end)
     (align beg end)))

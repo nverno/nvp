@@ -1,5 +1,10 @@
 ;; -*- coding: utf-8; -*-
 
+(define-abbrev-table 'html-mode-abbrev-table
+  '()
+  "Html-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))
+
 (define-abbrev-table 'web-mode-abbrev-table
   '()
   "General html-like abbrevs."

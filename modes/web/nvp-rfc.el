@@ -1,11 +1,9 @@
 ;;; nvp-rfc.el ---  -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'irfc nil t)
-(nvp-decl "irfc" irfc-visit irfc-render-buffer-hide-blank-line irfc-head-move) 
+(nvp-decl irfc-visit irfc-render-buffer-hide-blank-line irfc-head-move) 
 
 ;; load RFC config prior to visiting rfs
 ;;;###autoload

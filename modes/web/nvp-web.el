@@ -2,25 +2,29 @@
 ;;; Commentary:
 ;; FIXME: documentation, fixup nav functions
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar httpd-root)
-  (defvar httpd-port))
-(autoload 'nvp-jinja-url-for "nvp-jinja")
+(eval-when-compile (require 'nvp-macro))
+(require 'web-mode)
+(nvp-decls :f (impatient-mode
+               httpd-start httpd-running-p)
+           :v (httpd-root httpd-port))
+(nvp-auto "nvp-jinja" 'nvp-jinja-url-for)
+(nvp-auto "projectile" 'projectile-project-root)
 
 ;; -------------------------------------------------------------------
-;;; Interactive
+;;; Serve buffer interactively
 
-;;-- Browsing
-(declare-function impatient-mode "impatient-mode")
-(declare-function imp-visit-buffer "impatient-mode")
-(declare-function httpd-start "simple-httpd")
-
-(defun nvp-web-browse-buffer()
-  (interactive)
-  (impatient-mode)
-  (httpd-start)
-  (imp-visit-buffer))
+;; `imp-visit-buffer' doesn't seem to work for me
+;; is `system-name' supposed to be handled in the browser correctly?
+(defun nvp-web-browse-buffer (&optional arg)
+  (interactive "P")
+  (unless (httpd-running-p) (httpd-start))
+  (unless (impatient-mode) (impatient-mode))
+  (let ((url (format "http://localhost:%d/imp/" httpd-port)))
+    (unless arg
+      (setq url (format "%slive/%s/" url
+                        (url-hexify-string
+                         (file-name-nondirectory (buffer-name))))))
+    (browse-url url)))
 
 ;; https://github.com/cjohansen/.emacs.d/blob/master/defuns/misc-defuns.el
 ;; Start httpd-server in current directory.
@@ -33,11 +37,13 @@
   (httpd-start)
   (browse-url (concat "http://localhost:" (number-to-string port) "/")))
 
-;;-- Navigation
-(declare-function web-mode-element-beginning "web-mode")
-(declare-function web-mode-element-previous "web-mode")
-(declare-function web-mode-element-next "web-mode")
-(declare-function web-mode-element-end "web-mode")
+;; doesn't recognize web-mode as an html-mode and unecessarily does some shit
+(define-advice skewer-html-eval-tag (:around (fn &rest args) "html-mode")
+  (let ((major-mode 'html-mode))
+    (apply fn args)))
+
+;; -------------------------------------------------------------------
+;;; Navigation
 
 (defun nvp-web-backward-tag ()
   (interactive)
@@ -53,12 +59,7 @@
       (web-mode-element-next)
     (web-mode-element-end)))
 
-;;--- Jump
-(autoload 'projectile-project-root "projectile")
-(declare-function web-mode-tag-match "web-mode")
-(declare-function web-mode-block-beginning "web-mode")
-(declare-function xref-push-marker-stack "xref")
-
+;; jump to link when in an <a> or <link> tag
 (defun nvp-web-href-at-point ()
   (save-excursion
     (pcase (bound-and-true-p engine)
@@ -78,10 +79,9 @@
     (xref-push-marker-stack)
     (find-file (expand-file-name href (projectile-project-root)))))
 
-;;-- Help at point
+;; -------------------------------------------------------------------
+;;; Help 
 
-(eval-when-compile
-  (defvar web-mode-engine))
 (defun nvp-web-help-at-point ()
   (interactive)
   (cond

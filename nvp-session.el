@@ -75,11 +75,19 @@
     (nvp-session-load (file-name-directory session)
                       (file-name-nondirectory session))))
 
+(defun nvp-sessions-list-rename (name)
+  (interactive "sRename session: ")
+  (let ((session (tabulated-list-get-id)))
+    (rename-file session (expand-file-name name (file-name-directory session)))
+    (revert-buffer)))
+
 (nvp-bindings nvp-sessions-mode :now
   :create t
-  ("d" . nvp-sessions-list-delete)
-  ("o" . nvp-sessions-list-open)
-  ("l" . nvp-sessions-list-open))
+  ("d"   . nvp-sessions-list-delete)
+  ("o"   . nvp-sessions-list-load)
+  ("l"   . nvp-sessions-list-load)
+  ("r"   . nvp-sessions-list-rename)
+  ("RET" . nvp-sessions-list-load))
 
 (provide 'nvp-session)
 ;;; nvp-session.el ends here

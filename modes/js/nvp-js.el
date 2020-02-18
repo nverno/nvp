@@ -9,14 +9,22 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp-decls :f (nodejs-repl-switch-to-repl
                nodejs-repl-send-region nodejs-repl-send-last-expression
-               skewer-eval-print-last-expression skewer-eval-last-expression)
-           :v (nodejs-repl-process-name))
+               skewer-eval-print-last-expression skewer-eval-last-expression
+               httpd-start)
+           :v (nodejs-repl-process-name httpd-root httpd-port))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
 (cl-defmethod nvp-newline-dwim-comment
   (syntax arg &context (major-mode js2-mode js2-jsx-mode js-mode js-jsx-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
+
+;;; httpd
+
+(defun nvp-httpd-here ()
+  (interactive)
+  (setq httpd-root default-directory)
+  (httpd-start))
 
 ;; -------------------------------------------------------------------
 ;;; REPLs

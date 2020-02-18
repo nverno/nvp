@@ -2,6 +2,6 @@
 # name: prototype... function
 # key: proto
 # --
-prototype.${1:name} = function(${2:params}) {
+${1:classname}.prototype.${2:method} = function(${3:params}) {
     $0
 }

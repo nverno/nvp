@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: method: function
+# key: funp
+# --
+${1:functionName}: function(${2:arguments}) {
+	$0
+}

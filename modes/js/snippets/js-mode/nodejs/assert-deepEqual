@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: assert.deepEqual
+# key: assde
+# --
+assert.deepEqual(${1:actual}, ${2:expected});

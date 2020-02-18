@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: for prop in
+# key: forp
+# --
+for (${1:prop} in ${2:obj}) {
+	if ($2.hasOwnProperty($1)) {
+		$0
+	}
+}

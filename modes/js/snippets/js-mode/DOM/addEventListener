@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ae
+# key: ae
+# --
+${1:document}.addEventListener('${2:event}', ${3:function(e) {
+	$0
+}});

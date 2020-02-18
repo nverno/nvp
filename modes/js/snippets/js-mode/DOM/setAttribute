@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: setAttribute
+# key: sa
+# --
+${1:document}.setAttribute('${2:attr}');

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: textContext
+# key: tc
+# --
+${1:document}.textContext = '${2:content}';

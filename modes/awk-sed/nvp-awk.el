@@ -1,12 +1,11 @@
 ;;; nvp-awk.el --- awk extensions -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;; - Completion-at-point => merges builtins w/ completion from info manual
 ;; - when completion finishes and function arguments are available, expans w/
 ;;   yasnippet
 ;; - eldoc
 ;;
-
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

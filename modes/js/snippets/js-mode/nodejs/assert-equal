@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: assert.equal
+# key: asse
+# --
+assert.equal(${1:actual}, ${2:expected});

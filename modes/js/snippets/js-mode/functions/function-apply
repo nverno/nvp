@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: method.apply
+# key: apply
+# --
+${1:method}.call(${2:context}, [${3:args}]);

@@ -17,7 +17,9 @@
 ;; is `system-name' supposed to be handled in the browser correctly?
 (defun nvp-web-browse-buffer (&optional arg)
   (interactive "P")
-  (unless (httpd-running-p) (httpd-start))
+  (unless (httpd-running-p)
+    (let ((httpd-root default-directory))
+      (httpd-start)))
   (unless (impatient-mode) (impatient-mode))
   (let ((url (format "http://localhost:%d/imp/" httpd-port)))
     (unless arg

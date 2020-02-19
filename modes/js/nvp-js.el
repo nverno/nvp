@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;; - REPLs => nodejs, skewer
 ;; - newline
-;; - xrefs => tern
+;; - xrefs => tern / js2-xref
 ;; - help  => tern
 ;; - snippet stuff
 ;;; Code:
@@ -10,7 +10,9 @@
 (nvp-decls :f (nodejs-repl-switch-to-repl
                nodejs-repl-send-region nodejs-repl-send-last-expression
                skewer-eval-print-last-expression skewer-eval-last-expression
-               httpd-start)
+               httpd-start
+               js2-display-error-list
+               tern-get-docs)
            :v (nodejs-repl-process-name httpd-root httpd-port))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
@@ -91,9 +93,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Help
-
-(declare-function js2-display-error-list "js2-mode")
-(declare-function tern-get-docs "tern")
 
 (defun nvp-js-help-at-point ()
   (interactive)

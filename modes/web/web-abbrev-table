@@ -8,4 +8,5 @@
 (define-abbrev-table 'web-mode-abbrev-table
   '()
   "General html-like abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list prog-mode-abbrev-table
+                 html-mode-abbrev-table))

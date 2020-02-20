@@ -24,8 +24,9 @@
   (let ((url (format "http://localhost:%d/imp/" httpd-port)))
     (unless arg
       (setq url (format "%slive/%s/" url
-                        (url-hexify-string
-                         (file-name-nondirectory (buffer-name))))))
+                        (url-hexify-string (buffer-name)
+                                           ;; (file-name-nondirectory (buffer-name))
+                                           ))))
     (browse-url url)))
 
 ;; https://github.com/cjohansen/.emacs.d/blob/master/defuns/misc-defuns.el

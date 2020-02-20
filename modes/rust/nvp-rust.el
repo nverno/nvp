@@ -1,14 +1,11 @@
 ;;; nvp-rust.el --- rustls -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar toml-mode-map))
-(require 'tag-utils)                    ;remove
+(eval-when-compile (require 'nvp-macro))
 (require 'rust-mode)
-;; FIXME: declare functions for s/f -- dont want these
 (require 'racer)
-(nvp-decl "nvp-setup" nvp-setup-program)
+(nvp-decls :v (toml-mode-map))
+;; FIXME: declare functions for s/f -- dont want these
 
 ;; TODO:
 ;; - macroexp: rustc --pretty expanded, or rustc --pretty expanded,hygiene
@@ -40,8 +37,7 @@
                         "--depth=10"
                         ,(when (not have-src)
                            (directory-file-name
-                            (file-name-directory
-                             nvp-rust-rust-home))))))
+                            (file-name-directory nvp-rust-rust-home))))))
          (lambda (p _m)
            (when (zerop (process-exit-status p))
              ;; set RUST_SRC_PATH
@@ -53,7 +49,9 @@
       (when have-src
         (if (and (not arg) (file-exists-p tags))
             (visit-tags-table tags)
-         (tag-utils-tag-dir nvp-rust-rust-home))))))
+          (user-error "TODO: tag rust source")
+          ;; (tag-utils-tag-dir nvp-rust-rust-home)
+          )))))
 
 ;; -------------------------------------------------------------------
 ;;; Cargo

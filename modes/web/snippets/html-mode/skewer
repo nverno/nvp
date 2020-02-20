@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: skewer
+# key: skewer
+# --
+<script src="http://127.0.0.1:${1:`(bound-and-true-p httpd-port)`}/skewer" type="text/js"></script>

@@ -1,12 +1,17 @@
 ;;; nvp-python.el --- python helpers -*- lexical-binding: t; -*-
-
 ;;; Commentary:
+;;; FIXME: to get proper completion in python REPL following chained calls,
+;;         `python-shell-completion-at-point' doesn't correctly skip back over
+;;         '().', so the function could be advised (similar to modification for
+;;         octave in nvp-octave.el
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-python-ct "./compile/nvp-python-ct"))
 (require 'comint)
 (require 'python)
-(nvp-decls :f (anaconda-mode-complete-extract-names anaconda-mode-call
-                                                    conda-env-send-buffer))
+(nvp-decls :f (conda-env-send-buffer
+               anaconda-mode-complete-extract-names anaconda-mode-call))
 
 (defvar nvp-python-cython-repo "https://github.com/python/cpython")
 
@@ -15,27 +20,6 @@
   (add-log-current-defun))
 
 ;;; Encoding
-
-(defun nvp-python-cleanup-buffer ()
-  (set-buffer-file-coding-system 'utf-8-unix))
-
-;; from prelude to guess encoding
-(defsubst nvp-python-encoding-comment-required-p ()
-  (re-search-forward "[^\0-\177]" nil t))
-
-(defsubst nvp-python-detect-encoding ()
-  (let ((coding-system
-	 (or save-buffer-coding-system
-	     buffer-file-coding-system)))
-    (if coding-system
-	(symbol-name
-	 (or (coding-system-get coding-system 'mime-charset)
-	     (coding-system-change-eol-conversion coding-system nil)))
-      "ascii-8bit")))
-
-(defsubst nvp-python-insert-coding-comment (encoding)
-  (let ((newlines (if (looking-at "^\\s *$") "\n" "\n\n")))
-    (insert (format "# coding: %s" encoding) newlines)))
 
 ;; Insert a magic comment header with the proper encoding if necessary.
 (defun nvp-python-set-encoding ()
@@ -109,10 +93,6 @@
 ;; add regexp for errors in code sent to REPL
 (defvar nvp-python-compilation-regexp
   '("^\\([^<\n]+\\) in <[^>]+>\n\\(?:\\s-*[0-9]+.*\n\\)*---> \\([0-9]+\\)" 1 2))
-
-;; bounds of current python statement
-(defsubst nvp-python-statement-bounds ()
-  (cons (python-nav-beginning-of-statement) (python-nav-end-of-statement)))
 
 (defun nvp-python-send-line-dwim (arg)
   "Send current statement and step -- current statement is that containing the

@@ -72,8 +72,7 @@
      (nvp-with-w32
        ;; setups up local variables and adds directories containing
        ;; python and ipython programs to exec-path
-       (nvp-python-add-paths (nvp-program "python")
-                             (nvp-program "ipython")))
+       (nvp-python-add-paths (nvp-program "python") (nvp-program "ipython")))
      ,@(when start
          (list
           ;; sci has matplotlib/pyplot etcetc.

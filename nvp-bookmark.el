@@ -1,5 +1,4 @@
 ;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;; - bookmark-to-bookmark jump handler
 ;; - assorted bookmark functions
@@ -16,10 +15,16 @@
 (require 'nvp)
 (require 'nvp-cache)
 (require 'bookmark)
-(autoload 'f-same-p "f")
+(nvp-auto "f" 'f-same-p)
 
 (defvar nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
 
+;;; Modifications of bookmark.el functions
+;;; FIXME: what is wrong here
+;; (define-advice bookmark-load (:around (fn &rest args) "current-dir")
+;;   (let ((bookmark-default-file (expand-file-name "bookmarks.el" default-directory)))
+;;     (funcall fn bookmark-default-file)))
+  
 ;; if FILE is nil, use bookmark-default-file
 ;; search order:
 ;; 1. if absolute file name, just use it
@@ -72,8 +77,6 @@ With double prefix, reload defaults"
 
 ;; -------------------------------------------------------------------
 ;;; BMK handling
-
-;; (define-advice bookmark-load-hook)
 
 (defgroup nvp-bmk nil
   "Manage jumping between/bookmarking multiple bookmark files."

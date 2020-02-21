@@ -54,15 +54,6 @@
                 (with-current-buffer (slime-output-buffer t)
                   slime-buffer-connection)))))
 
-;; (nvp-repl-switch "lisp" (:repl-mode 'slime-repl-mode
-;;                          :repl-live-p #'(lambda (&rest _i) t)
-;;                          :repl-find-fn
-;;                          #'(lambda ()
-;;                              (slime-switch-to-output-buffer)
-;;                              (slime-repl-buffer nil slime-buffer-connection))
-;;                          :repl-switch-fn nil
-;;                          :repl-process slime-buffer-connection))
-
 ;; evaluate buffer - if in .asd file, call asdf:load-system on it,
 ;; otherwise do regular slime eval-buffer
 (defun nvp-lisp-eval-buffer (&optional buffer-name)

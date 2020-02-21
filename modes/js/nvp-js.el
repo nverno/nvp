@@ -5,14 +5,26 @@
 ;; - xrefs => tern / js2-xref
 ;; - help  => tern
 ;; - snippet stuff
+;; - http server => httpd
+;;
+;; TODO:
+;; - better xref for node_modules - can tern or js2-xref be taught about global
+;;   sources?
+;; - get 30s of code js/react functions
+;;
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-js-ct "compile/nvp-js-ct"))
+(require 'js)
+(require 'js2-mode nil t)
 (nvp-decls :f (nodejs-repl-switch-to-repl
                nodejs-repl-send-region nodejs-repl-send-last-expression
                skewer-eval-print-last-expression skewer-eval-last-expression
                httpd-start
                js2-display-error-list
-               tern-get-docs)
+               tern-get-docs
+               nvp-js2-hook nvp-jsx-hook)
            :v (nodejs-repl-process-name httpd-root httpd-port))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
@@ -21,12 +33,24 @@
   (syntax arg &context (major-mode js2-mode js2-jsx-mode js-mode js-jsx-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
-;;; httpd
+;;; http server: httpd
 
 (defun nvp-httpd-here ()
   (interactive)
   (setq httpd-root default-directory)
   (httpd-start))
+
+;;; jsx <=> js
+;; currently jsx uses js-mode with js2-minor-mode
+(defun nvp-js-toggle-jsx ()
+  "Toggle b/w js and jsx modes."
+  (interactive)
+  (if (equal mode-name "jsx")
+      (progn
+        (js2-minor-mode -1)
+        (nvp-js2-hook))
+    (js2-mode-exit)
+    (nvp-jsx-hook)))
 
 ;; -------------------------------------------------------------------
 ;;; REPLs
@@ -61,28 +85,7 @@
      #'skewer-eval-last-expression)))
 
 ;; -------------------------------------------------------------------
-;;; Snippet helpers
-;;; FIXME: unused
-
-(defun nvp-js-method-p ()
-  (save-excursion
-    (word-search-backward "function")
-    (looking-back ": " (line-beginning-position))))
-
-(defun nvp-js-function-declaration-p ()
-  (save-excursion
-    (word-search-backward "function")
-    (looking-back "^\\s *" (line-beginning-position))))
-
-(defun nvp-js-snippet-punctuation ()
-  (if (nvp-js-method-p)
-      (when (not (looking-at "[ \n\t\r]*[},]"))
-        (insert ","))
-    (unless (nvp-js-function-declaration-p)
-      (if (looking-at "$") (insert ";")))))
-
-(defun nvp-js-snippet-function-name ()
-  (if (nvp-js-function-declaration-p) "name" ""))
+;;; Font locking
 
 ;; (defvar keyword-function
 ;;   '(("\\(function\\)\\>" (0 (prog1 ()

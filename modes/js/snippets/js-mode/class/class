@@ -1,9 +1,7 @@
 # -*- mode: snippet -*-
-# name : Class
+# name : class
 # key: class
 # --
-var ${1:name} = new Class({
-  initialize: function($2) {
+class ${1:Name}${2: extends ${3:ParentClass}} {
     $0
-  }
-});
+}

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-const
+# key: forc
+# --
+for (const ${1:val} of ${2:arr/obj}) {
+    $0
+}

@@ -1,27 +1,28 @@
 ;;; nvp-makefile.el --- make helpers -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
 ;; make -q foo => exit 0 if foo is up-to-date
-
+;; - align rules added in nvp-align:
+;;   similar to sh-mode rules => equals, EOL comments/backslashes
+;; - adds beg/end of defuns
+;; - additional font-locking
+;; - completing read for compile targets
+;; - formatting/tidy
+;;
 ;; TODO:
-;; Base:
-;; - generic compile targets
-;; - additional font-locking: shell/define/info/warn/error
-;; Extra:
-;; - debug?
+;; - make compile generic
+;; - better additional font-locking: shell/define/info/warn/error
 ;; - fold: directives, rules, comments
-;; - align: similar to sh-mode rules => equals, EOL comments/backslashes
-;; - indent: directives
-;; - macrostep: update w/ dyn. table
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'nvp-makefile-ct "compile/nvp-makefile-ct")
   (require 'nvp-font))
-(require 'nvp)
 (require 'make-mode)
-(nvp-decls)
+(require 'nvp)
+(nvp-decls :f (nvp-makefile-indent))
 
 ;;; Navigation
 
@@ -40,16 +41,6 @@
                  (cons 0 1))))
     (if (looking-at (concat "^else\\|" (nth (car index) nvp-makefile-open/close)))
         (funcall search-fn (nth (cdr index) nvp-makefile-open/close) nil t))))
-
-(defsubst nvp-makefile--defun-line-p ()
-  (save-excursion
-    (beginning-of-line 1)
-    (looking-at-p nvp-makefile-defun-regexp)))
-
-(defsubst nvp-makefile--skip-escapes (search-fn)
-  (if (eq search-fn 're-search-backward)
-      (eq (point-at-bol) (nvp-goto 'boll))
-    (eq (point-at-eol) (nvp-goto 'eoll))))
 
 (defun nvp-makefile--beginning-of-defun (arg)
   (let ((search-fn (if (> arg 0) #'re-search-backward #'re-search-forward))
@@ -84,6 +75,7 @@
                       (concat "^\\s-*$\\|" nvp-makefile-defun-regexp)))))
     (point)))
 
+;; -------------------------------------------------------------------
 ;;; Font-lock
 ;; TODO:
 ;; - remove string fontification in #define blocks where it is incorrect.
@@ -97,7 +89,7 @@
 ;; `makefile-dependency-regex' => note this doesn't take into account quoting
 ;; `makefile-macroassign-regex' => doesn't handle #defines
 
-
+;; -------------------------------------------------------------------
 ;;; Compile
 
 (defun nvp-makefile-save-and-compile (&optional arg)
@@ -141,41 +133,7 @@ With prefix ARG, run `helm-make'."
             (push str targets)))))
     (nreverse targets)))
 
-;; Special targets: collect matches from url
-(defun nvp-makefile-collect-topics (url regex)
-  (let (res)
-    (nvp-while-scanning-url url regex
-      (push (match-string-no-properties 1) res))
-    res))
-
-(nvp-define-cache-runonce nvp-makefile-special-targets ()
-  "List of special make targets."
-  ;; propertize :manual (concat url (match-string 1))
-  (nvp-makefile-collect-topics
-   "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
-   "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
-
-;;; Indent
-(defvar nvp-makefile-indent-offset 2)
-
-;; indent ifeq ... endif regions
-(defun nvp-makefile-indent (&optional start finish)
-  (or finish (setq finish (point-max)))
-  (save-excursion
-    (goto-char (or start (point-min)))
-    (while (re-search-forward (car nvp-makefile-open/close) finish t)
-      (let ((beg (match-beginning 0)) end)
-        (when (re-search-forward
-               (concat "^else\\|" (cadr nvp-makefile-open/close)) finish t)
-          (setq end (nvp-point 'boll))
-          (goto-char beg)
-          (while (and (nvp-goto 'bonll)
-                      (< (point) end)
-                      (not (looking-at makefile-dependency-regex)))
-            (delete-horizontal-space)
-            (indent-to-column nvp-makefile-indent-offset))
-          (goto-char end))))))
-
+;; -------------------------------------------------------------------
 ;;; Tidy
 
 (defun nvp-makefile-format-buffer (&optional beg end)

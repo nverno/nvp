@@ -2,6 +2,6 @@
 # name: forEach
 # key: fe
 # --
-${1:myArray}.forEach(function(${2:elem}) {
+${1:myArray}.forEach(function(${2:elem}${3:, ${4:index}, ${5:array}}) {
 	$0
 });

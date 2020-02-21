@@ -22,12 +22,14 @@
 ;; - makefile variables, rules, and defines have filenames + locations
 ;;
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-makefile-ct "compile/nvp-makefile-ct"))
 (require 'xref)
 (require 'nvp)
 (nvp-auto "info-look" 'info-lookup->completions)
 (nvp-auto "s" 's-lowercase-p)
-(nvp-decl xref-make xref-location)
+(nvp-decls :f (xref-make xref-location) :v (info-lookup-other-window-flag))
 
 (nvp-package-define-root :name nvp-makefile)
 (defconst nvp-makecomp-program
@@ -38,8 +40,15 @@
 (eval-when-compile
   (defvar nvp-makecomp--annotation
     '((variable " <v>") (rule " <r>") (function " <f>") (environment " <e>")))
+
   (defmacro nvp-makecomp:annotation (symbol)
-    `(eval-when-compile (cadr (assoc ',symbol nvp-makecomp--annotation)))))
+    `(eval-when-compile (cadr (assoc ',symbol nvp-makecomp--annotation))))
+  
+  (defsubst nvp-makecomp--getter (type)
+    (if (eq type 'all)
+        (lambda (db) (append (nvp-makecomp-file-variables db)
+                        (nvp-makecomp-file-rules db)))
+      (intern (concat "nvp-makecomp-file-" (symbol-name type))))))
 
 (cl-defstruct (nvp-makecomp-file
                (:constructor nvp-makecomp-make-file)
@@ -60,12 +69,6 @@
                               file nvp-makecomp-program)))))
     (setf (nvp-makecomp-file-variables dbfile) (alist-get 'variables data))
     (setf (nvp-makecomp-file-rules dbfile) (alist-get 'rules data))))
-
-(defsubst nvp-makecomp--getter (type)
-  (if (eq type 'all)
-      (lambda (db) (append (nvp-makecomp-file-variables db)
-                      (nvp-makecomp-file-rules db)))
-    (intern (concat "nvp-makecomp-file-" (symbol-name type)))))
 
 ;;;###autoload
 (defun nvp-makecomp-candidates (type &optional file)
@@ -110,18 +113,6 @@ TYPE is one of \\='all, \\='variables or \\='rules."
         (info-lookup-symbol str 'makefile-mode)
         (current-buffer)))))
 
-;; preceded by '[^$]$[{(]'
-(defsubst nvp-makecomp-variable-or-function-p (pos)
-  (and (memq (char-before pos) '(?{ ?\())
-       (eq (char-before (1- pos)) ?$)
-       (not (eq (char-before (- pos 2)) ?$))))
-
-(defsubst nvp-makecomp-rule-line-p (&optional pos)
-  (save-excursion
-    (and pos (goto-char pos))
-    (beginning-of-line)
-    (looking-at-p "^[^ \t\n]*:")))
-
 ;;;###autoload
 (defun nvp-makecomp-completion-at-point ()
   (-when-let* (((beg . end) (bounds-of-thing-at-point 'symbol)))
@@ -129,7 +120,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
         ((table
           (cond
            ;; $(... or ${...
-           ((nvp-makecomp-variable-or-function-p beg)
+           ((nvp-makefile-variable-or-function-p beg)
             (list
              (completion-table-merge
               (completion-table-with-cache
@@ -151,7 +142,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
              :company-location (apply-partially #'nvp-makecomp--location 'variables)
              :company-doc-buffer #'nvp-makecomp--doc-buffer))
            ;; rules => after <rulename>: ...
-           ((nvp-makecomp-rule-line-p)
+           ((nvp-makefile-rule-line-p)
             (list
              (completion-table-with-cache
               (lambda (_string) (nvp-makecomp-candidates 'rules)))
@@ -168,7 +159,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
 
 (defun nvp-makecomp-var-or-func-botap ()
   (let ((bnds (bounds-of-thing-at-point 'symbol)))
-    (when (and bnds (nvp-makecomp-variable-or-function-p (car bnds)))
+    (when (and bnds (nvp-makefile-variable-or-function-p (car bnds)))
       bnds)))
 (put 'makesym 'bounds-of-thing-at-point 'nvp-makecomp-var-or-func-botap)
 

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-let-object
+# key: forlo
+# --
+for (let ${1:prop} in ${2:obj}) {
+    $0
+}

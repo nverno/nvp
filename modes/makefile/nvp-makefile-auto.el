@@ -6,41 +6,29 @@
 ;; - yas expansions that add deps => commands
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(require 'make-mode)
-
 (eval-when-compile
-  (defmacro nvp-makefile-with-target (target &rest body)
-    "Execute BODY with point after ':' following TARGET."
-    (declare (indent defun) (debug (symbolp &rest form)))
-    `(save-excursion
-       ;; if target is found point will be at the end
-       ;; of match, skip ahead to ':'
-       (when (nvp-makefile-goto-target ,target)
-         (skip-chars-forward "^:" (point-at-eol))
-         (forward-char 1)
-         ,@body))))
+  (require 'nvp-macro)
+  (require 'nvp-makefile-ct "./compile/nvp-makefile-ct"))
+(require 'make-mode)
+(require 'nvp)
 
-;; ------------------------------------------------------------
-;;; Goto Locations
+;; -------------------------------------------------------------------
+;;; Used in snippets
 
-;; put point at end of matching target named TARGET
-(defun nvp-makefile-goto-target (target)
-  (let ((place (point)))
-    (goto-char (point-min))
-    (or (re-search-forward (concat "^" target) nil t)
-        ;; if not found, put point back at start
-        (and (goto-char place) nil))))
+;; Special targets: collect matches from url
+(defun nvp-makefile-collect-topics (url regex)
+  (let (res)
+    (nvp-while-scanning-url url regex
+      (push (match-string-no-properties 1) res))
+    res))
 
-;; FIXME: unused
-;; put point after current rule.  if in last rule, goto end of
-;; buffer and insert newline if not at beginning of line
-;; (defun nvp-makefile-goto-end-of-rule ()
-;;   (or (makefile-next-dependency)
-;;       (and (goto-char (point-max))
-;;            (and (not (bolp))
-;;                 (insert "\n")))))
+;;;###autoload(nvp-makefile-special-targets "nvp-makefile-auto")
+(nvp-define-cache-runonce nvp-makefile-special-targets ()
+  "List of special make targets."
+  ;; propertize :manual (concat url (match-string 1))
+  (nvp-makefile-collect-topics
+   "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
+   "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
 
 ;; ------------------------------------------------------------
 ;;; Parse / Snippet helpers

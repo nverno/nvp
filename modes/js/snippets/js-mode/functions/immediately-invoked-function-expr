@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: immediately-invoked-function-expression
+# key: iife
+# --
+${1:var ${2:name} = }(function(${3:params}) {
+    $0
+})(${4:args});

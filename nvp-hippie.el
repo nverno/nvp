@@ -13,8 +13,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'hippie-exp)
-(nvp-decl "ggtags" ggtags-try-complete-tag ggtags-mode)
-(nvp-decl "etags" tags-completion-table)
+(nvp-decls :f (tags-completion-table ggtags-try-complete-tag ggtags-mode))
+(nvp-auto "s" 's-split-words 's-join)
 
 ;; args: active position, match-beg, match-end
 (defvar nvp-he-weight-function #'company-occurrence-prefer-any-closest
@@ -25,6 +25,9 @@
 
 (defvar nvp-he-time-limit 0.1
   "Max searching time before timeout in, eg. `nvp-he-buffer-matches'.")
+
+(defvar nvp-he-case-fold-search t
+  "Non-nil if flex matching should ignore case.")
 
 ;;;###autoload
 (defun nvp-he-local (&rest he-funcs)
@@ -112,7 +115,8 @@ doesn't exceed LIMIT."
   result)
 
 (defun nvp-he-buffer-matches (regexp &optional ignore-weights ignore-comments)
-  (let ((res (nvp-he--search-buffer
+  (let* ((case-fold-search nvp-he-case-fold-search)
+         (res (nvp-he--search-buffer
               regexp nil (point) ignore-weights (current-time)
               nvp-he-time-limit ignore-comments)))
     (cl-remove-duplicates
@@ -148,6 +152,18 @@ doesn't exceed LIMIT."
   (concat
    "\\b" (replace-regexp-in-string nvp-he-flex-from-re nvp-he-flex-to-re str)
    "[:A-Za-z0-9-]*\\b"))
+
+;; matcher for camel-cased strings
+;; eg. t.sS => this.setState
+(defun nvp-he-flex-camel (str)
+  (concat "\\b" (s-join nvp-he-flex-to-re (s-split-words str)) "[a-zA-Z.]*\\b"))
+
+;; grab possible "." chained symbol
+(defun nvp-he-chained-symbol-beg ()
+  (save-excursion
+    (while (not (or (zerop (skip-syntax-backward "w_"))
+                    (zerop (skip-chars-backward ".")))))
+    (point)))
 
 ;;;###autoload
 (defun nvp-try-expand-flex (old)

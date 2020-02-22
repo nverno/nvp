@@ -22,7 +22,7 @@
       (push (match-string-no-properties 1) res))
     res))
 
-;;;###autoload(nvp-makefile-special-targets "nvp-makefile-auto")
+;;;###autoload(autoload 'nvp-makefile-special-targets "nvp-makefile-auto")
 (nvp-define-cache-runonce nvp-makefile-special-targets ()
   "List of special make targets."
   ;; propertize :manual (concat url (match-string 1))

@@ -126,6 +126,7 @@ doesn't exceed LIMIT."
      :test #'equal)))
 
 
+;; -------------------------------------------------------------------
 ;;; Flex
 
 ;; function called with current string prefix to produce regexp to find candidates

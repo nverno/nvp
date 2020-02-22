@@ -33,6 +33,10 @@
   (syntax arg &context (major-mode js2-mode js2-jsx-mode js-mode js-jsx-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode js-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
 ;;; http server: httpd
 
 (defun nvp-httpd-here ()

@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (require 'nvp-macs-common)
-(require 'nvp-subrs)
 
 ;;; Keys
 

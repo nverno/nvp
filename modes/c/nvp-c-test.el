@@ -6,21 +6,25 @@
 ;; - hideif
 
 ;;; Code:
-(eval-when-compile (require 'nvp-c-macros "macs/nvp-c-macros"))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-c-ct "./compile/nvp-c-ct"))
 (require 'nvp-test)
 (require 'nvp-c)
-(autoload 'yas-expand "yasnippet")
-(declare-function clang-complete-create-or-update "clang-complete")
+(nvp-decls :f (clang-complete-create-or-update
+               yas-expand-snippet yas-lookup-snippet)
+           :v (yas-selected-text))
+(nvp-auto "yasnippet" 'yas-expand)
 
 ;; function to run unit test from test buffer
-(defvar nvp-c-test-runner 'nvp-c-test-default-runner)
+(defvar nvp-c-test-runner #'nvp-c-test-default-runner)
 
 ;; -------------------------------------------------------------------
 ;;; Util
 
 ;; assume first path will be root, eg ~/.local/include:etc
 (eval-and-compile
-  (defun nvp-c-local-include-path (path)
+  (defsubst nvp-c-local-include-path (path)
     (expand-file-name
      path
      (car (split-string (or (getenv "C_INCLUDE_PATH")
@@ -28,11 +32,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Setup Tests
-
-(eval-when-compile
-  (defvar yas-selected-text))
-(declare-function yas-expand-snippet "yasnippet")
-(declare-function yas-lookup-snippet "yasnippet")
 
 ;; init new test file
 (defun nvp-c-test-init (type &optional source-file)

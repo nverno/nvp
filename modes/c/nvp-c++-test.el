@@ -1,7 +1,9 @@
 ;;; nvp-c++-test.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-c-macros "macs/nvp-c-macros"))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-c-ct "./compile/nvp-c-ct"))
 (require 'nvp-c)
 (require 'nvp-test)
 (autoload 'yas-expand "yasnippet")

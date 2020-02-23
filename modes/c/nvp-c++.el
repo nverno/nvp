@@ -5,6 +5,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'nvp-c-ct "./compile/nvp-c-ct")
   (require 'nvp-compile))               ; nvp-make-or-compile-fn
 (require 'nvp-c)
 (nvp-decls)

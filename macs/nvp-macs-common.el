@@ -6,7 +6,7 @@
 (require 'subr-x)
 (require 'macroexp)
 (require 'dash)
-(require 'nvp-subrs)
+(require 'nvp-subrs "macs/nvp-subrs")
 
 (defvar nvp-debug-level nil)
 

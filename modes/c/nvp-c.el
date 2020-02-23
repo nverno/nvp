@@ -13,6 +13,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
+  (require 'nvp-c-ct "./compile/nvp-c-ct")
   (require 'nvp-compile)
   (require 'nvp-font)
   (require 'nvp-yas))
@@ -24,20 +25,12 @@
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
-
 ;; -------------------------------------------------------------------
 ;;; Util
 
-(defsubst nvp-c-out-file (&optional file)
-  (concat (file-name-sans-extension (or file (buffer-file-name)))
-          (nvp-with-gnu/w32 ".out" ".exe")))
-
-;; associated header file name
-(defsubst nvp-c--header-file-name (&optional buffer)
-  (concat (file-name-sans-extension (or buffer buffer-file-name)) ".h"))
-
-(defsubst nvp-header-file-p ()
-  (string-match-p "h[xp]*" (nvp-yas-ext)))
+(eval-and-compile
+  (defsubst nvp-header-file-p ()
+    (string-match-p "h[xp]*" (nvp-yas-ext))))
 
 ;; split string STR on commas, but only when not between <..>
 ;; eg., "std::vector<std::pair<int,int>> i, int j" =>

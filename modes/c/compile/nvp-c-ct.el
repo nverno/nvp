@@ -1,4 +1,4 @@
-;;; nvp-c-macros.el ---  -*- lexical-binding: t; -*-
+;;; nvp-c-ct.el --- compile-time -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 (require 'nvp-macro)
@@ -8,9 +8,13 @@
 (defvar nvp-abbrev-local-table)
 (defvar boost-test-abbrev-table)
 
-(defsubst nvp-string-or-symbol (sym)
-  "If SYM is string convert to symbol."
-  (if (stringp sym) (intern sym) sym))
+(defsubst nvp-c-out-file (&optional file)
+  (concat (file-name-sans-extension (or file (buffer-file-name)))
+          (nvp-with-gnu/w32 ".out" ".exe")))
+
+;; associated header file name
+(defsubst nvp-c--header-file-name (&optional buffer)
+  (concat (file-name-sans-extension (or buffer buffer-file-name)) ".h"))
 
 ;; locally set keys in test buffers to run tests
 (defmacro nvp-c-test--buffer (type)
@@ -25,7 +29,7 @@
 ;; Runs tests in current buffer or FILE if non-nil
 (defmacro nvp-c-test--runner-fn (name &optional c++ flags libs)
   (declare (indent defun))
-  (let ((fn (nvp-string-or-symbol name)))
+  (let ((fn (nvp-as-symbol name)))
     `(progn
        ;; (,'declare-function ,fn "")
        (defun ,fn (save &optional file post-compile)
@@ -47,7 +51,8 @@ is non-nil."
                 (compilation-read-command nil))
            (call-interactively 'compile))))))
 
-
+
+;; -------------------------------------------------------------------
 ;;; C++
 
 (defmacro nvp-with-c++-vars (&rest body)
@@ -62,7 +67,7 @@ is non-nil."
      (nvp-set-local-keymap :use t
        ("C-c C-c" . nvp-c++-test-run-unit-test))))
 
-(provide 'nvp-c-macros)
+(provide 'nvp-c-ct)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil

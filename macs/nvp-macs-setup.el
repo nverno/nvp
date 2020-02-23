@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (require 'nvp-macs-common)
-(require 'nvp-subrs)
 
 ;; default suffix appended when defining package location variables
 (defvar nvp-package-root-suffix "--dir")

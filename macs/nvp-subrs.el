@@ -72,6 +72,18 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
                    collect arg)
               (cons args nil))))
 
+(defsubst nvp-list-split-at (pred xs)
+  "Return list with first element being elements of LST before PRED was non-nil."
+  (let ((ys (list nil)) (zs (list nil)) flip)
+    (cl-dolist (x xs)
+      (if flip (nconc zs (list x))
+        (if (funcall pred x)
+            (progn
+              (setq flip t)
+              (nconc zs (list x)))
+          (nconc ys (list x)))))
+    (cons (cdr ys) (cdr zs))))
+
 ;; -------------------------------------------------------------------
 ;;; Plists
 
@@ -96,17 +108,18 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
         (setq lst (cdr lst))))
     (cons kws res)))
 
-(defsubst nvp-list-split-at (pred xs)
-  "Return list with first element being elements of LST before PRED was non-nil."
-  (let ((ys (list nil)) (zs (list nil)) flip)
-    (cl-dolist (x xs)
-      (if flip (nconc zs (list x))
-        (if (funcall pred x)
-            (progn
-              (setq flip t)
-              (nconc zs (list x)))
-          (nconc ys (list x)))))
-    (cons (cdr ys) (cdr zs))))
+;; -------------------------------------------------------------------
+;;; Files
+
+(defsubst nvp-ext (&optional path)
+  (file-name-extension (or path (buffer-file-name))))
+(defsubst nvp-no-ext (&optional path)
+  (file-name-sans-extension (or path (buffer-file-name) (buffer-name))))
+(defsubst nvp-bfn () (nvp-path 'bfs nil :or-name t))
+(defsubst nvp-bfn-no-ext () (nvp-path 'bfse nil :or-name t))
+(defsubst nvp-dfn () (nvp-path 'ds))
+(defsubst nvp-fn (&optional path)
+  (file-name-nondirectory (directory-file-name (or path (buffer-file-name)))))
 
 (provide 'nvp-subrs)
 ;; Local Variables:

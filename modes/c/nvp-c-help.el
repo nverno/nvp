@@ -2,7 +2,9 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-c-ct "./compile/nvp-c-ct"))
 (require 'nvp-hap-semantic)
 (require 'nvp-c)
 
@@ -32,7 +34,7 @@
 ;;; Util
 
 ;; return name of function at point and if it is static
-(defsubst nvp-c-help-function-at-point ()
+(defun nvp-c-help-function-at-point ()
   (ignore-errors
     (let ((tag (semantic-current-tag)))
       (when (and tag (eq (cadr tag) 'function))

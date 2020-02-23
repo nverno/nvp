@@ -28,7 +28,7 @@
 Decrement with prefix."
   (interactive "P")
   (or bnds
-      (setq bnds (nvp-tap 'bdwim 'paragraph))
+      (setq bnds (nvp-tap 'bdwim 'symbol))
       (user-error "No region to search in."))
   (or inc (setq inc (if arg -1 1)))
   (let (deactivate-mark)
@@ -37,7 +37,9 @@ Decrement with prefix."
        (replace-match (number-to-string (+ inc (string-to-number ms)))))
      "\\([-]?[[:digit:]]+\\)" bnds 1))
   (nvp-repeat-command ?= nil
-    `(("-" (nvp-lam nil (nvp-toggle-increment-numbers 1 ',bnds -1))
+    `(("-" (nvp-lam nil
+             (interactive)
+             (nvp-toggle-increment-numbers 1 ',bnds -1))
        :msg "decrement"))))
 
 ;; -------------------------------------------------------------------

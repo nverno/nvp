@@ -6,13 +6,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp-decls :v (yas-moving-away-p yas-modified-p))
 (nvp-auto "nvp-parse" 'nvp-parse-current-function)
 (nvp-auto "s" 's-upper-camel-case 's-snake-case 's-trim 's-trim-right)
-
-(eval-when-compile
-  (defvar yas-moving-away-p)
-  (defvar yas-modified-p))
 
 (defalias 'yas-comment-string 'nvp-yas-comment)
 ;; yas-inside-string uses `font-lock-string-face'

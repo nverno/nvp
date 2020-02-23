@@ -28,16 +28,13 @@
 (defvar-local nvp-project-root-function ()
   "Function to determine root directory of current project.")
 
-(defsubst nvp-longest-elem (&rest strs)
-  (cl-reduce (lambda (a b) (if (> (length a) (length b)) a b)) strs))
-
 ;;;###autoload
 (defun nvp-project-root (path)
   "Try `nvp-project-root-function' if it is defined.
 Otherwise, look for version control directories, returing the longest path."
   (if nvp-project-root-function
       (funcall nvp-project-root-function)
-    (or (nvp-longest-elem
+    (or (nvp-longest-item
          (vc-git-root path)
          (vc-svn-root path)
          (vc-hg-root path)

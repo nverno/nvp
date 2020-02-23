@@ -10,10 +10,11 @@
 (eval-when-compile
   ;; maven function factory
   (defmacro maven-fn (cmd)
-    `(defun ,(intern (concat "nvp-maven-" (nvp-stringify cmd))) ()
+    (unless (stringp cmd) (setq cmd (symbol-name cmd)))
+    `(defun ,(intern (concat "nvp-maven-" cmd)) ()
        (interactive)
        (if (nvp-maven-p)
-           (eclim-maven-run ,(nvp-stringify cmd))
+           (eclim-maven-run ,cmd)
          (message "No pom.xml file found in project root directory")))))
 
 ;; -------------------------------------------------------------------

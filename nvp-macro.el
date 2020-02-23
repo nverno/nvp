@@ -18,6 +18,7 @@
 (require 'nvp-macs-bindings "macs/nvp-macs-bindings")
 (require 'nvp-macs-process "macs/nvp-macs-process")
 (require 'nvp-macs-decls "macs/nvp-macs-decls")
+(require 'nvp-subrs "macs/nvp-subrs")
 
 
 ;; -------------------------------------------------------------------
@@ -28,7 +29,7 @@
   (declare (indent defun) (debug t))
   (while (keywordp (car else))
     (setq else (cdr (cdr else))))
-  (and test (setq test (car (nvp--unquote test))))
+  (and test (setq test (car (nvp-list-unquote test))))
   (let ((test-fn (if test
                      `(,test (prefix-numeric-value current-prefix-arg) ,num)
                    (if (listp num)
@@ -1152,7 +1153,7 @@ and set `this-command' to nil so opposite happens next time."
   "Apply ADVICE to FUNCS at WHERE with PROPS. 
 FUNCS can be a list, quoted or not."
   (declare (indent defun))
-  (setq funcs (nvp--unquote funcs))
+  (setq funcs (nvp-list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(advice-add ',func ,where ,advice ,props))))
@@ -1161,7 +1162,7 @@ FUNCS can be a list, quoted or not."
   "Remove ADVICE from FUNCS.
 See `nvp-advise-commands'."
   (declare (indent defun) (debug t))
-  (setq funcs (nvp--unquote funcs))
+  (setq funcs (nvp-list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(advice-remove ',func ',advice))))

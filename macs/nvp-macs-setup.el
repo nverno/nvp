@@ -10,12 +10,18 @@
 
 ;;; Define 
 
-(defmacro nvp-defvar (&rest var-vals)
+(cl-defmacro nvp-defvar (&rest var-vals &key permanent local &allow-other-keys)
   "Define VAR and eval VALUE during compile."
-  (declare (indent 0))
+  (declare (indent 0) (debug t))
+  (while (keywordp (car var-vals))
+    (setq var-vals (cdr (cdr var-vals))))
   (macroexp-progn
-   (cl-loop for (var value) on var-vals by #'cddr
-      collect `(progn (defvar ,var (eval-when-compile ,value))))))
+   (cl-loop for (var value . doc) on var-vals by #'cdddr
+      collect
+        `(progn
+           (defvar ,var (eval-when-compile ,value) ,doc)
+           ,(if local `(make-variable-buffer-local ',var))
+           ,(if permanent `(put ',var 'permanent-local t))))))
 
 (defmacro nvp-setq (&rest var-vals)
   "Define VAR and eval VALUE during compile."
@@ -36,6 +42,7 @@
      ,@(cl-loop for (var val) on var-vals by #'cddr
           collect `(funcall (or (get ',var 'custom-set) 'set-default)
                             ',var ,val))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Programs

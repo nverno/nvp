@@ -7,9 +7,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-org)
 (require 'org-table)
-
 (declare-function org-babel-execute:dot "ob-dot")
-(autoload 'nvp-list-split "nvp-util")
 
 ;; Note: this isn't used anywhere
 ;; Format alist DAT as an org table.  This alist assumes :head and
@@ -19,8 +17,7 @@
   (let* ((head (cdr (assoc-string "head" dat)))
          (rows (append (cdr (assoc-string "rows" dat)) ()))
          (cols (length head)))
-    (append head (cons 'hline nil) (nvp-list-split rows cols) nil)))
-
+    (append head (cons 'hline nil) (nvp-list-split-into-sublists rows cols) nil)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

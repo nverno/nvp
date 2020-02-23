@@ -131,12 +131,7 @@ The result may also contain atoms that where head of subalists."
 	((null (cdr l)) (car l))
 	(t (cl-intersection (car l) (nvp-list-intersection (cdr l))))))
 
-;; Split list LST into N sublists.
-(defun nvp-list-split (lst n)
-  (cl-loop for i from 0 to (1- (length lst)) by n
-     collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
-
-
+;; -------------------------------------------------------------------
 ;;; Regexps
 
 (eval-when-compile

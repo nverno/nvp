@@ -8,6 +8,10 @@
 (defvar nvp-abbrev-local-table)
 (defvar boost-test-abbrev-table)
 
+(defsubst nvp-string-or-symbol (sym)
+  "If SYM is string convert to symbol."
+  (if (stringp sym) (intern sym) sym))
+
 ;; locally set keys in test buffers to run tests
 (defmacro nvp-c-test--buffer (type)
   `(progn

@@ -1,7 +1,7 @@
 ;; -*- coding: utf-8;-*-
 (define-abbrev-table 'js-mode-abbrev-table
-  '(
-    ("nan" "NaN" nil :system t)
+  '(("nan" "NaN" nil :system t)
+    ("deb" "debugger;" nil :system t)
     ("ret" "return" nil :system t)
     ("undef" "undefined" nil :system t)
     ("infinity" "Infinity" nil :system t)

@@ -49,11 +49,17 @@
 
 ;;-- Local
 ;; Abbrevs
+(nvp-defvar
+  :local t :permanent t
+  nvp-abbrev-local-file () "File containing local abbrev tables." nil
+  nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
+  "Default chars to include in abbrev prefixes.")
+
 (defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
 (put 'nvp-mode-header-regex 'permanent-local t)
 (defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
 (defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
-(defvar-local nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
+(defvar-local nvp-abbrev-prefix-chars 
   "Default chars to include in abbrev prefixes")
 (put 'nvp-abbrev-prefix-chars 'permanent-local t)
 

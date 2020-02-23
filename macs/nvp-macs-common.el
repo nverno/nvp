@@ -6,6 +6,7 @@
 (require 'subr-x)
 (require 'macroexp)
 (require 'dash)
+(require 'nvp-subrs)
 
 (defvar nvp-debug-level nil)
 
@@ -36,42 +37,6 @@
 ;; -------------------------------------------------------------------
 ;;; Utils: Conversion / Normalization
 
-;; #<marker at 7449 in use-package-core.el>
-(defvar nvp-macs-merge-key-alist
-  '((:if . (lambda (new old) `(and ,new ,old)))
-    (:after . (lambda (new old) `(:all ,new ,old)))))
-
-;; unquote, unfunction, all elements in args - return as list
-;; eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)
-(defsubst nvp--unquote (args)
-  (while (memq (car-safe args) '(function quote))
-    (setq args (cadr args)))
-  (delq nil (if (listp args)
-                (cl-loop for arg in args
-                   do (while (memq (car-safe arg) '(function quote))
-                        (setq arg (cadr arg)))
-                   collect arg)
-              (cons args nil))))
-
-;; use-package helpers
-(defsubst nvp--concat (&rest elems)
-  "Remove empty lists from ELEMS and append."
-  (apply #'append (delete nil (delete (list nil) elems))))
-
-(defsubst nvp--stringify (string-or-symbol)
-  (if (stringp string-or-symbol) string-or-symbol
-    (symbol-name string-or-symbol)))
-
-;; use-package-is-pair
-(defsubst nvp--pair-p (x car-pred cdr-pred)
-  "Return non-nil if X is a cons satisfying predicates applied to elems."
-  (and (consp x)
-       (funcall car-pred (car x))
-       (funcall cdr-pred (cdr x))))
-
-;;; TODO: #<marker at 13907 in use-package-core.el>
-;; (defun nvp--normalize-keywords ())
-
 (defun nvp--normalize-modemap (mode &optional minor)
   "Convert MODE to keymap symbol if necessary.
 If MINOR is non-nil, create minor mode map symbol."
@@ -80,7 +45,7 @@ If MINOR is non-nil, create minor mode map symbol."
    ((and (stringp mode) (eq (intern mode) 'global-map))
     (list 'current-global-map))
    ((keymapp mode) mode)
-   (t (and (symbolp mode) (setq mode (symbol-name mode)))
+   (t (setq mode (nvp-as-string mode))
       (let ((minor (or minor (string-match-p "-minor" mode))))
         (if (not (or (string-match-p "-map\\'" mode)
                      (string-match-p "-keymap\\'" mode)))
@@ -93,7 +58,7 @@ If MINOR is non-nil, create minor mode map symbol."
   "Convert MODE to canonical hook symbol.
 If MINOR is non-nil, convert to minor mode hook symbol."
   (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
-  (and (symbolp mode) (setq mode (symbol-name mode)))
+  (setq mode (nvp-as-string mode))
   (let ((minor (or minor (string-match-p "-minor" mode))))
     (intern
      (concat
@@ -101,30 +66,66 @@ If MINOR is non-nil, convert to minor mode hook symbol."
        "\\(?:-minor\\)?\\(?:-mode\\)?\\(?:-hook\\)?\\'" "" mode)
       (if minor "-minor-mode-hook" "-mode-hook")))))
 
-(defmacro nvp-listify (&rest args)
-  "Ensure all items in ARGS are lists."
-  `(progn
-     ,@(mapcar (lambda (arg)
-                 (and (stringp arg) (setq arg (intern-soft arg)))
-                 `(unless (and ,arg
-                               (listp ,arg)
-                               (not (functionp ,arg)))
-                    (setq ,arg (list ,arg))))
-               args)))
 
-(defmacro nvp-string-or-symbol (sym)
-  "If SYM is string convert to symbol."
-  `(if (stringp ,sym) (intern ,sym) ,sym))
+;; -------------------------------------------------------------------
+;;; Normalize macro arguments
 
-(defmacro nvp-stringify (name)
-  "Sort of ensure that NAME symbol is a string."
-  `(progn
-     (pcase ,name
-       ((pred stringp) ,name)
-       ((pred symbolp) (symbol-name ,name))
-       (`(quote ,sym) (symbol-name sym))
-       (`(function ,sym) (symbol-name sym))
-       (_ (user-error "How to stringify %S?" ,name)))))
+(defvar nvp-macs-merge-key-alist
+  '((:if    . (lambda (new old) `(and ,new ,old)))
+    (:after . (lambda (new old) `(:all ,new ,old))))
+  "See `use-package-merge-key-alist'.")
+
+;; default function to merge key values when there may be a default or multiple
+;; found in arguments
+(defun nvp-macs-merge-keys (key new old)
+  (let ((merger (assq key nvp-macs-merge-key-alist)))
+    (if merger (funcall (cdr merger) new old)
+      (append new old))))
+
+(defun nvp-macs-normalize-plist (name input
+                                      &optional plist defaults merge-function)
+  "Normalize pseudo-plist to regular plist, extending key/value pairs.
+Keywords will be call by a function nvp-macs-normalize/<keyword>
+with three arguments: NAME, the keyword, and any args following before next keyword.
+If the keyword still has no default and is a member of DEFAULTS, that will be 
+used. Modification of `use-package-normalize-plist'."
+  (if (null input)
+      plist
+    (let* ((kw (car input))
+           (xs (nvp-list-split-at #'keywordp (cdr input)))
+           (args (car xs))
+           (tail (cdr xs))
+           (normalizer
+            (intern-soft
+             (format "nvp-macs-normalize/%s/%s" (symbol-name name) (symbol-name kw))))
+           (arg (if (functionp normalizer)
+                    (funcall normalizer name kw args)
+                  (car args))))
+      (if (memq kw defaults)
+          (progn
+            (unless arg (setq arg (plist-get arg defaults)))
+            (setq plist (nvp-macs-normalize-plist
+                         name tail plist defaults merge-function))
+            (plist-put plist kw
+                       (if (and merge-function (plist-member plist kw))
+                           (funcall merge-function kw arg (plist-get plist kw))
+                         arg)))
+        ;; unknown keyword
+        (nvp-macs-normalize-plist name tail plist defaults merge-function)))))
+
+
+(defun nvp-macs-normalize-keywords (name args &optional defaults merge-function)
+  (let ((name-sym (nvp-as-symbol name)))
+    (setq args (delq 'elisp--witness--lisp args))
+    (let ((body (list nil)))
+      (while (and args (not (keywordp (car args))))
+        (push (car args) body)
+        (setq args (cdr args)))
+      (nvp-plist-merge 
+       (nvp-macs-normalize-plist
+        name-sym args `(:body ,(nreverse body)) defaults merge-function)
+       defaults))))
+
 
 
 ;; -------------------------------------------------------------------
@@ -343,30 +344,30 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 (defalias 'nvp-decl 'nvp-declare)
 (put 'nvp-decl 'lisp-indent-function 'defun)
 
-(cl-defmacro nvp-declare (&rest funcs &key pre pkg &allow-other-keys)
-  (declare (indent defun))
-  (and (stringp (car funcs))
-       (setq pkg (car funcs)
-             funcs (cdr funcs)))
-  (let ((pkg (or pkg (cl-getf funcs :pkg) "")))
-    (while (keywordp (car funcs))
-      (setq funcs (cdr (cdr funcs))))
-    (setq funcs (nvp--unquote funcs))
-    (when pre
-      (setq funcs (mapcar (lambda (fn)
-                            (let ((fn (if (symbolp fn) (symbol-name fn) fn)))
-                              (if (string-prefix-p pre fn) fn
-                                (intern (concat pre "-" fn)))))
-                          funcs)))
-    (macroexp-progn
-     (cl-loop for func in funcs
-        collect `(declare-function ,func ,pkg)))))
+(defmacro nvp-declare (&rest funcs)
+  (declare (indent defun) (debug t))
+  (let ((pkg ""))
+    (when (stringp (car funcs))
+      (setq pkg (car funcs)
+            funcs (nvp-plist-delete (cdr funcs) :pkg)))
+    (-let (((&plist :body funcs :pkg pkg :pre pre)
+            (nvp-macs-normalize-keywords "decl" funcs `(:pkg ,pkg :pre nil))))
+      (setq funcs (nvp-list-unquote funcs))
+      (when pre
+        (setq funcs (mapcar (lambda (fn)
+                              (let ((fn (nvp-as-string fn)))
+                                (if (string-prefix-p pre fn) fn
+                                  (intern (concat pre "-" fn)))))
+                            funcs)))
+      (macroexp-progn
+       (cl-loop for func in funcs
+          collect `(declare-function ,func ,pkg))))))
 
 (defalias 'nvp-auto 'nvp-autoload)
 (put 'nvp-auto 'lisp-indent-function 'defun)
 (defmacro nvp-autoload (package &rest funcs)
   (declare (indent defun))
-  (setq funcs (nvp--unquote funcs))
+  (setq funcs (nvp-list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(autoload ',func ,package))))

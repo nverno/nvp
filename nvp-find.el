@@ -15,9 +15,10 @@
   (require 'hydra))
 (require 'nvp-display)
 (require 'nvp)
-(nvp-decls)
-(nvp-decl :pre "wgrep" exit save-all-buffers abort-changes remove-change
-  remove-all-change toggle-readonly-area mark-deletion change-to-wgrep-mode)
+(nvp-decls :f (wgrep-exit wgrep-save-all-buffers wgrep-abort-changes
+                          wgrep-remove-change wgrep-remove-all-change
+                          wgrep-toggle-readonly-area wgrep-mark-deletion
+                          wgrep-change-to-wgrep-mode))
 
 (defvar nvp-search-history () "Store search history inputs.")
 

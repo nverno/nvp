@@ -9,8 +9,7 @@
 ;; - add jump bindings to overlays
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (autoload 'find-library-name "find-func")
 
 (eval-and-compile

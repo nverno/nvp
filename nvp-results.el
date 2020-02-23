@@ -10,11 +10,10 @@
 ;; - view-list #<marker at 153343 in evil-common.el>
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-auto "nvp-util" nvp-s-repeat nvp-s-center)
 (nvp-decls)
+(nvp-auto "nvp-util" nvp-s-repeat nvp-s-center)
 
 ;; -------------------------------------------------------------------
 ;;; Pretty printing

@@ -3,6 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'nvp-macs-common)
+(require 'nvp-subrs)
 
 ;; default suffix appended when defining package location variables
 (defvar nvp-package-root-suffix "--dir")
@@ -15,8 +16,9 @@
   (declare (indent 0) (debug t))
   (while (keywordp (car var-vals))
     (setq var-vals (cdr (cdr var-vals))))
+  (setq var-vals (nvp-list-split-into-sublists var-vals 3))
   (macroexp-progn
-   (cl-loop for (var value . doc) on var-vals by #'cdddr
+   (cl-loop for (var value doc) in var-vals
       collect
         `(progn
            (defvar ,var (eval-when-compile ,value) ,doc)
@@ -94,7 +96,7 @@ If program is not found at compile time, fallback to runtime search."
 (defmacro nvp-mode-config-path (mode &optional ensure-string)
   "Create path for MODE config file."
   `(expand-file-name
-    (concat "nvp-" ,(if ensure-string (nvp-stringify mode) `,mode) "-config.el")
+    (concat "nvp-" ,(if ensure-string (nvp-as-string mode) `,mode) "-config.el")
     nvp/config))
 
 

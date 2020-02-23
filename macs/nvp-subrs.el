@@ -33,7 +33,7 @@
 ;;; Lists
 
 (defsubst nvp-list-split-into-sublists (lst n)
-  "Split LST into N sublists."
+  "Split LST into N length sublists."
   (declare (pure t) (side-effect-free t))
   (cl-loop for i from 0 to (1- (length lst)) by n
      collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))

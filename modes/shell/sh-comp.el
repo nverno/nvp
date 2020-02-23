@@ -23,7 +23,11 @@
 (require 'sh-script)
 (require 'company)
 (require 'imenu)
-(defvar bash-completion-process-timeout)
+(nvp-decls :v (bash-completion-process-timeout)
+           :f (bash-completion-require-process
+               bash-completion--parse bash-completion--customize
+               bash-completion--completion-table-with-cache bash-completion-comm
+               bash-completion-reset bash-completion--stub-start))
 
 (defvar sh-comp-use-bash-completion t
   "Non-nil to use `bash-completion' during completion at point.")
@@ -70,11 +74,12 @@
   sources
   modtime)
 
-(defsubst sh-comp--expand-file-names (stubs)
-  (cl-loop for stub in stubs
-     as file = (expand-file-name (substitute-in-file-name stub))
-     when (file-exists-p file)
-     collect file))
+(eval-when-compile
+  (defsubst sh-comp--expand-file-names (stubs)
+   (cl-loop for stub in stubs
+      as file = (expand-file-name (substitute-in-file-name stub))
+      when (file-exists-p file)
+      collect file)))
 
 ;; gather sourced files from buffer
 (defun sh-comp--buffer-sources ()
@@ -137,11 +142,12 @@
               (sh-comp-file-candidates
                src nil recurse imenu-regexp 'no-return))))))))
 
-(defsubst sh-comp--getter (type)
-  (if (eq type 'all)
-      (lambda (db) (append (sh-comp-dbfile-functions db)
-                      (sh-comp-dbfile-variables db)))
-    (intern (concat "sh-comp-dbfile-" (symbol-name type)))))
+(eval-when-compile
+  (defsubst sh-comp--getter (type)
+   (if (eq type 'all)
+       (lambda (db) (append (sh-comp-dbfile-functions db)
+                       (sh-comp-dbfile-variables db)))
+     (intern (concat "sh-comp-dbfile-" (symbol-name type))))))
 
 ;; Get/cache candidates for FILE
 ;; Cache is created when empty or the file's modification time has changed
@@ -179,8 +185,8 @@ sourced files."
 ;; -------------------------------------------------------------------
 ;;; Completion
 
-(nvp-decl :pre "bash-completion" require-process -parse -stub-start -customize
-  -completion-table-with-cache comm reset)
+(nvp-decl require-process -parse -stub-start -customize
+  -completion-table-with-cache comm reset :pre "bash-completion")
 
 (defvar sh-comp-syntax-table
   (let ((tab sh-mode-syntax-table))

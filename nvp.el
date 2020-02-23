@@ -24,7 +24,7 @@
 ;;-- Global -- most machine specific are compiled in init
 (nvp-defvar nvp-program-search-paths
   (nvp-with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
-    `(,nvp/bin ,nvp/binw)))
+    `(,nvp/bin ,nvp/binw)) "Preferred search locations for executables.")
 (defvar nvp-default-org-file "gtd.org" "Default org file.")
 (defvar nvp-window-configuration-stack () "Store window configurations.")
 (defvar nvp-default-log-function #'nvp-log-default
@@ -49,31 +49,19 @@
 
 ;;-- Local
 ;; Abbrevs
-(nvp-defvar
-  :local t :permanent t
-  nvp-abbrev-local-file () "File containing local abbrev tables." nil
-  nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
-  "Default chars to include in abbrev prefixes.")
-
-(defvar-local nvp-abbrev-local-file nil "File containing local abbrev tables.")
-(put 'nvp-mode-header-regex 'permanent-local t)
 (defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
 (defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
-(defvar-local nvp-abbrev-prefix-chars 
-  "Default chars to include in abbrev prefixes")
-(put 'nvp-abbrev-prefix-chars 'permanent-local t)
-
-;; jumping variables -- might be set in dir-locals
-(defvar-local nvp-local-notes-file () "Local notes/todo to jump dwim.")
-(put 'nvp-local-notes-file 'permanent-local t)
-(defvar-local nvp-local-books-directories () "Local book directory/s.")
-(put 'nvp-local-notes-file 'permanent-local t)
-(defvar-local nvp-local-uris () "Local URIs for webjumping.")
-(put 'nvp-local-uris 'permanent-local t)
-(defvar-local nvp-local-src-directories () "Local source dirs to jump.")
-(put 'nvp-local-src-directories 'permanent-local t)
-(defvar-local nvp-local-bookmark-file () "Local bookmarks to use.")
-(put 'nvp-local-bookmark-file 'permanent-local t)
+(nvp-defvar
+  :local t :permanent t
+  nvp-abbrev-local-file () "File containing local abbrev tables."
+  nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
+  "Default chars to include in abbrev prefixes."
+  ;; jumping variables -- might be set in dir-locals
+  nvp-local-notes-file () "Local notes/todo to jump dwim."
+  nvp-local-books-directories () "Local book directory/s."
+  nvp-local-uris () "Local URIs for webjumping."
+  nvp-local-src-directories () "Local source dirs to jump."
+  nvp-local-bookmark-file () "Local bookmarks to use.")
 
 ;;-- Possibly mode vars
 (defvar-local nvp-mode-header-regex nil "Regex to move b/w headers.")

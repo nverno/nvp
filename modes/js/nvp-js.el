@@ -91,12 +91,20 @@
 ;; -------------------------------------------------------------------
 ;;; Font locking
 
-;; (defvar keyword-function
-;;   '(("\\(function\\)\\>" (0 (prog1 ()
-;;                               (compose-region (match-beginning 1)
-;;                                               (match-end 1)
-;;                                               "\u0192"))))))
-;; (font-lock-add-keywords 'js2-mode keyword-function)
+;; shebang in node scripts not recognized by js2
+(defun nvp-js2-font-lock-additions ()
+  (font-lock-add-keywords
+   nil
+   '(("\\`\\(#!.*/[^ \t\n]+\\)\\s-*\\([^ \t\n]+\\)\\s-*$"
+      (1 font-lock-comment-face t)
+      (2 'nvp-italic-type-face t))))
+  (font-lock-flush)
+  (font-lock-ensure))
+
+;;; XXX: gets overwritten by stuff js2 does -- not sure why
+(defalias 'nvp-js2-syntax-propertize-shebang
+  (syntax-propertize-rules
+   ("\\`\\(#\\)!.*/[^ \t\n]+" (1 "!"))))
 
 ;; -------------------------------------------------------------------
 ;;; Help

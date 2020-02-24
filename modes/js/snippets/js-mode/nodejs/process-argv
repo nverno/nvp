@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: process.argv[]
+# key: pa
+# --
+process.argv[$1]

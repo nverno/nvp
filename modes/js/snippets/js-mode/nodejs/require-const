@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: require-const
+# key: reqc
+# --
+const ${1:pkg} = require('${2:$1}');

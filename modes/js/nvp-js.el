@@ -95,7 +95,7 @@
 (defun nvp-js2-font-lock-additions ()
   (font-lock-add-keywords
    nil
-   '(("\\`\\(#!.*/[^ \t\n]+\\)\\s-*\\([^ \t\n]+\\)\\s-*$"
+   '(("\\`\\(#!\\s-*.*/[^ \t\n]+\\)\\s-*\\([^ \t\n]+\\)\\s-*$"
       (1 font-lock-comment-face t)
       (2 'nvp-italic-type-face t))))
   (font-lock-flush)

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: import-explode
+# key: imp.
+# --
+import ${1:{ $2 }} from '$3';

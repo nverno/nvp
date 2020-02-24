@@ -2,4 +2,4 @@
 # name: require
 # key: req
 # --
-const ${1:pkg} = require("${2:$1}");
+${1:pkg} = require('${2:$1}')

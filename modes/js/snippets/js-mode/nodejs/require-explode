@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: require-explode
+# key: req.
+# --
+const { $1 } = require('${2:$1}');

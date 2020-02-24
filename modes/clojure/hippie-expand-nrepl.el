@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
-(require 'cider-repl)
+(require 'cider-repl nil t)
 
 (defvar-local he-nrepl--index nil)
 (defvar-local he-nrepl--matches ())

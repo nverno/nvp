@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'bison-mode)
+(require 'bison-mode nil t)
 ;; semantic bunghole
 (nvp-decls :v (bison-imenu-regex))
 

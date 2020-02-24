@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'cider)
+(require 'cider nil t)
 (nvp-decls :f (org-bookmark-jump-unhide))
 
 ;; -------------------------------------------------------------------

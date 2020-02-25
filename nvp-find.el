@@ -1,14 +1,19 @@
 ;;; nvp-find.el --- nvp-find-keymap; find stuff -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
+;; FIXME:
+;; - change the defaults to use project roots, integrate w/ projectile
+;;   with prefixes
+;; - Also, need to wrap projectile's ripgrep w/ an rg equivalent
+;;
 ;; Finding things:
 ;; - files
 ;; - grep/rgrep/lgrep/zgrep
 ;; - wgrep
 ;; - ag / wgrep-ag
 ;; - rgrep
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

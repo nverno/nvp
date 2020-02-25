@@ -121,18 +121,6 @@ If LOCAL is non-nil find closest root."
               `(setq-local ,projectile-test-prefix-function))))))
 
 ;; -------------------------------------------------------------------
-;;; Commands 
-
-;;;###autoload
-(defun nvp-project-projectile ()
-  "Load and remap keys for projectile."
-  (interactive)
-  (unless projectile-mode
-    (projectile-mode))
-  (global-set-key (kbd "<f2> p p") #'projectile-commander)
-  (call-interactively #'projectile-commander))
-
-;; -------------------------------------------------------------------
 ;;; Jumping to locations
 
 ;;;###autoload

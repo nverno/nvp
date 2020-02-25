@@ -1,15 +1,14 @@
 ;;; nvp-search.el --- search-map; search/replace -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;; - occur
 ;; - highlight regexps
 ;; - hi-lock
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
-(nvp-decl occur-read-primary-args)
+(nvp-decls :f (occur-read-primary-args))
 (nvp-auto "nvp-buffer" 'nvp-buffer-matching-mode)
 (nvp-auto "replace" 'multi-occur)
 

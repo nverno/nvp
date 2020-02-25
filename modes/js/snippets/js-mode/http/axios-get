@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: axios-get
+# key: axios-get
+# --
+axios.get(args.url, {responseType: 'json', responseEncoding: 'utf8'})
+  .then(response => {
+    console.log(response.data);
+  })
+  .catch(error => {
+    if (error.response) {                        // status code out of 2xx range
+      console.log(error.toJSON());
+    } else if (error.request) {                   // no response received
+      console.log(error.request);
+    } else {                                      // error setting up request
+      console.log('Error', error.message);
+    }
+  console.log(error.config);
+});

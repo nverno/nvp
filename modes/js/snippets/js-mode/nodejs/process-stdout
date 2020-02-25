@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: process.stdout
+# key: stdout
+# --
+process.stdout

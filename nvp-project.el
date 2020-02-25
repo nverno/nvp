@@ -24,22 +24,18 @@
 (defvar-local nvp-project--test-dir '("test" "tests" "t"))
 (defvar-local nvp-project--test-fmt "test-%s")
 
-;; TODO: find project root -- this is just from ag.el
-(defvar-local nvp-project-root-function ()
-  "Function to determine root directory of current project.")
-
 ;;;###autoload
-(defun nvp-project-root (path)
+(defun nvp-project-root (&optional path)
   "Try `nvp-project-root-function' if it is defined.
 Otherwise, look for version control directories, returing the longest path."
+  (or path (setq path (buffer-file-name)))
   (if nvp-project-root-function
       (funcall nvp-project-root-function)
     (or (nvp-longest-item
          (vc-git-root path)
          (vc-svn-root path)
          (vc-hg-root path)
-         (vc-bzr-root path))
-        path)))
+         (vc-bzr-root path)))))
 
 ;; -------------------------------------------------------------------
 ;;; Util

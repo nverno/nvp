@@ -80,6 +80,8 @@
 (defvar-local nvp-tag-function nil)
 (defvar-local nvp-compile-function #'nvp-compile-default)
 (defvar-local nvp-mark-defun-function #'mark-defun)
+(defvar-local nvp-project-root-function nil)
+(defvar-local nvp-test-framework nil)
 
 ;; TODO:
 ;; - test/tag functions should call hooks

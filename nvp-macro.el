@@ -20,7 +20,12 @@
 (require 'nvp-macs-decls "macs/nvp-macs-decls")
 (require 'nvp-subrs "macs/nvp-subrs")
 
-
+(defmacro nvp-with-project-root (&optional path &rest body)
+  "Execute BODY with `default-directory' set to project root.
+If PATH is non-nil, search for root starting at PATH."
+  `(let ((default-directory (nvp-project-root ,path)))
+     ,@body))
+
 ;; -------------------------------------------------------------------
 ;;; Prefix args
 

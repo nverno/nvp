@@ -9,6 +9,8 @@
 ;; - smart-compile
 ;; - https://github.com/syohex/emacs-quickrun
 ;; More generalization is good
+;; - see helm-make for generating makefile commands
+;; - maybe something in make-it-so
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -180,6 +182,7 @@ ARGS are passed to `nvp-compile'."
     (nvp-compilation-next n)))
 
 ;; Useful when compile is generalized for make builds
+;; Note: can just use "nproc" on linux
 ;; https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el
 ;; (defun numcores ()
 ;;   "Return the number of logical processors on this system."

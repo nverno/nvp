@@ -2,4 +2,4 @@
 # name: strict
 # key: strict
 # --
-'use strict'
+'use strict';

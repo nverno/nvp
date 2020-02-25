@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: castArray
+# key: f_castArray
+# contributor: 30-seconds
+# --
+const castArray = val => (Array.isArray(val) ? val : [val]);

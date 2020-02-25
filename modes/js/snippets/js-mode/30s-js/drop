@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: drop
+# key: f_drop
+# contributor: 30-seconds
+# --
+const drop = (arr, n = 1) => arr.slice(n);

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: dropRight
+# key: f_dropRight
+# contributor: 30-seconds
+# --
+const dropRight = (arr, n = 1) => arr.slice(0, -n);

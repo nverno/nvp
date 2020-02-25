@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: negate
+# key: f_negate
+# contributor: 30-seconds
+# --
+const negate = func => (...args) => !func(...args);

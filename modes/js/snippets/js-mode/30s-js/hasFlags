@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: hasFlags
+# key: f_hasFlags
+# contributor: 30-seconds
+# --
+const hasFlags = (...flags) =>
+  flags.every(flag => process.argv.includes(/^-{1,2}/.test(flag) ? flag : '--' + flag));

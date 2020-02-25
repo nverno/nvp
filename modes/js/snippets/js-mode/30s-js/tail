@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: tail
+# key: f_tail
+# contributor: 30-seconds
+# --
+const tail = arr => (arr.length > 1 ? arr.slice(1) : arr);

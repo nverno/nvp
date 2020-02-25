@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isAfterDate
+# key: f_isAfterDate
+# contributor: 30-seconds
+# --
+const isAfterDate = (dateA, dateB) => dateA > dateB;

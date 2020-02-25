@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: allEqual
+# key: f_allEqual
+# contributor: 30-seconds
+# --
+const allEqual = arr => arr.every(val => val === arr[0]);

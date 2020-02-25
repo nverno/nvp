@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: compose
+# key: f_compose
+# contributor: 30-seconds
+# --
+const compose = (...fns) => fns.reduce((f, g) => (...args) => f(g(...args)));

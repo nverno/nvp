@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: describe
+# key: describe
+# condition: (nvp-js-test-p)
+# --
+describe('$1', () => {
+  $0
+});

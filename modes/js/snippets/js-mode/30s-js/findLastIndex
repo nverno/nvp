@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: findLastIndex
+# key: f_findLastIndex
+# contributor: 30-seconds
+# --
+const findLastIndex = (arr, fn) =>
+  (arr
+    .map((val, i) => [i, val])
+    .filter(([i, val]) => fn(val, i, arr))
+    .pop() || [-1])[0];

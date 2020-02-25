@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: tomorrow
+# key: f_tomorrow
+# contributor: 30-seconds
+# --
+const tomorrow = () => {
+  let t = new Date();
+  t.setDate(t.getDate() + 1);
+  return t.toISOString().split('T')[0];
+};

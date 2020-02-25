@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: cloneRegExp
+# key: f_cloneRegExp
+# contributor: 30-seconds
+# --
+const cloneRegExp = regExp => new RegExp(regExp.source, regExp.flags);

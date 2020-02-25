@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: forOwn
+# key: f_forOwn
+# contributor: 30-seconds
+# --
+const forOwn = (obj, fn) => Object.keys(obj).forEach(key => fn(obj[key], key, obj));

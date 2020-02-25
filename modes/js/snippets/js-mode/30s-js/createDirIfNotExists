@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: createDirIfNotExists
+# key: f_createDirIfNotExists
+# contributor: 30-seconds
+# --
+const fs = require('fs');
+const createDirIfNotExists = dir => (!fs.existsSync(dir) ? fs.mkdirSync(dir) : undefined);

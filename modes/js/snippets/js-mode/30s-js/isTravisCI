@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isTravisCI
+# key: f_isTravisCI
+# contributor: 30-seconds
+# --
+const isTravisCI = () => 'TRAVIS' in process.env && 'CI' in process.env;

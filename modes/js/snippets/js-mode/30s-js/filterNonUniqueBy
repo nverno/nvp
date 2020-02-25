@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: filterNonUniqueBy
+# key: f_filterNonUniqueBy
+# contributor: 30-seconds
+# --
+const filterNonUniqueBy = (arr, fn) =>
+  arr.filter((v, i) => arr.every((x, j) => (i === j) === fn(v, x, i, j)));

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: converge
+# key: f_converge
+# contributor: 30-seconds
+# --
+const converge = (converger, fns) => (...args) => converger(...fns.map(fn => fn.apply(null, args)));

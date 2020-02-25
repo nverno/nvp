@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: partial
+# key: f_partial
+# contributor: 30-seconds
+# --
+const partial = (fn, ...partials) => (...args) => fn(...partials, ...args);

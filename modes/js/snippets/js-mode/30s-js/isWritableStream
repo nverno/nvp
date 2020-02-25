@@ -1,0 +1,11 @@
+# -*- snippet -*-
+# name: isWritableStream
+# key: f_isWritableStream
+# contributor: 30-seconds
+# --
+const isWritableStream = val =>
+  val !== null &&
+  typeof val === 'object' &&
+  typeof val.pipe === 'function' &&
+  typeof val._write === 'function' &&
+  typeof val._writableState === 'object';

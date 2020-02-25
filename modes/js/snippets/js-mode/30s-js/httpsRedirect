@@ -1,0 +1,8 @@
+# -*- snippet -*-
+# name: httpsRedirect
+# key: f_httpsRedirect
+# contributor: 30-seconds
+# --
+const httpsRedirect = () => {
+  if (location.protocol !== 'https:') location.replace('https://' + location.href.split('//')[1]);
+};

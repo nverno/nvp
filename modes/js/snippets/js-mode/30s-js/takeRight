@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: takeRight
+# key: f_takeRight
+# contributor: 30-seconds
+# --
+const takeRight = (arr, n = 1) => arr.slice(arr.length - n, arr.length);

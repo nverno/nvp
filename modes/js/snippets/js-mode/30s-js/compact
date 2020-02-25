@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: compact
+# key: f_compact
+# contributor: 30-seconds
+# --
+const compact = arr => arr.filter(Boolean);

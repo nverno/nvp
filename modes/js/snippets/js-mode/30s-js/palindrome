@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: palindrome
+# key: f_palindrome
+# contributor: 30-seconds
+# --
+const palindrome = str => {
+  const s = str.toLowerCase().replace(/[\\W_]/g, '');
+  return s === [...s].reverse().join('');
+};

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: initializeArrayWithValues
+# key: f_initializeArrayWithValues
+# contributor: 30-seconds
+# --
+const initializeArrayWithValues = (n, val = 0) => Array(n).fill(val);

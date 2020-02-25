@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: mapKeys
+# key: f_mapKeys
+# contributor: 30-seconds
+# --
+const mapKeys = (obj, fn) =>
+  Object.keys(obj).reduce((acc, k) => {
+    acc[fn(obj[k], k, obj)] = obj[k];
+    return acc;
+  }, {});

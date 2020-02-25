@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isArrayLike
+# key: f_isArrayLike
+# contributor: 30-seconds
+# --
+const isArrayLike = obj => obj != null && typeof obj[Symbol.iterator] === 'function';

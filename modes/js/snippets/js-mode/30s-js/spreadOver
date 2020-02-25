@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: spreadOver
+# key: f_spreadOver
+# contributor: 30-seconds
+# --
+const spreadOver = fn => argsArr => fn(...argsArr);

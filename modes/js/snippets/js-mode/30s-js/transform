@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: transform
+# key: f_transform
+# contributor: 30-seconds
+# --
+const transform = (obj, fn, acc) => Object.keys(obj).reduce((a, k) => fn(a, obj[k], k, obj), acc);

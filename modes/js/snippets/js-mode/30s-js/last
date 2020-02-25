@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: last
+# key: f_last
+# contributor: 30-seconds
+# --
+const last = arr => (arr && arr.length ? arr[arr.length - 1] : undefined);

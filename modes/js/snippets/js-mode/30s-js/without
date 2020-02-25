@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: without
+# key: f_without
+# contributor: 30-seconds
+# --
+const without = (arr, ...args) => arr.filter(v => !args.includes(v));

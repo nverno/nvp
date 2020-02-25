@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isBrowser
+# key: f_isBrowser
+# contributor: 30-seconds
+# --
+const isBrowser = () => ![typeof window, typeof document].includes('undefined');

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: union
+# key: f_union
+# contributor: 30-seconds
+# --
+const union = (a, b) => Array.from(new Set([...a, ...b]));

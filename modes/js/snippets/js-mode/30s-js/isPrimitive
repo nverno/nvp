@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isPrimitive
+# key: f_isPrimitive
+# contributor: 30-seconds
+# --
+const isPrimitive = val => Object(val) !== val;

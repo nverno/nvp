@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: pick
+# key: f_pick
+# contributor: 30-seconds
+# --
+const pick = (obj, arr) =>
+  arr.reduce((acc, curr) => (curr in obj && (acc[curr] = obj[curr]), acc), {});

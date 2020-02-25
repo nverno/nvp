@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: mapObject
+# key: f_mapObject
+# contributor: 30-seconds
+# --
+const mapObject = (arr, fn) =>
+  (a => (
+    (a = [arr, arr.map(fn)]), a[0].reduce((acc, val, ind) => ((acc[val] = a[1][ind]), acc), {})
+  ))();

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: minDate
+# key: f_minDate
+# contributor: 30-seconds
+# --
+const minDate = dates => new Date(Math.min(...dates));

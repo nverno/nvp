@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: objectFromPairs
+# key: f_objectFromPairs
+# contributor: 30-seconds
+# --
+const objectFromPairs = arr => arr.reduce((a, [key, val]) => ((a[key] = val), a), {});

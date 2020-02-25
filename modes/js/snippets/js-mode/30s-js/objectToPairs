@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: objectToPairs
+# key: f_objectToPairs
+# contributor: 30-seconds
+# --
+const objectToPairs = obj => Object.keys(obj).map(k => [k, obj[k]]);

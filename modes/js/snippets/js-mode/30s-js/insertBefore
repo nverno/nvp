@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: insertBefore
+# key: f_insertBefore
+# contributor: 30-seconds
+# --
+const insertBefore = (el, htmlString) => el.insertAdjacentHTML('beforebegin', htmlString);

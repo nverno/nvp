@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: toCurrency
+# key: f_toCurrency
+# contributor: 30-seconds
+# --
+const toCurrency = (n, curr, LanguageFormat = undefined) =>
+  Intl.NumberFormat(LanguageFormat, { style: 'currency', currency: curr }).format(n);

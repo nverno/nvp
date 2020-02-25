@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: insertAfter
+# key: f_insertAfter
+# contributor: 30-seconds
+# --
+const insertAfter = (el, htmlString) => el.insertAdjacentHTML('afterend', htmlString);

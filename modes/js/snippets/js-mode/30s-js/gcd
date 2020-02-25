@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: gcd
+# key: f_gcd
+# contributor: 30-seconds
+# --
+const gcd = (...arr) => {
+  const _gcd = (x, y) => (!y ? x : gcd(y, x % y));
+  return [...arr].reduce((a, b) => _gcd(a, b));
+};

@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: createElement
+# key: f_createElement
+# contributor: 30-seconds
+# --
+const createElement = str => {
+  const el = document.createElement('div');
+  el.innerHTML = str;
+  return el.firstElementChild;
+};

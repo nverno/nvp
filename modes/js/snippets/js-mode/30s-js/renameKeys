@@ -1,0 +1,13 @@
+# -*- snippet -*-
+# name: renameKeys
+# key: f_renameKeys
+# contributor: 30-seconds
+# --
+const renameKeys = (keysMap, obj) =>
+  Object.keys(obj).reduce(
+    (acc, key) => ({
+      ...acc,
+      ...{ [keysMap[key] || key]: obj[key] }
+    }),
+    {}
+  );

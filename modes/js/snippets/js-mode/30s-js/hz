@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: hz
+# key: f_hz
+# contributor: 30-seconds
+# --
+const hz = (fn, iterations = 100) => {
+  const before = performance.now();
+  for (let i = 0; i < iterations; i++) fn();
+  return (1000 * iterations) / (performance.now() - before);
+};

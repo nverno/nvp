@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: clampNumber
+# key: f_clampNumber
+# contributor: 30-seconds
+# --
+const clampNumber = (num, a, b) => Math.max(Math.min(num, Math.max(a, b)), Math.min(a, b));

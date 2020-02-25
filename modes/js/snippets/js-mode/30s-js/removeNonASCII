@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: removeNonASCII
+# key: f_removeNonASCII
+# contributor: 30-seconds
+# --
+const removeNonASCII = str => str.replace(/[^\\x20-\\x7E]/g, '');

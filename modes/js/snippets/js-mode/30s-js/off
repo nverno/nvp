@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: off
+# key: f_off
+# contributor: 30-seconds
+# --
+const off = (el, evt, fn, opts = false) => el.removeEventListener(evt, fn, opts);

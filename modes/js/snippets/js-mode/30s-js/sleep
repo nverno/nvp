@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: sleep
+# key: f_sleep
+# contributor: 30-seconds
+# --
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));

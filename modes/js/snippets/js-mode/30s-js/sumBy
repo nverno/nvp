@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: sumBy
+# key: f_sumBy
+# contributor: 30-seconds
+# --
+const sumBy = (arr, fn) =>
+  arr.map(typeof fn === 'function' ? fn : val => val[fn]).reduce((acc, val) => acc + val, 0);

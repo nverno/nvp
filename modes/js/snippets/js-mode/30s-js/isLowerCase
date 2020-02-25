@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isLowerCase
+# key: f_isLowerCase
+# contributor: 30-seconds
+# --
+const isLowerCase = str => str === str.toLowerCase();

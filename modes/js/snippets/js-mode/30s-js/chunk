@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: chunk
+# key: f_chunk
+# contributor: 30-seconds
+# --
+const chunk = (arr, size) =>
+  Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+    arr.slice(i * size, i * size + size)
+  );

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: filterFalsy
+# key: f_filterFalsy
+# contributor: 30-seconds
+# --
+const filterFalsy = arr => arr.filter(Boolean);

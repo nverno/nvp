@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: everyNth
+# key: f_everyNth
+# contributor: 30-seconds
+# --
+const everyNth = (arr, nth) => arr.filter((e, i) => i % nth === nth - 1);

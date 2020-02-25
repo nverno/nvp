@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: when
+# key: f_when
+# contributor: 30-seconds
+# --
+const when = (pred, whenTrue) => x => (pred(x) ? whenTrue(x) : x);

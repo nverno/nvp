@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: decapitalize
+# key: f_decapitalize
+# contributor: 30-seconds
+# --
+const decapitalize = ([first, ...rest], upperRest = false) =>
+  first.toLowerCase() + (upperRest ? rest.join('').toUpperCase() : rest.join(''));

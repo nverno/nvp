@@ -30,7 +30,8 @@
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
 (cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode js2-mode js2-jsx-mode js-mode js-jsx-mode))
+  (syntax arg &context (major-mode js2-mode js2-jsx-mode js-mode js-jsx-mode
+                                   rjsx-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
 (cl-defmethod nvp-newline-dwim-comment
@@ -45,6 +46,7 @@
   (httpd-start))
 
 ;;; jsx <=> js
+;;; FIXME: now using rsjx mode
 ;; currently jsx uses js-mode with js2-minor-mode
 (defun nvp-js-toggle-jsx ()
   "Toggle b/w js and jsx modes."
@@ -56,7 +58,15 @@
     (js2-mode-exit)
     (nvp-jsx-hook)))
 
+;; -------------------------------------------------------------------
 ;;; Yas
+(defun nvp-js-test-p ()
+  (or (string-match-p "\\(?:test\\|spec\\)" (nvp-dfn))
+      (string-match-p ".*test\\.js\\'" (nvp-bfn))))
+
+;; -------------------------------------------------------------------
+;;; Configuration
+;;; TODO: move this to projectile project configuration command
 (nvp-defvar nvp-js-test-re (regexp-opt '("jest" "mocha" "jasmine") t))
 
 ;; set local values, eg. in .dir-locals.el

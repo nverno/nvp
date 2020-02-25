@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: deepGet
+# key: f_deepGet
+# contributor: 30-seconds
+# --
+const deepGet = (obj, keys) => keys.reduce((xs, x) => (xs && xs[x] ? xs[x] : null), obj);

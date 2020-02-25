@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isFunction
+# key: f_isFunction
+# contributor: 30-seconds
+# --
+const isFunction = val => typeof val === 'function';

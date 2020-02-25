@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isSameDate
+# key: f_isSameDate
+# contributor: 30-seconds
+# --
+const isSameDate = (dateA, dateB) => dateA.toISOString() === dateB.toISOString();

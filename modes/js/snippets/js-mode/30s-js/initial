@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: initial
+# key: f_initial
+# contributor: 30-seconds
+# --
+const initial = arr => arr.slice(0, -1);

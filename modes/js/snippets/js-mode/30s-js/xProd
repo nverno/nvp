@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: xProd
+# key: f_xProd
+# contributor: 30-seconds
+# --
+const xProd = (a, b) => a.reduce((acc, x) => acc.concat(b.map(y => [x, y])), []);

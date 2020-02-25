@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: redirect
+# key: f_redirect
+# contributor: 30-seconds
+# --
+const redirect = (url, asLink = true) =>
+  asLink ? (window.location.href = url) : window.location.replace(url);

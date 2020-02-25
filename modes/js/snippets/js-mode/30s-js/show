@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: show
+# key: f_show
+# contributor: 30-seconds
+# --
+const show = (...el) => [...el].forEach(e => (e.style.display = ''));

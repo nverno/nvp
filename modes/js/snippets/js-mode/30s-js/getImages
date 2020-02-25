@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: getImages
+# key: f_getImages
+# contributor: 30-seconds
+# --
+const getImages = (el, includeDuplicates = false) => {
+  const images = [...el.getElementsByTagName('img')].map(img => img.getAttribute('src'));
+  return includeDuplicates ? images : [...new Set(images)];
+};

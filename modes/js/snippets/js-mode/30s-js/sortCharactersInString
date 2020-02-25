@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: sortCharactersInString
+# key: f_sortCharactersInString
+# contributor: 30-seconds
+# --
+const sortCharactersInString = str => [...str].sort((a, b) => a.localeCompare(b)).join('');

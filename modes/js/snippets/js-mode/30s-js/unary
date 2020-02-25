@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: unary
+# key: f_unary
+# contributor: 30-seconds
+# --
+const unary = fn => val => fn(val);

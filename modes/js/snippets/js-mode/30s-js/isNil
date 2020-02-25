@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isNil
+# key: f_isNil
+# contributor: 30-seconds
+# --
+const isNil = val => val === undefined || val === null;

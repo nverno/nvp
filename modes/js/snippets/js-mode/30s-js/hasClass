@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: hasClass
+# key: f_hasClass
+# contributor: 30-seconds
+# --
+const hasClass = (el, className) => el.classList.contains(className);

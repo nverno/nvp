@@ -1,0 +1,13 @@
+# -*- snippet -*-
+# name: isValidJSON
+# key: f_isValidJSON
+# contributor: 30-seconds
+# --
+const isValidJSON = str => {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: intersectionWith
+# key: f_intersectionWith
+# contributor: 30-seconds
+# --
+const intersectionWith = (a, b, comp) => a.filter(x => b.findIndex(y => comp(x, y)) !== -1);

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: stripHTMLTags
+# key: f_stripHTMLTags
+# contributor: 30-seconds
+# --
+const stripHTMLTags = str => str.replace(/<[^>]*>/g, '');

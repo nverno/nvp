@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isObjectLike
+# key: f_isObjectLike
+# contributor: 30-seconds
+# --
+const isObjectLike = val => val !== null && typeof val === 'object';

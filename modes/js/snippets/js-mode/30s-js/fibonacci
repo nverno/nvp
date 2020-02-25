@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: fibonacci
+# key: f_fibonacci
+# contributor: 30-seconds
+# --
+const fibonacci = n =>
+  Array.from({ length: n }).reduce(
+    (acc, val, i) => acc.concat(i > 1 ? acc[i - 1] + acc[i - 2] : i),
+    []
+  );

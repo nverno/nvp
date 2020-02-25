@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: overArgs
+# key: f_overArgs
+# contributor: 30-seconds
+# --
+const overArgs = (fn, transforms) => (...args) => fn(...args.map((val, i) => transforms[i](val)));

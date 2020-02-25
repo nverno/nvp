@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: frequencies
+# key: f_frequencies
+# contributor: 30-seconds
+# --
+const frequencies = arr =>
+  arr.reduce((a, v) => {
+    a[v] = a[v] ? a[v] + 1 : 1;
+    return a;
+  }, {});

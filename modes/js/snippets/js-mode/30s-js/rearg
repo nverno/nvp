@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: rearg
+# key: f_rearg
+# contributor: 30-seconds
+# --
+const rearg = (fn, indexes) => (...args) => fn(...indexes.map(i => args[i]));

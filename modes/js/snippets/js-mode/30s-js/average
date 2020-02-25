@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: average
+# key: f_average
+# contributor: 30-seconds
+# --
+const average = (...nums) => nums.reduce((acc, val) => acc + val, 0) / nums.length;

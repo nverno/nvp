@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: bindKey
+# key: f_bindKey
+# contributor: 30-seconds
+# --
+const bindKey = (context, fn, ...boundArgs) => (...args) =>
+  context[fn].apply(context, [...boundArgs, ...args]);

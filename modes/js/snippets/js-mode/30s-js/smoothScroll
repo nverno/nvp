@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: smoothScroll
+# key: f_smoothScroll
+# contributor: 30-seconds
+# --
+const smoothScroll = element =>
+  document.querySelector(element).scrollIntoView({
+    behavior: 'smooth'
+  });

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: shallowClone
+# key: f_shallowClone
+# contributor: 30-seconds
+# --
+const shallowClone = obj => Object.assign({}, obj);

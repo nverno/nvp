@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: getStyle
+# key: f_getStyle
+# contributor: 30-seconds
+# --
+const getStyle = (el, ruleName) => getComputedStyle(el)[ruleName];

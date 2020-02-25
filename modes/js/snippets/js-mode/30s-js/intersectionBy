@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: intersectionBy
+# key: f_intersectionBy
+# contributor: 30-seconds
+# --
+const intersectionBy = (a, b, fn) => {
+  const s = new Set(b.map(fn));
+  return a.filter(x => s.has(fn(x)));
+};

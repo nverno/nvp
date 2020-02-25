@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: collectInto
+# key: f_collectInto
+# contributor: 30-seconds
+# --
+const collectInto = fn => (...args) => fn(args);

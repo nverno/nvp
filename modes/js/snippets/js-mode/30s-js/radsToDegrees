@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: radsToDegrees
+# key: f_radsToDegrees
+# contributor: 30-seconds
+# --
+const radsToDegrees = rad => (rad * 180.0) / Math.PI;

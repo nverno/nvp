@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: differenceBy
+# key: f_differenceBy
+# contributor: 30-seconds
+# --
+const differenceBy = (a, b, fn) => {
+  const s = new Set(b.map(fn));
+  return a.map(fn).filter(el => !s.has(el));
+};

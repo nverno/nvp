@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: atob
+# key: f_atob
+# contributor: 30-seconds
+# --
+const atob = str => Buffer.from(str, 'base64').toString('binary');

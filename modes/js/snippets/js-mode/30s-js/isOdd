@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isOdd
+# key: f_isOdd
+# contributor: 30-seconds
+# --
+const isOdd = num => num % 2 === 1;

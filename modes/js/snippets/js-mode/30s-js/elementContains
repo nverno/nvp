@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: elementContains
+# key: f_elementContains
+# contributor: 30-seconds
+# --
+const elementContains = (parent, child) => parent !== child && parent.contains(child);

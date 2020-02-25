@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: triggerEvent
+# key: f_triggerEvent
+# contributor: 30-seconds
+# --
+const triggerEvent = (el, eventType, detail) =>
+  el.dispatchEvent(new CustomEvent(eventType, { detail }));

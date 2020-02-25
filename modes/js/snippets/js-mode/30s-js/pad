@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: pad
+# key: f_pad
+# contributor: 30-seconds
+# --
+const pad = (str, length, char = ' ') =>
+  str.padStart((str.length + length) / 2, char).padEnd(length, char);

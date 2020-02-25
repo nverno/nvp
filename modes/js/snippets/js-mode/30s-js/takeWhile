@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: takeWhile
+# key: f_takeWhile
+# contributor: 30-seconds
+# --
+const takeWhile = (arr, func) => {
+  for (const [i, val] of arr.entries()) if (func(val)) return arr.slice(0, i);
+  return arr;
+};

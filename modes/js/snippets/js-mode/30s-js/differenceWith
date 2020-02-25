@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: differenceWith
+# key: f_differenceWith
+# contributor: 30-seconds
+# --
+const differenceWith = (arr, val, comp) => arr.filter(a => val.findIndex(b => comp(a, b)) === -1);

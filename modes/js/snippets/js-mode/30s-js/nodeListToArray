@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: nodeListToArray
+# key: f_nodeListToArray
+# contributor: 30-seconds
+# --
+const nodeListToArray = nodeList => [...nodeList];

@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: forOwnRight
+# key: f_forOwnRight
+# contributor: 30-seconds
+# --
+const forOwnRight = (obj, fn) =>
+  Object.keys(obj)
+    .reverse()
+    .forEach(key => fn(obj[key], key, obj));

@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: intersection
+# key: f_intersection
+# contributor: 30-seconds
+# --
+const intersection = (a, b) => {
+  const s = new Set(b);
+  return a.filter(x => s.has(x));
+};

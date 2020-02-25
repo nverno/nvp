@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: deepFlatten
+# key: f_deepFlatten
+# contributor: 30-seconds
+# --
+const deepFlatten = arr => [].concat(...arr.map(v => (Array.isArray(v) ? deepFlatten(v) : v)));

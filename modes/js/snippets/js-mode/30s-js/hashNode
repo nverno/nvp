@@ -1,0 +1,19 @@
+# -*- snippet -*-
+# name: hashNode
+# key: f_hashNode
+# contributor: 30-seconds
+# --
+const crypto = require('crypto');
+const hashNode = val =>
+  new Promise(resolve =>
+    setTimeout(
+      () =>
+        resolve(
+          crypto
+            .createHash('sha256')
+            .update(val)
+            .digest('hex')
+        ),
+      0
+    )
+  );

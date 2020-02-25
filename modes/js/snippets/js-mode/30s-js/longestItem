@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: longestItem
+# key: f_longestItem
+# contributor: 30-seconds
+# --
+const longestItem = (...vals) => vals.reduce((a, x) => (x.length > a.length ? x : a));

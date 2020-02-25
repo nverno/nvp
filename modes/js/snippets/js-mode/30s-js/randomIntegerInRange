@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: randomIntegerInRange
+# key: f_randomIntegerInRange
+# contributor: 30-seconds
+# --
+const randomIntegerInRange = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;

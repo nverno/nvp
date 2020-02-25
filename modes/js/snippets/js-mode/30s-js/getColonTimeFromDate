@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: getColonTimeFromDate
+# key: f_getColonTimeFromDate
+# contributor: 30-seconds
+# --
+const getColonTimeFromDate = date => date.toTimeString().slice(0, 8);

@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: yesNo
+# key: f_yesNo
+# contributor: 30-seconds
+# --
+const yesNo = (val, def = false) =>
+  /^(y|yes)\$/i.test(val) ? true : /^(n|no)\$/i.test(val) ? false : def;

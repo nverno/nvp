@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: initialize2DArray
+# key: f_initialize2DArray
+# contributor: 30-seconds
+# --
+const initialize2DArray = (w, h, val = null) =>
+  Array.from({ length: h }).map(() => Array.from({ length: w }).fill(val));

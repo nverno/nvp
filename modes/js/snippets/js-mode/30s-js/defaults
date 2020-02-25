@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: defaults
+# key: f_defaults
+# contributor: 30-seconds
+# --
+const defaults = (obj, ...defs) => Object.assign({}, obj, ...defs.reverse(), obj);

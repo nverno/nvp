@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: is
+# key: f_is
+# contributor: 30-seconds
+# --
+const is = (type, val) => ![, null].includes(val) && val.constructor === type;

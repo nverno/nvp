@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: toggleClass
+# key: f_toggleClass
+# contributor: 30-seconds
+# --
+const toggleClass = (el, className) => el.classList.toggle(className);

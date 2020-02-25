@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: words
+# key: f_words
+# contributor: 30-seconds
+# --
+const words = (str, pattern = /[^a-zA-Z-]+/) => str.split(pattern).filter(Boolean);

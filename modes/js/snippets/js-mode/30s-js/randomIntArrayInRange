@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: randomIntArrayInRange
+# key: f_randomIntArrayInRange
+# contributor: 30-seconds
+# --
+const randomIntArrayInRange = (min, max, n = 1) =>
+  Array.from({ length: n }, () => Math.floor(Math.random() * (max - min + 1)) + min);

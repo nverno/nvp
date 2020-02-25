@@ -1,0 +1,11 @@
+# -*- snippet -*-
+# name: readFileLines
+# key: f_readFileLines
+# contributor: 30-seconds
+# --
+const fs = require('fs');
+const readFileLines = filename =>
+  fs
+    .readFileSync(filename)
+    .toString('UTF8')
+    .split('\\n');

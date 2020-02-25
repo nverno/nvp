@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: similarity
+# key: f_similarity
+# contributor: 30-seconds
+# --
+const similarity = (arr, values) => arr.filter(v => values.includes(v));

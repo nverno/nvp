@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: initializeNDArray
+# key: f_initializeNDArray
+# contributor: 30-seconds
+# --
+const initializeNDArray = (val, ...args) =>
+  args.length === 0
+    ? val
+    : Array.from({ length: args[0] }).map(() => initializeNDArray(val, ...args.slice(1)));

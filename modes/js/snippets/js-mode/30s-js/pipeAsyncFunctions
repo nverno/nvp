@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: pipeAsyncFunctions
+# key: f_pipeAsyncFunctions
+# contributor: 30-seconds
+# --
+const pipeAsyncFunctions = (...fns) => arg => fns.reduce((p, f) => p.then(f), Promise.resolve(arg));

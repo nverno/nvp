@@ -1,0 +1,8 @@
+# -*- snippet -*-
+# name: isWeekday
+# key: f_isWeekday
+# contributor: 30-seconds
+# --
+const isWeekday = (t = new Date()) => {
+  return t.getDay() % 6 !== 0;
+};

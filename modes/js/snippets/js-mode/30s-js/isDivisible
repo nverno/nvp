@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isDivisible
+# key: f_isDivisible
+# contributor: 30-seconds
+# --
+const isDivisible = (dividend, divisor) => dividend % divisor === 0;

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isPowerOfTwo
+# key: f_isPowerOfTwo
+# contributor: 30-seconds
+# --
+const isPowerOfTwo = n => !!n && (n & (n - 1)) == 0;

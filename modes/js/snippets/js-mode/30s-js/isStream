@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isStream
+# key: f_isStream
+# contributor: 30-seconds
+# --
+const isStream = val => val !== null && typeof val === 'object' && typeof val.pipe === 'function';

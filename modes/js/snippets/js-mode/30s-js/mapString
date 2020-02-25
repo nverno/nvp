@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: mapString
+# key: f_mapString
+# contributor: 30-seconds
+# --
+const mapString = (str, fn) =>
+  str
+    .split('')
+    .map((c, i) => fn(c, i, str))
+    .join('');

@@ -1,0 +1,10 @@
+# -*- snippet -*-
+# name: haveSameContents
+# key: f_haveSameContents
+# contributor: 30-seconds
+# --
+const haveSameContents = (a, b) => {
+  for (const v of new Set([...a, ...b]))
+    if (a.filter(e => e === v).length !== b.filter(e => e === v).length) return false;
+  return true;
+};

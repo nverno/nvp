@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isNull
+# key: f_isNull
+# contributor: 30-seconds
+# --
+const isNull = val => val === null;

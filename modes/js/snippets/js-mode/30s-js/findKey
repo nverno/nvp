@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: findKey
+# key: f_findKey
+# contributor: 30-seconds
+# --
+const findKey = (obj, fn) => Object.keys(obj).find(key => fn(obj[key], key, obj));

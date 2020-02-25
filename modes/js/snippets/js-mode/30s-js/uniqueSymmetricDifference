@@ -1,0 +1,8 @@
+# -*- snippet -*-
+# name: uniqueSymmetricDifference
+# key: f_uniqueSymmetricDifference
+# contributor: 30-seconds
+# --
+const uniqueSymmetricDifference = (a, b) => [
+  ...new Set([...a.filter(v => !b.includes(v)), ...b.filter(v => !a.includes(v))])
+];

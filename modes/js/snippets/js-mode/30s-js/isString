@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isString
+# key: f_isString
+# contributor: 30-seconds
+# --
+const isString = val => typeof val === 'string';

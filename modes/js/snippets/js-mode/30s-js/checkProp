@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: checkProp
+# key: f_checkProp
+# contributor: 30-seconds
+# --
+const checkProp = (predicate, prop) => obj => !!predicate(obj[prop]);

@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isNegativeZero
+# key: f_isNegativeZero
+# contributor: 30-seconds
+# --
+const isNegativeZero = val => val === 0 && 1 / val === -Infinity;

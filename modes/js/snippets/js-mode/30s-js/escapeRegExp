@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: escapeRegExp
+# key: f_escapeRegExp
+# contributor: 30-seconds
+# --
+const escapeRegExp = str => str.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\\{{body}}');

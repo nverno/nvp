@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: serializeForm
+# key: f_serializeForm
+# contributor: 30-seconds
+# --
+const serializeForm = form =>
+  Array.from(new FormData(form), field => field.map(encodeURIComponent).join('=')).join('&');

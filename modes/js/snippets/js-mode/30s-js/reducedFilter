@@ -1,0 +1,12 @@
+# -*- snippet -*-
+# name: reducedFilter
+# key: f_reducedFilter
+# contributor: 30-seconds
+# --
+const reducedFilter = (data, keys, fn) =>
+  data.filter(fn).map(el =>
+    keys.reduce((acc, key) => {
+      acc[key] = el[key];
+      return acc;
+    }, {})
+  );

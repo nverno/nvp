@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: detectDeviceType
+# key: f_detectDeviceType
+# contributor: 30-seconds
+# --
+const detectDeviceType = () =>
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    ? 'Mobile'
+    : 'Desktop';

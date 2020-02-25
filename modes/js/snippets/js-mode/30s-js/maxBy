@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: maxBy
+# key: f_maxBy
+# contributor: 30-seconds
+# --
+const maxBy = (arr, fn) => Math.max(...arr.map(typeof fn === 'function' ? fn : val => val[fn]));

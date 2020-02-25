@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: head
+# key: f_head
+# contributor: 30-seconds
+# --
+const head = arr => (arr && arr.length ? arr[0] : undefined);

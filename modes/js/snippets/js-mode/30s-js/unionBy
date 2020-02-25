@@ -1,0 +1,9 @@
+# -*- snippet -*-
+# name: unionBy
+# key: f_unionBy
+# contributor: 30-seconds
+# --
+const unionBy = (a, b, fn) => {
+  const s = new Set(a.map(fn));
+  return Array.from(new Set([...a, ...b.filter(x => !s.has(fn(x)))]));
+};

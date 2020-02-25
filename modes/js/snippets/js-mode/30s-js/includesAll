@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: includesAll
+# key: f_includesAll
+# contributor: 30-seconds
+# --
+const includesAll = (arr, values) => values.every(v => arr.includes(v));

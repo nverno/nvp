@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: hide
+# key: f_hide
+# contributor: 30-seconds
+# --
+const hide = (...el) => [...el].forEach(e => (e.style.display = 'none'));

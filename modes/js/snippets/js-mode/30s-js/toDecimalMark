@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: toDecimalMark
+# key: f_toDecimalMark
+# contributor: 30-seconds
+# --
+const toDecimalMark = num => num.toLocaleString('en-US');

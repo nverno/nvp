@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isNumber
+# key: f_isNumber
+# contributor: 30-seconds
+# --
+const isNumber = val => typeof val === 'number' && val === val;

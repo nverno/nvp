@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: any
+# key: f_any
+# contributor: 30-seconds
+# --
+const any = (arr, fn = Boolean) => arr.some(fn);

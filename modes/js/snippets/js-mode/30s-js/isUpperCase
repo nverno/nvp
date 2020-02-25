@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isUpperCase
+# key: f_isUpperCase
+# contributor: 30-seconds
+# --
+const isUpperCase = str => str === str.toUpperCase();

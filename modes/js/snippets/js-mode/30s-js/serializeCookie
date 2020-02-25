@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: serializeCookie
+# key: f_serializeCookie
+# contributor: 30-seconds
+# --
+const serializeCookie = (name, val) => \`\${encodeURIComponent(name)}=\${encodeURIComponent(val)}\`;

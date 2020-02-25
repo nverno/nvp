@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: delay
+# key: f_delay
+# contributor: 30-seconds
+# --
+const delay = (fn, wait, ...args) => setTimeout(fn, wait, ...args);

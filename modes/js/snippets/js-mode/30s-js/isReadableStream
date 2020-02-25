@@ -1,0 +1,11 @@
+# -*- snippet -*-
+# name: isReadableStream
+# key: f_isReadableStream
+# contributor: 30-seconds
+# --
+const isReadableStream = val =>
+  val !== null &&
+  typeof val === 'object' &&
+  typeof val.pipe === 'function' &&
+  typeof val._read === 'function' &&
+  typeof val._readableState === 'object';

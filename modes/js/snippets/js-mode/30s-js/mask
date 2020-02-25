@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: mask
+# key: f_mask
+# contributor: 30-seconds
+# --
+const mask = (cc, num = 4, mask = '*') => \`\${cc}\`.slice(-num).padStart(\`\${cc}\`.length, mask);

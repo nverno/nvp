@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: isAbsoluteURL
+# key: f_isAbsoluteURL
+# contributor: 30-seconds
+# --
+const isAbsoluteURL = str => /^[a-z][a-z0-9+.-]*:/.test(str);

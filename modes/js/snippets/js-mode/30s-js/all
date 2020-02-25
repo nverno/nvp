@@ -1,0 +1,6 @@
+# -*- snippet -*-
+# name: all
+# key: f_all
+# contributor: 30-seconds
+# --
+const all = (arr, fn = Boolean) => arr.every(fn);

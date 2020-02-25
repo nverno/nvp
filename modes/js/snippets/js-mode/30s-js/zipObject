@@ -1,0 +1,7 @@
+# -*- snippet -*-
+# name: zipObject
+# key: f_zipObject
+# contributor: 30-seconds
+# --
+const zipObject = (props, values) =>
+  props.reduce((obj, prop, index) => ((obj[prop] = values[index]), obj), {});

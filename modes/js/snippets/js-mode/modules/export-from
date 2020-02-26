@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: export-from
+# key: ef
+# --
+export ${1:{ $2 }} from '${3:other_module}';

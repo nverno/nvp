@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: import
+# key: impp
+# --
+import('$1')
+  .then((module) => {
+    $0
+  });

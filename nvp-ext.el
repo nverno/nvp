@@ -1,15 +1,12 @@
 ;;; nvp-ext.el --- External programs -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;; - https://github.com/syohex/better-shell/blob/master/better-shell.el
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar epg-gpg-home-directory))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-proc)
-(nvp-decls)
-
-(declare-function imenu--make-index-alist "imenu")
+(nvp-decls :v (epg-gpg-home-directory)
+           :f (imenu--make-index-alist))
 
 ;; do sudo command and return process object
 (defun nvp-ext-sudo-command (&optional password command buffer)

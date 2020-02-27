@@ -80,7 +80,7 @@
 (defvar-local nvp-tag-function nil)
 (defvar-local nvp-compile-function #'nvp-compile-default)
 (defvar-local nvp-mark-defun-function #'mark-defun)
-(defvar-local nvp-project-root-function nil)
+(defvar-local nvp-project-root-function #'projectile-project-root)
 (defvar-local nvp-test-framework nil)
 
 ;; TODO:
@@ -496,10 +496,10 @@ On error (read-only), quit without selecting."
 ;; add smooth-scrolling
 (nvp-advise-commands #'do-smooth-scroll :after '(nvp-move-next5 nvp-move-prev5))
 
-;; don't run `shell-mode-hook' during `shell-command' calls
+;; don't run my `shell-mode-hook' during `shell-command' calls
 (defvar shell-mode-hook)
 (define-advice shell-command (:around (orig-fn &rest args) "no-hook")
-  (let (shell-mode-hook)
+  (let ((shell-mode-hook (delq 'nvp-shell-mode-hook shell-mode-hook)))
     (apply orig-fn args)))
 
 ;; ensure spaces when aligning / commenting

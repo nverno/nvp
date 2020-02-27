@@ -2,7 +2,7 @@
 ;;; For more information see (info "(emacs) Directory Variables")
 
 ((nil
-  (projectile-project-type . emacs-cask)
+  (projectile-project-type . make)
   (nvp-local-notes-file . "~/org/code/emacs.org"))
  (emacs-lisp-mode
   ;; (outline-regexp . "\f\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*")

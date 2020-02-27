@@ -5,8 +5,7 @@
 ;; Minor mode to highlight and navigate b/w fixmes and todos
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 
 (defconst nvp-fixme-keywords
   (eval-when-compile

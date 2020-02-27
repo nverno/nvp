@@ -2,17 +2,34 @@
 ;;
 ;;; Commentary:
 ;;
-;; FIXME:
-;; - change the defaults to use project roots, integrate w/ projectile
-;;   with prefixes
-;; - Also, need to wrap projectile's ripgrep w/ an rg equivalent
-;;
-;; Finding things:
-;; - files
+;; Finding files + things in files:
+;; - recentf
 ;; - grep/rgrep/lgrep/zgrep
-;; - wgrep
-;; - ag / wgrep-ag
+;; - ag
 ;; - rgrep
+;; - wgrep (ag, ripgrep, grep)
+;; - adds imenu support for ag and rg result buffers
+;;
+;; Searching from project roots is preferred, and the interface tries to
+;; follow the same as searching functions in projectile.
+;; However, projectile uses ripgrep, whereas I use rg, so that needs to be 
+;; wrapped.
+;; Additionally, both ag.el and rg.el use the same sort of regex based
+;; interpretation of the results in the compilation output buffer, which
+;; are both broken when using `xterm-color' (which is both nicer and faster IMO).
+;; So, wrappers are added to make both libraries work (with some minor features
+;; lost in the case of rg.el) with `xterm-color'.
+;;
+;; * Interface
+;; 
+;; Defaults are determined in the following orders
+;; - root: project root if known, otherwise `default-directory'.
+;; - search term: region if active, symbol at point, prompt interactively
+;; 
+;; Prefix args:
+;; - none: literal search
+;; - single: regexp search
+;; - double: prompt (literal search)
 ;;
 ;;; Code:
 (eval-when-compile
@@ -20,12 +37,36 @@
   (require 'hydra))
 (require 'nvp-display)
 (require 'nvp)
-(nvp-decls :f (wgrep-exit wgrep-save-all-buffers wgrep-abort-changes
-                          wgrep-remove-change wgrep-remove-all-change
-                          wgrep-toggle-readonly-area wgrep-mark-deletion
-                          wgrep-change-to-wgrep-mode))
+(nvp-decls :f (wgrep-exit
+               wgrep-save-all-buffers wgrep-abort-changes
+               wgrep-remove-change wgrep-remove-all-change
+               wgrep-toggle-readonly-area wgrep-mark-deletion
+               wgrep-change-to-wgrep-mode
+               ;; ag
+               ag-project-dired ag-dired-regexp ag-dired ag-project-dired-regexp
+               ag/search
+               ;; rg
+               rg-filter)
+           :v (rg-mode-hook             ; rg
+               ;; ag
+               ag/file-column-pattern-group ag-ignore-list))
 
 (defvar nvp-search-history () "Store search history inputs.")
+
+;; -------------------------------------------------------------------
+;;; wgrep
+
+;;; XXX: remove this?
+;;;###autoload(autoload 'nvp-wgrep-hydra/body "nvp-find")
+(nvp-hydra-set-property 'nvp-wgrep-hydra)
+(defhydra nvp-wgrep-hydra (:color red)
+  ("q" wgrep-exit "exit" :exit t)
+  ("s" wgrep-save-all-buffers "save all")
+  ("a" wgrep-abort-changes "abort" :exit t)
+  ("r" wgrep-remove-change "remove region change")
+  ("R" wgrep-remove-all-change "remove all changes")
+  ("t" wgrep-toggle-readonly-area "toggle r/o")
+  ("m" wgrep-mark-deletion "mark deletion"))
 
 ;; -------------------------------------------------------------------
 ;;; Recentf 
@@ -49,119 +90,43 @@
       (nvp-display-location (cdr (assoc filename file-assoc-list))
                             :file (car action)))))
 
+
 ;; -------------------------------------------------------------------
-;;; Ripgrep
-
-(nvp-decls :f (rg-filter) :v (rg-mode-hook))
-
-;; Override rg's `compilation-error-regexp-alist' matching
-;; to use with `xterm-color-filter'
-(defconst nvp-rg-file-column-pattern-group-xc
-  "^\\([0-9]+\\):\\([0-9]+\\):")
-
-(defconst nvp-rg-grouped-file-regex-xc
-  "^\\(?:File:\\s-*\\)?\\([^ 	].*\\)$")
-
-(defun nvp-rg-match-grouped-filename-xc ()
-  "Match grouped filename in compilation output."
-  (save-match-data
-    (save-excursion
-      (beginning-of-line)
-      (while (and (not (bobp))
-                  (looking-at-p nvp-rg-file-column-pattern-group-xc))
-        (forward-line -1))
-      (and (looking-at nvp-rg-grouped-file-regex-xc)
-           (list (match-string 1))))))
-
-(defun nvp-rg-use-xterm-color ()
-  ;; (setq-local compilation-transform-file-match-alist nil)
-  (push 'nvp-rg-group-xc compilation-error-regexp-alist)
-  (push (cons 'nvp-rg-group-xc
-                     (list nvp-rg-file-column-pattern-group-xc
-                           'nvp-rg-match-grouped-filename-xc 1 2))
-        compilation-error-regexp-alist-alist))
-
-(defalias 'rg-filter 'ignore)
-(add-hook 'rg-mode-hook #'nvp-rg-use-xterm-color)
-
-
-;; -------------------------------------------------------------------
-;;; Grep / Rgrep
+;;; Determine defaults for ag/rg/rgrep
 
 (eval-when-compile
-  (defvar grep-find-ignored-directories)
-  (defvar package-user-dir)
-  (defmacro nvp-rgrep:with-defaults (elisp &rest body)
-    "Defaults: symbol at point, file/buffer extension.
-Prompt with any prefix.
-(4)  Prompt with defaults
-(16) If ELISP is non-nil includes `package-user-dir', otherwise uses HOME 
-     for `default-directory'.
-(64) Ignoring current file/buffer extension."
-    (declare (indent defun) (debug defun))
-    `(progn
-       (require 'nvp-grep-config)
-       (let ((sym (let ((tap (nvp-tap 'dwim))) 
-                    (if (or (null tap) (nvp-prefix 4))                       ; '(4)
-                        (read-from-minibuffer
-                         (format "Rgrep%s: "
-                                 (if tap (concat " ('" tap "')") ""))
-                         nil nil nil 'nvp-search-history)
-                      (prog1 tap (add-to-history 'nvp-search-history tap)))))
-             ,@(if elisp                                                     ; '(16)
-                   '((grep-find-ignored-directories
-                      (nvp-prefix 16 (cons (nvp-path 'ds package-user-dir)
-                                           grep-find-ignored-directories)
-                        grep-find-ignored-directories))
-                     (default-directory
-                       (nvp-prefix 4 default-directory :test '>= nvp/emacs)))
-                 '((default-directory
-                     (nvp-prefix 16 (getenv "HOME") default-directory))))
-             (ext (nvp-prefix 64 (nvp-path 'ext nil :or-name t) :test '/=))  ; '(64)
-             (confirm (nvp-prefix 4 nil :test #'>=)))
-         ,@(if body `,@body
-             `((grep-compute-defaults)
-               (rgrep (format "\\b%s\\b" sym)
-                      (if ext (concat "*." ext "*") "*")
-                      default-directory
-                      ;; ,(if elisp nvp/emacs 'default-directory)
-                      confirm)))))))
+  ;; get thing to search for: region, symbol-at-point, or prompt
+  (defsubst nvp-find--search-term (search-prompt &optional force-prompt)
+    (let ((search-term
+           (--if-let (nvp-tap 'dwim)
+               (if force-prompt
+                   (read-from-minibuffer (format (concat search-prompt " (%s): ") it))
+                 it)
+             (read-from-minibuffer (concat search-prompt ": ")))))
+      (add-to-history 'nvp-search-history search-term)
+      search-term))
 
-;;;###autoload
-(defun nvp-rgrep-symbol-at-point (arg)
-  "Rgrep for symbol at point. See `nvp-rgrep:with-defaults'."
-  (interactive "P")
-  (setq current-prefix-arg arg)
-  (nvp-rgrep:with-defaults nil))
+  ;; determine the search root directory
+  (defsubst nvp-find--seach-root (&optional root prompt)
+    (or root
+        (and prompt (read-directory-name "Search root: "))
+        (--if-let (nvp-project-root) it
+          (read-directory-name
+           (format "Search root ('%s'):" (file-name-directory default-directory))))))
 
-;;;###autoload
-(defun nvp-rgrep-elisp-symbol-at-point (arg)
-  "Rgrep for elisp symbol at point. See `nvp-rgrep:with-defaults'."
-  (interactive "P")
-  (setq current-prefix-arg arg)
-  (nvp-rgrep:with-defaults 'elisp))
+  ;; return (search-root search-term regexp-p)
+  (defsubst nvp-find--defaults (arg search-prompt &optional root)
+    (let ((prompt (equal '(16) arg)))
+      (list (nvp-find--seach-root root prompt)
+            (nvp-find--search-term search-prompt prompt)
+            (if prompt (y-or-n-p "Use regex?") (equal '(4) arg))))))
 
 
 ;; -------------------------------------------------------------------
-;;; wgrep
+;;; Ag / Ripgrep (using rg.el)
 
-;;;###autoload(autoload 'nvp-wgrep-hydra/body "nvp-search")
-(nvp-hydra-set-property 'nvp-wgrep-hydra)
-(defhydra nvp-wgrep-hydra (:color red)
-  ("q" wgrep-exit "exit" :exit t)
-  ("s" wgrep-save-all-buffers "save all")
-  ("a" wgrep-abort-changes "abort" :exit t)
-  ("r" wgrep-remove-change "remove region change")
-  ("R" wgrep-remove-all-change "remove all changes")
-  ("t" wgrep-toggle-readonly-area "toggle r/o")
-  ("m" wgrep-mark-deletion "mark deletion"))
-
-
-;; -------------------------------------------------------------------
-;;; Ag
-
-;; Notes
-;; -----
+;; Notes pertinent to both ag.el and rg.el
+;; ---------------------------------------
 ;; `ag-filter' replaces escape sequences with 'File: ' by regex parsing
 ;; and then relies on that text to match `compilation-error-regexp's to jump
 ;; to error locations. However, this is fucked up by xterm-color's
@@ -171,18 +136,11 @@ Prompt with any prefix.
 ;; and replaces text with 'File: ', hence the resulting compilation jumps
 ;; don't know the proper locations.
 ;;
-;; Offending location: #<marker at 24916 in ag.el>. It seems like a very brittle
-;; package and doesn't support wgrep. It also runs `shell-command' which
-;; awkwardly invokes `shell-mode-hook' on the output results, which also
-;; required fixes.
-(nvp-decl ag-project-dired ag-dired-regexp ag-dired ag-project-dired-regexp
-  ag/search)
-(eval-when-compile
-  (defvar ag/file-column-pattern-group)
-  (defvar ag-ignore-list))
-(defvar nvp-ag-grouped-file-regex "^\\(?:File:\\s-*\\)\\([^ \t].*\\)$"
-  "Support either `xterm-color' filtered results or defaults.")
-
+;; See : #<marker at 24916 in ag.el>. ag.el doesn't support wgrep out-of-the-box
+;;
+;; Ag runs `shell-command' which invokes `shell-mode-hook' on the output
+;; results. Since I have so much config in my `nvp-shell-mode-hook', `shell-command'
+;; is advised to run without my hook in nvp.el.
 ;;
 ;; Fixes for compilation:
 ;; (1) Can either disable xterm-color, which sucks
@@ -190,101 +148,122 @@ Prompt with any prefix.
 ;;   (let (compilation-start-hook)
 ;;     (apply orig-fn args)))
 ;; (2) Or override ag's `compilation-error-regexp-alist' matching function
-(defun nvp-ag-match-grouped-filename ()
-  "Match grouped filename in compilation output."
-  (save-match-data
-    (save-excursion
-      (beginning-of-line)
-      (while (and (not (bobp))
-                  (looking-at-p ag/file-column-pattern-group))
-        (forward-line -1))
-      (and (looking-at nvp-ag-grouped-file-regex)
-           (list (match-string 1))))))
+
+(eval-and-compile
+  (defconst nvp-ag/rg-grouped-file-regex "^\\(?:File:\\s-*\\)?\\([^ \t].*\\)$"
+    "Support either `xterm-color' filtered results or defaults.")
+
+  (defconst nvp-ag/rg-file-column-regex "^\\([[:digit:]]+\\):\\([[:digit:]]+\\):"))
+
+(eval-when-compile
+  (defsubst nvp-match-grouped-filename (file-column-re grouped-re)
+    "Match grouped filename in compilation output, not relying on escape codes."
+    (save-match-data
+      (save-excursion
+        (beginning-of-line)
+        (while (and (not (bobp))
+                    (looking-at-p file-column-re))
+          (forward-line -1))
+        (and (looking-at grouped-re)
+             (list (match-string 1))))))
+
+  ;; imenu that should work for ag/rg grouped results buffers
+  (defmacro nvp-ag/rg-imenu-function ()
+    `(lambda ()
+       (cl-block nil
+         (when (re-search-backward ,nvp-ag/rg-file-column-regex nil 'move)
+           (beginning-of-line)
+           (while (and (not (bobp))
+                       (looking-at-p ,nvp-ag/rg-file-column-regex))
+             (forward-line -1))
+           (and (looking-at "^\\(?:File: \\)?\\([^ \t].*\\)$")
+                (cl-return t)))))))
+
+
+;; -------------------------------------------------------------------
+;;; Ag
 
 (with-eval-after-load 'ag
+  ;; Match grouped filenames in rg/ag searches
+  (defun nvp-ag-match-grouped-filename ()
+    (nvp-match-grouped-filename
+     ag/file-column-pattern-group nvp-ag/rg-grouped-file-regex))
+
+  (defun nvp-ag-recompile ()
+    (interactive)
+    (let ((compilation-start-hook
+           (delq 'nvp-compilation-start-hook compilation-start-hook)))
+      (call-interactively 'recompile)))
+
   ;; override ag's function
   (setf (symbol-function 'ag/compilation-match-grouped-filename)
-        #'nvp-ag-match-grouped-filename)
+        'nvp-ag-match-grouped-filename)
 
-  (defvar nvp-ag-imenu-expression
-    `((nil (lambda ()
-             (cl-block nil
-               (when (re-search-backward ,ag/file-column-pattern-group nil 'move)
-                 (beginning-of-line 0)
-                 (while (and (not (bobp))
-                             (looking-at-p ,ag/file-column-pattern-group))
-                   (forward-line -1))
-                 (and (looking-at "^\\(?:File: \\)?\\([^ \t].*\\)$")
-                      (cl-return t)))))
-           1))))
+  (defvar nvp-ag-imenu-expression `((nil ,(nvp-ag/rg-imenu-function) 1))))
 
-
-(eval-when-compile
-  (defmacro nvp-ag:with-defaults (elisp &rest body)
-    "Search for STR from root DIR using ag.
-Defaults to symbol at point and nvp/emacs if ELISP is non-nil, HOME otherwise.
-If BODY is non-nil, it is executed in place of the default search.
-(1) prefix prompts for STR and DIR
-(2) or more prefix args to treat STR as REGEX
-(3) prefix prompt, treat as REGEX, use `default-directory'."
-    (declare (indent defun))
-    `(progn
-       (require 'nvp-ag-config)
-       (let* ((dir (nvp-prefix '(4 64)
-                     (read-directory-name 
-                      (format "Root directory ('%s'): " default-directory)
-                      default-directory nil 'match)
-                     ,(if elisp 'nvp/emacs 'default-directory)))
-              (sym (let ((tap (nvp-tap 'tap)))
-                     (if (or (nvp-prefix '(4 64)) (null tap))
-                         (read-from-minibuffer
-                          (format "Ag search%s: "
-                                  (if tap (concat " ('" tap "')") ""))
-                          tap nil nil 'nvp-search-history tap)
-                       (add-to-history 'nvp-search-history tap)
-                       tap)))
-              (re (nvp-prefix 4 nil :test '>))
-              ,@(if elisp '((elpa (nvp-path 'ds package-user-dir)))
-                  '((file-re (nvp-prefix 16))))
-              ;; nullify to allow ag output parsing
-              compilation-start-hook
-              compilation-environment)
-         (require 'ag)
-         ,@(if elisp
-               `((nvp-prefix 16 (cl-pushnew elpa ag-ignore-list :test #'equal)
-                   :test '<
-                   (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal))))
-         ,(if body `,@body
-            ;; integer prefix is used as context argument
-            ;; otherwise, prefix causes prompting with ag command
-            '(unless (or (integerp current-prefix-arg)
-                         (nvp-prefix 16 nil :test '>))
-               (setq current-prefix-arg nil))
-            (if elisp
-                '(ag/search sym dir :regexp re)
-              '(if file-re
-                   (ag/search sym dir :file-regex sym)
-                 (ag/search sym dir :regexp re))))))))
+;; -------------------------------------------------------------------
+;;; Ripgrep (rg.el)
 
-(defun nvp-ag-recompile ()
-  (interactive)
-  (let (compilation-start-hook)
-    (call-interactively 'recompile)))
+;; Override rg's `compilation-error-regexp-alist' matching
+;; to use with `xterm-color-filter'
+(with-eval-after-load 'rg
+  (defun nvp-rg-match-grouped-filename-xc ()
+    (nvp-match-grouped-filename
+     nvp-ag/rg-file-column-regex nvp-ag/rg-grouped-file-regex))
+
+  ;; use my own filter that works with `xterm-color'
+  (defalias 'rg-filter 'ignore)
+
+  ;; rg-mode is compilation-derived mode for results
+  ;; this hook lets it work with xterm-color
+  (add-hook 'rg-mode-hook
+            (nvp-def nvp-rg-mode-hook ()
+              (setq-local compilation-transform-file-match-alist nil)
+              (push 'nvp-rg-group-xc compilation-error-regexp-alist)
+              (push (cons 'nvp-rg-group-xc
+                          (list nvp-ag/rg-file-column-regex
+                                'nvp-rg-match-grouped-filename-xc 1 2))
+                    compilation-error-regexp-alist-alist)
+              (setq-local imenu-generic-expression
+                          `((nil ,(nvp-ag/rg-imenu-function) 1))))))
 
 
-;;;###autoload
-(defun nvp-ag-elisp-symbol-at-point (&optional arg)
-  "Search for elisp symbol at point with ag. See `nvp-ag:with-defaults'."
-  (interactive "P")
-  (and arg (setq current-prefix-arg arg))
-  (nvp-ag:with-defaults 'elisp))
+;; -------------------------------------------------------------------
+;;; Commands
 
 ;;;###autoload
-(defun nvp-ag-symbol-at-point (&optional arg)
-  "Search for symbol at point with ag. See `nvp-ag:with-defaults'."
-  (interactive "P")
-  (and arg (setq current-prefix-arg arg))
-  (nvp-ag:with-defaults nil))
+(defun nvp-rgrep-dwim (root search &optional regex)
+  (interactive (nvp-find--defaults current-prefix-arg "Rgrep search"))
+  (require 'nvp-grep-config)
+  (let ((default-directory root))
+    (grep-compute-defaults)
+    (rgrep (if regex search (format "\\b%s\\b" search)) "*.*" nil (nvp-prefix 16))))
+
+;;;###autoload
+(defun nvp-ag-dwim (root search &optional regex)
+  "Run ag search."
+  (interactive (nvp-find--defaults current-prefix-arg "Ag search"))
+  (require 'nvp-ag-config)
+  (unless (integerp current-prefix-arg) ; used as context=%d in ag/search
+    (setq current-prefix-arg nil))
+  (ag/search search root :regexp regex))
+
+;;;###autoload
+(defun nvp-ag-elisp-dwim (root search &optional regex)
+  "Run ag search including `package-user-dir' from `user-emacs-directory'."
+  (interactive
+   (let ((arg (prefix-numeric-value current-prefix-arg)))
+     (list nvp/emacs
+           (nvp-find--search-term "Ag elisp" (eq 16 arg))
+           (eq 16 arg))))
+  (require 'nvp-ag-config)
+  (let* ((elpa (nvp-path 'ds package-user-dir))
+         (ag-ignore-list
+          (nvp-prefix 4 (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal)
+            (cl-pushnew elpa ag-ignore-list))))
+    (unless (integerp current-prefix-arg)
+      (setq current-prefix-arg nil))
+    (ag/search search root :regexp regex)))
 
 ;;;###autoload
 (defun nvp-ag-dired (arg)

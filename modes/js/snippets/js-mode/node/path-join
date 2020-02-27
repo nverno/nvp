@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: path-join
+# key: pj
+# --
+path.join(${1:__dirname}, $2)

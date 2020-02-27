@@ -1,28 +1,24 @@
 ;;; nvp-project.el --- project management -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
-;; TODO: get rid of all this, try out new builtin project.el
+;;
 ;; Frameworks:
-;; - project.el
+;; - project.el (builtin -- wip)
 ;; - projectile.el
-;; - eproject.el
-
+;;
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (unless (require 'rg nil t)
+    ;; handle case if rg.el isn't downloaded
+    (defmacro rg-define-search (&rest _args))))
+(require 'nvp)
 (require 'projectile)
+(nvp-decls :f (rg-project-root rg-run))
+(nvp-auto "rg" 'rg-project-root)
 (autoload 'vc-git-root "vc-git")
 (autoload 'vc-hg-root "vc-hg")
-(autoload 'vc-bzr-root "vc-bzr")
 (autoload 'vc-svn-root "vc-svn")
-
-;; dynamic local variables
-(defvar-local nvp-project--root '(".git" ".projectile" "test" "tests"))
-
-;; FIXME: relocate to `nvp-test'
-(defvar-local nvp-project--test-re ".*tests?")
-(defvar-local nvp-project--test-dir '("test" "tests" "t"))
-(defvar-local nvp-project--test-fmt "test-%s")
 
 ;;;###autoload
 (defun nvp-project-root (&optional path)
@@ -34,11 +30,40 @@ Otherwise, look for version control directories, returing the longest path."
     (or (nvp-longest-item
          (vc-git-root path)
          (vc-svn-root path)
-         (vc-hg-root path)
-         (vc-bzr-root path)))))
+         (vc-hg-root path)))))
 
+;;; TODO: display more info: project's runner commands
+;;;###autoload
+(defun nvp-project-info ()
+  "Display info for current project."
+  (if (projectile-project-p)
+      (projectile-project-info)
+    (message "Not in a known project.")))
+
+;;;###autoload(autoload 'nvp-projectile-rg "nvp-project")
+(rg-define-search nvp-projectile-rg
+  :query (or (thing-at-point 'symbol) (read-from-minibuffer "Search: "))
+  :dir project
+  :format literal
+  :files (concat
+          (mapconcat
+           #'identity
+           (--map (concat "--glob !" it)
+                  (append projectile-globally-ignored-files
+                          projectile-globally-ignored-directories)) " "))
+  :flags '("--type all"))
+
+;;; FIXME: remove everything below here
 ;; -------------------------------------------------------------------
 ;;; Util
+
+;; dynamic local variables
+(defvar-local nvp-project--root '(".git" ".projectile" "test" "tests"))
+
+;; FIXME: relocate to `nvp-test'
+(defvar-local nvp-project--test-re ".*tests?")
+(defvar-local nvp-project--test-dir '("test" "tests" "t"))
+(defvar-local nvp-project--test-fmt "test-%s")
 
 ;; FIXME: make obsolete
 (cl-defmacro nvp-with-project ((&key (test-re nvp-project--test-re)
@@ -120,46 +145,6 @@ If LOCAL is non-nil find closest root."
         ,(and projectile-test-prefix-function
               `(setq-local ,projectile-test-prefix-function))))))
 
-;; -------------------------------------------------------------------
-;;; Jumping to locations
-
-;;;###autoload
-(defun nvp-project-jump-to-gitpage (arg)
-  "Jump to project's git page.
-With prefix ARG 4 or 64 prompt for project name, with prefix 16 or 64 prompt 
-for base URI."
-  (interactive "P")
-  (let ((uri (if (cl-member arg '((16) (64)) :test #'equal)
-                 (read-string "URI: " "https://")
-               "https://github.com/nverno/"))
-        (name (nvp-project-name (cl-member arg '((4) (64)) :test #'equal))))
-    (and (not (string-suffix-p "/" uri)) (setq uri (concat uri "/")))
-    (and name (browse-url (concat uri name)))))
-
-;;;###autoload
-(defun nvp-project-jump-to-projectile ()
-  "Jump to project's projectile file."
-  (interactive)
-  (nvp-with-project-root :local t
-    (find-file-other-window ".projectile")))
-
-;;;###autoload
-(defun nvp-project-jump-to-notes ()
-  "Jump to project's notes.org file."
-  (interactive)
-  (nvp-with-project-root :local t
-    (find-file-other-window "notes.org")))
-
-;; ;;;###autoload
-;; (defun nvp-project-jump-to-makefile (&optional root)
-;;   "Jump to closest Makefile.
-;; With \\[universal-argument] jump to root Makefile."
-;;   (interactive "P")
-;;   (if (not root)
-;;       (find-file-other-window (locate-dominating-file ))
-;;       (nvp-with-project-root
-        
-;;         (find-file-other-window ))))
 
 (provide 'nvp-project)
 ;;; nvp-project.el ends here

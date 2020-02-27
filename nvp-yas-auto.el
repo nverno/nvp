@@ -3,8 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'yasnippet)
+(require 'nvp)
 
 ;; TODO: optionally remove dirs of modes with no live buffers
 ;;;###autoload

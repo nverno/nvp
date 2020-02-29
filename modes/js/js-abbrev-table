@@ -18,3 +18,8 @@
   '()
   "Js2-Mode Abbrevs."
   :parents (list js-mode-abbrev-table))
+
+(define-abbrev-table 'typescript-mode-abbrev-table
+  '()
+  "Typescript-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table js-mode-abbrev-table))

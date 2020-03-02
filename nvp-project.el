@@ -44,7 +44,7 @@ Otherwise, look for version control directories, returing the longest path."
 (rg-define-search nvp-projectile-rg
   :query (or (thing-at-point 'symbol) (read-from-minibuffer "Search: "))
   :dir project
-  :format literal
+  :format (not current-prefix-arg)
   :files (concat
           (mapconcat
            #'identity

@@ -20,10 +20,11 @@
 (defvar nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
 
 ;;; Modifications of bookmark.el functions
-;;; FIXME: what is wrong here
-;; (define-advice bookmark-load (:around (fn &rest args) "current-dir")
-;;   (let ((bookmark-default-file (expand-file-name "bookmarks.el" default-directory)))
-;;     (funcall fn bookmark-default-file)))
+(defun nvp-bookmark-load (&optional make-default)
+  (interactive "P")
+  (-if-let (file (nvp-bookmark-locate-file "bookmarks.el"))
+      (bookmark-load file make-default nil make-default)
+    (funcall-interactively #'bookmark-load)))
   
 ;; if FILE is nil, use bookmark-default-file
 ;; search order:

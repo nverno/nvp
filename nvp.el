@@ -148,12 +148,6 @@
 ;; -------------------------------------------------------------------
 ;;; Utils
 
-;; add default to prompt in non-nil
-(defsubst nvp-prompt-default (prompt &optional default)
-  (if default (format "%s (default %s): "
-                      (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
-    prompt))
-
 ;; Read with default of symbol-at-point. When COLLECTION is provided use
 ;; completing read, otherwise read from the minibuffer
 (defun nvp-read-default (prompt &optional collection pred match initial
@@ -253,14 +247,6 @@
 
 (defvar-local nvp-newline-comment-continue t
   "Use comment continuations in applicable modes.")
-
-(defsubst nvp-between-empty-parens-p (&optional point)
-  "Non-nil if POINT is between open/close syntax with only whitespace."
-  (ignore-errors
-    (and point (goto-char point))
-    (and
-     (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
-     (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
 
 ;; add additional newline when between syntactic open/closer
 (defun nvp-newline-dwim--parens (&optional arg)

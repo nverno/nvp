@@ -1,7 +1,7 @@
 ;;; nvp-abbrev.el --- abbrev commands -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
 ;; Jumping to abbrev files
 ;; - converts region to abbrev if region is active (generic)
 ;;   includes default + elisp
@@ -21,7 +21,7 @@
 ;; - show all abbrev-table properties, including all parents recursively
 ;; - when listing locally active table, include all parents of local-table
 ;; - write abbrevs as system abbrevs to save permanently
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -31,28 +31,30 @@
 (require 'nvp-abbrev-util)
 (nvp-decls :v (nvp-abbrev-completion-need-refresh))
 
-;; -------------------------------------------------------------------
-;;; Utils
-
 (defvar nvp-abbrev--read-history ())
-(defun nvp-abbrev--read-table (prompt choices)
-  (nvp-completing-read prompt choices nil t nil 'nvp-abbrev--read-history))
 
-(defun nvp-abbrev--grab-prev (nchars)
-  "Grab preceding NCHARS to match against in abbrev table."
-  (save-excursion
-    (let ((end (point))
-          (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) nchars)))
-          (start (point)))
-      (buffer-substring-no-properties start end))))
+(eval-when-compile
+  (defsubst nvp-abbrev--read-table (prompt choices)
+    (nvp-completing-read prompt choices nil t nil 'nvp-abbrev--read-history))
 
-(cl-defgeneric nvp-abbrev--grab-region (beg end)
+  ;; Grab preceding NCHARS to match against in abbrev table.
+  (defsubst nvp-abbrev--grab-prev (nchars)
+    (save-excursion
+      (let ((end (point))
+            (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) nchars)))
+            (start (point)))
+        (buffer-substring-no-properties start end)))))
+
+;; -------------------------------------------------------------------
+;;; Generics
+
+(cl-defgeneric nvp-abbrev-grab-region (beg end)
   "Generic function to return abbrev from region BEG to END . 
 Should return sexp of form (abbrev                          . expansion)."
   (let ((exp (buffer-substring-no-properties beg end)))
     (cons (read-string (format "Abbrev for %s: " exp)) exp)))
 
-(cl-defmethod nvp-abbrev--grab-region
+(cl-defmethod nvp-abbrev-grab-region
   (beg end &context (major-mode emacs-lisp-mode))
   "Try to determine appropriate elisp abbrev from region.
 Remove any surrounding parens and use first chars with lisp transformer.
@@ -66,12 +68,12 @@ With prefix, don't split region by whitespace."
         (setq trans (concat "cl" (substring trans 1))))
     (cons trans exp)))
 
-(cl-defgeneric nvp-abbrev--table-name (&optional local-table _abbrev _exp)
+(cl-defgeneric nvp-abbrev-table-name (&optional local-table _abbrev _exp)
   "Generic function to return the name of abbrev file to use with given abbrev \
 or expansion."
   (regexp-quote (format "%s-abbrev-table" (or local-table major-mode))))
 
-(cl-defmethod nvp-abbrev--table-name
+(cl-defmethod nvp-abbrev-table-name
   (&context (major-mode emacs-lisp-mode) &optional local-table abbrev exp)
   "Determine with abbrev table to use based on prefix and possibly context."
   (if (not abbrev) (cl-call-next-method)
@@ -86,24 +88,22 @@ or expansion."
 
 ;; insert starter abbrev table template
 (defun nvp-abbrev--insert-template (table &optional parents)
-  (unless parents
-    (setq parents (if (derived-mode-p 'prog-mode) '(prog-mode)
-                    '(fundamental-mode))))
+  (nvp-defq parents (if (derived-mode-p 'prog-mode) '(prog-mode)
+                      '(fundamental-mode)))
   (let ((parents
-         (concat "(list "
-                 (mapconcat (lambda (s) (concat (symbol-name s) "-abbrev-table"))
-                            parents " ") ")")))
-   (insert
-    (concat
-     (when (zerop (buffer-size))
-       ";; -*- coding: utf-8; -*-\n")
-     "\n(define-abbrev-table '" table "\n"
-     "  '()\n"
-     (format
-      "  \"%s Abbrevs.\"\n"
-      (capitalize
-       (replace-regexp-in-string "-abbrev-table" "" table)))
-     (format "  :parents %s)" parents)))))
+         (concat
+          "(list "
+          (mapconcat (lambda (s) (concat (symbol-name s) "-abbrev-table")) parents " ")
+          ")")))
+    (insert
+     (concat
+      (when (zerop (buffer-size))
+        ";; -*- coding: utf-8; -*-\n")
+      "\n(define-abbrev-table '" table "\n"
+      "  '()\n"
+      (format "  \"%s Abbrevs.\"\n"
+              (capitalize (replace-regexp-in-string "-abbrev-table" "" table)))
+      (format "  :parents %s)" parents)))))
 
 ;; open abbrev file and search for the specified table
 ;; if it doesn't exist insert starter template
@@ -124,6 +124,7 @@ or expansion."
               '((nil "^(define-abbrev-table '\\([^ \n]+\\)" 1))))
 
 
+;; -------------------------------------------------------------------
 ;;; Commands
 
 ;;;###autoload
@@ -135,12 +136,12 @@ When abbrev text is selected, searching is done first by length then lexically."
   (let* ((local-abbrevs (bound-and-true-p nvp-abbrev-local-table))
          (prefix (cond
                   ((use-region-p)
-                   (nvp-abbrev--grab-region (region-beginning) (region-end)))
+                   (nvp-abbrev-grab-region (region-beginning) (region-end)))
                   (arg (nvp-abbrev--grab-prev arg))
                   (t nil)))
          (expansion (and (consp prefix) (prog1 (cdr prefix)
                                           (setq prefix (car prefix)))))
-         (table (nvp-abbrev--table-name local-abbrevs prefix expansion)))
+         (table (nvp-abbrev-table-name local-abbrevs prefix expansion)))
     (save-restriction
       (with-current-buffer (nvp-abbrev--get-table
                             table (or (bound-and-true-p nvp-abbrev-local-file)

@@ -1,5 +1,4 @@
 ;;; nvp-read.el --- Completing read for thangs -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;; various completing read functions
 ;;; TODO:
@@ -7,31 +6,32 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)                          ;nvp-prompt-default
-(autoload 'eldoc-minibuffer-message "eldoc")
-(nvp-decl help--symbol-completion-table function-called-at-point)
-(nvp-defv ido-exit ido-fallback ido-text)
+(nvp-decls :f (help--symbol-completion-table function-called-at-point)
+           :v (ido-exit ido-fallback ido-text))
+(nvp-auto "eldoc" 'eldoc-minibuffer-message)
 
 ;; minibuffer histories
 (defvar nvp-read-config-history ())
 (defvar nvp-read-keymap-history ())
 
-;; list filenames relative to ROOT matching REGEXP
-(defsubst nvp-read--relative-files (root regexp)
-  (mapcar (lambda (f) (file-relative-name f root))
-          (directory-files-recursively root regexp)))
+(eval-when-compile
+  ;; list filenames relative to ROOT matching REGEXP
+  (defsubst nvp-read--relative-files (root regexp)
+    (mapcar (lambda (f) (file-relative-name f root))
+            (directory-files-recursively root regexp)))
+
+  (defmacro nvp-read:with-fallback (&rest body)
+    "Do BODY with custom `ido-fallback-command'."
+    (declare (indent defun))
+    `(nvp-with-letf 'ido-fallback-command #'nvp-read--ido-fallback
+       ,@body)))
 
 ;; return default-directory on `ido-fallback-command'
-(defsubst nvp-read--ido-fallback (&rest _)
+(defun nvp-read--ido-fallback (&rest _)
   (interactive)
   (setq ido-text (or (file-name-directory ido-text) ""))
   (setq ido-exit 'done)
   (exit-minibuffer))
-
-(eval-when-compile
-  (defmacro nvp-read:with-fallback (&rest body)
-    (declare (indent defun))
-    `(nvp-with-letf 'ido-fallback-command 'nvp-read--ido-fallback
-       ,@body)))
 
 ;;;###autoload
 (defun nvp-read-relative-recursively (root regexp &optional prompt default)

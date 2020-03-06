@@ -121,6 +121,27 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 (defsubst nvp-fn (&optional path)
   (file-name-nondirectory (directory-file-name (or path (buffer-file-name)))))
 
+;; -------------------------------------------------------------------
+;;; Prompts 
+
+;; add default to prompt in non-nil
+(defsubst nvp-prompt-default (prompt &optional default)
+  (if default
+      (format "%s (default %s): "
+              (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
+    prompt))
+
+;; -------------------------------------------------------------------
+;;; Syntax
+
+;; Non-nil if POINT is between open/close syntax with only whitespace.
+(defsubst nvp-between-empty-parens-p (&optional point)
+  (ignore-errors
+    (and point (goto-char point))
+    (and
+     (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
+     (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
+
 (provide 'nvp-subrs)
 ;; Local Variables:
 ;; coding: utf-8

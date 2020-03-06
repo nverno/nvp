@@ -10,6 +10,11 @@
 
 ;;; Define 
 
+(defmacro nvp-defq (sym &rest default)
+  "If SYM is nil, `setq' it evaluating DEFAULT."
+  (declare (indent defun))
+  `(or ,sym (setq ,sym ,@default)))
+
 (cl-defmacro nvp-defvar (&rest var-vals &key permanent local &allow-other-keys)
   "Define VAR and eval VALUE during compile."
   (declare (indent 0) (debug t))

@@ -10,7 +10,7 @@
 ;; TODO:
 ;; - better xref for node_modules - can tern or js2-xref be taught about global
 ;;   sources?
-;; - get 30s of code js/react functions
+;; - Add react 30s snippets?  Problem is they may contain CSS as well
 ;;
 ;;; Code:
 (eval-when-compile
@@ -28,14 +28,9 @@
            :v (nodejs-repl-process-name httpd-root httpd-port))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
-;; newline-dwim
+;; newline-dwim -- other modes, js-jsx, js2-jsx, rjsx inherit from js/js2
 (cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode js2-mode js2-jsx-mode js-mode js-jsx-mode
-                                   rjsx-mode))
-  (nvp-newline-dwim--comment syntax arg " * "))
-
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode js-mode))
+  (syntax arg &context (major-mode js-mode js2-mode js3-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;;; http server: httpd
@@ -63,34 +58,6 @@
 (defun nvp-js-test-p ()
   (or (string-match-p "\\(?:test\\|spec\\)" (nvp-dfn))
       (string-match-p ".*test\\.js\\'" (nvp-bfn))))
-
-;; -------------------------------------------------------------------
-;;; Configuration
-;;; TODO: move this to projectile project configuration command
-(nvp-defvar nvp-js-test-re (regexp-opt '("jest" "mocha" "jasmine") t))
-
-;; set local values, eg. in .dir-locals.el
-(defun nvp-js-local-config (&optional dir)
-  (when-let ((default-directory
-               (nvp-project-root
-                (or dir buffer-file-name default-directory))))
-    (nvp-async-shell-command-to-string
-     "npm list --depth=0 --only=dev --parseable | awk -F/ '{print $NF}'"
-     `(lambda (p res)
-        (let ((default-directory ,default-directory))
-          (when (zerop (process-exit-status p))
-            (unwind-protect
-                (with-current-buffer (process-buffer p)
-                  (goto-char (point-min))
-                  (when (re-search-forward nvp-js-test-re nil t)
-                    (let ((test (match-string 1)))
-                      (save-window-excursion
-                        (add-dir-local-variable nil 'nvp-test-framework test)
-                        (save-buffer))
-                      (message "Project: %s\nTest framework: %s"
-                               (abbreviate-file-name default-directory)
-                               test))))
-              (kill-buffer (process-buffer p)))))))))
 
 ;; -------------------------------------------------------------------
 ;;; REPLs
@@ -153,4 +120,8 @@
    (t (tern-get-docs))))
 
 (provide 'nvp-js)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-js.el ends here

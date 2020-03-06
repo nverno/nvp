@@ -6,7 +6,7 @@
 (require 'comint)
 (require 'nvp-shell-common)
 (require 'nvp)
-(nvp-decls)
+(nvp-decls :f (tramp-dissect-file-name))
 (nvp-auto "f" f-same-p)
 
 ;; update default-directory on remote login
@@ -130,7 +130,11 @@ specified, prefer shell in current directory if available."
                    (buffname (or (and terms (not (listp terms)) (buffer-name terms))
                                  ;; didn't find one -- create unique name
                                  (generate-new-buffer-name default-name))))
-              (shell buffname))
+              ;; with double prefix, force new shell in current directory
+              (nvp-prefix 16 (if (buffer-live-p (get-buffer buffname))
+                                 (shell (generate-new-buffer-name default-name))
+                               (shell buffname))
+                (shell buffname)))
           ;; otherwise, any terminal will do, but prefer current directory
           (let ((terms (nvp-shell-in-dir-maybe nil proc-name)))
             (shell (or (and (listp terms) (car terms)) terms))))))))

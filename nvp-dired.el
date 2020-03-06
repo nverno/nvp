@@ -1,23 +1,16 @@
 ;;; nvp-dired.el --- dired helpers -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra)
-  (defvar nvp-dired-external-filelist-cmd)
-  (defvar nvp-dired-external-program))
+(eval-when-compile (require 'nvp-macro))
 (require 'dired)
-(nvp-decls)
+(nvp-decls :v (nvp-dired-external-filelist-cmd nvp-dired-external-program)
+           :f (comint-mode
+               org-texinfo-export-to-info org-latex-export-to-pdf comint-mode
+               dired-dwim-target-directory dired-read-shell-command  ; dired-aux
+               dired-filename-at-point                               ; dired-x
+               conda-env-read-env))                                  ; conda-env
 (nvp-auto "f" 'f-same-p)
-(nvp-auto "nvp-proc" 'nvp-proc-default-sentinel)
 
-(nvp-decl org-texinfo-export-to-info org-latex-export-to-pdf comint-mode)
-(nvp-decl "dired-aux" dired-dwim-target-directory dired-read-shell-command)
-(declare-function dired-filename-at-point "dired-x")
-(declare-function conda-env-read-env "conda-env")
-
-
 ;; -------------------------------------------------------------------
 ;;; Imenu
 

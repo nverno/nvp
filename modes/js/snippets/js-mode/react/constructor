@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: constructor
+# key: cons
+# --
+constructor(props) {
+  super(props);
+}

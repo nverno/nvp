@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-set-entries
+# key: forset
+# --
+for (${1:let} ${2:[key, val]} of ${3:Set}.entries()) {
+  $0
+}

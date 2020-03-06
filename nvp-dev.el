@@ -1,12 +1,12 @@
 ;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
 ;; TODO:
 ;; - function to remove all methods from generic
 ;; - how to remove all notifications (filenotify) without storing them?
 ;; - useful smie debugging output: #<marker at 7444 in tuareg-opam.el>
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

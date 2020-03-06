@@ -1,14 +1,13 @@
 ;;; nvp-debug.el --- gud -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
 ;;; FIXME: gud-mode seems to clobber kill-buffer-hooks,
 ;;         so shell history isn't being saved/read properly
-
+;; - replace nvp-repl-switch macro
+;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'gud)
 (nvp-decls)

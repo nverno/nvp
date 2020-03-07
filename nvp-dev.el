@@ -13,13 +13,12 @@
   (require 'nvp-display))
 (require 'nvp)
 (require 'help-mode)
-(nvp-req 'nvp-results)
+
 (nvp-decls :f (nvp-read-mode advice-mapc advice-remove)
            :v (c-lang-constants))
-(nvp-auto "nvp-util" nvp-s-wrap)
-(nvp-auto "nvp-read" 'nvp-read-elisp-variable)
+(nvp-auto "nvp-util" 'nvp-s-wrap)
 (nvp-auto "s" 's-split-words)
-(nvp-auto "nvp-results" 'nvp-pp-hash 'nvp-pp-variable-to-string)
+(nvp-auto "cl-extra" 'cl-prettyprint)
 
 (define-button-type 'help-marker
   :supertype 'help-xref
@@ -50,9 +49,8 @@
   ("u"  . nvp-dev-stats-uniq)
   ("v"  . nvp-dev-describe-variable))
 
-
 ;; -------------------------------------------------------------------
-;;; Commands 
+;;; Advice
 
 ;;;###autoload
 (defun nvp-dev-advice-remove-all (sym)
@@ -60,17 +58,35 @@
   (interactive "aFunction: ")
   (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
 
-;; ;;;###autoload
-;; (defun nvp-dev-make-and-reload ()
-;;   "Make and reload package autoloads."
-;;   (interactive)
-;;   (call-process "make" nil 0 nil "-k")
-;;   (let ((file (car (directory-files (expand-file-name ".") t "autoloads.el"))))
-;;     (load-file file)))
-
-
 ;; -------------------------------------------------------------------
 ;;; Pretty print data
+
+;; ielm's nice formatting: #<marker at 14912 in ielm.el.gz>
+
+(defun nvp-pp-hash (hash)
+  (with-temp-buffer
+    (lisp-mode-variables nil)
+    (set-syntax-table emacs-lisp-mode-syntax-table)
+    (maphash (lambda (key val)
+               (pp key)
+               (princ " => ")
+               (pp val)
+               (terpri))
+             hash)
+    (buffer-string)))
+
+(defun nvp-pp-variable-to-string (variable)
+  (let ((print-escape-newlines t)
+        (print-quoted t)
+        (var (if (symbolp variable) (eval variable)
+               variable)))
+    (pcase var
+      ((pred hash-table-p)
+       (nvp-pp-hash var))
+      ;; TODO: structs/classes
+      (_
+       ;; (cl-prin1-to-string var)
+       (pp-to-string var)))))
 
 ;; (defun nvp-dev-mode-cache (mode)
 ;;   "Examine, refresh MODE's config cache.

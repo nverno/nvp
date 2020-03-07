@@ -12,9 +12,7 @@
 ;; - gather targets: eg. make -prRn
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-results))
+(eval-when-compile (require 'nvp-macro))
 (require 'make-mode)
 (require 'nvp)
 
@@ -29,7 +27,7 @@
 
 (cl-defmethod nvp-install-help (&optional _type)
   "Display help about mode, eg. dependencies, packages, paths, etc."
-  (nvp-with-results-buffer (help-buffer) "Install"
+  (nvp-with-results-buffer nil "Install"
     (call-process "make" nil t t (concat "--file=" nvp/makeext) "help")))
 
 ;; -------------------------------------------------------------------
@@ -44,7 +42,7 @@
   (nvp-install-ext--make :targets targets :mode mode :makefile makefile))
 
 (defun nvp-install-help (ext)
-  (nvp-with-results-buffer (help-buffer) "Install targets"
+  (nvp-with-results-buffer nil "Install targets"
     (call-process-shell-command
      (concat "make -C " (file-name-directory (nvp-install-ext-makefile ext)) " help")
      nil t t)))

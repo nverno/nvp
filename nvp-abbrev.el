@@ -23,9 +23,7 @@
 ;; - write abbrevs as system abbrevs to save permanently
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-results))
+(eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
 (require 'nvp)
 (nvp-req 'nvp-abbrev 'subrs)

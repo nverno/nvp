@@ -1,48 +1,20 @@
-;;; nvp-results.el --- viewing results -*- lexical-binding: t; -*-
+;;; nvp-view-list.el --- view tabulated output -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
+;;; XXXX: (3/7/20) not used
+;;
 ;; View formatted results in temporary buffers:
 ;; - help-buffers
 ;; - tabulated lists
 ;; refs:
 ;; - timer-list.el
 ;; - view-list #<marker at 153343 in evil-common.el>
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)
-
-;; -------------------------------------------------------------------
-;;; Pretty printing
-
-;; ielm's nice formatting: #<marker at 14912 in ielm.el.gz>
-
-(defun nvp-pp-variable-to-string (variable)
-  (let ((print-escape-newlines t)
-        (print-quoted t)
-        (var (if (symbolp variable) (eval variable)
-               variable)))
-    (pcase var
-      ((pred hash-table-p)
-       (nvp-pp-hash var))
-      ;; TODO: structs/classes
-      (_
-       ;; (cl-prin1-to-string var)
-       (pp-to-string var)))))
-
-(defun nvp-pp-hash (hash)
-  (with-temp-buffer
-    (lisp-mode-variables nil)
-    (set-syntax-table emacs-lisp-mode-syntax-table)
-    (maphash (lambda (key val)
-               (pp key)
-               (princ " => ")
-               (pp val)
-               (terpri))
-             hash)
-    (buffer-string)))
 
 ;; -------------------------------------------------------------------
 ;;; View list - simple tabulated display
@@ -69,26 +41,6 @@
   ([return] . nvp-view-list-goto-entry)
   ("q"      . kill-this-buffer))
 
-
-;; -------------------------------------------------------------------
-;;; Output
-
-(defmacro nvp-with-results-buffer (&optional buffer-or-name title &rest body)
-  "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
-Make the temp buffer scrollable, in `view-mode' and kill when finished."
-  (declare (indent 2) (debug (sexp &rest form)))
-  `(let (other-window-scroll-buffer)
-     (nvp-window-configuration-save)
-     (with-temp-buffer-window
-         ,(or buffer-or-name '(help-buffer))
-         t
-         nil
-       (with-current-buffer standard-output
-         (setq other-window-scroll-buffer (current-buffer))
-         ,(if title `(princ (nvp-centered-header ,title)))
-         ,@body
-         (hl-line-mode)
-         (view-mode-enter nil #'nvp-window-configuration-restore)))))
 
 ;; evil-with-view-list: #<marker at 154076 in evil-common.el>
 (cl-defmacro nvp-with-view-list (&key
@@ -115,9 +67,9 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
              (setq mode-name ,mode-name))
            (pop-to-buffer buff))))))
 
-(provide 'nvp-results)
+(provide 'nvp-view-list)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-results.el ends here
+;;; nvp-view-list.el ends here

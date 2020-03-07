@@ -50,7 +50,26 @@ If PATH is non-nil, search for root starting at PATH."
 
 
 ;; -------------------------------------------------------------------
-;;; Messages
+;;; Output / Messages
+
+(nvp-decls :f (nvp-window-configuration-restore nvp-window-configuration-save))
+
+(defmacro nvp-with-results-buffer (&optional buffer-or-name title &rest body)
+  "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
+Make the temp buffer scrollable, in `view-mode' and kill when finished."
+  (declare (indent 2) (debug (sexp &rest form)))
+  `(let (other-window-scroll-buffer)
+     (nvp-window-configuration-save)
+     (with-temp-buffer-window
+         ,(or buffer-or-name '(help-buffer))
+         t
+         nil
+       (with-current-buffer standard-output
+         (setq other-window-scroll-buffer (current-buffer))
+         ,(if title `(princ (nvp-centered-header ,title)))
+         ,@body
+         (hl-line-mode)
+         (view-mode-enter nil #'nvp-window-configuration-restore)))))
 
 (cl-defmacro nvp-msg (fmt &rest args &key keys delay duration &allow-other-keys)
   "Print message, optionally using `substitute-command-keys' if KEYS.

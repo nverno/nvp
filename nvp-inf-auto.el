@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-results))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-display)
 

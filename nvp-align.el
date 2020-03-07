@@ -8,9 +8,7 @@
 ;; - additional alignment rules
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-results))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'align)
 (nvp-decls :f (nvp-read-mode))

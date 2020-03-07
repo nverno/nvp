@@ -1,8 +1,10 @@
 ;;; nvp-subrs.el ---  -*- lexical-binding: t; -*-
-;;
+
 ;;; Commentary:
-;; - some helpers from use-package
-;; - general simple subrs
+;;
+;; Collection of compile-time subrs -- many of which are used in macros
+;; elsewhere in the directory.
+;;
 ;;; Code:
 (require 'cl-lib)
 (require 'dash)

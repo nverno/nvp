@@ -1,7 +1,7 @@
 ;;; nvp-abbrev-completion.el --- local abbrev completion -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
 ;; Completion functions for abbrevs that take into account local context
 ;; using each active table's :regexp and :enable-function properties
 ;;
@@ -9,15 +9,31 @@
 ;; :enable-function and :regexp properties for each table separately
 ;;
 ;; Used to produce completion candidates for company and hippie-exp.
-
+;;
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-abbrev-subrs "subrs/nvp-abbrev-subrs"))
 (require 'abbrev)
 (require 'nvp)
-(require 'nvp-abbrev-util)
 
 ;; if non-nil, update active table cache
 (defvar-local nvp-abbrev-completion-need-refresh nil)
+
+;; list all active, nonempty tables:
+;; - dynamic table, local table, all parents, global table
+(defun nvp-abbrev--active-tables (&optional allow-empty)
+  (let ((tabs
+         (append (if (null local-abbrev-table) ()
+                   (cons local-abbrev-table
+                         (nvp-abbrev--all-parents local-abbrev-table)))
+                 (list global-abbrev-table))))
+    (when (and nvp-abbrev-dynamic-table
+               (abbrev-table-p nvp-abbrev-dynamic-table))
+      (setq tabs (cons nvp-abbrev-dynamic-table tabs)))
+    (setq tabs (delete-dups (mapcar #'abbrev-table-name tabs)))
+    (if allow-empty tabs
+      (nvp-abbrev--nonempty tabs))))
 
 ;; use local table along with its parents + global table
 (nvp-define-cache nvp-abbrev-completion--tables () nil

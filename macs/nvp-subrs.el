@@ -30,6 +30,12 @@
   (and (consp x) (not (consp (cdr x)))))
 
 ;; -------------------------------------------------------------------
+;;; Strings
+
+(defsubst nvp-string-member-p (str strings)
+  (cl-find-if (apply-partially #'string= str) strings))
+
+;; -------------------------------------------------------------------
 ;;; Lists
 
 (defsubst nvp-list-split-into-sublists (lst n)
@@ -120,6 +126,20 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 (defsubst nvp-dfn () (nvp-path 'ds))
 (defsubst nvp-fn (&optional path)
   (file-name-nondirectory (directory-file-name (or path (buffer-file-name)))))
+
+;; this must exist somewhere I'm forgetting...
+(defsubst nvp-directories (&optional root fullname pattern)
+  (nvp-defq pattern "^[^.]")
+  (--filter (file-directory-p it)
+            (directory-files (or root default-directory) fullname pattern)))
+
+;; return list of possible directories containing compile-time libraries
+(defconst nvp-compile-time-directories '("compile" "subrs" "macs" "macros"))
+(defconst nvp-compile-time-directory-re
+  (concat "^" (regexp-opt nvp-compile-time-directories) "\\'"))
+
+(defsubst nvp-compile-time-directories (&optional root full patterns)
+  (nvp-directories root full (or patterns nvp-compile-time-directory-re)))
 
 ;; -------------------------------------------------------------------
 ;;; Prompts 

@@ -1,18 +1,18 @@
 ;;; nvp-abbrev-dynamic.el --- dynamic abbrev tables -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
 ;; Generics to generate abbrevs from buffer/file contents
 ;; TODO: 
 ;; - refactor
 ;; - generic to make abbrevs
 ;; - generic to create table
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(nvp-req 'nvp-abbrev 'subrs)
 (require 'nvp)
 (require 'nvp-parse)
-(require 'nvp-abbrev-util)
 
 ;;; FIXME:
 (cl-defgeneric nvp-abbrev-dynamic--read (&optional arg)

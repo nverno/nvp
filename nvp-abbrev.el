@@ -25,25 +25,25 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-results))
-(require 'nvp)
+  (require 'nvp-results)
+  (require 'nvp-abbrev-subrs "subrs/nvp-abbrev-subrs"))
 (require 'abbrev)
-(require 'nvp-abbrev-util)
+(require 'nvp)
+
 (nvp-decls :v (nvp-abbrev-completion-need-refresh))
 
 (defvar nvp-abbrev--read-history ())
 
-(eval-when-compile
-  (defsubst nvp-abbrev--read-table (prompt choices)
-    (nvp-completing-read prompt choices nil t nil 'nvp-abbrev--read-history))
-
-  ;; Grab preceding NCHARS to match against in abbrev table.
-  (defsubst nvp-abbrev--grab-prev (nchars)
-    (save-excursion
-      (let ((end (point))
-            (_ (skip-chars-backward nvp-abbrev-prefix-chars (- (point) nchars)))
-            (start (point)))
-        (buffer-substring-no-properties start end)))))
+;; get list of all table properties, converting parent tables into symbols
+(defun nvp-abbrev-get-plist (table)
+  (unless (abbrev-table-p table) (setq table (symbol-value table)))
+  (when-let* ((sym (obarray-get table ""))
+              (props (symbol-plist sym)))
+    (cl-loop for (k v) on props by #'cddr
+       if (eq :parents k)
+       collect (list k (nvp-abbrev--all-parents table 'names))
+       else
+       collect (list k v))))
 
 ;; -------------------------------------------------------------------
 ;;; Generics
@@ -247,7 +247,7 @@ If FILE is non-nil, read abbrevs from FILE."
       (nvp-abbrev--read-table
        "List abbrev table props: "
        (mapcar #'symbol-name (nvp-abbrev--nonempty))))))
-  (let ((props (nvp-abbrev--get-plist (intern table))))
+  (let ((props (nvp-abbrev-get-plist (intern table))))
     (nvp-with-results-buffer nil
       (nvp-results-title table)
       (pcase-dolist (`(,k ,v) props)

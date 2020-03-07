@@ -7,13 +7,42 @@
 ;; default suffix appended when defining package location variables
 (defvar nvp-package-root-suffix "--dir")
 
+;;; Requires
+
+(defmacro nvp-req (sym &optional dir noerror)
+  "Handling for special requires for compile-time dependencies."
+  (declare (indent 0) (debug t))
+  (let* ((sym (car (nvp-list-unquote sym)))     ; accept quoted sym
+         (dir (car (nvp-list-unquote dir)))
+         (sym-name (nvp-as-string sym))
+         (cdirs (--map (file-relative-name it)  ; possible compile-time directories
+                       (nvp-compile-time-directories nil 'full)))
+         (dir (pcase dir
+                ((or 'subrs 'macs 'macros)
+                 (setq sym-name (concat sym-name "-" (symbol-name dir))
+                       sym (nvp-as-symbol sym-name))
+                 ;; check all possible directories, returning one where library
+                 ;; exists (if it does indeed)
+                 (->>
+                  (--first
+                   (file-exists-p (expand-file-name (concat sym-name ".el") it))
+                   cdirs)
+                  (expand-file-name sym-name)
+                  (file-relative-name)))
+                ((pred stringp) (expand-file-name (symbol-name sym-name) dir))
+                (_ nil))))
+    `(eval-when-compile (require ',sym ,dir ,noerror))))
+
+
 
 ;;; Define 
 
-(defmacro nvp-defq (sym &rest default)
-  "If SYM is nil, `setq' it evaluating DEFAULT."
-  (declare (indent defun))
-  `(or ,sym (setq ,sym ,@default)))
+(defmacro nvp-defq (&rest var-vals)
+  "If vars are nil in VAR-VALS, `setq' each VAR by evaluating its VAL."
+  (declare (indent defun) (debug t))
+  (macroexp-progn
+   (cl-loop for (var val) on var-vals by #'cddr
+      collect  `(or ,var (setq ,var ,val)))))
 
 (cl-defmacro nvp-defvar (&rest var-vals &key permanent local &allow-other-keys)
   "Define VAR and eval VALUE during compile."

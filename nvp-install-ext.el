@@ -1,7 +1,8 @@
 ;;; nvp-installer-ext.el --- Install external deps -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
+;;; FIXME: remove all this
 ;; Interface to install external dependencies
 ;; TODO:
 ;; - sentinels for external installs
@@ -28,7 +29,7 @@
 
 (cl-defmethod nvp-install-help (&optional _type)
   "Display help about mode, eg. dependencies, packages, paths, etc."
-  (nvp-with-results-buffer (help-buffer)
+  (nvp-with-results-buffer (help-buffer) "Install"
     (call-process "make" nil t t (concat "--file=" nvp/makeext) "help")))
 
 ;; -------------------------------------------------------------------
@@ -43,7 +44,7 @@
   (nvp-install-ext--make :targets targets :mode mode :makefile makefile))
 
 (defun nvp-install-help (ext)
-  (nvp-with-results-buffer (help-buffer)
+  (nvp-with-results-buffer (help-buffer) "Install targets"
     (call-process-shell-command
      (concat "make -C " (file-name-directory (nvp-install-ext-makefile ext)) " help")
      nil t t)))

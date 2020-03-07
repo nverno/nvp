@@ -10,10 +10,10 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-results)
   (require 'nvp-display))
 (require 'nvp)
 (require 'help-mode)
+(nvp-req 'nvp-results)
 (nvp-decls :f (nvp-read-mode advice-mapc advice-remove)
            :v (c-lang-constants))
 (nvp-auto "nvp-util" nvp-s-wrap)
@@ -34,7 +34,6 @@
   ("f"  . nvp-dev-features)
   ("Fr" . nvp-font-fontify-region-face)
   ("Fl" . nvp-font-list)
-  ("h"  . nvp-dev-describe-hash)
   ("H"  . nvp-hook-add-or-remove)
   ("ld" . list-dynamic-libraries)
   ("lf" . list-faces-display)
@@ -94,28 +93,6 @@
 ;;                vconcat [("")])))
 ;;       (remhash mode nvp-mode-cache)))
 
-;; https://github.com/abo-abo/oremacs
-(defun nvp-dev-describe-hash (variable)
-  "Display the full documentation of VARIABLE (a symbol)."
-  (interactive (let ((v (variable-at-point))
-                     (enable-recursive-minibuffers t)
-                     val)
-                 (setq val (completing-read
-                            (if (and (symbolp v)
-                                     (hash-table-p (symbol-value v)))
-                                (format
-                                 "Describe hash-map (default %s): " v)
-                              "Describe hash-map: ")
-                            obarray
-                            (lambda (atom) (and (boundp atom)
-                                           (hash-table-p (symbol-value atom))))
-                            t nil nil
-                            (if (hash-table-p v) (symbol-name v))))
-                 (list (if (equal val "") v (intern val)))))
-  (nvp-with-results-buffer (help-buffer)
-    :title (format "Hash: %S" variable)
-    (nvp-pp-hash variable)))
-
 (defun nvp-dev-describe-variable (variable)
   "Try to pretty print VARIABLE in temp buffer."
   (interactive (list (nvp-tap 'evari)))
@@ -125,8 +102,8 @@
         (print-circle t)
         ;; (print-gensym t)
         (inhibit-read-only t))
-    (nvp-with-results-buffer (help-buffer)
-      :title (format "Variable ('%s'): %S" (type-of val) variable)
+    (nvp-with-results-buffer nil
+        (format "Variable ('%s'): %S" (type-of val) variable)
       (princ (nvp-pp-variable-to-string val))
       (emacs-lisp-mode))))
 
@@ -169,8 +146,7 @@
                (princ (format ";; %s" (car i)))
                (cl-prettyprint (cdr i))
                (princ "\n"))))))
-    (nvp-with-results-buffer (help-buffer)
-      :title (format "%S variables" mode)
+    (nvp-with-results-buffer nil (format "%S variables" mode)
       (princ ";;; Variables\n")
       (funcall print-fn vars 'values)
       (princ ";;; Functions\n")
@@ -186,8 +162,7 @@
 ;; list my packages that have loaded
 (defun nvp-dev-features (prefix)
   (interactive (list (nvp-prefix 4 (read-string "Prefix: ") "nvp")))
-  (nvp-with-results-buffer (help-buffer)
-    :title (format "Loaded '%s' features" prefix)
+  (nvp-with-results-buffer nil (format "Loaded '%s' features" prefix)
     (cl-prettyprint
      (sort 
       (--filter (string-prefix-p prefix (symbol-name it)) features)
@@ -203,8 +178,7 @@
   (let ((print-escape-newlines t)
         (print-circle t)
         (inhibit-read-only t))
-    (nvp-with-results-buffer (help-buffer)
-      :title (format "c-lang-constants for %s" mode)
+    (nvp-with-results-buffer nil (format "c-lang-constants for %s" mode)
       (dolist (v (append c-lang-constants ()))
         (when (symbolp v)
           (princ v)
@@ -233,8 +207,7 @@
                           field))
         start end text)
     (if (not overlays) (message "Nothing here :(")
-      (nvp-with-results-buffer (help-buffer) :font-lock t
-        :title (format "Overlays at %d in %S" pos obuf)
+      (nvp-with-results-buffer nil (format "Overlays at %d in %S" pos obuf)
         (dolist (o overlays)
           (setq start (overlay-start o)
                 end (overlay-end o)
@@ -248,11 +221,50 @@
             (when (overlay-get o prop)
               (insert (propertize (format " %15S:" prop) 'face nil
                                   'font-lock-face font-lock-constant-face))
-              (insert (format " %S\n" (overlay-get o prop))))))))))
+              (insert (format " %S\n" (overlay-get o prop))))))
+        (font-lock-flush)
+        (font-lock-ensure)))))
 
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
+
+(defmacro nvp-lazy-defvar (var fun)
+  (declare (indent 1) (debug (symbolp lambda-expr)))
+  `(lambda ()
+     (when (functionp ',var)
+       (setq ,var (funcall #',fun)))
+     ,var))
+
+(nvp-lazy-defvar nvp-syntax-at-point-help
+  (lambda ()
+    (let
+        ((help-strs
+          '("depth in parens."
+            "character address of start of innermost containing list; nil if none."
+            "character address of start of last complete sexp terminated."
+            "non-nil if inside a string. \
+(it is the character that will terminate the string, \
+or t if the string should be terminated by a generic string delimiter.)"
+            "nil if outside a comment, t if inside a non-nestable comment, \
+else an integer (the current comment nesting)."
+            "t if following a quote character."
+            "the minimum paren-depth encountered during this scan."
+            "style of comment, if any."
+            "character address of start of comment or string; nil if not in one."
+            "List of positions of currently open parens, outermost first."
+            "When the last position scanned holds the first character of a \
+(potential) two character construct, the syntax of that position, \
+otherwise nil.  That construct can be a two character comment \
+delimiter or an Escaped or Char-quoted character."
+            ".... Possible further internal information used by \
+‘parse-partial-sexp’.")))
+      (mapconcat 'identity
+                 (cl-loop for i from 0 upto (length help-strs)
+                    collect
+                      (concat (number-to-string i) ") %S "
+                              (nvp-s-wrap 45 (nth i help-strs) "; ")))
+                 "\n"))))
 
 ;;;###autoload
 (defun nvp-syntax-at-point (marker &optional action)
@@ -285,7 +297,7 @@ delimiter or an Escaped or Char-quoted character."
                      (called-interactively-p 'interactive))
     (nvp-display-buffer-with-action action
       (with-help-window (help-buffer)
-        (nvp-results-title "Syntax at <marker>")
+        (princ (nvp-centered-header "Syntax at <marker>"))
        (cl-loop
           for i from 0 upto (length ppss)
           do
@@ -401,8 +413,7 @@ With \\[universal-argument] prompt for THING at point."
     (mapc (lambda (w) (cl-callf 1+ (gethash w ht 0))) words)
     (maphash (lambda (key val) (push (cons val key) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
-    (nvp-with-results-buffer (help-buffer)
-      :title "Word Counts"
+    (nvp-with-results-buffer nil "Word Counts"
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
 

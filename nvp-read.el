@@ -5,7 +5,7 @@
 ;; - read w/ popup help: see `register-read-with-preview'
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)                          ;nvp-prompt-default
+(require 'nvp)
 (nvp-decls :f (help--symbol-completion-table function-called-at-point)
            :v (ido-exit ido-fallback ido-text))
 (nvp-auto "eldoc" 'eldoc-minibuffer-message)

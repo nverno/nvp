@@ -50,6 +50,15 @@
             s
             (make-string (floor extra 2) char))))
 
+;; Format a header with TITLE centered
+(defsubst nvp-centered-header (title &optional width char)
+  (declare (pure t) (side-effect-free t))
+  (nvp-defq width 85 char "~")
+  (let ((len (length title)))
+    (format "\n%s\n%s\n\n"
+            (nvp-s-center (- width len) title)
+            (nvp-s-repeat width char))))
+
 ;; -------------------------------------------------------------------
 ;;; Lists
 

@@ -100,7 +100,8 @@
     (let ((search-term
            (--if-let (nvp-tap 'dwim)
                (if force-prompt
-                   (read-from-minibuffer (format (concat search-prompt " (%s): ") it))
+                   (read-from-minibuffer
+                    (format (concat search-prompt " (%s): ") it) it)
                  it)
              (read-from-minibuffer (concat search-prompt ": ")))))
       (add-to-history 'nvp-search-history search-term)
@@ -250,7 +251,8 @@
 
 ;;;###autoload
 (defun nvp-ag-elisp-dwim (root search &optional regex)
-  "Run ag search including `package-user-dir' from `user-emacs-directory'."
+  "Run ag search including `package-user-dir' from `user-emacs-directory'.
+Ignore elpa directory by default, but with any prefix, prompt to include."
   (interactive
    (let ((arg (prefix-numeric-value current-prefix-arg)))
      (list nvp/emacs
@@ -259,8 +261,12 @@
   (require 'nvp-ag-config)
   (let* ((elpa (nvp-path 'ds package-user-dir))
          (ag-ignore-list
-          (nvp-prefix 4 (cl-callf2 cl-delete elpa ag-ignore-list :test #'equal)
-            (cl-pushnew elpa ag-ignore-list))))
+          (nvp-prefix 4
+            (if (y-or-n-p "Include elpa? ")
+                (cl-callf2 cl-remove elpa ag-ignore-list :test #'string=)
+              ag-ignore-list)
+            :test '>=
+            (cl-pushnew elpa ag-ignore-list :test #'string=))))
     (unless (integerp current-prefix-arg)
       (setq current-prefix-arg nil))
     (ag/search search root :regexp regex)))

@@ -1,9 +1,10 @@
-;;; nvp-js-ct.el --- compile-time -*- lexical-binding: t; -*-
+;;; nvp-js-subrs.el --- compile-time -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(require 'nvp-macro)
 (require 'nvp)
+(require 'js)
 (nvp-decls)
 
 ;; -------------------------------------------------------------------
@@ -30,9 +31,9 @@
 (defun nvp-js-snippet-function-name ()
   (if (nvp-js-function-declaration-p) "name" ""))
 
-(provide 'nvp-js-ct)
+(provide 'nvp-js-subrs)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-js-ct.el ends here
+;;; nvp-js-subrs.el ends here

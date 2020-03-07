@@ -292,7 +292,7 @@ With prefix, display in same frame using `display-buffer' ACTION."
     (nvp-display-buffer-with-action action
       (with-help-window (help-buffer)
         (princ (nvp-centered-header "Syntax at <marker>"))
-        (princ (eval `(format ,help-str ,@(--map (list 'quote it) ppss))))
+        (princ (apply #'format help-str ppss))
         (with-current-buffer standard-output
           (let ((inhibit-read-only t)
                 (comment-start "; ")

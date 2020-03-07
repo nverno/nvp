@@ -1,23 +1,37 @@
 ;;; nvp-js-project.el --- project configuration -*- lexical-binding: t; -*-
-;;
+
 ;;; Commentary:
-;; TODO:
-;; - need to setup local binary paths: ./node_modules/.bin/
-;; - configure .tern-project locally when using webpack
-;; - if .tern-project loads webpack.dev.js configured using create-react-app,
-;;   it won't understand NODE_ENV, so environment variables need to be configured
-;;   appropriately beforehand (or in worst case use a shim to start tern with
-;;   environment variables -- this really shouldn't be required)
-;; TODO: Projectile-related
-;; - projectile-configure-project
-;; - projectile-run-project
-;; - projectile-test-project
-;; - projectile-compile-project
-;; Other:
-;; - indium configuration
-;; - local .tern-project configuration when necessary (webpack loader)
-;; - enable appropriate snippets based on frameworks
-;; - package.json reader to manage scripts/etc.
+;;
+;; TODO: Project setup, configuration, running, testing, and compiling
+;;
+;; Need support for project types:
+;; - React - create-react-app boostrapped projects
+;; - Node/npm 
+;;
+;; Configuration (work w/ projectile-configure-project?):
+;; - local binary paths: ./node_modules/.bin/
+;; - .tern-project w/ webpack needs process-environment configured
+;;   https://medium.com/@jrwillette88/tern-why-it-breaks-and-how-to-fix-it-8d1677df05f9
+;;   this hack uses a tern shim to set env. vars -- but it would be better to
+;;   configure the process-environment around the tern server.
+;; - indium configuration, eg. chrome or node + debugging port, node --inspect
+;;   command, etc., also needs to recognize correct sourcemaps
+;; - .env / .env.development variables
+;; - babel configuration (es6, jsx, ts) using preset-env, in config file
+;; - travis runner?
+;;
+;; Run => start development environment
+;; Test: only worry about jest framework
+;;   + need mappings b/w files
+;;   + test runner script in package.json
+;;   + could have option for coverage
+;;   + would be nice to have output with XREFs to failures
+;;   + Also, ability to run specific unit tests/groups of tests with regexps or
+;;     something similar
+;; Compile:
+;;   + Build project to produce static site
+;;   + Deploy somehow?
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

@@ -224,7 +224,19 @@
                                 'nvp-rg-match-grouped-filename-xc 1 2))
                     compilation-error-regexp-alist-alist)
               (setq-local imenu-generic-expression
-                          `((nil ,(nvp-ag/rg-imenu-function) 1))))))
+                          `((nil ,(nvp-ag/rg-imenu-function) 1)))))
+
+  ;; Useful function to search the zipped source 
+  ;; https://github.com/dajva/rg.el/issues/69#event-3107793694
+  (nvp-decl nvp-rg-emacs)
+  (rg-define-search nvp-rg-emacs 
+    :query (or (thing-at-point 'symbol)
+               (read-from-minibuffer "Search emacs source: "))
+    :literal (not current-prefix-arg)
+    :dir source-directory
+    :flags '("-z") 
+    :files "*.{el,el.gz}" 
+    :menu ("Custom" "L" "emacs source")))
 
 
 ;; -------------------------------------------------------------------

@@ -1,6 +1,49 @@
-;;; nvp-hippie.el --- hippie expansions  -*- lexical-binding: t; -*-
+;;; nvp-hippie.el --- hippie expansion functions  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;;
+;; This file contains hippie-expanders that are generally useful in any
+;; mode, as well as some tools to parse files and create completion tables.
+;;
+;; Flex expansion converts buffer symbols to regexps that can be fuzzily matched
+;; against for hippie expansion. So, with the defaults for elisp, for expample,
+;; hippie prefixes are broken by [-:.] and converted to regexps matching the
+;; first letter of each component, so 'r-r' or 'r.r' or 'r:r' are all converted
+;; to "\\br\\w*-r[[:alnum:]:-]*\\b", allowing 'r-r' to expand to
+;; `replace-regexp-in-string' or `read-regexp', for example.
+;; 
+;; Candidates are chosen in the buffer by the `nvp-he-weight-function', and only
+;; those with a minimum length of `nvp-he-min-length' are considered.
+;; Additionally, the search will timeout after `nvp-he-time-limit'. Conversion
+;; from hippie prefixes, eg. 'r-r', to regexps are customizable via
+;; `nvp-he-flex-from-re' and `nvp-he-flex-to-re' and a matcher function,
+;; `nvp-he-flex-matcher' that does the actually conversion from a prefix to a
+;; regexp. `nvp-he-flex-symbol-beg' is used to find the beginning of candidates.
+;;
+;; The flex completion table is only recomputed when the hippie expansion
+;; prefix changes.
+;;
+;; Default flex configs for some language types:
+;; - *Lisp-like*:
+;;  + case insensitive
+;;  + expansion candidates match prefixes of hyphen separated symbols
+;;  + prefixes can be separated by [.-:], eg. r.r == r-R == R:r, all of which
+;;  + would be converted to match "\\br\\w*-r[[:alnum:]:-]*\\b"
+;;  + symbol beginnings are found by `he-lisp-symbol-beg'
+;;  + regexps created by `nvp-he-flex-lisp'
+;;
+;; - *camelCased.method(), or snake_cased.chained() types*:
+;;  + case sensitive
+;;  + hippie expansion prefixes are split by first by non-word/numeric values,
+;;    so 't.sS' => '(t sS)
+;;
+
+(defun nvp-he-split-words (s)
+  (let ((case-fold-search nvp-he-case-fold-search))
+    (--map ()
+     (replace-regexp-in-string
+      "\\([._[:lower:]0-9]\\)\\([._[:upper:]0-9]\\)"
+      "\\1 \\2" s))))
 ;;
 ;; - cached completion tables
 ;; - sort candidates by weighting function
@@ -31,11 +74,24 @@
   "Non-nil if flex matching should ignore case.")
 
 ;;;###autoload
-(defun nvp-he-local (&rest he-funcs)
-  (unless (local-variable-p 'hippie-expand-try-functions-list)
-    (make-local-variable 'hippie-expand-try-functions-list))
-  (cl-remove-duplicates (append he-funcs hippie-expand-try-functions-list)))
+(defun nvp-he-local (expanders &optional local-vars clobber)
+  "Setup hippie expansion in mode hook.
+EXPANDERS are functions for `hippie-expand-try-functions-list', 
+LOCAL-VARS are set locally. If CLOBBER is non-nil, overwrite default 
+expansion functions instead of appending to them."
+  ;; `hippie-expand-try-functions-list' is made buffer-local in init
+  (setq hippie-expand-try-functions-list
+        (if clobber expanders
+          (cl-remove-duplicates
+           (append expanders hippie-expand-try-functions-list))))
+  `(nvp-setq-local ,@local-vars))
+(put 'nvp-he-local 'lisp-indent-function 0)
 
+;; -------------------------------------------------------------------
+;;; Configuration for a couple language styles
+
+
+;; -------------------------------------------------------------------
 ;;; Completion Tables
 
 (defmacro nvp-he-lazy-completion-table (var fun &optional test)
@@ -65,8 +121,8 @@ See `completion-table-dynamic' for NO-SWITCH."
                 (setq last-arg arg))))))
     new-fun))
 
-
-;;; Regexp Matches
+;; -------------------------------------------------------------------
+;;; Regexp Matches 
 
 (eval-when-compile
   ;; modified `company-dabbrev--time-limit-while'
@@ -186,9 +242,10 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
       (and old (he-reset-string)))))
 
 
+;; -------------------------------------------------------------------
 ;;; Tags
 
-;; destructively replace OLD-ELEM with NEW-ELEM in expanders list
+;; NON-destructively replace OLD-ELEM with NEW-ELEM in expanders list
 (defsubst nvp-he--replace-in-list (old-elem new-elem)
   (setq hippie-expand-try-functions-list
         (copy-sequence hippie-expand-try-functions-list))
@@ -232,6 +289,7 @@ with the active backend, otherwise it removes itself."
     t))
 
 
+;; -------------------------------------------------------------------
 ;;; Dabbrevs
 ;; TODO: refactor this
 

@@ -55,6 +55,12 @@ match($0, /\(require\s+'([[:alnum:]-]+)\s*("[^"]+")?\)/, l) {
     next
 }
 
+# nvp-req macros: (nvp-req 'feature '[subr|macro|etc])
+match($0, /\(nvp-req\s+'?([[:alnum:]-]+)\s*['"]?([[:alpha:]]+)\)/, l) {
+    deps[FILENAME,len++] = sprintf("%s%s", l[1], l[2] ? "-" l[2] : "");
+    next
+}
+
 match($0, /\(provide\s+'([[:alnum:]-]+)\)/, p) {
     libs[p[1]] = FILENAME
     next

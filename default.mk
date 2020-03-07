@@ -12,7 +12,8 @@ INSTALL_INFO ?= $(shell command -v ginstall-info || printf install-info)
 MAKEINFO     ?= makeinfo
 
 PKG           = nvp
-EL            = $(filter-out %-autoloads.el, $(wildcard *.el)) $(wildcard macs/*.el)
+EL            = $(filter-out %-autoloads.el, $(wildcard *.el)) $(wildcard macs/*.el) \
+		$(wildcard subrs/*.el)
 ELC           = ${EL:.el=.elc}
 BIN           = bin
 LATEX_ABBREVS = etc/unicode-latex-abbrev-table

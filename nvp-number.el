@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp-decls)
-(nvp-autoload "hexl" 'hexl-octal-string-to-integer 'hexl-hex-string-to-integer)
+(nvp-auto "hexl" 'hexl-octal-string-to-integer 'hexl-hex-string-to-integer)
 
 ;; -------------------------------------------------------------------
 ;;; Conversion

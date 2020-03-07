@@ -12,18 +12,14 @@
 ;; edebug-x.el: tabulated list of breakpoints looks useful
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra)
-  (defvar tramp-debug-on-error)
-  (defvar tramp-verbose))
+(eval-when-compile (require 'nvp-macro))
 (require 'elisp-mode)
 (require 'backtrace)
 (require 'edebug)
-(nvp-decls)
-(nvp-decl nvp-help-describe-keymap)
+(nvp-decls :v (tramp-debug-on-error tramp-verbose)
+           :f (nvp-help-describe-keymap))
 
-
+;; -------------------------------------------------------------------
 ;;; Debugger
 
 ;; Completion for frame locals in *Backtrace*
@@ -57,7 +53,8 @@
       (backtrace-single-line)
     (backtrace-multi-line)))
 
-
+
+;; -------------------------------------------------------------------
 ;;; Edebug
 
 ;; Completion for frame-locals in edebug buffer
@@ -94,7 +91,7 @@
   (message "Edebug all defs %s locally"
            (if nvp-edebug--all-defs "enabled" "disabled")))
 
-
+;; -------------------------------------------------------------------
 ;;; Emacs / Tramp
 
 (defun nvp-edebug-tramp-toggle-debug ()

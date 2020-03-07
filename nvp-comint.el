@@ -1,14 +1,14 @@
 ;;; nvp-comint.el --- Comint helpers -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; - sentinels
 ;; - manage history
 ;; - redirect output
-
+;;
 ;; TODO:
 ;; - default `comint-input-filter-functions' to ignore blanks, compress newlines
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)

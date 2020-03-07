@@ -1,6 +1,7 @@
 ;;; nvp-hippie.el --- hippie expansions  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;;
 ;; - cached completion tables
 ;; - sort candidates by weighting function
 ;; Expanders:
@@ -8,7 +9,7 @@
 ;; - dabbrevs, closest first
 ;; - tags => no tag libraries are loaded, local variables are just checked
 ;; - lines
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'company)

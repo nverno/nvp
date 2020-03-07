@@ -1,7 +1,7 @@
 ;;; nvp-cycle.el --- smart cycling -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Cycle between options with repeated keypress
 ;;
 ;; TODO:
@@ -15,12 +15,11 @@
 ;; - `cycle-spacing' (#<marker at 37959 in simple.el.gz>)
 ;;    examples in #<marker at 1838 in smartparens-ess.el>
 ;; - `just-one-space' (same; wrapper)
-
+;;
 ;; org-cycle: `org-pre-cycle-hook', `org-cycle-hook'
-
+;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)
 

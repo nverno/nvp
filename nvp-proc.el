@@ -1,11 +1,11 @@
 ;;; nvp-proc.el --- process-related functions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; - filters
 ;; - sentinels
 ;; - find processes
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

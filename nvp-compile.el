@@ -1,7 +1,10 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
+;; XXX: goal is just to integrate with project management, eg. projectile
+;;      as much as possible
+;;
 ;; Possible packages:
 ;; - https://github.com/ReanGD/emacs-multi-compile
 ;; - https://github.com/plandes/flex-compile -- nah
@@ -11,7 +14,7 @@
 ;; More generalization is good
 ;; - see helm-make for generating makefile commands
 ;; - maybe something in make-it-so
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)

@@ -1,7 +1,7 @@
 ;;; nvp-jump.el --- jumping places -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Functions to jump to locations
 ;;
 ;; Prefix args should do the following:
@@ -9,19 +9,18 @@
 ;; 1) With single prefix, jump same window
 ;; 2) With double prefix, prompt or something else
 ;; 3) Default action => dired location
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-display)
 (require 'nvp-read)
-(autoload 'lm-header "lisp-mnt")
+
+(nvp-auto "lisp-mnt" 'lm-header)
 (nvp-auto "find-func" 'find-function-library 'find-library-name)
-(nvp-auto "nvp-util" 'nvp-file-locate-first-dominating)
 (nvp-auto "nvp-scratch" 'nvp-scratch-switch-modes)
 (nvp-decls)
 
-
 ;;; Libraries
 
 ;;;###autoload

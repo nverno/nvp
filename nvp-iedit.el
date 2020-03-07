@@ -1,11 +1,11 @@
 ;;; nvp-iedit.el --- mark/replace matches -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; iedit extensions:
 ;; - toggle match restriction b/w global, defun, line
 ;; - expand regions during iedit
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'iedit)

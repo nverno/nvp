@@ -1,13 +1,13 @@
 ;;; nvp-parse.el --- Generics for parse -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; TODO:
 ;; - cache values by window -- see which-func
 ;; #<marker at 10467 in which-func.el.gz>
 ;; - use sematic when tags available:
 ;; #<marker at 19142 in semantic/imenu.el.gz>
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-imenu)

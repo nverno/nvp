@@ -16,9 +16,9 @@
 (require 'projectile)
 (nvp-decls :f (rg-project-root rg-run))
 (nvp-auto "rg" 'rg-project-root)
-(autoload 'vc-git-root "vc-git")
-(autoload 'vc-hg-root "vc-hg")
-(autoload 'vc-svn-root "vc-svn")
+(nvp-auto "vc-git" 'vc-git-root)
+(nvp-auto "vc-hg" 'vc-hg-root)
+(nvp-auto "vc-svn" 'vc-svn-root)
 
 ;;;###autoload
 (defun nvp-project-root (&optional path)

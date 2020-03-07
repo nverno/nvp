@@ -1,12 +1,12 @@
 ;;; nvp-edit.el --- editing / text manipulation -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; - Indent
 ;; - Sorting
 ;; - Wrap text
 ;; - Duplicate lines / regions
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

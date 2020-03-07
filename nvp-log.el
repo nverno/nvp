@@ -1,14 +1,13 @@
 ;;; nvp-log.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; FIXME: get rid of this, find better strategy
 ;; basic logging mode
 ;; - ert message capturing: #<marker at 10762 in ert-x.el.gz>
-
+;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
 (defvar nvp-log-buffer "*nvp-log*")

@@ -2,11 +2,10 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar tiny-beg))
-(declare-function tiny-expand "tiny")
-(autoload 'nvp-list-wrap-quotes "nvp-edit-aux")
+(eval-when-compile (require 'nvp-macro))
+(nvp-decls :v (tiny-beg)
+           :f (tiny-expand))
+(nvp-auto "nvp-edit-aux" 'nvp-list-wrap-quotes)
 
 ;;;###autoload
 (defun nvp-expand-range (&optional sep)

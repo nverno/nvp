@@ -1,16 +1,16 @@
 ;;; nvp-info.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; info helpers
 ;; - gather my nodes
 ;; - update when file changes
 ;; - convert org to info and install
 ;; - jump to source
 ;; - imenu support
-
+;;
 ;; TODO: node lookup should allow fuzzy matching
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

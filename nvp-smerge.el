@@ -3,9 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra))
+(eval-when-compile (require 'nvp-macro))
 (require 'smerge-mode)
 
 (nvp-hydra-set-property 'nvp-hydra-smerge :verbosity 1)

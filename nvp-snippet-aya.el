@@ -3,14 +3,13 @@
 ;;; Commentary:
 ;; auto yasnippets
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra))
+(eval-when-compile (require 'nvp-macro))
 (require 'auto-yasnippet)
 (defvar aya-current)
-(nvp-decl "nvp-snippet" nvp-jump-to-new-snippet)
+(nvp-decls :f (nvp-jump-to-new-snippet)
+           :v (aya-current))
 
-(defvar nvp-aya-new-template "\
+(defconst nvp-aya-new-template "\
 # -*- mode: snippet -*-
 # name: $1
 # key: ${2:${1:$(yas--key-from-desc yas-text)}}

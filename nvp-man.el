@@ -3,6 +3,7 @@
 ;;; Commentary:
 ;; Utility functions to parse help output
 ;; - parse man output
+;; - Currently used in sh-help
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -15,15 +16,16 @@
 (defconst nvp-help--man-subentry-re
   "\\([^ \t]\\(?:[^ \t\n\r]\\| [^ \t\n\r]\\)+\\)")
 
-;; make indentation based regexp
-(defsubst nvp-help--man-indent ()
-  (buffer-substring (point) (+ (point) (current-indentation))))
+(eval-when-compile
+  ;; make indentation based regexp
+  (defsubst nvp-help--man-indent ()
+    (buffer-substring (point) (+ (point) (current-indentation))))
 
-(defsubst nvp-help--man-indent-re ()
-  (concat "^\\(?:[ \t]*$\\|" (nvp-help--man-indent) "\\)"))
+  (defsubst nvp-help--man-indent-re ()
+    (concat "^\\(?:[ \t]*$\\|" (nvp-help--man-indent) "\\)"))
 
-(defsubst nvp-help--man-section-re ()
-  (concat "^" (nvp-help--man-indent) "[^ \t\n\r]"))
+  (defsubst nvp-help--man-section-re ()
+    (concat "^" (nvp-help--man-indent) "[^ \t\n\r]")))
 
 ;; return section from man doc
 (defun nvp-help-man-string (section-re)

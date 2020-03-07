@@ -1,11 +1,11 @@
 ;;; nvp-inf.el --- inferior processes -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
-;; TODO: cleanup
+;;
+;; TODO: cleanup -- don't really use any of this
 ;; inferior process utilities
 ;; lots of unused stuff
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp-declare nvp-inf-read-process)

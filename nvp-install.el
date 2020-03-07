@@ -1,8 +1,11 @@
 ;;; nvp-install.el --- -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;;; TODO: complete overhaul
+;;
+;; It's ugly but it works fine for now...
+;;
 ;; Rewrite:
 ;; - interface to makefile install
 ;; - defstruct mode configs
@@ -10,7 +13,7 @@
 ;; - better logging / cleanup / error reporting
 ;; - parallel pkg install
 ;; - async external installs
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-local nil t)
@@ -20,7 +23,7 @@
 (declare-function w32-shell-execute "w32")
 (declare-function nvp-log "nvp-log")
 (declare-function nvp-package-directory-dwim "nvp-package")
-(nvp-with-gnu (autoload 'nvp-ext-sudo-command "nvp-ext"))
+
 (autoload 'nvp-read-mode-config "nvp-read")
 
 ;; possible local locations

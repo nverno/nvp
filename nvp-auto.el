@@ -1,12 +1,12 @@
 ;;; nvp-auto.el --- some autoloads -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Random autoloads
 ;; - some movement functions
 ;; - hydras: yank/pop, goto-line
 ;; - some other randoms
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

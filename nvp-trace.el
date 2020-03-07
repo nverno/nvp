@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'hydra)
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'trace)
 (nvp-auto "find-func" 'read-library-name 'find-library-name)
 (nvp-auto "nvp-elisp" 'nvp-elisp-matching-forms)

@@ -1,7 +1,7 @@
 ;;; nvp-indicate.el --- indicators -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Indicate various things
 ;; - pulse regions with overlays
 ;; - temporarily change cursor color, eg. for hydra execution
@@ -9,11 +9,11 @@
 ;; Commands to toggle indicators
 ;; - long lines
 ;; - trailing white space
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decl "pulse"
-  pulse-momentary-highlight-region pulse-momentary-highlight-one-line)
+(nvp-decls
+ :f (pulse-momentary-highlight-region pulse-momentary-highlight-one-line))
 
 ;; indicatation colors
 (defvar nvp-indicate-colors

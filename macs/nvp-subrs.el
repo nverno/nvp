@@ -150,6 +150,14 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 (defsubst nvp-fn (&optional path)
   (file-name-nondirectory (directory-file-name (or path (buffer-file-name)))))
 
+;; Locate first name in NAMES using `locate-dominating-file' starting from FILE.
+;; I think projectile has a number of functions doing this type of stuff
+(defsubst nvp-file-locate-first-dominating (file names)
+  (cl-loop for name in names
+     as res = (locate-dominating-file file name)
+     when res
+     return res))
+
 ;; this must exist somewhere I'm forgetting...
 (defsubst nvp-directories (&optional root fullname pattern)
   (nvp-defq pattern "^[^.]")

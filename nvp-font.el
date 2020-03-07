@@ -1,14 +1,14 @@
 ;;; nvp-font.el --- add/toggle additional font-locking -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Utils to add additional font-locking
-
+;;
 ;; - https://github.com/ShingoFukuyama/ov.el
-
+;;
 ;; TODO:
 ;; - update a mode's additions w/o creating entire new entry
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -102,26 +102,6 @@ Each element of FORMS is a list ([:quoted char] regex font-spec)."
         (when (overlay-get ov name)
           (push ov res)))
       (nreverse res))))
-
-;; -------------------------------------------------------------------
-;;; Glyphs 
-
-(defun nvp-font-quote-glyphs ()
-  (let ((tbl (make-display-table)))
-    (aset tbl 8220 (vector (make-glyph-code ?\" 'default)))
-    (aset tbl 8221 (vector (make-glyph-code ?\" 'default)))
-    (aset tbl 8216 (vector (make-glyph-code ?\` 'default)))
-    (aset tbl 8217 (vector (make-glyph-code ?\' 'default)))
-    (setq standard-display-table tbl)))
-
-(defun nvp-font-glyphify (item glyph)
-  `((,item
-     (0 font-lock-keyword-face t)
-     (0 (prog1
-            (compose-region (match-beginning 0)
-                            (match-end 0)
-                            ,glyph)
-          nil)))))
 
 (provide 'nvp-font)
 ;;; nvp-font.el ends here

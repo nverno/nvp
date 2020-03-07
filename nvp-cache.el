@@ -1,14 +1,17 @@
 ;;; nvp-cache.el --- Generic caches -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
+;; Experimenting with defstructs/generics -- nothing particularly useful
+;; came from it.
+;;
 ;; Current cache backends:
 ;; - ring
 ;; - hash
-
+;;
 ;; Hash table with expiring entries:
 ;; https://github.com/skeeto/skewer-mode/blob/master/cache-table.el
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp-decls)

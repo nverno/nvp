@@ -1,15 +1,16 @@
 ;;; nvp-vc.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;;
 ;; ghub?
 ;; https://github.com/jwiegley/dot-emacs/blob/0e07f471036d6f3ec4f3cbd38fe3277be072747b/init.el#L180
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'magit nil t)
 (nvp-decls)
-(nvp-auto "nvp-util" nvp-s-all-matches)
+(nvp-auto "nvp-util" 'nvp-s-all-matches)
 (nvp-auto "vc-git" 'vc-git-root)
 
 ;; checkout part of a repo

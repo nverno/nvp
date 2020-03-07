@@ -1,21 +1,16 @@
 ;;; nvp-perl-help.el --- help-at-point -*- lexical-binding: t; -*-
 
-;; Last modified: <2019-07-29.23>
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/nvp
-;; Created:  9 November 2016
-
 ;;; Commentary:
-
+;;
 ;; TODO:
 ;; - HAP toggle
 ;; - metapan lookup
-
+;;
 ;; Refs:
 ;; - https://github.com/syohex/emacs-metacpan
 ;; - https://github.com/syohex/emacs-perl-utils/blob/master/perl-utils.el
 ;; - https://github.com/genehack/emacs/blob/master/etc/perl.el
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-perl)

@@ -1,11 +1,11 @@
 ;;; nvp-code.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; - code folding
 ;; - hi-lock
 ;; - narrow
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

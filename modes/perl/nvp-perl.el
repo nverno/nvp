@@ -1,12 +1,12 @@
 ;;; nvp-perl.el --- perl helpers  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Other:
 ;; - perlcritic.el, Perl::Critic
 ;; - Sepia, looks like old REPL
 ;; - Emacs::PDE - tried it before
-
+;;
 ;; TODO:
 ;; - Abstract cycling chars
 ;; - Examples:
@@ -14,21 +14,20 @@
 ;;   - https://github.com/emacsmirror/cycle-quotes/blob/master/cycle-quotes.el
 ;; - generic parse
 ;; - update compile: warnings / diagnostics, input in compilation comint buffer
-
+;;
 ;; FIXME:
 ;; - remove AC related plsense stuff
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-parse))
 (require 'cperl-mode)
-(nvp-decls)
-(declare-function auto-complete-mode "autocomplete")
-(nvp-decl "plsense" plsense-setup-current-buffer plsense-server-start)
-
+(nvp-req 'nvp-perl 'subrs)
 (nvp-auto "find-lisp" 'find-lisp-find-files)
-(nvp-auto "nvp-util" 'nvp-back-chars-then-look)
+
+(nvp-decls :f (auto-complete-mode
+               plsense-setup-current-buffer plsense-server-start))
 
 (nvp-with-w32
   ;; load windows environment helpers
@@ -213,10 +212,6 @@
 ;;; Find Stuff
 ;; `perl-find-library' stuff
 
-(defsubst nvp-perl-replace-all (from to str)
-  (declare (pure t) (side-effect-free t))
-  (replace-regexp-in-string from to str t t))
-
 ;; build perl modules paths
 (nvp-define-cache-runonce nvp-perl--module-paths () nil
   (cl-remove-if-not
@@ -229,7 +224,6 @@
       (eval-when-compile
         (concat "perl -e '$\"=\"\\\" \\\"\";"
                 "print \"(\\\"@INC\\\")\"'")))))))
-
 
 ;; Find all perl modules in directories on @INC, and cache
 ;; searches for files ending in .pod or .pm and translates

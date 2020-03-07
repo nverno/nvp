@@ -27,8 +27,7 @@
 ;; - support uninstalling pkgs
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'package)
 (require 'autoload)

@@ -2,8 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-log)
 (declare-function w32-shell-execute "w32")
@@ -19,21 +18,22 @@ whitespace either way."
       (string-trim string "[\" \t\n\r]+" "[\" \t\n\r]+")
     (string-trim string)))
 
-;; split environment variable, remove duplicates maintaining ordering
-(defsubst nvp-env-split-var (var)
-  (when-let ((env (getenv var)))
-    (split-string env path-separator)))
+(eval-when-compile
+ ;; split environment variable, remove duplicates maintaining ordering
+ (defsubst nvp-env-split-var (var)
+   (when-let ((env (getenv var)))
+     (split-string env path-separator)))
 
-;; remove duplicate entries, maintaining ordering
-(defsubst nvp-env-uniq (parts)
-  (cl-remove-duplicates
-   parts
-   :test (nvp-with-gnu/w32 'string= '(lambda (x y) (string= (downcase x) (downcase y))))
-   :from-end t))
+ ;; remove duplicate entries, maintaining ordering
+ (defsubst nvp-env-uniq (parts)
+   (cl-remove-duplicates
+    parts
+    :test (nvp-with-gnu/w32 'string= '(lambda (x y) (string= (downcase x) (downcase y))))
+    :from-end t))
 
-;; join env var with path-separator
-(defsubst nvp-env-join (parts)
-  (mapconcat 'identity parts path-separator))
+ ;; join env var with path-separator
+ (defsubst nvp-env-join (parts)
+   (mapconcat 'identity parts path-separator)))
 
 ;; move entries in environment VAR matching REGEX to front of list
 (defun nvp-env-rearrange (var regex &optional case-fold)

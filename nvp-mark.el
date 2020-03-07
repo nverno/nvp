@@ -1,13 +1,13 @@
 ;;; nvp-mark.el --- Minor mode for quick xrefs -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Minor mode to create xrefs from marker text on the fly
-
+;;
 ;; TODO:
 ;; - use overlays
 ;; - add jump bindings to overlays
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (autoload 'find-library-name "find-func")

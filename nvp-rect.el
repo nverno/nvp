@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra))
+(eval-when-compile (require 'nvp-macro))
 (require 'rect)
 
 ;;;###autoload(autoload 'nvp-rect-hydra/body "nvp-rect")

@@ -1,20 +1,20 @@
 ;;; nvp-imenu.el --- imenu helpers  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; imenu extensions:
 ;; - add support for mode specific headers
 ;; - wrapper function to call imenu/idomenu with additional options
 ;; - utilities to manipulate index-alist
 ;; - wrapper for ido-completion w/ fallback to flattened alist
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'imenu)
 (require 'ido)
-(nvp-decl nvp-comment-start)
-(autoload 'nvp-flatten-tree "nvp-util")
+(nvp-decls :f (nvp-comment-start))
+(nvp-auto "nvp-util" 'nvp-flatten-tree)
 
 (defvar nvp-imenu-guess nil
   "If non-nil, suggest `thing-at-point' if it is in the imenu alist.")

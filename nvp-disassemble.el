@@ -4,8 +4,7 @@
 ;; FIXME: all of it
 ;; Mode local functions
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)
 

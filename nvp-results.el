@@ -13,20 +13,11 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)
-(nvp-auto "nvp-util" nvp-s-repeat nvp-s-center)
 
 ;; -------------------------------------------------------------------
 ;;; Pretty printing
 
 ;; ielm's nice formatting: #<marker at 14912 in ielm.el.gz>
-
-;; print centered TITLE
-;;;###autoload
-(defun nvp-results-title (title &optional width char)
-  (or width (setq width 85))
-  (or char (setq char "~"))
-  (princ (format "\n%s\n%s\n\n" (nvp-s-center (- width (length title)) title)
-                 (nvp-s-repeat width "~"))))
 
 (defun nvp-pp-variable-to-string (variable)
   (let ((print-escape-newlines t)
@@ -82,27 +73,35 @@
 ;; -------------------------------------------------------------------
 ;;; Output
 
-(cl-defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body
-                                                &key font-lock title
-                                                &allow-other-keys)
-  "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
+(eval-when-compile
+  ;; print centered TITLE
+  (defsubst nvp-results-header (title &optional width char)
+    (nvp-defq width 85 char "~")
+    (princ (format "\n%s\n%s\n\n" (nvp-s-center (- width (length title)) title)
+                   (nvp-s-repeat width char)))))
+
+(eval-and-compile
+ (cl-defmacro nvp-with-results-buffer (&optional buffer-or-name &rest body
+                                                 &key font-lock title
+                                                 &allow-other-keys)
+   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."
-  (declare (indent defun) (debug (sexp &rest form)))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
-  `(let (other-window-scroll-buffer)
-     (nvp-window-configuration-save)
-     (with-temp-buffer-window
-      ,(or buffer-or-name '(help-buffer))
-      t
-      nil
-      (with-current-buffer standard-output
-        (setq other-window-scroll-buffer (current-buffer))
-        ,(if title `(funcall #'nvp-results-title ,title))
-        ,@body
-        ,@(when font-lock '((font-lock-mode) (font-lock-ensure)))
-        (hl-line-mode)
-        (view-mode-enter nil #'nvp-window-configuration-restore)))))
+   (declare (indent defun) (debug (sexp &rest form)))
+   (while (keywordp (car body))
+     (setq body (cdr (cdr body))))
+   `(let (other-window-scroll-buffer)
+      (nvp-window-configuration-save)
+      (with-temp-buffer-window
+          ,(or buffer-or-name '(help-buffer))
+          t
+          nil
+        (with-current-buffer standard-output
+          (setq other-window-scroll-buffer (current-buffer))
+          ,(if title (nvp-results-header `,title))
+          ,@body
+          ,@(when font-lock '((font-lock-mode) (font-lock-ensure)))
+          (hl-line-mode)
+          (view-mode-enter nil #'nvp-window-configuration-restore))))))
 
 ;; evil-with-view-list: #<marker at 154076 in evil-common.el>
 (cl-defmacro nvp-with-view-list (&key

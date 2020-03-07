@@ -79,30 +79,14 @@ Like `s-word-wrap' but allow for PREFIX."
         (push (cons (match-beginning group) (match-end group)) positions))
       (nreverse positions))))
 
-(defun nvp-s-center (len s &optional char)
-  "If S is shorter than LEN, pad it with CHAR (default spaces) so it's centered.
-Like `s-center' but allow for CHAR."
-  (declare (pure t) (side-effect-free t))
-  (or char (setq char ? ))
-  (let ((extra (max 0 (- len (length s)))))
-    (concat (make-string (ceiling extra 2) char)
-            s
-            (make-string (floor extra 2) char))))
-
-(defun nvp-s-repeat (num s)
-  "Make a string of S repeated NUM times."
-  (declare (pure t) (side-effect-free t))
-  (let (ss)
-    (dotimes (_ num)
-      (setq ss (cons s ss)))
-    (apply #'concat ss)))
-
 
+;; -------------------------------------------------------------------
 ;;; Lists
 
-;; if ELEM is a list and has a null cdr return its car, otherwise return it
-(defsubst nvp-flatten--elem (elem)
-  (if (and (consp elem) (null (cdr elem))) (car elem) elem))
+(eval-when-compile
+  ;; if ELEM is a list and has a null cdr return its car, otherwise return it
+  (defsubst nvp-flatten--elem (elem)
+    (if (and (consp elem) (null (cdr elem))) (car elem) elem)))
 
 (defun nvp-flatten-to-alist (tree)
   "Flatten tree, but leave cons cells. 

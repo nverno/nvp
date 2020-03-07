@@ -1,12 +1,12 @@
 ;;; nvp-align.el --- alignment -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Alignment:
 ;; - interactive align commands
 ;; - show rules applicable for mode
 ;; - additional alignment rules
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)

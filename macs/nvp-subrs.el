@@ -32,20 +32,35 @@
 ;; -------------------------------------------------------------------
 ;;; Strings
 
-(defsubst nvp-string-member-p (str strings)
-  (cl-find-if (apply-partially #'string= str) strings))
+;; Make a string of S repeated NUM times.
+(defsubst nvp-s-repeat (num s)
+  (declare (pure t) (side-effect-free t))
+  (let (ss)
+    (dotimes (_ num)
+      (setq ss (cons s ss)))
+    (apply #'concat ss)))
+
+;; If S is shorter than LEN, pad it with CHAR (default spaces) so it's centered.
+;; Like `s-center' but allow for CHAR.
+(defsubst nvp-s-center (len s &optional char)
+  (declare (pure t) (side-effect-free t))
+  (nvp-defq char ? )
+  (let ((extra (max 0 (- len (length s)))))
+    (concat (make-string (ceiling extra 2) char)
+            s
+            (make-string (floor extra 2) char))))
 
 ;; -------------------------------------------------------------------
 ;;; Lists
 
+;; Split LST into N length sublists.
 (defsubst nvp-list-split-into-sublists (lst n)
-  "Split LST into N length sublists."
   (declare (pure t) (side-effect-free t))
   (cl-loop for i from 0 to (1- (length lst)) by n
      collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
 
+;; Return longest item by `length'.
 (defsubst nvp-longest-item (&rest items)
-  "Return longest item by `length'."
   (declare (pure t) (side-effect-free t))
   (cl-reduce (lambda (a b) (if (> (length a) (length b)) a b)) items))
 

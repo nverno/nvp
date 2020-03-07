@@ -10,8 +10,7 @@
 ;; - update a mode's additions w/o creating entire new entry
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
 ;; -------------------------------------------------------------------

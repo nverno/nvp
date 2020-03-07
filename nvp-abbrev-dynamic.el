@@ -14,7 +14,7 @@
 (require 'nvp)
 (require 'nvp-parse)
 
-;;; FIXME:
+;;; FIXME: haven't ever really used this/made it work (3/6/20)
 (cl-defgeneric nvp-abbrev-dynamic--read (&optional arg)
   "Default method to read arguments for dynamic abbrev tables."
   (list (and arg (read-file-name "File to abbrev: "))

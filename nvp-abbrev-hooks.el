@@ -1,7 +1,10 @@
 ;;; nvp-abbrev-hooks.el --- abbrev expansion predicates -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
+;; This file shouldn't be loaded until abbrev expansion actually occurs, or
+;; other hooks defined here are run.
+;;
 ;; general abbrev hooks
 ;; - post-insert hook
 ;; - simple enable-functions
@@ -10,12 +13,12 @@
 ;;
 ;; Additional
 ;; - function to grab previous abbrev
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls :f (expand-abbrev-hook expand-do-expansion expand-build-marks
-                                  expand-list-to-markers)
+(nvp-decls :f (expand-abbrev-hook
+               expand-do-expansion expand-build-marks expand-list-to-markers)
            :v (expand-point expand-list expand-index expand-pos))
 
 ;;;###autoload

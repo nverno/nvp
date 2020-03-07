@@ -1,24 +1,57 @@
 ;;; nvp-tag.el --- tagging utilities -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
-;; - https://github.com/jixiuf/ctags-update
-
-;; TODO:
-;; - etags
-;; - ctags
-;; - gtags
-;; - tags from imenu?
-;; - tag directory
-;; - tag dwim
 ;;
-;; #<marker at 84484 in etags.el.gz>
-
+;; Various options:
+;; - etags bundled w/ emacs (basically just elisp/C/C++)
+;; - ctags
+;; - universal-ctags (better, actively maintained ctags fork, all languages)
+;; - Python pygments parsers - for all languages
+;; - GNU global: ***Best option (3/6/20)***
+;;   can act as frontend using both universal-ctags + pygments
+;;
+;; Bugs (3/6/20):
+;; - In configuration of global (~/.globalrc) -- I've found that using
+;;   pygments-parser w/ custom ctags (added langdefs in universal-ctags parser)
+;;   gives a warning about unknown langdef, but then still works -- see
+;;   ~/dotfiles/code/.globalrc for my reasoning about why the warning occurs
+;; - ggtags.el: tags starting with regex characters cause errors, eg.
+;;   ggtags-process-string("global" "-c" "$0") =>
+;;   global error: "only name char is allowed with -c option"
+;;   Maintainer of ggtags.el says this should be fixed in global, see issue:
+;;   https://github.com/leoliu/ggtags/issues/191
+;;   Workaround `nvp-ggtags-bounds-of-tag-function' for now.
+;;
+;; XXX: is this of any interest anymore?
+;; - https://github.com/jixiuf/ctags-update
+;;
+;; TODO:
+;; - might be work adding support for something like dumb-jump/smart-jump for
+;;   situations where global/universal-ctags aren't available
+;; - Generic function to tag language specific source directories that may be
+;;   outside of the current project root (system libraries, source installs, etc)
+;; - Integrate better with projectile tagging
+;;
+;; References for developing customizable templated commands:
+;; - grep #<marker at 25028 in grep.el.gz>
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
-;; find-tag default functions: #<marker at 114864 in subr.el.gz>
+;; workaround ggtags.el/global not accepting regex chars
+(defun nvp-ggtags-bounds-of-tag-function ()
+  (-when-let ((beg . end) (find-tag-default-bounds))
+    (save-excursion
+      (goto-char beg)
+      (skip-chars-forward "?$*+^\\." end) ; so no idents prefixed with '$' or '.'
+      (cons (point) end))))
+
+;;; FIXME: none of this is currently used
+(cl-defgeneric nvp-tag-command ()
+  "Command to generate tags.")
+
+;; find-tag default functions - see subr.el: #<marker at 125677 in subr.el.gz>
 (defun nvp-tag-get-default ()
   (or (and (region-active-p)
            (/= (point) (mark))
@@ -27,24 +60,10 @@
                    (get major-mode 'find-tag-default-function)
                    'find-tag))))
 
-(cl-defgeneric nvp-tag-command ()
-  "Command to generate tags.")
-
 ;; -------------------------------------------------------------------
 ;;; Using imenu
-;; ess #<marker at 24008 in ess-utils.el>
-;; grep #<marker at 31024 in grep.el.gz>
 
-(defvar nvp-tag-find-template nil
-  "Compute find command, ala `grep-find-template'.
-Placeholders:
- <D> - base directory for find
- <X> - find options to restrict or expand directory list
- <F> - find options to limit files matched
- <R> - regular expression to search for")
-
-(defvar nvp-tag-find-command nil)
-
+;; FIXME: What was this used for? Just remote tagging?
 ;; ;;;###autoload
 ;; (defun nvp-tag-directory-imenu (dir tagfile)
 ;;   "Use imenu regexp to call find .. | etags .. in shell command."

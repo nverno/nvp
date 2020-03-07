@@ -10,13 +10,15 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-font))
+(require 'cc-awk)
 (require 'nvp)
 (require 'info-look)
 (nvp-decls)
 
 ;;; Syntax
 
-(modify-syntax-entry ?@ "'" (syntax-table))
+(modify-syntax-entry ?@ "'" awk-mode-syntax-table)
+(modify-syntax-entry ?$ "'" awk-mode-syntax-table)
 
 ;;; Font-locking
 

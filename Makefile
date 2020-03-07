@@ -3,7 +3,7 @@ include default.mk
 
 MODEDIRS := $(shell find modes/ -mindepth 1 -maxdepth 1 -type d)
 MODES    := $(sort $(notdir ${MODEDIRS}))
-MODE_EL := $(shell find modes/ -type f -name \*.el                          \
+MODE_EL  := $(shell find modes/ -type f -name \*.el                         \
 		\! \( -path \*/snippets/* -o -name .\* -o -path \*/unused/* \
 		-o -path \*/test/\* -o -path \*/etc/\* -o -path \*/w32/\*   \
 		-o -path \*/ext/\* -o -path \*/build/\* -o -path \*/scratch/\* \))

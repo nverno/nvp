@@ -1,6 +1,7 @@
 ;;; nvp-utop.el --- ocaml REPL -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;;
 ;; - utop-mode syntax
 ;; - navigate b/w prompts - like comint-next/previous-prompt
 ;; - switch b/w source and REPL
@@ -8,6 +9,7 @@
 ;; - eval phrase from source buffer in utop
 ;; - redirection form utop process output
 ;; - load/track utop history to provide hippie expansion
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

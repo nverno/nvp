@@ -11,11 +11,10 @@
 ;; Used to produce completion candidates for company and hippie-exp.
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-abbrev-subrs "subrs/nvp-abbrev-subrs"))
+(eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
 (require 'nvp)
+(nvp-req 'nvp-abbrev 'subrs)
 
 ;; if non-nil, update active table cache
 (defvar-local nvp-abbrev-completion-need-refresh nil)

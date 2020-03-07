@@ -25,10 +25,10 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-results)
-  (require 'nvp-abbrev-subrs "subrs/nvp-abbrev-subrs"))
+  (require 'nvp-results))
 (require 'abbrev)
 (require 'nvp)
+(nvp-req 'nvp-abbrev 'subrs)
 
 (nvp-decls :v (nvp-abbrev-completion-need-refresh))
 

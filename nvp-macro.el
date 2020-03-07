@@ -943,7 +943,16 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 
 
 ;; -------------------------------------------------------------------
-;;; Caches 
+;;; Caches / Laziness
+
+(defmacro nvp-lazy-defvar (var fun)
+  "When called the first time, VAR sets its value via FUN."
+  (declare (indent 1) (debug (symbolp lambda-expr)))
+  (progn
+    `(lambda ()
+       (when (functionp ,var)
+         (setq ,var (funcall #',fun)))
+       ,var)))
 
 ;; Simple memoization / result caching
 (cl-defmacro nvp-define-cache (func arglist &optional docstring &rest body

@@ -32,9 +32,7 @@
 ;; - double: prompt (literal search)
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hydra))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-display)
 (require 'nvp)
 (nvp-decls :f (wgrep-exit

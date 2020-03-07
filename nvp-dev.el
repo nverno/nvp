@@ -229,97 +229,70 @@
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
-(defmacro nvp-lazy-defvar (var fun)
-  (declare (indent 1) (debug (symbolp lambda-expr)))
-  `(lambda ()
-     (when (functionp ',var)
-       (setq ,var (funcall #',fun)))
-     ,var))
-
-(nvp-lazy-defvar nvp-syntax-at-point-help
-  (lambda ()
-    (let
-        ((help-strs
-          '("depth in parens."
-            "character address of start of innermost containing list; nil if none."
-            "character address of start of last complete sexp terminated."
-            "non-nil if inside a string. \
+(defvar nvp-syntax-at-point-help
+  (nvp-lazy-defvar nvp-syntax-at-point-help
+    (lambda ()
+      (let
+          ((help-strs
+            '("depth in parens."
+              "character address of start of innermost containing list; nil if none."
+              "character address of start of last complete sexp terminated."
+              "non-nil if inside a string. \
 (it is the character that will terminate the string, \
 or t if the string should be terminated by a generic string delimiter.)"
-            "nil if outside a comment, t if inside a non-nestable comment, \
+              "nil if outside a comment, t if inside a non-nestable comment, \
 else an integer (the current comment nesting)."
-            "t if following a quote character."
-            "the minimum paren-depth encountered during this scan."
-            "style of comment, if any."
-            "character address of start of comment or string; nil if not in one."
-            "List of positions of currently open parens, outermost first."
-            "When the last position scanned holds the first character of a \
+              "t if following a quote character."
+              "the minimum paren-depth encountered during this scan."
+              "style of comment, if any."
+              "character address of start of comment or string; nil if not in one."
+              "List of positions of currently open parens, outermost first."
+              "When the last position scanned holds the first character of a \
 (potential) two character construct, the syntax of that position, \
 otherwise nil.  That construct can be a two character comment \
 delimiter or an Escaped or Char-quoted character."
-            ".... Possible further internal information used by \
+              "11).... Possible further internal information used by \
 ‘parse-partial-sexp’.")))
-      (mapconcat 'identity
-                 (cl-loop for i from 0 upto (length help-strs)
-                    collect
-                      (concat (number-to-string i) ") %S "
-                              (nvp-s-wrap 45 (nth i help-strs) "; ")))
-                 "\n"))))
+        (mapconcat 'identity
+                   (nconc
+                    (cl-loop for i from 0 upto 10
+                       collect
+                         (concat (number-to-string i) ") %s "
+                                 (nvp-s-wrap 45 (nth i help-strs) "; ")))
+                    (list (nth 11 help-strs)))
+                   "\n")))))
 
 ;;;###autoload
 (defun nvp-syntax-at-point (marker &optional action)
   "Display info about syntax at point.
 With prefix, display in same frame using `display-buffer' ACTION."
   (interactive (list (point-marker) (prefix-numeric-value current-prefix-arg)))
-  ;; (set-buffer (marker-buffer marker))
   (let ((ppss (syntax-ppss marker))
-        (help
-         '("depth in parens."
-           "character address of start of innermost containing list; nil if none."
-           "character address of start of last complete sexp terminated."
-           "non-nil if inside a string. \
-(it is the character that will terminate the string, \
-or t if the string should be terminated by a generic string delimiter.)"
-           "nil if outside a comment, t if inside a non-nestable comment, \
-else an integer (the current comment nesting)."
-           "t if following a quote character."
-           "the minimum paren-depth encountered during this scan."
-           "style of comment, if any."
-           "character address of start of comment or string; nil if not in one."
-           "List of positions of currently open parens, outermost first."
-           "When the last position scanned holds the first character of a \
-(potential) two character construct, the syntax of that position, \
-otherwise nil.  That construct can be a two character comment \
-delimiter or an Escaped or Char-quoted character."
-           ".... Possible further internal information used by \
-‘parse-partial-sexp’.")))
+        (help-str (if (functionp nvp-syntax-at-point-help)
+                      (funcall nvp-syntax-at-point-help)
+                    nvp-syntax-at-point-help)))
     (help-setup-xref (list #'nvp-syntax-at-point marker)
                      (called-interactively-p 'interactive))
     (nvp-display-buffer-with-action action
       (with-help-window (help-buffer)
         (princ (nvp-centered-header "Syntax at <marker>"))
-       (cl-loop
-          for i from 0 upto (length ppss)
-          do
-            (princ (format "%d) %S " i (nth i ppss)))
-            (princ (format "%s" (nvp-s-wrap 45 (nth i help) "; ")))
-            (terpri))
-       (with-current-buffer standard-output
-         (let ((inhibit-read-only t)
-               (comment-start "; ")
-               (fill-column 85)
-               (comment-column 30))
-           (goto-char (point-min))
-           (search-forward "<marker>")
-           (replace-match "")
-           (help-insert-xref-button (format "%S" marker) 'help-marker marker)
-           (forward-line 2)
-           (while (not (eobp))
-             (when (looking-at-p comment-start)
-               (insert "|"))
-             (comment-indent)
-             (forward-line 1)))
-         (hl-line-mode))))))
+        (princ (eval `(format ,help-str ,@(--map (list 'quote it) ppss))))
+        (with-current-buffer standard-output
+          (let ((inhibit-read-only t)
+                (comment-start "; ")
+                (fill-column 85)
+                (comment-column 30))
+            (goto-char (point-min))
+            (search-forward "<marker>")
+            (replace-match "")
+            (help-insert-xref-button (format "%S" marker) 'help-marker marker)
+            (forward-line 2)
+            (while (not (eobp))
+              (when (looking-at-p comment-start)
+                (insert "|"))
+              (comment-indent)
+              (forward-line 1)))
+          (hl-line-mode))))))
 
 
 ;; -------------------------------------------------------------------

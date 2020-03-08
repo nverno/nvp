@@ -1,6 +1,6 @@
 (require 'cl-lib)
 
-(defvar my-init-file "~/.emacs.d/etc/init-bare.el")
+(defvar my-init-file "~/.emacs.d/init.elc")
 
 (defun find-load-point (lib &optional continue)
   "During the first `require' or `load', print `load-file-name' when defined.

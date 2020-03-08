@@ -18,6 +18,7 @@
   (require 'nvp-font))
 (require 'nvp-parse)
 (require 'nvp)
+(nvp-req 'nvp-c 'subrs)
 (nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef
                clang-complete-load-args ; clang-complete
                asdf-where               ; asdf

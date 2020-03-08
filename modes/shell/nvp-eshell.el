@@ -1,5 +1,11 @@
 ;;; nvp-eshell.el --- eshell helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
+;;
+;; XXX:
+;; should be able to use functions/variables from nvp-shell-common now to find
+;; active commands/statements at point -- could use that to fix esh-help
+;; eldoc function easily.
+;;
 ;;; Code:
 (eval-when-compile
   (require 'pcomplete)

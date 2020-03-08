@@ -47,6 +47,10 @@
 (defvar nvp-repl-alist '()
   "Mapping modes to repls.")
 
+;; map repl buffers -> source buffers
+;; Note: repl buffers may not be processes, eg. slime repls
+(defvar nvp-repl--process-buffers (make-hash-table))
+
 ;; default REPL to use - shell
 (defvar nvp-repl-default (apply #'nvp-repl-make
                                 (list :init #'nvp-sh-get-process
@@ -143,10 +147,6 @@ Each function takes a process as an argument to test against.")
 
 ;; -------------------------------------------------------------------
 ;;; REPL processes
-
-;; map repl buffers -> source buffers
-;; Note: repl buffers may not be processes, eg. slime repls
-(defvar nvp-repl--process-buffers (make-hash-table))
 
 ;; non-nil if PROC is alive
 (defsubst nvp-repl-live-p (proc) (funcall (repl:val "live") proc))

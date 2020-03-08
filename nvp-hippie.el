@@ -36,15 +36,15 @@
 ;;  + case sensitive
 ;;  + hippie expansion prefixes are split by first by non-word/numeric values,
 ;;    so 't.sS' => '(t sS)
-;;
 
-(defun nvp-he-split-words (s)
-  (let ((case-fold-search nvp-he-case-fold-search))
-    (--map ()
-     (replace-regexp-in-string
-      "\\([._[:lower:]0-9]\\)\\([._[:upper:]0-9]\\)"
-      "\\1 \\2" s))))
-;;
+;;; TODO:
+;; (defun nvp-he-split-words (s)
+;;   (let ((case-fold-search nvp-he-case-fold-search))
+;;     (--map ()
+;;      (replace-regexp-in-string
+;;       "\\([._[:lower:]0-9]\\)\\([._[:upper:]0-9]\\)"
+;;       "\\1 \\2" s))))
+
 ;; - cached completion tables
 ;; - sort candidates by weighting function
 ;; Expanders:

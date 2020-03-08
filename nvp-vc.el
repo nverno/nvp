@@ -65,10 +65,12 @@ git config core.sparseCheckout true" repo) nil nil nil)
 ;; -------------------------------------------------------------------
 ;;; SVN 
 
+;;; FIXME: how to make these caches work with asynchronous callbacks???
 ;; Cached list of git svn subcommands
 (nvp-define-cache nvp-vc-svn--available-commands ()
   "List of git svn subcommands."
   (nvp-with-process "git"
+    :proc-name "git"
     :proc-args ("svn" "help")
     :on-success (setq nvp-vc-svn--available-commands
                       (nvp-s-all-matches "^  \\([-a-z]+\\) +" (buffer-string) 1))

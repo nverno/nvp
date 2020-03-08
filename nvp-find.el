@@ -234,9 +234,9 @@
                (read-from-minibuffer "Search emacs source: "))
     :literal (not current-prefix-arg)
     :dir source-directory
-    :flags '("-z") 
-    :files "*.{el,el.gz}" 
-    :menu ("Custom" "L" "emacs source")))
+    :flags '("-z")
+    :files "*.{el,el.gz}"
+    :menu ("Custom" "L" "src/emacs")))
 
 
 ;; -------------------------------------------------------------------

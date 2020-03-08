@@ -28,6 +28,7 @@
         (forward-sexp 1)
         (insert "}")))))
 
+;; -------------------------------------------------------------------
 ;;; Here docs
 
 ;; FIXME: does sh-script have builtin functions to get bounds of here-docs?

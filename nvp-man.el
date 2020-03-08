@@ -1,9 +1,11 @@
 ;;; nvp-man.el --- help utils -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;;
 ;; Utility functions to parse help output
 ;; - parse man output
 ;; - Currently used in sh-help
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

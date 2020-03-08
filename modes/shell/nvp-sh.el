@@ -15,7 +15,7 @@
 (require 'company)
 (require 'sh-script)
 (require 'nvp-shell-common)
-(nvp-req 'nvp-shell 'macs)
+(nvp-req 'nvp-shell 'subrs)
 (nvp-decls :f (company-shell
                sh-comp-completion-at-point sh-comp-candidates sh-comp--xref-backend))
 

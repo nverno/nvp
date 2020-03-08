@@ -84,13 +84,13 @@
 
 ;; dont expand in strings/comments
 ;;;###autoload
-(defun nvp-abbrev-expand-p ()
+(defsubst nvp-abbrev-expand-p ()
   (not (nvp-ppss 'soc)))
 
 ;; don't expand in strings/comments or after [_.-:]
 ;;;###autoload
-(defun nvp-abbrev-expand-not-after-punct-p ()
-  (not (or (memq last-input-event '(?_ ?. ?- ?:))
+(defsubst nvp-abbrev-expand-not-after-punct-p (&optional chars)
+  (not (or (memq last-input-event (or chars '(?_ ?. ?- ?:)))
            (nvp-ppss 'soc))))
 
 ;; -------------------------------------------------------------------

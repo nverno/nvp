@@ -1,8 +1,12 @@
 ;;; nvp-yas.el --- snippet helpers -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
-;;; FIXME: separate subrs -- make `yas-text' optional for generally usefule
-;;         functions
+;;; FIXME: make `yas-text' optional for generally usefule functions
+;; - should comment functions be separated out?
+;; - subrs are only useful if libraries require this during compile, since
+;;   I don't typically compile yas-snippets
+;; XXX: should the base snippets be compiled? They rarely change
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -25,8 +29,8 @@
 (defsubst nvp-yas-or-values (str &optional seps)
   (split-string str (or seps "[\]\[|]") 'omit " "))
 
-
-;;; Comments
+;;; -------------------------------------------------------------------
+;; Comments
 
 (defun nvp-comment-string (str &optional padlen)
   "Wrap STR with modes starting and ending comment delimiters.
@@ -59,10 +63,10 @@ Accounts for multi-character comments by recycling the second character."
 (defun nvp-comment-end (&optional trim)
   "Return a TRIMmed version `comment-end' or \"\" if not defined."
   (if (bound-and-true-p comment-end)
-      (if trim (s-trim comment-end) comment-end)
+      (if trim (string-trim comment-end) comment-end)
     ""))
 
-
+;; -------------------------------------------------------------------
 ;;; Padding / Headers
 
 ;; create string length of `yas-text', optionally constrained by min-len/max-len

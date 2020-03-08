@@ -1,4 +1,5 @@
 ;; -*- coding: utf-8; -*-
+
 (define-abbrev-table 'c-macros-includes-abbrev-table
   '(("#i" "#include" nil :system t)
     ("#e" "#endif" nil :system t)

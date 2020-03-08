@@ -1,22 +1,44 @@
 ;;; shellcheck.el --- shellcheck compilation -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
-;; Compilation for .sh and .bat files using shellcheck
-;; Links shellcheck output to source location and SC**** warnings/errors to wiki
-
+;;
+;; Compilation output for .sh and .bat files using shellcheck
+;; Provides:
+;; - font-locking in the output buffer via `xterm-color'
+;; - links b/w shellcheck output and source locations
+;; - converts 'SC****' warnings/errors to buttons that link to their documentation
+;;
+;; TODO:
+;; - add function to disable a warning at a given line
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)
 (require 'help-mode)
-(declare-function xterm-color-colorize-buffer "xterm-color")
-(nvp-decls)
+(nvp-decls :f (xterm-color-colorize-buffer))
 
 ;; use "bats ..." for .bat files
 (defvar shellcheck-compile-command '(concat "shellcheck " (buffer-file-name)))
 
-(defvar shellcheck-compilation-regexp
+(defconst shellcheck-wiki-url "https://github.com/koalaman/shellcheck/wiki/"
+  "Location to link shellcheck warnings/errors to their documentation.")
+
+(defconst shellcheck-compilation-regexp
   '(shellcheck "In \\([^ \t\n]+\\) line \\([0-9]+\\)" 1 2))
+
+(defun shellcheck-disable-error ()
+  "Disable the shellcheck error containing, or immediately following, POINT.
+This interactively adds a shellcheck comment directive in the source."
+  (interactive)
+  ;; this function will ensure a maker is/has been created for the message,
+  ;; and goto the corresponding location in the source
+  (compilation-next-error-function 0)
+  (unless (bolp)                        ; point is always at bol anyway?
+    (beginning-of-line 1))
+  (open-line 1)
+  (comment-dwim 1)
+  ;; TODO: finish this
+  (insert "shellcheck disable="))
 
 (defun shellcheck-filter ()
   "Link shellcheck codes to wiki pages in compilation output."
@@ -25,13 +47,12 @@
       (goto-char compilation-filter-start)
       (while (re-search-forward "SC[0-9]\\{4\\}" end t)
         (help-xref-button
-         0 'help-url
-         (concat "https://github.com/koalaman/shellcheck/wiki/"
-                 (match-string 0)))))))
+         0 'help-url (concat shellcheck-wiki-url (match-string 0)))))))
 
 (defvar shellcheck-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "q" #'kill-this-buffer)
+    (define-key map "d" #'shellcheck-disable-error)
     (define-key map (kbd "M-s-n") #'forward-button)
     (define-key map (kbd "M-s-p") #'backward-button)
     map))
@@ -45,6 +66,9 @@
   (setq-local compilation-buffer-name-function
               (lambda (_m) (concat "*shellcheck: " (buffer-file-name) "*")))
   (add-hook 'compilation-filter-hook #'shellcheck-filter nil t))
+
+;; -------------------------------------------------------------------
+;;; Interface
 
 ;;;###autoload
 (defun shellcheck-compile ()

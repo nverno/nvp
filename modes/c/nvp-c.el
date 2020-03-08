@@ -15,9 +15,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro)
   (require 'nvp-compile)
-  (require 'nvp-font))
+  (require 'nvp-font)
+  (require 'nvp-abbrev-hooks))
 (require 'nvp-parse)
 (require 'nvp)
+(nvp-req 'nvp-c 'subrs)
 (nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef
                clang-complete-load-args ; clang-complete
                asdf-where               ; asdf
@@ -28,6 +30,10 @@
                align-to-tab-stop))
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
+
+;; don't expand after '_' or in strings/comments
+(defsubst nvp-c-abbrev-expand-p ()
+  (nvp-abbrev-expand-not-after-punct-p '(_)))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
@@ -84,9 +90,6 @@
     (and args
          (mapconcat 'identity
                     (mapcar (lambda (s) (concat "\n * @param " s)) args) ""))))
-
-(defun nvp-c-abbrev-expand-p ()
-  (not (memq last-input-event '(?_))))
 
 ;; -------------------------------------------------------------------
 ;;; Font-lock

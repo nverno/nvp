@@ -34,6 +34,8 @@
 ;;
 ;; References for developing customizable templated commands:
 ;; - grep #<marker at 25028 in grep.el.gz>
+;; - format-spec.el (builtin)
+;; - transient (used by magit/rg)
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))

@@ -6,6 +6,7 @@
 (require 'comint)
 (require 'nvp-shell-common)
 (require 'nvp)
+(nvp-req 'nvp-shell 'subrs)
 (nvp-decls :f (tramp-dissect-file-name))
 (nvp-auto "f" f-same-p)
 
@@ -82,8 +83,9 @@ Add to `comint-input-filter-functions'."
       (setq default-directory fullname
             list-buffers-directory fullname))))
 
-(defun nvp-shell-tramp-name (&optional directory)
-  (or directory (setq directory default-directory)))
+(eval-when-compile
+  (defsubst nvp-shell-tramp-name (&optional directory)
+   (or directory (setq directory default-directory))))
 
 
 ;; -------------------------------------------------------------------

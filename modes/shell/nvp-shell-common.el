@@ -5,7 +5,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-proc))
-(nvp-req 'nvp-shell 'macs)
+(nvp-req 'nvp-shell 'subrs)
 (nvp-decls)
 
 ;; dont expand when prefixed by [-/_.]

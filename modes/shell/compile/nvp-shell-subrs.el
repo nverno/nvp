@@ -1,4 +1,4 @@
-;;; nvp-shell-macs.el --- shared macros -*- lexical-binding: t; -*-
+;;; nvp-shell-subrs.el --- shared compile suff -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;; Code:
@@ -30,9 +30,9 @@ strings."
             (t (up-list -1 t t)))))
        (skip-syntax-forward " " ,start))))
 
-(provide 'nvp-shell-macs)
+(provide 'nvp-shell-subrs)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-shell-macs.el ends here
+;;; nvp-shell-subrs.el ends here

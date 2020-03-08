@@ -17,8 +17,8 @@
 (nvp-auto "pos-tip" 'pos-tip-show)
 
 ;; ignore ':', not symbolized to match strings
-(defvar nvp-sh--bash-builtins
-  (eval-when-compile
+(eval-and-compile
+  (defconst nvp-sh--bash-builtins
     (concat
      (nvp-re-opt
       '("." "[" "[[" "alias" "bg" "bind" "break" "builtin" "case" "cd"
@@ -43,14 +43,15 @@
          (looking-at "[ !]*\\(-[[:alpha:]]+\\)")
          (match-string 1))))
 
-(defsubst nvp-sh--bash-builtin-p (cmd)
-  (string-match-p nvp-sh--bash-builtins (regexp-quote cmd)))
+(eval-when-compile
+  (defsubst nvp-sh--bash-builtin-p (cmd)
+    (string-match-p nvp-sh--bash-builtins (regexp-quote cmd)))
 
-;; synopsis: bash -c 'help -s %s'
-;; help:     bash -c 'help %s'
-(defsubst nvp-sh-bash-builtin-help-sync (cmd &optional synopsis)
-  (shell-command-to-string
-   (concat "bash -c 'help " (and synopsis "-s ") cmd "'")))
+  ;; synopsis: bash -c 'help -s %s'
+  ;; help:     bash -c 'help %s'
+  (defsubst nvp-sh-bash-builtin-help-sync (cmd &optional synopsis)
+    (shell-command-to-string
+     (concat "bash -c 'help " (and synopsis "-s ") cmd "'"))))
 
 (defun nvp-sh-bash-builtin-help (cmd &optional sync buffer)
   (let ((cmd (concat "bash -c 'help " cmd "'"))

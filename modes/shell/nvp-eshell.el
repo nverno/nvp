@@ -11,8 +11,9 @@
   (require 'pcomplete)
   (require 'nvp-macro))
 (require 'eshell)
-(nvp-declare "esh-mode" eshell-send-input eshell-kill-input)
-(nvp-autoload "pcomplete" pcomplete--here pcomplete-entries)
+(require 'nvp-shell-common)
+(nvp-decls :f (eshell-send-input eshell-kill-input))
+(nvp-auto "pcomplete" 'pcomplete--here pcomplete-entries)
 
 ;;;###autoload
 (defun nvp-eshell-this-dir ()
@@ -29,10 +30,6 @@
   (goto-char (point-max)))
 
 ;;; Completion
-
-;; FIXME:
-;; (defun pcomplete/eshell-mode/gc ()
-;;   (pcomplete-here (my--get-git-branches)))
 
 (defun pcomplete/eshell-mode/git ()
   (pcomplete-here

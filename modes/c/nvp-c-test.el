@@ -6,11 +6,10 @@
 ;; - hideif
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-c-ct "./compile/nvp-c-ct"))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-test)
 (require 'nvp-c)
+(nvp-req 'nvp-c 'subrs)
 (nvp-decls :f (clang-complete-create-or-update
                yas-expand-snippet yas-lookup-snippet)
            :v (yas-selected-text))
@@ -18,17 +17,6 @@
 
 ;; function to run unit test from test buffer
 (defvar nvp-c-test-runner #'nvp-c-test-default-runner)
-
-;; -------------------------------------------------------------------
-;;; Util
-
-;; assume first path will be root, eg ~/.local/include:etc
-(eval-and-compile
-  (defsubst nvp-c-local-include-path (path)
-    (expand-file-name
-     path
-     (car (split-string (or (getenv "C_INCLUDE_PATH")
-                            (getenv "CPATH")) path-separator t " ")))))
 
 ;; -------------------------------------------------------------------
 ;;; Setup Tests

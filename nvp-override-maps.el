@@ -1,4 +1,4 @@
-;;; nvp-bindings.el --- overriding bindings -*- lexical-binding: t; -*-
+;;; nvp-override-maps.el --- overriding bindings -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; Overriding global and buffer-local bindings
@@ -71,9 +71,9 @@ bindings, avoiding errors from key sequences starting with non-prefix keys."
                        (push `(,mode . ,map) minor-mode-overriding-map-alist)))))
     (define-key newmap key def)))
 
-(provide 'nvp-bindings)
+(provide 'nvp-override-maps)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-bindings.el ends here
+;;; nvp-override-maps.el ends here

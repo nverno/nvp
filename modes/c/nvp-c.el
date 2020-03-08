@@ -7,30 +7,33 @@
 ;; - factor out subrs
 ;; - move any additional newline behaviour to normal newline with prefix
 ;; - merge all the compile stuff and remove compile macros
+;;
 ;; FIXME:
 ;; - function signatures => generic parsing method
+;; - integrate compile w/ projectile + generic interface to build tools
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-c-ct "./compile/nvp-c-ct")
+(eval-when-compile (require 'nvp-macro)
   (require 'nvp-compile)
-  (require 'nvp-font)
-  (require 'nvp-yas))
+  (require 'nvp-font))
 (require 'nvp-parse)
 (require 'nvp)
 (nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef
-                                     nvp-company-local clang-complete-load-args)
-           :v (c/R-abbrev-table company-backends company-clang-arguments))
+               clang-complete-load-args ; clang-complete
+               asdf-where               ; asdf
+               nvp-env-add              ; nvp-env
+               objdump-mode)            ; emacs-objdump-mode
+           :v (c/R-abbrev-table
+               company-backends company-clang-arguments
+               align-to-tab-stop))
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
 ;; -------------------------------------------------------------------
-;;; Util
+;;; Snippet helpers
 
-(eval-and-compile
-  (defsubst nvp-header-file-p ()
-    (string-match-p "h[xp]*" (nvp-yas-ext))))
+(defun nvp-header-file-p ()
+  (string-match-p "h[xp]*" (nvp-ext)))
 
 ;; split string STR on commas, but only when not between <..>
 ;; eg., "std::vector<std::pair<int,int>> i, int j" =>
@@ -208,7 +211,6 @@
 ;; dump objects in compilation buffer, setup imenu for function jumps
 ;; FIXME: add tab/backtab movement
 ;; (autoload 'gdb-disassembly-mode "gdb-mi")
-(declare-function objdump-mode "objdump")
 (defun nvp-c-compile-objdump ()
   (interactive)
   (let ((compile-command (format "gcc -Og -c %s; objdump -d %s.o; rm %s.o"
@@ -269,9 +271,6 @@
 
 ;;; Environment
 
-(declare-function asdf-where "asdf")
-(declare-function nvp-env-add "nvp-env")
-
 (defvar nvp-c-ext-includes
   '(("unity" (expand-file-name ".local/include/unity/src" (getenv "HOME"))
      "/unity/src")
@@ -293,13 +292,11 @@
       (_ nil))
     (nvp-env-add "C_INCLUDE_PATH" (eval loc) regex)))
 
-
+;; -------------------------------------------------------------------
 ;;; Headers
 
-(eval-when-compile
-  (defvar yas-selected-text)
-  (defvar yas-wrap-around-region))
-(nvp-decl yas-expand-snippet yas-lookup-snippet)
+(nvp-decls :f (yas-expand-snippet yas-lookup-snippet)
+           :v (yas-selected-text yas-wrap-around-region))
 
 ;; jump to associated header, with arg create and/or update it as well
 (defun nvp-c-jump-or-update-header (update)
@@ -309,8 +306,9 @@
     (condition-case nil
         (find-file-other-window (nvp-c--header-file-name)))))
 
-;; Create/update header file with function signatures
 (defun nvp-c-create-or-update-header (and-go)
+  "Creates/updates header file with the function signatures in the current \
+source file."
   (interactive (list t))
   (let ((header (nvp-c--header-file-name))
         (sigs (nvp-c-function-signatures nil 'ignore-main 'ignore-static))
@@ -355,6 +353,7 @@
         (goto-char (point-max))
         (insert (format "\n#endif /* _%s */" guard))))))
 
+;; -------------------------------------------------------------------
 ;;; Doxygen
 
 (defun nvp-c-toggle-doxygen ()
@@ -371,9 +370,10 @@
           (delete-horizontal-space)
           (insert " */"))))))
 
+;; -------------------------------------------------------------------
 ;;; Align/tidy
+
 ;; align comment start / end for doxygen region
-(eval-when-compile (defvar align-to-tab-stop))
 (defun nvp-c-align-doxygen (beg end)
   (interactive "*r")
   (let (indent-tabs-mode align-to-tab-stop)

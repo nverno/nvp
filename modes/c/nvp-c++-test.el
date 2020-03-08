@@ -1,10 +1,15 @@
 ;;; nvp-c++-test.el ---  -*- lexical-binding: t; -*-
+
 ;;; Commentary:
+;;
+;; This is only reasonable for very small app setups with simple unit tests.
+;; All of this should be upgraded to integrate better with other tools
+;; like projectile that have already tackled a number of these problems.
+;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-c-ct "./compile/nvp-c-ct"))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-c)
+(nvp-req 'nvp-c 'subrs)
 (require 'nvp-test)
 (autoload 'yas-expand "yasnippet")
 (defvar boost-test-abbrev-table)

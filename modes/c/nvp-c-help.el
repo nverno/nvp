@@ -1,13 +1,27 @@
 ;;; nvp-c-help.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;;
+;; Get help from local sources, fallback to online lookup when
+;; all else fails.
+;;
+;; FIXME: the three HAP backends need to play nice -- whichever backend
+;;   found the identifier, it should be the one to then deal with it.
+;;   This needs to be fixed in nvp-hap.el and the plugins though.
+;;
+;; Local Methods:
+;; - man
+;; - info (glibc)
+;; - semantic scraping in code documentation
+;;
+;; Remote:
+;; - just tries to determine the function at hand and plugs it into the url
+;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-c-ct "./compile/nvp-c-ct"))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-hap-semantic)
 (require 'nvp-c)
-
+(nvp-req 'nvp-c 'subrs)
 (nvp-decls :v (semantic-c-dependency-system-include-path))
 
 ;; -------------------------------------------------------------------

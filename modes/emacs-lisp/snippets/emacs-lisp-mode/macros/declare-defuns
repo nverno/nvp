@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: declare-function-inlines
+# key: ddecl
+# --
+(declare ${1:(side-effect-free t)} ${2:(pure t)})

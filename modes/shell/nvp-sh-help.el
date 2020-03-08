@@ -277,7 +277,7 @@
   (interactive "P")
   (if (equal arg '(4))
       (call-interactively 'nvp-sh-help-command-at-point)
-    (let ((cmd (nvp-shell-current-command)))
+    (let ((cmd (nvp-sh-current-command)))
       (cond
        ((member cmd '("[[" "["))
         ;; return help for current switch or all if not found
@@ -313,7 +313,7 @@
 ;;;###autoload
 (defun nvp-hap-sh (command &optional arg prefix &rest _args)
   (cl-case command
-    (thingatpt (nvp-shell-current-command))
+    (thingatpt (nvp-sh-current-command))
     (doc-buffer (list (nvp-sh-help-more-help arg) :set nil))
     (doc-string
      ;; - if cmd is '[[' or '[' return help for current switch or all if not found

@@ -13,6 +13,25 @@
 (nvp-auto "nvp-util" 'nvp-s-all-matches)
 (nvp-auto "vc-git" 'vc-git-root)
 
+;; -------------------------------------------------------------------
+;;; Magit
+
+;; kill all the open magit buffers for the current repo
+(defun nvp-magit-kill-buffers ()
+  (interactive)
+  (mapc #'kill-buffer (magit-mode-get-buffers)))
+
+;; -------------------------------------------------------------------
+;;; Git Messenger
+
+(define-advice git-messenger:popup-message (:around (fn &rest _) "no-error")
+  (with-demoted-errors "GitMsg (not a repo?): %S"
+    (let (debug-on-error)               ; no thanks
+      (funcall fn))))
+
+;; -------------------------------------------------------------------
+;;; Random Git
+
 ;; checkout part of a repo
 ;;;###autoload
 (defun nvp-vc-git-sparse-clone (repo subdir local-dir)
@@ -49,8 +68,11 @@ git config core.sparseCheckout true" repo) nil nil nil)
 ;; Cached list of git svn subcommands
 (nvp-define-cache nvp-vc-svn--available-commands ()
   "List of git svn subcommands."
-  (nvp-s-all-matches
-   "^  \\([-a-z]+\\) +" (shell-command-to-string "git svn help") 1))
+  (nvp-with-process "git"
+    :proc-args ("svn" "help")
+    :on-success (setq nvp-vc-svn--available-commands
+                      (nvp-s-all-matches "^  \\([-a-z]+\\) +" (buffer-string) 1))
+    :shell t))
 
 ;;;###autoload
 (defun nvp-vc-svn (dir command)

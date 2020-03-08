@@ -1,13 +1,17 @@
 ;;; nvp-c++.el --- C++ helpers -*- lexical-binding: t; -*-
+
 ;;; Commentary:
-;;; FIXME: move to generic compile function that will check for build type, eg.
-;;         make or cmake, etc.
+;;
+;;; FIXME:
+;;  - move to generic compile function that will check for build type, eg.
+;;    make or cmake, etc.
+;;  - integrate all the compile / build / make with projectile as a start
+;; 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-c-ct "./compile/nvp-c-ct")
-  (require 'nvp-compile))               ; nvp-make-or-compile-fn
+(eval-when-compile (require 'nvp-macro))
+(nvp-req 'nvp-compile)                  ; nvp-make-or-compile-fn
 (require 'nvp-c)
+(nvp-req 'nvp-c 'subrs)
 (nvp-decls)
 
 ;; -------------------------------------------------------------------

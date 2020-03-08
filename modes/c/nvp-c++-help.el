@@ -1,17 +1,18 @@
 ;;; nvp-c++-help.el ---  -*- lexical-binding: t; -*-
+
 ;;; Commentary:
+;;
 ;; XXX: semantic needs some tweeks to be more effective at jumping to
 ;;      references
-;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-c-ct "./compile/nvp-c-ct"))
-(require 'semantic/analyze)
-
 ;;; TODO:
 ;; - index/jump to std
 ;; - local sources
 ;; - help determined by filepath
+;;
+;;; Code:
+(eval-when-compile (require 'nvp-macro))
+(require 'semantic/analyze)
+(nvp-req 'nvp-c 'subrs)
 
 ;; https://en.cppreference.com/w/
 (defvar nvp-c++-help-online-sources

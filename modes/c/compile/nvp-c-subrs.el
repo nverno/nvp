@@ -1,4 +1,4 @@
-;;; nvp-c-ct.el --- compile-time -*- lexical-binding: t; -*-
+;;; nvp-c-subrs.el --- compile-time -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 (require 'nvp-macro)
@@ -8,6 +8,9 @@
 (defvar nvp-abbrev-local-table)
 (defvar boost-test-abbrev-table)
 
+;; -------------------------------------------------------------------
+;;; Basic utils
+
 (defsubst nvp-c-out-file (&optional file)
   (concat (file-name-sans-extension (or file (buffer-file-name)))
           (nvp-with-gnu/w32 ".out" ".exe")))
@@ -15,6 +18,16 @@
 ;; associated header file name
 (defsubst nvp-c--header-file-name (&optional buffer)
   (concat (file-name-sans-extension (or buffer buffer-file-name)) ".h"))
+
+;; assume first path will be root, eg ~/.local/include:etc
+(defsubst nvp-c-local-include-path (path)
+  (expand-file-name
+   path
+   (car (split-string (or (getenv "C_INCLUDE_PATH")
+                          (getenv "CPATH")) path-separator t " "))))
+
+;; -------------------------------------------------------------------
+;;; Tests
 
 ;; locally set keys in test buffers to run tests
 (defmacro nvp-c-test--buffer (type)
@@ -51,7 +64,6 @@ is non-nil."
                 (compilation-read-command nil))
            (call-interactively 'compile))))))
 
-
 ;; -------------------------------------------------------------------
 ;;; C++
 
@@ -67,9 +79,9 @@ is non-nil."
      (nvp-set-local-keymap :use t
        ("C-c C-c" . nvp-c++-test-run-unit-test))))
 
-(provide 'nvp-c-ct)
+(provide 'nvp-c-subrs)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-c-macros.el ends here
+;;; nvp-c-subrs.el ends here

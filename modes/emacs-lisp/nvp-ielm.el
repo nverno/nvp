@@ -34,9 +34,10 @@
 ;; synchronize with default switching function and update default-directory
 (with-no-warnings
   (define-advice ielm-change-working-buffer (:after (&rest _args) "update-src")
-    (process-put (ielm-process) :src-buffer ielm-working-buffer)
-    (setq default-directory
-          (buffer-local-value 'default-directory ielm-working-buffer))))
+    (with-current-buffer (process-buffer (ielm-process))
+      (process-put (ielm-process) :src-buffer ielm-working-buffer)
+      (setq default-directory
+            (buffer-local-value 'default-directory ielm-working-buffer)))))
 
 
 ;;; Fonts

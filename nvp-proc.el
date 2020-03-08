@@ -2,9 +2,10 @@
 
 ;;; Commentary:
 ;;
+;; - Async shell command w/ callback
 ;; - filters
 ;; - sentinels
-;; - find processes
+;; - small subrs to find processes
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -13,17 +14,20 @@
 
 ;;;###autoload
 (defun nvp-async-shell-command-to-string (command &optional callback)
-  (unless callback
-    (setq callback (lambda (p _m)
-                     (message
-                      (with-current-buffer (process-buffer p)
-                        (prog1 (string-trim-right (buffer-string))
-                          (kill-buffer (current-buffer))))))))
+  "Execute COMMAND as an `async-shell-command', running CALLBACK with results \
+if non-nil. Default just barfs output in message win or lose."
+  (nvp-defq callback
+    (lambda (p _m)
+      (message
+       (with-current-buffer (process-buffer p)
+         (prog1 (string-trim-right (buffer-string))
+           (kill-buffer (current-buffer)))))))
   (nvp-with-process command
     :proc-name "async-string"
     :proc-buff (generate-new-buffer-name " *temp*")
     :shell t
     :callback callback))
+(put 'nvp-async-shell-command-to-string 'lisp-indent-function 'defun)
 
 ;; -------------------------------------------------------------------
 ;;; Find processes
@@ -61,20 +65,23 @@
     (goto-char (point-max))
     (insert (replace-regexp-in-string "[\r\n]+" "\n" string))))
 
-;; log proc & exit status. Kill buffer or RETURN it on success.
+;; log proc & exit status. Kill buffer or RETURN-BUFFER it on success.
 ;; On failure, jump to process-buffer
 ;;;###autoload
-(defun nvp-proc-default-sentinel (&optional return)
-  `(lambda (p m)
-     (let ((pname (process-name p)))
-       (funcall nvp-default-log-function "%s: %s" nil pname m)
-       (with-current-buffer (process-buffer p)
-         (if (not (zerop (process-exit-status p)))
-             (progn (nvp-indicate-modeline pname 'failure)
-                    (pop-to-buffer (current-buffer)))
-           (nvp-indicate-modeline pname)
-           ,(if return '(current-buffer)
-              '(kill-buffer (current-buffer))))))))
+(defun nvp-proc-default-sentinel (&optional return-buffer)
+  (nvp-with-syms (p m buff pname)
+    `(lambda (,p ,m)
+       (let ((,pname (process-name ,p))
+             (,buff (process-buffer ,p)))
+         (funcall nvp-default-log-function "%s: %s" nil ,pname ,m)
+         (unwind-protect
+             (with-current-buffer ,buff
+               (if (not (zerop (process-exit-status ,p)))
+                   (progn (nvp-indicate-modeline ,pname 'failure)
+                          (pop-to-buffer (current-buffer)))
+                 (nvp-indicate-modeline ,pname)))
+           ,(if return-buffer `,buff
+              `(kill-buffer ,buff)))))))
 
 ;; generate and return a new comint buffer
 (defsubst nvp-proc-comint-buffer (name)

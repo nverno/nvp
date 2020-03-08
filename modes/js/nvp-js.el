@@ -176,6 +176,8 @@
 
 ;; -------------------------------------------------------------------
 ;;; Help
+;;
+;; - React: https://reactjs.org/docs/{react-component.html}
 
 (defun nvp-js-help-at-point ()
   (interactive)

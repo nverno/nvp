@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: convert-to-string
-# key: c-str
-# --
-(and (${1:symbolp} ${2:mode}) (setq $2 (symbol-name $2)))

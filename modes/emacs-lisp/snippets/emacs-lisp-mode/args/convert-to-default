@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: set default
-# key: c-def
-# --
-(or ${1:arg} (setq $1 ${2:default}))

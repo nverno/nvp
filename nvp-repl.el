@@ -1,13 +1,13 @@
 ;;; nvp-repl.el --- Generic REPL functions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Always switch to REPL in other window by default, same window
 ;; TODO:
 ;; - send-dwim (region / previous sexp)
 ;; - send-defun
 ;; - redirect output
-
+;;
 ;; other options:
 ;; - https://github.com/kaz-yos/eval-in-repl -- meh
 
@@ -17,28 +17,28 @@
   (require 'comint)
   (require 'nvp-proc))
 (require 'nvp)
-(nvp-auto "nvp-sh" nvp-sh-get-process)
-(nvp-decls :f (ielm-change-working-buffer))
+(nvp-auto "nvp-sh" 'nvp-sh-get-process)
+(nvp-decls :f (ielm-change-working-buffer sh-cd-here))
 
 (cl-defstruct (nvp-repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"
-  modes                                 ; REPL major-modes to consider
-  init                                  ; init REPL => return process
-  bufname                               ; buffer name to search for
-  procname                              ; process name to search for
-  find-fn                               ; custom function to find REPL
-  wait                                  ; time to wait for REPL
-  (live #'process-live-p)               ; check if REPL process is alive
-  (buff->proc #'get-buffer-process)     ; get buffer associated with process
-  (proc->buff #'process-buffer)         ; process associated w/ buffer
+  modes                              ; REPL major-modes to consider
+  init                               ; init REPL => return process
+  bufname                            ; buffer name to search for
+  procname                           ; process name to search for
+  find-fn                            ; custom function to find REPL
+  wait                               ; time to wait for REPL
+  (live       #'process-live-p)      ; check if REPL process is alive
+  (buff->proc #'get-buffer-process)  ; get buffer associated with process
+  (proc->buff #'process-buffer)      ; process associated w/ buffer
   ;; the rest are related to interaction (not really implemented)
-  (send-fn 'comint-send-string)         ; function to send string to REPL
-  filters                               ; filters applied to text sent to REPL
-  cd                                    ; command to change REPL working dir
-  cwd                                   ; get current working directory
+  (send-fn    #'comint-send-string)  ; function to send string to REPL
+  filters                            ; filters applied to text sent to REPL
+  cd                                 ; command to change REPL working dir
+  cwd                                ; get current working directory
   ;; set internally
-  proc                                  ; REPL process
-  buff                                  ; REPL output buffer (may not have a proc)
+  proc                               ; REPL process
+  buff                               ; REPL output buffer (may not have a proc)
   )
 (put 'nvp-repl-make 'lisp-indent-function 'defun)
 
@@ -52,7 +52,8 @@
                                 (list :init #'nvp-sh-get-process
                                       :modes '(shell-mode)
                                       :procname "shell"
-                                      :bufname "*shell")))
+                                      :bufname "*shell"
+                                      :cd #'sh-cd-here)))
 
 ;;;###autoload
 (defun nvp-repl-add (mmodes &rest args)
@@ -70,16 +71,29 @@
   :procname "ielm"
   :bufname "*ielm"
   :wait 0.1
-  :cd #'ielm-change-working-buffer)
+  :cd (lambda ()
+        (if (eq major-mode 'inferior-emacs-lisp-mode)
+            (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
+                (and (buffer-live-p it)
+                     (ielm-change-working-buffer it))
+              (message "%s not asociated with a source buffer" (current-buffer)))
+          (ielm-change-working-buffer (current-buffer)))))
+
+(nvp-repl-add '(sh-mode bats-mode)
+  :init #'nvp-sh-get-process
+  :modes '(shell-mode)
+  :procname "shell"
+  :bufname "*shell"
+  :cd #'sh-cd-here)
 
 ;; return repl for MODE, or default
 (defun nvp-repl-for-mode (mode)
   (or (cl-loop for (modes . repl) in nvp-repl-alist
          when (memq mode modes)
          return repl)
-      (user-error "%S not associated with any REPLs" mode)
-      ;; nvp-repl-default
-      ))
+      (message "%S not explicitely associated with any REPLs:\
+ using default shell" mode)
+      nvp-repl-default))
 
 (defun nvp-repl-ensure (&optional mode)
   "Ensure buffer has a REPL associated with MODE or current `major-mode'."
@@ -154,7 +168,7 @@ Each function takes a process as an argument to test against.")
 ;; update REPLs proc/buff and link process-buffer (which may not be an
 ;; actual process, eg. slime repl) with source buffer
 (defun nvp-repl-update (proc src-buff &optional p-buff)
-  (or p-buff (setq p-buff (funcall (repl:val "proc->buff") proc)))
+  (nvp-defq p-buff (funcall (repl:val "proc->buff") proc))
   (setf (repl:val "proc") proc
         (repl:val "buff") p-buff)
   (puthash p-buff src-buff nvp-repl--process-buffers))
@@ -224,6 +238,9 @@ TODO:
                 (nvp-repl-get-buffer))))
     (pop-to-buffer buff nvp-repl--display-action)))
 
+;; -------------------------------------------------------------------
+;;; Basic REPL interaction
+
 (defun nvp-repl-send-string (str)
   (comint-send-string (nvp-repl-process) str))
 
@@ -240,6 +257,14 @@ TODO:
   (interactive)
   (nvp-repl-send-string
    (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun nvp-repl-cd-here (&optional dir)
+  (interactive "P")
+  (when nvp-repl-current
+    (--when-let (repl:val "cd")
+      (let ((default-directory (if dir dir default-directory)))
+        (funcall it)
+        (nvp-repl-update (repl:val "proc") (current-buffer))))))
 
 ;;; TODO:
 ;; (defun nvp-repl-send-defun ()

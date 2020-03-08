@@ -9,7 +9,8 @@
 START is the initial point, LIMIT is an optional search bound.
 DELIMS are chars that will delimit commands and won't be skipped outside of
 strings."
-  (or delims (setq delims "^)(|&\`;\["))
+  (declare (indent defun) (debug t))
+  (nvp-defq delims "^)(|&\`;\[")
   (macroexp-let2 nil limit limit
     `(let (ppss done)
        (while (and (not done) ,(if limit `(> (point) ,limit) t))

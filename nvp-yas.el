@@ -9,7 +9,6 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (nvp-decls :v (yas-moving-away-p yas-modified-p))
 (nvp-auto "nvp-parse" 'nvp-parse-current-function)
 (nvp-auto "s" 's-upper-camel-case 's-snake-case)
@@ -48,7 +47,7 @@ If PADLEN is non-nil, start with PADLEN comment starters."
 (defun nvp-comment-start (length &optional start)
   "Create comment string of LENGTH starting with `comment-start' or START.
 Accounts for multi-character comments by recycling the second character."
-  (let* ((comment (or start (s-trim-right comment-start)))
+  (let* ((comment (or start (string-trim-right comment-start)))
          (cont (if (> (length comment) 1) (aref comment 1) (aref comment 0))))
     (concat comment (make-string (max 0 (- length (length comment))) cont))))
 

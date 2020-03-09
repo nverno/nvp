@@ -1,16 +1,17 @@
 ;;; nvp-sh-eldoc.el --- eldoc for bash/sh  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Notes:
 ;; - help strings are cached
 ;; - bash builtins run synchronously
 ;; - others run async, so help will show up after moving point
 ;;   in region more than once
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
+(nvp-req 'nvp-shell 'subrs)
 (require 'nvp-sh-help)
 (require 'eldoc)
 

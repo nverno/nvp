@@ -3,22 +3,24 @@
 (require 'nvp)
 (require 'nvp-macro)
 
+;; -------------------------------------------------------------------
 ;;; Newline dwim tests
+
 ;; lisp doesn't do anything special
 (ert-deftest el-newline-dwim-code ()
   "Newline dwim in elisp code."
-  :tags '(newline)
+  :tags '(:newline)
   (nvp--buffer-should-change
     "
 (|)"
     "
 (
  |)" nil
-  (call-interactively 'nvp-newline-dwim)))
+    (call-interactively 'nvp-newline-dwim)))
 
 (ert-deftest el-newline-dwim-string ()
   "Newline dwim in elisp string."
-  :tags '(newline)
+  :tags '(:newline)
   (nvp--buffer-should-change
     "
 \"(|)\""
@@ -28,7 +30,7 @@
 
 (ert-deftest el-newline-dwim-comment ()
   "Newline dwim in elisp comment."
-  :tags '(newline)
+  :tags '(:newline)
   (nvp--buffer-should-change
     "
 ;; (|)"
@@ -38,7 +40,7 @@
 
 (ert-deftest el-newline-dwim-braces ()
   "Newline dwim in elisp braces."
-  :tags '(newline)
+  :tags '(:newline)
   (nvp--buffer-should-change
     "
 (list {|})"
@@ -53,7 +55,7 @@
 
 (ert-deftest point-start-of-comment-same-line ()
   "Find position of start of comment on line."
-  :tags '(point comment)
+  :tags '(:point)
   (nvp--buffer-should-change
     "
 (let| ((a 1)) ; abcs
@@ -64,7 +66,7 @@
 
 (ert-deftest point-end-of-comment-same-line-el ()
   "Find position of end of elisp comment on line."
-  :tags '(point comment)
+  :tags '(:point)
   (nvp--buffer-should-change
     "
 (let| ((a 1)) ; abcs
@@ -75,7 +77,7 @@
 
 (ert-deftest point-end-of-comment-same-line-c ()
   "Find position of end of C comment on line."
-  :tags '(point comment)
+  :tags '(:point)
   (nvp--buffer-should-change
     "
 |     fprintf(stderr, /* a poo */ \"%\" OFFSET \"s\n\", \"a\");"
@@ -85,7 +87,7 @@
 
 (ert-deftest point-start-of-multiline-comment-c ()
   "Find position of start of multiline C comment."
-  :tags '(point comment)
+  :tags '(:point)
   (nvp--buffer-should-change
     "
 /* 
@@ -105,7 +107,7 @@ int main(int argc, char *argv[]) {
 
 (ert-deftest point-end-of-multiline-comment-c ()
   "Find position of end of multiline C comment."
-  :tags '(point comment)
+  :tags '(:point)
   (nvp--buffer-should-change
     "
 /* 
@@ -127,7 +129,7 @@ int main(int argc, char *argv[]) {
 
 (ert-deftest point-end-of-logical-line-make ()
   "Find position of end of logical line in makefile - should pass escaped NLs."
-  :tags '(point line)
+  :tags '(:point)
   (nvp--buffer-should-change
     "
 .depend:

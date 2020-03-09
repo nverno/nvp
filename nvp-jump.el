@@ -15,11 +15,14 @@
 (require 'nvp)
 (require 'nvp-display)
 (require 'nvp-read)
-
 (nvp-auto "lisp-mnt" 'lm-header)
 (nvp-auto "find-func" 'find-function-library 'find-library-name)
 (nvp-auto "nvp-scratch" 'nvp-scratch-switch-modes)
 (nvp-decls)
+
+;; provides ido-completion for things like `locate-library', although it
+;; is just noticeably slower
+(nvp-maybe-enable 'ido-ubiquitous-mode 'ido-completing-read+)
 
 ;;; Libraries
 

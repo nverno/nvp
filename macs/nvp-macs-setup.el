@@ -34,6 +34,16 @@
     `(eval-when-compile (require ',sym ,dir ,noerror))))
 
 
+(defmacro nvp-maybe-enable (mode &optional feature)
+  "Enable MODE if it is bound and not already and FEATURE is available."
+  (declare (indent defun))
+  (let ((mode (car (nvp-list-unquote mode)))
+        (feature (if feature (car (nvp-list-unquote feature)))))
+    `(when (or (and (fboundp ',mode)
+                    (not ,mode))
+               ,(and feature `(require ',feature nil t)))
+       (,mode))))
+
 
 ;;; Define 
 

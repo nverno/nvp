@@ -3,7 +3,8 @@
 
 ((nil
   (projectile-project-type          . make)
-  (nvp-local-notes-file             . "~/org/code/emacs.org"))
+  (nvp-local-notes-file             . "~/org/code/emacs.org")
+  (bug-reference-url-format         . "https://github.com/nverno/%s"))
  (emacs-lisp-mode
   ;; (outline-regexp . "\f\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*")
   (indent-tabs-mode                 . nil)
@@ -13,6 +14,7 @@
   (nil
    (eval                            . (add-to-list 'load-path default-directory)))
   (emacs-lisp-mode
+   (mode                            . bug-reference-prog)
    (eval                            . (nvp-buffer-local-set-key
                                        (kbd "C-c C-c") #'nvp-ert-run-tests))
    (no-byte-compile                 . t)))

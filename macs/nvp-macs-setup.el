@@ -39,10 +39,13 @@
   (declare (indent defun))
   (let ((mode (car (nvp-list-unquote mode)))
         (feature (if feature (car (nvp-list-unquote feature)))))
-    `(when (or (and (fboundp ',mode)
-                    (not ,mode))
-               ,(and feature `(require ',feature nil t)))
-       (,mode))))
+    `(progn
+       (declare-function ,mode "")
+       (defvar ,mode)
+       (when (or (and (fboundp ',mode)
+                      (not ,mode))
+                 ,(and feature `(require ',feature nil t)))
+         (,mode)))))
 
 
 ;;; Define 

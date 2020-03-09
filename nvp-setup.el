@@ -11,6 +11,7 @@
   (require 'nvp-macro)
   (require 'smie))
 (require 'nvp)
+(require 'yasnippet)
 
 (cl-defstruct (nvp-mode-vars (:constructor nvp-mode-vars-make)
                              (:copier nil))

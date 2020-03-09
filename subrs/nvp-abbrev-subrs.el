@@ -5,7 +5,7 @@
 ;; shared abbrev subrs required by multiple files
 ;;
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(require 'nvp-macro)
 (require 'abbrev)
 (require 'nvp)
 

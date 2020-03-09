@@ -22,14 +22,13 @@
 Defaults to `defun' at point."
   (interactive
    (nvp-with-region beg end
-     (intern
-      (cadr (read-multiple-choice "Indent: " '((?i "buffer")
-                                               (?d "defun")
-                                               (?p "paragraph")))))
+     (nvp-read-char-case "Indent region: " 'verbose
+       (?i "[i]buffer" 'buffer)
+       (?d "[d]efun" 'defun)
+       (?p "[p]aragraph" 'paragraph))
      :pulse t (list beg end)))
   (indent-region beg end))
 
-
 ;; -------------------------------------------------------------------
 ;;; Sort
 

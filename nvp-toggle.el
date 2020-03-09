@@ -30,7 +30,7 @@ Decrement with prefix."
   (or bnds
       (setq bnds (nvp-tap 'bdwim 'symbol))
       (user-error "No region to search in."))
-  (or inc (setq inc (if arg -1 1)))
+  (nvp-defq inc (if arg -1 1))
   (let (deactivate-mark)
     (nvp-regex-map-across-matches
      (lambda (ms)
@@ -67,20 +67,21 @@ Decrement with prefix."
     (skip-chars-backward " \t\\*-" (line-beginning-position))
     (delete-region (point) (line-end-position))))
 
-;; get value corresponding to variable which may be shortened, eg. `mode'
-(defun nvp-toggle--normalize-var (var)
-  (pcase var
-    (`mode major-mode)
-    (`coding buffer-file-coding-system)
-    (_ (if (and (symbolp var)
-                (boundp var))
-           (symbol-value var)))))
+(eval-when-compile 
+ ;; get value corresponding to variable which may be shortened, eg. `mode'
+ (defsubst nvp-toggle--normalize-var (var)
+   (pcase var
+     (`mode major-mode)
+     (`coding buffer-file-coding-system)
+     (_ (if (and (symbolp var)
+                 (boundp var))
+            (symbol-value var)))))
 
-;; normalize possible shortened mode names
-(defun nvp-toggle--normalize-mode (val)
-  (let ((str (nvp-as-string val)))
-    (if (string-match-p "-mode\\'" str) val
-      (intern (concat str "-mode")))))
+ ;; normalize possible shortened mode names
+ (defsubst nvp-toggle--normalize-mode (val)
+   (let ((str (nvp-as-string val)))
+     (if (string-match-p "-mode\\'" str) val
+       (intern (concat str "-mode"))))))
 
 ;;;###autoload
 (defun nvp-toggle-local-variable (var &optional val dir footer)

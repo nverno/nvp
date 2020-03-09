@@ -108,6 +108,22 @@ those are both specified."
 
 
 ;; -------------------------------------------------------------------
+;;; Input
+
+;; `magit-read-char-case'
+(defmacro nvp-read-char-case (prompt verbose &rest clauses)
+  (declare (indent 2) (debug (form form &rest (characterp form body))))
+  `(prog1 (pcase (read-char-choice
+                  (concat ,prompt
+                          ,(concat (mapconcat 'cadr clauses ", ")
+                                   (and verbose ", or [C-g] to abort") " "))
+                  ',(mapcar 'car clauses))
+            ,@(--map `(,(car it) ,@(cddr it)) clauses))
+     (message "")))
+
+
+
+;; -------------------------------------------------------------------
 ;;; Buffer / Directory names
 
 (defmacro nvp-buff--1 (path no-def)

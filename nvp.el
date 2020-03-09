@@ -1,10 +1,19 @@
 ;;; nvp.el --- base configs -*- lexical-binding: t; -*-
 
 ;;; Commentary:
+;; 
+;; Library required at startup -- startup generally takes about 0.5 seconds
+;; And if it ever gets up around ~1 second, measures need be taken.
+;;
 ;; [![Build Status](https://travis-ci.org/nverno/nvp.svg?branch=master)](https://travis-ci.org/nverno/nvp)
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-local)
+;; only external libraries required at startup: (actually in `emacs-startup-hook')
+(require 'company)
+(require 'smartparens)
+
 (nvp-decls
  :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward))
 
@@ -17,9 +26,8 @@
 ;; root directory
 (nvp-package-define-root)
 
-
 ;; -------------------------------------------------------------------
-;;; Variables
+;;; My variables
 
 ;;-- Global -- most machine specific are compiled in init
 (nvp-defvar nvp-program-search-paths
@@ -144,48 +152,19 @@
   "Slanted error face."
   :group 'nvp)
 
-
 ;; -------------------------------------------------------------------
-;;; Utils
+;;; Company / Yasnippet
 
-;; Read with default of symbol-at-point. When COLLECTION is provided use
-;; completing read, otherwise read from the minibuffer
-(defun nvp-read-default (prompt &optional collection pred match initial
-                                           hist default inherit)
-  (when (and (not default) (setq default (thing-at-point 'symbol t)))
-    (setq prompt (nvp-prompt-default prompt default)))
-  (if collection
-      (nvp-completing-read (nvp-prompt-default prompt default) collection pred
-                           match initial hist default inherit)
-    (read-from-minibuffer prompt nil nil nil nil default)))
+(with-eval-after-load 'yasnippet (require 'nvp-yas))
+
+;; Note: this is set in compiled init -- but just in case
+(make-variable-buffer-local 'company-backends)
 
 (defun nvp-company-local (&rest backends)
-  "Make a buffer-local company backend."
-  (set (make-local-variable 'company-backends)
-       (delete-dups
-        (progn
-          (dolist (b backends)
-            (push b company-backends))
-          company-backends))))
-
-;; -------------------------------------------------------------------
-;;; Mode variables
-
-;; return MODE value associated with KEY if exists
-;; (define-inline nvp-mode-get-val (key &optional mode)
-;;   (inline-letevals ((mode (or mode (quote major-mode))) key)
-;;     (inline-quote (assq ,key (get ,mode 'nvp)))))
-
-;; return mode value, default to cadr (first value minus the key)
-;; (defsubst nvp-mode-val (key &optional all)
-;;   (when-let* ((val (nvp-mode-get-val key)))
-;;     (if all (cdr val)
-;;       (cadr val))))
-
-;; return KEY if defined otherwise lookup its mode value
-;; (defsubst nvp-mode-local-or-val (key &optional all)
-;;   (or (eval `(bound-and-true-p ,(intern-soft key)))
-;;       (nvp-mode-val key all)))
+  "Add backends to local `company-backends' (in a hook)."
+  (dolist (b backends)
+    (unless (member b company-backends)
+      (push b company-backends))))
 
 
 ;; -------------------------------------------------------------------
@@ -554,9 +533,9 @@ in `global-map' or BINDING-MAP if non-nil."
     (error (format "package.el %s failed to define keymap %s"
                    package keymap-symbol))))
 
-
+
 ;; -------------------------------------------------------------------
-;;; Window configuration
+;;; Windows / Buffers
 
 ;; save / restore window configurations
 (defun nvp-window-configuration-save ()
@@ -568,6 +547,11 @@ in `global-map' or BINDING-MAP if non-nil."
     (if (> (length (window-list)) 1)
         (delete-window)
       (bury-buffer))))
+
+;; weird this isn't builtin somewhere -- `kill-this-buffer' has issues
+(defun nvp-kill-this-buffer ()
+  (interactive)
+  (nvp-ktb))
 
 (provide 'nvp)
 ;;; nvp.el ends here

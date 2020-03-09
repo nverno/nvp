@@ -12,7 +12,7 @@
 (require 'nvp)
 (nvp-decls :v (yas-moving-away-p yas-modified-p))
 (nvp-auto "nvp-parse" 'nvp-parse-current-function)
-(nvp-auto "s" 's-upper-camel-case 's-snake-case 's-trim 's-trim-right)
+(nvp-auto "s" 's-upper-camel-case 's-snake-case)
 
 (defalias 'yas-comment-string 'nvp-yas-comment)
 ;; yas-inside-string uses `font-lock-string-face'
@@ -35,7 +35,7 @@
 (defun nvp-comment-string (str &optional padlen)
   "Wrap STR with modes starting and ending comment delimiters.
 If PADLEN is non-nil, start with PADLEN comment starters."
-  (let* ((ctrim (s-trim-right comment-start))
+  (let* ((ctrim (string-trim-right comment-start))
          (comment (if (or (derived-mode-p 'c-mode)
                          (memq major-mode '(python-mode))
                          (string= comment-end ""))

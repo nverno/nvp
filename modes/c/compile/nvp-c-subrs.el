@@ -12,12 +12,11 @@
 ;;; Basic utils
 
 (defsubst nvp-c-out-file (&optional file)
-  (concat (file-name-sans-extension (or file (buffer-file-name)))
-          (nvp-with-gnu/w32 ".out" ".exe")))
+  (concat (nvp-no-ext file) (nvp-with-gnu/w32 ".out" ".exe")))
 
 ;; associated header file name
-(defsubst nvp-c--header-file-name (&optional buffer)
-  (concat (file-name-sans-extension (or buffer buffer-file-name)) ".h"))
+(defsubst nvp-c--header-file-name (&optional buffer ext)
+  (concat (nvp-no-ext buffer) (or ext ".h")))
 
 ;; assume first path will be root, eg ~/.local/include:etc
 (defsubst nvp-c-local-include-path (path)

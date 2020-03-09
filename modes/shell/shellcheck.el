@@ -26,19 +26,23 @@
 (defconst shellcheck-compilation-regexp
   '(shellcheck "In \\([^ \t\n]+\\) line \\([0-9]+\\)" 1 2))
 
-(defun shellcheck-disable-error ()
-  "Disable the shellcheck error containing, or immediately following, POINT.
+(defun shellcheck-disable-this-error ()
+  "Disable the shellcheck error containing, or immediately following point.
 This interactively adds a shellcheck comment directive in the source."
   (interactive)
-  ;; this function will ensure a maker is/has been created for the message,
-  ;; and goto the corresponding location in the source
-  (compilation-next-error-function 0)
-  (unless (bolp)                        ; point is always at bol anyway?
-    (beginning-of-line 1))
-  (open-line 1)
-  (comment-dwim 1)
-  ;; TODO: finish this
-  (insert "shellcheck disable="))
+  (or (ignore-errors (compilation-next-error 0)    ; point somewhere in a message
+                     (compilation-next-error 1)))  ; otherwise, onward
+  (let ((errcode (button-label (button-at (next-button 1)))))
+    ;; this function will ensure a maker is/has been created for the message,
+    ;; and goto the corresponding location in the source
+    (compilation-next-error-function 0)
+    (unless (bolp)                        ; point is always at bol anyway?
+      (beginning-of-line 1))
+    (open-line 1)
+    (comment-dwim 1)
+    (insert
+     (if (string= errcode "SC2096") "shellcheck source=/dev/null"
+       (concat "shellcheck disable=" errcode)))))
 
 (defun shellcheck-filter ()
   "Link shellcheck codes to wiki pages in compilation output."
@@ -49,10 +53,14 @@ This interactively adds a shellcheck comment directive in the source."
         (help-xref-button
          0 'help-url (concat shellcheck-wiki-url (match-string 0)))))))
 
+(defun shellcheck-kill-buffer ()
+  (interactive)
+  (nvp-ktb))
+
 (defvar shellcheck-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "q" #'kill-this-buffer)
-    (define-key map "d" #'shellcheck-disable-error)
+    (define-key map "q" #'shellcheck-kill-buffer)
+    (define-key map "d" #'shellcheck-disable-this-error)
     (define-key map (kbd "M-s-n") #'forward-button)
     (define-key map (kbd "M-s-p") #'backward-button)
     map))

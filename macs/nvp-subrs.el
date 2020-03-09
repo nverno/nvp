@@ -138,6 +138,12 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
     (cons kws res)))
 
 ;; -------------------------------------------------------------------
+;;; Buffers
+
+;; why isn't this a builtin function?
+(defsubst nvp-ktb () (kill-buffer (current-buffer)))
+
+;; -------------------------------------------------------------------
 ;;; Files
 
 (defsubst nvp-ext (&optional path)

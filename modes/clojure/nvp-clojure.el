@@ -35,17 +35,14 @@
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-(nvp-newline nvp-clojure-newline-dwim nil
-  :pairs (("\[" "\]") ("{" "}")))
-
 ;; (defun nvp-clojure-align-vectors (beg end)
 ;;   (interactive "r")
 ;;   (align-regexp beg end "^ \\[[^ ]+\\(\\s-+\\)" 1 1 t))
 
-;; FIXME:
+;; FIXME: make better if ever use clojure again
 ;; Find documentation for given SYMBOL online.
 (defun nvp-clojure-help-online (symbol)
-  (interactive (list (nvp-read-default "Symbol: ")))
+  (interactive (list (read-from-minibuffer "Symbol: ")))
   (cl-destructuring-bind (x &optional y)
       (split-string symbol "/")
     (browse-url

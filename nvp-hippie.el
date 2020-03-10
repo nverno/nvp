@@ -187,13 +187,6 @@ doesn't exceed LIMIT."
 ;; -------------------------------------------------------------------
 ;;; Flex
 
-;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
-;; only recompute `nvp-he-buffer-matches' when prefix has changed
-(defvar nvp-he-flex-completion-table
-  (nvp-he-completion-table
-   (lambda (arg)
-     (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
-
 ;; function called with current string prefix to produce regexp to find candidates
 (defvar nvp-he-flex-matcher #'nvp-he-flex-lisp)
 
@@ -223,6 +216,13 @@ doesn't exceed LIMIT."
     (while (not (or (zerop (skip-syntax-backward "w_"))
                     (zerop (skip-chars-backward ".")))))
     (point)))
+
+;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
+;; only recompute `nvp-he-buffer-matches' when prefix has changed
+(defvar nvp-he-flex-completion-table
+  (nvp-he-completion-table
+   (lambda (arg)
+     (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
 
 ;;;###autoload
 (defun nvp-try-expand-flex (old)

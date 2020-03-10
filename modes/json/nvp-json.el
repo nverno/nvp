@@ -21,6 +21,5 @@
          (delete-region (car bnds) (cdr bnds))
          (insert (format "\"%s\": \"%s\"" a b)))))
 
-
 (provide 'nvp-json)
 ;;; nvp-json.el ends here

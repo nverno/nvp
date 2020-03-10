@@ -2,7 +2,7 @@
 ;;; For more information see (info "(emacs) Directory Variables")
 
 ((nil
-  (projectile-project-type          . make)
+  (projectile-project-type          . elisp)
   (nvp-local-notes-file             . "~/org/code/emacs.org")
   (bug-reference-url-format         . "https://github.com/nverno/%s"))
  (emacs-lisp-mode

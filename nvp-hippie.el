@@ -60,6 +60,7 @@
 (nvp-decls :f (tags-completion-table ggtags-try-complete-tag ggtags-mode))
 (nvp-auto "s" 's-split-words 's-join)
 
+;; XXX: this isn't always working as expected -- figure out why
 ;; args: active position, match-beg, match-end
 (defvar nvp-he-weight-function #'company-occurrence-prefer-any-closest
   "How to weight expansion candidates when sorting.")
@@ -186,6 +187,13 @@ doesn't exceed LIMIT."
 ;; -------------------------------------------------------------------
 ;;; Flex
 
+;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
+;; only recompute `nvp-he-buffer-matches' when prefix has changed
+(defvar nvp-he-flex-completion-table
+  (nvp-he-completion-table
+   (lambda (arg)
+     (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
+
 ;; function called with current string prefix to produce regexp to find candidates
 (defvar nvp-he-flex-matcher #'nvp-he-flex-lisp)
 
@@ -194,17 +202,10 @@ doesn't exceed LIMIT."
 ;; - elisp: he-lisp-symbol-beg
 (defvar nvp-he-flex-symbol-beg #'he-lisp-symbol-beg)
 
-;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
-;; only recompute `nvp-he-buffer-matches' when prefix has changed
-(defvar nvp-he-flex-completion-table
-  (nvp-he-completion-table
-   (lambda (arg)
-     (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
-
 ;; create regexp from STR matching expansions around hypens, eg
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
 ;; so it matches replace-regexp-in-string, for example
-(defvar nvp-he-flex-from-re "[-:]")
+(defvar nvp-he-flex-from-re "[-:.]")
 (defvar nvp-he-flex-to-re "\\\\w*-")
 (defun nvp-he-flex-lisp (str)
   (concat

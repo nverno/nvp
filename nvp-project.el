@@ -53,6 +53,16 @@ Otherwise, look for version control directories, returing the longest path."
                           projectile-globally-ignored-directories)) " "))
   :flags '("--type all"))
 
+;; -------------------------------------------------------------------
+;;; Test defining projectile project type
+
+;; (defun nvp-projectile-related/elisp (path)
+;;   (let ((name (nvp-bfn-no-ext path)))))
+;; (projectile-register-project-type 'elisp '("Makefile" "Cask")
+;;                                   :compile "make"
+;;                                   :test-suffix "-test"
+;;                                   :related-files-fn)
+
 ;;; FIXME: remove everything below here
 ;; -------------------------------------------------------------------
 ;;; Util

@@ -103,7 +103,7 @@
                            t nil 'nvp-read-keymap-history "nvp-keymap")))
 
 (eval-when-compile
-  (defmacro nvp-read--default (default &rest body)
+  (defmacro nvp-read:default (default &rest body)
     (macroexp-let2 nil def default
      `(if (eq ,def :none) nil
         (or ,def ,@body)))))
@@ -122,7 +122,7 @@
   "Read symbol using `help--symbol-completion-table' using PROMPT with DEFAULT.
 Filter by PREDICATE if non-nil."
   (require 'help-fns)
-  (setq default (nvp-read--default default (nvp-tap 'tap)))
+  (setq default (nvp-read:default default (nvp-tap 'tap)))
   (let ((enable-recursive-minibuffers t) val)
     (setq prompt (nvp-prompt-default prompt default))
     (setq val (completing-read prompt #'help--symbol-completion-table
@@ -136,7 +136,7 @@ Filter by PREDICATE if non-nil."
 ;;;###autoload
 (defun nvp-read-elisp-variable (prompt &optional default hist)
   "Lookup elisp symbol using PROMPT and optional DEFAULT."
-  (setq default (nvp-read--default default (let ((var (variable-at-point)))
+  (setq default (nvp-read:default default (let ((var (variable-at-point)))
                                              (and (symbolp var) var))))
   (let ((orig-buffer (current-buffer)))
     (nvp-read-elisp-symbol prompt
@@ -149,7 +149,7 @@ Filter by PREDICATE if non-nil."
 ;;;###autoload
 (defun nvp-read-elisp-function (prompt &optional default hist)
   "Lookup elisp function with PROMPT and optional DEFAULT."
-  (setq default (nvp-read--default default (function-called-at-point)))
+  (setq default (nvp-read:default default (function-called-at-point)))
   (nvp-read-elisp-symbol
    prompt (lambda (f) (or (fboundp f) (get f 'function-documentation))) default hist))
 

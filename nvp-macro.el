@@ -122,6 +122,24 @@ those are both specified."
      (message "")))
 
 
+;; -------------------------------------------------------------------
+;;; Strings / Regexps
+
+;; stolen from `magit-bind-match-strings'
+(defmacro nvp-bind-match-strings (varlist string &rest body)
+  "Bind variables to submatches according to VARLIST then evaluate BODY.
+Bind the symbols in VARLIST to submatches of the current match
+data, starting with 1 and incrementing by 1 for each symbol.  If
+the last match was against a string, then that has to be provided
+as STRING."
+  (declare (indent 2) (debug (listp form body)))
+  (let ((s (cl-gensym "string"))
+        (i 0))
+    `(let ((,s ,string))
+       (let ,(save-match-data
+               (--map (list it (list 'match-string (cl-incf i) s)) varlist))
+         ,@body))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Buffer / Directory names

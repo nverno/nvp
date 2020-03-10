@@ -1,8 +1,10 @@
 ;;; nvp-read.el --- Completing read for thangs -*- lexical-binding: t; -*-
 ;;; Commentary:
+;;
 ;; various completing read functions
 ;;; TODO:
 ;; - read w/ popup help: see `register-read-with-preview'
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)

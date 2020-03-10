@@ -143,7 +143,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
                   (mapcar #'car index-alist) nil t nil 'imenu--history-list name)))
     (if (eq ido-exit 'fallback)
         ;; call in minibuf's calling buffer
-        (nvp/do-switch-buffer #'nvp-idomenu nil index-alist t)
+        (nvp@do-switch-buffer #'nvp-idomenu nil index-alist t)
       (setq choice (assoc name index-alist))
       (if (imenu--subalist-p choice)
 	  (nvp-idomenu--read (cdr choice))

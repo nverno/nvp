@@ -62,13 +62,15 @@
 
 (defmacro nvp-kbd (key)
   "If key is a string, wrap with `kbd', otherwise leave it."
-  (and (symbolp key) (setq key (symbol-value key)))
-  ;; (cl-assert (or (vectorp key) (stringp key) (keymapp key)))
-  (cond
-   ((null key) nil)
-   ((or (vectorp key) (keymapp key)) key)
-   ((consp key) (eval key))             ;maybe '(kbd ...) already or symbol
-   (t (kbd key))))
+  ;; FIXME: doesn't do what intended I don't think -- check with undefined
+  ;; prefix arg before package loads -- this should work in that case
+  (if (symbolp key) `(kbd ,key)         ; evaluate at runtime instead
+    ;; (and (symbolp key) (setq key (symbol-value key)))
+    (cond
+     ((null key) nil)
+     ((or (vectorp key) (keymapp key)) key)
+     ((consp key) (eval key))             ;maybe '(kbd ...) already or symbol
+     (t (kbd key)))))
 
 ;;; Conditional binding
 ;; info: extended menu items

@@ -21,10 +21,14 @@
 (nvp-decls)
 
 ;; provides ido-completion for things like `locate-library', although it
-;; is just noticeably slower
+;; is just noticeably slower for some functions -- especially those related
+;; to reading libraries/obarray
+;; Might consider blacklisting `locate-library' -- although having the
+;; ido-vertical support there is dope
 (nvp-maybe-enable 'ido-ubiquitous-mode 'ido-completing-read+)
 
-;;; Libraries
+;; -------------------------------------------------------------------
+;;; Emacs Libraries
 
 ;;;###autoload
 (defun nvp-jump-to-library (library &optional action)
@@ -102,6 +106,7 @@ Optionally, search LISP-ONLY files (no C sources)."
     (user-error "No source found for %s" library)))
 
 
+;; -------------------------------------------------------------------
 ;;; Modes
 
 ;;;###autoload
@@ -146,6 +151,7 @@ Optionally, search LISP-ONLY files (no C sources)."
   (nvp-jump-to-dir nvp/modes action))
 
 
+;; -------------------------------------------------------------------
 ;;; Install / build files
 
 ;;;###autoload
@@ -166,90 +172,7 @@ Optionally, search LISP-ONLY files (no C sources)."
   (nvp-display-location file :file action))
 
 
-;;; Org / Info
-
-;;;###autoload
-(defun nvp-jump-to-org (org-file action)
-  "Jump to org file. 
-If `nvp-local-notes-file' is bound use that unless there is a prefix of 16. 
-Otherwise prompt, with default `nvp-default-org-file'."
-  (interactive
-   (list (nvp-read--org-file nil nil (nvp-prefix 16))
-         (nvp-prefix 16 1 :test #'>= current-prefix-arg)))
-  (prog1 (setq org-file (nvp-display-location org-file :file action))
-    (when (bufferp org-file)
-      (with-current-buffer org-file
-        (goto-char (point-min))
-        (ignore-errors (search-forward "* Notes"))))))
-
-;;;###autoload
-(defun nvp-jump-to-info (file action)
-  "Jump to info file (in org mode). 
-With prefix jump this window, otherwise `find-file-other-window'."
-  (interactive (list (nvp-read--info-files) current-prefix-arg))
-  (nvp-display-location
-   file :file action
-   :init-fn (lambda () (nvp-display-init-template 'texinfo 'org-mode))))
-
-
-;;; Scratch
-
-;;;###autoload
-(defun nvp-jump-to-scratch (mode action)
-  "Jump to scratch buffer in MODE (default current `major-mode'). 
-With prefix, pop other window, with double prefix, prompt for MODE."
-  (interactive
-   (list (nvp-prefix 16 (intern (nvp-read-mode)) major-mode) current-prefix-arg))
-  (nvp-window-configuration-save)
-  (let ((buff (get-buffer-create "*scratch*"))
-        (default-directory nvp/scratch))
-    (with-current-buffer buff
-      (nvp-scratch-switch-modes mode 'activate)
-      (nvp-display-location buff :buffer action))))
-
-
-;;; Books / PDFs
-
-;;;###autoload
-(defun nvp-jump-to-book (dir &optional action)
-  "Jump to book, either opening in emacs (eg. pdfs) or external for epubs.
-With double prefix, prompt for directory (default `nvp-local-books-directories'
-or `nvp/books'. 
-With triple prefix, offer recursive results."
-  (interactive
-   (let* ((arg (prefix-numeric-value current-prefix-arg))
-          (case-fold-search t)
-          (root (cond
-                  ((> arg 4)
-                   (expand-file-name
-                    (read-directory-name "Book Directory: " nvp/books)))
-                  ((bound-and-true-p nvp-local-books-directories)
-                   nvp-local-books-directories)
-                  (t (expand-file-name "programming" nvp/books)))))
-     (list root arg)))
-  (let* ((files (mapcar (lambda (f) (file-relative-name f dir))
-                        (if (eq action 16) ;recurse
-                            (directory-files-recursively dir "^[^.].*[^/]$")
-                          (directory-files dir t "^[^.]"))))
-         (book (nvp-completing-read "Book: " files nil 'match))
-         (fullname (expand-file-name book dir)))
-    (cond
-      ;; epubs
-      ((string-match-p "\\.epub$" book)
-       (nvp-with-gnu/w32
-           (if (executable-find "calibre")
-               (call-process "calibre" nil 0 nil fullname)
-             (call-process "firefox" nil 0 nil fullname))
-         (if (executable-find "sumatrapdf")
-             (call-process "sumatrapdf" nil 0 nil fullname)
-           (call-process (nvp-program "firefox") nil 0 nil fullname))))
-      ;; probably PDF, open in emacs
-      ((file-name-extension book)
-       (nvp-display-location fullname :file action))
-      ;; otherwise recurse in subdirs
-      (t (nvp-jump-to-book fullname action)))))
-
-
+;; -------------------------------------------------------------------
 ;;; Files/Directories
 
 ;; Open nearest file up the directory tree named:
@@ -312,8 +235,77 @@ With triple prefix, offer recursive results."
          current-prefix-arg))
   (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
 
+;;;###autoload
+(defun nvp-jump-to-book (dir &optional action)
+  "Jump to book, either opening in emacs (eg. pdfs) or external for epubs.
+With double prefix, prompt for directory (default `nvp-local-books-directories'
+or `nvp/books'. 
+With triple prefix, offer recursive results."
+  (interactive
+   (let* ((arg (prefix-numeric-value current-prefix-arg))
+          (case-fold-search t)
+          (root (cond
+                  ((> arg 4)
+                   (expand-file-name
+                    (read-directory-name "Book Directory: " nvp/books)))
+                  ((bound-and-true-p nvp-local-books-directories)
+                   nvp-local-books-directories)
+                  (t (expand-file-name "programming" nvp/books)))))
+     (list root arg)))
+  (let* ((files (mapcar (lambda (f) (file-relative-name f dir))
+                        (if (eq action 16) ;recurse
+                            (directory-files-recursively dir "^[^.].*[^/]$")
+                          (directory-files dir t "^[^.]"))))
+         (book (nvp-completing-read "Book: " files nil 'match))
+         (fullname (expand-file-name book dir)))
+    (cond
+      ;; epubs
+      ((string-match-p "\\.epub$" book)
+       (nvp-with-gnu/w32
+           (if (executable-find "calibre")
+               (call-process "calibre" nil 0 nil fullname)
+             (call-process "firefox" nil 0 nil fullname))
+         (if (executable-find "sumatrapdf")
+             (call-process "sumatrapdf" nil 0 nil fullname)
+           (call-process (nvp-program "firefox") nil 0 nil fullname))))
+      ;; probably PDF, open in emacs
+      ((file-name-extension book)
+       (nvp-display-location fullname :file action))
+      ;; otherwise recurse in subdirs
+      (t (nvp-jump-to-book fullname action)))))
+
+;;;###autoload
+(defun nvp-jump-to-org (org-file action)
+  "Jump to org file. 
+If `nvp-local-notes-file' is bound use that unless there is a prefix of 16. 
+Otherwise prompt, with default `nvp-default-org-file'."
+  (interactive
+   (list (nvp-read--org-file nil nil (nvp-prefix 16))
+         (nvp-prefix 16 1 :test #'>= current-prefix-arg)))
+  (prog1 (setq org-file (nvp-display-location org-file :file action))
+    (when (bufferp org-file)
+      (with-current-buffer org-file
+        (goto-char (point-min))
+        (ignore-errors (search-forward "* Notes"))))))
+
+;;;###autoload
+(defun nvp-jump-to-info (file action)
+  "Jump to info file (in org mode). 
+With prefix jump this window, otherwise `find-file-other-window'."
+  (interactive (list (nvp-read--info-files) current-prefix-arg))
+  (nvp-display-location
+   file :file action
+   :init-fn (lambda () (nvp-display-init-template 'texinfo 'org-mode))))
+
+;;;###autoload
+(defun nvp-jump-to-template (action)
+  "Jump to a project template."
+  (interactive "P")
+  (nvp-display-location nvp/template :ido action :find-fn #'ido-find-file-in-dir))
+
 
-;;; Other
+;; -------------------------------------------------------------------
+;;; Other: keymaps, register, scratch
 
 ;;;###autoload
 (defun nvp-jump-to-nvp-keymap (keymap action)
@@ -339,9 +331,17 @@ With triple prefix, offer recursive results."
     (call-interactively #'jump-to-register)))
 
 ;;;###autoload
-(defun nvp-jump-to-template (action)
-  (interactive "P")
-  (nvp-display-location nvp/template :ido action :find-fn #'ido-find-file-in-dir))
+(defun nvp-jump-to-scratch (mode action)
+  "Jump to scratch buffer in MODE (default current `major-mode'). 
+With prefix, pop other window, with double prefix, prompt for MODE."
+  (interactive
+   (list (nvp-prefix 16 (intern (nvp-read-mode)) major-mode) current-prefix-arg))
+  (nvp-window-configuration-save)
+  (let ((buff (get-buffer-create "*scratch*"))
+        (default-directory nvp/scratch))
+    (with-current-buffer buff
+      (nvp-scratch-switch-modes mode 'activate)
+      (nvp-display-location buff :buffer action))))
 
 (provide 'nvp-jump)
 ;;; nvp-jump.el ends here

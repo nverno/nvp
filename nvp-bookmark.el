@@ -59,6 +59,7 @@ and fallback to `bookmark-default-file'."
     (nvp-bmk-handler (nvp-bmk-make-record file)))
   (call-interactively 'bookmark-bmenu-list))
 
+;;; FIXME: cleanup
 ;;;###autoload
 (defun nvp-bookmark-list (&optional arg)
   "With single prefix force reloading, allowing for local settings to have effect.
@@ -78,7 +79,7 @@ With double prefix, reload defaults"
 
 ;; -------------------------------------------------------------------
 ;;; BMK handling
-
+;;; FIXME: all this
 (defgroup nvp-bmk nil
   "Manage jumping between/bookmarking multiple bookmark files."
   :group 'bookmark

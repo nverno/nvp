@@ -119,11 +119,11 @@
        nvp-window-configuration-restore
        nvp-window-configuration-save
        ;; hippie
+       nvp-he-flex-lisp-setup
        nvp-try-expand-history
        nvp-he-history-setup
        nvp-he-history-remove-trailing-paren
        nvp-try-expand-flex
-       nvp-try-expand-flex-lisp
        nvp-try-expand-dabbrev-closest-first
        nvp-try-expand-local-abbrevs
        ;; repls / shell

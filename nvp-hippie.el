@@ -34,23 +34,31 @@
 ;;
 ;; - *camelCased.method(), or snake_cased.chained() types*:
 ;;  + case sensitive
-;;  + hippie expansion prefixes are split by first by non-word/numeric values,
-;;    so 't.sS' => '(t sS)
-
+;;  + hippie expansion prefixes treat PREFIX-RE chars as being attached to the
+;;    subsequent char, and fuzzy match between lower/upper case and intervening
+;;    PREFIX-RE matches, eg. with the defaults
+;;    so 't.sS' => '\\bt[[:alnum:]]*\\.s[[:alnum:]]*S[[:alnum:]._]*\\b'
+;;    and look for matches in the buffer.
+;;
+;; Helper functions
 ;; - cached completion tables
 ;; - sort candidates by weighting function
-;; Expanders:
-;; - fuzzy matching
-;; - dabbrevs, closest first
-;; - tags => no tag libraries are loaded, local variables are just checked
-;; - lines
+;;
+;; Hippie expanders:
+;; - nvp-try-expand-flex => fuzzy matching
+;; - dabbrevs, modified to use closest first
+;; - tags (etags/gtags) => no tag libraries are loaded, if one is already
+;;   loaded, then an expand function is substituted at the nvp-try-expand-tags
+;;   location in the `hippie-expand-try-functions-list', if neither library
+;;   is active, then `nvp-try-expand-tags' removes itself from the buffer-local
+;;   list after first call
+;; - try expand whole lines: closest first modification + using case-fold-search
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'hippie-exp)
 (nvp-decls :f (tags-completion-table ggtags-try-complete-tag ggtags-mode))
-(nvp-auto "s" 's-split-words 's-join)
 
 ;; XXX: this isn't always working as expected -- figure out why
 ;; args: active position, match-beg, match-end
@@ -67,12 +75,16 @@
   "Non-nil if flex matching should ignore case.")
 
 ;; function called with current string prefix to produce regexp to find candidates
-(defvar nvp-he-flex-matcher #'nvp-he-flex-lisp)
+(defvar nvp-he-flex-matcher #'nvp-he-flex-camel/snake)
 
 ;; function to find beginning of candidate at point
 ;; - lisp: slime-symbol-start-pos, slime-symbol-end-pos
 ;; - elisp: he-lisp-symbol-beg
-(defvar nvp-he-flex-symbol-beg #'he-lisp-symbol-beg)
+(defvar nvp-he-flex-symbol-beg #'nvp-he-chained-symbol-beg)
+
+;; Lisp config
+;; (defvar nvp-he-flex-matcher #'nvp-he-flex-lisp)
+;; (defvar nvp-he-flex-symbol-beg #'he-lisp-symbol-beg)
 
 ;; create regexp from STR matching expansions around hypens, eg
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
@@ -95,7 +107,6 @@
 ;; t.sS => \\bt[[:alnum:]]*\\.s[[:alnum:]]*.S[[:alnum:]]*[[:alnum:]._]*\\b
 ;; so it would match "this.setState"
 (defun nvp-he-make-flex-camel-matcher (&optional pre-re join-re after-re)
-  (declare (indent defun) (debug t))
   (nvp-defq pre-re "[_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
   `(lambda (s)
      (let ((case-fold-search))
@@ -125,19 +136,16 @@
                     (zerop (skip-chars-backward ".")))))
     (point)))
 
+;; -------------------------------------------------------------------
+;;; Language setups
+;; defaults should work for most languages
+
 ;;;###autoload
-(defun nvp-he-local (expanders &optional local-vars clobber)
-  "Setup hippie expansion in mode hook.
-EXPANDERS are functions for `hippie-expand-try-functions-list', 
-LOCAL-VARS are set locally. If CLOBBER is non-nil, overwrite default 
-expansion functions instead of appending to them."
-  ;; `hippie-expand-try-functions-list' is made buffer-local in init
-  (setq hippie-expand-try-functions-list
-        (if clobber expanders
-          (cl-remove-duplicates
-           (append expanders hippie-expand-try-functions-list))))
-  `(nvp-setq-local ,@local-vars))
-(put 'nvp-he-local 'lisp-indent-function 0)
+(defun nvp-he-flex-lisp-setup (&optional beg)
+  (setq-local nvp-he-flex-matcher #'nvp-he-flex-lisp)
+  (setq-local nvp-he-flex-symbol-beg (or beg #'he-lisp-symbol-beg))
+  (setq-local nvp-he-flex-prefix-from-re "[-:.]")
+  (setq-local nvp-he-flex-prefix-to-re "\\\\w*-"))
 
 ;; -------------------------------------------------------------------
 ;;; Completion Tables

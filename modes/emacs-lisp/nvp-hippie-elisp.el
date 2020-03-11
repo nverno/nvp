@@ -116,17 +116,15 @@ onto the next one."
 ;;;###autoload
 (defun nvp-he-elisp-setup ()
   "Setup hippie expand functions for source buffers."
-  (make-local-variable 'hippie-expand-try-functions-list)
+  (nvp-he-flex-lisp-setup)
   (setq hippie-expand-try-functions-list
-        (cons 'nvp-try-elisp-with-local-namespace    ;try '-' prefixed first
-              hippie-expand-try-functions-list)) ;defaults setup in init
-  (add-to-list 'hippie-expand-try-functions-list #'nvp-try-expand-flex t)
-  (add-to-list 'hippie-expand-try-functions-list ;using add-to-list since
-               #'try-complete-lisp-symbol t)     ;some may already be in there
-  (add-to-list 'hippie-expand-try-functions-list
-               #'try-complete-lisp-symbol-partially t)
-  (add-to-list 'hippie-expand-try-functions-list 
-  	       #'nvp-try-elisp-symbol-sans-namespace t))
+        (append
+         (cons
+          'nvp-try-elisp-with-local-namespace ;try '-' prefixed first
+          hippie-expand-try-functions-list)
+         '(try-complete-lisp-symbol
+           try-complete-lisp-symbol-partially
+           nvp-try-elisp-symbol-sans-namespace))))
 
 (provide 'nvp-hippie-elisp)
 ;;; nvp-hippie-elisp.el ends here

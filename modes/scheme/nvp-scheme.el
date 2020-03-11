@@ -73,18 +73,8 @@
 ;; -------------------------------------------------------------------
 ;;; Hippie Expand
 
-(defvar nvp-scheme-he-expand-functions
-  '(nvp-try-expand-dabbrev-closest-first
-    nvp-try-expand-local-abbrevs
-    nvp-try-expand-flex
-    yas-hippie-try-expand
-    try-expand-dabbrev-from-kill
-    try-expand-dabbrev-all-buffers
-    try-complete-file-name-partially
-    try-complete-file-name))
-
 (defun nvp-scheme-hippie-expand-setup (&optional repl)
-  (setq-local hippie-expand-try-functions-list nvp-scheme-he-expand-functions)
+  (nvp-he-flex-lisp-setup)
   (setq-local hippie-expand-only-buffers '(scheme-mode))
   (when repl
     (nvp-he-history-setup :history 'comint-input-ring

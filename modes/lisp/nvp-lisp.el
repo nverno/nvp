@@ -108,6 +108,7 @@ currently under the curser."
 
 ;; pass to `nvp-he-try-expand-history-trans'
 (defun nvp-lisp-hippie-expand-setup (&optional repl)
+  (nvp-he-flex-lisp-setup #'slime-symbol-start-pos)
   (setq-local hippie-expand-try-functions-list nvp-lisp-he-expand-functions)
   (setq-local hippie-expand-only-buffers '(lisp-mode))
   (when repl

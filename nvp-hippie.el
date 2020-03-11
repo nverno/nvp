@@ -16,7 +16,7 @@
 ;; those with a minimum length of `nvp-he-min-length' are considered.
 ;; Additionally, the search will timeout after `nvp-he-time-limit'. Conversion
 ;; from hippie prefixes, eg. 'r-r', to regexps are customizable via
-;; `nvp-he-flex-from-re' and `nvp-he-flex-to-re' and a matcher function,
+;; `nvp-he-flex-prefix-from-re' and `nvp-he-flex-prefix-to-re' and a matcher function,
 ;; `nvp-he-flex-matcher' that does the actually conversion from a prefix to a
 ;; regexp. `nvp-he-flex-symbol-beg' is used to find the beginning of candidates.
 ;;
@@ -36,14 +36,6 @@
 ;;  + case sensitive
 ;;  + hippie expansion prefixes are split by first by non-word/numeric values,
 ;;    so 't.sS' => '(t sS)
-
-;;; TODO:
-;; (defun nvp-he-split-words (s)
-;;   (let ((case-fold-search nvp-he-case-fold-search))
-;;     (--map ()
-;;      (replace-regexp-in-string
-;;       "\\([._[:lower:]0-9]\\)\\([._[:upper:]0-9]\\)"
-;;       "\\1 \\2" s))))
 
 ;; - cached completion tables
 ;; - sort candidates by weighting function
@@ -71,8 +63,67 @@
 (defvar nvp-he-time-limit 0.1
   "Max searching time before timeout in, eg. `nvp-he-buffer-matches'.")
 
-(defvar nvp-he-case-fold-search t
+(defvar nvp-he-case-fold t
   "Non-nil if flex matching should ignore case.")
+
+;; function called with current string prefix to produce regexp to find candidates
+(defvar nvp-he-flex-matcher #'nvp-he-flex-lisp)
+
+;; function to find beginning of candidate at point
+;; - lisp: slime-symbol-start-pos, slime-symbol-end-pos
+;; - elisp: he-lisp-symbol-beg
+(defvar nvp-he-flex-symbol-beg #'he-lisp-symbol-beg)
+
+;; create regexp from STR matching expansions around hypens, eg
+;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
+;; so it matches replace-regexp-in-string, for example
+(defvar nvp-he-flex-prefix-from-re "[-:.]")
+(defvar nvp-he-flex-prefix-to-re "\\\\w*-")
+
+;; -------------------------------------------------------------------
+;;; Matchers
+
+;; default lisp matcher: convert STR (prefix before point) to regexp to match
+(defun nvp-he-flex-lisp (str)
+  (concat "\\b" (replace-regexp-in-string
+                 nvp-he-flex-prefix-from-re nvp-he-flex-prefix-to-re str)
+          "[:A-Za-z0-9-]*\\b"))
+
+;; Create matching function that splits prefixes by case
+;; any PRE-RE are considered part of the following char, eg. if
+;; PRE-RE is (default) "[._]?" and JOIN-RE is (default) "[[:alnum:]]*" then:
+;; t.sS => \\bt[[:alnum:]]*\\.s[[:alnum:]]*.S[[:alnum:]]*[[:alnum:]._]*\\b
+;; so it would match "this.setState"
+(defun nvp-he-make-flex-camel-matcher (&optional pre-re join-re after-re)
+  (declare (indent defun) (debug t))
+  (nvp-defq pre-re "[_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
+  `(lambda (s)
+     (let ((case-fold-search))
+       (concat
+        "\\b"
+        (replace-regexp-in-string
+         " " ,join-re
+         (replace-regexp-in-string
+          ,(concat pre-re "[[:alnum:]]") ,(concat join-re "\\&")
+          (replace-regexp-in-string
+           "\\([[:lower:]0-9]\\)\\([[:upper:]]\\)" "\\1 \\2"
+           (replace-regexp-in-string
+            "\\([[:upper:]]\\)\\([[:upper:]][[:lower:]0-9]\\)" "\\1 \\2"
+            s)))
+         nil 'literal)
+        ,after-re))))
+
+;; Default matcher for camel/snake-cased strings:
+;; can use with `nvp-he-flex-symbol-beg' set to `nvp-he-chained-symbol-beg'
+;; eg. t.sS => this.setState
+(defalias 'nvp-he-flex-camel/snake (nvp-he-make-flex-camel-matcher))
+
+;; grab possible "." chained symbol
+(defun nvp-he-chained-symbol-beg ()
+  (save-excursion
+    (while (not (or (zerop (skip-syntax-backward "w_"))
+                    (zerop (skip-chars-backward ".")))))
+    (point)))
 
 ;;;###autoload
 (defun nvp-he-local (expanders &optional local-vars clobber)
@@ -87,10 +138,6 @@ expansion functions instead of appending to them."
            (append expanders hippie-expand-try-functions-list))))
   `(nvp-setq-local ,@local-vars))
 (put 'nvp-he-local 'lisp-indent-function 0)
-
-;; -------------------------------------------------------------------
-;;; Configuration for a couple language styles
-
 
 ;; -------------------------------------------------------------------
 ;;; Completion Tables
@@ -173,7 +220,7 @@ doesn't exceed LIMIT."
   result)
 
 (defun nvp-he-buffer-matches (regexp &optional ignore-weights ignore-comments)
-  (let* ((case-fold-search nvp-he-case-fold-search)
+  (let* ((case-fold-search nvp-he-case-fold)
          (res (nvp-he--search-buffer
               regexp nil (point) ignore-weights (current-time)
               nvp-he-time-limit ignore-comments)))
@@ -186,36 +233,6 @@ doesn't exceed LIMIT."
 
 ;; -------------------------------------------------------------------
 ;;; Flex
-
-;; function called with current string prefix to produce regexp to find candidates
-(defvar nvp-he-flex-matcher #'nvp-he-flex-lisp)
-
-;; function to find beginning of candidate at point
-;; - lisp: slime-symbol-start-pos, slime-symbol-end-pos
-;; - elisp: he-lisp-symbol-beg
-(defvar nvp-he-flex-symbol-beg #'he-lisp-symbol-beg)
-
-;; create regexp from STR matching expansions around hypens, eg
-;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
-;; so it matches replace-regexp-in-string, for example
-(defvar nvp-he-flex-from-re "[-:.]")
-(defvar nvp-he-flex-to-re "\\\\w*-")
-(defun nvp-he-flex-lisp (str)
-  (concat
-   "\\b" (replace-regexp-in-string nvp-he-flex-from-re nvp-he-flex-to-re str)
-   "[:A-Za-z0-9-]*\\b"))
-
-;; matcher for camel-cased strings
-;; eg. t.sS => this.setState
-(defun nvp-he-flex-camel (str)
-  (concat "\\b" (s-join nvp-he-flex-to-re (s-split-words str)) "[a-zA-Z.]*\\b"))
-
-;; grab possible "." chained symbol
-(defun nvp-he-chained-symbol-beg ()
-  (save-excursion
-    (while (not (or (zerop (skip-syntax-backward "w_"))
-                    (zerop (skip-chars-backward ".")))))
-    (point)))
 
 ;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
 ;; only recompute `nvp-he-buffer-matches' when prefix has changed

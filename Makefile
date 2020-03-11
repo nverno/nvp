@@ -14,9 +14,10 @@ CLEAN_MODE = $(info cleaning $(1)) \
 	@$(RM) $(call FILTER_MODE,$(1),${MODE_ELC})
 BUILD_MODE = $(info building $(1)) \
 	@$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
+TESTS := $(wildcard test/*-tests.el)
 
 .PHONY: test
-all: 
+all:
 	${COMPILE} ${EL} ${MODE_EL}
 
 %.elc: %.el
@@ -41,7 +42,7 @@ dep-%: %  ## print depends for package
 	@grep "$^" .depend
 
 test: ## Run tests
-	$(BATCH) -l ert -l test/nvp-tests.el -f ert-run-tests-batch-and-exit
+	$(BATCH) -l ert $(addprefix  -l ,$(TESTS)) -f ert-run-tests-batch-and-exit
 
 README.md : el2markdown.el ${PKG}.el ## Generate README.md from source
 	$(BATCH) -l $< ${PKG}.el -f el2markdown-write-readme

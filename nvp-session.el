@@ -1,6 +1,15 @@
 ;;; nvp-session.el --- persistent session management -*- lexical-binding: t; -*-
+
 ;;; Commentary:
+;;
+;; Stores lightweight named sessions managed through desktop.el
+;; Extends to support:
+;; - multiple sessions
+;; - save / load / switch / delete
+;; - a basic menu to display and manage them
+;;
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'desktop)
@@ -49,7 +58,7 @@
                             "%D" (file-attribute-modification-time attr))))
          `(,session [,(file-name-nondirectory session) ,access-time ,mod-time]))))
 
-(define-derived-mode nvp-sessions-mode tabulated-list-mode "sessions"
+(define-derived-mode nvp-sessions-mode tabulated-list-mode "Sessions"
   "Mode for listing persistent sessions."
   (setq tabulated-list-format [("Name" 25 t)
                                ("Last Access" 12 t)

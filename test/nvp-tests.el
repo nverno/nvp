@@ -1,7 +1,4 @@
-(require 'ert)
 (require 'nvp-test-helpers)
-(require 'nvp)
-(require 'nvp-macro)
 
 ;; -------------------------------------------------------------------
 ;;; Newline dwim tests

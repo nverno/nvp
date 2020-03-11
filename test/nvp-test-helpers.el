@@ -3,6 +3,7 @@
 (require 'nvp-macro)
 (require 'ert)
 (require 'cl-lib)
+(require 'dash)
 
 (defun nvp-test-buffer-setup (&optional mode)
   (if mode (funcall mode) (emacs-lisp-mode))

@@ -18,6 +18,7 @@
 (nvp-auto "f" 'f-same-p)
 
 (defvar nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
+(defvar nvp-bookmark-local-names '("bookmarks.el"))
 
 ;;; Modifications of bookmark.el functions
 (defun nvp-bookmark-load (&optional make-default)

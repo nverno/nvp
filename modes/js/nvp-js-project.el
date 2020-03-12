@@ -6,10 +6,14 @@
 ;;
 ;; Need support for project types:
 ;; - React - create-react-app boostrapped projects
-;; - Node/npm 
+;; - Node/npm
+;; - yarn
 ;;
 ;; Configuration (work w/ projectile-configure-project?):
 ;; - local binary paths: ./node_modules/.bin/
+;;   > npm (or yarn) bin [cmd] => will list path to local bin
+;; - current npm/yarn configuration
+;;   > npm/yarn config list
 ;; - .tern-project w/ webpack needs process-environment configured
 ;;   https://medium.com/@jrwillette88/tern-why-it-breaks-and-how-to-fix-it-8d1677df05f9
 ;;   this hack uses a tern shim to set env. vars -- but it would be better to

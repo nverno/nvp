@@ -101,7 +101,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 
 ;; Collect align/exclude rules for MODE
 (defun nvp-align--mode-rules (&optional mode)
-  (or mode (setq mode major-mode))
+  (nvp-defq mode major-mode)
   (--map
    (--filter
     (--> (eval (cdr (assoc 'modes (cddr it))))
@@ -113,7 +113,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 (defun nvp-align-show-rules (&optional mode)
   "Show align/exclude rules applicable to `major-mode' or MODE."
   (interactive (list (nvp-prefix 4 (intern (nvp-read-mode)) major-mode)))
-  (or mode (setq mode major-mode))
+  (nvp-defq mode major-mode)
   (-let (((rules excludes) (nvp-align--mode-rules mode))
          (groups (--filter (apply #'provided-mode-derived-p mode (eval it))
                            nvp-align--groups)))
@@ -134,8 +134,10 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
       (emacs-lisp-mode))))
 
 
+;; -------------------------------------------------------------------
 ;;; Mode rules
 ;; #<marker at 13440 in align.el>
+;; FIXME:
 ;; Buggy rules:
 ;; - exc-dq-string
 ;;   - doesn't account for multiline strings
@@ -147,6 +149,14 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
  (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
  (concat "^\\s-*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
          "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
+
+;; use a variable for modes that align '\' line continuations
+(defvar nvp-align-basic-line-continuation-modes
+  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list))))
+
+(setf
+ (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))
+ 'nvp-align-basic-line-continuation-modes)
 
 ;; sh
 

@@ -91,6 +91,7 @@
      ,(when f
         `(nvp-decl ,@f))
      (nvp-decl
+       nvp-project-root
        ;; general generics
        nvp-mark-defun
        ;; movement

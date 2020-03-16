@@ -34,10 +34,10 @@
 ;; recognized CI types -- for jumping to info/linting
 ;; forms: (type prompt-key prompt-message linter &rest linter-args)
 (defvar nvp-yaml-ci-types
-  '((travis
+  `((travis
      (prompt ?t "[t]ravis")
-     (validate nvp-yaml-validate-local "travis" "lint")
-     (info browse-url "https://docs.travis-ci.com")
+     (validate nvp-yaml-validate-call "travis" "lint" (buffer-file-name))
+     (help "https://docs.travis-ci.com")
      ;; project info format:
      ;; 1. base uri
      ;; 2. display project repo (if function call it to produce format args,
@@ -46,15 +46,20 @@
      (project "https://travis-ci.org/%s" #'nvp-yaml-project-repo "profile/nverno"))
     (circleci
      (prompt ?c "[c]irclci")
-     (validate nvp-yaml-validate-local "circleci" "config" "validate")
-     (info)
+     (validate nvp-yaml-validate-call "circleci" "config" "validate"
+               (buffer-file-name))
+     (help format "https://circleci.com/docs/2.0/configuration-reference/#%s")
      (project "https://circleci.com/%s" (lambda () (concat "gh/" (nvp-yaml-project-repo)))
               "dashboard"))
     (appveyor
      (prompt ?a "[a]ppveyor")
      (validate nvp-yaml-validate-appveyor)
-     (info browse-url "https://www.appveyor.com/docs/appveyor-yml/")
-     (project "https://ci.appveyor.com/project%s" #'nvp-yaml-project-repo "s"))))
+     (help "https://www.appveyor.com/docs/appveyor-yml/")
+     (project "https://ci.appveyor.com/project%s" #'nvp-yaml-project-repo "s"))
+    (codecov
+     (prompt ?v "codeco[v]")
+     (validate nvp-yaml-validate-call "curl" "--data-binary"
+               (concat "@" (nvp-bfn)) "https://codecov.io/validate"))))
 
 (eval-when-compile
   (defsubst nvp-yaml--value (type val)
@@ -93,23 +98,24 @@
     (let ((dir (nvp-path 'ds (buffer-file-name)))
           (fname (nvp-bfn)))
       (cond
+       ((string-prefix-p ".appveyor" fname) 'appveyor)
+       ((string-prefix-p "codecov." fname) 'codecov)
        ((string= dir ".circleci") 'circleci)
        ((or (string-prefix-p ".travis" fname)
             (string= dir "travis"))
         'travis)
-       ((string-prefix-p ".appveyor" fname) 'appveyor)
        ;; auto-guessing failed -- so just prompt
        (t (nvp-yaml-type 'prompt))))))
 
 ;; execute ACTION depending on type of yaml -- prompt with ARG
-(defun nvp-yaml-execute (action &optional arg)
+(defun nvp-yaml-execute (action &optional arg &rest args)
   (-some--> (nvp-yaml-type arg)
     (nvp-yaml--value it action)
     (pcase it
       ((pred stringp) (car it))
       ((or (pred functionp) (pred symbolp)) (funcall it))
       ((pred listp)
-       (if (stringp (car it)) it (apply (car it) (cdr it))))
+       (if (stringp (car it)) it (apply (car it) (append (cdr it) args))))
       (_ (user-error "Don't know how to handle %S" it)))))
 
 ;; -------------------------------------------------------------------
@@ -126,21 +132,20 @@
   (kill-ring-save (point-min) (point-max))
   (browse-url "https://ci.appveyor.com/tools/validate-yaml"))
 
-(defun nvp-yaml-validate-local (type &rest args)
+(defun nvp-yaml-validate-call (type &rest args)
   "Validate buffer using local validator (async)."
-  (let* ((prog (nvp-as-string type))
-         (exe (executable-find prog)))
-    (if (null exe) (user-error "%s linter not found on `exec-path'" prog)
-      (eval
-       `(nvp-with-process ,prog
-          :proc-name ,prog
-          :proc-args (,@(append args (list buffer-file-name)))
-          :proc-buff (nvp-comint-buffer
-                       :name ,(concat "*lint-" prog "*")
-                       (erase-buffer))
-          :proc-sentinel #'nvp-yaml-lint-sentinel))
-      ;; travis process wont return on windows ionno
-      (nvp-with-w32 (ignore-errors (process-send-eof prog))))))
+  (let ((prog (nvp-as-string type)))
+    (eval
+     `(nvp-with-process ,prog
+        :proc-name ,prog
+        :proc-args ,args
+        :proc-buff (nvp-comint-buffer
+                     :name ,(concat "*lint-" prog "*")
+                     (erase-buffer))
+        :proc-sentinel #'nvp-yaml-lint-sentinel)
+     t)
+    ;; travis process wont return on windows ionno
+    (nvp-with-w32 (ignore-errors (process-send-eof prog)))))
 
 (defun nvp-yaml-lint-sentinel (p m)
   (with-current-buffer (process-buffer p)
@@ -155,12 +160,7 @@
       (kill-buffer (current-buffer)))))
 
 ;; -------------------------------------------------------------------
-;;; Online help
-
-(defun nvp-yaml-help-online (&optional arg)
-  "Lookup help docs online. Prompt for type with prefix ARG"
-  (interactive "P")
-  (nvp-yaml-execute 'info arg))
+;;; Help
 
 (defun nvp-yaml-project-info (arg)
   "Open project url or profile page with prefix ARG."
@@ -173,6 +173,13 @@
                        (car it))
                    (cadr it))))
       (browse-url (format base args)))))
+
+(defun nvp-yaml-help-at-point (sym &optional arg)
+  "Attempt to jump to help for SYM at point, or prompt.
+Otherwise, goto help reference if available."
+  (interactive (list (nvp-tap 'tapi)))
+  (--when-let (nvp-yaml-execute 'help arg sym)
+    (browse-url it)))
 
 (provide 'nvp-yaml)
 ;;; nvp-yaml.el ends here

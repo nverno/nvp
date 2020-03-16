@@ -151,27 +151,28 @@ if process exit status isn't 0."
   "Wrap `set-process-sentinel' to so BODY is executed in environment
 where WRAPPER has effect, eg. `cl-letf' will have effect.
 Note: use lexical-binding."
-  (let ((sps (cl-gensym))
-        (proc (cl-gensym))
-        (fn (cl-gensym)))
+  (nvp-with-syms (setter proc sentinel)
     (macroexp-let2 nil wrapper wrapper
-      `(let ((,sps (symbol-function 'set-process-sentinel)))
-         (cl-letf (((symbol-function 'set-process-sentinel))
-                   (lambda (,proc ,fn)
-                     (funcall ,sps ,proc (funcall wrapper ,fn))))
+      `(let ((,setter (symbol-function 'set-process-sentinel)))
+         (cl-letf (((symbol-function 'set-process-sentinel)
+                    (lambda (,proc ,sentinel)
+                      (funcall ,setter ,proc
+                               ;; original sentinel is wrapped with any new
+                               ;; bindings introduced in WRAPPER
+                               (funcall ,wrapper ,sentinel)))))
            ,@body)))))
 
 (defmacro nvp-with-async-override (orig-fn new-fn &rest body)
   "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of BODY."
   (declare (indent defun))
-  (macroexp-let2 nil new-fn new-fn
-    `(nvp-with-process-wrapper
-      (lambda (fn)
-        (let ((fun fn))
-          (lambda (p m)
-            (cl-letf (((symbol-function ,orig-fn) new-fn))
-              (funcall fun p m)))))
-      ,@body)))
+  `(nvp-with-process-wrapper
+    (lambda (fn)
+      (let ((fun fn))
+        (lambda (p m)
+          (cl-letf (((symbol-function ,orig-fn) ,new-fn))
+            ;; call original sentinel, FUN
+            (funcall fun p m)))))
+    ,@body))
 
 (provide 'nvp-macs-process)
 ;; Local Variables:

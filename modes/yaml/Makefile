@@ -1,10 +1,10 @@
-EMACS ?= emacs
+-include ../../config.mk
+include ../../default.mk
 
-LOAD_PATH ?=
 LOAD_PATH += -L .
-BATCH = ${EMACS} -Q -batch ${LOAD_PATH}
+TESTS := $(addprefix  -l ,$(wildcard test/*.el))
 
 .PHONY: test
 all: test
 test: 
-	$(BATCH) -l ert -l test/yaml-indent-test.el -f ert-run-tests-batch-and-exit
+	$(BATCH) -l ert ${TESTS} -f ert-run-tests-batch-and-exit

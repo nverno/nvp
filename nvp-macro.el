@@ -199,15 +199,17 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
      ((eq type 'bfse) `(file-name-base (nvp-buff--2 ,b-o-p ,or-name)))
 
      ;; directories
-     ((eq type 'ds)                     ;short name
+     ((eq type 'ds)                     ; containing directory's short name
       (if (not b-o-p)
           `(file-name-nondirectory
             (directory-file-name
              (nvp-buff--1 buffer-file-name ,no-default)))
         `(if (directory-name-p ,b-o-p)
              (file-name-nondirectory
-              (file-name-directory (file-truename ,b-o-p)))
-           (file-name-nondirectory (file-truename ,b-o-p)))))
+              (directory-file-name (file-truename ,b-o-p)))
+           (file-name-nondirectory
+            (directory-file-name
+             (file-name-directory (file-truename ,b-o-p)))))))
 
      ((eq type 'dn)                     ;full name no slash
       (if (not b-o-p)

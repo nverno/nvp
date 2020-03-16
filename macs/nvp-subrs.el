@@ -34,29 +34,30 @@
 ;; -------------------------------------------------------------------
 ;;; Strings
 
-;; Make a string of S repeated NUM times.
-(defsubst nvp-s-repeat (num s)
-  (let (ss)
-    (dotimes (_ num)
-      (setq ss (cons s ss)))
-    (apply #'concat ss)))
+(eval-and-compile
+  ;; Make a string of S repeated NUM times.
+  (defsubst nvp-s-repeat (num s)
+    (let (ss)
+      (dotimes (_ num)
+        (setq ss (cons s ss)))
+      (apply #'concat ss)))
 
-;; If S is shorter than LEN, pad it with CHAR (default spaces) so it's centered.
-;; Like `s-center' but allow for CHAR.
-(defsubst nvp-s-center (len s &optional char)
-  (nvp-defq char ? )
-  (let ((extra (max 0 (- len (length s)))))
-    (concat (make-string (ceiling extra 2) char)
-            s
-            (make-string (floor extra 2) char))))
+  ;; If S is shorter than LEN, pad it with CHAR (default spaces) so it's centered.
+  ;; Like `s-center' but allow for CHAR.
+  (defsubst nvp-s-center (len s &optional char)
+    (nvp-defq char ? )
+    (let ((extra (max 0 (- len (length s)))))
+      (concat (make-string (ceiling extra 2) char)
+              s
+              (make-string (floor extra 2) char))))
 
-;; Format a header with TITLE centered
-(defsubst nvp-centered-header (title &optional width char)
-  (nvp-defq width 85 char "~")
-  (let ((len (length title)))
-    (format "\n%s\n%s\n\n"
-            (nvp-s-center (- width len) title)
-            (nvp-s-repeat width char))))
+  ;; Format a header with TITLE centered
+  (defsubst nvp-centered-header (title &optional width char)
+    (nvp-defq width 85 char "~")
+    (let ((len (length title)))
+      (format "\n%s\n%s\n\n"
+              (nvp-s-center (- width len) title)
+              (nvp-s-repeat width char)))))
 
 ;; -------------------------------------------------------------------
 ;;; Lists

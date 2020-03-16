@@ -134,18 +134,20 @@
 
 (defun nvp-yaml-validate-call (type &rest args)
   "Validate buffer using local validator (async)."
-  (let ((prog (nvp-as-string type)))
-    (eval
-     `(nvp-with-process ,prog
-        :proc-name ,prog
-        :proc-args ,args
-        :proc-buff (nvp-comint-buffer
-                     :name ,(concat "*lint-" prog "*")
-                     (erase-buffer))
-        :proc-sentinel #'nvp-yaml-lint-sentinel)
-     t)
+  (let* ((prog (nvp-as-string type))
+         (proc
+          (eval
+           `(nvp-with-process ,prog
+              :proc-name ,prog
+              :proc-args ,args
+              :proc-buff (nvp-comint-buffer
+                           :name ,(concat "*lint-" prog "*")
+                           (erase-buffer))
+              :proc-sentinel #'nvp-yaml-lint-sentinel)
+           t)))
     ;; travis process wont return on windows ionno
-    (nvp-with-w32 (ignore-errors (process-send-eof prog)))))
+    (nvp-with-w32 (ignore-errors (process-send-eof prog)))
+    proc))
 
 (defun nvp-yaml-lint-sentinel (p m)
   (with-current-buffer (process-buffer p)

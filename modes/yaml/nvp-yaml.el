@@ -57,17 +57,16 @@
      (project "https://ci.appveyor.com/project%s" #'nvp-yaml-project-repo "s"))))
 
 (eval-when-compile
-  (eval-when-compile
-    (defsubst nvp-yaml--value (type val)
-      (cdr (assq val (assq type nvp-yaml-ci-types))))
+  (defsubst nvp-yaml--value (type val)
+    (cdr (assq val (assq type nvp-yaml-ci-types))))
 
-    ;; prompt for yaml type from list of known types
-    (defsubst nvp-yaml-read-known-type ()
-      (eval
-       `(nvp-read-char-case "Yaml type: " 'verbose
-          ,@(cl-loop for type in nvp-yaml-ci-types
-               for prompt = (nvp-yaml--value (car type) 'prompt)
-               collect (list (car prompt) (cadr prompt) `(quote ,(car type)))))))))
+  ;; prompt for yaml type from list of known types
+  (defsubst nvp-yaml-read-known-type ()
+    (eval
+     `(nvp-read-char-case "Yaml type: " 'verbose
+        ,@(cl-loop for type in nvp-yaml-ci-types
+             for prompt = (nvp-yaml--value (car type) 'prompt)
+             collect (list (car prompt) (cadr prompt) `(quote ,(car type))))))))
 
 ;; full path to git repo
 (defun nvp-yaml-project-url ()

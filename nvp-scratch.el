@@ -25,7 +25,7 @@
   (interactive)
   (let ((kill-buffer-hook '(nvp-window-configuration-restore))
         kill-buffer-query-functions)
-    (kill-this-buffer)))
+    (kill-buffer (current-buffer))))
 
 (defvar nvp-scratch-minor-mode-map
   (let ((km (make-sparse-keymap)))

@@ -89,7 +89,7 @@
 ;; create regexp from STR matching expansions around hypens, eg
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
 ;; so it matches replace-regexp-in-string, for example
-(defvar nvp-he-flex-prefix-from-re "[-:.]")
+(defvar nvp-he-flex-prefix-from-re "[-:./]")
 (defvar nvp-he-flex-prefix-to-re "\\\\w*-")
 
 ;; -------------------------------------------------------------------
@@ -107,7 +107,7 @@
 ;; t.sS => \\bt[[:alnum:]]*\\.s[[:alnum:]]*.S[[:alnum:]]*[[:alnum:]._]*\\b
 ;; so it would match "this.setState"
 (defun nvp-he-make-flex-camel-matcher (&optional pre-re join-re after-re)
-  (nvp-defq pre-re "[_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
+  (nvp-defq pre-re "[/_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
   `(lambda (s)
      (let ((case-fold-search))
        (concat
@@ -144,7 +144,7 @@
 (defun nvp-he-flex-lisp-setup (&optional beg)
   (setq-local nvp-he-flex-matcher #'nvp-he-flex-lisp)
   (setq-local nvp-he-flex-symbol-beg (or beg #'he-lisp-symbol-beg))
-  (setq-local nvp-he-flex-prefix-from-re "[-:.]")
+  (setq-local nvp-he-flex-prefix-from-re "[-:./]")
   (setq-local nvp-he-flex-prefix-to-re "\\\\w*-"))
 
 ;; -------------------------------------------------------------------

@@ -94,7 +94,7 @@
                httpd-start
                js2-display-error-list
                tern-get-docs
-               nvp-js2-hook nvp-jsx-hook)
+               nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook)
            :v (nodejs-repl-process-name httpd-root httpd-port))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
@@ -105,15 +105,25 @@
 
 ;;; Toggle b/w JsX <=> JS
 ;; JsX options (3/7/20): rjsx (better), or js-jsx-mode w/ js2-minor-mode
-(defun nvp-js-toggle-jsx ()
+(eval-when-compile
+  (defsubst nvp-js-switch-mode (new-mode)
+    (kill-all-local-variables)
+    (funcall-interactively new-mode)))
+
+(defun nvp-js-toggle-jsx (&optional old-mode)
   "Toggle b/w js and jsx modes."
   (interactive)
-  (if (equal mode-name "jsx")
-      (progn
-        (js2-minor-mode -1)
-        (nvp-js2-hook))
-    (js2-mode-exit)
-    (nvp-jsx-hook)))
+  (with-demoted-errors "Toggle modes: %S"
+    (pcase (or old-mode major-mode)
+      ('rjsx-mode                      ; => js-jsx-mode w/ js2-minor-mode
+       (nvp-js-switch-mode 'js-mode)
+       (nvp-jsx-hook))
+      ('js2-mode (nvp-js-switch-mode 'rjsx-mode))
+      ((or 'js-mode 'js-jsx-mode)
+       (when (bound-and-true-p js2-minor-mode)
+         (js2-minor-mode -1))
+       (nvp-js-switch-mode 'rjsx-mode))
+      (_ (user-error "%S not matched against any JsX modes" major-mode)))))
 
 ;; -------------------------------------------------------------------
 ;;; Nodejs REPL: using as default in all js-derived modes

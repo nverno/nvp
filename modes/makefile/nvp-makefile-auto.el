@@ -6,10 +6,9 @@
 ;; - yas expansions that add deps => commands
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-makefile-ct "./compile/nvp-makefile-ct"))
+(eval-when-compile (require 'nvp-macro))
 (require 'make-mode)
+(nvp-req 'nvp-makefile 'subrs)
 (require 'nvp)
 
 ;; -------------------------------------------------------------------

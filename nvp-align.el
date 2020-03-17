@@ -94,10 +94,21 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; `align-exclude-rules-list'
 ;; `align-rules-list'
 
+;; use a variable for modes that align '\' line continuations
+(defvar nvp-align-basic-lc-modes
+  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list))))
+
+(setf
+ (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))
+ nvp-align-basic-lc-modes)
+
 (defvar nvp-align--groups
   '(;; All predefined mode groupings
     align-dq-string-modes align-sq-string-modes align-open-comment-modes
-    align-c++-modes align-perl-modes align-lisp-modes align-tex-modes))
+    align-c++-modes align-perl-modes align-lisp-modes align-tex-modes
+    ;; plus mine
+    nvp-align-basic-lc-modes
+    ))
 
 ;; Collect align/exclude rules for MODE
 (defun nvp-align--mode-rules (&optional mode)
@@ -149,14 +160,6 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
  (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
  (concat "^\\s-*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
          "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
-
-;; use a variable for modes that align '\' line continuations
-(defvar nvp-align-basic-line-continuation-modes
-  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list))))
-
-(setf
- (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))
- 'nvp-align-basic-line-continuation-modes)
 
 ;; sh
 

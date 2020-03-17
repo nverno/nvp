@@ -43,7 +43,7 @@
      ;; 2. display project repo (if function call it to produce format args,
      ;;    otherwise treat as string)
      ;; 3. with prefix, display page with all repos
-     (project "https://travis-ci.org/%s" #'nvp-yaml-project-repo "profile/nverno"))
+     (project "https://travis-ci.org/%s" nvp-yaml-project-repo "profile/nverno"))
     (circleci
      (prompt ?c "[c]irclci")
      (validate nvp-yaml-validate-call "circleci" "config" "validate"
@@ -55,11 +55,13 @@
      (prompt ?a "[a]ppveyor")
      (validate nvp-yaml-validate-appveyor)
      (help "https://www.appveyor.com/docs/appveyor-yml/")
-     (project "https://ci.appveyor.com/project%s" #'nvp-yaml-project-repo "s"))
+     (project "https://ci.appveyor.com/project%s" nvp-yaml-project-repo "s"))
     (codecov
      (prompt ?v "codeco[v]")
      (validate nvp-yaml-validate-call "curl" "--data-binary"
-               (concat "@" (nvp-bfn)) "https://codecov.io/validate"))))
+               (concat "@" (nvp-bfn)) "https://codecov.io/validate")
+     (help "https://docs.codecov.io/docs/codecovyml-reference")
+     (project "https://codecov.io/gh/%s" nvp-yaml-project-repo ""))))
 
 (eval-when-compile
   (defsubst nvp-yaml--value (type val)
@@ -170,9 +172,9 @@
   (--when-let (nvp-yaml-execute 'project)
     (let* ((base (pop it))
            (args (if (null arg)
-                     (if (functionp (car it))
-                         (funcall (car it))
-                       (car it))
+                     (pcase (car it)
+                       ((or (pred symbolp) (pred functionp)) (funcall (car it)))
+                       (_ (car it)))
                    (cadr it))))
       (browse-url (format base args)))))
 

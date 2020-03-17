@@ -18,22 +18,22 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-makefile-ct "compile/nvp-makefile-ct")
   (require 'nvp-font))
 (require 'make-mode)
+(nvp-req 'nvp-makefile 'subrs)
 (require 'nvp)
 (nvp-decls :f (nvp-makefile-indent))
 
 ;;; Navigation
 
-(defvar nvp-makefile-open/close
-  (eval-when-compile
+(eval-and-compile
+  (defconst nvp-makefile-open/close
     (let ((openers (concat "^" (regexp-opt '("ifeq" "ifneq" "define"))))
           (closers (concat "^" (regexp-opt '("endif" "endef")))))
       `(,openers ,closers))))
 
-(defvar nvp-makefile-defun-regexp
-  (concat (car nvp-makefile-open/close) "\\|" "^[^# \t\n]+:"))
+(defconst nvp-makefile-defun-regexp
+  (nvp-concat (car nvp-makefile-open/close) "\\|" "^[^# \t\n]+:"))
 
 (defun nvp-makefile--match-opener (search-fn)
   (beginning-of-line)

@@ -1,8 +1,8 @@
-;;; nvp-makefile-ct.el --- compile-time -*- lexical-binding: t; -*-
+;;; nvp-makefile-subrs.el --- compile-time -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(require 'nvp-macro)
 (require 'nvp)
 (nvp-decls :v (nvp-makefile-defun-regexp))
 
@@ -65,9 +65,9 @@
          ,@body))))
 
 
-(provide 'nvp-makefile-ct)
+(provide 'nvp-makefile-subrs)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-makefile-ct.el ends here
+;;; nvp-makefile-subrs.el ends here

@@ -48,40 +48,41 @@
 ;;
 ;; Priorities:
 ;; ~~~~~~~~~~~
-;; 1. Package.json parser:
-;;   - get list script targets for projectile-run/test/compile commands
-;;   - Create basic projectile npm/react project runners
-;;   - Worry about config later
-;; 2. Documentation:
-;;   - Need help-at-point for both JS functions and React functions
-;;   - Opening a browser page would be OK, not ideal
-;;   - JS/React/Node .info files available?
-;; 3. Teach tern to read webpack.config, in order of goodness:
-;;   - wrap server in correct process-environment
-;;   - use a tern-shim to set env before starting
-;;   - source NODE_ENV=development on login -- not sure it would work
-;; 4. Get a decent REPL working (nodejs):
-;;   - Need to be able to reevaluate consts -- indium was able to solve that
-;;     problem -- look there
-;;   - process-filter bug
-;;   - random input from REPL breaks user input
-;;   - fix blocking, eg. accept-process-output loop or something
-;;   - Debugger is less important since devtools are really good
-;; 5. Add local binary paths when in project:
-;;   - could use .dir-locals.el
-;;   - could try direnv -- not sure how it works w/ emacs
-;;   - custom configuration, ala conda-env, based on current project
-;; 6. Fix JS <=> JsX to favor rjsx
-;; 7. Persist project configuartions across sessions:
-;;   - .dir-locals.el is only obvious one, but kinda sucks
-;;   - Might have to manage another cache, linked to projectiles
-;; 8. Add react 31s snippets?  Problem is they may contain CSS as well
-;; 9. Move unused stuff:
-;;   - skewer I think
-;;   - js2-refactor?
-;;   - httpd => could all just move over to web, node/python servers are probably
-;;     better
-;; 10. Possible to stop js2-mode from flychecking shebang line?
+;; - [ ] Package.json parser:
+;;       - get list script targets for projectile-run/test/compile commands
+;;       - Create basic projectile npm/react project runners
+;;       - Worry about config later
+;; - [ ] Documentation:
+;;       - Need help-at-point for both JS functions and React functions
+;;       - Opening a browser page would be OK, not ideal
+;;       - JS/React/Node .info files available?
+;; - [ ] Teach tern to read webpack.config, in order of goodness:
+;;       - wrap server in correct process-environment
+;;       - use a tern-shim to set env before starting
+;;       - source NODE_ENV=development on login -- not sure it would work
+;; - [ ] Get a decent REPL working (nodejs):
+;;       - Need to be able to reevaluate consts -- indium was able to solve that
+;;         problem -- look there
+;;       - process-filter bug -- xterm-color related probably
+;;       - random input from REPL breaks user input
+;;       - fix blocking, eg. accept-process-output loop or something
+;;       - Debugger is less important since devtools are really good
+;; - [ ] Add local binary paths when in project:
+;;       - could use .dir-locals.el
+;;       - could try direnv -- not sure how it works w/ emacs
+;;       - custom configuration, ala conda-env, based on current project
+;; - [X] Fix JS <=> JsX to favor rjsx
+;; - [ ] Persist project configuartions across sessions:
+;;       - .dir-locals.el is only obvious one, but kinda sucks
+;;       - Might have to manage another cache, linked to projectiles
+;; - [ ] Add react 31s snippets?  Problem is they may contain CSS as well
+;; - [ ] Move unused stuff:
+;;       - skewer I think
+;;       - js2-refactor?
+;;       - httpd => could all just move over to web, node/python servers are probably
+;;         better
+;; - [X] I think this is solved enough -- possible to stop js2-mode from
+;;       flychecking shebang line?
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -89,7 +90,6 @@
 (require 'js2-mode nil t)
 (nvp-req 'nvp-js 'subrs)
 (nvp-decls :f (nodejs-repl-switch-to-repl
-               nodejs-repl-send-region nodejs-repl-send-last-expression
                skewer-eval-print-last-expression skewer-eval-last-expression
                httpd-start
                js2-display-error-list
@@ -100,9 +100,22 @@
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim -- other modes, js-jsx, js2-jsx, rjsx inherit from js/js2
 (cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode js-mode js2-mode js3-mode))
+  (syntax arg &context (major-mode js-mode js2-mode js3-mode rjsx-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
+;; -------------------------------------------------------------------
+;;; Nodejs REPL: using as default in all js-derived modes
+
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(js2-mode js2-jsx-mode js-mode js-jsx-mode rjsx-mode)
+    :modes '(nodejs-repl-mode)
+    :procname (bound-and-true-p nodejs-repl-process-name)
+    :init (lambda ()
+            (save-window-excursion
+              (ignore-errors
+                (call-interactively #'nodejs-repl-switch-to-repl))))))
+
+;; -------------------------------------------------------------------
 ;;; Toggle b/w JsX <=> JS
 ;; JsX options (3/7/20): rjsx (better), or js-jsx-mode w/ js2-minor-mode
 (eval-when-compile
@@ -124,47 +137,6 @@
          (js2-minor-mode -1))
        (nvp-js-switch-mode 'rjsx-mode))
       (_ (user-error "%S not matched against any JsX modes" major-mode)))))
-
-;; -------------------------------------------------------------------
-;;; Nodejs REPL: using as default in all js-derived modes
-
-(with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(js2-mode js2-jsx-mode js-mode js-jsx-mode)
-    :modes '(nodejs-repl-mode)
-    :procname (bound-and-true-p nodejs-repl-process-name)
-    :init (lambda ()
-            (save-window-excursion
-              (ignore-errors
-                (call-interactively #'nodejs-repl-switch-to-repl))))))
-
-(defun nvp-js-nodejs-region-or-sexp ()
-  (interactive)
-  (if (and transient-mark-mode mark-active)
-      (call-interactively 'nodejs-repl-send-region)
-      (call-interactively 'nodejs-repl-send-last-expression))
-  (forward-line))
-
-;; nodejs-repl doesn't manage comint history files
-(define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
-  (comint-write-input-ring))
-
-;; -------------------------------------------------------------------
-;;; Yas
-
-(defun nvp-js-test-p ()
-  (or (string-match-p "\\(?:test\\|spec\\)" (nvp-dfn))
-      (string-match-p ".*test\\.js\\'" (nvp-bfn))))
-
-;; -------------------------------------------------------------------
-;;; other REPLs
-
-;;; Skewer
-
-(defun nvp-skewer-eval-last-expression (&optional print)
-  (interactive "P")
-  (call-interactively 
-   (if print #'skewer-eval-print-last-expression
-     #'skewer-eval-last-expression)))
 
 ;; -------------------------------------------------------------------
 ;;; Font locking
@@ -196,8 +168,22 @@
     (js2-display-error-list))
    (t (tern-get-docs))))
 
-;;; http server: httpd
+;; -------------------------------------------------------------------
+;;; Assorted
 
+;;; yas
+(defun nvp-js-test-p ()
+  (or (string-match-p "\\(?:test\\|spec\\)" (nvp-dfn))
+      (string-match-p ".*test\\.js\\'" (nvp-bfn))))
+
+;;; Skewer
+(defun nvp-skewer-eval-last-expression (&optional print)
+  (interactive "P")
+  (call-interactively 
+   (if print #'skewer-eval-print-last-expression
+     #'skewer-eval-last-expression)))
+
+;;; http server: httpd
 (defun nvp-httpd-here ()
   (interactive)
   (setq httpd-root default-directory)

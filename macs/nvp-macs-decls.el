@@ -72,12 +72,16 @@
     nvp-tag-function
     nvp-compile-function
     nvp-mark-defun-function
+    ;; hippie expansion
+    nvp-he-flex-matcher nvp-he-flex-prefix-to-re nvp-he-flex-prefix-from-re
+    nvp-he-flex-symbol-beg nvp-he-case-fold-search
+    ;; builtin hippie
+    hippie-expand-try-functions-list hippie-expand-only-buffers
     ;; emacs base
     package-user-dir
     recentf-list
     ielm-working-buffer ielm-dynamic-return
     org-babel-do-load-languages org-src-lang-modes
-    hippie-expand-try-functions-list hippie-expand-only-buffers
     local-abbrev-table
     ;; external pkgs
     zeal-at-point-docset
@@ -120,11 +124,14 @@
        nvp-window-configuration-restore
        nvp-window-configuration-save
        ;; hippie
-       nvp-he-flex-lisp-setup
        nvp-try-expand-history
        nvp-he-history-setup
        nvp-he-history-remove-trailing-paren
        nvp-try-expand-flex
+       nvp-he-flex-lisp
+       nvp-he-flex-lisp-setup
+       nvp-he-flex-camel/snake
+       nvp-he-chained-symbol-beg
        nvp-try-expand-dabbrev-closest-first
        nvp-try-expand-local-abbrevs
        ;; repls / shell

@@ -294,7 +294,8 @@ sourced files."
                    ;; use bash completion after '--'
                    ;; XXX: any way to get completion for '-' ???
                    (flag
-                    (setq beg (bash-completion--stub-start comp))
+                    (when use-comp
+                      (setq beg (bash-completion--stub-start comp)))
                     pos)
                    (t
                     (unless (or (eq beg (point-max))
@@ -326,10 +327,11 @@ sourced files."
                          (lambda (s) (or (get-text-property 0 'annot s) " <E>"))))
                   (t
                    (list (completion-table-merge
-                          (condition-case nil
-                              (bash-completion--completion-table-with-cache
-                               (lambda (_) (bash-completion-comm comp proc)))
-                            (error (prog1 nil (bash-completion-reset))))
+                          (when use-comp
+                           (condition-case nil
+                               (bash-completion--completion-table-with-cache
+                                (lambda (_) (bash-completion-comm comp proc)))
+                             (error (prog1 nil (bash-completion-reset)))))
                           (completion-table-dynamic
                            (lambda (_string) (sh-comp-candidates 'functions))))
                          :annotation-function

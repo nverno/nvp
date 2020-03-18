@@ -1,5 +1,5 @@
 ;;; nvp-pkg.el --- Manage package compile/autloads -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;;; FIXME: expand arbitrary macros in autoloaded forms?
 ;;; TODO:
@@ -25,7 +25,7 @@
 ;; - how to change current install-on-demand?
 ;; Uninstall
 ;; - support uninstalling pkgs
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -33,33 +33,42 @@
 (require 'autoload)
 (nvp-decls)
 
-(defvar nvp-pkg-directory nvp/modes)
+;; -------------------------------------------------------------------
+;;; Package menu
+
+;;;###autoload
+(defun nvp-pkg-get-upgradeable (&optional fetch)
+  "List packages that can be upgraded, don't update archives unless FETCH."
+  (interactive "P")
+  (save-window-excursion
+    (if fetch (package-list-packages)
+      (package-show-package-list))
+    (-some->> (package-menu--find-upgrades)
+      (--map (car it)))))
+
+;;;###autoload
+(defun nvp-pkg-menu-browse-url ()
+  "Just jump to the url of package at point straigt off."
+  (interactive)
+  (-some--> (tabulated-list-get-id)
+    (cdr (assq :url (package-desc-extras it)))
+    (browse-url it)))
+
+;; -------------------------------------------------------------------
+;;; Mine
+ 
+(defconst nvp-pkg-directory nvp/modes)
 
 (cl-defstruct (nvp-pkg (:constructor nvp-pkg-make)
                        (:copier nil))
-  "Personal package description.
-Slots:
+  "Personal package description."
+  name  ; package name
+  deps  ; local dependencies
+  libs  ; elisp libraries
+  dir   ; install directory
+  ext   ; external dependencies
+  opt)  ; optional key-val pairs
 
-`name' Symbolic name of package.
-
-`nvp-deps' List of `nvp-pkg' dependencies.
-
-`reqs' Requirements - list of dependencies.
-
-`dir' Directory containing package.
-
-`ext' External dependency targets.
-
-`extras' Optional alist of additional keyword-value pairs."
-  name reqs dir ext extras)
-
-(defun nvp-pkg--keywords (nvp-pkg)
-  (let ((keywords (cdr (assoc :keywords (nvp-pkg-extras nvp-pkg)))))
-    (if (eq (car-safe keywords) 'quote)
-        (nth 1 keywords)
-      keywords)))
-
-
 ;; -------------------------------------------------------------------
 ;;; Activation: autoloads and load-path 
 ;; same as package.el but don't care about versions, etc.

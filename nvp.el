@@ -486,7 +486,7 @@ On error (read-only), quit without selecting."
 
 ;; use ido-completing-read
 (defun nvp@read-with-ido (old-fn &rest args)
-  (nvp-with-letf 'completing-read #'ido-completing-read
+  (nvp-with-letf 'completing-read 'ido-completing-read
     (apply old-fn args)))
 ;; use ido-completion when reading environment variables interactively
 (nvp-advise-commands #'nvp@read-with-ido

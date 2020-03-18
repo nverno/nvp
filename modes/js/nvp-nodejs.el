@@ -13,6 +13,9 @@
 ;; - the current design involves a barrage of `comint-output-filter-functions'
 ;;   which fucks with xterm-color processing, no doubt
 ;;
+;; Would it work to use babel to convert es6 modules to requireJS format
+;; recognized by the REPL?
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nodejs-repl)
@@ -31,6 +34,18 @@
       (call-interactively 'nodejs-repl-send-region)
     (call-interactively 'nodejs-repl-send-last-expression))
   (forward-line))
+
+;; -------------------------------------------------------------------
+;;; Find problem with REPL
+
+;; debugging
+(with-eval-after-load 'nvp-trace
+  (cl-pushnew '(nodejs                  ; all `comint-output-filter-functions'
+                nodejs-repl--clear-cache
+                nodejs-repl--filter-escape-sequnces
+                nodejs-repl--remove-duplicated-prompt
+                nodejs-repl--delete-prompt)
+              nvp-trace-group-alist))
 
 (provide 'nvp-nodejs)
 ;; Local Variables:

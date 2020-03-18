@@ -88,23 +88,22 @@
      abbr-table                         ;abbrev table to use for mode
      post-fn)                           ;function called after setup
   "Setup local variables for helper package - abbrevs, snippets, root dir."
-  (setq mode (if mode (if (stringp mode) (intern-soft mode) mode) major-mode))
+  (setq mode (if mode (nvp-as-symbol mode) major-mode))
   (let ((mvars (gethash mode nvp-mode-cache nil))
         yas-dir mode-snips)
     (unless mvars
-      (or dir (setq dir (nvp-setup-package-root name)))
+      (nvp-defq dir (nvp-setup-package-root name))
       (if (not (file-exists-p dir))
-          (user-error "Setup for '%s' failed to find package root"
-                      (if (symbolp name) (symbol-value name) name))
-        (or abbr-file
-            (setq abbr-file (ignore-errors
-                              (car (directory-files dir t "abbrev-table")))))
+          (user-error
+           "Setup for '%s' failed to find package root" (nvp-as-string name))
+        (nvp-defq abbr-file
+          (ignore-errors (car (directory-files dir t "abbrev-table"))))
         ;; top-level snippets dir to load
         (setq yas-dir (or (ignore-errors (car (directory-files dir t "snippets")))
                           nvp/snippet))
         (setq mode-snips
               (expand-file-name (or snippets-dir (symbol-name mode)) yas-dir))
-        (or abbr-table (setq abbr-table (symbol-name mode)))
+        (nvp-defq abbr-table (symbol-name mode))
         (setq mvars (nvp-mode-vars-make
                      :dir dir
                      :snippets mode-snips

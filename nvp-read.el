@@ -25,7 +25,7 @@
   (defmacro nvp-read:with-fallback (&rest body)
     "Do BODY with custom `ido-fallback-command'."
     (declare (indent defun))
-    `(nvp-with-letf 'ido-fallback-command #'nvp-read--ido-fallback
+    `(nvp-with-letf 'ido-fallback-command 'nvp-read--ido-fallback
        ,@body)))
 
 ;; return default-directory on `ido-fallback-command'

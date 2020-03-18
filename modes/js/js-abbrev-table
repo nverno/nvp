@@ -10,7 +10,9 @@
   :parents (list prog-mode-abbrev-table))
 
 (define-abbrev-table 'nodejs-repl-mode-abbrev-table
-  '()
+  '(("pe" "process.env" nil :system t)
+    ("_d" "__dirname" nil :system t)
+    ("req" "require" nil :system t))
   "Nodejs-Repl-Mode Abbrevs."
   :parents (list js-mode-abbrev-table))
 

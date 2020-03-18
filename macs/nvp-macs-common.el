@@ -203,6 +203,8 @@ used. Modification of `use-package-normalize-plist'."
 (defmacro nvp-with-letf (old-fn new-fn &rest body)
   "Simple wrapper around `cl-letf' to execute BODY."
   (declare (indent 2) (debug t))
+  (when (eq 'quote (car-safe new-fn))
+    (setq new-fn `(symbol-function ',(cadr new-fn))))
   `(cl-letf (((symbol-function ,old-fn) ,new-fn)) ,@body))
 
 (defmacro nvp-compose (expr)

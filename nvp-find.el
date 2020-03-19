@@ -33,6 +33,9 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (unless (require 'rg nil t)
+    (defmacro rg-define-search (&rest _))))
 (require 'nvp-display)
 (require 'nvp)
 (nvp-decls :f (wgrep-exit
@@ -44,7 +47,8 @@
                ag-project-dired ag-dired-regexp ag-dired ag-project-dired-regexp
                ag/search
                ;; rg
-               rg-filter)
+               nvp-rg-emacs
+               rg-define-search rg-filter)
            :v (rg-mode-hook             ; rg
                ;; ag
                ag/file-column-pattern-group ag-ignore-list))
@@ -228,7 +232,6 @@
 
   ;; Useful function to search the zipped source 
   ;; https://github.com/dajva/rg.el/issues/69#event-3107793694
-  (nvp-decl nvp-rg-emacs)
   (rg-define-search nvp-rg-emacs 
     :query (or (thing-at-point 'symbol)
                (read-from-minibuffer "Search emacs source: "))

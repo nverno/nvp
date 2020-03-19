@@ -8,7 +8,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
-(declare-function nvp-try-expand-flex "nvp-hippie")
+(nvp-decls)
 
 ;;; Variables
 (defvar-local nvp-he-elisp--prefixes nil)

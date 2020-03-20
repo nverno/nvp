@@ -90,18 +90,17 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 
 ;; -------------------------------------------------------------------
 ;;; Alignment rules
-
+;;
 ;; `align-exclude-rules-list'
 ;; `align-rules-list'
 
 ;; use a variable for modes that align '\' line continuations
 (defvar nvp-align-basic-lc-modes
-  (eval
-   (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))))
+  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list))))
 
 (setf
  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))
- nvp-align-basic-lc-modes)
+ 'nvp-align-basic-lc-modes)
 
 (defvar nvp-align--groups
   '(;; All predefined mode groupings

@@ -16,12 +16,16 @@ BUILD_MODE = $(info building $(1)) \
 	@$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
 TESTS := $(wildcard test/*-tests.el)
 
-.PHONY: test
+.PHONY: test rebuild
 all:
 	${COMPILE} ${EL} ${MODE_EL}
 
 %.elc: %.el
 	${COMPILE} $^
+
+rebuild: ## Recompile macs/subrs/and all base configs
+	$(RM) $(CURDIR)/*.elc $(CURDIR)/macs/*.elc $(CURDIR)/subrs/*.elc
+	$(MAKE)
 
 .PHONY: clean-modes build-modes
 clean-modes: ## Clean all modes

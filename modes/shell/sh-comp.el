@@ -61,7 +61,9 @@
      "^\\s-*\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*()" 1)
     ;; Global variables
     (,(sh-comp:annotation global)
-     "^\\([[:alpha:]_][[:alnum:]_]*\\)=" 1)))
+     ,(nvp-concat "^\\(?:declare\\s-*\\(?:-[[:alpha:]]\\)\\s-*\\)?"
+                  "\\([[:alpha:]_][[:alnum:]_]*\\)=")
+     1)))
 
 ;; track candidates from sourced files
 (defvar sh-comp-db (make-hash-table :test 'equal))

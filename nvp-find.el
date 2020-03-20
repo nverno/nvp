@@ -48,7 +48,8 @@
                ag/search
                ;; rg
                nvp-rg-emacs
-               rg-define-search rg-filter)
+               rg-run rg-define-search rg-filter rg-menu-transient-insert
+               transient-get-value)
            :v (rg-mode-hook             ; rg
                ;; ag
                ag/file-column-pattern-group ag-ignore-list))

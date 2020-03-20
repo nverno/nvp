@@ -96,7 +96,8 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 
 ;; use a variable for modes that align '\' line continuations
 (defvar nvp-align-basic-lc-modes
-  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list))))
+  (eval
+   (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))))
 
 (setf
  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))

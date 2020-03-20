@@ -40,9 +40,9 @@
 (defconst nvp-sh-imenu-extra-regexps
   `(("Sources" "^\\(?:\\\.\\|source\\)\\s-+\\(.+\\)\\s-*$" 1)
     ("Globals"
-     (nvp-concat
-      "^\\(?:declare\\s-*\\(?:-[[:alpha:]]\\)\\s-*\\)?"
-      "\\([[:alpha:]_][[:alnum:]_]*\\)=")
+     ,(nvp-concat
+       "^\\(?:declare\\s-*\\(?:-[[:alpha:]]\\)\\s-*\\)?"
+       "\\([[:alpha:]_][[:alnum:]_]*\\)=")
      1)))
 
 ;;; Company Quickhelp remappings

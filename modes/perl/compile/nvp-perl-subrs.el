@@ -1,15 +1,14 @@
-;;; nvp-perl-subrs.el --- randoms -*- lexical-binding: t; -*-
+;;; nvp-perl-subrs.el --- compile time -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
-(require 'nvp)
+(require 'nvp-macro)
 (nvp-decls)
 
 ;; Skip back across `backchars' chars, then look for `forward-regexp',
 ;; returning cons of start and end of match.
 (defsubst nvp-back-chars-then-look (backchars &optional forward-regexp)
-  (or forward-regexp (setq forward-regexp (format "[%s]+" backchars)))
+  (nvp-defq forward-regexp (format "[%s]+" backchars))
   (save-excursion
     (skip-chars-backward backchars)
     (if (looking-at forward-regexp)

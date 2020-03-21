@@ -119,16 +119,16 @@ Used to set `end-of-defun-function'."
   ;; redirections
   ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-italic-type-face prepend))
   ;; doxys
-  ("^# *\\(@[[:alpha:]]+\\)\\s-*\\(\$[[:digit:]]\\)"
-   (1 font-lock-string-face prepend)
-   (2 'nvp-italic-variable-face prepend))
+  ("^# *\\(@[[:alpha:]]+\\)\\s-*\\(\$[[:digit:]]\\)\\(.*\\)"
+   (1 font-lock-doc-face prepend)
+   (2 'nvp-italic-variable-face prepend)
+   (3 font-lock-doc-face prepend))
   ;; quoted vars, special vars, function arguments
   (:quoted ?\" "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)"
            (1 font-lock-variable-name-face prepend))
   ;; first function in quoted backquote expressions, "`cmd ...`"
   (:quoted ?\" "`\\s-*\\([[:alnum:]_\\-]+\\)" (1 'sh-quoted-exec prepend)))
 
-
 ;; -------------------------------------------------------------------
 ;;; REPL
 
@@ -162,10 +162,7 @@ Replacement for `sh-shell-process', which see."
    (nvp-sh-get-process) (concat (buffer-substring beg end) "\n"))
   (goto-char end))
 
-
 ;; -------------------------------------------------------------------
-;;; Extra
-
 ;;; Cleanup / Align
 
 (require 'align)
@@ -190,8 +187,7 @@ Replacement for `sh-shell-process', which see."
                          (and (not (bolp))
                               (not (nth 3 (syntax-ppss)))))))))))
 
-
-
+;; -------------------------------------------------------------------
 ;;; Generics
 
 (eval-when-compile
@@ -220,7 +216,8 @@ Like `sh-current-defun-name' but ignore variables."
   "Sourced files, recursively."
   (nvp-sh:candidates sources args))
 
-
+
+;; -------------------------------------------------------------------
 ;;; Hooks
 
 ;; enforce uft-8-unix and align when killing buffer

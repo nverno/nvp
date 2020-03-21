@@ -72,7 +72,9 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
           (snippet-dir
            (if (not nvp-mode-snippet-dir)
                (expand-file-name mode-name nvp/snippet)
-             (nvp-read-mode-var "snippets" (file-name-base nvp-mode-snippet-dir)))))
+             (nvp-read-mode-var
+              "snippets"
+              (file-name-base nvp-mode-snippet-dir)))))
      (list mode-name
            snippet-dir
            (nvp-prefix 4 'do-dired)
@@ -80,8 +82,8 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
                (and (region-active-p)
                     (buffer-substring-no-properties
                      (region-beginning) (region-end)))))))
-  (and (symbolp mode) (setq mode (symbol-name mode)))
-  (or default-new-snippet (setq default-new-snippet yas-new-snippet-default))
+  (setq mode (nvp-as-string mode))
+  (nvp-defq default-new-snippet yas-new-snippet-default)
   (unless (file-exists-p snippet-dir)
     (make-directory snippet-dir))
   ;; with prefix dired the snippet directory

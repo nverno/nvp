@@ -14,6 +14,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-perl)
+(nvp-req 'nvp-perl 'subrs)
 (require 'cperl-mode)
 (require 'man)
 (require 'pos-tip)

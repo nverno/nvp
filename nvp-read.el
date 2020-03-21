@@ -157,20 +157,18 @@ Filter by PREDICATE if non-nil."
 ;; -------------------------------------------------------------------
 ;;; Modes 
 
-(eval-when-compile
-  (defvar nvp-mode-cache))
+(defvar nvp-mode-cache)
 
-;; just MODE's name minus the "-mode"
-(defsubst nvp-read--mode-name (&optional mode)
-  (if mode
-      (and (symbolp mode) (setq mode (symbol-name mode)))
-    (setq mode (symbol-name major-mode)))
-  (string-remove-suffix "-mode" mode))
+(eval-when-compile
+  ;; just MODE's name minus the "-mode"
+  (defsubst nvp-read--mode-name (&optional mode)
+    (setq mode (nvp-as-string (or mode major-mode)))
+    (string-remove-suffix "-mode" mode)))
 
 ;;;###autoload
 (defun nvp-read-mode (&optional default)
   "Lookup name of mode using PROMPT and optional DEFAULT."
-  (unless default (setq default major-mode))
+  (nvp-defq default major-mode)
   (let ((prompt (if default (format "Mode (default \"%s\"): " default) "Mode: ")))
     (nvp-read-obarray-regex prompt "-mode\\'" default)))
 
@@ -179,16 +177,15 @@ Filter by PREDICATE if non-nil."
   "Lookup MODE's VARIABLE."
   (require 'nvp-setup)
   (cl-assert (member variable '("dir" "snippets" "abbr-file" "abbr-table")))
-  (unless mode (setq mode major-mode))
-  (and (stringp mode) (setq mode (intern-soft mode)))
+  (nvp-defq mode major-mode)
+  (setq mode (nvp-as-symbol mode))
   (-if-let (data (gethash mode nvp-mode-cache))
       (funcall (intern (concat "nvp-mode-vars-" variable)) data)
     (user-error "%s not in nvp-mode-cache" mode)))
 
 ;; some completing reads for general config files
 (defun nvp-read-mode-config (&optional prompt default)
-  (unless default
-    (setq default (symbol-name major-mode)))
+  (nvp-defq default (symbol-name major-mode))
   (setq prompt (nvp-prompt-default (or prompt "Mode config: ") default))
   (catch 'dired
     (nvp-completing-read
@@ -205,8 +202,7 @@ Filter by PREDICATE if non-nil."
          (completion-ignored-extensions
           (cons "target" completion-ignored-extensions))
          (files (nvp-read--relative-files nvp/test "^[^.][^.]")))
-    (unless default
-      (setq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files))))
+    (nvp-defq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files)))
     (setq prompt (nvp-prompt-default (or prompt "Test: ") default))
     (expand-file-name
      (nvp-completing-read

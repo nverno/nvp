@@ -26,8 +26,7 @@
 (nvp-req 'nvp-perl 'subrs)
 (nvp-auto "find-lisp" 'find-lisp-find-files)
 
-(nvp-decls :f (auto-complete-mode
-               plsense-setup-current-buffer plsense-server-start))
+(nvp-decls :f (auto-complete-mode plsense-setup-current-buffer plsense-server-start))
 
 (nvp-with-w32
   ;; load windows environment helpers
@@ -46,7 +45,7 @@
   (nvp-back-chars-then-look "[:alpha:]_$@#%*&=" "[[:alpha:]_$@#%*&]+"))
 
 (put 'perl-module 'bounds-of-thing-at-point 'nvp-perl--module)
-(put 'perl-variable 'bounds-of-thing-at-point 'nvp-perl--var)
+(put 'perl-variable 'bounds-of-thing-at-point 'nvp-perl--variable)
 
 ;;; Generics
 

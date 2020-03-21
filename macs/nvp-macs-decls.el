@@ -83,6 +83,8 @@
     ielm-working-buffer ielm-dynamic-return
     org-babel-do-load-languages org-src-lang-modes
     local-abbrev-table
+    bug-reference-bug-regexp
+    bug-reference-url-format
     ;; external pkgs
     zeal-at-point-docset
     company-candidates company-selection))

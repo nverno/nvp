@@ -41,7 +41,10 @@
   `(("Sources" "^\\(?:\\\.\\|source\\)\\s-+\\(.+\\)\\s-*$" 1)
     ("Globals"
      ,(nvp-concat
-       "^\\(?:declare\\s-*\\(?:-[[:alpha:]]\\)\\s-*\\)?"
+       ;; optionally prefixed by: export or declare
+       "^\\(?:" (regexp-opt '("export" "declare"))
+       ;; with optional flag
+       "\\s-*\\(?:-[[:alpha:]]\\)?\\s-*\\)?"
        "\\([[:alpha:]_][[:alnum:]_]*\\)=")
      1)))
 
@@ -115,6 +118,10 @@ Used to set `end-of-defun-function'."
    (1 'nvp-italic-variable-face prepend))
   ;; redirections
   ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-italic-type-face prepend))
+  ;; doxys
+  ("^# *\\(@[[:alpha:]]+\\)\\s-*\\(\$[[:digit:]]\\)"
+   (1 font-lock-string-face prepend)
+   (2 'nvp-italic-variable-face prepend))
   ;; quoted vars, special vars, function arguments
   (:quoted ?\" "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)"
            (1 font-lock-variable-name-face prepend))

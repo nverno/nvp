@@ -7,15 +7,14 @@
 ;; - font-locking in the output buffer via `xterm-color'
 ;; - links b/w shellcheck output and source locations
 ;; - converts 'SC****' warnings/errors to buttons that link to their documentation
-;;
-;; TODO:
-;; - add function to disable a warning at a given line
+;; - can disable warnings/errors by adding shellcheck directives from compilation
+;;   buffer
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'compile))
 (require 'help-mode)
-(nvp-decls :f (xterm-color-colorize-buffer))
+(nvp-decls :f (xterm-color-colorize-buffer winner-undo))
 
 ;; use "bats ..." for .bat files
 (defvar shellcheck-compile-command '(concat "shellcheck " (buffer-file-name)))
@@ -66,8 +65,8 @@ This interactively adds a shellcheck comment directive in the source."
 
 (defvar shellcheck-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "q" #'shellcheck-kill-buffer)
-    (define-key map "d" #'shellcheck-disable-this-error)
+    (define-key map "q"           #'shellcheck-kill-buffer)
+    (define-key map "d"           #'shellcheck-disable-this-error)
     (define-key map (kbd "M-s-n") #'forward-button)
     (define-key map (kbd "M-s-p") #'backward-button)
     map))

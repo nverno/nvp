@@ -2,12 +2,9 @@
 # name: usage
 # key: usage
 # --
-##
-# @info         Print usage info
-##
 usage() {
     cat <<EOF_HELP
-Usage: \$0 [$1-h] $2
+Usage: \$(basename \$0) [$1-h] $2
 
         -h          Show this message$0
 EOF_HELP

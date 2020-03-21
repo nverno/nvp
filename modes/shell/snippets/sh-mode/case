@@ -3,7 +3,7 @@
 # key: case
 # --
 case "$1" in
-    ${2:*i*}) $3;;
+    ${2:*i*}) $3;;$0
     *) ${4:echo "Usage: \$0"
        exit 1};;
 esac

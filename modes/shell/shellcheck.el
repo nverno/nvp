@@ -13,7 +13,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'compile)
+(eval-and-compile (require 'compile))
 (require 'help-mode)
 (nvp-decls :f (xterm-color-colorize-buffer))
 
@@ -30,19 +30,35 @@
   "Disable the shellcheck error containing, or immediately following point.
 This interactively adds a shellcheck comment directive in the source."
   (interactive)
-  (or (ignore-errors (compilation-next-error 0)    ; point somewhere in a message
-                     (compilation-next-error 1)))  ; otherwise, onward
-  (let ((errcode (button-label (button-at (next-button 1)))))
+  (let* ((compilation-skip-threshold 0)
+         (errcode (button-label (button-at (next-button 1))))
+         (msg (or (compilation-next-error 0) ; point somewhere in a message
+                  (compilation-next-error 1)))
+         (loc (compilation--message->loc msg))
+         (marker (point-marker))
+         (file (caar (compilation--loc->file-struct loc)))
+         (line (compilation--loc->line loc)))
     ;; this function will ensure a maker is/has been created for the message,
     ;; and goto the corresponding location in the source
-    (compilation-next-error-function 0)
-    (unless (bolp)                        ; point is always at bol anyway?
-      (beginning-of-line 1))
-    (open-line 1)
-    (comment-dwim 1)
-    (insert
-     (if (string= errcode "SC2096") "shellcheck source=/dev/null"
-       (concat "shellcheck disable=" errcode)))))
+    (with-current-buffer
+        (if (bufferp file) file
+          (apply #'compilation-find-file
+                 marker
+                 file
+                 (cadr (car (compilation--loc->file-struct loc)))
+                 (compilation--file-struct->formats
+                  (compilation--loc->file-struct loc))))
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (forward-line (1- line))
+        (unless (bolp)                     ; point is always at bol anyway?
+          (beginning-of-line 1))
+        (open-line 1)
+        (comment-dwim 1)
+        (insert
+         (if (string= errcode "SC2096") "shellcheck source=/dev/null"
+           (concat "shellcheck disable=" errcode)))))))
 
 (defun shellcheck-filter ()
   "Link shellcheck codes to wiki pages in compilation output."
@@ -71,6 +87,7 @@ This interactively adds a shellcheck comment directive in the source."
   (make-local-variable 'compilation-error-regexp-alist-alist)
   (setq compilation-error-regexp-alist-alist (list shellcheck-compilation-regexp)
         compilation-error-regexp-alist (list (car shellcheck-compilation-regexp)))
+  (setq-local compilation-skip-threshold 0)
   (setq-local compilation-buffer-name-function
               (lambda (_m) (concat "*shellcheck: " (buffer-file-name) "*")))
   (add-hook 'compilation-filter-hook #'shellcheck-filter nil t))

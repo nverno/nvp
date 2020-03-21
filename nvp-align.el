@@ -158,7 +158,9 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; better make macro regexp:  allow _ in macro names and '?='
 (setf
  (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
- (concat "^\\s-*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
+ ;; careful not to mess with assignments in shell scripts
+ ;; ie. ignores aligning any assignments prefixed with tabs
+ (concat "^[ ]*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
          "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
 
 ;; sh

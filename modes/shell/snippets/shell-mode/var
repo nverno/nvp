@@ -2,4 +2,4 @@
 # name: var
 # key: _
 # --
-"\${$1}"$0
+`(if (nth 3 (syntax-ppss)) "" "\"")`\${$1}`(unless (nth 3 (syntax-ppss)) "\"")`$0

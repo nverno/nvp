@@ -60,15 +60,6 @@ This interactively adds a shellcheck comment directive in the source."
          (if (string= errcode "SC2096") "shellcheck source=/dev/null"
            (concat "shellcheck disable=" errcode)))))))
 
-(defun shellcheck-filter ()
-  "Link shellcheck codes to wiki pages in compilation output."
-  (let ((end (point)))
-    (save-excursion
-      (goto-char compilation-filter-start)
-      (while (re-search-forward "SC[0-9]\\{4\\}" end t)
-        (help-xref-button
-         0 'help-url (concat shellcheck-wiki-url (match-string 0)))))))
-
 (defun shellcheck-kill-buffer ()
   (interactive)
   (nvp-ktb))
@@ -81,6 +72,20 @@ This interactively adds a shellcheck comment directive in the source."
     (define-key map (kbd "M-s-p") #'backward-button)
     map))
 
+(defun shellcheck-filter ()
+  "Link shellcheck codes to wiki pages in compilation output."
+  (let ((end (point)))
+    (save-excursion
+      (goto-char compilation-filter-start)
+      (while (re-search-forward "SC[0-9]\\{4\\}" end t)
+        (help-xref-button
+         0 'help-url (concat shellcheck-wiki-url (match-string 0)))))))
+
+(defun shellcheck-compilation-finish (buf msg)
+  (when (string-prefix-p "finished" msg)
+    (nvp-indicate-modeline "All good" 'success)
+    (kill-buffer buf)))
+
 (define-compilation-mode shellcheck-mode "Shellcheck"
   "Shellcheck results in compilation mode."
   (make-local-variable 'compilation-error-regexp-alist)
@@ -90,7 +95,8 @@ This interactively adds a shellcheck comment directive in the source."
   (setq-local compilation-skip-threshold 0)
   (setq-local compilation-buffer-name-function
               (lambda (_m) (concat "*shellcheck: " (buffer-file-name) "*")))
-  (add-hook 'compilation-filter-hook #'shellcheck-filter nil t))
+  (add-hook 'compilation-filter-hook #'shellcheck-filter nil t)
+  (add-hook 'compilation-finish-functions #'shellcheck-compilation-finish nil t))
 
 ;; -------------------------------------------------------------------
 ;;; Interface

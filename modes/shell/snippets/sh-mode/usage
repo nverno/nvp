@@ -4,8 +4,8 @@
 # --
 usage() {
     cat <<EOF_HELP
-Usage: \$(basename \$0) [$1-h] $2
+Usage: \$(basename "\$0") [$1-h|--help] $2
 
-        -h          Show this message$0
+        -h|--help          Show this message$0
 EOF_HELP
 }

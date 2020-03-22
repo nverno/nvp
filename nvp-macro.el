@@ -71,6 +71,38 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
          (hl-line-mode)
          (view-mode-enter nil #'nvp-window-configuration-restore)))))
 
+
+(cl-defmacro nvp-with-tabulated-list (&rest body &key name format entries action
+                                            &allow-other-keys)
+  "View results in buffer NAME in `tabulated-list-mode'.
+FORMAT and ENTRIES define `tabulated-list-format' and `tabulated-list-entries'
+to use.  
+If ACTION is non-nil, `nvp-tabulated-list-select-action' will be bound to it,
+which will be called when selecting an entry.  
+The rest of BODY is evaluated in result buffer after `tabulated-list-mode'
+is activated, but before items are printed."
+  (declare (indent defun) (debug t))
+  (while (keywordp (car body))
+    (setq body (cdr (cdr body))))
+  `(progn
+     (let ((bufname (concat "*" ,name "*"))
+           (inhibit-read-only t))
+       (and (get-buffer bufname)
+            (kill-buffer bufname))
+       (let ((buf (get-buffer-create bufname)))
+         (with-current-buffer buf
+           (setq tabulated-list-format ,format
+                 tabulated-list-entries ,entries)
+           (tabulated-list-mode)
+           ;; allow for further customization of tabulated list mode
+           ,@body
+           (tabulated-list-init-header)
+           (tabulated-list-print)
+           (setq mode-name ,name)
+           ,(when action `(setq nvp-tabulated-list-select-action ,action)))
+         (pop-to-buffer buf)))))
+
+
 (cl-defmacro nvp-msg (fmt &rest args &key keys delay duration &allow-other-keys)
   "Print message, optionally using `substitute-command-keys' if KEYS.
 Message is displayed temporarily, restoring any previous message after
@@ -1010,29 +1042,31 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
        ,var)))
 
 ;; Simple memoization / result caching
-(cl-defmacro nvp-define-cache (func arglist &optional docstring &rest body
+(cl-defmacro nvp-define-cache (func arglist &rest body
                                     &key local predicate cache
                                     &allow-other-keys)
   "Create a simple cache for FUNC results named FUNC or CACHE if non-nil. 
 Cache is either defvar (possibly local) so is updated when set to nil,
 or PREDICATE is non-nil and returns nil."
   (declare (indent defun) (debug (sexp sexp sexp &form body)) (doc-string 3))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
-  (let* ((fn (if (stringp func) (intern func) func))
-         (cache (or cache fn)))
-    `(progn
-       ,(if local `(defvar-local ,cache nil)
-          `(defvar ,cache nil))
-       (defun ,fn ,arglist
-         ,docstring
-         (or (,@(if predicate `(and ,predicate) '(progn)) ,cache)
-             (setq ,cache (progn ,@body)))))))
+  (let ((docstring (when (stringp (car body)) (pop body))))
+    (while (keywordp (car body))
+      (setq body (cdr (cdr body))))
+    (let* ((fn (nvp-as-symbol func))
+           (cache (or cache fn)))
+      `(progn
+         ,(if local `(defvar-local ,cache nil)
+            `(defvar ,cache nil))
+         (defun ,fn ,arglist
+           ,docstring
+           (or (,@(if predicate `(and ,predicate) '(progn)) ,cache)
+               (setq ,cache (progn ,@body))))))))
 
-(defmacro nvp-define-cache-runonce (func arglist &optional docstring &rest body)
+(defmacro nvp-define-cache-runonce (func arglist &rest body)
   "Define cache function that will only compute cache once."
   (declare (indent defun) (debug defun) (doc-string 3))
-  (let ((cache (make-symbol "cache-runonce"))
+  (let ((docstring (when (stringp (car body)) (pop body)))
+        (cache (make-symbol "cache-runonce"))
         (fn (if (stringp func) (intern func) func)))
     `(defun ,fn ,arglist
        ,docstring

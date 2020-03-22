@@ -30,8 +30,8 @@
 ;; -------------------------------------------------------------------
 ;;; Config
 
-(defun nvp-gitconfig-list-aliases ()
-  (interactive)
+;; caches aliases in tabulated list format after first call
+(nvp-define-cache nvp-git-aliases ()
   (cl-flet
       ((parse-aliases
         ()
@@ -39,8 +39,11 @@
           (goto-char (point-min))
           (while (not (eobp))
             (and (looking-at "\\([[:alnum:]]+\\)\\(.*\\)")
-                 (push (cons (match-string 1) (match-string 2)) res))
+                 (push (list (match-string 1)
+                             `[,(match-string 1) ,(match-string 2)])
+                       res))
             (forward-line 1))
+          (kill-buffer (current-buffer))
           res)))
     (nvp-with-process "git"
       ;; git alias => command in my gitconfig to list them all
@@ -48,6 +51,28 @@
       :shell t
       :sync t
       :on-success #'parse-aliases)))
+
+;;;###autoload
+(defun nvp-git-list-aliases ()
+  "List git aliases in tabulated list format."
+  (interactive)
+  (nvp-with-tabulated-list
+    :name "git-aliases"
+    :format [("Alias" 10 t) ("Expansion" 60 t)]
+    :entries (nvp-git-aliases)
+    :action (lambda (_id entry)
+              (kill-new (elt entry 1))
+              (message "copied %S" (elt entry 1)))
+    (setq tabulated-list-sort-key '("Alias" . nil))))
+
+;;; Gitconfig-mode
+(defun nvp-gitconfig-jump-to-alias (alias)
+  "Jump to alias in .gitconfig file."
+  (interactive
+   (list (completing-read "Alias: " (nvp-git-aliases))))
+  (goto-char (point-min))
+  (search-forward "[alias]" nil t)
+  (re-search-forward (concat "^\\s-*" (regexp-quote alias)) nil t))
 
 ;; -------------------------------------------------------------------
 ;;; Random Git

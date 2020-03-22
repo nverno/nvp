@@ -56,6 +56,7 @@
     nvp-local-uris
     nvp-local-src-directories
     nvp-local-bookmark-file
+    nvp-tabulated-list-select-action
     nvp-default-log-function
     nvp-default-org-file
     nvp-window-configuration-stack

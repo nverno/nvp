@@ -73,7 +73,8 @@
   nvp-local-books-directories () "Local book directory/s."
   nvp-local-uris () "Local URIs for webjumping."
   nvp-local-src-directories () "Local source dirs to jump."
-  nvp-local-bookmark-file () "Local bookmarks to use.")
+  nvp-local-bookmark-file () "Local bookmarks to use."
+  nvp-tabulated-list-select-action () "Function to call on list entry, when non-nil.")
 
 ;;-- Possibly mode vars
 (defvar-local nvp-mode-header-regex nil "Regex to move b/w headers.")

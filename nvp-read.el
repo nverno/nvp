@@ -8,6 +8,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(nvp-req 'nvp-read 'subrs)
 (nvp-decls :f (help--symbol-completion-table function-called-at-point)
            :v (ido-exit ido-fallback ido-text))
 (nvp-auto "eldoc" 'eldoc-minibuffer-message)
@@ -15,18 +16,6 @@
 ;; minibuffer histories
 (defvar nvp-read-config-history ())
 (defvar nvp-read-keymap-history ())
-
-(eval-when-compile
-  ;; list filenames relative to ROOT matching REGEXP
-  (defsubst nvp-read--relative-files (root regexp)
-    (mapcar (lambda (f) (file-relative-name f root))
-            (directory-files-recursively root regexp)))
-
-  (defmacro nvp-read:with-fallback (&rest body)
-    "Do BODY with custom `ido-fallback-command'."
-    (declare (indent defun))
-    `(nvp-with-letf 'ido-fallback-command 'nvp-read--ido-fallback
-       ,@body)))
 
 ;; return default-directory on `ido-fallback-command'
 (defun nvp-read--ido-fallback (&rest _)
@@ -64,7 +53,7 @@
     (hack-local-variables))             ;read .dir-locals.el if exist
   (let ((local (bound-and-true-p nvp-local-notes-file)))
     (if (and local (not nolocal)) local
-      (or default (setq default nvp-default-org-file))
+      (nvp-defq default nvp-default-org-file)
       (setq prompt (nvp-prompt-default (or prompt "Org file: ") default))
       (nvp-read:with-fallback
         (nvp-read-relative-recursively
@@ -101,12 +90,6 @@
                                   (keymapp (symbol-value m))
                                   (string-prefix-p "nvp-" (symbol-name m))))
                            t nil 'nvp-read-keymap-history "nvp-keymap")))
-
-(eval-when-compile
-  (defmacro nvp-read:default (default &rest body)
-    (macroexp-let2 nil def default
-     `(if (eq ,def :none) nil
-        (or ,def ,@body)))))
 
 (defun nvp-read-obarray-regex (prompt &optional regexp default hist)
   "Completing read for obarray with optional REGEXP filter."
@@ -158,12 +141,6 @@ Filter by PREDICATE if non-nil."
 ;;; Modes 
 
 (defvar nvp-mode-cache)
-
-(eval-when-compile
-  ;; just MODE's name minus the "-mode"
-  (defsubst nvp-read--mode-name (&optional mode)
-    (setq mode (nvp-as-string (or mode major-mode)))
-    (string-remove-suffix "-mode" mode)))
 
 ;;;###autoload
 (defun nvp-read-mode (&optional default)

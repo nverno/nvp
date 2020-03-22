@@ -212,7 +212,7 @@
 ;; `perl-find-library' stuff
 
 ;; build perl modules paths
-(nvp-define-cache-runonce nvp-perl--module-paths () nil
+(nvp-define-cache-runonce nvp-perl--module-paths ()
   (cl-remove-if-not
    #'(lambda (dir)
        (and (string-match "/" dir)
@@ -227,7 +227,7 @@
 ;; Find all perl modules in directories on @INC, and cache
 ;; searches for files ending in .pod or .pm and translates
 ;; file path separators to '::'
-(nvp-define-cache-runonce nvp-perl-modules () nil
+(nvp-define-cache-runonce nvp-perl-modules ()
   (cl-mapcan
    (lambda (dir)
      (mapcar

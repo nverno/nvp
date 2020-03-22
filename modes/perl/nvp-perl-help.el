@@ -2,9 +2,27 @@
 
 ;;; Commentary:
 ;;
+;; Trying to integrate perldoc - perldoc, Pod::Perldoc, perlpod
+;; Would be nice to have a better interface to fuzzy search on metapan,
+;; but haven't found a feature like that in cpanm/perlbrew.
+;;
+;;    perldoc -f BuiltinFunction
+;;    perldoc -L it -f BuiltinFunction
+;;    perldoc -q FAQ Keyword
+;;    perldoc -L fr -q FAQ Keyword
+;;    perldoc -v PerlVariable
+;;    perldoc -a PerlAPI
+;;
+;; I also haven't been able to build the perldoc.info files, without them
+;; getting all mangled and unusable -- I don't think they are maintained
+;; with texi in mind.
+;; Section 3.3 - Reference manual lists all the docs, but links don't currently
+;; work (3/21/20).
+;;
 ;; TODO:
 ;; - HAP toggle
 ;; - metapan lookup
+;; - build info manual
 ;;
 ;; Refs:
 ;; - https://github.com/syohex/emacs-metacpan

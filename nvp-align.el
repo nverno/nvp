@@ -100,7 +100,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 
 (setf
  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))
- 'nvp-align-basic-lc-modes)
+ nvp-align-basic-lc-modes)
 
 (defvar nvp-align--groups
   '(;; All predefined mode groupings

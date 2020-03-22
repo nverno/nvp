@@ -3,5 +3,6 @@
 # key: fun
 # --
 sub ${1:function_name} {
+  ${2:my (${3:params}) = @_;}
   $0
 }

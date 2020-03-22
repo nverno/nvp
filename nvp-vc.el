@@ -28,6 +28,28 @@
       (funcall fn))))
 
 ;; -------------------------------------------------------------------
+;;; Config
+
+(defun nvp-gitconfig-list-aliases ()
+  (interactive)
+  (cl-flet
+      ((parse-aliases
+        ()
+        (let (res)
+          (goto-char (point-min))
+          (while (not (eobp))
+            (and (looking-at "\\([[:alnum:]]+\\)\\(.*\\)")
+                 (push (cons (match-string 1) (match-string 2)) res))
+            (forward-line 1))
+          res)))
+    (nvp-with-process "git"
+      ;; git alias => command in my gitconfig to list them all
+      :proc-args ("alias | sed 's|^\\\([^=]*\\\)=\\\(.*\\\)$|\\1\\2|g'") 
+      :shell t
+      :sync t
+      :on-success #'parse-aliases)))
+
+;; -------------------------------------------------------------------
 ;;; Random Git
 
 ;; checkout part of a repo

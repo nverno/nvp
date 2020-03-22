@@ -130,6 +130,7 @@
     ("fl" "forward-line" nil :system t)
     ("gc" "goto-char" nil :system t)
     ("gb" "get-buffer" nil :system t)
+    ("gm" "goto-char (point-min)" nil :system t)
     ("ie" "ignore-errors" nil :system t)
     ("iv" "indirect-variable" nil :system t)
     ("kb" "kill-buffer" nil :system t)

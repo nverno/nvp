@@ -99,7 +99,13 @@ if process exit status isn't 0."
      on-failure
      (proc-filter :default)
      (proc-sentinel :default))
-  "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer."
+  "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer.
+For async calls (default), returns process object.
+
+Note for `call-process-shell-command', invoked with SHELL and SYNC being non-nil,
+there is no process object to return. Instead, if ON-SUCCESS is non-nil, it
+should be a function that will be called in the result buffer. 
+In this case, the return value is the exit status of the shell command."
   (declare (indent defun) (debug t))
   (let* ((proc (make-symbol "proc"))
          (proc-cmd (intern (format "%s%s"
@@ -114,35 +120,48 @@ if process exit status isn't 0."
                  (if sync
                      `(funcall
                        ',proc-cmd (mapconcat
-                                   'identity (list ,process ,@proc-args) " "))
+                                   'identity (list ,process ,@proc-args) " ")
+                       nil ,(and on-success `,pbuf))
                    `(funcall ',proc-cmd ,(or proc-name process) ,pbuf
                              (mapconcat 'identity (list ,process ,@proc-args) " ")))
                `(funcall ',proc-cmd
                          ,(or proc-name process)
                          ,pbuf ,process ,@proc-args))))
-       (progn
-         ,(cond                        ; filter for sync/async
-           ((memq proc-filter '(:default t))
-            `(set-process-filter ,proc 'nvp-proc-default-filter))
-           (proc-filter
-            `(set-process-filter ,proc ,proc-filter))
-           (t nil))
-         ,(unless sync                 ; no sentinel for sync
-            (cond
-             (callback `(set-process-sentinel ,proc ,callback))
-             ((or on-success on-failure)
-              `(set-process-sentinel ,proc
-                                     (lambda (p m)
-                                       (nvp-log "%s: %s" nil (process-name p) m)
-                                       (with-current-buffer (process-buffer p)
-                                         (if (zerop (process-exit-status p))
-                                             ,on-success
-                                           ,on-failure)))))
-             ((memq proc-sentinel '(:default t))
-              `(set-process-sentinel ,proc (nvp-proc-default-sentinel)))
-             (proc-sentinel `(set-process-sentinel ,proc ,proc-sentinel))
-             ((null proc-sentinel) `,proc)))
-         ,proc))))  ;return process object
+       ,(if (and sync shell)
+            (if on-success
+                `(if (zerop ,proc)
+                     (with-current-buffer ,pbuf
+                       (funcall ,on-success))
+                   ,(if on-failure `(funcall ,on-failure ,proc)
+                      `,proc))
+              (if on-failure `(funcall ,on-failure ,proc)
+                (unless on-success `,proc)))
+          `(progn
+             ,(cond                         ; filter for sync/async
+               ((memq proc-filter '(:default t))
+                (unless sync
+                  `(set-process-filter ,proc 'nvp-proc-default-filter)))
+               (proc-filter
+                `(set-process-filter ,proc ,proc-filter))
+               (t nil))
+             ,(unless sync               ; no sentinel for sync
+                (cond
+                 (callback `(set-process-sentinel ,proc ,callback))
+                 ((or on-success on-failure)
+                  `(set-process-sentinel
+                    ,proc
+                    (lambda (p m)
+                      (nvp-log "%s: %s" nil (process-name p) m)
+                      (with-current-buffer (process-buffer p)
+                        (if (zerop (process-exit-status p))
+                            ,on-success
+                          ,on-failure)))))
+                 ((memq proc-sentinel '(:default t))
+                  `(set-process-sentinel ,proc (nvp-proc-default-sentinel)))
+                 (proc-sentinel `(set-process-sentinel ,proc ,proc-sentinel))
+                 ((null proc-sentinel) `,proc)))
+             ;; return process object for async calls (exit code for sync)
+             ,proc)))))
 
 ;; -------------------------------------------------------------------
 ;;; Wrappers / Overrides

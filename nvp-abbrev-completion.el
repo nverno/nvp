@@ -35,7 +35,7 @@
       (nvp-abbrev--nonempty tabs))))
 
 ;; use local table along with its parents + global table
-(nvp-define-cache nvp-abbrev-completion--tables () nil
+(nvp-define-cache nvp-abbrev-completion--tables ()
   :cache nvp-abbrev-completion--tables-cache
   :local t
   :predicate (not nvp-abbrev-completion-need-refresh)

@@ -197,7 +197,7 @@ the current paragraph."
 ;;; Delimiters: brackets / strings
 
 ;; translation table 
-(nvp-define-cache-runonce nvp-toggle-brackets-table () nil
+(nvp-define-cache-runonce nvp-toggle-brackets-table ()
   (let ((tbl (make-string 256 0)))
     (cl-loop for i from 0 upto 255
        do (aset tbl i i))
@@ -219,7 +219,7 @@ the current paragraph."
   (nvp-repeat-command nil nil nil beg end))
 
 ;; toggle between quotes
-(nvp-define-cache-runonce nvp-toggle-strings-table () nil
+(nvp-define-cache-runonce nvp-toggle-strings-table ()
   (let ((tbl (make-string 256 0)))
     (cl-loop for i from 0 upto 255
        do (aset tbl i i))

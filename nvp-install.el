@@ -139,20 +139,18 @@
 
 ;; push process onto active process list, log it, and delete if
 ;; when finished. When all active process are done, compile
-(defmacro nvp-with-finished-process (process file &rest body)
-  (declare (indent 1) (debug t))
-  `(progn
-     (cl-incf nvp-install--total-proc)
-     (nvp-with-process-log ,process
-       :on-error (pop-to-buffer (current-buffer))
-       :on-success (progn
-                     (cl-decf nvp-install--total-proc)
-                     ,@body
-                     (when (zerop nvp-install--total-proc)
-                       ;; build site-lisp packages
-                       (nvp-install-pending-dirs)
-                       ;; compile mode
-                       (nvp-install-compile ,file))))))
+(defun nvp-install-execute-process (process file)
+  ;; (declare (indent 1) (debug t))
+  (cl-incf nvp-install--total-proc)
+  (nvp-with-process-log process
+    :on-error (pop-to-buffer (current-buffer))
+    :on-success (progn
+                  (cl-decf nvp-install--total-proc)
+                  (when (zerop nvp-install--total-proc)
+                    ;; build site-lisp packages
+                    (nvp-install-pending-dirs)
+                    ;; compile mode
+                    (nvp-install-compile file)))))
 
 ;; compile the file, removing macro+contents
 (defun nvp-install-compile (file)
@@ -208,12 +206,12 @@
            (setq nvp-install-pending-dirs (append ,git ,bit))
            (cl-loop for pkg in ,git
               do (let ((proc (nvp-install-git pkg)))
-                   (nvp-with-finished-process proc ,file)))
+                   (nvp-install-execute-process proc ,file)))
            (cl-loop for pkg in ,bit
               do (let ((proc
                         (nvp-install-git
                          pkg "https://bitbucket.org")))
-                   (nvp-with-finished-process proc ,file)))
+                   (nvp-install-execute-process proc ,file)))
            ;;--- Environment ----------------------------------------
            ;; Permanent
            (cl-loop for (var val exec clobber) in ,env!
@@ -232,7 +230,7 @@
               do
                 (nvp-log "Running %s %S" nil prog args)
                 (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
-                  (nvp-with-finished-process proc ,file)))
+                  (nvp-install-execute-process proc ,file)))
            (nvp-with-gnu
              ;; sudo commands
              (cl-loop for (action cmd) in ,sudo

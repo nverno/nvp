@@ -12,8 +12,8 @@ MODE_ELC := ${MODE_EL:.el=.elc}
 FILTER_MODE = $(filter $(addprefix modes/,$(1))/%,$(2))
 CLEAN_MODE = $(info cleaning $(1)) \
 	@$(RM) $(call FILTER_MODE,$(1),${MODE_ELC})
-BUILD_MODE = $(info building $(1)) \
-	@$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
+BUILD_MODE = $(info building $(mode)) \
+	@$(call COMPILE,$(call FILTER_MODE,$(mode),${MODE_EL}))
 TESTS := $(wildcard test/*-tests.el)
 
 .PHONY: test rebuild
@@ -31,8 +31,8 @@ rebuild: ## Recompile macs/subrs/and all base configs
 clean-modes: ## Clean all modes
 	$(foreach mode,${MODES},$(call CLEAN_MODE,$(mode)))
 
-build-modes: ## Build all modes
-	$(foreach mode,${MODES},$(call BUILD_MODE,$(mode)))
+build-modes: ## Build all modes -- FIXME: does weird loopy shit
+	$(foreach mode,${MODES},$(BUILD_MODE))
 
 .PHONY: ${MODES}
 clean-%: %   ## Clean mode

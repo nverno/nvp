@@ -1,5 +1,5 @@
 ;; -*- lexical-binding: t; -*-
-(eval-when-compile (require 'nvp-macro))
+(require 'nvp-macro)
 (require 'nvp-proc)
 (require 'nvp-yaml)
 (require 'ert)

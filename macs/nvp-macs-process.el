@@ -89,7 +89,7 @@ if process exit status isn't 0."
      ;; return process buffer - when set, takes priority over combination of
      ;; proc-bufname + buffer-fn
      proc-buff
-     (proc-bufname `,(concat "*" (or proc-name process) "*"))
+     (proc-bufname `(concat "*" (or ,proc-name ,process) "*"))
      proc-args
      (buffer-fn 'get-buffer-create)
      sync                 ; run synchronously

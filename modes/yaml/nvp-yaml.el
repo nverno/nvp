@@ -33,43 +33,46 @@
 
 ;; recognized CI types -- for jumping to info/linting
 ;; forms: (type prompt-key prompt-message linter &rest linter-args)
-(defvar nvp-yaml-ci-types
-  `((travis
-     (prompt ?t "[t]ravis")
-     (validate nvp-yaml-validate-call "travis" "lint" (buffer-file-name))
-     (help "https://docs.travis-ci.com")
-     ;; project info format:
-     ;; 1. base uri
-     ;; 2. display project repo (if function call it to produce format args,
-     ;;    otherwise treat as string)
-     ;; 3. with prefix, display page with all repos
-     (project "https://travis-ci.org/%s" nvp-yaml-project-repo "profile/nverno"))
-    (circleci
-     (prompt ?c "[c]irclci")
-     (validate nvp-yaml-validate-call "circleci" "config" "validate"
-               (buffer-file-name))
-     (help format "https://circleci.com/docs/2.0/configuration-reference/#%s")
-     (project "https://circleci.com/%s" (lambda () (concat "gh/" (nvp-yaml-project-repo)))
-              "dashboard"))
-    (appveyor
-     (prompt ?a "[a]ppveyor")
-     (validate nvp-yaml-validate-appveyor)
-     (help "https://www.appveyor.com/docs/appveyor-yml/")
-     (project "https://ci.appveyor.com/project%s" nvp-yaml-project-repo "s"))
-    (codecov
-     (prompt ?v "codeco[v]")
-     (validate nvp-yaml-validate-call "curl" "--data-binary"
-               (concat "@" (nvp-bfn)) "https://codecov.io/validate")
-     (help "https://docs.codecov.io/docs/codecovyml-reference")
-     (project "https://codecov.io/gh/%s" nvp-yaml-project-repo ""))))
+(eval-and-compile
+  (defvar nvp-yaml-ci-types
+    `((travis
+       (prompt ?t "[t]ravis")
+       (validate nvp-yaml-validate-call "travis" "lint" (buffer-file-name))
+       (help "https://docs.travis-ci.com")
+       ;; project info format:
+       ;; 1. base uri
+       ;; 2. display project repo (if function call it to produce format args,
+       ;;    otherwise treat as string)
+       ;; 3. with prefix, display page with all repos
+       (project "https://travis-ci.org/%s" nvp-yaml-project-repo "profile/nverno"))
+      (circleci
+       (prompt ?c "[c]irclci")
+       (validate nvp-yaml-validate-call "circleci" "config" "validate"
+                 (buffer-file-name))
+       (help format "https://circleci.com/docs/2.0/configuration-reference/#%s")
+       (project "https://circleci.com/%s"
+                (lambda () (concat "gh/" (nvp-yaml-project-repo))) "dashboard"))
+      (appveyor
+       (prompt ?a "[a]ppveyor")
+       (validate nvp-yaml-validate-appveyor)
+       (help "https://www.appveyor.com/docs/appveyor-yml/")
+       (project "https://ci.appveyor.com/project%s" nvp-yaml-project-repo "s"))
+      (codecov
+       (prompt ?v "codeco[v]")
+       (validate nvp-yaml-validate-call "curl" "--data-binary"
+                 (concat "@" (file-name-nondirectory (buffer-file-name)))
+                 "https://codecov.io/validate")
+       (help "https://docs.codecov.io/docs/codecovyml-reference")
+       (project "https://codecov.io/gh/%s" nvp-yaml-project-repo "")))))
 
 (eval-when-compile
   (defsubst nvp-yaml--value (type val)
-    (cdr (assq val (assq type nvp-yaml-ci-types))))
+    (cdr (assq val (assq type nvp-yaml-ci-types)))))
 
-  ;; prompt for yaml type from list of known types
-  (defsubst nvp-yaml-read-known-type ()
-    (eval
+;; prompt for yaml type from list of known types
+(defun nvp-yaml-read-known-type ()
+  (eval-when-compile
+    (macroexpand-all
      `(nvp-read-char-case "Yaml type: " 'verbose
         ,@(cl-loop for type in nvp-yaml-ci-types
              for prompt = (nvp-yaml--value (car type) 'prompt)
@@ -138,15 +141,13 @@
   "Validate buffer using local validator (async)."
   (let* ((prog (nvp-as-string type))
          (proc
-          (eval
-           `(nvp-with-process ,prog
-              :proc-name ,prog
-              :proc-args ,args
-              :proc-buff (nvp-comint-buffer
-                           :name ,(concat "*lint-" prog "*")
-                           (erase-buffer))
-              :proc-sentinel #'nvp-yaml-lint-sentinel)
-           t)))
+          (nvp-with-process prog
+            :proc-name prog
+            :proc-args (args)
+            :proc-buff (nvp-comint-buffer
+                         :name (concat "*lint-" prog "*")
+                         (erase-buffer))
+            :proc-sentinel #'nvp-yaml-lint-sentinel)))
     ;; travis process wont return on windows ionno
     (nvp-with-w32 (ignore-errors (process-send-eof prog)))
     proc))

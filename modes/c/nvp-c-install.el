@@ -9,10 +9,13 @@
 
 (nvp-package-define-root :name nvp-c)
 
+(defconst nvp-c-gen-vars-script
+  (nvp-program "gen-c-vars.sh" :path (expand-file-name "emacs" nvp/bin)))
+
 ;; generate site-specific include paths, flags, etc.
 (defun nvp-c-gen-site-vars (&optional arg)
   (let ((includes (expand-file-name "nvp-c-vars.el" nvp-c--dir))
-        (prog (expand-file-name "emacs/gen-c-vars" nvp/bin)))
+        (prog nvp-c-gen-vars-script))
     (when (or arg
               (not (file-exists-p includes))
               (nvp-file-older-than-days includes 20))

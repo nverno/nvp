@@ -95,14 +95,22 @@
 ;; -------------------------------------------------------------------
 ;;; Programs
 
-(defvar nvp-program-search-paths
-  '("~/bin/" "~/.asdf/shims/" "~/.local/bin/" "/usr/local/bin/")
-  "Default paths to search for executables.")
+(eval-and-compile
+  (defconst nvp-program-search-paths
+    '("~/bin/" "~/.asdf/shims/" "~/.local/bin/" "/usr/local/bin/")
+    "Default paths to search for executables."))
 
 (defmacro nvp-w32-program (name)
   "Name of cached program on shitty w32.e"
   (and (symbolp name) (setq name (symbol-name name)))
   `(intern (concat "nvp-" ,name "-program")))
+
+(defsubst nvp-program-search (program &optional path)
+  (cl-loop for p in (delq nil (cons path nvp-program-search-paths))
+     do (let ((f (expand-file-name program p)))
+          (and (file-exists-p f)
+               (file-executable-p f)
+               (cl-return f)))))
 
 ;; PATH can contain environment variables to expand
 ;; if NO-COMPILE is defined the name is determined at runtime
@@ -122,20 +130,29 @@ If program is not found at compile time, fallback to runtime search."
                    (_ name)))
                 ((stringp name) name)
                 (t (user-error "%S unmatched")))))
-    `(progn
-       (nvp-decl nvp-setup-program)
-       (or (eval-when-compile
-             (nvp-with-gnu/w32
-                 (let ((exec-path (delq nil (cons ,path ',nvp-program-search-paths))))
-                   (executable-find ,name))
-               ,(if w32 `,w32
-                  `(bound-and-true-p (intern (concat "nvp-" ,name "-program")))))
-             ;; otherwise try entire PATH
-             (executable-find ,name))
-           ;; fallback to runtime search
-           (when (require 'nvp-setup nil t)
-             (nvp-setup-program ,name ,path))
-           ,(if default `,name)))))
+    (when path
+      (setq path (eval path)))
+    (let ((ct `(eval-when-compile
+                 (nvp-with-gnu/w32
+                     (or
+                      ;; (1) just in prime spots
+                      ,(nvp-program-search name path)
+                      ;; (2) prime + exec-path
+                      ,(let ((exec-path
+                              (delq nil
+                                    (append (cons path nvp-program-search-paths)
+                                            exec-path))))
+                         (executable-find name)))
+                   ,(if w32 `,w32
+                      `(bound-and-true-p
+                        (intern (concat "nvp-" ,name "-program"))))))))
+      (or (eval ct)
+          ;; otherwise, fallback to runtime search
+          `(progn
+             (or (executable-find ,name)
+                 (when (require 'nvp-setup nil t)
+                   (nvp-setup-program ,name ,path)))
+             ,(if default `,name))))))
 
 ;;; Paths
 

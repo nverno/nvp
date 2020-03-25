@@ -28,14 +28,14 @@
   "Create .merlin with all ocamlfind packages / .opam sources."
   (interactive)
   (nvp-async-shell-command-to-string
-   (concat "opam config exec -- bash -c "
-           (expand-file-name "emacs/merlin-init" nvp/bin))))
+    (concat "opam config exec -- bash -c "
+            (expand-file-name "emacs/merlin-init.sh" nvp/bin))))
 
 (defun nvp-ocaml-init ()
   "Create local .ocamlinit."
   (interactive)
   (nvp-async-shell-command-to-string
-   (expand-file-name "emacs/ocaml-init" nvp/bin)))
+    (expand-file-name "emacs/ocaml-init.sh" nvp/bin)))
 
 (defun nvp-ocaml-library-path ()
   (when (executable-find "opam")

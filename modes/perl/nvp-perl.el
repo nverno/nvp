@@ -26,7 +26,8 @@
 (nvp-req 'nvp-perl 'subrs)
 (nvp-auto "find-lisp" 'find-lisp-find-files)
 
-(nvp-decls :f (auto-complete-mode plsense-setup-current-buffer plsense-server-start))
+(nvp-decls :f (auto-complete-mode
+               plsense-setup-current-buffer plsense-server-start))
 
 (nvp-with-w32
   ;; load windows environment helpers

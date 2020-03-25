@@ -25,13 +25,13 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-
+;;
 ;; Emacs major-mode for bats source.
 ;;
 ;; See
 ;; - https://github.com/sstephenson/bats
 ;; - modified from https://github.com/dougm/bats-mode
-
+;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -45,7 +45,7 @@
 (defvar bats-indent-offset sh-basic-offset "Bats indentation offset.")
 
 (defvar bats-check-program
-  (nvp-program "batscheck" :path (file-truename "~/bin/sh")))
+  (nvp-program "batscheck.sh" :path (expand-file-name "sh" nvp/bin)))
 
 (defvar bats-function-re
   (nvp-concat
@@ -59,10 +59,6 @@
    ;; bats tests
    "@test"
    "\\)"))
-
-(eval-when-compile
-  (defmacro re-opt (opts)
-    `(concat "\\_<" (regexp-opt ,opts t) "\\_>")))
 
 (defun bats-current-test ()
   "Find current bats test."
@@ -151,8 +147,8 @@
 
 (defvar bats-font-lock-keywords
   `(("\\(@test\\)" 1 font-lock-keyword-face)
-    (,(re-opt '("load" "run" "skip")) 1 font-lock-function-name-face)
-    (,(re-opt '("setup" "teardown")) 1 'nvp-italic-type-face)))
+    (,(nvp-re-opt '("load" "run" "skip")) 1 font-lock-function-name-face)
+    (,(nvp-re-opt '("setup" "teardown")) 1 'nvp-italic-type-face)))
 
 (defvar bats-mode-map
   (let ((km (make-sparse-keymap)))

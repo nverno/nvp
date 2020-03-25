@@ -97,11 +97,15 @@
                nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook)
            :v (nodejs-repl-process-name httpd-root httpd-port))
 
+;; FIXME: not working for multiple major-modes???
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim -- other modes, js-jsx, js2-jsx, rjsx inherit from js/js2
 (cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode js-mode js2-mode js3-mode rjsx-mode))
+  (syntax arg &context (major-mode js-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
+;; (cl-defmethod nvp-newline-dwim-comment
+;;   (syntax arg &context (major-mode js-mode js2-mode js3-mode rjsx-mode))
+;;   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;; -------------------------------------------------------------------
 ;;; Nodejs REPL: using as default in all js-derived modes

@@ -241,15 +241,16 @@
 ;; decide if newlines should add comment continuations in the
 ;; current comment block
 (defun nvp-newline--comment-continue-p (syntax &optional cmt-cont)
-  (setq cmt-cont (or cmt-cont comment-continue))
+  (nvp-defq cmt-cont comment-continue)
   (when cmt-cont
-    (save-excursion
-      (beginning-of-line)
-      (let ((start (<= (point) (nth 8 syntax))))
-        (or (and start (goto-char (line-beginning-position 2))
-                 (not (eq (get-char-property (point) 'face)
-                          'font-lock-comment-face)))
-            (looking-at-p (concat "\\s-*" (regexp-quote cmt-cont))))))))
+    (let ((cmt-beg-re (concat "\\s-*" (string-trim (regexp-quote cmt-cont)))))
+      (save-excursion
+        (beginning-of-line)
+        (let ((start (<= (point) (nth 8 syntax))))
+          (or (and start (goto-char (line-beginning-position 2))
+                   (not (eq (get-char-property (point) 'face)
+                            'font-lock-comment-face)))
+              (looking-at-p cmt-beg-re)))))))
 
 ;; add a comment continuation string when in nestable doc comments
 (defun nvp-newline-dwim--comment (syntax &optional arg cmt-cont)

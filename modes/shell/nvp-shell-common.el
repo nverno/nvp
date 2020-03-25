@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-proc))
+  (require 'nvp-proc))                  ; nvp-proc-find-if
 (nvp-req 'nvp-shell 'subrs)
 (nvp-decls)
 

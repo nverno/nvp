@@ -123,7 +123,7 @@
                   (unwind-protect (progn ,@body)
                     (and (buffer-name ,buffer) (kill-buffer ,buffer)))))))))))
 
-
+
 ;;; Parse output
 
 (defsubst nvp-sh--builtin-string ()

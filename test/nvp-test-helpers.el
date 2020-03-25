@@ -6,12 +6,15 @@
 (require 'dash)
 
 (defun nvp-test-buffer-setup (&optional mode)
-  (if mode (funcall mode) (emacs-lisp-mode))
-  (setq-local indent-tabs-mode nil)
-  (setq-local comment-column 40)
-  (setq-local show-trailing-whitespace nil)
-  (setq-local use-hard-newlines nil)
-  (electric-indent-local-mode))
+  (let ((setup-fn (intern-soft
+                   (concat (nvp-as-string (or mode major-mode)) "-buffer-setup"))))
+    (if mode (funcall mode) (emacs-lisp-mode))
+    (setq-local indent-tabs-mode nil)
+    (setq-local comment-column 40)
+    (setq-local show-trailing-whitespace nil)
+    (setq-local use-hard-newlines nil)
+    (electric-indent-local-mode)
+    (if (functionp setup-fn) (funcall setup-fn))))
 
 (defun nvp-test-set-mark-and-point ()
   "Replace '_' and set mark there. Then replace '|' and leave point there."

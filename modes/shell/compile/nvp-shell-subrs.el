@@ -30,6 +30,13 @@ strings."
             (t (up-list -1 t t)))))
        (skip-syntax-forward " " ,start))))
 
+
+(defvar nvp-sh-function-re)
+(defsubst nvp-sh-looking-at-beginning-of-defun ()
+  (save-excursion
+    (beginning-of-line 1)
+    (looking-at-p nvp-sh-function-re)))
+
 (provide 'nvp-shell-subrs)
 ;; Local Variables:
 ;; coding: utf-8

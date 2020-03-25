@@ -15,24 +15,21 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro)
   (require 'nvp-compile)
-  (require 'nvp-font)
-  (require 'nvp-abbrev-hooks))
+  (require 'nvp-font))
 (require 'nvp-parse)
 (require 'nvp)
 (nvp-req 'nvp-c 'subrs)
-(nvp-decls :f (xref-pop-marker-stack xref-push-marker-stack forward-ifdef
+(nvp-decls :f (forward-ifdef
                clang-complete-load-args ; clang-complete
                asdf-where               ; asdf
                nvp-env-add              ; nvp-env
                objdump-mode)            ; emacs-objdump-mode
-           :v (c/R-abbrev-table
-               company-backends company-clang-arguments
-               align-to-tab-stop))
+           :v (c/R-abbrev-table company-clang-arguments))
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
 ;; don't expand after '_' or in strings/comments
-(defsubst nvp-c-abbrev-expand-p ()
+(defun nvp-c-abbrev-expand-p ()
   (nvp-abbrev-expand-not-after-punct-p '(_)))
 
 ;; -------------------------------------------------------------------
@@ -115,13 +112,10 @@
 ;; -------------------------------------------------------------------
 ;;; Movement
 
-;; (cl-defmethod nvp-newline-dwim-default (&context (major-mode )))
-
-;; when in /* continued comments or doxygen, add comment continuation for
+;; XXX: when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
-
 (cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode c-mode c++-mode))
+  (syntax arg &context (major-mode c-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;;; XXX: remove
@@ -297,9 +291,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Headers
-
-(nvp-decls :f (yas-expand-snippet yas-lookup-snippet)
-           :v (yas-selected-text yas-wrap-around-region))
 
 ;; jump to associated header, with arg create and/or update it as well
 (defun nvp-c-jump-or-update-header (update)

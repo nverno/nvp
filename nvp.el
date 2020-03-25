@@ -24,7 +24,6 @@
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
 
 ;; autoloads
-(nvp-auto "dired-x" 'dired-jump-other-window)
 (nvp-auto "projectile" 'projectile-project-root)
 
 ;; root directory

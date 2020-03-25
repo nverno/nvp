@@ -1,15 +1,35 @@
 ;;; sh-doc.el --- documentation for sh functions -*- lexical-binding: t; -*-
 ;;; Commentary:
-
+;;
 ;; TODO:
 ;; - better check for doc block
 ;; - extend newline-dwim with doc-newline-dwim
 ;; - parse doc comments
 ;; - eldoc support
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'sh-script)
+;; `font-lock-extend-region-functions'
+(eval-when-compile
+  (defvar font-lock-beg)
+  (defvar font-lock-end))
+
+(defgroup sh-doc nil
+  "Support sh script documentation and highlighting."
+  :group 'faces)
+
+(defface sh-doc-comment
+  '((((background light)) :inherit font-lock-doc-face :background "grey95")
+    (((background dark))  :inherit font-lock-doc-face :background "grey30"))
+  "The face used for Doxygen comment blocks."
+  :group 'sh-doc)
+
+;; (defface highlight-doxygen-code-block
+;;   '((((background light)) :background "grey85")
+;;     (((background dark))  :background "grey40"))
+;;   "The face used to mark a code block."
+;;   :group 'highlight-doxygen)
 
 (eval-and-compile
   (defvar sh-doc-types '("brief" "param" "return" "note" "usage" "see")))

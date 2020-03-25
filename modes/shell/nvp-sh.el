@@ -61,12 +61,6 @@
 ;; commands to enable `beginning-of-defun', `end-of-defun', `narrow-to-defun',
 ;; etc. to work properly in sh buffers
 
-(eval-when-compile
-  (defsubst nvp-sh-looking-at-beginning-of-defun ()
-    (save-excursion
-      (beginning-of-line 1)
-      (looking-at-p nvp-sh-function-re))))
-
 (defun nvp-sh--beginning-of-defun (&optional arg)
   "Internal implementation for function navigation.
 With positive ARG search backwards."
@@ -118,8 +112,8 @@ Used to set `end-of-defun-function'."
    (1 'nvp-italic-variable-face prepend))
   ;; redirections
   ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-italic-type-face prepend))
-  ;; doxys
-  ("^# *\\(@[[:alpha:]]+\\)\\s-*\\(\$[[:digit:]]\\)\\(.*\\)"
+  ;; doxy params
+  ("^# *\\(@[[:alpha:]]+\\)\\s-*\\(\$[[:digit:]]\\)\\(.*\\)$"
    (1 font-lock-doc-face prepend)
    (2 'nvp-italic-variable-face prepend)
    (3 font-lock-doc-face prepend))
@@ -215,7 +209,6 @@ Like `sh-current-defun-name' but ignore variables."
 (cl-defmethod nvp-parse-includes (&context (major-mode sh-mode) &rest args)
   "Sourced files, recursively."
   (nvp-sh:candidates sources args))
-
 
 ;; -------------------------------------------------------------------
 ;;; Hooks

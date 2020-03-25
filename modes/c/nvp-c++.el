@@ -14,6 +14,10 @@
 (nvp-req 'nvp-c 'subrs)
 (nvp-decls)
 
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode c++-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
 ;; -------------------------------------------------------------------
 ;;; Commands 
 

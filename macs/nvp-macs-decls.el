@@ -78,7 +78,7 @@
     nvp-he-flex-symbol-beg nvp-he-case-fold-search
     ;; builtin hippie
     hippie-expand-try-functions-list hippie-expand-only-buffers
-    ;; emacs base
+    ;;=== emacs base ===
     package-user-dir
     recentf-list
     ielm-working-buffer ielm-dynamic-return
@@ -86,9 +86,13 @@
     local-abbrev-table
     bug-reference-bug-regexp
     bug-reference-url-format
-    ;; external pkgs
+    ;; align
+    align-to-tab-stop
+    ;;=== external pkg ===
     zeal-at-point-docset
-    company-candidates company-selection))
+    company-candidates company-selection
+    ;; yasnippet
+    yas-selected-text yas-wrap-around-region))
 
 (cl-defmacro nvp-decls (&key v f)
   `(progn
@@ -180,12 +184,16 @@
        ielm ielm-return
        ert-run-tests-interactively
        hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
-       w32-shell-execute)
+       w32-shell-execute
+       xref-pop-marker-stack xref-push-marker-stack)
 
      (nvp-decl                          ; external packages
        pos-tip-show
        projectile-project-name
        do-smooth-scroll
+       ;; yasnippet
+       yas-expand-snippet
+       yas-lookup-snippet
        yas-hippie-try-expand)))
 
 (provide 'nvp-macs-decls)

@@ -318,10 +318,6 @@ With prefix, display in same frame using `display-buffer' ACTION."
 ;;   (interactive "P")
 ;;   (nvp-display-buffer-with-action 4
 ;;     (with-help-window (help-buffer)
-;;         (princ
-;;          (format "\n%s\n%s\n\n"
-;;                  (nvp-s-center 60 "Key commands")
-;;                  (nvp-s-repeat 85 "~")))
 ;;         (let ((vars '(this-command
 ;;                       real-this-command
 ;;                       this-original-command

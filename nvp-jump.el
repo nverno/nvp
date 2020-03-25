@@ -189,10 +189,8 @@ Optionally, search LISP-ONLY files (no C sources)."
               (bound-and-true-p nvp-local-notes-file)
               '("notes.org" "Notes.org" "todo.org" "Todo.org"))
           current-prefix-arg))
-  (let* ((locate-fn (if (consp name) #'nvp-file-locate-first-dominating
-                      #'locate-dominating-file))
-         (dir (funcall
-               locate-fn (or (buffer-file-name) default-directory) name))
+  (let* ((dir (nvp-file-locate-first-dominating
+               (or (buffer-file-name) default-directory) name))
          (fname
           (if (stringp name) name
             (cl-some (lambda (f) (and (file-exists-p (expand-file-name dir f)) f))

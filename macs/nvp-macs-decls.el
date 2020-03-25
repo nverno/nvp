@@ -118,7 +118,6 @@
        nvp-completing-read
        nvp-find-file-in-dir
        ;; modes
-       nvp-view-list-mode
        nvp-scratch-minor-mode
        ;; logging
        nvp-results-title
@@ -169,9 +168,6 @@
        nvp-compile
        nvp-compile-default
        nvp-compile-cmake
-       ;; strings
-       nvp-s-repeat
-       nvp-s-center
        ;; environment
        nvp-env-add
        nvp-env-path-add

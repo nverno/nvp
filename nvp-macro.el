@@ -59,18 +59,19 @@ If PATH is non-nil, search for root starting at PATH."
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."
   (declare (indent 2) (debug (sexp &rest form)))
-  `(let (other-window-scroll-buffer)
-     (nvp-window-configuration-save)
-     (with-temp-buffer-window
-         ,(or buffer-or-name '(help-buffer))
-         t
-         nil
-       (with-current-buffer standard-output
-         (setq other-window-scroll-buffer (current-buffer))
-         ,(if title `(princ (nvp-centered-header ,title)))
-         ,@body
-         (hl-line-mode)
-         (view-mode-enter nil #'nvp-window-configuration-restore)))))
+  (macroexp-let2 nil hdr (if title `(princ (nvp-centered-header ,title)))
+    `(let (other-window-scroll-buffer)
+       (nvp-window-configuration-save)
+       (with-temp-buffer-window
+           ,(or buffer-or-name '(help-buffer))
+           t
+           nil
+         (with-current-buffer standard-output
+           (setq other-window-scroll-buffer (current-buffer))
+           ,hdr
+           ,@body
+           (hl-line-mode)
+           (view-mode-enter nil #'nvp-window-configuration-restore))))))
 
 
 (cl-defmacro nvp-with-tabulated-list (&rest body &key name format entries action

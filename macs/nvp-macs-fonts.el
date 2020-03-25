@@ -25,11 +25,12 @@
 
 ;; add fontification to REGEX up to LIMIT in quoted area by CHAR
 ;; (default double-quotes)
-(defsubst nvp-fontify-quoted-1 (regex char limit)
-  (let (res)
-    (while (and (setq res (re-search-forward regex limit 'move))
-                (not (nvp-font-lock-quoted-p char))))
-    res))
+(defun nvp-fontify-quoted-1 (regex char)
+  `(lambda (limit)
+     (let (res)
+       (while (and (setq res (re-search-forward ,regex limit 'move))
+                   (not (nvp-font-lock-quoted-p ,char))))
+       res)))
 
 (defun nvp-font-lock-doc-comments (prefix limit keywords)
   ;; Simplified `c-font-lock-doc-comments' (cc-fonts)
@@ -113,16 +114,15 @@
 
 (cl-defmacro nvp-fontify-quoted (&rest forms &key char &allow-other-keys)
   "Fontify elements in quoted regions."
-  (declare (indent defun))
+  (declare (indent defun) (debug t))
   (while (keywordp (car forms))
     (setq forms (cdr (cdr forms))))
   (nvp-defq char ?\")
   (macroexp-progn
    (cl-loop for (regex font) in forms
       collect `(cons
-                ,(lambda (limit)
-                   (nvp-fontify-quoted-1 regex char limit))
-                '(,font)))))
+                ,(nvp-fontify-quoted-1 regex char)
+                ',font))))
 
 (defmacro nvp-font-lock-keywords (&rest forms)
   "Create list of font-lock additions.

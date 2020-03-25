@@ -3,12 +3,13 @@
 ;;; Commentary:
 ;;
 ;; Compilation output for .sh and .bat files using shellcheck
+;;
 ;; Provides:
 ;; - font-locking in the output buffer via `xterm-color'
 ;; - links b/w shellcheck output and source locations
 ;; - converts 'SC****' warnings/errors to buttons that link to their documentation
 ;; - can disable warnings/errors by adding shellcheck directives from compilation
-;;   buffer
+;;   buffer with `shellcheck-disable-this-error'
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -17,7 +18,8 @@
 (nvp-decls :f (xterm-color-colorize-buffer winner-undo))
 
 ;; use "bats ..." for .bat files
-(defvar shellcheck-compile-command '(concat "shellcheck " (buffer-file-name)))
+(defvar shellcheck-executable (nvp-program "shellcheck"))
+(defvar shellcheck-arguments () "Command-line arguments to shellcheck.")
 
 (defconst shellcheck-wiki-url "https://github.com/koalaman/shellcheck/wiki/"
   "Location to link shellcheck warnings/errors to their documentation.")
@@ -25,9 +27,20 @@
 (defconst shellcheck-compilation-regexp
   '(shellcheck "In \\([^ \t\n]+\\) line \\([0-9]+\\)" 1 2))
 
+(defun shellcheck-compile-command ()
+  (concat
+   (mapconcat
+    #'identity
+    (cons shellcheck-executable shellcheck-arguments) " ")
+   " " (buffer-file-name)))
+
 (defun shellcheck-disable-this-error ()
   "Disable the shellcheck error containing, or immediately following point.
 This interactively adds a shellcheck comment directive in the source."
+  ;; Could add prefix argument to save+recompile?
+  ;; Saving + recompile is almost always what I want -- there are rare cases
+  ;; where the directive is inserted on the wrong line, however, but it's an
+  ;; ez undo.
   (interactive)
   (let* ((compilation-skip-threshold 0)
          (errcode (button-label (button-at (next-button 1))))
@@ -57,7 +70,9 @@ This interactively adds a shellcheck comment directive in the source."
         (comment-dwim 1)
         (insert
          (if (string= errcode "SC2096") "shellcheck source=/dev/null"
-           (concat "shellcheck disable=" errcode)))))))
+           (concat "shellcheck disable=" errcode))))
+      (save-buffer))
+    (recompile)))
 
 (defun shellcheck-kill-buffer ()
   (interactive)
@@ -82,18 +97,20 @@ This interactively adds a shellcheck comment directive in the source."
 
 (defun shellcheck-compilation-finish (buf msg)
   (when (string-prefix-p "finished" msg)
-    (nvp-indicate-modeline "All good" 'success)
-    (kill-buffer buf)))
+    (kill-buffer buf)
+    (nvp-indicate-modeline "All good" 'success)))
 
 (define-compilation-mode shellcheck-mode "Shellcheck"
-  "Shellcheck results in compilation mode."
+  "Shellcheck results in compilation mode.
+From `shellcheck-mode' buffers, warning/error messages are linked to both the
+source code location and the associated documentation for each code on the wiki.
+Calling `shellcheck-disable-this-error' will add the appropriate directive to
+the source buffer, save it, and recompile."
   (make-local-variable 'compilation-error-regexp-alist)
   (make-local-variable 'compilation-error-regexp-alist-alist)
   (setq compilation-error-regexp-alist-alist (list shellcheck-compilation-regexp)
         compilation-error-regexp-alist (list (car shellcheck-compilation-regexp)))
   (setq-local compilation-skip-threshold 0)
-  (setq-local compilation-buffer-name-function
-              (lambda (_m) (concat "*shellcheck: " (buffer-file-name) "*")))
   (add-hook 'compilation-filter-hook #'shellcheck-filter nil t)
   (add-hook 'compilation-finish-functions #'shellcheck-compilation-finish nil t))
 
@@ -102,17 +119,17 @@ This interactively adds a shellcheck comment directive in the source."
 
 ;;;###autoload
 (defun shellcheck-compile ()
+  "Compile current buffer with shellcheck.
+Output is in `shellcheck-mode' compilation buffer, which see."
   (interactive)
-  (compilation-start
-   (concat "shellcheck " (buffer-file-name))
-   #'shellcheck-mode
-   `(lambda (_) (concat "*shellcheck: " (buffer-file-name) "*"))))
+  (compilation-start (shellcheck-compile-command) 'shellcheck-mode))
 
 ;;;###autoload
 (defun shellcheck ()
   "Check current buffer with shellcheck."
   (interactive)
-  (nvp-with-process "shellcheck" :proc-args ((buffer-file-name))
+  (nvp-with-process "shellcheck"
+    :proc-args ((buffer-file-name))
     :on-failure (progn
                   (pop-to-buffer "*shellcheck*")
                   (xterm-color-colorize-buffer)

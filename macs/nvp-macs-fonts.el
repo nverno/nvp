@@ -6,6 +6,11 @@
 ;; - see cc-fonts.el `c-font-lock-doc-comments', and
 ;;   constant `gtkdoc-font-lock-doc-comments' for usage
 ;;
+;; TODO:
+;; - mark comment as doc comment based on a match -- not as restrictive as
+;;   doxygen, eg. don't require a leading marker
+;; - Apply matchers inside marked doc comment
+;;
 ;;; Code:
 (require 'nvp-macs-common)
 (require 'cc-defs)
@@ -31,6 +36,24 @@
        (while (and (setq res (re-search-forward ,regex limit 'move))
                    (not (nvp-font-lock-quoted-p ,char))))
        res)))
+
+;;; TODO: use this in newline-dwim when inside strings and wanting an
+;;        escape to the next line
+;; stackoverflow
+(defun syntax-to-char (syntax-code syntax-table)
+  "Return chars (or char range) with SYNTAX-CODE in SYNTAX-TABLE."
+  (let (result)
+    (map-char-table
+     (lambda (k v)
+       ;; k is either a char or (FROM . TO)
+       ;; v is (SYNTAX-CODE . MATCHING-CHAR)
+       (when (= (car v) syntax-code)
+         (push (pcase k
+                 (`(,from . ,to) (list (string from) (string to)))
+                 (_ (string k)))
+               result)))
+     syntax-table)
+    (nreverse result)))
 
 (defun nvp-font-lock-doc-comments (prefix limit keywords)
   ;; Simplified `c-font-lock-doc-comments' (cc-fonts)

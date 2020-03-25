@@ -9,7 +9,6 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-font)
   (require 'nvp-parse))
 (require 'nvp)
 (require 'company)

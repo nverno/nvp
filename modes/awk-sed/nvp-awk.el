@@ -7,9 +7,7 @@
 ;; - eldoc
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-font))
+(eval-when-compile (require 'nvp-macro))
 (require 'cc-awk)
 (require 'nvp)
 (require 'info-look)
@@ -28,7 +26,7 @@
    (1 font-lock-keyword-face))
   ("\\(@[[:alpha:]_]+\\)" (1 'nvp-italic-variable-face)))
 
-(defvar nvp-awk-imenu-expression
+(defconst nvp-awk-imenu-expression
   `((nil
      ,(concat "^\\s-*" (regexp-opt '("BEGIN" "BEGINFILE" "END" "ENDFILE") 'paren))
      0)
@@ -39,7 +37,7 @@
 
 ;; PROCINFO['identifiers'], FUNCTAB
 
-(defvar nvp-awk-builtins
+(defconst nvp-awk-builtins
   (eval-when-compile
     (with-temp-buffer
       (insert-file-contents

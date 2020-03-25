@@ -14,8 +14,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro)
-  (require 'nvp-compile)
-  (require 'nvp-font))
+  (require 'nvp-compile))
 (require 'nvp-parse)
 (require 'nvp)
 (nvp-req 'nvp-c 'subrs)
@@ -112,7 +111,6 @@
 ;; -------------------------------------------------------------------
 ;;; Movement
 
-;; XXX: when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim
 (cl-defmethod nvp-newline-dwim-comment
   (syntax arg &context (major-mode c-mode))

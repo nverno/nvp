@@ -13,7 +13,7 @@ FILTER_MODE = $(filter $(addprefix modes/,$(1))/%,$(2))
 CLEAN_MODE = $(info cleaning $(1)) \
 	@$(RM) $(call FILTER_MODE,$(1),${MODE_ELC})
 BUILD_MODE = $(info building $(mode)) \
-	@$(call COMPILE,$(call FILTER_MODE,$(mode),${MODE_EL}))
+	@$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
 TESTS := $(wildcard test/*-tests.el)
 
 .PHONY: test rebuild

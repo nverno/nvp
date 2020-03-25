@@ -1,14 +1,12 @@
 ;;; nvp-ielm.el --- ielm/lisp-interaction -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
+;;
 ;; FIXME:
 ;; - multi-line ielm history ==> how to change and use `comint-input-ring-separator'
-
+;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-font))
+(eval-when-compile (require 'nvp-macro))
 (require 'lisp-mode)
 (require 'ielm)
 (require 'nvp-comint)

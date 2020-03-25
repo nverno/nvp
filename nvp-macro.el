@@ -18,6 +18,7 @@
 (require 'nvp-macs-bindings "macs/nvp-macs-bindings")
 (require 'nvp-macs-process "macs/nvp-macs-process")
 (require 'nvp-macs-decls "macs/nvp-macs-decls")
+(require 'nvp-macs-fonts "macs/nvp-macs-fonts")
 (require 'nvp-subrs "macs/nvp-subrs")
 
 (defmacro nvp-with-project-root (&optional path &rest body)

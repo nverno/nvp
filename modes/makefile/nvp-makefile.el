@@ -16,9 +16,7 @@
 ;; - fold: directives, rules, comments
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-font))
+(eval-when-compile (require 'nvp-macro))
 (require 'make-mode)
 (nvp-req 'nvp-makefile 'subrs)
 (require 'nvp)

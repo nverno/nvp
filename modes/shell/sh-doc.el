@@ -7,6 +7,13 @@
 ;; - parse doc comments
 ;; - eldoc support
 ;;
+;; References:
+;; - font-locking:
+;;   + cc-fonts: #<marker at 108257 in cc-fonts.el.gz>
+;;     see `c-font-lock-doc-comments' in cc-fonts
+;;   + highlight-doxygen library (no longer necessary since cc-mode does this)
+;;     it uses `font-lock-extend-region-functions'
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'sh-script)

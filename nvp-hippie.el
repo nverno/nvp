@@ -54,13 +54,22 @@
 ;;   list after first call
 ;; - try expand whole lines: closest first modification + using case-fold-search
 ;;
+;;; TODO:
+;;; - allow flex matching in additional scopes: frame/global/visible
+;;; - make flex sorting / removal of duplicates more efficient
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'hippie-exp)
 (nvp-decls :f (tags-completion-table ggtags-try-complete-tag ggtags-mode))
 
-;; XXX: this isn't always working as expected -- figure out why
+;; *Note*: cl-remove-duplicates is currently used _after_ sorting candidates
+;; which is pretty inefficient -- but also, need to remove dupes using :from-end t
+;; in order to maintain the proper sorted order.
+;; It might be quite a bit more efficient to hash candidates, or at least track
+;; nearness to original point during search and remove duplicates prior to sorting.
+;;
 ;; args: active position, match-beg, match-end
 (defvar nvp-he-weight-function #'company-occurrence-prefer-any-closest
   "How to weight expansion candidates when sorting.")
@@ -73,6 +82,9 @@
 
 (defvar nvp-he-case-fold t
   "Non-nil if flex matching should ignore case.")
+
+(defvar nvp-he-window-scope 'visible
+  "Limits additional scopage for expanders: can be 'visible, 'global, or 'frame.")
 
 ;; function called with current string prefix to produce regexp to find candidates
 (defvar nvp-he-flex-matcher #'nvp-he-flex-camel/snake)
@@ -207,7 +219,7 @@ doesn't exceed LIMIT."
 ;; non-nil IGNORE-COMMENTS ignores matches in strings/comments
 (defun nvp-he--search-buffer (regexp &optional result start-pos ignore-weights
                                      start-time limit ignore-comments)
-  (or start-pos (setq start-pos (point-min)))
+  (nvp-defq start-pos (point-min))
   (save-excursion
     (goto-char (point-min))
     (nvp-he:timed-while (and (not (input-pending-p))
@@ -232,11 +244,45 @@ doesn't exceed LIMIT."
          (res (nvp-he--search-buffer
               regexp nil (point) ignore-weights (current-time)
               nvp-he-time-limit ignore-comments)))
+    ;; XXX: optimization => this is sorting prior to removing all duplicates
+    ;; very inefficient, but don't want to remove highest weighted candidates
+    ;; prior to sort -- should modify the regexp searching to expand away from
+    ;; the initial candidate? Or hash the matches, compute the weights when
+    ;; they are found and keep the best weight for duplicates
     (cl-remove-duplicates
      (if ignore-weights
          res
        (--map (car it) (sort res (lambda (e1 e2) (<= (cdr e1) (cdr e2))))))
-     :test #'equal)))
+     :test #'equal
+     :from-end t)))
+
+;;; TODO: use this function to allow flex-expansion in other visible windows
+;;; as well
+;; refs: `aw-window-list', `he--all-buffers', `next-window'
+(defun nvp-he-interesting-buffers ()
+  "Return list of interesting buffers. This respects `hippie-expand-only-buffers',
+`hippie-expand-ignore-buffers' and `nvp-he-window-scope'."
+  (let ((only-buffers hippie-expand-only-buffers) ; usually buffer-local
+        (ignore-buffers hippie-expand-ignore-buffers))
+    (mapcar
+     #'window-buffer
+     (cl-remove-if
+      (lambda (w)
+        (let ((f (window-frame w))
+              (buff (window-buffer w)))
+          (or (not (and (frame-live-p f)
+                        (frame-visible-p f)))
+              (string= "initial_terminal" (terminal-name f))
+              ;; check if buffer is accepted by other hippie variables
+              (progn
+                (set-buffer buff)
+                (if only-buffers
+                    (not (he-buffer-member only-buffers))
+                  (he-buffer-member ignore-buffers))))))
+      (cl-ecase nvp-he-window-scope
+        (visible (cl-mapcan #'window-list (visible-frame-list)))
+        (global (cl-mapcan #'window-list (frame-list)))
+        (frame (window-list)))))))
 
 
 ;; -------------------------------------------------------------------

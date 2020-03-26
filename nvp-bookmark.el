@@ -1,144 +1,203 @@
 ;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
+;;
 ;;; Commentary:
-;; - bookmark-to-bookmark jump handler
-;; - assorted bookmark functions
-;; #<marker at 210151 in info.el.gz>
+;;
+;; Want:
+;; - [✓] mode-specific bookmarks by default
+;; - [ ] ez way to jump b/w bookmark stashes
+;; - [ ] bookmark-to-bookmark jump handler
+;; Functions:
+;; - [✓] load DWIM - check local variable, look locally, then default
+;; - [ ] link bookmark files
+;;
+;; Bmenu:
+;; - [ ] unmark all
+;; - [ ] create new bookmark w/ linkage
+;;
+;; `Info-bookmark-make-record' #<marker at 212098 in info.el.gz>
+;;
 ;; FIXME:
 ;; - wrong formatting with xrefs
+;;
 ;; TODO:
 ;; - create new bookmark files
 ;; - interface to list bookmark files
 ;; - show bookmarks for a given file
-;; - update with new bookmark.el modifications
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'nvp-cache)
+(require 'ring)
 (require 'bookmark)
 (nvp-auto "f" 'f-same-p)
+(nvp-decls)
 
-(defvar nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
-(defvar nvp-bookmark-local-names '("bookmarks.el"))
+(defconst nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
 
-;;; Modifications of bookmark.el functions
-(defun nvp-bookmark-load (&optional make-default)
+(defvar nvp-bookmark-search-files
+  '(nvp-local-bookmark-file "bookmarks.el" bookmark-default-file)
+  "The first existing file is found by the order in this list.
+If an entry isn't an existing path, it will be expanded against 
+`nvp-bookmark-search-roots', returning the first existing file.")
+
+(defvar nvp-bookmark-search-roots
+  '((lambda (f) (locate-dominating-file f default-directory))
+    (lambda (_f) (nvp-project-root))
+    nvp-bookmark-directory)
+  "Order of locations from which to search for the bookmark file.
+Entries can be functions, called with a single file argument.  The first file
+found is returned. Default order (1) `locate-dominating-file', 
+(2) `nvp-project-root', (3) in `nvp-bookmark-directory'.")
+
+(defun nvp-bookmark-locate-file-1 (file)
+  ;; try expanding FILE against `nvp-bookmark-search-roots' to find existing file
+  (--some
+   (--when-let (expand-file-name file (if (functionp it) (funcall it file) it))
+     (and (file-exists-p it) it))
+   nvp-bookmark-search-roots))
+
+(defun nvp-bookmark-locate-file (&optional file)
+  "Locate bookmark file by ordering in `nvp-bookmark-search-files', searching
+in `nvp-bookmark-search-roots' when an entry doesn't exist."
+  (--some (when (or (and (symbolp it) (boundp it) (setq it (symbol-value it)))
+                    it)
+            (if (and (stringp it) (file-exists-p it)) it   ; absolute path given
+              (nvp-bookmark-locate-file-1 it)))
+          (delq nil (cons file nvp-bookmark-search-list))))
+
+;;;###autoload
+(defun nvp-bookmark-load (&optional no-default)
+  "Load bookmarks using `nvp-bookmark-locate-file' to determine default.
+With prefix NO-DEFAULT, doesn't set new bookmarks as defaults (opposite 
+behaviour of default)."
   (interactive "P")
-  (-if-let (file (nvp-bookmark-locate-file "bookmarks.el"))
-      (bookmark-load file make-default nil make-default)
-    (funcall-interactively #'bookmark-load)))
-  
-;; if FILE is nil, use bookmark-default-file
-;; search order:
-;; 1. if absolute file name, just use it
-;; 2. if IGNORE-LOCAL is non-nil or no local-bookmark is bound,
-;;    use FILE in `nvp-bookmark-directory'
-;; 3. there is a local-bookmark:
-;;    - if OK-NOT-EXISTS is non-nil or the file exists in first directory containing
-;;      .dir-locals, return path to that file
-;;    - otherwise, path to local-bookmark in `nvp-bookmark-directory'
-(defun nvp-bookmark-locate-file (file &optional ignore-local ok-not-exists)
-  (or file (setq file bookmark-default-file))
-  (if (file-name-absolute-p file) file
-    (if (or ignore-local (not (bound-and-true-p nvp-local-bookmark-file)))
-        (expand-file-name file nvp-bookmark-directory)
-      (let ((f (expand-file-name
-                nvp-local-bookmark-file
-                (locate-dominating-file default-directory dir-locals-file))))
-        (if (or ok-not-exists (file-exists-p f)) f
-          (expand-file-name nvp-local-bookmark-file nvp-bookmark-directory))))))
+  (-if-let (file (nvp-bookmark-locate-file))
+      (bookmark-load file (not no-default) nil (not no-default))
+    (funcall-interactively #'bookmark-load))
+  (call-interactively #'bookmark-bmenu-list))
 
-;;;###autoload
-(defun nvp-bookmark-local (file)
-  "Load bookmark FILE.
-With prefix prompt for filename. Otherwise, try `nvp-local-bookmark-file'
-and fallback to `bookmark-default-file'."
-  (interactive
-   (list (or (and current-prefix-arg (read-file-name "Bookmark file: "))
-             (nvp-bookmark-locate-file nvp-local-bookmark-file))))
-  (nvp-bmk-update-history file)
-  (unless (f-same-p bookmark-default-file file)
-    (nvp-bmk-handler (nvp-bmk-make-record file)))
-  (call-interactively 'bookmark-bmenu-list))
-
-;;; FIXME: cleanup
-;;;###autoload
-(defun nvp-bookmark-list (&optional arg)
-  "With single prefix force reloading, allowing for local settings to have effect.
-With double prefix, reload defaults"
-  (interactive "p")
-  (when (> arg 1)
-    (setq bookmark-bookmarks-timestamp nil
-          bookmark-alist nil))
-  (when (> arg 4)
-    (setq bookmark-default-file
-          (expand-file-name "bookmarks-linux.bmk" nvp-bookmark-directory))
-    (message "Reloaded: %s" bookmark-default-file))
-  (let ((bookmark-bookmarks-timestamp nil)
-        (bookmark-default-file (nvp-bookmark-locate-file nvp-local-bookmark-file)))
-    (call-interactively #'bookmark-bmenu-list)))
 
 
 ;; -------------------------------------------------------------------
-;;; BMK handling
-;;; FIXME: all this
+;;; Bookmark <=> Bookmark handling
+
 (defgroup nvp-bmk nil
   "Manage jumping between/bookmarking multiple bookmark files."
   :group 'bookmark
   :prefix "nvp-bmk-")
 
+(defun nvp-bookmark--sync ()
+  (cl-incf bookmark-alist-modification-count)
+  (when (bookmark-time-to-save-p)
+    (bookmark-save))
+  (bookmark-bmenu-surreptitiously-rebuild-list))
+
 (defface nvp-bmk-bookmark-highlight
   '((((background dark)) (:background "light blue" :foreground "black"))
     (t (:background "light blue")))
-  "Face to highlight bookmark entries (.bmk)."
+  "Face to highlight bookmark entries."
   :group 'nvp-bmk)
 
-;; store bookmark files
-(nvp-setup-cache nvp-bmk-directory "bookmarks")
-(defvar nvp-bmk-cache
-  (nvp-cache-create 'ring
-    :filename ".bmk_history"
-    :insert-filter #'abbreviate-file-name
-    :save-predicate #'file-exists-p)
-  "Cache bookmark lists.")
+(defvar nvp-bmk-verbose t "Print messages")
 
-(defvar nvp-bmk-regexp "^.*\\.bmk$" "Regexp to match bookmark entries.")
+;; `ring-insert' => newest item, `ring-remove' => oldest item
+(defvar nvp-bmk-ring (make-ring 65) "Bookmark history list.")
+(defvar nvp-bmk-ring-index nil)
+(nvp-setup-cache nvp-bmk-ring-name ".bmk_history")
 
-(defsubst nvp-bmk-update-history (&optional filename silent)
-  (nvp-cache-insert (or filename bookmark-default-file) nvp-bmk-cache)
-  (or silent
-      (message "Current bookmark file: %s"
-               (abbreviate-file-name (or filename bookmark-default-file)))))
+(defsubst nvp-bmk--default-file (&optional file)
+  (abbreviate-file-name
+   (or file (car bookmark-bookmarks-timestamp)
+       (expand-file-name bookmark-default-file))))
+
+(defun nvp-bmk-msg (&optional format &rest args)
+  (when nvp-bmk-verbose
+    (if format (message format args)
+      (message "Current bookmark: %s" (nvp-bmk--default-file)))))
+
+(defun nvp-bmk-ring-insert (&optional bookmark)
+  ;; insert BOOKMARK into history ring, growing when necessary
+  ;; entries are just abbreviated bookmark filenames
+  ;; return non-nil if an insertion was made, 'first if there was no previous
+  ;; element in the ring
+  (let ((default (nvp-bmk--default-file
+                  (and bookmark (bookmark-get-filename bookmark))))
+        (previous (unless (ring-empty-p nvp-bmk-ring)
+                    (ring-ref nvp-bmk-ring 0))))
+    (if (and previous (f-same-p default previous)) nil
+      (ring-insert+extend nvp-bmk-ring default 'grow)
+      (if (null previous) 'first t))))
+
+(defun nvp-bmk-make-record (&optional file name)
+  "Implements the `bookmark-make-record-function' type for bookmarks."
+  (let* ((afile (nvp-bmk--default-file file))
+         (fname (or name (file-name-nondirectory afile)))
+         (bookmark-name (if fname (concat "_" fname "_")))
+         (prev (unless (ring-empty-p nvp-bmk-ring)
+                 (ring-ref nvp-bmk-ring 0)))
+         (defaults
+           (delq
+            nil
+            (list bookmark-name
+                  afile
+                  nvp-bmk-ring-name     ; cached ring filename
+                  prev))))              ; previous bookmark, or nil
+    `(,bookmark-name
+      ,@(bookmark-make-record-default 'no-file 'no-context 1)
+      (filename . ,afile)
+      (handler  . nvp-bmk-jump)
+      (defaults . ,defaults))))
+
+(defun nvp-bmk-jump (bmk)
+  "Implements the `handler' function for the record returned by 
+`nvp-bmk-make-record'."
+  (let ((file (bookmark-prop-get bmk 'filename))
+        (insert-p (nvp-bmk-ring-insert)))
+    (if insert-p
+        (let ((buf (save-window-excursion
+                     (bookmark-load file t nil t)
+                     (bookmark-bmenu-list)
+                     (current-buffer))))
+          (nvp-bmk-msg)
+          ;; default bookmark handler to move to location
+          (bookmark-default-handler
+           `("" (buffer . ,buf) . ,(bookmark-get-bookmark-record bmk))))
+      (user-error "Already at bookmark '%s'?" file))))
+
+;; (defvar nvp-bmk-cache
+;;   (nvp-cache-create 'ring
+;;     :filename ".bmk_history"
+;;     :insert-filter #'abbreviate-file-name
+;;     :save-predicate #'file-exists-p)
+;;   "Cache bookmark lists.")
 
 ;; Create bookmark record for bookmark-menu-list from current default
-(defun nvp-bmk-record-function ()
-  `((filename . ,(bookmark-buffer-file-name))
-    (handler  . nvp-bmk-handler)))
+;; (defun nvp-bmk-record-function ()
+;;   `((filename . ,(bookmark-buffer-file-name))
+;;     (handler  . nvp-bmk-handler)))
 
-;; handle jumping to another bookmark file
-(defun nvp-bmk-handler (bmk)
-  (when (> bookmark-alist-modification-count 0)
-    (bookmark-save))
-  (setq bookmark-default-file (bookmark-get-filename bmk))
-  (nvp-bmk-update-history)
-  ;; (kill-all-local-variables)
-  (setq bookmark-alist nil)
-  (let (bookmark-bookmarks-timestamp)
-    (bookmark-maybe-load-default-file)
-    ;; (bookmark-bmenu-list)
-    ))
+;; (defun nvp-bmk-next-index (arg)
+;;   "Get next index in ring based on direction."
+;;   (if (and r-l)))
 
-(defun nvp-bmk-make-record (filename &optional name)
-  `(,(or name nil)
-    ,@(bookmark-make-record-default 'no-file)
-    (filename . ,(abbreviate-file-name filename))
-    (handler  . nvp-bmk-handler)))
+(defun nvp-bmk-cycle-start (arg)
+  "Index to start a bookmark history traversal."
+  (if nvp-bmk-ring-index
+      ;; if a search is running, offset by 1 in direction of arg
+      (mod (+ nvp-bmk-ring-index (if (> arg 0) 1 -1))
+           (ring-length nvp-bmk-ring-insert))
+    ;; New search, start from beg. or end
+    (if (>= arg 0)
+        0                               ; First elt for forward
+      (1- (ring-length nvp-bmk-ring-insert)))))
 
 (defun nvp-bmk-cycle-previous (&optional next)
   "Cycle through bookmark history."
   (interactive)
+  (--when-let (funcall (if next #'ring-plus1 #'ring-minus1)))
   (when-let
       ((bmk
-        (funcall (if next #'nvp-cache-next #'nvp-cache-previous) nvp-bmk-cache)))
+        (funcall (if next #'nvp- #'nvp-cache-previous) nvp-bmk-cache)))
     (unless (f-same-p bmk bookmark-default-file)
       (when (> bookmark-alist-modification-count 0)
         (bookmark-save))
@@ -149,35 +208,37 @@ With double prefix, reload defaults"
         ;; (bookmark-bmenu-list)
         ))))
 
-(defun nvp-bmk-cycle-next ()
-  "Cycle forward through bookmark list."
-  (interactive)
-  (nvp-bmk-cycle-previous 'next))
+;; (defun nvp-bmk-cycle-next ()
+;;   "Cycle forward through bookmark list."
+;;   (interactive)
+;;   (nvp-bmk-cycle-previous 'next))
 
-(defun nvp-bmk-create (filename &optional make-current link)
-  "Create new bookmark file, prompting for FILENAME. 
-(4) prefix or MAKE-CURRENT is non-nil, set new bookmark file as current 
-    default bookmark file.
-(16) prefix or LINK is non-nil, create link to new bookmark file from
-current bookmark menu list."
-  (interactive
-   (list (let ((default-directory nvp-bmk-directory))
-           (read-file-name "Bookmark File: ")) (nvp-prefix 4) (nvp-prefix 16)))
-  (when (not (file-exists-p filename))
-    (message "Creating new bookmark file at %s" filename)
-    (nvp-bmk-update-history filename make-current)
-    (with-temp-buffer
-      (let (bookmark-alist)
-        (bookmark-save nil filename))))
-  (when link
-    (let* ((name (read-from-minibuffer "Bookmark Link Name: "))
-           (record (nvp-bmk-make-record filename)))
-      (bookmark-store name (cdr record) t)))
-  (when make-current
-    (nvp-bmk-handler (nvp-bmk-make-record filename))))
+;; (defun nvp-bmk-create (filename &optional make-current link)
+;;   "Create new bookmark file, prompting for FILENAME. 
+;; (4) prefix or MAKE-CURRENT is non-nil, set new bookmark file as current 
+;;     default bookmark file.
+;; (16) prefix or LINK is non-nil, create link to new bookmark file from
+;; current bookmark menu list."
+;;   (interactive
+;;    (list (let ((default-directory nvp-bmk-directory))
+;;            (read-file-name "Bookmark File: ")) (nvp-prefix 4) (nvp-prefix 16)))
+;;   (when (not (file-exists-p filename))
+;;     (message "Creating new bookmark file at %s" filename)
+;;     (nvp-bmk-update-history filename make-current)
+;;     (with-temp-buffer
+;;       (let (bookmark-alist)
+;;         (bookmark-save nil filename))))
+;;   (when link
+;;     (let* ((name (read-from-minibuffer "Bookmark Link Name: "))
+;;            (record (nvp-bmk-make-record filename)))
+;;       (bookmark-store name (cdr record) t)))
+;;   (when make-current
+;;     (nvp-bmk-handler (nvp-bmk-make-record filename))))
 
 ;; FIXME: store overlays?
 ;; Highlight entries
+(defvar nvp-bmk-regexp "^.*\\.bmk$" "Regexp to match bookmark entries.")
+
 (defvar-local nvp-bmk-overlays nil)
 
 (defun nvp-bmk-toggle-highlight ()
@@ -203,11 +264,11 @@ current bookmark menu list."
 
 (defvar nvp-bmk-to-bmk-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "c"               #'nvp-bmk-create)
-    (define-key map (kbd "TAB")       #'nvp-bmk-cycle-next)
-    (define-key map (kbd "C-M-n")     #'nvp-bmk-cycle-next)
-    (define-key map (kbd "<backtab>") #'nvp-bmk-cycle-previous)
-    (define-key map (kbd "C-M-p")     #'nvp-bmk-cycle-previous)
+    ;; (define-key map "c"               #'nvp-bmk-create)
+    ;; (define-key map (kbd "TAB")       #'nvp-bmk-cycle-next)
+    ;; (define-key map (kbd "C-M-n")     #'nvp-bmk-cycle-next)
+    ;; (define-key map (kbd "<backtab>") #'nvp-bmk-cycle-previous)
+    ;; (define-key map (kbd "C-M-p")     #'nvp-bmk-cycle-previous)
     (define-key map "f"               #'nvp-bmk-toggle-highlight)
     map))
 
@@ -227,10 +288,11 @@ and jumped between.
   :keymap nvp-bmk-to-bmk-mode-map
   :lighter " B2B"
   (when nvp-bmk-to-bmk-mode
-    (setq-local bookmark-make-record-function 'nvp-bmk-record-function)
+    (setq-local bookmark-make-record-function 'nvp-bmk-make-record)
     (nvp-bmk-toggle-highlight)
-    (when (nvp-cache-empty-p nvp-bmk-cache)
-      (nvp-cache-load nvp-bmk-cache))))
+    ;; (when (nvp-cache-empty-p nvp-bmk-cache)
+    ;;   (nvp-cache-load nvp-bmk-cache))
+    ))
 
 (provide 'nvp-bookmark)
 ;;; nvp-bookmark.el ends here

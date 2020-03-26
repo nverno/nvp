@@ -50,9 +50,11 @@
 (defun nvp-pkg-menu-browse-url ()
   "Just jump to the url of package at point straigt off."
   (interactive)
-  (-some--> (tabulated-list-get-id)
-    (cdr (assq :url (package-desc-extras it)))
-    (browse-url it)))
+  (unless (-some--> (tabulated-list-get-id)
+            (cdr (assq :url (package-desc-extras it)))
+            (browse-url it))
+    (user-error "No URL associated with %s"
+                (car (elt (tabulated-list-get-entry) 0)))))
 
 ;; -------------------------------------------------------------------
 ;;; Mine

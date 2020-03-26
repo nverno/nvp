@@ -181,6 +181,7 @@
     ("wf" "write-file" nil :system t)
     ("wg" "widget-get" nil :system t)
 
+    ("afn" "abbreviate-file-name" nil :system t)
     ("apo" "accept-process-output" nil :system t)
     ("asc" "async-shell-command" nil :system t)
     ("atl" "add-to-list" nil :system t)

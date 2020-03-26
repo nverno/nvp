@@ -32,6 +32,15 @@
   (and (consp x) (not (consp (cdr x)))))
 
 ;; -------------------------------------------------------------------
+;;; Hash tests
+
+(defsubst case-fold-string= (a b)
+  (eq t (compare-strings a nil nil b nil nil t)))
+
+(defsubst case-fold-string-hash (a)
+  (sxhash (upcase a)))
+
+;; -------------------------------------------------------------------
 ;;; Strings
 
 ;; Make a string of S repeated NUM times.

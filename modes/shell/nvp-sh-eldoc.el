@@ -12,7 +12,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
 (nvp-req 'nvp-shell 'subrs)
-(require 'nvp-sh-help)
+(eval-and-compile (require 'nvp-sh-help))
 (require 'eldoc)
 
 (defvar nvp-sh-eldoc-cache (make-hash-table :test 'equal))
@@ -63,7 +63,7 @@ from `man %s'."
   (let ((func (nvp-sh-current-command)))
     (and func
          (nvp-sh:with-bash/man func
-           (nvp-sh-eldoc-builtin-string func) ;; synchronously
+             (nvp-sh-eldoc-builtin-string func) ;; synchronously
            (nvp-sh-eldoc-man-string func))))) ;; async
 
 (provide 'nvp-sh-eldoc)

@@ -71,9 +71,9 @@ replacing with NEW-VERSION."
                (lambda (s) (string-prefix-p ,prefix s))
                (split-string (getenv "PATH") path-separator))))
          (when ,new-version
-           (setq path (cons (expand-file-name (concat "perls/" ,new-version
-                                                      "bin/perl")
-                                              ,perlbrew-root)
+           (setq path (cons (expand-file-name
+                             (concat "perls/" ,new-version "/bin/perl")
+                             ,perlbrew-root)
                             path)))
          (setq exec-path path)
          (setenv "PATH" (mapconcat 'identity path path-separator)))))

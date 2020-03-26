@@ -1,6 +1,0 @@
-;; -*- coding: utf-8; -*-
-
-(define-abbrev-table 'web-mode-abbrev-table
-  '()
-  "Web-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))

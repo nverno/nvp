@@ -189,5 +189,15 @@ With prefix, prompts for DATE."
             (error "Auth entry for %s@%s:%s has no secret" user host port)))
       (error "No auth entry found for %s@%s:%s" user host port))))
 
+;;;###autoload
+(defun nvp-insert-unicode ()
+  "Quick insert unicode character."
+  (interactive)
+  (insert
+   (nvp-read-char-case "Char: " 'verbose
+     (?c "[c]heck" "✓")
+     (?s "[s]mile" "☻")
+     (?p "[p]rev" "└─"))))
+
 (provide 'nvp-auto)
 ;;; nvp-auto.el ends here

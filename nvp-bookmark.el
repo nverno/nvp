@@ -2,27 +2,28 @@
 ;;
 ;;; Commentary:
 ;;
-;; Want:
-;; - [✓] mode-specific bookmarks by default
-;; - [ ] ez way to jump b/w bookmark stashes
-;; - [ ] bookmark-to-bookmark jump handler
-;; Functions:
+;; TODO:
 ;; - [✓] load DWIM - check local variable, look locally, then default
-;; - [ ] link bookmark files
+;; - [✓] mode-specific bookmarks by default
+;; - [✓] bookmark-to-bookmark jump handler
+;; - [ ] create new bookmark files -- add prefix option to create on lookup
+;; - [ ] load all bookmark files into ring from default directory
 ;;
 ;; Bmenu:
+;; - [✓] link bookmark files
+;; - [✓] ez way to jump b/w bookmark stashes
+;; - [✓] create new bookmark w/ linkage
 ;; - [ ] unmark all
-;; - [ ] create new bookmark w/ linkage
-;;
-;; `Info-bookmark-make-record' #<marker at 212098 in info.el.gz>
+;; - [ ] show bookmarks for file -- maybe in annotation or something?
+;; - [ ] display bookmark files as tabs to switch between
 ;;
 ;; FIXME:
-;; - wrong formatting with xrefs
+;; - [✓] wrong formatting with xrefs
+;; - [✓] error displayed when using jump handler in bmemu
+;; - [✓] not getting added to ring
 ;;
-;; TODO:
-;; - create new bookmark files
-;; - interface to list bookmark files
-;; - show bookmarks for a given file
+;; Refs:
+;; `Info-bookmark-make-record' #<marker at 212098 in info.el.gz>
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -63,7 +64,7 @@ in `nvp-bookmark-search-roots' when an entry doesn't exist."
                     it)
             (if (and (stringp it) (file-exists-p it)) it   ; absolute path given
               (nvp-bookmark-locate-file-1 it)))
-          (delq nil (cons file nvp-bookmark-search-list))))
+          (delq nil (cons file nvp-bookmark-search-files))))
 
 ;;;###autoload
 (defun nvp-bookmark-load (&optional no-default)
@@ -132,38 +133,33 @@ behaviour of default)."
               (ring-insert nvp-bmk-ring (ring-remove nvp-bmk-ring it))
             (ring-insert nvp-bmk-ring next))
           t)                            ; return t, an insert happened
+      (ring-insert nvp-bmk-ring next)
       'first)))                         ; first insert, previous was null
 
 (defun nvp-bmk-make-record (&optional file name)
   "Implements the `bookmark-make-record-function' type for bookmarks."
   (let* ((afile (nvp-bmk--default-file file))
          (fname (or name (file-name-nondirectory afile)))
-         (bookmark-name (if fname (concat "_" fname "_")))
-         (defaults
-           (delq
-            nil
-            (list bookmark-name afile nvp-bmk-ring-name)))) ; cached ring filename
+         (bookmark-name (if fname (concat "_" fname "_"))))
     `(,bookmark-name
       ,@(bookmark-make-record-default 'no-file 'no-context 1)
       (filename . ,afile)
-      (handler  . nvp-bmk-jump)
-      (defaults . ,defaults))))
+      (handler  . nvp-bmk-jump))))
 
 (defun nvp-bmk-jump (bmk &optional no-insert)
   "Implements the `handler' function for the record returned by 
 `nvp-bmk-make-record'. This functions updates the history cache unless NO-INSERT."
   (let* ((file (bookmark-prop-get bmk 'filename))
          (insert-p (or no-insert (nvp-bmk-ring-insert bmk))))
-    ;; (setq bookmark-default-file file)
     (if insert-p
-        (let ((buf (save-window-excursion
-                     (bookmark-load file t nil t)
-                     (bookmark-bmenu-list)
-                     (current-buffer))))
-          (nvp-bmk-msg)
-          ;; default bookmark handler to move to location
-          (bookmark-default-handler
-           `("" (buffer . ,buf) . ,(bookmark-get-bookmark-record bmk))))
+        (progn
+          ;; could change this to prompt if `bookmark-alist-modification-count'>0
+          (when (bookmark-time-to-save-p)
+            (bookmark-save))
+          ;; calls `bookmark-bmenu-surreptitiously-rebuild-list' which updates
+          ;; the bmenu buffer already if it exists
+          (bookmark-load file t nil t)
+          (nvp-bmk-msg))
       (user-error "Already at bookmark '%s'?" file))))
 
 ;;; Cycling through bookmark history
@@ -282,10 +278,11 @@ and jumped between.
   :lighter " B2B"
   (if nvp-bmk-to-bmk-mode
       (progn
+        ;; TODO: load cache with known bookmarks
         (setq-local bookmark-make-record-function 'nvp-bmk-make-record)
+        ;; tries to get prop on entry that may no longer be in the bookmark-alist
+        (setq-local bookmark-automatically-show-annotations nil)
         (nvp-bmk-toggle-highlight))
-    ;; (when (nvp-cache-empty-p nvp-bmk-cache)
-    ;;   (nvp-cache-load nvp-bmk-cache))
     (nvp-bmk-remove-overlays)))
 
 (provide 'nvp-bookmark)

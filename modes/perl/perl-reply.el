@@ -2,6 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'comint)
 (require 'cperl-mode)
 
 (defvar perl-reply-font-lock-keywords (cperl-load-font-lock-keywords-2))

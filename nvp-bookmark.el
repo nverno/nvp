@@ -120,39 +120,41 @@ behaviour of default)."
   ;; entries are just abbreviated bookmark filenames
   ;; return non-nil if an insertion was made, 'first if there was no previous
   ;; element in the ring
-  (let ((default (nvp-bmk--default-file
-                  (and bookmark (bookmark-get-filename bookmark))))
+  (let ((next (nvp-bmk--default-file
+               (and bookmark (bookmark-get-filename bookmark))))
         (previous (unless (ring-empty-p nvp-bmk-ring)
                     (ring-ref nvp-bmk-ring 0))))
-    (if (and previous (f-same-p default previous)) nil
-      (ring-insert+extend nvp-bmk-ring default 'grow)
-      (if (null previous) 'first t))))
+    (if previous
+        (if (f-same-p next previous) nil ; just ignore if same as last
+          (--if-let (ring-member nvp-bmk-ring next)
+              ;; if it is already present elsewhere in the ring, move it up
+              ;; to the most recent location -- head of the ring
+              (ring-insert nvp-bmk-ring (ring-remove nvp-bmk-ring it))
+            (ring-insert nvp-bmk-ring next))
+          t)                            ; return t, an insert happened
+      'first)))                         ; first insert, previous was null
 
 (defun nvp-bmk-make-record (&optional file name)
   "Implements the `bookmark-make-record-function' type for bookmarks."
   (let* ((afile (nvp-bmk--default-file file))
          (fname (or name (file-name-nondirectory afile)))
          (bookmark-name (if fname (concat "_" fname "_")))
-         (prev (unless (ring-empty-p nvp-bmk-ring)
-                 (ring-ref nvp-bmk-ring 0)))
          (defaults
            (delq
             nil
-            (list bookmark-name
-                  afile
-                  nvp-bmk-ring-name     ; cached ring filename
-                  prev))))              ; previous bookmark, or nil
+            (list bookmark-name afile nvp-bmk-ring-name)))) ; cached ring filename
     `(,bookmark-name
       ,@(bookmark-make-record-default 'no-file 'no-context 1)
       (filename . ,afile)
       (handler  . nvp-bmk-jump)
       (defaults . ,defaults))))
 
-(defun nvp-bmk-jump (bmk)
+(defun nvp-bmk-jump (bmk &optional no-insert)
   "Implements the `handler' function for the record returned by 
-`nvp-bmk-make-record'."
-  (let ((file (bookmark-prop-get bmk 'filename))
-        (insert-p (nvp-bmk-ring-insert)))
+`nvp-bmk-make-record'. This functions updates the history cache unless NO-INSERT."
+  (let* ((file (bookmark-prop-get bmk 'filename))
+         (insert-p (or no-insert (nvp-bmk-ring-insert bmk))))
+    ;; (setq bookmark-default-file file)
     (if insert-p
         (let ((buf (save-window-excursion
                      (bookmark-load file t nil t)
@@ -164,54 +166,46 @@ behaviour of default)."
            `("" (buffer . ,buf) . ,(bookmark-get-bookmark-record bmk))))
       (user-error "Already at bookmark '%s'?" file))))
 
-;; (defvar nvp-bmk-cache
-;;   (nvp-cache-create 'ring
-;;     :filename ".bmk_history"
-;;     :insert-filter #'abbreviate-file-name
-;;     :save-predicate #'file-exists-p)
-;;   "Cache bookmark lists.")
+;;; Cycling through bookmark history
+(defun nvp-bmk-next-index (arg)
+  "Next index in bookmark history traversal."
+  (unless (ring-empty-p nvp-bmk-ring)
+    (if nvp-bmk-ring-index
+        (let ((sz (ring-length nvp-bmk-ring)))
+          (if (> nvp-bmk-ring-index sz) ; bookmarks may have been deleted
+              (1- sz)
+            ;; when cycling, offset by 1 in direction of arg
+            (mod (+ nvp-bmk-ring-index (if (> arg 0) 1 -1)) sz)))
+      ;; start from beg. or end
+      (if (>= arg 0) 0                       ; => most recent bookmark
+        (1- (ring-length nvp-bmk-ring))))))  ; <= go back to oldest
 
-;; Create bookmark record for bookmark-menu-list from current default
-;; (defun nvp-bmk-record-function ()
-;;   `((filename . ,(bookmark-buffer-file-name))
-;;     (handler  . nvp-bmk-handler)))
-
-;; (defun nvp-bmk-next-index (arg)
-;;   "Get next index in ring based on direction."
-;;   (if (and r-l)))
-
-(defun nvp-bmk-cycle-start (arg)
-  "Index to start a bookmark history traversal."
-  (if nvp-bmk-ring-index
-      ;; if a search is running, offset by 1 in direction of arg
-      (mod (+ nvp-bmk-ring-index (if (> arg 0) 1 -1))
-           (ring-length nvp-bmk-ring-insert))
-    ;; New search, start from beg. or end
-    (if (>= arg 0)
-        0                               ; First elt for forward
-      (1- (ring-length nvp-bmk-ring-insert)))))
-
-(defun nvp-bmk-cycle-previous (&optional next)
-  "Cycle through bookmark history."
+;; return the next/previous bookmark and update `nvp-bmk-ring-index'
+(defun nvp-bmk-next-bookmark (&optional arg)
+  "Go to the next bookmark if there is one, otherwise loop back to the oldest."
   (interactive)
-  (--when-let (funcall (if next #'ring-plus1 #'ring-minus1)))
-  (when-let
-      ((bmk
-        (funcall (if next #'nvp- #'nvp-cache-previous) nvp-bmk-cache)))
-    (unless (f-same-p bmk bookmark-default-file)
-      (when (> bookmark-alist-modification-count 0)
-        (bookmark-save))
-      (setq bookmark-default-file bmk)
-      (setq bookmark-alist nil)
-      (let (bookmark-bookmarks-timestamp)
-        (bookmark-maybe-load-default-file)
-        ;; (bookmark-bmenu-list)
-        ))))
+  (nvp-defq arg -1)
+  (--if-let (nvp-bmk-next-index arg)
+      (let* ((afile (ring-ref nvp-bmk-ring it))
+             (bmk (nvp-bmk-make-record afile)))
+        (setq nvp-bmk-ring-index it)
+        ;; doesn't change ordering of entries when cycling through history
+        (nvp-bmk-jump bmk 'no-insert))
+    (user-error "No %s bookmark - history should be empty?"
+                (if (< arg 0) "next" "previous"))))
 
-;; (defun nvp-bmk-cycle-next ()
-;;   "Cycle forward through bookmark list."
-;;   (interactive)
-;;   (nvp-bmk-cycle-previous 'next))
+(defun nvp-bmk-previous-bookmark ()
+  "Go back to the previous bookmark, if available."
+  (interactive)
+  (nvp-bmk-next-bookmark 1))
+
+;;; TODO: create new links to b/w bookmark files from bmenu
+(defun nvp-bmk-link (filename)
+  "Create new bookmark link from current to FILENAME."
+  (interactive "fBookmark file to link: ")
+  ;; XXX: ensure FILENAME is actually a bookmark file
+  (pcase-let ((`(,str . ,alist) (nvp-bmk-make-record filename)))
+    (bookmark-store str alist t)))
 
 ;; (defun nvp-bmk-create (filename &optional make-current link)
 ;;   "Create new bookmark file, prompting for FILENAME. 
@@ -235,9 +229,9 @@ behaviour of default)."
 ;;   (when make-current
 ;;     (nvp-bmk-handler (nvp-bmk-make-record filename))))
 
-;; FIXME: store overlays?
+;; FIXME: overlays sucx
 ;; Highlight entries
-(defvar nvp-bmk-regexp "^.*\\.bmk$" "Regexp to match bookmark entries.")
+(defvar nvp-bmk-regexp "_.*\\.bmk_$" "Regexp to match bookmark entries.")
 
 (defvar-local nvp-bmk-overlays nil)
 
@@ -259,16 +253,15 @@ behaviour of default)."
 
 (defun nvp-bmk-remove-overlays ()
   "Remove highlighting of bookmark entries."
-  (remove-overlays))
+  (remove-overlays (point-min) (point-max) 'face 'nvp-bmk-bookmark-highlight))
 
-
 (defvar nvp-bmk-to-bmk-mode-map
   (let ((map (make-sparse-keymap)))
     ;; (define-key map "c"               #'nvp-bmk-create)
-    ;; (define-key map (kbd "TAB")       #'nvp-bmk-cycle-next)
-    ;; (define-key map (kbd "C-M-n")     #'nvp-bmk-cycle-next)
-    ;; (define-key map (kbd "<backtab>") #'nvp-bmk-cycle-previous)
-    ;; (define-key map (kbd "C-M-p")     #'nvp-bmk-cycle-previous)
+    (define-key map (kbd "<tab>")     #'nvp-bmk-next-bookmark)
+    (define-key map (kbd "C-M-n")     #'nvp-bmk-next-bookmark)
+    (define-key map (kbd "<backtab>") #'nvp-bmk-previous-bookmark)
+    (define-key map (kbd "C-M-p")     #'nvp-bmk-previous-bookmark)
     (define-key map "f"               #'nvp-bmk-toggle-highlight)
     map))
 
@@ -287,12 +280,13 @@ and jumped between.
   :init-value nil
   :keymap nvp-bmk-to-bmk-mode-map
   :lighter " B2B"
-  (when nvp-bmk-to-bmk-mode
-    (setq-local bookmark-make-record-function 'nvp-bmk-make-record)
-    (nvp-bmk-toggle-highlight)
+  (if nvp-bmk-to-bmk-mode
+      (progn
+        (setq-local bookmark-make-record-function 'nvp-bmk-make-record)
+        (nvp-bmk-toggle-highlight))
     ;; (when (nvp-cache-empty-p nvp-bmk-cache)
     ;;   (nvp-cache-load nvp-bmk-cache))
-    ))
+    (nvp-bmk-remove-overlays)))
 
 (provide 'nvp-bookmark)
 ;;; nvp-bookmark.el ends here

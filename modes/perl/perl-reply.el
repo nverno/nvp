@@ -3,6 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
+(require 'perl-mode)
 (require 'cperl-mode)
 
 (defvar perl-reply-font-lock-keywords (cperl-load-font-lock-keywords-2))
@@ -43,17 +44,34 @@
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-(defun perl-reply-send-region (start end)
+(defun perl-reply-eval-region (start end)
   (interactive "r")
   (perl-reply-send-string (buffer-substring-no-properties start end)))
 
-(defun perl-reply-send-line ()
+(defun perl-reply-eval-line ()
   (interactive)
-  (perl-reply-send-region (line-beginning-position) (line-end-position)))
+  (perl-reply-eval-region (line-beginning-position) (line-end-position)))
 
-(defun perl-reply-send-buffer ()
+(defun perl-reply-eval-buffer ()
   (interactive)
-  (perl-reply-send-region (point-min) (point-max)))
+  (perl-reply-eval-region (point-min) (point-max)))
+
+(defun perl-reply-eval-last-sexp ()
+  (interactive))
+
+(defun perl-reply-eval-defun ()
+  (interactive))
+
+;;;###autoload
+(define-minor-mode perl-reply-minor-mode
+  "Minor mode for perl reply REPL."
+  :lighter " Reply"
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "C-c C-r") #'perl-reply-eval-region)
+            (define-key map (kbd "C-x C-e") #'perl-reply-eval-last-sexp)
+            (define-key map (kbd "C-c C-b") #'perl-reply-eval-buffer)
+            (define-key map (kbd "M-C-x")   #'perl-reply-eval-defun)
+            map))
 
 ;;;###autoload(defalias 'run-perl 'perl-reply-run)
 ;;;###autoload

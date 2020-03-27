@@ -8,15 +8,8 @@
 ;; - Emacs::PDE - tried it before
 ;;
 ;; TODO:
-;; - Abstract cycling chars
-;; - Examples:
-;;   - ESS cycles assign
-;;   - https://github.com/emacsmirror/cycle-quotes/blob/master/cycle-quotes.el
-;; - generic parse
 ;; - update compile: warnings / diagnostics, input in compilation comint buffer
-;;
-;; FIXME:
-;; - remove AC related plsense stuff
+;; - update support for jumping to modules / tags
 ;;
 ;;; Code:
 (eval-when-compile
@@ -25,9 +18,7 @@
 (require 'cperl-mode)
 (nvp-req 'nvp-perl 'subrs)
 (nvp-auto "find-lisp" 'find-lisp-find-files)
-
-(nvp-decls :f (auto-complete-mode
-               plsense-setup-current-buffer plsense-server-start))
+(nvp-decls)
 
 (nvp-with-w32
   ;; load windows environment helpers
@@ -43,7 +34,7 @@
   (nvp-back-chars-then-look "_[:alpha:]:\\->" "[_[:alpha:]:]+"))
 
 (defun nvp-perl--variable ()
-  (nvp-back-chars-then-look "[:alpha:]_$@#%*&=" "[[:alpha:]_$@#%*&]+"))
+  (nvp-back-chars-then-look "[:alnum:]_$@#%*&=" "[[:alnum:]_$@#%*&]+"))
 
 (put 'perl-module 'bounds-of-thing-at-point 'nvp-perl--module)
 (put 'perl-variable 'bounds-of-thing-at-point 'nvp-perl--variable)
@@ -80,30 +71,6 @@
       :buffer-fn get-buffer-create
       :proc-args (module))))
 
-;; -------------------------------------------------------------------
-;;; Completion
-
-;; FIXME: Remove AC related stuff
-;; switch b/w completion backends
-(defun nvp-perl-toggle-completion ()
-  (interactive)
-  (cond
-   ((bound-and-true-p auto-complete-mode)
-    (and (fboundp 'plsense-server-stop)
-         (plsense-server-stop))
-    (auto-complete-mode -1)
-    (and (require 'company nil t)
-         (company-mode)))
-   ((and (bound-and-true-p company-mode)
-         (fboundp 'plsense-config-default))
-    (company-mode -1)
-    (plsense-config-default)
-    (auto-complete-mode)
-    (plsense-setup-current-buffer)
-    (plsense-server-start))
-   (t (and (fboundp 'company-mode)
-           (company-mode)))))
-
 ;;; Eldoc
 (defun nvp-perl-eldoc-function ()
   (ignore-errors
@@ -130,11 +97,12 @@
 (defun nvp-perl-cycle-exit ()
   (unless (eq this-command 'keyboard-quit)
     (let ((char (char-before)))
-      (undo-boundary)
       (pcase char
-        (`?% (yas-expand-snippet
-              "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
-              '((yas-indent-line 'auto))))))))
+        (`?%
+         (undo-boundary)
+         (yas-expand-snippet
+          "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
+          '((yas-indent-line 'auto))))))))
 
 ;; FIXME: inserts in weird places
 ;; Add a new perl use statement after the existing use statements.
@@ -192,63 +160,6 @@
     (insert (format "p %s;" var))
     (comment-indent)
     (insert "DEBUG")))
-
-;; ------------------------------------------------------------
-;;; Find Stuff
-;; `perl-find-library' stuff
-
-;; build perl modules paths
-(nvp-define-cache-runonce nvp-perl--module-paths ()
-  (cl-remove-if-not
-   #'(lambda (dir)
-       (and (string-match "/" dir)
-            (file-exists-p dir)))
-   (car
-    (read-from-string
-     (shell-command-to-string
-      (eval-when-compile
-        (concat "perl -e '$\"=\"\\\" \\\"\";"
-                "print \"(\\\"@INC\\\")\"'")))))))
-
-;; Find all perl modules in directories on @INC, and cache
-;; searches for files ending in .pod or .pm and translates
-;; file path separators to '::'
-(nvp-define-cache-runonce nvp-perl-modules ()
-  (cl-mapcan
-   (lambda (dir)
-     (mapcar
-      (lambda (file)
-        (nvp-perl-replace-all
-         ;; chop suffixes
-         (rx (seq "." (| "pod" "pm") string-end))
-         ""
-         ;; convert file path separators to '::'
-         (nvp-perl-replace-all
-          "/" "::" (substring file (1+ (length dir))))))
-      (find-lisp-find-files
-       dir (rx (seq "." (| "pod" "pm") string-end)))))
-   (nvp-perl--module-paths)))
-
-;; return path to perl module
-(defun nvp-perl-module-path (module)
-  (let ((path
-         (shell-command-to-string (concat "perldoc -l " module))))
-    (and (not (string-match-p "No documentation" path))
-         (substring path 0 (1- (length path))))))
-
-;; completing read for installed modules
-(defun nvp-perl-read-module (&optional prompt default path)
-  (or default (setq default (thing-at-point 'perl-module t)))
-  (setq prompt (nvp-prompt-default (or prompt "Module: ") default))
-  (let ((module (nvp-completing-read prompt (nvp-perl-modules))))
-    (if path (nvp-perl-module-path module)
-      path)))
-
-(defun nvp-perl-jump-to-module (module)
-  "Jump to MODULE in other window."
-  (interactive (list (nvp-perl-read-module nil nil 'path)))
-  (with-demoted-errors "Error in nvp-perl-jump-to-module: %S"
-    (find-file-other-window module)))
 
 (provide 'nvp-perl)
 ;;; nvp-perl.el ends here

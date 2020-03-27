@@ -31,6 +31,8 @@
 
 ;; see `helm-iter-list', `helm-iter-circular'
 ;; #<marker at 16718 in helm-lib.el>
+;; also `helm-cycle-resume' #<marker at 115465 in helm.el> to resume
+;; iteration from a specific position -- currently this doesn't support that
 (defun nvp-cycle-iter (seq)
   "Circular iterator over SEQ."
   (let ((lis seq))
@@ -67,15 +69,15 @@
         (beg (point)))
     (lambda ()
       (interactive)
-      (when (> (point) beg)
-        ;; (undo-boundary)
-        (delete-region beg (point)))
-      (insert (nvp-cycle-next iter)))))
+      (with-silent-modifications        ; try not to pollute undo history
+        (when (> (point) beg)
+          (delete-region beg (point)))
+        (insert (nvp-cycle-next iter))))))
 
 ;;;###autoload
 (cl-defun nvp-cycle (key seq &key keymap
                          (iter-fn #'nvp-cycle-insert) 
-                         (exit-fn #'nvp-cycle-stop))
+                         exit-fn)
   "Cycle SEQ with KEYpresses indefinetly.
 ITER-FN is called to handle each element, called with iterator.
 KEYMAP if non-nil, is used when setting up a transient map with KEY bound to

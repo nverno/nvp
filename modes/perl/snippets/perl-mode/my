@@ -3,4 +3,4 @@
 # key: my
 # type: command
 # --
-(nvp-perl-cycle '("$" "@" "%"))
+(insert "my ")(nvp-perl-cycle '("$" "@" "%"))

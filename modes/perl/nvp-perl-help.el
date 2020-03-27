@@ -37,6 +37,66 @@
 (require 'man)
 (require 'pos-tip)
 
+;; ------------------------------------------------------------
+;;; Find Stuff
+;; `perl-find-library' stuff
+;; XXXX: probably just build module cache using external perl script
+;; although this takes barely a second anyway
+
+;; build perl modules paths
+(nvp-define-cache-runonce nvp-perl--module-paths ()
+  (cl-remove-if-not
+   #'(lambda (dir)
+       (and (string-match "/" dir)
+            (file-exists-p dir)))
+   (car
+    (read-from-string
+     (shell-command-to-string
+      (eval-when-compile
+        (concat "perl -e '$\"=\"\\\" \\\"\";"
+                "print \"(\\\"@INC\\\")\"'")))))))
+
+;; Find all perl modules in directories on @INC, and cache
+;; searches for files ending in .pod or .pm and translates
+;; file path separators to '::'
+(nvp-define-cache-runonce nvp-perl-modules ()
+  (cl-mapcan
+   (lambda (dir)
+     (mapcar
+      (lambda (file)
+        (nvp-perl-replace-all
+         ;; chop suffixes
+         (rx (seq "." (| "pod" "pm") string-end))
+         ""
+         ;; convert file path separators to '::'
+         (nvp-perl-replace-all
+          "/" "::" (substring file (1+ (length dir))))))
+      (find-lisp-find-files
+       dir (rx (seq "." (| "pod" "pm") string-end)))))
+   (nvp-perl--module-paths)))
+
+;; return path to perl module
+(defun nvp-perl-module-path (module)
+  (let ((path
+         (shell-command-to-string (concat "perldoc -l " module))))
+    (and (not (string-match-p "No documentation" path))
+         (substring path 0 (1- (length path))))))
+
+;; completing read for installed modules
+(defun nvp-perl-read-module (&optional prompt default path)
+  (nvp-defq default (thing-at-point 'perl-module t))
+  (setq prompt (nvp-prompt-default (or prompt "Module: ") default))
+  (let ((module (nvp-completing-read prompt (nvp-perl-modules))))
+    (if path (nvp-perl-module-path module)
+      path)))
+
+;;;###autoload
+(defun nvp-perl-jump-to-module (module)
+  "Jump to MODULE in other window."
+  (interactive (list (nvp-perl-read-module nil nil 'path)))
+  (with-demoted-errors "Error in nvp-perl-jump-to-module: %S"
+    (find-file-other-window module)))
+
 ;; -------------------------------------------------------------------
 ;;; Perldoc
 

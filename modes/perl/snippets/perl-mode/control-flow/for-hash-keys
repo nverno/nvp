@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-hash-keys
+# key: forkeys
+# --
+for my \$${1:key} (keys %${2:hash}) {
+  $0
+}

@@ -111,6 +111,8 @@
        nvp-mode-header-regex
        ;; bindings
        nvp-autoload-keymap
+       ;; nvp-cycle.el
+       nvp-cycle
        ;; reading
        nvp-read-elisp-symbol
        nvp-read-elisp-function

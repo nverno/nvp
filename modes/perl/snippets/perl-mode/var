@@ -3,4 +3,4 @@
 # key: _
 # type: command
 # --
-(insert "$")(nvp-perl-my-toggle)
+(nvp-perl-cycle '("$_" "@_"))

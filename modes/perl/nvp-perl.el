@@ -123,33 +123,18 @@
       (beginning-of-line)
       (looking-at-p ".*%.*="))))
 
-(defun nvp-perl-my-cycle ()
-  "Cycle between [$ @ %] after 'my' abbrev expansion."
-  (interactive)
-  (let ((char (char-before)))
-    (pcase char
-      (?$ (delete-char -1) (insert "@"))
-      (?@ (delete-char -1) (insert "%"))
-      (?% (delete-char -1) (insert "$")))))
+(defun nvp-perl-cycle (seq)
+  (nvp-cycle (kbd "<tab>") seq :exit-fn #'nvp-perl-cycle-exit))
 
 ;; hook run after 'my' abbrev toggle is done
-(defun nvp-perl-my-exit ()
+(defun nvp-perl-cycle-exit ()
   (unless (eq this-command 'keyboard-quit)
     (let ((char (char-before)))
+      (undo-boundary)
       (pcase char
-        (`?% (yas-expand-snippet "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
-                                 '((yas-indent-line 'auto))))))))
-
-(defvar nvp-perl-my-map
-  (let ((km (make-sparse-keymap)))
-    (define-key km (kbd "<tab>") 'nvp-perl-my-cycle)
-    km))
-
-(defun nvp-perl-my-toggle ()
-  (set-transient-map nvp-perl-my-map t 'nvp-perl-my-exit))
-
-;; don't insert a space after expanding 
-(put 'nvp-perl-my-toggle 'no-self-insert t)
+        (`?% (yas-expand-snippet
+              "$1${2: = (\n  ${3:x} => $4\n$0);}" nil nil
+              '((yas-indent-line 'auto))))))))
 
 ;; FIXME: inserts in weird places
 ;; Add a new perl use statement after the existing use statements.

@@ -12,7 +12,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
 (nvp-req 'nvp-shell 'subrs)
-(eval-and-compile (require 'nvp-sh-help))
+(require 'nvp-sh-help)
 (require 'eldoc)
 
 (defvar nvp-sh-eldoc-cache (make-hash-table :test 'equal))

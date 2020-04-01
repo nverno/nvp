@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: my-args
+# key: my_
+# --
+my ($1) = @_;

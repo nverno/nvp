@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-of/in
+# key: fori
+# --
+for (${1:let} ${2:item} of ${2:collection}) {
+  $0
+}

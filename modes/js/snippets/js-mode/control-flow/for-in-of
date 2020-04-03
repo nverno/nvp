@@ -2,6 +2,6 @@
 # name: for-of/in
 # key: fori
 # --
-for (${1:let} ${2:item} of ${2:collection}) {
+for (${1:let} ${2:item} of ${3:collection}) {
   $0
 }

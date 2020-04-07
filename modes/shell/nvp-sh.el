@@ -158,8 +158,6 @@ Replacement for `sh-shell-process', which see."
 ;; -------------------------------------------------------------------
 ;;; Cleanup / Align
 
-(require 'align)
-
 ;; FIXME: these rules can be useful for other modes: makefile, automake, etc.
 ;; alignment rules to align '\' not in strings/comments and
 ;; align end-of-line comments

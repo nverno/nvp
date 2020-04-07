@@ -189,6 +189,13 @@ With prefix, prompts for DATE."
             (error "Auth entry for %s@%s:%s has no secret" user host port)))
       (error "No auth entry found for %s@%s:%s" user host port))))
 
+(nvp-decl count-words-region count-lines-page)
+;;;###autoload
+(defun nvp-count-lines-or-region (arg)
+  (interactive "P")
+  (if arg (funcall-interactively #'count-words-region (region-beginning) (region-end))
+    (call-interactively #'count-lines-page)))
+
 ;;;###autoload
 (defun nvp-insert-unicode ()
   "Quick insert unicode character."

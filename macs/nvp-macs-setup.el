@@ -110,6 +110,7 @@
      do (let ((f (expand-file-name program p)))
           (and (file-exists-p f)
                (file-executable-p f)
+               (not (file-directory-p f))
                (cl-return f)))))
 
 ;; PATH can contain environment variables to expand

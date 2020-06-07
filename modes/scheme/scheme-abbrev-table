@@ -34,7 +34,8 @@
   :regexp "\\(?:^\\|[^A-Za-z0-9_.#/-]\\)\\([A-Za-z0-9_.#/-]+\\)")
 
 (define-abbrev-table 'racket-mode-abbrev-table
-  '(
+  '(("def" "define" nil :system t)
+
     ("r" "require" nil :system t)
     
     ("n?" "number?" nil :system t)

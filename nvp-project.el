@@ -36,6 +36,7 @@ Otherwise, look for version control directories, returing the longest path."
 ;;;###autoload
 (defun nvp-project-info ()
   "Display info for current project."
+  (interactive)
   (if (projectile-project-p)
       (projectile-project-info)
     (message "Not in a known project.")))

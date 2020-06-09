@@ -37,7 +37,7 @@ Decrement with prefix."
        (replace-match (number-to-string (+ inc (string-to-number ms)))))
      "\\([-]?[[:digit:]]+\\)" bnds 1))
   (nvp-repeat-command ?= nil
-    `(("-" (nvp-lam nil
+    `(("-" (lambda nil
              (interactive)
              (nvp-toggle-increment-numbers 1 ',bnds -1))
        :msg "decrement"))))
@@ -68,20 +68,20 @@ Decrement with prefix."
     (delete-region (point) (line-end-position))))
 
 (eval-when-compile 
- ;; get value corresponding to variable which may be shortened, eg. `mode'
- (defsubst nvp-toggle--normalize-var (var)
-   (pcase var
-     (`mode major-mode)
-     (`coding buffer-file-coding-system)
-     (_ (if (and (symbolp var)
-                 (boundp var))
-            (symbol-value var)))))
+  ;; get value corresponding to variable which may be shortened, eg. `mode'
+  (defsubst nvp-toggle--normalize-var (var)
+    (pcase var
+      (`mode major-mode)
+      (`coding buffer-file-coding-system)
+      (_ (if (and (symbolp var)
+                  (boundp var))
+             (symbol-value var)))))
 
- ;; normalize possible shortened mode names
- (defsubst nvp-toggle--normalize-mode (val)
-   (let ((str (nvp-as-string val)))
-     (if (string-match-p "-mode\\'" str) val
-       (intern (concat str "-mode"))))))
+  ;; normalize possible shortened mode names
+  (defsubst nvp-toggle--normalize-mode (val)
+    (let ((str (nvp-as-string val)))
+      (if (string-match-p "-mode\\'" str) val
+        (intern (concat str "-mode"))))))
 
 ;;;###autoload
 (defun nvp-toggle-local-variable (var &optional val dir footer)
@@ -200,7 +200,7 @@ the current paragraph."
 (nvp-define-cache-runonce nvp-toggle-brackets-table ()
   (let ((tbl (make-string 256 0)))
     (cl-loop for i from 0 upto 255
-       do (aset tbl i i))
+          do (aset tbl i i))
     tbl))
 
 ;;;###autoload
@@ -222,7 +222,7 @@ the current paragraph."
 (nvp-define-cache-runonce nvp-toggle-strings-table ()
   (let ((tbl (make-string 256 0)))
     (cl-loop for i from 0 upto 255
-       do (aset tbl i i))
+          do (aset tbl i i))
     tbl))
 
 (defun nvp-bounds-of-string-at-point (&optional pt)

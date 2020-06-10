@@ -14,6 +14,10 @@
                   (concat (file-name-sans-extension (buffer-file-name)) ".css"))))
     (call-interactively 'nvp-compile)))
 
+(nvp-font-lock-add-defaults 'less-css-mode
+  ;; Mixins w/ parameters
+  ("\\(?:[ \t{;]\\|^\\)\\(\\.[a-z_-][a-z-_0-9]*\\)[ \t]*\("
+   (1 font-lock-keyword-face prepend)))
 
 (provide 'nvp-css)
 ;; Local Variables:

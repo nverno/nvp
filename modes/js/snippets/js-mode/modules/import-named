@@ -2,4 +2,4 @@
 # name: import-named
 # key: imp.
 # --
-import ${2:{ $3 }} from '$1';
+import ${2:{ $3 \}} from '$1';

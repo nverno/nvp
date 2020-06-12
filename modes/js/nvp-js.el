@@ -134,7 +134,7 @@
     (pcase (or old-mode major-mode)
       ('rjsx-mode                      ; => js-jsx-mode w/ js2-minor-mode
        (nvp-js-switch-mode 'js-mode)
-       (nvp-jsx-hook))
+       (nvp-js-jsx-hook))
       ('js2-mode (nvp-js-switch-mode 'rjsx-mode))
       ((or 'js-mode 'js-jsx-mode)
        (when (bound-and-true-p js2-minor-mode)

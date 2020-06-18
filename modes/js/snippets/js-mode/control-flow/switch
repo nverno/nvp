@@ -1,12 +1,12 @@
 # -*- mode: snippet -*-
 # name: switch... case... default
-# key: switchd
+# key: swi
 # --
 switch (${1:variable}) {
-case ${2:match}:
-    $0
+${2:case ${3:match}:
+    $4
     break;
-default:
-    
+}default:
+    $0
     break;
 }

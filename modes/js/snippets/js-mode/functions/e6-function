@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: e6 function
+# key: f
+# --
+`(if $% (concat "const " $% " = ") "")`($1) => {$2}`($>)`

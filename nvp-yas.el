@@ -9,11 +9,12 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(eval-and-compile (require 'yasnippet))
+(defvaralias '% 'yas-selected-text)
 (nvp-decls :v (yas-moving-away-p yas-modified-p))
 (nvp-auto "nvp-parse" 'nvp-parse-current-function)
 (nvp-auto "s" 's-upper-camel-case 's-snake-case)
 
-(defalias 'yas-comment-string 'nvp-yas-comment)
 ;; yas-inside-string uses `font-lock-string-face'
 (defsubst nvp-yas-in-string () (nth 3 (syntax-ppss)))
 (defsubst nvp-yas-in-comment () (nth 4 (syntax-ppss)))
@@ -23,6 +24,8 @@
 (defsubst nvp-yas-dfn () (nvp-path 'ds))
 (defsubst nvp-yas-ext () (nvp-path 'ext))
 (defsubst nvp-yas-indent () (current-indentation))
+
+(defalias 'yas-comment-string 'nvp-yas-comment)
 
 ;; Or patterns
 (defsubst nvp-yas-or-values (str &optional seps)

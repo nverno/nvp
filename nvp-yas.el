@@ -10,10 +10,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'yasnippet))
-(defvaralias '% 'yas-selected-text)
-(nvp-decls :v (yas-moving-away-p yas-modified-p))
 (nvp-auto "nvp-parse" 'nvp-parse-current-function)
 (nvp-auto "s" 's-upper-camel-case 's-snake-case)
+
+(defvaralias '$% 'yas-selected-text)
+(nvp-decls :v (yas-moving-away-p yas-modified-p))
 
 ;; yas-inside-string uses `font-lock-string-face'
 (defsubst nvp-yas-in-string () (nth 3 (syntax-ppss)))
@@ -31,6 +32,37 @@
 (defsubst nvp-yas-or-values (str &optional seps)
   (split-string str (or seps "[\]\[|]") 'omit " "))
 
+;; -------------------------------------------------------------------
+;;; Expansion helpers
+;; see doom-snippets.el
+(defun nvp-yas-count-lines (str)
+  (if (and (stringp str)
+           (not (string-empty-p str)))
+      (length (split-string str "\\(\r\n\\|[\r\n]\\)"))
+    0))
+
+(defun nvp-yas-format (format &optional default trim)
+  "Returns formatted string (see `doom-snippets-format').
+If TRIM is non-nil, whitespace is removed from selected text.
+
+  %s  `yas-selected-text' or DEFAULT
+  %n  A newline, if current selection spans more than a single line
+  %e  A newline, unless the point is at EOL"
+  (let* ((text (or yas-selected-text default ""))
+         (text (if trim (string-trim text) text)))
+    (format-spec format
+                 `((?s . ,text)
+                   (?n . ,(if (> (nvp-yas-count-lines text) 1) "\n" ""))
+                   (?e . ,(if (eolp) "" "\n"))))))
+
+(defun nvp-yas-newline-selected-newline () (nvp-yas-format "%n%s%n" nil t))
+(defun nvp-yas-newline-selected () (nvp-yas-format "%s%n" nil t))
+(defun nvp-yas-newline-or-eol () (nvp-yas-format "%e"))
+(defalias '$!%! 'nvp-yas-newline-selected-newline)
+(defalias '$!% 'nvp-yas-newline-selected)
+(defalias '$$ 'nvp-yas-newline-or-eol)
+(defalias '$format 'nvp-yas-format)
+
 ;;; -------------------------------------------------------------------
 ;; Comments
 
@@ -39,8 +71,8 @@
 If PADLEN is non-nil, start with PADLEN comment starters."
   (let* ((ctrim (string-trim-right comment-start))
          (comment (if (or (derived-mode-p 'c-mode)
-                         (memq major-mode '(python-mode))
-                         (string= comment-end ""))
+                          (memq major-mode '(python-mode))
+                          (string= comment-end ""))
                       ctrim
                     (concat ctrim ctrim))))
     (when (and padlen (> padlen (length comment)))

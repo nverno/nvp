@@ -301,7 +301,7 @@ If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s
        return (cl-loop for place in places
                  as root = (if (symbolp place) (symbol-value place) place)
                  as loc-name = (expand-file-name loc root)
-                 when (file-exists-p loc-name)
+                 when (or file (file-exists-p loc-name))
                  return (if file (directory-file-name loc-name)
                           (file-name-as-directory loc-name))))))
 

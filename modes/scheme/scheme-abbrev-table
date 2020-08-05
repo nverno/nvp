@@ -11,7 +11,7 @@
   :enable-function 'nvp-scheme-abbrev-expand-p)
 
 (define-abbrev-table 'guile-mode-abbrev-table
-  '(("i" "ice-9" nil :system t)
+  '(;;("i" "ice-9" nil :system t)
 
     ("di" "display" nil :system t)
     ("ds" "define-syntax" nil :system t)

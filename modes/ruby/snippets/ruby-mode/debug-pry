@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: pry
+# key: pry
+# --
+require 'pry'; bindings.pry

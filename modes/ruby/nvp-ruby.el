@@ -4,8 +4,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'ruby-mode)
 (require 'inf-ruby)
-(nvp-decl ruby-compilation-this-buffer projectile-rails-root robe-mode robe-start)
-(nvp-decls)
+(nvp-decls
+ :f (ruby-compilation-this-buffer projectile-rails-root robe-mode robe-start))
 
 (defun nvp-ruby--buffer-requires ()
   (save-excursion

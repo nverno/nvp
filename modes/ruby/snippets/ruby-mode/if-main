@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ifmain
+# key: ifmain
+# --
+if __FILE__ == $PROGRAM_NAME
+  $0
+end

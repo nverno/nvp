@@ -34,8 +34,9 @@
        ("E"     . end-of-buffer)
        ("/"     . isearch-forward)
        ("?"     . isearch-backward)
-       ("SPC"   . scroll-down)
-       ("S-SPC" . scroll-up)))))
+       ("SPC"   . scroll-up)
+       ("i"     . scroll-down)
+       ("S-SPC" . scroll-down)))))
 
 ;;; Helpers
 

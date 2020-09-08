@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: color-vars
+# key: colors
+# --
+esc=\$(printf '\033')
+red=\${esc}'[0;31m'
+blue=\${esc}'[0;34m'
+green=\${esc}'[0;32m'
+reset=\${esc}'[0m'

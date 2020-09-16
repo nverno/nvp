@@ -5,6 +5,7 @@
     ("inc"    "include" nil   :system t)  
     ("mod"    "module"  nil   :system t)  
     ("req"    ["require ''" 1 nil nil] expand-abbrev-hook :system t) 
+    ("reqr" ["require_relative ''" 1 nil nil] expand-abbrev-hook nil :system t)
     ("stdin"  "STDIN"   nil   :system t)  
     ("stderr" "STDERR"  nil   :system t)  
     ("stdout" "STDOUT"  nil   :system t))

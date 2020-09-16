@@ -150,7 +150,7 @@ See the variable `align-rules-list' for more details.")
 ;;; Rspec
 
 (defconst nvp-rspec-font-lock-keywords
-  `((,(regexp-opt '("expect" "describe" "it" "context") 'symbols)
+  `((,(regexp-opt '("expect" "describe" "it" "context" "before") 'symbols)
       (1 font-lock-function-name-face))))
 
 (defun nvp-rspec-font-lock ()

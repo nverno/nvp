@@ -189,12 +189,15 @@ If FILE is non-nil, read abbrevs from FILE."
   (message "Activated %s abbrevs locally." table))
 
 ;;;###autoload
-(defun nvp-abbrev-load-unicode ()
-  "Add unicode abbrevs as parent of local abbrev table."
-  (interactive)
-  (nvp-abbrev-add-parent
-   "unicode-latex-abbrev-table"
-   (expand-file-name "unicode-latex-abbrev-table" nvp/abbrevs)))
+(defun nvp-abbrev-load-unicode (arg)
+  "Add unicode abbrevs as parent of local abbrev table.
+With prefix, unload unicode abbrevs."
+  (interactive "P")
+  (if arg
+      (nvp-abbrev-remove-parent unicode-latex-abbrev-table)
+    (nvp-abbrev-add-parent
+     "unicode-latex-abbrev-table"
+     (expand-file-name "unicode-latex-abbrev-table" nvp/abbrevs))))
 
 ;;;###autoload
 (defun nvp-abbrev-remove-parent (table &optional parents)
@@ -208,7 +211,8 @@ If FILE is non-nil, read abbrevs from FILE."
            parents)))
   (let ((new-p (mapcar #'symbol-value (remq table parents))))
     (abbrev-table-put local-abbrev-table :parents new-p))
-  (message "Removed local %S abbrevs." table))
+  (message "Removed local %S abbrevs."
+           (if (abbrev-table-p table) (abbrev-table-name table) table)))
 
 ;; write abbrev table
 ;; temporarily rebind `abbrev--write' to write :system abbrevs

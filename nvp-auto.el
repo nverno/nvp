@@ -203,6 +203,7 @@ With prefix, prompts for DATE."
   (insert
    (nvp-read-char-case "Char: " 'verbose
      (?c "[c]heck" "✓")
+     (?i "[i]n" "∈")
      (?s "[s]mile" "☻")
      (?p "[p]rev" "└─"))))
 

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: describe
-# key: des
+# key: describe
 # --
 describe ${1:"${2:something under test}"} do
   $0

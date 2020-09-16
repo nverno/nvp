@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: context
-# key: con
+# key: context
 # --
 context "${1:in this context}" do
   $0

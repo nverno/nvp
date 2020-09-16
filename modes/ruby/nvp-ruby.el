@@ -125,6 +125,7 @@ See the variable `align-rules-list' for more details.")
     (dolist (it ruby-align-rules-list)
       (add-to-list 'align-rules-list it))))
 
+;; -------------------------------------------------------------------
 ;;; Debug
 
 (defun nvp-ruby--insert-breakpoint ()
@@ -144,6 +145,17 @@ See the variable `align-rules-list' for more details.")
   (interactive "P")
   (if arg (nvp-ruby--remove-breakpoints)
     (nvp-ruby--insert-breakpoint)))
+
+;; -------------------------------------------------------------------
+;;; Rspec
+
+(defconst nvp-rspec-font-lock-keywords
+  `((,(regexp-opt '("expect" "describe" "it" "context") 'symbols)
+      (1 font-lock-function-name-face))))
+
+(defun nvp-rspec-font-lock ()
+  (font-lock-add-keywords 'ruby-mode nvp-rspec-font-lock-keywords))
+
 
 (provide 'nvp-ruby)
 

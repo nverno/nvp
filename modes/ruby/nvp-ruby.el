@@ -43,8 +43,10 @@
 (defun nvp-ruby-start-robe ()
   (interactive)
   (robe-mode)
-  (inf-ruby)
-  (robe-start))
+  (save-window-excursion
+    (inf-ruby))
+  (robe-start)
+  (get-buffer-process inf-ruby-buffer))
 
 ;;; Compile
 (defun nvp-ruby-compile ()
@@ -52,16 +54,17 @@
   (ruby-compilation-this-buffer)
   (other-window 1))
 
+;; -------------------------------------------------------------------
 ;;; REPL
+
 ;; add compilation jumps in traceback output from REPL
 (defvar nvp-ruby-inf-compilation-regexp
   '("^\\s-+[0-9]+: from \\([^\(][^:]+\\):\\([0-9]+\\)" 1 2))
 
-(defun nvp-ruby-switch-to-repl (eob-p)
-  (interactive "P")
-  (if (buffer-live-p (bound-and-true-p inf-ruby-buffer))
-      (ruby-switch-to-inf eob-p)
-    (nvp-ruby-start-robe)))
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(ruby-mode)
+    :modes '(inf-ruby-mode)
+    :init #'nvp-ruby-start-robe))
 
 (defun nvp-ruby-send-block ()
   (interactive)
@@ -87,14 +90,13 @@
    (point-min)
    (point-max)))
 
-;;; Fold
+;; -------------------------------------------------------------------
+;;; Fold / Align
 
 (defvar hs-special-modes-alist)
 (with-eval-after-load 'hideshow
   (unless (assoc 'ruby-mode hs-special-modes-alist)
     (push (list 'ruby-mode "\\(def\\|do\\)" "end" "#") hs-special-modes-alist)))
-
-;;; Tidy / Align
 
 ;; ruby-hacks.el
 ;; setup align for ruby-mode
@@ -151,16 +153,11 @@ See the variable `align-rules-list' for more details.")
 
 (defconst nvp-rspec-font-lock-keywords
   `((,(regexp-opt '("expect" "describe" "it" "context" "before") 'symbols)
-      (1 font-lock-function-name-face))))
+     (1 font-lock-function-name-face))))
 
 (defun nvp-rspec-font-lock ()
   (font-lock-add-keywords 'ruby-mode nvp-rspec-font-lock-keywords))
 
 
 (provide 'nvp-ruby)
-
-;;; Local Variables:
-;;; lisp-indent-function: common-lisp-indent-function
-;;; End:
-
 ;;; nvp-ruby.el ends here

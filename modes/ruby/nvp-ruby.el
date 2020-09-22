@@ -67,14 +67,20 @@
     :init #'nvp-ruby-start-robe))
 
 ;; Interpret '?' in irb similar to octave/ess
+(defconst nvp-ruby-inf-help
+  '(("ruby" . "help\n%s\n")
+    ("pry" . "show-doc %s")))
+
 (defun nvp-ruby-inf-sender (proc str)
   (-if-let
       (help-str (and (string-match "^ *\\? *\\(.+\\)" str)
                      (match-string 1 str)))
       (progn
-        (comint-simple-send proc "help")
-        (comint-simple-send proc help-str)
-        (process-send-string proc "\n"))
+        (comint-simple-send
+         proc
+         (format
+          (cdr (assoc inf-ruby-default-implementation nvp-ruby-inf-help))
+          help-str)))
     (comint-simple-send proc str)))
 
 (defun nvp-ruby-send-block ()

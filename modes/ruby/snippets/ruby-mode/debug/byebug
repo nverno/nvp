@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: byebug
+# key: bye
+# --
+require 'byebug'; debugger

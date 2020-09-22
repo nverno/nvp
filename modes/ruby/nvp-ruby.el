@@ -44,7 +44,7 @@
   (interactive)
   (robe-mode)
   (save-window-excursion
-    (inf-ruby))
+    (inf-ruby inf-ruby-default-implementation))
   (robe-start)
   (get-buffer-process inf-ruby-buffer))
 

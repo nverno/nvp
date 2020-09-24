@@ -26,12 +26,12 @@
 
 ;; Set GOROOT depending on current version after switching with asdf
 ;; run locally in go-mode hook
-(defun nvp-go-asdf-hook (&optional asdf-home)
-  (let ((ver (asdf-current-version "golang")))
-    (when ver
-      (setenv "GOROOT" (expand-file-name
-                        (format "%s/installs/golang/%s/go"
-                                (or asdf-home "~/.asdf") ver))))))
+;; (defun nvp-go-asdf-hook (&optional asdf-home)
+;;   (let ((ver (asdf-current-version "golang")))
+;;     (when ver
+;;       (setenv "GOROOT" (expand-file-name
+;;                         (format "%s/installs/golang/%s/go"
+;;                                 (or asdf-home "~/.asdf") ver))))))
 
 ;;; Tag
 

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: readlines
+# key: readlines
+# --
+${1:s} := bufio.NewScanner(os.Stdin)
+for $1.Scan() {
+	$0// $1.Text()
+}

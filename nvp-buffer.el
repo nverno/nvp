@@ -102,7 +102,7 @@ With prefix, prompt for MODE buffers to kill."
    `(let ((remote-method (file-remote-p default-directory 'method))
           (remote-host (file-remote-p default-directory 'host))
           (remote-localname (file-remote-p default-directory 'localname)))
-      (,func (format "/%s:root:@%s:%s"
+      (,func (format "/%s:root@%s:%s"
                      (or remote-method "sudo")
                      (or remote-host "localhost")
                      (or remote-localname

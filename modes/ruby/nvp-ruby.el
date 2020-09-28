@@ -69,7 +69,7 @@
 ;; Interpret '?' in irb similar to octave/ess
 (defconst nvp-ruby-inf-help
   '(("ruby" . "help\n%s\n")
-    ("pry" . "show-doc %s")))
+    ("pry" . "show-source -d %s")))
 
 (defun nvp-ruby-inf-sender (proc str)
   (-if-let

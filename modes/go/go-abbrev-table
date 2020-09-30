@@ -5,4 +5,4 @@
     ("ret" "return" nil :system t)
     )
   "Go-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table unicode-latex-abbrev-table))
+  :parents (list prog-mode-abbrev-table))

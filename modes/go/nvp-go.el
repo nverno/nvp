@@ -106,6 +106,11 @@
 ;; -------------------------------------------------------------------
 ;;; Interactive
 
+;;; Newline dwim
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode go-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
 ;;; Insert/Toggle
 ;; insert import if not there
 (defun nvp-go-insert-import (import)
@@ -159,12 +164,6 @@
           (forward-line -1)
           (indent-according-to-mode)
           (yas-expand-snippet stmt))))))
-
-;;; Newline dwim
-(nvp-newline nvp-go-newline-dwim nil
-  :pairs (("{" "}") ("(" ")"))
-  :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
-  :comment-start " * ")
 
 ;;; Compile / Run
 

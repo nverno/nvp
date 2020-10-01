@@ -167,24 +167,6 @@
   :comment-start " * ")
 
 ;;; Compile / Run
-;; (eval-when-compile
-;;   (defmacro nvp-go-compile-with-completion (args cmd prompt &rest body)
-;;    (declare (indent defun) (debug t))
-;;    `(nvp-compile-with-switch-completion "go" ,args ,cmd ,prompt
-;;       ,@body)))
-
-;; compile with minibuffer completion for command line switches
-;; (defvar go-build--switches nil)
-(defun nvp-go-compile (_arg)
-  (interactive "P")
-  ;; (if (not arg)
-  ;;     (let ((compile-command (format "go build %s" buffer-file-name))
-  ;;           (compilation-read-command))
-  ;;       (call-interactively 'compile))
-  ;;   (nvp-go-compile-with-completion '("build" "--help")
-  ;;     ;; 'go-build--switches
-  ;;     "go build" "go build args: "))
-  )
 
 (defun nvp-go-run-main ()
   (interactive)

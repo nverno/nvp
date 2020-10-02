@@ -119,7 +119,7 @@
 ;; t.sS => \\bt[[:alnum:]]*\\.s[[:alnum:]]*.S[[:alnum:]]*[[:alnum:]._]*\\b
 ;; so it would match "this.setState"
 (defun nvp-he-make-flex-camel-matcher (&optional pre-re join-re after-re)
-  (nvp-defq pre-re "[/_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
+  (nvp-defq pre-re "[-/_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
   `(lambda (s)
      (let ((case-fold-search))
        (concat

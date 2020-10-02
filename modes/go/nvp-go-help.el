@@ -5,8 +5,7 @@
 ;; help-at-point for go source
 
 ;;; Code:
-(eval-when-compile (require 'nvp-macro)
-  (defvar godoc-command))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp-go)
 (nvp-decls :v (godoc-command)
            :f (godoc-and-godef godoc-at-point godoc-gogetdoc godoc--read-query))

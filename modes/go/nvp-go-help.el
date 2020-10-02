@@ -5,14 +5,11 @@
 ;; help-at-point for go source
 
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
+(eval-when-compile (require 'nvp-macro)
   (defvar godoc-command))
 (require 'nvp-go)
-(declare-function godoc-and-godef "go-mode")
-(declare-function godoc-at-point "go-mode")
-(declare-function godoc-gogetdoc "go-mode")
-(declare-function godoc--read-query "go-mode")
+(nvp-decls :v (godoc-command)
+           :f (godoc-and-godef godoc-at-point godoc-gogetdoc godoc--read-query))
 (autoload 'pos-tip-show "pos-tip")
 
 ;; if non-nil use gtk tooltips
@@ -127,31 +124,34 @@ Special floats: NaN, +Inf, -Inf. Use math.IsNaN, math.NaN"))
 ;;;###autoload
 (defun nvp-go-help-at-point (arg)
   (interactive "P")
-  (with-syntax-table nvp-go-help-symbol-syntax
-    (let* ((bnds (bounds-of-thing-at-point 'symbol))
-           (sym (thing-at-point 'symbol)))
-      (cond
-       ((null sym)
-        (call-interactively 'godoc))
-       ;; Formatted strings
-       ((nth 3 (syntax-ppss))
-        (save-excursion
-          ;; back out of string and function call
-          (ignore-errors (up-list -2 t))
-          ;; if we in string in formatting function
-          (and (string-match-p
-                "\\(?:fmt\\|log\\).*f$" (thing-at-point 'symbol))
-               (nvp-go-help-string-format))))
-       ;; Types
-       ((string-match-p nvp-go-type-re sym)
-        (nvp-go-help-types))
-       ;; call popup versions of godoc or gogetdoc
-       ;; use point at end of symbol so fm|t.Printf returns help for
-       ;; Printf
-       (t
-        (if arg
-            (funcall-interactively #'nvp-go-help-gogetdoc-at-point (1- (cdr bnds)))
-          (funcall-interactively #'nvp-go-help-godoc-at-point (1- (cdr bnds)))))))))
+  (or (x-hide-tip)
+      (with-syntax-table nvp-go-help-symbol-syntax
+        (let* ((bnds (bounds-of-thing-at-point 'symbol))
+               (sym (thing-at-point 'symbol)))
+          (cond
+           ((null sym)
+            (call-interactively 'godoc))
+           ;; Formatted strings
+           ((nth 3 (syntax-ppss))
+            (save-excursion
+              ;; back out of string and function call
+              (ignore-errors (up-list -2 t))
+              ;; if we in string in formatting function
+              (and (string-match-p
+                    "\\(?:fmt\\|log\\).*f$" (thing-at-point 'symbol))
+                   (nvp-go-help-string-format))))
+           ;; Types
+           ((string-match-p nvp-go-type-re sym)
+            (nvp-go-help-types))
+           ;; call popup versions of godoc or gogetdoc
+           ;; use point at end of symbol so fm|t.Printf returns help for
+           ;; Printf
+           (t
+            (if arg
+                (funcall-interactively
+                 #'nvp-go-help-gogetdoc-at-point (1- (cdr bnds)))
+              (funcall-interactively
+               #'nvp-go-help-godoc-at-point (1- (cdr bnds))))))))))
 
 (provide 'go-help)
 ;;; nvp-go-help.el ends here

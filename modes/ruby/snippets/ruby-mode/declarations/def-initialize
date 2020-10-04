@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
-# name: def initialize
-# key: defi
+# name: initialize
+# key: init
 # --
-def initialize${1:$(if (> (length yas-text) 0) "(" "")}${1:args}${1:$(if (> (length yas-text) 0) ")" "")}
-  $0
+def initialize(${1:args})$0${1:$(if (> (length yas-text) 0) (concat "\n" (nvp-ruby-yas-init-args)))}
 end

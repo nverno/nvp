@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: fork
-# key: for
+# key: fork
 # --
 ${1:pid}${1:$(if (> (length yas-text) 0) " = " "")}fork do
   $0

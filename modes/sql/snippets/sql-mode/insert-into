@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: insert into
+# key: insi
+# --
+INSERT INTO $1
+    VALUES $2

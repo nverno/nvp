@@ -1,0 +1,13 @@
+;; -*- coding: utf-8; no-byte-compile: t; -*-
+
+(define-abbrev-table 'sql-mode-abbrev-table
+  '(("ins" "insert" nil :system t)
+    ("upd" "update" nil :system t)
+    ("del" "delete" nil :system t)
+    ("sel" "select" nil :system t)
+    ("pro" "procedure" nil :system t)
+    ("fun" "function" nil :system t)
+    ("cre" "create" nil :system t))
+  "Abbrev table used in `sql-mode' and `sql-interactive-mode'."
+  :parents (list fundamental-mode-abbrev-table)
+  :enable-function 'sql-in-code-context-p)

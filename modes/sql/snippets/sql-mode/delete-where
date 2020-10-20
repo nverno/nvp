@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: delete where
+# key: delw
+# --
+DELETE FROM $1
+  WHERE $2

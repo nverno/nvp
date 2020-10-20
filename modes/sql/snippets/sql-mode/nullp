@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: nullp
+# key: nullp
+# --
+SELECT COUNT(${1:col}) FROM ${2:table} WHERE $1 IS NULL;

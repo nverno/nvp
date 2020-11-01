@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: <%= ... %>
+# key: pe
+# condition: (string= "erb" web-mode-engine)
+# --
+<%= $0 %>

@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
 # name: ifelse
 # key: ife
-# condition: (string= "erb" (web-yas-type))
 # --
 <% ${1:condition} %>
   $0

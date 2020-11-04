@@ -2,6 +2,6 @@
 # name: context
 # key: context
 # --
-context "${1:in this context}" do
+context '${1:in this context}' do
   $0
 end

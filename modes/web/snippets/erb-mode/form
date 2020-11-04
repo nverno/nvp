@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: form
+# key: form
+# --
+<form action="<%= ${1:action} %>" method="${2:POST}">
+  <input type="hidden"
+         name="authenticity_token"
+         value="<%= form_authenticity_token %>">
+  ${3:<input type="hidden" name="_method" value="<%= ${4:method} %>">}
+  $0
+</form>

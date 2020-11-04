@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: _form
+# key: _form
+# --
+<% action = $1.persisted? ? $1_url($1) : $1s_url %>
+<% method = $1.persisted? ? :patch : :post %>
+
+<form action="<%= ${2:action} %>" method="${3:POST}">
+  <input type="hidden"
+         name="authenticity_token"
+         value="<%= form_authenticity_token %>">
+  ${4:<input type="hidden" name="_method" value="<%= ${5:method} %>">}
+  $0
+</form>

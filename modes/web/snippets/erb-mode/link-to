@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: link_to
+# key: link
+# --
+<%= link_to '$1', ${2:path} %>

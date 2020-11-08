@@ -2,4 +2,4 @@
 # name: let-double
 # key: letd
 # --
-let(:$1) { double("$1"${2:, $3}) }
+let(:$1) { double('$1'${2:, $3}) }

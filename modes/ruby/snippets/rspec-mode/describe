@@ -2,6 +2,6 @@
 # name: describe
 # key: describe
 # --
-describe ${1:"${2:something under test}"} do
+describe ${1:'${2:something under test}'} do
   $0
 end

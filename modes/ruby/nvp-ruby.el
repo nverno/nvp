@@ -44,7 +44,9 @@
   (interactive)
   (robe-mode)
   (save-window-excursion
-    (inf-ruby inf-ruby-default-implementation))
+    (or
+     (ignore-errors (inf-ruby-console-auto))
+     (inf-ruby inf-ruby-default-implementation)))
   (robe-start)
   (get-buffer-process inf-ruby-buffer))
 
@@ -169,7 +171,10 @@ See the variable `align-rules-list' for more details.")
 ;;; Rspec
 
 (defconst nvp-rspec-font-lock-keywords
-  `((,(regexp-opt '("expect" "describe" "it" "context" "before") 'symbols)
+  `((,(regexp-opt
+       '("expect" "describe" "it" "context" "before"
+         "feature" "scenario")
+       'symbols)
      (1 font-lock-function-name-face))))
 
 (defun nvp-rspec-font-lock ()

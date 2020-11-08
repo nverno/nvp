@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: button_to
+# key: button
+# --
+<%= button_to '$1', ${2:path}, ${3:method: ${4::delete}} %>

@@ -2,6 +2,6 @@
 # name: describe
 # key: describe
 # --
-describe( "${1:something under test}", function() {
-    $0
-} );
+describe("${1:something under test}", function() {
+  $0
+});

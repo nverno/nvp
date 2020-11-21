@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if indexOf
+# key: ifin
+# --
+if (${1:array}.indexOf(${2:elem}) ${3:!}== -1) {
+  $0
+}

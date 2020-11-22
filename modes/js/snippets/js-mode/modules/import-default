@@ -2,4 +2,4 @@
 # name: impd
 # key: impd
 # --
-import ${1:default}${2: { $3 }} from '${4:$1}';
+import ${1:default}${2: { $3 }} from '${4:${1:$(s-snake-case yas-text)}}';

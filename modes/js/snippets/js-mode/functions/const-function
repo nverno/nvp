@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: const function = ...
+# key: cfun
+# --
+const ${1:func} = ($2) => $0;

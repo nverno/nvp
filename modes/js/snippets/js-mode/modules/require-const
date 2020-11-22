@@ -2,4 +2,4 @@
 # name: require-const
 # key: reqc
 # --
-const ${1:pkg} = require('${2:$1}');
+const ${1:pkg} = require('${2:${1:$(s-snake-case yas-text)}}');

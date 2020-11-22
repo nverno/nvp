@@ -2,8 +2,9 @@
 # name: select
 # key: sel
 # --
-var ${1:filtered} = [ ];
-for (var i = 0; i < ${2:array}.length; i++) {
-   if ($0)
-       $1.push($2[i]);
+const ${1:filtered} = [ ];
+for (let i = 0; i < ${2:array}.length; i++) {
+  if ($0) {
+    $1.push($2[i]);
+  }
 }

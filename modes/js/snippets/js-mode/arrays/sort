@@ -2,6 +2,6 @@
 # name: sort
 # key: sort
 # --
-sort( function(a, b) {
+sort(function(a, b) {
     return ${1:a - b};
-} );
+});

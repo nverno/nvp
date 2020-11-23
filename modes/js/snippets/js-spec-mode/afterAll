@@ -1,6 +1,5 @@
 # -*- mode: snippet -*-
 # name: afterAll
 # key: aa
-# condition: (nvp-js-test-p)
 # --
 afterAll(($1) => { $0 });

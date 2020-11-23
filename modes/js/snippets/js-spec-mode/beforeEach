@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
 # name: beforeEach
 # key: be
-# condition: (nvp-js-test-p)
 # --
 beforeEach(($1) => {
   $0

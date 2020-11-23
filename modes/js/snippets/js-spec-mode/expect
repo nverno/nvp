@@ -1,6 +1,5 @@
 # -*- mode: snippet -*-
 # name: expect
 # key: expect
-# condition: (nvp-js-test-p)
 # --
 expect($1).$0();

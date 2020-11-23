@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
 # name: test
 # key: test
-# condition: (nvp-js-test-p)
 # --
 test('$1', () => {
   $0

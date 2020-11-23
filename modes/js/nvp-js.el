@@ -95,7 +95,7 @@
                js2-display-error-list
                tern-get-docs
                nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook)
-           :v (nodejs-repl-process-name httpd-root httpd-port))
+           :v (nodejs-repl-process-name httpd-root httpd-port yas--extra-modes))
 
 ;; FIXME: not working for multiple major-modes???
 ;; when in /* continued comments or doxygen, add comment continuation for
@@ -193,6 +193,27 @@
   (interactive)
   (setq httpd-root default-directory)
   (httpd-start))
+
+;; -------------------------------------------------------------------
+;;; Specs
+
+(defconst js-spec-global-externs
+  '("it" "describe" "expect" "beforeEach" "afterEach" "beforeAll" "afterAll"
+    "spyOn"))
+
+;;;###autoload
+(define-minor-mode js-spec-mode
+  "Minor mode for js specs."
+  nil
+  :lighter " JSpec"
+  :keymap nil
+  (if js-spec-mode
+      (progn
+        (yas-activate-extra-mode 'js-spec-mode)
+        (make-local-variable 'js2-global-externs)
+        (cl-callf append js2-global-externs js-spec-global-externs))
+    (when (boundp 'yas--extra-modes)
+      (setq yas--extra-modes (delq 'js-spec-mode yas-extra--modes)))))
 
 (provide 'nvp-js)
 ;; Local Variables:

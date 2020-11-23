@@ -1,6 +1,5 @@
 # -*- mode: snippet -*-
 # name: beforeAll
 # key: ba
-# condition: (nvp-js-test-p)
 # --
 beforeAll(($1) => { $0 });

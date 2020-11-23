@@ -1,6 +1,5 @@
 # -*- mode: snippet -*-
 # name: afterEach
 # key: ae
-# condition: (nvp-js-test-p)
 # --
 afterEach(($1) => { $0 });

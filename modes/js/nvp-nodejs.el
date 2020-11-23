@@ -5,7 +5,7 @@
 ;; (3/17/20) not very useful ATM
 ;;; XXX:
 ;; - can't ever load anything into it
-;; - doesn't support imports AFAICT
+;; - doesn't support imports AFAICT => (11/23/20) node doesn't
 ;; - doesn't seem to find libraries by default, probably need some config
 ;; - no redefinition of symbols -- even when let bound or null...
 ;; - the process seems to randomly interfere with comint, dumping junk in

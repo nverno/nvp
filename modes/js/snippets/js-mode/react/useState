@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: useState
+# key: uses
+# --
+const [$1, set${1:$(s-upper-camel-case yas-text)}] = React.useState(${2:init});

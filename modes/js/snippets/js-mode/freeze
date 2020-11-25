@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: freeze
+# key: freeze
+# --
+Object.freeze($1);

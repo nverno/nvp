@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: functional component
+# key: fcomp
+# --
+const ${1:`(s-upper-camel-case (nvp-yas-bfn-no-ext))`} = ${2:props} => \{
+
+  return (
+    <>$0
+    </>
+  );
+\};${3:
+
+export default $1;}

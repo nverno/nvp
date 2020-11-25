@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: react-redux container
+# key: react_container
+# --
+import { connect } from 'react-redux';
+import ${1:WrappedComponent} from '${2:./${1:$(s-snake-case yas-text)}}';
+${3:import \{ ${5:actions} \} from '${4:../../actions/}';}
+
+const mapStateToProps = (state) => ({
+  ${6:prop.key}: ${7:state},
+  state,
+});
+
+const mapDispatchToProps = (dispatch) => (\{
+  ${5:$(mapconcat (lambda (s) (concat s ": () => dispatch(" s "()),"))
+        (split-string yas-text "[ ,]" t " ")
+        "\n")}
+\});
+
+export default connect(mapStateToProps, mapDispatchToProps)($1);

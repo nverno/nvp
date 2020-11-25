@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Object.assign
+# key: assign
+# --
+Object.assign(${1:{}}, ${2:source});

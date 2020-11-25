@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: input
+# key: input
+# --
+<label>$1
+  <input
+    type="text"
+    className="${2:input}"
+    value=\{$3\}
+    onChange=\{this.$4\}
+   />
+</label>

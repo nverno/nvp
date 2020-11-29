@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: redux store
+# key: redux_store
+# --
+import { applyMiddleware, createStore } from 'redux';
+import ${1:rootReducer} from '${2:../reducers/root_reducer}';${3:
+import { logger \} from 'react-logger';}${4:
+import thunk from 'redux-thunk';}
+
+const configureStore = (preloadedState = {}) => {
+  const store = createStore(
+    $1,
+    preloadedState,${3:$(if (yas-text) "
+    applyMiddleware(thunk, logger)" "")}
+  );
+
+  return store;
+};
+
+export default configureStore;

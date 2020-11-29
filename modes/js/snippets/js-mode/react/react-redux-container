@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: react-redux container
-# key: react_container
+# key: redux_container
 # --
 import { connect } from 'react-redux';
 import ${1:WrappedComponent} from '${2:./${1:$(s-snake-case yas-text)}}';

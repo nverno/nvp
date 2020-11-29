@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: middleware
+# key: middleware
+# --
+const ${1:middleware} = store => next => action => {
+  ${2:// side effects, if any}
+  const result = next(action);
+  ${3:// side effects using `result`}
+  return result;
+}

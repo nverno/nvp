@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: thunk action creator
+# key: thunk
+# --
+export const ${1:actionCreator} = ($2) => dispatch => {
+  $0
+}

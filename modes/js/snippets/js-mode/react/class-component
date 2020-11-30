@@ -2,9 +2,9 @@
 # name: React class component
 # key: comp
 # --
-import React, \{ Component \} from 'react';
+import React, { Component } from 'react';
 
-export default class ${1:$(s-upper-camel-case (nvp-yas-bfn-no-ext))} extends Component {
+export default class ${1:`(s-upper-camel-case (nvp-yas-bfn-no-ext))`} extends Component {
   constructor(props) {
     super(props);
     $0;

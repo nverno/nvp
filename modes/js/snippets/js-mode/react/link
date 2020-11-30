@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: link
+# key: link
+# --
+<Link to=${1:"/"}${2: onClick={e => this.handleClick(e)\}}>$3</Link>

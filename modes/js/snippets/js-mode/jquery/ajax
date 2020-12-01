@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: ajax
+# key: ajax
+# --
+$.ajax({
+  method: ${1:'GET'},
+  url: $0
+})

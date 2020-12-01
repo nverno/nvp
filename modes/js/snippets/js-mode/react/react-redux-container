@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import ${1:WrappedComponent} from '${2:./${1:$(s-snake-case yas-text)}}';
 ${3:import \{ ${5:actions} \} from '${4:../../actions/}';}
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state, ownProps) => ({
   ${6:prop.key}: ${7:state},
   state,
 });

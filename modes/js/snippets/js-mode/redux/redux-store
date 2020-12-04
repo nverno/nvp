@@ -5,8 +5,8 @@
 import { applyMiddleware, createStore } from 'redux';
 import ${1:rootReducer} from '${2:../reducers/root_reducer}';${3:
 import thunk from 'redux-thunk';}${4:
-import logger from 'react-logger';}${5:
-import { composeWithDevTools } from 'redux-devtools-extension';}
+import logger from 'redux-logger';}${5:
+import { composeWithDevTools \} from 'redux-devtools-extension';}
 
 const configureStore = (preloadedState = {}) => {
   const store = createStore(

@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: reducer
+# key: reducer
+# --
+import {
+  $3
+} from '${1:../actions/$2}';
+
+export default (state = ${4:{\}}, action) => {
+  Object.freeze(state);
+  switch (action.type) {$0
+    ${3:$(mapconcat
+            (lambda (s) (concat "case " s ":"))
+            (split-string yas-text "[ ,\n]" t " ")
+            "\n")}
+            
+    default:
+      return state;
+  }
+}

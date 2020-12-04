@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: root_reducer
+# key: root_reducer
+# --
+import { combineReducers } from 'redux';
+import ${2:usersReducer} from '${1:./users_reducer}';
+
+export default combineReducers({
+  $3: $2,$0
+});

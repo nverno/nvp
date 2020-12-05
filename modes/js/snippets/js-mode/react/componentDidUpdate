@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: componentDidUpdate
+# key: cdu
+# --
+componentDidUpdate() {
+  $0
+}

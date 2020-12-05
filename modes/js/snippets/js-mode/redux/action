@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: action
+# key: action
+# --
+export const ${1:ACTION} = '$1';
+
+export const ${1:$(s-lower-camel-case yas-text)} = ($2) => ({
+  type: $1,${2:$(if (yas-text)
+  (concat "\n" yas-text) "")}
+});

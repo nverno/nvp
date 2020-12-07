@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: mapStateToProps
+# key: msp
+# --
+const mapStateToProps = (state${1:, ownProps}) => ({
+  ${2:key}: ${3:state},${4:
+  state}
+});

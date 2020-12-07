@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: dispatch
+# key: dispatch
+# --
+($1) => dispatch($2($1)),

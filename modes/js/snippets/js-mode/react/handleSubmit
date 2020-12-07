@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: handleSubmit
+# key: hs
+# --
+handleSubmit(e) {
+    e.preventDefault();
+    $0
+}

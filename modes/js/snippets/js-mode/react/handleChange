@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: handleChange
+# key: hc
+# --
+handleChange(property) {
+  return e => this.setState({ [property]: e.target.value });
+}

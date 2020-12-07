@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: mapDispatchToProps
+# key: mdp
+# --
+const mapDispatchToProps = dispatch => ({
+  ${1:action}: ($2) => dispatch($3($2)),
+});

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: params
+# key: params
+# --
+this.props.match.params.$0

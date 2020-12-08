@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: process.env
+# key: env
+# --
+process.env.$0

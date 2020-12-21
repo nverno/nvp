@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: require-const
-# key: reqc
+# key: creq
 # --
 const ${1:pkg} = require('${2:${1:$(s-snake-case yas-text)}}');

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: promise()...then...catch
+# key: ff
+# --
+${1:func}($2)
+  .then(($3) => $4)${5:
+  .catch((${6:error}) => $7)}

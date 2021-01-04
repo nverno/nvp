@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: useStyles
+# key: styles
+# --
+const useStyles = makeStyles(theme => ({
+  $0
+}));

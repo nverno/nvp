@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: async iterator
+# key: mdb_fora
+# --
+const cursor = ${1:model}.find().cursor();
+for (let ${1:$(downcase yas-text)} = await cursor.next(); ${1:$(downcase yas-text)} != null; ${1:$(downcase yas-text)} = await cursor.next()) {
+  $0          
+}

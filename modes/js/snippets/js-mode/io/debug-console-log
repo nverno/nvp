@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: dbg
+# key: dbg
+# --
+console.log("$1: ", $1);

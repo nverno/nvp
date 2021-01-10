@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: forEach
+# key: fore
+# --
+<% $1.forEach(function($2) { %>
+  $0
+<% }); %>

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: import-all
+# key: imp*
+# --
+import * as $2 from '$1';

@@ -3,16 +3,25 @@
 # key: redux_store
 # --
 import { applyMiddleware, createStore } from 'redux';
-import ${1:rootReducer} from '${2:../reducers/root_reducer}';${3:
-import thunk from 'redux-thunk';}${4:
-import logger from 'redux-logger';}${5:
-import { composeWithDevTools \} from 'redux-devtools-extension';}
+import ${1:rootReducer} from '${2:../reducers/root_reducer}';
+import thunk from 'redux-thunk';
+
+const middlewares = [thunk];
+
+if (process.env.NODE_ENV !== 'production') {
+  const { logger } = require('redux-logger');
+  middlewares.push(logger);
+}
 
 const configureStore = (preloadedState = {}) => {
   const store = createStore(
-    $1,
-    preloadedState,${3:$(if (yas-text) "
-    composeWithDevTools(applyMiddleware(thunk, logger))" "")}
+    rootReducer,
+    preloadedState,
+    process.env.NODE_ENV !== 'production'
+      ? require('redux-devtools-extension').composeWithDevTools(
+          applyMiddleware(...middlewares)
+        )
+      : applyMiddleware(...middlewares)
   );
 
   return store;

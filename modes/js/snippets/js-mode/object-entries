@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Object.entries
+# key: ents
+# --
+Object.entries($1)

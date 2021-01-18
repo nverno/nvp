@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Object.keys
+# key: keys
+# --
+Object.keys($1)

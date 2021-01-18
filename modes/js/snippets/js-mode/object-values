@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Object.values
+# key: vals
+# --
+Object.values($1)

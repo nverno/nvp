@@ -8,11 +8,28 @@
 (require 'nvp)
 (nvp-decls)
 
+;;; from spacemacs
+(defvar vue-imenu-expression
+  '(("html" "^<template>$" 0)
+    ("js" "^<script>$" 0)
+    ("js" "^\\s-*\\(data\\).*()\\s-?{" 1)
+    ("js" "^\\s-*\\(mounted\\).*()\\s-?{" 1)
+    ("js" "^\\s-*\\(beforeMount\\).*()\\s-?{" 1)
+    ("js" "^\\s-*\\(beforeDestroy\\).*()\\s-?{" 1)
+    ("js" "^\\s-*\\(created\\).*()\\s-?{" 1)
+    ("js" "^\\s-*\\(computed\\):\\s-?{" 1)
+    ("js" "^\\s-*\\(watch\\):\\s-?{" 1)
+    ("js" "^\\s-*\\(methods\\):\\s-?{" 1)
+    ("js" "^\\s-*\\(props\\):\\s-?{" 1)
+    ("css" "^<css>$" 0)))
+
 ;;;###autoload
 (define-derived-mode vue-mode web-mode "Vue"
-  nil
   ;; :lighter " Vue"
-  (yas-activate-extra-mode 'vue-mode))
+  "Major mode for editing Vue."
+  (yas-activate-extra-mode 'js-mode)
+  (setq imenu-generic-expression vue-imenu-expression
+        imenu-create-index-function #'imenu-default-create-index-function))
 
 (provide 'nvp-vue)
 ;; Local Variables:

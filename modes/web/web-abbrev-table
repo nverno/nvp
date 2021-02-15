@@ -10,3 +10,8 @@
   "General html-like abbrevs."
   :parents (list prog-mode-abbrev-table
                  html-mode-abbrev-table))
+
+(define-abbrev-table 'vue-mode-abbrev-table
+  '()
+  "Vue-Mode Abbrevs."
+  :parents (list web-mode-abbrev-table))

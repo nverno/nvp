@@ -2,16 +2,16 @@
 ;;
 ;;; Commentary:
 ;; The old `vue-mode' available on melpa doesn't add anything more than `web-mode'.
-;; This just provides simple minor mode for abbrev/snippet control mostly.
+;; This just provides simple mode for abbrev/snippet control mostly.
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp-decls)
 
 ;;;###autoload
-(define-minor-mode vue-mode "Vue minor mode"
+(define-derived-mode vue-mode web-mode "Vue"
   nil
-  :lighter " Vue"
+  ;; :lighter " Vue"
   (yas-activate-extra-mode 'vue-mode))
 
 (provide 'nvp-vue)

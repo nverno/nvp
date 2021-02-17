@@ -5,8 +5,9 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'web-mode)
 (nvp-decls :f (impatient-mode
-               httpd-start httpd-running-p)
-           :v (httpd-root httpd-port))
+               httpd-start httpd-running-p
+               lsp-describe-thing-at-point)
+           :v (httpd-root httpd-port lsp-mode))
 (nvp-auto "nvp-jinja" 'nvp-jinja-url-for)
 (nvp-auto "projectile" 'projectile-project-root)
 
@@ -88,6 +89,7 @@
 (defun nvp-web-help-at-point ()
   (interactive)
   (cond
+   (lsp-mode (call-interactively 'lsp-describe-thing-at-point))
    ((cl-member web-mode-engine '("django" "jinja2") :test 'string=)
     (browse-url "http://jinja.pocoo.org/docs/2.10/"))
    (t (message "TODO"))))

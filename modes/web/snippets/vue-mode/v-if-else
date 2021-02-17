@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: vife
+# key: vife
+# --
+<${1:div} v-if="$2">$3</$1>
+<$1 v-else>$4</$1>

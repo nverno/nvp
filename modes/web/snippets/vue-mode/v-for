@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: v-for
+# key: vfor
+# --
+<${1:li} v-for="${2:($3, i) in $4}">$5</$1>

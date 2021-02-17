@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: v-if
+# key: vif
+# --
+<${1:div} v-if="$2">$3</$1>

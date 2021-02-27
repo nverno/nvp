@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: vector-constant
-# key: v
+# key: vc
 # --
 std::vector<${1:int}> ${2:var} = {$3};

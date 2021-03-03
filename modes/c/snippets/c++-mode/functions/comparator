@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: comparator
+# key: cmp
+# --
+auto cmp = [](const ${1:vector<int>}& a, const $1 b) {
+  $0
+};

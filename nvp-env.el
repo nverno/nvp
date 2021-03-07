@@ -97,9 +97,9 @@ With prefix, overwrite value instead of appending by default."
 ;;; PATH
 
 ;;;###autoload
-(define-obsolete-function-alias 'nvp-add-exec-path 'nvp-env-path-add)
+(define-obsolete-function-alias 'nvp-add-exec-path 'nvp-env-path-add nil)
 ;;;###autoload
-(define-obsolete-function-alias 'nvp-env-exec-add 'nvp-env-path-add)
+(define-obsolete-function-alias 'nvp-env-exec-add 'nvp-env-path-add nil)
 ;; Append DIR to environment variable PATH and EXEC-PATH.
 ;;;###autoload
 (defun nvp-env-path-add (dir)

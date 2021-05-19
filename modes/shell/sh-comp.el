@@ -23,8 +23,8 @@
 (require 'sh-script)
 (require 'company)
 (require 'imenu)
-(nvp-decls :v (bash-completion-process-timeout)
-           :f (bash-completion-require-process
+(nvp-decls :v (bash-completion-process-timeout bash-completion-use-separate-processes)
+           :f (bash-completion--get-process
                bash-completion--parse bash-completion--customize
                bash-completion--completion-table-with-cache bash-completion-comm
                bash-completion-reset bash-completion--stub-start))
@@ -275,6 +275,7 @@ sourced files."
   (with-syntax-table sh-comp-syntax-table
     (nvp-unless-ppss 'cmt
       (let* ((bash-completion-process-timeout 0.5)
+             (bash-completion-use-separate-processes t)
              (pos (point))
              (beg (condition-case nil
                       (save-excursion
@@ -286,7 +287,8 @@ sourced files."
              (flag (eq (char-after beg) ?-))
              (use-comp (and sh-comp-use-bash-completion
                             (null var)))
-             (proc (and use-comp (bash-completion-require-process)))
+             (proc (and use-comp
+                        (bash-completion--get-process)))
              (comp (when use-comp
                      (bash-completion--parse
                       (or (save-excursion (sh-beginning-of-command)) beg)

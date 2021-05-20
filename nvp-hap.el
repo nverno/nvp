@@ -110,6 +110,7 @@
   (nvp-indicate-cursor-post)
   (setq nvp-hap--doc-buffer nil)
   (nvp-hap--electric-restore-windows)
+  (x-hide-tip)
   (and kill-map (setq overriding-terminal-local-map nil)))
 
 (defun nvp-hap-install-keymap ()

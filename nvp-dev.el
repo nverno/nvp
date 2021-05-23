@@ -171,7 +171,7 @@
       (funcall print-fn keys)
       (when fonts
         (princ "\n;;; Fonts\n")
-        (cl-prettyprint fonts)
+        (ignore-errors (cl-prettyexpand fonts))
         (princ "\n"))
       (emacs-lisp-mode))))
 

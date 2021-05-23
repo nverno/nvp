@@ -85,7 +85,9 @@
                   ;; make sure not in comment/string
                   ;; have to manually do this in custom MATCHERs
                   (not (or (nth 3 state) (nth 4 state)))))))
-       ,@match-highlights))))
+       ,(if (listp match-highlights)
+            `,@match-highlights
+          `,match-highlights)))))
 
 
 (provide 'nvp-comint)

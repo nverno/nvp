@@ -202,8 +202,8 @@ ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
   (let ((indent (get 'flet 'common-lisp-indent-function)))
     (mapc #'(lambda (f) (put f 'common-lisp-indent-function indent))
           '(cl-flet cl-flet* labels cl-labels cl-macrolet))))
-(put 'cl-loop 'lisp-indent-function 'common-lisp-indent-function)
-(put 'cl-labels 'lisp-indent-function 'common-lisp-indent-function)
+;; (put 'cl-loop 'lisp-indent-function 'common-lisp-indent-function)
+;; (put 'cl-labels 'lisp-indent-function 'common-lisp-indent-function)
 (put 'lisp-indent-function 'safe-local-variable 'symbolp)
 
 ;; -------------------------------------------------------------------

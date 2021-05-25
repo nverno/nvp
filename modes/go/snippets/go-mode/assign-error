@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: x, err := ...
+# key: e
+# --
+$1, err :=

@@ -1,9 +1,6 @@
 ;;; nvp-go-help.el ---  -*- lexical-binding: t; -*-
-
 ;;; Commentary:
-
 ;; help-at-point for go source
-
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-go)
@@ -59,34 +56,6 @@ Printf notes:
 %[digit]	tells Printf to use digit'th operand.
 #		for %o, %x, %X emit a 0, 0x, or 0X prefix"))
 
-(defun nvp-go-help-types (&optional type)
-  (interactive)
-  (with-toggled-tip
-    :highlight t
-    :type type
-    :help-doc "Types:
-
-int[8,16,32,64]		| int(2's complement)/uint determined by -
-uint[8,16,32,64]	| - compiler to be most efficient for arch
-rune			| synonym for int32 (Unicode code point)
-byte			| synonym for uint8 (raw data)
-uintptr			| width unspec. - holds bits of pointer value
-float[32,64]		| IEEE 754 standard, precision[~6,~15]
-
-Notes:
-Signed integers are 2's complement.
-Special floats: NaN, +Inf, -Inf. Use math.IsNaN, math.NaN"))
-
-(defun nvp-go-help-ops ()
-  (interactive)
-  (with-toggled-tip
-    :help-doc "Ops:
-
-%		| Only applies to integers. Sign of remainder is -
-		| - always same as dividend: -5%3 and -5%-3 => -2.
-/		| Integer division when applied to ints.
-&^		| bit clear (AND NOT)"))
-
 ;; -------------------------------------------------------------------
 ;;; Help at point
 
@@ -139,9 +108,7 @@ Special floats: NaN, +Inf, -Inf. Use math.IsNaN, math.NaN"))
               (and (string-match-p
                     "\\(?:fmt\\|log\\).*f$" (thing-at-point 'symbol))
                    (nvp-go-help-string-format))))
-           ;; Types
-           ((string-match-p nvp-go-type-re sym)
-            (nvp-go-help-types))
+           ((string-match-p nvp-go-type-re sym))
            ;; call popup versions of godoc or gogetdoc
            ;; use point at end of symbol so fm|t.Printf returns help for
            ;; Printf

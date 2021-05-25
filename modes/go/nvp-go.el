@@ -5,14 +5,9 @@
 ;; - delve debugger setup
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decl "go-mode"
-  go--in-anonymous-funcion-p go-goto-function-name
-  go-beginning-of-defun go-end-of-defun)
-(nvp-decls)
-(defvar go-use-gocheck-for-testing)
-
-(autoload 'tag-utils-tag-dir "tag-utils")
-(autoload 'asdf-current-version "asdf")
+(require 'go-mode)
+(nvp-decls :v (go-use-gocheck-for-testing))
+(nvp-auto "asdf" asdf-current-version)
 
 (defvar nvp-go-type-re
   (nvp-re-opt '("int" "int8" "int16" "int32" "int64"
@@ -21,29 +16,6 @@
                 "float32" "float64"
                 "complex64" "complex128"
                 "bool" "byte" "rune" "string" "error")))
-
-;;; Env.
-
-;; Set GOROOT depending on current version after switching with asdf
-;; run locally in go-mode hook
-;; (defun nvp-go-asdf-hook (&optional asdf-home)
-;;   (let ((ver (asdf-current-version "golang")))
-;;     (when ver
-;;       (setenv "GOROOT" (expand-file-name
-;;                         (format "%s/installs/golang/%s/go"
-;;                                 (or asdf-home "~/.asdf") ver))))))
-
-;;; Tag
-
-(defun nvp-go-tag-source ()
-  (interactive)
-  (let* ((dir (expand-file-name "go/src" (getenv "DEVEL")))
-         (tags (expand-file-name "TAGS" dir)))
-    (unless (file-exists-p tags)
-      (nvp-with-process-log (tag-utils-tag-dir dir) :on-error :pop))))
-
-;; -------------------------------------------------------------------
-;;; Utils
 
 ;; collect imports
 (defun nvp-go-imports ()

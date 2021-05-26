@@ -4,5 +4,4 @@
 # --
 type ${1:StructName} struct {
   ${2:VariableName}	${3:Type}
-	$0
 }

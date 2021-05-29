@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: debug-printf
+# key: dbg
+# --
+printf("DEBUG %s:%d: ${1:%s}\\n", __func__, __LINE__${1:$(if (string-match "%" yas-text)", " "\);")
+}$2${1:$(if (string-match "%" yas-text) "\);" "")}

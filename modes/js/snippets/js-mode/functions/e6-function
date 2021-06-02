@@ -2,4 +2,4 @@
 # name: e6 function
 # key: f
 # --
-`(if $% (concat "const " $% " = ") "")`($1) => ${2:{$3\}}
+`(if $% (concat "const " $% " = ") "")`($1) => ${2:{$0\}}

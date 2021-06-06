@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: unordered_set
+# key: uset
+# --
+std::unordered_set<$1>

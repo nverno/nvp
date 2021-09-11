@@ -18,6 +18,8 @@
   (syntax arg &context (major-mode c++-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
+(defvar nvp-c++-compiler-flags "-Wall -Werror -O2 -g -std=c++17")
+
 ;; -------------------------------------------------------------------
 ;;; Commands 
 
@@ -25,7 +27,7 @@
 ;; pretty much same as c-tools-compile
 (nvp-make-or-compile-fn nvp-c++-compile
   (:default-prompt (read-from-minibuffer "Compiler flags: "))
-  (let* ((flags (or args "-Wall -Werror -O2 -g -std=c++14"))
+  (let* ((flags (or args nvp-c++-compiler-flags))
          (file (file-name-nondirectory buffer-file-name))
          (out (file-name-sans-extension file))
          (compile-command
@@ -36,7 +38,7 @@
 (defun nvp-c++-compile-and-run (keep)
   (interactive "P")
   (funcall-interactively
-   #'nvp-c-compile-and-run keep (nvp-program "g++") "-std=c++14 -O3 -s"))
+   #'nvp-c-compile-and-run keep (nvp-program "g++") nvp-c++-compiler-flags))
 
 ;; -------------------------------------------------------------------
 ;;; Font-lock

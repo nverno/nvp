@@ -111,7 +111,7 @@
 (defun nvp-he-flex-lisp (str)
   (concat "\\b" (replace-regexp-in-string
                  nvp-he-flex-prefix-from-re nvp-he-flex-prefix-to-re str)
-          "[:A-Za-z0-9-]*\\b"))
+          "[+:A-Za-z0-9-]*\\b"))
 
 ;; Create matching function that splits prefixes by case
 ;; any PRE-RE are considered part of the following char, eg. if

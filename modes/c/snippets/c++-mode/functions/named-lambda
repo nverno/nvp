@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: named lambda
+# key: fnn
+# --
+auto $1 = [&]($2) {$3};

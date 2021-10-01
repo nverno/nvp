@@ -18,7 +18,7 @@
   (syntax arg &context (major-mode c++-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
-(defvar nvp-c++-compiler-flags "-Wall -Werror -O2 -g -std=c++17")
+(defvar nvp-c++-compiler-flags "-Wall -Wshadow -fsanitize=address -fsanitize=undefined -O2 -g -std=c++17")
 
 ;; -------------------------------------------------------------------
 ;;; Commands 

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: include all
+# key: inca
+# --
+#include <bits/stdc++.h>
+using namespace std;

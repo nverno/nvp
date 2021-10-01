@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: next power of 2
+# key: n_pow2
+# --
+if ($1 > 0 && ($1 & ($1 - 1)) != 0) {
+   $1 = (1 << (32 - __builtin_clz($1)));
+}

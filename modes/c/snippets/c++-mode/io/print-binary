@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: print-binary
+# key: prbin
+# --
+cout << bitset<${1:16}>($2).to_string() << endl;

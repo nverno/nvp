@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: read vector
+# key: readv
+# --
+int ${1:n}; cin >> $1;
+vector<${2:int}> ${3:arr}($1);
+for (int i = 0; i < n; ++i) cin >> $3[i];

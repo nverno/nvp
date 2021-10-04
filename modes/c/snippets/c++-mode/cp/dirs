@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: dirs
+# key: dirs
+# --
+int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};

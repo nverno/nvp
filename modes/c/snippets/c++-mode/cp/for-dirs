@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: fordir
+# key: fordir
+# --
+for (auto& d : dirs) {
+    int ${1:x} = ${2:i} + d[0], ${3:y} = ${4:j} + d[1];
+    if ($1 >= 0 && $2 >= 0 && $1 < ${5:m} && $2 < ${6:n} && $7) {
+       $0
+    }
+}

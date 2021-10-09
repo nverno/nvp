@@ -1,0 +1,19 @@
+# -*- mode: snippet -*-
+# name: pascal table of combinations
+# key: n_pascal
+# --
+#define COMBN_MAXN ${1:1000}
+static const int MOD = 1e9+7;
+static int ${1:C}[COMBN_MAXN+1][COMBN_MAXN+1];
+bool init_done = false;
+void init_combn() {
+    if (init_done) return;
+    init_done = true;
+    $1[0][0] = 1;
+    for (int n = 1; n <= COMBN_MAXN; ++n) {
+        $1[n][0] = $1[n][n] = 1;
+        for (int k = 1; k < n; ++k) {
+            $1[n][k] = ($1[n-1][k-1] + $1[n-1][k]) % MOD;
+        }
+    }
+}

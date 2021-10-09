@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: modular binomial coefficient
+# key: n_binom
+# --
+#define ${1:MAXN} ${2:1001}
+const int ${3:MOD} = ${4:1e5+3}; // must be prime
+static int inv[$3];
+static int fact[$1+1];
+void init_binom() {
+    if (inv[1] == 1) return;
+    inv[1] = 1;
+    for (int i = 1; i < $3; ++i)
+        inv[i] = $3 - ($3/i) * inv[$3%i] % $3;
+
+    fact[0] = 1;
+    for (int i = 1; i < $2; ++i)
+        fact[i] = fact[i-1] * i % $3;
+}
+
+long long binom(int n, int k) {
+    return fact[n] * inv[fact[k]] % $3 * inv[fact[n-k]] % $3;
+}

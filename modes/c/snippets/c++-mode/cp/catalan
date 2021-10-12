@@ -1,0 +1,17 @@
+# -*- mode: snippet -*-
+# name: catalan
+# key: n_catalan
+# --
+${1:const long ${2:MOD} = ${3:1e9+7};
+}int catalan(int n) {
+    vector<long> inv(n + 3);
+    inv[1] = 1;
+    for (int i = 2; i <= n + 2; ++i)
+        inv[i] = MOD - (MOD/i) * inv[MOD%i] % MOD;
+    long res = 1;
+    for (int i = 1; i <= n; ++i) {
+        res = res * (i + n) % MOD;
+        res = res * inv[i] % MOD;
+    }
+    return inv[n+1] * res % MOD;
+}

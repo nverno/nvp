@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: uniquify vector
+# key: uniq
+# --
+${1:vec}.resize(std::unique(begin($1), end($1)) - begin($1));

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: append
+# key: append
+# --
+$1.insert($1.end(), $2.begin(), $2.end());

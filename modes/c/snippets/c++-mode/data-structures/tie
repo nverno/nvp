@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: tie
+# key: tie
+# --
+std::tie($1, $2) = $3

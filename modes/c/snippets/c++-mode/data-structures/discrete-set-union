@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: union find/discrete sets
+# key: n_dsu
+# --
+struct Dsu {
+    vector<int> uf;
+    Dsu(int n) : uf(n) {
+        iota(uf.begin(), uf.end(), 0);
+    }
+    int find(int x) {
+        return uf[x] == x ? x : (uf[x] = find(uf[x]));
+    }
+    void merge(int x, int y) {
+        int xx = find(x), yy = find(y);
+        if (xx != yy)
+            uf[yy] = uf[xx];
+    }
+    bool connected(int x, int y) {
+        return find(x) == find(y);
+    }
+    void reset(int x) { uf[x] = x; }
+}

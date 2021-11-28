@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sort lambda
+# key: fnc
+# --
+[](const auto& a, const auto& b) {$1}

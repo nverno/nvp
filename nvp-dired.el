@@ -136,7 +136,7 @@
   (interactive "P")
   (let ((files (condition-case nil
                    (or (dired-get-marked-files)
-                       (cons (dired-filename-at-point) nil))
+                       (cons (dired-file-name-at-point) nil))
                  (error nil)))
         string)
     (when files
@@ -151,6 +151,14 @@
   (interactive (list (read-string "Filename (.gitkeep): " nil nil ".gitkeep")))
   (with-temp-buffer
     (write-file filename)))
+
+(defun nvp-dired-mark-files-extension (unflag-p)
+  "Mark all files by extension."
+  (interactive "P")
+  (let ((ext (file-name-extension (dired-file-name-at-point)))
+        (dired-marker-char (if unflag-p ?\s dired-marker-char)))
+    (when ext
+      (dired-mark-if (looking-at-p (concat ".*." ext)) "file extension"))))
 
 
 ;; -------------------------------------------------------------------

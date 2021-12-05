@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: least common ancestor
+# key: n_lca
+# --
+${1:TreeNode} *lca($1 *root, int x, int y) {
+    if (!root) return nullptr;
+    if (root->val == x || root->val == y) return root;
+    auto l = lca(root->left, x, y);
+    auto r = lca(root->right, x, y);
+    return l && r ? root : l ? l : r;
+}

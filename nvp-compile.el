@@ -30,7 +30,10 @@
      (&key
       (doc "Compile using make or cmake if found, otherwise execute body.")
       (make-action
-       '(let ((compile-command (or args "make -k")))
+       '(let ((compile-command
+               (or args
+                   (cdr (assoc 'compile-command file-local-variables-alist))
+                   "make -k")))
           (nvp-compile)))
       (cmake-action
        '(nvp-compile-cmake args))

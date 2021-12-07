@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: aoc
+# key: aoc
+# --
+// -*- compile-command: "make d$1" -*-
+#include <bits/stdc++.h>
+#include "../lib/aoc.hpp"
+using namespace std;
+
+int main(int argc, char *argv[]) {
+    $0
+    return 0;
+}

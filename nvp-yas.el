@@ -11,7 +11,7 @@
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'yasnippet))
 (nvp-auto "nvp-parse" 'nvp-parse-current-function)
-(nvp-auto "s" 's-upper-camel-case 's-snake-case)
+(nvp-auto "s" 's-upper-camel-case 's-snake-case 's-match)
 
 (defvaralias '$% 'yas-selected-text)
 (nvp-decls :v (yas-moving-away-p yas-modified-p))

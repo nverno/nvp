@@ -2,7 +2,7 @@
 # name: aoc
 # key: aoc
 # --
-// -*- compile-command: "make d$1" -*-
+// -*- compile-command: make d${1:`(car (s-match "[0-9]+" (nvp-yas-bfn-no-ext)))`} -*-
 #include <bits/stdc++.h>
 #include "../lib/aoc.hpp"
 using namespace std;

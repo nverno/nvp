@@ -93,7 +93,7 @@
 
 ;; Install git repo into site-lisp, default to github
 (defun nvp-install-git (repo &optional root)
-  (let* ((git-uri (format "%s/%s" (or root "https://github.com") repo))
+  (let* ((git-uri (format "%s/%s" (or root "git@github.com:") repo))
          (pkg (car (last (split-string repo "/"))))
          (default-directory nvp/site)
          (buff (get-buffer-create "*nvp-install*")))

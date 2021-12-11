@@ -69,7 +69,7 @@
 (defun nvp@leet-maybe-setup (orig-fn problem problem-info)
   (let* ((title (plist-get problem-info :title))
          (buf-name (leetcode--get-code-buffer-name title))
-         (buf (get-buffer buf-name)))
+         (buf (and buf-name (get-buffer buf-name))))
     (funcall orig-fn problem problem-info)
     (unless buf
       (with-current-buffer (get-buffer buf-name)
@@ -79,7 +79,8 @@
 (define-minor-mode nvp-leet-mode "Leetcode minor mode."
   :lighter " LC"
   :keymap nvp-leet-mode-map
-  (setq nvp-leet-window-configuration (current-window-configuration)))
+  (unless nvp-leet-window-configuration
+    (setq nvp-leet-window-configuration (current-window-configuration))))
 
 (provide 'nvp-leet)
 ;; Local Variables:

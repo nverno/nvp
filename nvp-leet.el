@@ -61,6 +61,7 @@
   :create t
   :prefix-key "<f2>L"
   ("e" . nvp-leet-add-examples)
+  ("a" . nvp-leet-add-examples)
   ("t" . leetcode-try)
   ("s" . leetcode-submit)
   ("r" . nvp-leet-reset-layout))

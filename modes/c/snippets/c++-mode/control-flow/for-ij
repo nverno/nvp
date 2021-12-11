@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: for-ij
+# key: forij
+# --
+for (size_t i = ${1:0}; i < ${2:m}; ++i) {
+  for (size_t j = ${3:0}; j < ${4:n}; ++j) {
+    $0
+  }
+}

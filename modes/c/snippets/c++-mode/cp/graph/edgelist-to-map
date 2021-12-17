@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: edge list to map
+# key: n_etog
+# --
+unordered_map<int,vector<int>> ${1:g};${2:
+vector<int> indegree(${3:n});}
+for (auto& e : ${4:edges}) {
+    int u = e[0], v = e[1];
+    $1[u].push_back(v);${2:$(and (yas-text) " indegree[v]++;")}
+    $1[v].push_back(u);${2:$(and (yas-text) " indegree[u]++;")}
+}

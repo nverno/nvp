@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: m x n
+# key: mxn
+# --
+const size_t m = $1.size(), n = $1[0].size();

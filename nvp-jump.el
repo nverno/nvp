@@ -190,7 +190,8 @@ Optionally, search LISP-ONLY files (no C sources)."
               '("notes.org" "Notes.org" "todo.org" "Todo.org"))
           current-prefix-arg))
   (let* ((dir (nvp-file-locate-first-dominating
-               (or (buffer-file-name) default-directory) name))
+               (or (buffer-file-name) default-directory)
+               (if (listp name) name (list name))))
          (fname
           (if (stringp name) name
             (cl-some (lambda (f) (and (file-exists-p (expand-file-name dir f)) f))

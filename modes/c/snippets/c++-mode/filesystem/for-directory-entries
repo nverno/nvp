@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-files
+# key: forfiles
+# --
+for (const auto& e : fs::directory_iterator(${1:path})) {
+    ${2:if (fs::is_directory(e))}
+}

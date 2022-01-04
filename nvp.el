@@ -2,8 +2,7 @@
 
 ;;; Commentary:
 ;; 
-;; Library required at startup -- startup generally takes about 0.5 seconds
-;; And if it ever gets up around ~1 second, measures need be taken.
+;; Library required at startup -- ~0.4 sec
 ;;
 ;; [![Build Status](https://travis-ci.org/nverno/nvp.svg?branch=master)](https://travis-ci.org/nverno/nvp)
 ;;

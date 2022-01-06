@@ -12,7 +12,8 @@
 ;; if pcomplete doesn't find a match
 (advice-add 'pcomplete-completions-at-point :filter-return
             (nvp-def nvp@pcomplete-not-exclusive (table)
-              (nconc table (list :exclusive 'no))))
+              (when table
+                (nconc table (list :exclusive 'no)))))
 
 ;; cache list of github repos
 (nvp-lazy-defvar nvp-shell--gh-repo-list

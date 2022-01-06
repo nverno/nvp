@@ -8,6 +8,12 @@
 (require 'pcomplete)
 (nvp-decls)
 
+;; allow other completion backends, eg. bash-completion, to take over
+;; if pcomplete doesn't find a match
+(advice-add 'pcomplete-completions-at-point :filter-return
+            (nvp-def nvp@pcomplete-not-exclusive (table)
+              (nconc table (list :exclusive 'no))))
+
 ;; cache list of github repos
 (nvp-lazy-defvar nvp-shell--gh-repo-list
   (lambda ()
@@ -18,12 +24,13 @@
 
 ;; complete for gh CLI
 (defun pcomplete/shell-mode/gh ()
-  (when (and (pcomplete-arg )))
   (pcomplete-here '("repo"))
-  (pcomplete-here '("clone"))
-  (while (if (pcomplete-match "^-" 'last) ; skip flags
-             (pcomplete-next-arg)
-           (pcomplete-here (nvp-lazy-val nvp-shell--gh-repo-list)))))
+  (when (pcomplete-match "repo" 'first 1)
+    (pcomplete-here '("clone")))
+  (while (pcomplete-match "^-" 'last) ; skip flags
+    (pcomplete-next-arg))
+  (while (and (pcomplete-match "clone" 'first 2))
+    (pcomplete-here (nvp-lazy-val nvp-shell--gh-repo-list))))
 
 (provide 'nvp-shell-completion)
 ;; Local Variables:

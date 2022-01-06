@@ -425,7 +425,7 @@ Line continuations, recognized by ESCAPE, are treated as whitespace as well."
                       t))))))
 
 (defmacro nvp-skip-sws (direction &optional escape)
-  "Skip `forward' or `backward' across comments, whitespace, and line \
+  "Skip `forward' or `backward' across comments, whitespace, and line 
 continuations."
   (and escape (stringp escape) (setq escape (string-to-char escape)))
   (let ((direction (eval direction)))
@@ -785,8 +785,8 @@ Returns nil if unsuccessful, point otherwise."
   "Wrapper for bounds/contents of region/thing-at-points.
 Things at point default to 'symbols unless TAP is non-nil.
 By regions of things at point are pulsed if PULSE is non-nil.
-If BEG and END are non-nil, they are used as region bounds instead of those listed
-below.
+If BEG and END are non-nil, they are used as region bounds instead of those 
+listed below.
 
 Trailing 'i' indicates to prompt for input if nothing is found.
 
@@ -796,7 +796,8 @@ Trailing 'i' indicates to prompt for input if nothing is found.
 `tappi'  -- 
 `btap'   -- Bounds of thing at point
 `btapi'  -- 
-`dwim'   -- If region is active, region string, otherwise thing-at-point (no props)
+`dwim'   -- If region is active, region string, otherwise thing-at-point
+            (no props)
 `dwimp'  -- Same, but with props
 `bdwim'  -- Bounds of region or thing at point
 `evar'   -- Elisp `variable-at-point'
@@ -970,8 +971,8 @@ transient keymap.
 TIMEOUT is passed to `pos-tip-show'.
 If USE-GTK is non-nil use gtk tooltips.
 KEEP is passed to `set-transient-map'.
-HELP-BUFFER is buffer with full help documentation. This is only applicable to the
-default help function."
+HELP-BUFFER is buffer with full help documentation. This is only applicable to 
+the default help function."
   (declare (indent defun) (debug t))
   (macroexp-let2* nil ((str popup)
                        (h-key (or help-key "h"))
@@ -1011,9 +1012,8 @@ default help function."
 
 ;;-- Wrapper functions to call mode-local values
 (defmacro nvp-wrapper-function (symbol &optional doc)
-  "Creates a simple wrapper function to call local SYMBOL function with \
-list of args.
-Optionally use DOC for function."
+  "Creates a simple wrapper function to call local SYMBOL function with 
+list of args. Optionally use DOC for function."
   (let ((fn (intern (string-remove-suffix "-function" (symbol-name symbol))))
         ;; (arg (make-symbol "arg"))
         )
@@ -1037,11 +1037,15 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 (defmacro nvp-lazy-defvar (var fun)
   "When called the first time, VAR sets its value via FUN."
   (declare (indent 1) (debug (symbolp lambda-expr)))
-  (progn
-    `(lambda ()
+  `(defvar ,var
+     (lambda ()
        (when (functionp ,var)
          (setq ,var (funcall #',fun)))
        ,var)))
+
+(defmacro nvp-lazy-val (var)
+  "Get value of lazily defined VAR."
+  `(if (functionp ,var) (funcall ,var) ,var))
 
 ;; Simple memoization / result caching
 (cl-defmacro nvp-define-cache (func arglist &rest body
@@ -1083,7 +1087,7 @@ or PREDICATE is non-nil and returns nil."
 
 ;;-- Toggle
 (cl-defmacro nvp-toggled-if (then &rest rest &key this-cmd &allow-other-keys)
-  "Do THEN if `last-command' wasn't `this-command', otherwise do REST \
+  "Do THEN if `last-command' wasn't `this-command', otherwise do REST 
 and set `this-command' to nil so opposite happens next time."
   (declare (indent 1))
   (while (keywordp (car rest))

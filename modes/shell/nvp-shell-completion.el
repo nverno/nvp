@@ -18,9 +18,12 @@
 
 ;; complete for gh CLI
 (defun pcomplete/shell-mode/gh ()
+  (when (and (pcomplete-arg )))
   (pcomplete-here '("repo"))
   (pcomplete-here '("clone"))
-  (pcomplete-here (nvp-lazy-val nvp-shell--gh-repo-list)))
+  (while (if (pcomplete-match "^-" 'last) ; skip flags
+             (pcomplete-next-arg)
+           (pcomplete-here (nvp-lazy-val nvp-shell--gh-repo-list)))))
 
 (provide 'nvp-shell-completion)
 ;; Local Variables:

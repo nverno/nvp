@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: main
+# key: main
+# --
+class Main {
+  function void main() {
+    $0
+    return;
+  }
+}

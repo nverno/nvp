@@ -93,7 +93,7 @@
         yas-dir mode-snips)
     (unless mvars
       (nvp-defq dir (nvp-setup-package-root name))
-      (if (not (file-exists-p dir))
+      (if (not (and dir (file-exists-p dir)))
           (user-error
            "Setup for '%s' failed to find package root" (nvp-as-string name))
         (nvp-defq abbr-file

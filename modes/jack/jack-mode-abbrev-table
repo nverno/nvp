@@ -1,0 +1,7 @@
+;; -*- coding: utf-8; -*- 
+
+(define-abbrev-table 'jack-mode-abbrev-table
+  '(("ret" "return" nil :system t))
+  "Jack-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table)
+  :enable-function #'nvp-abbrev-expand-p)

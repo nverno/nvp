@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: for-
+# key: for-
+# --
+let i = $1;
+while (i > 0) {
+  $0;
+  let i = i - 1;
+}

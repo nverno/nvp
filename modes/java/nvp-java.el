@@ -6,9 +6,10 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-hap))
+(require 'cc-cmds)
 (require 'nvp-parse)
-(nvp-decl nvp-compile nvp-abbrev-expand-p)
 
+(nvp-decls :f (nvp-compile nvp-abbrev-expand-p))
 (declare-function javadoc-lookup "javadoc-lookup")
 
 ;; FIXME: remove
@@ -40,7 +41,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Generics
-(require 'nvp-parse)
 
 (cl-defmethod nvp-parse-current-function
   (&context (major-mode java-mode) &rest _args)
@@ -59,26 +59,41 @@
 ;;; Commands
 
 ;;--- Movement
-;; FIXME: convert these to beginning/end-of-defun
-;; if outside of class move to methods within instead of just jumping
-;; over the whole class
-(defun nvp-java-next-defun (&optional arg)
-  "Move to next class or method. With ARG, move backwards."
-  (interactive)
-  (let ((ppss (syntax-ppss)))
-    ;; if at start of class, move inside to jump to methods
-    (and (= 0 (syntax-ppss-depth ppss))
-         (or arg (looking-at-p "\\s-*\\(public\\|private\\|class\\)"))
-         (down-list (and arg -1))))
-  (beginning-of-defun (and (not arg) -1))
-  (recenter))
+(defun nvp-java-beginning-of-defun (&optional arg)
+  "Move backward to the beginning of defun. Wrapper around `c-beginning-of-defun'
+that doesn't jump over top-level class decls, but moves into their methods."
+  (interactive "p")
+  (nvp-defq arg 1)
+  (let (where)
+    (if (< arg 0)
+        (progn
+          (c-forward-comments)
+          (setq where (c-where-wrt-brace-construct))
+          (and (memq where '(at-header))
+               (c-syntactic-re-search-forward "{" nil 'eob)))
+      (c-backward-comments)
+      (setq where (c-where-wrt-brace-construct))
+      (when (memq where '(outwith-function at-function-end))
+        (c-syntactic-skip-backward "^}")
+        (and (eq (char-before) ?})
+             (forward-char -1)))))
+  (let ((this-command 'c-beginning-of-defun))
+    (c-beginning-of-defun arg)))
 
-(defun nvp-java-previous-defun ()
-  (interactive)
-  (nvp-java-next-defun 'previous))
+(defun nvp-java-end-of-defun (&optional arg)
+  "Move forward to end of function. Wrapper around `c-end-of-defun'
+that doesn't skip class body."
+  (interactive "p")
+  (nvp-defq arg 1)
+  (when (< arg 0)
+    (let ((where (c-where-wrt-brace-construct)))
+      (when (memq where '(outwith-function))
+        (c-syntactic-skip-backward "^}")
+        (and (eq (char-before) ?})
+             (forward-char -1)))))
+  (c-end-of-defun arg))
 
 ;;--- Compile
-
 (defun nvp-java-compile ()
   (interactive)
   (cond
@@ -100,6 +115,12 @@
      (expand-file-name 
       (concat "src/java/" (replace-regexp-in-string "[.]" "/" name)) root)
      'parents)))
+
+;;; Setup
+(defun nvp-java-locals ()
+  (nvp-setq-local
+    beginning-of-defun-function #'nvp-java-beginning-of-defun
+    end-of-defun-function #'nvp-java-end-of-defun))
 
 (provide 'nvp-java)
 ;;; nvp-java.el ends here

@@ -50,15 +50,13 @@
     (backward-char 2)
     (thing-at-point 'symbol t)))
 
+;; newline
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode java-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
 ;; -------------------------------------------------------------------
 ;;; Commands
-
-;;--- newline
-;; FIXME: remove
-(nvp-newline nvp-java-newline-dwim nil
-  :pairs (("{" "}"))
-  :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
-  :comment-start "* ")
 
 ;;--- Movement
 ;; FIXME: convert these to beginning/end-of-defun

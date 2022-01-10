@@ -13,7 +13,8 @@
 ;; - integrate compile w/ projectile + generic interface to build tools
 ;;
 ;;; Code:
-(eval-when-compile (require 'nvp-macro)
+(eval-when-compile
+  (require 'nvp-macro)
   (require 'nvp-compile))
 (require 'nvp-parse)
 (require 'nvp)

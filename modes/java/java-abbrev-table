@@ -2,6 +2,15 @@
 
 (define-abbrev-table 'java-mode-abbrev-table
   '(
+    ("cont" "continue" nil :system t)
+    ("ret" "return" nil :system t)
+    )
+  "Java-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table)
+  :enable-function #'nvp-abbrev-expand-p)
+
+(define-abbrev-table 'java-mode-util-abbrev-table
+  '(
     ("abq" "ArrayBlockingQueue" nil :system t)
     ("ac" "AbstractCollection" nil :system t)
     ("ace" "AsynchronousCloseException" nil :system t)
@@ -220,6 +229,6 @@
     ("zis" "ZipInputStream" nil :system t)
     ("zos" "ZipOutputStream" nil :system t)
     )
-  "Java-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table)
+  "Java stdlib Abbrevs."
+  :parents (list java-mode-abbrev-table)
   :enable-function #'nvp-abbrev-expand-p)

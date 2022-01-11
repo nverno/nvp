@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
 # name: doc
 # key: doc
-# condition: (nvp-java-in-javadoc)
 # --
 /**
  * ${1:documentation}

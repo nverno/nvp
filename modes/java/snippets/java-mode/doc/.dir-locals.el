@@ -1,1 +1,1 @@
-((nil (nvp-snippet-local-condition . (nvp-java-in-javadoc))))
+((nil (nvp-local-snippet-conditions . (nvp-java-in-javadoc))))

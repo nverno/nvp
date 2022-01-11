@@ -14,9 +14,9 @@
   "Directory names to default conditions (eg. :condition key functions).")
 
 ;; local variables to update fields in snippet subdirs
-(defvar-local nvp-snippet-local-conditions ()
+(defvar-local nvp-local-snippet-conditions ()
   "Directory local variable to set condition in snippet subdirectories.")
-(put 'nvp-snippet-local-conditions 'safe-local-variable 'listp)
+(put 'nvp-local-snippet-conditions 'safe-local-variable 'listp)
 
 ;; -------------------------------------------------------------------
 ;;; Hooks
@@ -40,7 +40,7 @@ When part of `before-save-hook', won't add condition on initial save."
     (let ((dir (ignore-errors (or (nvp-path 'ds) (nvp-path 'dn)))))
       (when-let*
           ((test
-            (assoc-string dir (or (bound-and-true-p nvp-snippet-local-conditions)
+            (assoc-string dir (or (bound-and-true-p nvp-local-snippet-conditions)
                                   nvp-snippet-default-conditions))))
         (add-condition (cadr test))))))
 

@@ -52,7 +52,14 @@
   (when nvp-leet-window-configuration
     (set-window-configuration nvp-leet-window-configuration)))
 
-(nvp-advise-commands #'nvp-leet-reset-layout :before '(leetcode-try leetcode-submit))
+(defun nvp-leet-result-layout ()
+  (when nvp-leet-window-configuration
+    (set-window-configuration nvp-leet-window-configuration))
+  (save-current-buffer
+    (with-selected-window (display-buffer leetcode--result-buffer-name)
+      (enlarge-window 25))))
+
+(nvp-advise-commands #'nvp-leet-result-layout :before '(leetcode-try leetcode-submit))
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode
@@ -68,13 +75,13 @@
 (define-key nvp-leet-mode-map (kbd "C-c C-c") #'leetcode-try)
 
 (defun nvp@leet-maybe-setup (orig-fn problem problem-info)
-  (let* ((title (plist-get problem-info :title))
-         (buf-name (leetcode--get-code-buffer-name title))
-         (buf (and buf-name (get-buffer buf-name))))
+  (let ((title (plist-get problem-info :title)))
     (funcall orig-fn problem problem-info)
-    (unless buf
-      (with-current-buffer (get-buffer buf-name)
-        (nvp-leet-mode 1)))))
+    (let* ((buf-name (leetcode--get-code-buffer-name title))
+           (buf (and buf-name (get-buffer buf-name))))
+      (when buf
+        (with-current-buffer (get-buffer buf-name)
+          (nvp-leet-mode 1))))))
 (advice-add #'leetcode--start-coding :around #'nvp@leet-maybe-setup)
 
 (define-minor-mode nvp-leet-mode "Leetcode minor mode."

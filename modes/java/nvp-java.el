@@ -20,6 +20,10 @@
 ;; -------------------------------------------------------------------
 ;;; Utils
 
+;; for snippets: FIXME: check actually javadoc
+(defun nvp-java-in-javadoc ()
+  (nth 4 (syntax-ppss)))
+
 ;; FIXME: remove or fix -- these can probably be replaced with eclim
 (defmacro nvp-java-method-args ()
   `(save-excursion

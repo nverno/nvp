@@ -1,15 +1,5 @@
 ;; -*- coding: utf-8; -*- 
 
-(define-abbrev-table 'java-mode-abbrev-table
-  '(("bool" "boolean" nil :system t)
-    ("cont" "continue" nil :system t)
-    ("imp" "import" nil :system t)
-    ("ret" "return" nil :system t)
-    ("string" "String" nil :system t))
-  "Java-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table java-stdutil-abbrev-table)
-  :enable-function #'nvp-abbrev-expand-p)
-
 (define-abbrev-table 'java-stdutil-abbrev-table
   '(("abq" "ArrayBlockingQueue" nil :system t)
     ("ac" "AbstractCollection" nil :system t)
@@ -227,4 +217,14 @@
     ("zos" "ZipOutputStream" nil :system t))
   "Java stdlib Abbrevs."
   ;; :parents (list)
+  :enable-function #'nvp-abbrev-expand-p)
+
+(define-abbrev-table 'java-mode-abbrev-table
+  '(("bool" "boolean" nil :system t)
+    ("cont" "continue" nil :system t)
+    ("imp" "import" nil :system t)
+    ("ret" "return" nil :system t)
+    ("string" "String" nil :system t))
+  "Java-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table java-stdutil-abbrev-table)
   :enable-function #'nvp-abbrev-expand-p)

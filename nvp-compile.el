@@ -21,6 +21,16 @@
 (nvp-decls :f (nvp-read-switch comint-after-pmark-p xterm-color-colorize-buffer))
 (autoload 'ansi-color-apply-on-region "ansi-color")
 
+(defmacro nvp-with-compile-command (cmd &optional arg &rest body)
+  "Bind `compile-command' to CMD unless ARG, if non-nil, or `compile-command'
+has a file or directory local binding."
+  (declare (indent 2))
+  `(let ((compile-command
+          (or ,@(if arg '(arg))
+              (cdr (assoc 'compile-command file-local-variables-alist))
+              ,cmd)))
+     ,@body))
+
 ;; FIXME: Obsolete
 ;; Create compile function, check for makefiles/cmake first, otherwise
 ;; execute BODY. Prefix argument executes PROMPT-ACTION, and its
@@ -31,7 +41,7 @@
       (doc "Compile using make or cmake if found, otherwise execute body.")
       (make-action
        '(let ((compile-command
-               (or args
+               (or arg
                    (cdr (assoc 'compile-command file-local-variables-alist))
                    "make -k")))
           (nvp-compile)))
@@ -71,16 +81,19 @@
             (t ,@body)))))))
 
 ;;;###autoload
-(defun nvp-compile (&optional arg)
-  "Compile using local `nvp-local-compile-function' or `nvp-compile-default'.
+(defun nvp-compile (&optional arg compile-fn)
+  "Compile using COMPILE-FN if non-nil, otherwise
+first of local `nvp-local-compile-function' or `nvp-compile-default'.
 By default, with single prefix or 3 or more, read compilation command.
 With double prefix or more, use comint buffer for compilation."
   (interactive "P")
   (setq current-prefix-arg arg)
-  (let ((compile-fn (or (bound-and-true-p nvp-local-compile-function)
-                        (bound-and-true-p nvp-compile-function)
-                        #'nvp-compile-default)))
-    (call-interactively compile-fn)))
+  (nvp-defq compile-fn
+    (or (bound-and-true-p nvp-local-compile-function)
+        (bound-and-true-p nvp-compile-function)
+        #'nvp-compile-default))
+  (and (eq compile-fn 'default) (setq compile-fn #'nvp-compile-default))
+  (call-interactively compile-fn))
 
 (defun nvp-compile-default (&optional comint read-command)
   "Basic compilation."

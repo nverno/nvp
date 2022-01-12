@@ -109,6 +109,7 @@
        nvp-move-previous-heading
        nvp-move-forward-heading
        nvp-mode-header-regex
+       nvp-newline-dwim--comment
        ;; bindings
        nvp-autoload-keymap
        ;; nvp-cycle.el
@@ -163,6 +164,7 @@
        ;; abbrev
        nvp-abbrev-grab
        nvp-grab-symbol
+       nvp-abbrev-expand-p
        nvp-abbrev-expand-not-after-punct-p
        ;; test
        nvp-ert-run-tests

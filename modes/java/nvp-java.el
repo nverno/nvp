@@ -5,11 +5,12 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'nvp-hap))
+  (require 'nvp-hap)
+  (require 'nvp-compile))
 (require 'cc-cmds)
 (require 'nvp-parse)
 
-(nvp-decls :f (nvp-compile nvp-abbrev-expand-p))
+(nvp-decls :f (c-syntactic-skip-backward c-syntactic-re-search-forward))
 (declare-function javadoc-lookup "javadoc-lookup")
 
 ;; -------------------------------------------------------------------
@@ -78,7 +79,8 @@ that doesn't skip class body."
         (c-syntactic-skip-backward "^}")
         (and (eq (char-before) ?})
              (forward-char -1)))))
-  (c-end-of-defun arg))
+  (let ((this-command 'c-end-of-defun))
+    (c-end-of-defun arg)))
 
 ;;--- Compile
 ;; compile SRC and run DRIVER with java -cp CLASSPATH
@@ -90,22 +92,23 @@ that doesn't skip class body."
     driver (nvp-path 'bfse))
   (format "javac %s && java -cp %s %s" src classpath driver))
 
-(defun nvp-java-compile-and-run (arg)
+(defun nvp-java-compile-and-run (&optional arg)
   "Compile and run with output to compilation buffer."
   (interactive "P")
   (cond
+   ;; can check if main exists: (nvp-tag-list-decls "java" "m")
    ;; ...
-   (t (let ((compile-command (nvp-java--compile-and-run-cmd)))
-        (funcall-interactively #'nvp-compile arg)))))
+   (t (nvp-with-compile-command (nvp-java--compile-and-run-cmd) arg
+        (funcall-interactively #'nvp-compile arg 'default)))))
 
-(defun nvp-java-compile ()
-  (interactive)
+(defun nvp-java-compile (&optional arg)
+  (interactive "P")
   (cond
    ;; ((nvp-maven-p) (nvp-maven-compile))
    ;; ((bound-and-true-p eclim-mode) (eclim-project-build))
    ;; ...
-   (t (let ((compile-command (format "javac %s" (nvp-path 'bf))))
-        (nvp-compile)))))
+   (t (nvp-with-compile-command (format "javac %s" (nvp-path 'bf)) arg
+        (funcall-interactively #'nvp-compile arg 'default)))))
 
 ;;; Setup
 (defun nvp-java-locals ()

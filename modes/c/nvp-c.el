@@ -19,6 +19,7 @@
 (require 'nvp-parse)
 (require 'nvp)
 (nvp-req 'nvp-c 'subrs)
+(nvp-auto "nvp-tag" 'nvp-tag-function-signatures)
 (nvp-decls :f (forward-ifdef
                clang-complete-load-args ; clang-complete
                asdf-where               ; asdf
@@ -65,21 +66,16 @@
 
 ;; pull out functions signatures from current buffer using ctags
 (defun nvp-c-function-signatures (&optional file ignore-main ignore-static)
-  (when-let* ((sigs (process-lines
-                     (nvp-program "ctags") "-x" "--c-kinds=fp"
-                     (or file buffer-file-name)))
-              (res (mapcar
-                    (lambda (s)
-                      (string-trim-left
-                       (replace-regexp-in-string
-                        "[ \t;{]*$" ""
-                        (cadr (split-string s (or file buffer-file-name) t " ")))))
-                    (if ignore-main
-                        (cl-remove-if #'(lambda (s) (string-prefix-p "main" s)) sigs)
-                      sigs))))
-    (if ignore-static
-        (cl-remove-if #'(lambda (s) (string-match-p "\\_<static\\_>" s)) res)
-      res)))
+  (--when-let (nvp-tag-function-signatures file)
+    (if (or ignore-main ignore-static)
+        (let ((ignore (regexp-opt
+                       (cl-remove-if
+                        #'null
+                        (list (and ignore-main "main")
+                              (and ignore-static "static")))
+                       'symbols)))
+          (cl-remove-if (lambda (s) (string-match-p ignore s)) it))
+      it)))
 
 ;; convert functions args to doxygen params
 (defun c-yas-args-docstring (text)
@@ -256,7 +252,7 @@
   (xref-push-marker-stack)
   (condition-case nil
       (apply orig-fn args)
-    (error (xref-pop-marker-stack))))
+    (error (xref-go-back))))
 
 ;;; Parse
 
@@ -300,7 +296,7 @@
         (find-file-other-window (nvp-c--header-file-name)))))
 
 (defun nvp-c-create-or-update-header (and-go)
-  "Creates/updates header file with the function signatures in the current \
+  "Creates/updates header file with the function signatures in the current
 source file."
   (interactive (list t))
   (let ((header (nvp-c--header-file-name))

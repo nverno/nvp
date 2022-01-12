@@ -62,6 +62,19 @@
                    (get major-mode 'find-tag-default-function)
                    'find-tag))))
 
+;;; ctags
+;;;###autoload
+(defun nvp-tag-function-signatures (&optional file)
+  "List class, function, method signatures in FILE if non-nil, or current
+buffer."
+  (nvp-defq file (nvp-path 'bf))
+  (->> (process-lines (nvp-program "ctags") "-x" "--c-kinds=fp" file)
+       (mapcar (lambda (s)
+                 (string-trim-left
+                  (replace-regexp-in-string
+                   "[ \t;{]*$" ""
+                   (cadr (split-string s file t " "))))))))
+
 ;; -------------------------------------------------------------------
 ;;; Using imenu
 

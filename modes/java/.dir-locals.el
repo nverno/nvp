@@ -1,3 +1,2 @@
-(("etc"
-  (nil
-   (no-byte-compile . t))))
+(("etc" (nil (no-byte-compile . t)))
+ ("unused" (nil (no-byte-compile . t))))

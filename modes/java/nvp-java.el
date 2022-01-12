@@ -12,11 +12,6 @@
 (nvp-decls :f (nvp-compile nvp-abbrev-expand-p))
 (declare-function javadoc-lookup "javadoc-lookup")
 
-;; FIXME: remove
-(defun nvp-java-eclipse-releases ()
-  (interactive)
-  (browse-url "https://projects.eclipse.org/releases"))
-
 ;; -------------------------------------------------------------------
 ;;; Utils
 
@@ -30,18 +25,6 @@
      (beginning-of-defun)
      (when (re-search-forward "(\\([^)]*\\))")
        (match-string-no-properties 1))))
-
-;; FIXME: doesn't work 
-(defmacro nvp-java-method-name-and-args ()
-  `(save-excursion
-     (beginning-of-defun)
-     (when (re-search-forward "\\([A-Za-z]+\\)\\s-*(")
-       (let ((method (match-string-no-properties 1))
-             args)
-         (while (re-search-forward "\\([A-Za-z]+\\)[\[\]\\s-]*[,)]"
-                                   (line-end-position) t)
-           (push (match-string-no-properties 1) args))
-         (cons method args)))))
 
 ;; -------------------------------------------------------------------
 ;;; Generics
@@ -98,27 +81,31 @@ that doesn't skip class body."
   (c-end-of-defun arg))
 
 ;;--- Compile
+;; compile SRC and run DRIVER with java -cp CLASSPATH
+;; default: javac buffer && java -cp /path/to/buffer Buffer 
+(defun nvp-java--compile-and-run-cmd (&optional src classpath driver)
+  (nvp-defq
+    src (nvp-path 'bf)
+    classpath (nvp-path 'dn)
+    driver (nvp-path 'bfse))
+  (format "javac %s && java -cp %s %s" src classpath driver))
+
+(defun nvp-java-compile-and-run (arg)
+  "Compile and run with output to compilation buffer."
+  (interactive "P")
+  (cond
+   ;; ...
+   (t (let ((compile-command (nvp-java--compile-and-run-cmd)))
+        (funcall-interactively #'nvp-compile arg)))))
+
 (defun nvp-java-compile ()
   (interactive)
   (cond
    ;; ((nvp-maven-p) (nvp-maven-compile))
    ;; ((bound-and-true-p eclim-mode) (eclim-project-build))
-   (t (let ((compile-command
-             (format "javac %s && java %s" buffer-file-name
-                     (file-name-sans-extension buffer-file-name))))
+   ;; ...
+   (t (let ((compile-command (format "javac %s" (nvp-path 'bf))))
         (nvp-compile)))))
-
-;;--- Package
-;; create package structure in current directory
-(defun nvp-java-new-package (root name)
-  (interactive (list
-                (read-directory-name "Root directory: " default-directory)
-                (read-string "Package name: ")))
-  (ignore-errors
-    (make-directory
-     (expand-file-name 
-      (concat "src/java/" (replace-regexp-in-string "[.]" "/" name)) root)
-     'parents)))
 
 ;;; Setup
 (defun nvp-java-locals ()

@@ -202,7 +202,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 `bf'     -- Buffer file name
 `bfa'    -- Buffer file name abbreviated
 `bfs'    -- Buffer file Short name (no directory)
-`bfse'   -- Buffer file name w/o extension
+`bfe'    -- Buffer file name w/o extension
 `bfod'   -- Buffer file name or default directory
 `bfse'   -- Buffer file short name w/o extension
 

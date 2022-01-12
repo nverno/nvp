@@ -10,6 +10,17 @@
 (autoload 'eclimd--ensure-started "eclimd")
 (autoload 'eclim--connected-p "eclim-common")
 
+;; create package structure in current directory
+(defun nvp-java-new-package (root name)
+  (interactive (list
+                (read-directory-name "Root directory: " default-directory)
+                (read-string "Package name: ")))
+  (ignore-errors
+    (make-directory
+     (expand-file-name 
+      (concat "src/java/" (replace-regexp-in-string "[.]" "/" name)) root)
+     'parents)))
+
 ;; make sure that the eclimd process is running before using hydra
 (defun nvp-java-project-pre ()
   (when (not (eclim--connected-p))

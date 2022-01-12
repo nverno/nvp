@@ -19,7 +19,7 @@
 (require 'nvp-parse)
 (require 'nvp)
 (nvp-req 'nvp-c 'subrs)
-(nvp-auto "nvp-tag" 'nvp-tag-function-signatures)
+(nvp-auto "nvp-tag" 'nvp-tag-list-decls)
 (nvp-decls :f (forward-ifdef
                clang-complete-load-args ; clang-complete
                asdf-where               ; asdf
@@ -66,7 +66,7 @@
 
 ;; pull out functions signatures from current buffer using ctags
 (defun nvp-c-function-signatures (&optional file ignore-main ignore-static)
-  (--when-let (nvp-tag-function-signatures file)
+  (--when-let (nvp-tag-list-decls "c" "fp" file)
     (if (or ignore-main ignore-static)
         (let ((ignore (regexp-opt
                        (cl-remove-if

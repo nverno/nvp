@@ -194,8 +194,9 @@ Optionally, search LISP-ONLY files (no C sources)."
                (if (listp name) name (list name))))
          (fname
           (if (stringp name) name
-            (cl-some (lambda (f) (and (file-exists-p (expand-file-name dir f)) f))
-                     name))))
+            (when dir
+              (cl-some (lambda (f) (and (file-exists-p (expand-file-name dir f)) f))
+                       name)))))
     (if dir (nvp-display-location (expand-file-name fname dir) :file action)
       (user-error (format "%S not found up the directory tree." name)))))
 

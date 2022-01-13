@@ -133,6 +133,7 @@
   (-when-let (buff (or nvp-hap--doc-buffer
                        (nvp-hap--call 'doc-buffer thing arg)))
     (setq nvp-hap--saved-window-configuration nil)
+    (x-hide-tip)
     (pop-to-buffer (car buff))
     (unless (eq (cadr buff) :set)
       (goto-char (or (cadr buff) (point-min))))))

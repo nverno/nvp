@@ -93,6 +93,7 @@
 (defvar-local nvp-mark-defun-function #'mark-defun)
 (defvar-local nvp-project-root-function #'projectile-project-root)
 (defvar-local nvp-test-framework nil)
+(defvar-local nvp-fill-paragraph-function nil)
 
 ;; TODO:
 ;; - test/tag functions should call hooks

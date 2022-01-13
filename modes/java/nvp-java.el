@@ -85,6 +85,29 @@ that doesn't skip class body."
   (let ((this-command 'c-end-of-defun))
     (c-end-of-defun arg)))
 
+;;--- Fill
+(defun nvp-java--fill-inline (&optional unfill)
+  (let ((from (if unfill "" " "))
+        (to (if unfill " " "")))
+    (with-silent-modifications
+      (-let (((beg . end) (or c-lit-limits
+                              (c-literal-limits nil t))))
+        (save-excursion
+          (goto-char beg)
+          (while (re-search-forward "{@[a-z]+[^}\n\r]*}" end t)
+            (replace-regexp-in-region
+             from to (match-beginning 0) (match-end 0))))))))
+
+(defun nvp-java-fill-paragraph (&optional arg)
+  "Like \\[c-fill-paragraph] but doesn't break inline javadoc tags."
+  (interactive "*P")
+  (if (nvp-java-in-javadoc 'or-inline)
+      (progn
+        (nvp-java--fill-inline)
+        (funcall-interactively #'c-fill-paragraph arg)
+        (nvp-java--fill-inline 'unfill))
+    (funcall-interactively #'c-fill-paragraph arg)))
+
 ;;--- Compile
 ;; compile SRC and run DRIVER with java -cp CLASSPATH
 ;; default: javac buffer && java -cp /path/to/buffer Buffer 
@@ -117,7 +140,8 @@ that doesn't skip class body."
 (defun nvp-java-locals ()
   (nvp-setq-local
     beginning-of-defun-function #'nvp-java-beginning-of-defun
-    end-of-defun-function #'nvp-java-end-of-defun))
+    end-of-defun-function #'nvp-java-end-of-defun
+    nvp-fill-paragraph-function #'nvp-java-fill-paragraph))
 
 (provide 'nvp-java)
 ;;; nvp-java.el ends here

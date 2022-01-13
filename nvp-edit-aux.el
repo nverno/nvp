@@ -41,19 +41,20 @@
   ;; WRAP by default, prompting for wrapping string with prefix.  IGNORE
   ;; is regexp to ignore in list, ie commas and spaces and MATCH is regex
   ;; to capture items.
-  (cl-defmacro nvp-wrap-list-items (name
-                                    &key
-                                    (delims '("(" . ")"))
-                                    (match "[^)(, \n\t\r]+")
-                                    (ignore "[, \n\t\r]*")
-                                    (wrap '("\"" . "\"")))
+  (cl-defmacro nvp-wrap-list-items
+      (name &key
+            (delims '("(" . ")"))
+            (match "[^)(, \n\t\r]+")
+            (ignore "[, \n\t\r]*")
+            (wrap '("\"" . "\"")))
     (declare (debug defun)
              (indent defun))
     (let ((fn (intern (concat "nvp-list-wrap-" (symbol-name name))))
           (doc (format
-                (concat "Wrap items of list in selected region between "
-                        "%s...%s with items with %s..%s by default or "
-                        "string ARG, prompting with prefix.")
+                (concat
+                 "Wrap items of list in selected region between "
+                 "%s...%s with items\nwith %s..%s by default or"
+                 "string ARG, prompting with prefix.")
                 (car delims) (cdr delims) (car wrap) (cdr wrap)))
           (delim-re (concat ignore "\\(" match "\\)")))
       `(defun ,fn (start end &optional arg)
@@ -104,7 +105,8 @@
 
 ;;;###autoload
 (defun nvp-paredit-remove-newlines ()
-  "Removes extra whitespace and newlines from current point to the next paren."
+  "Removes extra whitespace and newlines from current point to the next
+paren."
   (interactive)
   (let ((up-to (point)))
     (backward-char)
@@ -157,8 +159,8 @@
 
 ;;;###autoload
 (defun nvp-unfill-region (beg end)
-  "Unfill the region, joining text paragraphs into a single logical line. This
-is useful, e.g, for use with `visual-line-mode'."
+  "Unfill the region, joining text paragraphs into a single logical line.
+This is useful, e.g, for use with `visual-line-mode'."
   (interactive "*r")
   (let ((fill-column (point-max)))
     (fill-region beg end)))
@@ -169,7 +171,8 @@ is useful, e.g, for use with `visual-line-mode'."
   (interactive (list (and current-prefix-arg (read-number "Fill column: "))))
   (let ((fill-column (or column (nvp-toggled-if fill-column most-positive-fixnum))))
     (deactivate-mark t)
-    (call-interactively 'fill-paragraph))
+    (call-interactively
+     (or nvp-fill-paragraph-function fill-paragraph-function) 'fill-paragraph))
   (nvp-repeat-command))
 
 (provide 'nvp-edit-aux)

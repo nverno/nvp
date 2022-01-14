@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-map
+# key: form
+# --
+for (Map.Entry<$1> e : $2.entrySet()) {
+  $0
+}

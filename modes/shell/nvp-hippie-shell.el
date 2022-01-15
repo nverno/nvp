@@ -35,7 +35,7 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
 (eval-when-compile
   ;; get expansion of ALIAS with optional prefix CMD from alias TABLE
   (defsubst nvp-shell--get-alias (alias table &optional cmd)
-   (gethash alias (if cmd (cdr (assoc cmd table)) (car table)))))
+    (gethash alias (if cmd (cdr (assoc cmd table)) (car table)))))
 
 (defvar nvp-shell-alias-completion-table
   (lambda (args)

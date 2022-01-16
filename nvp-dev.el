@@ -375,7 +375,7 @@ With \\[universal-argument] prompt for THING at point."
          (cl-remove-duplicates 
           (sort (font-family-list) #'(lambda (x y) (string< (upcase x) (upcase y))))
           :test 'string=)))
-    (nvp-with-results-buffer (help-buffer)
+    (nvp-with-results-buffer (help-buffer) "Available Fonts"
       (font-lock-mode)
       (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
         (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"

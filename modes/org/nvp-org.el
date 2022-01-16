@@ -16,8 +16,8 @@
 (defun nvp-org-header-list (&optional header-re level buffer items)
   "Get the headers of an org buffer (default current buffer). Optionally,
 narrows to headers matching HEADER-RE under nesting LEVEL (defaults all
-headers). Returns plist list of headers with specified values in ITEMS when defined.
-Defaults to header text, location, level, todo status. 
+headers). Returns plist list of headers with specified values in ITEMS when
+defined. Defaults to header text, location, level, todo status. 
 See `org-element-all-elements' for possible item types."
   (require 'org-element)
   (setq level (or level 0)) ;default all headers

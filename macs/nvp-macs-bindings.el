@@ -24,6 +24,12 @@
       ("M-N"   . nvp-move-forward-paragraph)
       ("M-P"   . nvp-move-backward-paragraph)))
 
+  (defvar nvp--bindings-search
+    '(("o" . occur)
+      ;; XXX: don't override ???
+      ("/" . isearch-forward)
+      ("?" . isearch-backward)))
+
   (defvar nvp--bindings-view
     (append
      nvp--bindings-hjkl
@@ -45,6 +51,11 @@
     (unless (boundp var)
       (error "%s bindings unknown" var))
     (symbol-value var)))
+
+(defun nvp--compose-bindings (bindings)
+  (unless (listp bindings) (setq bindings (list bindings)))
+  (cl-loop for bs in bindings
+           append (nvp--with-bindings bs)))
 
 (defsubst nvp--msg-from-bindings (bindings &optional prefix)
   "Create message of 'PREFIX: [key] cmd, ...' from list of cons BINDINGS."
@@ -193,9 +204,10 @@ BINDINGS are conses of (key . command).
 Optional:
   AUTOLOAD specifies prefix key which autoloads map.
   CREATE   if non-nil, map is initialized as sparse keymap.
-  PREFIX   defines map as a prefix command with PREFIX as its name if it is a string.
-  WITH     specifies sets of bindings, from 'nvp--bindings-*', to add to map. These
-           bindings are overwritten by any conflicts in BINDINGS.
+  PREFIX   defines map as a prefix command with PREFIX as its name if it is a
+           string.
+  WITH     specifies sets of bindings, from 'nvp--bindings-*', to add to map.
+           These bindings are overwritten by any conflicts in BINDINGS.
   PREFIX-KEY append sequence to each binding in map
 
 Transient:
@@ -223,7 +235,7 @@ Buggy:
           collect `(nvp-bindings ,km ,feature ,@bindings)))
     (while (keywordp (car bindings))
       (setq bindings (cdr (cdr bindings))))
-    (and with (setq bindings (append (nvp--with-bindings with) bindings)))
+    (and with (setq bindings (append (nvp--compose-bindings with) bindings)))
     (and prefix-key (setq prefix-key (eval prefix-key))) ;can be symbol
     ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
     (let ((modemap (nvp--normalize-modemap keymap minor))

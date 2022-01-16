@@ -175,14 +175,15 @@
         (princ "\n"))
       (emacs-lisp-mode))))
 
-;; list my packages that have loaded
 (defun nvp-dev-features (prefix)
+  "List my loaded `features', or prompt for PREFIX."
   (interactive (list (nvp-prefix 4 (read-string "Prefix: ") "nvp")))
-  (nvp-with-results-buffer nil (format "Loaded '%s' features" prefix)
-    (cl-prettyprint
-     (sort 
-      (--filter (string-prefix-p prefix (symbol-name it)) features)
-      #'string-lessp))))
+  (let* ((fs (sort
+              (--filter (string-prefix-p prefix (symbol-name it)) features)
+              #'string-lessp))
+         (title (format "Loaded '%s' features (%d)" prefix (length fs))))
+    (nvp-with-results-buffer nil title
+      (cl-prettyprint fs))))
 
 ;; dump lang's `c-lang-constants'
 

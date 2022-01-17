@@ -10,6 +10,7 @@
 (require 'cl-lib)
 (require 'subr-x)
 (require 'macroexp)
+(require 'inline)
 (require 'dash)
 (require 'hydra)
 (require 'cc-defs)

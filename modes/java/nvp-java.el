@@ -86,6 +86,7 @@ that doesn't skip class body."
     (c-end-of-defun arg)))
 
 ;;--- Fill
+;; FIXME: use `fill-nobreak-predicate'
 (defun nvp-java--fill-inline (&optional unfill)
   (let ((from (if unfill "" " "))
         (to (if unfill " " "")))

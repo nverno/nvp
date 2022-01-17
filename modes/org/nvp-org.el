@@ -4,6 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'org)
 (require 'nvp)
+(nvp-req 'nvp-org 'subrs)
 (nvp-decls :f (outline-show-subtree
                org-element-parse-buffer org-element-map org-element-property
                org-tempo-setup))
@@ -44,6 +45,18 @@ See `org-element-all-elements' for possible item types."
                      :end (org-element-property :end el)              ;end
                      :level (org-element-property :level el)          ;depth
                      :todo-keyword (org-element-property :todo-keyword el))))))))))))
+
+
+;;;###autoload
+(defun nvp-org-links (headline-re &optional buffer)
+  "Gather links nested under sections matching HEADLINE-RE in BUFFER if non-nil
+or current buffer."
+  (let (res)
+    (with-current-buffer (or buffer (current-buffer))
+      (nvp-with-org-sections headline-re
+        (org-element-map it 'link
+          (lambda (link) (push (nvp-org-property :raw-link link) res)))))
+    res))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

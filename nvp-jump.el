@@ -13,7 +13,6 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp-req 'nvp-read 'subrs)
-(nvp-req 'nvp-find 'subrs)
 (require 'nvp)
 (require 'nvp-display)
 (require 'nvp-read)
@@ -183,14 +182,15 @@ Optionally, search LISP-ONLY files (no C sources)."
 ;; 3. Variable `nvp-local-notes-file' (directory-local) if non-nil
 ;; 4. Otherwise, default to 'todo.org' or 'notes.org'.
 ;;;###autoload
-(defun nvp-jump-to-nearest-notes-dwim (name action)
+(defun nvp-jump-to-nearest-notes-dwim (&optional name action)
   "Jump to nearest notes/todo file, prompting with prefix."
   (interactive
-   (list  (nvp-prefix 16 (read-file-name "File name: ") :test #'>)
-          current-prefix-arg))
-  (let ((file (nvp-find-local-notes name)))
-    (if file (nvp-display-location file :file action)
-      (user-error (format "%S not found up the directory tree." name)))))
+   (list (nvp-prefix 4
+           (prog1 (read-file-name "File name: ") (setq current-prefix-arg '(1)))
+           :test #'>)
+         current-prefix-arg))
+  (--if-let (nvp-find-notes-file name) (nvp-display-location it :file action)
+    (user-error (format "%S not found up the directory tree." name))))
 
 ;;;###autoload
 (defun nvp-jump-to-dotfile (dir action)
@@ -205,9 +205,7 @@ Optionally, search LISP-ONLY files (no C sources)."
    (list
     (nvp-prefix 16 (nvp-completing-read
                     (format "Directory (default %s): " nvp/scratch)
-                    (list "~/" nvp/project nvp/class nvp/bin nvp/install nvp/work
-                          nvp/devel nvp/modes nvp/nvp nvp/site nvp/emacs nvp/build
-                          nvp/private nvp/scratch)
+                    (append '("~/") nvp-default-directories)
                     nil nil nil 'nvp-read-config-history nvp/scratch)
       nvp/scratch)
     current-prefix-arg))

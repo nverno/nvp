@@ -43,6 +43,11 @@
 (defvar nvp-default-org-file "gtd.org"
   "Default org file.")
 
+(defvar nvp-default-directories
+  (list nvp/project nvp/class nvp/bin nvp/install nvp/work nvp/devel nvp/modes
+        nvp/nvp nvp/site nvp/emacs nvp/build nvp/private nvp/scratch)
+  "Interesting directories.")
+
 (defvar nvp-window-configuration-stack ()
   "Store window configurations.")
 

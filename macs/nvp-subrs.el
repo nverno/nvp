@@ -168,10 +168,11 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;; Locate first name in NAMES using `locate-dominating-file' starting from FILE.
 ;; I think projectile has a number of functions doing this type of stuff
 (defsubst nvp-file-locate-first-dominating (file names)
+  (unless (listp names) (setq names (list names)))
   (cl-loop for name in names
      as res = (locate-dominating-file file name)
      when res
-     return res))
+     return (expand-file-name name res)))
 
 ;; this must exist somewhere I'm forgetting...
 (defsubst nvp-directories (&optional root fullname pattern)
@@ -186,6 +187,17 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 
 (defsubst nvp-compile-time-directories (&optional root full patterns)
   (nvp-directories root full (or patterns nvp-compile-time-directory-re)))
+
+;; -------------------------------------------------------------------
+;;; Defaults
+
+;; path to local notes file or nil
+(defsubst nvp-find-notes-file (&optional names)
+  (nvp-defq names (or (bound-and-true-p nvp-local-notes-file)
+                      nvp-default-notes-files))
+  (let* ((case-fold-search t))
+    (nvp-file-locate-first-dominating
+     (or (buffer-file-name) default-directory) names)))
 
 ;; -------------------------------------------------------------------
 ;;; Prompts 

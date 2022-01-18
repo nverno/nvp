@@ -10,7 +10,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-req 'nvp-find 'subrs)
+
 (nvp-decls :f (auth-source-search))
 (nvp-auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
 (nvp-auto "nvp-outline" nvp-outline-hydra/body)
@@ -103,7 +103,13 @@
     (cond ((search-forward "<?xml" nil t) (xml-mode))
 	  ((search-forward "<html" nil t) (web-mode)))))
 
-(defvar nvp-webjump-org-section-re (regexp-opt '("reference" "links")))
+(defvar nvp-webjump-org-links-re (regexp-opt '("reference" "links")))
+
+(eval-when-compile
+  (defsubst nvp-get-local-uris ()
+    (or (bound-and-true-p nvp-local-uris)
+        (--when-let (nvp-find-notes-file)
+          (setq nvp-local-uris (nvp-org-links nvp-webjump-org-links-re it))))))
 
 ;;;###autoload
 (defun nvp-browse-webjump (&optional prompt use-defaults)
@@ -114,11 +120,7 @@
   (let* ((completion-ignore-case t)
          (locals (and (not use-defaults)
                       (or (and prompt (read-from-minibuffer "URI: "))
-                          (bound-and-true-p nvp-local-uris)
-                          (--when-let (nvp-find-local-notes)
-                            (setq nvp-local-uris
-                                  (nvp-org-links
-                                   nvp-webjump-org-section-re it))))))
+                          (nvp-get-local-uris))))
          (sites (or locals (append nvp-webjump-sites webjump-sites)))
          (item (or (and prompt (cons nil locals))
                    (assoc-string

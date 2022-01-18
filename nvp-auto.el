@@ -102,22 +102,27 @@
     (cond ((search-forward "<?xml" nil t) (xml-mode))
 	  ((search-forward "<html" nil t) (web-mode)))))
 
+(defvar nvp-webjump-org-section-re (regexp-opt '("reference" "links")))
+
 ;;;###autoload
-(defun nvp-browse-webjump (&optional arg)
+(defun nvp-browse-webjump (&optional prompt use-defaults)
   "Jump to website."
-  (interactive "P")
+  (interactive (list (nvp-prefix 4) (nvp-prefix 16)))
   (require 'webjump)
   (require 'nvp-vars)                   ;nvp-webjump-sites
   (let* ((completion-ignore-case t)
-         (locals (or (and arg (read-from-minibuffer "URI: "))
-                     (and (bound-and-true-p nvp-local-uris)
-                          (y-or-n-p "Use local uris?")
-                          nvp-local-uris)))
+         (locals (and (not use-defaults)
+                      (or (and prompt (read-from-minibuffer "URI: "))
+                          (bound-and-true-p nvp-local-uris)
+                          (--when-let (nvp-find-local-notes)
+                            (setq nvp-local-uris
+                                  (nvp-org-links
+                                   nvp-webjump-org-section-re it))))))
          (sites (or locals (append nvp-webjump-sites webjump-sites)))
-         (item (or (and arg (cons nil locals))
+         (item (or (and prompt (cons nil locals))
                    (assoc-string
                     (nvp-completing-read "WebJump to site: "
-                                         (mapcar #'car sites) nil t)
+                      (mapcar #'car sites) nil t)
                     sites t)))
          (name (car item))
          (expr (cdr item)))

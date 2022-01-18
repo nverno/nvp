@@ -26,7 +26,7 @@
 
 ;;;###autoload
 (defun nvp-read-relative-recursively (root regexp &optional prompt default)
-  "Return full filepath prompting with file matching REGEXP from ROOT with\
+  "Return full filepath prompting with file matching REGEXP from ROOT with
 `directory-files-recursively'."
   (nvp-read:with-fallback
     (expand-file-name

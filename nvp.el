@@ -34,15 +34,27 @@
 ;;-- Global -- most machine specific are compiled in init
 (nvp-defvar nvp-program-search-paths
   (nvp-with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
-    `(,nvp/bin ,nvp/binw)) "Preferred search locations for executables.")
-(defvar nvp-default-org-file "gtd.org" "Default org file.")
-(defvar nvp-window-configuration-stack () "Store window configurations.")
+    `(,nvp/bin ,nvp/binw))
+  "Preferred search locations for executables.")
+
+(defvar nvp-default-notes-files '("notes.org" "todo.org")
+  "Default notes files.")
+
+(defvar nvp-default-org-file "gtd.org"
+  "Default org file.")
+
+(defvar nvp-window-configuration-stack ()
+  "Store window configurations.")
+
 (defvar nvp-default-log-function #'nvp-log-default
   "Default logging function - called from process sentinels, etc.")
-(defvar nvp-mode-font-additions () "Alist of mode font-lock additions.")
+
+(defvar nvp-mode-font-additions ()
+  "Alist of mode font-lock additions.")
 
 (defvar nvp-display-fallback-function #'nvp-display-fallback-dired
   "Fallback for unhandled prefix.")
+
 (defvar nvp-display-actions
   '(
     :buffer ((4 display-buffer-same-window

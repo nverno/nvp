@@ -27,7 +27,7 @@ has a file or directory local binding."
   (declare (indent 2))
   `(let ((compile-command
           (or ,@(if arg '(arg))
-              (cdr (assoc 'compile-command file-local-variables-alist))
+              (cdr (assoc 'compile-command (buffer-local-variables)))
               ,cmd)))
      ,@body))
 
@@ -59,11 +59,13 @@ has a file or directory local binding."
                     (format "make %s" (read-from-minibuffer "Make args: ")))))
           (t ,default-prompt)))))
      &rest body)
+  "Create compile function that prefers make or cmake.
+
+\(fn NAME ...)"
   (declare (indent defun))
   (let ((fn (if (symbolp name) name (intern name))))
     `(progn
-       (declare-function nvp-compile "nvp-compile")
-       (declare-function nvp-compile-cmake "nvp-compile")
+       (nvp-decl nvp-compile nvp-compile-cmake)
        (defun ,fn (&optional arg)
          ,doc
          (interactive "P")

@@ -13,6 +13,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp-req 'nvp-read 'subrs)
+(nvp-req 'nvp-find 'subrs)
 (require 'nvp)
 (require 'nvp-display)
 (require 'nvp-read)
@@ -185,19 +186,10 @@ Optionally, search LISP-ONLY files (no C sources)."
 (defun nvp-jump-to-nearest-notes-dwim (name action)
   "Jump to nearest notes/todo file, prompting with prefix."
   (interactive
-   (list  (or (nvp-prefix 16 (read-file-name "File name: ") :test #'>)
-              (bound-and-true-p nvp-local-notes-file)
-              '("notes.org" "Notes.org" "todo.org" "Todo.org"))
+   (list  (nvp-prefix 16 (read-file-name "File name: ") :test #'>)
           current-prefix-arg))
-  (let* ((dir (nvp-file-locate-first-dominating
-               (or (buffer-file-name) default-directory)
-               (if (listp name) name (list name))))
-         (fname
-          (if (stringp name) name
-            (when dir
-              (cl-some (lambda (f) (and (file-exists-p (expand-file-name dir f)) f))
-                       name)))))
-    (if dir (nvp-display-location (expand-file-name fname dir) :file action)
+  (let ((file (nvp-find-local-notes name)))
+    (if file (nvp-display-location file :file action)
       (user-error (format "%S not found up the directory tree." name)))))
 
 ;;;###autoload

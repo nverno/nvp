@@ -71,19 +71,23 @@ Return cons of \\='(name . raw-link)."
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-;; go up element, or if at top-level back same level
-(defun nvp-org-up-or-back-element ()
+(defun nvp-org-forward-element ()
   (interactive)
-  (condition-case nil
-      (org-up-element)
-    (error (org-backward-heading-same-level 1))))
+  (cond ((org-at-item-p)
+         (condition-case nil
+             (org-next-item)
+           (error (org-forward-element))))
+        (t (org-forward-element))))
 
-;; go down element when possible, otherwise forward
-(defun nvp-org-down-or-forward-element ()
-  (interactive)
-  (condition-case nil
-      (org-down-element)
-    (error (org-forward-heading-same-level 1))))
+(nvp-bindings nvp-org-move-map :now
+  :create t :indicate t :repeat t
+  :wrap (org-backward-element org-cycle org-down-element)
+  ("TAB" . org-cycle)
+  ("n"   . nvp-org-forward-element)
+  ("j"   . nvp-org-forward-element)
+  ("p"   . org-backward-element)
+  ("k"   . org-backward-element)
+  ("l"   . org-down-element))
 
 ;; FIXME: don't skip over tags
 ;; ensure point is at end-of-line so text doesn't get carried to next todo

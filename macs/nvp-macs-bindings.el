@@ -261,7 +261,10 @@ Buggy:
 
          ;; Transient bindings
          ,(when wrap
+            ;; repeated commands that are also wrapped will be replaced by
+            ;; wrapped versions, so this should come before handling 'repeat'
             (cond
+             ((listp wrap) wrap)
              ((eq wrap 'all)
               (setq wrap (--map (cdr it) bindings)))
              ((eq wrap t)
@@ -272,9 +275,10 @@ Buggy:
             (dolist (b bindings)
               (and (memq (cdr b) wrap)
                    (setf (cdr b) (nvp-wrap--make-name (cdr b)))))
-            (dolist (fn wrap)
-              (--when-let (memq fn repeat)
-                (setf (car it) (nvp-wrap--make-name fn))))
+            (when (listp repeat)
+              (dolist (fn wrap)
+                (--when-let (memq fn repeat)
+                  (setf (car it) (nvp-wrap--make-name fn)))))
             `(progn
                ,(macroexp-progn
                  (cl-loop for fn in wrap
@@ -284,6 +288,7 @@ Buggy:
             ;; 
             (when (memq repeat '(all t))
               (setq repeat (--map (cdr it) bindings)))
+            (setq repeat (cl-remove-duplicates repeat))
             (let ((repeat-fn (intern (concat "nvp/repeat-" mapname))))
               `(progn
                  (nvp-def ,repeat-fn (&rest _args)

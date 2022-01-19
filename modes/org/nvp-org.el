@@ -81,13 +81,14 @@ Return cons of \\='(name . raw-link)."
 
 (nvp-bindings nvp-org-move-map :now
   :create t :indicate t :repeat t
-  :wrap (org-backward-element org-cycle org-down-element)
+  :wrap (org-backward-element org-cycle org-down-element org-up-element)
   ("TAB" . org-cycle)
   ("n"   . nvp-org-forward-element)
-  ("j"   . nvp-org-forward-element)
+  ("j"   . nvp-org-forward-element)     ;XXX: move down into if sublist
   ("p"   . org-backward-element)
   ("k"   . org-backward-element)
-  ("l"   . org-down-element))
+  ("l"   . org-down-element)
+  ("h"   . org-up-element))
 
 ;; FIXME: don't skip over tags
 ;; ensure point is at end-of-line so text doesn't get carried to next todo

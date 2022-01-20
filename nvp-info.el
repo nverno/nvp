@@ -1,5 +1,5 @@
 ;;; nvp-info.el ---  -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;;
 ;; info helpers
@@ -8,8 +8,6 @@
 ;; - convert org to info and install
 ;; - jump to source
 ;; - imenu support
-;;
-;; TODO: node lookup should allow fuzzy matching
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -20,20 +18,33 @@
 (nvp-decls :f (nvp-read-mode))
 (nvp-auto "nvp-read" 'nvp-read--info-files)
 
+(defsubst nvp-info-read-node (&optional prompt default)
+  (nvp-defq prompt "Go to node: ")
+  (nvp-completing-read prompt (Info-build-node-completions) nil t nil
+    'Info-minibuf-history default))
+
+(defsubst nvp-info-read-manual (&optional arg)
+  (info-initialize)
+  (nvp-completing-read "Manual name: " (info--manual-names arg) nil t))
+
 ;;;###autoload
 (defun nvp-info-lookup-node (&optional arg)
-  "Lookup node in info associated with current mode."
+  "Lookup node in info associated with current mode,
+or prompt for manual with ARG."
   (interactive "P")
-  (-some-->
-   (or (and arg (intern (nvp-read-mode)))
-       (info-lookup-select-mode))
-   (info-lookup->doc-spec 'symbol it)
-   (car (nth 0 it))
-   (with-current-buffer (generate-new-buffer "*info*")
-     (Info-mode)
-     (Info-goto-node it)
-     (call-interactively #'Info-goto-node)
-     (pop-to-buffer (current-buffer)))))
+  (--if-let (or (and arg (nvp-info-read-manual))
+                (-some-->
+                    (or (info-lookup-select-mode)
+                        (nvp-read-mode))
+                  (info-lookup->doc-spec 'symbol it)
+                  (car (nth 0 it))))
+    (with-current-buffer (generate-new-buffer "*info*")
+      (Info-mode)
+      (if arg (Info-goto-node (format "(%s)" it))
+        (Info-goto-node it))
+      (Info-goto-node (nvp-info-read-node (format "(%s) goto: " it)))
+      (pop-to-buffer (current-buffer)))
+    (user-error "No info found.")))
 
 ;;; Imenu support
 

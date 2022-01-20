@@ -20,7 +20,10 @@
 (require 'make-mode)
 (nvp-req 'nvp-makefile 'subrs)
 (require 'nvp)
-(nvp-decls :f (nvp-makefile-indent))
+(nvp-decls :f (nvp-makefile-indent
+               nvp-makefile-check
+               nvp-makecomp-eldoc-function
+               helm-make))
 
 ;;; Navigation
 
@@ -96,11 +99,11 @@
 With prefix ARG, run `helm-make'."
   (interactive "P")
   (save-buffer)
-  (if arg (call-interactively 'helm-make)
-    (call-interactively 'nvp-compile))
+  (call-interactively
+   (if (and arg) (fboundp 'helm-make) #'helm-make) #'nvp-compile)
   (pop-to-buffer next-error-last-buffer))
 
-;; modified `helm--make-target-list-qp'
+;; modified `helm--make-target-list-qp' in helm-make
 ;; read targets from 'make -prqnR' output
 (defun nvp-makefile-targets--make (makefile)
   (let ((dir (if (file-directory-p makefile) makefile
@@ -117,8 +120,8 @@ With prefix ARG, run `helm-make'."
                       (forward-line -1)
                       (looking-at "^# Not a target:"))
                     (string-match "^\\([/a-zA-Z0-9_. -]+/\\)?\\." target))
-          (push target targets)))
-      targets)))
+          (push target targets))))
+    targets))
 
 ;; read targets from source
 (defun nvp-makefile-targets--source (makefile)

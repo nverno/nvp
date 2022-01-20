@@ -31,6 +31,11 @@
   (declare (pure t) (side-effect-free t))
   (and (consp x) (not (consp (cdr x)))))
 
+(defsubst nvp-as-list (x)
+  (declare (pure t) (side-effect-free t))
+  (if (and (listp x) (not (functionp x))) x
+    (list x)))
+
 ;; -------------------------------------------------------------------
 ;;; Hash tests
 
@@ -86,10 +91,7 @@
   (declare (pure t) (side-effect-free t))
   (mapcar (lambda (arg)
             (and (stringp arg) (setq arg (intern-soft arg)))
-            (unless (and arg
-                         (listp arg)
-                         (not (functionp arg)))
-              (setq arg (list arg))))
+            (setq arg (nvp-as-list arg)))
           args))
 
 (defsubst nvp-list-concat (&rest elems)
@@ -168,7 +170,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;; Locate first name in NAMES using `locate-dominating-file' starting from FILE.
 ;; I think projectile has a number of functions doing this type of stuff
 (defsubst nvp-file-locate-first-dominating (file names)
-  (unless (listp names) (setq names (list names)))
+  (setq names (nvp-as-list names))
   (cl-loop for name in names
      as res = (locate-dominating-file file name)
      when res

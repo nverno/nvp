@@ -146,10 +146,11 @@
   (let* ((flags (or args "-Wall -Werror -O2 -g -std=c11"))
          (file (file-name-nondirectory buffer-file-name))
          (out (file-name-sans-extension file))
-         (compile-command
+         (command
           (format "%s %s -o %s%s %s" (nvp-program "gcc")
                   flags out (nvp-with-gnu/w32 ".out" ".exe") file)))
-    (setq-local compile-command compile-command)
+    (unless (assoc 'compile-command (buffer-local-variables))
+      (setq-local compile-command command))
     (funcall-interactively 'nvp-compile current-prefix-arg)))
 
 ;; compile current file and run it with output to compilation buffer

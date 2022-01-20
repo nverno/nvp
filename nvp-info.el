@@ -19,13 +19,14 @@
 (nvp-auto "nvp-read" 'nvp-read--info-files)
 
 (defsubst nvp-info-read-node (&optional prompt default)
-  (nvp-defq prompt "Go to node: ")
-  (nvp-completing-read prompt (Info-build-node-completions) nil t nil
+  (completing-read (or prompt "Go to node: ")
+    (Info-build-node-completions) nil t nil
     'Info-minibuf-history default))
 
 (defsubst nvp-info-read-manual (&optional arg)
-  (info-initialize)
-  (nvp-completing-read "Manual name: " (info--manual-names arg) nil t))
+  (progn
+    (info-initialize)
+    (completing-read "Manual name: " (info--manual-names arg) nil t)))
 
 ;;;###autoload
 (defun nvp-info-lookup-node (&optional arg)

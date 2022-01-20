@@ -47,8 +47,7 @@
 
 ;;;###autoload
 (defun nvp-mark-goto-marker-at-point ()
-  "Jump to the marker at point.
-A marker is of the form \
+  "Jump to the marker at point. A marker is of the form
 '#<marker at [point/function-name] in [library/relative filename]>'."
   (interactive)
   (when-let* ((bnds (bounds-of-thing-at-point 'nvp-mark)))
@@ -58,7 +57,7 @@ A marker is of the form \
         (when (re-search-forward nvp-mark--regex (line-end-position) t)
           (let* ((fn-or-place (match-string-no-properties 1))
                  (place (string-to-number fn-or-place))
-                 (name (match-string 2))
+                 (name (replace-regexp-in-string "\\..*$" "" (match-string 2)))
                  (file (condition-case nil
                            (find-library-name name)
                          (expand-file-name name default-directory))))
@@ -146,7 +145,6 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
 
 ;;;###autoload
 (define-minor-mode nvp-mark-mode "NvpMark"
-  nil
   :lighter " NMark"
   :keymap nvp-mark-mode-map
   (if nvp-mark-mode

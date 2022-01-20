@@ -17,7 +17,7 @@
  :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward))
 
 ;;; Aliases
-(defalias 'nvp-completing-read 'ido-completing-read)
+(defalias 'nvp-completing-read 'completing-read)
 (put 'nvp-completing-read 'lisp-indent-function 'defun)
 (defalias 'nvp-find-file-in-dir 'ido-find-file-in-dir)
 (defalias 'nvp-grab-symbol 'company-grab-symbol)

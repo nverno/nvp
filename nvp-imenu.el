@@ -157,6 +157,9 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
       (define-key map (kbd "C-f") #'nvp-imenu-toggle))
     map))
 
+(define-minor-mode nvp-imenu-completion-mode "Imenu completion."
+  :keymap nvp-imenu-completion-map)
+
 ;; Completing read from imenu INDEX-ALIST with optional default NAME
 (defun nvp-imenu--read-choice (index-alist &optional name)
   (when (stringp name)
@@ -180,7 +183,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
          prompt index-alist nil t nil 'imenu--history-list name)))))
 
 ;; modified `imenu--completion-buffer'
-(defun nvp-idomenu--read (index-alist)
+(defun nvp-menu--read (index-alist)
   (let* ((default (and nvp-imenu-guess (thing-at-point 'symbol)))
          (name (nvp-imenu--read-choice index-alist default))
          choice)
@@ -191,7 +194,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
         (nvp@do-switch-buffer #'nvp-imenu-wrapper nil index-alist t)
       (setq choice (assoc name index-alist))
       (if (imenu--subalist-p choice)
-	  (nvp-idomenu--read (cdr choice))
+	  (nvp-menu--read (cdr choice))
 	choice))))
 
 ;; -------------------------------------------------------------------
@@ -209,7 +212,7 @@ before prompting."
       (setq alist (if nvp-imenu--flattened
                       (--filter (consp it) (nvp-flatten-tree alist 'alist))
                     (nvp-imenu--index-alist))))
-    (imenu (nvp-idomenu--read alist))))
+    (imenu (nvp-menu--read alist))))
 
 ;;;###autoload
 (defun nvp-imenu (arg)

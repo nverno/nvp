@@ -156,7 +156,6 @@ those are both specified."
             ,@(--map `(,(car it) ,@(cddr it)) clauses))
      (message "")))
 
-
 ;; -------------------------------------------------------------------
 ;;; Strings / Regexps
 

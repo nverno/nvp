@@ -367,41 +367,9 @@ Dispatches to generic handlers with ARG."
 
 
 ;; -------------------------------------------------------------------
-;;; IDO
+;;; Completion
 
-(defun nvp-ido-refresh-homedir ()
-  "Refresh completion for homedir while ido is finding a file."
-  (interactive)
-  (ido-set-current-directory "~/")
-  (setq ido-exit 'refresh)
-  (exit-minibuffer))
-
-(defun nvp-ido-yank ()
-  "Forward to `yank'."
-  (interactive)
-  (if (file-exists-p (current-kill 0))
-      (ido-fallback-command)
-    (yank)))
-
-(defun nvp-ido-backspace ()
-  "Forward to `backward-delete-char'.
-On error (read-only), quit without selecting."
-  (interactive)
-  (condition-case nil
-      (backward-delete-char 1)
-    (error
-     (minibuffer-keyboard-quit))))
-
-(defun nvp-ido-beginning-of-input ()
-  (interactive)
-  (goto-char (minibuffer-prompt-end)))
-
-(defun nvp-ido-throw-dired ()
-  (interactive)
-  (throw 'dired t))
-
-;; -------------------------------------------------------------------
-;;; Vertico
+(with-eval-after-load 'ido (require 'nvp-ido))
 
 (defun nvp-vertico-directory-up ()
   "Like `vertico-directory-up' except works when completing against
@@ -413,12 +381,8 @@ relative paths."
     (let* ((path (buffer-substring (minibuffer-prompt-end) (point)))
            (parent (file-name-directory (directory-file-name path))))
       (delete-minibuffer-contents)
-      (insert (or parent "/")))
-    (save-excursion
-      (goto-char (1- (point)))
-      (when (search-backward "/" (minibuffer-prompt-end) t)
-        (delete-region (1+ (point)) (point-max))
-        t))))
+      (insert (or parent "")))
+    t))
 
 (with-eval-after-load 'vertico-directory
   (setf (symbol-function 'vertico-directory-up) #'nvp-vertico-directory-up)

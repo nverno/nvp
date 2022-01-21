@@ -158,7 +158,8 @@
        nvp-proc-default-sentinel
        ;; imenu
        nvp-imenu-setup
-       nvp-idomenu
+       nvp-imenu
+       nvp-imenu-wrapper
        ;; toggle
        nvp-toggle-local-variable
        ;; abbrev

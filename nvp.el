@@ -531,9 +531,10 @@ relative paths."
 (defun nvp@read-with-ido (old-fn &rest args)
   (nvp-with-letf 'completing-read 'ido-completing-read
     (apply old-fn args)))
+
 ;; use ido-completion when reading environment variables interactively
-(nvp-advise-commands #'nvp@read-with-ido
-  :around '(read-envvar-name bookmark-jump))
+;; (nvp-advise-commands #'nvp@read-with-ido
+;;   :around '(read-envvar-name bookmark-jump))
 
 ;; after advice: repeat command with last basic input, or install transient MAP
 (defun nvp@repeat (&optional map &rest args)

@@ -195,6 +195,8 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 
 ;; path to local notes file or nil
 (defsubst nvp-find-notes-file (&optional names)
+  (when (and (not nvp-local-notes-file) (derived-mode-p 'comint-mode))
+    (hack-local-variables))
   (nvp-defq names (or (bound-and-true-p nvp-local-notes-file)
                       nvp-default-notes-files))
   (let* ((case-fold-search t))

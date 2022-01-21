@@ -139,6 +139,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 ;; like `ido-fallback-command', exit minibuffer, set flag, push what has
 ;; been entered back onto the stack so it is used in next command
 (defun nvp-imenu-toggle ()
+  "Toggle between hierarchical and flattened imenu list."
   (interactive)
   (let ((input (minibuffer-contents-no-properties)))
     (cl-loop for c across input
@@ -147,6 +148,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
     (exit-minibuffer)))
 
 ;;--- completion map
+;; XXX: and add binding to move backward up imenu-alist (DEL)
 (defvar nvp-imenu-completion-map
   (let ((map (make-sparse-keymap)))
     (nvp-imenu:if-ido
@@ -175,10 +177,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
            prompt (mapcar #'car index-alist)
            nil t nil 'imenu--history-list name))
       (minibuffer-with-setup-hook
-          ;; FIXME: remove binding after exit
-          ;; and add binding to move backward up imenu-alist (DEL)
-          (lambda ()
-            (define-key (current-local-map) (kbd "C-f") #'nvp-imenu-toggle))
+          (lambda () (nvp-imenu-completion-mode))
         (completing-read
          prompt index-alist nil t nil 'imenu--history-list name)))))
 

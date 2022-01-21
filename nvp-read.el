@@ -24,6 +24,14 @@
   (setq ido-exit 'done)
   (exit-minibuffer))
 
+(defun nvp-read--recursive-file-completion-table (&optional root regexp)
+  (let ((files (nvp-read--relative-files root regexp)))
+    (lambda (string pred action)
+      (cond ((eq action 'metadata) '(metadata (category . file)))
+            ((eq (car-safe action) 'boundaries)
+             `(boundaries 0 . ,(length (cdr action))))
+            (t (complete-with-action action files string pred))))))
+
 ;;;###autoload
 (defun nvp-read-relative-recursively (root regexp &optional prompt default)
   "Return full filepath prompting with file matching REGEXP from ROOT with
@@ -32,8 +40,8 @@
     (expand-file-name
      (nvp-completing-read
        (nvp-prompt-default (or prompt "File: ") default)
-       (nvp-read--relative-files root regexp) nil nil nil
-       'nvp-read-config-history default)
+       (nvp-read--recursive-file-completion-table root regexp)
+       nil nil nil 'nvp-read-config-history default)
      root)))
 
 (defun nvp-read--info-files (&optional prompt default)
@@ -54,7 +62,6 @@
   (let ((local (bound-and-true-p nvp-local-notes-file)))
     (if (and local (not nolocal)) local
       (nvp-defq default nvp-default-org-file)
-      (setq prompt (nvp-prompt-default (or prompt "Org file: ") default))
       (nvp-read:with-fallback
         (nvp-read-relative-recursively
          nvp/org "\.org$" (or prompt "Org file: ") default)))))

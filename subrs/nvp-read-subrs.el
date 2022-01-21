@@ -7,9 +7,10 @@
 (require 'nvp)
 
 ;; list filenames relative to ROOT matching REGEXP
-(defsubst nvp-read--relative-files (root regexp)
-  (mapcar (lambda (f) (file-relative-name f root))
-          (directory-files-recursively root regexp)))
+(defsubst nvp-read--relative-files (&optional root regexp)
+  (let ((default-directory (or root default-directory)))
+    (mapcar (lambda (f) (file-relative-name f))
+            (directory-files-recursively root (or regexp "")))))
 
 ;; just MODE's name minus the "-mode"
 (defsubst nvp-read--mode-name (&optional mode)

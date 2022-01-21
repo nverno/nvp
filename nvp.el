@@ -14,7 +14,8 @@
 (require 'smartparens)
 
 (nvp-decls
- :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward))
+ :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward
+                 vertico-directory--completing-file-p))
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'completing-read)
@@ -398,6 +399,30 @@ On error (read-only), quit without selecting."
 (defun nvp-ido-throw-dired ()
   (interactive)
   (throw 'dired t))
+
+;; -------------------------------------------------------------------
+;;; Vertico
+
+(defun nvp-vertico-directory-up ()
+  "Like `vertico-directory-up' except works when completing against
+relative paths."
+  (interactive)
+  (when (and (> (point) (minibuffer-prompt-end))
+             (eq (char-before) ?/)
+             (vertico-directory--completing-file-p))
+    (let* ((path (buffer-substring (minibuffer-prompt-end) (point)))
+           (parent (file-name-directory (directory-file-name path))))
+      (delete-minibuffer-contents)
+      (insert (or parent "/")))
+    (save-excursion
+      (goto-char (1- (point)))
+      (when (search-backward "/" (minibuffer-prompt-end) t)
+        (delete-region (1+ (point)) (point-max))
+        t))))
+
+(with-eval-after-load 'vertico-directory
+  (setf (symbol-function 'vertico-directory-up) #'nvp-vertico-directory-up)
+  (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
 
 
 ;; -------------------------------------------------------------------

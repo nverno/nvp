@@ -74,8 +74,7 @@
 ;; -------------------------------------------------------------------
 ;;; Recentf 
 
-;; Find a recent file using ido completion, only abbreviating
-;; filenames.
+;; Find a recent file, but abbreviate filenames in UI.
 ;;;###autoload
 (defun nvp-find-recentf (action)
   "Find recentf file, displaying with ACTION."

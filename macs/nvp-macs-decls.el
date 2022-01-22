@@ -102,16 +102,16 @@
      ,(when f
         `(nvp-decl ,@f))
      (nvp-decl
-       nvp-project-root
-       ;; general generics
+       ;; nvp
+       nvp-repeat-command
+       nvp-autoload-keymap
        nvp-mark-defun
-       ;; movement
        nvp-move-previous-heading
        nvp-move-forward-heading
        nvp-mode-header-regex
        nvp-newline-dwim--comment
-       ;; bindings
-       nvp-autoload-keymap
+       ;; project
+       nvp-project-root
        ;; nvp-cycle.el
        nvp-cycle
        ;; reading

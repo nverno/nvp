@@ -16,7 +16,8 @@
 (nvp-auto "nvp-util" 'nvp-flatten-tree)
 
 (defvar nvp-imenu-guess nil
-  "If non-nil, suggest `thing-at-point' if it is in the imenu alist.")
+  "If non-nil, suggest active region or `thing-at-point' if it is in the
+ imenu alist.")
 
 (defvar nvp-imenu-default-filter-regex (regexp-opt '("Headers" "Sub-Headers"))
   "Regex to match sublist headers to filter out of cleaned imenu alist.")
@@ -131,9 +132,9 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 
 
 ;; -------------------------------------------------------------------
-;;; Completion / Ido
+;;; Completion - ido or (nvp-)completing-read
 
-(defvar nvp-imenu--flattened nil)
+(defvar nvp-imenu--flattened nil "Flag if alist is flattened.")
 (defvar nvp-imenu--exit nil "Flag to monitor completing read exit.")
 
 ;; like `ido-fallback-command', exit minibuffer, set flag, push what has
@@ -141,11 +142,9 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 (defun nvp-imenu-toggle ()
   "Toggle between hierarchical and flattened imenu list."
   (interactive)
-  (let ((input (minibuffer-contents-no-properties)))
-    (cl-loop for c across input
-             do (push c unread-command-events))
-    (setq nvp-imenu--exit 'toggle)
-    (exit-minibuffer)))
+  (nvp-unread (minibuffer-contents-no-properties))
+  (setq nvp-imenu--exit 'toggle)
+  (exit-minibuffer))
 
 ;;--- completion map
 ;; XXX: and add binding to move backward up imenu-alist (DEL)
@@ -159,8 +158,14 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
       (define-key map (kbd "C-f") #'nvp-imenu-toggle))
     map))
 
-(define-minor-mode nvp-imenu-completion-mode "Imenu completion."
+(define-minor-mode nvp-imenu-completion-mode
+  "Imenu completion."
   :keymap nvp-imenu-completion-map)
+
+(eval-when-compile
+  (defsubst nvp-imenu--prompt (&optional name)
+    (format "Imenu%s%s: " (if nvp-imenu--flattened "[flat]" "")
+            (if name (concat " ('" name "')") ""))))
 
 ;; Completing read from imenu INDEX-ALIST with optional default NAME
 (defun nvp-imenu--read-choice (index-alist &optional name)
@@ -169,7 +174,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
                      (or (imenu-find-default name index-alist) name)
                      index-alist)
                     name)))
-  (let ((prompt (if name (format "Imenu ('%s'): " name) "Imenu: ")))
+  (let ((prompt (nvp-imenu--prompt name)))
     (nvp-imenu:if-ido
         (nvp-with-letf 'ido-setup-completion-map
             #'(lambda () (setq ido-completion-map nvp-imenu-completion-map))
@@ -178,12 +183,12 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
            nil t nil 'imenu--history-list name))
       (minibuffer-with-setup-hook
           (lambda () (nvp-imenu-completion-mode))
-        (completing-read
+        (nvp-completing-read
          prompt index-alist nil t nil 'imenu--history-list name)))))
 
-;; modified `imenu--completion-buffer'
+;; completing read for selection in INDEX-ALIST
 (defun nvp-menu--read (index-alist)
-  (let* ((default (and nvp-imenu-guess (thing-at-point 'symbol)))
+  (let* ((default (and nvp-imenu-guess (nvp-tap 'dwim)))
          (name (nvp-imenu--read-choice index-alist default))
          choice)
     (if (nvp-imenu:if-ido (eq ido-exit 'fallback)
@@ -201,8 +206,8 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 
 ;;;###autoload
 (defun nvp-imenu-wrapper (&optional flat alist toggle)
-  "Call imenu with ido-completion.  If FLAT is non-nil, flatten index alist
-before prompting."
+  "Call imenu.  If FLAT is non-nil, flatten index alist before prompting.
+Input is read with `nvp-imenu-completion-mode' active."
   (interactive (list current-prefix-arg (nvp-imenu--index-alist)))
   (nvp-imenu:if-ido (ido-common-initialization))
   (-when-let (alist (or alist (nvp-imenu--index-alist)))
@@ -215,6 +220,8 @@ before prompting."
 
 ;;;###autoload
 (defun nvp-imenu (arg)
+  "Calls `nvp-imenu-wrapper'. With prefix C-u restrict to headers only.
+C-u C-u restricts to headers+sub-headers."
   (interactive "P")
   (setq nvp-imenu--flattened nil)
   (let ((default (eq imenu-create-index-function

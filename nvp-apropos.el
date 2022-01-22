@@ -30,4 +30,8 @@
   ("o" customize-apropos-options "options"))
 
 (provide 'nvp-apropos)
+;; Local Variables:
+;; coding: utf-8
+;; byte-compile-warnings: (not docstrings)
+;; End:
 ;;; nvp-apropos.el ends here

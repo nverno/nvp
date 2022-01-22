@@ -4,7 +4,6 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'ido)
-(require 'nvp)
 (nvp-decls)
 
 (defun nvp-ido-refresh-homedir ()

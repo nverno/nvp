@@ -204,7 +204,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
      (or (buffer-file-name) default-directory) names)))
 
 ;; -------------------------------------------------------------------
-;;; Prompts 
+;;; I/O
 
 ;; add default to prompt in non-nil
 (defsubst nvp-prompt-default (prompt &optional default)
@@ -212,6 +212,11 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
       (format "%s (default %s): "
               (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
     prompt))
+
+;; push input back onto command stack
+(defsubst nvp-unread (input)
+  (cl-loop for c across input
+           do (push c unread-command-events)))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax
@@ -223,6 +228,24 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
     (and
      (progn (skip-syntax-forward " ") (eq ?\) (char-syntax (char-after))))
      (progn (skip-syntax-backward " ") (eq ?\( (char-syntax (char-before)))))))
+
+;; -------------------------------------------------------------------
+;;; System
+
+;; Numboer of available processors
+(define-inline nvp-nproc ()
+  (cond
+   ((executable-find "nproc")
+    (inline-quote
+     (string-to-number
+      (string-trim (shell-command-to-string "nproc")))))
+   ((file-exists-p "/proc/cpuinfo")
+    (inline-quote
+     (with-temp-buffer
+       (insert-file-contents "/proc/cpuinfo")
+       (how-many "^processors[[:space:]]+:"))))
+   ;; default
+   (t (inline-quote 1))))
 
 (provide 'nvp-subrs)
 ;; Local Variables:

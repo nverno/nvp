@@ -59,25 +59,6 @@ in buffer *vagrant-status*."
    shell-command-switch
    (format "nohup 1>/dev/null 2>/dev/null %s" cmd)))
 
-;; Return the number of logical processors on this system.
-(defun nvp-ext-sys-numcores ()
-  (or ;; Linux
-   (when (file-exists-p "/proc/cpuinfo")
-     (with-temp-buffer
-       (insert-file-contents "/proc/cpuinfo")
-       (how-many "^processor[[:space:]]+:")))
-   ;; Windows
-   (let ((number-of-processors (getenv "NUMBER_OF_PROCESSORS")))
-     (when number-of-processors
-       (string-to-number number-of-processors)))
-   ;; BSD+OSX
-   (with-temp-buffer
-     (ignore-errors
-       (when (zerop (call-process "sysctl" nil t nil "-n" "hw.ncpu"))
-         (string-to-number (buffer-string)))))
-   ;; Default
-   1))
-
 ;;;###autoload
 (defun nvp-ext-xev ()
   "Run xev with output to emacs buffer."

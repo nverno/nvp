@@ -28,7 +28,7 @@
 (require 'nvp)
 (nvp-req 'nvp-abbrev 'subrs)
 
-(nvp-decls :v (nvp-abbrev-completion-need-refresh))
+(nvp-decls :v (nvp-abbrev-completion-need-refresh unicode-latex-abbrev-table))
 
 (defvar nvp-abbrev--read-history ())
 
@@ -67,7 +67,7 @@ With prefix, don't split region by whitespace."
     (cons trans exp)))
 
 (cl-defgeneric nvp-abbrev-table-name (&optional local-table _abbrev _exp)
-  "Generic function to return the name of abbrev file to use with given abbrev \
+  "Generic function to return the name of abbrev file to use with given abbrev
 or expansion."
   (regexp-quote (format "%s-abbrev-table" (or local-table major-mode))))
 
@@ -127,9 +127,10 @@ or expansion."
 
 ;;;###autoload
 (defun nvp-abbrev-jump-to-file (arg)
-  "Jump to abbrev file, `nvp-abbrev-local-table', and search for insertion location.
-Prefix ARG specifies the length of the preceding text to use as abbrev.
-When abbrev text is selected, searching is done first by length then lexically."
+  "Jump to abbrev file, `nvp-abbrev-local-table', and search for insertion
+location. Prefix ARG specifies the length of the preceding text to use as
+abbrev. When abbrev text is selected, searching is done first by length
+then lexically."
   (interactive "P")
   (let* ((local-abbrevs (bound-and-true-p nvp-abbrev-local-table))
          (prefix (cond

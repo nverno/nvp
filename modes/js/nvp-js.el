@@ -94,8 +94,8 @@
                httpd-start
                js2-display-error-list
                tern-get-docs
-               nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook)
-           :v (nodejs-repl-process-name httpd-root httpd-port yas--extra-modes))
+               nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook)
+           :v (nodejs-repl-process-name httpd-root httpd-port yas-extra--modes))
 
 ;; FIXME: not working for multiple major-modes???
 ;; when in /* continued comments or doxygen, add comment continuation for
@@ -204,7 +204,6 @@
 ;;;###autoload
 (define-minor-mode js-spec-mode
   "Minor mode for js specs."
-  nil
   :lighter " JSpec"
   :keymap nil
   (if js-spec-mode

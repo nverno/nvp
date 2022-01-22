@@ -95,7 +95,6 @@
 
 (define-minor-mode yaml-src-mode
   "Yaml code minor mode."
-  nil
   :lighter " YamlCode")
 
 ;; kill editing buffer and insert code back into OG

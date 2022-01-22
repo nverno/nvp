@@ -154,4 +154,8 @@ _v_ariable   _c_urrent defun      _n_ew emacs (in debug)
   ("y" debug-on-entry))
 
 (provide 'nvp-edebug)
+;; Local Variables:
+;; coding: utf-8
+;; byte-compile-warnings: (not docstrings redefine)
+;; End:
 ;;; nvp-edebug.el ends here

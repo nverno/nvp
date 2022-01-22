@@ -203,7 +203,6 @@ the console."
 
 ;;;###autoload
 (define-minor-mode nvp-python-mode "Python utils"
-  nil
   :keymap nvp-python-mode-map
   :lighter " PU"
   (add-hook 'after-save-hook 'nvp-python-set-encoding nil t))

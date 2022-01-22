@@ -147,8 +147,9 @@ behaviour of default)."
       (handler  . nvp-bmk-jump))))
 
 (defun nvp-bmk-jump (bmk &optional no-insert)
-  "Implements the `handler' function for the record returned by 
-`nvp-bmk-make-record'. This functions updates the history cache unless NO-INSERT."
+  "Implements the `handler' function for the record returned by
+`nvp-bmk-make-record'. This functions updates the history cache unless
+NO-INSERT."
   (let* ((file (bookmark-prop-get bmk 'filename))
          (insert-p (or no-insert (nvp-bmk-ring-insert bmk))))
     (if insert-p

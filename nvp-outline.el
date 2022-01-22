@@ -52,4 +52,8 @@ _<backtab>_: subtree _TAB_: subtree   _n_: forward same level
   ("q" nil "quit"))
 
 (provide 'nvp-outline)
+;; Local Variables:
+;; coding: utf-8
+;; byte-compile-warnings: (not docstrings)
+;; End:
 ;;; nvp-outline.el ends here

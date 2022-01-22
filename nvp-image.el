@@ -9,9 +9,12 @@
 (defun nvp-image-fit ()
   (interactive)
   (if (not (eq last-command this-command))
-      (image-transform-fit-to-width)
+      (progn
+        (setq image-transform-resize 'fit-width)
+        (image-toggle-display-image))
     (setq this-command 'image-transform-fit-to-height)
-    (call-interactively 'image-transform-fit-to-height)))
+    (setq image-transform-resize 'fit-height)
+    (image-toggle-display-image)))
 
 (defmacro image-view (direction)
   `(lambda ()

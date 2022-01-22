@@ -46,4 +46,8 @@ _h_   _l_   _y_ank      _o_pen    _e_xchange-point
       (goto-char mk))))
 
 (provide 'nvp-rect)
+;; Local Variables:
+;; coding: utf-8
+;; byte-compile-warnings: (not docstrings)
+;; End:
 ;;; nvp-rect.el ends here

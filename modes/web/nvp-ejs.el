@@ -8,7 +8,6 @@
 
 ;;;###autoload
 (define-minor-mode ejs-mode "EJS minor mode"
-  nil
   :lighter " EJS"
   (yas-activate-extra-mode 'ejs-mode))
 

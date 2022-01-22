@@ -58,8 +58,8 @@
 
 ;;;###autoload
 (defun nvp-sh-eldoc-function ()
-  "Return eldoc string for bash functions (builtins and those avaliable \
-from `man %s'."
+  "Return eldoc string for bash functions (builtins and those avaliable from
+`man %s'."
   (let ((func (nvp-sh-current-command)))
     (and func
          (nvp-sh:with-bash/man func

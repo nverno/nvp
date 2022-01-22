@@ -368,6 +368,7 @@ Dispatches to generic handlers with ARG."
 
 ;; -------------------------------------------------------------------
 ;;; Completion
+(nvp-decl vertico-directory-tidy)
 
 (with-eval-after-load 'ido (require 'nvp-ido))
 

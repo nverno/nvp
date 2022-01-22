@@ -22,6 +22,7 @@
 ;; `global-override-mode' in bind-key
 (define-minor-mode nvp-override-mode
   "Minor mode to enable overriding key bindings."
+  :group 'nvp
   :lighter ""
   :global t
   :keymap nvp-override-mode-map)
@@ -62,7 +63,7 @@ bindings, avoiding errors from key sequences starting with non-prefix keys."
 ;; https://stackoverflow.com/a/14769115/2415684
 ;;;###autoload
 (defun nvp-local-set-minor-mode-key (mode key def)
-  "Override a minor mode keybinding for the local buffer only using \
+  "Override a minor mode keybinding for the local buffer only using
 `minor-mode-overriding-map-alist'."
   (let* ((oldmap (cdr (assoc mode minor-mode-map-alist)))
          (newmap (or (cdr (assoc mode minor-mode-overriding-map-alist))

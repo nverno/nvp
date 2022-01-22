@@ -89,6 +89,8 @@ Printf notes:
     (modify-syntax-entry ?. "_" st)
     st))
 
+(defvar nvp-go-type-re)
+
 ;;;###autoload
 (defun nvp-go-help-at-point (arg)
   (interactive "P")

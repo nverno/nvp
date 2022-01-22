@@ -88,9 +88,9 @@
 
 (defun nvp-utop-run-once (func where callback &optional state &rest args)
   "Execute CALLBACK applied to ARGS once before or after FUNC is called.
-WHERE can be :before or :after and is passed to `advice-add'.
-Optionally, if STATE specifies one of `utop-state''s, the CALLBACK will run once 
-after both FUNC is called and `utop-state' is set to STATE."
+WHERE can be :before or :after and is passed to `advice-add'. Optionally,
+if STATE specifies one of `utop-state''s, the CALLBACK will run once after
+both FUNC is called and `utop-state' is set to STATE."
   (advice-add func where
               (progn
                 (let ((name (intern (concat (symbol-name callback) "@once"))))
@@ -137,8 +137,8 @@ after both FUNC is called and `utop-state' is set to STATE."
 
 (defun nvp-utop-redirect-output (command output-buffer echo &optional no-display)
   "Send COMMAND to utop process with output to OUTPUT-BUFFER.
-With prefix arg ECHO, echo output in utop buffer.
-Redirection is handled by `comint-redirect-send-command-to-process', (which see)."
+With prefix arg ECHO, echo output in utop buffer. Redirection is handled by
+`comint-redirect-send-command-to-process', (which see)."
   (interactive "sCommand: \nBOutput Buffer: \nP")
   (if (get-buffer-process utop-buffer-name)
       (let ((proc (get-buffer-process utop-buffer-name))) ;lexical

@@ -327,8 +327,9 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
 ;;;###autoload
 (defun nvp-try-expand-tags (_old)
   "Placeholder for tag expansion function.  
-If active tags are found, it replaces itself in `hippie-expand-try-functions-list'
-with the active backend, otherwise it removes itself."
+If active tags are found, it replaces itself in
+`hippie-expand-try-functions-list' with the active backend, otherwise it
+removes itself."
   (cond
    ((bound-and-true-p ggtags-mode)
     (nvp-he--replace-in-list 'nvp-try-expand-tags 'ggtags-try-complete-tag))

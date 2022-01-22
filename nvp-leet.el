@@ -3,7 +3,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls :v (leetcode--description-buffer-name leetcode--testcase-buffer-name)
+(nvp-decls :v (leetcode--description-buffer-name
+               leetcode--testcase-buffer-name
+               leetcode--result-buffer-name)
            :f (leetcode-try leetcode-submit leetcode--start-coding
                             leetcode--get-code-buffer-name))
 

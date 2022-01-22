@@ -10,7 +10,8 @@
 ;;;###autoload
 (defun nvp-expand-range (&optional sep)
   "Expand range before point, eg. to make 0:10 by 1 could be 
-either m:10, m0:10, m0:1:10 or m:1:10. So, a missing start assumes starts from 0."
+either m:10, m0:10, m0:1:10 or m:1:10. So, a missing start assumes starts
+from 0."
   (interactive
    (list (if current-prefix-arg (read-from-minibuffer "Separator: " ", ")
            " ")))

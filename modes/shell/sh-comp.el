@@ -183,7 +183,7 @@
 
 ;;;###autoload
 (defun sh-comp-candidates (type &optional file)
-  "List of completion targets from current buffer or FILE and all recursively \
+  "List of completion targets from current buffer or FILE and all recursively
 sourced files."
   (sh-comp-file-candidates
    (or file (buffer-file-name)) type 'recurse sh-comp-imenu-expression))

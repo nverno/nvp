@@ -18,7 +18,8 @@
 ;;;###autoload
 (defun nvp-perltidy-dwim (arg)
   "Tidy active region, current defun, or entire buffer.
-With prefix ARG display the tidy results in separate buffer before applying them."
+With prefix ARG display the tidy results in separate buffer before applying
+them."
   (interactive "P")
   (let ((src-buff (current-buffer))
         beg end)

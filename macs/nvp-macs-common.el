@@ -85,10 +85,10 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 (defun nvp-macs-normalize-plist (name input
                                       &optional plist defaults merge-function)
   "Normalize pseudo-plist to regular plist, extending key/value pairs.
-Keywords will be call by a function nvp-macs-normalize/<keyword>
-with three arguments: NAME, the keyword, and any args following before next keyword.
-If the keyword still has no default and is a member of DEFAULTS, that will be 
-used. Modification of `use-package-normalize-plist'."
+Keywords will be call by a function nvp-macs-normalize/<keyword> with three
+arguments: NAME, the keyword, and any args following before next keyword.
+If the keyword still has no default and is a member of DEFAULTS, that will
+be used. Modification of `use-package-normalize-plist'."
   (if (null input)
       plist
     (let* ((kw (car input))

@@ -185,4 +185,8 @@ _l_ →          _Z_ reset         _d_elete  _q_uit
     (enlarge-window arg)))
 
 (provide 'nvp-window)
+;; Local Variables:
+;; coding: utf-8
+;; byte-compile-warnings: (not docstrings redefine)
+;; End:
 ;;; nvp-window.el ends here

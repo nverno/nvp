@@ -23,7 +23,7 @@
 
 ;;;###autoload
 (defun nvp-abbrev-grab ()
-  "Grabs previous symbol if point is at the end of a symbol or if the \
+  "Grabs previous symbol if point is at the end of a symbol or if the
 `last-input-event' was a space."
   (if (or (and (characterp last-input-event)
                (eq ? (char-syntax last-input-event)))

@@ -44,7 +44,7 @@
 
 ;;;###autoload
 (defun nvp-hook-add-or-remove (func hook-var hook-fn &optional append local)
-  "Call FUNC to add or remove HOOK-FN from HOOK-VAR, locally when called \
+  "Call FUNC to add or remove HOOK-FN from HOOK-VAR, locally when called
 interactively."
   (interactive
    (let* ((func (if current-prefix-arg 'remove-hook 'add-hook))

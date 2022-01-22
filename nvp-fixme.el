@@ -77,7 +77,6 @@
 
 ;;;###autoload
 (define-minor-mode nvp-fixme-mode "Fixme"
-  nil
   :lighter " Fixme"
   :keymap nvp-fixme-mode-map
   (if nvp-fixme-mode

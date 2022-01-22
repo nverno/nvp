@@ -11,8 +11,8 @@
 
 (defun nvp-env-substitute-vars (string &optional unquote)
   "Substitute environment variables in STRING.
-If UNQUOTE is non-nil remove surrounding quotes.  Result is trimmed of surrounding
-whitespace either way."
+If UNQUOTE is non-nil remove surrounding quotes. Result is trimmed of
+surrounding whitespace either way."
   (setq string (substitute-env-vars string 'leave-undefined))
   (if unquote
       (string-trim string "[\" \t\n\r]+" "[\" \t\n\r]+")

@@ -9,12 +9,12 @@
 (defhydra nvp-hydra-buffer-menu (:color pink :hint nil :pre (Buffer-menu-mode))
   "
 ^Mark^             ^Unmark^           ^Actions^          ^Search
-^^^^^^^^-----------------------------------------------------------------                        (__)
-_m_: mark          _u_: unmark        _x_: execute       _R_: re-isearch                         (oo)
-_s_: save          _U_: unmark up     _b_: bury          _I_: isearch                      /------\\/
-_d_: delete        ^ ^                _g_: refresh       _O_: multi-occur                 / |    ||
-_D_: delete up     ^ ^                _T_: files only: % -28`Buffer-menu-files-only^^    *  /\\---/\\
-_~_: modified      ^ ^                ^ ^                ^^                                 ~~   ~~
+^^^^^^^^-----------------------------------------------------------------
+_m_: mark          _u_: unmark        _x_: execute       _R_: re-isearch
+_s_: save          _U_: unmark up     _b_: bury          _I_: isearch
+_d_: delete        ^ ^                _g_: refresh       _O_: multi-occur
+_D_: delete up     ^ ^                _T_: files only: % -28`Buffer-menu-files-only
+_~_: modified      ^ ^                ^ ^                ^^
 "
   ("m" Buffer-menu-mark)
   ("u" Buffer-menu-unmark)
@@ -36,4 +36,8 @@ _~_: modified      ^ ^                ^ ^                ^^                     
   ("q" quit-window "quit" :color blue))
 
 (provide 'nvp-Buffer-menu)
+;; Local Variables:
+;; coding: utf-8
+;; byte-compile-warnings: (not docstrings)
+;; End:
 ;;; nvp-Buffer-menu.el ends here

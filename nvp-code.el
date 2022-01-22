@@ -11,6 +11,7 @@
   (require 'nvp-macro)
   (require 'hideshow))
 (require 'nvp)
+(nvp-auto "hideshow" hs-hide-all hs-toggle-hiding hs-hide-level hs-show-all)
 (nvp-decls
  :f (hs-toggle-hiding hs-show-all hs-hide-all hs-discard-overlays
                       hs-inside-comment-p hs-hide-block-at-point)

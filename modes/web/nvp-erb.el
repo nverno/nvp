@@ -8,7 +8,6 @@
 
 ;;;###autoload
 (define-minor-mode erb-mode "ERB minor mode"
-  nil
   :lighter " ERB"
   (yas-activate-extra-mode 'erb-mode))
 

@@ -14,7 +14,7 @@
 
 ;;;###autoload
 (defun nvp-async-shell-command-to-string (command &optional callback)
-  "Execute COMMAND as an `async-shell-command', running CALLBACK with results \
+  "Execute COMMAND as an `async-shell-command', running CALLBACK with results
 if non-nil. Default just barfs output in message win or lose."
   (nvp-defq callback
     (lambda (p _m)

@@ -47,8 +47,10 @@
             (match "[^)(, \n\t\r]+")
             (ignore "[, \n\t\r]*")
             (wrap '("\"" . "\"")))
-    (declare (debug defun)
-             (indent defun))
+    "Create list wrapping function.
+
+\(fn NAME ...)"
+    (declare (debug defun) (indent defun))
     (let ((fn (intern (concat "nvp-list-wrap-" (symbol-name name))))
           (doc (format
                 (concat

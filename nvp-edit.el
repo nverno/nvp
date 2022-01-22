@@ -34,7 +34,7 @@ Defaults to `defun' at point."
 
 (eval-when-compile
   (defmacro nvp-sort:defaults (start end &rest body)
-    "Sort region between START and END by BODY, using defaults and indent \
+    "Sort region between START and END by BODY, using defaults and indent
 region afterward."
     (declare (indent defun) (debug (sexp sexp &rest form)))
     `(unwind-protect

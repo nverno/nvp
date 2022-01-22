@@ -216,4 +216,8 @@ With prefix, prompts for DATE."
      (?p "[p]rev" "└─"))))
 
 (provide 'nvp-auto)
+;; Local Variables:
+;; coding: utf-8
+;; byte-compile-warnings: (not docstrings redefine)
+;; End:
 ;;; nvp-auto.el ends here

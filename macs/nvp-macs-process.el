@@ -99,13 +99,15 @@ if process exit status isn't 0."
      on-failure
      (proc-filter :default)
      (proc-sentinel :default))
-  "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process buffer.
-For async calls (default), returns process object.
+  "Start PROCESS with a sentinel doing ON-SUCCESS or ON-FAILURE in process
+buffer. For async calls (default), returns process object.
 
-Note for `call-process-shell-command', invoked with SHELL and SYNC being non-nil,
-there is no process object to return. Instead, if ON-SUCCESS is non-nil, it
-should be a function that will be called in the result buffer. 
-In this case, the return value is the exit status of the shell command."
+Note for `call-process-shell-command', invoked with SHELL and SYNC being
+non-nil, there is no process object to return. Instead, if ON-SUCCESS is
+non-nil, it should be a function that will be called in the result buffer.
+In this case, the return value is the exit status of the shell command.
+
+\(fn PROCESS ...)"
   (declare (indent defun) (debug t))
   (let* ((proc (make-symbol "proc"))
          (proc-cmd (intern (format "%s%s"

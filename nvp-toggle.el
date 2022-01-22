@@ -176,7 +176,7 @@ With prefix ARG, just refresh defaults."
 ;;; Text
 
 (defun nvp-toggle-tabify (&optional beg end)
-  "Tab/Untabify buffer regions - full visible buffer with prefix, otherwise \
+  "Tab/Untabify buffer regions - full visible buffer with prefix, otherwise
 the current paragraph."
   (interactive
    (nvp-tap-or-region 'bdwim (nvp-prefix 1 'buffer :test '> 'paragraph) :pulse t))

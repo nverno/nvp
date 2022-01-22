@@ -279,8 +279,8 @@ MODES is of form (feature . mode)."
 ;;-- Setup helper functions
 ;; Find locations for init constants
 (defun nvp--setup-normalize-locs (locs &optional defaults)
-  "Ensure LOCS is a list.
-If LOCS is nil, use DEFAULTS.  If it is a symbol/function (list) get its value(s)."
+  "Ensure LOCS is a list. If LOCS is nil, use DEFAULTS.
+If it is a symbol/function (list) get its value(s)."
   (if (null locs)
       (or defaults (nvp-with-gnu/w32 '("~/") '("~/" "d:/" "c:/")))
     (if (and (consp locs) (functionp (car locs)))

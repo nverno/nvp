@@ -43,7 +43,7 @@ Otherwise, look for version control directories, returing the longest path."
 
 ;;;###autoload(autoload 'nvp-projectile-rg "nvp-project")
 (rg-define-search nvp-projectile-rg
-  :query (or (thing-at-point 'symbol) (read-from-minibuffer "Search: "))
+  :query (or (nvp-tap 'dwim) (read-from-minibuffer "Search: "))
   :dir project
   :format (not current-prefix-arg)
   :files (concat
@@ -51,7 +51,8 @@ Otherwise, look for version control directories, returing the longest path."
            #'identity
            (--map (concat "--glob !" it)
                   (append projectile-globally-ignored-files
-                          projectile-globally-ignored-directories)) " "))
+                          projectile-globally-ignored-directories))
+           " "))
   :flags '("--type all"))
 
 ;; -------------------------------------------------------------------

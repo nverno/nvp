@@ -485,11 +485,14 @@ relative paths."
 
 ;; don't run my `shell-mode-hook' during `shell-command' calls
 (defvar shell-mode-hook)
-(define-advice shell-command (:around (orig-fn &rest args) "no-hook")
-  ;; XXX: when running in batch mode `shell-mode-hook' is undefined???
-  (let ((shell-mode-hook (and (bound-and-true-p shell-mode-hook)
-                              (delq 'nvp-shell-mode-hook shell-mode-hook))))
+(defun nvp@shell-command-no-hook (orig-fn &rest args)
+  (let ((shell-mode-hook
+         (delq 'nvp-shell-mode-hook (bound-and-true-p shell-mode-hook))))
     (apply orig-fn args)))
+
+;; when running in batch mode `shell-mode-hook' is undefined
+(unless noninteractive
+  (advice-add 'shell-command :around #'nvp@no-shell-hook))
 
 ;; ensure spaces when aligning / commenting
 (defun nvp@no-tabs (old-fn &rest args)

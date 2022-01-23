@@ -185,9 +185,9 @@ Optionally, search LISP-ONLY files (no C sources)."
 (defun nvp-jump-to-nearest-notes-dwim (&optional name action)
   "Jump to nearest notes/todo file, prompting with prefix."
   (interactive
-   (list (nvp-prefix 4
-           (prog1 (read-file-name "File name: ") (setq current-prefix-arg '(1)))
-           :test #'>)
+   (list (nvp-prefix '>4
+           (prog1 (read-file-name "File name: ")
+             (setq current-prefix-arg '(1))))
          current-prefix-arg))
   (--if-let (nvp-find-notes-file name) (nvp-display-location it :file action)
     (user-error (format "%S not found up the directory tree." name))))
@@ -204,9 +204,9 @@ Optionally, search LISP-ONLY files (no C sources)."
   (interactive
    (list
     (nvp-prefix 16 (nvp-completing-read
-                    (format "Directory (default %s): " nvp/scratch)
-                    (append '("~/") nvp-default-directories)
-                    nil nil nil 'nvp-read-config-history nvp/scratch)
+                     (format "Directory (default %s): " nvp/scratch)
+                     (append '("~/") nvp-default-directories)
+                     nil nil nil 'nvp-read-config-history nvp/scratch)
       nvp/scratch)
     current-prefix-arg))
   (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
@@ -272,7 +272,7 @@ If `nvp-local-notes-file' is bound use that unless there is a prefix of 16.
 Otherwise prompt, with default `nvp-default-org-file'."
   (interactive
    (list (nvp-read--org-file nil nil (nvp-prefix 16))
-         (nvp-prefix 16 1 :test #'>= current-prefix-arg)))
+         (nvp-prefix '>=16 1 current-prefix-arg)))
   (prog1 (setq org-file (nvp-display-location org-file :file action))
     (when (bufferp org-file)
       (with-current-buffer org-file

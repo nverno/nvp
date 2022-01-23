@@ -75,6 +75,10 @@ If MINOR is non-nil, convert to minor mode hook symbol."
     (:after . (lambda (new old) `(:all ,new ,old))))
   "See `use-package-merge-key-alist'.")
 
+(defmacro nvp-skip-keywords (else)
+  "Skip past any keywords in ELSE."
+  `(while (keywordp (car ,else)) (setq ,else (cddr ,else))))
+
 ;; default function to merge key values when there may be a default or multiple
 ;; found in arguments
 (defun nvp-macs-merge-keys (key new old)

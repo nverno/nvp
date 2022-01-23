@@ -45,6 +45,10 @@
 (defsubst case-fold-string-hash (a)
   (sxhash (upcase a)))
 
+;; case-insensitive hash-table
+;; eg. (define-hash-table-test 'case-fold #'case-fold-string=
+;;      #'case-fold-string-hash)
+
 ;; -------------------------------------------------------------------
 ;;; Strings
 
@@ -149,6 +153,24 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
     (cons kws res)))
 
 ;; -------------------------------------------------------------------
+;;; Headings / Sections
+
+;; (define-inline nvp-heading-create-re (&optional comment)
+;;   (declare (pure t) (side-effect-free t))
+;;   (list (if (null comment) 'let* 'let)
+;;         (list (if (null comment)
+;;                   (inline-quote (comment (string-trim comment-start)))))
+        
+;;    (let* (,@(if (null comment)
+;;                 )
+;;           (cs (regexp-quote ,comment))
+;;           (multi (> (string-width comment) 1)))
+;;      (if (not multi)
+;;          (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-" cs cs cs)
+;;        (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" cs
+;;                (regexp-quote (substring comment 1 2)))))))
+
+;; -------------------------------------------------------------------
 ;;; Buffers
 
 ;; why isn't this a builtin function?
@@ -161,9 +183,22 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
   (file-name-extension (or path (buffer-file-name))))
 (defsubst nvp-no-ext (&optional path)
   (file-name-sans-extension (or path (buffer-file-name) (buffer-name))))
-(defsubst nvp-bfn () (nvp-path 'bfs nil :or-name t))
-(defsubst nvp-bfn-no-ext () (nvp-path 'bfse nil :or-name t))
-(defsubst nvp-dfn () (nvp-path 'ds))
+(defsubst nvp-bfn ()
+  (file-name-nondirectory
+   (or
+    (buffer-file-name)
+    (buffer-name))))
+(defsubst nvp-bfn-no-ext ()
+  (file-name-base
+   (or
+    (buffer-file-name)
+    (buffer-name))))
+(defsubst nvp-dfn ()
+  (file-name-nondirectory
+   (directory-file-name
+    (or
+     (file-name-directory (file-truename buffer-file-name))
+     (file-truename default-directory)))))
 (defsubst nvp-fn (&optional path)
   (file-name-nondirectory (directory-file-name (or path (buffer-file-name)))))
 

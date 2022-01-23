@@ -274,11 +274,10 @@ Ignore elpa directory by default, but with any prefix, prompt to include."
   (require 'nvp-ag-config)
   (let* ((elpa (nvp-path 'ds package-user-dir))
          (ag-ignore-list
-          (nvp-prefix 4
+          (nvp-prefix '>=4
             (if (y-or-n-p "Include elpa? ")
                 (cl-callf2 cl-remove elpa ag-ignore-list :test #'string=)
               ag-ignore-list)
-            :test '>=
             (cl-pushnew elpa ag-ignore-list :test #'string=))))
     (unless (integerp current-prefix-arg)
       (setq current-prefix-arg nil))

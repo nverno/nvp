@@ -46,6 +46,8 @@ See `org-element-all-elements' for possible item types."
                      :level (org-element-property :level el)          ;depth
                      :todo-keyword (org-element-property :todo-keyword el))))))))))))
 
+;; -------------------------------------------------------------------
+;;; Links
 
 ;;;###autoload
 (defun nvp-org-links (headline-re &optional buffer-or-file type)
@@ -67,6 +69,18 @@ Return cons of \\='(name . raw-link)."
                           (nvp-org-property :raw-link link))
                     res))))))
     (nreverse res)))
+
+(org-link-set-parameters "nvp"
+                         :follow #'nvp-org-nvp-open
+                         :export #'nvp-org-nvp-export)
+
+(defun nvp-org-nvp-open (file &optional section)
+  "Visit nvp FILE and goto SECTION if non-nil."
+  (--when-let (locate-library file nil (list nvp/nvp nvp/config nvp/site))
+    (with-current-buffer (find-file-noselect it)
+      (when section
+        (re-search-forward (concat "^\\s-*"))))
+    ))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

@@ -31,12 +31,27 @@ If PATH is non-nil, search for root starting at PATH."
 ;; -------------------------------------------------------------------
 ;;; Prefix args
 
+;; parse symbols like '>12 to (> . 12)
+(defsubst nvp-prefix-parse-testsym (sym)
+  (when (and (not (numberp sym)) (not (listp sym)) (symbolp sym))
+    (--when-let (symbol-name sym)
+      (when (string-match "\\([><=]+\\)\\([0-9]+\\)" it)
+        (let ((test (match-string 1 it))
+              (num (match-string 2 it)))
+          (cons (and test (intern test))
+                (and num (string-to-number num))))))))
+
 (cl-defmacro nvp-prefix (num &optional then &rest else &key test &allow-other-keys)
   "If `current-prefix-arg' equals NUM do THEN otherwise ELSE."
   (declare (indent defun) (debug t))
-  (while (keywordp (car else))
-    (setq else (cdr (cdr else))))
+  (nvp-skip-keywords else)
   (and test (setq test (car (nvp-list-unquote test))))
+  (--when-let (and (eq (car-safe num) 'quote)
+                   (nvp-prefix-parse-testsym (cadr num)))
+    (cl-assert (not test) nil
+               "nvp-prefix called with two tests: %S, %S" num test)
+    (setq num (cdr it)
+          test (car it)))
   (let ((test-fn (if test
                      `(,test (prefix-numeric-value current-prefix-arg) ,num)
                    (if (listp num)
@@ -920,6 +935,8 @@ VAR is a symbol and FORM is evaluated."
   `(< (* 60 60 24 ,days)
       (time-to-seconds
        (time-subtract (current-time) (nth 5 (file-attributes ,file))))))
+
+;;; Profile
 
 ;; modified from skeeto extras
 (defmacro nvp-measure-time (times &rest body)

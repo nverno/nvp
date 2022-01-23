@@ -181,7 +181,14 @@
   "Insert DATE string, defaulting to current date.
 With prefix, prompts for DATE."
   (interactive
-   (list (nvp-prefix 1 (calendar-read-date) :test '> (calendar-current-date))))
+   (list (nvp-prefix '>1 (calendar-read-date) (calendar-current-date))))
+  (insert (calendar-date-string date)))
+
+;;;###autoload
+(defun nvp-insert-note (date)
+  "Insert comment with date. Prompt for date with prefix."
+  (interactive
+   (list (nvp-prefix '>1 (calendar-read-date) (calendar-current-date))))
   (insert (calendar-date-string date)))
 
 ;;;###autoload

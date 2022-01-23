@@ -215,15 +215,7 @@
 (nvp-define-cache nvp-mode-header-regex ()
   "Get or create header regex based on comment syntax."
   :local t
-  (let* ((comment (string-trim comment-start))
-         (cs (regexp-quote comment))
-         (multi (> (string-width comment) 1)))
-    (if (not multi)
-        ;; ignore things like ';;;###autoload'
-        (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-"
-                cs cs cs)
-      (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" cs
-              (regexp-quote (substring comment 1 2))))))
+  (nvp-heading-create-re))
 
 (defun nvp-move-forward-heading (&optional back error)
   (interactive)

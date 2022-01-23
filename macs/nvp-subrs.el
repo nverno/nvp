@@ -5,6 +5,7 @@
 ;; Collection of compile-time subrs -- many of which are used in macros
 ;; elsewhere in the directory.
 ;;
+;; Note: don't use nvp-macros in here - recursive require
 ;;; Code:
 (require 'cl-lib)
 (require 'dash)
@@ -62,7 +63,7 @@
 ;; If S is shorter than LEN, pad it with CHAR (default spaces) so it's centered.
 ;; Like `s-center' but allow for CHAR.
 (defsubst nvp-s-center (len s &optional char)
-  (nvp-defq char ? )
+  (or char (setq char 32))
   (let ((extra (max 0 (- len (length s)))))
     (concat (make-string (ceiling extra 2) char)
             s
@@ -70,7 +71,8 @@
 
 ;; Format a header with TITLE centered
 (defsubst nvp-centered-header (title &optional width char)
-  (nvp-defq width 85 char "~")
+  (or width (setq width 85))
+  (or char (setq char "~"))
   (let ((len (length title)))
     (format "\n%s\n%s\n\n"
             (nvp-s-center (- width len) title)
@@ -155,20 +157,15 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;; -------------------------------------------------------------------
 ;;; Headings / Sections
 
-;; (define-inline nvp-heading-create-re (&optional comment)
-;;   (declare (pure t) (side-effect-free t))
-;;   (list (if (null comment) 'let* 'let)
-;;         (list (if (null comment)
-;;                   (inline-quote (comment (string-trim comment-start)))))
-        
-;;    (let* (,@(if (null comment)
-;;                 )
-;;           (cs (regexp-quote ,comment))
-;;           (multi (> (string-width comment) 1)))
-;;      (if (not multi)
-;;          (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-" cs cs cs)
-;;        (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" cs
-;;                (regexp-quote (substring comment 1 2)))))))
+(defsubst nvp-heading-create-re (&optional comment)
+  (declare (side-effect-free t))
+  (let* ((comment (or comment (string-trim comment-start)))
+         (beg (regexp-quote comment))
+         (multi-p (> (string-width comment) 1)))
+    (if (not multi-p)
+        (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-" beg beg beg)
+      (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" beg
+              (regexp-quote (substring comment 1 2))))))
 
 ;; -------------------------------------------------------------------
 ;;; Buffers
@@ -204,7 +201,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 
 ;; Locate first name in NAMES using `locate-dominating-file' starting from FILE.
 ;; I think projectile has a number of functions doing this type of stuff
-(defsubst nvp-file-locate-first-dominating (file names)
+(defsubst nvp-locate-first-dominating (file names)
   (setq names (nvp-as-list names))
   (cl-loop for name in names
      as res = (locate-dominating-file file name)
@@ -213,7 +210,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 
 ;; this must exist somewhere I'm forgetting...
 (defsubst nvp-directories (&optional root fullname pattern)
-  (nvp-defq pattern "^[^.]")
+  (or pattern (setq pattern "^[^.]"))
   (--filter (file-directory-p it)
             (directory-files (or root default-directory) fullname pattern)))
 
@@ -232,11 +229,20 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 (defsubst nvp-find-notes-file (&optional names)
   (when (and (not nvp-local-notes-file) (derived-mode-p 'comint-mode))
     (hack-local-variables))
-  (nvp-defq names (or (bound-and-true-p nvp-local-notes-file)
-                      nvp-default-notes-files))
+  (or names (setq names (or (bound-and-true-p nvp-local-notes-file)
+                            nvp-default-notes-files)))
   (let* ((case-fold-search t))
-    (nvp-file-locate-first-dominating
+    (nvp-locate-first-dominating
      (or (buffer-file-name) default-directory) names)))
+
+(defsubst nvp-locate-library (library)
+  (--when-let (or (locate-library library)
+                  (let ((paths (--map (expand-file-name it nvp/nvp)
+                                      '("macs" "subrs" "compile"))))
+                    (locate-library (file-name-base library) nil paths)))
+    (let ((f (concat (file-name-sans-extension it) ".el")))
+      (if (file-exists-p f) f
+        (concat f ".gz")))))
 
 ;; -------------------------------------------------------------------
 ;;; I/O

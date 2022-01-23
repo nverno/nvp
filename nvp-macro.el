@@ -100,8 +100,7 @@ which will be called when selecting an entry.
 The rest of BODY is evaluated in result buffer after `tabulated-list-mode'
 is activated, but before items are printed."
   (declare (indent defun) (debug t))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
+  (nvp-skip-keywords body)
   `(progn
      (let ((bufname (concat "*" ,name "*"))
            (inhibit-read-only t))
@@ -130,8 +129,7 @@ if a useful message is expected it can be read before this message is
 displayed. The original message will be displayed after DELAY + DURATION when
 those are both specified."
   (declare (indent defun) (debug (sexp &rest form)))
-  (while (keywordp (car args))
-    (setq args (cdr (cdr args))))
+  (nvp-skip-keywords args)
   (let ((msg
          `(function
            (lambda ()
@@ -884,8 +882,7 @@ Trailing 'i' indicates to prompt for input if nothing is found.
 Uses region bounds if active, otherwise bounds of THING.
 In WIDEN is non-nil, save restriction and widen before finding bounds."
   (declare (indent defun) (debug body))
-  (while (keywordp (car body))
-    (setq body (cdr (cdr body))))
+  (nvp-skip-keywords body)
   (let ((bnds (make-symbol "bounds")))
     `(,@(if widen '(save-restriction (widen)) '(progn))
       (if-let* ((,bnds (nvp-tap ,(or type ''bdwim) ,(or thing ''paragraph)
@@ -1073,8 +1070,7 @@ Cache is either defvar (possibly local) so is updated when set to nil,
 or PREDICATE is non-nil and returns nil."
   (declare (indent defun) (debug (sexp sexp sexp &form body)) (doc-string 3))
   (let ((docstring (when (stringp (car body)) (pop body))))
-    (while (keywordp (car body))
-      (setq body (cdr (cdr body))))
+    (nvp-skip-keywords body)
     (let* ((fn (nvp-as-symbol func))
            (cache (or cache fn)))
       `(progn
@@ -1107,8 +1103,7 @@ or PREDICATE is non-nil and returns nil."
   "Do THEN if `last-command' wasn't `this-command', otherwise do REST 
 and set `this-command' to nil so opposite happens next time."
   (declare (indent 1))
-  (while (keywordp (car rest))
-    (setq rest (cdr (cdr rest))))
+  (nvp-skip-keywords rest)
   `(if (not (eq this-command last-command))
        ,then
      (prog1 (progn ,@rest)

@@ -11,7 +11,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
-(nvp-decls :f (auth-source-search))
+(nvp-decls :f (auth-source-search org-comment-dwim paredit-comment-dwim))
 (nvp-auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
 (nvp-auto "nvp-outline" nvp-outline-hydra/body)
 
@@ -185,11 +185,16 @@ With prefix, prompts for DATE."
   (insert (calendar-date-string date)))
 
 ;;;###autoload
-(defun nvp-insert-note (date)
+(defun nvp-comment-timestamped (date)
   "Insert comment with date. Prompt for date with prefix."
   (interactive
    (list (nvp-prefix '>1 (calendar-read-date) (calendar-current-date))))
-  (insert (calendar-date-string date)))
+  (call-interactively (pcase major-mode
+                        (`org-mode #'org-comment-dwim)
+                        (_ (if (bound-and-true-p paredit-mode)
+                               #'paredit-comment-dwim
+                             #'comment-dwim))))
+  (insert "(" (calendar-date-string date) ")"))
 
 ;;;###autoload
 (defun nvp-lookup-password (host user port)

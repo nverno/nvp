@@ -70,17 +70,25 @@ Return cons of \\='(name . raw-link)."
                     res))))))
     (nreverse res)))
 
-(org-link-set-parameters "nvp"
-                         :follow #'nvp-org-nvp-open
-                         :export #'nvp-org-nvp-export)
+(org-link-set-parameters "nvp" :follow #'nvp-org-nvp-open)
 
-(defun nvp-org-nvp-open (file &optional section)
-  "Visit nvp FILE and goto SECTION if non-nil."
-  (--when-let (locate-library file nil (list nvp/nvp nvp/config nvp/site))
-    (with-current-buffer (find-file-noselect it)
-      (when section
-        (re-search-forward (concat "^\\s-*"))))
-    ))
+(defun nvp-org-nvp-open (file-section)
+  "Visit nvp FILE-SECTION and goto SECTION if non-nil."
+  (-let (((file section) (split-string file-section "?")))
+    (--when-let (nvp-locate-library file)
+      (with-current-buffer (find-file-noselect it)
+        (let ((cur (point)) pt)
+          (when section
+            (goto-char (point-min))
+            (let* ((re (nvp-heading-create-re))
+                   (case-fold-search t))
+              (when (re-search-forward (concat re "*" section) nil t)
+                (setq pt (nvp-point 'bol)))))
+          (pop-to-buffer (current-buffer))
+          (unless (or (null pt) (eq pt cur))
+            (push-mark))
+          (and pt (goto-char pt))
+          (recenter-top-bottom))))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

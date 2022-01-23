@@ -17,13 +17,6 @@
 (defvar nvp-read-config-history ())
 (defvar nvp-read-keymap-history ())
 
-;; return default-directory on `ido-fallback-command'
-(defun nvp-read--ido-fallback (&rest _)
-  (interactive)
-  (setq ido-text (or (file-name-directory ido-text) ""))
-  (setq ido-exit 'done)
-  (exit-minibuffer))
-
 (defun nvp-read--recursive-file-completion-table (&optional root regexp)
   (let ((files (nvp-read--relative-files root regexp)))
     (lambda (string pred action)
@@ -36,35 +29,29 @@
 (defun nvp-read-relative-recursively (root regexp &optional prompt default)
   "Return full filepath prompting with file matching REGEXP from ROOT with
 `directory-files-recursively'."
-  (nvp-read:with-fallback
-    (expand-file-name
-     (nvp-completing-read
-       (nvp-prompt-default (or prompt "File: ") default)
-       (nvp-read--recursive-file-completion-table root regexp)
-       nil nil nil 'nvp-read-config-history default)
-     root)))
+  (nvp-read-file:with-fallback root
+    (nvp-completing-read
+      (nvp-prompt-default (or prompt "File: ") default)
+      (nvp-read--recursive-file-completion-table root regexp)
+      nil nil nil 'nvp-read-config-history default)))
 
 (defun nvp-read--info-files (&optional prompt default)
   (or default (and (string-prefix-p nvp/info default-directory)
                    (setq default (ignore-errors (nvp-path 'bfs)))))
-  (nvp-read:with-fallback
-    (expand-file-name 
-     (nvp-completing-read
-       (nvp-prompt-default (or prompt "Info file: ") default)
-       (directory-files (expand-file-name "org" nvp/info) nil "\.org")
-       nil nil nil 'nvp-read-config-history default)
-     (expand-file-name "org" nvp/info))))
+  (nvp-read-file:with-fallback (expand-file-name "org" nvp/info)
+    (nvp-completing-read
+      (nvp-prompt-default (or prompt "Info file: ") default)
+      (directory-files (expand-file-name "org" nvp/info) nil "\.org")
+      nil nil nil 'nvp-read-config-history default)))
 
 ;; if LOCAL is non-nil use that
 (defun nvp-read--org-file (&optional prompt default nolocal)
-  (when (derived-mode-p 'comint-mode)   ;jumping from shell
-    (hack-local-variables))             ;read .dir-locals.el if exist
+  (nvp-ensure-local-variables)
   (let ((local (bound-and-true-p nvp-local-notes-file)))
     (if (and local (not nolocal)) local
-      (nvp-defq default nvp-default-org-file)
-      (nvp-read:with-fallback
-        (nvp-read-relative-recursively
-         nvp/org "\.org$" (or prompt "Org file: ") default)))))
+      (nvp-read-relative-recursively
+       nvp/org "\.org$" (or prompt "Org file: ")
+       (or default nvp-default-org-file)))))
 
 ;;; Minibuffer input
 
@@ -170,15 +157,14 @@ Filter by PREDICATE if non-nil."
 ;; some completing reads for general config files
 (defun nvp-read-mode-config (&optional prompt default)
   (nvp-defq default (symbol-name major-mode))
-  (setq prompt (nvp-prompt-default (or prompt "Mode config: ") default))
-  (catch 'dired
+  (nvp-read-file:with-fallback nil
     (nvp-completing-read
-     prompt
-     (mapcar
-      #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
-          (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
-      (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-     nil nil nil 'nvp-read-config-history (nvp-read--mode-name default))))
+      (nvp-prompt-default (or prompt "Mode config: ") default)
+      (mapcar
+       #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
+           (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
+       (directory-files nvp/config nil "^[^\\.].*\\.el$"))
+      nil nil nil 'nvp-read-config-history (nvp-read--mode-name default))))
 
 (defun nvp-read--mode-test (&optional prompt default)
   (let* ((ext (ignore-errors (nvp-path 'ext)))
@@ -187,11 +173,10 @@ Filter by PREDICATE if non-nil."
           (cons "target" completion-ignored-extensions))
          (files (nvp-read--relative-files nvp/test "^[^.][^.]")))
     (nvp-defq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files)))
-    (setq prompt (nvp-prompt-default (or prompt "Test: ") default))
-    (expand-file-name
-     (nvp-completing-read
-      prompt files nil nil nil 'nvp-read-config-history default)
-     nvp/test)))
+    (nvp-read-file:with-fallback nvp/test
+      (nvp-completing-read
+        (nvp-prompt-default (or prompt "Test: ") default)
+        files nil nil nil 'nvp-read-config-history default))))
 
 (provide 'nvp-read)
 ;;; nvp-read.el ends here

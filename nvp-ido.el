@@ -33,6 +33,13 @@ On error (read-only), quit without selecting."
   (interactive)
   (goto-char (minibuffer-prompt-end)))
 
+;; return default-directory on `ido-fallback-command'
+(defun nvp-ido-fallback (&rest _)
+  (interactive)
+  (setq ido-text (or (file-name-directory ido-text) ""))
+  (setq ido-exit 'done)
+  (exit-minibuffer))
+
 (defun nvp-ido-throw-dired ()
   (interactive)
   (throw 'dired t))

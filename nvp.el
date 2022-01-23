@@ -61,6 +61,11 @@
 (defvar nvp-display-fallback-function #'nvp-display-fallback-dired
   "Fallback for unhandled prefix.")
 
+(defvar nvp-fallback-function #'nvp-fallback-default
+  "Function to call on exit from completing read.")
+
+(defvar nvp-exit nil "Exit flag")
+
 (defvar nvp-display-actions
   '(
     :buffer ((4 display-buffer-same-window
@@ -376,6 +381,19 @@ relative paths."
       (delete-minibuffer-contents)
       (insert (or parent "")))
     t))
+
+(defun nvp-fallback-default (&rest _)
+  "Throw \\='nvp-fallback with input."
+  (interactive)
+  (let ((input (minibuffer-contents-no-properties)))
+    ;; (nvp-unread input)
+    (throw 'nvp-fallback input)))
+
+(defun nvp-fallback-command (&rest args)
+  "Set `nvp-exit' and call `nvp-fallback-function'."
+  (interactive)
+  (setq nvp-exit 'fallback)
+  (funcall-interactively nvp-fallback-function args))
 
 (with-eval-after-load 'vertico-directory
   (setf (symbol-function 'vertico-directory-up) #'nvp-vertico-directory-up)

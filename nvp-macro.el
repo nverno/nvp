@@ -22,11 +22,18 @@
 (require 'nvp-macs-fonts "macs/nvp-macs-fonts")
 (require 'nvp-subrs "macs/nvp-subrs")
 
+;;; Project
 (defmacro nvp-with-project-root (&optional path &rest body)
   "Execute BODY with `default-directory' set to project root.
 If PATH is non-nil, search for root starting at PATH."
   `(let ((default-directory (nvp-project-root ,path)))
      ,@body))
+
+;;; Local Variables
+(defmacro nvp-ensure-local-variables ()
+  "Make sure directory local variables have been read, even in shell."
+  `(when (derived-mode-p 'comint-mode)
+     (hack-local-variables)))
 
 ;; -------------------------------------------------------------------
 ;;; Prefix args

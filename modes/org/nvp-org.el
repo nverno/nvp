@@ -70,7 +70,9 @@ Return cons of \\='(name . raw-link)."
                     res))))))
     (nreverse res)))
 
-(org-link-set-parameters "nvp" :follow #'nvp-org-nvp-open)
+(org-link-set-parameters "nvp"
+                         :follow #'nvp-org-nvp-open
+                         :export #'nvp-org-nvp-export)
 
 (defun nvp-org-nvp-open (file-section)
   "Visit nvp FILE-SECTION and goto SECTION if non-nil."
@@ -89,6 +91,13 @@ Return cons of \\='(name . raw-link)."
             (push-mark))
           (and pt (goto-char pt))
           (recenter-top-bottom))))))
+
+(defun nvp-org-nvp-export (file-section desc backend _)
+  (-let* (((file _section) (split-string file-section "?"))
+          (lib (or (nvp-locate-library file) file)))
+    (pcase backend
+      (`texinfo (format "@uref{%s,%s}" lib desc))
+      (_ lib))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

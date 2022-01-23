@@ -468,7 +468,9 @@ relative paths."
 ;; don't run my `shell-mode-hook' during `shell-command' calls
 (defvar shell-mode-hook)
 (define-advice shell-command (:around (orig-fn &rest args) "no-hook")
-  (let ((shell-mode-hook (delq 'nvp-shell-mode-hook shell-mode-hook)))
+  ;; XXX: when running in batch mode `shell-mode-hook' is undefined???
+  (let ((shell-mode-hook (and (bound-and-true-p shell-mode-hook)
+                              (delq 'nvp-shell-mode-hook shell-mode-hook))))
     (apply orig-fn args)))
 
 ;; ensure spaces when aligning / commenting

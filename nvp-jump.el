@@ -19,7 +19,7 @@
 (nvp-auto "lisp-mnt" 'lm-header)
 (nvp-auto "find-func" 'find-function-library 'find-library-name)
 (nvp-auto "nvp-scratch" 'nvp-scratch-switch-modes)
-(nvp-decls)
+(nvp-decls :v (ido-default-buffer-method))
 
 ;; provides ido-completion for things like `locate-library', although it
 ;; is just noticeably slower for some functions -- especially those related
@@ -44,17 +44,14 @@
   "Get defining file for current symbol or prompt for library.
 Optionally, search LISP-ONLY files (no C sources)."
   (let* ((curr (symbol-at-point))
-         (sym (if (or prompt (null curr))
-                  (intern (nvp-completing-read
-                            (format "Feature%s: "
-                                    (if curr (concat " ('" (symbol-name curr) "')")
-                                      ""))
-                            (mapcar #'symbol-name features) nil t nil nil
-                            (symbol-name curr)))
-                curr))
-         (lib (if (not (memq sym features))
+         (sym (if (or prompt (null curr)) (read-library-name) curr))
+         (lib (if (and (symbolp sym) (not (memq sym features)))
                   (cdr (find-function-library sym lisp-only))
-                (find-library-name (symbol-name sym)))))
+                (if (file-name-absolute-p sym) sym
+                  (locate-file sym
+                               load-path
+                               (append (get-load-suffixes)
+                                       load-file-rep-suffixes))))))
     lib))
 
 ;;;###autoload

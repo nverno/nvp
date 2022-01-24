@@ -70,21 +70,38 @@ Return cons of \\='(name . raw-link)."
                     res))))))
     (nreverse res)))
 
+;; Link format:
+;; nvp:library ( '?' section-or-def ( '&' 'type=' (v|f|s) )? )?
 (org-link-set-parameters "nvp"
                          :follow #'nvp-org-nvp-open
                          :export #'nvp-org-nvp-export)
 
-(defun nvp-org-nvp-open (file-section)
+(defvar nvp-org-nvp-re
+  "\\([^?]+\\)\\(?:[?]\\([^&]+\\)\\)?\\(?:&type=\\([vfs]\\)\\)?"
+  "Match parts of link query.")
+
+(defsubst nvp-org--nvp-parse (query)
+  (when (string-match nvp-org-nvp-re query)
+    (list (match-string 1 query) (match-string 2 query)
+          (pcase (match-string 3 query)
+            ("f" 'function)
+            ("s" 'section)
+            ("v" 'variable)
+            (_ nil)))))
+
+(defun nvp-org-nvp-open (query)
   "Visit nvp FILE-SECTION and goto SECTION if non-nil."
-  (-let (((file section) (split-string file-section "?")))
+  (-let (((file sec-or-def type) (nvp-org--nvp-parse query)))
     (--when-let (nvp-locate-library file)
       (with-current-buffer (find-file-noselect it)
         (let ((cur (point)) pt)
-          (when section
+          (when sec-or-def
             (goto-char (point-min))
-            (let* ((re (nvp-heading-create-re))
+            (let* ((prefix-re (if (or (not type) (eq type 'section))
+                                  (concat (nvp-heading-create-re) "*")
+                                "^\\s-*(def.*"))
                    (case-fold-search t))
-              (when (re-search-forward (concat re "*" section) nil t)
+              (when (re-search-forward (concat prefix-re sec-or-def) nil t)
                 (setq pt (nvp-point 'bol)))))
           (pop-to-buffer (current-buffer))
           (unless (or (null pt) (eq pt cur))

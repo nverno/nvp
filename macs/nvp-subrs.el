@@ -47,8 +47,7 @@
   (sxhash (upcase a)))
 
 ;; case-insensitive hash-table
-;; eg. (define-hash-table-test 'case-fold #'case-fold-string=
-;;      #'case-fold-string-hash)
+(define-hash-table-test 'case-fold #'case-fold-string= #'case-fold-string-hash)
 
 ;; -------------------------------------------------------------------
 ;;; Strings

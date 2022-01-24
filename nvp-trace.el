@@ -47,21 +47,25 @@
   (display-buffer trace-buffer))
 
 ;;;###autoload
-(defun nvp-trace-library (library &optional arg)
+(defun nvp-trace-library (library &optional macros filter)
   "Trace all top-level defun-like forms in library. 
-With prefix, trace macros and substs as well."
-  (interactive (list (read-library-name) current-prefix-arg))
+With \\[universal-argument], trace macros and substs as well.
+With \\[universal-argument] \\[universal-argument] prompt for filter."
+  (interactive (list (read-library-name) current-prefix-arg
+                     (nvp-prefix '>=16 (read-string "Filter: "))))
   (require 'nvp-elisp)                  ;gather all defun-like forms
-  (let* ((def-forms (if arg (flatten-tree nvp-trace-defun-forms)
+  (let* ((def-forms (if macros (flatten-tree nvp-trace-defun-forms)
                       (assoc 'defun nvp-trace-defun-forms)))
          (forms
           (with-temp-buffer
             (insert-file-contents (find-library-name library))
             (with-syntax-table emacs-lisp-mode-syntax-table
               (nvp-elisp-matching-forms def-forms)))))
+    (when filter
+      (setq forms (--filter (string-match-p filter (symbol-name it)) forms)))
     (dolist (fn forms)
       (trace-function-background fn))
-    (message "tracing: %S" forms)))
+    (message "tracing %d forms: %S" (length forms) forms)))
 
 ;;;###autoload
 (defun nvp-trace-hooks (&optional library)

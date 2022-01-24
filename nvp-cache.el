@@ -1,24 +1,61 @@
-;;; nvp-cache.el --- Generic caches -*- lexical-binding: t; -*-
+;;; nvp-cache.el --- caches -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
+;; Creates cache with expiring entries.
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp-decls)
 
-;;; Hash tests
+(eval-when-compile
+  (defsubst nvp-cache-timer-expired-p (lim)
+   `(lambda (start) (> (time-to-seconds (- (float-time) start)) ,lim)))
 
-;; case-insensitive hash-table
-(define-hash-table-test 'case-fold #'case-fold-string= #'case-fold-string-hash)
+  (defsubst nvp-cache-timer-start () '(lambda (&rest _) (float-time)))
 
+  (defconst nvp-cache--args '(:timeout :expires-fn :expired-p :default))
+
+  (defsubst nvp-cache--clean-args (kwargs)
+    (cl-loop for (k v) on kwargs by #'cddr
+             unless (memq k nvp-cache--args)
+             nconc (list k v))))
+
+(cl-defmacro nvp-cache (&rest kwargs &key timeout expires-fn expired-p default
+                              &allow-other-keys)
+  "Create cache.
+If TIMEOUT is a number, entries expire after that many seconds have elapsed
+since the entry was added. Otherwise, EXPIRES-FN and EXPIRED-P are used to
+create expiration and test if entries are expired respectively. DEFAULT is
+returned by `nvp-cache-get' when a key is absent. Further arguments are
+passed to `make-hash-table', with a default \\=':test of \\='equal unless
+specified."
+  (let ((args (nvp-cache--clean-args kwargs)))
+    (cond
+     ((and timeout (numberp timeout))
+      ;; entries expire after time
+      `(nvp-cache-create
+        ,(nvp-cache-timer-expired-p timeout)
+        ,(nvp-cache-timer-start)
+        ,default
+        ,@args))
+     ((and expires-fn expired-p)
+      `(nvp-cache-create ,expired-p ,expires-fn ,default ,@args))
+     ((or expires-fn expired-p)
+      (error "Cache: need both EXPIRES-FN and EXPIRED-P"))
+     (t (error "Cache: no expiration recognized")))))
+
+;;; Cache with expiring entries
 (cl-defstruct (nvp-cache (:constructor nvp-cache--create)
                          (:copier nil))
-  ;; call (expires-fn new-key new-val) to compute expiry-value
-  ;; call (expired-p expiry-value) to determine if entry is invalidated
-  table expired-p expires-fn default)
-
+  expires-fn        ; call (expires-fn new-key new-val) to create expiration 
+  expired-p         ; call (expired-p expiration) to determine if invalide
+  table             ; hash-table
+  default)          ; default for `nvp-cache-get'
+  
 (defun nvp-cache-create (expired-p expires-fn default &rest keyword-args)
   "Create cache table whose entries are invalidated when EXPIRED-P returns
 non-nil."
+  (unless (cl-getf keyword-args :test nil)
+    (setq keyword-args (nconc keyword-args (list ':test 'equal))))
   (nvp-cache--create
    :expired-p expired-p :expires-fn expires-fn :default default
    :table (apply #'make-hash-table keyword-args)))
@@ -41,17 +78,8 @@ non-nil."
       ,key (cons (funcall (nvp-cache-expires-fn ,cache) ,key ,val) ,val)
       (nvp-cache-table ,cache))))
 
-;; (defun nvp-tst-expired-p (v)
-;;   (> (time-to-seconds (- (float-time) v)) 10))
-;; (defun nvp-tst-expires-fn (k v)
-;;   (float-time))
-;; (defvar nvp-cache-test (nvp-cache-create
-;;                          #'nvp-tst-expired-p
-;;                          #'nvp-tst-expires-fn
-;;                          0
-;;                          :test 'equal))
-;; (setf (nvp-cache-get "a" nvp-cache-test) 1)
-;; (nvp-cache-get "a" nvp-cache-test)
+(define-inline nvp-cache-clear (cache)
+  (inline-quote (clrhash (nvp-cache-table ,cache))))
 
 (provide 'nvp-cache)
 ;;; nvp-cache.el ends here

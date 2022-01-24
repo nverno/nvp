@@ -492,7 +492,7 @@ relative paths."
 
 ;; when running in batch mode `shell-mode-hook' is undefined
 (unless noninteractive
-  (advice-add 'shell-command :around #'nvp@no-shell-hook))
+  (advice-add 'shell-command :around #'nvp@shell-command-no-hook))
 
 ;; ensure spaces when aligning / commenting
 (defun nvp@no-tabs (old-fn &rest args)

@@ -238,8 +238,9 @@ With triple prefix, offer recursive results."
                     (read-directory-name "Book Directory: " nvp/books)))
                   ((bound-and-true-p nvp-local-books-directories)
                    nvp-local-books-directories)
-                  (t (expand-file-name "programming" nvp/books)))))
+                  (t nvp/books))))
      (list root arg)))
+  (unless dir (user-error "No books directories found."))
   (let* ((files (mapcar (lambda (f) (file-relative-name f dir))
                         (if (eq action 16) ;recurse
                             (directory-files-recursively dir "^[^.].*[^/]$")

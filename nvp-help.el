@@ -44,18 +44,25 @@
 ;; Define word at point, with single prefix prompt for word, 
 ;; with two prefix use lookup-word.
 ;;;###autoload
-(defun nvp-help-define-word (arg)
-  "Define word at point, dispatching based on ARG."
+(defun nvp-help-word-dwim (arg)
+  "Define or lookup word at point, dispatching based on prefix: (nil) define
+word at point, \\[universal-argument] prompt for word,
+\\[universal-argument] \\[universal-argument] lookup word with
+`powerthesaurus', if available, or on wiktionary."
   (interactive "p")
   (cond
    ((eq arg 4) (call-interactively  #'define-word))
-   ((eq arg 16) (call-interactively #'nvp-help-lookup-word))
+   ((eq arg 16) (call-interactively #'nvp-help-lookup-word-external))
    (t (call-interactively           #'define-word-at-point))))
 
 ;; Lookup definintion of word at point online.
-(defun nvp-help-lookup-word (word)
-  (interactive (list (save-excursion (car (ispell-get-word nil)))))
-  (browse-url (format "http://en.wiktionary.org/wiki/%s" word)))
+(defun nvp-help-lookup-word-external ()
+  (interactive)
+  (if (or (bound-and-true-p powerthesaurus-lookup-dwim)
+          (require 'powerthesaurus nil t))
+      (funcall-interactively #'powerthesaurus-lookup-dwim)
+    (browse-url (format "http://en.wiktionary.org/wiki/%s"
+                        (save-excursion (car (ispell-get-word nil)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Faces 

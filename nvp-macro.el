@@ -137,23 +137,25 @@ displayed. The original message will be displayed after DELAY + DURATION when
 those are both specified."
   (declare (indent defun) (debug (sexp &rest form)))
   (nvp-skip-keywords args)
-  (let ((msg
-         `(function
-           (lambda ()
-             (message
-              ,@(if keys
-                    `("%s" (substitute-command-keys (format ,fmt ,@args)))
-                  `(,fmt ,@args)))))))
-    `(let ((orig-msg (current-message)))
-       ,(if delay
-            `(run-with-idle-timer ,delay nil ,msg)
-          `(funcall ,msg))
-       (run-with-idle-timer
-        (+ ,(or delay 0) ,(or duration 2))
-        nil (function
+  (nvp-with-syms (orig-msg)
+    (let ((msg
+           `(function
              (lambda ()
-               (eval
-                `(and ,orig-msg (message ,orig-msg)))))))))
+               (or (minibufferp)
+                   (message
+                    ,@(if keys
+                          `("%s" (substitute-command-keys (format ,fmt ,@args)))
+                        `(,fmt ,@args)))))))
+          (post-msg
+           `(function
+             (lambda ()
+               (and ,orig-msg (not (minibufferp)) (message ,orig-msg))))))
+      `(let ((,orig-msg (current-message)))
+         ,(if delay
+              `(run-with-idle-timer ,delay nil ,msg)
+            `(funcall ,msg))
+         (run-with-idle-timer
+          ,(+ (or delay 0) (or duration 2)) nil ,post-msg)))))
 
 ;; `org-no-popups'
 (defmacro nvp-no-popups (&rest body)

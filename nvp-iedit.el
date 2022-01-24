@@ -53,9 +53,11 @@
     (nvp-msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
       :delay 1 :keys t)))
 
-(defsubst nvp-iedit-report ()
-  (message "Restricted to current %s, %d matches."
-           nvp-iedit-restriction (length iedit-occurrences-overlays)))
+(eval-when-compile
+  (defsubst nvp-iedit-report ()
+    (or (minibufferp)
+        (message "Restricted to current %s, %d matches."
+                 nvp-iedit-restriction (length iedit-occurrences-overlays)))))
 
 ;; allow expanding of restricted region when in `iedit-mode'
 (defun nvp-iedit-cycle-regions ()

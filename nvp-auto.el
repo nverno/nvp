@@ -88,28 +88,29 @@
 ;; -------------------------------------------------------------------
 ;;; Web
 (eval-when-compile
+  (require 'nvp-cache)
   (defvar nvp-webjump-sites)
   (defvar webjump-sites))
 (nvp-decl thing-at-point-url-at-point webjump-builtin webjump-url-fix web-mode)
 
-;;;###autoload
-(defun nvp-browse-url-contents ()
-  "Open a new buffer containing the contents of a URL."
-  (interactive)
-  (let* ((default (thing-at-point-url-at-point))
-	 (url (read-from-minibuffer "URL: " default)))
-    (switch-to-buffer (url-retrieve-synchronously url))
-    (rename-buffer url t)
-    (cond ((search-forward "<?xml" nil t) (xml-mode))
-	  ((search-forward "<html" nil t) (web-mode)))))
+(defvar nvp-webjump-org-links-re (regexp-opt '("reference" "links"))
+  "Org sections to look for links.")
 
-(defvar nvp-webjump-org-links-re (regexp-opt '("reference" "links")))
+(defvar nvp-webjump-cache nil "Cache local uris from files.")
 
-(eval-when-compile
-  (defsubst nvp-get-local-uris ()
-    (or (bound-and-true-p nvp-local-uris)
-        (--when-let (nvp-find-notes-file)
-          (setq nvp-local-uris (nvp-org-links nvp-webjump-org-links-re it))))))
+(defun nvp-get-local-uris ()
+  (or (bound-and-true-p nvp-local-uris)
+      (--when-let (nvp-find-notes-file)
+        (unless nvp-webjump-cache
+          (setq nvp-webjump-cache (nvp-cache :expires-fn 'modtime)))
+        (or (nvp-cache-get nvp-local-notes-file nvp-webjump-cache)
+            (cdr
+             (setf (nvp-cache-get nvp-local-notes-file nvp-webjump-cache)
+                   (nvp-org-links nvp-webjump-org-links-re it))))))
+  ;; (or (bound-and-true-p nvp-local-uris)
+  ;;     (--when-let (nvp-find-notes-file)
+  ;;       (setq nvp-local-uris (nvp-org-links nvp-webjump-org-links-re it))))
+  )
 
 ;;;###autoload
 (defun nvp-browse-webjump (&optional prompt use-defaults)
@@ -141,6 +142,17 @@
                                  expr)))
                        (t (error "WebJump URL expression for \"%s\" invalid"
                                  name)))))))
+
+;;;###autoload
+(defun nvp-browse-url-contents ()
+  "Open a new buffer containing the contents of a URL."
+  (interactive)
+  (let* ((default (thing-at-point-url-at-point))
+	 (url (read-from-minibuffer "URL: " default)))
+    (switch-to-buffer (url-retrieve-synchronously url))
+    (rename-buffer url t)
+    (cond ((search-forward "<?xml" nil t) (xml-mode))
+	  ((search-forward "<html" nil t) (web-mode)))))
 
 
 ;; -------------------------------------------------------------------

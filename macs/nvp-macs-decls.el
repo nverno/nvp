@@ -176,6 +176,9 @@
        ;; environment
        nvp-env-add
        nvp-env-path-add
+       ;; cache
+       nvp-cache-get
+       nvp-cache-create
        ;; setup
        nvp-setup-program
        nvp-lookup-password)

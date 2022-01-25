@@ -11,7 +11,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'align)
-(nvp-decls :f (nvp-read-mode))
+(nvp-decls :f (nvp-read-mode cl-prettyprint))
 
 (nvp-bindings nvp-align-keymap nil
   :create t

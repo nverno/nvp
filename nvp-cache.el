@@ -6,9 +6,11 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp-decls)
 
+(eval-and-compile
+ ;; Macro argument parsing
+ (defconst nvp-cache--args '(:expires-fn :expired-p :default :filename)))
+
 (eval-when-compile
-  ;; Macro argument parsing
-  (defconst nvp-cache--args '(:expires-fn :expired-p :default :filename))
 
   (defsubst nvp-cache--clean-args (kwargs)
     (cl-loop for (k v) on kwargs by #'cddr

@@ -91,7 +91,8 @@
   (require 'nvp-cache)
   (defvar nvp-webjump-sites)
   (defvar webjump-sites))
-(nvp-decl thing-at-point-url-at-point webjump-builtin webjump-url-fix web-mode)
+(nvp-decl thing-at-point-url-at-point webjump-builtin webjump-url-fix web-mode
+  nvp-org-links)
 
 (defvar nvp-webjump-org-links-re (regexp-opt '("reference" "links"))
   "Org sections to look for links.")

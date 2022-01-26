@@ -370,17 +370,17 @@ sourced files."
 ;; -------------------------------------------------------------------
 ;;; Xref
 
-(nvp-decl xref-make xref-location)
+(nvp-decl xref-make xref-item-location)
 
 ;;;###autoload
 (defun sh-comp--xref-backend () 'sh-comp)
 
-(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql sh-comp)))
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql 'sh-comp)))
   (completion-table-dynamic
    (lambda (_string) (sh-comp-candidates 'all (buffer-file-name))) 'switch))
 
 ;;; TODO: if at a source => detect variable in path, jump to path in source line
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql sh-comp)))
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql 'sh-comp)))
   (save-excursion
     (skip-chars-forward "[:alnum:]_")
     (let ((end (point))
@@ -412,21 +412,17 @@ sourced files."
                 (setq done t)))
             xref))))))
 
-(cl-defmethod xref-backend-definitions ((_backend (eql sh-comp)) identifier)
+(cl-defmethod xref-backend-definitions ((_backend (eql 'sh-comp)) identifier)
   (-when-let (loc (sh-comp--make-xref-location identifier (buffer-file-name)))
     (list (xref-make identifier loc))))
 
-(defclass xref-sh-location (xref-location)
-  ((pos :type fixnum :initarg :pos)
-   (file :type string :initarg :file
-         :reader xref-location-group))
-  :documentation "Location of sh-comp tag.")
-
-(defun xref-make-sh-location (file pos)
-  (make-instance 'xref-sh-location :file file :pos pos))
+(cl-defstruct (xref-sh-location
+               (:constructor xref-make-sh-location (file pos)))
+  "Location of sh symbol definition."
+  file pos)
 
 (cl-defmethod xref-location-marker ((l xref-sh-location))
-  (with-slots (file pos) l
+  (pcase-let (((cl-struct xref-sh-location file pos) l))
     (let ((buffer (find-file-noselect file)))
       (with-current-buffer buffer
         (save-excursion

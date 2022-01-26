@@ -51,7 +51,7 @@
        (iedit-restrict-function))
       (_))
     (nvp-msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
-      :delay 1 :keys t)))
+      :test (bound-and-true-p iedit-mode) :delay 1 :keys t)))
 
 (eval-when-compile
   (defsubst nvp-iedit-report ()

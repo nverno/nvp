@@ -100,6 +100,8 @@
 (defvar nvp-webjump-cache nil "Cache local uris from files.")
 
 (defun nvp-get-local-uris ()
+  "Find local jump uris. Use `nvp-local-uris' or if a local notes file is found,
+try to find links there."
   (or (bound-and-true-p nvp-local-uris)
       (--when-let (nvp-find-notes-file)
         (unless nvp-webjump-cache
@@ -107,11 +109,7 @@
         (or (nvp-cache-get nvp-local-notes-file nvp-webjump-cache)
             (cdr
              (setf (nvp-cache-get nvp-local-notes-file nvp-webjump-cache)
-                   (nvp-org-links nvp-webjump-org-links-re it))))))
-  ;; (or (bound-and-true-p nvp-local-uris)
-  ;;     (--when-let (nvp-find-notes-file)
-  ;;       (setq nvp-local-uris (nvp-org-links nvp-webjump-org-links-re it))))
-  )
+                   (nvp-org-links nvp-webjump-org-links-re it)))))))
 
 ;;;###autoload
 (defun nvp-browse-webjump (&optional prompt use-defaults)

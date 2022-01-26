@@ -6,37 +6,7 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp-decls)
 
-(eval-and-compile
- ;; Macro argument parsing
- (defconst nvp-cache--args '(:expires-fn :expired-p :default :filename)))
-
-(eval-when-compile
-
-  (defsubst nvp-cache--clean-args (kwargs)
-    (cl-loop for (k v) on kwargs by #'cddr
-             unless (memq k nvp-cache--args)
-             nconc (list k v)))
-
-  ;; Cache entries expire after number of seconds
-  (defsubst nvp-cache-timer-expired-p (lim)
-    `(lambda (start) (> (time-to-seconds (- (float-time) start)) ,lim)))
-
-  (defsubst nvp-cache-timer-start ()
-    '(lambda (&rest _) (float-time)))
-
-  ;; Cache entries expire when files are modified
-  (defmacro nvp-cache--modtime (file)
-    `(let ((attr (file-attributes ,file 'integer)))
-       (and attr (nth 5 attr))))
-  
-  (defsubst nvp-cache-modtime-expired-p (&optional filename)
-    (if filename `(lambda (prev) (equal (nvp-cache--modtime ,filename) prev))
-      `(lambda (prev) (not (equal (nvp-cache--modtime (car prev)) (cdr prev))))))
-
-  (defsubst nvp-cache-modtime-start (&optional filename)
-    (if filename `(lambda (_key) (nvp-cache--modtime ,filename))
-      `(lambda (file) (cons file (nvp-cache--modtime file))))))
-
+;;; Cache
 (cl-defmacro nvp-cache (&rest kwargs &key expires-fn expired-p default
                               filename &allow-other-keys)
   "Create caches with expiring entries.
@@ -54,35 +24,49 @@ expiration value, and to test if entries are expired, respectively.
 DEFAULT is returned by `nvp-cache-get' when a key is absent. Further
 arguments are passed to `make-hash-table', with a default \\=':test of
 \\='equal unless specified."
-  (let* ((args (nvp-cache--clean-args kwargs))
-         (typ (if (and (eq (car-safe expires-fn) 'quote)
-                       (memq (cadr expires-fn) '(timer modtime)))
-                  (cadr expires-fn)
-                'fn))
-         (exp-p
-          (pcase typ
-            (`timer
-             ;; entries expire after time limit
-             (unless (numberp expired-p)
-               (error "Cache: timer expects EXPIRED-P to be numer of seconds"))
-             (nvp-cache-timer-expired-p expired-p))
-            (`modtime
-             ;; entries expire when files are modified
-             (nvp-cache-modtime-expired-p filename))
-            (_ expired-p)))
-         (exp-fn
-          (pcase typ
-            (`timer (nvp-cache-timer-start))
-            (`modtime
-             (nvp-cache-modtime-start filename))
-            (_ expires-fn))))
-    (unless (and exp-p exp-fn)
-      (error "Cache: need both EXPIRES-FN and EXPIRED-P"))
-    `(nvp-cache-create
-      ,exp-p
-      ,exp-fn
-      ,default
-      ,@args)))
+  ;; FIXME: why isn't this expanded in backquoted lambdas???
+  (cl-macrolet ((get-modtime (f)
+                  `(let ((attr (file-attributes ,f 'integer)))
+                     (and attr (nth 5 attr)))))
+    (let* ((args (nvp:args-remove
+                  '(:expires-fn :expired-p :default :filename)
+                  kwargs))
+           ;; Common caches: (1) time limit, (2) file modification
+           (typ (if (and (eq (car-safe expires-fn) 'quote)
+                         (memq (cadr expires-fn) '(timer modtime)))
+                    (cadr expires-fn)
+                  'fn))
+           (exp-p
+            (pcase typ
+              (`timer
+               ;; entries expire after time limit
+               (unless (numberp expired-p)
+                 (error "Cache: timer expects EXPIRED-P to be numer of seconds"))
+               `(lambda (start) (> (time-to-seconds (- (float-time) start)) ,expired-p)))
+              (`modtime
+               ;; entries expire when files are modified
+               (if filename
+                   `(lambda (prev) (equal (get-modtime ,filename) prev))
+                 `(lambda (prev) (not (equal (get-modtime (car prev)) (cdr prev))))))
+              (_ expired-p)))
+           (exp-fn
+            (pcase typ
+              (`timer (lambda (&rest _) (float-time)))
+              (`modtime
+               (if filename
+                   `(lambda (_key) (get-modtime ,filename))
+                 `(lambda (file) (cons file (get-modtime file)))))
+              (_ expires-fn))))
+      (unless (and exp-p exp-fn)
+        (error "Cache: need both EXPIRES-FN and EXPIRED-P"))
+      `(cl-macrolet ((get-modtime (f)
+                       `(let ((attr (file-attributes ,f 'integer)))
+                          (and attr (nth 5 attr)))))
+         (nvp-cache-create
+          ,exp-p
+          ,exp-fn
+          ,default
+          ,@args)))))
 
 ;;; Cache with expiring entries
 (cl-defstruct (nvp-cache (:constructor nvp-cache--create)
@@ -91,7 +75,7 @@ arguments are passed to `make-hash-table', with a default \\=':test of
   expired-p         ; call (expired-p expiration) to determine if invalide
   table             ; hash-table
   default)          ; default for `nvp-cache-get'
-  
+
 ;;;###autoload
 (defun nvp-cache-create (expired-p expires-fn default &rest keyword-args)
   "Create cache table whose entries are invalidated when EXPIRED-P returns

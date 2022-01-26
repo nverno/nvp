@@ -60,13 +60,13 @@ Return cons of \\='(name . raw-link)."
                (current-buffer)))
         res)
     (with-current-buffer buf
-      (nvp-with-org-sections headline-re
+      (nvp:with-org-sections headline-re
         (org-element-map it 'link
           (lambda (link)
             (when (or (null type)
-                      (string-match-p type (nvp-org-property :type link)))
-              (push (cons (nvp-org-link-name link)
-                          (nvp-org-property :raw-link link))
+                      (string-match-p type (nvp:org-property :type link)))
+              (push (cons (nvp:org-link-name link)
+                          (nvp:org-property :raw-link link))
                     res))))))
     (nreverse res)))
 

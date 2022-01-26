@@ -51,7 +51,7 @@
 (defmacro nvp-makefile-with-target (target &rest body)
   "Execute BODY with point after ':' following TARGET."
   (declare (indent defun) (debug (symbolp &rest form)))
-  (nvp-with-gensyms (place)
+  (nvp:with-gensyms (place)
     `(save-excursion
        ;; if target is found point will be at the end
        ;; of match, skip ahead to ':'

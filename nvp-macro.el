@@ -30,7 +30,7 @@ If PATH is non-nil, search for root starting at PATH."
      ,@body))
 
 ;;; Local Variables
-(defmacro nvp-ensure-local-variables ()
+(defmacro nvp:ensure-local-variables ()
   "Make sure directory local variables have been read, even in shell."
   `(when (derived-mode-p 'comint-mode)
      (hack-local-variables)))
@@ -39,7 +39,7 @@ If PATH is non-nil, search for root starting at PATH."
 ;;; Prefix args
 
 ;; parse symbols like '>12 to (> . 12)
-(defsubst nvp-prefix-parse-testsym (sym)
+(defsubst nvp--prefix-parse-testsym (sym)
   (when (and (not (numberp sym)) (not (listp sym)) (symbolp sym))
     (--when-let (symbol-name sym)
       (when (string-match "\\([><=]+\\)\\([0-9]+\\)" it)
@@ -51,10 +51,10 @@ If PATH is non-nil, search for root starting at PATH."
 (cl-defmacro nvp-prefix (num &optional then &rest else &key test &allow-other-keys)
   "If `current-prefix-arg' equals NUM do THEN otherwise ELSE."
   (declare (indent defun) (debug t))
-  (nvp-skip-keywords else)
+  (nvp:skip-keywords else)
   (and test (setq test (car (nvp-list-unquote test))))
   (--when-let (and (eq (car-safe num) 'quote)
-                   (nvp-prefix-parse-testsym (cadr num)))
+                   (nvp--prefix-parse-testsym (cadr num)))
     (cl-assert (not test) nil
                "nvp-prefix called with two tests: %S, %S" num test)
     (setq num (cdr it)
@@ -107,7 +107,7 @@ which will be called when selecting an entry.
 The rest of BODY is evaluated in result buffer after `tabulated-list-mode'
 is activated, but before items are printed."
   (declare (indent defun) (debug t))
-  (nvp-skip-keywords body)
+  (nvp:skip-keywords body)
   `(progn
      (let ((bufname (concat "*" ,name "*"))
            (inhibit-read-only t))
@@ -127,21 +127,30 @@ is activated, but before items are printed."
          (pop-to-buffer buf)))))
 
 
-(cl-defmacro nvp-msg (fmt &rest args &key keys delay duration &allow-other-keys)
+(cl-defmacro nvp-msg (fmt &rest args &key keys delay duration
+                          test &allow-other-keys)
   "Print message, optionally using `substitute-command-keys' if KEYS.
 Message is displayed temporarily, restoring any previous message after
 DURATION or 2 seconds.
-If DELAY is non-nil, message won't be displayed for that many seconds, so
-if a useful message is expected it can be read before this message is 
-displayed. The original message will be displayed after DELAY + DURATION when
-those are both specified."
+
+If TEST is non-nil, message will only be displayed if it evaluates
+truthy (if TEST is a function it will be called with no arguments). If
+DELAY is non-nil, message is delayed for that many seconds, eg. allowing
+previous messages to be read.
+
+The original message will be restored after DELAY + DURATION when those
+are both specified."
   (declare (indent defun) (debug (sexp &rest form)))
-  (nvp-skip-keywords args)
+  (nvp:skip-keywords args)
   (nvp-with-syms (orig-msg)
     (let ((msg
            `(function
              (lambda ()
                (or (minibufferp)
+                   ,@(when test
+                       `((not
+                          ,(if (functionp test) `(funcall ,test)
+                            ` ,test))))
                    (message
                     ,@(if keys
                           `("%s" (substitute-command-keys (format ,fmt ,@args)))
@@ -891,7 +900,7 @@ Trailing 'i' indicates to prompt for input if nothing is found.
 Uses region bounds if active, otherwise bounds of THING.
 In WIDEN is non-nil, save restriction and widen before finding bounds."
   (declare (indent defun) (debug body))
-  (nvp-skip-keywords body)
+  (nvp:skip-keywords body)
   (let ((bnds (make-symbol "bounds")))
     `(,@(if widen '(save-restriction (widen)) '(progn))
       (if-let* ((,bnds (nvp-tap ,(or type ''bdwim) ,(or thing ''paragraph)
@@ -1079,7 +1088,7 @@ Cache is either defvar (possibly local) so is updated when set to nil,
 or PREDICATE is non-nil and returns nil."
   (declare (indent defun) (debug (sexp sexp sexp &form body)) (doc-string 3))
   (let ((docstring (when (stringp (car body)) (pop body))))
-    (nvp-skip-keywords body)
+    (nvp:skip-keywords body)
     (let* ((fn (nvp-as-symbol func))
            (cache (or cache fn)))
       `(progn
@@ -1112,7 +1121,7 @@ or PREDICATE is non-nil and returns nil."
   "Do THEN if `last-command' wasn't `this-command', otherwise do REST 
 and set `this-command' to nil so opposite happens next time."
   (declare (indent 1))
-  (nvp-skip-keywords rest)
+  (nvp:skip-keywords rest)
   `(if (not (eq this-command last-command))
        ,then
      (prog1 (progn ,@rest)

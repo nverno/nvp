@@ -17,8 +17,10 @@
 (defvar nvp-read-config-history ())
 (defvar nvp-read-keymap-history ())
 
+;; vertico needs metadata according to conventions in minibuffer.el,
+;; .ie 'boundaries and 'category
 (defun nvp-read--recursive-file-completion-table (&optional root regexp)
-  (let ((files (nvp-read--relative-files root regexp)))
+  (let ((files (nvp:read-relative-files root regexp)))
     (lambda (string pred action)
       (cond ((eq action 'metadata) '(metadata (category . file)))
             ((eq (car-safe action) 'boundaries)
@@ -29,7 +31,7 @@
 (defun nvp-read-relative-recursively (root regexp &optional prompt default)
   "Return full filepath prompting with file matching REGEXP from ROOT with
 `directory-files-recursively'."
-  (nvp-read-file:with-fallback root
+  (nvp:read-file-with-fallback root
     (nvp-completing-read
       (nvp-prompt-default (or prompt "File: ") default)
       (nvp-read--recursive-file-completion-table root regexp)
@@ -38,7 +40,7 @@
 (defun nvp-read--info-files (&optional prompt default)
   (or default (and (string-prefix-p nvp/info default-directory)
                    (setq default (ignore-errors (nvp-path 'bfs)))))
-  (nvp-read-file:with-fallback (expand-file-name "org" nvp/info)
+  (nvp:read-file-with-fallback (expand-file-name "org" nvp/info)
     (nvp-completing-read
       (nvp-prompt-default (or prompt "Info file: ") default)
       (directory-files (expand-file-name "org" nvp/info) nil "\.org")
@@ -46,7 +48,7 @@
 
 ;; if LOCAL is non-nil use that
 (defun nvp-read--org-file (&optional prompt default nolocal)
-  (nvp-ensure-local-variables)
+  (nvp:ensure-local-variables)
   (let ((local (bound-and-true-p nvp-local-notes-file)))
     (if (and local (not nolocal)) local
       (nvp-read-relative-recursively
@@ -99,7 +101,7 @@
   "Read symbol using `help--symbol-completion-table' using PROMPT with DEFAULT.
 Filter by PREDICATE if non-nil."
   (require 'help-fns)
-  (setq default (nvp-read:default default (nvp-tap 'tap)))
+  (setq default (nvp:read-default default (nvp-tap 'tap)))
   (let ((enable-recursive-minibuffers t) val)
     (setq prompt (nvp-prompt-default prompt default))
     (setq val (completing-read prompt #'help--symbol-completion-table
@@ -113,7 +115,7 @@ Filter by PREDICATE if non-nil."
 ;;;###autoload
 (defun nvp-read-elisp-variable (prompt &optional default hist)
   "Lookup elisp symbol using PROMPT and optional DEFAULT."
-  (setq default (nvp-read:default default (let ((var (variable-at-point)))
+  (setq default (nvp:read-default default (let ((var (variable-at-point)))
                                              (and (symbolp var) var))))
   (let ((orig-buffer (current-buffer)))
     (nvp-read-elisp-symbol prompt
@@ -126,7 +128,7 @@ Filter by PREDICATE if non-nil."
 ;;;###autoload
 (defun nvp-read-elisp-function (prompt &optional default hist)
   "Lookup elisp function with PROMPT and optional DEFAULT."
-  (setq default (nvp-read:default default (function-called-at-point)))
+  (setq default (nvp:read-default default (function-called-at-point)))
   (nvp-read-elisp-symbol
    prompt (lambda (f) (or (fboundp f) (get f 'function-documentation))) default hist))
 
@@ -157,23 +159,23 @@ Filter by PREDICATE if non-nil."
 ;; some completing reads for general config files
 (defun nvp-read-mode-config (&optional prompt default)
   (nvp-defq default (symbol-name major-mode))
-  (nvp-read-file:with-fallback nil
+  (nvp:read-file-with-fallback nil
     (nvp-completing-read
       (nvp-prompt-default (or prompt "Mode config: ") default)
       (mapcar
        #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
            (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
        (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-      nil nil nil 'nvp-read-config-history (nvp-read--mode-name default))))
+      nil nil nil 'nvp-read-config-history (nvp:read-mode-name default))))
 
 (defun nvp-read--mode-test (&optional prompt default)
   (let* ((ext (ignore-errors (nvp-path 'ext)))
          (default-directory nvp/test)
          (completion-ignored-extensions
           (cons "target" completion-ignored-extensions))
-         (files (nvp-read--relative-files nvp/test "^[^.][^.]")))
+         (files (nvp:read-relative-files nvp/test "^[^.][^.]")))
     (nvp-defq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files)))
-    (nvp-read-file:with-fallback nvp/test
+    (nvp:read-file-with-fallback nvp/test
       (nvp-completing-read
         (nvp-prompt-default (or prompt "Test: ") default)
         files nil nil nil 'nvp-read-config-history default))))

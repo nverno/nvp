@@ -70,23 +70,29 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; -------------------------------------------------------------------
 ;;; Normalize macro arguments
 
+(defmacro nvp:skip-keywords (else)
+  "Skip past any keywords in ELSE."
+  `(while (keywordp (car ,else)) (setq ,else (cddr ,else))))
+
+(defsubst nvp:args-remove (args kwargs)
+  "Return keyword arguments, KWARGS, minus those in ARGS."
+  (cl-loop for (k v) on kwargs by #'cddr
+           unless (memq k args)
+           nconc (list k v)))
+
 (defvar nvp-macs-merge-key-alist
   '((:if    . (lambda (new old) `(and ,new ,old)))
     (:after . (lambda (new old) `(:all ,new ,old))))
   "See `use-package-merge-key-alist'.")
 
-(defmacro nvp-skip-keywords (else)
-  "Skip past any keywords in ELSE."
-  `(while (keywordp (car ,else)) (setq ,else (cddr ,else))))
-
 ;; default function to merge key values when there may be a default or multiple
 ;; found in arguments
-(defun nvp-macs-merge-keys (key new old)
+(defun nvp:-macs-merge-keys (key new old)
   (let ((merger (assq key nvp-macs-merge-key-alist)))
     (if merger (funcall (cdr merger) new old)
       (append new old))))
 
-(defun nvp-macs-normalize-plist (name input
+(defun nvp:-normalize-plist (name input
                                       &optional plist defaults merge-function)
   "Normalize pseudo-plist to regular plist, extending key/value pairs.
 Keywords will be call by a function nvp-macs-normalize/<keyword> with three
@@ -108,17 +114,17 @@ be used. Modification of `use-package-normalize-plist'."
       (if (memq kw defaults)
           (progn
             (unless arg (setq arg (plist-get arg defaults)))
-            (setq plist (nvp-macs-normalize-plist
+            (setq plist (nvp:-normalize-plist
                          name tail plist defaults merge-function))
             (plist-put plist kw
                        (if (and merge-function (plist-member plist kw))
                            (funcall merge-function kw arg (plist-get plist kw))
                          arg)))
         ;; unknown keyword
-        (nvp-macs-normalize-plist name tail plist defaults merge-function)))))
+        (nvp:-normalize-plist name tail plist defaults merge-function)))))
 
 
-(defun nvp-macs-normalize-keywords (name args &optional defaults merge-function)
+(defun nvp:-normalize-keywords (name args &optional defaults merge-function)
   (let ((name-sym (nvp-as-symbol name)))
     (setq args (delq 'elisp--witness--lisp args))
     (let ((body (list nil)))
@@ -126,7 +132,7 @@ be used. Modification of `use-package-normalize-plist'."
         (push (car args) body)
         (setq args (cdr args)))
       (nvp-plist-merge 
-       (nvp-macs-normalize-plist
+       (nvp:-normalize-plist
         name-sym args `(:body ,(nreverse body)) defaults merge-function)
        defaults))))
 
@@ -135,19 +141,19 @@ be used. Modification of `use-package-normalize-plist'."
 ;; -------------------------------------------------------------------
 ;;; General 
 
-(defmacro nvp-unless-bound (sym &rest body)
+(defmacro nvp:unless-bound (sym &rest body)
   "Execute BODY unless SYM is `fboundp' or `boundp'."
   (declare (indent 1) (debug t))
   `(unless (fboundp ,sym)
      ,@body))
 
-(defmacro nvp-when-bound (sym &rest body)
+(defmacro nvp:when-bound (sym &rest body)
   "Execute BODY when SYM is `fbound' or `boundp'."
   (declare (indent 1) (debug t))
   `(when (fboundp ,sym)
      ,@body))
 
-(defmacro nvp-with-gensyms (syms &rest body)
+(defmacro nvp:with-gensyms (syms &rest body)
   "Execute BODY with SYMS bound to `cl-gensyms'."
   (declare (indent 1))
   `(let ,(mapcar (lambda (s)
@@ -253,7 +259,7 @@ be used. Modification of `use-package-normalize-plist'."
 (defmacro nvp-awhile (expr &rest body)
   "Anamorphic `while'."
   (declare (indent 1) (debug t))
-  (nvp-with-gensyms (flag)
+  (nvp:with-gensyms (flag)
     `(let ((,flag t))
        (cl-block nil
          (while ,flag
@@ -357,7 +363,7 @@ be used. Modification of `use-package-normalize-plist'."
       (setq pkg (car funcs)
             funcs (nvp-plist-delete (cdr funcs) :pkg)))
     (-let (((&plist :body funcs :pkg pkg :pre pre)
-            (nvp-macs-normalize-keywords "decl" funcs `(:pkg ,pkg :pre nil))))
+            (nvp:-normalize-keywords "decl" funcs `(:pkg ,pkg :pre nil))))
       (setq funcs (nvp-list-unquote funcs))
       (when pre
         (setq funcs (mapcar (lambda (fn)

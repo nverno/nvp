@@ -108,8 +108,9 @@ TAGS: ${EL} ${MODE_EL}
 clean:  ## clean temp files
 	$(RM) *~ \#.*\#
 
-distclean: clean ## clean all generated files including compiled & autoloads
-	$(RM) *loaddefs?.el *autoloads.el TAGS GPATH GTAGS
+distclean: clean-modes clean ## clean all generated files inc. compiled/auto
+	$(RM) *loaddefs?.el *autoloads.el TAGS GPATH GTAGS \
+		*.elc macs/*.elc subrs/*.elc
 
 .PHONY: help
 help:  ## Display this help message

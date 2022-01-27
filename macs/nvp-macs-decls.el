@@ -94,7 +94,7 @@
     ;; yasnippet
     yas-selected-text yas-wrap-around-region
     ;; url
-    url-end-of-headers
+    url-http-end-of-headers
     url-request-method url-request-extra-headers url-request-data))
 
 (cl-defmacro nvp-decls (&key v f)

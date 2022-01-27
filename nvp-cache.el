@@ -27,7 +27,7 @@ arguments are passed to `make-hash-table', with a default \\=':test of
   (cl-macrolet ((get-modtime (f)
                   `(let ((attr (file-attributes ,f 'integer)))
                      (and attr (nth 5 attr)))))
-    (let* ((args (nvp:args-remove
+    (let* ((args (nvp:arglist-remove-kwargs
                   '(:expires-fn :expired-p :default :filename)
                   kwargs))
            ;; Common caches: (1) time limit, (2) file modification

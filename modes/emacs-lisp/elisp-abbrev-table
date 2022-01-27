@@ -88,6 +88,7 @@
     ("w" "when" nil :system t)
     ("z" "zerop" nil :system t)
     
+    ("aa" "advice-add" nil :system t)
     ("ah" "add-hook" nil :system t)
     ("ap" "apply-partially" nil :system t)
     ("bc" "backward-char" nil :system t)

@@ -74,11 +74,17 @@ If MINOR is non-nil, convert to minor mode hook symbol."
   "Skip past any keywords in ELSE."
   `(while (keywordp (car ,else)) (setq ,else (cddr ,else))))
 
-(defsubst nvp:args-remove (args kwargs)
-  "Return keyword arguments, KWARGS, minus those in ARGS."
+(defsubst nvp:arglist-remove-kwargs (args kwargs)
+  "Return keyword arguments ARGS from KWARGS."
   (cl-loop for (k v) on kwargs by #'cddr
            unless (memq k args)
            nconc (list k v)))
+
+(defsubst nvp:arglist-args (args)
+  "Return arguments minus `cl--lambda-list-keywords' and any arguments prefixed
+with \"_\"."
+  (--filter (not (string-prefix-p "_" (symbol-name it)))
+            (cl--arglist-args args)))
 
 (defvar nvp-macs-merge-key-alist
   '((:if    . (lambda (new old) `(and ,new ,old)))

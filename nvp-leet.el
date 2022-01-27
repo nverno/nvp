@@ -4,16 +4,14 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'let-alist))
-(nvp-decls :v (leetcode--description-buffer-name
-               leetcode--testcase-buffer-name leetcode--result-buffer-name
-               leetcode--User-Agent leetcode--url-login
-               leetcode--X-CSRFToken leetcode--api-graphql
-               url-http-end-of-headers)
-           :f (leetcode-try
-               leetcode-submit leetcode-show-problem leetcode--start-coding
-               leetcode--get-code-buffer-name leetcode--referer
-               leetcode--maybe-csrf-token))
+  (require 'let-alist)
+  (unless (require 'aio nil t)
+    (defmacro aio-defun (&rest _)
+      (interactive)
+      (user-error "aio library not found."))))
+(require 'leetcode)
+(require 'aio)
+(nvp-decls)
 
 ;;; Test cases
 
@@ -75,6 +73,7 @@
 
 ;;; Question of the Day
 
+;; graphql query for daily challenge question
 (defconst nvp-leet--daily-challenge-query
   (nvp:concat
    "query questionOfToday { activeDailyCodingChallengeQuestion {"
@@ -97,11 +96,15 @@
       (let-alist (json-read)
         .data.activeDailyCodingChallengeQuestion.question.qid))))
 
-(defun nvp-leet-daily ()
+;;;###autoload(autoload 'nvp-leet-daily "nvp-leet")
+(aio-defun nvp-leet-daily ()
   "Open the daily challenge."
   (interactive)
-  (--when-let (nvp-leet--lookup-daily-question)
-    (leetcode-show-problem (string-to-number it))))
+  (if (leetcode--login-p)
+      (--when-let (nvp-leet--lookup-daily-question)
+        (leetcode-show-problem (string-to-number it)))
+    (aio-await (leetcode--login))
+    (funcall #'nvp-leet-daily)))
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode

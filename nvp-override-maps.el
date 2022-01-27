@@ -46,7 +46,7 @@
   "Advices `define-key' to auto unbind keys that are subsequences of new
 bindings, avoiding errors from key sequences starting with non-prefix keys."
   (if undo
-      (nvp-unadvise-commands #'nvp-unbind-non-prefix-key #'define-key)
+      (nvp:unadvise-commands #'nvp-unbind-non-prefix-key #'define-key)
     (nvp:advise-commands #'nvp-unbind-non-prefix-key :around #'define-key)))
 
 ;; -------------------------------------------------------------------

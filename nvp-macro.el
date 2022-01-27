@@ -1297,7 +1297,7 @@ FUNCS can be a list, quoted or not."
    (cl-loop for func in funcs
       collect `(advice-add ',func ,where ,advice ,props))))
 
-(defmacro nvp-unadvise-commands (advice funcs)
+(defmacro nvp:unadvise-commands (advice funcs)
   "Remove ADVICE from FUNCS.
 See `nvp:advise-commands'."
   (declare (indent defun) (debug t))
@@ -1306,7 +1306,7 @@ See `nvp:advise-commands'."
    (cl-loop for func in funcs
       collect `(advice-remove ',func ',advice))))
 
-(defmacro nvp-remove-all-advice (funcs)
+(defmacro nvp:remove-all-advice (funcs)
   "Remove all advice from list of FUNCS."
   (declare (indent 0))
   `(progn
@@ -1314,11 +1314,32 @@ See `nvp:advise-commands'."
           collect `(advice-mapc (lambda (advice _props) (advice-remove ',fn advice))
                                 ',fn))))
 
-(defmacro nvp-eldoc-function (func &optional init)
+(defmacro nvp:eldoc-function (func &optional init)
   "Set local eldoc function."
   `(progn
      (add-function :before-until (local 'eldoc-documentation-function) #',func)
      ,(when init '(eldoc-mode))))
+
+(defmacro nvp:run-once (symbol args &rest body)
+  "Add advice to function SYMBOL that runs once. See `define-advice'."
+  (declare (indent 2) (doc-string 3) (debug (sexp sexp def-body)))
+  (let* ((where         (nth 0 args))
+         (lambda-list   (nth 1 args))
+         (name          (or (nth 2 args) (cl-gensym "nvp")))
+         (depth         (nth 3 args))
+         (props         (and depth `((depth . ,depth))))
+         (advice (cond ((or (stringp name) (symbolp name))
+                        (intern (format "%s@%s~once" symbol name)))
+                       (t (error "Unrecognized name spec `%S'" name)))))
+    `(prog1
+         (defalias ',advice
+           (lambda ,lambda-list
+             (declare-function ',advice "" ,lambda-list)
+             (advice-remove ',symbol ',advice)
+             ,(if (functionp name)
+                  `(funcall #',name ,@(nvp:arglist-args lambda-list))
+                `(progn ,@body))))
+       (advice-add ',symbol ,where #',advice ,@(and props `(',props))))))
 
 
 ;; -------------------------------------------------------------------

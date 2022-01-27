@@ -2,18 +2,13 @@
 
 ;;; Commentary:
 ;;
-;; XXX: goal is just to integrate with project management, eg. projectile
-;;      as much as possible
+;; XXX: integrate with projectile
 ;;
-;; Possible packages:
+;; packages:
 ;; - https://github.com/ReanGD/emacs-multi-compile
-;; - https://github.com/plandes/flex-compile -- nah
 ;; - https://github.com/defunkt/emacs/blob/master/vendor/mode-compile.el
 ;; - smart-compile
 ;; - https://github.com/syohex/emacs-quickrun
-;; More generalization is good
-;; - see helm-make for generating makefile commands
-;; - maybe something in make-it-so
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -201,30 +196,6 @@ ARGS are passed to `nvp-compile'."
   (if (comint-after-pmark-p)
       (completion-at-point)
     (nvp-compilation-next n)))
-
-;; Useful when compile is generalized for make builds
-;; Note: can just use "nproc" on linux
-;; https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el
-;; (defun numcores ()
-;;   "Return the number of logical processors on this system."
-;;   (or
-;;    ;; Linux
-;;    (when (file-exists-p "/proc/cpuinfo")
-;;      (with-temp-buffer
-;;        (insert-file-contents "/proc/cpuinfo")
-;;        (how-many "^processor[[:space:]]+:")))
-;;    ;; Windows
-;;    (let ((number-of-processors (getenv "NUMBER_OF_PROCESSORS")))
-;;      (when number-of-processors
-;;        (string-to-number number-of-processors)))
-;;    ;; BSD+OSX
-;;    (with-temp-buffer
-;;      (ignore-errors
-;;        (when (zerop (call-process "sysctl" nil t nil "-n" "hw.ncpu"))
-;;          (string-to-number (buffer-string)))))
-;;    ;; Default
-;;    1))
-
 
 (provide 'nvp-compile)
 ;;; nvp-compile.el ends here

@@ -48,7 +48,7 @@
     (goto-char (point-min))
     (let ((vars '("nvp")))
       (while (search-forward-regexp
-              (nvp-concat "\\s-*(\\(?:require\\|provide\\)[ \t]*\'"
+              (nvp:concat "\\s-*(\\(?:require\\|provide\\)[ \t]*\'"
                           "\\([-:_.a-zA-Z0-9]+\\)")
               nil t)
         (push (buffer-substring-no-properties (match-beginning 1) (match-end 1))

@@ -61,7 +61,7 @@
      "^\\s-*\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*()" 1)
     ;; Global variables
     (,(sh-comp:annotation global)
-     ,(nvp-concat
+     ,(nvp:concat
        ;; optionally prefixed by: export or declare
        "^\\(?:" (regexp-opt '("export" "declare"))
        ;; with optional flag

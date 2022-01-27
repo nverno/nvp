@@ -23,7 +23,7 @@
         ;; try to deal with nested ifs
         (if (looking-at
              ;; eval-when-compile
-             (nvp-concat "if[^!]*\\(!\\)? *\$OS.*=="
+             (nvp:concat "if[^!]*\\(!\\)? *\$OS.*=="
                          "\\s-*[\"']?\\([A-Za-z_0-9]+\\)"))
             (pcase (match-string-no-properties 2)
               (`"Windows_NT"

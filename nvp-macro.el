@@ -1288,7 +1288,7 @@ and set `this-command' to nil so opposite happens next time."
 ;; -------------------------------------------------------------------
 ;;; Advice
 
-(defmacro nvp-advise-commands (advice where funcs &optional props)
+(defmacro nvp:advise-commands (advice where funcs &optional props)
   "Apply ADVICE to FUNCS at WHERE with PROPS. 
 FUNCS can be a list, quoted or not."
   (declare (indent defun))
@@ -1299,7 +1299,7 @@ FUNCS can be a list, quoted or not."
 
 (defmacro nvp-unadvise-commands (advice funcs)
   "Remove ADVICE from FUNCS.
-See `nvp-advise-commands'."
+See `nvp:advise-commands'."
   (declare (indent defun) (debug t))
   (setq funcs (nvp-list-unquote funcs))
   (macroexp-progn

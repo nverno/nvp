@@ -49,7 +49,7 @@
       (goto-char (point-min))
       (let (res imports)
         (while (re-search-forward
-                (nvp-concat
+                (nvp:concat
                  ;; Module 
                  "\\<use\\>[ \t]*\\([.0-9A-Za-z:]+\\);?[ \t]*"
                  ;; Imports

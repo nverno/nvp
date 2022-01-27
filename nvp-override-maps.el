@@ -47,7 +47,7 @@
 bindings, avoiding errors from key sequences starting with non-prefix keys."
   (if undo
       (nvp-unadvise-commands #'nvp-unbind-non-prefix-key #'define-key)
-    (nvp-advise-commands #'nvp-unbind-non-prefix-key :around #'define-key)))
+    (nvp:advise-commands #'nvp-unbind-non-prefix-key :around #'define-key)))
 
 ;; -------------------------------------------------------------------
 ;;; Local bindings functions - probably get rid of these 

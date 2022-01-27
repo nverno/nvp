@@ -25,7 +25,7 @@
 ;; second group is the gemset. when no gemset is set, the second group
 ;; is nil
 (defvar nvp-rvm--rvmrc-parse-regexp
-  (nvp-concat
+  (nvp:concat
    "\\(?:^rvm\s+\\(?:use\s+\\|\\)\\|environment_id=\"\\)\s*"
    "\\(?:--.+\s\\)*" ;; Flags
    "\\([^"
@@ -118,7 +118,7 @@
   (with-rvm-buffer
     (nvp-rvm "list" (and default "default"))
     (goto-char (point-min))
-    (let ((re (nvp-concat
+    (let ((re (nvp:concat
                "^[ \t]*\\(=?[>*]\\)?[ \t]*"  ;; current version?
                "\\(.+?\\)[ \t]*"             ;; ruby version
                "\\[ *\\(.+\\) *\\][ \t]*$")) ;; arch

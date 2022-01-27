@@ -46,13 +46,13 @@
 
 (defvar nvp-log-font-lock
   (eval-when-compile
-    (let ((gstat (nvp-re-opt '("finished" "deleted" "open" "success")))
-          (wstat (nvp-re-opt '("warning")))
-          (rstat (nvp-re-opt
+    (let ((gstat (nvp:re-opt '("finished" "deleted" "open" "success")))
+          (wstat (nvp:re-opt '("warning")))
+          (rstat (nvp:re-opt
                   '("exited abnormally" "failed" "error" "signal-description"
                     "connection broken")))
-          (gproc (nvp-re-opt '("run" "open" "listen" "connect")))
-          (rproc (nvp-re-opt '("stop" "exit" "signal" "closed" "failed"))))
+          (gproc (nvp:re-opt '("run" "open" "listen" "connect")))
+          (rproc (nvp:re-opt '("stop" "exit" "signal" "closed" "failed"))))
       `(("`\\([^\n']+\\)'" (1 font-lock-constant-face))
         (,gstat (1 'compilation-info))
         (,wstat (1 'compilation-warning))

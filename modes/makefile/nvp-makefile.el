@@ -34,7 +34,7 @@
       `(,openers ,closers))))
 
 (defconst nvp-makefile-defun-regexp
-  (nvp-concat (car nvp-makefile-open/close) "\\|" "^[^# \t\n]+:"))
+  (nvp:concat (car nvp-makefile-open/close) "\\|" "^[^# \t\n]+:"))
 
 (defun nvp-makefile--match-opener (search-fn)
   (beginning-of-line)
@@ -159,7 +159,7 @@ With prefix ARG, run `helm-make'."
     ;;              (progn (goto-char (point-min))
     ;;                     (re-search-forward "^[^ ]+:" nil t)
     ;;                     (point)))))
-    ;;   (align-regexp (point-min) end (nvp-concat
+    ;;   (align-regexp (point-min) end (nvp:concat
     ;;                                  "\\(?:[^<?]\\)\\(\\s-*\\)"
     ;;                                  "\\(=\\|[:?+]=\\)")
     ;;                 1))

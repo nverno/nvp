@@ -225,7 +225,7 @@
   (interactive "P")
   (let* ((prog (file-name-sans-extension buffer-file-name))
          (strace-file (concat prog ".strace"))
-         (compile-command (format (nvp-concat "gcc -Og %s -o %s; "
+         (compile-command (format (nvp:concat "gcc -Og %s -o %s; "
                                               "strace -o %s %s %s")
                                   buffer-file-name
                                   prog

@@ -481,7 +481,7 @@ relative paths."
 ;;; Advices
 
 ;; add smooth-scrolling
-(nvp-advise-commands #'do-smooth-scroll :after '(nvp-move-next5 nvp-move-prev5))
+(nvp:advise-commands #'do-smooth-scroll :after '(nvp-move-next5 nvp-move-prev5))
 
 ;; don't run my `shell-mode-hook' during `shell-command' calls
 (defvar shell-mode-hook)
@@ -498,7 +498,7 @@ relative paths."
 (defun nvp@no-tabs (old-fn &rest args)
   (let (indent-tabs-mode)
     (apply old-fn args)))
-(nvp-advise-commands #'nvp@no-tabs :around '(comment-dwim align align-regexp))
+(nvp:advise-commands #'nvp@no-tabs :around '(comment-dwim align align-regexp))
 
 ;; apply function in calling buffer when currently in minibuffer
 (defun nvp@do-switch-buffer (old-fn &rest args)
@@ -513,7 +513,7 @@ relative paths."
     (apply old-fn args)))
 
 ;; use ido-completion when reading environment variables interactively
-;; (nvp-advise-commands #'nvp@read-with-ido
+;; (nvp:advise-commands #'nvp@read-with-ido
 ;;   :around '(read-envvar-name bookmark-jump))
 
 ;; after advice: repeat command with last basic input, or install transient MAP

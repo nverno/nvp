@@ -2,12 +2,20 @@
 ;;
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'let-alist))
 (nvp-decls :v (leetcode--description-buffer-name
-               leetcode--testcase-buffer-name
-               leetcode--result-buffer-name)
-           :f (leetcode-try leetcode-submit leetcode--start-coding
-                            leetcode--get-code-buffer-name))
+               leetcode--testcase-buffer-name leetcode--result-buffer-name
+               leetcode--User-Agent leetcode--url-login
+               leetcode--X-CSRFToken leetcode--api-graphql
+               url-http-end-of-headers)
+           :f (leetcode-try
+               leetcode-submit leetcode-show-problem leetcode--start-coding
+               leetcode--get-code-buffer-name leetcode--referer
+               leetcode--maybe-csrf-token))
+
+;;; Test cases
 
 (defun nvp-leet--collect-examples ()
   "Collect example inputs from problem description."
@@ -46,6 +54,8 @@
                       (unless (bolp) (insert "\n"))
                       (insert (mapconcat 'identity input "\n"))))))))
 
+;;; Window Configuration
+
 (defvar-local nvp-leet-window-configuration nil)
 
 (defun nvp-leet-reset-layout ()
@@ -61,7 +71,37 @@
     (with-selected-window (display-buffer leetcode--result-buffer-name)
       (enlarge-window 25))))
 
-(nvp-advise-commands #'nvp-leet-result-layout :before '(leetcode-try leetcode-submit))
+(nvp:advise-commands #'nvp-leet-result-layout :before '(leetcode-try leetcode-submit))
+
+;;; Question of the Day
+
+(defconst nvp-leet--daily-challenge-query
+  (nvp:concat
+   "query questionOfToday { activeDailyCodingChallengeQuestion {"
+   " link question { status title titleSlug qid: questionFrontendId } } }"))
+
+(defun nvp-leet--lookup-daily-question ()
+  (let* ((url-request-method "POST")
+         (url-request-extra-headers
+          `(,leetcode--User-Agent
+            ("Content-Type" . "application/json")
+            ,(leetcode--referer leetcode--url-login) 
+            ,(cons leetcode--X-CSRFToken (leetcode--maybe-csrf-token))))
+         (url-request-data
+          (json-encode
+           `((operationName . "questionOfToday")
+             (query . ,nvp-leet--daily-challenge-query))))
+         (result (url-retrieve-synchronously leetcode--api-graphql)))
+    (with-current-buffer result
+      (goto-char url-http-end-of-headers)
+      (let-alist (json-read)
+        .data.activeDailyCodingChallengeQuestion.question.qid))))
+
+(defun nvp-leet-daily ()
+  "Open the daily challenge."
+  (interactive)
+  (--when-let (nvp-leet--lookup-daily-question)
+    (leetcode-show-problem (string-to-number it))))
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode
@@ -73,7 +113,8 @@
   ("a" . nvp-leet-add-examples)
   ("t" . leetcode-try)
   ("s" . leetcode-submit)
-  ("r" . nvp-leet-reset-layout))
+  ("r" . nvp-leet-reset-layout)
+  ("d" . nvp-leet-daily))
 (define-key nvp-leet-mode-map (kbd "C-c C-c") #'leetcode-try)
 
 (defun nvp@leet-maybe-setup (orig-fn problem problem-info)

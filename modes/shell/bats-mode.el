@@ -48,7 +48,7 @@
   (nvp-program "batscheck.sh" :path (expand-file-name "sh" nvp/bin)))
 
 (defvar bats-function-re
-  (nvp-concat
+  (nvp:concat
    "^\\s-*\\(?:"
    ;; function FOO()
    "function\\s-+\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*\\(?:()\\)?"
@@ -147,8 +147,8 @@
 
 (defvar bats-font-lock-keywords
   `(("\\(@test\\)" 1 font-lock-keyword-face)
-    (,(nvp-re-opt '("load" "run" "skip")) 1 font-lock-function-name-face)
-    (,(nvp-re-opt '("setup" "teardown")) 1 'nvp-italic-type-face)))
+    (,(nvp:re-opt '("load" "run" "skip")) 1 font-lock-function-name-face)
+    (,(nvp:re-opt '("setup" "teardown")) 1 'nvp-italic-type-face)))
 
 (defvar bats-mode-map
   (let ((km (make-sparse-keymap)))

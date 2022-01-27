@@ -20,7 +20,7 @@
 (eval-and-compile
   (defconst nvp-sh--bash-builtins
     (concat
-     (nvp-re-opt
+     (nvp:re-opt
       '("." "[" "[[" "alias" "bg" "bind" "break" "builtin" "case" "cd"
         "command" "compgen" "complete" "continue" "declare" "dirs"
         "disown" "echo" "enable" "eval" "exec" "exit" "export" "fc" "fg"

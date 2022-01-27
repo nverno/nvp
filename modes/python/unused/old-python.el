@@ -45,7 +45,7 @@
 (defun nvp-python-current-class ()
   (save-excursion
     (nvp-python-beginning-of-class)
-    (and (looking-at (nvp-concat "class +\\([A-Z][A-Za-z0-9_]*\\)"
+    (and (looking-at (nvp:concat "class +\\([A-Z][A-Za-z0-9_]*\\)"
                                  "\\(?:(\\([^)]+\\))\\)?"))
          (cons (match-string 1) (match-string 2)))))
 

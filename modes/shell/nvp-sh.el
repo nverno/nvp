@@ -23,7 +23,7 @@
 ;; for jumping b/w functions -- see `sh-imenu-generic-expression'
 (eval-and-compile
   (defconst nvp-sh-function-re
-    (nvp-concat
+    (nvp:concat
      "\\(?:"
      ;; function FOO()
      "^\\s-*function\\s-+\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*\\(?:()\\)?"
@@ -39,7 +39,7 @@
 (defconst nvp-sh-imenu-extra-regexps
   `(("Sources" "^\\(?:\\\.\\|source\\)\\s-+\\(.+\\)\\s-*$" 1)
     ("Globals"
-     ,(nvp-concat
+     ,(nvp:concat
        ;; optionally prefixed by: export or declare
        "^\\(?:" (regexp-opt '("export" "declare"))
        ;; with optional flag

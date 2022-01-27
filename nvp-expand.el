@@ -15,7 +15,7 @@ from 0."
   (interactive
    (list (if current-prefix-arg (read-from-minibuffer "Separator: " ", ")
            " ")))
-  (when (looking-back (nvp-concat "\\bm\\(-?[0-9.]*\\)\:"
+  (when (looking-back (nvp:concat "\\bm\\(-?[0-9.]*\\)\:"
                                   ;; either end of range or increment
                                   "\\(-?[0-9.]+\\)"
                                   ;; optional end of range

@@ -41,7 +41,7 @@
 
 (defun nvp-ruby--uninstall-gems ()
   (start-process "ruby" "*nvp-install*" "ruby" "-e"
-                 (nvp-concat "`gem list`.split(/$/).each {|line| "
+                 (nvp:concat "`gem list`.split(/$/).each {|line| "
                              "puts `gem uninstall -Iax #{line.split(' ')[0]}`"
                              " unless line.empty? }")))
 

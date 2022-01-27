@@ -13,8 +13,8 @@
 (with-eval-after-load 'hideshow
   (unless (assoc 'octave-mode hs-special-modes-alist)
     (push (list 'octave-mode
-                (nvp-re-opt '("function" "for" "while" "if"))
-                (nvp-re-opt '("end" "endfunction" "endfor" "endwhile" "endif"))
+                (nvp:re-opt '("function" "for" "while" "if"))
+                (nvp:re-opt '("end" "endfunction" "endfor" "endwhile" "endif"))
                 "[%#]")
           hs-special-modes-alist)))
 

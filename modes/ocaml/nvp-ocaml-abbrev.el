@@ -13,7 +13,7 @@
       (forward-line)
       (while (not (eobp))
         (when (looking-at
-               (nvp-concat
+               (nvp:concat
                 "[ \t]*\\(?:[[:alnum:]]+\\)[ \t]+\\([A-Za-z_0-9]+\\)"
                 "[ \t]*:[ \t]*\\([^\n\r]+\\)$"))
           (push (cons (match-string 1) (match-string 2)) res))

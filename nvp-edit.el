@@ -84,7 +84,7 @@ With prefix sort in REVERSE."
   (interactive (nvp-with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp-sort:defaults start end
-    (sort-regexp-fields reverse (nvp-concat "\\(?:"
+    (sort-regexp-fields reverse (nvp:concat "\\(?:"
                                             "\\s\"\\S\"*\\s\"" ;quoted
                                             "\\|\\sw+\\|\\s_+" ;word/symbol
                                             "\\)")

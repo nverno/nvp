@@ -11,7 +11,7 @@
 (nvp-auto "f" f-same-p)
 
 ;; update default-directory on remote login
-(defvar nvp-shell-ssh-regexp (nvp-re-opt '("ssh" "hssh")))
+(defvar nvp-shell-ssh-regexp (nvp:re-opt '("ssh" "hssh")))
 
 ;;; Processes
 

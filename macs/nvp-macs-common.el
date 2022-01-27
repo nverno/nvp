@@ -399,18 +399,18 @@ be used. Modification of `use-package-normalize-plist'."
 ;; -------------------------------------------------------------------
 ;;; Strings / Regex
 
-(defmacro nvp-wrap-with (pre post &rest body)
+(defmacro nvp:wrap-with (pre post &rest body)
   (macroexp-let2* nil ((pre pre) (post post))
     `(concat ,pre ,(macroexp-progn body) ,post)))
 
 ;; not that useful -- concat only happens one first load
-(defmacro nvp-concat (&rest body)
+(defmacro nvp:concat (&rest body)
   `(eval-when-compile (concat ,@body)))
 
-(defmacro nvp-re-opt (opts &optional no-symbol)
+(defmacro nvp:re-opt (opts &optional no-symbol)
   `(eval-when-compile
      ,(if no-symbol `(regexp-opt ,opts t)
-        `(nvp-wrap-with "\\_<" "\\_>" (regexp-opt ,opts t)))))
+        `(nvp:wrap-with "\\_<" "\\_>" (regexp-opt ,opts t)))))
 
 
 ;; -------------------------------------------------------------------

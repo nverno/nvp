@@ -53,10 +53,10 @@ is non-nil."
                 (out (nvp-c-out-file file))
                 (compile-command
                  (concat
-                  (nvp-concat
+                  (nvp:concat
                    (nvp-program ,(if c++ "g++" "gcc")) " " ,flags " ")
                   " -o " out " " (or file buffer-file-name)
-                  (nvp-concat " " ,libs ";")
+                  (nvp:concat " " ,libs ";")
                   (or save post-compile
                       (concat "./" (file-name-nondirectory out)
                               "; rm " out))))

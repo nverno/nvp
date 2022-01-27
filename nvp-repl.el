@@ -14,8 +14,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'comint)
-  (require 'nvp-proc))
+  (require 'comint))
 (require 'nvp)
 (nvp-auto "nvp-sh" 'nvp-sh-get-process)
 (nvp-decls :f (ielm-change-working-buffer sh-cd-here))
@@ -129,19 +128,19 @@ Each function takes a process as an argument to test against.")
 ;; match process buffer
 (defun nvp-repl-find-bufname ()
   (--when-let (repl:val "bufname")
-    (nvp-proc-find it
+    (nvp:proc-find it
       :key (lambda (p) (buffer-name (funcall (repl:val "proc->buff") p)))
       :test #'string-match-p)))
 
 ;; match process name
 (defun nvp-repl-find-procname ()
   (--when-let (repl:val "procname")
-    (nvp-proc-find it :key #'process-name :test #'string-match-p)))
+    (nvp:proc-find it :key #'process-name :test #'string-match-p)))
 
 ;; match major-mode
 (defun nvp-repl-find-modes ()
   (--when-let (repl:val "modes")
-    (nvp-proc-find-if
+    (nvp:proc-find-if
      (lambda (p-buf) (and p-buf (memq (buffer-local-value 'major-mode p-buf) it)))
      :key (lambda (p) (funcall (repl:val "proc->buff") p)))))
 

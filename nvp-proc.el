@@ -30,32 +30,6 @@ if non-nil. Default just barfs output in message win or lose."
 (put 'nvp-async-shell-command-to-string 'lisp-indent-function 'defun)
 
 ;; -------------------------------------------------------------------
-;;; Find processes
-
-;; find first item using TEST function (default 'equal)
-(cl-defsubst nvp-proc-find (item &key test key)
-  (declare (indent defun))
-  (let ((completion-ignore-case t)
-        (case-fold-search t))
-    (cl-find item (process-list) :test (or test #'equal) :key key)))
-
-;; find first process matched by PRED function
-(cl-defsubst nvp-proc-find-if (pred &key key start end from-end)
-  (declare (indent defun))
-  (and pred (cl-find-if pred (process-list) :key key :start start :end end
-                        :from-end from-end)))
-
-;; find all processes matching PRED
-(defsubst nvp-proc-find-all (pred)
-  (cl-loop for proc in (process-list)
-     when (funcall pred proc)
-     collect proc))
-
-;; find process by matching NAME
-(defsubst nvp-proc-find-by-name (name)
-  (nvp-proc-find name :test #'string-match-p :key #'process-name))
-
-;; -------------------------------------------------------------------
 ;;; Filters / Sentinels
 
 ;; condense multiple newlines
@@ -82,12 +56,6 @@ if non-nil. Default just barfs output in message win or lose."
                  (nvp-indicate-modeline ,pname)))
            ,(if return-buffer `,buff
               `(kill-buffer ,buff)))))))
-
-;; generate and return a new comint buffer
-(defsubst nvp-proc-comint-buffer (name)
-  (with-current-buffer (generate-new-buffer name)
-    (comint-mode)
-    (current-buffer)))
 
 (provide 'nvp-proc)
 ;; Local Variables:

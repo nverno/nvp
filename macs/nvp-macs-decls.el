@@ -153,9 +153,10 @@
        nvp-indicate-modeline
        nvp-indicate-cursor-pre
        nvp-indicate-cursor-post
-       ;; procs
+       ;; procs / inf
        nvp-proc-default-filter
        nvp-proc-default-sentinel
+       nvp-inf-read-process
        ;; imenu
        nvp-imenu-setup
        nvp-imenu

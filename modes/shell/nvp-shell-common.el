@@ -2,9 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-proc))                  ; nvp-proc-find-if
+(eval-when-compile(require 'nvp-macro))                 
 (nvp-req 'nvp-shell 'subrs)
 (nvp-decls)
 
@@ -103,7 +101,7 @@
            (lambda (cmd) (cl-find "-i" cmd :test #'string=))))
         (buff-name (if (eq t buff-name) (buffer-name (current-buffer))
                      buff-name)))
-   (nvp-proc-find-if
+   (nvp:proc-find-if
      (lambda (p)
        (when (process-live-p p)
          (or (and proc-name (string= proc-name (process-name p)))

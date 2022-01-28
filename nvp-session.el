@@ -90,7 +90,7 @@
     (rename-file session (expand-file-name name (file-name-directory session)))
     (revert-buffer)))
 
-(nvp-bindings nvp-sessions-mode :now
+(nvp:bindings nvp-sessions-mode :now
   :create t
   ("d"   . nvp-sessions-list-delete)
   ("o"   . nvp-sessions-list-load)

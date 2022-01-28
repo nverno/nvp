@@ -48,10 +48,10 @@
 ;;;###autoload
 (defun nvp-cool-add-bindings ()
   (interactive)
-  (nvp-bindings "c++-mode" 'cc-mode
+  (nvp:bindings "c++-mode" 'cc-mode
     ("<f2> m j h" . nvp-cool-jump-to-src)
     ("<f2> m e c" . nvp-cool-setenv))
-  (nvp-bindings "flex-mode" nil
+  (nvp:bindings "flex-mode" nil
     ("<f2> m j h" . nvp-cool-jump-to-src)
     ("<f2> m e c" . nvp-cool-setenv)))
 

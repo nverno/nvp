@@ -528,17 +528,17 @@ relative paths."
          km))
    t))
 
-(nvp-bindings nvp-winner-map 'winner
+(nvp:bindings nvp-winner-map 'winner
   :create t :repeat t :indicate t
   ("p" . winner-undo)
   ("n" . winner-redo))
 
-(nvp-bindings nvp-isearch-fast-map 'isearch
+(nvp:bindings nvp-isearch-fast-map 'isearch
   :create t :repeat t :wrap t :indicate t
   ("]" . isearch-repeat-forward)
   ("[" . isearch-repeat-backward))
 
-(nvp-bindings isearch-mode-map 'isearch
+(nvp:bindings isearch-mode-map 'isearch
   ("C-s" . nvp/isearch-repeat-forward)
   ("C-r" . nvp/isearch-repeat-backward))
 

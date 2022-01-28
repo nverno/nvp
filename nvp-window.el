@@ -8,7 +8,7 @@
 (nvp:decls :f (winner-undo winner-redo ace-window ace-swap-window))
 
 (defvar nvp-window--interactive-stack ())
-(nvp-bindings nvp-window-fast-map :now
+(nvp:bindings nvp-window-fast-map :now
   :create t :repeat (nvp-window-configuration-pop) :indicate t
   ("," . nvp-window-configuration-pop)
   ("d" . nvp-window-toggle-dedicated)

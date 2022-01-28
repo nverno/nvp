@@ -34,7 +34,7 @@
      (setq-local local-abbrev-table
                  (symbol-value (intern (concat ,type "-abbrev-table"))))
      (setq-local nvp-abbrev-local-table ,type)
-     (nvp-set-local-keymap :use t
+     (nvp:set-local-keymap :use t
        ("C-c C-c" . nvp-c-test-run-unit-test))))
 
 ;; generate function to run unit tests
@@ -75,7 +75,7 @@ is non-nil."
 (defmacro nvp-c++-test--setup-buffer ()
   `(progn
      (setq-local local-abbrev-table boost-test-abbrev-table)
-     (nvp-set-local-keymap :use t
+     (nvp:set-local-keymap :use t
        ("C-c C-c" . nvp-c++-test-run-unit-test))))
 
 (provide 'nvp-c-subrs)

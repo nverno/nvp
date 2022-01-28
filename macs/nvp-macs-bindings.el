@@ -46,25 +46,26 @@
 
 ;;; Helpers
 
-(defun nvp--with-bindings (type)
+(defun nvp:-with-bindings (type)
   (let ((var (intern (concat "nvp--bindings-" (symbol-name type)))))
     (unless (boundp var)
       (error "%s bindings unknown" var))
     (symbol-value var)))
 
-(defun nvp--compose-bindings (bindings)
+(defun nvp:-compose-bindings (bindings)
   (unless (listp bindings) (setq bindings (list bindings)))
   (cl-loop for bs in bindings
-           append (nvp--with-bindings bs)))
+           append (nvp:-with-bindings bs)))
 
-(defsubst nvp--msg-from-bindings (bindings &optional prefix)
+(defsubst nvp:msg-from-bindings (bindings &optional prefix)
   "Create message of 'PREFIX: [key] cmd, ...' from list of cons BINDINGS."
   (or prefix (setq prefix "Transient: "))
   (let ((msg (if (listp bindings)
                  (concat
                   prefix
                   (mapconcat (lambda (b)
-                               (format "[%S] %S" (car b) (cdr b))) bindings ", "))
+                               (format "[%S] %S" (car b) (cdr b)))
+                             bindings ", "))
                prefix)))
     msg))
 
@@ -72,7 +73,7 @@
 ;; -------------------------------------------------------------------
 ;;; Bind keys
 
-(defmacro nvp-kbd (key)
+(defmacro nvp:kbd (key)
   "If key is a string, wrap with `kbd', otherwise leave it."
   ;; FIXME: doesn't do what intended I don't think -- check with undefined
   ;; prefix arg before package loads -- this should work in that case
@@ -87,7 +88,7 @@
 ;;; Conditional binding
 ;; info: extended menu items
 ;; http://endlessparentheses.com/define-context-aware-keys-in-emacs.html
-(defmacro nvp-bind (map key cmd &rest predicate)
+(defmacro nvp:bind (map key cmd &rest predicate)
   "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
   (let ((c (cond
             ((or (null cmd) (and (consp cmd)
@@ -104,14 +105,14 @@
     `(progn
        (declare-function ,cmd "")
        ,(if predicate
-            `(define-key ,m (nvp-kbd ,key)
+            `(define-key ,m (nvp:kbd ,key)
                '(menu-item
                  ,(format "maybe-%s" (or (car (cdr-safe c)) c))
                  nil :filter (lambda (&optional _)
                                (when ,(if (symbolp predicate) predicate
                                         (macroexp-progn predicate))
                                  ,c))))
-          `(define-key ,m (nvp-kbd ,key) ,c)))))
+          `(define-key ,m (nvp:kbd ,key) ,c)))))
 
 
 ;;; Local, Transient, Overriding maps
@@ -120,7 +121,7 @@
 ;; Overrides a minor mode keybinding for the local buffer by creating
 ;; or altering keymaps stored in buffer-local variable
 ;; `minor-mode-overriding-map-alist'.
-(cl-defmacro nvp-use-minor-mode-overriding-map (mode &rest bindings
+(cl-defmacro nvp:use-minor-mode-overriding-map (mode &rest bindings
                                                      &key predicate
                                                      after-load
                                                      &allow-other-keys)
@@ -135,10 +136,10 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
       (let ((map (make-sparse-keymap)))
         (set-keymap-parent map ,modemap)
         ,@(cl-loop for (k . b) in bindings
-             collect `(nvp-bind map ,k ,b))
+             collect `(nvp:bind map ,k ,b))
         (push (cons ,mode map) minor-mode-overriding-map-alist)))))
 
-(cl-defmacro nvp-set-local-keymap (&rest bindings
+(cl-defmacro nvp:set-local-keymap (&rest bindings
                                          &key keymap buffer use &allow-other-keys)
   "Use or create a local version of KEYMAP (default `current-local-map').
 If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
@@ -149,7 +150,7 @@ If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
   `(let ((lmap (make-sparse-keymap)))
      (set-keymap-parent lmap ,(or keymap '(current-local-map)))
      ,@(cl-loop for (k . b) in bindings
-          collect `(nvp-bind lmap ,k ,b))
+          collect `(nvp:bind lmap ,k ,b))
      ,(if buffer `(with-current-buffer ,buffer
                     ,(if use '(use-local-map lmap)
                        `(set (make-local-variable ',keymap) lmap)))
@@ -158,7 +159,7 @@ If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
 
 ;;; Create Keymaps 
 
-(defmacro nvp-create-keymaps (leader &rest maps)
+(defmacro nvp:create-keymaps (leader &rest maps)
   "Create submaps from LEADER map. Optionally give name of keymap for
 menu entry."
   (declare (indent defun))
@@ -169,28 +170,28 @@ menu entry."
           collect `(progn
                      (eval-when-compile (declare-function ,map "")) ;compiler
                      (define-prefix-command ',map nil ,name)
-                     (nvp-bind ,leader ,key ',map)))))
+                     (nvp:bind ,leader ,key ',map)))))
 
 
 ;; -------------------------------------------------------------------
 ;;; General bindings
 
-(defsubst nvp-wrap--make-name (def)
+(defsubst nvp:wrap--make-name (def)
   (intern (concat "nvp/" (symbol-name def))))
 
-(defmacro nvp-wrap-command (def)
+(defmacro nvp:wrap-command (def)
   "Creates wrapper for command DEF. Useful when advising a command for
 repetition that may get called by other unwanted routines."
-  (let ((name (nvp-wrap--make-name def)))
+  (let ((name (nvp:wrap--make-name def)))
     `(defun ,name ()
        (interactive)
        (setq this-command ',def)
        (call-interactively ',def))))
 
 ;; option to check for override?
-;; do (when-let ((curr (lookup-key (current-global-map) `(nvp-kbd ,k)))))
+;; do (when-let ((curr (lookup-key (current-global-map) `(nvp:kbd ,k)))))
 ;; (cl-assert t 'show-args (format "%k is assigned %S globally" k curr))
-(cl-defmacro nvp-bindings (keymap &optional feature &rest bindings
+(cl-defmacro nvp:bindings (keymap &optional feature &rest bindings
                                   &key
                                   local buff-local minor
                                   autoload create prefix
@@ -230,12 +231,12 @@ Buggy:
       (macroexp-progn
        (cl-loop for km in keymap
           if (listp km)
-          collect `(nvp-bindings ,(car km) ',(cdr km) ,@bindings)
+          collect `(nvp:bindings ,(car km) ',(cdr km) ,@bindings)
           else
-          collect `(nvp-bindings ,km ,feature ,@bindings)))
+          collect `(nvp:bindings ,km ,feature ,@bindings)))
     (while (keywordp (car bindings))
       (setq bindings (cdr (cdr bindings))))
-    (and with (setq bindings (append (nvp--compose-bindings with) bindings)))
+    (and with (setq bindings (append (nvp:-compose-bindings with) bindings)))
     (and prefix-key (setq prefix-key (eval prefix-key))) ;can be symbol
     ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
     (let ((modemap (nvp:-normalize-modemap keymap minor))
@@ -248,7 +249,7 @@ Buggy:
          ,(when create
             `(defvar ,modemap (make-sparse-keymap)))
          ,(when autoload
-            `(nvp-bind global-map ,autoload
+            `(nvp:bind global-map ,autoload
                        (nvp:lam ()
                          (interactive)
                          (nvp-autoload-keymap
@@ -274,15 +275,15 @@ Buggy:
                 (setq wrap (copy-sequence repeat)))))
             (dolist (b bindings)
               (and (memq (cdr b) wrap)
-                   (setf (cdr b) (nvp-wrap--make-name (cdr b)))))
+                   (setf (cdr b) (nvp:wrap--make-name (cdr b)))))
             (when (listp repeat)
               (dolist (fn wrap)
                 (--when-let (memq fn repeat)
-                  (setf (car it) (nvp-wrap--make-name fn)))))
+                  (setf (car it) (nvp:wrap--make-name fn)))))
             `(progn
                ,(macroexp-progn
                  (cl-loop for fn in wrap
-                    collect `(nvp-wrap-command ,fn)))))
+                    collect `(nvp:wrap-command ,fn)))))
          
          ,(when repeat
             ;; 
@@ -307,10 +308,10 @@ Buggy:
               ;; with-eval-after-load ,(or feature `',(intern mode))
               ;; the `prefix-key' may be a variable defined after package is loaded
               ,@(cl-loop for (k . b) in bindings
-                   collect `(nvp-bind ,modemap
+                   collect `(nvp:bind ,modemap
                                       ,(if prefix-key
-                                           `(vconcat (nvp-kbd ,prefix-key)
-                                                     (nvp-kbd ,k))
+                                           `(vconcat (nvp:kbd ,prefix-key)
+                                                     (nvp:kbd ,k))
                                          k)
                                       ,b))))))))
 

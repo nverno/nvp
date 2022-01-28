@@ -17,7 +17,7 @@
                       hs-inside-comment-p hs-hide-block-at-point)
  :v (hs-minor-mode hs-set-up-overlay hs-allow-nesting hs-c-start-regexp))
 
-(nvp-bindings nvp-fold-keymap nil
+(nvp:bindings nvp-fold-keymap nil
   :create t
   :repeat (nvp-hs-hide-comments hs-toggle-hiding)
   :indicate t

@@ -64,7 +64,7 @@
   :enable-function 'nvp-elisp-abbrev-expand-fn-p)
 
 (define-abbrev-table 'emacs-lisp-nvp-abbrev-table
-  '(("nb" "nvp-bindings" nil :system t)
+  '(("nb" "nvp:bindings" nil :system t)
     ("nd" "nvp:decls" nil :system t)
     ("np" "nvp:point" nil :system t)
     ("nr" "nvp:req" nil :system t)

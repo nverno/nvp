@@ -12,7 +12,7 @@
 (nvp:decls)
 
 ;; Add iedit bindings
-(nvp-bindings iedit-mode-keymap :now
+(nvp:bindings iedit-mode-keymap :now
   ("C-=" . nvp-iedit-cycle-regions)
   ("M-o" . nil)
   ("M-O" . nvp-iedit-occur))

@@ -20,7 +20,7 @@ Append to `outline-regexp' with prefix."
               (regexp-quote
                (concat
                 (if arg outline-regexp)
-                ";;\\*\\|;;;\\*\\|(\\(?:cl-\\)?def[hcuvm]\\|(setq\\|nvp-bind")))
+                ";;\\*\\|;;;\\*\\|(\\(?:cl-\\)?def[hcuvm]\\|(setq\\|nvp:bind")))
       ";;; End:"))))
 
 ;;;###autoload(autoload 'nvp-outline-hydra/body "nvp-outline")

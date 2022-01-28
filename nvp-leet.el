@@ -113,7 +113,7 @@
 ;; -------------------------------------------------------------------
 ;;; Minor mode
 
-(nvp-bindings nvp-leet-mode nil
+(nvp:bindings nvp-leet-mode nil
   :create t
   :prefix-key "<f2>L"
   ("e" . nvp-leet-add-examples)

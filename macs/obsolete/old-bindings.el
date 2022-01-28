@@ -14,7 +14,7 @@ If REPEAT is non-nil, add a binding to repeat command from the last input char
 or use REPEAT-KEY if specified."
   (declare (indent defun) (debug defun))
   (when (or bindings repeat)            ;w/o one of these, do nothing
-    (let ((msg (nvp--msg-from-bindings bindings)))
+    (let ((msg (nvp:msg-from-bindings bindings)))
       `(progn
          (nvp:declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
          ;; only set first time
@@ -27,7 +27,7 @@ or use REPEAT-KEY if specified."
              (message ,msg repeat-key)   ;echo bindings on first pass
              ,pre
              ,@(cl-loop for (k . b) in bindings
-                  collect `(nvp-bind tmap ,k ,b))
+                  collect `(nvp:bind tmap ,k ,b))
              ,(when repeat '(define-key tmap (kbd repeat-key) this-command))
              (set-transient-map
               tmap
@@ -48,7 +48,7 @@ or use REPEAT-KEY if specified."
   (let ((tmap (cl-gensym)))
     `(let ((,tmap (make-sparse-keymap)))
        ,@(cl-loop for (k . b) in bindings
-            collect `(nvp-bind ,tmap ,k ,b))
+            collect `(nvp:bind ,tmap ,k ,b))
        (set-transient-map ,tmap ,keep ,exit)
        ,@body)))
 

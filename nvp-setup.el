@@ -42,7 +42,7 @@
 ;;;###autoload
 (defun nvp-setup-smie-bindings ()
   "Locally override minor mode bindings when smie functions are available."
-  (nvp-use-minor-mode-overriding-map 'smartparens-mode
+  (nvp:use-minor-mode-overriding-map 'smartparens-mode
     :after-load 'smie
     :predicate (not (null smie-closer-alist))
     ("C-M-f"    . smie-forward-sexp-command)

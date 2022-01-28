@@ -18,7 +18,7 @@
 ;;                         (match-string-no-properties 2))
 ;;                 binds))
 ;;         (goto-char start)
-;;         (insert (concat "(nvp-bindings \"" map "\" nil \n  "
+;;         (insert (concat "(nvp:bindings \"" map "\" nil \n  "
 ;;                         (mapconcat 'identity (nreverse binds) "\n  ")
 ;;                         ")\n"))
 ;;         (goto-char start)

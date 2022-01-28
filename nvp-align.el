@@ -13,7 +13,7 @@
 (require 'align)
 (nvp:decls :f (nvp-read-mode cl-prettyprint))
 
-(nvp-bindings nvp-align-keymap nil
+(nvp:bindings nvp-align-keymap nil
   :create t
   ("A"   . align)
   ("a"   . nvp-align)

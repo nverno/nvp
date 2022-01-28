@@ -12,7 +12,7 @@
 (require 'nvp)
 (nvp:decls :f (paredit-delete-indentation))
 
-(nvp-bindings nvp-list-keymap :now
+(nvp:bindings nvp-list-keymap :now
   :create t
   ("c"  . nvp-list-insert-commas)
   ("("  . nvp-list-wrap-parens)

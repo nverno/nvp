@@ -59,7 +59,7 @@ them."
               (perl-mode)
               (save-excursion (nvp-perltidy-buffer))
               (pop-to-buffer (current-buffer))
-              (nvp-set-local-keymap :use t
+              (nvp:set-local-keymap :use t
                 ("C-x C-s" . apply-changes)
                 ("C-c C-k" . abort-changes))
               (nvp:msg "C-x C-s to apply changes, C-c C-k to abort"))))))))

@@ -127,7 +127,7 @@ Return cons of \\='(name . raw-link)."
            (error (org-forward-element))))
         (t (org-forward-element))))
 
-(nvp-bindings nvp-org-move-map :now
+(nvp:bindings nvp-org-move-map :now
   :create t :indicate t :repeat t
   :wrap (org-backward-element org-cycle org-down-element org-up-element)
   ("TAB" . org-cycle)

@@ -17,7 +17,7 @@
 ;; -------------------------------------------------------------------
 ;;; Bindings
 
-(nvp-bindings "clojure-mode" nil
+(nvp:bindings "clojure-mode" nil
   ("<f2> 4 o" . 4clojure-open-question)
   ("<f2> 4 n" . 4clojure-next-question)
   ("<f2> 4 p" . 4clojure-previous-question)

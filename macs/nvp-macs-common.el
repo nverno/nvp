@@ -45,7 +45,7 @@ If MINOR is non-nil, create minor mode map symbol."
    ((and (stringp mode) (eq (intern mode) 'global-map))
     (list 'current-global-map))
    ((keymapp mode) mode)
-   (t (setq mode (nvp-as-string mode))
+   (t (setq mode (nvp:as-string mode))
       (let ((minor (or minor (string-match-p "-minor" mode))))
         (if (not (or (string-match-p "-map\\'" mode)
                      (string-match-p "-keymap\\'" mode)))
@@ -58,7 +58,7 @@ If MINOR is non-nil, create minor mode map symbol."
   "Convert MODE to canonical hook symbol.
 If MINOR is non-nil, convert to minor mode hook symbol."
   (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
-  (setq mode (nvp-as-string mode))
+  (setq mode (nvp:as-string mode))
   (let ((minor (or minor (string-match-p "-minor" mode))))
     (intern
      (concat
@@ -108,7 +108,7 @@ be used. Modification of `use-package-normalize-plist'."
   (if (null input)
       plist
     (let* ((kw (car input))
-           (xs (nvp-list-split-at #'keywordp (cdr input)))
+           (xs (nvp:list-split-at #'keywordp (cdr input)))
            (args (car xs))
            (tail (cdr xs))
            (normalizer
@@ -131,13 +131,13 @@ be used. Modification of `use-package-normalize-plist'."
 
 
 (defun nvp:-normalize-keywords (name args &optional defaults merge-function)
-  (let ((name-sym (nvp-as-symbol name)))
+  (let ((name-sym (nvp:as-symbol name)))
     (setq args (delq 'elisp--witness--lisp args))
     (let ((body (list nil)))
       (while (and args (not (keywordp (car args))))
         (push (car args) body)
         (setq args (cdr args)))
-      (nvp-plist-merge 
+      (nvp:plist-merge 
        (nvp:-normalize-plist
         name-sym args `(:body ,(nreverse body)) defaults merge-function)
        defaults))))
@@ -367,13 +367,13 @@ be used. Modification of `use-package-normalize-plist'."
   (let ((pkg ""))
     (when (stringp (car funcs))
       (setq pkg (car funcs)
-            funcs (nvp-plist-delete (cdr funcs) :pkg)))
+            funcs (nvp:plist-delete (cdr funcs) :pkg)))
     (-let (((&plist :body funcs :pkg pkg :pre pre)
             (nvp:-normalize-keywords "decl" funcs `(:pkg ,pkg :pre nil))))
-      (setq funcs (nvp-list-unquote funcs))
+      (setq funcs (nvp:list-unquote funcs))
       (when pre
         (setq funcs (mapcar (lambda (fn)
-                              (let ((fn (nvp-as-string fn)))
+                              (let ((fn (nvp:as-string fn)))
                                 (if (string-prefix-p pre fn) fn
                                   (intern (concat pre "-" fn)))))
                             funcs)))
@@ -385,7 +385,7 @@ be used. Modification of `use-package-normalize-plist'."
 (put 'nvp-auto 'lisp-indent-function 'defun)
 (defmacro nvp-autoload (package &rest funcs)
   (declare (indent defun))
-  (setq funcs (nvp-list-unquote funcs))
+  (setq funcs (nvp:list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(autoload ',func ,package))))

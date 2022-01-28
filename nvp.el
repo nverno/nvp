@@ -220,7 +220,7 @@
 (nvp-define-cache nvp-mode-header-regex ()
   "Get or create header regex based on comment syntax."
   :local t
-  (nvp-heading-create-re))
+  (nvp:heading-create-re))
 
 (defun nvp-move-forward-heading (&optional back error)
   (interactive)
@@ -249,7 +249,7 @@
 ;; add additional newline when between syntactic open/closer
 (defun nvp-newline-dwim--parens (&optional arg)
   (save-excursion
-    (when (nvp-between-empty-parens-p)
+    (when (nvp:between-empty-parens-p)
       (newline-and-indent)))
   (newline arg 'interactive))
 
@@ -386,7 +386,7 @@ relative paths."
   "Throw \\='nvp-fallback with input."
   (interactive)
   (let ((input (minibuffer-contents-no-properties)))
-    ;; (nvp-unread input)
+    ;; (nvp:unread input)
     (throw 'nvp-fallback input)))
 
 (defun nvp-fallback-command (&rest args)
@@ -580,7 +580,7 @@ in `global-map' or BINDING-MAP if non-nil."
 ;; weird this isn't builtin somewhere -- `kill-this-buffer' has issues
 (defun nvp-kill-this-buffer ()
   (interactive)
-  (nvp-ktb))
+  (nvp:ktb))
 
 (provide 'nvp)
 ;;; nvp.el ends here

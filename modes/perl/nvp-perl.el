@@ -141,7 +141,7 @@
 (defun nvp-perl-insert-debug-statement (var &optional comment)
   (interactive
    (let ((var (thing-at-point 'perl-variable t)))
-     (list (read-string (nvp-prompt-default "Expression to dump: " var) nil nil var)
+     (list (read-string (nvp:prompt-default "Expression to dump: " var) nil nil var)
            current-prefix-arg)))
   (when comment
     (progn

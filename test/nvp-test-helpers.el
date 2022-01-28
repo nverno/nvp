@@ -7,7 +7,7 @@
 
 (defun nvp-test-buffer-setup (&optional mode)
   (let ((setup-fn (intern-soft
-                   (concat (nvp-as-string (or mode major-mode)) "-buffer-setup"))))
+                   (concat (nvp:as-string (or mode major-mode)) "-buffer-setup"))))
     (if mode (funcall mode) (emacs-lisp-mode))
     (setq-local indent-tabs-mode nil)
     (setq-local comment-column 40)

@@ -103,7 +103,7 @@
   "Find local jump uris. Use `nvp-local-uris' or if a local notes file is found,
 try to find links there."
   (or (bound-and-true-p nvp-local-uris)
-      (--when-let (nvp-find-notes-file)
+      (--when-let (nvp:find-notes-file)
         (unless nvp-webjump-cache
           (setq nvp-webjump-cache (nvp-cache :expires-fn 'modtime)))
         (or (nvp-cache-get nvp-local-notes-file nvp-webjump-cache)

@@ -85,7 +85,7 @@
 ;; completing read for installed modules
 (defun nvp-perl-read-module (&optional prompt default path)
   (nvp-defq default (thing-at-point 'perl-module t))
-  (setq prompt (nvp-prompt-default (or prompt "Module: ") default))
+  (setq prompt (nvp:prompt-default (or prompt "Module: ") default))
   (let ((module (nvp-completing-read prompt (nvp-perl-modules))))
     (if path (nvp-perl-module-path module)
       path)))

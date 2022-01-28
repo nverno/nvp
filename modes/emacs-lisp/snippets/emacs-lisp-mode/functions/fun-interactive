@@ -2,6 +2,6 @@
 # name: defun interactive
 # key: funi
 # --
-(defun `(nvp-bfn-no-ext)`-$1 ($2)
+(defun `(nvp:bfn-no-ext)`-$1 ($2)
   (interactive$3)
   $0)

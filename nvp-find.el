@@ -98,7 +98,7 @@
 
 (eval-when-compile
   ;; get thing to search for: region, symbol-at-point, or prompt
-  (defsubst nvp-find--search-term (search-prompt &optional force-prompt)
+  (defsubst nvp:find-search-term (search-prompt &optional force-prompt)
     (let ((search-term
            (--if-let (nvp-tap 'dwim)
                (if force-prompt
@@ -110,7 +110,7 @@
       search-term))
 
   ;; determine the search root directory
-  (defsubst nvp-find--seach-root (&optional root prompt)
+  (defsubst nvp:find-seach-root (&optional root prompt)
     (or root
         (and prompt (read-directory-name "Search root: "))
         (--if-let (nvp-project-root) it
@@ -118,10 +118,10 @@
            (format "Search root ('%s'):" (file-name-directory default-directory))))))
 
   ;; return (search-root search-term regexp-p)
-  (defsubst nvp-find--defaults (arg search-prompt &optional root)
+  (defsubst nvp:find-defaults (arg search-prompt &optional root)
     (let ((prompt (equal '(16) arg)))
-      (list (nvp-find--seach-root root prompt)
-            (nvp-find--search-term search-prompt prompt)
+      (list (nvp:find-seach-root root prompt)
+            (nvp:find-search-term search-prompt prompt)
             (if prompt (y-or-n-p "Use regex?") (equal '(4) arg))))))
 
 
@@ -142,11 +142,10 @@
 ;; See : #<marker at 24916 in ag.el>. ag.el doesn't support wgrep out-of-the-box
 ;;
 ;; Ag runs `shell-command' which invokes `shell-mode-hook' on the output
-;; results. Since I have so much config in my `nvp-shell-mode-hook', `shell-command'
-;; is advised to run without my hook in nvp.el.
+;; results. (`shell-command' advised to ignore `nvp-shell-mode-hook' in nvp.el)
 ;;
 ;; Fixes for compilation:
-;; (1) Can either disable xterm-color, which sucks
+;; (1) Can either disable xterm-color
 ;; (define-advice ag/search (:around (orig-fn &rest args) "no-xterm-color")
 ;;   (let (compilation-start-hook)
 ;;     (apply orig-fn args)))
@@ -247,7 +246,7 @@
 
 ;;;###autoload
 (defun nvp-rgrep-dwim (root search &optional regex)
-  (interactive (nvp-find--defaults current-prefix-arg "Rgrep search"))
+  (interactive (nvp:find-defaults current-prefix-arg "Rgrep search"))
   (require 'nvp-grep-config)
   (let ((default-directory root))
     (grep-compute-defaults)
@@ -256,7 +255,7 @@
 ;;;###autoload
 (defun nvp-ag-dwim (root search &optional regex)
   "Run ag search."
-  (interactive (nvp-find--defaults current-prefix-arg "Ag search"))
+  (interactive (nvp:find-defaults current-prefix-arg "Ag search"))
   (require 'nvp-ag-config)
   (unless (integerp current-prefix-arg) ; used as context=%d in ag/search
     (setq current-prefix-arg nil))
@@ -269,7 +268,7 @@ Ignore elpa directory by default, but with any prefix, prompt to include."
   (interactive
    (let ((arg (prefix-numeric-value current-prefix-arg)))
      (list nvp/emacs
-           (nvp-find--search-term "Ag elisp" (eq 16 arg))
+           (nvp:find-search-term "Ag elisp" (eq 16 arg))
            (eq 16 arg))))
   (require 'nvp-ag-config)
   (let* ((elpa (nvp-path 'ds package-user-dir))

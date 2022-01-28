@@ -92,13 +92,13 @@ Return cons of \\='(name . raw-link)."
 (defun nvp-org-nvp-open (query)
   "Visit nvp FILE-SECTION and goto SECTION if non-nil."
   (-let (((file sec-or-def type) (nvp-org--nvp-parse query)))
-    (--when-let (nvp-locate-library file)
+    (--when-let (nvp:locate-library file)
       (with-current-buffer (find-file-noselect it)
         (let ((cur (point)) pt)
           (when sec-or-def
             (goto-char (point-min))
             (let* ((prefix-re (if (or (not type) (eq type 'section))
-                                  (concat (nvp-heading-create-re) "*")
+                                  (concat (nvp:heading-create-re) "*")
                                 "^\\s-*(def.*"))
                    (case-fold-search t))
               (when (re-search-forward (concat prefix-re sec-or-def) nil t)
@@ -111,7 +111,7 @@ Return cons of \\='(name . raw-link)."
 
 (defun nvp-org-nvp-export (file-section desc backend _)
   (-let* (((file _section) (split-string file-section "?"))
-          (lib (or (nvp-locate-library file) file)))
+          (lib (or (nvp:locate-library file) file)))
     (pcase backend
       (`texinfo (format "@uref{%s,%s}" lib desc))
       (_ lib))))

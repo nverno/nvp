@@ -12,11 +12,11 @@
 ;;; Basic utils
 
 (defsubst nvp-c-out-file (&optional file)
-  (concat (nvp-no-ext file) (nvp-with-gnu/w32 ".out" ".exe")))
+  (concat (nvp:no-ext file) (nvp-with-gnu/w32 ".out" ".exe")))
 
 ;; associated header file name
 (defsubst nvp-c--header-file-name (&optional buffer ext)
-  (concat (nvp-no-ext buffer) (or ext ".h")))
+  (concat (nvp:no-ext buffer) (or ext ".h")))
 
 ;; assume first path will be root, eg ~/.local/include:etc
 (defsubst nvp-c-local-include-path (path)
@@ -41,7 +41,7 @@
 ;; Runs tests in current buffer or FILE if non-nil
 (defmacro nvp-c-test--runner-fn (name &optional c++ flags libs)
   (declare (indent defun))
-  (let ((fn (nvp-as-symbol name)))
+  (let ((fn (nvp:as-symbol name)))
     `(progn
        ;; (,'declare-function ,fn "")
        (defun ,fn (save &optional file post-compile)

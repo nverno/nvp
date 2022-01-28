@@ -28,21 +28,27 @@
             (t (complete-with-action action files string pred))))))
 
 ;;;###autoload
-(defun nvp-read-relative-recursively (root regexp &optional prompt default)
+(defun nvp-read-relative-recursively (root &optional regexp prompt default)
   "Return full filepath prompting with file matching REGEXP from ROOT with
 `directory-files-recursively'."
   (nvp:read-file-with-fallback root
-    (nvp-completing-read
-      (nvp-prompt-default (or prompt "File: ") default)
-      (nvp-read--recursive-file-completion-table root regexp)
-      nil nil nil 'nvp-read-config-history default)))
+    (read-file-name
+     (nvp:prompt-default (or prompt "File: ") default)
+     root default nil nil
+     (and regexp (lambda (s) (string-match-p regexp s))))
+    ;; (let ((minibuffer-completing-file-name t))
+    ;;   (nvp-completing-read
+    ;;     (nvp:prompt-default (or prompt "File: ") default)
+    ;;     (nvp-read--recursive-file-completion-table root regexp)
+    ;;     nil nil nil 'nvp-read-config-history default))
+    ))
 
 (defun nvp-read--info-files (&optional prompt default)
   (or default (and (string-prefix-p nvp/info default-directory)
                    (setq default (ignore-errors (nvp-path 'bfs)))))
   (nvp:read-file-with-fallback (expand-file-name "org" nvp/info)
     (nvp-completing-read
-      (nvp-prompt-default (or prompt "Info file: ") default)
+      (nvp:prompt-default (or prompt "Info file: ") default)
       (directory-files (expand-file-name "org" nvp/info) nil "\.org")
       nil nil nil 'nvp-read-config-history default)))
 
@@ -103,7 +109,7 @@ Filter by PREDICATE if non-nil."
   (require 'help-fns)
   (setq default (nvp:read-default default (nvp-tap 'tap)))
   (let ((enable-recursive-minibuffers t) val)
-    (setq prompt (nvp-prompt-default prompt default))
+    (setq prompt (nvp:prompt-default prompt default))
     (setq val (completing-read prompt #'help--symbol-completion-table
                                predicate t nil hist
                                (when default
@@ -151,7 +157,7 @@ Filter by PREDICATE if non-nil."
   (require 'nvp-setup)
   (cl-assert (member variable '("dir" "snippets" "abbr-file" "abbr-table")))
   (nvp-defq mode major-mode)
-  (setq mode (nvp-as-symbol mode))
+  (setq mode (nvp:as-symbol mode))
   (-if-let (data (gethash mode nvp-mode-cache))
       (funcall (intern (concat "nvp-mode-vars-" variable)) data)
     (user-error "%s not in nvp-mode-cache" mode)))
@@ -161,7 +167,7 @@ Filter by PREDICATE if non-nil."
   (nvp-defq default (symbol-name major-mode))
   (nvp:read-file-with-fallback nil
     (nvp-completing-read
-      (nvp-prompt-default (or prompt "Mode config: ") default)
+      (nvp:prompt-default (or prompt "Mode config: ") default)
       (mapcar
        #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
            (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
@@ -177,7 +183,7 @@ Filter by PREDICATE if non-nil."
     (nvp-defq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files)))
     (nvp:read-file-with-fallback nvp/test
       (nvp-completing-read
-        (nvp-prompt-default (or prompt "Test: ") default)
+        (nvp:prompt-default (or prompt "Test: ") default)
         files nil nil nil 'nvp-read-config-history default))))
 
 (provide 'nvp-read)

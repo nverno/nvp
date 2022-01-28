@@ -12,15 +12,15 @@
 (defmacro nvp-req (sym &optional dir noerror)
   "Handling for special requires for compile-time dependencies."
   (declare (indent 0) (debug t))
-  (let* ((sym (car (nvp-list-unquote sym)))     ; accept quoted sym
-         (dir (car (nvp-list-unquote dir)))
-         (sym-name (nvp-as-string sym))
+  (let* ((sym (car (nvp:list-unquote sym)))     ; accept quoted sym
+         (dir (car (nvp:list-unquote dir)))
+         (sym-name (nvp:as-string sym))
          (cdirs (--map (file-relative-name it)  ; possible compile-time directories
-                       (nvp-compile-time-directories nil 'full)))
+                       (nvp:compile-time-directories nil 'full)))
          (dir (pcase dir
                 ((or 'subrs 'macs 'macros)
                  (setq sym-name (concat sym-name "-" (symbol-name dir))
-                       sym (nvp-as-symbol sym-name))
+                       sym (nvp:as-symbol sym-name))
                  ;; check all possible directories, returning one where library
                  ;; exists (if it does indeed)
                  (->>
@@ -37,8 +37,8 @@
 (defmacro nvp-maybe-enable (mode &optional feature)
   "Enable MODE if it is bound and not already and FEATURE is available."
   (declare (indent defun))
-  (let ((mode (car (nvp-list-unquote mode)))
-        (feature (if feature (car (nvp-list-unquote feature)))))
+  (let ((mode (car (nvp:list-unquote mode)))
+        (feature (if feature (car (nvp:list-unquote feature)))))
     `(progn
        (declare-function ,mode "")
        (defvar ,mode)
@@ -62,7 +62,7 @@
   (declare (indent 0) (debug t))
   (while (keywordp (car var-vals))
     (setq var-vals (cdr (cdr var-vals))))
-  (setq var-vals (nvp-list-split-into-sublists var-vals 3))
+  (setq var-vals (nvp:list-split-into-sublists var-vals 3))
   (macroexp-progn
    (cl-loop for (var value doc) in var-vals
       collect
@@ -160,7 +160,7 @@ If program is not found at compile time, fallback to runtime search."
 (defmacro nvp-mode-config-path (mode &optional ensure-string)
   "Create path for MODE config file."
   `(expand-file-name
-    (concat "nvp-" ,(if ensure-string (nvp-as-string mode) `,mode) "-config.el")
+    (concat "nvp-" ,(if ensure-string (nvp:as-string mode) `,mode) "-config.el")
     nvp/config))
 
 

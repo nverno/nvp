@@ -142,7 +142,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 (defun nvp-imenu-toggle ()
   "Toggle between hierarchical and flattened imenu list."
   (interactive)
-  (nvp-unread (minibuffer-contents-no-properties))
+  (nvp:unread (minibuffer-contents-no-properties))
   (setq nvp-imenu--exit 'toggle)
   (exit-minibuffer))
 

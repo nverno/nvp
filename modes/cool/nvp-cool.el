@@ -17,7 +17,7 @@
     (macroexp-let2 nil dir (if dir `(expand-file-name ,dir nvp-cool-root-path)
                              nvp-cool-root-path)
       `(nvp-completing-read
-        (nvp-prompt-default ,(or prompt "Directory: ") ,dir)
+        (nvp:prompt-default ,(or prompt "Directory: ") ,dir)
         (directory-files ,dir 'full "[^.].*[^J]$")
         nil nil nil 'nvp-cool-history ,dir))))
 

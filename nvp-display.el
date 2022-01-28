@@ -46,9 +46,9 @@ MODE and BINDINGS are passed to `yas-expand-snippet'."
   "Display LOCATION of TYPE using ACTION.
 Currently supported TYPEs are :buffer, :find-func, :file, and :ido.
 Action decides how to display location depending on prefix: 
-  - none        => other window (default)
-  - C-u         => same window
-  - C-uC-u...   => fallback
+  - none	=> other window (default)
+  - \\[universal-argument]		=> same window
+  - \\[universal-argument]\\[universal-argument]...	=> fallback
 In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
   (if (not action) (setq action 1)
     (if (consp action) (setq action (prefix-numeric-value action))))

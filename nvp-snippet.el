@@ -82,7 +82,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
                (and (region-active-p)
                     (buffer-substring-no-properties
                      (region-beginning) (region-end)))))))
-  (setq mode (nvp-as-string mode))
+  (setq mode (nvp:as-string mode))
   (nvp-defq default-new-snippet yas-new-snippet-default)
   (unless (file-exists-p snippet-dir)
     (make-directory snippet-dir))

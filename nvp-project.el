@@ -27,7 +27,7 @@ Otherwise, look for version control directories, returing the longest path."
   (or path (setq path (buffer-file-name)))
   (if nvp-project-root-function
       (funcall nvp-project-root-function)
-    (or (nvp-longest-item
+    (or (nvp:longest-item
          (vc-git-root path)
          (vc-svn-root path)
          (vc-hg-root path)))))
@@ -59,7 +59,7 @@ Otherwise, look for version control directories, returing the longest path."
 ;;; Test defining projectile project type
 
 ;; (defun nvp-projectile-related/elisp (path)
-;;   (let ((name (nvp-bfn-no-ext path)))))
+;;   (let ((name (nvp:bfn-no-ext path)))))
 ;; (projectile-register-project-type 'elisp '("Makefile" "Cask")
 ;;                                   :compile "make"
 ;;                                   :test-suffix "-test"
@@ -84,7 +84,7 @@ Otherwise, look for version control directories, returing the longest path."
                                &rest body)
   (declare (indent defun) (debug t))
   `(let ((nvp-project--test-re ,test-re)
-         (nvp-project--root ',(nvp-listify `,root))
+         (nvp-project--root ',(nvp:listify `,root))
          (nvp-project--test-dir ',test-dir))
      ,@body))
 
@@ -100,7 +100,7 @@ If LOCAL is non-nil find closest root."
 (defun nvp-project-locate-root (&optional local)
   (if local (projectile-root-top-down
              (or buffer-file-name default-directory)
-             (nvp-listify nvp-project--root))
+             (nvp:listify nvp-project--root))
     (projectile-project-root)))
 
 (defun nvp-project-name (&optional arg)

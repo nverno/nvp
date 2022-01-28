@@ -289,7 +289,7 @@ With prefix, display in same frame using `display-buffer' ACTION."
                      (called-interactively-p 'interactive))
     (nvp-display-buffer-with-action action
       (with-help-window (help-buffer)
-        (princ (nvp-centered-header "Syntax at <marker>"))
+        (princ (nvp:centered-header "Syntax at <marker>"))
         (princ (apply #'format help-str ppss))
         (with-current-buffer standard-output
           (let ((inhibit-read-only t)

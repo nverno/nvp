@@ -101,7 +101,7 @@
 (defun nvp-yaml-type (&optional prompt)
   (if prompt (nvp-yaml-read-known-type)
     (let ((dir (nvp-path 'ds (buffer-file-name)))
-          (fname (nvp-bfn)))
+          (fname (nvp:bfn)))
       (cond
        ((string-prefix-p ".appveyor" fname) 'appveyor)
        ((string-prefix-p "codecov." fname) 'codecov)
@@ -139,7 +139,7 @@
 
 (defun nvp-yaml-validate-call (type &rest args)
   "Validate buffer using local validator (async)."
-  (let* ((prog (nvp-as-string type))
+  (let* ((prog (nvp:as-string type))
          (proc
           (nvp-with-process prog
             :proc-name prog

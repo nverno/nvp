@@ -37,7 +37,7 @@
 ;;; Snippet helpers
 
 (defun nvp-header-file-p ()
-  (string-match-p "h[xp]*" (nvp-ext)))
+  (string-match-p "h[xp]*" (nvp:ext)))
 
 ;; split string STR on commas, but only when not between <..>
 ;; eg., "std::vector<std::pair<int,int>> i, int j" =>

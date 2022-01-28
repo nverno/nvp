@@ -52,7 +52,7 @@ If PATH is non-nil, search for root starting at PATH."
   "If `current-prefix-arg' equals NUM do THEN otherwise ELSE."
   (declare (indent defun) (debug t))
   (nvp:skip-keywords else)
-  (and test (setq test (car (nvp-list-unquote test))))
+  (and test (setq test (car (nvp:list-unquote test))))
   (--when-let (and (eq (car-safe num) 'quote)
                    (nvp--prefix-parse-testsym (cadr num)))
     (cl-assert (not test) nil
@@ -82,7 +82,7 @@ If PATH is non-nil, search for root starting at PATH."
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished."
   (declare (indent 2) (debug (sexp &rest form)))
-  (macroexp-let2 nil hdr (if title `(nvp-centered-header ,title))
+  (macroexp-let2 nil hdr (if title `(nvp:centered-header ,title))
     `(let (other-window-scroll-buffer)
        (nvp-window-configuration-save)
        (with-temp-buffer-window
@@ -1089,7 +1089,7 @@ or PREDICATE is non-nil and returns nil."
   (declare (indent defun) (debug (sexp sexp sexp &form body)) (doc-string 3))
   (let ((docstring (when (stringp (car body)) (pop body))))
     (nvp:skip-keywords body)
-    (let* ((fn (nvp-as-symbol func))
+    (let* ((fn (nvp:as-symbol func))
            (cache (or cache fn)))
       `(progn
          ,(if local `(defvar-local ,cache nil)
@@ -1292,7 +1292,7 @@ and set `this-command' to nil so opposite happens next time."
   "Apply ADVICE to FUNCS at WHERE with PROPS. 
 FUNCS can be a list, quoted or not."
   (declare (indent defun))
-  (setq funcs (nvp-list-unquote funcs))
+  (setq funcs (nvp:list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(advice-add ',func ,where ,advice ,props))))
@@ -1301,7 +1301,7 @@ FUNCS can be a list, quoted or not."
   "Remove ADVICE from FUNCS.
 See `nvp:advise-commands'."
   (declare (indent defun) (debug t))
-  (setq funcs (nvp-list-unquote funcs))
+  (setq funcs (nvp:list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(advice-remove ',func ',advice))))

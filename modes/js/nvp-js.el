@@ -178,8 +178,8 @@
 
 ;;; yas
 (defun nvp-js-test-p ()
-  (or (string-match-p "\\(?:test\\|spec\\)" (nvp-dfn))
-      (string-match-p ".*test\\.js\\'" (nvp-bfn))))
+  (or (string-match-p "\\(?:test\\|spec\\)" (nvp:dfn))
+      (string-match-p ".*test\\.js\\'" (nvp:bfn))))
 
 ;;; Skewer
 (defun nvp-skewer-eval-last-expression (&optional print)

@@ -17,7 +17,7 @@
   (let* ((head (cdr (assoc-string "head" dat)))
          (rows (append (cdr (assoc-string "rows" dat)) ()))
          (cols (length head)))
-    (append head (cons 'hline nil) (nvp-list-split-into-sublists rows cols) nil)))
+    (append head (cons 'hline nil) (nvp:list-split-into-sublists rows cols) nil)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

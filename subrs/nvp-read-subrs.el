@@ -14,7 +14,7 @@
 
 ;; just MODE's name minus the "-mode"
 (defsubst nvp:read-mode-name (&optional mode)
-  (setq mode (nvp-as-string (or mode major-mode)))
+  (setq mode (nvp:as-string (or mode major-mode)))
   (string-remove-suffix "-mode" mode))
 
 (defmacro nvp:read-with-ido-fallback (&rest body)

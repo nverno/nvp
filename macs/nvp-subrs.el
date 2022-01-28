@@ -11,28 +11,28 @@
 (require 'dash)
 
 ;;; Conversion
-(defsubst nvp-as-symbol (string-or-symbol)
+(defsubst nvp:as-symbol (string-or-symbol)
   (declare (pure t) (side-effect-free t))
   (if (symbolp string-or-symbol) string-or-symbol
     (intern string-or-symbol)))
 
-(defsubst nvp-as-string (string-or-symbol)
+(defsubst nvp:as-string (string-or-symbol)
   (declare (pure t) (side-effect-free t))
   (if (stringp string-or-symbol) string-or-symbol
     (symbol-name string-or-symbol)))
 
-(defsubst nvp-pair-p (x car-pred cdr-pred)
+(defsubst nvp:pair-p (x car-pred cdr-pred)
   "Return non-nil if X is a cons satisfying predicates applied to elems."
   (declare (pure t) (side-effect-free t))
   (and (consp x)
        (funcall car-pred (car x))
        (funcall cdr-pred (cdr x))))
 
-(defsubst nvp-dotted-pair-p (x)
+(defsubst nvp:dotted-pair-p (x)
   (declare (pure t) (side-effect-free t))
   (and (consp x) (not (consp (cdr x)))))
 
-(defsubst nvp-as-list (x)
+(defsubst nvp:as-list (x)
   (declare (pure t) (side-effect-free t))
   (if (and (listp x) (not (functionp x))) x
     (list x)))
@@ -53,7 +53,7 @@
 ;;; Strings
 
 ;; Make a string of S repeated NUM times.
-(defsubst nvp-s-repeat (num s)
+(defsubst nvp:s-repeat (num s)
   (let (ss)
     (dotimes (_ num)
       (setq ss (cons s ss)))
@@ -61,7 +61,7 @@
 
 ;; If S is shorter than LEN, pad it with CHAR (default spaces) so it's centered.
 ;; Like `s-center' but allow for CHAR.
-(defsubst nvp-s-center (len s &optional char)
+(defsubst nvp:s-center (len s &optional char)
   (or char (setq char 32))
   (let ((extra (max 0 (- len (length s)))))
     (concat (make-string (ceiling extra 2) char)
@@ -69,42 +69,42 @@
             (make-string (floor extra 2) char))))
 
 ;; Format a header with TITLE centered
-(defsubst nvp-centered-header (title &optional width char)
+(defsubst nvp:centered-header (title &optional width char)
   (or width (setq width 85))
   (or char (setq char "~"))
   (let ((len (length title)))
     (format "\n%s\n%s\n\n"
-            (nvp-s-center (- width len) title)
-            (nvp-s-repeat width char))))
+            (nvp:s-center (- width len) title)
+            (nvp:s-repeat width char))))
 
 ;; -------------------------------------------------------------------
 ;;; Lists
 
 ;; Split LST into N length sublists.
-(defsubst nvp-list-split-into-sublists (lst n)
+(defsubst nvp:list-split-into-sublists (lst n)
   (declare (pure t) (side-effect-free t))
   (cl-loop for i from 0 to (1- (length lst)) by n
      collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
 
 ;; Return longest item by `length'.
-(defsubst nvp-longest-item (&rest items)
+(defsubst nvp:longest-item (&rest items)
   (declare (pure t) (side-effect-free t))
   (cl-reduce (lambda (a b) (if (> (length a) (length b)) a b)) items))
 
-(defsubst nvp-listify (&rest args)
+(defsubst nvp:listify (&rest args)
   "Ensure all items in ARGS are lists."
   (declare (pure t) (side-effect-free t))
   (mapcar (lambda (arg)
             (and (stringp arg) (setq arg (intern-soft arg)))
-            (setq arg (nvp-as-list arg)))
+            (setq arg (nvp:as-list arg)))
           args))
 
-(defsubst nvp-list-concat (&rest elems)
+(defsubst nvp:list-concat (&rest elems)
   "Remove empty lists from ELEMS and append."
   (declare (pure t) (side-effect-free t))
   (apply #'append (delete nil (delete (list nil) elems))))
 
-(defsubst nvp-list-unquote (args)
+(defsubst nvp:list-unquote (args)
   "Unquote, unfunction, all elements in args - return as list.
 eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
   (declare (pure t) (side-effect-free t))
@@ -117,7 +117,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
                    collect arg)
               (cons args nil))))
 
-(defsubst nvp-list-split-at (pred xs)
+(defsubst nvp:list-split-at (pred xs)
   "Return list with first element being elements of LST before PRED was non-nil."
   (let ((ys (list nil)) (zs (list nil)) flip)
     (cl-dolist (x xs)
@@ -132,18 +132,18 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;; -------------------------------------------------------------------
 ;;; Plists
 
-(defsubst nvp-plist-delete (plist prop)
+(defsubst nvp:plist-delete (plist prop)
   (declare (pure t) (side-effect-free t))
   (cl-loop for (k v) on plist by #'cddr
      unless (eq prop k)
      nconc (list k v)))
 
-(defsubst nvp-plist-merge (a b)
+(defsubst nvp:plist-merge (a b)
   (nconc a (cl-loop for (k v) on b by #'cddr
               if (not (plist-member a k))
               nconc (list k v))))
 
-(defsubst nvp-separate-keywords (lst)
+(defsubst nvp:separate-keywords (lst)
   (let (kws res)
     (while lst
       (if (keywordp (car lst))
@@ -156,7 +156,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;; -------------------------------------------------------------------
 ;;; Headings / Sections
 
-(defsubst nvp-heading-create-re (&optional comment)
+(defsubst nvp:heading-create-re (&optional comment)
   (declare (side-effect-free t))
   (let* ((comment (or comment (string-trim comment-start)))
          (beg (regexp-quote comment))
@@ -170,45 +170,45 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;;; Buffers
 
 ;; why isn't this a builtin function?
-(defsubst nvp-ktb () (kill-buffer (current-buffer)))
+(defsubst nvp:ktb () (kill-buffer (current-buffer)))
 
 ;; -------------------------------------------------------------------
 ;;; Files
 
-(defsubst nvp-ext (&optional path)
+(defsubst nvp:ext (&optional path)
   (file-name-extension (or path (buffer-file-name))))
-(defsubst nvp-no-ext (&optional path)
+(defsubst nvp:no-ext (&optional path)
   (file-name-sans-extension (or path (buffer-file-name) (buffer-name))))
-(defsubst nvp-bfn ()
+(defsubst nvp:bfn ()
   (file-name-nondirectory
    (or
     (buffer-file-name)
     (buffer-name))))
-(defsubst nvp-bfn-no-ext ()
+(defsubst nvp:bfn-no-ext ()
   (file-name-base
    (or
     (buffer-file-name)
     (buffer-name))))
-(defsubst nvp-dfn ()
+(defsubst nvp:dfn ()
   (file-name-nondirectory
    (directory-file-name
     (or
      (file-name-directory (file-truename buffer-file-name))
      (file-truename default-directory)))))
-(defsubst nvp-fn (&optional path)
+(defsubst nvp:fn (&optional path)
   (file-name-nondirectory (directory-file-name (or path (buffer-file-name)))))
 
 ;; Locate first name in NAMES using `locate-dominating-file' starting from FILE.
 ;; I think projectile has a number of functions doing this type of stuff
-(defsubst nvp-locate-first-dominating (file names)
-  (setq names (nvp-as-list names))
+(defsubst nvp:locate-first-dominating (file names)
+  (setq names (nvp:as-list names))
   (cl-loop for name in names
      as res = (locate-dominating-file file name)
      when res
      return (expand-file-name name res)))
 
 ;; this must exist somewhere I'm forgetting...
-(defsubst nvp-directories (&optional root fullname pattern)
+(defsubst nvp:directories (&optional root fullname pattern)
   (or pattern (setq pattern "^[^.]"))
   (--filter (file-directory-p it)
             (directory-files (or root default-directory) fullname pattern)))
@@ -218,14 +218,14 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 (defconst nvp-compile-time-directory-re
   (concat "^" (regexp-opt nvp-compile-time-directories) "\\'"))
 
-(defsubst nvp-compile-time-directories (&optional root full patterns)
-  (nvp-directories root full (or patterns nvp-compile-time-directory-re)))
+(defsubst nvp:compile-time-directories (&optional root full patterns)
+  (nvp:directories root full (or patterns nvp-compile-time-directory-re)))
 
 ;; -------------------------------------------------------------------
-;;; Defaults
+;;; Find
 
 ;; path to local notes file or nil
-(defsubst nvp-find-notes-file (&optional names)
+(defsubst nvp:find-notes-file (&optional names)
   (if (and nvp-local-notes-file (file-exists-p nvp-local-notes-file))
       (expand-file-name nvp-local-notes-file)
     (when (and (not nvp-local-notes-file) (derived-mode-p 'comint-mode))
@@ -234,10 +234,10 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
                               nvp-default-notes-files)))
     (let* ((case-fold-search t))
       (setq nvp-local-notes-file
-            (nvp-locate-first-dominating
+            (nvp:locate-first-dominating
              (or (buffer-file-name) default-directory) names)))))
 
-(defsubst nvp-locate-library (library)
+(defsubst nvp:locate-library (library)
   (--when-let (or (locate-library library)
                   (let ((paths (--map (expand-file-name it nvp/nvp)
                                       '("macs" "subrs" "compile"))))
@@ -250,14 +250,14 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;;; I/O
 
 ;; add default to prompt in non-nil
-(defsubst nvp-prompt-default (prompt &optional default)
+(defsubst nvp:prompt-default (prompt &optional default)
   (if default
       (format "%s (default %s): "
               (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
     prompt))
 
 ;; push input back onto command stack
-(defsubst nvp-unread (input)
+(defsubst nvp:unread (input)
   (cl-loop for c across input
            do (push c unread-command-events)))
 
@@ -265,7 +265,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;;; Syntax
 
 ;; Non-nil if POINT is between open/close syntax with only whitespace.
-(defsubst nvp-between-empty-parens-p (&optional point)
+(defsubst nvp:between-empty-parens-p (&optional point)
   (ignore-errors
     (and point (goto-char point))
     (and
@@ -276,7 +276,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 ;;; System
 
 ;; Numboer of available processors
-(define-inline nvp-nproc ()
+(define-inline nvp:nproc ()
   (cond
    ((executable-find "nproc")
     (inline-quote

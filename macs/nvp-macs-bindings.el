@@ -239,7 +239,7 @@ Buggy:
     (and prefix-key (setq prefix-key (eval prefix-key))) ;can be symbol
     ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
     (let ((modemap (nvp--normalize-modemap keymap minor))
-          (mapname (nvp-as-string keymap)))
+          (mapname (nvp:as-string keymap)))
       `(progn
          ,(when (symbolp modemap)
             `(eval-when-compile (defvar ,modemap)))

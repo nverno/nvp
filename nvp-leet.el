@@ -13,6 +13,7 @@
 (require 'aio)
 (nvp-decls)
 
+;; -------------------------------------------------------------------
 ;;; Test cases
 
 (defun nvp-leet--collect-examples ()
@@ -52,6 +53,7 @@
                       (unless (bolp) (insert "\n"))
                       (insert (mapconcat 'identity input "\n"))))))))
 
+;; -------------------------------------------------------------------
 ;;; Window Configuration
 
 (defvar-local nvp-leet-window-configuration nil)
@@ -71,6 +73,7 @@
 
 (nvp:advise-commands #'nvp-leet-result-layout :before '(leetcode-try leetcode-submit))
 
+;; -------------------------------------------------------------------
 ;;; Question of the Day
 
 ;; graphql query for daily challenge question

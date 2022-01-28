@@ -186,14 +186,15 @@ Optionally, search LISP-ONLY files (no C sources)."
            (prog1 (read-file-name "File name: ")
              (setq current-prefix-arg '(1))))
          current-prefix-arg))
-  (--if-let (nvp-find-notes-file name) (nvp-display-location it :file action)
+  (--if-let (nvp:find-notes-file name) (nvp-display-location it :file action)
     (user-error (format "%S not found up the directory tree." name))))
 
 ;;;###autoload
 (defun nvp-jump-to-dotfile (dir action)
   "Jump to dotfile in other window."
-  (interactive (list nvp/dots (prefix-numeric-value current-prefix-arg)))
-  (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
+  (interactive (list (nvp-read-relative-recursively nvp/dots "")
+                     current-prefix-arg))
+  (nvp-display-location dir :file action))
 
 ;;;###autoload
 (defun nvp-jump-to-dir (dir action)
@@ -204,9 +205,9 @@ Optionally, search LISP-ONLY files (no C sources)."
                      (format "Directory (default %s): " nvp/scratch)
                      (append '("~/") nvp-default-directories)
                      nil nil nil 'nvp-read-config-history nvp/scratch)
-      nvp/scratch)
+      (nvp-read-relative-recursively nvp/scratch))
     current-prefix-arg))
-  (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
+  (nvp-display-location dir :file action))
 
 ;;;###autoload
 (defun nvp-jump-to-source (dir action)
@@ -221,7 +222,8 @@ Optionally, search LISP-ONLY files (no C sources)."
              nvp-local-src-directories))
           (t nvp/devel))
          current-prefix-arg))
-  (nvp-display-location dir :ido action :find-fn #'ido-find-file-in-dir))
+  (let ((file (nvp-read-relative-recursively dir)))
+    (nvp-display-location file :file action)))
 
 ;;;###autoload
 (defun nvp-jump-to-book (dir &optional action)
@@ -290,7 +292,8 @@ With prefix jump this window, otherwise `find-file-other-window'."
 (defun nvp-jump-to-template (action)
   "Jump to a project template."
   (interactive "P")
-  (nvp-display-location nvp/template :ido action :find-fn #'ido-find-file-in-dir))
+  (nvp-display-location
+   (nvp-read-relative-recursively nvp/template) :file action))
 
 
 ;; -------------------------------------------------------------------

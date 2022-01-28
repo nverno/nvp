@@ -100,7 +100,7 @@
 (defun nvp-autoconf-read (&optional prompt default collection)
   (or default (setq default (thing-at-point 'symbol)))
   (completing-read
-   (nvp-prompt-default (or prompt "Lookup macro: ") default)
+   (nvp:prompt-default (or prompt "Lookup macro: ") default)
    (if collection (funcall collection) (nvp-autoconf-all-macros))
    nil nil nil 'nvp-autoconf-read-history default))
 

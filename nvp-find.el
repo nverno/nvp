@@ -101,10 +101,11 @@
            (--if-let (nvp-tap 'dwim)
                (if force-prompt
                    (read-from-minibuffer
-                    (format (concat search-prompt " (%s): ") it) it)
-                 it)
-             (read-from-minibuffer (concat search-prompt ": ")))))
-      (add-to-history 'nvp-search-history search-term)
+                    (format (concat search-prompt " (%s): ") it) it
+                    nil nil nil 'nvp-search-history)
+                 (prog1 it (add-to-history 'nvp-search-history it)))
+             (read-from-minibuffer
+              (concat search-prompt ": ") nil nil nil 'nvp-search-history))))
       search-term))
 
   ;; determine the search root directory
@@ -180,6 +181,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Ag
+(nvp-decl nvp-ag-filter ag/compilation-match-grouped-filename ag-filter)
 
 ;; Make ag, wgrep-ag, and xterm-color work together
 (with-eval-after-load 'ag

@@ -11,7 +11,7 @@
       (user-error "aio library not found."))))
 (require 'leetcode)
 (require 'aio)
-(nvp-decls)
+(nvp-decls :f (nvp-leetcode-hook))
 
 ;; -------------------------------------------------------------------
 ;;; Test cases
@@ -103,6 +103,7 @@
 (aio-defun nvp-leet-daily ()
   "Open the daily challenge."
   (interactive)
+  (run-hooks 'nvp-leetcode-hook)
   (if (leetcode--login-p)
       (--when-let (nvp-leet--lookup-daily-question)
         (leetcode-show-problem (string-to-number it)))

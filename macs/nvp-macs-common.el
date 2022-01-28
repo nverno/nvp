@@ -223,6 +223,19 @@ be used. Modification of `use-package-normalize-plist'."
     (setq new-fn `(symbol-function ',(cadr new-fn))))
   `(cl-letf (((symbol-function ,old-fn) ,new-fn)) ,@body))
 
+(defmacro nvp-with-letfs (bindings &rest body)
+  "Temporarily override function definitions."
+  (declare (indent 1)
+           (debug ((&rest [&or (symbolp form) (gate gv-place &optional form)])
+                   body)))
+  (let ((fn-bindings
+         (cl-loop for (old new) in (nvp:list-unquote bindings)
+                  nconc `(((symbol-function ',(nvp:unquote old))
+                           ,(if (eq 'quote (car-safe new))
+                                `(symbol-function ',(cadr new))
+                              `,new))))))
+    `(cl-letf ,fn-bindings ,@body)))
+
 (defmacro nvp-compose (expr)
   "Combine functions in EXPR without explicit `funcall's."
   `#',(nvp--rbuild expr))

@@ -157,14 +157,16 @@ are both specified."
                         `(,fmt ,@args)))))))
           (post-msg
            `(function
-             (lambda ()
-               (and ,orig-msg (not (minibufferp)) (message ,orig-msg))))))
+             (lambda (orig-msg)
+               (and orig-msg (not (minibufferp)) (message orig-msg))))))
       `(let ((,orig-msg (current-message)))
          ,(if delay
               `(run-with-idle-timer ,delay nil ,msg)
             `(funcall ,msg))
-         (run-with-idle-timer
-          ,(+ (or delay 0) (or duration 2)) nil ,post-msg)))))
+         (and ,orig-msg
+              (run-with-idle-timer
+               ,(+ (or delay 0) (or duration 2)) nil
+               (apply-partially ,post-msg ,orig-msg)))))))
 
 ;; `org-no-popups'
 (defmacro nvp-no-popups (&rest body)

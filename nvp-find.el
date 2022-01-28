@@ -5,20 +5,19 @@
 ;; Finding files + things in files:
 ;; - recentf
 ;; - grep/rgrep/lgrep/zgrep
-;; - ag
-;; - rgrep
+;; - ag :: modifications to work with xterm-color + wgrep-ag
+;; - rgrep :: TODO: fix for wgrep-rg w/ xterm-color
 ;; - wgrep (ag, ripgrep, grep)
 ;; - adds imenu support for ag and rg result buffers
 ;;
-;; Searching from project roots is preferred, and the interface tries to
-;; follow the same as searching functions in projectile.
-;; However, projectile uses ripgrep, whereas I use rg, so that needs to be 
-;; wrapped.
-;; Additionally, both ag.el and rg.el use the same sort of regex based
-;; interpretation of the results in the compilation output buffer, which
-;; are both broken when using `xterm-color' (which is both nicer and faster IMO).
-;; So, wrappers are added to make both libraries work (with some minor features
-;; lost in the case of rg.el) with `xterm-color'.
+;; Both ag.el and rg.el use the same sort of regex based interpretation of the
+;; results in the compilation output buffer, and both break when using
+;; `xterm-color'.
+;;
+;; ag.el is patched to work with xterm-color by overriding `ag-filter' to
+;; insert "File: " before file paths - wgrep-ag relies on this pattern.
+;;
+;; TODO: fix rg overrides to work with wgrep-rg
 ;;
 ;; * Interface
 ;; 
@@ -92,7 +91,6 @@
       (nvp-display-location (cdr (assoc filename file-assoc-list))
                             :file (car action)))))
 
-
 ;; -------------------------------------------------------------------
 ;;; Determine defaults for ag/rg/rgrep
 
@@ -113,9 +111,10 @@
   (defsubst nvp:find-seach-root (&optional root prompt)
     (or root
         (and prompt (read-directory-name "Search root: "))
-        (--if-let (nvp-project-root) it
-          (read-directory-name
-           (format "Search root ('%s'):" (file-name-directory default-directory))))))
+        (or (nvp-project-root)
+            (read-directory-name
+             (format "Search root ('%s'):"
+                     (file-name-directory default-directory))))))
 
   ;; return (search-root search-term regexp-p)
   (defsubst nvp:find-defaults (arg search-prompt &optional root)
@@ -124,7 +123,6 @@
             (nvp:find-search-term search-prompt prompt)
             (if prompt (y-or-n-p "Use regex?") (equal '(4) arg))))))
 
-
 ;; -------------------------------------------------------------------
 ;;; Ag / Ripgrep (using rg.el)
 
@@ -158,7 +156,7 @@
   (defconst nvp-ag/rg-file-column-regex "^\\([[:digit:]]+\\):\\([[:digit:]]+\\):"))
 
 (eval-when-compile
-  (defsubst nvp-match-grouped-filename (file-column-re grouped-re)
+  (defsubst nvp:match-grouped-filename (file-column-re grouped-re)
     "Match grouped filename in compilation output, not relying on escape codes."
     (save-match-data
       (save-excursion
@@ -167,41 +165,74 @@
                     (looking-at-p file-column-re))
           (forward-line -1))
         (and (looking-at grouped-re)
-             (list (match-string 1))))))
+             (list (match-string 1)))))))
 
-  ;; imenu that should work for ag/rg grouped results buffers
-  (defmacro nvp-ag/rg-imenu-function ()
-    `(lambda ()
-       (cl-block nil
-         (when (re-search-backward ,nvp-ag/rg-file-column-regex nil 'move)
-           (beginning-of-line)
-           (while (and (not (bobp))
-                       (looking-at-p ,nvp-ag/rg-file-column-regex))
-             (forward-line -1))
-           (and (looking-at "^\\(?:File: \\)?\\([^ \t].*\\)$")
-                (cl-return t)))))))
+;; imenu that should work for ag/rg grouped results buffers
+(defun nvp-ag/rg-imenu-function ()
+  (cl-block nil
+    (when (re-search-backward nvp-ag/rg-file-column-regex nil 'move)
+      (beginning-of-line)
+      (while (and (not (bobp))
+                  (looking-at-p nvp-ag/rg-file-column-regex))
+        (forward-line -1))
+      (and (looking-at "^\\(?:File: \\)?\\([^ \t].*\\)$")
+           (cl-return t)))))
 
-
 ;; -------------------------------------------------------------------
 ;;; Ag
 
+;; Make ag, wgrep-ag, and xterm-color work together
 (with-eval-after-load 'ag
+  (defconst nvp-ag-file-prefix "File: "
+    "Prefix added by `ag-filter' to grouped matches.")
+  
   ;; Match grouped filenames in rg/ag searches
   (defun nvp-ag-match-grouped-filename ()
-    (nvp-match-grouped-filename
+    (nvp:match-grouped-filename
      ag/file-column-pattern-group nvp-ag/rg-grouped-file-regex))
 
+  ;; `ag-filter' adds "File: " based on escape codes that have already been
+  ;; parsed by xterm-color. wgrep-ag relies on the "File: " prefix.
+  ;; this overrides `ag-filter' to add the "File: " prefix where necessary
+  (defun nvp-ag-filter ()
+    (save-excursion
+      ;; skip past line-number:column-number lines
+      (let (ok)
+        (while (>= (point) compilation-filter-start)
+          (forward-line 0)
+          (setq ok nil)
+          (while (and (>= (point) compilation-filter-start)
+                      (looking-at-p ag/file-column-pattern-group))
+            (setq ok (or ok t))
+            (forward-line -1))
+          ;; add "File: " prefix to group start
+          (when (and ok (>= (point) compilation-filter-start)
+                     (looking-at nvp-ag/rg-grouped-file-regex))
+            (replace-match (concat nvp-ag-file-prefix (match-string 1)) t t))
+          (forward-line -1)))))
+
+  ;; save originals
+  (defalias 'nvp-ag-orig-filter (symbol-function #'ag-filter))
+  (defalias 'nvp-ag-orig-match-group
+    (symbol-function #'ag/compilation-match-grouped-filename))
+  ;; Overrides
+  (defalias 'ag-filter #'nvp-ag-filter)
+  (defalias 'ag/compilation-match-grouped-filename
+    'nvp-ag-match-grouped-filename)
+  ;; (setf (symbol-function 'ag/compilation-match-grouped-filename)
+  ;;       'nvp-ag-match-grouped-filename)
+
   (defun nvp-ag-recompile ()
+    "Recompile without xterm-color filter and original `ag-filter'."
     (interactive)
     (let ((compilation-start-hook
            (delq 'nvp-compilation-start-hook compilation-start-hook)))
-      (call-interactively 'recompile)))
+      (nvp-with-letfs ((ag-filter 'nvp-ag-orig-filter)
+                       (ag/compilation-match-grouped-filename
+                        'nvp-ag-orig-match-group))
+        (call-interactively 'recompile))))
 
-  ;; override ag's function
-  (setf (symbol-function 'ag/compilation-match-grouped-filename)
-        'nvp-ag-match-grouped-filename)
-
-  (defvar nvp-ag-imenu-expression `((nil ,(nvp-ag/rg-imenu-function) 1))))
+  (defvar nvp-ag-imenu-expression '((nil nvp-ag/rg-imenu-function 1))))
 
 ;; -------------------------------------------------------------------
 ;;; Ripgrep (rg.el)
@@ -210,7 +241,7 @@
 ;; to use with `xterm-color-filter'
 (with-eval-after-load 'rg
   (defun nvp-rg-match-grouped-filename-xc ()
-    (nvp-match-grouped-filename
+    (nvp:match-grouped-filename
      nvp-ag/rg-file-column-regex nvp-ag/rg-grouped-file-regex))
 
   ;; use my own filter that works with `xterm-color'
@@ -227,7 +258,7 @@
                                 'nvp-rg-match-grouped-filename-xc 1 2))
                     compilation-error-regexp-alist-alist)
               (setq-local imenu-generic-expression
-                          `((nil ,(nvp-ag/rg-imenu-function) 1)))))
+                          '((nil nvp-ag/rg-imenu-function 1)))))
 
   ;; Useful function to search the zipped source 
   ;; https://github.com/dajva/rg.el/issues/69#event-3107793694
@@ -240,7 +271,6 @@
     :files "*.{el,el.gz}"
     :menu ("Custom" "L" "src/emacs")))
 
-
 ;; -------------------------------------------------------------------
 ;;; Commands
 

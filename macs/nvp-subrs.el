@@ -37,6 +37,12 @@
   (if (and (listp x) (not (functionp x))) x
     (list x)))
 
+(defsubst nvp:unquote (sym)
+  (declare (pure t))
+  (while (memq (car-safe sym) '(quote function))
+    (setq sym (cadr sym)))
+  sym)
+
 ;; -------------------------------------------------------------------
 ;;; Hash tests
 

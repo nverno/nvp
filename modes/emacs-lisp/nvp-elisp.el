@@ -6,7 +6,7 @@
 (require 'pp)
 (require 'company-elisp)
 (require 'nvp-parse)
-(nvp-decls :f (company-elisp--candidates-predicate company-elisp--fns-regexp)
+(nvp:decls :f (company-elisp--candidates-predicate company-elisp--fns-regexp)
            :v (nvp-elisp-defuns-regexp nvp-elisp-var-binding-regexp))
 
 ;; modified from company-elisp to incorporate more things
@@ -37,7 +37,7 @@
 (defun nvp-elisp-bounds-of-cons ()
   "Return bounds of dotted cons, eg (sexp . sexp)."
   (save-excursion
-    (let* ((syntax (nvp-ppss 'partial))
+    (let* ((syntax (nvp:ppss 'partial))
            (parens (reverse (nth 9 syntax))))
       (cl-block nil
         (dolist (pos parens)
@@ -54,17 +54,17 @@
 Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
   (cl-block nil
     (if (memq ?\' (list (char-before) (char-after)))
-        (and (nvp-goto 'fdl)
+        (and (nvp:goto 'fdl)
              (bounds-of-thing-at-point 'list))
       (save-excursion
-        (while (nvp-goto 'bul)         ;search backward up lists for a '(
+        (while (nvp:goto 'bul)         ;search backward up lists for a '(
           (and (eq (char-before) ?\')
-               (nvp-goto 'fdl)
+               (nvp:goto 'fdl)
                (cl-return (bounds-of-thing-at-point 'list)))))
       ;; check if in cons-cell and back out of it
       ;; eg. (macro (foo . bar) (goo . ber))
       (save-excursion
-        (when-let ((bnds (nvp-tap 'btap 'cons)))
+        (when-let ((bnds (nvp:tap 'btap 'cons)))
           (goto-char (1- (car bnds)))
           (bounds-of-thing-at-point 'list))))))
 
@@ -94,7 +94,7 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
     "Filter matching ELEMS from file's forms (possibly loading file).
 Forms are read from :file if present in ARGS, otherwise current buffer file."
     (declare (indent defun) (debug t))
-    (nvp-with-syms (fname buff lib pargs)
+    (nvp:with-syms (fname buff lib pargs)
       `(-let* ((,pargs ,args)
                ((&plist :file ,fname :buffer ,buff :library ,lib) ,pargs))
          (if ,buff
@@ -268,7 +268,7 @@ If in `declare-function', convert to autoload."
     (declare (debug t))
     `(and (or (memq this-command '(expand-abbrev nvp-abbrev-expand-after-symbols))
               (not (memq last-input-event '(?/ ?- ?= ?> ?<))))
-          (not (or (nvp-ppss 'soc)      ; in string or comment
+          (not (or (nvp:ppss 'soc)      ; in string or comment
                    (let ((company-elisp-var-binding-regexp
                           nvp-elisp-var-binding-regexp))
                      (eq (company-elisp--candidates-predicate (nvp-abbrev-grab))
@@ -289,7 +289,7 @@ If in `declare-function', convert to autoload."
 (define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
   (let ((orig-buff (current-buffer)))
    (with-current-buffer (get-buffer-create "*ielm*")
-     (nvp-with-letf #'pop-to-buffer-same-window #'ignore
+     (nvp:with-letf #'pop-to-buffer-same-window #'ignore
        (funcall orig-fn))
      (prog1 (current-buffer)
        (setq-local ielm-working-buffer orig-buff)
@@ -311,7 +311,7 @@ If in `declare-function', convert to autoload."
 ;;; Imenu
 
 (eval-and-compile
-  (nvp-setq nvp-elisp-imenu-headers
+  (nvp:setq nvp-elisp-imenu-headers
             (let* ((prefix "^;;\\(?:;\\{1,2\\}\\|[*]\\{1,2\\}\\| |\\)\\s-+")
                    (hdr-regex (concat prefix "\\([^#;].*\\)\\s-*$"))
                    (pkg-hdrs
@@ -322,13 +322,13 @@ If in `declare-function', convert to autoload."
               ;; don't include default package headers, beginning/end of file
               `((nil ,(macroexpand-all
                        (lambda ()
-                         (nvp-awhile (and (not (bobp))
+                         (nvp:awhile (and (not (bobp))
                                           (re-search-backward hdr-regex nil t))
                            (unless (looking-at-p pkg-hdrs)
                              (cl-return t)))))
                      1))))
   
-  (nvp-setq
+  (nvp:setq
     nvp-elisp-imenu-headers-1
     `(("Headers" ,(cadar nvp-elisp-imenu-headers) 1)
       ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)))

@@ -14,7 +14,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
 (require 'nvp)
-(nvp-req 'nvp-abbrev 'subrs)
+(nvp:req 'nvp-abbrev 'subrs)
 
 ;; if non-nil, update active table cache
 (defvar-local nvp-abbrev-completion-need-refresh nil)
@@ -35,7 +35,7 @@
       (nvp-abbrev--nonempty tabs))))
 
 ;; use local table along with its parents + global table
-(nvp-define-cache nvp-abbrev-completion--tables ()
+(nvp:define-cache nvp-abbrev-completion--tables ()
   :cache nvp-abbrev-completion--tables-cache
   :local t
   :predicate (not nvp-abbrev-completion-need-refresh)

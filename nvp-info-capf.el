@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'info-look)
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;;;###autoload
 (defun nvp-info-completion-at-point ()

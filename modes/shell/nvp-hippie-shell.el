@@ -18,7 +18,7 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
                    (match-string-no-properties val) ht))
         ht))))
 
-(nvp-lazy-defvar nvp-shell--alias-completion-table
+(nvp:lazy-defvar nvp-shell--alias-completion-table
   (lambda ()
     (list
      ;; for bash assume all aliases are of the form
@@ -39,7 +39,7 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
 
 (defvar nvp-shell-alias-completion-table
   (lambda (args)
-    (let ((ht (nvp-lazy-val nvp-shell--alias-completion-table)))
+    (let ((ht (nvp:lazy-val nvp-shell--alias-completion-table)))
       (setq nvp-shell-alias-completion-table
             (nvp-he-completion-table
              (lambda (cmd)
@@ -102,7 +102,7 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
           (setq he-tried-table (cons he-search-string he-tried-table)))
         (setq he-expand-list             ;completions from hash table
               (and (not (equal "" he-search-string))
-                   (let ((ht (nvp-lazy-val nvp-shell--alias-completion-table)))
+                   (let ((ht (nvp:lazy-val nvp-shell--alias-completion-table)))
                      (delq nil
                            (mapcar
                             (lambda (abbr)

@@ -5,7 +5,7 @@
 (require 'hydra)
 
 ;;;###autoload(autoload 'nvp-hydra-buffer-menu/body "nvp-Buffer-menu")
-(nvp-hydra-set-property 'nvp-hydra-buffer-menu :verbosity 1)
+(nvp:hydra-set-property 'nvp-hydra-buffer-menu :verbosity 1)
 (defhydra nvp-hydra-buffer-menu (:color pink :hint nil :pre (Buffer-menu-mode))
   "
 ^Mark^             ^Unmark^           ^Actions^          ^Search

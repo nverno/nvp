@@ -68,7 +68,7 @@
     (goto-char initial-pos)))
 
 ;; FIXME: rails-ruby-command, el4r-ruby-eval => just evaluate, capital-word-p
-(nvp-decl el4r-ruby-eval capital-word-p inf-ruby-mode)
+(nvp:decl el4r-ruby-eval capital-word-p inf-ruby-mode)
 (defvar rails-ruby-command)
 (defvar inf-ruby-first-prompt-pattern)
 (defvar inf-ruby-prompt-pattern)

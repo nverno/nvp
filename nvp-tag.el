@@ -67,8 +67,8 @@
 (defun nvp-tag-list-decls (&optional lang kinds file)
   "List decls defined by language LANG of type KINDS from current buffer or
 FILE if non-nil."
-  (nvp-defq file (nvp-path 'bf) lang "all" kinds "*")
-  (->> (process-lines (nvp-program "ctags") "-x"
+  (nvp:defq file (nvp:path 'bf) lang "all" kinds "*")
+  (->> (process-lines (nvp:program "ctags") "-x"
                       (if lang (format "--kinds-%s=%s" lang kinds) "--kinds-all")
                       file)
        (mapcar (lambda (s)

@@ -31,7 +31,7 @@
 (maven-fn compile)
 
 ;;;###autoload(autoload 'nvp-maven-hydra/body "nvp-maven")
-(nvp-hydra-set-property 'nvp-maven-hydra :verbosity 1)
+(nvp:hydra-set-property 'nvp-maven-hydra :verbosity 1)
 (defhydra nvp-maven-hydra (:color blue)
   ("r" eclim-maven-run "run")
   ("p" eclim-maven-lifecycle-phase-run "phase")

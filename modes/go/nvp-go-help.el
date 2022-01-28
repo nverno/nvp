@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-go)
-(nvp-decls :v (godoc-command)
+(nvp:decls :v (godoc-command)
            :f (godoc-and-godef godoc-at-point godoc-gogetdoc godoc--read-query))
 (autoload 'pos-tip-show "pos-tip")
 

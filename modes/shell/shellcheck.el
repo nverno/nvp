@@ -15,10 +15,10 @@
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'compile))
 (require 'help-mode)
-(nvp-decls :f (xterm-color-colorize-buffer winner-undo))
+(nvp:decls :f (xterm-color-colorize-buffer winner-undo))
 
 ;; use "bats ..." for .bat files
-(defvar shellcheck-executable (nvp-program "shellcheck"))
+(defvar shellcheck-executable (nvp:program "shellcheck"))
 (defvar shellcheck-arguments () "Command-line arguments to shellcheck.")
 
 (defconst shellcheck-wiki-url "https://github.com/koalaman/shellcheck/wiki/"
@@ -128,7 +128,7 @@ Output is in `shellcheck-mode' compilation buffer, which see."
 (defun shellcheck ()
   "Check current buffer with shellcheck."
   (interactive)
-  (nvp-with-process "shellcheck"
+  (nvp:with-process "shellcheck"
     :proc-args ((buffer-file-name))
     :on-failure (progn
                   (pop-to-buffer "*shellcheck*")

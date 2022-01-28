@@ -15,8 +15,8 @@
 (require 'info)
 (require 'filenotify)
 (require 'info-look)
-(nvp-decls :f (nvp-read-mode))
-(nvp-auto "nvp-read" 'nvp-read--info-files)
+(nvp:decls :f (nvp-read-mode))
+(nvp:auto "nvp-read" 'nvp-read--info-files)
 
 (defsubst nvp-info-read-node (&optional prompt default)
   (completing-read (or prompt "Go to node: ")
@@ -39,7 +39,7 @@ or prompt for manual with ARG."
                         (nvp-read-mode))
                   (info-lookup->doc-spec 'symbol it)
                   (car (nth 0 it)))
-                (nvp-info-read-manual))
+                (setq arg (nvp-info-read-manual)))
     (with-current-buffer (get-buffer-create (generate-new-buffer "*info*"))
       (Info-mode)
       (if arg (Info-goto-node (format "(%s)" it))
@@ -69,7 +69,7 @@ or prompt for manual with ARG."
 
 (defvar nvp-info-nodes-need-refresh () "Update list when 'dir' changes.")
 (cl-eval-when (load compile eval)
-  (nvp-define-cache nvp-info-nodes ()
+  (nvp:define-cache nvp-info-nodes ()
     "List of my info manuals."
     :predicate (not nvp-info-nodes-need-refresh)
     (setq nvp-info-nodes-need-refresh nil)
@@ -105,8 +105,8 @@ or prompt for manual with ARG."
   "Install org texinfo FILE into info directory."
   (interactive (list (nvp-read--info-files)))
   (let ((default-directory (expand-file-name "org" nvp/info))
-        (target (concat "install-" (nvp-path 'fse file))))
-    (nvp-with-process "make"
+        (target (concat "install-" (nvp:path 'fse file))))
+    (nvp:with-process "make"
       :proc-name "install-info"
       :proc-args (target))))
 

@@ -7,7 +7,7 @@
 (require 'nvp-log)
 (declare-function w32-shell-execute "w32")
 (declare-function nvp-read-with-message "nvp-read")
-(nvp-auto "env" 'substitute-env-vars 'read-envvar-name 'setenv)
+(nvp:auto "env" 'substitute-env-vars 'read-envvar-name 'setenv)
 
 (defun nvp-env-substitute-vars (string &optional unquote)
   "Substitute environment variables in STRING.
@@ -28,7 +28,7 @@ surrounding whitespace either way."
  (defsubst nvp-env-uniq (parts)
    (cl-remove-duplicates
     parts
-    :test (nvp-with-gnu/w32 'string= '(lambda (x y) (string= (downcase x) (downcase y))))
+    :test (nvp:with-gnu/w32 'string= '(lambda (x y) (string= (downcase x) (downcase y))))
     :from-end t))
 
  ;; join env var with path-separator
@@ -118,7 +118,7 @@ Return `process-environment' with new value tacked on front (first is used)."
 ;;; Setenv
 
 ;;;###autoload (autoload 'nvp-env-setenv! "nvp-env")
-(nvp-with-w32
+(nvp:with-w32
   ;; Update registry value ENV-VAR by setting/appending VALUE (user).
   ;; add to exec-path if EXEC is non-nil. If CLOBBER is non-nil,
   ;; overwrite variable if it already exists.
@@ -134,7 +134,7 @@ Return `process-environment' with new value tacked on front (first is used)."
             (nvp-env-path-add val)
           (setenv env-var val))))))
 
-(nvp-with-gnu
+(nvp:with-gnu
   (defun nvp-env-setenv! (env-var value &optional exec clobber append)
     (let ((current (getenv env-var)))
       (when (or clobber append (not current))
@@ -152,7 +152,7 @@ Return `process-environment' with new value tacked on front (first is used)."
 ;;; Windows Search Path
 
 ;;;###autoload (autoload 'nvp-env-update-path-db "nvp-env")
-(nvp-with-w32
+(nvp:with-w32
   ;; update executable database, rerun build script
   ;; defaults to $APPDATA/exe-index on windows
   (defun nvp-env-update-path-db (&optional path)

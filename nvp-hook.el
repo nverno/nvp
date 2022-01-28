@@ -5,7 +5,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (defvar time-stamp-pattern)
-(nvp-auto "nvp-read" 'nvp-read-elisp-symbol 'nvp-read-elisp-function)
+(nvp:auto "nvp-read" 'nvp-read-elisp-symbol 'nvp-read-elisp-function)
 
 ;;;###autoload
 (defun nvp-hook-update-timestamp ()

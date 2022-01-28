@@ -9,10 +9,10 @@
 ;; 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-req 'nvp-compile)                  ; nvp-make-or-compile-fn
+(nvp:req 'nvp-compile)                  ; nvp-make-or-compile-fn
 (require 'nvp-c)
-(nvp-req 'nvp-c 'subrs)
-(nvp-decls)
+(nvp:req 'nvp-c 'subrs)
+(nvp:decls)
 
 (cl-defmethod nvp-newline-dwim-comment
   (syntax arg &context (major-mode c++-mode))
@@ -31,14 +31,14 @@
          (file (file-name-nondirectory buffer-file-name))
          (out (file-name-sans-extension file))
          (compile-command
-          (format "%s %s -o %s%s %s" (nvp-program "g++")
-                  flags out (nvp-with-gnu/w32 ".out" ".exe") file)))
+          (format "%s %s -o %s%s %s" (nvp:program "g++")
+                  flags out (nvp:with-gnu/w32 ".out" ".exe") file)))
     (nvp-compile)))
 
 (defun nvp-c++-compile-and-run (keep)
   (interactive "P")
   (funcall-interactively
-   #'nvp-c-compile-and-run keep (nvp-program "g++") nvp-c++-compiler-flags))
+   #'nvp-c-compile-and-run keep (nvp:program "g++") nvp-c++-compiler-flags))
 
 ;; -------------------------------------------------------------------
 ;;; Font-lock

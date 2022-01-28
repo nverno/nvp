@@ -21,7 +21,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;;; XXX: isn't used
 ;; (defvar-local nvp-cycling nil "Non-nil if cycle in progress")

@@ -88,8 +88,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'js)
 (require 'js2-mode nil t)
-(nvp-req 'nvp-js 'subrs)
-(nvp-decls :f (nodejs-repl-switch-to-repl
+(nvp:req 'nvp-js 'subrs)
+(nvp:decls :f (nodejs-repl-switch-to-repl
                skewer-eval-print-last-expression skewer-eval-last-expression
                httpd-start
                js2-display-error-list

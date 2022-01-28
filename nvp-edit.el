@@ -11,7 +11,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'smartparens))
-(nvp-decls :f (paredit-kill) :v (sort-fold-case))
+(nvp:decls :f (paredit-kill) :v (sort-fold-case))
 (autoload 'sp-wrap-with-pair "smartparens")
 
 ;;; Indent
@@ -21,8 +21,8 @@
   "Indent `thing-at-point' or region between BEG and END.
 Defaults to `defun' at point."
   (interactive
-   (nvp-with-region beg end
-     (nvp-read-char-case "Indent region: " 'verbose
+   (nvp:with-region beg end
+     (nvp:read-char-case "Indent region: " 'verbose
        (?i "[i]buffer" 'buffer)
        (?d "[d]efun" 'defun)
        (?p "[p]aragraph" 'paragraph))
@@ -81,7 +81,7 @@ then using `compare-buffer-substrings'."
 (defun nvp-sort-list (&optional start end reverse)
   "Sort list region in list at point or b/w START and END by words/symbols.
 With prefix sort in REVERSE."
-  (interactive (nvp-with-region start end 'list :pulse t :widen t
+  (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp-sort:defaults start end
     (sort-regexp-fields reverse (nvp:concat "\\(?:"
@@ -94,7 +94,7 @@ With prefix sort in REVERSE."
 ;;;###autoload
 (defun nvp-sort-alist (&optional start end reverse)
   "Sort alist by car of each element in list at point or b/w START and END."
-  (interactive (nvp-with-region start end 'alist :pulse t :widen t
+  (interactive (nvp:with-region start end 'alist :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp-sort:defaults start end
     (sort-regexp-fields
@@ -104,14 +104,14 @@ With prefix sort in REVERSE."
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)
-  (interactive (nvp-with-region start end 'list :pulse t :widen t
+  (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp-sort:defaults start end
     (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
 
 ;;;###autoload
 (defun nvp-sort-symbols (start end &optional reverse)
-  (interactive (nvp-with-region start end 'list :pulse t :widen t
+  (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp-sort:defaults start end
     (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
@@ -139,11 +139,11 @@ With prefix sort in REVERSE."
   (if (bound-and-true-p paredit-mode)
       (nvp--paredit-duplicate-current-line)
     (save-excursion
-      (when (eq (nvp-point 'eol) (point-max))
+      (when (eq (nvp:point 'eol) (point-max))
         (goto-char (point-max))
         (newline)
         (forward-char -1))
-      (nvp--duplicate-region num (nvp-point 'bol) (1+ (nvp-point 'eol)))))
+      (nvp--duplicate-region num (nvp:point 'bol) (1+ (nvp:point 'eol)))))
   (nvp-repeat-command))
 
 (defun nvp--duplicate-back-and-dupe ()
@@ -174,15 +174,15 @@ With prefix sort in REVERSE."
                 (> (line-number-at-pos) 1))
       (forward-line -1)
       (setq back (1+ back)))
-    (when (eq (nvp-point 'eol) (point-max))
+    (when (eq (nvp:point 'eol) (point-max))
       (goto-char (point-max))
       (newline)
       (forward-char -1))
-    (let ((region (buffer-substring (nvp-point 'bol) (1+ (nvp-point 'eol)))))
+    (let ((region (buffer-substring (nvp:point 'bol) (1+ (nvp:point 'eol)))))
       (forward-line back)
       (dotimes (_i num)
         (insert region))))
-  (goto-char (nvp-point 'eol)))
+  (goto-char (nvp:point 'eol)))
 
 (defun nvp--paredit-duplicate-current-line ()
   (back-to-indentation)
@@ -212,7 +212,7 @@ With prefix sort in REVERSE."
   "Wrap next sexp with CHAR (last key pressed in calling command).
 Override default `sp-pair-list' if CHAR isn't a leading member.
 Prefix arg is passed to SP, wrapping the next _ARG elements."
-  (interactive (list (nvp-input 'lcs) current-prefix-arg))
+  (interactive (list (nvp:input 'lcs) current-prefix-arg))
   (let ((sp-pair-list
          (if (not (cl-member char sp-pair-list :test #'string= :key #'car))
              `((,char . ,char))

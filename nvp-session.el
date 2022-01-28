@@ -13,7 +13,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'desktop)
-(nvp-decls :f (nvp-buffer-kill-all-buffers))
+(nvp:decls :f (nvp-buffer-kill-all-buffers))
 
 (eval-when-compile
   (defsubst nvp-sessions (&optional full)

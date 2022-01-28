@@ -9,7 +9,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'iedit)
-(nvp-decls)
+(nvp:decls)
 
 ;; Add iedit bindings
 (nvp-bindings iedit-mode-keymap :now
@@ -50,7 +50,7 @@
        (setq nvp-iedit-restriction 'defun)
        (iedit-restrict-function))
       (_))
-    (nvp-msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
+    (nvp:msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
       :test (bound-and-true-p iedit-mode) :delay 1 :keys t)))
 
 (eval-when-compile

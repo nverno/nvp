@@ -8,7 +8,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-declare nvp-inf-read-process)
+(nvp:decl nvp-inf-read-process)
 
 ;; error signals
 (put 'nvp-inf-process-died 'error-conditions '(nvp-inf-process-died error))

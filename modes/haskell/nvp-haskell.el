@@ -4,8 +4,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
-(nvp-decl haskell-ident-at-point nvp-cycle)
+(nvp:decls)
+(nvp:decl haskell-ident-at-point nvp-cycle)
 
 
 ;; -------------------------------------------------------------------
@@ -13,7 +13,7 @@
 
 (defun nvp-haskell-arrow ()
   (interactive)
-  (nvp-cycle (nvp-input 'lcs) '("_" " -> ")))
+  (nvp-cycle (nvp:input 'lcs) '("_" " -> ")))
 
 ;; -------------------------------------------------------------------
 ;;; Compilation

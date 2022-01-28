@@ -4,7 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'rust-mode)
 (require 'racer)
-(nvp-decls :v (toml-mode-map))
+(nvp:decls :v (toml-mode-map))
 ;; FIXME: declare functions for s/f -- dont want these
 
 ;; TODO:
@@ -41,7 +41,7 @@
          (lambda (p _m)
            (when (zerop (process-exit-status p))
              ;; set RUST_SRC_PATH
-             (nvp-with-w32
+             (nvp:with-w32
                (nvp-rust-w32-setenv! "RUST_SRC_PATH"
                                        nvp-rust-rust-home))
              (nvp-rust-tag-source nil t))))
@@ -211,7 +211,7 @@
 ;; -------------------------------------------------------------------
 ;;; Interactive
 
-(nvp-newline nvp-rust-newline-dwim nil
+(nvp:newline nvp-rust-newline-dwim nil
   :pairs (("{" "}"))
   :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
   :comment-start " * ")

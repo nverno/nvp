@@ -30,8 +30,8 @@
 (require 'nvp)
 (require 'ring)
 (require 'bookmark)
-(nvp-auto "f" 'f-same-p)
-(nvp-decls)
+(nvp:auto "f" 'f-same-p)
+(nvp:decls)
 
 (defconst nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
 
@@ -104,7 +104,7 @@ behaviour of default)."
 ;; `ring-insert' => newest item, `ring-remove' => oldest item
 (defvar nvp-bmk-ring (make-ring 65) "Bookmark history list.")
 (defvar nvp-bmk-ring-index nil)
-(nvp-setup-cache nvp-bmk-ring-name ".bmk_history")
+(nvp:setup-cache nvp-bmk-ring-name ".bmk_history")
 
 (defsubst nvp-bmk--default-file (&optional file)
   (abbreviate-file-name
@@ -181,7 +181,7 @@ NO-INSERT."
 (defun nvp-bmk-next-bookmark (&optional arg)
   "Go to the next bookmark if there is one, otherwise loop back to the oldest."
   (interactive)
-  (nvp-defq arg -1)
+  (nvp:defq arg -1)
   (--if-let (nvp-bmk-next-index arg)
       (let* ((afile (ring-ref nvp-bmk-ring it))
              (bmk (nvp-bmk-make-record afile)))
@@ -212,7 +212,7 @@ NO-INSERT."
 ;; current bookmark menu list."
 ;;   (interactive
 ;;    (list (let ((default-directory nvp-bmk-directory))
-;;            (read-file-name "Bookmark File: ")) (nvp-prefix 4) (nvp-prefix 16)))
+;;            (read-file-name "Bookmark File: ")) (nvp:prefix 4) (nvp:prefix 16)))
 ;;   (when (not (file-exists-p filename))
 ;;     (message "Creating new bookmark file at %s" filename)
 ;;     (nvp-bmk-update-history filename make-current)

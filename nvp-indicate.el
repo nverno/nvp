@@ -12,7 +12,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls
+(nvp:decls
  :f (pulse-momentary-highlight-region pulse-momentary-highlight-one-line))
 
 ;; indicatation colors
@@ -85,7 +85,7 @@
 (defun nvp-indicate-long-lines (arg)
   "Toggle indication of long lines (length with prefix ARG, default 80)."
   (interactive "P")
-  (nvp-toggled-if 
+  (nvp:toggled-if 
       (let ((len (if arg (read-number "Length: ") 80))
             (font-lock-multiline t))
         (font-lock-add-keywords

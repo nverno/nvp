@@ -11,7 +11,7 @@
 (require 'cc-awk)
 (require 'nvp)
 (require 'info-look)
-(nvp-decls)
+(nvp:decls)
 
 ;;; Syntax
 
@@ -20,7 +20,7 @@
 
 ;;; Font-locking
 
-(nvp-font-lock-add-defaults 'awk-mode
+(nvp:font-lock-add-defaults 'awk-mode
   ("\$\\([0-9]+\\)" (1 font-lock-variable-name-face prepend))
   ((concat "\\<" (regexp-opt '("BEGINFILE" "ENDFILE") t) "\\>")
    (1 font-lock-keyword-face))
@@ -42,7 +42,7 @@
     (with-temp-buffer
       (insert-file-contents
        (expand-file-name
-        "doc/builtins.el" (file-name-directory (nvp-load-file-name))))
+        "doc/builtins.el" (file-name-directory (nvp:load-file-name))))
       (car (read-from-string (buffer-string))))))
 
 (defun nvp-awk-completion-at-point ()

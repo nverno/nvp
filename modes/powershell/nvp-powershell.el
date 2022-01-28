@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls)
+(nvp:decls)
 
 (defvar nvp-powershell--dir nil)
 (defvar nvp-powershell-abbrev-table nil)

@@ -24,7 +24,7 @@
 (defun nvp-ocaml-abbrev-module-sig (module)
   (let
       ((proc
-        (nvp-with-process "opam"
+        (nvp:with-process "opam"
           :proc-buff "*ocaml-sigs*"
           :proc-args ("config" "exec" "--" "ocaml"
                       "-init" (expand-file-name ".ocamlinit-bare" nvp-ocaml--etc))

@@ -65,10 +65,10 @@
 
 (define-abbrev-table 'emacs-lisp-nvp-abbrev-table
   '(("nb" "nvp-bindings" nil :system t)
-    ("nd" "nvp-decls" nil :system t)
-    ("np" "nvp-point" nil :system t)
-    ("nr" "nvp-req" nil :system t)
-    ("nds" "nvp-decls" nil :system t)
+    ("nd" "nvp:decls" nil :system t)
+    ("np" "nvp:point" nil :system t)
+    ("nr" "nvp:req" nil :system t)
+    ("nds" "nvp:decls" nil :system t)
     ("ncr" "nvp-completing-read" nil :system t)
     ("ndl" "nvp-display-location" nil :system t)
     ("niod" "nvp-install-on-demand" nil :system t)

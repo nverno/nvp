@@ -9,7 +9,7 @@
 ;;; Ensime
 
 ;; switch between source and REPL buffers
-(nvp-repl-switch "ensime" (:repl-mode 'ensime-inf-mode
+(nvp:repl-switch "ensime" (:repl-mode 'ensime-inf-mode
                            :repl-buffer-name ensime-inf-buffer-name
                            :repl-live-p 'ensime-inf-process-live-p
                            :repl-switch-fn 'pop-to-buffer
@@ -19,7 +19,7 @@
        (nvp-ensime-auto-start))
   (ensime-inf-run-scala))
 
-;; (nvp-repl-switch "sbt" (:repl-mode 'sbt-mode
+;; (nvp:repl-switch "sbt" (:repl-mode 'sbt-mode
 ;;                                    :))
 ;;; Server
 (defun nvp-ensime-auto-start ()

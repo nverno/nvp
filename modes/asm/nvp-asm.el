@@ -9,7 +9,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls :v (asm-mode-syntax-table))
+(nvp:decls :v (asm-mode-syntax-table))
 
 (defconst nvp-asm-imenu-expression
   '((nil "^\\s-*\\(\\_<[a-zA-Z_?][a-zA-Z0-9_$#@~?]*\\_>\\)\\s-*:" 1)))

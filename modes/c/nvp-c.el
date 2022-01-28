@@ -18,9 +18,9 @@
   (require 'nvp-compile))
 (require 'nvp-parse)
 (require 'nvp)
-(nvp-req 'nvp-c 'subrs)
-(nvp-auto "nvp-tag" 'nvp-tag-list-decls)
-(nvp-decls :f (forward-ifdef
+(nvp:req 'nvp-c 'subrs)
+(nvp:auto "nvp-tag" 'nvp-tag-list-decls)
+(nvp:decls :f (forward-ifdef
                clang-complete-load-args ; clang-complete
                asdf-where               ; asdf
                nvp-env-add              ; nvp-env
@@ -88,7 +88,7 @@
 ;;; Font-lock
 
 (dolist (mode '(c-mode c++-mode))
-  (nvp-font-lock-add-defaults mode
+  (nvp:font-lock-add-defaults mode
     ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
 
 ;;; Company
@@ -147,8 +147,8 @@
          (file (file-name-nondirectory buffer-file-name))
          (out (file-name-sans-extension file))
          (command
-          (format "%s %s -o %s%s %s" (nvp-program "gcc")
-                  flags out (nvp-with-gnu/w32 ".out" ".exe") file)))
+          (format "%s %s -o %s%s %s" (nvp:program "gcc")
+                  flags out (nvp:with-gnu/w32 ".out" ".exe") file)))
     (unless (assoc 'compile-command (buffer-local-variables))
       (setq-local compile-command command))
     (funcall-interactively 'nvp-compile current-prefix-arg)))
@@ -158,9 +158,9 @@
   (interactive "P")
   (let* ((out (concat (file-name-sans-extension
                        (file-name-nondirectory buffer-file-name))
-                      (nvp-with-gnu/w32 ".out" ".exe")))
+                      (nvp:with-gnu/w32 ".out" ".exe")))
          (command
-          (concat (or compiler (nvp-program "gcc")) " "
+          (concat (or compiler (nvp:program "gcc")) " "
                   (or flags "-s -O3") " "
                   buffer-file-name " -o " out "; "
                   (or (and (eq post-action 'no-run) "")

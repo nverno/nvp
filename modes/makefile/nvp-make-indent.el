@@ -6,7 +6,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-makefile)
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;; indentation in blocks, eg.  #if, #define
 (defvar nvp-makefile-indent-offset 2)
@@ -21,9 +21,9 @@
       (let ((beg (match-beginning 0)) end)
         (when (re-search-forward
                (concat "^else\\|" (cadr nvp-makefile-open/close)) finish t)
-          (setq end (nvp-point 'boll))
+          (setq end (nvp:point 'boll))
           (goto-char beg)
-          (while (and (nvp-goto 'bonll)
+          (while (and (nvp:goto 'bonll)
                       (< (point) end)
                       (not (looking-at makefile-dependency-regex)))
             (delete-horizontal-space)

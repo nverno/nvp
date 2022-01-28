@@ -35,7 +35,7 @@
 ;; transform by splitting on '-', eg.
 ;; 'nvp-abbrev--lisp-transformer' => 'na:lt' abbrev
 (defsubst nvp-abbrev--lisp-transformer (str &optional joiner splitter)
-  (nvp-defq splitter "-" joiner ":")
+  (nvp:defq splitter "-" joiner ":")
   (mapconcat (lambda (s)
                (if (string-empty-p s) joiner
                  (substring s 0 1)))

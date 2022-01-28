@@ -4,7 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-ocaml)
 (require 'ocamldebug)
-(nvp-decls :f (ocamldebug))
+(nvp:decls :f (ocamldebug))
 
 ;; ocamldebug.el has `ocamldebug-prefix-map'
 (defvar ocaml-debug-key-prefix (kbd "<f2> d"))

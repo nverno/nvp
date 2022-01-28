@@ -63,7 +63,7 @@
   (interactive (list (symbol-at-point)))
   (let ((str (nvp-scheme-help--doc-string sym))
         (sym sym))
-    (nvp-with-toggled-tip str
+    (nvp:with-toggled-tip str
       :help-fn #'(lambda ()
                    (interactive)
                    (x-hide-tip)

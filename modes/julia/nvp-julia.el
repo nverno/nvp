@@ -77,7 +77,7 @@
 ;; toggle pophelp help for symbol at point in pos-tip
 ;; (defun nvp-julia-popup-help-at-point ()
 ;;   (interactive)
-;;   (nvp-with-toggled-tip (nvp-julia-popup-doc-at-point)))
+;;   (nvp:with-toggled-tip (nvp-julia-popup-doc-at-point)))
 
 ;; -------------------------------------------------------------------
 ;;; Yas

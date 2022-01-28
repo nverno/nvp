@@ -24,7 +24,7 @@ Append to `outline-regexp' with prefix."
       ";;; End:"))))
 
 ;;;###autoload(autoload 'nvp-outline-hydra/body "nvp-outline")
-(nvp-hydra-set-property 'nvp-outline-hydra)
+(nvp:hydra-set-property 'nvp-outline-hydra)
 (defhydra nvp-outline-hydra (:color red)
   "
 ^Hide^              ^Show^           ^Move

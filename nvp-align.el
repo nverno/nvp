@@ -11,7 +11,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'align)
-(nvp-decls :f (nvp-read-mode cl-prettyprint))
+(nvp:decls :f (nvp-read-mode cl-prettyprint))
 
 (nvp-bindings nvp-align-keymap nil
   :create t
@@ -38,8 +38,8 @@
 (16) prefix, highlight changes that would occur."
   (interactive
    (cons (prefix-numeric-value current-prefix-arg)
-         (or (nvp-tap-or-region 'bdwim (nvp-prefix 4 'buffer 'defun) :pulse t)
-             (nvp-tap-or-region 'bdwim 'paragraph :pulse t))))
+         (or (nvp:tap-or-region 'bdwim (nvp:prefix 4 'buffer 'defun) :pulse t)
+             (nvp:tap-or-region 'bdwim 'paragraph :pulse t))))
   (if (eq arg 16) (call-interactively 'align-highlight-rule)
     (indent-region beg end)
     (align beg end)))
@@ -61,8 +61,8 @@
 (defun nvp-align-by-last-char (char &optional beg end)
   "Align BEG to END or bounds of paragraph by CHAR.
 With prefix or if char is '\\', ensure CHAR is at the end of the line."
-  (interactive (nvp-with-region beg end 'paragraph :pulse t
-                 (list (nvp-input 'lcs) beg end)))
+  (interactive (nvp:with-region beg end 'paragraph :pulse t
+                 (list (nvp:input 'lcs) beg end)))
   (let ((re (concat "\\(\\s-+\\)" (regexp-quote char)
                     (if (or current-prefix-arg (string= char "\\")) "$" ""))))
     (align-regexp beg end re)))
@@ -112,7 +112,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 
 ;; Collect align/exclude rules for MODE
 (defun nvp-align--mode-rules (&optional mode)
-  (nvp-defq mode major-mode)
+  (nvp:defq mode major-mode)
   (--map
    (--filter
     (--> (eval (cdr (assoc 'modes (cddr it))))
@@ -123,12 +123,12 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;;;###autoload
 (defun nvp-align-show-rules (&optional mode)
   "Show align/exclude rules applicable to `major-mode' or MODE."
-  (interactive (list (nvp-prefix 4 (intern (nvp-read-mode)) major-mode)))
-  (nvp-defq mode major-mode)
+  (interactive (list (nvp:prefix 4 (intern (nvp-read-mode)) major-mode)))
+  (nvp:defq mode major-mode)
   (-let (((rules excludes) (nvp-align--mode-rules mode))
          (groups (--filter (apply #'provided-mode-derived-p mode (eval it))
                            nvp-align--groups)))
-    (nvp-with-results-buffer nil (format "Align rules for %s" mode)
+    (nvp:with-results-buffer nil (format "Align rules for %s" mode)
       (princ ";;; Member groups\n")
       (pp groups)
       (princ "\n;;; Align Rules\n")
@@ -170,7 +170,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; exclude: exc-open-comment
 ;; setf (assoc 'make-assignment align-rules-list)
 ;; (defun nvp-align-mode (mode)
-;;   (interactive (list (nvp-prefix 4 (intern (nvp-read-mode)) major-mode)))
+;;   (interactive (list (nvp:prefix 4 (intern (nvp-read-mode)) major-mode)))
 ;;   ())
 
 ;; FIXME: these rules can be useful for other modes: makefile, automake, etc.

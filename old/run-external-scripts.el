@@ -7,8 +7,8 @@
              (nvp-lookup-password "localhost" (user-login-name) nil))
          (read-shell-command "Sudo command: ")
          "*sudo-command*"))
-  (let* ((proc (nvp-with-process "bash"
-                 :proc-buff (nvp-comint-buffer :name buffer :new t)
+  (let* ((proc (nvp:with-process "bash"
+                 :proc-buff (nvp:comint-buffer :name buffer :new t)
                  :proc-args ("-l" "-c" command)
                  :shell t)))
     (process-send-string proc password)
@@ -52,15 +52,15 @@
                         "Function: "
                         (nvp-ext--script-functions file))
                        nil))
-          (sudo (nvp-with-gnu (y-or-n-p "Sudo? "))))
+          (sudo (nvp:with-gnu (y-or-n-p "Sudo? "))))
      (list file funcs sudo nil)))
   (let ((cmd (nvp-ext--script-command file functions)))
-    (nvp-with-process-filter
-      (nvp-with-gnu/w32
+    (nvp:with-process-filter
+      (nvp:with-gnu/w32
           (if sudo
               (nvp-ext-sudo-command passwd cmd)
             (start-process-shell-command
-             "bash" (nvp-comint-buffer :name file) (concat "bash -l " cmd)))
+             "bash" (nvp:comint-buffer :name file) (concat "bash -l " cmd)))
         (start-process-shell-command
-         "bash" (nvp-comint-buffer :name file) "bash -l " cmd)))))
+         "bash" (nvp:comint-buffer :name file) "bash -l " cmd)))))
 

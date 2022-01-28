@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls :v (sql-product sql-buffer zeal-at-point-docset))
+(nvp:decls :v (sql-product sql-buffer zeal-at-point-docset))
 (declare-function sql-set-product "sql")
 (declare-function sql-set-sqli-buffer "sql")
 (declare-function sql-product-font-lock "sql")

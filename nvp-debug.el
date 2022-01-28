@@ -4,13 +4,13 @@
 ;;
 ;;; FIXME: gud-mode seems to clobber kill-buffer-hooks,
 ;;         so shell history isn't being saved/read properly
-;; - replace nvp-repl-switch macro
+;; - replace nvp:repl-switch macro
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'gud)
-(nvp-decls)
+(nvp:decls)
 
 ;; -------------------------------------------------------------------
 ;;; GDB REPL
@@ -26,7 +26,7 @@
   (nvp-comint-setup-history (concat ".gud_" name "_history")))
 
 ;;;###autoload(autoload 'nvp-gud-repl-switch "nvp-debug")
-(nvp-repl-switch "gud" (:repl-mode 'gud-mode
+(nvp:repl-switch "gud" (:repl-mode 'gud-mode
                         :repl-find-fn
                         #'(lambda ()
                             (and (comint-check-proc gud-comint-buffer)
@@ -37,7 +37,7 @@
 
 ;;;###autoload(autoload 'nvp-gud-hydra/body "nvp-debug")
 ;; compiler doesnt understande these functions
-(nvp-hydra-set-property 'nvp-gud-hydra)
+(nvp:hydra-set-property 'nvp-gud-hydra)
 (with-no-warnings
   (defhydra nvp-gud-hydra (:color amaranth
                            :pre nvp-indicate-cursor-pre

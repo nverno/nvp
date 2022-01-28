@@ -29,7 +29,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-yaml-indent)
-(nvp-decls)
+(nvp:decls)
 
 ;; recognized CI types -- for jumping to info/linting
 ;; forms: (type prompt-key prompt-message linter &rest linter-args)
@@ -73,7 +73,7 @@
 (defun nvp-yaml-read-known-type ()
   (eval-when-compile
     (macroexpand-all
-     `(nvp-read-char-case "Yaml type: " 'verbose
+     `(nvp:read-char-case "Yaml type: " 'verbose
         ,@(cl-loop for type in nvp-yaml-ci-types
              for prompt = (nvp-yaml--value (car type) 'prompt)
              collect (list (car prompt) (cadr prompt) `(quote ,(car type))))))))
@@ -100,7 +100,7 @@
 ;; guess or prompt for type of yaml config (eg. CI)
 (defun nvp-yaml-type (&optional prompt)
   (if prompt (nvp-yaml-read-known-type)
-    (let ((dir (nvp-path 'ds (buffer-file-name)))
+    (let ((dir (nvp:path 'ds (buffer-file-name)))
           (fname (nvp:bfn)))
       (cond
        ((string-prefix-p ".appveyor" fname) 'appveyor)
@@ -141,15 +141,15 @@
   "Validate buffer using local validator (async)."
   (let* ((prog (nvp:as-string type))
          (proc
-          (nvp-with-process prog
+          (nvp:with-process prog
             :proc-name prog
             :proc-args (args)
-            :proc-buff (nvp-comint-buffer
+            :proc-buff (nvp:comint-buffer
                          :name (concat "*lint-" prog "*")
                          (erase-buffer))
             :proc-sentinel #'nvp-yaml-lint-sentinel)))
     ;; travis process wont return on windows ionno
-    (nvp-with-w32 (ignore-errors (process-send-eof prog)))
+    (nvp:with-w32 (ignore-errors (process-send-eof prog)))
     proc))
 
 (defun nvp-yaml-lint-sentinel (p m)
@@ -182,7 +182,7 @@
 (defun nvp-yaml-help-at-point (sym &optional arg)
   "Attempt to jump to help for SYM at point, or prompt.
 Otherwise, goto help reference if available."
-  (interactive (list (nvp-tap 'tapi)))
+  (interactive (list (nvp:tap 'tapi)))
   (--when-let (nvp-yaml-execute 'help arg sym)
     (browse-url it)))
 

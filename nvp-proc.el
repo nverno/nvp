@@ -10,19 +10,19 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;;;###autoload
 (defun nvp-async-shell-command-to-string (command &optional callback)
   "Execute COMMAND as an `async-shell-command', running CALLBACK with results
 if non-nil. Default just barfs output in message win or lose."
-  (nvp-defq callback
+  (nvp:defq callback
     (lambda (p _m)
       (message
        (with-current-buffer (process-buffer p)
          (prog1 (string-trim-right (buffer-string))
            (kill-buffer (current-buffer)))))))
-  (nvp-with-process command
+  (nvp:with-process command
     :proc-name "async-string"
     :proc-buff (generate-new-buffer-name " *temp*")
     :shell t
@@ -43,7 +43,7 @@ if non-nil. Default just barfs output in message win or lose."
 ;; On failure, jump to process-buffer
 ;;;###autoload
 (defun nvp-proc-default-sentinel (&optional return-buffer)
-  (nvp-with-syms (p m buff pname)
+  (nvp:with-syms (p m buff pname)
     `(lambda (,p ,m)
        (let ((,pname (process-name ,p))
              (,buff (process-buffer ,p)))

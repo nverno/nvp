@@ -15,8 +15,8 @@
          (file (file-name-nondirectory buffer-file-name))
          (out (file-name-sans-extension file))
          (compile-command
-          (format "%s %s -o %s%s %s" (nvp-program "gfortran")
-                  flags out (nvp-with-gnu/w32 "" ".exe") file)))
+          (format "%s %s -o %s%s %s" (nvp:program "gfortran")
+                  flags out (nvp:with-gnu/w32 "" ".exe") file)))
     (nvp-compile)))
 
 (provide 'nvp-fortran)

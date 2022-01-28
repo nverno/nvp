@@ -10,20 +10,20 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'yasnippet))
-(nvp-auto "nvp-parse" 'nvp-parse-current-function)
-(nvp-auto "s" 's-upper-camel-case 's-snake-case 's-match)
+(nvp:auto "nvp-parse" 'nvp-parse-current-function)
+(nvp:auto "s" 's-upper-camel-case 's-snake-case 's-match)
 
 (defvaralias '$% 'yas-selected-text)
-(nvp-decls :v (yas-moving-away-p yas-modified-p))
+(nvp:decls :v (yas-moving-away-p yas-modified-p))
 
 ;; yas-inside-string uses `font-lock-string-face'
 (defsubst nvp-yas-in-string () (nth 3 (syntax-ppss)))
 (defsubst nvp-yas-in-comment () (nth 4 (syntax-ppss)))
-(defsubst nvp-yas-in-string-or-comment () (nvp-ppss 'soc))
-(defsubst nvp-yas-bfn () (nvp-path 'bfs nil :or-name t))
-(defsubst nvp-yas-bfn-no-ext () (nvp-path 'bfse nil :or-name t))
-(defsubst nvp-yas-dfn () (nvp-path 'ds))
-(defsubst nvp-yas-ext () (nvp-path 'ext))
+(defsubst nvp-yas-in-string-or-comment () (nvp:ppss 'soc))
+(defsubst nvp-yas-bfn () (nvp:path 'bfs nil :or-name t))
+(defsubst nvp-yas-bfn-no-ext () (nvp:path 'bfse nil :or-name t))
+(defsubst nvp-yas-dfn () (nvp:path 'ds))
+(defsubst nvp-yas-ext () (nvp:path 'ext))
 (defsubst nvp-yas-indent () (current-indentation))
 
 (defalias 'yas-comment-string 'nvp-yas-comment)
@@ -159,7 +159,7 @@ Accounts for multi-character comments by recycling the second character."
 ;; name of current function or script
 (defun nvp-yas-function-or-script ()
   (or (nvp-parse-current-function)
-      (nvp-path 'bfse nil :or-name t)))
+      (nvp:path 'bfse nil :or-name t)))
 
 ;; build param strings: params range from BEG length LEN
 ;; each param is prepended by JOIN string

@@ -10,7 +10,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls :f (paredit-delete-indentation))
+(nvp:decls :f (paredit-delete-indentation))
 
 (nvp-bindings nvp-list-keymap :now
   :create t
@@ -25,7 +25,7 @@
 
 ;; Adds commas after numbers in list, like matlab -> R.
 (defun nvp-list-insert-commas (str &optional beg end)
-  (interactive (nvp-with-region beg end 'list :pulse t (list nil beg end)))
+  (interactive (nvp:with-region beg end 'list :pulse t (list nil beg end)))
   (let ((res (replace-regexp-in-string
               "\\([0-9]\\)\\s-+" "\\1, "
               (or str (buffer-substring-no-properties beg end)))))
@@ -122,8 +122,8 @@ paren."
   (let (comt)
     (save-excursion
       (move-beginning-of-line (if arg 1 0))
-      (when (skip-syntax-forward "^<" (nvp-point 'eol))
-        (setq comt (delete-and-extract-region (point) (nvp-point 'eol))))
+      (when (skip-syntax-forward "^<" (nvp:point 'eol))
+        (setq comt (delete-and-extract-region (point) (nvp:point 'eol))))
       (delete-indentation arg)
       (when comt
         (save-excursion
@@ -171,7 +171,7 @@ This is useful, e.g, for use with `visual-line-mode'."
 (defun nvp-fill-paragraph-toggle (&optional column)
   "Toggle paragraph filling. With prefix, prompt for `fill-column'."
   (interactive (list (and current-prefix-arg (read-number "Fill column: "))))
-  (let ((fill-column (or column (nvp-toggled-if fill-column most-positive-fixnum))))
+  (let ((fill-column (or column (nvp:toggled-if fill-column most-positive-fixnum))))
     (deactivate-mark t)
     (call-interactively
      (or nvp-fill-paragraph-function fill-paragraph-function) 'fill-paragraph))

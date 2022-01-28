@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
-(nvp-decl "nvp-read" nvp-read-mode nvp-read-mode-var)
+(nvp:decl "nvp-read" nvp-read-mode nvp-read-mode-var)
 
 (defvar nvp-snippet-default-conditions
   '(("comment" (nvp-yas-in-comment))
@@ -20,7 +20,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Hooks
-(nvp-decl nvp-yas-in-string nvp-yas-in-comment)
+(nvp:decl nvp-yas-in-string nvp-yas-in-comment)
 
 (define-advice yas-maybe-load-snippet-buffer
     (:around (orig-fn &rest args) "save-excursion")
@@ -37,7 +37,7 @@ When part of `before-save-hook', won't add condition on initial save."
              (pred)
              (remove-hook 'before-save-hook #'nvp-snippet-save-hook t)
              (nvp-snippet-add-field "condition" pred)))
-    (let ((dir (ignore-errors (or (nvp-path 'ds) (nvp-path 'dn)))))
+    (let ((dir (ignore-errors (or (nvp:path 'ds) (nvp:path 'dn)))))
       (when-let*
           ((test
             (assoc-string dir (or (bound-and-true-p nvp-local-snippet-conditions)
@@ -68,7 +68,7 @@ When part of `before-save-hook', won't add condition on initial save."
 If TEXT is non-nil use as `yas-selected-text'.
 DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (interactive
-   (let* ((mode-name (nvp-prefix 16 (nvp-read-mode) (symbol-name major-mode)))
+   (let* ((mode-name (nvp:prefix 16 (nvp-read-mode) (symbol-name major-mode)))
           (snippet-dir
            (if (not nvp-mode-snippet-dir)
                (expand-file-name mode-name nvp/snippet)
@@ -77,13 +77,13 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
               (file-name-base nvp-mode-snippet-dir)))))
      (list mode-name
            snippet-dir
-           (nvp-prefix 4 'do-dired)
+           (nvp:prefix 4 'do-dired)
            (or yas-selected-text
                (and (region-active-p)
                     (buffer-substring-no-properties
                      (region-beginning) (region-end)))))))
   (setq mode (nvp:as-string mode))
-  (nvp-defq default-new-snippet yas-new-snippet-default)
+  (nvp:defq default-new-snippet yas-new-snippet-default)
   (unless (file-exists-p snippet-dir)
     (make-directory snippet-dir))
   ;; with prefix dired the snippet directory
@@ -122,7 +122,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 
 ;; de/in-crement snippet expansion numbers in selected region
 (defun nvp-snippet-increment-count (bounds)
-  (interactive (list (nvp-tap 'bdwim)))
+  (interactive (list (nvp:tap 'bdwim)))
   (cl-destructuring-bind (beg . end) bounds
     (goto-char beg)
     (while (re-search-forward "\$\{?\\([[:digit:]]\\)" end 'move)
@@ -147,7 +147,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;; (modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
 ;; (modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
 
-(nvp-define-cache nvp-snippet-header-end ()
+(nvp:define-cache nvp-snippet-header-end ()
   "Return marker at end of snippet header."
   :local t
   :cache nvp-snippet-header-end--cache

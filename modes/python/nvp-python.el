@@ -10,7 +10,7 @@
   (require 'nvp-python-ct "./compile/nvp-python-ct"))
 (require 'comint)
 (require 'python)
-(nvp-decls :f (conda-env-send-buffer
+(nvp:decls :f (conda-env-send-buffer
                anaconda-mode-complete-extract-names anaconda-mode-call))
 
 (defvar nvp-python-cython-repo "https://github.com/python/cpython")
@@ -229,7 +229,7 @@ the console."
                   (match-string 1 item)))))))))
 
 ;;; W32 old env. stuff
-(nvp-with-w32
+(nvp:with-w32
  ;; update exec path to include DIR
  (defun nvp-python-add-exec-path (dir)
    (let ((path (cl-remove-duplicates

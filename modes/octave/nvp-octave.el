@@ -7,7 +7,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'octave)
-(nvp-decls :f (nvp-hap--docstring-from-buffer)
+(nvp:decls :f (nvp-hap--docstring-from-buffer)
            :v (hs-special-modes-alist))
 
 (with-eval-after-load 'hideshow
@@ -119,7 +119,7 @@
 ;; display for thing at point in popup tooltip
 (defun nvp-octave-help-at-point (fn)
   (interactive (list (thing-at-point 'symbol)))
-  (nvp-with-toggled-tip (nvp-octave--docstring fn)
+  (nvp:with-toggled-tip (nvp-octave--docstring fn)
     :help-fn (lambda ()
                (interactive)
                (display-buffer (nvp-octave--doc-buffer fn) t))))
@@ -132,7 +132,7 @@
 (defun nvp-octave-run ()
   (interactive)
   (shell-command
-   (concat (nvp-with-gnu/w32 "./" "octave ")
+   (concat (nvp:with-gnu/w32 "./" "octave ")
            (file-name-nondirectory (buffer-file-name)))))
 
 ;;; Compile
@@ -141,7 +141,7 @@
   (interactive)
   (setq-local compilation-read-command nil)
   (let ((compile-command
-         (concat (nvp-with-gnu/w32 "./" "octave ")
+         (concat (nvp:with-gnu/w32 "./" "octave ")
                  (file-name-nondirectory buffer-file-name))))
     (call-interactively 'compile)))
 

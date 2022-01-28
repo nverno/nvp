@@ -4,7 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'cider nil t)
-(nvp-decls :f (org-bookmark-jump-unhide))
+(nvp:decls :f (org-bookmark-jump-unhide))
 
 ;; -------------------------------------------------------------------
 ;;; Util

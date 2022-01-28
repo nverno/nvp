@@ -22,7 +22,7 @@
       ))))
 
 ;; setup clink so it starts whenever cmd.exe runs
-(nvp-with-w32
+(nvp:with-w32
   (defun shell-w32tools-clink-install ()
     (start-process "clink" "*nvp-install*" "cmd.exe"
                    "clink" "autorun" "install")))

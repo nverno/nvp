@@ -4,13 +4,13 @@
 ;;; Code:
 (require 'nvp-macs-common)
 
-(defmacro nvp-local-defvars (&rest defvars)
+(defmacro nvp:local-defvars (&rest defvars)
   (macroexp-progn
    (cl-loop for dv in defvars
       collect `(defvar ,dv))))
 
-(defmacro nvp-local-vars ()
-  `(nvp-local-defvars
+(defmacro nvp:local-vars ()
+  `(nvp:local-defvars
     nvp/abbrevs
     nvp/auto
     nvp/auto-site
@@ -97,14 +97,14 @@
     url-http-end-of-headers
     url-request-method url-request-extra-headers url-request-data))
 
-(cl-defmacro nvp-decls (&key v f)
+(cl-defmacro nvp:decls (&key v f)
   `(progn
-     (nvp-local-vars)
+     (nvp:local-vars)
      ,(when v
-        `(nvp-local-defvars ,@v))
+        `(nvp:local-defvars ,@v))
      ,(when f
-        `(nvp-decl ,@f))
-     (nvp-decl
+        `(nvp:decl ,@f))
+     (nvp:decl
        ;; nvp
        nvp-repeat-command
        nvp-autoload-keymap
@@ -187,7 +187,7 @@
        nvp-setup-program
        nvp-lookup-password)
 
-     (nvp-decl                          ; builtins
+     (nvp:decl                          ; builtins
        minibuffer-keyboard-quit
        ielm ielm-return
        ert-run-tests-interactively
@@ -195,7 +195,7 @@
        w32-shell-execute
        xref-pop-marker-stack xref-push-marker-stack)
 
-     (nvp-decl                          ; external packages
+     (nvp:decl                          ; external packages
        pos-tip-show
        projectile-project-name
        do-smooth-scroll

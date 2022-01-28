@@ -4,12 +4,12 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'trace)
-(nvp-auto "find-func" 'read-library-name 'find-library-name)
-(nvp-auto "nvp-elisp" 'nvp-elisp-matching-forms)
-(nvp-decl flatten-tree)
+(nvp:auto "find-func" 'read-library-name 'find-library-name)
+(nvp:auto "nvp-elisp" 'nvp-elisp-matching-forms)
+(nvp:decl flatten-tree)
 
 ;;;###autoload(autoload 'nvp-trace-hydra/body "nvp-trace")
-(nvp-hydra-set-property 'nvp-trace-hydra)
+(nvp:hydra-set-property 'nvp-trace-hydra)
 (defhydra nvp-trace-hydra (:color blue )
   ("f" trace-function "trace func")
   ("b" trace-function-background "trace func background")
@@ -52,7 +52,7 @@
 With \\[universal-argument], trace macros and substs as well.
 With \\[universal-argument] \\[universal-argument] prompt for filter."
   (interactive (list (read-library-name) current-prefix-arg
-                     (nvp-prefix '>=16 (read-string "Filter: "))))
+                     (nvp:prefix '>=16 (read-string "Filter: "))))
   (require 'nvp-elisp)                  ;gather all defun-like forms
   (let* ((def-forms (if macros (flatten-tree nvp-trace-defun-forms)
                       (assoc 'defun nvp-trace-defun-forms)))

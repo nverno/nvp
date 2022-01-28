@@ -21,7 +21,7 @@
 (defun nvp-theme-switch ()
   "Toggle light/dark themes."
   (interactive)
-  (nvp-toggled-if (nvp-theme-dark)
+  (nvp:toggled-if (nvp-theme-dark)
     (nvp-theme-light)))
 
 (provide 'nvp-theme)

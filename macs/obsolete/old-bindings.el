@@ -16,11 +16,11 @@ or use REPEAT-KEY if specified."
   (when (or bindings repeat)            ;w/o one of these, do nothing
     (let ((msg (nvp--msg-from-bindings bindings)))
       `(progn
-         (nvp-declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
+         (nvp:declare "" nvp-indicate-cursor-pre nvp-indicate-cursor-post)
          ;; only set first time
          (when (null overriding-terminal-local-map)
            (let ((tmap (make-sparse-keymap))
-                 (repeat-key ,(when repeat (or repeat-key `(nvp-input 'lcs)))))
+                 (repeat-key ,(when repeat (or repeat-key `(nvp:input 'lcs)))))
              ,(when repeat
                 (prog1 nil
                   (setq msg (concat msg (and bindings ", ") "[%s] repeat command"))))

@@ -4,7 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require '4clojure nil t)
 (require 'request)
-(nvp-decls)
+(nvp:decls)
 (autoload 'nvp-netrc "nvp-conf")
 
 (defconst 4clojure-x-save-file (expand-file-name "4clojure-place.txt" nvp/data)

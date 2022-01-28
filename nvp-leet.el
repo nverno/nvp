@@ -11,7 +11,7 @@
       (user-error "aio library not found."))))
 (require 'leetcode)
 (require 'aio)
-(nvp-decls :f (nvp-leetcode-hook))
+(nvp:decls :f (nvp-leetcode-hook))
 
 ;; -------------------------------------------------------------------
 ;;; Test cases

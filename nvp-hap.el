@@ -34,8 +34,8 @@
 (require 'pos-tip)
 (require 'company)
 (require 'company-quickhelp)
-(nvp-decls)
-(nvp-auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
+(nvp:decls)
+(nvp:auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
 (defvar info-lookup-other-window-flag)
 
 ;; local override function to get doc for quickhelp-toggle
@@ -54,7 +54,7 @@
     ;; moving on to another candidate - I believe breaking the `while-no-input'
     ;; cycle, but not really sure)
     ;; #<marker at 8895 in company-quickhelp.el>
-    (nvp-toggled-if (funcall nvp-quickhelp-toggle-function)
+    (nvp:toggled-if (funcall nvp-quickhelp-toggle-function)
       ;; :this-cmd 'nvp-sh-quickhelp-toggle
       :this-cmd 'company-quickhelp-manual-begin
       (x-hide-tip))))

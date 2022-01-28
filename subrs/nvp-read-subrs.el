@@ -20,14 +20,14 @@
 (defmacro nvp:read-with-ido-fallback (&rest body)
   "Do BODY with custom `ido-fallback-command'."
   (declare (indent defun))
-  `(nvp-with-letf 'ido-fallback-command 'nvp-read--ido-fallback
+  `(nvp:with-letf 'ido-fallback-command 'nvp-read--ido-fallback
      ,@body))
 
 (defmacro nvp:read-file-with-fallback (&optional root &rest body)
   "Do BODY but catch \\='nvp-fallback. If result doesn't exist, then
 return its directory name."
   (declare (indent 1))
-  (nvp-with-syms (res)
+  (nvp:with-syms (res)
     `(progn
        (setq nvp-exit nil)
        (let ((,res

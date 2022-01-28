@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls)
+(nvp:decls)
 (defvar exenv-dir "~/.exenv")
 
 ;; -------------------------------------------------------------------
@@ -33,7 +33,7 @@
 
 (defun exenv-install (id)
   (interactive (list (aref (tabulated-list-get-entry) 0)))
-  (nvp-with-process-log
+  (nvp:with-process-log
     (start-process-shell-command
      "exenv" "*exenv*" (concat "exenv install " id))
     :on-error (pop-to-buffer (current-buffer))

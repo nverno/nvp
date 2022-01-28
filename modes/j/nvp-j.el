@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'j-mode nil t)
-(nvp-decl j-console-execute-line j-console-execute-buffer)
+(nvp:decl j-console-execute-line j-console-execute-buffer)
 
 ;; provided j-atoms
 ;; (custom-set-faces

@@ -14,11 +14,11 @@
 (require 'nvp)
 (require 'help-mode)
 
-(nvp-decls :f (nvp-read-mode advice-mapc advice-remove)
+(nvp:decls :f (nvp-read-mode advice-mapc advice-remove)
            :v (c-lang-constants))
-(nvp-auto "nvp-util" 'nvp-s-wrap)
-(nvp-auto "s" 's-split-words)
-(nvp-auto "cl-extra" 'cl-prettyprint)
+(nvp:auto "nvp-util" 'nvp-s-wrap)
+(nvp:auto "s" 's-split-words)
+(nvp:auto "cl-extra" 'cl-prettyprint)
 
 (define-button-type 'help-marker
   :supertype 'help-xref
@@ -111,20 +111,20 @@
 
 (defun nvp-dev-describe-variable (variable)
   "Try to pretty print VARIABLE in temp buffer."
-  (interactive (list (nvp-tap 'evari)))
+  (interactive (list (nvp:tap 'evari)))
   (let ((val (if (symbolp variable) (eval variable)
                variable))
         (print-escape-newlines t)
         (print-circle t)
         ;; (print-gensym t)
         (inhibit-read-only t))
-    (nvp-with-results-buffer nil
+    (nvp:with-results-buffer nil
         (format "Variable ('%s'): %S" (type-of val) variable)
       (princ (nvp-pp-variable-to-string val))
       (emacs-lisp-mode))))
 
 (defun nvp-dev-describe-mode (&optional mode)
-  (interactive (list (nvp-prefix 4 (nvp-read-mode) major-mode)))
+  (interactive (list (nvp:prefix 4 (nvp-read-mode) major-mode)))
   (let ((print-escape-newlines t)
         (print-circle t)
         (inhibit-read-only t)
@@ -162,7 +162,7 @@
                (princ (format ";; %s" (car i)))
                (cl-prettyprint (cdr i))
                (princ "\n"))))))
-    (nvp-with-results-buffer nil (format "%S variables" mode)
+    (nvp:with-results-buffer nil (format "%S variables" mode)
       (princ ";;; Variables\n")
       (funcall print-fn vars 'values)
       (princ ";;; Functions\n")
@@ -177,12 +177,12 @@
 
 (defun nvp-dev-features (prefix)
   "List my loaded `features', or prompt for PREFIX."
-  (interactive (list (nvp-prefix 4 (read-string "Prefix: ") "nvp")))
+  (interactive (list (nvp:prefix 4 (read-string "Prefix: ") "nvp")))
   (let* ((fs (sort
               (--filter (string-prefix-p prefix (symbol-name it)) features)
               #'string-lessp))
          (title (format "Loaded '%s' features (%d)" prefix (length fs))))
-    (nvp-with-results-buffer nil title
+    (nvp:with-results-buffer nil title
       (cl-prettyprint fs))))
 
 ;; dump lang's `c-lang-constants'
@@ -195,7 +195,7 @@
   (let ((print-escape-newlines t)
         (print-circle t)
         (inhibit-read-only t))
-    (nvp-with-results-buffer nil (format "c-lang-constants for %s" mode)
+    (nvp:with-results-buffer nil (format "c-lang-constants for %s" mode)
       (dolist (v (append c-lang-constants ()))
         (when (symbolp v)
           (princ v)
@@ -224,7 +224,7 @@
                           field))
         start end text)
     (if (not overlays) (message "Nothing here :(")
-      (nvp-with-results-buffer nil (format "Overlays at %d in %S" pos obuf)
+      (nvp:with-results-buffer nil (format "Overlays at %d in %S" pos obuf)
         (dolist (o overlays)
           (setq start (overlay-start o)
                 end (overlay-end o)
@@ -246,7 +246,7 @@
 ;; -------------------------------------------------------------------
 ;;; Syntax
 
-(nvp-lazy-defvar nvp-syntax-at-point-help
+(nvp:lazy-defvar nvp-syntax-at-point-help
   (lambda ()
     (let
         ((help-strs
@@ -284,7 +284,7 @@ delimiter or an Escaped or Char-quoted character."
 With prefix, display in same frame using `display-buffer' ACTION."
   (interactive (list (point-marker) (prefix-numeric-value current-prefix-arg)))
   (let ((ppss (syntax-ppss marker))
-        (help-str (nvp-lazy-val nvp-syntax-at-point-help)))
+        (help-str (nvp:lazy-val nvp-syntax-at-point-help)))
     (help-setup-xref (list #'nvp-syntax-at-point marker)
                      (called-interactively-p 'interactive))
     (nvp-display-buffer-with-action action
@@ -344,7 +344,7 @@ With \\[universal-argument] prompt for THING at point."
            (if current-prefix-arg
                (intern (read-from-minibuffer "Thing to fontify: "))
              'symbol))
-          (bnds (nvp-tap 'btap thing)))
+          (bnds (nvp:tap 'btap thing)))
      (list (read-face-name "Fontifaction face: ") (car bnds) (cdr bnds))))
   (put-text-property beg end 'font-lock-face face))
 
@@ -375,7 +375,7 @@ With \\[universal-argument] prompt for THING at point."
          (cl-remove-duplicates 
           (sort (font-family-list) #'(lambda (x y) (string< (upcase x) (upcase y))))
           :test 'string=)))
-    (nvp-with-results-buffer (help-buffer) "Available Fonts"
+    (nvp:with-results-buffer (help-buffer) "Available Fonts"
       (font-lock-mode)
       (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
         (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
@@ -396,7 +396,7 @@ With \\[universal-argument] prompt for THING at point."
     (mapc (lambda (w) (cl-callf 1+ (gethash w ht 0))) words)
     (maphash (lambda (key val) (push (cons val key) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
-    (nvp-with-results-buffer nil "Word Counts"
+    (nvp:with-results-buffer nil "Word Counts"
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
 

@@ -14,11 +14,11 @@
 (require 'company)
 (require 'sh-script)
 (require 'nvp-shell-common)
-(nvp-req 'nvp-shell 'subrs)
-(nvp-decls :f (company-shell
+(nvp:req 'nvp-shell 'subrs)
+(nvp:decls :f (company-shell
                sh-comp-completion-at-point sh-comp-candidates sh-comp--xref-backend))
 
-(nvp-auto "nvp-sh-help" 'nvp-sh-quickhelp-toggle 'nvp-sh-company-show-doc-buffer)
+(nvp:auto "nvp-sh-help" 'nvp-sh-quickhelp-toggle 'nvp-sh-company-show-doc-buffer)
 
 ;; for jumping b/w functions -- see `sh-imenu-generic-expression'
 (eval-and-compile
@@ -105,7 +105,7 @@ Used to set `end-of-defun-function'."
 ;;; Font-locks
 
 ;; Add font-locking & register additions
-(nvp-font-lock-add-defaults 'sh-mode
+(nvp:font-lock-add-defaults 'sh-mode
   ;; gaudy array faces
   ("\\${\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
    (1 'nvp-italic-variable-face prepend))
@@ -219,7 +219,7 @@ Like `sh-current-defun-name' but ignore variables."
 
 (defun nvp-sh-locals ()
   "Define local variables to be called in hook."
-  (nvp-setq-local
+  (nvp:setq-local
     beginning-of-defun-function #'nvp-sh-beginning-of-defun
     end-of-defun-function       #'nvp-sh-end-of-defun
     align-rules-list nvp-sh-align-rules-list
@@ -233,7 +233,7 @@ Like `sh-current-defun-name' but ignore variables."
   ;; local version of `company-active-map' to rebind popup/help functions
   (add-function :before-until (local 'nvp-quickhelp-toggle-function)
                 #'nvp-sh-quickhelp-toggle)
-  (nvp-setq-local company-active-map nvp-sh-company-active-map
+  (nvp:setq-local company-active-map nvp-sh-company-active-map
                   company-backends (remq 'company-capf company-backends)
                   company-transformers '(company-sort-by-backend-importance))
   (push 'company-capf company-backends)

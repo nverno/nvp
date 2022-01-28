@@ -32,7 +32,7 @@
 ;; kill jupyter processes
 (defun nvp-jupyter-kill-processes ()
   (interactive)
-  (nvp-with-gnu/w32
+  (nvp:with-gnu/w32
       (start-process "pkill" nil "pkill" "jupyter")
     (w32-shell-execute
      "runas" "powershell" "-c gps jupyter* | stop-process")))
@@ -42,7 +42,7 @@
   (interactive "P")
   (let* ((proc (if arg (read-string "Process Name: ") "jupyter"))
          (res
-          (nvp-with-gnu/w32
+          (nvp:with-gnu/w32
               (mapcar (lambda (s)
                         (apply 'format "(%s . %s)" (nreverse (split-string s))))
                       (process-lines "pgrep" "-l" proc))
@@ -69,10 +69,10 @@
      (declare-function conda-env-activate "conda-env")
      (declare-function nvp-setup-local "nvp")
      (nvp-setup-local "python-tools" :abbr-table "python-mode")
-     (nvp-with-w32
+     (nvp:with-w32
        ;; setups up local variables and adds directories containing
        ;; python and ipython programs to exec-path
-       (nvp-python-add-paths (nvp-program "python") (nvp-program "ipython")))
+       (nvp-python-add-paths (nvp:program "python") (nvp:program "ipython")))
      ,@(when start
          (list
           ;; sci has matplotlib/pyplot etcetc.

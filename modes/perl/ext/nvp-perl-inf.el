@@ -1,14 +1,14 @@
 ;;; nvp-perl-inf.el --- init inf perl -*- lexical-binding: t; -*-
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-perl)
-(nvp-decls :v (nvp-perl-pde-path inf-perl-start-file inf-perl-shell-program))
+(nvp:decls :v (nvp-perl-pde-path inf-perl-start-file inf-perl-shell-program))
 
 ;; if non-nil, install Emacs::PDE perl module,
 ;; otherwise, just use patched version for inf-perl
 (defvar nvp-perl-use-pde nil)
 
 ;; path to pde, or where to install it; for inf-perl
-(nvp-defvar nvp-perl-pde-path (expand-file-name "pde" "~/.emacs.d"))
+(nvp:defvar nvp-perl-pde-path (expand-file-name "pde" "~/.emacs.d"))
 
 (when nvp-perl-use-pde
   (add-to-list 'load-path nvp-perl-pde-path))

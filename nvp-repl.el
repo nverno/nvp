@@ -16,8 +16,8 @@
   (require 'nvp-macro)
   (require 'comint))
 (require 'nvp)
-(nvp-auto "nvp-sh" 'nvp-sh-get-process)
-(nvp-decls :f (ielm-change-working-buffer sh-cd-here))
+(nvp:auto "nvp-sh" 'nvp-sh-get-process)
+(nvp:decls :f (ielm-change-working-buffer sh-cd-here))
 
 (cl-defstruct (nvp-repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"
@@ -167,7 +167,7 @@ Each function takes a process as an argument to test against.")
 ;; update REPLs proc/buff and link process-buffer (which may not be an
 ;; actual process, eg. slime repl) with source buffer
 (defun nvp-repl-update (proc src-buff &optional p-buff)
-  (nvp-defq p-buff (funcall (repl:val "proc->buff") proc))
+  (nvp:defq p-buff (funcall (repl:val "proc->buff") proc))
   (setf (repl:val "proc") proc
         (repl:val "buff") p-buff)
   (puthash p-buff src-buff nvp-repl--process-buffers))
@@ -250,7 +250,7 @@ TODO:
 (defun nvp-repl-send-line ()
   (interactive)
   (nvp-repl-send-string
-   (buffer-substring-no-properties (nvp-point 'bol) (nvp-point 'eoll))))
+   (buffer-substring-no-properties (nvp:point 'bol) (nvp:point 'eoll))))
 
 (defun nvp-repl-send-buffer ()
   (interactive)

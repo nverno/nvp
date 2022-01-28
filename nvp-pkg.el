@@ -31,7 +31,7 @@
 (require 'nvp)
 (require 'package)
 (require 'autoload)
-(nvp-decls)
+(nvp:decls)
 
 ;; -------------------------------------------------------------------
 ;;; Package menu

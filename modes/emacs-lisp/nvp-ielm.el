@@ -44,7 +44,7 @@
   `(,@(mapcar #'nvp-comint-font-lock-keywords lisp-el-font-lock-keywords-2)
     ,@(mapcar #'nvp-comint-font-lock-keywords lisp-cl-font-lock-keywords-2)))
 
-(nvp-font-lock-add-defaults 'inferior-emacs-lisp-mode
+(nvp:font-lock-add-defaults 'inferior-emacs-lisp-mode
   ((nvp:re-opt '("IELM error" "Eval error" "Read error")) .
    (0 font-lock-warning-face prepend))
   (:splice

@@ -1,4 +1,4 @@
-(nvp-auto "nvp-util" 'nvp-s-all-matches)
+(nvp:auto "nvp-util" 'nvp-s-all-matches)
 
 ;; -------------------------------------------------------------------
 ;;; SVN 
@@ -8,9 +8,9 @@
 ;; caching technique
 
 ;; Cached list of git svn subcommands
-(nvp-define-cache nvp-vc-svn--available-commands ()
+(nvp:define-cache nvp-vc-svn--available-commands ()
   "List of git svn subcommands."
-  (nvp-with-process "git"
+  (nvp:with-process "git"
     :proc-name "git"
     :proc-args ("svn" "help")
     :on-success (setq nvp-vc-svn--available-commands

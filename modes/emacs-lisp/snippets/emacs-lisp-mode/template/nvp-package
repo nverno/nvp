@@ -8,7 +8,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 $0
 
 (provide '`(nvp-yas-bfn-no-ext)`)

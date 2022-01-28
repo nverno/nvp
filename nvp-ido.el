@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'ido)
-(nvp-decls)
+(nvp:decls)
 
 (defun nvp-ido-refresh-homedir ()
   "Refresh completion for homedir while ido is finding a file."

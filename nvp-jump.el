@@ -12,21 +12,21 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-req 'nvp-read 'subrs)
+(nvp:req 'nvp-read 'subrs)
 (require 'nvp)
 (require 'nvp-display)
 (require 'nvp-read)
-(nvp-auto "lisp-mnt" 'lm-header)
-(nvp-auto "find-func" 'find-function-library 'find-library-name)
-(nvp-auto "nvp-scratch" 'nvp-scratch-switch-modes)
-(nvp-decls :v (ido-default-buffer-method))
+(nvp:auto "lisp-mnt" 'lm-header)
+(nvp:auto "find-func" 'find-function-library 'find-library-name)
+(nvp:auto "nvp-scratch" 'nvp-scratch-switch-modes)
+(nvp:decls :v (ido-default-buffer-method))
 
 ;; provides ido-completion for things like `locate-library', although it
 ;; is just noticeably slower for some functions -- especially those related
 ;; to reading libraries/obarray
 ;; Might consider blacklisting `locate-library' -- although having the
 ;; ido-vertical support there is dope
-(nvp-maybe-enable 'ido-ubiquitous-mode 'ido-completing-read+)
+(nvp:maybe-enable 'ido-ubiquitous-mode 'ido-completing-read+)
 
 ;; -------------------------------------------------------------------
 ;;; Emacs Libraries
@@ -112,7 +112,7 @@ Optionally, search LISP-ONLY files (no C sources)."
   "Jump to MODE configuration, inserting skeleton snippet if non-existent."
   (interactive (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
   (if (eq t mode) (dired-other-window nvp/config)
-    (let ((file (nvp-mode-config-path mode)))
+    (let ((file (nvp:mode-config-path mode)))
       (nvp-display-location
        file :file action
        :init-fn (lambda () (nvp-display-init-template
@@ -130,7 +130,7 @@ Optionally, search LISP-ONLY files (no C sources)."
 ;;;###autoload
 (defun nvp-jump-to-mode-hook (mode action)
   "Jump to location defining MODEs hook."
-  (interactive (list (nvp-prefix 16 (nvp-read-mode) major-mode) current-prefix-arg))
+  (interactive (list (nvp:prefix 16 (nvp-read-mode) major-mode) current-prefix-arg))
   (and (stringp mode) (setq mode (intern mode)))
   (let* ((str-mode-hook (format "%s-hook" mode))
          (hook-fn-name (format "nvp-%s-hook" (nvp:read-mode-name mode)))
@@ -182,7 +182,7 @@ Optionally, search LISP-ONLY files (no C sources)."
 (defun nvp-jump-to-nearest-notes-dwim (&optional name action)
   "Jump to nearest notes/todo file, prompting with prefix."
   (interactive
-   (list (nvp-prefix '>4
+   (list (nvp:prefix '>4
            (prog1 (read-file-name "File name: ")
              (setq current-prefix-arg '(1))))
          current-prefix-arg))
@@ -201,7 +201,7 @@ Optionally, search LISP-ONLY files (no C sources)."
   "Jump to some common directories."
   (interactive
    (list
-    (nvp-prefix 16 (nvp-completing-read
+    (nvp:prefix 16 (nvp-completing-read
                      (format "Directory (default %s): " nvp/scratch)
                      (append '("~/") nvp-default-directories)
                      nil nil nil 'nvp-read-config-history nvp/scratch)
@@ -214,7 +214,7 @@ Optionally, search LISP-ONLY files (no C sources)."
   "Jump to local source or default devel directory."
   (interactive
    (list (cond
-          ((nvp-prefix 16) "~")
+          ((nvp:prefix 16) "~")
           ((bound-and-true-p nvp-local-src-directories)
            (if (> 1 (length nvp-local-src-directories))
                (nvp-completing-read "Source directory: " nvp-local-src-directories
@@ -252,13 +252,13 @@ With triple prefix, offer recursive results."
     (cond
       ;; epubs
       ((string-match-p "\\.epub$" book)
-       (nvp-with-gnu/w32
+       (nvp:with-gnu/w32
            (if (executable-find "calibre")
                (call-process "calibre" nil 0 nil fullname)
              (call-process "firefox" nil 0 nil fullname))
          (if (executable-find "sumatrapdf")
              (call-process "sumatrapdf" nil 0 nil fullname)
-           (call-process (nvp-program "firefox") nil 0 nil fullname))))
+           (call-process (nvp:program "firefox") nil 0 nil fullname))))
       ;; probably PDF, open in emacs
       ((file-name-extension book)
        (nvp-display-location fullname :file action))
@@ -271,8 +271,8 @@ With triple prefix, offer recursive results."
 If `nvp-local-notes-file' is bound use that unless there is a prefix of 16. 
 Otherwise prompt, with default `nvp-default-org-file'."
   (interactive
-   (list (nvp-read--org-file nil nil (nvp-prefix 16))
-         (nvp-prefix '>=16 1 current-prefix-arg)))
+   (list (nvp-read--org-file nil nil (nvp:prefix 16))
+         (nvp:prefix '>=16 1 current-prefix-arg)))
   (prog1 (setq org-file (nvp-display-location org-file :file action))
     (when (bufferp org-file)
       (with-current-buffer org-file
@@ -327,7 +327,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
   "Jump to scratch buffer in MODE (default current `major-mode'). 
 With prefix, pop other window, with double prefix, prompt for MODE."
   (interactive
-   (list (nvp-prefix 16 (intern (nvp-read-mode)) major-mode) current-prefix-arg))
+   (list (nvp:prefix 16 (intern (nvp-read-mode)) major-mode) current-prefix-arg))
   (nvp-window-configuration-save)
   (let ((buff (get-buffer-create "*scratch*"))
         (default-directory nvp/scratch))

@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'web-mode)
-(nvp-decls :v (emmet-expand-jsx-className?))
+(nvp:decls :v (emmet-expand-jsx-className?))
 
 ;;;###autoload
 (defun nvp-web-setup-react ()

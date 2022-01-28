@@ -100,7 +100,7 @@
                      (call-interactively
                       'eclim-java-show-documentation-for-current-element)
                      (buffer-string))))
-    (nvp-with-toggled-tip doc
+    (nvp:with-toggled-tip doc
       :help-fn #'(lambda () (interactive) (pop-to-buffer (eclim-javadoc-buffer))))))
 
 ;; simple for now

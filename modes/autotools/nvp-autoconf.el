@@ -11,7 +11,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'company-autoconf)
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;; -------------------------------------------------------------------
 ;;; Locally available macros
@@ -85,11 +85,11 @@
         (ignore-errors (read (current-buffer)))))))
 
 ;; load index, or if not made do all the setup and return it when finished
-(nvp-define-cache-runonce nvp-autoconf-manual-index ()
+(nvp:define-cache-runonce nvp-autoconf-manual-index ()
   "Cached macro manual indicies."
   (nvp-autoconf--load-index))
 
-(nvp-define-cache-runonce nvp-autoconf-all-macros ()
+(nvp:define-cache-runonce nvp-autoconf-all-macros ()
   "Cache of all known macros, either from company or index."
   (delete-dups (append (mapcar #'car (nvp-autoconf-manual-index))
                        company-autoconf-keywords)))
@@ -138,7 +138,7 @@ With prefix ARG, prompt with macros from manual."
            (if (or current-prefix-arg (not macro))
                (nvp-autoconf-read nil macro)
              macro))))
-  (nvp-with-toggled-tip
+  (nvp:with-toggled-tip
     (if macro (or (get-text-property 0 'annot macro)
                   (format (if (assoc macro (nvp-autoconf-manual-index))
                               "Manual available for %s ('h')"

@@ -29,7 +29,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'python)
-(nvp-auto "pythonic" 'pythonic-activate 'pythonic-deactivate)
+(nvp:auto "pythonic" 'pythonic-activate 'pythonic-deactivate)
 (defvar python-shell-virtualenv-root)
 
 ;; conda envs directory
@@ -106,7 +106,7 @@
   (interactive (list (conda-env-read-env)))
   (let* ((path (conda-env-update-path env))
          (env-exec (and env (expand-file-name
-                             (nvp-with-gnu/w32 "bin" "Scripts")
+                             (nvp:with-gnu/w32 "bin" "Scripts")
                              (car path)))))
     (setq exec-path (if env (cons env-exec (cdr path)) path))
     (setenv "PATH" (mapconcat 'identity exec-path path-separator))
@@ -160,7 +160,7 @@
     (pcase program 
       (`"ipython"
        (setq python-shell-interpreter-args
-             (nvp-with-gnu/w32
+             (nvp:with-gnu/w32
                  "-i --matplotlib=auto --pylab=auto --colors=Linux --simple-prompt"
                "-i --matplotlib=auto --pylab=auto --simple-prompt")))
       (_ (setq python-shell-interpreter-args "-i")))))

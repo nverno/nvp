@@ -43,7 +43,7 @@
 ;;; Interactive
 
 ;; FIXME: use newline-dwim
-(nvp-newline nvp-sml-newline-dwim
+(nvp:newline nvp-sml-newline-dwim
   "Newline dwim for `sml-mode'"
   :comment-re (" *\\(?:(\\*\\|\\*\\)" . "\\*) *")
   :comment-start "* ")
@@ -100,7 +100,7 @@
   (comint-send-input))
 
 ;; FIXME: replace with REPL interface
-;; (nvp-repl-switch "sml" (:repl-mode 'inferior-sml-mode
+;; (nvp:repl-switch "sml" (:repl-mode 'inferior-sml-mode
 ;;                                    ))
 (defvar nvp-sml--last-buffer nil)
 (defun nvp-sml-switch-buffers ()

@@ -6,7 +6,7 @@
 
 ;; Apropos hydra from github wiki
 ;;;###autoload(autoload 'nvp-apropos-hydra/body "nvp-apropos")
-(nvp-hydra-set-property 'nvp-apropos-hydra)
+(nvp:hydra-set-property 'nvp-apropos-hydra)
 (defhydra nvp-apropos-hydra (:color blue)
   "Apropos"
   ("a" apropos "apropos")
@@ -21,7 +21,7 @@
   ("t" xref-find-apropos "tags")
   ("z" nvp-apropos-hydra-customize/body "customize"))
 
-(nvp-hydra-set-property 'nvp-apropos-hydra-customize)
+(nvp:hydra-set-property 'nvp-apropos-hydra-customize)
 (defhydra nvp-apropos-hydra-customize (:color blue)
   "Apropos (customize)"
   ("a" customize-apropos "apropos")

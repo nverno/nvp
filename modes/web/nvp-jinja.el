@@ -2,8 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decl web-mode-block-beginning web-mode-element-beginning)
-(nvp-auto "projectile" 'projectile-project-root)
+(nvp:decl web-mode-block-beginning web-mode-element-beginning)
+(nvp:auto "projectile" 'projectile-project-root)
 
 ;; true if in url_for clause and returns the file if it exists
 ;; TODO: expand to non-static?

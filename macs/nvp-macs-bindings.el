@@ -129,7 +129,7 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
   (declare (indent defun))
   (while (keywordp (car bindings))
     (setq bindings (cdr (cdr bindings))))
-  (let ((modemap (nvp--normalize-modemap mode)))
+  (let ((modemap (nvp:-normalize-modemap mode)))
     `(,@(if after-load `(with-eval-after-load ,after-load) '(progn))
       ,@(if predicate `((when ,predicate)))
       (let ((map (make-sparse-keymap)))
@@ -238,7 +238,7 @@ Buggy:
     (and with (setq bindings (append (nvp--compose-bindings with) bindings)))
     (and prefix-key (setq prefix-key (eval prefix-key))) ;can be symbol
     ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
-    (let ((modemap (nvp--normalize-modemap keymap minor))
+    (let ((modemap (nvp:-normalize-modemap keymap minor))
           (mapname (nvp:as-string keymap)))
       `(progn
          ,(when (symbolp modemap)
@@ -249,7 +249,7 @@ Buggy:
             `(defvar ,modemap (make-sparse-keymap)))
          ,(when autoload
             `(nvp-bind global-map ,autoload
-                       (nvp-lam ()
+                       (nvp:lam ()
                          (interactive)
                          (nvp-autoload-keymap
                           ',modemap ,(or feature `',(intern mapname))))))
@@ -291,7 +291,7 @@ Buggy:
             (setq repeat (cl-remove-duplicates repeat))
             (let ((repeat-fn (intern (concat "nvp/repeat-" mapname))))
               `(progn
-                 (nvp-def ,repeat-fn (&rest _args)
+                 (nvp:def ,repeat-fn (&rest _args)
                    ,(and indicate `(nvp-indicate-cursor-pre))
                    (set-transient-map
                     ,modemap t

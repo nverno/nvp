@@ -34,7 +34,7 @@
 ;; -------------------------------------------------------------------
 ;;; GDB REPL 
 
-(nvp-repl-switch "gud-pdb" (:repl-mode 'gud-mode
+(nvp:repl-switch "gud-pdb" (:repl-mode 'gud-mode
                             :repl-doc "Switch between PDB and source buffer."
                             :repl-find-fn
                             #'(lambda ()
@@ -48,7 +48,7 @@
 ;; -------------------------------------------------------------------
 ;;; PDB Hydra
 
-(nvp-hydra-set-property 'nvp-pdb-hydra :verbosity 1)
+(nvp:hydra-set-property 'nvp-pdb-hydra :verbosity 1)
 (with-no-warnings
   (defhydra nvp-pdb-hydra (:color amaranth
                            :pre nvp-indicate-cursor-pre

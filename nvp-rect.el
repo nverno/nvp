@@ -6,7 +6,7 @@
 (require 'rect)
 
 ;;;###autoload(autoload 'nvp-rect-hydra/body "nvp-rect")
-(nvp-hydra-set-property 'nvp-rect-hydra)
+(nvp:hydra-set-property 'nvp-rect-hydra)
 (defhydra nvp-rect-hydra (:body-pre (rectangle-mark-mode 1)
                           :color pink
                           :post (deactivate-mark))

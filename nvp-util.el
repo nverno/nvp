@@ -104,7 +104,7 @@ The result may also contain atoms that where head of subalists."
 (eval-when-compile
   (defmacro nvp-regex:with-matches (regex bounds subexp &rest body)
     (declare (indent 3))
-    (nvp-with-syms (beg end)
+    (nvp:with-syms (beg end)
       `(-let (((,beg . ,end) ,bounds))
          (save-excursion
            (if ,beg (goto-char ,beg)

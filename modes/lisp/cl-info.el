@@ -75,7 +75,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'slime)
 (defvar common-lisp-hyperspec-symbols)
-(nvp-decls :f (slime-symbol-name-at-point common-lisp-hyperspec-strip-cl-package))
+(nvp:decls :f (slime-symbol-name-at-point common-lisp-hyperspec-strip-cl-package))
 
 (defvar cl-info-symbols (make-hash-table :test #'equal))
 (defvar cl-info-urls (make-hash-table :test #'equal))

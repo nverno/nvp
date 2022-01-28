@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
-(nvp-decl nvp-comment-string)
+(nvp:decl nvp-comment-string)
 
 (defun nvp-scratch-switch-modes (mode &optional activate)
   "Switch major modes in scratch buffer."
@@ -42,7 +42,7 @@
     (erase-buffer)
     (unless comment-start (setq comment-start "#"))
     (insert (nvp-comment-string "Jah lives chilren\n" 2))
-    (nvp-msg "Press \\[nvp-scratch-kill-buffer] to kill this buffer \
+    (nvp:msg "Press \\[nvp-scratch-kill-buffer] to kill this buffer \
 or \\[nvp-scratch-switch-modes] to switch major modes. " :keys t)))
 
 (provide 'nvp-scratch)

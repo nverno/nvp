@@ -9,11 +9,11 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-test)
 (require 'nvp-c)
-(nvp-req 'nvp-c 'subrs)
-(nvp-decls :f (clang-complete-create-or-update
+(nvp:req 'nvp-c 'subrs)
+(nvp:decls :f (clang-complete-create-or-update
                yas-expand-snippet yas-lookup-snippet)
            :v (yas-selected-text))
-(nvp-auto "yasnippet" 'yas-expand)
+(nvp:auto "yasnippet" 'yas-expand)
 
 ;; function to run unit test from test buffer
 (defvar nvp-c-test-runner #'nvp-c-test-default-runner)

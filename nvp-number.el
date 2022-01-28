@@ -3,8 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls)
-(nvp-auto "hexl" 'hexl-octal-string-to-integer 'hexl-hex-string-to-integer)
+(nvp:decls)
+(nvp:auto "hexl" 'hexl-octal-string-to-integer 'hexl-hex-string-to-integer)
 
 ;; -------------------------------------------------------------------
 ;;; Conversion
@@ -29,7 +29,7 @@
   (interactive (list (thing-at-point 'symbol)))
   (cond
    ((string-match "$?0x" symbol)
-    (nvp-with-toggled-tip
+    (nvp:with-toggled-tip
      (number-to-string
       (string-to-number (substring symbol (match-end 0)) 16))
      :help-fn nil))))

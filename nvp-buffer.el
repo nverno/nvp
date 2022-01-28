@@ -65,7 +65,7 @@ With prefix, prompt for MODE buffers to kill."
 (defun nvp-buffer-delete-file ()
   (interactive)
   (if-let ((file (buffer-file-name)))
-      (when (y-or-n-p (format "Really delete '%s'? " (nvp-path 'bfs)))
+      (when (y-or-n-p (format "Really delete '%s'? " (nvp:path 'bfs)))
         ;; if (vc-backend file)
         ;; (vc-delete-file file)
         (delete-file file delete-by-moving-to-trash)
@@ -76,7 +76,7 @@ With prefix, prompt for MODE buffers to kill."
 ;; `NEW-NAME'.
 ;;;###autoload
 (defun nvp-buffer-rename-file (new-name)
-  (interactive (list (read-from-minibuffer "New name: " (nvp-path 'bfs))))
+  (interactive (list (read-from-minibuffer "New name: " (nvp:path 'bfs))))
   (let ((name (buffer-name))
 	(filename (buffer-file-name)))
     (if (not (and filename (file-exists-p filename)))

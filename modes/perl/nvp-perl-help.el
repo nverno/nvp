@@ -32,7 +32,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-perl)
-(nvp-req 'nvp-perl 'subrs)
+(nvp:req 'nvp-perl 'subrs)
 (require 'cperl-mode)
 (require 'man)
 (require 'pos-tip)
@@ -44,7 +44,7 @@
 ;; although this takes barely a second anyway
 
 ;; build perl modules paths
-(nvp-define-cache-runonce nvp-perl--module-paths ()
+(nvp:define-cache-runonce nvp-perl--module-paths ()
   (cl-remove-if-not
    #'(lambda (dir)
        (and (string-match "/" dir)
@@ -59,7 +59,7 @@
 ;; Find all perl modules in directories on @INC, and cache
 ;; searches for files ending in .pod or .pm and translates
 ;; file path separators to '::'
-(nvp-define-cache-runonce nvp-perl-modules ()
+(nvp:define-cache-runonce nvp-perl-modules ()
   (cl-mapcan
    (lambda (dir)
      (mapcar
@@ -84,7 +84,7 @@
 
 ;; completing read for installed modules
 (defun nvp-perl-read-module (&optional prompt default path)
-  (nvp-defq default (thing-at-point 'perl-module t))
+  (nvp:defq default (thing-at-point 'perl-module t))
   (setq prompt (nvp:prompt-default (or prompt "Module: ") default))
   (let ((module (nvp-completing-read prompt (nvp-perl-modules))))
     (if path (nvp-perl-module-path module)

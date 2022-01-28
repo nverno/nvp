@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;;;###autoload
 (define-minor-mode ejs-mode "EJS minor mode"

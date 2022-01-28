@@ -4,7 +4,7 @@
 ;;; Code:
 (require 'nvp-macro)
 (require 'nvp)
-(nvp-decls :v (nvp-makefile-defun-regexp))
+(nvp:decls :v (nvp-makefile-defun-regexp))
 
 (defsubst nvp-makefile--defun-line-p ()
   (save-excursion
@@ -13,8 +13,8 @@
 
 (defsubst nvp-makefile--skip-escapes (search-fn)
   (if (eq search-fn 're-search-backward)
-      (eq (point-at-bol) (nvp-goto 'boll))
-    (eq (point-at-eol) (nvp-goto 'eoll))))
+      (eq (point-at-bol) (nvp:goto 'boll))
+    (eq (point-at-eol) (nvp:goto 'eoll))))
 
 ;; preceded by '[^$]$[{(]'
 (defsubst nvp-makefile-variable-or-function-p (pos)

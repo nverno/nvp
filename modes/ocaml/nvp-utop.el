@@ -17,7 +17,7 @@
 (require 'tuareg)
 (require 'nvp-ocaml)
 (require 'nvp-hippie-history)
-(nvp-decls :v (nvp-trace-group-alist))
+(nvp:decls :v (nvp-trace-group-alist))
 
 ;; debugging
 (with-eval-after-load 'nvp-trace

@@ -11,7 +11,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
-(nvp-req 'nvp-shell 'subrs)
+(nvp:req 'nvp-shell 'subrs)
 (require 'nvp-sh-help)
 (require 'eldoc)
 

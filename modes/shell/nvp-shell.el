@@ -6,9 +6,9 @@
 (require 'comint)
 (require 'nvp-shell-common)
 (require 'nvp)
-(nvp-req 'nvp-shell 'subrs)
-(nvp-decls :f (tramp-dissect-file-name))
-(nvp-auto "f" f-same-p)
+(nvp:req 'nvp-shell 'subrs)
+(nvp:decls :f (tramp-dissect-file-name))
+(nvp:auto "f" f-same-p)
 
 ;; update default-directory on remote login
 (defvar nvp-shell-ssh-regexp (nvp:re-opt '("ssh" "hssh")))
@@ -16,9 +16,9 @@
 ;;; Processes
 
 ;; return some available shells
-(nvp-define-cache-runonce nvp-shell-shells ()
+(nvp:define-cache-runonce nvp-shell-shells ()
   "List of possible shells."
-  (nvp-with-gnu/w32 '("sh" "bash" "fish" "zsh" "csh")
+  (nvp:with-gnu/w32 '("sh" "bash" "fish" "zsh" "csh")
     (cl-loop
        for var in `(,(expand-file-name "usr/bin" (getenv "MSYS_HOME"))
                     ,(expand-file-name "bin" (getenv "CYGWIN_HOME")))
@@ -40,7 +40,7 @@
 (defun nvp-shell-run-external ()
   "Run input on current line in external shell (gnome)"
   (interactive)
-  (nvp-with-proc proc
+  (nvp:with-buffer-proc proc
     (-when-let (cmd (nvp-shell--get-input 'add))
       ;; FIXME: inherit environment?
       ;; this doesn't work -- how to pass env from gnome-shell => bash
@@ -58,14 +58,14 @@
 (defun nvp-shell-compile ()
   "Run current input in compilation buffer."
   (interactive)
-  (nvp-with-proc proc
+  (nvp:with-buffer-proc proc
     (-when-let (compile-command (nvp-shell--get-input 'add))
       (call-interactively #'nvp-compile))))
 
 (defun nvp-shell-nautilus ()
   "Open nautilus in current directory."
   (interactive)
-  (nvp-with-proc proc
+  (nvp:with-buffer-proc proc
     (comint-send-string proc "nautilus . 2>/dev/null\n")))
 
 ;; -------------------------------------------------------------------
@@ -117,7 +117,8 @@ specified, prefer shell in current directory if available."
   (interactive "P")
   (let* ((remote (file-remote-p default-directory))
          (default-name (if buffer (buffer-name buffer) "*shell*"))
-         (explicit-shell-file-name (if remote "/bin/bash"
+         ;; explicit-shell-file-name
+         (shell-file-name (if remote "/bin/bash"
                                      (or shell-name (getenv "SHELL"))))
          ;; always pop the shell in other window
          (display-buffer-overriding-action
@@ -133,7 +134,7 @@ specified, prefer shell in current directory if available."
                                  ;; didn't find one -- create unique name
                                  (generate-new-buffer-name default-name))))
               ;; with double prefix, force new shell in current directory
-              (nvp-prefix 16 (if (buffer-live-p (get-buffer buffname))
+              (nvp:prefix 16 (if (buffer-live-p (get-buffer buffname))
                                  (shell (generate-new-buffer-name default-name))
                                (shell buffname))
                 (shell buffname)))
@@ -145,7 +146,7 @@ specified, prefer shell in current directory if available."
 (defun nvp-shell-launch-terminal ()
   "Launch external terminal."
   (interactive)
-  (nvp-with-gnu (call-process "gnome-terminal" nil nil nil)))
+  (nvp:with-gnu (call-process "gnome-terminal" nil nil nil)))
 
 (provide 'nvp-shell)
 ;;; nvp-shell.el ends here

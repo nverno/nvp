@@ -13,22 +13,22 @@
 ;; (defun nvp-debug (&rest args)
 ;;   (and nvp-debug-level (apply #'message args)))
 
-(defmacro nvp-debug (&rest _args))
+(defmacro nvp:debug (&rest _args))
 
 ;; -------------------------------------------------------------------
 ;;; OS 
 
-(defmacro nvp-with-w32 (&rest body)
+(defmacro nvp:with-w32 (&rest body)
   (declare (indent 0) (debug t))
   (when (eq system-type 'windows-nt)
     `(progn ,@body)))
 
-(defmacro nvp-with-gnu (&rest body)
+(defmacro nvp:with-gnu (&rest body)
   (declare (indent 0) (debug t))
   (when (not (eq system-type 'windows-nt))
     `(progn ,@body)))
 
-(defmacro nvp-with-gnu/w32 (gnu w32)
+(defmacro nvp:with-gnu/w32 (gnu w32)
   (declare (indent 2) (indent 1) (debug t))
   (if (eq system-type 'windows-nt)
       `,@w32
@@ -37,7 +37,7 @@
 ;; -------------------------------------------------------------------
 ;;; Utils: Conversion / Normalization
 
-(defun nvp--normalize-modemap (mode &optional minor)
+(defun nvp:-normalize-modemap (mode &optional minor)
   "Convert MODE to keymap symbol if necessary.
 If MINOR is non-nil, create minor mode map symbol."
   (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
@@ -54,7 +54,7 @@ If MINOR is non-nil, create minor mode map symbol."
                      (if minor "-minor-mode-map" "-mode-map")))
           (intern mode))))))
 
-(defun nvp--normalize-hook (mode &optional minor)
+(defun nvp:-normalize-hook (mode &optional minor)
   "Convert MODE to canonical hook symbol.
 If MINOR is non-nil, convert to minor mode hook symbol."
   (and (eq 'quote (car-safe mode)) (setq mode (eval mode)))
@@ -169,7 +169,7 @@ be used. Modification of `use-package-normalize-plist'."
                  syms)
      ,@body))
 
-(defmacro nvp-with-syms (syms &rest body)
+(defmacro nvp:with-syms (syms &rest body)
   (declare (indent 1) (debug t))
   `(let ,(mapcar (lambda (s) `(,s (make-symbol (symbol-name ',s)))) syms)
      ,@body))
@@ -177,7 +177,7 @@ be used. Modification of `use-package-normalize-plist'."
 ;; -------------------------------------------------------------------
 ;;; Building functions
 
-(defmacro nvp-lam (match-form &rest body)
+(defmacro nvp:lam (match-form &rest body)
   "Return interactive lambda, destructuring with `-lambda'."
   (declare (indent defun) (debug t))
   (let (ispec doc doc-ispec)
@@ -200,7 +200,7 @@ be used. Modification of `use-package-normalize-plist'."
            ,@doc-ispec
            (-let* ,inputs ,@body)))))))
 
-(defmacro nvp-def (func match-form &rest body)
+(defmacro nvp:def (func match-form &rest body)
   "Define function and return it."
   (declare (indent defun)
            (debug (&define name lambda-list
@@ -208,22 +208,22 @@ be used. Modification of `use-package-normalize-plist'."
                            [&rest sexp]
                            def-body)))
   `(progn
-     (defalias ',func (nvp-lam ,match-form ,@body))
+     (defalias ',func (nvp:lam ,match-form ,@body))
      (declare-function ,func "")
      #',func))
 
-(defmacro nvp-! (fun)
+(defmacro nvp:! (fun)
   "Return function negating result of FUN."
   `(lambda (&rest args) (not (apply ,fun args))))
 
-(defmacro nvp-with-letf (old-fn new-fn &rest body)
+(defmacro nvp:with-letf (old-fn new-fn &rest body)
   "Simple wrapper around `cl-letf' to execute BODY."
   (declare (indent 2) (debug t))
   (when (eq 'quote (car-safe new-fn))
     (setq new-fn `(symbol-function ',(cadr new-fn))))
   `(cl-letf (((symbol-function ,old-fn) ,new-fn)) ,@body))
 
-(defmacro nvp-with-letfs (bindings &rest body)
+(defmacro nvp:with-letfs (bindings &rest body)
   "Temporarily override function definitions."
   (declare (indent 1)
            (debug ((&rest [&or (symbolp form) (gate gv-place &optional form)])
@@ -236,12 +236,12 @@ be used. Modification of `use-package-normalize-plist'."
                               `,new))))))
     `(cl-letf ,fn-bindings ,@body)))
 
-(defmacro nvp-compose (expr)
+(defmacro nvp:compose (expr)
   "Combine functions in EXPR without explicit `funcall's."
-  `#',(nvp--rbuild expr))
+  `#',(nvp:-rbuild expr))
 
 ;;; TODO: !!
-(defun nvp--compose (&rest fns)
+(defun nvp:-compose (&rest fns)
   "Compose FNS, eg. 𝔣𝔬𝔤(x) = "
   (if fns
       (let ((fn1 (car (last fns)))
@@ -250,23 +250,23 @@ be used. Modification of `use-package-normalize-plist'."
             (cl-reduce #'funcall fns :from-end t :initial-value (apply fn1 args))))
     #'identity))
 
-(defun nvp--rbuild (expr)
+(defun nvp:-rbuild (expr)
   (if (or (atom expr) (eq (car expr) 'lambda)) expr
-    (if (eq (car expr) 'nvp--compose)
-        (nvp--build-compose (cdr expr))
-      (nvp--build-call (car expr) (cdr expr)))))
+    (if (eq (car expr) 'nvp:-compose)
+        (nvp:-build-compose (cdr expr))
+      (nvp:-build-call (car expr) (cdr expr)))))
 
-(defun nvp--build-call (op fns)
+(defun nvp:-build-call (op fns)
   (let ((g (cl-gensym)))
     `(lambda (,g)
-       (,op ,@(mapcar #'(lambda (f) `(,(nvp--rbuild f) ,g)) fns)))))
+       (,op ,@(mapcar #'(lambda (f) `(,(nvp:-rbuild f) ,g)) fns)))))
 
-(defun nvp--build-compose (fns)
+(defun nvp:-build-compose (fns)
   (let ((g (cl-gensym)))
     `(lambda (,g)
        ,(cl-labels ((rec (fns)
                          (if fns
-                             `(,(nvp--rbuild (car fns))
+                             `(,(nvp:-rbuild (car fns))
                                ,(rec (cdr fns)))
                            g)))
           (rec fns)))))
@@ -275,7 +275,7 @@ be used. Modification of `use-package-normalize-plist'."
 ;;; Anamorphs
 ;; See ch. 14 of On Lisp
 
-(defmacro nvp-awhile (expr &rest body)
+(defmacro nvp:awhile (expr &rest body)
   "Anamorphic `while'."
   (declare (indent 1) (debug t))
   (nvp:with-gensyms (flag)
@@ -286,7 +286,7 @@ be used. Modification of `use-package-normalize-plist'."
                (progn ,@body)
              (setq ,flag nil)))))))
 
-(defmacro acond (&rest clauses)
+(defmacro nvp:acond (&rest clauses)
   "Anamorphic `cond'."
   (declare (debug cond))
   (unless (null clauses)
@@ -295,15 +295,9 @@ be used. Modification of `use-package-normalize-plist'."
       `(let ((,sym ,(car cl1)))
          (if ,sym
              (let ((it ,sym)) ,@(cdr cl1))
-           (acond ,@(cdr clauses)))))))
+           (nvp:acond ,@(cdr clauses)))))))
 
-(defmacro aand (&rest args)
-  "Anamorphic `and'."
-  (cond ((null args) t)
-        ((null (cdr args)) (car args))
-        (t `(aif ,(car args) (aand ,@(cdr args))))))
-
-(defmacro alambda (params &rest body)
+(defmacro nvp:alambda (params &rest body)
   "Anamorphic `lambda', binding the function to 'self'"
   (declare (indent defun) (debug t))
   `(cl-labels ((self ,params ,@body))
@@ -337,7 +331,7 @@ be used. Modification of `use-package-normalize-plist'."
 ;; TODO: make this work like `with-slots', so type doesn't need to be
 ;;       specified at compile-time. Problem is how to make the BODY setf-able.
 ;; eieio with-slots: #<marker at 12490 in eieio.el.gz>
-(defmacro with-struct-slots (spec-list inst &rest body)
+(defmacro nvp:with-struct-slots (spec-list inst &rest body)
   "See `with-slots' for CLOS explanation."
   (declare (indent 2) (debug t))
   (macroexp-let2 nil inst inst
@@ -365,17 +359,17 @@ be used. Modification of `use-package-normalize-plist'."
 ;; (with-slots (a b c) tst
 ;;   (setq c (concat a b)))
 
-;; (with-struct-slots (a b c) tst
+;; (nvp:with-struct-slots (a b c) tst
 ;;   (setq c (concat a b)))
 
 ;; -------------------------------------------------------------------
 ;;; Declares / Autoloads
 ;; silence byte-compiler warnings
 
-(defalias 'nvp-decl 'nvp-declare)
-(put 'nvp-decl 'lisp-indent-function 'defun)
+(defalias 'nvp:decl 'nvp:declare)
+(put 'nvp:decl 'lisp-indent-function 'defun)
 
-(defmacro nvp-declare (&rest funcs)
+(defmacro nvp:declare (&rest funcs)
   (declare (indent defun) (debug t))
   (let ((pkg ""))
     (when (stringp (car funcs))
@@ -394,26 +388,21 @@ be used. Modification of `use-package-normalize-plist'."
        (cl-loop for func in funcs
           collect `(declare-function ,func ,pkg))))))
 
-(defalias 'nvp-auto 'nvp-autoload)
-(put 'nvp-auto 'lisp-indent-function 'defun)
-(defmacro nvp-autoload (package &rest funcs)
+(defalias 'nvp:auto 'nvp:autoload)
+(put 'nvp:auto 'lisp-indent-function 'defun)
+(defmacro nvp:autoload (package &rest funcs)
   (declare (indent defun))
   (setq funcs (nvp:list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
       collect `(autoload ',func ,package))))
 
-(defmacro nvp-setq-local (&rest var-vals)
+(defmacro nvp:setq-local (&rest var-vals)
   (declare (indent 0))
   (macroexp-progn
    (cl-loop for (var val) on var-vals by #'cddr
       collect `(setq-local ,var ,val))))
 
-(defmacro nvp-defv (&rest vars)
-  (declare (indent 0))
-  (macroexp-progn
-   (cl-loop for var in vars
-      collect `(defvar ,var))))
 
 ;; -------------------------------------------------------------------
 ;;; Strings / Regex
@@ -445,7 +434,7 @@ be used. Modification of `use-package-normalize-plist'."
 ;;          ,@body))))
 
 ;;; Load file name
-(defmacro nvp-load-file-name ()
+(defmacro nvp:load-file-name ()
   "Expand to the file's name."
   '(cond
     (load-in-progress load-file-name)
@@ -461,7 +450,7 @@ be used. Modification of `use-package-normalize-plist'."
 ;; `key-description' is defined at C level and `edemacro-format-keys' does
 ;; a lot of work. How to profile?
 ;; - semantic-read-event : #<marker at 3072 in fw.el.gz>
-(defmacro nvp-input (type)
+(defmacro nvp:input (type)
   "Return user input by TYPE.
 Trailing 's' indicates a string is returned. 
 See Info node `(elisp) Input Events'.
@@ -513,7 +502,7 @@ See Info node `(elisp) Input Events'.
                              (aref keys (1- (length keys))))))
          (and last-key (lookup-key (current-active-maps 'olp) (vector last-key)))))
 
-     (t (message "Unknown type `nvp-input': %S" type)))))
+     (t (message "Unknown type `nvp:input': %S" type)))))
 
 (provide 'nvp-macs-common)
 ;; Local Variables:

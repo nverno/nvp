@@ -10,7 +10,7 @@
 (require 'nvp-hap)
 (require 'nvp-ocaml)
 (with-no-warnings (require 'merlin-company nil t))
-(nvp-decls :f (merlin/complete zeal-at-point))
+(nvp:decls :f (merlin/complete zeal-at-point))
 
 (defvar nvp-ocaml-help-syntax-table
   (let ((st (make-syntax-table)))
@@ -28,7 +28,7 @@
           (when info
             (let ((doc (cdr (assoc 'info info)))
                   (type (cdr (assoc 'desc info))))
-              (nvp-with-toggled-tip
+              (nvp:with-toggled-tip
                 (concat "val " candidate " : " type "\n\n(** " doc " *)")))))))))
 
 ;;;###autoload
@@ -45,10 +45,10 @@
 ;; (nvp-ocaml-read "Module: " :module)
 ;; - better version of `tuareg-browse-manual'
 
-(nvp-define-cache-runonce nvp-ocaml--manual-index ()
+(nvp:define-cache-runonce nvp-ocaml--manual-index ()
   "Index of modules in online manual."
   (let (res)
-    (nvp-with-url-buffer
+    (nvp:with-url-buffer
       "https://caml.inria.fr/pub/docs/manual-ocaml/libref/index_modules.html"
       (goto-char (point-min))
       (while (not (looking-at-p "</head>"))

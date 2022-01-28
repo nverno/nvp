@@ -18,9 +18,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'make-mode)
-(nvp-req 'nvp-makefile 'subrs)
+(nvp:req 'nvp-makefile 'subrs)
 (require 'nvp)
-(nvp-decls :f (nvp-makefile-indent
+(nvp:decls :f (nvp-makefile-indent
                nvp-makefile-check
                nvp-makecomp-eldoc-function
                helm-make))
@@ -52,7 +52,7 @@
     (while (and (funcall search-fn nvp-makefile-defun-regexp nil 'move)
                 (not (nvp-makefile--skip-escapes search-fn))))
     (if (nvp-makefile--defun-line-p)
-        (or (nvp-point 'boll) (point))  ;found beg
+        (or (nvp:point 'boll) (point))  ;found beg
       (and (goto-char pos) nil))))     ;failed
 
 (defun nvp-makefile-beginning-of-defun (&optional arg)
@@ -71,7 +71,7 @@
   "Skips to end of tabbed block."
   (unless (nvp-makefile--match-opener 're-search-forward)
     (while (and (not (eobp))
-                (nvp-goto 'bonll)
+                (nvp:goto 'bonll)
                 (not (looking-at-p
                       (concat "^\\s-*$\\|" nvp-makefile-defun-regexp)))))
     (point)))
@@ -82,7 +82,7 @@
 ;; - remove string fontification in #define blocks where it is incorrect.
 
 ;; better to fontify using `forward-sexp' to allow for closing parens in command
-(nvp-font-lock-add-defaults 'makefile-gmake-mode
+(nvp:font-lock-add-defaults 'makefile-gmake-mode
   ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
   ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
   ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend))

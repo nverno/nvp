@@ -9,10 +9,10 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls :f (define-word define-word-at-point powerthesaurus-lookup-dwim))
-(nvp-auto "nvp-read" 'nvp-read-keymap)
-(nvp-auto "nvp-edit" 'nvp-sort-lines-first-symbol)
-(nvp-auto "ispell" 'ispell-get-word)
+(nvp:decls :f (define-word define-word-at-point powerthesaurus-lookup-dwim))
+(nvp:auto "nvp-read" 'nvp-read-keymap)
+(nvp:auto "nvp-edit" 'nvp-sort-lines-first-symbol)
+(nvp:auto "ispell" 'ispell-get-word)
 
 ;;;###autoload
 (defun nvp-push-button (&optional same-window)

@@ -3,13 +3,13 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'dired)
-(nvp-decls :v (nvp-dired-external-filelist-cmd nvp-dired-external-program)
+(nvp:decls :v (nvp-dired-external-filelist-cmd nvp-dired-external-program)
            :f (comint-mode
                org-texinfo-export-to-info org-latex-export-to-pdf comint-mode
                dired-dwim-target-directory dired-read-shell-command  ; dired-aux
                dired-filename-at-point                               ; dired-x
                conda-env-read-env))                                  ; conda-env
-(nvp-auto "f" 'f-same-p)
+(nvp:auto "f" 'f-same-p)
 
 ;; -------------------------------------------------------------------
 ;;; Imenu
@@ -171,7 +171,7 @@
   (interactive)
   (let ((files (or (dired-get-marked-files)
                    (dired-file-name-at-point))))
-    (nvp-with-gnu/w32
+    (nvp:with-gnu/w32
      (mapc (lambda (path)
              (let ((process-connection-type nil)
                    (ext (file-name-extension path)))
@@ -181,7 +181,7 @@
                   (let ((env (conda-env-read-env)))
                     (start-process-shell-command
                      "jupyter-notebook"
-                     (nvp-comint-buffer :name "*jupyter-notebook*")
+                     (nvp:comint-buffer :name "*jupyter-notebook*")
                      (format "cd %s && source activate %s && jupyter-notebook &"
                              (read-directory-name "Jupyter root: ") env))))
                  (_ (start-process "" nil "xdg-open" path)))))
@@ -193,7 +193,7 @@
 ;; Open directory in gui
 (defun nvp-dired-external-explorer ()
   (interactive)
-  (nvp-with-gnu/w32
+  (nvp:with-gnu/w32
       (let ((process-connection-type nil)
             (prog (if (file-exists-p "/usr/bin/gvfs-open")
                       "/usr/bin/gvfs-open"
@@ -209,7 +209,7 @@
       (when-let*
           ((prog (assoc (file-name-extension file) nvp-dired-external-program)))
         (let ((cmd (cdr (assoc 'cmd prog))))
-          (nvp-with-gnu/w32
+          (nvp:with-gnu/w32
               (start-process cmd nil cmd file)
             (w32-shell-execute (cdr (assoc 'cmd prog)) file)))))))
 
@@ -220,7 +220,7 @@
 If marked files are already .info files, just install. By default, installs
 to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument]."
   (interactive
-   (let ((dir (nvp-prefix nil nvp/info
+   (let ((dir (nvp:prefix nil nvp/info
                 (read-directory-name "Install info to directory: "))))
      (list (directory-file-name dir) (f-same-p dir default-directory))))
   ;; convert org files to .info
@@ -241,7 +241,7 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
               (and (not keep-info) 
                    (file-exists-p (concat base ".org"))
                    (delete-file info))
-              (nvp-with-process "install-info"
+              (nvp:with-process "install-info"
                 :proc-args ((concat "--info-dir=" info-dir)
                             (concat "--info-file=" dest))))))
         (dired-get-marked-files)))
@@ -289,9 +289,9 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
   (interactive
    (let ((files (dired-get-marked-files t current-prefix-arg)))
      (list
-      (nvp-with-gnu (dired-read-shell-command "& on %s: " current-prefix-arg files))
+      (nvp:with-gnu (dired-read-shell-command "& on %s: " current-prefix-arg files))
       files)))
-  (nvp-with-gnu/w32
+  (nvp:with-gnu/w32
       (let (list-switch)
         (start-process
          cmd nil shell-file-name

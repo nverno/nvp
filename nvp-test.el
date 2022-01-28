@@ -5,7 +5,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-project)
-(nvp-decl "ert" ert-run-tests-interactively)
+(nvp:decl "ert" ert-run-tests-interactively)
 
 ;; called when visiting new test buffer, passed name of matching source file
 (defvar nvp-test-init-function 'ignore)
@@ -85,8 +85,8 @@ With prefix ARG, prompt for selector."
 
 ;; non-nil if current buffer is a test file
 (defsubst nvp-test-file-p ()
-  (and (cl-member (nvp-path 'ds) nvp-project--test-dir :test 'string=)
-       (let ((buff-name (nvp-path 'bfse)))
+  (and (cl-member (nvp:path 'ds) nvp-project--test-dir :test 'string=)
+       (let ((buff-name (nvp:path 'bfse)))
          (or (cl-some (lambda (prefix)
                         (string-prefix-p (regexp-quote prefix) buff-name))
                       nvp-test-prefixes)

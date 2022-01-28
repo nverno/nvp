@@ -16,11 +16,11 @@
   (require 'nvp-macro)
   (require 'nvp-parse))
 (require 'cperl-mode)
-(nvp-req 'nvp-perl 'subrs)
-(nvp-auto "find-lisp" 'find-lisp-find-files)
-(nvp-decls)
+(nvp:req 'nvp-perl 'subrs)
+(nvp:auto "find-lisp" 'find-lisp-find-files)
+(nvp:decls)
 
-(nvp-with-w32
+(nvp:with-w32
   ;; load windows environment helpers
   (add-to-list
    'load-path
@@ -67,14 +67,14 @@
 (defun nvp-perl-cpanm-install ()
   (interactive)
   (let ((module (read-from-minibuffer "Module: " (thing-at-point 'perl-module t))))
-    (nvp-with-process "cpanm"
+    (nvp:with-process "cpanm"
       :buffer-fn get-buffer-create
       :proc-args (module))))
 
 ;;; Eldoc
 (defun nvp-perl-eldoc-function ()
   (ignore-errors
-    (nvp-unless-ppss 'soc
+    (nvp:unless-ppss 'soc
       (car
        (let ((cperl-message-electric-keyword nil))
          (cperl-get-help))))))
@@ -129,7 +129,7 @@
 ;; on windows just run in an external shell
 (defun nvp-perl-debug (_arg)
   (interactive "P")
-  (nvp-with-gnu/w32
+  (nvp:with-gnu/w32
       (let ((process-environment
              (cons "PERL5DB_THREADED=1" process-environment)))
         (call-interactively 'cperl-db))

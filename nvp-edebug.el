@@ -16,7 +16,7 @@
 (require 'elisp-mode)
 (require 'backtrace)
 (require 'edebug)
-(nvp-decls :v (tramp-debug-on-error tramp-verbose)
+(nvp:decls :v (tramp-debug-on-error tramp-verbose)
            :f (nvp-help-describe-keymap))
 
 ;; -------------------------------------------------------------------
@@ -49,7 +49,7 @@
 (defvar-local nvp-backtrace--multi t)
 (defun nvp-backtrace-toggle-multi ()
   (interactive)
-  (if (nvp-toggle-variable nvp-backtrace--multi)
+  (if (nvp:toggle-variable nvp-backtrace--multi)
       (backtrace-single-line)
     (backtrace-multi-line)))
 
@@ -60,7 +60,7 @@
 ;; Completion for frame-locals in edebug buffer
 ;; needs to switch buffer before completing in minibuffer
 (advice-add 'edebug-eval-expression :around
-            (nvp-def nvp@edebug-locals (orig-fn expr)
+            (nvp:def nvp@edebug-locals (orig-fn expr)
               (interactive
                (let ((hookfun
                       (lambda ()
@@ -108,7 +108,7 @@
 (eval-when-compile
   (defmacro nvp-debug:launch-emacs (&rest args)
     (declare (debug defun))
-    (let ((args (cons (nvp-with-gnu/w32 "emacs" "runemacs.exe") args)))
+    (let ((args (cons (nvp:with-gnu/w32 "emacs" "runemacs.exe") args)))
       `(call-process-shell-command
         (mapconcat #'shell-quote-argument (delq nil (list ,@args)) " ") nil 0 nil))))
 
@@ -126,7 +126,7 @@ With prefix open current file."
 
 
 ;;;###autoload(autoload 'nvp-edebug-hydra-emacs/body "nvp-edebug")
-(nvp-hydra-set-property 'nvp-edebug-hydra-emacs)
+(nvp:hydra-set-property 'nvp-edebug-hydra-emacs)
 (defhydra nvp-edebug-hydra-emacs (:color blue)
   "
 Toggle debugging functions:

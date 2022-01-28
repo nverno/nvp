@@ -14,21 +14,21 @@
 ;; -------------------------------------------------------------------
 ;;; Buffers / Processes 
 
-(defmacro nvp-buffer-process (&optional buffer)
+(defmacro nvp:buffer-process (&optional buffer)
   "Return BUFFER's process."
   `(get-buffer-process ,(or buffer '(current-buffer))))
 
-(defmacro nvp-with-proc (proc &rest body)
+(defmacro nvp:with-buffer-proc (proc &rest body)
   "Execute BODY with current buffer PROC if process is live."
   (declare (indent defun) (debug t))
-  `(if-let ((,proc (nvp-buffer-process)))
+  `(if-let ((,proc (nvp:buffer-process)))
        (if (not (process-live-p ,proc))
            (user-error "Buffer process is not live.")
          ,@body)
      (user-error "Current buffer has no process.")))
 
-(defalias 'nvp-with-comint-buffer 'nvp-comint-buffer)
-(cl-defmacro nvp-comint-buffer (&rest body &key name new result &allow-other-keys)
+(defalias 'nvp:with-comint-buffer 'nvp:comint-buffer)
+(cl-defmacro nvp:comint-buffer (&rest body &key name new result &allow-other-keys)
   "Get a new comint buffer from NAME and execute BODY there, returning buffer.
 If NEW is non-nil, use `generate-new-buffer', otherwise `get-buffer-create'.
 If RESULT is non-nil, return result of BODY instead of buffer."
@@ -46,7 +46,7 @@ If RESULT is non-nil, return result of BODY instead of buffer."
 ;; -------------------------------------------------------------------
 ;;; Helpers
 
-(defmacro nvp-with-process-filter (process &optional proc-filter)
+(defmacro nvp:with-process-filter (process &optional proc-filter)
   "Run processs with `nvp-proc-default-filter'.
 Return process object."
   (declare (indent defun))
@@ -56,7 +56,7 @@ Return process object."
       `(prog1 ,process
          (set-process-filter ,process ,proc-filter)))))
 
-(cl-defmacro nvp-with-process-log (process &key
+(cl-defmacro nvp:with-process-log (process &key
                                            on-error
                                            on-success
                                            proc-filter
@@ -64,7 +64,7 @@ Return process object."
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
   (declare (indent defun))
-  (macroexp-let2* nil ((proc `(nvp-with-process-filter ,process ,proc-filter))
+  (macroexp-let2* nil ((proc `(nvp:with-process-filter ,process ,proc-filter))
                        (on-err (if (keywordp on-error)
                                    ;; (equal on-error :pop-on-error)
                                    `(pop-to-buffer (process-buffer ,proc)
@@ -82,7 +82,7 @@ if process exit status isn't 0."
 ;; -------------------------------------------------------------------
 ;;; Main wrapper
 
-(cl-defmacro nvp-with-process
+(cl-defmacro nvp:with-process
     (process
      &key
      proc-name
@@ -168,11 +168,11 @@ In this case, the return value is the exit status of the shell command.
 ;; -------------------------------------------------------------------
 ;;; Wrappers / Overrides
 
-(defmacro nvp-with-process-wrapper (wrapper &rest body)
+(defmacro nvp:with-process-wrapper (wrapper &rest body)
   "Wrap `set-process-sentinel' to so BODY is executed in environment
 where WRAPPER has effect, eg. `cl-letf' will have effect.
 Note: use lexical-binding."
-  (nvp-with-syms (setter proc sentinel)
+  (nvp:with-syms (setter proc sentinel)
     (macroexp-let2 nil wrapper wrapper
       `(let ((,setter (symbol-function 'set-process-sentinel)))
          (cl-letf (((symbol-function 'set-process-sentinel)
@@ -183,10 +183,10 @@ Note: use lexical-binding."
                                (funcall ,wrapper ,sentinel)))))
            ,@body)))))
 
-(defmacro nvp-with-async-override (orig-fn new-fn &rest body)
+(defmacro nvp:with-async-override (orig-fn new-fn &rest body)
   "Set `symbol-function' of ORIG-FN to NEW-FN in process-buffer of BODY."
   (declare (indent defun))
-  `(nvp-with-process-wrapper
+  `(nvp:with-process-wrapper
     (lambda (fn)
       (let ((fun fn))
         (lambda (p m)

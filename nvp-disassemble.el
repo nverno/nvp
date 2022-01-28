@@ -6,7 +6,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;; -------------------------------------------------------------------
 ;;; Disassemble code
@@ -35,7 +35,7 @@
 (defun nvp-disassemble-popup ()
   (interactive)
   (let ((doc (nvp-disassemble-doc)))
-    (nvp-with-toggled-tip doc)))
+    (nvp:with-toggled-tip doc)))
 
 (provide 'nvp-disassemble)
 ;;; nvp-disassemble.el ends here

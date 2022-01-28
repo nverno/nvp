@@ -13,7 +13,7 @@
     (kill-buffer (process-buffer p))))
 
 (defun nvp-yaml-ci-validate (_type)
-  (nvp-with-async-override 'nvp-yaml-lint-sentinel 'nvp-yaml-ci-test-sentinel
+  (nvp:with-async-override 'nvp-yaml-lint-sentinel 'nvp-yaml-ci-test-sentinel
     (accept-process-output (nvp-yaml-validate) 0.2)))
 
 (ert-deftest nvp-yaml-ci-circleci ()

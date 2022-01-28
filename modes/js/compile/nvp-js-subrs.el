@@ -5,7 +5,7 @@
 (require 'nvp-macro)
 (require 'nvp)
 (require 'js)
-(nvp-decls)
+(nvp:decls)
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers

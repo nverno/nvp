@@ -4,12 +4,12 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'web-mode)
-(nvp-decls :f (impatient-mode
+(nvp:decls :f (impatient-mode
                httpd-start httpd-running-p
                lsp-describe-thing-at-point)
            :v (httpd-root httpd-port lsp-mode))
-(nvp-auto "nvp-jinja" 'nvp-jinja-url-for)
-(nvp-auto "projectile" 'projectile-project-root)
+(nvp:auto "nvp-jinja" 'nvp-jinja-url-for)
+(nvp:auto "projectile" 'projectile-project-root)
 
 ;; -------------------------------------------------------------------
 ;;; Serve buffer interactively

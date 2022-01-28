@@ -9,7 +9,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'magit nil t)
-(nvp-decls :f (git-messenger:popup-message))
+(nvp:decls :f (git-messenger:popup-message))
 
 ;; -------------------------------------------------------------------
 ;;; Magit
@@ -31,7 +31,7 @@
 ;;; Config
 
 ;; caches aliases in tabulated list format after first call
-(nvp-define-cache nvp-git-aliases ()
+(nvp:define-cache nvp-git-aliases ()
   (cl-flet
       ((parse-aliases
         ()
@@ -45,7 +45,7 @@
             (forward-line 1))
           (kill-buffer (current-buffer))
           res)))
-    (nvp-with-process "git"
+    (nvp:with-process "git"
       ;; git alias => command in my gitconfig to list them all
       :proc-args ("alias | sed 's|^\\\([^=]*\\\)=\\\(.*\\\)$|\\1\\2|g'") 
       :shell t
@@ -56,7 +56,7 @@
 (defun nvp-git-list-aliases ()
   "List git aliases in tabulated list format."
   (interactive)
-  (nvp-with-tabulated-list
+  (nvp:with-tabulated-list
     :name "git-aliases"
     :format [("Alias" 10 t) ("Expansion" 60 t)]
     :entries (nvp-git-aliases)

@@ -23,14 +23,14 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-req 'nvp-makefile 'subrs)
+(nvp:req 'nvp-makefile 'subrs)
 (require 'xref)
 (require 'nvp)
-(nvp-auto "info-look" 'info-lookup->completions)
-(nvp-auto "s" 's-lowercase-p)
-(nvp-decls :f (xref-make xref-location) :v (info-lookup-other-window-flag))
+(nvp:auto "info-look" 'info-lookup->completions)
+(nvp:auto "s" 's-lowercase-p)
+(nvp:decls :f (xref-make xref-location) :v (info-lookup-other-window-flag))
 
-(nvp-package-define-root :name nvp-makefile)
+(nvp:package-define-root :name nvp-makefile)
 (defconst nvp-makecomp-program
   (expand-file-name "bin/makevars.awk" nvp-makefile--dir))
 

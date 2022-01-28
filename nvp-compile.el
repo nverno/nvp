@@ -13,7 +13,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)
-(nvp-decls :f (nvp-read-switch comint-after-pmark-p xterm-color-colorize-buffer))
+(nvp:decls :f (nvp-read-switch comint-after-pmark-p xterm-color-colorize-buffer))
 (autoload 'ansi-color-apply-on-region "ansi-color")
 
 (defmacro nvp-with-compile-command (cmd &optional arg &rest body)
@@ -60,7 +60,7 @@ has a file or directory local binding."
   (declare (indent defun))
   (let ((fn (if (symbolp name) name (intern name))))
     `(progn
-       (nvp-decl nvp-compile nvp-compile-cmake)
+       (nvp:decl nvp-compile nvp-compile-cmake)
        (defun ,fn (&optional arg)
          ,doc
          (interactive "P")
@@ -85,7 +85,7 @@ By default, with single prefix or 3 or more, read compilation command.
 With double prefix or more, use comint buffer for compilation."
   (interactive "P")
   (setq current-prefix-arg arg)
-  (nvp-defq compile-fn
+  (nvp:defq compile-fn
     (or (bound-and-true-p nvp-local-compile-function)
         (bound-and-true-p nvp-compile-function)
         #'nvp-compile-default))
@@ -147,7 +147,7 @@ ARGS are passed to `nvp-compile'."
          (args (mapconcat 'identity
                           `(,(file-name-directory buffer-file-name)
                             ;; for MSYS
-                            ,(nvp-with-w32 "-G \"MSYS Makefiles\"")
+                            ,(nvp:with-w32 "-G \"MSYS Makefiles\"")
                             "-DCMAKE_CXX_COMPILER=g++"
                             "-DCMAKE_C_COMPILER=gcc"
                             "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"

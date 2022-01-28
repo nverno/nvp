@@ -4,13 +4,13 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-c)
-(nvp-req 'nvp-c 'subrs)
-(nvp-decls)
+(nvp:req 'nvp-c 'subrs)
+(nvp:decls)
 
-(nvp-package-define-root :name nvp-c)
+(nvp:package-define-root :name nvp-c)
 
 (defconst nvp-c-gen-vars-script
-  (nvp-program "gen-c-vars.sh" :path (expand-file-name "emacs" nvp/bin)))
+  (nvp:program "gen-c-vars.sh" :path (expand-file-name "emacs" nvp/bin)))
 
 ;; generate site-specific include paths, flags, etc.
 (defun nvp-c-gen-site-vars (&optional arg)
@@ -18,8 +18,8 @@
         (prog nvp-c-gen-vars-script))
     (when (or arg
               (not (file-exists-p includes))
-              (nvp-file-older-than-days includes 20))
-      (nvp-with-process "bash"
+              (nvp:file-older-than-days includes 20))
+      (nvp:with-process "bash"
         :proc-buff " *c-vars*"
         :proc-args (prog "-o" includes)
         :callback (lambda (p _m)
@@ -40,12 +40,12 @@
 
 ;;; Irony server
 
-(nvp-with-gnu
+(nvp:with-gnu
   (defun nvp-c-install-irony ()
     (require 'irony)
     (call-interactively 'irony-install-server)))
 
-(nvp-with-w32
+(nvp:with-w32
   ;; Install irony server using MSYS compilers. Return process object
   (defun nvp-c-install-irony (&optional irony-prefix irony-dir build-cmd)
     (require 'irony)

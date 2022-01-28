@@ -12,8 +12,8 @@
   (require 'nvp-macro))
 (require 'eshell)
 (require 'nvp-shell-common)
-(nvp-decls :f (eshell-send-input eshell-kill-input))
-(nvp-auto "pcomplete" 'pcomplete--here pcomplete-entries)
+(nvp:decls :f (eshell-send-input eshell-kill-input))
+(nvp:auto "pcomplete" 'pcomplete--here pcomplete-entries)
 
 ;;;###autoload
 (defun nvp-eshell-this-dir ()

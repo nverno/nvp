@@ -14,7 +14,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls)
+(nvp:decls)
 
 ;;; Hash tests
 

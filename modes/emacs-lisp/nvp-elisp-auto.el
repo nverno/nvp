@@ -7,8 +7,8 @@
   (require 'nvp-project)
   (require 'nvp-test))
 (require 'nvp)
-(nvp-decls)
-(nvp-decl nvp-test-dir nvp-test-find-or-read-matching-test)
+(nvp:decls)
+(nvp:decl nvp-test-dir nvp-test-find-or-read-matching-test)
 
 ;;;###autoload
 (defun nvp-elisp-jump-to-cask (&optional this-window)

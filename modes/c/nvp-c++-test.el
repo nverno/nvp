@@ -9,7 +9,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-c)
-(nvp-req 'nvp-c 'subrs)
+(nvp:req 'nvp-c 'subrs)
 (require 'nvp-test)
 (autoload 'yas-expand "yasnippet")
 (defvar boost-test-abbrev-table)

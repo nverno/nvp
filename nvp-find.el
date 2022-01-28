@@ -37,7 +37,7 @@
     (defmacro rg-define-search (&rest _))))
 (require 'nvp-display)
 (require 'nvp)
-(nvp-decls :f (wgrep-exit
+(nvp:decls :f (wgrep-exit
                wgrep-save-all-buffers wgrep-abort-changes
                wgrep-remove-change wgrep-remove-all-change
                wgrep-toggle-readonly-area wgrep-mark-deletion
@@ -60,7 +60,7 @@
 
 ;;; XXX: remove this?
 ;;;###autoload(autoload 'nvp-wgrep-hydra/body "nvp-find")
-(nvp-hydra-set-property 'nvp-wgrep-hydra)
+(nvp:hydra-set-property 'nvp-wgrep-hydra)
 (defhydra nvp-wgrep-hydra (:color red)
   ("q" wgrep-exit "exit" :exit t)
   ("s" wgrep-save-all-buffers "save all")
@@ -98,7 +98,7 @@
   ;; get thing to search for: region, symbol-at-point, or prompt
   (defsubst nvp:find-search-term (search-prompt &optional force-prompt)
     (let ((search-term
-           (--if-let (nvp-tap 'dwim)
+           (--if-let (nvp:tap 'dwim)
                (if force-prompt
                    (read-from-minibuffer
                     (format (concat search-prompt " (%s): ") it) it
@@ -181,7 +181,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Ag
-(nvp-decl nvp-ag-filter ag/compilation-match-grouped-filename ag-filter)
+(nvp:decl nvp-ag-filter ag/compilation-match-grouped-filename ag-filter)
 
 ;; Make ag, wgrep-ag, and xterm-color work together
 (with-eval-after-load 'ag
@@ -229,7 +229,7 @@
     (interactive)
     (let ((compilation-start-hook
            (delq 'nvp-compilation-start-hook compilation-start-hook)))
-      (nvp-with-letfs ((ag-filter 'nvp-ag-orig-filter)
+      (nvp:with-letfs ((ag-filter 'nvp-ag-orig-filter)
                        (ag/compilation-match-grouped-filename
                         'nvp-ag-orig-match-group))
         (call-interactively 'recompile))))
@@ -252,7 +252,7 @@
   ;; rg-mode is compilation-derived mode for results
   ;; this hook lets it work with xterm-color
   (add-hook 'rg-mode-hook
-            (nvp-def nvp-rg-mode-hook ()
+            (nvp:def nvp-rg-mode-hook ()
               (setq-local compilation-transform-file-match-alist nil)
               (push 'nvp-rg-group-xc compilation-error-regexp-alist)
               (push (cons 'nvp-rg-group-xc
@@ -282,7 +282,7 @@
   (require 'nvp-grep-config)
   (let ((default-directory root))
     (grep-compute-defaults)
-    (rgrep (if regex search (format "\\b%s\\b" search)) "*.*" nil (nvp-prefix 16))))
+    (rgrep (if regex search (format "\\b%s\\b" search)) "*.*" nil (nvp:prefix 16))))
 
 ;;;###autoload
 (defun nvp-ag-dwim (root search &optional regex)
@@ -303,9 +303,9 @@ Ignore elpa directory by default, but with any prefix, prompt to include."
            (nvp:find-search-term "Ag elisp" (eq 16 arg))
            (eq 16 arg))))
   (require 'nvp-ag-config)
-  (let* ((elpa (nvp-path 'ds package-user-dir))
+  (let* ((elpa (nvp:path 'ds package-user-dir))
          (ag-ignore-list
-          (nvp-prefix '>=4
+          (nvp:prefix '>=4
             (if (y-or-n-p "Include elpa? ")
                 (cl-callf2 cl-remove elpa ag-ignore-list :test #'string=)
               ag-ignore-list)

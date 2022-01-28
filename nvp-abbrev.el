@@ -26,9 +26,9 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
 (require 'nvp)
-(nvp-req 'nvp-abbrev 'subrs)
+(nvp:req 'nvp-abbrev 'subrs)
 
-(nvp-decls :v (nvp-abbrev-completion-need-refresh unicode-latex-abbrev-table))
+(nvp:decls :v (nvp-abbrev-completion-need-refresh unicode-latex-abbrev-table))
 
 (defvar nvp-abbrev--read-history ())
 
@@ -86,7 +86,7 @@ or expansion."
 
 ;; insert starter abbrev table template
 (defun nvp-abbrev--insert-template (table &optional parents)
-  (nvp-defq parents (if (derived-mode-p 'prog-mode) '(prog-mode)
+  (nvp:defq parents (if (derived-mode-p 'prog-mode) '(prog-mode)
                       '(fundamental-mode)))
   (let ((parents
          (concat
@@ -251,7 +251,7 @@ With prefix, unload unicode abbrevs."
        "List abbrev table props: "
        (mapcar #'symbol-name (nvp-abbrev--nonempty))))))
   (let ((props (nvp-abbrev-get-plist (intern table))))
-    (nvp-with-results-buffer nil table
+    (nvp:with-results-buffer nil table
       (pcase-dolist (`(,k ,v) props)
         (princ (format "%S: %S\n" k v))))))
 

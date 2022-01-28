@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls)
+(nvp:decls)
 (autoload 'nvp-env-path-add "nvp-env")
 
 ;; server binaries
@@ -19,7 +19,7 @@
 ;; (defun nvp-d-install-dcd (&optional post-action)
 ;;   (interactive)
 ;;   (unless (file-exists-p nvp-d-dcd-bin-dir)
-;;     (nvp-with-process-log
+;;     (nvp:with-process-log
 ;;       (start-process-shell-command
 ;;        "bash" (nvp-process-buffer)
 ;;        (format "bash -l %s install_dcd_server"
@@ -87,7 +87,7 @@
 
 ;;; Newline dwim
 
-(nvp-newline nvp-d-newline-dwim nil
+(nvp:newline nvp-d-newline-dwim nil
   :pairs (("{" "}") ("(" ")"))
   :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
   :comment-start " * ")

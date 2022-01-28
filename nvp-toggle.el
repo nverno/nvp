@@ -5,9 +5,9 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'files-x)
-(nvp-decls :v (time-stamp-pattern time-stamp-count time-stamp-active)
+(nvp:decls :v (time-stamp-pattern time-stamp-count time-stamp-active)
            :f (time-stamp))
-(nvp-auto "nvp-util" 'nvp-regex-map-across-matches)
+(nvp:auto "nvp-util" 'nvp-regex-map-across-matches)
 
 ;;;###autoload
 (defun nvp-toggle-timestamp (arg)
@@ -28,9 +28,9 @@
 Decrement with prefix."
   (interactive "P")
   (or bnds
-      (setq bnds (nvp-tap 'bdwim 'symbol))
+      (setq bnds (nvp:tap 'bdwim 'symbol))
       (user-error "No region to search in."))
-  (nvp-defq inc (if arg -1 1))
+  (nvp:defq inc (if arg -1 1))
   (let (deactivate-mark)
     (nvp-regex-map-across-matches
      (lambda (ms)
@@ -151,7 +151,7 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
 With prefix ARG, just refresh defaults."
   (interactive "P")
   (if arg
-      (nvp-toggled-if (font-lock-refresh-defaults)
+      (nvp:toggled-if (font-lock-refresh-defaults)
         (font-lock-flush)
         (font-lock-ensure))
     ;; otherwise, remove fonts added via `font-lock-add-keywords'
@@ -179,8 +179,8 @@ With prefix ARG, just refresh defaults."
   "Tab/Untabify buffer regions - full visible buffer with prefix, otherwise
 the current paragraph."
   (interactive
-   (nvp-tap-or-region 'bdwim (nvp-prefix '>1 'buffer 'paragraph) :pulse t))
-  (nvp-toggled-if (untabify beg end)
+   (nvp:tap-or-region 'bdwim (nvp:prefix '>1 'buffer 'paragraph) :pulse t))
+  (nvp:toggled-if (untabify beg end)
     (tabify beg end))
   (nvp-repeat-command nil nil nil beg end))
 
@@ -197,7 +197,7 @@ the current paragraph."
 ;;; Delimiters: brackets / strings
 
 ;; translation table 
-(nvp-define-cache-runonce nvp-toggle-brackets-table ()
+(nvp:define-cache-runonce nvp-toggle-brackets-table ()
   (let ((tbl (make-string 256 0)))
     (cl-loop for i from 0 upto 255
           do (aset tbl i i))
@@ -206,7 +206,7 @@ the current paragraph."
 ;;;###autoload
 (defun nvp-toggle-brackets (&optional beg end)
   "Toggle b/w open/close braces, eg. '{' <=> '['."
-  (interactive (nvp-tap-or-region 'bdwim 'list :pulse t))
+  (interactive (nvp:tap-or-region 'bdwim 'list :pulse t))
   (let ((bs '(?\[ ?\{))
         (tbl (nvp-toggle-brackets-table)))
     (-when-let (b (car (memq (char-after) bs)))
@@ -219,14 +219,14 @@ the current paragraph."
   (nvp-repeat-command nil nil nil beg end))
 
 ;; toggle between quotes
-(nvp-define-cache-runonce nvp-toggle-strings-table ()
+(nvp:define-cache-runonce nvp-toggle-strings-table ()
   (let ((tbl (make-string 256 0)))
     (cl-loop for i from 0 upto 255
           do (aset tbl i i))
     tbl))
 
 (defun nvp-bounds-of-string-at-point (&optional pt)
-  (let ((ppss (nvp-ppss 'partial nil (or pt (point)))))
+  (let ((ppss (nvp:ppss 'partial nil (or pt (point)))))
     (when (nth 3 ppss)
       (save-excursion
         (goto-char (nth 8 ppss))
@@ -238,7 +238,7 @@ the current paragraph."
 ;;;###autoload
 (defun nvp-toggle-quotes (&optional beg end)
   "Toggle b/w quote styles."
-  (interactive (nvp-tap-or-region 'bdwim 'string :pulse t))
+  (interactive (nvp:tap-or-region 'bdwim 'string :pulse t))
   (when (and beg end)
     (let ((tbl (nvp-toggle-strings-table)))
       (pcase (char-after beg)

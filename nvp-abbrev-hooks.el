@@ -17,7 +17,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls :f (expand-abbrev-hook
+(nvp:decls :f (expand-abbrev-hook
                expand-do-expansion expand-build-marks expand-list-to-markers)
            :v (expand-point expand-list expand-index expand-pos))
 
@@ -56,7 +56,7 @@
 (defun nvp-abbrev-expand-in-paren-hook ()
   (require 'expand)
   ;; this used to work fine:
-  ;; (nvp-with-letf #'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
+  ;; (nvp:with-letf #'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
   ;;   (expand-abbrev-hook))
   (if (not (eq (char-syntax (char-after)) ?w))
       (let ((p (point)))
@@ -85,13 +85,13 @@
 ;; dont expand in strings/comments
 ;;;###autoload
 (defun nvp-abbrev-expand-p ()
-  (not (nvp-ppss 'soc)))
+  (not (nvp:ppss 'soc)))
 
 ;; don't expand in strings/comments or after [_.-:]
 ;;;###autoload
 (defun nvp-abbrev-expand-not-after-punct-p (&optional chars)
   (not (or (memq last-input-event (or chars '(?_ ?. ?- ?:)))
-           (nvp-ppss 'soc))))
+           (nvp:ppss 'soc))))
 
 ;; -------------------------------------------------------------------
 ;;; Abbrev table modes

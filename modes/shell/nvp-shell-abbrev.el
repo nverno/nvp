@@ -8,8 +8,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
 (require 'nvp-shell)
-(nvp-req 'nvp-shell 'subrs)
-(nvp-decls :f (nvp-abbrev-expand-not-after-punct-p)
+(nvp:req 'nvp-shell 'subrs)
+(nvp:decls :f (nvp-abbrev-expand-not-after-punct-p)
            :v (nvp-shell-abbrev-table shells-abbrev-table))
 
 ;; read aliases from bash_aliases to alist ((alias . expansion) ... )

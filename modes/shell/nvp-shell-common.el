@@ -3,8 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile(require 'nvp-macro))                 
-(nvp-req 'nvp-shell 'subrs)
-(nvp-decls)
+(nvp:req 'nvp-shell 'subrs)
+(nvp:decls)
 
 ;; dont expand when prefixed by [-/_.]
 (defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")

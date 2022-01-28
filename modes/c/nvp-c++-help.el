@@ -12,7 +12,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'semantic/analyze)
-(nvp-req 'nvp-c 'subrs)
+(nvp:req 'nvp-c 'subrs)
 
 ;; https://en.cppreference.com/w/
 (defvar nvp-c++-help-online-sources

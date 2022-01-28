@@ -27,7 +27,7 @@
     (eclimd--ensure-started t 'nvp-java-project-hydra/body)))
 
 ;;;###autoload(autoload 'nvp-java-project-hydra/body "nvp-java-project")
-(nvp-hydra-set-property 'nvp-java-project-hydra :verbosity 1)
+(nvp:hydra-set-property 'nvp-java-project-hydra :verbosity 1)
 (defhydra nvp-java-project-hydra (:color blue :pre nvp-java-project-pre)
   "Java Project"
   ("s" nvp-java-new-package  "pkg"       )

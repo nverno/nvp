@@ -32,7 +32,7 @@
 ;; locate program in local locations
 ;;;###autoload
 (defun nvp-install-find-local-program (program &optional path)
-  (nvp-with-gnu/w32
+  (nvp:with-gnu/w32
       (cl-loop for p in (if path (cons path nvp-install-local-locations)
                           nvp-install-local-locations)
          do (let ((f (expand-file-name program p)))
@@ -45,7 +45,7 @@
 (defvar nvp-install-mode-patterns
   '("libs:" "optional:" "git:" "bit:" "env:" "script:"))
 (setq nvp-install-mode-patterns
-      (nvp-with-gnu/w32
+      (nvp:with-gnu/w32
           `(,@nvp-install-mode-patterns "sudo:")
         `(,@nvp-install-mode-patterns "choco:" "msys:" "cygwin:")))
 
@@ -142,7 +142,7 @@
 (defun nvp-install-execute-process (process file)
   ;; (declare (indent 1) (debug t))
   (cl-incf nvp-install--total-proc)
-  (nvp-with-process-log process
+  (nvp:with-process-log process
     :on-error (pop-to-buffer (current-buffer))
     :on-success (progn
                   (cl-decf nvp-install--total-proc)
@@ -231,11 +231,11 @@
                 (nvp-log "Running %s %S" nil prog args)
                 (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
                   (nvp-install-execute-process proc ,file)))
-           (nvp-with-gnu
+           (nvp:with-gnu
              ;; sudo commands
              (cl-loop for (action cmd) in ,sudo
                 do (nvp-log "Unsupported :install")))
-           (nvp-with-w32
+           (nvp:with-w32
              ;; chocolatey
              (cl-loop for pkg in ,choco
                 ;; FIXME: can't have process sentinel with this
@@ -255,7 +255,7 @@
 ;;;###autoload
 (defun nvp-install-mode (mode)
   (interactive (list (nvp-read-mode-config)))
-  (load (nvp-mode-config-path mode)))
+  (load (nvp:mode-config-path mode)))
 
 ;;;###autoload
 (defun nvp-install-modes (modes)

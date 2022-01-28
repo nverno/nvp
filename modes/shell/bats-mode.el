@@ -40,12 +40,12 @@
 (require 'nvp)
 (require 'nvp-sh)
 
-(defvar bats-exe (nvp-program "bats") "Bats executable.")
+(defvar bats-exe (nvp:program "bats") "Bats executable.")
 
 (defvar bats-indent-offset sh-basic-offset "Bats indentation offset.")
 
 (defvar bats-check-program
-  (nvp-program "batscheck.sh" :path (expand-file-name "sh" nvp/bin)))
+  (nvp:program "batscheck.sh" :path (expand-file-name "sh" nvp/bin)))
 
 (defvar bats-function-re
   (nvp:concat

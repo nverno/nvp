@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'company-elisp)
-(nvp-decls)
+(nvp:decls)
 
 ;; wrapper for company-complete in lisp-data-mode
 ;; Note: lisp-data-mode is parent of emacs-lisp-mode so

@@ -18,29 +18,29 @@
 (defvar nvp-mode-font-additions)
 
 ;; return start of string or comment surrounding point or nil if not in one
-(defun nvp-font-start-of-string-or-comment (&optional syntax)
+(defun nvp:-font-start-of-string-or-comment (&optional syntax)
   (let ((s (or syntax (parse-partial-sexp (point-min) (point)))))
     (and (or (nth 3 s)
              (and (nth 4 s) (not (eq (nth 7 s) 'syntax-table))))
          (nth 8 s))))
 
 ;; Non-nil if point is inside a CHAR quoted region
-(defsubst nvp-font-lock-quoted-p (&optional char)
+(defsubst nvp:font-lock-quoted-p (&optional char)
   (eq (nth 3 (syntax-ppss)) (or char ?\")))
 
 ;; add fontification to REGEX up to LIMIT in quoted area by CHAR
 ;; (default double-quotes)
-(defun nvp-fontify-quoted-1 (regex char)
+(defun nvp:-fontify-quoted-1 (regex char)
   `(lambda (limit)
      (let (res)
        (while (and (setq res (re-search-forward ,regex limit 'move))
-                   (not (nvp-font-lock-quoted-p ,char))))
+                   (not (nvp:font-lock-quoted-p ,char))))
        res)))
 
 ;;; TODO: use this in newline-dwim when inside strings and wanting an
 ;;        escape to the next line
 ;; stackoverflow
-(defun syntax-to-char (syntax-code syntax-table)
+(defun syntax:-to-char (syntax-code syntax-table)
   "Return chars (or char range) with SYNTAX-CODE in SYNTAX-TABLE."
   (let (result)
     (map-char-table
@@ -55,7 +55,7 @@
      syntax-table)
     (nreverse result)))
 
-(defun nvp-font-lock-doc-comments (prefix limit keywords)
+(defun nvp:-font-lock-doc-comments (prefix limit keywords)
   ;; Simplified `c-font-lock-doc-comments' (cc-fonts)
   ;; Differences:
   ;; - doesn't match sequences of doc comments
@@ -80,7 +80,7 @@
     (if (memq (get-text-property (point) 'face) '(font-lock-comment-face
                                                   font-lock-comment-delimiter-face))
         ;; Case when fontified region starts inside a comment.
-        (let ((start (nvp-font-start-of-string-or-comment)))
+        (let ((start (nvp:-font-start-of-string-or-comment)))
           (setq region-beg (point))
           (when start
             (goto-char start))
@@ -130,24 +130,24 @@
 
         (goto-char region-end))))
   nil)
-(put 'nvp-font-lock-doc-comments 'lisp-indent-function 2)
+(put 'nvp:-font-lock-doc-comments 'lisp-indent-function 2)
 
 ;; -------------------------------------------------------------------
 ;;; Adding font-lock additions
 
-(cl-defmacro nvp-fontify-quoted (&rest forms &key char &allow-other-keys)
+(cl-defmacro nvp:fontify-quoted (&rest forms &key char &allow-other-keys)
   "Fontify elements in quoted regions."
   (declare (indent defun) (debug t))
   (while (keywordp (car forms))
     (setq forms (cdr (cdr forms))))
-  (nvp-defq char ?\")
+  (nvp:defq char ?\")
   (macroexp-progn
    (cl-loop for (regex font) in forms
       collect `(cons
-                ,(nvp-fontify-quoted-1 regex char)
+                ,(nvp:-fontify-quoted-1 regex char)
                 ',font))))
 
-(defmacro nvp-font-lock-keywords (&rest forms)
+(defmacro nvp:font-lock-keywords (&rest forms)
   "Create list of font-lock additions.
 Each element of FORMS is a list ([:quoted char] regex font-spec)."
   (declare (indent defun) (debug t))
@@ -166,16 +166,16 @@ Each element of FORMS is a list ([:quoted char] regex font-spec)."
          ;; collect `,(car form)
          ;; else
          if quoted
-         collect `(list (nvp-fontify-quoted :char ,quoted ,form))
+         collect `(list (nvp:fontify-quoted :char ,quoted ,form))
          else
          collect (if (consp form)
                      `(list (cons ,(car form) ',(cdr form)))
                    `(list ,form)))))
 
-(defmacro nvp-font-lock-add-defaults (mode &rest forms)
+(defmacro nvp:font-lock-add-defaults (mode &rest forms)
   "Add font-lock additions to MODE."
   (declare (indent defun))
-  (macroexp-let2 nil fonts `(progn (nvp-font-lock-keywords ,@forms))
+  (macroexp-let2 nil fonts `(progn (nvp:font-lock-keywords ,@forms))
    `(progn
       (cl-pushnew (cons ,mode ,fonts) nvp-mode-font-additions :test #'equal)
       (font-lock-add-keywords ,mode ,fonts))))

@@ -6,7 +6,7 @@
 (require 'nvp)
 (require 'nvp-hap)
 (require 'semantic/analyze)
-(nvp-decls)
+(nvp:decls)
 (declare-function semanticdb-includes-in-table "semantic/db-ref")
 (defvar semanticdb-current-table)
 

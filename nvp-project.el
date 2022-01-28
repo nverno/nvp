@@ -14,11 +14,11 @@
     (defmacro rg-define-search (&rest _args))))
 (require 'nvp)
 (require 'projectile)
-(nvp-decls :f (rg-project-root rg-run))
-(nvp-auto "rg" 'rg-project-root)
-(nvp-auto "vc-git" 'vc-git-root)
-(nvp-auto "vc-hg" 'vc-hg-root)
-(nvp-auto "vc-svn" 'vc-svn-root)
+(nvp:decls :f (rg-project-root rg-run))
+(nvp:auto "rg" 'rg-project-root)
+(nvp:auto "vc-git" 'vc-git-root)
+(nvp:auto "vc-hg" 'vc-hg-root)
+(nvp:auto "vc-svn" 'vc-svn-root)
 
 ;;;###autoload
 (defun nvp-project-root (&optional path)
@@ -43,7 +43,7 @@ Otherwise, look for version control directories, returing the longest path."
 
 ;;;###autoload(autoload 'nvp-projectile-rg "nvp-project")
 (rg-define-search nvp-projectile-rg
-  :query (or (nvp-tap 'dwim) (read-from-minibuffer "Search: "))
+  :query (or (nvp:tap 'dwim) (read-from-minibuffer "Search: "))
   :dir project
   :format (not current-prefix-arg)
   :files (concat

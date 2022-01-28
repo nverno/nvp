@@ -7,10 +7,10 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'tuareg)
-(nvp-decls :f (nvp-async-shell-command-to-string utop-mode utop-prepare-for-eval)
+(nvp:decls :f (nvp-async-shell-command-to-string utop-mode utop-prepare-for-eval)
            :v (utop-buffer-name))
 
-(nvp-package-define-root :name nvp-ocaml :dirs ("etc"))
+(nvp:package-define-root :name nvp-ocaml :dirs ("etc"))
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(tuareg-mode utop-mode)

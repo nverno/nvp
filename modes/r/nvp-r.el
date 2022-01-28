@@ -6,7 +6,7 @@
 (require 'ess-site)
 (require 'ess-inf)
 (declare-function tag-utils-tag-dir "tag-utils")
-(nvp-auto "nvp-util" 'nvp-list-intersection 'nvp-s-match-all-positions)
+(nvp:auto "nvp-util" 'nvp-list-intersection 'nvp-s-match-all-positions)
 
 (defvar nvp-r-source-dir (expand-file-name "R/r-source" (getenv "DEVEL")))
 (defvar nvp-r-package-src (expand-file-name "R/src" (getenv "DEVEL")))
@@ -64,7 +64,7 @@
     (align-regexp beg end "\\(\\s-*\\)[^#]#" -1 1)))
 
 ;; Add extra newline between brackets. Insert roxy starter in roxy comments.
-(nvp-newline nvp-r-newline-dwim nil
+(nvp:newline nvp-r-newline-dwim nil
   :pairs (("\\[" "\\]") ("(" ")") ("{" "}"))
   :comment-re ("##'")
   :comment-start "##' ")
@@ -169,7 +169,7 @@
                     (buffer-substring-no-properties (point-min) (point-max)))
                 (with-current-buffer tbuffer
                   (buffer-substring-no-properties (point-min) (point-max))))))
-        (nvp-with-toggled-tip str
+        (nvp:with-toggled-tip str
           :help-fn (function
                     (lambda ()
                       (interactive)
@@ -228,7 +228,7 @@
        (no-tags
         (message "Creating R source TAGS")
         (tag-utils-tag-dir nvp-r-source-dir :language "r"
-                           :program (nvp-program ctags))
+                           :program (nvp:program ctags))
         ;; (nvp-r-tag-sentinel
         ;;  (nvp-r-tag-dir nvp-r-source-dir)
         ;;  t)

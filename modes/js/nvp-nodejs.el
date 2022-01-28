@@ -21,7 +21,7 @@
 (require 'nodejs-repl)
 (require 'nvp-js)
 (require 'nvp)
-(nvp-decls :v (nvp-trace-group-alist))
+(nvp:decls :v (nvp-trace-group-alist))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")

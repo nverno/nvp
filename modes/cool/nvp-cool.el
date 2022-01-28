@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 (defvar nvp-cool-root-path "~/.local/cool/")
 (defvar nvp-cool-history () "Jumping history.")

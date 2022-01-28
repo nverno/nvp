@@ -8,7 +8,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'make-mode)
-(nvp-req 'nvp-makefile 'subrs)
+(nvp:req 'nvp-makefile 'subrs)
 (require 'nvp)
 
 ;; -------------------------------------------------------------------
@@ -17,12 +17,12 @@
 ;; Special targets: collect matches from url
 (defun nvp-makefile-collect-topics (url regex)
   (let (res)
-    (nvp-while-scanning-url url regex
+    (nvp:while-scanning-url url regex
       (push (match-string-no-properties 1) res))
     res))
 
 ;;;###autoload(autoload 'nvp-makefile-special-targets "nvp-makefile-auto")
-(nvp-define-cache-runonce nvp-makefile-special-targets ()
+(nvp:define-cache-runonce nvp-makefile-special-targets ()
   "List of special make targets."
   ;; propertize :manual (concat url (match-string 1))
   (nvp-makefile-collect-topics

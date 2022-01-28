@@ -4,8 +4,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'org)
 (require 'nvp)
-(nvp-req 'nvp-org 'subrs)
-(nvp-decls :f (outline-show-subtree
+(nvp:req 'nvp-org 'subrs)
+(nvp:decls :f (outline-show-subtree
                org-element-parse-buffer org-element-map org-element-property
                org-tempo-setup))
 
@@ -102,7 +102,7 @@ Return cons of \\='(name . raw-link)."
                                 "^\\s-*(def.*"))
                    (case-fold-search t))
               (when (re-search-forward (concat prefix-re sec-or-def) nil t)
-                (setq pt (nvp-point 'bol)))))
+                (setq pt (nvp:point 'bol)))))
           (pop-to-buffer (current-buffer))
           (unless (or (null pt) (eq pt cur))
             (push-mark))

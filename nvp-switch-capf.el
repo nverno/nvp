@@ -7,7 +7,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;; minibuffer history
 (defvar nvp-switch-read-history ())

@@ -23,7 +23,7 @@
 (require 'sh-script)
 (require 'company)
 (require 'imenu)
-(nvp-decls :v (bash-completion-process-timeout bash-completion-use-separate-processes)
+(nvp:decls :v (bash-completion-process-timeout bash-completion-use-separate-processes)
            :f (bash-completion--get-process
                bash-completion--parse bash-completion--customize
                bash-completion--completion-table-with-cache bash-completion-comm
@@ -191,7 +191,7 @@ sourced files."
 ;; -------------------------------------------------------------------
 ;;; Completion
 
-(nvp-decl require-process -parse -stub-start -customize
+(nvp:decl require-process -parse -stub-start -customize
   -completion-table-with-cache comm reset :pre "bash-completion")
 
 (defvar sh-comp-syntax-table
@@ -273,7 +273,7 @@ sourced files."
 (defun sh-comp-completion-at-point ()
   ;; XXX: in comments complete for docs only
   (with-syntax-table sh-comp-syntax-table
-    (nvp-unless-ppss 'cmt
+    (nvp:unless-ppss 'cmt
       (let* ((bash-completion-process-timeout 0.5)
              (bash-completion-use-separate-processes t)
              (pos (point))
@@ -353,7 +353,7 @@ sourced files."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-sh-comp))
-    (prefix (nvp-unless-ppss 'cmt
+    (prefix (nvp:unless-ppss 'cmt
               (and (derived-mode-p 'sh-mode)
                    (company-grab-symbol))))
     (annotation (get-text-property 0 'annot arg))
@@ -370,7 +370,7 @@ sourced files."
 ;; -------------------------------------------------------------------
 ;;; Xref
 
-(nvp-decl xref-make xref-item-location)
+(nvp:decl xref-make xref-item-location)
 
 ;;;###autoload
 (defun sh-comp--xref-backend () 'sh-comp)

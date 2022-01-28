@@ -21,8 +21,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-hap-semantic)
 (require 'nvp-c)
-(nvp-req 'nvp-c 'subrs)
-(nvp-decls :v (semantic-c-dependency-system-include-path))
+(nvp:req 'nvp-c 'subrs)
+(nvp:decls :v (semantic-c-dependency-system-include-path))
 
 ;; -------------------------------------------------------------------
 ;;; Sources

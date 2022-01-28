@@ -5,7 +5,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-proc)
-(nvp-decls :v (epg-gpg-home-directory))
+(nvp:decls :v (epg-gpg-home-directory))
 
 ;; -------------------------------------------------------------------
 ;;; Vagrant
@@ -16,7 +16,7 @@
 in buffer *vagrant-status*."
   (interactive "P")
   (unless nvp/vms (user-error "'nvp/vms' is nil" nvp/vms))
-  (nvp-with-process "bash"
+  (nvp:with-process "bash"
     :proc-bufname (and arg "*vagrant-status*")
     :proc-args ((expand-file-name "vms/vagrant-shizzle" nvp/bin) "-l" nvp/vms "-K"))
   (when (not arg)
@@ -29,12 +29,12 @@ in buffer *vagrant-status*."
 (defun nvp-ext-gpg-export (dir &optional name prog)
   "Export GPG public keys matching NAME (default NVP) to DIR using PROG (gpg/2)."
   (interactive "DExport public key to directory: \nsKey name (NVP): ")
-  (or prog (setq prog (or (nvp-program "gpg2") (nvp-program "gpg"))))
+  (or prog (setq prog (or (nvp:program "gpg2") (nvp:program "gpg"))))
   (and (equal name "") (setq name "NVP"))
   (unless (and prog (file-exists-p prog))
     (error (if prog "%s not found" "No gpg found") prog))
   (let ((default-directory dir))
-    (nvp-with-process prog
+    (nvp:with-process prog
       :proc-name "gpg"
       :buffer-fn get-buffer-create
       :proc-args ("--armor" "--output" "public_key.asc" "--export" name))))
@@ -43,7 +43,7 @@ in buffer *vagrant-status*."
 ;;;###autoload
 (defun nvp-ext-gpg-backup (dir)
   (interactive "DExport gpg files to directory: ")
-  (unless (file-exists-p (nvp-program "gpg"))
+  (unless (file-exists-p (nvp:program "gpg"))
     (user-error "gpg program not set."))
   (let ((default-directory epg-gpg-home-directory))
     (mapc (lambda (f)
@@ -66,7 +66,7 @@ in buffer *vagrant-status*."
   (with-current-buffer (get-buffer-create "*xev*")
     (pop-to-buffer (current-buffer))
     (local-set-key (kbd "C-c C-c") 'kill-this-buffer)
-    (nvp-with-process "xev"
+    (nvp:with-process "xev"
       :buffer-fn get-buffer-create
       :proc-filter nil
       :on-success (kill-buffer))))

@@ -14,7 +14,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
 (require 'nvp-man) ;; parse 'man' stuff
-(nvp-auto "pos-tip" 'pos-tip-show)
+(nvp:auto "pos-tip" 'pos-tip-show)
 
 ;; ignore ':', not symbolized to match strings
 (eval-and-compile
@@ -99,7 +99,7 @@
 ;; either from 'bash help' for bash builtins or 'man'.
 (defmacro nvp-sh:with-help (command &optional sync &rest body)
   (declare (indent defun) (debug t))
-  (nvp-with-syms (buffer cmd)
+  (nvp:with-syms (buffer cmd)
     `(let ((,buffer (generate-new-buffer " *sh-help*"))
            (,cmd ,command))
        (if ,sync
@@ -242,7 +242,7 @@
 (defun nvp-sh-help-command-at-point (cmd &optional prompt section recache)
   (interactive (list (thing-at-point 'symbol)))
   (when cmd
-    (nvp-with-toggled-tip
+    (nvp:with-toggled-tip
       (or (nvp-sh--function-string
            cmd
            (if prompt
@@ -263,7 +263,7 @@
        (list nil 'ignore)
      (list (completing-read "Switch: " nvp-sh--conditional-cache))))
   (when (not ignore)
-    (nvp-with-toggled-tip
+    (nvp:with-toggled-tip
       (nvp-sh--conditional-string switch) :help-fn :none)))
 
 ;; popup help for thing at point

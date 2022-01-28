@@ -9,7 +9,7 @@
     (when (nth 0 ppss)
       (save-excursion
         ;; skip backward up-lists, passing over variables and out of strings
-        (while (and (nvp-goto 'bul)
+        (while (and (nvp:goto 'bul)
                     (memq (char-after) '(?\{ ?$ ?\")))
           (skip-chars-backward "{$\"" (line-beginning-position)))
         (let ((end (progn
@@ -58,7 +58,7 @@
     tab))
 
 (defun nvp-cmake-expand-abbrev ()
-  (nvp-with-letf 'forward-word 'forward-word-strictly
+  (nvp:with-letf 'forward-word 'forward-word-strictly
     (c-with-syntax-table nvp-cmake-abbrev-syntax-table
       (abbrev--default-expand))))
 

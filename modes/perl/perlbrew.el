@@ -8,7 +8,7 @@
 (eval-and-compile
   (defvar perlbrew-root (or (getenv "PERLBREW_ROOT")
                             (expand-file-name "perl5/perlbrew" (getenv "HOME"))))
-  (defvar perlbrew-exe (nvp-program "perlbrew" :path perlbrew-root)))
+  (defvar perlbrew-exe (nvp:program "perlbrew" :path perlbrew-root)))
 
 ;; -------------------------------------------------------------------
 ;;; Utils

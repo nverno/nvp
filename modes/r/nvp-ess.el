@@ -12,7 +12,7 @@
 ;;;###autoload
 (defun nvp-ess-mark-defun (&optional _arg)
   (interactive)
-  (nvp--mark-defun
+  (nvp:mark-defun
    ;; first mark
    (ess-mark-function-or-para)
    ;; repeated calls

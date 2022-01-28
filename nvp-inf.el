@@ -12,7 +12,7 @@
 ;; completing read for processes
 ;;;###autoload
 (defun nvp-inf-read-process ()
-  (let* ((current (nvp-buffer-process))
+  (let* ((current (nvp:buffer-process))
          (prompt (if current (format "Process (default %s): " current)
                    "Process: ")))
    (when-let ((procs (mapcar #'(lambda (p) (cons (process-name p) p)) (process-list))))
@@ -24,7 +24,7 @@
 (eval-when-compile
   (defmacro nvp:inf-read-or-current (arg)
     "With ARG prompt for process, otherwise use current buffer's process."
-    `(if ,arg (nvp-inf-read-process) (nvp-buffer-process)))
+    `(if ,arg (nvp-inf-read-process) (nvp:buffer-process)))
 
   (defmacro nvp:inf-message (proc var)
     "Display message about PROC's VAR."
@@ -72,7 +72,7 @@
                       (process-get proc var)
                     (error (format "Process attribute %s not found" var)))))))
     (if (and res (string= var "plist"))
-        (nvp-with-results-buffer (help-buffer)
+        (nvp:with-results-buffer (help-buffer)
           (pp res))
       (nvp:inf-message proc res))))
 

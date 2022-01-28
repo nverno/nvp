@@ -30,13 +30,13 @@
   "Lookup program in preferable locations before falling back to PATH."
   (and (symbolp name) (setq name (symbol-name name)))
   (and path (substitute-env-in-file-name path))
-  (or (nvp-with-gnu/w32
+  (or (nvp:with-gnu/w32
           (cl-loop for p in (delq nil (cons path nvp-program-search-paths))
              do (let ((f (expand-file-name name p)))
                   (and (file-exists-p f)
                        (file-executable-p f)
                        (cl-return f))))
-        (bound-and-true-p (intern (nvp-w32-program name))))
+        (bound-and-true-p (intern (nvp:w32-program name))))
       (executable-find name)))
 
 ;;;###autoload
@@ -92,18 +92,18 @@
   (let ((mvars (gethash mode nvp-mode-cache nil))
         yas-dir mode-snips)
     (unless mvars
-      (nvp-defq dir (nvp-setup-package-root name))
+      (nvp:defq dir (nvp-setup-package-root name))
       (if (not (and dir (file-exists-p dir)))
           (user-error
            "Setup for '%s' failed to find package root" (nvp:as-string name))
-        (nvp-defq abbr-file
+        (nvp:defq abbr-file
           (ignore-errors (car (directory-files dir t "abbrev-table"))))
         ;; top-level snippets dir to load
         (setq yas-dir (or (ignore-errors (car (directory-files dir t "snippets")))
                           nvp/snippet))
         (setq mode-snips
               (expand-file-name (or snippets-dir (symbol-name mode)) yas-dir))
-        (nvp-defq abbr-table (symbol-name mode))
+        (nvp:defq abbr-table (symbol-name mode))
         (setq mvars (nvp-mode-vars-make
                      :dir dir
                      :snippets mode-snips

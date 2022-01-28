@@ -44,7 +44,7 @@ found file.  File is determined by:
   (4) finally error if default fails
 "
   (declare (indent defun) (debug t))
-  (nvp-with-syms (args buff file opened-p)
+  (nvp:with-syms (args buff file opened-p)
     `(let ((,args ,pargs))
        ,(if want-buff
             `(-let* (((&plist :buffer ,buff :file ,file) ,args)

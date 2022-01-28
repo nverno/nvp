@@ -9,7 +9,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (defvar yaml-src--prev-buffer))
-(nvp-auto "nvp-read" 'nvp-read-mode)
+(nvp:auto "nvp-read" 'nvp-read-mode)
 
 ;; amount to indent source blocks in addition to
 ;; baseline yaml indent at location

@@ -6,7 +6,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'smerge-mode)
 
-(nvp-hydra-set-property 'nvp-hydra-smerge :verbosity 1)
+(nvp:hydra-set-property 'nvp-hydra-smerge :verbosity 1)
 ;;;###autoload(autoload 'nvp-hydra-smerge/body "nvp-smerge")
 (defhydra nvp-hydra-smerge
   (:color red :hint nil :pre (smerge-mode 1))

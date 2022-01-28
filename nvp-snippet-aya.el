@@ -6,7 +6,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'auto-yasnippet)
 (defvar aya-current)
-(nvp-decls :f (nvp-jump-to-new-snippet)
+(nvp:decls :f (nvp-jump-to-new-snippet)
            :v (aya-current))
 
 (defconst nvp-aya-new-template "\
@@ -17,7 +17,7 @@
 `aya-current`")
 
 ;;;###autoload(autoload 'nvp-aya-hydra/body "nvp-snippet-aya")
-(nvp-hydra-set-property 'nvp-aya-hydra)
+(nvp:hydra-set-property 'nvp-aya-hydra)
 (defhydra nvp-aya-hydra (:color blue)
   ("c" aya-create "create(~)")
   ("e" aya-expand "expand")

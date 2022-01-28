@@ -4,7 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'bison-mode nil t)
 ;; semantic bunghole
-(nvp-decls :v (bison-imenu-regex))
+(nvp:decls :v (bison-imenu-regex))
 
 ;;;###autoload
 (defun nvp-bison-load-imenu ()

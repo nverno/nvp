@@ -5,8 +5,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-ruby)
-(nvp-decls)
-(nvp-auto "nvp-env" 'nvp-env-path-add 'nvp-env-setenv!)
+(nvp:decls)
+(nvp:auto "nvp-env" 'nvp-env-path-add 'nvp-env-setenv!)
 
 (defsubst nvp-ruby-version ()
   (let ((str (shell-command-to-string "ruby --version")))
@@ -53,10 +53,10 @@
   (let ((mods gems))
     (cl-flet ((install-gems
                ()
-               (nvp-with-process "gem"
+               (nvp:with-process "gem"
                  :proc-args ("install" "-q" mods))))
       (if update
-          (nvp-with-process "gem"
+          (nvp:with-process "gem"
             :proc-args ("update" "--system")
             :on-success (install-gems))
         ;; just install gems

@@ -13,7 +13,7 @@
 (require 'company)
 (require 'smartparens)
 
-(nvp-decls
+(nvp:decls
  :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward
                  vertico-directory--completing-file-p))
 
@@ -24,17 +24,17 @@
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
 
 ;; autoloads
-(nvp-auto "projectile" 'projectile-project-root)
+(nvp:auto "projectile" 'projectile-project-root)
 
 ;; root directory
-(nvp-package-define-root)
+(nvp:package-define-root)
 
 ;; -------------------------------------------------------------------
 ;;; My variables
 
 ;;-- Global -- most machine specific are compiled in init
-(nvp-defvar nvp-program-search-paths
-  (nvp-with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
+(nvp:defvar nvp-program-search-paths
+  (nvp:with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
     `(,nvp/bin ,nvp/binw))
   "Preferred search locations for executables.")
 
@@ -84,7 +84,7 @@
 ;; Abbrevs
 (defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
 (defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
-(nvp-defvar
+(nvp:defvar
   :local t :permanent t
   nvp-abbrev-local-file () "File containing local abbrev tables."
   nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
@@ -124,7 +124,7 @@
 ;;   either calling a hook or invoking a type of menu with options. Currently,
 ;;   it just invokes local indirect function.
 ;; - They could just be alists registering modes to functions?
-(nvp-wrapper-fuctions
+(nvp:wrapper-fuctions
  (nvp-check-buffer-function . nil)
  (nvp-test-function         . nil)
  (nvp-tag-function          . nil))
@@ -217,7 +217,7 @@
 
 ;;--- Headings
 ;; these may vary by mode
-(nvp-define-cache nvp-mode-header-regex ()
+(nvp:define-cache nvp-mode-header-regex ()
   "Get or create header regex based on comment syntax."
   :local t
   (nvp:heading-create-re))
@@ -256,7 +256,7 @@
 ;; decide if newlines should add comment continuations in the
 ;; current comment block
 (defun nvp-newline--comment-continue-p (syntax &optional cmt-cont)
-  (nvp-defq cmt-cont comment-continue)
+  (nvp:defq cmt-cont comment-continue)
   (when cmt-cont
     (let ((cmt-beg-re (concat "\\s-*" (string-trim (regexp-quote cmt-cont)))))
       (save-excursion
@@ -295,9 +295,9 @@
   "Generic function to handle newline dwim syntactically."
   (let ((syntax (parse-partial-sexp (point-min) (point))))
     (cond
-     ((nvp-ppss 'str syntax)
+     ((nvp:ppss 'str syntax)
       (nvp-newline-dwim-string arg syntax))
-     ((nvp-ppss 'cmt syntax)
+     ((nvp:ppss 'cmt syntax)
       (nvp-newline-dwim-comment syntax arg))
      ;; default to adding newline between paren delimiters
      (t (nvp-newline-dwim--parens arg)))))
@@ -317,7 +317,7 @@ Dispatches to generic handlers with ARG."
 ;; -------------------------------------------------------------------
 ;;; Paredit 
 (eval-when-compile (require 'paredit))
-(nvp-decl paredit-move-past-close-and paredit-blink-paren-match
+(nvp:decl paredit-move-past-close-and paredit-blink-paren-match
   paredit-indent-region paredit-splice-reindent)
 
 (defun nvp-paredit-close-round ()
@@ -343,7 +343,7 @@ Dispatches to generic handlers with ARG."
 ;; This redefinition accounts for the minibuffer width during reindent so the
 ;; point doesn't jump the width of the minibuffer after splicing
 (defun nvp-paredit-splice-reindent (start end)
-  (nvp-preserving-column
+  (nvp:preserving-column
     ;; If we changed the first subform of the enclosing list, we must
     ;; reindent the whole enclosing list.
     (if (paredit-handle-sexp-errors
@@ -365,7 +365,7 @@ Dispatches to generic handlers with ARG."
 
 ;; -------------------------------------------------------------------
 ;;; Completion
-(nvp-decl vertico-directory-tidy)
+(nvp:decl vertico-directory-tidy)
 
 (with-eval-after-load 'ido (require 'nvp-ido))
 
@@ -426,7 +426,7 @@ relative paths."
   (when (and nvp-repeat-key-enabled
              (null overriding-terminal-local-map)
              (not (memq this-command `(nvp-repeat-command ,last-command))))
-    (let* ((repeat-key (or key (nvp-input 'lbi)))
+    (let* ((repeat-key (or key (nvp:input 'lbi)))
            (repeat-key-str (single-key-description repeat-key)))
       (when repeat-key
         (unless no-indicator (nvp-indicate-cursor-pre))
@@ -509,7 +509,7 @@ relative paths."
 
 ;; use ido-completing-read
 (defun nvp@read-with-ido (old-fn &rest args)
-  (nvp-with-letf 'completing-read 'ido-completing-read
+  (nvp:with-letf 'completing-read 'ido-completing-read
     (apply old-fn args)))
 
 ;; use ido-completion when reading environment variables interactively
@@ -521,7 +521,7 @@ relative paths."
   (set-transient-map
    (or map
        (let ((km (make-sparse-keymap)))
-         (define-key km (vector (nvp-input 'lbi))
+         (define-key km (vector (nvp:input 'lbi))
            `(lambda ()
               (interactive)
               (apply #',this-command ,args)))

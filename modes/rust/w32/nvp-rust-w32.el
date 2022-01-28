@@ -31,7 +31,7 @@
 (eval-when-compile
   (require 'cl-lib)
   (require 'nvp-macro)
-  (nvp-local-vars))
+  (nvp:local-vars))
 (require 'nvp-rust)
 
 ;; install on windows with chocolatey

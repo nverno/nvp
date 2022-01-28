@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (defvar projectile-tags-file-name)
-(nvp-decl projectile-rails-root)
+(nvp:decl projectile-rails-root)
 
 (defvar nvp-rails-buffer "*rails*")
 (defmacro nvp-rails-buffer ()

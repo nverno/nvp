@@ -12,11 +12,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
-(nvp-decls)
+(nvp:decls)
 
 ;; kill process before killing buffer -- ensure comint writes history
 (defun nvp-comint-kill-proc-before-buffer ()
-  (let ((proc (nvp-buffer-process)))
+  (let ((proc (nvp:buffer-process)))
     (when (processp proc)
       (and (derived-mode-p 'comint-mode)
            (comint-write-input-ring))

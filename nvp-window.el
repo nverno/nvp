@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'windmove)
-(nvp-decls :f (winner-undo winner-redo ace-window ace-swap-window))
+(nvp:decls :f (winner-undo winner-redo ace-window ace-swap-window))
 
 (defvar nvp-window--interactive-stack ())
 (nvp-bindings nvp-window-fast-map :now
@@ -91,7 +91,7 @@
 
 ;; Hydra wiki
 ;;;###autoload(autoload 'nvp-window-hydra/body "nvp-window")
-(nvp-hydra-set-property 'nvp-window-hydra)
+(nvp:hydra-set-property 'nvp-window-hydra)
 (defhydra nvp-window-hydra (:color red)
    "
 Movement^^        ^Split^       ^Switch^   ^Resize^
@@ -142,7 +142,7 @@ _l_ →          _Z_ reset         _d_elete  _q_uit
 ;; -------------------------------------------------------------------
 ;;; Resizing windows
 
-(nvp-hydra-set-property 'nvp-window-resize-hydra)
+(nvp:hydra-set-property 'nvp-window-resize-hydra)
 (defhydra nvp-window-resize-hydra (:color red)
   "resize"
    ("j" nvp-window-move-splitter-left "←")

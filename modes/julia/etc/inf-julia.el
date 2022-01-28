@@ -11,7 +11,7 @@
 (defvar inf-julia-args)
 (defvar julia-arguments)
 (defvar inf-julia-history-file (expand-file-name ".julia_history" nvp/cache))
-(defvar inf-julia-program (nvp-program "julia"))
+(defvar inf-julia-program (nvp:program "julia"))
 (defvar inf-julia-process-buffer "*julia*")
 
 (when load-file-name 

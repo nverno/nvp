@@ -37,7 +37,7 @@
    (expand-file-name "julia/w32/repl_init.jl" nvp/install) "repl_init.jl" 'ok))
 
 (or (getenv "JULIA_HOME")
-    (setenv "JULIA_HOME" (file-name-directory (nvp-program "julia"))))
+    (setenv "JULIA_HOME" (file-name-directory (nvp:program "julia"))))
 
 ;; -------------------------------------------------------------------
 ;;; REPL 
@@ -48,7 +48,7 @@
 
 ;; repl loading on windows -- this is years old, probably works now
 (when load-file-name
-  (let ((init (expand-file-name "w32/repl_init.jl" (nvp-package-root))))
+  (let ((init (expand-file-name "w32/repl_init.jl" (nvp:package-root))))
     (setq inferior-julia-args (format "-i -L%s" init)
           julia-arguments `("-i" "-L" ,init))))
 

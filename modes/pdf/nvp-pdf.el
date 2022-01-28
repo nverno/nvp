@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'pdf-tools)
-(nvp-decls :v (pdf-info-epdfinfo-program
+(nvp:decls :v (pdf-info-epdfinfo-program
                pdf-tools-auto-mode-alist-entry
                pdf-annot-default-annotation-properties)
            :f (pdf-annot-add-text-annotation

@@ -14,7 +14,7 @@
   )"
     "
 (let ((a 1)) |; abcs
-  )" nil (goto-char (nvp-point 'csl))))
+  )" nil (goto-char (nvp:point 'csl))))
 
 (ert-deftest point-end-of-comment-same-line-el ()
   "Find position of end of elisp comment on line."
@@ -25,7 +25,7 @@
   )"
     "
 (let ((a 1)) ; abcs|
-  )" nil (goto-char (nvp-point 'cel))))
+  )" nil (goto-char (nvp:point 'cel))))
 
 (ert-deftest point-end-of-comment-same-line-c ()
   "Find position of end of C comment on line."
@@ -35,7 +35,7 @@
 |     fprintf(stderr, /* a poo */ \"%\" OFFSET \"s\n\", \"a\");"
     "
      fprintf(stderr, /* a poo */| \"%\" OFFSET \"s\n\", \"a\");"
-    'c-mode (goto-char (nvp-point 'cel))))
+    'c-mode (goto-char (nvp:point 'cel))))
 
 (ert-deftest point-start-of-multiline-comment-c ()
   "Find position of start of multiline C comment."
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     return 0;
 }"
-    'c-mode (goto-char (nvp-point 'cs))))
+    'c-mode (goto-char (nvp:point 'cs))))
 
 (ert-deftest point-end-of-multiline-comment-c ()
   "Find position of end of multiline C comment."
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     return 0;
 }"
-    'c-mode (goto-char (nvp-point 'ce))))
+    'c-mode (goto-char (nvp:point 'ce))))
 
 ;;--- Line positions
 
@@ -97,6 +97,6 @@ int main(int argc, char *argv[]) {
 		\"s/.*(require '\(${PKG}[^) ]*\).*).*$$/$${f}c: \1.elc/p\" $$f \
 		>> .depend;                                                  \
 	done|"
-    'makefile-gmake-mode (goto-char (nvp-point 'eoll))))
+    'makefile-gmake-mode (goto-char (nvp:point 'eoll))))
 
 (provide 'nvp-tests)

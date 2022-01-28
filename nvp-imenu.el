@@ -12,8 +12,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'imenu)
-(nvp-decls :f (nvp-comment-start))
-(nvp-auto "nvp-util" 'nvp-flatten-tree)
+(nvp:decls :f (nvp-comment-start))
+(nvp:auto "nvp-util" 'nvp-flatten-tree)
 
 (defvar nvp-imenu-guess nil
   "If non-nil, suggest active region or `thing-at-point' if it is in the
@@ -176,7 +176,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
                     name)))
   (let ((prompt (nvp-imenu--prompt name)))
     (nvp-imenu:if-ido
-        (nvp-with-letf 'ido-setup-completion-map
+        (nvp:with-letf 'ido-setup-completion-map
             #'(lambda () (setq ido-completion-map nvp-imenu-completion-map))
           (ido-completing-read
            prompt (mapcar #'car index-alist)
@@ -188,7 +188,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 
 ;; completing read for selection in INDEX-ALIST
 (defun nvp-menu--read (index-alist)
-  (let* ((default (and nvp-imenu-guess (nvp-tap 'dwim)))
+  (let* ((default (and nvp-imenu-guess (nvp:tap 'dwim)))
          (name (nvp-imenu--read-choice index-alist default))
          choice)
     (if (nvp-imenu:if-ido (eq ido-exit 'fallback)

@@ -7,8 +7,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'go-mode)
 (require 'xref)
-(nvp-decls :v (go-use-gocheck-for-testing))
-(nvp-auto "asdf" asdf-current-version)
+(nvp:decls :v (go-use-gocheck-for-testing))
+(nvp:auto "asdf" asdf-current-version)
 
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))

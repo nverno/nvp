@@ -9,7 +9,7 @@
 
 ;;; Requires
 
-(defmacro nvp-req (sym &optional dir noerror)
+(defmacro nvp:req (sym &optional dir noerror)
   "Handling for special requires for compile-time dependencies."
   (declare (indent 0) (debug t))
   (let* ((sym (car (nvp:list-unquote sym)))     ; accept quoted sym
@@ -34,7 +34,7 @@
     `(eval-when-compile (require ',sym ,dir ,noerror))))
 
 
-(defmacro nvp-maybe-enable (mode &optional feature)
+(defmacro nvp:maybe-enable (mode &optional feature)
   "Enable MODE if it is bound and not already and FEATURE is available."
   (declare (indent defun))
   (let ((mode (car (nvp:list-unquote mode)))
@@ -50,14 +50,14 @@
 
 ;;; Define 
 
-(defmacro nvp-defq (&rest var-vals)
+(defmacro nvp:defq (&rest var-vals)
   "If vars are nil in VAR-VALS, `setq' each VAR by evaluating its VAL."
   (declare (indent defun) (debug t))
   (macroexp-progn
    (cl-loop for (var val) on var-vals by #'cddr
       collect  `(or ,var (setq ,var ,val)))))
 
-(cl-defmacro nvp-defvar (&rest var-vals &key permanent local &allow-other-keys)
+(cl-defmacro nvp:defvar (&rest var-vals &key permanent local &allow-other-keys)
   "Define VAR and eval VALUE during compile."
   (declare (indent 0) (debug t))
   (while (keywordp (car var-vals))
@@ -71,7 +71,7 @@
            ,(if local `(make-variable-buffer-local ',var))
            ,(if permanent `(put ',var 'permanent-local t))))))
 
-(defmacro nvp-setq (&rest var-vals)
+(defmacro nvp:setq (&rest var-vals)
   "Define VAR and eval VALUE during compile."
   (declare (indent 0))
   `(progn
@@ -81,7 +81,7 @@
      ,@(cl-loop for (var value) on var-vals by #'cddr
           collect `(setq ,var (eval-when-compile ,value)))))
 
-(defmacro nvp-cset (&rest var-vals)
+(defmacro nvp:cset (&rest var-vals)
   (declare (indent 0))
   `(progn
      (,@(cons 'eval-when-compile
@@ -100,12 +100,12 @@
     '("~/bin/" "~/.asdf/shims/" "~/.local/bin/" "/usr/local/bin/")
     "Default paths to search for executables."))
 
-(defmacro nvp-w32-program (name)
+(defmacro nvp:w32-program (name)
   "Name of cached program on shitty w32.e"
   (and (symbolp name) (setq name (symbol-name name)))
   `(intern (concat "nvp-" ,name "-program")))
 
-(defsubst nvp-program-search (program &optional path)
+(defsubst nvp:program-search (program &optional path)
   (cl-loop for p in (delq nil (cons path nvp-program-search-paths))
      do (let ((f (expand-file-name program p)))
           (and (file-exists-p f)
@@ -115,7 +115,7 @@
 
 ;; PATH can contain environment variables to expand
 ;; if NO-COMPILE is defined the name is determined at runtime
-(cl-defmacro nvp-program (name &key path (default t) w32)
+(cl-defmacro nvp:program (name &key path (default t) w32)
   "Try to find program NAME at compile time.
 If PATH is non-nil, append to default search paths.
 If DEFAULT is non-nil, use NAME if other methods fail.
@@ -134,10 +134,10 @@ If program is not found at compile time, fallback to runtime search."
     (when path
       (setq path (eval path)))
     (let ((ct `(eval-when-compile
-                 (nvp-with-gnu/w32
+                 (nvp:with-gnu/w32
                      (or
                       ;; (1) just in prime spots
-                      ,(nvp-program-search name path)
+                      ,(nvp:program-search name path)
                       ;; (2) prime + exec-path
                       ,(let ((exec-path
                               (delq nil
@@ -157,7 +157,7 @@ If program is not found at compile time, fallback to runtime search."
 
 ;;; Paths
 
-(defmacro nvp-mode-config-path (mode &optional ensure-string)
+(defmacro nvp:mode-config-path (mode &optional ensure-string)
   "Create path for MODE config file."
   `(expand-file-name
     (concat "nvp-" ,(if ensure-string (nvp:as-string mode) `,mode) "-config.el")
@@ -167,20 +167,20 @@ If program is not found at compile time, fallback to runtime search."
 ;; -------------------------------------------------------------------
 ;;; Package
 
-(defsubst nvp-package--root (prefix)
+(defsubst nvp:package--root (prefix)
   (concat prefix nvp-package-root-suffix))
 
-(defmacro nvp-package-root (&optional name)
+(defmacro nvp:package-root (&optional name)
   "Expand to the default package directory with default prefix or NAME."
   (let ((prefix
          (if name
              (if (symbolp name) (symbol-name name) name)
            (file-name-nondirectory
             (directory-file-name
-             (file-name-directory (nvp-load-file-name)))))))
-    (intern (nvp-package--root prefix))))
+             (file-name-directory (nvp:load-file-name)))))))
+    (intern (nvp:package--root prefix))))
 
-(cl-defmacro nvp-package-define-root (&key name snippets dirs after-load)
+(cl-defmacro nvp:package-define-root (&key name snippets dirs after-load)
   "Define package root directory with default prefix as directory name or NAME.
 If SNIPPETS is non-nil, setup snippet loading for directory.
 If DIRS is non-nil it should be a list of variables to define as directories
@@ -188,11 +188,11 @@ relative to the project root directory as symbols 'prefix--dir'.
 AFTER-LOAD is a form to execute after file is loaded during which the root
 directory is bound to `root' and all `dirs' are let-bound to their symbols."
   (declare (indent 0) (debug t))
-  (let* ((file (nvp-load-file-name))
+  (let* ((file (nvp:load-file-name))
          (root-val (file-name-directory file))
          (base (file-name-nondirectory (directory-file-name root-val)))
          (prefix (if name (if (symbolp name) (symbol-name name) name) base))
-         (root (intern (nvp-package--root prefix)))
+         (root (intern (nvp:package--root prefix)))
          (dirs (mapcar (lambda (d)
                          (and (symbolp d) (setq d (symbol-name d)))
                          (list (intern d)
@@ -203,7 +203,7 @@ directory is bound to `root' and all `dirs' are let-bound to their symbols."
     `(progn
        (eval-and-compile
          (defconst ,root ,root-val))
-       ,(when snippets `(nvp-package-load-snippets ,root))
+       ,(when snippets `(nvp:package-load-snippets ,root))
        ,(when dirs
           `(progn
              ,@(cl-loop for (_orig-sym dir-sym dir-val) in dirs
@@ -213,7 +213,7 @@ directory is bound to `root' and all `dirs' are let-bound to their symbols."
              (let ,mappings
                ,after-load))))))
 
-(defmacro nvp-package-load-snippets (dir)
+(defmacro nvp:package-load-snippets (dir)
   "Add packages snippet directory to `yas-snippet-dirs' after loading
 `yasnippet'."
   `(progn
@@ -232,7 +232,7 @@ directory is bound to `root' and all `dirs' are let-bound to their symbols."
 ;;; Other modes
 
 ;;-- Hydras
-(defmacro nvp-hydra-set-property (hydra-name &rest props)
+(defmacro nvp:hydra-set-property (hydra-name &rest props)
   "Apply PROPS to HYDRA-NAME after `hydra' is loaded.
 PROPS defaults to setting :verbosity to 1."
   (declare (indent 1))
@@ -244,7 +244,7 @@ PROPS defaults to setting :verbosity to 1."
             collect `(hydra-set-property ,hydra-name ,k ,v)))))
 
 ;;-- Smartparens
-(cl-defmacro nvp-sp-local-pairs (&rest pairs &key modes &allow-other-keys)
+(cl-defmacro nvp:sp-local-pairs (&rest pairs &key modes &allow-other-keys)
   (declare (indent defun) (debug defun))
   (while (keywordp (car pairs))
     (setq pairs (cdr (cdr pairs))))
@@ -261,7 +261,7 @@ PROPS defaults to setting :verbosity to 1."
          (cl-loop for pair in pairs
             collect `(sp-local-pair ,@pair)))))))
 
-(defmacro nvp-diminish (&rest modes)
+(defmacro nvp:diminish (&rest modes)
   "Diminish MODES in modeline.
 MODES is of form (feature . mode)."
   (declare (indent 0))
@@ -278,11 +278,11 @@ MODES is of form (feature . mode)."
 
 ;;-- Setup helper functions
 ;; Find locations for init constants
-(defun nvp--setup-normalize-locs (locs &optional defaults)
+(defun nvp:-setup-normalize-locs (locs &optional defaults)
   "Ensure LOCS is a list. If LOCS is nil, use DEFAULTS.
 If it is a symbol/function (list) get its value(s)."
   (if (null locs)
-      (or defaults (nvp-with-gnu/w32 '("~/") '("~/" "d:/" "c:/")))
+      (or defaults (nvp:with-gnu/w32 '("~/") '("~/" "d:/" "c:/")))
     (if (and (consp locs) (functionp (car locs)))
         (list (eval locs))
       (and (not (listp locs)) (setq locs (cons locs nil)))
@@ -293,10 +293,10 @@ If it is a symbol/function (list) get its value(s)."
                  (t l)))
               locs))))
 
-(defun nvp--setup-find-loc (locs &optional places file)
+(defun nvp:-setup-find-loc (locs &optional places file)
   "Find first existing location in LOCS."
-  (let ((locs (nvp--setup-normalize-locs locs nil))
-        (places (nvp--setup-normalize-locs places)))
+  (let ((locs (nvp:-setup-normalize-locs locs nil))
+        (places (nvp:-setup-normalize-locs places)))
     (cl-loop for loc in locs
        return (cl-loop for place in places
                  as root = (if (symbolp place) (symbol-value place) place)
@@ -305,7 +305,7 @@ If it is a symbol/function (list) get its value(s)."
                  return (if file (directory-file-name loc-name)
                           (file-name-as-directory loc-name))))))
 
-(defun nvp--setup-subdirs (root &optional ignored)
+(defun nvp:-setup-subdirs (root &optional ignored)
   (setq root
         (cond
          ((symbolp root) (setq root (symbol-value root)))
@@ -317,7 +317,7 @@ If it is a symbol/function (list) get its value(s)."
    (directory-files root t "^[^.]")))
 
 ;;-- setup macros
-(cl-defmacro nvp-add-to-alist (&rest items
+(cl-defmacro nvp:add-to-alist (&rest items
                                      &key
                                      (alist 'auto-mode-alist)
                                      (test 'equal)
@@ -340,50 +340,50 @@ If it is a symbol/function (list) get its value(s)."
     (when new-vals
       `(setq ,alist (append ',new-vals ,alist)))))
 
-(defmacro nvp-setup-consts (&rest vars)
+(defmacro nvp:setup-consts (&rest vars)
   "Define consts in init."
   (declare (indent 0) (debug t))
   (macroexp-progn
    (cl-loop for (v dir places file) in vars
-      as loc = (nvp--setup-find-loc dir places file)
+      as loc = (nvp:-setup-find-loc dir places file)
       do (eval `(defconst ,v ,loc)) ;so subsequent vars can use
       collect `(defconst ,v ,loc))))
 
-(defmacro nvp-setup-load-files (&rest files)
+(defmacro nvp:setup-load-files (&rest files)
   (declare (indent 0))
   (macroexp-progn
    (cl-loop for f in files
       collect `(load ,f 'noerror 'nomessage))))
 
-(defmacro nvp-setup-load-paths (&rest paths)
+(defmacro nvp:setup-load-paths (&rest paths)
   (declare (indent 0))
   (macroexp-progn
    (cl-loop for p in paths
       collect `(add-to-list 'load-path ,p))))
 
-(defmacro nvp-setup-hooks (hook &rest modes)
+(defmacro nvp:setup-hooks (hook &rest modes)
   "Add HOOK to all MODES hooks."
   (declare (indent 1))
   (when (eq 'quote (car-safe hook))
     (setq hook (eval hook)))
   (macroexp-progn
    (cl-loop for mode in modes
-      as mode-hook = (nvp--normalize-hook mode)
+      as mode-hook = (nvp:-normalize-hook mode)
       collect `(add-hook ',mode-hook #',hook))))
 
 ;;; FIXME: minimize `add-to-list' calls
-(defmacro nvp-setup-add-subdir-load-paths (root &optional ignored)
+(defmacro nvp:setup-add-subdir-load-paths (root &optional ignored)
   "Add subdirs under ROOT to `load-path', ingnoring those listed in IGNORED."
   (declare (indent defun))
   (let* ((ignored (or ignored '("." ".." "unused" "ignored" "old")))
-         (dirs (nvp--setup-subdirs root ignored)))
+         (dirs (nvp:-setup-subdirs root ignored)))
     (macroexp-progn
      (cl-loop for d in dirs
         collect `(add-to-list 'load-path ,d)))))
 
-(defmacro nvp-setup-cache (var filename)
+(defmacro nvp:setup-cache (var filename)
   "Set cache FILENAME location."
-  `(nvp-setq ,var (expand-file-name ,filename nvp/cache)))
+  `(nvp:setq ,var (expand-file-name ,filename nvp/cache)))
 
 (provide 'nvp-macs-setup)
 ;; Local Variables:

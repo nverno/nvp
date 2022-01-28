@@ -5,11 +5,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'cperl-mode)
-(nvp-decls)
+(nvp:decls)
 
 (defconst nvp-perltidy-buffer-name "*perltidy*")
 
-(defvar nvp-perltidy (nvp-program "perltidy")
+(defvar nvp-perltidy (nvp:program "perltidy")
   "perltidy executable.")
 
 (defvar nvp-perltidy-args '("-st" "-se")
@@ -62,7 +62,7 @@ them."
               (nvp-set-local-keymap :use t
                 ("C-x C-s" . apply-changes)
                 ("C-c C-k" . abort-changes))
-              (nvp-msg "C-x C-s to apply changes, C-c C-k to abort"))))))))
+              (nvp:msg "C-x C-s to apply changes, C-c C-k to abort"))))))))
 
 (defun nvp-perltidy-region (beg end)
   "Call perltidy on region."
@@ -84,7 +84,7 @@ them."
 (defun nvp-perltidy-function ()
   "Call perltidy on function at point."
   (interactive)
-  (nvp-perltidy-region (nvp-point 'bod) (nvp-point 'eod)))
+  (nvp-perltidy-region (nvp:point 'bod) (nvp:point 'eod)))
 
 (provide 'nvp-perltidy)
 ;; Local Variables:

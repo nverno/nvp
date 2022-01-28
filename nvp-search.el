@@ -8,9 +8,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls :f (occur-read-primary-args))
-(nvp-auto "nvp-buffer" 'nvp-buffer-matching-mode)
-(nvp-auto "replace" 'multi-occur)
+(nvp:decls :f (occur-read-primary-args))
+(nvp:auto "nvp-buffer" 'nvp-buffer-matching-mode)
+(nvp:auto "replace" 'multi-occur)
 
 ;; -------------------------------------------------------------------
 ;;; Occur 
@@ -20,7 +20,7 @@
   "Call `occur' with either region or symbol-at-point.
 With prefix ARG multi-occur in buffers of the same mode."
   (interactive "P")
-  (when-let* ((str (nvp-tap 'dwim)))
+  (when-let* ((str (nvp:tap 'dwim)))
     (push (if (stringp str) (regexp-quote str) str) regexp-history))
   (if arg (nvp-multi-occur-in-this-mode)
     (call-interactively #'occur)

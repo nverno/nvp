@@ -11,7 +11,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'geiser)
-(nvp-decls
+(nvp:decls
  :f (geiser-eval-last-sexp
      abbrev-table-put abbrev-table-get)
  :v (geiser-active-implementations
@@ -41,7 +41,7 @@
 (defun nvp-scheme-abbrev-expand-p ()
   (when (not (memq last-input-event '(?/ ?- ?\?)))
     (or (memq this-command '(expand-abbrev))
-        (nvp-unless-ppss 'soc         ;not in strings/comments
+        (nvp:unless-ppss 'soc         ;not in strings/comments
           (save-match-data
             (and (looking-back "([[:alnum:]]*" (line-beginning-position))
                  (save-excursion

@@ -12,7 +12,7 @@
 ;;; Basic utils
 
 (defsubst nvp-c-out-file (&optional file)
-  (concat (nvp:no-ext file) (nvp-with-gnu/w32 ".out" ".exe")))
+  (concat (nvp:no-ext file) (nvp:with-gnu/w32 ".out" ".exe")))
 
 ;; associated header file name
 (defsubst nvp-c--header-file-name (&optional buffer ext)
@@ -54,7 +54,7 @@ is non-nil."
                 (compile-command
                  (concat
                   (nvp:concat
-                   (nvp-program ,(if c++ "g++" "gcc")) " " ,flags " ")
+                   (nvp:program ,(if c++ "g++" "gcc")) " " ,flags " ")
                   " -o " out " " (or file buffer-file-name)
                   (nvp:concat " " ,libs ";")
                   (or save post-compile

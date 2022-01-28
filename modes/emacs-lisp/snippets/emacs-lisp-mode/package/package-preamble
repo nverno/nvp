@@ -5,4 +5,4 @@
 (eval-when-compile
   (require 'nvp-macro))
 ${2:
-(nvp-package-define-root ${3::snippets t})}
+(nvp:package-define-root ${3::snippets t})}

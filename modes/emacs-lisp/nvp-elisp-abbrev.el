@@ -12,7 +12,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'company-elisp))
-(nvp-decls)
+(nvp:decls)
 (require 'nvp-elisp)
 (require 'nvp-abbrev-dynamic)
 

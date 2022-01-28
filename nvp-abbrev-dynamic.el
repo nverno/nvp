@@ -12,7 +12,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-req 'nvp-abbrev 'subrs)
+(nvp:req 'nvp-abbrev 'subrs)
 (require 'nvp)
 (require 'nvp-parse)
 

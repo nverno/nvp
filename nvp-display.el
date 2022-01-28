@@ -11,7 +11,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)                          ;nvp-display-actions
-(nvp-decl yas-expand-snippet yas-lookup-snippet find-function-other-window)
+(nvp:decl yas-expand-snippet yas-lookup-snippet find-function-other-window)
 
 (eval-and-compile
   (defmacro nvp-display:get-action (action type)
@@ -59,7 +59,7 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
      ;;      (goto-char (mark-marker)))
      )
     (`(,:find-func . ,_)
-     (and (nvp-prefix action (setq action 1) :test '>=))
+     (and (nvp:prefix action (setq action 1) :test '>=))
      (funcall (nvp-display:get-action action type) location))
     (`(,:file . ,_)
      (funcall (nvp-display:get-action action type) location))
@@ -82,7 +82,7 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
             (file-fn (nvp-display:get-action ,action :file))
             (ido-default-file-method (nvp-display:get-action ,action :ido))
             (ido-default-buffer-method ido-default-file-method))
-       (nvp-with-letf 'find-file file-fn ,@body))))
+       (nvp:with-letf 'find-file file-fn ,@body))))
 
 ; (defmacro nvp-display-file-with-action (action &rest body)
 ;   "Execute BODY with jump ACTION file defaults."

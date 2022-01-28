@@ -11,9 +11,9 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 
-(nvp-decls :f (auth-source-search org-comment-dwim paredit-comment-dwim))
-(nvp-auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
-(nvp-auto "nvp-outline" nvp-outline-hydra/body)
+(nvp:decls :f (auth-source-search org-comment-dwim paredit-comment-dwim))
+(nvp:auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
+(nvp:auto "nvp-outline" nvp-outline-hydra/body)
 
 ;; -------------------------------------------------------------------
 ;;; Movement
@@ -26,10 +26,10 @@
   (or (eq last-command this-command) (region-active-p) (push-mark))
   (let ((case-fold-search t))
     (condition-case nil
-        (search-forward char (nvp-point 'eol))
+        (search-forward char (nvp:point 'eol))
       (error (let ((pt (point)))
                (beginning-of-line)
-               (or (search-forward char (nvp-point 'eol))
+               (or (search-forward char (nvp:point 'eol))
                    (goto-char pt))))))
   (nvp-repeat-command nil nil nil char))
 
@@ -63,7 +63,7 @@
   ("o" nvp-outline-hydra/body :exit t))
 
 ;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
-(nvp-hydra-set-property 'nvp-hydra-goto-line)
+(nvp:hydra-set-property 'nvp-hydra-goto-line)
 (defhydra nvp-hydra-goto-line (goto-map) "line"
   ("g" goto-line "go")
   ("b" (push-mark (car mark-ring) nil 'activate) "mark to start" :bind nil)
@@ -91,7 +91,7 @@
   (require 'nvp-cache)
   (defvar nvp-webjump-sites)
   (defvar webjump-sites))
-(nvp-decl thing-at-point-url-at-point webjump-builtin webjump-url-fix web-mode
+(nvp:decl thing-at-point-url-at-point webjump-builtin webjump-url-fix web-mode
   nvp-cache-get nvp-cache-create nvp-org-links)
 
 (defvar nvp-webjump-org-links-re (regexp-opt '("reference" "links"))
@@ -114,7 +114,7 @@ try to find links there."
 ;;;###autoload
 (defun nvp-browse-webjump (&optional prompt use-defaults)
   "Jump to website."
-  (interactive (list (nvp-prefix 4) (nvp-prefix 16)))
+  (interactive (list (nvp:prefix 4) (nvp:prefix 16)))
   (require 'webjump)
   (require 'nvp-vars)                   ;nvp-webjump-sites
   (let* ((completion-ignore-case t)
@@ -192,14 +192,14 @@ try to find links there."
   "Insert DATE string, defaulting to current date.
 With prefix, prompts for DATE."
   (interactive
-   (list (nvp-prefix '>1 (calendar-read-date) (calendar-current-date))))
+   (list (nvp:prefix '>1 (calendar-read-date) (calendar-current-date))))
   (insert (calendar-date-string date)))
 
 ;;;###autoload
 (defun nvp-comment-timestamped (date)
   "Insert comment with date. Prompt for date with prefix."
   (interactive
-   (list (nvp-prefix '>1 (calendar-read-date) (calendar-current-date))))
+   (list (nvp:prefix '>1 (calendar-read-date) (calendar-current-date))))
   (call-interactively (pcase major-mode
                         (`org-mode #'org-comment-dwim)
                         (_ (if (bound-and-true-p paredit-mode)
@@ -220,7 +220,7 @@ With prefix, prompts for DATE."
             (error "Auth entry for %s@%s:%s has no secret" user host port)))
       (error "No auth entry found for %s@%s:%s" user host port))))
 
-(nvp-decl count-words-region count-lines-page)
+(nvp:decl count-words-region count-lines-page)
 ;;;###autoload
 (defun nvp-count-lines-or-region (arg)
   (interactive "P")
@@ -232,7 +232,7 @@ With prefix, prompts for DATE."
   "Quick insert unicode character."
   (interactive)
   (insert
-   (nvp-read-char-case "Char: " 'verbose
+   (nvp:read-char-case "Char: " 'verbose
      (?c "[c]heck" "✓")
      (?i "[i]n" "∈")
      (?s "[s]mile" "☻")

@@ -62,7 +62,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'hippie-exp)
-(nvp-decls :f (tags-completion-table ggtags-try-complete-tag ggtags-mode))
+(nvp:decls :f (tags-completion-table ggtags-try-complete-tag ggtags-mode))
 
 ;; *Note*: cl-remove-duplicates is currently used _after_ sorting candidates
 ;; which is pretty inefficient -- but also, need to remove dupes using :from-end t
@@ -119,7 +119,7 @@
 ;; t.sS => \\bt[[:alnum:]]*\\.s[[:alnum:]]*.S[[:alnum:]]*[[:alnum:]._]*\\b
 ;; so it would match "this.setState"
 (defun nvp-he-make-flex-camel-matcher (&optional pre-re join-re after-re)
-  (nvp-defq pre-re "[-/_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
+  (nvp:defq pre-re "[-/_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
   `(lambda (s)
      (let ((case-fold-search))
        (concat
@@ -219,13 +219,13 @@ doesn't exceed LIMIT."
 ;; non-nil IGNORE-COMMENTS ignores matches in strings/comments
 (defun nvp-he--search-buffer (regexp &optional result start-pos ignore-weights
                                      start-time limit ignore-comments)
-  (nvp-defq start-pos (point-min))
+  (nvp:defq start-pos (point-min))
   (save-excursion
     (goto-char (point-min))
     (nvp-he:timed-while (and (not (input-pending-p))
                              (re-search-forward regexp nil t))
         start-time limit 25
-      (if (and ignore-comments (save-match-data (nvp-ppss 'soc)))
+      (if (and ignore-comments (save-match-data (nvp:ppss 'soc)))
           (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
         (let ((match (match-string-no-properties 0)))
           (when (>= (length match) nvp-he-min-length)

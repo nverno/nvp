@@ -6,7 +6,7 @@
   (require 'nvp-macro)
   (defvar nvp-csc-program))
 (require 'nvp)
-(nvp-decl nvp-one-shot-keybinding)
+(nvp:decl nvp-one-shot-keybinding)
 
 (defun nvp-csharp-compile (&optional arg)
   (interactive "P")

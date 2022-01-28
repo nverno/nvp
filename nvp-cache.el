@@ -4,7 +4,7 @@
 ;; Creates cache with expiring entries.
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp-decls)
+(nvp:decls)
 
 ;;; Cache
 (cl-defmacro nvp-cache (&rest kwargs &key expires-fn expired-p default

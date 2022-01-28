@@ -39,11 +39,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp-decls)
+(nvp:decls)
 
 ;; -------------------------------------------------------------------
 ;;; Configuration
-(nvp-defvar nvp-js-test-re (regexp-opt '("jest" "mocha" "jasmine") t))
+(nvp:defvar nvp-js-test-re (regexp-opt '("jest" "mocha" "jasmine") t))
 
 ;; set local values, eg. in .dir-locals.el
 (defun nvp-js-local-config (&optional dir)

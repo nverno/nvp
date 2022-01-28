@@ -9,13 +9,13 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'slime)
-(nvp-decls :f (slime-repl-eval-string
+(nvp:decls :f (slime-repl-eval-string
                slime-repl-buffer slime-switch-to-output-buffer
                slime-connection-output-buffer slime-output-buffer
                slime-fuzzy-completions
                yas-hippie-try-expand)
            :v (slime-repl-input))
-(nvp-auto "nvp-elisp" 'nvp-elisp-abbrev-expand-var-p 'nvp-elisp-abbrev-expand-fn-p)
+(nvp:auto "nvp-elisp" 'nvp-elisp-abbrev-expand-var-p 'nvp-elisp-abbrev-expand-fn-p)
 
 ;; return list of available lisps and their arguments
 (defun nvp-lisp-implementations ()
@@ -25,7 +25,7 @@
            ("lisp"  cmucl ("cmucl" "-quiet") :coding-system iso-latin-1-unix)
            ("ccl"   ccl ("ccl")))))
     (cl-loop for (name . args) in impls
-       when (eval `(nvp-program ,name :default nil))
+       when (eval `(nvp:program ,name :default nil))
        collect args)))
 
 (defun nvp-lisp-start-slime ()

@@ -84,10 +84,10 @@
       (with-temp-buffer
         (insert-file-contents file)
         (cl-loop for pattern in patterns
-           do (goto-char (point-min))
-           if (re-search-forward (concat "^;+[*]\\s-*" pattern) nil t)
-           do (goto-char (match-end 0))
-           and collect (cons pattern (nvp-install-parse-line)))))))
+                 do (goto-char (point-min))
+                 if (re-search-forward (concat "^;+[*]\\s-*" pattern) nil t)
+                 do (goto-char (match-end 0))
+                 and collect (cons pattern (nvp-install-parse-line)))))))
 
 ;;--- Git installs ---------------------------------------------------
 
@@ -161,9 +161,10 @@
       (goto-char (point-max))
       (insert-file-contents infile)
       (goto-char (point-min))
-      (while (search-forward "(nvp-install-on-demand" nil t)
-        (goto-char (match-beginning 0))
-        (kill-sexp 1)))
+      (save-match-data
+        (while (search-forward "(nvp-install-on-demand" nil t)
+          (goto-char (match-beginning 0))
+          (kill-sexp 1))))
     (let ((byte-compile-dest-file-function
            #'(lambda (_f) outfile)))
       (byte-compile-file tmp-file)

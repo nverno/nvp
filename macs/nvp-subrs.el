@@ -58,6 +58,10 @@
 ;; -------------------------------------------------------------------
 ;;; Strings
 
+(defsubst nvp:common-prefix (prefix candidates)
+  (--> (try-completion prefix candidates)
+       (or (and (eq t it) it) it)))
+
 ;; Make a string of S repeated NUM times.
 (defsubst nvp:s-repeat (num s)
   (let (ss)

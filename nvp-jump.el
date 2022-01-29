@@ -165,7 +165,8 @@ Optionally, search LISP-ONLY files (no C sources)."
 (defun nvp-jump-to-build-file (file action)
   "Jump with ACTION to an init FILE in the build directory."
   (interactive
-   (list (nvp-read-relative-recursively nvp/build ".el$" "Jump to init file: ")
+   (list (nvp-read-relative-recursively
+          nvp/build "\\(?:.el\\|/\\)$" "Jump to init file: ")
          current-prefix-arg))
   (nvp-display-location file :file action))
 

@@ -382,6 +382,33 @@ relative paths."
       (insert (or parent "")))
     t))
 
+(defun nvp-vertico-expand-or-insert ()
+  "When completing files, try expand to longest common prefix using partial
+matching, otherwise just call `vertico-insert'. If this was previous
+command, call `vertico-insert'. If there is only one match call
+`vertico-exit'."
+  (interactive)
+  (--if-let (and (not (eq this-command last-command))
+                 (vertico-directory--completing-file-p)
+                 (buffer-substring
+                  (minibuffer-prompt-end)
+                  (max (point) (minibuffer-prompt-end))))
+      (let ((comp (completion-pcm-try-completion
+                   it minibuffer-completion-table nil
+                   (- (point) (minibuffer-prompt-end)))))
+        (cond ((eq comp t) (vertico-exit))    ; only completion
+              ((null comp) nil)               ; no match
+              (t
+               (pcase-let* ((`(,str . ,pt) comp)
+                            (pos (+ pt (minibuffer-prompt-end))))
+                 (cond ((string= it str) ; no change
+                        (goto-char pos))
+                       (t               ; replace with longest common prefix
+                        (delete-minibuffer-contents)
+                        (insert str)
+                        (goto-char pos)))))))
+    (vertico-insert)))
+
 (defun nvp-fallback-default (&rest _)
   "Throw \\='nvp-fallback with input."
   (interactive)

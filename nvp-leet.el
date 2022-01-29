@@ -4,11 +4,7 @@
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
-  (require 'let-alist)
-  (unless (require 'aio nil t)
-    (defmacro aio-defun (&rest _)
-      (interactive)
-      (user-error "aio library not found."))))
+  (require 'let-alist))
 (require 'leetcode)
 (require 'aio)
 (nvp:decls :f (nvp-leetcode-hook))
@@ -99,16 +95,15 @@
       (let-alist (json-read)
         .data.activeDailyCodingChallengeQuestion.question.qid))))
 
-;;;###autoload(autoload 'nvp-leet-daily "nvp-leet")
+;;;###autoload(autoload 'nvp-leet-daily "nvp-leet" nil t)
 (aio-defun nvp-leet-daily ()
   "Open the daily challenge."
   (interactive)
   (run-hooks 'nvp-leetcode-hook)
-  (if (leetcode--login-p)
-      (--when-let (nvp-leet--lookup-daily-question)
-        (leetcode-show-problem (string-to-number it)))
-    (aio-await (leetcode--login))
-    (funcall #'nvp-leet-daily)))
+  (unless (leetcode--login-p)
+    (aio-await (leetcode)))
+  (--when-let (nvp-leet--lookup-daily-question)
+    (leetcode-show-problem (string-to-number it))))
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode
@@ -121,7 +116,8 @@
   ("t" . leetcode-try)
   ("s" . leetcode-submit)
   ("r" . nvp-leet-reset-layout)
-  ("d" . nvp-leet-daily))
+  ("d" . nvp-leet-daily)
+  ("q" . leetcode-quit))
 (define-key nvp-leet-mode-map (kbd "C-c C-c") #'leetcode-try)
 
 (defun nvp@leet-maybe-setup (orig-fn problem problem-info)

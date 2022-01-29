@@ -18,15 +18,17 @@
 (nvp:decls :f (nvp-read-mode))
 (nvp:auto "nvp-read" 'nvp-read--info-files)
 
-(defsubst nvp-info-read-node (&optional prompt default)
-  (completing-read (or prompt "Go to node: ")
-    (Info-build-node-completions) nil t nil
-    'Info-minibuf-history default))
+(defun nvp-info-read-node (manual &optional prompt default)
+  (let* ((node (format "(%s)" manual))
+         (prompt (or prompt (format "%s node: " manual))))
+    (nvp:with-fallback :fallback (lambda (_) node)
+      (nvp-completing-read prompt (Info-build-node-completions) nil t nil
+        'Info-minibuf-history default))))
 
 (defsubst nvp-info-read-manual (&optional arg)
   (progn
     (info-initialize)
-    (completing-read "Manual name: " (info--manual-names arg) nil t)))
+    (nvp-completing-read "Manual name: " (info--manual-names arg) nil t)))
 
 ;;;###autoload
 (defun nvp-info-lookup-node (&optional arg)
@@ -44,7 +46,7 @@ or prompt for manual with ARG."
       (Info-mode)
       (if arg (Info-goto-node (format "(%s)" it))
         (Info-goto-node it))
-      (Info-goto-node (nvp-info-read-node (format "(%s) goto: " it)))
+      (Info-goto-node (nvp-info-read-node it))
       (pop-to-buffer (current-buffer)))
     (user-error "No info found.")))
 

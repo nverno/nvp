@@ -73,6 +73,10 @@
     nvp-tag-function
     nvp-compile-function
     nvp-mark-defun-function
+    ;; fallbacks
+    nvp-exit
+    nvp-fallback-function
+    nvp-fallback-minibuffer-function
     ;; hippie expansion variables
     nvp-he-flex-matcher nvp-he-flex-prefix-to-re nvp-he-flex-prefix-from-re
     nvp-he-flex-symbol-beg nvp-he-case-fold-search

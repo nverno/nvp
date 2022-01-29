@@ -17,8 +17,9 @@
     (setq mode 'sh-mode))
    (t (and activate                     ;default when jumping to new scratch
            (setq mode 'lisp-interaction-mode))))
-  (funcall mode)
-  (nvp-scratch-minor-mode))
+  ;; TODO: don't clobber used scratch buffer - cache by modified tick?
+  (or (eq mode major-mode) (funcall mode))
+  (or (bound-and-true-p nvp-scratch-minor-mode) (nvp-scratch-minor-mode)))
 
 (defun nvp-scratch-kill-buffer ()
   "Kill buffer ignoring `kill-buffer-query-functions'."

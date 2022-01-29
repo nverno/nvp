@@ -29,12 +29,12 @@ return its directory name."
   (declare (indent 1))
   (nvp:with-syms (res)
     `(progn
-       (setq nvp-exit nil)
-       (let ((,res
-              ,(if root
-                   `(expand-file-name
-                     (catch 'nvp-fallback ,@body) ,root)
-                 `(catch 'nvp-fallback ,@body))))
+       (let* ((nvp-exit nil)
+              (,res
+               ,(if root
+                    `(expand-file-name
+                      (catch 'nvp-fallback ,@body) ,root)
+                  `(catch 'nvp-fallback ,@body))))
          (if (or (not ,root) (file-exists-p ,res)) ,res
            (file-name-directory ,res))))))
 

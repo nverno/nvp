@@ -61,8 +61,13 @@
 (defvar nvp-display-fallback-function #'nvp-display-fallback-dired
   "Fallback for unhandled prefix.")
 
-(defvar nvp-fallback-function #'nvp-fallback-default
+(defvar nvp-fallback-minibuffer-function #'nvp-fallback-minibuffer-default
   "Function to call on exit from completing read.")
+
+(defvar nvp-fallback-function nil
+  "If non-nil, function to call after `nvp-fallback-command'. The first argument
+is the result of `nvp-fallback-minibuffer-default' if called from minibuffer,
+or nil.")
 
 (defvar nvp-exit nil "Exit flag")
 
@@ -365,7 +370,7 @@ Dispatches to generic handlers with ARG."
 
 ;; -------------------------------------------------------------------
 ;;; Completion
-(nvp:decl vertico-directory-tidy)
+(nvp:decl vertico-directory-tidy vertico-insert vertico-exit)
 
 (with-eval-after-load 'ido (require 'nvp-ido))
 
@@ -396,20 +401,20 @@ command, call `vertico-insert'. If there is only one match call
       (let ((comp (completion-pcm-try-completion
                    it minibuffer-completion-table nil
                    (- (point) (minibuffer-prompt-end)))))
-        (cond ((eq comp t) (vertico-exit))    ; only completion
-              ((null comp) nil)               ; no match
+        (cond ((eq comp t) (vertico-exit))  ; only completion
+              ((null comp) nil)             ; no match
               (t
                (pcase-let* ((`(,str . ,pt) comp)
                             (pos (+ pt (minibuffer-prompt-end))))
-                 (cond ((string= it str) ; no change
+                 (cond ((string= it str)    ; no change
                         (goto-char pos))
-                       (t               ; replace with longest common prefix
+                       (t                   ; replace with longest common prefix
                         (delete-minibuffer-contents)
                         (insert str)
                         (goto-char pos)))))))
     (vertico-insert)))
 
-(defun nvp-fallback-default (&rest _)
+(defun nvp-fallback-minibuffer-default (&rest _)
   "Throw \\='nvp-fallback with input."
   (interactive)
   (let ((input (minibuffer-contents-no-properties)))
@@ -417,10 +422,12 @@ command, call `vertico-insert'. If there is only one match call
     (throw 'nvp-fallback input)))
 
 (defun nvp-fallback-command (&rest args)
-  "Set `nvp-exit' and call `nvp-fallback-function'."
+  "Set `nvp-exit' and call fallback functions."
   (interactive)
   (setq nvp-exit 'fallback)
-  (funcall-interactively nvp-fallback-function args))
+  (and (minibufferp)
+       (bound-and-true-p nvp-fallback-minibuffer-function)
+       (funcall-interactively nvp-fallback-minibuffer-function args)))
 
 (with-eval-after-load 'vertico-directory
   (setf (symbol-function 'vertico-directory-up) #'nvp-vertico-directory-up)

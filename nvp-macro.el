@@ -22,11 +22,39 @@
 (require 'nvp-macs-fonts "macs/nvp-macs-fonts")
 (require 'nvp-subrs "macs/nvp-subrs")
 
+;; add compile time paths interactively
+(cl-eval-when (load eval)
+  (dolist (subdir '("macs" "subrs"))
+   (let ((dir (expand-file-name
+               subdir
+               (file-name-directory (nvp:load-file-name)))))
+     (add-to-list 'load-path dir))))
+
 ;;; Local Variables
 (defmacro nvp:ensure-local-variables ()
   "Make sure directory local variables have been read, even in shell."
   `(when (derived-mode-p 'comint-mode)
      (hack-local-variables)))
+
+;;; Fallback
+
+(cl-defmacro nvp:with-fallback (&rest body &key fallback minibuffer-fallback
+                                      &allow-other-keys)
+  "Catch \\='nvp-fallback in BODY. If `nvp-exit' is set to \\='fallback during
+BODY, call either FALLBACK or `nvp-fallback-function', if they are non-nil on
+result of BODY."
+  (declare (indent defun) (debug t))
+  (nvp:skip-keywords body)
+  (nvp:with-syms (res)
+    `(let* (,@(if fallback `((nvp-fallback-function ,`,fallback)))
+            ,@(if minibuffer-fallback
+                  `((nvp-fallback-minibuffer-function ,`,minibuffer-fallback)))
+            (nvp-exit nil)
+            (,res (catch 'nvp-fallback (progn ,@body))))
+       (if (and (eq nvp-exit 'fallback)
+                (bound-and-true-p nvp-fallback-function))
+           (funcall nvp-fallback-function ,res)
+         ,res))))
 
 ;; -------------------------------------------------------------------
 ;;; Prefix args

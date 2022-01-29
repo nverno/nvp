@@ -276,13 +276,17 @@
 ;; -------------------------------------------------------------------
 ;;; Commands
 
+(eval-when-compile
+  (defsubst nvp:find-symbol (query &optional regex)
+   (if regex query (format "\\b%s\\b" query))))
+
 ;;;###autoload
 (defun nvp-rgrep-dwim (root search &optional regex)
   (interactive (nvp:find-defaults current-prefix-arg "Rgrep search"))
   (require 'nvp-grep-config)
   (let ((default-directory root))
     (grep-compute-defaults)
-    (rgrep (if regex search (format "\\b%s\\b" search)) "*.*" nil (nvp:prefix 16))))
+    (rgrep (nvp:find-symbol search regex) "*.*" nil (nvp:prefix 16))))
 
 ;;;###autoload
 (defun nvp-ag-dwim (root search &optional regex)
@@ -291,7 +295,7 @@
   (require 'nvp-ag-config)
   (unless (integerp current-prefix-arg) ; used as context=%d in ag/search
     (setq current-prefix-arg nil))
-  (ag/search search root :regexp regex))
+  (ag/search (nvp:find-symbol search regex) root :regexp t))
 
 ;;;###autoload
 (defun nvp-ag-elisp-dwim (root search &optional regex)
@@ -312,7 +316,7 @@ Ignore elpa directory by default, but with any prefix, prompt to include."
             (cl-pushnew elpa ag-ignore-list :test #'string=))))
     (unless (integerp current-prefix-arg)
       (setq current-prefix-arg nil))
-    (ag/search search root :regexp regex)))
+    (ag/search (nvp:find-symbol search regex) root :regexp t)))
 
 ;;;###autoload
 (defun nvp-ag-dired (arg)

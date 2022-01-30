@@ -73,6 +73,7 @@ Return cons of \\='(name . raw-link)."
 ;; Link format:
 ;; nvp:library ( '?' section-or-def ( '&' 'type=' (v|f|s) )? )?
 (org-link-set-parameters "nvp"
+                         :store #'nvp-org-nvp-store-link
                          :follow #'nvp-org-nvp-open
                          :export #'nvp-org-nvp-export)
 
@@ -115,6 +116,27 @@ Return cons of \\='(name . raw-link)."
     (pcase backend
       (`texinfo (format "@uref{%s,%s}" lib desc))
       (_ lib))))
+
+(defun nvp-org-nvp-store-link (&optional prompt)
+  "Store org \\='nvp link."
+  (when (eq major-mode 'emacs-lisp-mode)
+    (let ((lib (nvp:path 'bfse))
+          (symt (if (nvp:ppss 'cmt) (cons 's (read-string "Section: "))
+                  (let ((sym (variable-at-point)))
+                    (if (not (zerop sym)) (cons 'v sym)
+                      (--when-let (function-called-at-point)
+                        (cons 'f it)))))))
+      (when (or prompt (null symt))
+        (setq symt (cons
+                    (nvp:read-char-case "Type: " 'verbose
+                      (?s "[s]ection" 's)
+                      (?f "[f]unction" 'f)
+                      (?v "[v]ariable" 'v))
+                    (read-string "Symbol: " nil nil (cdr symt)))))
+      (org-link-store-props
+       :type "nvp"
+       :link (format "nvp:%s?%s&type=%s" lib (cdr symt) (car symt))
+       :description (format "%s" (cdr symt))))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

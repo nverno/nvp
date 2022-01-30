@@ -99,7 +99,6 @@
 (aio-defun nvp-leet-daily ()
   "Open the daily challenge."
   (interactive)
-  (run-hooks 'nvp-leetcode-hook)
   (unless (leetcode--login-p)
     (aio-await (leetcode)))
   (--when-let (nvp-leet--lookup-daily-question)

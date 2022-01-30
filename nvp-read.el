@@ -58,7 +58,7 @@
   (let ((local (bound-and-true-p nvp-local-notes-file)))
     (if (and local (not nolocal)) local
       (nvp-read-relative-recursively
-       nvp/org "\.org$" (or prompt "Org file: ")
+       nvp/org "\\(?:\.org\\|/\\)$" (or prompt "Org file: ")
        (or default nvp-default-org-file)))))
 
 ;;; Minibuffer input

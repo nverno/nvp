@@ -14,7 +14,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)
 (nvp:decls :f (nvp-read-switch comint-after-pmark-p xterm-color-colorize-buffer))
-(autoload 'ansi-color-apply-on-region "ansi-color")
+(nvp:auto "ansi-color" 'ansi-color-apply-on-region)
 
 (defmacro nvp-with-compile-command (cmd &optional arg &rest body)
   "Bind `compile-command' to CMD unless ARG, if non-nil, or `compile-command'
@@ -182,7 +182,8 @@ ARGS are passed to `nvp-compile'."
   "Move to next warning, error, or info message."
   (interactive "p")
   (let ((compilation-skip-threshold 0))
-    (compilation-next-error n)))
+    (compilation-next-error n)
+    (setq compilation-current-error (point-marker))))
 
 (defun nvp-compilation-previous (n)
   (interactive "p")

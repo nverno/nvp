@@ -107,16 +107,25 @@
 ;; -------------------------------------------------------------------
 ;;; Minor mode
 
+(defun nvp-leet-browse ()
+  (interactive)
+  (with-current-buffer (get-buffer leetcode--description-buffer-name)
+    (save-excursion
+      (goto-char (point-min))
+      (forward-button 2)
+      (push-button))))
+
 (nvp:bindings nvp-leet-mode nil
   :create t
   :prefix-key "<f2>L"
-  ("e" . nvp-leet-add-examples)
   ("a" . nvp-leet-add-examples)
-  ("t" . leetcode-try)
-  ("s" . leetcode-submit)
-  ("r" . nvp-leet-reset-layout)
   ("d" . nvp-leet-daily)
-  ("q" . leetcode-quit))
+  ("e" . nvp-leet-add-examples)
+  ("q" . leetcode-quit)
+  ("r" . nvp-leet-reset-layout)
+  ("s" . leetcode-submit)
+  ("t" . leetcode-try)
+  ("w" . nvp-leet-browse))
 (define-key nvp-leet-mode-map (kbd "C-c C-c") #'leetcode-try)
 
 (defun nvp@leet-maybe-setup (orig-fn problem problem-info)

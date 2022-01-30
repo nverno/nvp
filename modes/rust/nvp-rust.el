@@ -7,6 +7,10 @@
 (nvp:decls :v (toml-mode-map))
 ;; FIXME: declare functions for s/f -- dont want these
 
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode rust-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
 ;; TODO:
 ;; - macroexp: rustc --pretty expanded, or rustc --pretty expanded,hygiene
 ;;   https://doc.rust-lang.org/book/macros.html#debugging-macro-code
@@ -16,7 +20,6 @@
 (defvar nvp-rust-rust-home (or (getenv "RUST_SRC_PATH")
                                (expand-file-name "rust/src" (getenv "DEVEL"))))
 
-;; -------------------------------------------------------------------
 ;;; Tag
 
 ;; clone/update source repo, tag it, set RUST_SRC_PATH
@@ -210,11 +213,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Interactive
-
-(nvp:newline nvp-rust-newline-dwim nil
-  :pairs (("{" "}"))
-  :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
-  :comment-start " * ")
 
 ;; -------------------------------------------------------------------
 ;;; Minor Mode

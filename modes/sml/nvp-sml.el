@@ -4,9 +4,15 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'nvp)
 (require 'sml-mode)
 (declare-function tag-utils-tag-dir "tag-utils")
 (declare-function smie-forward-sexp "smie")
+
+;; default newline-dwim + comment continuation in nested comments
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode sml-mode))
+  (nvp-newline-dwim--comment syntax arg))
 
 (defvar nvp-sml-src-repo "https://smlnj-gforge.cs.uchicago.edu/svn")
 (defvar nvp-sml-src-dir (expand-file-name "sml" (getenv "DEVEL")))
@@ -41,12 +47,6 @@
 
 ;; ------------------------------------------------------------
 ;;; Interactive
-
-;; FIXME: use newline-dwim
-(nvp:newline nvp-sml-newline-dwim
-  "Newline dwim for `sml-mode'"
-  :comment-re (" *\\(?:(\\*\\|\\*\\)" . "\\*) *")
-  :comment-start "* ")
 
 ;; FIXME: just use beginning/end of defun for movement/marking/folding
 

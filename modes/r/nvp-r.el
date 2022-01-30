@@ -12,6 +12,19 @@
 (defvar nvp-r-package-src (expand-file-name "R/src" (getenv "DEVEL")))
 (defvar nvp-r-source-repo "http://www.github.com/wch/r-source")
 
+;; newline comment continuation in roxy
+(cl-defmethod nvp-newline-dwim-comment
+  (_syntax arg &context (major-mode ess-r-mode))
+  (save-match-data
+    (--if-let (and nvp-newline-comment-continue
+                   (save-excursion
+                     (beginning-of-line)
+                     (and (looking-at "^\\(#+'\\)")
+                          (match-string 1))))
+        (dotimes (_ (or arg 1))
+          (insert ?\n it))
+      (newline-and-indent arg))))
+
 ;; -------------------------------------------------------------------
 ;;; Utils
 
@@ -62,12 +75,6 @@
   (interactive "*r")
   (let (indent-tabs-mode)
     (align-regexp beg end "\\(\\s-*\\)[^#]#" -1 1)))
-
-;; Add extra newline between brackets. Insert roxy starter in roxy comments.
-(nvp:newline nvp-r-newline-dwim nil
-  :pairs (("\\[" "\\]") ("(" ")") ("{" "}"))
-  :comment-re ("##'")
-  :comment-start "##' ")
 
 ;;; REPL
 

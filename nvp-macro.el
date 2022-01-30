@@ -1179,51 +1179,6 @@ and set `this-command' to nil so opposite happens next time."
 ;; FIXME: most of these should either be generic or act on local variables
 ;; instead of being defined many times
 
-;;-- Newline
-
-;; FIXME: Obsolete
-;; Newline and indents for PAIRS, extends comment region with
-;; COMMENT-START when inside COMMENT-RE.
-(cl-defmacro nvp:newline (name &optional description
-                               &key pairs comment-re comment-start)
-  (declare (indent defun))
-  (let ((fn (if (symbolp name) name (intern name)))
-        (conds
-         (cons 'or
-               (cl-loop
-                  for (open close) in pairs
-                  collect `(and (looking-back ,open (line-beginning-position))
-                                (looking-at ,close)))))
-        (start-re (when comment-re (car comment-re)))
-        (end-re (when comment-re (cdr comment-re))))
-    `(defun ,fn ()
-       ,(or description "Newline dwim.")
-       (interactive)
-       (let (,@(when pairs `((p ,conds)))
-             ,@(when comment-re '((ppss (syntax-ppss)))))
-         (cond
-          ,@(when comment-re
-              `(((and (nth 4 ppss)
-                      (save-excursion
-                        (forward-line 0)
-                        (looking-at-p ,start-re)))
-                 ,(when end-re
-                    `(when (save-excursion
-                             (end-of-line)
-                             (looking-back ,end-re (line-beginning-position)))
-                       (save-excursion
-                         (newline-and-indent))))
-                 (newline)
-                 (insert ,comment-start)
-                 (indent-according-to-mode))))
-          (t
-           (newline)
-           ,@(when pairs
-               '((when p
-                   (save-excursion
-                     (newline-and-indent)))))
-           (indent-according-to-mode)))))))
-
 ;; switching between REPLs and source buffers -- maintain the name of the
 ;; source buffer as a property of the process running the REPL. Uses REPL-FIND-FN
 ;; if supplied to find/create the REPL buffer, REPL-LIVE-P is called to check

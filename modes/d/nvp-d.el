@@ -2,8 +2,13 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'nvp)
 (nvp:decls)
-(autoload 'nvp-env-path-add "nvp-env")
+(nvp:auto "nvp-env" 'nvp-env-path-add)
+
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode d-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
 
 ;; server binaries
 (defvar nvp-d-dcd-bin-dir (expand-file-name "dcd/bin" (getenv "DEVEL")))
@@ -84,13 +89,6 @@
 ;; ;		  (getenv "INCLUDE") ))
 ;;   )
 ;; -------------------------------------------------------------------
-
-;;; Newline dwim
-
-(nvp:newline nvp-d-newline-dwim nil
-  :pairs (("{" "}") ("(" ")"))
-  :comment-re (" *\\(?:/\\*\\|\\*\\)" . "\\*/ *")
-  :comment-start " * ")
 
 ;;; Run/Compile
 

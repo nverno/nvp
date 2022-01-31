@@ -51,17 +51,6 @@ Like `s-word-wrap' but allow for PREFIX."
         (push (match-string group str) matches))
       (nreverse matches))))
 
-;; (defun nvp-s-all-match-positions (regex str &optional group)
-;;   "Find positions of all REGEX matches in STR for regex GROUP (default 0)."
-;;   (declare (side-effect-free t))
-;;   (or group (setq group 0))
-;;   (save-match-data
-;;     (let ((pos 0) (len (length str)) positions)
-;;       (while (and (< pos len) (string-match regex str pos))
-;;         (setq pos (match-end group))
-;;         (push (cons (match-beginning group) (match-end group)) positions))
-;;       (nreverse positions))))
-
 
 ;; -------------------------------------------------------------------
 ;;; Lists
@@ -90,13 +79,6 @@ The result may also contain atoms that where head of subalists."
   (declare (pure t) (side-effect-free t))
   (if alist (nvp-flatten-to-alist lst)
     (flatten-tree lst)))
-
-;; Intersection of multiple lists.
-(defun nvp-list-intersection (l)
-  (declare (pure t) (side-effect-free t))
-  (cond ((null l) nil)
-	((null (cdr l)) (car l))
-	(t (cl-intersection (car l) (nvp-list-intersection (cdr l))))))
 
 ;; -------------------------------------------------------------------
 ;;; Regexps

@@ -528,6 +528,10 @@ command, call `vertico-insert'. If there is only one match call
 (unless noninteractive
   (advice-add 'shell-command :around #'nvp@shell-command-no-hook))
 
+;; dont move point
+(defun nvp@save-excurison (orig-fn &rest args)
+  (save-excursion (apply orig-fn args)))
+
 ;; ensure spaces when aligning / commenting
 (defun nvp@no-tabs (old-fn &rest args)
   (let (indent-tabs-mode)

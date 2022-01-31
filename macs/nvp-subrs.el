@@ -139,6 +139,11 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
           (nconc ys (list x)))))
     (cons (cdr ys) (cdr zs))))
 
+(defsubst nvp:list-intersection (lsts)
+  "Intersection of all lists in LSTS (unique values)."
+  (declare (pure t) (side-effect-free t))
+  (cl-reduce #'cl-intersection lsts))
+
 ;; -------------------------------------------------------------------
 ;;; Plists
 

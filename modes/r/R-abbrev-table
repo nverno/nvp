@@ -1,7 +1,7 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
 
 (define-abbrev-table 'R-mode-abbrev-table
-  '(
+  '(("req" "require" nil :system t)
     ("fn" ["function()" 1 nil nil] nvp-abbrev-expand-in-paren-hook :system t)
     ("fp" "file.path" nil :system t)
     ("fun" ["function()" 1 nil nil] nvp-abbrev-expand-in-paren-hook :system t)

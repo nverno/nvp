@@ -70,6 +70,8 @@
   ("t" wgrep-toggle-readonly-area "toggle r/o")
   ("m" wgrep-mark-deletion "mark deletion"))
 
+(advice-add 'wgrep-finish-edit :around 'nvp@save-excurison)
+
 ;; -------------------------------------------------------------------
 ;;; Recentf 
 

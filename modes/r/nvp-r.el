@@ -2,17 +2,17 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'ess-site)
 (require 'ess-inf)
-(declare-function tag-utils-tag-dir "tag-utils")
-(nvp:auto "nvp-util" 'nvp-list-intersection 'nvp-s-match-all-positions)
+(require 'nvp)
+(nvp:decls)
+(nvp:auto "s" 's-matched-positions-all)
 
 (defvar nvp-r-source-dir (expand-file-name "R/r-source" (getenv "DEVEL")))
 (defvar nvp-r-package-src (expand-file-name "R/src" (getenv "DEVEL")))
 (defvar nvp-r-source-repo "http://www.github.com/wch/r-source")
 
-;; newline comment continuation in roxy
+;; add comment continuation when in roxy block
 (cl-defmethod nvp-newline-dwim-comment
   (_syntax arg &context (major-mode ess-r-mode))
   (save-match-data
@@ -25,41 +25,19 @@
           (insert ?\n it))
       (newline-and-indent arg))))
 
-;; -------------------------------------------------------------------
-;;; Utils
+;; dont expand in comments/strings or in symbols with '.', eg. is.null
+(defun nvp-r-abbrev-expand-p ()
+  (and (not (string-match-p "\\." (symbol-name (ess-symbol-at-point))))
+       (not (nvp:ppss 'soc))))
 
 ;; Guess where the column breaks are located (assumes right-justified).
 (defun nvp-r-guess-column-breaks (str)
-  (let* ((res (mapcar
-               #'(lambda (x)
-                   (mapcar
-                    #'cdr (nvp-s-match-all-positions "\'.*?\'\\|[-0-9.A-Za-z]+" x)))
-               (split-string str "\n")))
-         (res (cl-remove-if-not #'(lambda (x)
-                                    (> (length x) 0))
-                                res)))
-    (nvp-list-intersection res)))
-
-;;; FIXME: remove
-(eval-when-compile
-  (defmacro nvp-r-str-or-region (name &optional doc &rest body)
-    (declare (indent defun))
-    (let* ((fn (intern (symbol-name name))))
-      `(defun ,fn (str &optional from to)
-         ,doc
-         (interactive
-          (if (region-active-p)
-              (list nil (region-beginning) (region-end))
-            (let ((bds (bounds-of-thing-at-point 'paragraph)))
-              (list nil (car bds) (cdr bds)))))
-         (let* ((input (or str (buffer-substring-no-properties from to)))
-                output)
-           ,@body
-           (if str output
-             (save-excursion
-               (delete-region from to)
-               (goto-char from)
-               (insert output))))))))
+  (-->
+   (--map
+    (--map (cdr it) (s-matched-positions-all "\'.*?\'\\|[-0-9.A-Za-z]+" it))
+    (split-string str "\n"))
+   (cl-remove-if-not (lambda (x) (> (length x) 0)) it)
+   (nreverse (nvp:list-intersection it))))
 
 ;; ------------------------------------------------------------
 ;;; Commands
@@ -99,61 +77,87 @@
       ;; process stuff
       (pop-to-buffer buff))))
 
-;;; string or regions
 
-(defvar nvp-r-header-str
-  (eval-when-compile
-    (mapconcat #'(lambda (x) (or (and (consp x) (make-string (car x) (cadr x))) x))
-               '("## " (77 ?-) "\n##\n## %s\n##\n## " (77 ?-)) "")))
+;;; Roxy 
 
-;; Surround STR or region in header box.
-(nvp-r-str-or-region nvp-r-header-box nil
-  (let* ((header (replace-regexp-in-string "^[#\s]+\\|\n" "" input)))
-    (setq output
-          (format nvp-r-header-str
-                  (concat (make-string (- (/ 74 2) (/ (length header) 2)) ?\s)
-                          header)))))
+;;Convert regular comments to roxygen prefixes.
+(defun nvp-r-roxy ()
+  (interactive)
+  (save-excursion
+    (if (region-active-p)
+        (while (re-search-forward "^#+\'?" (region-end) 'move)
+          (replace-match "##\'"))
+      (goto-char (point-min))
+      (while (re-search-forward "^#+\'?" nil t)
+        (replace-match "##\'")))))
 
-;; Insert commas into table (assumes right-justified).
-(nvp-r-str-or-region nvp-r-insert-commas-table nil
-  (let* ((_pos (nvp-r-guess-column-breaks input))
-         (raw (split-string input "\n"))
-         (_lines (cl-remove-if-not (lambda (x) (> (length x) 0)) raw))
-         (new-lines #'(mapcar (lambda (x)
-                                (with-temp-buffer
-                                  (insert x)
-                                  (mapc
-                                   (lambda (y) (goto-char (+ y (nth (- y 1) _pos)))
-                                     (insert ","))
-                                   (number-sequence 1 (- (length _pos) 1)))
-                                  (buffer-string)))
-                              _lines)))
-    (setq output (mapconcat 'identity new-lines "\n"))))
+(defun nvp-r-roxy-preview (type)
+  (interactive (list (nvp-completing-read "Preview: " '("Rd" "HTML" "text"))))
+  (funcall-interactively (intern (concat "ess-roxy-preview-" type))))
+
+;;; Tables
+
+;;; FIXME: remove
+(eval-when-compile
+  (defmacro nvp-r-str-or-region (name &optional doc &rest body)
+    (declare (indent defun))
+    (let* ((fn (intern (symbol-name name))))
+      `(defun ,fn (str &optional from to)
+         ,doc
+         (interactive
+          (if (region-active-p)
+              (list nil (region-beginning) (region-end))
+            (let ((bds (bounds-of-thing-at-point 'paragraph)))
+              (list nil (car bds) (cdr bds)))))
+         (let* ((input (or str (buffer-substring-no-properties from to)))
+                output)
+           ,@body
+           (if str output
+             (save-excursion
+               (delete-region from to)
+               (goto-char from)
+               (insert output))))))))
+
+(defun nvp-r-table-insert-commas (str &optional beg end)
+  "Insert commas into space separated table (assume right-justified)."
+  (interactive
+   (-let (((beg . end) (nvp:tap 'bdwim 'paragraph :pulse t)))
+     (list (and beg end (buffer-substring-no-properties beg end))
+           beg end t)))
+  (let* ((pos (nvp-r-guess-column-breaks str))
+         (table
+          (--> (--map (with-temp-buffer
+                        (insert it)
+                        (mapc (lambda (y) (goto-char (+ y (nth (1- y) pos)))
+                                (insert ","))
+                              (number-sequence 1 (length pos)))
+                        (buffer-string))
+                      (split-string str "\n" 'omit "\t "))
+               (mapconcat 'identity it "\n"))))
+    (if (and beg end)
+        (save-excursion
+          (delete-region beg end)
+          (goto-char beg)
+          (insert table))
+      table)))
 
 (defvar nvp-r-datetime-regex
-  (eval-when-compile
-    (concat "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} "
-            "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\)")))
+  (nvp:concat "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} "
+              "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\)"))
 
 ;; Quote R date times to use with `read.table'.
-(nvp-r-str-or-region nvp-r-quote-datetime nil
-  (setq output (replace-regexp-in-string nvp-r-datetime-regex "\'\\1\'" input)))
+(defun nvp-r-table-quote-datetime (&optional str beg end)
+  "Quote date times to use with \\='read.table."
+  (interactive (list nil (nvp:tap 'bdwim 'paragraph :pulse t)))
+  (if str (replace-regexp-in-string nvp-r-datetime-regex "\'\\1\'" str)
+    (save-excursion
+      (goto-char beg)
+      (while (re-search-forward nvp-r-datetime-regex end t)
+        (replace-match "\'\\1\'")))))
 
-;; -------------------------------------------------------------------
-;;; Imenu/headers
-
-(defun nvp-r-setup-headers ()
-  ;; code blocks in spin docs
-  (setq nvp-mode-header-regex "\\s-*##\\(?:-\\|+\\)+")
-  ;; comment headers in rmd/spin
-  (nvp-imenu-setup
-   :headers '((nil "\\s-*##'\\s-+#\\s-*\\(.*\\)\\s-*$" 1))
-   :headers-1 '(("Headers" "\\s-*##'\\s-+#\\s-*\\(.*\\)\\s-*$" 1))
-   :headers-2 '(("Sub-headers" "\\s-*##'\\s-+##\\s-*\\(.*\\)\\s-*$" 1))))
-
-;; -------------------------------------------------------------------
 ;;; Help
 
+;; FIXME: nvp-hap backend
 ;; toggle help at point in popup
 (defun nvp-r-help-at-point (&optional command)
   (interactive)
@@ -183,27 +187,9 @@
                       (x-hide-tip)
                       (pop-to-buffer tbuffer))))))))
 
-;; -------------------------------------------------------------------
-;;; Roxy 
-
-;;Convert regular comments to roxygen prefixes.
-(defun nvp-r-roxy ()
-  (interactive)
-  (save-excursion
-    (if (region-active-p)
-        (while (re-search-forward "^#+\'?" (region-end) 'move)
-          (replace-match "##\'"))
-      (goto-char (point-min))
-      (while (re-search-forward "^#+\'?" nil t)
-        (replace-match "##\'")))))
-
-(defun nvp-r-roxy-preview (type)
-  (interactive
-   (list (nvp-completing-read "Preview: " '("Rd" "HTML" "text"))))
-  (funcall-interactively (intern (concat "ess-roxy-preview-" type))))
-
 ;; ------------------------------------------------------------
 ;;; Tags
+;;; FIXME: remove / fix tag stuff
 
 ;; Create tags file [default c tags] for directory. Return process object.
 (defun nvp-r-tag-dir (&optional directory pattern)
@@ -234,8 +220,8 @@
          nil))
        (no-tags
         (message "Creating R source TAGS")
-        (tag-utils-tag-dir nvp-r-source-dir :language "r"
-                           :program (nvp:program ctags))
+        ;; (tag-utils-tag-dir nvp-r-source-dir :language "r"
+        ;;                    :program (nvp:program ctags))
         ;; (nvp-r-tag-sentinel
         ;;  (nvp-r-tag-dir nvp-r-source-dir)
         ;;  t)
@@ -274,16 +260,7 @@
      (t (visit-tags-table tags)))))
 
 ;; -------------------------------------------------------------------
-;;; Abbrevs
-
-;; dont expand in comments/strings or in symbols with '.', eg. is.null
-(defun nvp-r-abbrev-expand-p ()
-  (and (not (string-match-p "\\." (symbol-name (ess-symbol-at-point))))
-       (let ((ppss (syntax-ppss)))
-         (not (or (elt ppss 3) (elt ppss 4))))))
-
-;; -------------------------------------------------------------------
-;;; Completion
+;;; Setup
 
 ;; list libraries ahead of other options when in "require|library"
 (defun nvp-r-company-setup (&optional backends)
@@ -297,6 +274,15 @@
           comps)
     (setq-local company-backends comps)
     (delq 'company-capf company-backends)))
+
+(defun nvp-r-locals ()
+  ;; code blocks in spin docs
+  (setq-local nvp-mode-header-regex "\\s-*##\\(?:-\\|+\\)+")
+  ;; comment headers in rmd/spin
+  (nvp-imenu-setup
+   :headers '((nil "\\s-*##'\\s-+#\\s-*\\(.*\\)\\s-*$" 1))
+   :headers-1 '(("Headers" "\\s-*##'\\s-+#\\s-*\\(.*\\)\\s-*$" 1))
+   :headers-2 '(("Sub-headers" "\\s-*##'\\s-+##\\s-*\\(.*\\)\\s-*$" 1))))
 
 (provide 'nvp-r)
 

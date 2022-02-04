@@ -50,14 +50,15 @@
 ;; Align single hashtags for end-of-line R comments. Must be a single
 ;; '#' preceded by space, ignores the '##' so they align with code.
 (defun nvp-r-comment-align (beg end)
+  "Align single hashtag comments as end-of-line."
   (interactive "*r")
   (let (indent-tabs-mode)
     (align-regexp beg end "\\(\\s-*\\)[^#]#" -1 1)))
 
 ;;; REPL
 
-;; redirect repl output to temp buffer
 (defun nvp-r-redirect-output (command &optional buffer process)
+  "Redirect REPL output to temp buffer."
   (interactive (list (read-from-minibuffer "Command: ")))
   (let ((buff (get-buffer-create
                (or buffer
@@ -80,8 +81,8 @@
 
 ;;; Roxy 
 
-;;Convert regular comments to roxygen prefixes.
 (defun nvp-r-roxy ()
+  "Convert regular comments to roxygen."
   (interactive)
   (save-excursion
     (if (region-active-p)
@@ -96,27 +97,6 @@
   (funcall-interactively (intern (concat "ess-roxy-preview-" type))))
 
 ;;; Tables
-
-;;; FIXME: remove
-(eval-when-compile
-  (defmacro nvp-r-str-or-region (name &optional doc &rest body)
-    (declare (indent defun))
-    (let* ((fn (intern (symbol-name name))))
-      `(defun ,fn (str &optional from to)
-         ,doc
-         (interactive
-          (if (region-active-p)
-              (list nil (region-beginning) (region-end))
-            (let ((bds (bounds-of-thing-at-point 'paragraph)))
-              (list nil (car bds) (cdr bds)))))
-         (let* ((input (or str (buffer-substring-no-properties from to)))
-                output)
-           ,@body
-           (if str output
-             (save-excursion
-               (delete-region from to)
-               (goto-char from)
-               (insert output))))))))
 
 (defun nvp-r-table-insert-commas (str &optional beg end)
   "Insert commas into space separated table (assume right-justified)."
@@ -145,7 +125,6 @@
   (nvp:concat "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} "
               "[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\)"))
 
-;; Quote R date times to use with `read.table'.
 (defun nvp-r-table-quote-datetime (&optional str beg end)
   "Quote date times to use with \\='read.table."
   (interactive (list nil (nvp:tap 'bdwim 'paragraph :pulse t)))

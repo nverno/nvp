@@ -19,12 +19,8 @@
   (require 'nvp-local nil t)
   (require 'nvp-macro))
 (require 'nvp)
-
-(declare-function w32-shell-execute "w32")
-(declare-function nvp-log "nvp-log")
-(declare-function nvp-package-directory-dwim "nvp-package")
-
-(autoload 'nvp-read-mode-config "nvp-read")
+(nvp:decls :f (w32-shell-execute))
+(nvp:auto "nvp-read" 'nvp-read-mode-config)
 
 ;; possible local locations
 (defvar nvp-install-local-locations '("~/.local/bin/" "/usr/local/bin/"))
@@ -126,7 +122,7 @@
      do (let* ((repo (car (last (split-string p "/"))))
                (dir (expand-file-name repo nvp/site)))
           (add-to-list 'load-path dir)
-          (nvp-package-directory-dwim dir)))
+          (nvp-pkg-directory-dwim dir)))
   (setq nvp-install-pending-dirs nil)
   (load-file nvp/auto-site)
   (nvp-log "Finished installing site-lisp.")

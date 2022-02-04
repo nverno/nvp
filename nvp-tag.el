@@ -5,10 +5,9 @@
 ;; Various options:
 ;; - etags bundled w/ emacs (basically just elisp/C/C++)
 ;; - ctags
-;; - universal-ctags (better, actively maintained ctags fork, all languages)
-;; - Python pygments parsers - for all languages
-;; - GNU global: ***Best option (3/6/20)***
-;;   can act as frontend using both universal-ctags + pygments
+;; - universal-ctags (better, actively maintained ctags fork, many languages)
+;; - Python pygments parsers - many languages
+;; - GNU global w/ universal-ctags + pygments (best)
 ;;
 ;; Bugs (3/6/20):
 ;; - In configuration of global (~/.globalrc) -- I've found that using
@@ -22,11 +21,8 @@
 ;;   https://github.com/leoliu/ggtags/issues/191
 ;;   Workaround `nvp-ggtags-bounds-of-tag-function' for now.
 ;;
-;; XXX: is this of any interest anymore?
-;; - https://github.com/jixiuf/ctags-update
-;;
 ;; TODO:
-;; - might be work adding support for something like dumb-jump/smart-jump for
+;; - might be worth adding support for something like dumb-jump/smart-jump for
 ;;   situations where global/universal-ctags aren't available
 ;; - Generic function to tag language specific source directories that may be
 ;;   outside of the current project root (system libraries, source installs, etc)

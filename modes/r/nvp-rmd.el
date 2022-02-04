@@ -1,5 +1,4 @@
 ;;; nvp-rmd.el --- Rmarkdown helpers -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile

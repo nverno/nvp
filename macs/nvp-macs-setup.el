@@ -55,7 +55,7 @@
   (declare (indent defun) (debug t))
   (macroexp-progn
    (cl-loop for (var val) on var-vals by #'cddr
-      collect  `(or ,var (setq ,var ,val)))))
+            collect  `(or ,var (setq ,var ,val)))))
 
 (cl-defmacro nvp:defvar (&rest var-vals &key permanent local &allow-other-keys)
   "Define VAR and eval VALUE during compile."
@@ -65,11 +65,11 @@
   (setq var-vals (nvp:list-split-into-sublists var-vals 3))
   (macroexp-progn
    (cl-loop for (var value doc) in var-vals
-      collect
-        `(progn
-           (defvar ,var (eval-when-compile ,value) ,doc)
-           ,(if local `(make-variable-buffer-local ',var))
-           ,(if permanent `(put ',var 'permanent-local t))))))
+            collect
+            `(progn
+               (defvar ,var (eval-when-compile ,value) ,doc)
+               ,(if local `(make-variable-buffer-local ',var))
+               ,(if permanent `(put ',var 'permanent-local t))))))
 
 (defmacro nvp:setq (&rest var-vals)
   "Define VAR and eval VALUE during compile."
@@ -77,19 +77,19 @@
   `(progn
      (,@(cons 'eval-when-compile
               (cl-loop for (var _value) on var-vals by #'cddr
-                 collect `(defvar ,var))))
+                       collect `(defvar ,var))))
      ,@(cl-loop for (var value) on var-vals by #'cddr
-          collect `(setq ,var (eval-when-compile ,value)))))
+                collect `(setq ,var (eval-when-compile ,value)))))
 
 (defmacro nvp:cset (&rest var-vals)
   (declare (indent 0))
   `(progn
      (,@(cons 'eval-when-compile
               (cl-loop for (var _val) on var-vals by #'cddr
-                 collect `(defvar ,var))))
+                       collect `(defvar ,var))))
      ,@(cl-loop for (var val) on var-vals by #'cddr
-          collect `(funcall (or (get ',var 'custom-set) 'set-default)
-                            ',var ,val))))
+                collect `(funcall (or (get ',var 'custom-set) 'set-default)
+                                  ',var ,val))))
 
 
 ;; -------------------------------------------------------------------
@@ -107,11 +107,11 @@
 
 (defsubst nvp:program-search (program &optional path)
   (cl-loop for p in (delq nil (cons path nvp-program-search-paths))
-     do (let ((f (expand-file-name program p)))
-          (and (file-exists-p f)
-               (file-executable-p f)
-               (not (file-directory-p f))
-               (cl-return f)))))
+           do (let ((f (expand-file-name program p)))
+                (and (file-exists-p f)
+                     (file-executable-p f)
+                     (not (file-directory-p f))
+                     (cl-return f)))))
 
 ;; PATH can contain environment variables to expand
 ;; if NO-COMPILE is defined the name is determined at runtime
@@ -207,7 +207,7 @@ directory is bound to `root' and all `dirs' are let-bound to their symbols."
        ,(when dirs
           `(progn
              ,@(cl-loop for (_orig-sym dir-sym dir-val) in dirs
-                  collect `(defconst ,dir-sym ,dir-val))))
+                        collect `(defconst ,dir-sym ,dir-val))))
        ,(when after-load
           `(with-eval-after-load ,file
              (let ,mappings
@@ -241,7 +241,7 @@ PROPS defaults to setting :verbosity to 1."
      (declare-function hydra-set-property "hydra")
      (with-eval-after-load 'hydra
        ,@(cl-loop for (k v) on props by #'cddr
-            collect `(hydra-set-property ,hydra-name ,k ,v)))))
+                  collect `(hydra-set-property ,hydra-name ,k ,v)))))
 
 ;;-- Smartparens
 (cl-defmacro nvp:sp-local-pairs (&rest pairs &key modes &allow-other-keys)
@@ -259,7 +259,7 @@ PROPS defaults to setting :verbosity to 1."
        (t
         (macroexp-progn
          (cl-loop for pair in pairs
-            collect `(sp-local-pair ,@pair)))))))
+                  collect `(sp-local-pair ,@pair)))))))
 
 (defmacro nvp:diminish (&rest modes)
   "Diminish MODES in modeline.
@@ -270,7 +270,7 @@ MODES is of form (feature . mode)."
      (eval-when-compile ,@(mapcar (lambda (f) `(defvar ,(cdr f))) modes))
      ,(macroexp-progn
        (cl-loop for (feat . mode) in modes
-          collect `(eval-after-load ',feat '(diminish ',mode))))))
+                collect `(eval-after-load ',feat '(diminish ',mode))))))
 
 
 ;; -------------------------------------------------------------------
@@ -298,12 +298,12 @@ If it is a symbol/function (list) get its value(s)."
   (let ((locs (nvp:-setup-normalize-locs locs nil))
         (places (nvp:-setup-normalize-locs places)))
     (cl-loop for loc in locs
-       return (cl-loop for place in places
-                 as root = (if (symbolp place) (symbol-value place) place)
-                 as loc-name = (expand-file-name loc root)
-                 when (or file (file-exists-p loc-name))
-                 return (if file (directory-file-name loc-name)
-                          (file-name-as-directory loc-name))))))
+             return (cl-loop for place in places
+                             as root = (if (symbolp place) (symbol-value place) place)
+                             as loc-name = (expand-file-name loc root)
+                             when (or file (file-exists-p loc-name))
+                             return (if file (directory-file-name loc-name)
+                                      (file-name-as-directory loc-name))))))
 
 (defun nvp:-setup-subdirs (root &optional ignored)
   (setq root
@@ -331,12 +331,12 @@ If it is a symbol/function (list) get its value(s)."
   (let* ((lval (eval alist))
          (new-vals
           (cl-loop for item in (macroexpand-all items)
-             as ival = (if (and (symbolp (car item))
-                                (fboundp (car item)))
-                           (eval item)
-                         item)
-             unless (cl-member ival lval :test test)
-             collect ival)))
+                   as ival = (if (and (symbolp (car item))
+                                      (fboundp (car item)))
+                                 (eval item)
+                               item)
+                   unless (cl-member ival lval :test test)
+                   collect ival)))
     (when new-vals
       `(setq ,alist (append ',new-vals ,alist)))))
 
@@ -345,21 +345,21 @@ If it is a symbol/function (list) get its value(s)."
   (declare (indent 0) (debug t))
   (macroexp-progn
    (cl-loop for (v dir places file) in vars
-      as loc = (nvp:-setup-find-loc dir places file)
-      do (eval `(defconst ,v ,loc)) ;so subsequent vars can use
-      collect `(defconst ,v ,loc))))
+            as loc = (nvp:-setup-find-loc dir places file)
+            do (eval `(defconst ,v ,loc)) ;so subsequent vars can use
+            collect `(defconst ,v ,loc))))
 
 (defmacro nvp:setup-load-files (&rest files)
   (declare (indent 0))
   (macroexp-progn
    (cl-loop for f in files
-      collect `(load ,f 'noerror 'nomessage))))
+            collect `(load ,f 'noerror 'nomessage))))
 
 (defmacro nvp:setup-load-paths (&rest paths)
   (declare (indent 0))
   (macroexp-progn
    (cl-loop for p in paths
-      collect `(add-to-list 'load-path ,p))))
+            collect `(add-to-list 'load-path ,p))))
 
 (defmacro nvp:setup-hooks (hook &rest modes)
   "Add HOOK to all MODES hooks."
@@ -368,8 +368,8 @@ If it is a symbol/function (list) get its value(s)."
     (setq hook (eval hook)))
   (macroexp-progn
    (cl-loop for mode in modes
-      as mode-hook = (nvp:-normalize-hook mode)
-      collect `(add-hook ',mode-hook #',hook))))
+            as mode-hook = (nvp:-normalize-hook mode)
+            collect `(add-hook ',mode-hook #',hook))))
 
 ;;; FIXME: minimize `add-to-list' calls
 (defmacro nvp:setup-add-subdir-load-paths (root &optional ignored)
@@ -379,7 +379,7 @@ If it is a symbol/function (list) get its value(s)."
          (dirs (nvp:-setup-subdirs root ignored)))
     (macroexp-progn
      (cl-loop for d in dirs
-        collect `(add-to-list 'load-path ,d)))))
+              collect `(add-to-list 'load-path ,d)))))
 
 (defmacro nvp:setup-cache (var filename)
   "Set cache FILENAME location."

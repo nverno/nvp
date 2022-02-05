@@ -97,6 +97,8 @@
     company-candidates company-selection
     ;; yasnippet
     yas-selected-text yas-wrap-around-region
+    ;; vertico
+    vertico--input
     ;; url
     url-http-end-of-headers
     url-request-method url-request-extra-headers url-request-data))
@@ -117,6 +119,8 @@
        nvp-move-forward-heading
        nvp-mode-header-regex
        nvp-newline-dwim--comment
+       ;; install / package
+       nvp-pkg-directory-dwim
        ;; project
        nvp-project-root
        ;; nvp-cycle.el
@@ -203,6 +207,8 @@
        pos-tip-show
        projectile-project-name
        do-smooth-scroll
+       ;; vertico
+       vertico--exhibit
        ;; yasnippet
        yas-expand-snippet
        yas-lookup-snippet

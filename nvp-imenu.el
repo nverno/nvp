@@ -1,5 +1,5 @@
 ;;; nvp-imenu.el --- imenu helpers  -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;;
 ;; imenu extensions:
@@ -11,9 +11,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(require 'imenu-anywhere)
 (require 'imenu)
 (nvp:decls :f (nvp-comment-start))
-(nvp:auto "nvp-util" 'nvp-flatten-tree)
 
 (defvar nvp-imenu-guess nil
   "If non-nil, suggest active region or `thing-at-point' if it is in the
@@ -23,6 +23,17 @@
   "Regex to match sublist headers to filter out of cleaned imenu alist.")
 
 (defvar nvp-imenu-use-ido nil "Use ido-completion if non-nil.")
+
+(defvar nvp-imenu-buffer-delimiter ": "
+  "Separates buffer name from candidates in other buffers.")
+
+(defvar nvp-imenu-ignored-modes '(dired-mode elisp-byte-code-mode)
+  "Major modes to ignore when searching for imenu candidates in other buffers.")
+
+;; imenu-anywhere functions
+(setq-default imenu-anywhere-buffer-list-function #'nvp-imenu-buffer-list)
+(setq-default imenu-anywhere-preprocess-entry-function
+              #'nvp-imenu-preprocess-entry)
 
 (when nvp-imenu-use-ido
   (require 'ido))
@@ -68,7 +79,7 @@ Assumes the list is flattened and only elements with markers remain."
   (or alist (setq alist imenu--index-alist))
   (cl-remove-if-not
    #'nvp-imenu-maybe-code-p
-   (nvp-flatten-tree
+   (nvp:flatten-tree
     (if (and regex (stringp regex))
         (nvp-imenu-filter-regex regex alist)
       alist)
@@ -91,7 +102,7 @@ Assumes the list is flattened and only elements with markers remain."
          (imenu--make-index-alist)))
 
 ;; -------------------------------------------------------------------
-;;; Hook
+;;; Headers
 
 (defun nvp-imenu--create-regex (&optional headers headers-1 headers-2)
   (if (eq headers ':none)
@@ -130,24 +141,72 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 
 (put 'nvp-imenu-setup 'lisp-indent-function 'defun)
 
-
+;; -------------------------------------------------------------------
+;;; Anywhere
+
+(defvar-local nvp-imenu--visibility 'visible
+  "Non-nil when buffers are restricted to visible only.")
+
+(eval-when-compile
+  (defsubst nvp:imenu-good-buffer-p (buff)
+    (or (eq buff (current-buffer))
+        (not (memq (buffer-local-value 'major-mode buff)
+                   nvp-imenu-ignored-modes)))))
+
+;; cadidates for `imenu-anywhere-buffer-list-function'
+(defun nvp-imenu-visible-buffer-list ()
+  "Buffer list restricted to visible buffers in current frame."
+  (nvp:visible-buffers :test-fn #'nvp:imenu-good-buffer-p))
+
+(defun nvp-imenu-buffer-list ()
+  "List of potential buffers to check for imenu candidates."
+  (pcase nvp-imenu--visibility
+    (`current (list (if (minibufferp) minibuffer--original-buffer
+                      (current-buffer))))
+    (`visible (nvp-imenu-visible-buffer-list))
+    (`all (--filter (nvp:imenu-good-buffer-p it) (buffer-list)))
+    (_ (nvp-imenu-visible-buffer-list))))
+
+(eval-when-compile
+  (defsubst nvp:imenu-buffer-name (buff)
+    (concat (buffer-name buff) nvp-imenu-buffer-delimiter)))
+
+;; candidate for `imenu-anywhere-preprocess-entry-function'
+;; dont prefix candidates in the current buffer
+(defun nvp-imenu-preprocess-entry (entry entry-name)
+  (when entry
+    (let ((bname (if (markerp (cdr entry))
+                     (nvp:imenu-buffer-name (marker-buffer (cdr entry)))
+                   "")))
+      (setcar entry (concat bname entry-name
+                            (and entry-name imenu-anywhere-delimiter)
+                            (car entry))))
+    entry))
+
 ;; -------------------------------------------------------------------
 ;;; Completion - ido or (nvp-)completing-read
+;;
+;; TODO: hide current buffer in results - see `rfn-eshadow-overlay'
+(defun nvp-imenu-cycle-restriction (cur)
+  (pcase cur
+    (`visible 'current)
+    (`current 'all)
+    (_ 'visible)))
 
-(defvar nvp-imenu--flattened nil "Flag if alist is flattened.")
-(defvar nvp-imenu--exit nil "Flag to monitor completing read exit.")
-
-;; like `ido-fallback-command', exit minibuffer, set flag, push what has
-;; been entered back onto the stack so it is used in next command
+;; Fallback toggles b/w visible and unrestricted buffers
 (defun nvp-imenu-toggle ()
-  "Toggle between hierarchical and flattened imenu list."
+  "Toggle between unrestricted/visible only buffer search."
   (interactive)
-  (nvp:unread (minibuffer-contents-no-properties))
-  (setq nvp-imenu--exit 'toggle)
-  (exit-minibuffer))
+  (let ((_input (minibuffer-contents-no-properties)))
+    (setq nvp-imenu--visibility
+          (nvp-imenu-cycle-restriction nvp-imenu--visibility))
+    (setq minibuffer-completion-table (imenu-anywhere-candidates))
+    (let ((vertico--input t))
+     (vertico--exhibit))))
 
 ;;--- completion map
 ;; XXX: and add binding to move backward up imenu-alist (DEL)
+;; TODO: ':' should restrict to buffer, '/' restrict to sublist
 (defvar nvp-imenu-completion-map
   (let ((map (make-sparse-keymap)))
     (nvp-imenu:if-ido
@@ -163,87 +222,61 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
   :keymap nvp-imenu-completion-map)
 
 (eval-when-compile
-  (defsubst nvp-imenu--prompt (&optional name)
-    (format "Imenu%s%s: " (if nvp-imenu--flattened "[flat]" "")
-            (if name (concat " ('" name "')") ""))))
+  ;; XXX: display restriction as overlay after prompt
+  (defsubst nvp:imenu-prompt ()
+    "Imenu: "
+    ;; (if nvp-imenu--visibility "Imenu[v]: " "Imenu[all]: ")
+    ))
 
-;; Completing read from imenu INDEX-ALIST with optional default NAME
-(defun nvp-imenu--read-choice (index-alist &optional name)
-  (when (stringp name)
-    (setq name (and (imenu--in-alist
-                     (or (imenu-find-default name index-alist) name)
-                     index-alist)
-                    name)))
-  (let ((prompt (nvp-imenu--prompt name)))
-    (nvp-imenu:if-ido
-        (nvp:with-letf 'ido-setup-completion-map
-            #'(lambda () (setq ido-completion-map nvp-imenu-completion-map))
-          (ido-completing-read
-           prompt (mapcar #'car index-alist)
-           nil t nil 'imenu--history-list name))
-      (minibuffer-with-setup-hook
-          (lambda () (nvp-imenu-completion-mode))
-        (nvp-completing-read
-         prompt index-alist nil t nil 'imenu--history-list name)))))
-
-;; completing read for selection in INDEX-ALIST
-(defun nvp-menu--read (index-alist)
-  (let* ((default (and nvp-imenu-guess (nvp:tap 'dwim)))
-         (name (nvp-imenu--read-choice index-alist default))
-         choice)
-    (if (nvp-imenu:if-ido (eq ido-exit 'fallback)
-          (prog1 (eq nvp-imenu--exit 'toggle)
-            (setq nvp-imenu--exit nil)))
-        ;; call in minibuf's calling buffer
-        (nvp@do-switch-buffer #'nvp-imenu-wrapper nil index-alist t)
-      (setq choice (assoc name index-alist))
-      (if (imenu--subalist-p choice)
-	  (nvp-menu--read (cdr choice))
-	choice))))
+(defun nvp-imenu-complete (&optional restrict)
+  (nvp-imenu:if-ido (ido-common-initialization))
+  (let* ((imenu-default-goto-function #'imenu-anywhere-goto)
+         (nvp-imenu--visibility (or restrict nvp-imenu--visibility))
+         (index-alist (imenu-anywhere-candidates)))
+    (if (null index-alist) (message "No imenu tags")
+      (let* ((str (and nvp-imenu-guess (nvp:tap 'dwim)))
+             (default
+              (and str (imenu-anywhere--guess-default index-alist str))))
+        (nvp-imenu:if-ido
+            (nvp:with-letf 'ido-setup-completion-map
+                #'(lambda () (setq ido-completion-map nvp-imenu-completion-map))
+              (ido-completing-read
+               (nvp:imenu-prompt) (mapcar #'car index-alist)
+               nil t nil 'imenu--history-list default))
+          (minibuffer-with-setup-hook
+              (lambda ()
+                (nvp-imenu-completion-mode)
+                (setq nvp-imenu--visibility nvp-imenu--visibility))
+            (let* ((name (nvp-completing-read (nvp:imenu-prompt)
+                           index-alist nil t nil 'imenu--history-list default))
+                   (selection (assoc name index-alist)))
+              (xref-push-marker-stack)
+              (imenu selection))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
 
 ;;;###autoload
-(defun nvp-imenu-wrapper (&optional flat alist toggle)
-  "Call imenu.  If FLAT is non-nil, flatten index alist before prompting.
-Input is read with `nvp-imenu-completion-mode' active."
-  (interactive (list current-prefix-arg (nvp-imenu--index-alist)))
-  (nvp-imenu:if-ido (ido-common-initialization))
-  (-when-let (alist (or alist (nvp-imenu--index-alist)))
-    (when (or flat toggle)
-      (setq nvp-imenu--flattened (or flat (not nvp-imenu--flattened)))
-      (setq alist (if nvp-imenu--flattened
-                      (--filter (consp it) (nvp-flatten-tree alist 'alist))
-                    (nvp-imenu--index-alist))))
-    (imenu (nvp-menu--read alist))))
-
-;;;###autoload
-(defun nvp-imenu (arg)
-  "Calls `nvp-imenu-wrapper'. With prefix C-u restrict to headers only.
-C-u C-u restricts to headers+sub-headers."
-  (interactive "P")
-  (setq nvp-imenu--flattened nil)
-  (let ((default (eq imenu-create-index-function
-                     #'imenu-default-create-index-function)))
-    (when (and default (null nvp-imenu-comment-headers-re) comment-start)
+(defun nvp-imenu (&optional arg)
+  "Call `imenu-anywhere' with fallback restricting to visible buffers only.
+\\[universal-argument] - restrict to only headers
+\\[universal-argument] \\[universal-argument] - only headers+sub-headers."
+  (interactive (list (prefix-numeric-value current-prefix-arg)))
+  (let ((default-p (eq imenu-create-index-function
+                       #'imenu-default-create-index-function)))
+    (when (and default-p (null nvp-imenu-comment-headers-re) comment-start)
       (nvp-imenu-setup))
     (with-demoted-errors "Error in nvp-imenu: %S"
-      (if (and (not (equal ':none nvp-imenu-comment-headers-re))
-               (or (not default) imenu-generic-expression))
-          (pcase arg
-            (`(4)                       ; headers only
-             (let ((imenu-generic-expression nvp-imenu-comment-headers-re)
-                   (imenu-create-index-function 'imenu-default-create-index-function))
-               (nvp-imenu-wrapper)))
-            (`(16)                      ; headers + sub-headers only
-             (let ((imenu-generic-expression
-                    (append nvp-imenu-comment-headers-re
-                            nvp-imenu-comment-headers-re-2))
-                   (imenu-create-index-function 'imenu-default-create-index-function))
-               (nvp-imenu-wrapper)))
-            (_ (nvp-imenu-wrapper)))
-        (nvp-imenu-wrapper)))))
+      (if (or (< arg 4)
+              (equal ':none nvp-imenu-comment-headers-re)
+              (not (or default-p imenu-generic-expression)))
+          (nvp-imenu-complete)
+        (let ((imenu-generic-expression
+               (if (< arg 16) nvp-imenu-comment-headers-re
+                 (append nvp-imenu-comment-headers-re
+                         nvp-imenu-comment-headers-re-2)))
+              (imenu-create-index-function #'imenu-default-create-index-function))
+          (nvp-imenu-complete 'visible))))))
 
 (provide 'nvp-imenu)
 ;;; nvp-imenu.el ends here

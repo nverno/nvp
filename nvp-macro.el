@@ -232,6 +232,28 @@ as STRING."
 ;; -------------------------------------------------------------------
 ;;; Buffer / Directory names
 
+(cl-defmacro nvp:visible-buffers (&key mode derived test-fn)
+  "List buffers visible in current frame. If MODE is non-nil, only return
+buffers with matching (or DERIVED) \\='major-mode. Otherwise if TEST-FN, is
+non-nil only list buffers where \\='(TEST-FN buffer) is non-nil."
+  (when (and mode test-fn) (error "nvp:visible-buffers: %S is ignored" test-fn))
+  (macroexp-let2 nil mode mode
+    `(let (res)
+       (walk-windows
+        (lambda (w)
+          ,(if (or mode test-fn)
+               `(let* ((buff (window-buffer w))
+                       ,@(when derived
+                           '((major-mode (buffer-local-value 'major-mode buff)))))
+                  (and ,(if mode
+                            (if derived `(derived-mode-p ,mode)
+                              `(eq (buffer-local-value 'major-mode buff) ,mode))
+                          `(funcall ,test-fn buff))
+                       (push buff res)))
+             `(push (window-buffer w) res)))
+        nil 'visible)
+       res)))
+
 (defmacro nvp:buff--1 (path no-def)
   (if no-def
       `(file-name-directory (file-truename ,path))

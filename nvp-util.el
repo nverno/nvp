@@ -51,35 +51,6 @@ Like `s-word-wrap' but allow for PREFIX."
         (push (match-string group str) matches))
       (nreverse matches))))
 
-
-;; -------------------------------------------------------------------
-;;; Lists
-
-(eval-when-compile
-  ;; if ELEM is a list and has a null cdr return its car, otherwise return it
-  (defsubst nvp-flatten--elem (elem)
-    (if (and (consp elem) (null (cdr elem))) (car elem) elem)))
-
-(defun nvp-flatten-to-alist (tree)
-  "Flatten tree, but leave cons cells. 
-The result may also contain atoms that where head of subalists."
-  (declare (pure t) (side-effect-free t))
-  (let (elems)
-    (while (and (consp tree))
-      (let ((elem (pop tree)))
-        (while (and (consp elem) (consp (cdr elem)))
-          (push (cdr elem) tree)
-          (setq elem (car elem)))
-        (if elem (push (nvp-flatten--elem elem) elems))))
-    (if tree (push (nvp-flatten--elem tree) elems))
-    (nreverse elems)))
-
-(defun nvp-flatten-tree (lst &optional alist)
-  "Flatten nested list. If ALIST is non-nil, leave cons cells intact."
-  (declare (pure t) (side-effect-free t))
-  (if alist (nvp-flatten-to-alist lst)
-    (flatten-tree lst)))
-
 ;; -------------------------------------------------------------------
 ;;; Regexps
 

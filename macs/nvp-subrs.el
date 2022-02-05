@@ -96,6 +96,30 @@
   (cl-loop for i from 0 to (1- (length lst)) by n
      collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
 
+(defsubst nvp:flatten-to-alist (tree)
+  "Flatten tree, but leave cons cells. 
+The result may also contain atoms that where head of subalists."
+  (declare (pure t) (side-effect-free t))
+  ;; if ELEM is a list and has a null cdr return its car, otherwise return it
+  (cl-macrolet ((flatten-elem (elem)
+                  (if (and (consp elem) (null (cdr elem)))
+                      (car elem) elem)))
+    (let (elems)
+      (while (and (consp tree))
+        (let ((elem (pop tree)))
+          (while (and (consp elem) (consp (cdr elem)))
+            (push (cdr elem) tree)
+            (setq elem (car elem)))
+          (if elem (push (flatten-elem elem) elems))))
+      (if tree (push (flatten-elem tree) elems))
+      (nreverse elems))))
+
+(define-inline nvp:flatten-tree (lst &optional alist)
+  "Flatten nested list. If ALIST is non-nil, leave cons cells intact."
+  (declare (pure t) (side-effect-free t))
+  (if alist (inline-quote (nvp:flatten-to-alist ,lst))
+    (inline-quote (flatten-tree ,lst))))
+
 ;; Return longest item by `length'.
 (defsubst nvp:longest-item (&rest items)
   (declare (pure t) (side-effect-free t))
@@ -273,7 +297,7 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 
 ;; push input back onto command stack
 (defsubst nvp:unread (input)
-  (cl-loop for c across input
+  (cl-loop for c across (reverse input)
            do (push c unread-command-events)))
 
 ;; -------------------------------------------------------------------

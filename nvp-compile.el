@@ -196,7 +196,7 @@ ARGS are passed to `nvp-compile'."
 
 (defun nvp-previous-error-no-select (n)
   (interactive "p")
-  (nvp-compilation-next-no-select (- n)))
+  (nvp-next-error-no-select (- n)))
 
 ;;; Compilation-shell-minor-mode
 

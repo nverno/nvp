@@ -189,6 +189,15 @@ ARGS are passed to `nvp-compile'."
   (interactive "p")
   (nvp-compilation-next (- n)))
 
+(defun nvp-next-error-no-select (n)
+  (interactive "p")
+  (let ((compilation-skip-threshold 0))
+    (next-error-no-select n)))
+
+(defun nvp-previous-error-no-select (n)
+  (interactive "p")
+  (nvp-compilation-next-no-select (- n)))
+
 ;;; Compilation-shell-minor-mode
 
 (defun nvp-compilation-next-or-complete (n)

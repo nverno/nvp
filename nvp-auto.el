@@ -86,61 +86,8 @@
 
 
 ;; -------------------------------------------------------------------
-;;; Web
-(eval-when-compile
-  (require 'nvp-cache)
-  (defvar nvp-webjump-sites)
-  (defvar webjump-sites))
-(nvp:decl thing-at-point-url-at-point webjump-builtin webjump-url-fix web-mode
-  nvp-cache-get nvp-cache-create nvp-org-links)
-
-(defvar nvp-webjump-org-links-re (regexp-opt '("reference" "links"))
-  "Org sections to look for links.")
-
-(defvar nvp-webjump-cache nil "Cache local uris from files.")
-
-(defun nvp-get-local-uris ()
-  "Find local jump uris. Use `nvp-local-uris' or if a local notes file is found,
-try to find links there."
-  (or (bound-and-true-p nvp-local-uris)
-      (--when-let (nvp:find-notes-file)
-        (unless nvp-webjump-cache
-          (setq nvp-webjump-cache (nvp-cache :expires-fn 'modtime)))
-        (or (nvp-cache-get nvp-local-notes-file nvp-webjump-cache)
-            (cdr
-             (setf (nvp-cache-get nvp-local-notes-file nvp-webjump-cache)
-                   (nvp-org-links nvp-webjump-org-links-re it)))))))
-
-;;;###autoload
-(defun nvp-browse-webjump (&optional prompt use-defaults)
-  "Jump to website."
-  (interactive (list (nvp:prefix 4) (nvp:prefix 16)))
-  (require 'webjump)
-  (require 'nvp-vars)                   ;nvp-webjump-sites
-  (let* ((completion-ignore-case t)
-         (locals (and (not use-defaults)
-                      (or (and prompt (read-from-minibuffer "URI: "))
-                          (nvp-get-local-uris))))
-         (sites (or locals (append nvp-webjump-sites webjump-sites)))
-         (item (or (and prompt (cons nil locals))
-                   (assoc-string
-                    (nvp-completing-read "WebJump to site: "
-                      (mapcar #'car sites) nil t)
-                    sites t)))
-         (name (car item))
-         (expr (cdr item)))
-    (browse-url (webjump-url-fix
-                 (cond ((not expr) "")
-                       ((stringp expr) expr)
-                       ((vectorp expr) (webjump-builtin expr name))
-                       ((listp expr) (eval expr))
-                       ((symbolp expr)
-                        (if (fboundp expr)
-                            (funcall expr name)
-                          (error "WebJump URL function \"%s\" undefined"
-                                 expr)))
-                       (t (error "WebJump URL expression for \"%s\" invalid"
-                                 name)))))))
+;;; Assorted
+(nvp:decl thing-at-point-url-at-point web-mode)
 
 ;;;###autoload
 (defun nvp-browse-url-contents ()
@@ -152,10 +99,6 @@ try to find links there."
     (rename-buffer url t)
     (cond ((search-forward "<?xml" nil t) (xml-mode))
 	  ((search-forward "<html" nil t) (web-mode)))))
-
-
-;; -------------------------------------------------------------------
-;;; Assorted
 
 ;;;###autoload
 (defun nvp-mark-header-region ()

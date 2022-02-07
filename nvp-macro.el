@@ -211,6 +211,21 @@ are both specified."
      (message "")))
 
 ;; -------------------------------------------------------------------
+;;; Completion
+
+(nvp:decl vertico--exhibit)
+(defvar vertico--input)
+
+;;-- vertico
+(defmacro nvp:vertico-update-candidates (&rest update)
+  "Update completion candidates and vertico display."
+  (declare (indent defun) (debug t))
+  `(progn
+     (setq minibuffer-completion-table (progn ,@update))
+     (let ((vertico--input t))
+       (vertico--exhibit))))
+
+;; -------------------------------------------------------------------
 ;;; Strings / Regexps
 
 ;; stolen from `magit-bind-match-strings'
@@ -1109,20 +1124,14 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 
 
 ;; -------------------------------------------------------------------
-;;; Caches / Laziness
+;;; Caches
 
-(defmacro nvp:lazy-defvar (var fun)
-  "When called the first time, VAR sets its value via FUN."
-  (declare (indent 1) (debug (symbolp lambda-expr)))
-  `(defvar ,var
-     (lambda ()
-       (when (functionp ,var)
-         (setq ,var (funcall #',fun)))
-       ,var)))
-
-(defmacro nvp:lazy-val (var)
-  "Get value of lazily defined VAR."
-  `(if (functionp ,var) (funcall ,var) ,var))
+;;--- nvp-cache
+(defmacro nvp:cache-get (key cache &rest body)
+  "Get KEY from CACHE, or cache BODY result."
+  (declare (indent 2))
+  `(or (nvp-cache-get ,key ,cache)
+       (cdr (setf (nvp-cache-get ,key ,cache) ,@body))))
 
 ;; Simple memoization / result caching
 (cl-defmacro nvp:define-cache (func arglist &rest body
@@ -1156,6 +1165,20 @@ or PREDICATE is non-nil and returns nil."
            (let ((val (progn ,@body)))
              (prog1 val
                (put ',fn ',cache val)))))))
+
+;;--- Lazy
+(defmacro nvp:lazy-defvar (var fun)
+  "When called the first time, VAR sets its value via FUN."
+  (declare (indent 1) (debug (symbolp lambda-expr)))
+  `(defvar ,var
+     (lambda ()
+       (when (functionp ,var)
+         (setq ,var (funcall #',fun)))
+       ,var)))
+
+(defmacro nvp:lazy-val (var)
+  "Get value of lazily defined VAR."
+  `(if (functionp ,var) (funcall ,var) ,var))
 
 
 ;; -------------------------------------------------------------------

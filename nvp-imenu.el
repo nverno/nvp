@@ -32,7 +32,7 @@
 (defvar nvp-imenu-buffer-delimiter ": "
   "Separates buffer name from candidates in other buffers.")
 
-(defvar nvp-imenu-ignored-modes '(dired-mode elisp-byte-code-mode)
+(defvar nvp-imenu-ignored-modes '(dired-mode elisp-byte-code-mode ag-mode)
   "Major modes to ignore when searching for imenu candidates in other buffers.")
 
 ;; imenu-anywhere functions
@@ -232,21 +232,18 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 (defun nvp-imenu-toggle ()
   "Toggle between unrestricted/visible only buffer search."
   (interactive)
-  (let ((_input (minibuffer-contents-no-properties)))
-    (setq nvp-imenu--visibility
-          (nvp:imenu-cycle-restriction nvp-imenu--visibility))
+  (setq nvp-imenu--visibility
+        (nvp:imenu-cycle-restriction nvp-imenu--visibility))
+  (nvp:vertico-update-candidates
     (let ((imenu-anywhere-buffer-list-function
            (apply-partially #'nvp-imenu-buffer-list nvp-imenu--visibility)))
-      (setq minibuffer-completion-table
-            ;; call in original buffer so
-            ;; `imenu-anywhere-buffer-filter-functions' use mode/project, etc.
-            (with-minibuffer-selected-window
-              (imenu-anywhere-candidates))
-            ;; let-bind around completing-read - minibuffer-completion-table
-            ;; will be nil after completing-read calls `exit-minibuffer'
-            nvp-imenu--completion-table minibuffer-completion-table))
-    (let ((vertico--input t))
-      (vertico--exhibit))))
+      ;; call in original buffer so
+      ;; `imenu-anywhere-buffer-filter-functions' use mode/project, etc.
+      (with-minibuffer-selected-window
+        (imenu-anywhere-candidates))))
+  ;; let-bind around completing-read - minibuffer-completion-table
+  ;; will be nil after completing-read calls `exit-minibuffer'
+  (setq nvp-imenu--completion-table minibuffer-completion-table))
 
 ;;--- completion map
 ;; XXX: and add binding to move backward up imenu-alist (DEL)

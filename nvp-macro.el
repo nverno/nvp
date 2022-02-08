@@ -246,6 +246,8 @@ as STRING."
 
 ;; -------------------------------------------------------------------
 ;;; Buffer / Directory names
+;;
+;; - `consult--local-let' :: buffer local let bind dynamic variables
 
 (cl-defmacro nvp:visible-buffers (&key mode derived test-fn)
   "List buffers visible in current frame. If MODE is non-nil, only return

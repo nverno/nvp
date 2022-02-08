@@ -55,10 +55,13 @@
     ("clrd" "cl-remove-duplicates" nil :system t)
     ("clri" "cl-remove-if" nil :system t)
     ("clcnm" "cl-call-next-method" nil :system t)
-    ("cldefc" "cl-defclass" nil :system t)
-    ("cldefg" "cl-defgeneric" nil :system t)
-    ("cldefm" "cl-defmethod" nil :system t)
-    )
+    ("dbind" "cl-destructuring-bind" nil :system t)
+    ("defcl" "cl-defclass" nil :system t)
+    ("defg" "cl-defgeneric" nil :system t)
+    ("defm" "cl-defmethod" nil :system t)
+    ("flet" "cl-flet" nil :system t)
+    ("letf" "cl-letf" nil :system t)
+    ("loop" "cl-loop" nil :system t))
   "Emacs cl- functions."
   :regexp nvp-lisp-abbrev-re
   :enable-function 'nvp-elisp-abbrev-expand-fn-p)
@@ -181,6 +184,8 @@
     ("sp" "syntax-ppss" nil :system t)
     ("sr" "save-restriction" nil :system t)
     ("ss" "split-string" nil :system t)
+    ("tf" "thread-first" nil :system t)
+    ("tl" "thread-last" nil :system t)
     ("to" "type-of" nil :system t)
     ("ue" "user-error" nil :system t)
     ("wf" "write-file" nil :system t)
@@ -358,8 +363,7 @@
     ("stbow" "switch-to-buffer-other-window" nil :system t)
     ("symfi" "symbol-file" nil :system t)
     ("sympl" "symbol-plist" nil :system t)
-    ("wottb" "with-output-to-temp-buffer" nil :system t)
-    )
+    ("wottb" "with-output-to-temp-buffer" nil :system t))
   "Emacs lisp function abbrevs."
   :enable-function #'nvp-elisp-abbrev-expand-fn-p
   :regexp nvp-lisp-abbrev-re
@@ -384,7 +388,6 @@
     ("pf" "package-file" nil :system t)
     ("sm" "source melpa" nil :system t)
     ("sg" "source gnu" nil :system t)
-    ("dev" "development" nil :system t)
-    )
+    ("dev" "development" nil :system t))
   "Cask-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

@@ -57,6 +57,18 @@
   (dired-next-line -1)
   (recenter-top-bottom))
 
+(defun nvp-dired-next-dirline (arg)
+  "Move to next directory line, wrapping if at end."
+  (interactive "p")
+  (let ((wrap-pt (if (> arg 0) (point-min) (point-max))))
+    (condition-case nil
+        (funcall #'dired-next-dirline arg wrap-pt)
+      (error (funcall #'dired-next-dirline arg)))))
+
+(defun nvp-dired-prev-dirline (arg)
+  (interactive "p")
+  (nvp-dired-next-dirline (- arg)))
+
 ;; or C-x C-j
 (defun nvp-dired-find-alternate-file ()
   (interactive)

@@ -191,6 +191,8 @@
        ;; cache
        nvp-cache-get
        nvp-cache-create
+       ;; nvp-org
+       nvp-org-links
        ;; setup
        nvp-setup-program
        nvp-lookup-password)

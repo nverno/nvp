@@ -88,7 +88,7 @@
 ;;; Conditional binding
 ;; info: extended menu items
 ;; http://endlessparentheses.com/define-context-aware-keys-in-emacs.html
-(defmacro nvp:bind (map key cmd &rest predicate)
+(defmacro nvp:bind (map key cmd &rest kwargs)
   "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
   (let ((c (cond
             ((or (null cmd) (and (consp cmd)
@@ -101,17 +101,24 @@
               ((equal (car cmd) 'quote) `#',(cadr cmd))
               (t cmd)))
             (t `#',cmd)))
-        (m (if (keymapp map) `',map map)))
+        (m (if (keymapp map) `',map map))
+        (enable (or (plist-get kwargs :when)
+                    (plist-get kwargs :enable)))
+        (filter (plist-get kwargs :filter)))
     `(progn
        (declare-function ,cmd "")
-       ,(if predicate
+       ,(if (or enable filter)
             `(define-key ,m (nvp:kbd ,key)
-               '(menu-item
-                 ,(format "maybe-%s" (or (car (cdr-safe c)) c))
-                 nil :filter (lambda (&optional _)
-                               (when ,(if (symbolp predicate) predicate
-                                        (macroexp-progn predicate))
-                                 ,c))))
+                         '(menu-item
+                           ,(format "maybe-%s" (or (car (cdr-safe c)) c))
+                           nil :filter
+                           ,(if filter `,filter
+                              `(lambda (&optional _)
+                                 (when ,(cond
+                                         ((functionp enable) `(funcall ',enable))
+                                         ((symbolp enable) `,enable)
+                                         (t (macroexp-progn enable)))
+                                   ,c)))))
           `(define-key ,m (nvp:kbd ,key) ,c)))))
 
 
@@ -226,7 +233,7 @@ Buggy:
   LOCAL makes map local var.        -- changes bindings for ALL mode buffers!!
   BUFF-LOCAL makes map buffer-local -- INCORRECT
 "
-  (declare (indent defun))
+  (declare (indent defun) (debug t))
   (if (listp keymap)
       (macroexp-progn
        (cl-loop for km in keymap
@@ -300,20 +307,26 @@ Buggy:
                        `(lambda () (nvp-indicate-cursor-post)))))
                  ,(macroexp-progn
                    (cl-loop for fn in repeat
-                      collect `(advice-add ',fn :after #',repeat-fn))))))
+                            collect `(advice-add ',fn :after #',repeat-fn))))))
 
          ,(when bindings
             `(,@(if (or create prefix (equal feature :now)) '(progn)
                   `(with-eval-after-load ,(or feature `',(intern mapname))))
               ;; with-eval-after-load ,(or feature `',(intern mode))
-              ;; the `prefix-key' may be a variable defined after package is loaded
+              ;; the `prefix-key' may be a variable defined after package is
+              ;; loaded
               ,@(cl-loop for (k . b) in bindings
-                   collect `(nvp:bind ,modemap
-                                      ,(if prefix-key
-                                           `(vconcat (nvp:kbd ,prefix-key)
-                                                     (nvp:kbd ,k))
-                                         k)
-                                      ,b))))))))
+                         collect
+                         `(nvp:bind ,modemap
+                                    ,(if prefix-key
+                                         `(vconcat (nvp:kbd ,prefix-key)
+                                                   (nvp:kbd ,k))
+                                       k)
+                                    ,(if (consp b) (car b) b)
+                                    ,@(if (consp b) (cdr b))
+                                    ;; ,(if (consp b) `,@(cdr b))
+                                    )
+                         )))))))
 
 (provide 'nvp-macs-bindings)
 ;; Local Variables:

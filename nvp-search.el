@@ -8,11 +8,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp:decls :f (occur-read-primary-args consult-multi-occur))
+(nvp:decls :f (occur-read-primary-args))
 (nvp:auto "nvp-buffer" 'nvp-buffer-matching-mode)
-(nvp:auto "replace" 'multi-occur)
-
-(defvar nvp-multi-occur-function #'consult-multi-occur)
+(nvp:auto "replace" 'multi-occur 'multi-occur-in-matching-buffers)
 
 ;; -------------------------------------------------------------------
 ;;; Occur 
@@ -27,16 +25,16 @@ With prefix ARG multi-occur in buffers of the same mode."
   (pcase arg
     ('nil (call-interactively #'occur))
     (`(4) (nvp-multi-occur-in-this-mode))
-    (`(16) (funcall-interactively nvp-multi-occur-function))
+    (`(16)
+     (let (current-prefix-arg)
+       (call-interactively #'multi-occur-in-matching-buffers)))
     (_ (call-interactively #'occur)))
   (if (get-buffer "*Occur*")
       (switch-to-buffer-other-window "*Occur*")))
 
-;; https://www.masteringemacs.org/article/searching-buffers-occur-mode
-;; Show all lines matching REGEXP in buffers withe the same 
-;; `major-mode'.
 ;;;###autoload
 (defun nvp-multi-occur-in-this-mode ()
+  "Occur in buffers with same major mode as current."
   (interactive)
   (multi-occur
    (nvp-buffer-matching-mode major-mode) (car (occur-read-primary-args))))

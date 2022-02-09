@@ -23,9 +23,9 @@
       (setq thing (read-string "Wikipedia lookup: ")))
     (format "https://wikipedia.org/wiki/%s" thing)))
 
-(defun nvp-webjump-localhost (_name)
-  (let ((port (completing-read "Port:" '("8080" "3000" "5000"))))
-    (format "http://localhost:%s" port)))
+(defun nvp-webjump-options (base options &optional prompt sep)
+  (concat (string-trim-right base "/*") (or sep "/")
+          (nvp-completing-read (or prompt "ext: ") options)))
 
 (defun nvp-get-local-uris ()
   "Find local jump uris. Use `nvp-local-uris' or if a local notes file is found,

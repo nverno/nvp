@@ -1,10 +1,9 @@
 ;;; nvp-hippie-history.el --- hippie expand from histories -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
-
 ;; Hippie expansion using histories, eg. shell history rings, minibuffer
 ;; history, etc.
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
@@ -37,6 +36,7 @@
   '((shell-mode               . comint-input-ring)
     (eshell-mode              . eshell-history-ring)
     (minibuffer-inactive-mode . minibuffer-history-variable)
+    (minibuffer-mode          . minibuffer-history-variable)
     ;; default - for any mode that is comint derived
     (comint-mode              . comint-input-ring))
   "Mapping of modes to history rings.")
@@ -49,6 +49,7 @@
   '((shell-mode               . comint-line-beginning-position)
     (eshell-mode              . nvp-he-history-eshell-bol)
     (minibuffer-inactive-mode . line-beginning-position)
+    (minibuffer-mode          . line-beginning-position)
     (comint-mode              . comint-line-beginning-position))
   "Mapping of modes to functions returning line beginning position.")
 

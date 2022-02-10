@@ -10,8 +10,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-
-(nvp:decls :f (auth-source-search org-comment-dwim paredit-comment-dwim))
+(nvp:decls :f (auth-source-search))
 (nvp:auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
 (nvp:auto "nvp-outline" nvp-outline-hydra/body)
 
@@ -50,6 +49,18 @@
   (interactive "^p")
   (or arg (setq arg 1))
   (nvp-move-forward-paragraph (- arg)))
+
+;;;###autoload
+(defun nvp-goto-link ()
+  "Jump to link in current window if mode is recognized.
+Otherwise, if there is a visible help buffer, jump to links there instead."
+  (interactive)
+  (let ((ace-link-fallback-function
+         (lambda ()
+           (--when-let (nvp:visible-windows :mode (info-mode help-mode))
+             (with-selected-window (car it)
+               (call-interactively #'ace-link-help))))))
+    (call-interactively #'ace-link)))
 
 
 ;; -------------------------------------------------------------------

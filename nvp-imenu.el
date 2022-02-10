@@ -177,7 +177,8 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 ;; candidate for `imenu-anywhere-buffer-list-function'
 (defun nvp-imenu-visible-buffer-list ()
   "Buffer list restricted to visible buffers in current frame."
-  (nvp:visible-buffers :test-fn #'nvp:imenu-good-buffer-p))
+  (--map (window-buffer)
+         (nvp:visible-windows :test-fn #'nvp:imenu-good-buffer-p)))
 
 (defun nvp-imenu-buffer-list (&optional restrict)
   "List of potential buffers to check for imenu candidates."

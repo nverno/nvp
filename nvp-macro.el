@@ -195,6 +195,19 @@ are both specified."
   `(let (pop-up-frames display-buffer-alist)
      ,@body))
 
+(defmacro nvp:prompt-with-message (prompt &optional format-string &rest args)
+  "Display message in mode-line while reading from minibuffer."
+  (let ((read-fn 'read-from-minibuffer))
+    (while (keywordp (car args))
+      (if (eq ':read-fn (car args))
+          (setq read-fn (car (nvp:list-unquote (cadr args)))))
+      (setq args (cddr args)))
+    `(progn
+       (require 'eldoc)
+       (minibuffer-with-setup-hook
+           (:append (lambda () (eldoc-minibuffer-message ,format-string ,@args)))
+         (,read-fn ,prompt)))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Input
@@ -252,27 +265,36 @@ as STRING."
 ;; -------------------------------------------------------------------
 ;;; Buffer / Directory names
 ;;
+;; others:
 ;; - `consult--local-let' :: buffer local let bind dynamic variables
 
-(cl-defmacro nvp:visible-buffers (&key mode derived test-fn)
+(cl-defmacro nvp:visible-windows (&key mode derived test-fn)
   "List buffers visible in current frame. If MODE is non-nil, only return
 buffers with matching (or DERIVED) \\='major-mode. Otherwise if TEST-FN, is
 non-nil only list buffers where \\='(TEST-FN buffer) is non-nil."
-  (when (and mode test-fn) (error "nvp:visible-buffers: %S is ignored" test-fn))
-  (macroexp-let2 nil mode mode
+  (when (and mode test-fn) (error "nvp:visible-windows: %S is ignored" test-fn))
+  (when (consp mode)
+    (setq mode (nvp:list-unquote mode)))
+  (macroexp-let2 (lambda (e) (or (null e) (consp e))) mode mode
     `(let (res)
        (walk-windows
         (lambda (w)
           ,(if (or mode test-fn)
                `(let* ((buff (window-buffer w))
                        ,@(when derived
-                           '((major-mode (buffer-local-value 'major-mode buff)))))
+                           '((major-mode
+                              (buffer-local-value 'major-mode buff)))))
                   (and ,(if mode
-                            (if derived `(derived-mode-p ,mode)
-                              `(eq (buffer-local-value 'major-mode buff) ,mode))
+                            (if derived
+                                (if (listp mode)
+                                    `(derived-mode-p ,@(--map `(quote ,it) mode))
+                                  `(derived-mode-p ,mode))
+                              `(,(if (listp mode) 'memq 'eq)
+                                (buffer-local-value 'major-mode buff)
+                                ,(if (listp mode) `',mode `,mode)))
                           `(funcall ,test-fn buff))
-                       (push buff res)))
-             `(push (window-buffer w) res)))
+                       (push w res)))
+             `(push w res)))
         nil 'visible)
        res)))
 
@@ -1146,7 +1168,7 @@ hash values are counts of strings, otherwise values are \\='t."
             (dolist (s ,strings)
               ,(if count
                    `(puthash s (1+ (gethash s it 0)) it)
-                 `(puthash s t ,it)))))))
+                 `(puthash s t it)))))))
 
 ;;--- nvp-cache
 (defmacro nvp:cache-get (key cache &rest body)

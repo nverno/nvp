@@ -9,7 +9,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp:decls :f (dictionary-search dictionary-lookup-definition powerthesaurus-lookup-dwim))
+(nvp:decls :f (dictionary-search dictionary-match-words powerthesaurus-lookup-dwim))
 (nvp:auto "nvp-read" 'nvp-read-keymap)
 (nvp:auto "nvp-edit" 'nvp-sort-lines-first-symbol)
 (nvp:auto "ispell" 'ispell-get-word)
@@ -45,16 +45,16 @@
 ;; with two prefix use lookup-word.
 ;;;###autoload
 (defun nvp-help-word-dwim (arg)
-  "Define or lookup word at point, dispatching based on prefix:
-(nil) define word at point
-\\[universal-argument] prompt for word
-\\[universal-argument] \\[universal-argument] lookup word with
-`powerthesaurus', if available, or on wiktionary."
+  "Lookup word in dictionary/thesaurus, dispatch on prefix:
+(nil)	 search for word
+\\[universal-argument]	 pattern search
+\\[universal-argument] \\[universal-argument]\
+	lookup word with `powerthesaurus', if available, or on wiktionary."
   (interactive "p")
   (cond
-   ((eq arg 4) (call-interactively  #'dictionary-search))
+   ((eq arg 4) (call-interactively  #'dictionary-match-words))
    ((eq arg 16) (call-interactively #'nvp-help-lookup-word-external))
-   (t (call-interactively           #'dictionary-lookup-definition))))
+   (t (call-interactively           #'dictionary-search))))
 
 ;; Lookup definintion of word at point online.
 (defun nvp-help-lookup-word-external ()

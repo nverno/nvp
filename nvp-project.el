@@ -43,7 +43,7 @@ Otherwise, look for version control directories, returing the longest path."
 
 ;;;###autoload(autoload 'nvp-projectile-rg "nvp-project")
 (rg-define-search nvp-projectile-rg
-  :query (or (nvp:tap 'dwim) (read-from-minibuffer "Search: "))
+  :query (read-from-minibuffer "Search: " (nvp:tap 'dwim))
   :dir project
   :format (not current-prefix-arg)
   :files (concat
@@ -54,6 +54,17 @@ Otherwise, look for version control directories, returing the longest path."
                           projectile-globally-ignored-directories))
            " "))
   :flags '("--type all"))
+
+(defun nvp-project-invalidate-cmds ()
+  "Reset cached projectile project commands."
+  (interactive)
+  (--when-let (projectile-acquire-root)
+    (remhash it projectile-compilation-cmd-map)
+    (remhash it projectile-configure-cmd-map)
+    (remhash it projectile-install-cmd-map)
+    (remhash it projectile-package-cmd-map)
+    (remhash it projectile-test-cmd-map)
+    (remhash it projectile-run-cmd-map)))
 
 ;; -------------------------------------------------------------------
 ;;; Test defining projectile project type

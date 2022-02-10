@@ -100,6 +100,8 @@
     company-candidates company-selection
     ;; yasnippet
     yas-selected-text yas-wrap-around-region
+    ;; ace-link
+    ace-link-fallback-function
     ;; vertico
     vertico--input
     ;; url
@@ -206,14 +208,23 @@
        ert-run-tests-interactively
        hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
        w32-shell-execute
-       xref-pop-marker-stack xref-push-marker-stack)
+       xref-pop-marker-stack xref-push-marker-stack
+       org-comment-dwim)
 
      (nvp:decl                          ; external packages
        pos-tip-show
        projectile-project-name
        do-smooth-scroll
+       ;; paredit
+       paredit-comment-dwim
        ;; vertico
        vertico--exhibit
+       ;; consult
+       consult-yank-replace
+       ;; ace-link
+       ace-link
+       ace-link-help
+       ace-link-info
        ;; yasnippet
        yas-expand-snippet
        yas-lookup-snippet

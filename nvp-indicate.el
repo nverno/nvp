@@ -22,7 +22,6 @@
 
 ;; store indicators
 (defvar nvp-indicate--cache (make-hash-table))
-;; FIXME: define hash cache
 (defun nvp-indicate-cache (key &optional value overwrite)
   (if value
       (if overwrite (puthash key value nvp-indicate--cache)

@@ -1,5 +1,5 @@
 ;;; nvp-buffer.el --- buffer/file functions -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;; buffer/buffer-file commands
 ;;; Code:
@@ -44,18 +44,23 @@
   "Kill all buffers of current MODE by default.
 With prefix, prompt for MODE buffers to kill."
   (interactive
-   (let ((buffs (nvp-buffer-major-modes)))
-     (if (not current-prefix-arg)
-         (list major-mode buffs)
-       (list (intern
-              (completing-read
-               "Mode to kill: " (cl-delete-duplicates buffs :key #'car)))
-             buffs))))
-  (message "Killing all %S buffers..." mode)
+   (let* ((bufs (nvp-buffer-major-modes))
+          (mode (if current-prefix-arg
+                    (intern
+                     (completing-read
+                      "Mode to kill: " (cl-delete-duplicates bufs :key #'car)))
+                  major-mode))
+          (mbufs (cl-loop for (m . b) in bufs
+                          when (eq m mode)
+                          collect b)))
+     (list mode mbufs)))
   (and (stringp mode) (setq mode (intern mode)))
   (or buffs (setq buffs (nvp-buffer-matching-mode mode)))
-  (pcase-dolist (`(,bmode . ,buff) (or buffs (nvp-buffer-matching-mode mode)))
-    (and (eq mode bmode) (kill-buffer buff))))
+  (when (nvp:prompt-with-message
+         "Kill all mode buffers?" "%S" :read-fn 'y-or-n-p
+         (--map (buffer-name it) buffs))
+    (message "Killing all %S buffers..." mode)
+    (mapc (lambda (buf) (kill-buffer buf)) buffs)))
 
 ;; -------------------------------------------------------------------
 ;;; Buffer files 

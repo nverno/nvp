@@ -6,7 +6,6 @@
 (require 'nvp)
 (require 'nvp-log)
 (declare-function w32-shell-execute "w32")
-(declare-function nvp-read-with-message "nvp-read")
 (nvp:auto "env" 'substitute-env-vars 'read-envvar-name 'setenv)
 
 (defun nvp-env-substitute-vars (string &optional unquote)
@@ -87,7 +86,7 @@ With prefix, overwrite value instead of appending by default."
   (interactive
    (let* ((var (read-envvar-name "Environment variable: " t))
           (current-val (getenv var)))
-     (list var (nvp-read-with-message "Value: " "Current: %s" current-val)
+     (list var (nvp:prompt-with-message "Value: " "Current: %s" current-val)
            (y-or-n-p "Clobber current value? "))))
   (if clobber (setenv env-var value)
     (nvp-env-add env-var value))

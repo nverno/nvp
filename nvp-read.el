@@ -61,15 +61,6 @@
        nvp/org "\\(?:\.org\\|/\\)$" (or prompt "Org file: ")
        (or default nvp-default-org-file)))))
 
-;;; Minibuffer input
-
-;;;###autoload
-(defun nvp-read-with-message (prompt &optional format-string &rest args)
-  "Display message in mode-line while reading from minibuffer."
-  (minibuffer-with-setup-hook
-      (:append (lambda () (eldoc-minibuffer-message format-string args)))
-    (read-from-minibuffer prompt)))
-
 ;;; Library files
 ;; stolen from `helm-locate-library-scan-list'
 (defun nvp-read--library-files ()

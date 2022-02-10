@@ -3,6 +3,7 @@
 
 ((nil
   (projectile-project-type          . elisp)
+  (projectile-project-compilation-cmd   . "make distclean all")
   (nvp-local-notes-file             . "~/org/code/emacs.org")
   (bug-reference-url-format         . "https://github.com/nverno/%s"))
  (emacs-lisp-mode

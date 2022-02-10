@@ -551,9 +551,6 @@ command, call `vertico-insert'. If there is only one match call
   (nvp:with-letf 'completing-read 'ido-completing-read
     (apply old-fn args)))
 
-(nvp:run-once consult-recent-file (:before (&rest _))
-  (recentf-mode))
-
 ;; use ido-completion when reading environment variables interactively
 ;; (nvp:advise-commands #'nvp@read-with-ido
 ;;   :around '(read-envvar-name bookmark-jump))

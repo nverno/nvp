@@ -55,13 +55,6 @@
 ;; case-insensitive hash-table
 (define-hash-table-test 'case-fold #'case-fold-string= #'case-fold-string-hash)
 
-;; hash strings
-(defsubst nvp:hash-strings (strings)
-  (--> (make-hash-table :test #'equal :size (length strings))
-       (prog1 (dolist (s strings)
-                (puthash s t it))
-         it)))
-
 ;; -------------------------------------------------------------------
 ;;; Strings
 

@@ -10,7 +10,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-imenu)
+(nvp:auto "nvp-imenu" 'nvp-imenu-sort-relative-positions 'nvp-imenu-cleaned-alist)
 
 (put 'nvp-parse-bad-location 'error-conditions '(nvp-parse-bad-location error))
 (put 'nvp-parse-bad-location 'error-message "Location not available: ")

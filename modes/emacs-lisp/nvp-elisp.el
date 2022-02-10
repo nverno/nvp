@@ -2,10 +2,11 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-parse))
 (require 'pp)
 (require 'company-elisp)
-(require 'nvp-parse)
 (nvp:decls :f (company-elisp--candidates-predicate company-elisp--fns-regexp)
            :v (nvp-elisp-defuns-regexp nvp-elisp-var-binding-regexp))
 

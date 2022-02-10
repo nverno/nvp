@@ -389,12 +389,10 @@ With \\[universal-argument] prompt for THING at point."
 (defun nvp-dev-stats-uniq (beg end &optional _arg)
   "Print counts (case-insensitive) of unique words in region BEG to END."
   (interactive "r\nP")
-  (require 'nvp-cache)
-  (let ((ht (make-hash-table :test 'case-fold))
-        (words (s-split-words (buffer-substring-no-properties beg end)))
-        lst)
-    (mapc (lambda (w) (cl-callf 1+ (gethash w ht 0))) words)
-    (maphash (lambda (key val) (push (cons val key) lst)) ht)
+  (let* ((words (s-split-words (buffer-substring-no-properties beg end)))
+         (ht (nvp:hash-strings words 'case-fold 'count))
+         lst)
+    (maphash (lambda (k v) (push (cons v k) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
     (nvp:with-results-buffer nil "Word Counts"
       (pcase-dolist (`(,k . ,v) lst)

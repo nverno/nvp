@@ -54,7 +54,7 @@
       :test (bound-and-true-p iedit-mode) :delay 1 :keys t)))
 
 (eval-when-compile
-  (defsubst nvp-iedit-report ()
+  (defsubst nvp:iedit-report ()
     (or (minibufferp)
         (message "Restricted to current %s, %d matches."
                  nvp-iedit-restriction (length iedit-occurrences-overlays)))))
@@ -83,11 +83,11 @@
                                (iedit-add-occurrence-overlay
                                 occ-regexp nil 'forward end)
                              (error (forward-word)))))))
-           (nvp-iedit-report))
+           (nvp:iedit-report))
           (`defun                        ;expand to buffer
               (setq nvp-iedit-restriction 'buffer)
               (iedit-make-occurrences-overlays occ-regexp (point-min) (point-max))
-            (nvp-iedit-report))
+            (nvp:iedit-report))
           (_                             ;currently buffer => recycle
            (setq nvp-iedit-restriction 'line)
            (iedit-restrict-current-line)))))

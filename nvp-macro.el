@@ -1131,7 +1131,21 @@ FUN-DOCS is an alist of pairs of symbols with optional docs."
 
 
 ;; -------------------------------------------------------------------
-;;; Caches
+;;; Caches / Hash
+
+(defmacro nvp:hash-strings (strings &optional case-fold count)
+  "Hash STRINGS.  If CASE-FOLD, hash is case-insensitive. If COUNT,
+hash values are counts of strings, otherwise values are \\='t."
+  `(progn
+     ,@(if case-fold
+           '((define-hash-table-test
+              'case-fold #'case-fold-string= #'case-fold-string-hash)))
+     (--> (make-hash-table :test ,(if case-fold ''case-fold '#'equal)
+                           :size (length ,strings))
+          (prog1 it
+            (dolist (s ,strings)
+              ,(if count `(cl-callf 1+ (gethash s it 0))
+                 `(puthash s t it)))))))
 
 ;;--- nvp-cache
 (defmacro nvp:cache-get (key cache &rest body)
@@ -1351,25 +1365,32 @@ See `nvp:advise-commands'."
      ,(when init '(eldoc-mode))))
 
 (defmacro nvp:run-once (symbol args &rest body)
-  "Add advice to function SYMBOL that runs once. See `define-advice'."
+  "Add advice to function SYMBOL (or multiple symbols if list). that runs
+once. If SYMBOLs is a list, the advice only runs the first time any of the
+symbols is evaluated. See `define-advice'."
   (declare (indent 2) (doc-string 3) (debug (sexp sexp def-body)))
   (let* ((where         (nth 0 args))
          (lambda-list   (nth 1 args))
          (name          (or (nth 2 args) (cl-gensym "nvp")))
          (depth         (nth 3 args))
          (props         (and depth `((depth . ,depth))))
+         (symbols (nvp:as-list symbol))
          (advice (cond ((or (stringp name) (symbolp name))
-                        (intern (format "%s@%s~once" symbol name)))
+                        (intern (format "%s@%s~once" (car symbol) name)))
                        (t (error "Unrecognized name spec `%S'" name)))))
     `(prog1
          (defalias ',advice
            (lambda ,lambda-list
              (declare-function ',advice "" ,lambda-list)
-             (advice-remove ',symbol ',advice)
+             (mapc (lambda (sym) (advice-remove sym ',advice)) ',symbols)
+             ;; (advice-remove ',symbol ',advice)
              ,(if (functionp name)
                   `(funcall #',name ,@(nvp:arglist-args lambda-list))
                 `(progn ,@body))))
-       (advice-add ',symbol ,where #',advice ,@(and props `(',props))))))
+       ,@(cl-loop for sym in symbols
+                  collect
+                  `(advice-add ',sym ,where #',advice
+                               ,@(and props `(',props)))))))
 
 
 ;; -------------------------------------------------------------------

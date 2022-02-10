@@ -92,6 +92,9 @@
     bug-reference-url-format
     ;; align
     align-to-tab-stop
+    ;; ido
+    ido-default-buffer-method
+    ido-default-file-method
     ;;=== external pkg ===
     zeal-at-point-docset
     company-candidates company-selection

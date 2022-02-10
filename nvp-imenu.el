@@ -27,8 +27,6 @@
 (defvar nvp-imenu-default-filter-regex (regexp-opt '("Headers" "Sub-Headers"))
   "Regex to match sublist headers to filter out of cleaned imenu alist.")
 
-(defvar nvp-imenu-use-ido nil "Use ido-completion if non-nil.")
-
 (defvar nvp-imenu-buffer-delimiter ": "
   "Separates buffer name from candidates in other buffers.")
 
@@ -40,7 +38,10 @@
 (setq-default imenu-anywhere-preprocess-entry-function
               #'nvp-imenu-preprocess-entry)
 
-(when nvp-imenu-use-ido
+(eval-and-compile
+  (defvar nvp-imenu-use-ido nil "Use ido-completion if non-nil."))
+
+(when (bound-and-true-p nvp-imenu-use-ido)
   (require 'ido))
 
 ;;; Local variables

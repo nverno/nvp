@@ -1144,8 +1144,9 @@ hash values are counts of strings, otherwise values are \\='t."
                            :size (length ,strings))
           (prog1 it
             (dolist (s ,strings)
-              ,(if count `(cl-callf 1+ (gethash s it 0))
-                 `(puthash s t it)))))))
+              ,(if count
+                   `(puthash s (1+ (gethash s it 0)) it)
+                 `(puthash s t ,it)))))))
 
 ;;--- nvp-cache
 (defmacro nvp:cache-get (key cache &rest body)

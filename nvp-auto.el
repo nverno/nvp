@@ -73,16 +73,16 @@
   ("q" nil "quit" :bind nil))
 
 ;; Yank / Pop
-(declare-function helm-show-kill-ring "")
 ;;;###autoload(autoload 'nvp-hydra-yank-pop/yank "nvp-auto")
 ;;;###autoload(autoload 'nvp-hydra-yank-pop/yank-pop "nvp-auto")
+(nvp:hydra-set-property 'nvp-hydra-yank-pop)
 (defhydra nvp-hydra-yank-pop ()
   "yank"
   ("C-y" yank nil)
   ("M-y" yank-pop nil)
   ("y" (yank-pop 1) "next")
-  ("Y" (yank-pop -1) "prev"))
-  ;; ("l" helm-show-kill-ring "list" :color blue)
+  ("Y" (yank-pop -1) "prev")
+  ("h" consult-yank-replace "list"))
 
 
 ;; -------------------------------------------------------------------

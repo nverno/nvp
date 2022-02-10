@@ -70,6 +70,16 @@
       (:append (lambda () (eldoc-minibuffer-message format-string args)))
     (read-from-minibuffer prompt)))
 
+;;; Library files
+;; stolen from `helm-locate-library-scan-list'
+(defun nvp-read--library-files ()
+  (cl-loop for dir in load-path
+           with load-suffixes = '(".el")
+           when (file-directory-p dir)
+           append (directory-files
+                   dir t (concat (regexp-opt (get-load-suffixes))
+                                 "\\'"))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Elisp objects 

@@ -64,7 +64,7 @@
   "Cycle `iedit-mode' region restrictions."
   (interactive)
   (when iedit-mode
-    (let ((occ-regexp (iedit-current-occurrence-string)))
+    (let* ((occ-regexp (iedit-regexp-quote (iedit-current-occurrence-string))))
       (if (region-active-p)
           (progn
             (setq nvp-iedit-restriction 'region)

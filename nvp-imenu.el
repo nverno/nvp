@@ -234,7 +234,7 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
   (interactive)
   (setq nvp-imenu--visibility
         (nvp:imenu-cycle-restriction nvp-imenu--visibility))
-  (nvp:vertico-update-candidates
+  (nvp:vertico-update-candidates nil
     (let ((imenu-anywhere-buffer-list-function
            (apply-partially #'nvp-imenu-buffer-list nvp-imenu--visibility)))
       ;; call in original buffer so

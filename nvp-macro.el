@@ -214,16 +214,21 @@ are both specified."
 ;;; Completion
 
 (nvp:decl vertico--exhibit)
-(defvar vertico--input)
+(nvp:local-defvars vertico--input vertico--history-hash vertico--lock-candidate)
 
 ;;-- vertico
-(defmacro nvp:vertico-update-candidates (&rest update)
+(defmacro nvp:vertico-update-candidates (reset &rest update)
   "Update completion candidates and vertico display."
   (declare (indent defun) (debug t))
   `(progn
-     (setq minibuffer-completion-table (progn ,@update))
-     (let ((vertico--input t))
-       (vertico--exhibit))))
+     ,(and update
+           `(setq minibuffer-completion-table (progn ,@update)))
+     (when vertico--input
+       (setq vertico--input t)
+       ,(when reset
+          `(setq vertico--history-hash nil
+                 vertico--lock-candidate nil))
+      (vertico--exhibit))))
 
 ;; -------------------------------------------------------------------
 ;;; Strings / Regexps

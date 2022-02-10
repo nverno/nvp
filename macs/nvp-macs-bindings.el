@@ -203,6 +203,7 @@ repetition that may get called by other unwanted routines."
                                   local buff-local minor
                                   autoload create prefix
                                   repeat indicate wrap
+                                  parent
                                   with
                                   prefix-key
                                   &allow-other-keys)
@@ -217,6 +218,7 @@ Optional:
   WITH     specifies sets of bindings, from 'nvp--bindings-*', to add to map.
            These bindings are overwritten by any conflicts in BINDINGS.
   PREFIX-KEY append sequence to each binding in map
+  PARENT   Set KEYMAP's parent
 
 Transient:
   REPEAT   A list of functions which will be advised to enter transient KEYMAP
@@ -325,8 +327,9 @@ Buggy:
                                     ,(if (consp b) (car b) b)
                                     ,@(if (consp b) (cdr b))
                                     ;; ,(if (consp b) `,@(cdr b))
-                                    )
-                         )))))))
+                                    ))))
+         ,(when parent
+            `(set-keymap-parent ,modemap ,parent))))))
 
 (provide 'nvp-macs-bindings)
 ;; Local Variables:

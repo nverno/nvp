@@ -15,7 +15,8 @@
 
 (nvp:decls
  :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward
-                 vertico-directory--completing-file-p))
+                 vertico-directory--completing-file-p
+                 consult-recent-file))
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'completing-read)
@@ -549,6 +550,9 @@ command, call `vertico-insert'. If there is only one match call
 (defun nvp@read-with-ido (old-fn &rest args)
   (nvp:with-letf 'completing-read 'ido-completing-read
     (apply old-fn args)))
+
+(nvp:run-once consult-recent-file (:before (&rest _))
+  (recentf-mode))
 
 ;; use ido-completion when reading environment variables interactively
 ;; (nvp:advise-commands #'nvp@read-with-ido

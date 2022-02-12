@@ -221,6 +221,8 @@
        vertico--exhibit
        ;; consult
        consult-yank-replace
+       ;; transient
+       transient-get-value
        ;; ace-link
        ace-link
        ace-link-help

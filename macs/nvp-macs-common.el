@@ -175,7 +175,22 @@ be used. Modification of `use-package-normalize-plist'."
      ,@body))
 
 ;; -------------------------------------------------------------------
-;;; Building functions
+;;; Functions
+
+(defmacro nvp:alias (syms &optional original)
+  "Create aliases for SYMS. If ORIGINAL, save original definitions.
+If entry in SYMS is a cons cell, alias car to its cdr. Otherwise, entries
+are aliases to symbols prefixed by \"nvp-\"."
+  (setq syms (nvp:list-unquote syms))
+  (macroexp-progn
+   (cl-loop for sym in syms
+            as symbol = (if (consp sym) (car sym) sym)
+            as alias = (if (consp sym) (cdr sym)
+                         (intern (concat "nvp-" (symbol-name symbol))))
+            as orig = (intern (concat (symbol-name alias) "-orig"))
+            nconc `(,@(if original
+                          `((defalias ',orig (symbol-function #',symbol))))
+                    (defalias ',symbol (symbol-function #',alias))))))
 
 (defmacro nvp:lam (match-form &rest body)
   "Return interactive lambda, destructuring with `-lambda'."

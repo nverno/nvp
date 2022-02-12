@@ -43,7 +43,8 @@
 (defun nvp--get-library-file (&optional lisp-only prompt)
   "Get defining file for current symbol or prompt for library.
 Optionally, search LISP-ONLY files (no C sources)."
-  (let* ((curr (symbol-at-point))
+  (let* ((load-suffixes (if lisp-only '(".el")))
+         (curr (symbol-at-point))
          (sym (if (or prompt (null curr)) (read-library-name) curr))
          (lib (if (and (symbolp sym) (not (memq sym features)))
                   (cdr (find-function-library sym lisp-only))
@@ -64,19 +65,16 @@ Optionally, search LISP-ONLY files (no C sources)."
              (eq major-mode 'emacs-lisp-mode)
              (setq url (save-excursion (or (lm-header "URL")
                                            (lm-header "Homepage")))))
-        (browse-url url)                ;found URL in current buffer!!
-      (let ((lib (nvp--get-library-file 'lisp-only choose)))
-        (if (and lib                   ;no URL in emacs sources
-                 (member (file-name-extension lib) '("el" "elc")))
-            (let ((file (concat (file-name-sans-extension lib) ".el")))
-              (if (not (file-exists-p file))
-                  (user-error "Emacs source library - no URL: %s" lib)
-                (with-temp-buffer
-                  (insert-file-contents file)
-                  (if (setq url (lm-header "URL"))
-                      (browse-url url)
-                    (user-error "Library %s has no URL header" lib)))))
-          (user-error "Library %s isn't elisp." lib))))))
+        (browse-url url)                ; found URL in current buffer!!
+      ;; no URL in emacs sources
+      (--when-let (nvp--get-library-file 'lisp-only choose)
+        (if (not (string= (file-name-extension it) "el"))
+            (user-error "Library %S isn't elisp." it)
+          (with-temp-buffer
+            (insert-file-contents it)
+            (if (setq url (lm-header "URL"))
+                (browse-url url)
+              (user-error "Library %S has no URL header" it))))))))
 
 (defun nvp--locate-library-source (library)
   (let* ((name (file-name-nondirectory library))

@@ -209,18 +209,6 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
               (regexp-quote (substring comment 1 2))))))
 
 ;; -------------------------------------------------------------------
-;;; Windows
-
-;; sort windows left-to-right
-(defun nvp:sort-window-list (windows)
-  (sort windows
-        (lambda (x y)
-          (cl-loop for a in (window-edges x)
-                   for b in (window-edges y)
-                   while (= a b)
-                   finally return (< a b)))))
-
-;; -------------------------------------------------------------------
 ;;; Buffers
 
 ;; why isn't this a builtin function?

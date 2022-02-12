@@ -50,18 +50,6 @@
   (or arg (setq arg 1))
   (nvp-move-forward-paragraph (- arg)))
 
-;;;###autoload
-(defun nvp-goto-link ()
-  "Jump to link in current window if mode is recognized.
-Otherwise, if there is a visible help buffer, jump to links there instead."
-  (interactive)
-  (let ((ace-link-fallback-function
-         (lambda ()
-           (--when-let (nvp:visible-windows :mode (info-mode help-mode))
-             (with-selected-window (car it)
-               (call-interactively #'ace-link-help))))))
-    (call-interactively #'ace-link)))
-
 
 ;; -------------------------------------------------------------------
 ;;; Hydras

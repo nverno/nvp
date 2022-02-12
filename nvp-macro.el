@@ -272,6 +272,7 @@ as STRING."
   "List buffers visible in current frame. If MODE is non-nil, only return
 buffers with matching (or DERIVED) \\='major-mode. Otherwise if TEST-FN, is
 non-nil only list buffers where \\='(TEST-FN buffer) is non-nil."
+  (declare (indent defun) (debug t))
   (when (and mode test-fn) (error "nvp:visible-windows: %S is ignored" test-fn))
   (when (consp mode)
     (setq mode (nvp:list-unquote mode)))
@@ -289,9 +290,10 @@ non-nil only list buffers where \\='(TEST-FN buffer) is non-nil."
                                 (if (listp mode)
                                     `(derived-mode-p ,@(--map `(quote ,it) mode))
                                   `(derived-mode-p ,mode))
-                              `(,(if (listp mode) 'memq 'eq)
+                              `(memq
                                 (buffer-local-value 'major-mode buff)
-                                ,(if (listp mode) `',mode `,mode)))
+                                ,(if (listp mode) `',mode
+                                   `(if (listp ,mode) ,mode (list ,mode)))))
                           `(funcall ,test-fn buff))
                        (push w res)))
              `(push w res)))

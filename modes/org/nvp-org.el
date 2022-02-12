@@ -122,10 +122,8 @@ Return cons of \\='(name . raw-link)."
   (when (eq major-mode 'emacs-lisp-mode)
     (let ((lib (nvp:path 'bfse))
           (symt (if (nvp:ppss 'cmt) (cons 's (read-string "Section: "))
-                  (let ((sym (variable-at-point)))
-                    (if (not (and (numberp sym) (zerop sym))) (cons 'v sym)
-                      (--when-let (function-called-at-point)
-                        (cons 'f it)))))))
+                  (--when-let (nvp-parse-current-function)
+                    (cons 'f it)))))
       (when (or prompt (null symt))
         (setq symt (cons
                     (nvp:read-char-case "Type: " 'verbose

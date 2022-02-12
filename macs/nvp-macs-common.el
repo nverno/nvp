@@ -444,6 +444,19 @@ be used. Modification of `use-package-normalize-plist'."
 
 
 ;; -------------------------------------------------------------------
+;;; Restrictions
+
+(defmacro nvp:with-restriction (type &rest body)
+  "Narrow to region TYPE and do BODY."
+  (declare (indent 1))
+  `(save-restriction
+     ,@(pcase type
+         (`'visible '((narrow-to-region (window-start) (window-end))))
+         (_ (error "Invalid type: %S" type)))
+     ,@body))
+
+
+;; -------------------------------------------------------------------
 ;;; Input keys / IO
 
 ;; FIXME: best way to get last input char?

@@ -30,7 +30,7 @@
 
 (defsubst nvp:dotted-pair-p (x)
   (declare (pure t) (side-effect-free t))
-  (and (consp x) (not (consp (cdr x)))))
+  (and (consp x) (cdr x) (atom (cdr x))))
 
 (defsubst nvp:as-list (x)
   (declare (pure t) (side-effect-free t))
@@ -102,16 +102,19 @@ The result may also contain atoms that where head of subalists."
   (declare (pure t) (side-effect-free t))
   ;; if ELEM is a list and has a null cdr return its car, otherwise return it
   (cl-macrolet ((flatten-elem (elem)
-                  (if (and (consp elem) (null (cdr elem)))
-                      (car elem) elem)))
+                  (while (and (consp elem) (not (nvp:dotted-pair-p elem)))
+                    (setq elem (car elem)))
+                  elem))
     (let (elems)
       (while (and (consp tree))
         (let ((elem (pop tree)))
-          (while (and (consp elem) (consp (cdr elem)))
+          (while (and (consp elem)
+                      (or (null (cdr elem))
+                          (not (atom (cdr elem)))))
             (push (cdr elem) tree)
             (setq elem (car elem)))
           (if elem (push (flatten-elem elem) elems))))
-      (if tree (push (flatten-elem tree) elems))
+      (when tree (push (flatten-elem tree) elems))
       (nreverse elems))))
 
 (define-inline nvp:flatten-tree (lst &optional alist)
@@ -204,6 +207,18 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
         (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-" beg beg beg)
       (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" beg
               (regexp-quote (substring comment 1 2))))))
+
+;; -------------------------------------------------------------------
+;;; Windows
+
+;; sort windows left-to-right
+(defun nvp:sort-window-list (windows)
+  (sort windows
+        (lambda (x y)
+          (cl-loop for a in (window-edges x)
+                   for b in (window-edges y)
+                   while (= a b)
+                   finally return (< a b)))))
 
 ;; -------------------------------------------------------------------
 ;;; Buffers

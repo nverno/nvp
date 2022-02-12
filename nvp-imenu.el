@@ -79,26 +79,41 @@ Assumes the list is flattened and only elements with markers remain."
   "Sort imenu entries so those closest in the buffer are first."
   (cl-sort alist (apply-partially #'nvp-imenu--relative-positions marker)))
 
-(defun nvp-imenu-cleaned-alist (&optional regex alist)
+(defun nvp-imenu-cleaned-alist (&optional buffer regex alist)
   "Flatten imenu alist, remove headers and things that don't look like code."
+  (or buffer (setq buffer (current-buffer)))
   (or regex (setq regex nvp-imenu-default-filter-regex))
   (or alist (setq alist imenu--index-alist))
-  (cl-remove-if-not
-   #'nvp-imenu-maybe-code-p
-   (nvp:flatten-tree
-    (if (and regex (stringp regex))
-        (nvp-imenu-filter-regex regex alist)
-      alist)
-    'alist)))
+  (delq nil (--map (nvp-imenu-filter-code buffer it)
+                   (nvp:flatten-to-alist
+                    (if (and regex (stringp regex))
+                        (nvp-imenu-filter-regex regex alist)
+                      alist)))))
 
-(defun nvp-imenu-maybe-code-p (elem)
+(eval-when-compile
+  (defsubst nvp:imenu-remove-prefix (elem)
+    (thread-last elem
+     (replace-regexp-in-string (concat "^.*" nvp-imenu-buffer-delimiter) "")
+     (replace-regexp-in-string "^.*/" ""))))
+
+(defun nvp-imenu-filter-code (buffer elem)
   "Filter out probable non code things."
+  (when (and (consp elem) (not (nvp:dotted-pair-p elem)))
+    (setq elem (car elem)))
   (let (mark)
-    (and (consp elem)
-         (not (string-match-p "[ \t;]\\|:\\'" (car elem)))
-         (or (number-or-marker-p (setq mark (cdr elem)))
-             (and (overlayp mark)
-                  (setq mark (overlay-start mark)))))))
+    (--when-let
+        (and (consp elem)
+             (setq mark (cdr elem))
+             (cond
+              ((numberp mark) mark)
+              ((markerp mark)
+               (and (or (null buffer) (eq (marker-buffer mark) buffer))
+                    mark))
+              ((overlayp mark)
+               (and (or (null buffer) (eq (overlay-buffer mark) buffer))
+                    (overlay-start mark)))
+              (t nil)))
+      (cons (nvp:imenu-remove-prefix (car elem)) mark))))
 
 ;; substitute spaces for `imenu-space-replacement' in candidate names
 (defun nvp-imenu--index-alist ()

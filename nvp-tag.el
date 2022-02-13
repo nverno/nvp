@@ -49,7 +49,7 @@
 (cl-defgeneric nvp-tag-command ()
   "Command to generate tags.")
 
-;; find-tag default functions - see subr.el: #<marker at 125677 in subr.el.gz>
+;; find-tag default functions - see subr.el: #<marker at 149978 in subr.el>
 (defun nvp-tag-get-default ()
   (or (and (region-active-p)
            (/= (point) (mark))

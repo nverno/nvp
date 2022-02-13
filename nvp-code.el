@@ -21,12 +21,12 @@
   :create t
   :repeat (nvp-hs-hide-comments hs-toggle-hiding)
   :indicate t
-  ("TAB" . hs-toggle-hiding)
-  ("a"   . hs-hide-all)
-  ("c"   . nvp-hs-hide-comments)
-  ("f"   . nvp-hs-toggle)
-  ("l"   . hs-hide-level)
-  ("s"   . hs-show-all))
+  ("<tab>" . hs-toggle-hiding)
+  ("a"     . hs-hide-all)
+  ("c"     . nvp-hs-hide-comments)
+  ("f"     . nvp-hs-toggle)
+  ("l"     . hs-hide-level)
+  ("s"     . hs-show-all))
 
 ;;; Hideshow
 

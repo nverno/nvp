@@ -4,10 +4,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(require 'avy)
 (nvp:decls :v (org-link-any-re) :f (ace-link ace-link-org))
 
 ;; map major-modes to link actions
-(defvar ace-link-major-mode-actions
+(defvar nvp-ace-link-major-mode-actions
   `((Info-mode                   . ace-link-info)
     (Man-mode                    . ace-link-man)
     (woman-mode                  . ace-link-woman)
@@ -23,7 +24,7 @@
     (indium-debugger-frames-mode . ace-link-indium-debugger-frames)
     (magit-commit-mode           . ace-link-commit)
     (cider-inspector-mode        . ace-link-cider-inspector)
-    (org-agenda-mode             . ace-link-org-agenda)
+    ;; (org-agenda-mode             . ace-link-org-agenda)
     ,@(mapcar (lambda (m) (cons m 'ace-link-help))
               '(help-mode
                 package-menu-mode
@@ -34,31 +35,40 @@
                 helpful-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-compilation))
               '(compilation-mode
-                grep-mode))
+                grep-mode
+                ;; added
+                emacs-lisp-compilation-mode
+                ag-mode
+                rg-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-gnus))
               '(gnus-article-mode
                 gnus-summary-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-org))
               '(org-mode
+                org-agenda-mode         ; `ace-link-org-agenda'
                 erc-mode elfeed-show-mode
                 term-mode vterm-mode
                 eshell-mode
-                telega-chat-mode)))
+                telega-chat-mode))
+    ;; added
+    (shortdoc-mode               . ace-link-help)
+    (shell-mode                  . nvp-link-shell))
   "Mapping of `major-mode' to ace-link actions.")
 
-(defvar ace-link-minor-mode-actions
-  '((compilation-shell-minor-mode . ace-link-compilation))
+(defvar nvp-ace-link-minor-mode-actions
+  '((compilation-shell-minor-mode . ace-link-compilation)
+    (nvp-mark-minor-mode          . nvp-link-mark))
   "Mapping of minor modes to ace-link actions.")
 
-(defun ace-link-action (&optional buffer)
+(defun nvp-ace-link-action (&optional buffer)
   "Return action associated with current buffer, if any."
-  (or (cdr (assoc major-mode ace-link-major-mode-actions))
+  (or (cdr (assoc major-mode nvp-ace-link-major-mode-actions))
       (cl-some (lambda (action)
                  (and (boundp (car action))
                       (buffer-local-value
                        (car action) (or buffer (current-buffer)))
                       (cdr action)))
-               ace-link-minor-mode-actions)))
+               nvp-ace-link-minor-mode-actions)))
 
 ;; sort windows left-to-right: see `winner-sorted-window-list'
 (defun nvp-sort-window-list (windows)
@@ -75,7 +85,7 @@
 (defun nvp-ace-link ()
   "Call the ace link function for the current `major-mode'"
   (interactive)
-  (if-let ((action (ace-link-action (current-buffer))))
+  (if-let ((action (nvp-ace-link-action (current-buffer))))
       (funcall action)
     (unless (and ace-link-fallback-function
                  (funcall ace-link-fallback-function))
@@ -99,11 +109,57 @@ With \\[universal-argument] call in next visible window."
                        (lambda (buf)
                          (and (not (eq buf cur-buf))
                               (assoc (buffer-local-value 'major-mode buf)
-                                     ace-link-major-mode-actions))))
+                                     nvp-ace-link-major-mode-actions))))
                    (with-selected-window (car (nvp-sort-window-list it))
                      (prog1 t
                        (call-interactively #'nvp-ace-link)))))))
           (call-interactively #'nvp-ace-link))))))
+
+;;; Mark
+(nvp:decl nvp-mark-goto-marker-at-point)
+(defvar nvp-mark--regex)
+
+(defun nvp-link--mark-collect ()
+  (let (res)
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward nvp-mark--regex nil 'move)
+        (push (cons (buffer-substring-no-properties
+                     (match-beginning 0) (match-end 0))
+                    (match-beginning 0))
+              res)))
+    (nreverse res)))
+
+(defun nvp-link-mark ()
+  (interactive)
+  (let ((pt (avy-with nvp-link-mark
+              (avy-process
+               (--map (cdr it) (nvp-link--mark-collect))
+               (avy--style-fn avy-style)))))
+    (when pt
+      (funcall #'nvp-mark-goto-marker-at-point))))
+
+;;; Shell
+(nvp:decl comint-next-prompt)
+
+(defun nvp-link--shell-collect ()
+  (let (res)
+    (nvp:with-restriction 'visible
+      (let ((end (1- (point-at-bol (point-max)))))
+        (goto-char (point-min))
+        (while (progn (comint-next-prompt 1) (< (point) end))
+          (push (cons (string-chop-newline (nvp:tap 'tap 'line))
+                      (point-at-bol))
+                res))))
+    (nreverse res)))
+
+(defun nvp-link-shell ()
+  (interactive)
+  (let ((pt (avy-with nvp-link-shell
+              (avy-process
+               (--map (cdr it) (nvp-link--shell-collect))
+               (avy--style-fn avy-style)))))
+    (avy-action-yank-line pt)))
 
 ;; use actual links in agenda buffer - the default is just the same
 ;; as `avy-goto-link'

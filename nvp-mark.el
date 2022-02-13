@@ -1,12 +1,8 @@
 ;;; nvp-mark.el --- Minor mode for quick xrefs -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;;
 ;; Minor mode to create xrefs from marker text on the fly
-;;
-;; TODO:
-;; - use overlays
-;; - add jump bindings to overlays
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -18,29 +14,73 @@
 (defvar-local nvp-mark--fontified-p nil
   "Non-nil if marks in buffer are currently fontified")
 
-(defvar-local nvp-mark--marks () "Position of marks in buffer.")
-
-;; -------------------------------------------------------------------
-;;; Util
-
-;; thing-at-point 'marker
-(defun nvp-mark-bounds-of-marker-at-point ()
-  (save-excursion
-    (skip-chars-backward "^#" (line-beginning-position))
-    (when (eq ?< (char-after (point)))
-      (let ((start (1- (point)))
-            (end (progn
-                   (skip-chars-forward "^>" (line-end-position))
-                   (1+ (point)))))
-        (cons start end)))))
-
-(put 'nvp-mark 'bounds-of-thing-at-point 'nvp-mark-bounds-of-marker-at-point)
+(defun nvp-mark-at-point (&optional point)
+  (or point (setq point (point)))
+  (and (nvp:ppss 'cmt nil point)
+       (get-text-property (point) 'file-place)))
 
 (defun nvp-mark--collect-marks ()
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward nvp-mark--regex nil 'move)
-      (push (cons (match-beginning 0) (match-end 0)) nvp-mark--marks))))
+  (let (res)
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward nvp-mark--regex nil 'move)
+        (push (cons (match-beginning 0) (match-end 0)) res)))
+    res))
+
+;; -------------------------------------------------------------------
+;;; Xref
+
+;; #<marker at 1681 in nvp-mark.el>
+(defun nvp-mark--xref-backend ()
+  (and (nvp-mark-at-point) 'nvp-mark))
+
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql 'nvp-mark)))
+  nil)
+
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql 'nvp-mark)))
+  (-when-let ((file . place) (nvp-mark-at-point))
+    (let ((ident (format "%s:%s" file place)))
+      (add-text-properties
+       0 (length ident) `(file-place ,(cons file place)) ident)
+      ident)))
+
+(cl-defstruct (xref-nvp-mark-location
+               (:constructor xref-make-nvp-mark-location (file pos)))
+  "Location of mark."
+  file pos)
+
+(cl-defmethod xref-backend-definitions ((_backend (eql 'nvp-mark)) ident)
+  (-when-let ((file . place) (get-text-property 0 'file-place ident))
+    (let ((loc (xref-make-nvp-mark-location file place)))
+      (list (xref-make (substring-no-properties ident) loc)))))
+
+(defun nvp-mark--filename (file)
+  (setq file (replace-regexp-in-string "\\..*$" "" file))
+  (condition-case nil
+      (find-library-name file)
+    (expand-file-name file default-directory)))
+
+(defun nvp-mark--position (place)
+  (if (numberp place) place
+    (let ((pt (string-to-number place)))
+      (when (and (zerop pt)
+                 (progn
+                   (goto-char (point-min))
+                   (re-search-forward
+                    (format "^(\\(?:cl-\\)?def[-a-z]+ %s" place) nil t)))
+        (setq pt (point)))
+      pt)))
+
+(cl-defmethod xref-location-marker ((l xref-nvp-mark-location))
+  (pcase-let (((cl-struct xref-nvp-mark-location file pos) l))
+    (let* ((file (nvp-mark--filename file))
+           (buf (and (file-exists-p file)
+                     (find-file-noselect file))))
+      (when buf
+        (with-current-buffer buf
+          (save-excursion
+            (goto-char (nvp-mark--position pos))
+            (point-marker)))))))
 
 ;; -------------------------------------------------------------------
 ;; Commands
@@ -50,32 +90,19 @@
   "Jump to the marker at point. A marker is of the form
 '#<marker at [point/function-name] in [library/relative filename]>'."
   (interactive)
-  (when-let* ((bnds (bounds-of-thing-at-point 'nvp-mark)))
-    (save-excursion
-      (goto-char (car bnds))
-      (save-match-data
-        (when (re-search-forward nvp-mark--regex (line-end-position) t)
-          (let* ((fn-or-place (match-string-no-properties 1))
-                 (place (string-to-number fn-or-place))
-                 (name (replace-regexp-in-string "\\..*$" "" (match-string 2)))
-                 (file (condition-case nil
-                           (find-library-name name)
-                         (expand-file-name name default-directory))))
-            (when (file-exists-p file)
-              (switch-to-buffer-other-window (find-file-noselect file))
-              (goto-char (or place 1))
-              (when (zerop place)
-                (re-search-forward
-                 (format "^(\\(?:cl-\\)?def[-a-z]+ %s" fn-or-place) nil t)))))))))
+  (unless (bound-and-true-p nvp-mark-minor-mode)
+    (nvp-mark-minor-mode))
+  (if (nvp-mark-at-point)
+      (let* ((xref-backend-functions '(nvp-mark--xref-backend t))
+             (ident (xref-backend-identifier-at-point 'nvp-mark)))
+        (xref-find-definitions-other-window ident))
+    (user-error "Not at mark.")))
 
 ;; insert `point-marker' in kill-ring
 ;;;###autoload
 (defun nvp-mark-kill-point ()
   (interactive)
   (kill-new (format "%s" (point-marker))))
-
-;; -------------------------------------------------------------------
-;;; Font-lock / Mode
 
 (defun nvp-mark-next (&optional previous)
   "Move to the next nvp-mark.
@@ -95,28 +122,43 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
                      (format "No %s marks" (if previous "previous" "next")))
                     (goto-char curr))))))
 
-;; #<marker at 3312 in nvp-mark.el>
 (defun nvp-mark-previous ()
   "Move to the previous nvp-mark."
   (interactive)
   (nvp-mark-next 'previous))
 
-;; Font-lock
+;; -------------------------------------------------------------------
+;;; Font-lock
+
+(defvar nvp-mark-keymap
+  (let ((map (make-sparse-keymap)))
+    (define-key map "\C-m" #'xref-find-definitions)
+    (define-key map (kbd "C-c C-j") #'xref-find-definitions)
+    map))
+
 (defvar nvp-mark-font-lock-keywords
   `((,nvp-mark--regex
      (0 (prog1 ()
           (let* ((place (match-string-no-properties 1))
                  (file (match-string-no-properties 2)))
-            (put-text-property (1+ (match-beginning 0)) (match-end 0)
-                               'display (format "%s<%s>" file place)))))
+            (add-text-properties
+             (match-beginning 0) (match-end 0)
+             `(display ,(format "#%s<%s>" file place)
+                       printed-value ,(match-string 0)
+                       keymap ,nvp-mark-keymap
+                       read-only t
+                       file-place ,(cons file place))))))
      (0 'font-lock-constant-face t))))
 
 ;; remove special mark display when disabling fontification
 (defun nvp-mark--remove-display ()
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward nvp-mark--regex nil 'move)
-      (remove-text-properties (match-beginning 0) (match-end 0) '(display)))))
+  (let ((inhibit-read-only t))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward nvp-mark--regex nil 'move)
+        (remove-text-properties
+         (match-beginning 0) (match-end 0)
+         '(display keymap read-only file-place printed-value))))))
 
 ;;;###autoload
 (defun nvp-mark-toggle-fontification ()
@@ -134,22 +176,24 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
   (let ((km (make-sparse-keymap)))
     (define-key km (kbd "M-s-p") #'nvp-mark-previous)
     (define-key km (kbd "M-s-n") #'nvp-mark-next)
-    (define-key km (kbd "M-s-<return>") #'nvp-mark-goto-marker-at-point)
-    (define-key km [mouse-1] #'nvp-mark-goto-marker-at-point)
+    (define-key km [mouse-1] #'xref-find-definitions)
     (easy-menu-define nil km nil
       '("NMark"
         ["Previous" nvp-mark-previous t]
         ["Next" nvp-mark-next t]))
     km)
-  "Keymap used in `nvp-mark-mode'.")
+  "Keymap used in `nvp-mark-minor-mode'.")
 
 ;;;###autoload
-(define-minor-mode nvp-mark-mode "NvpMark"
+(define-minor-mode nvp-mark-minor-mode "NvpMark"
   :lighter " NMark"
   :keymap nvp-mark-mode-map
-  (if nvp-mark-mode
-      (font-lock-add-keywords nil nvp-mark-font-lock-keywords)
+  (if nvp-mark-minor-mode
+      (progn
+        (add-hook 'xref-backend-functions #'nvp-mark--xref-backend nil t)
+        (font-lock-add-keywords nil nvp-mark-font-lock-keywords))
     (nvp-mark--remove-display)
+    (remove-hook 'xref-backend-functions #'nvp-mark--xref-backend t)
     (font-lock-remove-keywords nil nvp-mark-font-lock-keywords))
   (font-lock-flush)
   (font-lock-ensure))

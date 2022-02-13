@@ -137,6 +137,7 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
 
 (cl-defmethod nvp-parse-current-function
   (&context (major-mode emacs-lisp-mode) &rest _args)
+  (require 'nvp-parse)
   (or (add-log-current-defun) (cl-call-next-method)))
 
 ;; file could have multiple provides

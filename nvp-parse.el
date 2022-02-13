@@ -86,6 +86,7 @@ Recognized arguments:
     (nvp-imenu-cleaned-alist)))
 
 ;; like which-func - attempt with imenu and add-log
+;;;###autoload
 (cl-defgeneric nvp-parse-current-function (&rest _args)
   "Default method to get name of function containing point.
 First tries closest imenu entry, then `add-log-current-defun'."

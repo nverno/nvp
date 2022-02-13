@@ -1,5 +1,7 @@
 ;;; nvp.el --- base configs -*- lexical-binding: t; -*-
-
+;;
+;; URL: https://github.com/nverno/nvp
+;;
 ;;; Commentary:
 ;; 
 ;; Library required at startup -- ~0.4 sec

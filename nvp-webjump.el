@@ -27,6 +27,11 @@
   (concat (string-trim-right base "/*") (or sep "/")
           (nvp-completing-read (or prompt "ext: ") options)))
 
+(defun nvp-webjump-multiple (prompt alist)
+  (let* ((choice (nvp-completing-read prompt alist nil t))
+         (urls (assoc-string choice alist 'case-fold)))
+    (cons (cadr urls) (mapconcat 'identity (cddr urls) " "))))
+
 (defun nvp-get-local-uris ()
   "Find local jump uris. Use `nvp-local-uris' or if a local notes file is found,
 try to find links there."
@@ -41,7 +46,8 @@ try to find links there."
 (defun nvp-browse-webjump (&optional prompt use-defaults)
   "Jump to website."
   (interactive (list (nvp:prefix 4) (nvp:prefix 16)))
-  (-let* ((completion-ignore-case t)
+  (-let* (browse-url-chrome-arguments
+          (completion-ignore-case t)
           (locals (and (not use-defaults)
                        (or (and prompt (read-from-minibuffer "URI: "))
                            (nvp-get-local-uris))))
@@ -50,17 +56,22 @@ try to find links there."
            (or (and prompt (cons nil locals))
                (assoc-string
                 (nvp-completing-read "WebJump to site: " sites nil t)
-                sites 'case-fold))))
-    (browse-url
-     (webjump-url-fix
-      (cond ((not expr) "")
-            ((stringp expr) expr)
-            ((vectorp expr) (webjump-builtin expr name))
-            ((listp expr) (eval expr))
-            ((symbolp expr)
-             (if (fboundp expr) (funcall expr name)
-               (error "WebJump URL function \"%s\" undefined" expr)))
-            (t (error "WebJump URL expression for \"%s\" invalid" name)))))))
+                sites 'case-fold)))
+          (url
+           (cond ((not expr) "")
+                 ((stringp expr) expr)
+                 ((vectorp expr) (webjump-builtin expr name))
+                 ((listp expr)
+                  (if (eq (car expr) 'multiple)
+                      (-let (((url . args) (apply #'nvp-webjump-multiple (cdr expr))))
+                        (push args browse-url-chrome-arguments)
+                        url)
+                    (eval expr)))
+                 ((symbolp expr)
+                  (if (fboundp expr) (funcall expr name)
+                    (error "WebJump URL function \"%s\" undefined" expr)))
+                 (t (error "WebJump URL expression for \"%s\" invalid" name)))))
+    (browse-url (webjump-url-fix url))))
 
 (provide 'nvp-webjump)
 ;; Local Variables:

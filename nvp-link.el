@@ -139,6 +139,20 @@ With \\[universal-argument] call in next visible window."
     (when pt
       (funcall #'nvp-mark-goto-marker-at-point))))
 
+;;; TODO: dired
+(defun nvp-link--dired-collect ())
+
+;;; TODO: Markdown
+(nvp:decl markdown-next-link)
+(defun nvp-link--markdown-collect ()
+  (let (res)
+    (nvp:with-restriction 'visible
+      (goto-char (point-min))
+      (while (and (markdown-next-link) (point))
+        (push (cons (markdown-link-at-pos (point)) (point))
+              res)))
+    res))
+
 ;;; Shell
 (nvp:decl comint-next-prompt)
 

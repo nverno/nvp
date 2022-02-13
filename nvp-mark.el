@@ -6,6 +6,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'xref)
 (autoload 'find-library-name "find-func")
 
 (eval-and-compile

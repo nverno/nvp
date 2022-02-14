@@ -150,9 +150,10 @@
 
 ;; compile the file, removing macro+contents
 (defun nvp-install-compile (file)
-  (let ((outfile (concat file ".elc"))
-        (infile (concat file ".el"))
-        (tmp-file (make-temp-name (file-name-nondirectory file))))
+  (let* ((default-directory (file-name-directory file))
+         (outfile (concat file ".elc"))
+         (infile (concat file ".el"))
+         (tmp-file (make-temp-name (file-name-nondirectory file))))
     (with-temp-file tmp-file
       (goto-char (point-max))
       (insert-file-contents infile)

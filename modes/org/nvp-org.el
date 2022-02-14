@@ -52,8 +52,8 @@ See `org-element-all-elements' for possible item types."
 ;;;###autoload
 (defun nvp-org-links (headline-re &optional buffer-or-file type)
   "Gather links of TYPE (or \"https\") nested under sections matching 
-HEADLINE-RE in BUFFER if non-nil or current buffer.
-Return cons of \\='(name . raw-link)."
+HEADLINE-RE in BUFFER if non-nil or current buffer . 
+Return cons of \\='(name                           . raw-link)."
   (let ((buf (if buffer-or-file
                  (or (get-buffer buffer-or-file)
                      (find-file-noselect buffer-or-file))
@@ -65,8 +65,7 @@ Return cons of \\='(name . raw-link)."
           (lambda (link)
             (when (or (null type)
                       (string-match-p type (nvp:org-property :type link)))
-              (push (cons (nvp:org-link-name link)
-                          (nvp:org-property :raw-link link))
+              (push (list (nvp:org-link-name link) 'org-link link)
                     res))))))
     (nreverse res)))
 

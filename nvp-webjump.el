@@ -8,7 +8,7 @@
 (require 'nvp)
 (require 'nvp-vars)
 (require 'webjump)
-(nvp:decls)
+(nvp:decls :f (org-link-open nvp-org-links))
 
 (defvar nvp-webjump-org-links-re (regexp-opt '("reference" "links"))
   "Org sections to look for links.")
@@ -46,7 +46,7 @@ try to find links there."
 (defun nvp-browse-webjump (&optional prompt use-defaults)
   "Jump to website."
   (interactive (list (nvp:prefix 4) (nvp:prefix 16)))
-  (-let* (browse-url-chrome-arguments
+  (-let* (extra-args type
           (completion-ignore-case t)
           (locals (and (not use-defaults)
                        (or (and prompt (read-from-minibuffer "URI: "))
@@ -62,16 +62,25 @@ try to find links there."
                  ((stringp expr) expr)
                  ((vectorp expr) (webjump-builtin expr name))
                  ((listp expr)
-                  (if (eq (car expr) 'multiple)
-                      (-let (((url . args) (apply #'nvp-webjump-multiple (cdr expr))))
-                        (push args browse-url-chrome-arguments)
-                        url)
-                    (eval expr)))
+                  (pcase (car expr)
+                    ('multiple
+                     (-let (((url . args) (apply #'nvp-webjump-multiple (cdr expr))))
+                       (setq type 'multiple)
+                       (push args extra-args)
+                       url))
+                    ('org-link
+                     (setq type 'org-link)
+                     (cdr expr))
+                    (_ (eval expr))))
                  ((symbolp expr)
                   (if (fboundp expr) (funcall expr name)
                     (error "WebJump URL function \"%s\" undefined" expr)))
                  (t (error "WebJump URL expression for \"%s\" invalid" name)))))
-    (browse-url (webjump-url-fix url))))
+    (pcase type
+      ('multiple (let ((browse-url-chrome-arguments extra-args))
+                   (browse-url (webjump-url-fix url))))
+      ('org-link (apply #'org-link-open url))
+      (_ (browse-url (webjump-url-fix url))))))
 
 (provide 'nvp-webjump)
 ;; Local Variables:

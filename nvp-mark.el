@@ -142,24 +142,26 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
      (0 (prog1 ()
           (let* ((place (match-string-no-properties 1))
                  (file (match-string-no-properties 2)))
-            (add-text-properties
-             (match-beginning 0) (match-end 0)
-             `(display ,(format "#%s<%s>" file place)
-                       printed-value ,(match-string 0)
-                       keymap ,nvp-mark-keymap
-                       read-only t
-                       file-place ,(cons file place))))))
+            (with-silent-modifications
+              (add-text-properties
+               (match-beginning 0) (match-end 0)
+               `(display ,(format "#%s<%s>" file place)
+                         printed-value ,(match-string 0)
+                         keymap ,nvp-mark-keymap
+                         read-only t
+                         file-place ,(cons file place)))))))
      (0 'font-lock-constant-face t))))
 
 ;; remove special mark display when disabling fontification
 (defun nvp-mark--remove-display ()
-  (let ((inhibit-read-only t))
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward nvp-mark--regex nil 'move)
-        (remove-text-properties
-         (match-beginning 0) (match-end 0)
-         '(display keymap read-only file-place printed-value))))))
+  (with-silent-modifications
+    (let ((inhibit-read-only t))
+      (save-excursion
+        (goto-char (point-min))
+        (while (re-search-forward nvp-mark--regex nil 'move)
+          (remove-text-properties
+           (match-beginning 0) (match-end 0)
+           '(display keymap read-only file-place printed-value)))))))
 
 ;;;###autoload
 (defun nvp-mark-toggle-fontification ()

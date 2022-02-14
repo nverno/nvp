@@ -94,21 +94,24 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; `align-exclude-rules-list'
 ;; `align-rules-list'
 
-;; use a variable for modes that align '\' line continuations
+;; Line continuation (EOL = '\') - modifies 'basic-line-continuation to:
+;; - store modes in variable so it can be extended easily
+;; - not align in string/comments
 (defvar nvp-align-basic-lc-modes
-  (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list))))
+  '(python-mode sh-mode makefile-mode dockerfile-mode))
 
-(setf
- (cdr (assq 'modes (assq 'basic-line-continuation align-rules-list)))
- nvp-align-basic-lc-modes)
+(cl-eval-when (load)
+  (setcdr (assq 'basic-line-continuation align-rules-list)
+          `((regexp . "\\(\\s-*\\)\\\\$")
+            (modes  . nvp-align-basic-lc-modes)
+            (valid  . ,(function (lambda () (not (nvp:ppss 'soc))))))))
 
 (defvar nvp-align--groups
   '(;; All predefined mode groupings
     align-dq-string-modes align-sq-string-modes align-open-comment-modes
     align-c++-modes align-perl-modes align-lisp-modes align-tex-modes
     ;; plus mine
-    nvp-align-basic-lc-modes
-    ))
+    nvp-align-basic-lc-modes))
 
 ;; Collect align/exclude rules for MODE
 (defun nvp-align--mode-rules (&optional mode)

@@ -159,16 +159,9 @@ Replacement for `sh-shell-process', which see."
 ;;; Cleanup / Align
 
 ;; FIXME: these rules can be useful for other modes: makefile, automake, etc.
-;; alignment rules to align '\' not in strings/comments and
 ;; align end-of-line comments
 (defvar nvp-sh-align-rules-list
-  `((sh-line-continuation
-     (regexp . "\\(\\s-*\\)\\\\\\s-*$")
-     (modes  . '(sh-mode))
-     (valid  . ,(function
-                 (lambda () (save-excursion
-                         (not (sh-in-comment-or-string (point))))))))
-    (sh-eol-comments
+  `((sh-eol-comments
      (regexp . "[^ #\t\n\\\\]\\(\\s-+\\)#+.*$")
      (group  . 1)
      (modes  . '(sh-mode))
@@ -222,7 +215,7 @@ Like `sh-current-defun-name' but ignore variables."
   (nvp:setq-local
     beginning-of-defun-function #'nvp-sh-beginning-of-defun
     end-of-defun-function       #'nvp-sh-end-of-defun
-    align-rules-list nvp-sh-align-rules-list
+    align-rules-list (append nvp-sh-align-rules-list align-rules-list)
     bug-reference-bug-regexp "\\(shellcheck [^=]+\\)=\\(SC[[:digit:]]\\{4\\}\\)"
     bug-reference-url-format "https://github.com/koalaman/shellcheck/wiki/%s")
   (cl-pushnew 'nvp-he-try-expand-shell-alias hippie-expand-try-functions-list)

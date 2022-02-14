@@ -99,7 +99,7 @@ with \"_\"."
       (append new old))))
 
 (defun nvp:-normalize-plist (name input
-                                      &optional plist defaults merge-function)
+                                  &optional plist defaults merge-function)
   "Normalize pseudo-plist to regular plist, extending key/value pairs.
 Keywords will be call by a function nvp-macs-normalize/<keyword> with three
 arguments: NAME, the keyword, and any args following before next keyword.
@@ -280,10 +280,10 @@ are aliases to symbols prefixed by \"nvp-\"."
   (let ((g (cl-gensym)))
     `(lambda (,g)
        ,(cl-labels ((rec (fns)
-                         (if fns
-                             `(,(nvp:-rbuild (car fns))
-                               ,(rec (cdr fns)))
-                           g)))
+                      (if fns
+                          `(,(nvp:-rbuild (car fns))
+                            ,(rec (cdr fns)))
+                        g)))
           (rec fns)))))
 
 ;; -------------------------------------------------------------------
@@ -401,7 +401,7 @@ are aliases to symbols prefixed by \"nvp-\"."
                             funcs)))
       (macroexp-progn
        (cl-loop for func in funcs
-          collect `(declare-function ,func ,pkg))))))
+                collect `(declare-function ,func ,pkg))))))
 
 (defalias 'nvp:auto 'nvp:autoload)
 (put 'nvp:auto 'lisp-indent-function 'defun)
@@ -410,13 +410,13 @@ are aliases to symbols prefixed by \"nvp-\"."
   (setq funcs (nvp:list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
-      collect `(autoload ',func ,package))))
+            collect `(autoload ',func ,package))))
 
 (defmacro nvp:setq-local (&rest var-vals)
   (declare (indent 0))
   (macroexp-progn
    (cl-loop for (var val) on var-vals by #'cddr
-      collect `(setq-local ,var ,val))))
+            collect `(setq-local ,var ,val))))
 
 
 ;; -------------------------------------------------------------------
@@ -434,6 +434,46 @@ are aliases to symbols prefixed by \"nvp-\"."
   `(eval-when-compile
      ,(if no-symbol `(regexp-opt ,opts t)
         `(nvp:wrap-with "\\_<" "\\_>" (regexp-opt ,opts t)))))
+
+(defmacro nvp:regex-complement (syntax &optional capture)
+  "Create regex complement for SYNTAX classes.
+Syntax should be list of syntax class symbols or syntax codes."
+  (let* ((table
+          `(;(,?-  . 0)     ; whitespace
+            (,?   . 0)     ; whitespace
+            (,?.  . 1)     ; punct
+            (,?w  . 2)     ; word
+            (,?_  . 3)     ; symbol
+            (,?\( . 4)     ; open paren
+            (,?\) . 5)     ; close paren
+            (,?\' . 6)     ; expression prefix
+            (,?\" . 7)     ; string quote
+            (,?$  . 8)     ; paired delimiter
+            (,?\\ . 9)     ; escape
+            (,?/  . 10)    ; character quote
+            (,?<  . 11)    ; comment start
+            (,?>  . 12)    ; comment end
+            ;; 13 = inherit
+            (,?!  . 14)    ; generic comment
+            (,?|  . 15)))) ; generic string
+    (setq syntax
+          (--map (cond
+                  ;; both ?- and ?  map to same code: 0
+                  ((memq it '(- ?-)) ? )
+                  ((symbolp it) (string-to-char (symbol-name it)))
+                  ((assq it table) it)
+                  ((numberp it) (syntax-class-to-char it))
+                  (t (error "invalid syntax: expected char,number,symbol")))
+                 syntax))
+    (cl-assert (--every (assq it table) syntax)
+               nil "nvp:regex-compliment: syntax invalid")
+
+    (let* ((chars (--filter (not (memq (car it) syntax)) table))
+           (res (concat "\\(" (if capture "" "?:")
+                        (mapconcat
+                         (lambda (syn) (format "\\s%c" (car syn))) chars "\\|")
+                        "\\)")))
+      `,res)))
 
 
 ;; -------------------------------------------------------------------

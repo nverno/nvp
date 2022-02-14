@@ -32,7 +32,9 @@
                 elbank-report-mode
                 elbank-overview-mode
                 slime-trace-dialog-mode
-                helpful-mode))
+                helpful-mode
+                ;; added
+                leetcode--problem-description-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-compilation))
               '(compilation-mode
                 grep-mode
@@ -143,7 +145,7 @@ With \\[universal-argument] call in next visible window."
 (defun nvp-link--dired-collect ())
 
 ;;; TODO: Markdown
-(nvp:decl markdown-next-link)
+(nvp:decl markdown-next-link markdown-link-at-pos)
 (defun nvp-link--markdown-collect ()
   (let (res)
     (nvp:with-restriction 'visible

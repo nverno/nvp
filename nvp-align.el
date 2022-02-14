@@ -93,6 +93,14 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;;
 ;; `align-exclude-rules-list'
 ;; `align-rules-list'
+;; 
+;; #<marker at 13440 in align.el>
+;; FIXME:
+;; Buggy rules:
+;; - exc-dq-string
+;;   - doesn't account for multiline strings
+;;   - is fooled by escaped quotes
+;; - exc-open-comment treats quoted comment starters as normal
 
 ;; Line continuation (EOL = '\') - modifies 'basic-line-continuation to:
 ;; - store modes in variable so it can be extended easily
@@ -100,18 +108,52 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 (defvar nvp-align-basic-lc-modes
   '(python-mode sh-mode makefile-mode dockerfile-mode))
 
-(cl-eval-when (load)
-  (setcdr (assq 'basic-line-continuation align-rules-list)
-          `((regexp . "\\(\\s-*\\)\\\\$")
-            (modes  . nvp-align-basic-lc-modes)
-            (valid  . ,(function (lambda () (not (nvp:ppss 'soc))))))))
+;; EOL comments
+(defvar nvp-align-eol-comment-modes
+  '(sh-mode makefile-mode))
+
+;; Add / modify default rules
+(setcdr (assq 'basic-line-continuation align-rules-list)
+        `((regexp . "\\(\\s-*\\)\\\\$")
+          (modes  . nvp-align-basic-lc-modes)
+          (valid  . ,(function (lambda () (not (nvp:ppss 'soc)))))))
+
+(unless (assq 'basic-eol-comments align-rules-list)
+  (push
+   (list 'basic-eol-comments 
+         (cons 'regexp
+               ;; not whitespace, escape char, or comment begin
+               (concat (nvp:regex-complement (?- ?\\ ?<))
+                       "\\(\\s-+\\)\\s<+.*$"))
+         '(modes . nvp-align-eol-comment-modes)
+         '(group . 1)
+         (cons 'valid
+               (function
+                (lambda ()
+                  (save-excursion
+                    (goto-char (match-beginning 1))
+                    (and (not (bolp))
+                         (not (nvp:ppss 'soc))))))))
+   align-rules-list))
+
+;; better make macro regexp:  allow _ in macro names and '?='
+(setf
+ (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
+ ;; careful not to mess with assignments in shell scripts
+ ;; ie. ignores aligning any assignments prefixed with tabs
+ (concat "^[ ]*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
+         "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
+
+;; -------------------------------------------------------------------
+;;; Display rules
 
 (defvar nvp-align--groups
   '(;; All predefined mode groupings
     align-dq-string-modes align-sq-string-modes align-open-comment-modes
     align-c++-modes align-perl-modes align-lisp-modes align-tex-modes
     ;; plus mine
-    nvp-align-basic-lc-modes))
+    nvp-align-basic-lc-modes
+    nvp-align-eol-comment-modes))
 
 ;; Collect align/exclude rules for MODE
 (defun nvp-align--mode-rules (&optional mode)
@@ -146,55 +188,6 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
         (princ group)
         (cl-prettyprint (symbol-value group)))
       (emacs-lisp-mode))))
-
-
-;; -------------------------------------------------------------------
-;;; Mode rules
-;; #<marker at 13440 in align.el>
-;; FIXME:
-;; Buggy rules:
-;; - exc-dq-string
-;;   - doesn't account for multiline strings
-;;   - is fooled by escaped quotes
-;; - exc-open-comment treats quoted comment starters as normal
-
-;; better make macro regexp:  allow _ in macro names and '?='
-(setf
- (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
- ;; careful not to mess with assignments in shell scripts
- ;; ie. ignores aligning any assignments prefixed with tabs
- (concat "^[ ]*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
-         "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
-
-;; sh
-
-;; makefile => align-open-comment-modes
-;; rules: open-comment, make-assignment, basic-line-continuation
-;; exclude: exc-open-comment
-;; setf (assoc 'make-assignment align-rules-list)
-;; (defun nvp-align-mode (mode)
-;;   (interactive (list (nvp:prefix 4 (intern (nvp-read-mode)) major-mode)))
-;;   ())
-
-;; FIXME: these rules can be useful for other modes: makefile, automake, etc.
-;; alignment rules to align '\' not in strings/comments and
-;; align end-of-line comments
-;; (defvar nvp-sh-align-rules-list
-;;   `((sh-line-continuation
-;;      (regexp . "\\(\\s-*\\)\\\\\\s-*$")
-;;      (modes  . '(sh-mode))              ; abc
-;;      (valid  . ,(function ; one two three
-;;                  (lambda () (save-excursion
-;;                          (not (sh-in-comment-or-string (point))))))))
-;;     (sh-eol-comments
-;;      (regexp . "[^ #\t\n\\\\]\\(\\s-+\\)#+.*$")
-;;      (group  . 1)
-;;      (modes  . '(sh-mode))
-;;      (valid  . ,(function
-;;                  (lambda () (save-excursion
-;;                          (goto-char (match-beginning 1))
-;;                          (and (not (bolp))
-;;                               (not (nth 3 (syntax-ppss)))))))))))
 
 (provide 'nvp-align)
 ;; Local Variables:

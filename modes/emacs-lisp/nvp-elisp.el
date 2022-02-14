@@ -33,6 +33,19 @@
     (defvar nvp-elisp-var-binding-regexp vars-re)))
 
 ;; -------------------------------------------------------------------
+;;; `lisp-data-mode'
+
+;; wrapper for company-complete in lisp-data-mode
+;; Note: lisp-data-mode is parent of emacs-lisp-mode so
+;; (put 'derived-parent-mode ...) results in infinite loop
+;; XXX: how to add-advice on local copy of function?
+(defun nvp-company-lisp-data (&rest args)
+  (interactive (list 'interactive))
+  (let* ((orig-fn (symbol-function 'company-elisp))
+         (major-mode 'emacs-lisp-mode))
+    (apply orig-fn args)))
+
+;; -------------------------------------------------------------------
 ;;; Things at point
 
 (defun nvp-elisp-bounds-of-cons ()

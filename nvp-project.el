@@ -41,20 +41,6 @@ Otherwise, look for version control directories, returing the longest path."
       (projectile-project-info)
     (message "Not in a known project.")))
 
-;;;###autoload(autoload 'nvp-projectile-rg "nvp-project")
-(rg-define-search nvp-projectile-rg
-  :query (read-from-minibuffer "Search: " (nvp:tap 'dwim))
-  :dir project
-  :format (not current-prefix-arg)
-  :files (concat
-          (mapconcat
-           #'identity
-           (--map (concat "--glob !" it)
-                  (append projectile-globally-ignored-files
-                          projectile-globally-ignored-directories))
-           " "))
-  :flags '("--type all"))
-
 (defun nvp-project-invalidate-cmds ()
   "Reset cached projectile project commands."
   (interactive)

@@ -27,16 +27,20 @@
   "Do BODY but catch \\='nvp-fallback. If result doesn't exist, then
 return its directory name."
   (declare (indent 1))
-  (nvp:with-syms (res)
-    `(progn
-       (let* ((nvp-exit nil)
-              (,res
-               ,(if root
-                    `(expand-file-name
-                      (catch 'nvp-fallback ,@body) ,root)
-                  `(catch 'nvp-fallback ,@body))))
-         (if (or (not ,root) (file-exists-p ,res)) ,res
-           (file-name-directory ,res))))))
+  (let ((handler (plist-get body :handler)))
+    (nvp:skip-keywords body)
+    (nvp:with-syms (res)
+      `(progn
+         (let* ((nvp-exit nil)
+                (,res
+                 ,(if root
+                      `(expand-file-name
+                        (catch 'nvp-fallback ,@body) ,root)
+                    `(catch 'nvp-fallback ,@body))))
+           ,(if handler
+                `(funcall ,handler ,res)
+              `(if (or (not ,root) (file-exists-p ,res)) ,res
+                 (file-name-directory ,res))))))))
 
 (defmacro nvp:read-default (default &rest body)
   (macroexp-let2 nil def default

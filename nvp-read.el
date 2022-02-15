@@ -47,6 +47,7 @@
   (or default (and (string-prefix-p nvp/info default-directory)
                    (setq default (ignore-errors (nvp:path 'bfs)))))
   (nvp:read-file-with-fallback (expand-file-name "org" nvp/info)
+    :handler (lambda (f) (expand-file-name f (expand-file-name "org" nvp/info)))
     (nvp-completing-read
       (nvp:prompt-default (or prompt "Info file: ") default)
       (directory-files (expand-file-name "org" nvp/info) nil "\.org")

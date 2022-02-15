@@ -28,7 +28,7 @@ Optional keywords:
     (nvp:skip-keywords body (no-recurse prefix-sep types))
     (unless no-recurse (setq types (cons 'headline (delq 'headline types))))
     (nvp:with-gensyms (sub-mapper)
-      `(save-restriction
+      `(save-excursion
          (letrec ((,sub-mapper
                    (lambda (it prefix)
                      (org-element-map it ',types
@@ -42,9 +42,10 @@ Optional keywords:
                                        (and prefix (concat prefix ,prefix-sep))
                                        (org-element-property :raw-value it)))))
                             (when (memq it-type ',types)
-                              (narrow-to-region
-                               (org-element-property :contents-begin it)
-                               (org-element-property :contents-end it))
+                              (save-restriction
+                                (narrow-to-region
+                                 (org-element-property :contents-begin it)
+                                 (org-element-property :contents-end it)))
                               ,@body))))
                        nil nil ',types))))
            (org-element-map (org-element-parse-buffer) 'headline

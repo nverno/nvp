@@ -70,9 +70,19 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; -------------------------------------------------------------------
 ;;; Normalize macro arguments
 
-(defmacro nvp:skip-keywords (else)
-  "Skip past any keywords in ELSE."
-  `(while (keywordp (car ,else)) (setq ,else (cddr ,else))))
+(defmacro nvp:skip-keywords (body &optional collect)
+  "Skip past any keywords in BODY. Optionally, setq and keyword-values
+found in COLLECT. A var in COLLECT is assigned a value if there is a keyword
+named \\=':var."
+  `(while (keywordp (car ,body))
+     ,@(when collect
+         `((cond
+            ,@(cl-loop
+               for var in collect
+               collect `((eq ',(intern (concat ":" (symbol-name var)))
+                             (car ,body))
+                         (setq ,var (cadr ,body)))))))
+     (setq ,body (cddr ,body))))
 
 (defsubst nvp:arglist-remove-kwargs (args kwargs)
   "Return keyword arguments ARGS from KWARGS."

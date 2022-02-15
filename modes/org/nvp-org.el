@@ -61,12 +61,14 @@ Return cons of \\='(name                           . raw-link)."
         res)
     (with-current-buffer buf
       (nvp:with-org-sections headline-re
-        (org-element-map it 'link
-          (lambda (link)
-            (when (or (null type)
-                      (string-match-p type (nvp:org-property :type link)))
-              (push (list (nvp:org-link-name link) 'org-link link)
-                    res))))))
+        :types (link)
+        (when (or (null type)
+                  (string-match-p type (org-element-property :type it)))
+          (push (list (concat
+                       (if (/= 0 (length prefix)) (concat prefix "/"))
+                       (nvp:org-link-name it))
+                      'org-link it)
+                res))))
     (nreverse res)))
 
 ;; Link format:

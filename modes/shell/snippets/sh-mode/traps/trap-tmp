@@ -2,8 +2,9 @@
 # name: traptmp
 # key: traptmp
 # --
-trap 'exit 1' HUP INT PIPE TERM
-trap 'exit_status=$?;
-[[ -d "\$${1:tmpdir}" ]] && rm -rf \$$1; exit $exit_status' EXIT
-
+\$DEBUG || {
+    trap 'exit 1' HUP INT PIPE TERM
+    trap 'exit_status=$?;
+    [[ -d "\$${1:tmpdir}" ]] && rm -rf \$$1; exit $exit_status' EXIT
+}
 $1=\$(_tempdir "${2:prefix}")

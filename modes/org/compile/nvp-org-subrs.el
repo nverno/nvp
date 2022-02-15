@@ -5,12 +5,6 @@
 (require 'nvp-macro)
 (require 'org-element)
 
-(define-inline nvp:org-property (property element)
-  (inline-quote 
-   ,(if (stringp element)
-        (inline-quote (get-text-property 0 ,property ,element))
-      (inline-quote (plist-get (nth 1 ,element) ,property)))))
-
 ;; see `org-element-link-parser' for link structure:
 ;; links are list where car is a `link' and cdr is plist
 (defsubst nvp:org-link-name (link)
@@ -19,21 +13,46 @@
 
 (defmacro nvp:with-org-sections (headline-re &rest body)
   "Execute BODY in narrowed regions under headlines matching HEADLINE-RE.
-IT is bound to parse tree in BODY."
+\\='it is bound to parse tree in BODY, \\='it-type is bound the element
+ type, and \\='prefix is bound to string of headings under which \\='it
+ appears.
+
+Optional keywords:
+\\='types         types to match when recursing under matching headlines
+                  defaults to matching headings under top-level matches
+\\=':prefix-sep   default \"/\", separates prefix
+\\='no-recurse    don't recurse under matching headlines"
   (declare (indent 1))
   (require 'org-element)
-  (nvp:with-gensyms (tree)
-    `(save-restriction
-       (let ((,tree (org-element-parse-buffer)))
-         (nreverse
-          (org-element-map ,tree 'headline
-            (lambda (it)
-              (when (string-match-p
-                     ,headline-re (nvp:org-property :raw-value it))
-                (narrow-to-region
-                 (nvp:org-property :contents-begin it)
-                 (nvp:org-property :contents-end it))
-                ,@body))))))))
+  (let (no-recurse (prefix-sep "/") types)
+    (nvp:skip-keywords body (no-recurse prefix-sep types))
+    (unless no-recurse (setq types (cons 'headline (delq 'headline types))))
+    (nvp:with-gensyms (sub-mapper)
+      `(save-restriction
+         (letrec ((,sub-mapper
+                   (lambda (it prefix)
+                     (org-element-map it ',types
+                       (lambda (it)
+                         (let ((it-type (org-element-type it)))
+                           (,@(if no-recurse '(progn)
+                                `(if (eq it-type 'headline)
+                                     (funcall
+                                      ,sub-mapper (org-element-contents it)
+                                      (concat
+                                       (and prefix (concat prefix ,prefix-sep))
+                                       (org-element-property :raw-value it)))))
+                            (when (memq it-type ',types)
+                              (narrow-to-region
+                               (org-element-property :contents-begin it)
+                               (org-element-property :contents-end it))
+                              ,@body))))
+                       nil nil ',types))))
+           (org-element-map (org-element-parse-buffer) 'headline
+             (lambda (it)
+               (when (string-match-p ,headline-re
+                                     (org-element-property :raw-value it))
+                 (funcall ,sub-mapper (org-element-contents it) nil)))
+             nil nil org-element-all-elements))))))
 
 (provide 'nvp-org-subrs)
 ;; Local Variables:

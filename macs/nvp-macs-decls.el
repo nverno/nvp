@@ -128,6 +128,7 @@
        nvp-pkg-directory-dwim
        ;; project
        nvp-project-root
+       nvp-project-parent
        ;; nvp-cycle.el
        nvp-cycle
        ;; reading

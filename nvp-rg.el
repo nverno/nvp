@@ -34,30 +34,17 @@
                     'nvp-rg-match-grouped-filename-xc 1 2))
         compilation-error-regexp-alist-alist))
 
-;; (defun nvp-rg-toplevel ()
-  
-;;   )
-
-;; search in toplevel project
-;; (rg-define-search nvp-rg-toplevel
-;;   :query (read-from-minibuffer "Search toplevel: " (nvp:tap 'dwim))
-;;   :literal (not current-prefix-arg)
-;;   :dir 
-;;   )
+(defun nvp-rg-get-project ()
+  (pcase current-prefix-arg
+    ('nil (projectile-acquire-root))
+    (`(4) (nvp-project-parent))
+    (_ (nvp-completing-read "Project: " (projectile-relevant-known-projects)))))
 
 ;;;###autoload(autoload 'nvp-projectile-rg "nvp-project")
 (rg-define-search nvp-projectile-rg
   :query (read-from-minibuffer "Search: " (nvp:tap 'dwim))
-  :dir project
-  :format (not current-prefix-arg)
-  :files (concat
-          (mapconcat
-           #'identity
-           (--map (concat "--glob !" it)
-                  (append projectile-globally-ignored-files
-                          projectile-globally-ignored-directories))
-           " "))
-  :flags '("--type all"))
+  :dir (nvp-rg-get-project)
+  :files "everything")
 
 ;; Useful function to search the zipped source 
 ;; https://github.com/dajva/rg.el/issues/69#event-3107793694

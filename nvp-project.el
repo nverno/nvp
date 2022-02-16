@@ -7,15 +7,10 @@
 ;; - projectile.el
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (unless (require 'rg nil t)
-    ;; handle case if rg.el isn't downloaded
-    (defmacro rg-define-search (&rest _args))))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'projectile)
-(nvp:decls :f (rg-project-root rg-run))
-(nvp:auto "rg" 'rg-project-root)
+(nvp:decls)
 (nvp:auto "vc-git" 'vc-git-root)
 (nvp:auto "vc-hg" 'vc-hg-root)
 (nvp:auto "vc-svn" 'vc-svn-root)
@@ -31,6 +26,19 @@ Otherwise, look for version control directories, returing the longest path."
          (vc-git-root path)
          (vc-svn-root path)
          (vc-hg-root path)))))
+
+;;;###autoload
+(defun nvp-project-parent (&optional maxdepth directory)
+  "Return project root containing current project, or MAXDEPTH levels up."
+  (cl-assert (or (null maxdepth) (>= maxdepth 0)))
+  (or maxdepth (setq maxdepth 100))
+  (let ((default-directory (or directory default-directory)) res cur)
+    (while (and (or (null maxdepth) (>= maxdepth 0))
+                (setq cur (funcall nvp-project-root-function)))
+      (setq res cur
+            default-directory (nvp:parent cur)
+            maxdepth (1- maxdepth)))
+    res))
 
 ;;; TODO: display more info: project's runner commands
 ;;;###autoload

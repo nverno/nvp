@@ -240,6 +240,11 @@ eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
 (defsubst nvp:fn (&optional path)
   (file-name-nondirectory (directory-file-name (or path (buffer-file-name)))))
 
+(defsubst nvp:parent (&optional path)
+  (file-name-directory
+   (directory-file-name
+    (or (and path (expand-file-name path)) default-directory))))
+
 ;; Locate first name in NAMES using `locate-dominating-file' starting from FILE.
 ;; I think projectile has a number of functions doing this type of stuff
 (defsubst nvp:locate-first-dominating (file names)

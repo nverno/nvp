@@ -47,6 +47,27 @@
 
 
 ;;; I/O
+(defun nvp-comint-redirect-to-string (command)
+  (let* ((proc (nvp:buffer-process))
+         (buf (generate-new-buffer "*nvp*" t))
+         (comint-redirect-filter-functions '(xterm-color-filter)))
+    (comint-redirect-send-command command buf nil t)
+    (with-current-buffer (process-buffer proc)
+      (while (and (null comint-redirect-completed) ;ignore output
+                  (accept-process-output proc 1))))
+    (comint-redirect-cleanup)
+    (with-current-buffer buf
+      ;; drop the last line from 2-line prompt
+      (goto-char (point-max))
+      (forward-line -1)
+      (end-of-line)
+      (prog1
+          (buffer-substring-no-properties
+           (point-min)
+           (max 1 (1- (point-at-bol))))
+        (and (buffer-name buf)
+             (kill-buffer buf))))))
+
 ;; evaluate STRING in PROC, but discard output silently
 ;; TODO: check if this would work better
 ;; https://github.com/hylang/hy-mode/blob/8699b744c03e0399c049757b7819d69768cac3bc/hy-shell.el#L156

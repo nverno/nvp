@@ -24,8 +24,6 @@
                     ,(expand-file-name "bin" (getenv "CYGWIN_HOME")))
        nconc (mapcar (lambda (x) (expand-file-name x var))
                      '("sh.exe" "bash.exe" "fish.exe" "zsh.exe")))))
-
-;;; Commands
 
 (defun nvp-shell--get-input (&optional add-history)
   (let ((cmd (funcall comint-get-old-input)))
@@ -37,6 +35,22 @@
       (setq comint-input-ring-index nil)
       cmd)))
 
+;;; z directory tracking
+(defun nvp-shell-z-resync ()
+  (advice-remove #'shell-directory-tracker #'ignore)
+  (let ((dir (nvp-comint-redirect-to-string "command dirs")))
+    (when (file-exists-p dir)
+      (shell-directory-tracker dir)
+      (setq default-directory dir))))
+
+(defun nvp-shell-z-filter (str)
+  (when (string-match-p "^\\s-*z\\b" str)
+    (advice-add #'shell-directory-tracker :override #'ignore)
+    (run-with-timer 0.1 nil #'nvp-shell-z-resync)))
+
+
+;; -------------------------------------------------------------------
+;;; Commands 
 (defun nvp-shell-run-external ()
   "Run input on current line in external shell (gnome)"
   (interactive)

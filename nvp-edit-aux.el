@@ -174,7 +174,8 @@ This is useful, e.g, for use with `visual-line-mode'."
   (let ((fill-column (or column (nvp:toggled-if fill-column most-positive-fixnum))))
     (deactivate-mark t)
     (call-interactively
-     (or nvp-fill-paragraph-function fill-paragraph-function) 'fill-paragraph))
+     (or nvp-fill-paragraph-function fill-paragraph-function #'fill-paragraph)
+     'fill-paragraph))
   (nvp-repeat-command))
 
 (provide 'nvp-edit-aux)

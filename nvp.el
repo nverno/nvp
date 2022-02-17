@@ -304,7 +304,7 @@ or nil.")
   (let ((syntax (parse-partial-sexp (point-min) (point))))
     (cond
      ((nvp:ppss 'str syntax)
-      (nvp-newline-dwim-string arg syntax))
+      (nvp-newline-dwim-string syntax arg))
      ((nvp:ppss 'cmt syntax)
       (nvp-newline-dwim-comment syntax arg))
      ;; default to adding newline between paren delimiters

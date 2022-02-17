@@ -323,7 +323,7 @@ sourced files."
                  (cond
                   ((and use-comp flag)
                    (list (bash-completion--completion-table-with-cache
-                          (lambda (_) (bash-completion-comm comp proc)))))
+                          comp proc)))
                   (var
                    (list (completion-table-merge
                           sh-comp--local-variables-completion-table
@@ -338,7 +338,7 @@ sourced files."
                           (when use-comp
                            (condition-case nil
                                (bash-completion--completion-table-with-cache
-                                (lambda (_) (bash-completion-comm comp proc)))
+                                comp proc)
                              (error (prog1 nil (bash-completion-reset)))))
                           (completion-table-dynamic
                            (lambda (_string) (sh-comp-candidates 'functions))))

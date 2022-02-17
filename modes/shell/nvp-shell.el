@@ -108,6 +108,18 @@ If none found, return list of all terminal buffers."
      return pbuff
      else collect pbuff))
 
+(defun nvp-shell-in-project-maybe (buffers)
+  "Return buffer in current project if there is one in BUFFERS."
+  (if (not (listp buffers)) buffers
+    (or (-when-let (root (and (bound-and-true-p projectile-mode)
+                              (projectile-project-root)))
+          (cl-some (lambda (buf)
+                     (--> (projectile-project-root
+                           (buffer-local-value 'default-directory buf))
+                          (and (string= it root) buf)))
+                   buffers))
+        (car buffers))))
+
 ;;;###autoload
 (defun nvp-shell (arg &optional buffer shell-name proc-name)
   "Launch a shell using SHELL-NAME or env var SHELL, or bash if remote.
@@ -119,7 +131,7 @@ specified, prefer shell in current directory if available."
          (default-name (if buffer (buffer-name buffer) "*shell*"))
          ;; explicit-shell-file-name
          (shell-file-name (if remote "/bin/bash"
-                                     (or shell-name (getenv "SHELL"))))
+                            (or shell-name (getenv "SHELL"))))
          ;; always pop the shell in other window
          (display-buffer-overriding-action
           '(display-buffer-pop-up-window ((inhibit-same-window . t)))))
@@ -127,20 +139,20 @@ specified, prefer shell in current directory if available."
       (if remote
           (shell (format "*shell:%s*"
                          (nth 2 (tramp-dissect-file-name default-directory))))
-        ;; want a terminal in the current directory
-        (if arg
-            (let* ((terms (nvp-shell-in-dir-maybe nil proc-name))
-                   (buffname (or (and terms (not (listp terms)) (buffer-name terms))
-                                 ;; didn't find one -- create unique name
-                                 (generate-new-buffer-name default-name))))
-              ;; with double prefix, force new shell in current directory
-              (nvp:prefix 16 (if (buffer-live-p (get-buffer buffname))
-                                 (shell (generate-new-buffer-name default-name))
-                               (shell buffname))
-                (shell buffname)))
-          ;; otherwise, any terminal will do, but prefer current directory
-          (let ((terms (nvp-shell-in-dir-maybe nil proc-name)))
-            (shell (or (and (listp terms) (car terms)) terms))))))))
+        ;; want a terminal in the current directory or project
+        (let ((terms (nvp-shell-in-dir-maybe nil proc-name)))
+          (if arg
+              (let ((buffname (or (and terms (not (listp terms)) (buffer-name terms))
+                                  ;; didn't find one -- create unique name
+                                  (generate-new-buffer-name default-name))))
+                ;; with double prefix, force new shell in current directory
+                (nvp:prefix 16 (if (buffer-live-p (get-buffer buffname))
+                                   (shell (generate-new-buffer-name default-name))
+                                 (shell buffname))
+                            (shell buffname)))
+            ;; otherwise, any terminal will do, but prefer current directory
+            ;; or project
+            (shell (nvp-shell-in-project-maybe terms))))))))
 
 ;;;###autoload
 (defun nvp-shell-launch-terminal ()

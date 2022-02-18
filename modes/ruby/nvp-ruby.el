@@ -180,10 +180,5 @@ See the variable `align-rules-list' for more details.")
 (defun nvp-rspec-font-lock ()
   (font-lock-add-keywords 'ruby-mode nvp-rspec-font-lock-keywords))
 
-;; -------------------------------------------------------------------
-;;; Setup
-
-(add-to-list 'auto-mode-alist '("\\.json.builder\\'" . ruby-mode))
-
 (provide 'nvp-ruby)
 ;;; nvp-ruby.el ends here

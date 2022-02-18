@@ -7,7 +7,8 @@
 (require 'nvp-shell-common)
 (require 'nvp)
 (nvp:req 'nvp-shell 'subrs)
-(nvp:decls :f (tramp-dissect-file-name))
+(nvp:decls :f (tramp-dissect-file-name
+               nvp-comint-redirect-to-string shell-directory-tracker))
 (nvp:auto "f" f-same-p)
 
 ;; update default-directory on remote login
@@ -43,7 +44,7 @@
       (shell-directory-tracker dir)
       (setq default-directory dir))))
 
-(defun nvp-shell-z-filter (str)
+(defun nvp-shell-z-tracker (str)
   (when (string-match-p "^\\s-*z\\b" str)
     (advice-add #'shell-directory-tracker :override #'ignore)
     (run-with-timer 0.1 nil #'nvp-shell-z-resync)))

@@ -123,7 +123,7 @@
 ;;; Toggle b/w JsX <=> JS
 ;; JsX options (3/7/20): rjsx (better), or js-jsx-mode w/ js2-minor-mode
 (eval-when-compile
-  (defsubst nvp-js-switch-mode (new-mode)
+  (defsubst nvp:js-switch-mode (new-mode)
     (kill-all-local-variables)
     (funcall-interactively new-mode)))
 
@@ -133,13 +133,13 @@
   (with-demoted-errors "Toggle modes: %S"
     (pcase (or old-mode major-mode)
       ('rjsx-mode                      ; => js-jsx-mode w/ js2-minor-mode
-       (nvp-js-switch-mode 'js-mode)
+       (nvp:js-switch-mode 'js-mode)
        (nvp-js-jsx-hook))
-      ('js2-mode (nvp-js-switch-mode 'rjsx-mode))
+      ('js2-mode (nvp:js-switch-mode 'rjsx-mode))
       ((or 'js-mode 'js-jsx-mode)
        (when (bound-and-true-p js2-minor-mode)
          (js2-minor-mode -1))
-       (nvp-js-switch-mode 'rjsx-mode))
+       (nvp:js-switch-mode 'rjsx-mode))
       (_ (user-error "%S not matched against any JsX modes" major-mode)))))
 
 ;; -------------------------------------------------------------------
@@ -195,24 +195,19 @@
   (httpd-start))
 
 ;; -------------------------------------------------------------------
-;;; Specs
+;;; Setup
 
-(defconst js-spec-global-externs
-  '("it" "describe" "expect" "beforeEach" "afterEach" "beforeAll" "afterAll"
-    "spyOn"))
+;; from spacemacs
+(defun nvp-js-jsx-file-p ()
+  "Enable rsjx mode using `magic-mode-alist'."
+  (when buffer-file-name
+    (and (member (file-name-extension buffer-file-name) '("js" "jsx"))
+         (re-search-forward
+          "\\(^\\s-*import React\\|\\( from \\|require(\\)[\"']react\\)"
+          magic-mode-regexp-match-limit t)
+         (not (nvp:ppss 'soc nil (match-beginning 1))))))
 
-;;;###autoload
-(define-minor-mode js-spec-mode
-  "Minor mode for js specs."
-  :lighter " JSpec"
-  :keymap nil
-  (if js-spec-mode
-      (progn
-        (yas-activate-extra-mode 'js-spec-mode)
-        (make-local-variable 'js2-global-externs)
-        (cl-callf append js2-global-externs js-spec-global-externs))
-    (when (boundp 'yas--extra-modes)
-      (setq yas--extra-modes (delq 'js-spec-mode yas-extra--modes)))))
+(add-to-list 'magic-mode-alist '(nvp-js-jsx-file-p . rjsx-mode))
 
 (provide 'nvp-js)
 ;; Local Variables:

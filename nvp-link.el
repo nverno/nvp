@@ -59,7 +59,8 @@
 
 (defvar nvp-ace-link-minor-mode-actions
   '((compilation-shell-minor-mode . ace-link-compilation)
-    (nvp-mark-minor-mode          . nvp-link-mark))
+    (nvp-mark-minor-mode          . nvp-link-mark)
+    (lsp-mode                     . nvp-link-lsp))
   "Mapping of minor modes to ace-link actions.")
 
 (defun nvp-ace-link-action (&optional buffer)
@@ -80,6 +81,14 @@
                    for b in (window-edges y)
                    while (= a b)
                    finally return (< a b)))))
+
+;; collect overlays in window that have PROP
+(defun nvp-link--overlay-collect (prop)
+  (let (res)
+    (dolist (overlay (overlays-in (window-start) (window-end)))
+      (if (overlay-get overlay prop)
+          (push (overlay-start overlay) res)))
+    (nreverse res)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -176,6 +185,16 @@ With \\[universal-argument] call in next visible window."
                (--map (cdr it) (nvp-link--shell-collect))
                (avy--style-fn avy-style)))))
     (avy-action-yank-line pt)))
+
+;;; Lsp
+(defun nvp-link-lsp ()
+  (interactive)
+  (let ((pt (avy-with nvp-link-lsp
+              (avy-process
+               (nvp-link--overlay-collect 'lsp-link)
+               (avy--style-fn avy-style)))))
+    (goto-char (1+ pt))
+    (push-button pt)))
 
 ;; use actual links in agenda buffer - the default is just the same
 ;; as `avy-goto-link'

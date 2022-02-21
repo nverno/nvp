@@ -171,84 +171,86 @@
 ;;;###autoload
 (cl-defmacro nvp-install-on-demand
     (&key libs optional git bit env env! script sudo choco msys
-          cygwin depends)
+          path cygwin depends)
   (declare (indent defun) (debug t))
   (require 'nvp-macro)
-  (when load-file-name
-    (let ((file (file-name-sans-extension load-file-name)))
-      `(eval-when-compile
-         (unless
-             (file-exists-p
-              (expand-file-name (concat ,file ".elc")))
-           ;; process counter
-           (setq nvp-install--total-proc 0)
-           ;;--- Dependencies ----------------------------------------
-           (cl-loop for dep in ,depends
-              do (nvp-install-mode dep))
-           ;;--- Packages --------------------------------------------
-           (cl-loop for pkg in ,libs
-              if (and (package-installed-p (intern pkg))
-                      (locate-library pkg))
-              do (nvp-log "%s already installed" nil pkg)
-              else do (nvp-log "Installing %s" nil pkg)
-                (package-install (intern pkg) t))
-           (cl-loop for pkg in ,optional
-              do (message "Package %s" pkg)
-              if (and (not (and (package-installed-p (intern pkg))
-                                (locate-library pkg)))
-                      (y-or-n-p
-                       (format "Install optional package: %s? " pkg)))
-              do (package-install (intern pkg) t))
-           ;;--- Git Installs ----------------------------------------
-           ;; github / bitbucket
-           (setq nvp-install-pending-dirs (append ,git ,bit))
-           (cl-loop for pkg in ,git
-              do (let ((proc (nvp-install-git pkg)))
-                   (nvp-install-execute-process proc ,file)))
-           (cl-loop for pkg in ,bit
-              do (let ((proc
-                        (nvp-install-git
-                         pkg "https://bitbucket.org")))
-                   (nvp-install-execute-process proc ,file)))
-           ;;--- Environment ----------------------------------------
-           ;; Permanent
-           (cl-loop for (var val exec clobber) in ,env!
-              do
-                (nvp-log "Setting %s to %s%s" nil var val
-                         (if clobber " (clobbering)"))
-                (nvp-env-setenv! var val exec clobber))
-           ;; FIXME: handle more than just PATH
-           ;; Just adds to PATH currently 
-           (cl-loop for dir in ,env
-              do
-                (nvp-log "Adding %s to PATH" dir)
-                (nvp-env-path-add dir))
-           ;;--- Scripts ---------------------------------------------
-           (cl-loop for (prog args) in ,script
-              do
-                (nvp-log "Running %s %S" nil prog args)
-                (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
-                  (nvp-install-execute-process proc ,file)))
-           (nvp:with-gnu
-             ;; sudo commands
-             (cl-loop for (action cmd) in ,sudo
-                do (nvp-log "Unsupported :install")))
-           (nvp:with-w32
-             ;; chocolatey
-             (cl-loop for pkg in ,choco
-                ;; FIXME: can't have process sentinel with this
-                do (w32-shell-execute
-                    "runas" "cmd.exe" (format " /c cinst -y %s" pkg)))
-             ;; FIXME: msys / cygwin
-             (cl-loop for pkg in ,msys
-                do (message "FIXME"))
-             (cl-loop for pkg in ,cygwin
-                do (message "FIXME")))
-           ;;--- Compile ---------------------------------------------
-           ;; If not processes were spawned, then do the compile
-           ;; here since no sentinels will get called
-           (when (zerop nvp-install--total-proc)
-             (nvp-install-compile ,file)))))))
+  `(progn
+     ,(if path `(add-to-list 'load-path ,path))
+     ,(when load-file-name
+       (let ((file (file-name-sans-extension load-file-name)))
+         `(eval-when-compile
+            (unless
+                (file-exists-p
+                 (expand-file-name (concat ,file ".elc")))
+              ;; process counter
+              (setq nvp-install--total-proc 0)
+              ;;--- Dependencies ----------------------------------------
+              (cl-loop for dep in ,depends
+                       do (nvp-install-mode dep))
+              ;;--- Packages --------------------------------------------
+              (cl-loop for pkg in ,libs
+                       if (and (package-installed-p (intern pkg))
+                               (locate-library pkg))
+                       do (nvp-log "%s already installed" nil pkg)
+                       else do (nvp-log "Installing %s" nil pkg)
+                       (package-install (intern pkg) t))
+              (cl-loop for pkg in ,optional
+                       do (message "Package %s" pkg)
+                       if (and (not (and (package-installed-p (intern pkg))
+                                         (locate-library pkg)))
+                               (y-or-n-p
+                                (format "Install optional package: %s? " pkg)))
+                       do (package-install (intern pkg) t))
+              ;;--- Git Installs ----------------------------------------
+              ;; github / bitbucket
+              (setq nvp-install-pending-dirs (append ,git ,bit))
+              (cl-loop for pkg in ,git
+                       do (let ((proc (nvp-install-git pkg)))
+                            (nvp-install-execute-process proc ,file)))
+              (cl-loop for pkg in ,bit
+                       do (let ((proc
+                                 (nvp-install-git
+                                  pkg "https://bitbucket.org")))
+                            (nvp-install-execute-process proc ,file)))
+              ;;--- Environment ----------------------------------------
+              ;; Permanent
+              (cl-loop for (var val exec clobber) in ,env!
+                       do
+                       (nvp-log "Setting %s to %s%s" nil var val
+                                (if clobber " (clobbering)"))
+                       (nvp-env-setenv! var val exec clobber))
+              ;; FIXME: handle more than just PATH
+              ;; Just adds to PATH currently 
+              (cl-loop for dir in ,env
+                       do
+                       (nvp-log "Adding %s to PATH" dir)
+                       (nvp-env-path-add dir))
+              ;;--- Scripts ---------------------------------------------
+              (cl-loop for (prog args) in ,script
+                       do
+                       (nvp-log "Running %s %S" nil prog args)
+                       (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
+                         (nvp-install-execute-process proc ,file)))
+              (nvp:with-gnu
+                ;; sudo commands
+                (cl-loop for (action cmd) in ,sudo
+                         do (nvp-log "Unsupported :install")))
+              (nvp:with-w32
+                ;; chocolatey
+                (cl-loop for pkg in ,choco
+                         ;; FIXME: can't have process sentinel with this
+                         do (w32-shell-execute
+                             "runas" "cmd.exe" (format " /c cinst -y %s" pkg)))
+                ;; FIXME: msys / cygwin
+                (cl-loop for pkg in ,msys
+                         do (message "FIXME"))
+                (cl-loop for pkg in ,cygwin
+                         do (message "FIXME")))
+              ;;--- Compile ---------------------------------------------
+              ;; If not processes were spawned, then do the compile
+              ;; here since no sentinels will get called
+              (when (zerop nvp-install--total-proc)
+                (nvp-install-compile ,file))))))))
 
 ;;;###autoload
 (defun nvp-install-mode (mode)

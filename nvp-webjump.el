@@ -64,7 +64,9 @@ try to find links there."
                  ((listp expr)
                   (pcase (car expr)
                     ('multiple
-                     (-let (((url . args) (apply #'nvp-webjump-multiple (cdr expr))))
+                     (-let (((url . args)
+                             (funcall #'nvp-webjump-multiple
+                                      (cadr expr) (cddr expr))))
                        (setq type 'multiple)
                        (push args extra-args)
                        url))

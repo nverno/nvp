@@ -7,6 +7,9 @@
 (require 'avy)
 (nvp:decls :v (org-link-any-re) :f (ace-link ace-link-org))
 
+(defvar nvp-link-default-imenu t
+  "Jump to imenu in visibile window when no other handlers.")
+
 ;; map major-modes to link actions
 (defvar nvp-ace-link-major-mode-actions
   `((Info-mode                   . ace-link-info)
@@ -90,6 +93,14 @@
           (push (overlay-start overlay) res)))
     (nreverse res)))
 
+(defun nvp-link-maybe-imenu ()
+  (and nvp-link-default-imenu
+       (or (bound-and-true-p imenu--index-alist)
+           (and (fboundp 'imenu--make-index-alist)
+                (setq imenu--index-alist
+                      (save-excursion
+                        (funcall imenu-create-index-function)))))))
+
 ;; -------------------------------------------------------------------
 ;;; Commands
 
@@ -100,7 +111,9 @@
       (funcall action)
     (unless (and ace-link-fallback-function
                  (funcall ace-link-fallback-function))
-      (error "%S isn't supported" major-mode))))
+      (if (nvp-link-maybe-imenu)
+          (nvp-link-imenu)
+        (error "%S isn't supported" major-mode)))))
 
 ;;;###autoload
 (defun nvp-goto-link (&optional arg)
@@ -126,6 +139,21 @@ With \\[universal-argument] call in next visible window."
                        (call-interactively #'nvp-ace-link)))))))
           (call-interactively #'nvp-ace-link))))))
 
+;; -------------------------------------------------------------------
+;;; Link Extensions
+
+(eval-when-compile
+  (defmacro nvp:define-link (name collector &rest action)
+    "Wrap `avy-with', bind \\='it to return of COLLECTOR in ACTION."
+    (declare (indent 2) (debug t))
+    `(defun ,name ()
+       (interactive)
+       (let ((it (avy-with ,name
+                   (avy-process
+                    ,collector
+                    (avy--style-fn avy-style)))))
+         ,@action))))
+
 ;;; Mark
 (nvp:decl nvp-mark-goto-marker-at-point)
 (defvar nvp-mark--regex)
@@ -141,14 +169,10 @@ With \\[universal-argument] call in next visible window."
               res)))
     (nreverse res)))
 
-(defun nvp-link-mark ()
-  (interactive)
-  (let ((pt (avy-with nvp-link-mark
-              (avy-process
-               (--map (cdr it) (nvp-link--mark-collect))
-               (avy--style-fn avy-style)))))
-    (when pt
-      (funcall #'nvp-mark-goto-marker-at-point))))
+(nvp:define-link nvp-link-mark
+    (--map (cdr it) (nvp-link--mark-collect))
+  (when it
+    (funcall #'nvp-mark-goto-marker-at-point)))
 
 ;;; TODO: dired
 (defun nvp-link--dired-collect ())
@@ -178,38 +202,32 @@ With \\[universal-argument] call in next visible window."
                 res))))
     (nreverse res)))
 
-(defun nvp-link-shell ()
-  (interactive)
-  (let ((pt (avy-with nvp-link-shell
-              (avy-process
-               (--map (cdr it) (nvp-link--shell-collect))
-               (avy--style-fn avy-style)))))
-    (avy-action-yank-line pt)))
+(nvp:define-link nvp-link-shell
+    (--map (cdr it) (nvp-link--shell-collect))
+  (avy-action-yank-line it))
 
 ;;; Lsp
-(defun nvp-link-lsp ()
-  (interactive)
-  (let ((pt (avy-with nvp-link-lsp
-              (avy-process
-               (nvp-link--overlay-collect 'lsp-link)
-               (avy--style-fn avy-style)))))
-    (goto-char (1+ pt))
-    (push-button pt)))
+(nvp:define-link nvp-link-lsp
+    (nvp-link--overlay-collect 'lsp-link)
+  (goto-char (1+ it))
+  (push-button it))
+
+;;; Imenu
+(nvp:auto "nvp-imenu" 'nvp-imenu-cleaned-alist)
+(defun nvp-link--imenu-collect ()
+  (when (bound-and-true-p imenu--index-alist)
+    (let ((beg (window-start))
+          (end (window-end)))
+      (--keep (let ((pos (marker-position (cdr it))))
+                (and (>= pos beg) (<= pos end) pos))
+              (nvp-imenu-cleaned-alist)))))
+
+(nvp:define-link nvp-link-imenu
+    (nvp-link--imenu-collect)
+  (goto-char it))
 
 ;; use actual links in agenda buffer - the default is just the same
-;; as `avy-goto-link'
-;; (defun nvp-link--org-agenda-collect ()
-;;   (let (res)
-;;     (save-excursion
-;;       (nvp:with-restriction 'visible
-;;         (goto-char (point-min))
-;;         (while (re-search-forward org-link-any-re nil t)
-;;           (push (cons (buffer-substring-no-properties
-;;                        (match-beginning 0) (match-end 0))
-;;                       (match-beginning 0))
-;;                 res))))
-;;     (nreverse res)))
-
+;; as `avy-goto-line'
 (with-eval-after-load 'ace-link
   (advice-add 'ace-link-org-agenda :override #'ace-link-org))
 

@@ -42,7 +42,7 @@
   (let ((dir (nvp-comint-redirect-to-string "command dirs")))
     (when (file-exists-p dir)
       (shell-directory-tracker dir)
-      (setq default-directory dir))))
+      (setq default-directory (file-name-as-directory dir)))))
 
 (defun nvp-shell-z-tracker (str)
   (when (string-match-p "^\\s-*z\\b" str)

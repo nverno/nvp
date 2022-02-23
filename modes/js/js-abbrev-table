@@ -27,3 +27,8 @@
   '()
   "Typescript-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table js-mode-abbrev-table))
+
+(define-abbrev-table 'typescript-tsx-mode-abbrev-table
+  '()
+  "Typescript-Tsx-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

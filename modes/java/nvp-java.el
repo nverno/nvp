@@ -16,12 +16,12 @@
 
 ;; Determine if point is in javadoc comment but not in inline tag,
 ;; unless OR-INLINE is non-nil
-;; (defun nvp-java-in-javadoc (&optional or-inline)
-;;   (let* ((face (get-text-property (point) 'face))
-;;          (fn (if (symbolp face) #'eq #'memq)))
-;;     (and (funcall fn 'font-lock-doc-face face)
-;;          (or or-inline
-;;              (not (funcall fn 'font-lock-doc-markup-face face))))))
+(defun nvp-java-in-javadoc (&optional or-inline)
+  (let* ((face (get-text-property (point) 'face))
+         (fn (if (symbolp face) #'eq #'memq)))
+    (and (funcall fn 'font-lock-doc-face face)
+         (or or-inline
+             (not (funcall fn 'font-lock-doc-markup-face face))))))
 
 ;; FIXME: remove or fix -- these can probably be replaced with eclim
 (defmacro nvp-java-method-args ()

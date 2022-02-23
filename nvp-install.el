@@ -87,17 +87,21 @@
 
 ;;--- Git installs ---------------------------------------------------
 
+(defsubst nvp-install-normalize-pkgname (pkg)
+  (string-remove-suffix ".el" pkg))
+
 ;; Install git repo into site-lisp, default to github
 (defun nvp-install-git (repo &optional root)
   (let* ((git-uri (format "%s/%s" (or root "git@github.com:") repo))
-         (pkg (car (last (split-string repo "/"))))
+         (pkg (nvp-install-normalize-pkgname
+               (car (last (split-string repo "/")))))
          (default-directory nvp/site)
          (buff (get-buffer-create "*nvp-install*")))
     (if (file-exists-p pkg)
         (progn
           (cd pkg)
           (start-process pkg buff "git" "pull"))
-      (start-process pkg buff "git" "clone" git-uri))))
+      (start-process pkg buff "git" "clone" git-uri pkg))))
 
 ;; keep list of active processes, to build after they all finish
 (defvar nvp-install-active-procs nil)

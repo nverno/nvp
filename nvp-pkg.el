@@ -79,7 +79,8 @@ associated .elc files."
            do
            (package-autoload-ensure-default-file defs)
            (mapc
-            (lambda (dir) (make-directory-autoloads dir generated-autoload-file))
+            (lambda (dir) (make-directory-autoloads
+                      (file-name-as-directory dir) generated-autoload-file))
             dirs)
            (let ((buf (find-buffer-visiting defs)))
              (when buf (kill-buffer buf)))

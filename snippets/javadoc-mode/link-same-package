@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: linksp
 # key: linksp
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --
 \{@link ${1:other-class}#${2:method}\}

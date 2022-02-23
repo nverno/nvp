@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: inline code
+# key: _
+# condition: (nvp-yas-in-doc)
+# --
+{@code $0}

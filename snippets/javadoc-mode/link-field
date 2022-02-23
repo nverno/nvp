@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: link-field
 # key: linkf
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --

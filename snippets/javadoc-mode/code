@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: code
 # key: code
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --
 <code>$0</code>

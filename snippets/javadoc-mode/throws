@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: throws
 # key: throws
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --
 @throws ${1:describe in past tense}

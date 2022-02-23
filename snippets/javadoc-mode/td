@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: td
 # key: td
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --
 <td>$1</td>$0

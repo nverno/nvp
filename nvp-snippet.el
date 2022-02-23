@@ -10,7 +10,7 @@
 (defvar nvp-snippet-default-conditions
   '(("comment" (nvp-yas-in-comment))
     ("cookie"  (bound-and-true-p cookie))
-    ("doc"     (nvp-yas-in-comment)))
+    ("doc"     (nvp-yas-in-doc)))
   "Directory names to default conditions (eg. :condition key functions).")
 
 ;; local variables to update fields in snippet subdirs

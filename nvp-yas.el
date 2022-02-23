@@ -16,25 +16,50 @@
 (defvaralias '$% 'yas-selected-text)
 (nvp:decls :v (yas-moving-away-p yas-modified-p))
 
-;; yas-inside-string uses `font-lock-string-face'
-(defsubst nvp-yas-in-string () (nth 3 (syntax-ppss)))
-(defsubst nvp-yas-in-comment () (nth 4 (syntax-ppss)))
-(defsubst nvp-yas-in-string-or-comment () (nvp:ppss 'soc))
+;;; Buffers/File names
 (defsubst nvp-yas-bfn () (nvp:path 'bfs nil :or-name t))
 (defsubst nvp-yas-bfn-no-ext () (nvp:path 'bfse nil :or-name t))
 (defsubst nvp-yas-dfn () (nvp:path 'ds))
 (defsubst nvp-yas-ext () (nvp:path 'ext))
 (defsubst nvp-yas-indent () (current-indentation))
 
-(defalias 'yas-comment-string 'nvp-yas-comment)
+;;; Syntax
+;; yas-inside-string uses `font-lock-string-face'
+(defsubst nvp-yas-in-string () (nth 3 (syntax-ppss)))
+(defsubst nvp-yas-in-comment () (nth 4 (syntax-ppss)))
+(defsubst nvp-yas-in-soc () (nvp:ppss 'soc))
+
+;; inside doc strings
+(defsubst nvp-yas-in-doc ()
+  (memq 'font-lock-doc-face (nvp:as-list (get-text-property (point) 'face))))
 
 ;; Or patterns
 (defsubst nvp-yas-or-values (str &optional seps)
   (split-string str (or seps "[\]\[|]") 'omit " "))
 
 ;; -------------------------------------------------------------------
+;;; Docstrings
+
+;; curly, html
+;; (nvp:defvar :local t :permanent t nvp-docstring-style 'curly "Docstring style")
+
+;; (defun nvp-yas-ds-open (tag)
+;;   (pcase nvp-docstring-style
+;;     ('html (concat "<" tag ">"))
+;;     (_ (concat "{@" tag))))
+
+;; (defun nvp-yas-ds-close (tag)
+;;   (pcase nvp-docstring-style
+;;     ('html (concat "</" tag ">"))
+;;     (_ "}")))
+
+;; (defalias '${ 'nvp-yas-ds-open)
+;; (defalias '$} 'nvp-yas-ds-close)
+
+;; -------------------------------------------------------------------
 ;;; Expansion helpers
 ;; see doom-snippets.el
+
 (defun nvp-yas-count-lines (str)
   (if (and (stringp str)
            (not (string-empty-p str)))
@@ -67,6 +92,8 @@ If TRIM is non-nil, whitespace is removed from selected text.
 
 ;;; -------------------------------------------------------------------
 ;; Comments
+
+(defalias 'yas-comment-string 'nvp-yas-comment)
 
 (defun nvp-comment-string (str &optional padlen)
   "Wrap STR with modes starting and ending comment delimiters.

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: link-diff-package
 # key: linkdp
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --
 \{@link ${1:other-pkg}#${2:method}\}

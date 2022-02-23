@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: param
 # key: par
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --
 @param $0

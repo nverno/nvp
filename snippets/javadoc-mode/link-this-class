@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: link-this-class
 # key: linksc
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --
 \{@link #${1:function(...)}\}

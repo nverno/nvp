@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: ol
 # key: ol
-# condition: (nvp-java-in-javadoc)
+# condition: (nvp-yas-in-doc)
 # --
 <ol>$1</ol>$0

@@ -148,8 +148,14 @@ specified, prefer shell in current directory if available."
          (shell-file-name (if remote "/bin/bash"
                             (or shell-name (getenv "SHELL"))))
          ;; always pop the shell in other window
+         (switch-to-buffer-obey-display-actions t)
          (display-buffer-overriding-action
-          '(display-buffer-pop-up-window ((inhibit-same-window . t)))))
+          '((lambda (buf alist)
+              (and (eq buf (current-buffer)) buf))
+            . ((display-buffer-reuse-window . t)
+               (display-buffer-below-selected . t)
+               (display-buffer-in-direction . down)
+               (inhibit-same-window . t)))))
     (if buffer (shell buffer)
       (if remote
           (shell (format "*shell:%s*"
@@ -164,7 +170,7 @@ specified, prefer shell in current directory if available."
                 (nvp:prefix 16 (if (buffer-live-p (get-buffer buffname))
                                    (shell (generate-new-buffer-name default-name))
                                  (shell buffname))
-                            (shell buffname)))
+                  (shell buffname)))
             ;; otherwise, any terminal will do, but prefer current directory
             ;; or project
             (shell (nvp-shell-in-project-maybe terms))))))))

@@ -2,10 +2,10 @@
 # name: traptmp
 # key: traptmp
 # --
-\$DEBUG${1:_CMD} || {
+\$DEBUG${1:_ON} || {
     exit_status=0
     trap 'exit 1' HUP INT PIPE TERM
     trap 'exit_status=$?;
     [[ -d "\$${1:tmpdir}" ]] && rm -rf \$$1; exit $exit_status' EXIT
 }
-$2=\$(_tempdir "${3:prefix}")
+$1=\$(_tempdir "${2:prefix}")

@@ -10,7 +10,7 @@ _${1:$(upcase yas-text)}_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd
 . "\$_${1:$(upcase yas-text)}_DIR/../vars.sh"
 
 $0
-${1:`(nvp-yas-bfn-no-ext)`}_install() {
+${1:`(replace-regexp-in-string "-" "_" (nvp-yas-bfn-no-ext))`}_install() {
     _info "==> running $1 \$*"
     case "\$1" in
         --install)

@@ -135,6 +135,49 @@ If none found, return list of all terminal buffers."
                    buffers))
         (car buffers))))
 
+;; modified `display-buffer-split-below-and-attach'
+(defun nvp-display-buffer-split-below (buf alist)
+  "Split current window and return bottom split."
+  (let ((height (cdr (assq 'window-height alist)))
+        newwin)
+    (when height
+      (when (floatp height)
+        (setq height (round (* height (frame-height)))))
+      (setq height (- (max height window-min-height))))
+    (setq newwin
+          (window--display-buffer
+           buf
+           (split-window-below height)
+           'window alist))
+    newwin))
+
+(defvar nvp-shell-display-buffer-default-action
+  '((display-buffer-reuse-window nvp-display-buffer-split-below)
+    (inhibit-same-window         . t)
+    (window-height               . 0.5)
+    (display-buffer-in-direction . right)))
+
+;; 1. do nothing if already selected
+;; 2. if next window is BUFFER, go there
+;; 3. split horizontally below if window large enough
+;; 4. otherwise, don't use current window
+(defun nvp-shell-display-buffer (buffer)
+  (let* ((win (selected-window))
+         (display-buffer-overriding-action
+          (cond
+           ((eq (current-buffer) buffer)
+            '(display-buffer-reuse-window))
+           ((--when-let (window-right win)
+              (and (eq buffer (window-buffer it))
+                   '(display-buffer-below-selected))))
+           ((window-splittable-p (selected-window))
+            nvp-shell-display-buffer-default-action)
+           (t '(nvp-display-buffer-split-below
+                display-buffer-pop-up-window
+                display-buffer-reuse-window
+                ((inhibit-same-window . t)))))))
+    (shell buffer)))
+
 ;;;###autoload
 (defun nvp-shell (arg &optional buffer shell-name proc-name)
   "Launch a shell using SHELL-NAME or env var SHELL, or bash if remote.
@@ -147,15 +190,8 @@ specified, prefer shell in current directory if available."
          ;; explicit-shell-file-name
          (shell-file-name (if remote "/bin/bash"
                             (or shell-name (getenv "SHELL"))))
-         ;; always pop the shell in other window
          (switch-to-buffer-obey-display-actions t)
-         (display-buffer-overriding-action
-          '((lambda (buf alist)
-              (and (eq buf (current-buffer)) buf))
-            . ((display-buffer-reuse-window . t)
-               (display-buffer-below-selected . t)
-               (display-buffer-in-direction . down)
-               (inhibit-same-window . t)))))
+         (split-height-threshold 60))
     (if buffer (shell buffer)
       (if remote
           (shell (format "*shell:%s*"
@@ -169,11 +205,11 @@ specified, prefer shell in current directory if available."
                 ;; with double prefix, force new shell in current directory
                 (nvp:prefix 16 (if (buffer-live-p (get-buffer buffname))
                                    (shell (generate-new-buffer-name default-name))
-                                 (shell buffname))
-                  (shell buffname)))
+                                 (nvp-shell-display-buffer buffname))
+                  (nvp-shell-display-buffer buffname)))
             ;; otherwise, any terminal will do, but prefer current directory
             ;; or project
-            (shell (nvp-shell-in-project-maybe terms))))))))
+            (nvp-shell-display-buffer (nvp-shell-in-project-maybe terms))))))))
 
 ;;;###autoload
 (defun nvp-shell-launch-terminal ()

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: foreign key
+# key: fkey
+# --
+${1:name} ${1:$(capitalize yas-text)} @relation(fields: [$1Id], references: [id])
+$1Id    Int

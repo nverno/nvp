@@ -155,7 +155,7 @@ If none found, return list of all terminal buffers."
   '((display-buffer-reuse-window nvp-display-buffer-split-below)
     (inhibit-same-window         . t)
     (window-height               . 0.5)
-    (display-buffer-in-direction . right)))
+    (display-buffer-in-direction . left)))
 
 ;; 1. do nothing if already selected
 ;; 2. if next window is BUFFER, go there
@@ -170,10 +170,11 @@ If none found, return list of all terminal buffers."
            ((--when-let (window-right win)
               (and (eq buffer (window-buffer it))
                    '(display-buffer-below-selected))))
-           ((window-splittable-p (selected-window))
+           ((and (> (window-height win)
+                    split-height-threshold)
+                 (window-splittable-p (selected-window)))
             nvp-shell-display-buffer-default-action)
-           (t '(nvp-display-buffer-split-below
-                display-buffer-pop-up-window
+           (t '(display-buffer-pop-up-window
                 display-buffer-reuse-window
                 ((inhibit-same-window . t)))))))
     (shell buffer)))

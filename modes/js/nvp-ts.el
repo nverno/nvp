@@ -8,6 +8,10 @@
 (require 'web-mode)
 (nvp:decls)
 
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode typescript-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
 ;; -------------------------------------------------------------------
 ;;; Tsx
 ;; @see https://github.com/syl20bnr/spacemacs/blob/develop/layers/%2Blang/typescript/packages.el

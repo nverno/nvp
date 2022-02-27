@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: model
+# key: model
+# --
+model ${1:User} {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  $0
+}

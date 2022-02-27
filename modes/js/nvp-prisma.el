@@ -13,6 +13,9 @@
     (when (file-exists-p it)
       (shell-command (concat it " format --schema="(buffer-file-name))))))
 
+(defvar prisma-imenu-generic-expression
+  '((nil "^\\s-*model\\s-+\\([[:alnum:]]+\\)\\s-*{" 1)))
+
 (provide 'nvp-prisma)
 ;; Local Variables:
 ;; coding: utf-8

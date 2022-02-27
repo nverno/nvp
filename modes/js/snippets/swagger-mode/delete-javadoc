@@ -1,0 +1,27 @@
+# -*- mode: snippet -*-
+# name: delete
+# key: delete
+# --
+/**
+ * @swagger
+ *
+ * paths:
+ *   /${1:users}/{id}:
+ *     delete:
+ *       tags:
+ *         - $1
+ *       summary: 'Delete ${1:$(singularize-string (capitalize yas-text))} by Id'
+ *       parameters:
+ *       - name: id
+ *         in: path
+ *         description: '${1:$(singularize-string (capitalize yas-text))} Id'
+ *         required: true
+ *         type: integer
+ *       responses:
+ *         200:
+ *           description: 'OK'
+ *         409:
+ *           description: 'Conflict'
+ *         500:
+ *           description: 'Server Error'
+ */

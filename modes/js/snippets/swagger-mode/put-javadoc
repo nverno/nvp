@@ -1,0 +1,35 @@
+# -*- mode: snippet -*-
+# name: put
+# key: put
+# --
+/**
+ * @swagger
+ * 
+ * paths:
+ *   /${1:users}/{id}:
+ *     put:
+ *       tags:
+ *         - $1
+ *       summary: 'Update ${1:$(singularize-string (capitalize yas-text))} by Id'
+ *       parameters:
+ *       - name: id
+ *         in: path
+ *         description: ${1:$(singularize-string (capitalize yas-text))} Id
+ *         required: true
+ *         type: integer
+ *       - name: body
+ *         in: body
+ *         description: ${1:$(singularize-string (capitalize yas-text))} data
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/$1'
+ *       responses:
+ *         200:
+ *           description: 'OK'
+ *         400:
+ *           description: 'Bad Request'
+ *         409:
+ *           description: 'Conflict'
+ *         500:
+ *           description: 'Server Error'
+ */

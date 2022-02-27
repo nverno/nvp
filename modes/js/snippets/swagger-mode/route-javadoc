@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: route
+# key: route
+# --
+/**
+ * @swagger
+ *
+ * tags:
+ * - name: ${1:users}
+ *   description: '$1 API'
+ */

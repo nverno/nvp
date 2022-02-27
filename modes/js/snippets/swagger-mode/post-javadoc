@@ -1,0 +1,30 @@
+# -*- mode: snippet -*-
+# name: post
+# key: post
+# --
+/**
+ * @swagger
+ *
+ * paths:
+ *   /${1:users}/{id}:
+ *     post:
+ *       tags:
+ *         - $1
+ *       summary: 'Add ${1:$(singularize-string yas-text)}'
+ *       parameters:
+ *       - name: body
+ *         in: body
+ *         description: '${1:$(singularize-string (capitalize yas-text))} Data'
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/$1'
+ *       responses:
+ *         201:
+ *           description: 'Created'
+ *         400:
+ *           description: 'Bad Request'
+ *         409:
+ *           description: 'Conflict'
+ *         500:
+ *           description: 'Server Error'
+ */

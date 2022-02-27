@@ -1,0 +1,21 @@
+# -*- mode: snippet -*-
+# name: index
+# key: index
+# --
+/**
+ * @swagger
+ *
+ * paths:
+ *   /${1:users}:
+ *     get:
+ *       tags:
+ *         - $1
+ *       summary: 'Find all $1'
+ *       produces:
+ *         - application/json
+ *       responses:
+ *         200:
+ *           description: 'OK'
+ *         500:
+ *           description: 'Server Error'
+ */

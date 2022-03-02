@@ -179,7 +179,9 @@
   (declare (indent defun) (debug t))
   (require 'nvp-macro)
   `(progn
-     ,(if path `(eval-and-compile (add-to-list 'load-path ,path)))
+     ,(if path `(eval-and-compile
+                  (when (file-exists-p ,path)
+                    (add-to-list 'load-path ,path))))
      ,(when load-file-name
        (let ((file (file-name-sans-extension load-file-name)))
          `(eval-when-compile

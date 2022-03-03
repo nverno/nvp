@@ -24,7 +24,7 @@
 (require 'nvp)
 (nvp:req 'nvp-find 'subrs)
 
-(defvar nvp-find-history () "Store search history inputs.")
+(defvar nvp-search-history () "Store search history inputs.")
 
 ;; -------------------------------------------------------------------
 ;;; Ag/rg shared

@@ -47,7 +47,7 @@
 (defun nvp-shell-z-tracker (str)
   (when (string-match-p "^\\s-*z\\b" str)
     (advice-add #'shell-directory-tracker :override #'ignore)
-    (run-with-timer 0.1 nil #'nvp-shell-z-resync)))
+    (run-with-timer 0.3 nil #'nvp-shell-z-resync)))
 
 
 ;; -------------------------------------------------------------------

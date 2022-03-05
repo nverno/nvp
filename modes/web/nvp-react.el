@@ -5,11 +5,17 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'web-mode)
-(nvp:decls :v (emmet-expand-jsx-className?))
+(nvp:decls :v (emmet-expand-jsx-className? yas-activate-extra-mode))
+
+;;;###autoload
+(define-minor-mode react-minor-mode "React"
+  :lighter " ℝ"
+  (yas-activate-extra-mode 'react-mode))
 
 ;;;###autoload
 (defun nvp-web-setup-react ()
   (interactive)
+  (react-minor-mode)
   (setq-local emmet-expand-jsx-className? t)
   (web-mode-set-content-type "jsx")
   ;; don't auto-quote attribute values

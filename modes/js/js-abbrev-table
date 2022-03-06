@@ -31,4 +31,4 @@
 (define-abbrev-table 'typescript-tsx-mode-abbrev-table
   '()
   "Typescript-Tsx-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list js-mode-abbrev-table prog-mode-abbrev-table))

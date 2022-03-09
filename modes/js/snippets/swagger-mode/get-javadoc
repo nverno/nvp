@@ -14,7 +14,7 @@
  *       parameters:
  *       - name: id
  *         in: path
- *         description: '${1:$(signularize-string (capitalize yas-text))} Id'
+ *         description: '${1:$(singularize-string (capitalize yas-text))} Id'
  *         required: true
  *         type: integer
  *       responses:

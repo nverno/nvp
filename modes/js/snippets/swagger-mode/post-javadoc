@@ -6,18 +6,18 @@
  * @swagger
  *
  * paths:
- *   /${1:users}/{id}:
+ *   /${1:users}:
  *     post:
  *       tags:
  *         - $1
  *       summary: 'Add ${1:$(singularize-string yas-text)}'
- *       parameters:
- *       - name: body
- *         in: body
+ *       requestBody:
  *         description: '${1:$(singularize-string (capitalize yas-text))} Data'
  *         required: true
- *         schema:
- *           $ref: '#/definitions/$1'
+ *         content:
+ *           application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/${1:$(singularize-string (capitalize yas-text))}'
  *       responses:
  *         201:
  *           description: 'Created'

@@ -17,12 +17,13 @@
  *         description: ${1:$(singularize-string (capitalize yas-text))} Id
  *         required: true
  *         type: integer
- *       - name: body
- *         in: body
- *         description: ${1:$(singularize-string (capitalize yas-text))} data
+ *       requestBody:
+ *         description: '${1:$(singularize-string (capitalize yas-text))} Data'
  *         required: true
- *         schema:
- *           $ref: '#/definitions/$1'
+ *         content:
+ *           application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/${1:$(singularize-string (capitalize yas-text))}'
  *       responses:
  *         200:
  *           description: 'OK'

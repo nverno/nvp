@@ -14,7 +14,7 @@
       (shell-command (concat it " format --schema="(buffer-file-name))))))
 
 (defvar prisma-imenu-generic-expression
-  '((nil "^\\s-*model\\s-+\\([[:alnum:]]+\\)\\s-*{" 1)))
+  '((nil "^\\s-*\\(?:model\\|enum\\)\\s-+\\([[:alnum:]]+\\)\\s-*{" 1)))
 
 (provide 'nvp-prisma)
 ;; Local Variables:

@@ -1,30 +1,8 @@
 ;;; conda-env.el --- manage conda environments -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
+;;
 ;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/python-tools
-;; Last modified: <2019-01-28 21:01:57>
-;; Package-Requires: 
-;; Created: 15 November 2016
-
-;; This file is not part of GNU Emacs.
+;; URL: https://github.com/nverno/nvp/modes/python
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -110,6 +88,8 @@
                              (car path)))))
     (setq exec-path (if env (cons env-exec (cdr path)) path))
     (setenv "PATH" (mapconcat 'identity exec-path path-separator))
+    (setenv "NODE_GYP_FORCE_PYTHON"
+            (and env (expand-file-name "bin/python" (car path))))
     (setenv "VIRTUAL_ENV" (and env (car path)))
     (setenv "CONDA_ENV" env)
     (setq python-shell-exec-path (and env (list env-exec))

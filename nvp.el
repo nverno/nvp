@@ -377,7 +377,7 @@ Dispatches to generic handlers with ARG."
 
 (with-eval-after-load 'ido (require 'nvp-ido))
 
-(defun nvp-vertico-directory-up ()
+(defun nvp-vertico-directory-up (&optional _)
   "Like `vertico-directory-up' except works when completing against
 relative paths."
   (interactive)

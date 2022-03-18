@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: useQuery
+# key: useq
+# --
+const { data: $1, ${2:...queryProps} } = use$0

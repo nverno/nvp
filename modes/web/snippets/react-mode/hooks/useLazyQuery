@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: useLazyQuery
+# key: uselq
+# --
+const [${1:trigger}, { data: $2, ${3:...queryProps} } ] = useLazy$0

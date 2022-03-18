@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: useMutation
+# key: usem
+# --
+const [${1:trigger}] = use$0

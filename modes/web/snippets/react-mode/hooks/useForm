@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: useForm
+# key: usef
+# --
+const [form] = Form.useForm<$1>();

@@ -2,9 +2,12 @@
 # name: functional component
 # key: fcomp
 # --
-import React from 'react';
+`($set (s-upper-camel-case (nvp-yas-bfn-no-ext)))
+`import React, { FC } from 'react';
 
-const ${1:`(s-upper-camel-case (nvp-yas-bfn-no-ext))`} = ${2:props} => {
+export interface ${1:`$tmp`}Props {}
+
+const $1: FC<$1Props> = ${2:props} => {
 
   return (
     <$3>$0

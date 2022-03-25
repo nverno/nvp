@@ -2,7 +2,7 @@
 # name: useEffect
 # key: usee
 # --
-useEffect(() => {
+React.useEffect(() => {
   $0${3:
   return () => $4}
 }${1:, [$2]});

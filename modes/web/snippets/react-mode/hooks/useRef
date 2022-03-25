@@ -2,4 +2,4 @@
 # name: useRef
 # key: ref
 # --
-const \$$1 = useRef()
+const \$$1 = React.useRef(null)

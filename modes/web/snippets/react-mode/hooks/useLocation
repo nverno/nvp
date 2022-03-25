@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: useLocation
+# key: usel
+# --
+const location = useLocation()

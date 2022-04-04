@@ -2,4 +2,4 @@
 # name: useLazyQuery
 # key: uselq
 # --
-const [${1:trigger}, { data: $2, ${3:...queryProps} } ] = useLazy$0
+const [${1:trigger}, { data: $2, ${3:...queryProps} } ] = useLazy${1:$(s-upper-camel-case yas-text)}Query()

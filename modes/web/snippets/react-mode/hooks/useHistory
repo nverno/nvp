@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: useHistory
+# key: useh
+# --
+const history = useHistory()

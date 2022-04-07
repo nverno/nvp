@@ -3,5 +3,5 @@
 # key: proto
 # --
 ${1:classname}.prototype.${2:method} = function(${3:params}) {
-    $0
+  $0
 };

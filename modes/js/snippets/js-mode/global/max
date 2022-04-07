@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Math.max
+# key: mmax
+# --
+Math.max($1)

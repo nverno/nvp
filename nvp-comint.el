@@ -25,6 +25,37 @@
 
 ;;; History
 
+(defun nvp-comint-history-remove-duplicates ()
+  "Remove duplicates from history and write history file."
+  (interactive)
+  (let ((proc (nvp:buffer-process)))
+    (when (and (processp proc)
+               (derived-mode-p 'comint-mode)
+               (not (null comint-input-ring-file-name)))
+      (let* ((history-buf (get-buffer-create " *Temp Input History*"))
+             (ring comint-input-ring)
+             (file comint-input-ring-file-name)
+             (index (ring-length ring))
+             (hash (make-hash-table :test #'equal))
+             (hist
+              (let ((h ()) str)
+                (while (> index 0)
+                  (setq index (1- index))
+                  (setq str (ring-ref ring index))
+                  (unless (gethash str hash nil)
+                    (puthash str 1 hash)
+                    (push str h)))
+                h))
+             (index (length hist)))
+        (with-current-buffer history-buf
+          (erase-buffer)
+          (while (> index 0)
+            (setq index (1- index))
+            (insert (nth index hist) comint-input-ring-separator))
+          (write-region (buffer-string) nil file nil 'no-message)
+          (kill-buffer nil))))))
+
+
 ;; use if wanting to read history file over tramp connection
 ;; (defun nvp-create-remote-filename (filename)
 ;;   (if (file-remote-p default-directory)

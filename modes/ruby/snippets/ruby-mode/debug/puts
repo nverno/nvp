@@ -2,4 +2,4 @@
 # name: debug
 # key: dbg
 # --
-puts "DBG: $1 = #{$1.inspect}"
+STDERR.puts "DBG: $1 = #{$1.inspect}"

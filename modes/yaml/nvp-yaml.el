@@ -65,18 +65,19 @@
        (help "https://docs.codecov.io/docs/codecovyml-reference")
        (project "https://codecov.io/gh/%s" nvp-yaml-project-repo "")))))
 
-(eval-when-compile
-  (defsubst nvp-yaml--value (type val)
-    (cdr (assq val (assq type nvp-yaml-ci-types)))))
+(defsubst nvp-yaml--value (type val)
+  (cdr (assq val (assq type nvp-yaml-ci-types))))
 
 ;; prompt for yaml type from list of known types
 (defun nvp-yaml-read-known-type ()
-  (eval-when-compile
+  (eval-when-compile 
     (macroexpand-all
-     `(nvp:read-char-case "Yaml type: " 'verbose
-        ,@(cl-loop for type in nvp-yaml-ci-types
+     `(progn
+        (nvp:read-char-case "Yaml type: " 'verbose
+          ,@(cl-loop
+             for type in nvp-yaml-ci-types
              for prompt = (nvp-yaml--value (car type) 'prompt)
-             collect (list (car prompt) (cadr prompt) `(quote ,(car type))))))))
+             collect (list (car prompt) (cadr prompt) `(quote ,(car type)))))))))
 
 ;; full path to git repo
 (defun nvp-yaml-project-url ()

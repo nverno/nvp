@@ -14,6 +14,7 @@
 (require 'dash)
 (require 'hydra)
 (require 'cc-defs)
+(require 'seq)
 (require 'nvp-macs-common "macs/nvp-macs-common")
 (require 'nvp-macs-setup "macs/nvp-macs-setup")
 (require 'nvp-macs-bindings "macs/nvp-macs-bindings")

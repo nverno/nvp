@@ -70,14 +70,18 @@
 
 ;; prompt for yaml type from list of known types
 (defun nvp-yaml-read-known-type ()
-  (eval-when-compile 
-    (macroexpand-all
-     `(progn
-        (nvp:read-char-case "Yaml type: " 'verbose
-          ,@(cl-loop
-             for type in nvp-yaml-ci-types
-             for prompt = (nvp-yaml--value (car type) 'prompt)
-             collect (list (car prompt) (cadr prompt) `(quote ,(car type)))))))))
+  (let* ((read-opts
+          (cl-loop
+           for type in nvp-yaml-ci-types
+           for prompt = (nvp-yaml--value (car type) 'prompt)
+           collect (list (car prompt) (cadr prompt) `(quote ,(car type)))))
+         (choice
+          (read-char-choice
+           (concat "Yaml type: " (mapconcat #'cadr read-opts ", ")
+                   ", or [C-g] to abort ")
+           (mapcar #'car read-opts))))
+    (prog1 (cadr (caddr (assq choice read-opts)))
+      (message ""))))
 
 ;; full path to git repo
 (defun nvp-yaml-project-url ()

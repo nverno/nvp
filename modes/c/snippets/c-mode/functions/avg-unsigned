@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: average-unsigned
+# key: avgu
+# --
+unsigned average(unsigned a, unsigned b) {
+  return (a & b) + (a ^ b) / 2;
+}

@@ -14,7 +14,8 @@
 (nvp:auto "s" 's-upper-camel-case 's-snake-case 's-match)
 
 (defvaralias '$% 'yas-selected-text)
-(nvp:decls :v (yas-moving-away-p yas-modified-p))
+(nvp:decls :v (yas-moving-away-p yas-modified-p)
+           :f (typescript--in-documentation-comment-p))
 
 ;;; Buffers/File names
 (defsubst nvp-yas-bfn () (nvp:path 'bfs nil :or-name t))
@@ -31,7 +32,9 @@
 
 ;; inside doc strings
 (defsubst nvp-yas-in-doc ()
-  (memq 'font-lock-doc-face (nvp:as-list (get-text-property (point) 'face))))
+  (or (memq 'font-lock-doc-face (nvp:as-list (get-text-property (point) 'face)))
+      (and (eq major-mode 'typescript-mode)
+           (typescript--in-documentation-comment-p))))
 
 ;; Or patterns
 (defsubst nvp-yas-or-values (str &optional seps)

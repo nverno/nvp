@@ -7,6 +7,7 @@
 (nvp:decls :f (projectile-acquire-root add-node-modules-path))
 
 (defun nvp-prisma-format-buffer ()
+  "Run prisma format on current buffer."
   (interactive)
   (--when-let (--> (locate-dominating-file (buffer-file-name) "package.json")
                    (and it (expand-file-name "node_modules/.bin/prisma" it)))

@@ -53,7 +53,8 @@
             (setq index (1- index))
             (insert (nth index hist) comint-input-ring-separator))
           (write-region (buffer-string) nil file nil 'no-message)
-          (kill-buffer nil))))))
+          (kill-buffer nil))
+        (comint-read-input-ring)))))
 
 
 ;; use if wanting to read history file over tramp connection

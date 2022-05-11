@@ -243,11 +243,6 @@
            (list (help-buffer) (point-min) nil)))))))
 
 ;;;###autoload
-(defun nvp-hap-lsp (command &optional art &rest _args)
-  (cl-case command
-    (thingatpt ())))
-
-;;;###autoload
 (defun nvp-help-at-point (thing &optional prefix)
   "Show help for THING at point in a popup tooltip or help buffer."
   (interactive

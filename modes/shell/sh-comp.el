@@ -375,6 +375,13 @@ sourced files."
 ;;;###autoload
 (defun sh-comp--xref-backend () 'sh-comp)
 
+;;;###autoload
+(defun nvp-sh-find-definitions ()
+  (interactive)
+  (let* ((xref-backend-functions '(sh-comp--xref-backend t))
+         (thing (xref-backend-identifier-at-point 'sh-comp)))
+    (xref-find-definitions thing)))
+
 (cl-defmethod xref-backend-identifier-completion-table ((_backend (eql 'sh-comp)))
   (completion-table-dynamic
    (lambda (_string) (sh-comp-candidates 'all (buffer-file-name))) 'switch))

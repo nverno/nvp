@@ -1,24 +1,24 @@
 -include config.mk
 include default.mk
 
-MODEDIRS := $(shell find modes/ -mindepth 1 -maxdepth 1 -type d)
-MODES    := $(sort $(notdir ${MODEDIRS}))
-MODE_EL  := $(shell find modes/ -type f -name \*.el                         \
+SRCDIRS := $(shell find modes/ pkgs/ -mindepth 1 -maxdepth 1 -type d)
+PKGS    := $(sort $(notdir ${SRCDIRS}))
+PKG_EL  := $(shell find modes/ pkgs/ -type f -name \*.el                    \
 		\! \( -path \*/snippets/* -o -name .\* -o -path \*/unused/* \
 		-o -path \*/test/\* -o -path \*/etc/\* -o -path \*/w32/\*   \
 		-o -path \*/ext/\* -o -path \*/build/\* -o -path \*/scratch/\* \))
-MODE_ELC := ${MODE_EL:.el=.elc}
+PKG_ELC := ${PKG_EL:.el=.elc}
 
 FILTER_MODE = $(filter $(addprefix modes/,$(1))/%,$(2))
 CLEAN_MODE = $(info cleaning $(1)) \
-	@$(RM) $(call FILTER_MODE,$(1),${MODE_ELC})
-BUILD_MODE = $(info building $(mode)) \
-	@$(call COMPILE,$(call FILTER_MODE,$(1),${MODE_EL}))
+	@$(RM) $(call FILTER_MODE,$(1),${PKG_ELC})
+BUILD_PKG = $(info building $(mode)) \
+	@$(call COMPILE,$(call FILTER_MODE,$(1),${PKG_EL}))
 TESTS := $(wildcard test/*-tests.el)
 
 .PHONY: test rebuild
 all:
-	${COMPILE} ${EL} ${MODE_EL}
+	${COMPILE} ${EL} ${PKG_EL}
 
 %.elc: %.el
 	${COMPILE} $^
@@ -27,20 +27,20 @@ rebuild: ## Recompile macs/subrs/and all base configs
 	$(RM) $(CURDIR)/*.elc $(CURDIR)/macs/*.elc $(CURDIR)/subrs/*.elc
 	$(MAKE)
 
-.PHONY: clean-modes build-modes
-clean-modes: ## Clean all modes
-	$(foreach mode,${MODES},$(call CLEAN_MODE,$(mode)))
+.PHONY: clean-pkgs build-pkgs
+clean-pkgs: ## Clean all pkgs
+	$(foreach mode,${PKGS},$(call CLEAN_MODE,$(mode)))
 
-build-modes: ## Build all modes -- FIXME: does weird loopy shit
-	$(foreach mode,${MODES},$(BUILD_MODE))
+build-pkgs: ## Build all pkgs -- FIXME: does weird loopy shit
+	$(foreach mode,${PKGS},$(BUILD_PKG))
 
-.PHONY: ${MODES}
+.PHONY: ${PKGS}
 clean-%: %   ## Clean mode
 	$(call CLEAN_MODE,$^)
 
 build-%: %   ## Build mode
 	$(call CLEAN_MODE,$^)
-	$(call BUILD_MODE,$^)
+	$(call BUILD_PKG,$^)
 
 dep-%: %  ## print depends for package
 	@grep "$^" .depend
@@ -61,7 +61,7 @@ unicode:  ## Generate latex/unicode abbrevs
 	@julia ${BIN}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
 # .PHONY: .depend
-.depend: $(EL) $(MODE_EL) ## create depends for *.el files
+.depend: $(EL) $(PKG_EL) ## create depends for *.el files
 	$(info Computing depends)
 	@rm -f .depend
 	@${BIN}/depends.awk $^ >> .depend
@@ -99,7 +99,7 @@ ${PKG}-autoloads.el: ${EL} ## Generate package autoloads
 	(setq find-file-visit-truename t)                          \
 	(update-directory-autoloads default-directory))"
 
-TAGS: ${EL} ${MODE_EL}
+TAGS: ${EL} ${PKG_EL}
 	$(RM) $@
 	@touch $@
 	ls $^ | xargs $(ETAGS) -a -o $@
@@ -108,7 +108,7 @@ TAGS: ${EL} ${MODE_EL}
 clean:  ## clean temp files
 	$(RM) *~ \#.*\#
 
-distclean: clean-modes clean ## clean all generated files inc. compiled/auto
+distclean: clean-pkgs clean ## clean all generated files inc. compiled/auto
 	$(RM) *loaddefs?.el *autoloads.el TAGS GPATH GTAGS \
 		*.elc macs/*.elc subrs/*.elc
 

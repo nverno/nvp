@@ -9,12 +9,17 @@
 (require 'aio)
 (nvp:decls :f (nvp-leetcode-hook))
 
+(defvar-local nvp-leet-problem-id nil)
+
+(defsubst nvp-leet-problem-buffer ()
+  (get-buffer (leetcode--detail-buffer-name nvp-leet-problem-id)))
+
 ;; -------------------------------------------------------------------
 ;;; Test cases
 
 (defun nvp-leet--collect-examples ()
   "Collect example inputs from problem description."
-  (-when-let (buf (get-buffer leetcode--description-buffer-name))
+  (-when-let (buf (nvp-leet-problem-buffer))
     (let (inputs)
       (with-current-buffer buf
         (save-excursion
@@ -40,7 +45,8 @@
   "Add all examples from description to tests."
   (interactive)
   (-when-let (inputs (nvp-leet--collect-examples))
-    (with-current-buffer (get-buffer-create leetcode--testcase-buffer-name)
+    (with-current-buffer
+        (get-buffer-create (leetcode--testcase-buffer-name nvp-leet-problem-id))
       (save-excursion
         (goto-char (point-max))
         (cl-loop for input in inputs
@@ -64,52 +70,18 @@
   (when nvp-leet-window-configuration
     (set-window-configuration nvp-leet-window-configuration))
   (save-current-buffer
-    (with-selected-window (display-buffer leetcode--result-buffer-name)
+    (with-selected-window
+        (display-buffer (leetcode--result-buffer-name nvp-leet-problem-id))
       (enlarge-window 25))))
 
 (nvp:advise-commands #'nvp-leet-result-layout :before '(leetcode-try leetcode-submit))
-
-;; -------------------------------------------------------------------
-;;; Question of the Day
-
-;; graphql query for daily challenge question
-(defconst nvp-leet--daily-challenge-query
-  (nvp:concat
-   "query questionOfToday { activeDailyCodingChallengeQuestion {"
-   " link question { status title titleSlug qid: questionFrontendId } } }"))
-
-(defun nvp-leet--lookup-daily-question ()
-  (let* ((url-request-method "POST")
-         (url-request-extra-headers
-          `(,leetcode--User-Agent
-            ("Content-Type" . "application/json")
-            ,(leetcode--referer leetcode--url-login) 
-            ,(cons leetcode--X-CSRFToken (leetcode--maybe-csrf-token))))
-         (url-request-data
-          (json-encode
-           `((operationName . "questionOfToday")
-             (query . ,nvp-leet--daily-challenge-query))))
-         (result (url-retrieve-synchronously leetcode--api-graphql)))
-    (with-current-buffer result
-      (goto-char url-http-end-of-headers)
-      (let-alist (json-read)
-        .data.activeDailyCodingChallengeQuestion.question.qid))))
-
-;;;###autoload(autoload 'nvp-leet-daily "nvp-leet" nil t)
-(aio-defun nvp-leet-daily ()
-  "Open the daily challenge."
-  (interactive)
-  (unless (leetcode--login-p)
-    (aio-await (leetcode)))
-  (--when-let (nvp-leet--lookup-daily-question)
-    (leetcode-show-problem (string-to-number it))))
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode
 
 (defun nvp-leet-browse ()
   (interactive)
-  (with-current-buffer (get-buffer leetcode--description-buffer-name)
+  (with-current-buffer (nvp-leet-problem-buffer)
     (save-excursion
       (goto-char (point-min))
       (forward-button 2)
@@ -119,7 +91,7 @@
   :create t
   :prefix-key "<f2>L"
   ("a" . nvp-leet-add-examples)
-  ("d" . nvp-leet-daily)
+  ("d" . leetcode-daily)
   ("e" . nvp-leet-add-examples)
   ("q" . leetcode-quit)
   ("r" . nvp-leet-reset-layout)
@@ -128,13 +100,18 @@
   ("w" . nvp-leet-browse))
 (define-key nvp-leet-mode-map (kbd "C-c C-c") #'leetcode-try)
 
+(defun nvp-leet--setup-buffer (problem-info)
+  "Set variables in problem's source code buffer."
+  (setq-local nvp-leet-problem-id (leetcode-problem-id problem-info)))
+
 (defun nvp@leet-maybe-setup (orig-fn problem problem-info)
-  (let ((title (plist-get problem-info :title)))
+  (let ((title (leetcode-problem-title problem-info)))
     (funcall orig-fn problem problem-info)
     (let* ((buf-name (leetcode--get-code-buffer-name title))
            (buf (and buf-name (get-buffer buf-name))))
       (when buf
         (with-current-buffer (get-buffer buf-name)
+          (nvp-leet--setup-buffer problem-info)
           (nvp-leet-mode 1))))))
 (advice-add #'leetcode--start-coding :around #'nvp@leet-maybe-setup)
 

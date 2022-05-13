@@ -2,17 +2,16 @@
 ;;
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(nvp:decls :f (projectile-acquire-root add-node-modules-path))
 
 (defun nvp-prisma-format-buffer ()
-  "Run prisma format on current buffer."
+  "Run prisma format on current prisma buffer."
   (interactive)
-  (--when-let (--> (locate-dominating-file (buffer-file-name) "package.json")
-                   (and it (expand-file-name "node_modules/.bin/prisma" it)))
-    (when (file-exists-p it)
-      (shell-command (concat it " format --schema="(buffer-file-name))))))
+  (let* ((buf (buffer-file-name))
+         (pkg (and buf (locate-dominating-file buf "package.json")))
+         (prisma (and pkg (expand-file-name "node_modules/.bin/prisma" pkg))))
+    (if (and prisma (file-exists-p prisma))
+        (shell-command (concat prisma " format --schema=" buf))
+      (message "prisma not found"))))
 
 (defvar prisma-imenu-generic-expression
   '((nil "^\\s-*\\(?:model\\|enum\\)\\s-+\\([[:alnum:]]+\\)\\s-*{" 1)))

@@ -13,8 +13,8 @@
         (shell-command (concat prisma " format --schema=" buf))
       (message "prisma not found"))))
 
-(defvar prisma-imenu-generic-expression
-  '((nil "^\\s-*\\(?:model\\|enum\\)\\s-+\\([[:alnum:]]+\\)\\s-*{" 1)))
+;; (defvar prisma-imenu-generic-expression
+;;   '((nil "^\\s-*\\(?:model\\|enum\\)\\s-+\\([[:alnum:]]+\\)\\s-*{" 1)))
 
 (provide 'nvp-prisma)
 ;; Local Variables:

@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
 # name: bash_completion
 # key: complete
-# p
 # --
 _${1:complete}() {
     local cur prev words cword

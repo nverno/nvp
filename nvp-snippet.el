@@ -147,8 +147,8 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;; (modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
 ;; (modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
 
+;; Return marker at end of snippet header.
 (nvp:define-cache nvp-snippet-header-end ()
-  "Return marker at end of snippet header."
   :local t
   :cache nvp-snippet-header-end--cache
   (save-excursion

@@ -72,7 +72,7 @@ or prompt for manual with ARG."
 (defvar nvp-info-nodes-need-refresh () "Update list when 'dir' changes.")
 (cl-eval-when (load compile eval)
   (nvp:define-cache nvp-info-nodes ()
-    "List of my info manuals."
+    ;; "List of my info manuals."
     :predicate (not nvp-info-nodes-need-refresh)
     (setq nvp-info-nodes-need-refresh nil)
     (with-temp-buffer

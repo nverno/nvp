@@ -225,8 +225,8 @@ or nil.")
 
 ;;--- Headings
 ;; these may vary by mode
+;; Get or create header regex based on comment syntax.
 (nvp:define-cache nvp-mode-header-regex ()
-  "Get or create header regex based on comment syntax."
   :local t
   (nvp:heading-create-re))
 

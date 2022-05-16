@@ -19,6 +19,8 @@ ${1:`(replace-regexp-in-string "-" "_" (nvp-yas-bfn-no-ext))`}_install() {
         ;;
         --uninstall)
         ;;
+        --version)
+        ;;
     esac
     _success "$1 \$1"
 }

@@ -2,4 +2,4 @@
 # name: dbg
 # key: dbg
 # --
-console.debug("DEBUG: $1:", $1);
+console.debug("DEBUG$2: $1:", $1);

@@ -2,6 +2,7 @@
 (define-abbrev-table 'js-mode-abbrev-table
   '(("tof" "typeof" nil :system t)
     ("exp" "export" nil :system t)
+    ("expd" "export default" nil :system t)
     ("nan" "NaN" nil :system t)
     ("deb" "debugger;" nil :system t)
     ("ret" "return" nil :system t)

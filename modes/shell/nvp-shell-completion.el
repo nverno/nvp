@@ -33,6 +33,12 @@
   (while (and (pcomplete-match "clone" 'first 2))
     (pcomplete-here (nvp:lazy-val nvp-shell--gh-repo-list))))
 
+;;;###autoload
+(defun nvp-pcomplete ()
+  (interactive)
+  (let ((completion-at-point-functions '(pcomplete-completions-at-point t)))
+    (completion-at-point)))
+
 (provide 'nvp-shell-completion)
 ;; Local Variables:
 ;; coding: utf-8

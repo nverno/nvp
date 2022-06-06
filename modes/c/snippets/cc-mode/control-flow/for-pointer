@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: forp
+# key: forp
+# --
+for (${1:ListNode *}${2:ptr} = $3; $2; $2 = ${4:$2->next}) {
+  $0
+}

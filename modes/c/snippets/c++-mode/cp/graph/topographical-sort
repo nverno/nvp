@@ -1,0 +1,27 @@
+# -*- mode: snippet -*-
+# name: topographical sort
+# key: n_toposort
+# --
+unordered_map<int,vector<int>> ${1:g};
+vector<int> ${2:topo};
+vector<bool> ${3:seen};
+
+void dfs_topo(int v) {
+  $3[v] = true;
+  for (int u : $1[v]) {
+    if (!$3[u])
+      dfs_topo(u);
+  }
+  $2.push_back(v);
+}
+
+void toposort(int n) {
+  // const int n = (int)$1.size();
+  $2.clear();
+  $3.assign(n, false);
+  for (int i = 0; i < n; ++i) {
+    if (!$3[i])
+      dfs_topo(i);
+  }
+  reverse($2.begin(), $2.end());
+}

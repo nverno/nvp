@@ -1,0 +1,19 @@
+# -*- mode: snippet -*-
+# name: next combination (lexicographically)
+# key: n_combinations
+# --
+// Next lexicographical K-combination
+// starting from v={1,2,...,K} up to v={n,n-1,..,n-k}
+bool next_combination(vector<int>& v, int n) {
+  const int k = (int)v.size();
+  for (int i = k - 1; i >= 0; --i) {
+    if (v[i] < n - k + i + 1) {
+      v[i]++;
+      for (int j = i + 1; j < k; j++) {
+        v[j] = v[j - 1] + 1;
+      }
+      return true;
+    }
+  }
+  return false;
+}

@@ -24,33 +24,6 @@
   (browse-url "http://www.cburch.com/cs/330/reading/mips-ref.pdf"))
 
 ;; -------------------------------------------------------------------
-;;; Commands
-
-(defun nvp-mips-previous-label ()
-  "Goto previous label"
-  (interactive)
-  (condition-case nil
-      (progn
-        (forward-line -1)
-        (re-search-backward "^[ \t]*[a-zA-Z0-9_]+:")
-        (beginning-of-line))
-    (error
-     (forward-line 1)
-     (user-error "No previous label"))))
-
-(defun nvp-mips-next-label ()
-  "Goto next label"
-  (interactive)
-  (condition-case nil
-      (progn
-        (forward-line 1)
-        (re-search-forward "^[ \t]*[a-zA-Z0-9_.]+:")
-        (beginning-of-line))
-    (error
-     (forward-line -1)
-     (user-error "No previous label"))))
-
-;; -------------------------------------------------------------------
 ;;; Completion
 
 (defconst mips-words

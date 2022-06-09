@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: split string
+# key: split
+# --
+void split(std::string& s, std::vector<std::string>& res, char c) {
+    res.clear();
+    std::istringstream iss(s);
+    std::string cur;
+    while (std::getline(iss, cur, c))
+        res.push_back(cur);
+}

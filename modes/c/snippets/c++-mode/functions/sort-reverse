@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sort-reverse
+# key: sortr
+# --
+std::sort($1.rbegin(), $1.rend())

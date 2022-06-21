@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: or-args
+# key: orargs
+# --
+[ "$#" -lt ${1:1} ] && ${2:usage}${3: && return 1}

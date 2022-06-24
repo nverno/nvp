@@ -3,9 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'rust-mode)
-(require 'racer)
 (nvp:decls :v (toml-mode-map))
-;; FIXME: declare functions for s/f -- dont want these
 
 (cl-defmethod nvp-newline-dwim-comment
   (syntax arg &context (major-mode rust-mode))
@@ -16,45 +14,45 @@
 ;;   https://doc.rust-lang.org/book/macros.html#debugging-macro-code
 ;; - deps
 
-(defvar nvp-rust-src-repo "https://github.com/rust-lang/rust")
-(defvar nvp-rust-rust-home (or (getenv "RUST_SRC_PATH")
-                               (expand-file-name "rust/src" (getenv "DEVEL"))))
+;; (defvar nvp-rust-src-repo "https://github.com/rust-lang/rust")
+;; (defvar nvp-rust-rust-home (or (getenv "RUST_SRC_PATH")
+;;                                (expand-file-name "rust/src" (getenv "DEVEL"))))
 
 ;;; Tag
 
 ;; clone/update source repo, tag it, set RUST_SRC_PATH
-(defun nvp-rust-tag-source (arg &optional noretry)
-  (interactive "P")
-  (let ((have-src (file-exists-p nvp-rust-rust-home))
-        (tags (expand-file-name "TAGS" nvp-rust-rust-home)))
-    (if (and (not noretry)
-             (or (not have-src) (eq '(16) arg)))
-        ;; clone/pull first
-        (set-process-sentinel
-         (apply 'start-process "nvp-rust" "*nvp-install*" "git"
-                (delq nil
-                      `(,@(if (not have-src)
-                              `("clone" ,nvp-rust-src-repo)
-                            '("pull" "origin" "master"
-                              "--allow-unrelated-histories"))
-                        "--depth=10"
-                        ,(when (not have-src)
-                           (directory-file-name
-                            (file-name-directory nvp-rust-rust-home))))))
-         (lambda (p _m)
-           (when (zerop (process-exit-status p))
-             ;; set RUST_SRC_PATH
-             (nvp:with-w32
-               (nvp-rust-w32-setenv! "RUST_SRC_PATH"
-                                       nvp-rust-rust-home))
-             (nvp-rust-tag-source nil t))))
-      ;; tag source / load tags table when finished
-      (when have-src
-        (if (and (not arg) (file-exists-p tags))
-            (visit-tags-table tags)
-          (user-error "TODO: tag rust source")
-          ;; (tag-utils-tag-dir nvp-rust-rust-home)
-          )))))
+;; (defun nvp-rust-tag-source (arg &optional noretry)
+;;   (interactive "P")
+;;   (let ((have-src (file-exists-p nvp-rust-rust-home))
+;;         (tags (expand-file-name "TAGS" nvp-rust-rust-home)))
+;;     (if (and (not noretry)
+;;              (or (not have-src) (eq '(16) arg)))
+;;         ;; clone/pull first
+;;         (set-process-sentinel
+;;          (apply 'start-process "nvp-rust" "*nvp-install*" "git"
+;;                 (delq nil
+;;                       `(,@(if (not have-src)
+;;                               `("clone" ,nvp-rust-src-repo)
+;;                             '("pull" "origin" "master"
+;;                               "--allow-unrelated-histories"))
+;;                         "--depth=10"
+;;                         ,(when (not have-src)
+;;                            (directory-file-name
+;;                             (file-name-directory nvp-rust-rust-home))))))
+;;          (lambda (p _m)
+;;            (when (zerop (process-exit-status p))
+;;              ;; set RUST_SRC_PATH
+;;              (nvp:with-w32
+;;                (nvp-rust-w32-setenv! "RUST_SRC_PATH"
+;;                                        nvp-rust-rust-home))
+;;              (nvp-rust-tag-source nil t))))
+;;       ;; tag source / load tags table when finished
+;;       (when have-src
+;;         (if (and (not arg) (file-exists-p tags))
+;;             (visit-tags-table tags)
+;;           (user-error "TODO: tag rust source")
+;;           ;; (tag-utils-tag-dir nvp-rust-rust-home)
+;;           )))))
 
 ;; -------------------------------------------------------------------
 ;;; Cargo
@@ -97,17 +95,17 @@
       (message "pub on"))))
 
 ;; toggle mutability of variable at point
-(defun nvp-rust-toggle-mut ()
-  (interactive)
-  (save-excursion
-    (racer-find-definition)
-    (back-to-indentation)
-    (forward-char 4)
-    (if (and (looking-at-p "mut ")
-             (message "mutability off"))
-        (delete-char 4)
-      (insert "mut ")
-      (message "mutability on"))))
+;; (defun nvp-rust-toggle-mut ()
+;;   (interactive)
+;;   (save-excursion
+;;     (racer-find-definition)
+;;     (back-to-indentation)
+;;     (forward-char 4)
+;;     (if (and (looking-at-p "mut ")
+;;              (message "mutability off"))
+;;         (delete-char 4)
+;;       (insert "mut ")
+;;       (message "mutability on"))))
 
 ;; convert vector expression at point to slice
 ;; foo -> &foo[..]
@@ -178,22 +176,22 @@
 ;;
 ;; FIXME: fix reading fields, matches by line ...
 
-(defun nvp-rust-cases ()
-  (-when-let* ((sym (symbol-at-point))
-               (sym (cl-find-if
-                     (lambda (s) (string= sym s)) (racer-complete))))
-    (pcase (get-text-property 0 'matchtype sym)
-      ((or "Let" "FnArg")
-       (nvp-rust-at-definition-of sym
-         (when (nvp-rust-let-type)
-           (nvp-rust-cases))))
-      ((or "Enum" "EnumVariant")
-       (nvp-rust-at-definition-of sym
-         (cons :enum (nvp-rust-enum-fields))))
-      ("Struct"
-       (nvp-rust-at-definition-of sym
-         (cons :struct (nvp-rust-struct-fields))))
-      (_ sym))))
+;; (defun nvp-rust-cases ()
+;;   (-when-let* ((sym (symbol-at-point))
+;;                (sym (cl-find-if
+;;                      (lambda (s) (string= sym s)) (racer-complete))))
+;;     (pcase (get-text-property 0 'matchtype sym)
+;;       ((or "Let" "FnArg")
+;;        (nvp-rust-at-definition-of sym
+;;          (when (nvp-rust-let-type)
+;;            (nvp-rust-cases))))
+;;       ((or "Enum" "EnumVariant")
+;;        (nvp-rust-at-definition-of sym
+;;          (cons :enum (nvp-rust-enum-fields))))
+;;       ("Struct"
+;;        (nvp-rust-at-definition-of sym
+;;          (cons :struct (nvp-rust-struct-fields))))
+;;       (_ sym))))
 
 ;; get fields of enum at point
 (defun nvp-rust-enum-fields ()
@@ -205,34 +203,32 @@
   (nvp-rust-collect-fields "^\\s-*\\([_a-z0-9]+\\):"))
 
 ;; get fields for struct / enum we be at
-(defun nvp-rust-match ()
-  (interactive)
-  (let ((_meta (racer--call-at-point "find-definition")))
-    ;; FIXME:
-    ))
-
-;; -------------------------------------------------------------------
-;;; Interactive
+;; (defun nvp-rust-match ()
+;;   (interactive)
+;;   (let ((_meta (racer--call-at-point "find-definition")))
+;;     ;; FIXME:
+;;     ))
 
 ;; -------------------------------------------------------------------
 ;;; Minor Mode
 
 (defvar nvp-rust-menu
   '("RU"
-    ["Tag Source" nvp-rust-tag-source
-     :help "C-u C-u update source, C-u retag"]
+    ;; ["Tag Source" nvp-rust-tag-source
+    ;;  :help "C-u C-u update source, C-u retag"]
     ["Open Cargo.toml" nvp-rust-open-cargo]
     "--"
-    ["Install/Upgrade" nvp-rust-install
-     :help "Choco upgrade or install with prefix."]))
+    ;; ["Install/Upgrade" nvp-rust-install
+    ;;  :help "Choco upgrade or install with prefix."]
+    ))
 
 (defvar nvp-rust-mode-map
   (let ((km (make-sparse-keymap)))
     (easy-menu-define nil km nil nvp-rust-menu)
-    (define-key km (kbd "<f2> m t") #'nvp-rust-tag-source)
+    ;; (define-key km (kbd "<f2> m t") #'nvp-rust-tag-source)
     (define-key km (kbd "<f2> m .") #'xref-find-definitions)
     (define-key km (kbd "<f2> M-p") #'nvp-rust-toggle-pub)
-    (define-key km (kbd "<f2> M-m") #'nvp-rust-toggle-mut)
+    ;; (define-key km (kbd "<f2> M-m") #'nvp-rust-toggle-mut)
     (define-key km (kbd "<f2> M-v") #'nvp-rust-slice)
     (define-key km (kbd "<f2> m c") #'nvp-rust-open-cargo)
     km))
@@ -240,10 +236,10 @@
 ;;;###autoload
 (define-minor-mode nvp-rust-mode
   "Rust utilities."
-  nil
   :keymap 'nvp-rust-mode-map
   :lighter " RU"
-  (nvp-rust-tag-source nil))
+  ;; (nvp-rust-tag-source nil)
+  )
 
 (defun nvp-rust-toml-hook ()
   (define-key toml-mode-map (kbd "M-?") #'nvp-rust-cargo-help))

@@ -16,9 +16,7 @@
 (require 'smartparens)
 
 (nvp:decls
- :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward
-                 vertico-directory--completing-file-p
-                 consult-recent-file))
+ :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward consult-recent-file))
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'completing-read)
@@ -377,13 +375,16 @@ Dispatches to generic handlers with ARG."
 
 (with-eval-after-load 'ido (require 'nvp-ido))
 
+(defsubst nvp-vertico-completing-file-p ()
+  (eq 'file (vertico--metadata-get 'category)))
+
 (defun nvp-vertico-directory-up (&optional _)
   "Like `vertico-directory-up' except works when completing against
 relative paths."
   (interactive)
   (when (and (> (point) (minibuffer-prompt-end))
              (eq (char-before) ?/)
-             (vertico-directory--completing-file-p))
+             (nvp-vertico-completing-file-p))
     (let* ((path (buffer-substring (minibuffer-prompt-end) (point)))
            (parent (file-name-directory (directory-file-name path))))
       (delete-minibuffer-contents)
@@ -397,7 +398,7 @@ command, call `vertico-insert'. If there is only one match call
 `vertico-exit'."
   (interactive)
   (--if-let (and (not (eq this-command last-command))
-                 (vertico-directory--completing-file-p)
+                 (nvp-vertico-completing-file-p)
                  (buffer-substring
                   (minibuffer-prompt-end)
                   (max (point) (minibuffer-prompt-end))))

@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: kadane
+# key: n_kadane
+# --
+int kadane(std::vector<int>& A, std::vector<int>& B) {
+    int res = 0, cur = 0;
+    for (int i = 0; i < A.size(); ++i) {
+        cur = max(0, cur + A[i] - B[i]);
+        res = max(res, cur);
+    }
+    return res + std::accumulate(std::begin(B), std::end(B), 0);
+}

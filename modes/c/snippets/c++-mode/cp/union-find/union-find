@@ -1,0 +1,23 @@
+# -*- mode: snippet -*-
+# name: union find
+# key: n_uf
+# --
+static const int N = ${1:1e5+1};
+int uf[N]${2:, sz[N]};
+
+int find(int x) {
+    return x == uf[x] ? x : uf[x] = find(uf[x]);
+}
+
+void merge(int x, int y) {
+    int xx = find(x), yy = find(y);
+    if (xx != yy) {
+        uf[yy] = uf[xx];${2:$(and (yas-text) "
+        sz[xx] += sz[yy];")}
+    }
+}
+
+void init() {
+    std::iota(std::begin(uf), std::end(uf), 0);${2:$(and (yas-text) "
+    std::fill(std::begin(sz), std::end(sz), 1);")}
+}

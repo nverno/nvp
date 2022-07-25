@@ -66,7 +66,7 @@
            (expand-file-name
             "Cargo.toml"
             (locate-dominating-file buffer-file-name "Cargo.toml")))
-      (user-error "No Cargo.toml found.")))
+      (user-error "No Cargo.toml found")))
 
 (defun nvp-rust-open-cargo ()
   (interactive)
@@ -230,13 +230,13 @@
     (define-key km (kbd "<f2> M-p") #'nvp-rust-toggle-pub)
     ;; (define-key km (kbd "<f2> M-m") #'nvp-rust-toggle-mut)
     (define-key km (kbd "<f2> M-v") #'nvp-rust-slice)
-    (define-key km (kbd "<f2> m c") #'nvp-rust-open-cargo)
+    (define-key km (kbd "<f2> m j c") #'nvp-rust-open-cargo)
     km))
 
 ;;;###autoload
 (define-minor-mode nvp-rust-mode
   "Rust utilities."
-  :keymap 'nvp-rust-mode-map
+  :keymap nvp-rust-mode-map
   :lighter " RU"
   ;; (nvp-rust-tag-source nil)
   )

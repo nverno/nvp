@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: string from
+# key: sf
+# --
+String::from("$1")

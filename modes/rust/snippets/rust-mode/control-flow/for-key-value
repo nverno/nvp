@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for key-value
+# key: forkv
+# --
+for (${1:key}, ${2:val}) in &$3 {
+    $0
+}

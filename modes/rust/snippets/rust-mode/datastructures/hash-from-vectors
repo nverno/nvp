@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: hash from vectors
+# key: hf
+# --
+let mut ${1:h}: HashMap<_, _> = ${2:keys}${3:.into_iter().zip(${4:vals}.into_iter()).collect()}

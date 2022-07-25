@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for chars
+# key: forc
+# --
+for ${1:c} in $2.chars() {
+    $0
+}

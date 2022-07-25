@@ -3,6 +3,6 @@
 # key: mres
 # --
 match ${1:var} {
-    Ok($2) => Some($3),
-    Err(_) => None,
+    Ok($2) => $3,
+    Err(${4:e}) => $5,
 }

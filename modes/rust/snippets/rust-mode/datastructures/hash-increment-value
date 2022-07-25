@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: hash increment value
+# key: hinc
+# --
+let ${1:cnt} = $2.entry($3).or_insert(0);
+*$1 += 1;

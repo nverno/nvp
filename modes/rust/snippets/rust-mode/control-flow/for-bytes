@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for bytes
+# key: forb
+# --
+for ${1:b} in $2.bytes() {
+    $0
+}

@@ -176,7 +176,7 @@ This is useful, e.g, for use with `visual-line-mode'."
          (or nvp-fill-paragraph-function fill-paragraph-function #'fill-paragraph)))
     (deactivate-mark t)
     (funcall
-     (if (commandp fill-fn) 'call-interactively 'funcall)
+     (if (commandp fill-fn) 'funcall-interactively 'funcall)
      fill-fn
      'fill-paragraph))
   (nvp-repeat-command))

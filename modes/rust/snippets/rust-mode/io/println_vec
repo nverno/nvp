@@ -2,4 +2,4 @@
 # name: prv
 # key: prv
 # --
-println("{:?}", $1);$0
+println("{:?}", $1);

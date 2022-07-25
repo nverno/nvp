@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if-let
+# key: ifl
+# --
+if let Some($1) = $2 {
+    $0
+}

@@ -2,4 +2,4 @@
 # name: debug
 # key: dbg
 # --
-dbg!($1);
+dbg!($1)

@@ -1,9 +1,8 @@
 # -*- mode: snippet -*-
 # name: match option
 # key: mopt
-# expand-env: ((yas-indent-line 'fixed))
 # --
 match ${1:var} {
-  Some(${2:x}) => $3,
-  None => $4
+    Some(${2:x}) => $3,
+    None => $4
 }

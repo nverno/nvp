@@ -171,10 +171,13 @@ This is useful, e.g, for use with `visual-line-mode'."
 (defun nvp-fill-paragraph-toggle (&optional column)
   "Toggle paragraph filling. With prefix, prompt for `fill-column'."
   (interactive (list (and current-prefix-arg (read-number "Fill column: "))))
-  (let ((fill-column (or column (nvp:toggled-if fill-column most-positive-fixnum))))
+  (let ((fill-column (or column (nvp:toggled-if fill-column most-positive-fixnum)))
+        (fill-fn
+         (or nvp-fill-paragraph-function fill-paragraph-function #'fill-paragraph)))
     (deactivate-mark t)
-    (call-interactively
-     (or nvp-fill-paragraph-function fill-paragraph-function #'fill-paragraph)
+    (funcall
+     (if (commandp fill-fn) 'call-interactively 'funcall)
+     fill-fn
      'fill-paragraph))
   (nvp-repeat-command))
 

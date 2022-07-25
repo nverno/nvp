@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: vector init with values
+# key: v.
+# --
+let ${1:v} = vec![$2];

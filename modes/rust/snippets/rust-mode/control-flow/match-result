@@ -1,9 +1,8 @@
 # -*- mode: snippet -*-
 # name: match result
 # key: mres
-# expand-env: ((yas-indent-line 'fixed))
 # --
 match ${1:var} {
-  Ok($2) => Some($3),
-  Err(_) => None,
+    Ok($2) => Some($3),
+    Err(_) => None,
 }

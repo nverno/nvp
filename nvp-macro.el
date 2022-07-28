@@ -1374,7 +1374,7 @@ See `nvp:advise-commands'."
   (setq funcs (nvp:list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
-      collect `(advice-remove ',func ',advice))))
+      collect `(advice-remove ',func ,advice))))
 
 (defmacro nvp:remove-all-advice (funcs)
   "Remove all advice from list of FUNCS."

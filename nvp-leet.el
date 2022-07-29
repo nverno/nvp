@@ -75,7 +75,7 @@
       (enlarge-window 25))))
 
 (nvp:advise-commands #'nvp-leet-result-layout :before '(leetcode-try leetcode-submit))
-(nvp:unadvise-commands #'nvp-leet-result-layout (leetcode-try leetcode-submit))
+;; (nvp:unadvise-commands #'nvp-leet-result-layout (leetcode-try leetcode-submit))
 
 ;; -------------------------------------------------------------------
 ;;; Rust
@@ -86,6 +86,7 @@
          (res (replace-regexp-in-string "[(),]" "" str1)))
     res))
 
+(nvp:decl f-filename f-dirname)
 (defun nvp@leet-get-slug-title (_code-buf)
   (f-filename (f-dirname (buffer-file-name))))
 

@@ -95,13 +95,24 @@
           (file-name-sans-extension
            (replace-regexp-in-string "-" "_" buf-name))))
 
+(defun nvp-leet--add-mod (mod)
+  (with-current-buffer
+      (find-file-noselect
+       (expand-file-name "main.rs" leetcode-directory))
+    (point-min)
+    (insert (format "pub mod %s;\n" mod))
+    (save-buffer)
+    (kill-buffer (current-buffer))))
+
 (defun nvp@leet-get-code-buffer (buf-name)
   (let ((mod (nvp-leet--mod-name buf-name)))
-    (find-file-noselect
-     (concat
-      (file-name-as-directory
-       (expand-file-name mod leetcode-directory))
-      "mod.rs"))))
+    (with-current-buffer
+        (find-file-noselect
+         (concat
+          (file-name-as-directory
+           (expand-file-name mod leetcode-directory))
+          "mod.rs"))
+      (rename-buffer buf-name))))
 
 (defun nvp-leet-set-rust ()
   (interactive)

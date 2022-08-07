@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: size
-# key: si
+# key: sz
 # --
 $1.size()

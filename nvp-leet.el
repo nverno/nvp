@@ -105,13 +105,14 @@
     (kill-buffer (current-buffer))))
 
 (defun nvp@leet-get-code-buffer (buf-name)
-  (let ((mod (nvp-leet--mod-name buf-name)))
-    (with-current-buffer
-        (find-file-noselect
-         (concat
-          (file-name-as-directory
-           (expand-file-name mod leetcode-directory))
-          "mod.rs"))
+  (let* ((mod (nvp-leet--mod-name buf-name))
+         (file (concat
+                (file-name-as-directory
+                 (expand-file-name mod leetcode-directory))
+                "mod.rs")))
+    (unless (file-exists-p file)
+      (nvp-leet--add-mod mod))
+    (with-current-buffer (find-file-noselect file)
       (rename-buffer buf-name)
       (current-buffer))))
 

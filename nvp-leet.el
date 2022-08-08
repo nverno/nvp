@@ -74,7 +74,7 @@
         (display-buffer (leetcode--result-buffer-name nvp-leet-problem-id))
       (enlarge-window 25))))
 
-(nvp:advise-commands #'nvp-leet-result-layout :before '(leetcode-try leetcode-submit))
+(nvp:advise-commands #'nvp-leet-result-layout :before (leetcode-try leetcode-submit))
 ;; (nvp:unadvise-commands #'nvp-leet-result-layout (leetcode-try leetcode-submit))
 
 ;; -------------------------------------------------------------------
@@ -112,7 +112,8 @@
           (file-name-as-directory
            (expand-file-name mod leetcode-directory))
           "mod.rs"))
-      (rename-buffer buf-name))))
+      (rename-buffer buf-name)
+      (current-buffer))))
 
 (defun nvp-leet-set-rust ()
   (interactive)
@@ -125,12 +126,6 @@
   (setq leetcode-prefer-language "cpp"
         leetcode-directory "~/class/leetcode")
   (advice-remove 'leetcode--get-code-buffer #'nvp@leet-get-code-buffer))
-
-;; (defun nvp@leet-solve-rust (orig-fn problem problem-info)
-;;   (let-alist problem
-;;     (let* ((title (leetcode-problem-title problem-info))
-;;            (problem-id (leetcode-problem-id problem-info))))))
-
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode
@@ -176,6 +171,16 @@
   :keymap nvp-leet-mode-map
   (unless nvp-leet-window-configuration
     (setq nvp-leet-window-configuration (current-window-configuration))))
+
+;;; Results
+(define-minor-mode nvp-leet-result-mode "Leetcode results."
+  :lighter " LR")
+
+(defun nvp@leet-show-results (problem-id _submission-detail)
+  (with-current-buffer (get-buffer-create (leetcode--result-buffer-name problem-id))
+    (nvp-leet-result-mode 1)))
+
+(advice-add #'leetcode--show-submission-result :after #'nvp@leet-show-results)
 
 (provide 'nvp-leet)
 ;; Local Variables:

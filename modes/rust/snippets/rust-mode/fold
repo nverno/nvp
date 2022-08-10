@@ -2,4 +2,4 @@
 # name: fold
 # key: fold
 # --
-fold(${1:init}, |${2:acc}| $3)$0
+fold(${1:init}, |${2:acc}| $3)

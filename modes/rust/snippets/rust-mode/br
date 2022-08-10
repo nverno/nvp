@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: br
-# key: br
-# --
-//-- ${1:title} ${1:$(make-string (- 64 (string-width yas-text)) ?-)}
-$0

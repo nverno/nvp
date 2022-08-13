@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: sync-with-stdio
+# key: sws
+# --
+ios::sync_with_stdio(0);
+cin.tie(0);

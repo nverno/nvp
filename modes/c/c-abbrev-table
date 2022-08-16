@@ -46,7 +46,8 @@
   :parents (list c-mode-abbrev-table))
 
 (define-abbrev-table 'c++-mode-abbrev-table
-  '(("th" "this" nil :system t)
+  '(("so" "sizeof" nil :system t)
+    ("th" "this" nil :system t)
     ("np" "nullptr" nil :system t)
     ("del" "delete" nil :system t)
     ("inl" "inline" nil :system t)

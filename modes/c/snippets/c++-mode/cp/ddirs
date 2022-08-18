@@ -2,7 +2,7 @@
 # name: dirs-with-diagonals
 # key: ddirs
 # --
-int dirs[8][2] = {
+const int dirs[8][2] = {
     {1, 1}, {1, 0}, {0, 1},
     {1, -1}, {-1, 1}, {0, -1},
     {-1, 0}, {-1, -1},

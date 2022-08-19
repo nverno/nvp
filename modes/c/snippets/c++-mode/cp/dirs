@@ -2,4 +2,5 @@
 # name: dirs
 # key: dirs
 # --
-const int dirs[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+const string ds = "NESW";
+const int dirs[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};

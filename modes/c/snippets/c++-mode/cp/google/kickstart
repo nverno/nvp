@@ -3,7 +3,7 @@
 # key: google_ks
 # --
 #include <bits/stdc++.h>
-#include "template.hpp"
+#include "../../../include/template.hpp"
 using namespace std;
 
 void solve() {

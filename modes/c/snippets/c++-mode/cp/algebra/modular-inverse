@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: modular-inverse
+# key: n_modinv
+# --
+long long modinv(long long x, long long mod = MOD) {
+    return powmod(x, mod - 2, mod);
+}

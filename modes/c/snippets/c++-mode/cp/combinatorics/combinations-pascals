@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: pascal table of combinations
-# key: n_pascal
+# key: n_combn_table
 # --
 #define COMBN_MAXN ${1:1000}
 static const int MOD = 1e9+7;

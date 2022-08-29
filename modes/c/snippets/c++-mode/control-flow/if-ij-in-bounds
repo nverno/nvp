@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if i,j in bounds
+# key: if-ij
+# --
+if (i < 0 || j < 0 || i >= m || j >= n${1: || ${2:grid}[i][j] ${3:!= '1'}}) {
+    $0
+}

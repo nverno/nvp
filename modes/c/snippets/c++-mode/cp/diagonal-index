@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: diagonal index
+# key: n_diag
+# --
+int diag(int r, int c, int ndiag) {
+    return (ndiag + (r - c)) % ndiag;
+}

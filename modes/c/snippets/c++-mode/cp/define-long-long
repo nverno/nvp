@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: define long long
+# key: dll
+# --
+#define ll long long

@@ -1,0 +1,39 @@
+# -*- mode: snippet -*-
+# name: find cycle
+# key: n_cycle
+# --
+// return {true, {cycle start, cycle end}} if cycle found
+pair<bool,pair<int,int>> dfs_cycle(int u, int p, vector<int>& parent, vector<int>& color, ${1:unordered_map<int,vector<int>>}& g) {
+    color[u] = 1;
+    for (auto& v : g[u]) {
+        if (v == p) continue;
+        if (color[v] == 1) {
+            return {true, {u, v}};
+        } else if (color[v] == 0) {
+            parent[v] = u;
+            auto r = dfs_cycle(v, u, parent, color, g);
+            if (r.first)
+                return r;
+        }
+    }
+    color[u] = 2;
+    return {false, {}};
+}
+
+vector<int> find_cycle(int n, $1& g, /*first node*/int initial = 0) {
+    vector<int> parent(n+initial), color(n+initial);
+    for (auto& [k, v] : g) {
+        if (color[k]) continue;
+        auto r = dfs_cycle(k, k, parent, color, g);
+        if (!r.first) continue;
+        auto [b, e] = r.second;
+        vector<int> res = {e};
+        while (b != e) {
+            res.push_back(b);
+            b = parent[b];
+        }
+        res.push_back(e);
+        return res;
+    }
+    return {};
+}

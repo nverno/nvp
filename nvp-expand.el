@@ -39,7 +39,10 @@ from 0."
 (defun nvp-expand-tiny (&optional arg)
   "Expand region before point with `tiny-expand'. If prefix is non-nil,
 wrap expanded items with quotes (default) or with double-prefix, prompt
-for string to wrap."
+for string to wrap.
+
+Example: m,25+x?a%c => \"a\", \"b\", ..., \"z\"
+"
   (interactive "P")
   (cond
    ((eq (car-safe arg) 4)

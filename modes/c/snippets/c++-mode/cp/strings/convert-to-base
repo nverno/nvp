@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: convert number to base
+# key: s_to_base
+# --
+string to_base(int n, int b) {
+    string res;
+    while (n) {
+        res += to_string(n % b);
+        n /= b;
+    }
+    std::reverse(res.begin(), res.end());
+    return res;
+}

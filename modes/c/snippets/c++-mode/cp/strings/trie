@@ -1,0 +1,26 @@
+# -*- mode: snippet -*-
+# name: trie
+# key: n_trie
+# --
+struct Node {
+    bool leaf;
+    array<Node*,26> ch;
+    Node(): leaf(false) {
+        fill(ch.begin(), ch.end(), nullptr);
+    }
+
+    void insert(string& s) {
+        Node* ptr = this;
+        for (char const &c: s) {
+            if (!ptr->ch[c-'a'])
+                ptr->ch[c-'a'] = new Node();
+            ptr = ptr->ch[c-'a'];
+        }
+        ptr->leaf = true;
+    }
+
+    ~Node() {
+        for (auto it = ch.begin(); it != ch.end(); ++it) 
+            delete *it;
+    }
+};

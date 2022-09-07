@@ -1,0 +1,37 @@
+# -*- mode: snippet -*-
+# name: bellman-ford single-source shortest path
+# key: n_bellman_ford
+# --
+#define ll long long
+const ${1:ll} INF = ${2:1e9+1};
+
+struct Edge {
+    int u, v;
+    $1 cost;
+};
+
+// Note: If relaxation after (n-1)th run, then there is negative cycle
+// beg = start node, n = #nodes [0..n), d = distances, p = parent
+// return -1 if no cycle, otherwise node in cycle
+int bellman_ford(int beg, int n, vector<$1>& dist, vector<int>& p, vector<Edge>& edges) {
+    const int m = edges.size();
+    dist.assign(n, INF);
+    p.assign(n, -1);
+    dist[beg] = 0;
+
+    int cycle = -1;
+    for (int i = 0; i < n; ++i) {
+        cycle = -1;
+        for (int j = 0; j < m; ++j) {
+            auto [u, v, c] = edges[j];
+            if (dist[u] != INF) {
+                if (dist[v] > dist[u] + c) {
+                    dist[v] = max(-INF, dist[u] + c);
+                    p[v] = u;
+                    cycle = v;
+                }
+            }
+        }
+    }
+    return cycle;
+}

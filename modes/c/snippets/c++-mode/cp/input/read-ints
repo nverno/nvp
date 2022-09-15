@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: read ints
+# key: iin
+# --
+int $1;
+cin >> ${1:$(s-join " >> " (s-split "[ ,]" (or (yas-text) "") t))};

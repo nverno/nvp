@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: read inputs
+# key: in
+# --
+${1:int} ${2:n};
+cin >> ${2:$(s-join " >> " (s-split "[ ,]" (or (yas-text) "") t))};

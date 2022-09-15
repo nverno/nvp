@@ -1,0 +1,58 @@
+# -*- mode: snippet -*-
+# name: segtree
+# key: n_segtree
+# --
+auto f_combine = ${1:std::plus<int>()};
+auto f_update = ${2:$1};
+
+template<typename T>
+struct SegTree {
+    int n, h;
+    vector<T> tree;
+
+    SegTree(int sz): n(sz) {
+        h = 1;
+        while ((1 << h) < n) ++h;
+        if (sz > 0 && (sz & (sz - 1)) != 0) {
+            sz = (1 << (32 - __builtin_clz(sz)));
+        }
+        tree.resize(2 * sz, ${3:0});
+    }
+
+    T value() { return tree[0]; }
+
+    T query(int l, int r) {
+        return query1(0, l, r, 0, n-1);
+    }
+
+    T query1(int pos, int ql, int qr, int l, int r) {
+        if (l >= ql && r <= qr) return tree[pos];
+        if (l > qr || r < ql) return ${4:0};
+
+        int mid = l + (r - l) / 2,
+             ln = 2*pos + 1,
+             rn = ln + 1;
+
+        return f_combine(query1(ln, ql, qr, l, mid), query1(rn, ql, qr, mid+1, r));
+    }
+
+    void update(int i, T val) {
+        update1(0, 0, n-1, i, val);
+    }
+
+    void update1(int i, int l, int r, int pos, T val) {
+        if (pos < l || pos > r) return;
+        if (l == r) {
+            tree[i] = $5;
+            return;
+        }
+
+        int mid = l + (r - l) / 2,
+             ln = 2*i+1,
+             rn = 1 + ln;
+
+        update1(ln, l, mid, pos, val);
+        update1(rn, mid+1, r, pos, val);
+        tree[i] = f_update(tree[ln], tree[rn]);
+    }
+};

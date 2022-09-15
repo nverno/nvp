@@ -1,0 +1,56 @@
+# -*- mode: snippet -*-
+# name: max/min segtree
+# key: n_segtree_max
+# --
+template<typename T>
+struct ${1:Max}SegTree {
+    int n, h;
+    vector<T> tree;
+
+    $1SegTree(int sz): n(sz) {
+        h = 1;
+        while ((1 << h) < n) ++h;
+        if (sz > 0 && (sz & (sz - 1)) != 0) {
+            sz = (1 << (32 - __builtin_clz(sz)));
+        }
+        tree.resize(2 * sz, ${2:0});
+    }
+
+    T ${1:$(downcase (yas-text))}Val() { return tree[0]; }
+
+    T query(int l, int r) {
+        return query1(0, l, r, 0, n-1);
+    }
+
+    T query1(int pos, int ql, int qr, int l, int r) {
+        if (l >= ql && r <= qr) return tree[pos];
+        if (l > qr || r < ql) return INT_${1:$(if (string= "max" (downcase (yas-text)))
+        "MIN" "MAX")};
+
+        int mid = l + (r - l) / 2,
+             ln = 2*pos + 1,
+             rn = ln + 1;
+
+        return ${1:$(downcase (yas-text))}(query1(ln, ql, qr, l, mid), query1(rn, ql, qr, mid+1, r));
+    }
+
+    void update(int i, T val) {
+        update1(0, 0, n-1, i, val);
+    }
+
+    void update1(int i, int l, int r, int pos, T val) {
+        if (pos < l || pos > r) return;
+        if (l == r) {
+            tree[i] = ${3:max(val, tree[i])};
+            return;
+        }
+
+        int mid = l + (r - l) / 2,
+             ln = 2*i+1,
+             rn = 1 + ln;
+
+        update1(ln, l, mid, pos, val);
+        update1(rn, mid+1, r, pos, val);
+        tree[i] = ${1:$(downcase (yas-text))}(tree[ln], tree[rn]);
+    }
+};

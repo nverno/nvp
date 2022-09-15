@@ -1,0 +1,61 @@
+# -*- mode: snippet -*-
+# name: range update
+# key: n_range_update
+# --
+template<typename T>
+struct RangeUpdate {
+    int n, h;
+    vector<T> tree;
+
+    RangeUpdate(int sz): n(sz) {
+        h = 1;
+        while ((1 << h) < n) ++h;
+        if (sz > 0 && (sz & (sz - 1)) != 0) {
+            sz = (1 << (32 - __builtin_clz(sz)));
+        }
+        tree.resize(2 * sz, 0);
+    }
+
+    void build1(int i, int l, int r, vector<T>& arr) {
+        if (l == r) {
+            tree[i] = arr[l];
+        } else {
+            int mid = (l + r) / 2;
+            build1(2*i + 1, l, mid, arr);
+            build1(2*i + 2, mid+1, r, arr);
+        }
+    }
+
+    void build(vector<T>& arr) {
+        build1(0, 0, n-1, arr);
+    }
+
+    void update1(int i, int l, int r, int ql, int qr, T val) {
+        if (ql > qr) return;
+        if (l == ql && r == qr) {
+            tree[i] += val;
+        } else {
+            int mid = (l + r) / 2;
+            update1(2*i + 1, l, mid, ql, min(qr, mid), val);
+            update1(2*i + 2, mid+1, r, max(ql, mid+1), qr, val);
+        }
+    }
+
+    void update(int ql, int qr, T val) {
+        update1(0, 0, n-1, ql, qr, val);
+    }
+
+    T query1(int i, int pos, int l, int r) {
+        if (l == r) return tree[i];
+
+        int mid = (l + r)/2;
+        return tree[i] + (
+            pos <= mid
+            ? query1(2*i + 1, pos, l, mid)
+            : query1(2*i + 2, pos, mid+1, r));
+    }
+
+    T query(int pos) {
+        return query1(0, pos, 0, n-1);
+    }
+};

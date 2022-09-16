@@ -1,0 +1,41 @@
+# -*- mode: snippet -*-
+# name: segtree query index
+# key: n_segree_index
+# --
+struct Segtree {
+    int n;
+    vector<int> tree;
+
+    Segtree(int n_): n(n_) {
+        if (n > 0 && (n & (n - 1)) != 0) {
+            n = (1 << (32 - __builtin_clz(n)));
+        }
+        tree.resize(n * 2);
+    }
+
+    void update(int i, int v) {
+        i += n;
+        tree[i] += v;
+        i >>= 1;
+        while (i >= 1) {
+            tree[i] = max(tree[2*i], tree[2*i+1]);
+            i >>= 1;
+        }
+    }
+
+    int query(int v) {
+        if (tree[1] < v)
+            return -1;
+
+        int pos = 1;
+        while (pos < n) {
+            if (tree[2*pos] >= v) pos <<= 1;
+            else {
+                pos <<= 1;
+                pos++;
+            }
+        }
+
+        return pos - n;
+    }
+};

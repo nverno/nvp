@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: runtime
+# key: n_time
+# --
+clock_t tstart = clock();
+cerr << fixed << setprecision(10)
+     << "\nRuntime: "
+     << (double)(clock()- tstart) / CLOCKS_PER_SEC << endl;

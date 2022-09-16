@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: friend operator+
+# key: fop
+# --
+friend ${1:type} operator${2:+}(const $1& a, const $1& b) {
+    $0
+}

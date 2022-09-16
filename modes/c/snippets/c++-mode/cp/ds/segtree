@@ -2,8 +2,16 @@
 # name: segtree
 # key: n_segtree
 # --
-auto f_combine = ${1:std::plus<int>()};
-auto f_update = ${2:$1};
+${1:struct Node {
+    int val;
+    Node(int x = 0): val(x) {\}
+    friend Node operator+(const Node& a, const Node& b) {
+        return { a.val + b.val \};
+    \}
+\};}
+
+auto f_combine = ${2:std::plus<${1:$(if (yas-text) "Node" "int")}>()};
+auto f_update = $2;
 
 template<typename T>
 struct SegTree {
@@ -43,7 +51,7 @@ struct SegTree {
     void update1(int i, int l, int r, int pos, T val) {
         if (pos < l || pos > r) return;
         if (l == r) {
-            tree[i] = $5;
+            tree[i] = ${5:val};
             return;
         }
 

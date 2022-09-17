@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: binary-exponentiation
-# key: n_binpow
+# key: n_powmod
 # --
 long long powmod(long long x, long long y, long long mod = MOD) {
     x %= mod;

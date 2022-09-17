@@ -3,4 +3,3 @@
 # key: imp
 # --
 import ${1:java.$2};
-$0

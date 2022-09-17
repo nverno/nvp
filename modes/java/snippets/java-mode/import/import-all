@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: import all utils
+# key: inca
+# --
+import java.util.*;

@@ -2,4 +2,4 @@
 # name: import java utils
 # key: impu
 # --
-import java.util.$1;
+import java.util.${1:*};

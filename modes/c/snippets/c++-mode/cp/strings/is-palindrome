@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: isPalindrome
+# key: n_isPali
+# --
+bool isPali(string s) {
+    int l = 0, r = s.size() - 1;
+    while (l < r)
+        if (s[l++] != s[r--])
+            return false;
+    return true;
+}

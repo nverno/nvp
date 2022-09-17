@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: coordinate compression
+# key: n_compress
+# --
+sort(${1:vals}.begin(), $1.end());
+$1.resize(unique(begin($1), end($1)) - begin($1));
+
+auto idx = [&](int x) {
+    return lower_bound(begin($1), end($1), x) - begin($1);
+};

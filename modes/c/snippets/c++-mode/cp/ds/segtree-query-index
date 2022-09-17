@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: segtree query index
-# key: n_segree_index
+# key: n_segtree_index
 # --
 struct Segtree {
     int n;

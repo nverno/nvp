@@ -7,13 +7,13 @@ struct Trie {
     bool leaf;
     char offset;
     T val;
-    std::array<Trie*,26> ch;
+    array<Trie*,26> ch;
 
-    Trie(char off = 'A'): leaf(false), offset(off) {
-        std::fill(ch.begin(), ch.end(), nullptr);
+    Trie(char off = 'a'): leaf(false), offset(off) {
+        fill(ch.begin(), ch.end(), nullptr);
     }
 
-    void add(std::string& s, T v) {
+    void add(string const& s, T v) {
         Trie *ptr = this;
         for (char const &c: s) {
             if (!ptr->ch[c-offset])
@@ -24,7 +24,7 @@ struct Trie {
         ptr->val = v;
     }
 
-    Trie *lookup(std::string s) {
+    Trie *lookup(string s) {
         Trie *ptr = this;
         for (char const &c: s) {
             if (!ptr->ch[c-offset]) break;

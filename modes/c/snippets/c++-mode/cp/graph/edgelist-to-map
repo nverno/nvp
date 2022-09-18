@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: edge list to map
-# key: n_etog
+# key: etog
 # --
 unordered_map<int,vector<int>> ${1:g};${2:
 vector<int> indegree(${3:n});}

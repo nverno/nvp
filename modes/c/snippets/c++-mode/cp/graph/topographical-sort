@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: topographical sort
-# key: n_toposort
+# key: g_topo
 # --
 bool dfs_topo(int u, int& cur, vector<int>& order, ${1:unordered_map<int,vector<int>>}& g) {
     order[u] = -1;

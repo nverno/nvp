@@ -2,4 +2,4 @@
 # name: vector-constant
 # key: vc
 # --
-std::vector<${1:int}> ${2:var} = {$3};
+vector<${1:int}> ${2:var} = {$3};

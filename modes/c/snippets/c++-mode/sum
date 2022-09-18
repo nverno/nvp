@@ -2,4 +2,4 @@
 # name: sum
 # key: sum
 # --
-std::accumulate($1.begin(), $1.end(), 0${2:LL});
+accumulate($1.begin(), $1.end(), 0${2:LL});

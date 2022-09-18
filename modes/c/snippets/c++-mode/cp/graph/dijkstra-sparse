@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: dijkstra on sparse graph
-# key: n_dijkstra
+# key: g_dijkstra
 # --
 const ${1:int} INF = ${2:INT_MAX};
 // beg = start node, d = distances, p = parent
@@ -9,7 +9,7 @@ void dijkstra(int beg, vector<$1>& d, vector<int>& p, vector<vector<pair<$1,int>
     d.assign(n, INF);
     p.assign(n, -1);
 
-    std::priority_queue<pair<$1,int>, vector<pair<$1,int>>, std::greater<>> pq;
+    priority_queue<pair<$1,int>, vector<pair<$1,int>>, greater<>> pq;
     pq.push({0, beg});
     d[beg] = 0;
     while (!pq.empty()) {

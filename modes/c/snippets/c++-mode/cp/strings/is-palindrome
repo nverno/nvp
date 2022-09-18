@@ -1,8 +1,8 @@
 # -*- mode: snippet -*-
-# name: isPalindrome
-# key: n_isPali
+# name: check palindrome
+# key: s_pali
 # --
-bool isPali(string s) {
+bool isPali(string const& s) {
     int l = 0, r = s.size() - 1;
     while (l < r)
         if (s[l++] != s[r--])

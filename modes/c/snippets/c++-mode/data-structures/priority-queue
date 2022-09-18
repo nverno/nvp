@@ -2,4 +2,4 @@
 # name: priority_queue
 # key: pq
 # --
-std::priority_queue<${1:int}, vector<$1>${2:, ${3:std::less<>}}> pq;
+priority_queue<${1:int}, vector<$1>${2:, ${3:std::less<>}}> pq;

@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: string hash
+# key: s_hash
+# --
+// polynomial rolling hash: sum_0^{n-1} s[i]*p^i (mod m)
+long long s_hash(string const& s) {
+    const int p = 31;
+    const int m = 1e9 + 9;
+    long long hash = 0;
+    long long p_pow = 1;
+    for (char c : s) {
+        hash = (hash + (c - 'a' + 1) * p_pow) % m;
+        p_pow = (p_pow * p) % m;
+    }
+    return hash;
+}

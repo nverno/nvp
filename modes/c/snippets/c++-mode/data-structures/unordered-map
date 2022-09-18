@@ -2,4 +2,4 @@
 # name: unordered_map
 # key: umap
 # --
-std::unordered_map<$1>
+unordered_map<$1>

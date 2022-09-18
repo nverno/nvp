@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: bellman-ford single-source shortest path
-# key: n_bellman_ford
+# key: g_bellman
 # --
 #define ll long long
 const ${1:ll} INF = ${2:1e9+1};

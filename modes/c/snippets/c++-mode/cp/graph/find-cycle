@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: find cycle
-# key: n_cycle
+# key: g_cycle
 # --
 // return {true, {cycle start, cycle end}} if cycle found
 pair<bool,pair<int,int>> dfs_cycle(int u, int p, vector<int>& parent, vector<int>& color, ${1:unordered_map<int,vector<int>>}& g) {

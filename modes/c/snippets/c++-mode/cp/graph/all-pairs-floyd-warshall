@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: floyd-warshall all-pairs shortest paths
-# key: n_floyd_warshall
+# key: g_floyd
 # --
 #define ll long long
 const int INF = -1;

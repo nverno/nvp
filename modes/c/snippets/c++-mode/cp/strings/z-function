@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: z function
-# key: n_zfunction
+# key: s_z
 # --
 vector<${1:ll}> z_function(string s) {
     int n = (int) s.length();

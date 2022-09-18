@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: alphabet
+# key: alpha
+# --
+string alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";

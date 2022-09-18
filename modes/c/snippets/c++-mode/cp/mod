@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: MOD
-# key: MOD
+# name: mod
+# key: mod
 # --
 const int MOD = 1e9+7;

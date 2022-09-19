@@ -36,7 +36,7 @@ has a file or directory local binding."
       (doc "Compile using make or cmake if found, otherwise execute body.")
       (make-action
        '(let ((compile-command
-               (or arg
+               (or args
                    (cdr (assoc 'compile-command file-local-variables-alist))
                    "make -k")))
           (nvp-compile)))

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: least common ancestor
-# key: n_lca
+# key: t_lca1
 # --
 ${1:TreeNode} *lca($1 *root, int x, int y) {
     if (!root) return nullptr;

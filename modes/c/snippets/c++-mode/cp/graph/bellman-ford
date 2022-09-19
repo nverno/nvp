@@ -20,7 +20,7 @@ int bellman_ford(int beg, int n, vector<$1>& dist, vector<int>& p, vector<Edge>&
     dist[beg] = 0;
 
     int cycle = -1;
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n/*<= n for cycle*/; ++i) {
         cycle = -1;
         for (int j = 0; j < m; ++j) {
             auto [u, v, c] = edges[j];

@@ -1,0 +1,38 @@
+# -*- mode: snippet -*-
+# name: lca binary lifting
+# key: t_lca
+# --
+const int logN = 20;
+const int maxN = ${1:2e5};
+
+int up[maxN+1][logN+1], tin[maxN+1], tout[maxN+1];
+int timer = 0;
+
+void dfs_lca(int u, int p, vector<vector<int>>& adj) {
+    tin[u] = timer++;
+    up[u][0] = p;
+
+    for (int l = 1; l <= logN; ++l) 
+        up[u][l] = up[up[u][l-1]][l-1];
+
+    for (auto& v : adj[u]) 
+        if (v != p) 
+            dfs_lca(v, u, adj);
+
+    tout[u] = timer++;
+}
+
+bool is_ancestor(int u, int v) {
+    return tin[u] <= tin[v] && tout[u] >= tout[v];
+}
+
+int lca(int u, int v) {
+    if (is_ancestor(u, v)) return u;
+    if (is_ancestor(v, u)) return v;
+
+    for (int l = logN; l >= 0; --l) {
+        if (!is_ancestor(up[u][l], v))
+            u = up[u][l];
+    }
+    return up[u][0];
+}

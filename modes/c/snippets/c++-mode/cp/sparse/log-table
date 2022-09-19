@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: log2 lookup table
+# key: t_logs
+# --
+${1:const int maxN = 2e5;}
+const int logN = ${2:18};
+int logs[maxN+1];
+
+void ${3:init}() {
+     logs[1] = 0;
+     for(int i = 0; i <= maxN; ++i) 
+         logs[i] = logs[i/2] + 1;
+}

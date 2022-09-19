@@ -2,4 +2,4 @@
 # name: cout
 # key: cout
 # --
-std::cout << $1${2: << std::endl};
+cout << $1${2: << endl};

@@ -2,5 +2,5 @@
 # name: print-vector
 # key: prvec
 # --
-std::copy(${1:vec}.begin(), $1.end(), std::ostream_iterator<decltype($1[0])>(std::cout, ${3:" "}));${4:
-std::cout << std::endl;}
+copy(${1:vec}.begin(), $1.end(), ostream_iterator<decltype($1[0])>(cout, ${3:" "}));${4:
+cout << endl;}

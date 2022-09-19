@@ -2,4 +2,4 @@
 # name: sort
 # key: sort
 # --
-std::sort(${1:v}.begin(), $1.end());
+sort(${1:v}.begin(), $1.end());

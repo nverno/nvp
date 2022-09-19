@@ -2,4 +2,4 @@
 # name: dbg
 # key: dbg
 # --
-std::cout << "[DEBUG]$2: $1 = " << $1 << std::endl;
+cout << "[DEBUG]$2: $1 = " << $1 << endl;

@@ -2,4 +2,4 @@
 # name: reverse
 # key: rev
 # --
-std::reverse($1.begin(), $1.end());
+reverse($1.begin(), $1.end());

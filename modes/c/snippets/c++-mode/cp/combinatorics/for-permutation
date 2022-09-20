@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: for permutation
+# key: forperm
+# --
+${2:vector<int> $1;
+for (int i = 0; i < n; i++) {
+    $1.push_back(i);
+\}}
+do {
+    $0
+} while (next_permutation(${1:perm}.begin(), $1.end()));

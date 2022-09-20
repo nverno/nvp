@@ -2,10 +2,17 @@
 # name: binary-search
 # key: n_bs
 # --
-int l = 0, r = ${1:hi};
-while (l != r) {
-    int mid = (l + r + 1) / 2;
-    if (${2:check(mid)}) l = mid;
-    else r = mid - 1;
+auto check = [&](int m) {
+    $0
+};
+
+int l = 0, r = ${1:hi}, res = 0;
+while (l <= r) {
+    int mid = (l + r) / 2;
+    if (${2:check(mid)}) {
+        r = mid-1;
+        res = mid;
+    }
+    else l = mid + 1;
 }
-return l;
+return res;

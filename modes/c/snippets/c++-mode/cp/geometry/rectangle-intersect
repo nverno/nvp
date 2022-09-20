@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: rectangle intersect
+# key: g_rect_intersect
+# --
+long long rect_intersect(vector<int>& a, vector<int>& b) {
+    long long w = min(a[2], b[2]) - max(a[0], b[0]),
+              h = min(a[3], b[3]) - max(a[1], b[1]);
+    return w > 0 && h > 0 ? w * h : 0;
+}

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: auto deconstruct
+# key: .
+# --
+auto [$1] = $2

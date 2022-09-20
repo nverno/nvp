@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: multiset
+# key: ms
+# --
+multiset<$1>

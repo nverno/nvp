@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: multiset erase
+# key: mse
+# --
+$1.erase($1.find($2))

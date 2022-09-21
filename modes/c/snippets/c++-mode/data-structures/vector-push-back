@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: push_back
+# key: pb
+# --
+push_back($1)

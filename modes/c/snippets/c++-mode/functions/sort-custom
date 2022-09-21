@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: sort custom
+# key: sortf
+# --
+sort(begin($1), end($1), [](const ${2:auto}& a, const $2& b) {
+    $0
+});

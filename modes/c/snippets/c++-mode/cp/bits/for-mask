@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for-mask
+# key: formask
+# --
+for (int mask = ${1:0}; mask < ${2:(1 << n)}; ++mask) {
+    $0
+}

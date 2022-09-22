@@ -1,0 +1,34 @@
+# -*- mode: snippet -*-
+# name: binary lifting
+# key: n_jump
+# --
+${1:const int maxK = 1e9;
+}const int maxN = 2e5;
+const int logN = 30;
+
+int n, st[maxN+1][logN+1], logs[maxN+1];
+
+void process(vector<int>& p) {
+    memset(st, -1, sizeof(st));
+    for (int i = 1; i <= n; ++i) 
+        st[i][0] = p[i-1];
+
+    for (int l = 1; (1 << l) <= ${1:$(if (yas-text) "maxK" "maxN")}; ++l) {
+        for (int i = 1; i <= n; ++i) {
+            if (st[i][l-1] != -1)
+                st[i][l] = st[st[i][l-1]][l-1];
+        }
+    }
+
+    for (int l = 2; l <= maxN; ++l) {
+        logs[l] = logs[l/2] + 1;
+    }
+}
+
+int query(int x, int k) {
+    int l = ${2:$(if (yas-text) "logs[k]" "k <= maxN ? logs[k] : log2(k)")};
+    for (; k && x != -1; k -= (1 << l), l = $2) {
+        x = st[x][l];
+    }
+    return x;
+}

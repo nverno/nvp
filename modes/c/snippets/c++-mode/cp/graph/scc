@@ -1,0 +1,50 @@
+# -*- mode: snippet -*-
+# name: strongly connected components
+# key: g_scc
+# --
+const int maxN = ${1:1e5};
+
+vector<int> g[$1], rg[$1];
+
+void dfs1(int u, vector<int>& seen, vector<int>& order) {
+    seen[u] = 1;
+    for (auto& v : g[u]) {
+        if (!seen[v])
+            dfs1(v, seen, order);
+    }
+    order.push_back(u);
+}
+
+void dfs2(int u, vector<int>& seen, vector<int>& comp) {
+    seen[u] = 1;
+    comp.push_back(u);
+    for (auto& v : rg[u]) {
+        if (!seen[v])
+            dfs2(v, seen, comp);
+    }
+}
+
+// scc id for each node in graph
+vector<int> sccs(int n) {
+    vector<int> res(n, -1), seen(n), order, comp;
+    for (int u = 0; u < n; ++u) {
+        if (!seen[u])
+            dfs1(u, seen, order);
+    }
+    reverse(order.begin(), order.end());
+
+    seen.assign(n, 0);
+    int cid = 1;
+    for (auto& u : order) {
+        if (!seen[u]) {
+            dfs2(u, seen, comp);
+            for (auto& x : comp) {
+                // process component
+                res[x] = cid;
+            }
+            comp.clear();
+            ++cid;
+        }
+    }
+    return res;
+}

@@ -2,11 +2,11 @@
 # name: topographical sort
 # key: g_topo
 # --
-bool dfs_topo(int u, int& cur, vector<int>& order, ${1:unordered_map<int,vector<int>>}& g) {
+bool dfs_topo(int u, int& cur, vector<int>& order${1:, ${2:unordered_map<int,vector<int>>}& g}) {
     order[u] = -1;
     for (auto& v : g[u]) {
         if (order[v] >= 0) continue;
-        if (order[v] == -1 || !dfs_topo(v, cur, order, g))
+        if (order[v] == -1 || !dfs_topo(v, cur, order${1:$(if (yas-text) ", g")}))
             return false;
     }
     order[u] = cur++;
@@ -14,13 +14,13 @@ bool dfs_topo(int u, int& cur, vector<int>& order, ${1:unordered_map<int,vector<
 }
 
 // nodes 1..n, returns {} if cycle detected
-vector<int> toposort(int n, $1& g) {
+vector<int> toposort(int n$1) {
     vector<int> order(n, -2);
     int cur = 0;
 
     for (int i = 0; i < n; ++i) {
         if (order[i] == -2) {
-            if (!dfs_topo(i, cur, order, g))
+            if (!dfs_topo(i, cur, order${1:$(if (yas-text) ", g")}))
                 return {};
         }
     }

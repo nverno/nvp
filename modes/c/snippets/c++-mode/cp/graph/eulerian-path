@@ -1,0 +1,48 @@
+# -*- mode: snippet -*-
+# name: euler path
+# key: g_euler
+# --
+// from Benq (from KACTL)	
+template<int SZ, bool directed>
+struct Euler {
+    int N;
+    vector<pair<int,int>> adj[SZ];
+    vector<pair<int,int>>::iterator its[SZ];
+    vector<bool> used;
+    void add_edge(int a, int b) {
+        int M = used.size();
+        used.push_back(0); 
+        adj[a].emplace_back(b,M);
+        if (!directed) adj[b].emplace_back(a,M);
+    }
+    vector<pair<int,int>> solve(int _N, int src = 0) {
+        N = _N;
+        for (int i = 0; i < N; ++i) 
+            its[i] = begin(adj[i]);
+
+        vector<pair<pair<int,int>,int>> res, s = {{{src,-1},-1}}; 
+        // {{vert, prev vert}, edge label}
+        while (!s.empty()) {
+            int x = s.back().first.first;
+            auto& it = its[x], en = end(adj[x]);
+            while (it != en && used[it->second])
+                it++;
+            if (it == en) { // no more edges out of vertex
+                if (res.size() && res.back().first.second != x)
+                    return {}; 
+                res.push_back(s.back());
+                s.pop_back(); 
+            } else {
+                s.push_back({{it->first,x},it->second});
+                used[it->second] = 1;
+            }
+        }
+        if (res.size() != used.size()+1)
+            return {};
+        vector<pair<int,int>> ans;
+        for (auto& t : res) 
+            ans.push_back({t.first.first, t.second});
+        reverse(ans.begin(), ans.end());
+        return ans;
+    }
+};

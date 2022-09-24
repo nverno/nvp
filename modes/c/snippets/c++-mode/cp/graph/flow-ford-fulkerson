@@ -1,0 +1,76 @@
+# -*- mode: snippet -*-
+# name: max flow ford-fulkerson
+# key: g_flow
+# --
+#define ll long long
+const int maxN = ${1:500};
+const ll INF = ${2:LLONG_MAX};
+// g is undirected of original graph, for a->b: add both a->b and b->a
+// to check for residual capicities during bfs
+vector<int> g[maxN];
+// cap is initially capacities of directed input, cap[a][b] = cost(a->b)
+ll cap[maxN][maxN];
+
+ll bfs(int s, int t, vector<int>& parent) {
+    fill(begin(parent), end(parent), -1);
+    parent[s] = -2;
+    queue<pair<int,ll>> q;
+    q.push({s, INF});
+
+    while (!q.empty()) {
+        auto [cur, flow] = q.front(); q.pop();
+
+        for (auto& next : g[cur]) {
+            if (parent[next] == -1 && cap[cur][next]) {
+                parent[next] = cur;
+                ll nflow = min(flow, cap[cur][next]);
+                if (next == t)
+                    return nflow;
+                q.push({next, nflow});
+            }
+        }
+    }
+    return 0;
+}
+
+ll maxflow(int s, int t, int n) {
+    vector<int> parent(n, -1);
+    ll flow = 0LL, nflow;
+    
+    while ((nflow = bfs(s, t, parent)) != 0) {
+        flow += nflow;
+        int cur = t;
+        while (cur != s) {
+            int prev = parent[cur];
+            cap[prev][cur] -= nflow;
+            cap[cur][prev] += nflow;
+            cur = prev;
+        }
+    }
+    
+    return flow;
+}
+
+// return edges crossing mincut
+vector<pair<int,int>> mincut(int s, int n) {
+    vector<pair<int,int>> res;
+    vector<int> ss, seen(n);
+    queue<int> q;
+    q.push(s);
+    seen[s] = 1;
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        ss.push_back(u);
+        for (auto& v : g[u]) {
+            if (!seen[v] && cap[u][v]) {
+                seen[v] = 1;
+                q.push(v);
+            }
+        }
+    }
+    for (auto& u : ss) 
+        for (auto& v : g[u]) 
+            if (!seen[v])
+                res.push_back({u, v});
+    return res;
+}

@@ -1,0 +1,43 @@
+# -*- mode: snippet -*-
+# name: directed euler path
+# key: g_euler_directed
+# --
+const int maxN = ${1:1e5};
+vector<int> g[maxN];
+int indegree[maxN];
+
+// find euler path in directed graph from start node s to node t
+vector<int> euler_path(int s, int t, int n) {
+    bool bad = false;
+    for (int i = 0; !bad && i < n; ++i) {
+        if (i == s)
+            bad = (int)g[i].size() != indegree[i]+1;
+        else if (i == t)
+            bad = (int)g[i].size() != indegree[i]-1;
+        else
+            bad = (int)g[i].size() != indegree[i];
+    }
+    if (bad) return {};
+
+    stack<int> st;
+    st.push(s);
+    vector<int> res;
+    while (!st.empty()) {
+        int u = st.top();
+        if (g[u].empty()) {
+            res.push_back(u);
+            st.pop();
+        } else {
+            int v = g[u].back();
+            g[u].pop_back();
+            st.push(v);
+        }
+    }
+
+    bool ok = true;
+    for (int i = 0; ok && i < n; ++i) 
+        ok = !g[i].size();
+
+    if (!ok) return {};
+    return res;
+}

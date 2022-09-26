@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: catalan
-# key: n_catalan
+# key: f_catalan
 # --
 ${1:const long ${2:MOD} = ${3:1e9+7};
 }int catalan(int n) {

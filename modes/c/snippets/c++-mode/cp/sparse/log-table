@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: log2 lookup table
-# key: t_logs
+# key: tab_log
 # --
 ${1:const int maxN = 2e5;}
 const int logN = ${2:18};

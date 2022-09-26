@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: modular inverse table
-# key: n_modinv_table
+# key: tab_modinv
 # --
 #define INV_MAXN ${1:1000}
 const int ${2:MOD} = 1e9+7;

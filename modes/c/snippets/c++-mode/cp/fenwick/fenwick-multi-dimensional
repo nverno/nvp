@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: fenwick multi-dimensional
-# key: n_fenwick_md
+# key: d_bit2
 # --
 template<class T, int... Ns>
 struct BIT {

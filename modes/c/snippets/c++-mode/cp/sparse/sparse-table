@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: sparse table
-# key: n_sparse
+# key: d_st
 # --
 const int maxN = ${1:100'005};
 const int logN = 17;

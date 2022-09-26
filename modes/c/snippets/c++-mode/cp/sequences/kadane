@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: kadane
-# key: n_kadane
+# key: f_kadane
 # --
 int kadane(std::vector<int>& A, std::vector<int>& B) {
     int res = 0, cur = 0;

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: binomial coefficient
-# key: n_choosek
+# key: f_nchoosek
 # --
 int choose(int n, int k) {
     if (n < k) return choose(k, n);

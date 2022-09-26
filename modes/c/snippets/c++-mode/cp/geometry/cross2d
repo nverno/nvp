@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: cross2d
-# key: n_cross2d
+# key: f_cross2d
 # --
 long cross2d(vector<int> a, vector<int> b) {
   return a[0]*b[1] - b[0]*a[1];

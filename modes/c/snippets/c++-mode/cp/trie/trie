@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: trie
-# key: n_trie
+# key: d_trie
 # --
 template<typename T>
 struct Trie {

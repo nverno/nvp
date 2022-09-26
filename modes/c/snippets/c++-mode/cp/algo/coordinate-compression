@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: coordinate compression
-# key: n_compress
+# key: f_compress
 # --
 sort(${1:vals}.begin(), $1.end());
 $1.resize(unique(begin($1), end($1)) - begin($1));

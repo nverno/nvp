@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: next combination (lexicographically)
-# key: n_next_combn
+# key: f_combn
 # --
 // Next lexicographical K-combination
 // starting from v={1,2,...,K} up to v={n,n-1,..,n-k}

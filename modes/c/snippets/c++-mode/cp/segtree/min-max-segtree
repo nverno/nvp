@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: max/min segtree
-# key: n_segtree_max
+# key: d_segtree_max
 # --
 template<typename T>
 struct ${1:Max}SegTree {

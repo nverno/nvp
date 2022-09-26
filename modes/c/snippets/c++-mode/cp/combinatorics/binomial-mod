@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: modular binomial coefficient
-# key: n_binom
+# key: f_binom
 # --
 #define ${1:MAXN} ${2:1001}
 const int ${3:MOD} = ${4:1e5+3}; // must be prime

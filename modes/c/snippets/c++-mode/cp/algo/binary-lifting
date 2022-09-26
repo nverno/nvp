@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: binary lifting
-# key: n_jump
+# name: binary lifting, jump table
+# key: d_jump
 # --
 ${1:const int maxK = 1e9;
 }const int maxN = 2e5;

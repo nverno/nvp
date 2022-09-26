@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: lower_bound
+# key: lb
+# --
+auto ${1:it} = lower_bound(begin($2), end($2), ${3:target});

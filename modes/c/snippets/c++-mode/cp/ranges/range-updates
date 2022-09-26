@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: range update
-# key: n_range_update
+# key: d_range_update
 # --
 template<typename T>
 struct RangeUpdate {

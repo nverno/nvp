@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: upper_bound
+# key: ub
+# --
+auto ${1:it} = upper_bound(begin($2), end($2), ${3:target});

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: fenwick
-# key: n_fenwick
+# name: fenwick binary indexed tree
+# key: d_bit
 # --
 template<typename T>
 struct BIT {

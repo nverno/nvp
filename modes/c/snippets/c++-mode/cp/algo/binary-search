@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: binary-search
-# key: n_bs
+# key: bs
 # --
 auto check = [&](int m) {
     $0

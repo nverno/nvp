@@ -1,13 +1,13 @@
 # -*- mode: snippet -*-
-# name: range update
-# key: d_range_update
+# name: segtree w/ range update
+# key: d_seg_ru
 # --
 template<typename T>
-struct RangeUpdate {
+struct SegTree {
     int n, h;
     vector<T> tree;
 
-    RangeUpdate(int sz): n(sz) {
+    SegTree(int sz): n(sz) {
         h = 1;
         while ((1 << h) < n) ++h;
         if (sz > 0 && (sz & (sz - 1)) != 0) {

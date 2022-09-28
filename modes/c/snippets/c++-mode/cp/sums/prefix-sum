@@ -1,8 +1,9 @@
 # -*- mode: snippet -*-
 # name: prefix sum
-# key: d_ps
+# key: s_ps
 # --
 vector<int> ps(${1:n} + 1);
 partial_sum(begin(${2:arr}), end($2), begin(ps)+1);${3:
-for (int i = 0; i < $1; ++i) 
+for (int i = 0; i < $1; ++i) {
     ps[i+1] = ps[i] + $2[i];}
+\}

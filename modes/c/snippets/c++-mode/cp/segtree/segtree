@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: segtree
-# key: d_segtree
+# key: d_seg
 # --
 ${1:struct Node {
     int val;

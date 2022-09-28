@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: segtree-vertex-sum
-# key: d_segtree_vertex_sum
+# key: d_seg_vertex_sum
 # --
 struct Vertex {
     Vertex *l, *r;

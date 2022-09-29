@@ -1,0 +1,52 @@
+# -*- mode: snippet -*-
+# name: bit range updates/sums
+# key: ds_bit_ru
+# --
+template<typename T, int SZ> struct BIT {
+    int n;
+    T bit[SZ];
+    BIT() {}
+    BIT(int sz) { init(sz); }
+    void init(int size) { n = size + 1; memset(bit, 0, sizeof(bit)); }
+    void add(int idx, T v) {
+        for (int i = idx+1 /*1-indexed*/; i <= n; i += i&-i) 
+            bit[i] += v;
+    }
+    T sum(int idx) {
+        T res = 0;
+        for (int i = idx+1; i > 0; i -= i&-i) 
+            res += bit[i];
+        return res;
+    }
+    T sum(int l, int r) {
+        return sum(r) - sum(l - 1);
+    }
+    // first index where prefix sum >= v, or n if none greater
+    int lower_bound(T v) {
+        if (v <= 0) return -1;
+        int k = 0;
+        for (int i = 1 << 30; i != 0; i >>= 1) {
+            if ((k|i) <= n && bit[k|i] < v) {
+                k |= i;
+                v -= bit[k];
+            }
+        }
+        return k;
+    }
+};
+
+template<typename T, int SZ> struct BITrange {
+    BIT<T,SZ> bit[2];
+    int n;
+    BITrange() {}
+    BITrange(int size): n(size) { init(n); }
+    void init(int size) { n = size; bit[0].init(n), bit[1].init(n); }
+    void add(int l, int r, T val) {
+        bit[0].add(l, val);
+        bit[0].add(r+1, -val);
+        bit[1].add(l, val*(l-1));
+        bit[1].add(r+1, -val*r);
+    }
+    T sum(int idx) { return idx*bit[0].sum(idx) - bit[1].sum(idx); }
+    T sum(int l, int r) { return sum(r) - sum(l-1); }
+};

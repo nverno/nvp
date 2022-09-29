@@ -1,0 +1,92 @@
+# -*- mode: snippet -*-
+# name: segtree w/ range update and set
+# key: d_seg_rus
+# --
+template<typename T>
+struct SegTree {
+    int n, h;
+    vector<T> tree, updates, cnt;
+    vector<int> marked;                           // 0(none), 1(range), >=2(set)
+
+    SegTree(int sz): n(sz) {
+        h = 1;
+        while ((1 << h) < n) ++h;
+        if (sz > 0 && (sz & (sz - 1)) != 0) {
+            sz = (1 << (32 - __builtin_clz(sz)));
+        }
+        tree.resize(2*sz, 0);
+        updates.resize(2*sz, 0);
+        cnt.resize(2*sz, 0);
+        marked.resize(2*sz);
+    }
+
+    void build1(int i, int l, int r, vector<T>& arr) {
+        if (l == r) {
+            tree[i] = arr[l];
+            cnt[i] = 1;
+        } else {
+            int mid = (l + r) / 2;
+            build1(2*i+1, l, mid, arr);
+            build1(2*i+2, mid+1, r, arr);
+            tree[i] = tree[2*i+1] + tree[2*i+2];
+            cnt[i] = cnt[2*i+1] + cnt[2*i+2];
+        }
+    }
+
+    void build(vector<T>& arr) {
+        build1(0, 0, n-1, arr);
+    }
+
+    void push(int i) {
+        if (marked[i]) {
+            int l = 2*i+1, r = 2*i+2;
+            if (marked[i] == 1) {                 // range
+                updates[l] += updates[i];
+                updates[r] += updates[i];
+                marked[l] |= marked[i];
+                marked[r] |= marked[i];
+                tree[i] += cnt[i] * updates[i];
+            } else {
+                updates[l] = updates[r] = updates[i];
+                tree[i] = cnt[i] * updates[i];
+                tree[l] = tree[r] = 0;
+                marked[l] = marked[r] = 2;
+            }
+            marked[i] = updates[i] = 0;
+        }
+    }
+
+    void update1(int i, int l, int r, int ql, int qr, T val, bool set) {
+        if (ql > qr) return;
+        if (ql <= l && r <= qr) {
+            if (set) tree[i] = 0;
+            marked[i] |= (1 + set);
+            updates[i] = set ? val : updates[i] + val;
+        } else {
+            push(i);
+            int mid = (l + r) / 2, tl = 2*i+1, tr = 2*i+2;
+            update1(tl, l, mid, ql, min(qr, mid), val, set);
+            update1(tr, mid+1, r, max(ql, mid+1), qr, val, set);
+            tree[i] = tree[tl] + updates[tl]*cnt[tl] +
+                      tree[tr] + updates[tr]*cnt[tr];
+        }
+    }
+
+    void update(int ql, int qr, T val, bool set) {
+        update1(0, 0, n-1, ql, qr, val, set);
+    }
+
+    T query1(int i, int l, int r, int ql, int qr) {
+        if (qr < l || ql > r) return 0;
+        if (ql <= l && r <= qr)
+            return tree[i] + updates[i]*cnt[i];
+        push(i);
+        int mid = (l + r) / 2;
+        return query1(2*i+1, l, mid, ql, min(qr, mid)) +
+            query1(2*i+2, mid+1, r, max(ql, mid+1), qr);
+    }
+
+    T query(int l, int r) {
+        return query1(0, 0, n-1, l, r);
+    }
+};

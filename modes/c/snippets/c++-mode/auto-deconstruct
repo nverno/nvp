@@ -2,4 +2,4 @@
 # name: auto deconstruct
 # key: .
 # --
-auto [$1] = $2
+auto${1:&} [$2] = $3

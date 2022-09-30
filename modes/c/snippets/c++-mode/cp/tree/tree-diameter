@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: tree diameter
+# key: t_diameter
+# --
+int dfs(int u, int p, int& res${1:, vector<vector<int>>& g}) {
+    int a = 0, b = 0;
+    for (auto& v : g[u]) {
+        if (v == p) continue;
+        int d = 1 + dfs(v, u, res${1:$(if (yas-text) ", g" "")});
+        if (d > b) b = d;
+        if (b > a) swap(a, b);
+    }
+
+    res = max(res, a + b);
+    return max(a, b);
+}

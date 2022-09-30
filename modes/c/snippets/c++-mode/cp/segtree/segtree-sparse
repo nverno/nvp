@@ -1,0 +1,56 @@
+# -*- mode: snippet -*-
+# name: sparse segtree
+# key: d_seg_sparse
+# --
+template<typename T>
+struct SegTree {
+    struct Node {
+        Node *l, *r;
+        T val;
+        Node(T v): l(nullptr), r(nullptr), val(v) {}
+        Node(Node* left, Node* right) {
+            l = left; r = right;
+            val = 0;
+            if (l) val += l->val;
+            if (r) val += r->val;
+        }
+        Node(Node* cp): l(cp->l), r(cp->r), val(cp->val) {}
+        // ~Node() { if (l) delete l; if (r) delete r; }
+    };
+    int n;
+    vector<T> arr;
+    Node *root;
+    SegTree(): n(0), root(nullptr) {}
+    SegTree(int sz, vector<T>& a) { init(sz, a); }
+    void init(int sz, vector<T>& a) { n = sz; root = build(a); }
+    Node* build(int l, int r) {
+        if (l == r) return new Node(arr[l]);
+        int mid = (l + r) / 2;
+        return new Node(build(l, mid), build(mid+1, r));
+    }
+    Node* build(vector<T>& a) {
+        arr = a;
+        return build(0, arr.size() - 1);
+    }
+    Node* update(Node* node, T val, int pos, int l, int r) {
+        if (l == r) return new Node(val);
+        int mid = (l + r) / 2;
+        if (pos > mid) return new Node(node->l, update(node->r, val, pos, mid+1, r));
+        return new Node(update(node->l, val, pos, l, mid), node->r);
+    }
+    void update(int idx, T val) { root = update(root, val, idx, 0, n-1); }
+    T get(Node* node, int pos, int l, int r) {
+        if (l == r) return node->val;
+        int mid = (l + r) / 2;
+        if (pos > mid) return get(node->r, pos, mid+1, r);
+        return get(node->l, pos, l, mid);
+    }
+    T get(int idx) { return get(root, idx, 0, n-1); }
+    T query(Node* node, int a, int b, int l, int r) {
+        if (l > b || r < a) return 0;
+        if (a <= l && b >= r) return node->val;
+        int mid = (l + r) / 2;
+        return query(node->l, a, b, l, mid) + query(node->r, a, b, mid+1, r);
+    }
+    T query(int a, int b) { return query(root, a, b, 0, n-1); }
+};

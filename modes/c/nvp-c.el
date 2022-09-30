@@ -24,6 +24,7 @@
                clang-complete-load-args ; clang-complete
                asdf-where               ; asdf
                nvp-env-add              ; nvp-env
+               nvp-yas-var s-join
                objdump-mode)            ; emacs-objdump-mode
            :v (c/R-abbrev-table company-clang-arguments))
 
@@ -63,6 +64,10 @@
               (_ (setf trim-p nil))))
       (push (string-trim-right (substring str prev)) res)
       (nreverse res))))
+
+(defun nvp-c-yas-vars (&optional sep str)
+  (let ((vars (mapcar #'nvp-yas-var (nvp-c-split-string (or str (yas-text))))))
+    (if sep (s-join sep vars) vars)))
 
 ;; pull out functions signatures from current buffer using ctags
 (defun nvp-c-function-signatures (&optional file ignore-main ignore-static)

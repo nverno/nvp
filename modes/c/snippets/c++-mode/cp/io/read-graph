@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: read graph
+# key: gin
+# --
+for (int i = 0; i < ${1:n}; ++i) {
+    int a, b;
+    cin >> a >> b;${2: --a; --b;}
+    ${3:g}[a].push_back(b);${4:
+    $3[b].push_back(a);}
+}

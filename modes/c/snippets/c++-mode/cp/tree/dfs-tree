@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: tree dfs
+# key: t_dfs
+# --
+${1:void} dfs(int u, int p$2) \{
+   ${1:$(if (string= "void" (yas-text)) "" (concat (yas-text) " res = 1;"))}
+    for (auto& v : g[u]) {
+        if (v == p) continue;
+        $4dfs(v, u${2:$(nvp-c-yas-vars ", ")});
+    }${1:$(if (string= "void" (yas-text)) "" "
+    return res;")}
+\}

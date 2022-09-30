@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: maxN
+# key: maxn
+# --
+const int maxN = ${1:2e5};

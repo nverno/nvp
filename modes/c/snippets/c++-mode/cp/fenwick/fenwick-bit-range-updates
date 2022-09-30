@@ -2,46 +2,25 @@
 # name: bit range updates/sums
 # key: d_bit_range
 # --
-template<typename T>
-struct BIT {
+template<typename T> struct BIT {
     int n;
     vector<T> bit1, bit2;
-
-    // 1-indexed!
-    BIT(int sz): n(sz) {
-        bit1.assign(n+1, 0);
-        bit2.assign(n+1, 0);
-    }
-
-    void add(int idx, T v) {
-        for (int i = idx; i <= n; i += i&-1) 
-            bit1[i] += v;
-    }
-
+    BIT(): n(0) {}
+    BIT(int sz) { init(sz); }
+    void init(int sz) { n = sz; bit1.assign(n+1, 0); bit2.assign(n+1, 0); }
+    void add(int idx, T v) { for (int i = idx; i <= n; i += i&-1) bit1[i] += v; }
     void add(vector<T>& b, int idx, T v) {
-        for (int i = idx; i <= n; i += i&-1) 
-            b[i] += v;
+        for (int i = idx; i <= n; i += i&-1) b[i] += v;
     }
-
     void range_add(int l, int r, T v) {
-        add(bit1, l, v);
-        add(bit1, r+1, -v);
-        add(bit2, l, v*(l - 1));
-        add(bit2, r+1, -v*r);
+        add(bit1, l, v); add(bit1, r+1, -v);
+        add(bit2, l, v*(l - 1)); add(bit2, r+1, -v*r);
     }
-
     T sum(vector<T>& b, int idx) {
         T res = 0;
-        for (int i = idx; i > 0; i -= i&-1) 
-            res += b[i];
+        for (int i = idx; i > 0; i -= i&-1) res += b[i];
         return res;
     }
-
-    T sum(int idx) {
-        return sum(bit1, idx)*idx - sum(bit2, idx);
-    }
-
-    T range_sum(int l, int r) {
-        return sum(r) - sum(l-1);
-    }
+    T sum(int idx) { return sum(bit1, idx)*idx - sum(bit2, idx); }
+    T range_sum(int l, int r) { return sum(r) - sum(l-1); }
 };

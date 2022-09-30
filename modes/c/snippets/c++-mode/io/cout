@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: cout
-# key: cout
+# key: co
 # --
-cout << $1${2: << endl};
+cout << 

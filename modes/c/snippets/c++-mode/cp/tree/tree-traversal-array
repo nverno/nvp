@@ -2,8 +2,8 @@
 # name: tree traversal array
 # key: t_trav
 # --
-int timer = 0;
-array<int,2> subtree[${1:maxN}];
+int timer = ${1:0};
+array<int,2> subtree[${2:maxN}];
 
 void traversal(int u, int p, vector<int>& vals) {
     subtree[u][0] = timer++;

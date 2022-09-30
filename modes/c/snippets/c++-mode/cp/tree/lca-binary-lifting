@@ -2,8 +2,8 @@
 # name: lca binary lifting
 # key: t_lca
 # --
-const int logN = 20;
 const int maxN = ${1:2e5};
+const int logN = ${1:$(ceiling (log (string-to-number (yas-text)) 2))};
 
 int up[maxN+1][logN+1], tin[maxN+1], tout[maxN+1];
 int timer = 0;

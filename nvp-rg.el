@@ -43,6 +43,7 @@
 ;;;###autoload(autoload 'nvp-projectile-rg "nvp-project")
 (rg-define-search nvp-projectile-rg
   :query (read-from-minibuffer "Search: " (nvp:tap 'dwim))
+  :format (not current-prefix-arg)
   :dir (nvp-rg-get-project)
   :files "everything")
 
@@ -50,7 +51,7 @@
 ;; https://github.com/dajva/rg.el/issues/69#event-3107793694
 (rg-define-search nvp-rg-emacs-source 
   :query (read-from-minibuffer "Search emacs source: " (nvp:tap 'dwim))
-  :literal (not current-prefix-arg)
+  :format (not current-prefix-arg)
   :dir source-directory
   :flags '("-z")
   :files "*.{el,el.gz}"

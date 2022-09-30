@@ -2,4 +2,4 @@
 # name: << '\n';
 # key: el
 # --
-<< '\n';
+`(if (not (looking-back "<<\\s-*")) "<< " "")`'\n';

@@ -2,4 +2,4 @@
 # name: endl
 # key: endl
 # --
-std::cout << std::endl;
+cout << endl;

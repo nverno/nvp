@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: tree euler tour
+# key: t_euler
+# --
+int timer = ${1:0};
+int tour[${2:maxN}+$1], start[$2+$1];
+
+void euler_tour(int u, int p) {
+    start[u] = timer;
+    for (auto& v : g[u]) {
+        if (v == p) continue;
+        euler_tour(v, u);
+    }
+    tour[timer++] = u;
+}

@@ -2,18 +2,13 @@
 # name: trie
 # key: d_trie
 # --
-template<typename T>
-struct Trie {
+template<typename T> struct Trie {
     bool leaf;
     char offset;
     T val;
     array<Trie*,26> ch;
-
-    Trie(char off = 'a'): leaf(false), offset(off) {
-        fill(ch.begin(), ch.end(), nullptr);
-    }
-
-    void add(string const& s, T v) {
+    Trie(char off='${1:a}'): leaf(false), offset(off) {fill(ch.begin(), ch.end(), nullptr);}
+    void insert(string const& s, T v) {
         Trie *ptr = this;
         for (char const &c: s) {
             if (!ptr->ch[c-offset])
@@ -23,18 +18,13 @@ struct Trie {
         ptr->leaf = true;
         ptr->val = v;
     }
-
-    Trie *lookup(string s) {
+    Trie *find(string s) {
         Trie *ptr = this;
         for (char const &c: s) {
             if (!ptr->ch[c-offset]) break;
             ptr = ptr->ch[c-offset];
         }
         return ptr->leaf ? ptr : nullptr;
-    }
-
-    ~Trie() {
-        for (auto it = ch.begin(); it != ch.end(); ++it) 
-            delete *it;
-    }
+    }${2:
+     ~Trie() \{for (auto it = ch.begin(); it != ch.end(); ++it) delete *it;\}}
 };

@@ -1,0 +1,23 @@
+# -*- mode: snippet -*-
+# name: segtree bottom up
+# key: d_seg_bu
+# --
+template<typename T> struct SegTree {
+    const T ID{}; int n; vector<T> seg;
+    T combine(T a, T b) { return ${1:a + b}; }
+    void init(int sz) {
+        if (sz > 0 && (sz & (sz - 1)) != 0) sz = (1 << (32 - __builtin_clz(sz)));
+        n = sz;
+        seg.assign(2*n, ID);
+    }
+    void pull(int i) { seg[i] = combine(seg[2*i], seg[2*i+1]); }
+    void update(int i, T val) { seg[i += n] = val; for (i /= 2; i; i /= 2) pull(i); }
+    T query(int l, int r) {
+        T ra = ID, rb = ID;
+        for (l += n, r += n+1; l < r; l /= 2, r /= 2) {
+            if (l&1) ra = combine(ra, seg[l++]);
+            if (r&1) rb = combine(seg[--r], rb);
+        }
+        return combine(ra, rb);
+    }
+};

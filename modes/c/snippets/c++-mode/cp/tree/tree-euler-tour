@@ -2,8 +2,7 @@
 # name: tree euler tour
 # key: t_euler
 # --
-int timer = ${1:0};
-int tour[${2:maxN}+$1], start[$2+$1];
+int timer = ${1:0}, tour[${2:maxN}+$1], start[$2+$1];
 
 void euler_tour(int u, int p) {
     start[u] = timer;

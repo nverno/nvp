@@ -2,14 +2,13 @@
 # name: tree traversal array
 # key: t_trav
 # --
-int timer = ${1:0};
-array<int,2> subtree[${2:maxN}];
+int timer = ${1:0}, st[${2:maxN}+$1], en[$2+$1];
 
-void traversal(int u, int p, vector<int>& vals) {
-    subtree[u][0] = timer++;
+void traversal(int u, int p${3:, vector<int>& vals}) {
+    st[u] = timer++;
     for (auto& v : g[u]) {
         if (v == p) continue;
-        traversal(v, u, vals);
+        traversal(v, u${3:$(nvp-c-yas-vars ", ")});
     }
-    subtree[u][1] = timer-1;
+    en[u] = timer-1;
 }

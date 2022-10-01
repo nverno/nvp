@@ -3,8 +3,8 @@
 # key: d_jump
 # --
 ${1:const int maxK = 1e9;
-}const int maxN = 2e5;
-const int logN = 30;
+}const int maxN = ${2:2e5};
+const int logN = ${2:$(ceiling (log (string-to-number (yas-text)) 2))};
 
 int n, st[maxN+1][logN+1], logs[maxN+1];
 
@@ -26,8 +26,8 @@ void process(vector<int>& p) {
 }
 
 int query(int x, int k) {
-    int l = ${2:$(if (yas-text) "logs[k]" "k <= maxN ? logs[k] : log2(k)")};
-    for (; k && x != -1; k -= (1 << l), l = $2) {
+    int l = ${3:$(if (yas-text) "logs[k]" "k <= maxN ? logs[k] : log2(k)")};
+    for (; k && x != -1; k -= (1 << l), l = $3) {
         x = st[x][l];
     }
     return x;

@@ -4,20 +4,18 @@
 # --
 const int maxN = ${1:2e5};
 const int logN = ${1:$(ceiling (log (string-to-number (yas-text)) 2))};
+int timer = ${2:0}, up[maxN+$2][logN+1], tin[maxN+$2], tout[maxN+$2];
 
-int up[maxN+1][logN+1], tin[maxN+1], tout[maxN+1];
-int timer = 0;
-
-void dfs_lca(int u, int p, vector<vector<int>>& adj) {
+void dfs_lca(int u, int p${3:, vector<vector<int>>& adj}) {
     tin[u] = timer++;
     up[u][0] = p;
 
     for (int l = 1; l <= logN; ++l) 
         up[u][l] = up[up[u][l-1]][l-1];
 
-    for (auto& v : adj[u]) 
+    for (auto& v : ${3:$(if (yas-text) "adj" "g")}[u])
         if (v != p) 
-            dfs_lca(v, u, adj);
+            dfs_lca(v, u${3:$(nvp-c-yas-vars ", ")});
 
     tout[u] = timer++;
 }

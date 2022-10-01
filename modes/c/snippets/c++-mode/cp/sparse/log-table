@@ -2,8 +2,8 @@
 # name: log2 lookup table
 # key: tab_log
 # --
-${1:const int maxN = 2e5;}
-const int logN = ${2:18};
+const int maxN = ${1:2e5};
+const int logN = ${1:$(ceiling (log (string-to-number (yas-text)) 2))};
 int logs[maxN+1];
 
 void ${3:init}() {

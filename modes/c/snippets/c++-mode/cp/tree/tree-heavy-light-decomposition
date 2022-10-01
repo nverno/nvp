@@ -1,0 +1,33 @@
+# -*- mode: snippet -*-
+# name: tree heavy-light decomposition
+# key: t_hld
+# --
+int ct = ${1:1};
+int parent[maxN+$1], heavy[maxN+$1], depth[maxN+$1], head[maxN+$1], id[maxN+$1];
+
+int dfs_sz(int u) {
+    int size = 1, max_sz = 0;
+    for (auto& v : g[u]) {
+        if (v == parent[u]) continue;
+        parent[v] = u; depth[v] = depth[u] + 1;
+        int sz = dfs_sz(v);
+        size += sz;
+        if (sz > max_sz) 
+            max_sz = sz, heavy[u] = v;
+    }
+    return size;
+}
+void decompose(int u, int h) {
+    head[u] = h;
+    id[u] = ct++;
+    if (heavy[u] != -1)
+        decompose(heavy[u], h);
+    for (auto& v : g[u]) 
+        if (v != parent[u] && v != heavy[u])
+            decompose(v, v);
+}
+void hld(int u) {
+    memset(heavy, -1, sizeof(heavy));
+    dfs_sz(u);
+    decompose(u, u);
+}

@@ -1,15 +1,11 @@
 # -*- mode: snippet -*-
 # name: union find
-# key: d_uf
+# key: ds_uf
 # --
-struct UF {
-    vector<int> uf, sz;
-    UF() {}
-    UF(int size) { init(size); }
-    void init(int size) {
-        uf.resize(size); iota(begin(uf), end(uf), 0);
-        sz.assign(size, 1);
-    }
+static const int maxN = ${1:1e5+1};
+template<int SZ> struct UF {
+    int uf[maxN], sz[maxN];
+    void init() { iota(begin(uf), end(uf), 0); fill(begin(sz), end(sz), 1);}
     int find(int x) { return x == uf[x] ? x : uf[x] = find(uf[x]); }
     void merge(int x, int y) {
         int xx = find(x), yy = find(y);

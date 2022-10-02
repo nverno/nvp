@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: chars frequency
+# key: s_freq
+# --
+int freq[26] = {0};
+for (auto& c : ${1:word}) ++freq[c-${2:'a'}];

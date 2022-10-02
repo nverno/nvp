@@ -28,6 +28,18 @@ void decompose(int u, int h) {
 }
 void hld(int u) {
     memset(heavy, -1, sizeof(heavy));
+    parent[u] = u;
     dfs_sz(u);
     decompose(u, u);
+}
+int query(int a, int b) {
+    int res = 0;
+    for (; head[a] != head[b]; b = parent[head[b]]) {
+        if (depth[head[a]] > depth[head[b]])
+            swap(a, b);
+        int v = ${2:seg}.query(id[head[b]], id[b]);
+        res = ${3:max(res, v)};
+    }
+    if (depth[a] > depth[b]) swap(a, b);
+    return ${4:max(res, $2.query(id[a], id[b]))};
 }

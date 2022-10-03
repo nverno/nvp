@@ -1,0 +1,47 @@
+# -*- mode: snippet -*-
+# name: tree centroid decomposition
+# key: t_centroid
+# --
+bool seen[${1:maxN+1}];
+int tree_sz[$1];
+
+int subtree_size(int u, int p) {
+    int& res = tree_sz[u] = 1;
+    for (auto& v : g[u]) {
+        if (!seen[v] && v != p) {
+            res += subtree_size(v, u);
+        }
+    }
+    return res;
+}
+
+// get centroid with all children <= max_sz
+int get_centroid(int u, int p, int max_sz) {
+    for (auto& v : g[u]) {
+        if (v != p && !seen[v] && tree_sz[v] >= max_sz)
+            return get_centroid(v, u, max_sz);
+    }
+    return u;
+}
+
+${2:void} ${3:process_centroid}(int u, int p$4) {
+    for (auto& v : g[u]) {
+        if (!seen[v] && v != p) {
+            process_centroid(v, u${4:$(nvp-c-yas-vars ", ")});
+        }
+    }
+}
+
+// process centroids
+$2 centroid_decomp(int u) {
+    int centroid = get_centroid(u, u, subtree_size(u, u) / 2);
+    seen[centroid] = true;
+    ${2:$($s!= "void" (format "%s res = 0;" (yas-text)))}
+    for (auto& v : g[centroid]) {
+        if (!seen[v]) {
+            ${2:$($s!= "void" "res += ")}$3(v, centroid${4:$(nvp-c-yas-vars ", ")});
+        }
+    }
+    for (auto& v : g[u]) if (!seen[v]) centroid_decomp(v);${2:$($s!= "void" "
+    return res;")}
+}

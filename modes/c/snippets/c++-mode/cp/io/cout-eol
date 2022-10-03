@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: << '\n';
-# key: el
+# key: nl
 # --
 `(if (not (looking-back "<<\\s-*")) "<< " "")`'\n';

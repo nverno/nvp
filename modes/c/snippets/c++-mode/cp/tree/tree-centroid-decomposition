@@ -42,6 +42,8 @@ $2 centroid_decomp(int u) {
             ${2:$($s!= "void" "res += ")}$3(v, centroid${4:$(nvp-c-yas-vars ", ")});
         }
     }
-    for (auto& v : g[u]) if (!seen[v]) centroid_decomp(v);${2:$($s!= "void" "
+    for (auto& v : g[centroid])
+        if (!seen[v])
+            ${2:$($s!= "void" "res += ")}centroid_decomp(v);${2:$($s!= "void" "
     return res;")}
 }

@@ -1,0 +1,24 @@
+# -*- mode: snippet -*-
+# name: trie static size
+# key: ds_trie
+# --
+template<typename T, int SZ> struct Trie {
+    T ch[SZ][26], sz[SZ], ID{}, last = 0;
+    Trie() { memset(ch, 0, sizeof ch); memset(sz, 0, sizeof sz); }
+    void insert(string const& s, T a) { // insert/delete
+        int cur = 0; sz[cur] += a;
+        for (int i = 0; i < (int)s.size(); ++i) {
+            int idx = s[i]-'a';
+            if (!ch[cur][idx]) ch[cur][idx] = ++last;
+            sz[cur = ch[cur][idx]] += a;
+        }
+    }
+    T find(string const& s) {
+        int cur = 0;
+        for (int i = 0, idx=s[i]-'a'; i < (int)s.size(); ++i, idx=s[i]-'a') {
+            if (!ch[cur][idx]) return ID;
+            cur = ch[cur][idx];
+        }
+        return sz[cur];
+    }
+};

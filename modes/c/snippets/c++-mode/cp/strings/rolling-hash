@@ -1,16 +1,15 @@
 # -*- mode: snippet -*-
 # name: rolling hash
-# key: s_hash
+# key: s_rhash
 # --
-using VT = ${1:string};
-struct RollingHash {
+template<typename T>struct RollingHash {
     using ll = long long;
     static const ll mo0=1e9+21, mo1=1e9+9;
     static ll mul0, mul1;
     static const ll add0=1000010007, add1=1003333331;
     static vector<ll> pmo[2];
-    VT s; int S; vector<ll> h[2];
-    void init(VT ss) {
+    T s; int S; vector<ll> h[2];
+    void init(T ss) {
         this->s=ss; S=s.size();
         h[0] = h[1] = vector<ll>(1,0);
         if (!mul0)
@@ -26,11 +25,12 @@ struct RollingHash {
         return {(h[0][r+1]+(mo0-h[0][l]*pmo[0][r+1-l]%mo0))%mo0,
             (h[1][r+1]+(mo1-h[1][l]*pmo[1][r+1-l]%mo1))%mo1};
     }
-    pair<ll,ll> hash(VT ss) { init(ss); return hash(0, s.size()-1); }
+    pair<ll,ll> hash(T ss) { init(ss); return hash(0, s.size()-1); }
     static pair<ll,ll> concat(pair<ll,ll> L, pair<ll,ll> R, int RL) { // hash(L+R) RL=len-of-R
         while (pmo[0].size()<RL+2) pmo[0].push_back(pmo[0].back()*mul0%mo0), pmo[1].push_back(pmo[1].back()*mul1%mo1);
         return {(R.first + L.first*pmo[0][RL])%mo0,(R.second + L.second*pmo[1][RL])%mo1};
     }
 };
-vector<long long> RollingHash::pmo[2];
-long long RollingHash::mul0; long long RollingHash::mul1;
+template<typename T>vector<long long> RollingHash<T>::pmo[2];
+template<typename T>long long RollingHash<T>::mul0;
+template<typename T>long long RollingHash<T>::mul1;

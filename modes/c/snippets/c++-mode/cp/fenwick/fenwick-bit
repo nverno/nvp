@@ -3,19 +3,14 @@
 # key: d_bit
 # --
 template<typename T> struct BIT { // 1-indexed
-    int n;
-    vector<T> bit;
+    int n; vector<T> bit;
     BIT(): n(0) {}
     BIT(int size): n(size) { bit.assign(n+1, 0); }
     void init(int size, T val=0) { n = size; bit.assign(n+1, val); }
     void reinit(T val = 0) { bit.assign(n+1, val); }
-    void add(int idx, T v) { for (int i = idx; i <= n; i += i&-i) bit[i] += v; }
-    T sum(int idx) {
-        T res = 0;
-        for (int i = idx; i > 0; i -= i&-i) res += bit[i];
-        return res;
-    }
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
+    void update(int i, T v) { for (++i; i <= n; i += i&-i) bit[i] += v; }
+    T query(int i) { T res = 0; for (++i; i > 0; i -= i&-i) res += bit[i]; return res; }
+    T query(int l, int r) { return query(r) - query(l - 1); }
     // first index where prefix sum >= v, or n if none greater
     int lower_bound(T v) {
         if (v <= 0) return -1;

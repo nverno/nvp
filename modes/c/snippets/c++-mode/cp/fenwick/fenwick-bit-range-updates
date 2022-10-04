@@ -8,19 +8,15 @@ template<typename T> struct BIT {
     BIT(): n(0) {}
     BIT(int sz) { init(sz); }
     void init(int sz) { n = sz; bit1.assign(n+1, 0); bit2.assign(n+1, 0); }
-    void add(int idx, T v) { for (int i = idx; i <= n; i += i&-1) bit1[i] += v; }
-    void add(vector<T>& b, int idx, T v) {
-        for (int i = idx; i <= n; i += i&-1) b[i] += v;
+    void update(int i, T v) { for (++i; i <= n; i += i&-1) bit1[i] += v; }
+    void update(vector<T>& b, int i, T v) { for (++i; i <= n; i += i&-1) b[i] += v; }
+    void update(int l, int r, T v) {
+        update(bit1, l, v); update(bit1, r+1, -v);
+        update(bit2, l, v*(l - 1)); update(bit2, r+1, -v*r);
     }
-    void range_add(int l, int r, T v) {
-        add(bit1, l, v); add(bit1, r+1, -v);
-        add(bit2, l, v*(l - 1)); add(bit2, r+1, -v*r);
+    T query(vector<T>& b, int i) {
+        T res = 0; for (++i; i > 0; i -= i&-1) res += b[i]; return res;
     }
-    T sum(vector<T>& b, int idx) {
-        T res = 0;
-        for (int i = idx; i > 0; i -= i&-1) res += b[i];
-        return res;
-    }
-    T sum(int idx) { return sum(bit1, idx)*idx - sum(bit2, idx); }
-    T range_sum(int l, int r) { return sum(r) - sum(l-1); }
+    T query(int i) { return query(bit1, i)*(i+1) - query(bit2, i); }
+    T query(int l, int r) { return query(r) - query(l-1); }
 };

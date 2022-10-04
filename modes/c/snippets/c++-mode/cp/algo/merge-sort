@@ -1,0 +1,29 @@
+# -*- mode: snippet -*-
+# name: merge sort
+# key: f_mergesort
+# --
+void merge(int l, int m, int e, vector<int>& arr) {
+    int r = m+1;
+    while (l <= m && r <= e) {
+        if (arr[l] <= arr[r]) ++l;
+        else {
+            // process out-of-place elements
+            ${1:int tmp = arr[r], idx = r;
+            while (idx != l) {
+                arr[idx] = arr[idx-1];
+                --idx;
+            \}
+            arr[l++] = tmp;
+            ++m;
+            ++r;}
+        }
+    }${2:
+    sort(arr.begin()+l, arr.begin()+e+1);}
+}
+void mergeSort(int l, int r, vector<int>& arr) {
+    if (l >= r) return;
+    int mid = l + (r - l) / 2;
+    mergeSort(l, mid, arr);
+    mergeSort(mid+1, r, arr);
+    merge(l, mid, r, arr);
+}

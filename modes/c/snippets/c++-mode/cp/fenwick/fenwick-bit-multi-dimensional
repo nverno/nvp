@@ -5,31 +5,24 @@
 template<class T, int... Ns>
 struct BIT {
     T val = 0;
-    void add(T v) { val += v; }
+    void update(T v) { val += v; }
     T query() { return val; }
 };
 template<class T, int N, int... Ns>
 struct BIT<T,N,Ns...> {
     BIT<T,Ns...> bit[N+1];
-
-    template<typename... Args> void add(int pos, Args... args) {
+    template<typename... Args> void update(int pos, Args... args) {
         assert(pos >= 0);
-        for (int i = pos+1 /*1-indexed*/; i <= N; i += i&-i) 
-            bit[i].add(args...);
+        for (++pos; pos <= N; pos += pos&-pos) 
+            bit[pos].update(args...);
     }
-
-    template<typename... Args> T sum(int r, Args... args) {
-        T res = 0;
-        for (int i = r+1; i > 0; i -= i&-i) 
-            res += bit[i].query(args...);
-        return res;
+    template<typename... Args> T query(int r, Args... args) {
+        T res = 0; for (++r; r > 0; r -= r&-r) res += bit[r].query(args...); return res;
     }
-
     template<typename... Args> T query(int l, int r, Args... args) {
-        return sum(r, args...) - sum(l-1, args...);
+        return query(r, args...) - query(l-1, args...);
     }
-
-    // index of sum >= v, or n if none greater
+    // index of query >= v, or n if none greater
     template<typename... Args> int lower_bound(T v, Args... args) {
         if (v <= 0) return -1;
         int k = 0;

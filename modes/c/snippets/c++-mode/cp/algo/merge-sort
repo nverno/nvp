@@ -2,13 +2,15 @@
 # name: merge sort
 # key: f_mergesort
 # --
+long long cnt = 0;
 void merge(int l, int m, int e, vector<int>& arr) {
     int r = m+1;
     while (l <= m && r <= e) {
         if (arr[l] <= arr[r]) ++l;
         else {
             // process out-of-place elements
-            ${1:int tmp = arr[r], idx = r;
+            ${1:cnt += r - l};
+            ${2:int tmp = arr[r], idx = r;
             while (idx != l) {
                 arr[idx] = arr[idx-1];
                 --idx;
@@ -17,13 +19,13 @@ void merge(int l, int m, int e, vector<int>& arr) {
             ++m;
             ++r;}
         }
-    }${2:
-    sort(arr.begin()+l, arr.begin()+e+1);}
+    }${2:$(if (not (yas-text)) "" "
+        sort(arr.begin()+l, arr.begin()+e+1);")}
 }
-void mergeSort(int l, int r, vector<int>& arr) {
+void merge_sort(int l, int r, vector<int>& arr) {
     if (l >= r) return;
     int mid = l + (r - l) / 2;
-    mergeSort(l, mid, arr);
-    mergeSort(mid+1, r, arr);
+    merge_sort(l, mid, arr);
+    merge_sort(mid+1, r, arr);
     merge(l, mid, r, arr);
 }

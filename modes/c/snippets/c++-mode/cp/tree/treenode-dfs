@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: treenode dfs
+# key: tn_dfs
+# --
+${1:void} dfs(TreeNode* r$2) {
+    if (!r) return $3;
+
+    if (r->left) {
+        dfs(r->left${2:$(nvp-c-yas-vars ", ")});
+    }
+    if (r->right) {
+        dfs(r->right${2:$(nvp-c-yas-vars ", ")});
+    }
+    return $4;
+}

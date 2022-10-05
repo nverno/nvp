@@ -1,0 +1,37 @@
+# -*- mode: snippet -*-
+# name: manacher longest palindrome substrings O(n)
+# key: s_manacher
+# --
+// Finds half-lengths of longest palindromes centered at each index in string
+// [0] => even-length center is right of exact center, eg. {i-dp[1][i]..i+dp[1][i]}
+// [1] => odd-length pali centered at i, eg. {i-dp[i][0]..i+dp[i][0]-1}
+// https://codeforces.com/blog/entry/12143
+vector<vector<int>> manacher(string& s) {
+    int n = s.size();
+    vector<vector<int>> p(2,vector<int>(n, 0));
+    for(int z=0, l=0, r=0; z<2; z++, l=0, r=0) {
+        for (int i=0; i<n; i++) {
+            if (i<r) p[z][i] = min(r-i+!z, p[z][l+r-i+!z]);
+            int L=i-p[z][i], R=i+p[z][i]-!z;
+            while (L-1>=0 && R+1<n && s[L-1]==s[R+1]) p[z][i]++, L--, R++;
+            if (R>r) l=L,r=R;
+        }
+    }
+    return p;
+}
+
+string longest_palindromic_substring(string& s) {
+    auto inds = manacher(s);
+    int mx = 0, idx = 0;
+    for (int i = 0; i < (int)s.size(); ++i) {
+        if (2*inds[0][i] > mx) {
+            mx = 2*inds[0][i];
+            idx = i - inds[0][i];
+        }
+        if (2*inds[1][i]+1 > mx) {
+            mx = 2*inds[1][i]+1;
+            idx = i - inds[1][i];
+        }
+    }
+    return s.substr(idx, mx);
+}

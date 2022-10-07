@@ -40,8 +40,8 @@ vector<int> sccs(int n) {
         if (!seen[u]) {
             dfs2(u, seen, comp);
             for (auto& x : comp) {
-                // process component
-                res[x] = cid;
+                ${1:// process component
+                }res[x] = cid;
             }
             comp.clear();
             ++cid;

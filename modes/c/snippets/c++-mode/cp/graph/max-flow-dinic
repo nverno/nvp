@@ -1,0 +1,49 @@
+# -*- mode: snippet -*-
+# name: dinic max flow
+# key: g_dinic
+# --
+// https://github.com/bqi343/USACO/blob/master/Implementations/content/graphs%20%2812%29/Flows%20%2812.3%29/Dinic.h
+template<typename T> struct Dinic {
+    struct Edge { int to, rev; T cap; };
+    int N; vector<vector<Edge>> adj;
+    void init(int _N) { N = _N; adj.rsz(N); }
+    pair<int,int> add_edge(int a, int b, T cap, T rcap = 0) { 
+        assert(min(cap, rcap) >= 0);
+        adj[a].pb({b, adj[b].size(), cap});
+        adj[b].pb({a, adj[a].size()-1, rcap});
+        return {a, adj[a].size()-1};
+    }
+    T edgeFlow(pair<int,int> loc) { // get flow along original edge
+        const Edge& e = adj.at(loc.first).at(loc.second);
+        return adj[e.to][e.rev].cap;
+    }
+    vector<int> lev, ptr;
+    bool bfs(int s, int t) { // level=shortest dist from source
+        lev = ptr = vector<int>(N);
+        lev[s] = 1; queue<int> q({s});
+        while (!q.empty()) {
+            int u = q.front(); q.pop();
+            for (auto& e : adj[u]) if (e.cap && !lev[e.to]) {
+                    q.push(e.to), lev[e.to] = lev[u]+1;
+                    if (e.to == t) return 1;
+                }
+        }
+        return 0;
+    }
+    T dfs(int v, int t, T flo) {
+        if (v == t) return flo;
+        for (int& i = ptr[v]; i < adj[v].size(); i++) {
+            Edge& e = adj[v][i];
+            if (lev[e.to] != lev[v]+1 || !e.cap) continue;
+            if (T df = dfs(e.to, t, min(flo, e.cap))) { 
+                e.cap -= df; adj[e.to][e.rev].cap += df;
+                return df; } // saturated >=1 one edge
+        }
+        return 0;
+    }
+    T maxFlow(int s, int t) {
+        T tot = 0;
+        while (bfs(s,t)) while (T df = dfs(s,t,numeric_limits<T>::max())) tot += df;
+        return tot;
+    }
+};

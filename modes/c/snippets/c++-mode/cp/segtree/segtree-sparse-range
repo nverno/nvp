@@ -1,0 +1,41 @@
+# -*- mode: snippet -*-
+# name: segtree sparse range
+# key: d_seg_sparse_range
+# --
+template<typename T> struct SegTree {
+    struct Node {
+        Node *l, *r; T lo, hi, val, mx;
+        Node(T l, T r): l(nullptr), r(nullptr), lo(l), hi(r), val(0), mx(0) {}
+        Node(T l, T r, T v): l(nullptr), r(nullptr), lo(l), hi(r), val(v), mx(0) {}
+        T mid() { return lo + (hi - lo)/2; }
+        Node* left() { return l ? l : new Node(lo, mid(), 0); }
+        Node* right() { return r ? r : new Node(mid()+1, hi, 0); }
+        Node(Node* cp): l(cp->l), r(cp->r), lo(cp->lo), hi(cp->hi), val(cp->val) {}
+    };
+    Node *root;
+    SegTree(): root(nullptr) {}
+    SegTree(int l, int r): root(new Node(l, r, 0)) {}
+    void init(int l, int r) { root = new Node(l, r, 0); }
+    Node* update(Node* node, T val, int l, int r) {
+        if (!node) return new Node(l, r, val);
+        if (r < node->lo || l > node->hi) return node;
+        if (l <= node->lo && r >= node->hi) {
+            node->val += val;
+            return node;
+        }
+        int mid = (node->lo + node->hi) / 2;
+        if (l <= mid) node->l = update(node->left(), val, l, min(mid, r));
+        if (r > mid) node->r = update(node->right(), val, max(l, mid+1), r);
+        node->mx = max(node->l?node->l->val+node->l->mx:0,
+                       node->r?node->r->val+node->r->mx:0);
+        return node;
+    }
+    void update(int l, int r, T val) { root = update(root, val, l, r); }
+    T query(Node* node, int l, int r) {
+        if (l > node->hi || r < node->lo) return 0;
+        if (node->lo <= l && node->hi >= r) return node->val + node->mx;
+        T mid = node->mid();
+        return node->val + max(query(node->l, l, mid), query(node->r, mid+1, r));
+    }
+    T query(int a, int b) { return query(root, a, b); }
+};

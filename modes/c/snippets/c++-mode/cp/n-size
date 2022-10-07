@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: const int n = x.size()
+# key: szn
+# --
+const int ${1:n} = $2.size();

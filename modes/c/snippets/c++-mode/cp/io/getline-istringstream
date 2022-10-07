@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: istringstream getline
+# key: iss
+# --
+istringstream iss($1);
+string cur;
+while (getline(iss, cur, ${2:' '})) {
+    $0
+}

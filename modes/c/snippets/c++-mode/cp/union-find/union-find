@@ -7,8 +7,7 @@ struct UF {
     UF() {}
     UF(int size) { init(size); }
     void init(int size) {
-        uf.resize(size); iota(begin(uf), end(uf), 0);
-        sz.assign(size, 1);
+        uf.resize(size); iota(begin(uf), end(uf), 0); sz.assign(size, 1);
     }
     int find(int x) { return x == uf[x] ? x : uf[x] = find(uf[x]); }
     void merge(int x, int y) {
@@ -18,4 +17,5 @@ struct UF {
             uf[xx] = yy; sz[yy] += sz[xx];
         }
     }
+    bool connected(int x, int y) { return find(x) == find(y); }
 };

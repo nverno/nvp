@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: convert number to base 10
+# key: n_base10
+# --
+// convert from number n base k to n base 10
+long long to_base10(string& n, int k) {
+    long long res = 0;
+    for (int i = 0; i < n.size(); ++i) 
+        res = res*k + (n[i] - '0');
+    return res;
+}

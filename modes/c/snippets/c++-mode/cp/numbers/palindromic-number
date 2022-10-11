@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: number base b is palindromic
+# key: n_pali
+# --
+bool is_pali(long long n, int b) {
+    long long mul = 1;
+    while (mul * b <= n) mul *= b;
+    for (; n; mul /= b * b) {
+        int d = n / mul, r = n % b;
+        if (d != r) return false;
+        n = (n - d*mul - r) / b;
+    }
+    return true;
+}

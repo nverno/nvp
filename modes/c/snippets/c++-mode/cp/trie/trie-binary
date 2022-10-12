@@ -1,0 +1,34 @@
+# -*- mode: snippet -*-
+# name: binary trie
+# key: d_trie_binary
+# --
+template<typename T> struct Trie {
+    const int BITS=30; T cnt, ID{}; array<Trie*,2> ch;
+    Trie(): cnt(0) { fill(begin(ch), end(ch), nullptr); }
+    Trie* c0() { return ch[0] && ch[0]->cnt > 0 ? ch[0] : nullptr; }
+    Trie* c1() { return ch[1] && ch[1]->cnt > 0 ? ch[1] : nullptr; }
+    void update(T x, T v=1) {
+        Trie *ptr = this;
+        for (int b=BITS; b>=0; --b) {
+            int i = (x>>b)&1;
+            if (!ptr->ch[i]) ptr->ch[i] = new Trie<T>();
+            ptr = ptr->ch[i];
+            ptr->cnt += v;
+        }
+    }
+    Trie* get(T x) {
+        Trie *ptr = this;
+        for (int b = BITS; b>=0 && ptr; --b) ptr = (x>>b)&1 ? ptr->c1() : ptr->c0();
+        return ptr;
+    }
+    T count(T x) { Trie *ptr = get(x); return ptr ? ptr->cnt : ID; }
+    T find_max(T x) { // find value v, maximizing v^x
+        Trie *ptr = this; T res = 0;
+        for (int b=BITS; ~b; --b) {
+            if (!ptr->c1() || (ptr->c0() && (x>>b&1))) ptr = ptr->c0();
+            else { res |= (1<<b); ptr = ptr->c1(); }
+        }
+        return res;
+    }
+    T find_min(T x) { return find_max(~x); }
+};

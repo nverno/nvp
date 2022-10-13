@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: matrix indices for counter/clockwise rotations
+# key: m_rotate
+# --
+// return i,j indices associated with clockwise rotation index for layer
+// idx |0|7|6|      |{0,0}|
+//     |1| |5|   -> |{1,0}| ...
+//     |2|3|4|      |{2,0}|
+pair<int,int> rotate_clockwise(int idx, int h, int w) {
+    return idx < h ? make_pair(idx, 0)
+            : idx < h+w ? make_pair(h-1, idx-h+1)
+            : idx < 2*h+w-1 ? make_pair(2*h+w-2 - idx, w)
+            : make_pair(0, 2*(h+w)-2 - idx);
+};
+// return i,j for counter-clockwise rotation index
+pair<int,int> rotate_cclockwise(int idx, int h, int w) {
+    return rotate_clockwise(2*(h+w)-2-idx, h, w);
+}

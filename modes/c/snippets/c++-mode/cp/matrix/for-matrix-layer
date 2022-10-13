@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: for matrix layer
+# key: forlayer
+# --
+for (int l = 0; l < min(${1:m}, ${2:n})/2; ++l) {
+    int h = $1 - 2*l, w = $2 - 1 - 2*l, len = 2*(h+w)-2;
+    ${3:for (int idx = 0; idx < len; ++idx) {
+        // auto [i, j] = rotate_clockwise(idx, h, w);
+    \}}
+}

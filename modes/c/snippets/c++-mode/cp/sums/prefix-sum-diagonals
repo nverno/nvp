@@ -1,0 +1,25 @@
+# -*- mode: snippet -*-
+# name: diagonal prefix sums
+# key: s_diag
+# --
+int ndiag = ${1:m} + ${2:n}; // 1-indexed
+// positive slope diag index (negative indexed by r+c)
+auto pdiag = [&](int r, int c) { return (ndiag + (r - c)) % ndiag;};
+// 1-indexed, diags indexed by row
+// [0] = -slope (eg. [$1,$2]->[1,1]) diags, [1] = +slope ([2,1]->[1,2])
+vector<vector<vector<int>>> diag(vector<vector<vector<int>>>(
+    2, vector<vector<int>>(ndiag+1, vector<int>(max($1,$2)+1))));
+for (int i = 1; i <= $1; ++i) {
+    for (int j = 1; j <= $2; ++j) {
+        diag[0][i+j][i] = grid[i-1][j-1] + diag[0][i+j][i-1];
+        int d = pdiag(i, j);
+        diag[1][d][i] = grid[i-1][j-1] + diag[1][d][i-1];
+    }
+}
+// 1-indexed, sum diagonal b/w [i,j] <-> [ii,jj]
+auto diag_sum = [&](int i, int j, int ii, int jj) {
+    assert(i+j == ii+jj || pdiag(i,j) == pdiag(ii,jj));
+    int b = min(i,ii), e = max(i,ii), d = (jj-j)*(i-ii) < 0 ? 1 : 0,
+      idx = d == 0 ? i+j : pdiag(i,j);
+    return diag[d][idx][e] - diag[d][idx][b-1];
+};

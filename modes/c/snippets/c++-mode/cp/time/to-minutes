@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: convert HH:MM to minutes
+# key: time_tomin
+# --
+int to_minutes(string& t, const char* fmt = "%d:%d") {
+    int a, b;
+    sscanf(t.c_str(), fmt, &a, &b);
+    return 60*a + b;
+}

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: prefix sum
-# key: s_ps
+# key: ps_ps
 # --
 vector<int> ps(${1:n} + 1);
 partial_sum(begin(${2:arr}), end($2), begin(ps)+1);${3:

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: diagonal prefix sums
-# key: s_diag
+# key: ps_diag
 # --
 int ndiag = ${1:m} + ${2:n}; // 1-indexed
 // positive slope diag index (negative indexed by r+c)

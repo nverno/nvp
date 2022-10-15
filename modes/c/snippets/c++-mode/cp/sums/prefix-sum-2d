@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: 2d prefix sum
-# key: s_ps2
+# key: ps_ps2
 # --
 vector<vector<int>> ps(${1:m}+1, vector<int>(${2:n}+1));
 for (int i = 1; i <= $1; ++i) {

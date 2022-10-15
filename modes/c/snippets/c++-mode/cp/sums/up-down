@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: up/down sums
-# key: s_updown
+# key: ps_updown
 # --
 vector<int> up(${1:n}, ${2:n}), down($1, $2);
 for (int i = n-1; i >= 0; --i) {

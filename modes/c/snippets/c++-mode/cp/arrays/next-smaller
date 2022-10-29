@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: index of next/previous smaller value in array
+# key: f_next_smaller
+# --
+vector<int> next_smaller(const vector<int>& a, bool prev=false) {
+    const int n = a.size();
+    vector<int> res(n), st;
+    for (int i = (prev?0:n-1); prev?i<n:i>=0; prev?i++:i--) {
+        while (!st.empty() && a[st.back()] >= a[i]) st.pop_back();
+        res[i] = st.empty() ? -1 : st.back();
+        st.push_back(i);
+    }
+    return res;
+}
+vector<int> prev_smaller(const vector<int>& a) { return next_smaller(a, true); }

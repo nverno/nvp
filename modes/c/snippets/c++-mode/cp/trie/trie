@@ -1,28 +1,27 @@
 # -*- mode: snippet -*-
-# name: trie
+# name: simple string trie
 # key: d_trie
 # --
-template<typename T> struct Trie {
-    bool leaf; char offset; int cnt; T val, ID{}; array<Trie*,26> ch;
-    Trie(char off='${1:a}'): leaf(false), offset(off), cnt(0) { clear(); }
-    void clear() { fill(begin(ch), end(ch), nullptr); cnt=0; leaf=false; val=ID; }
-    void insert(string const& s, T v) {
+struct Trie {
+    bool leaf; char offset; const char *val; array<Trie*,26> ch;
+    Trie(char off='a'): leaf(false), offset(off), val(nullptr) {
+    fill(begin(ch), end(ch), nullptr);
+    }
+    void insert(string const& s) {
         Trie *ptr = this;
         for (char const &c: s) {
-            if (!ptr->ch[c-offset]) ptr->ch[c-offset] = new Trie<T>(offset);
-            ptr = ptr->ch[c-offset]; ptr->cnt++;
+            if (!ptr->ch[c-offset]) ptr->ch[c-offset] = new Trie(offset);
+            ptr = ptr->ch[c-offset];
         }
         ptr->leaf = true;
-        ptr->val = v;
+        ptr->val = s.c_str();
     }
     Trie *get(string const& s) {
         Trie *ptr = this;
         for (char const &c: s) {ptr = ptr->ch[c-offset]; if (!(ptr && ptr->cnt)) break;}
         return ptr;
     }
-    int count(string const& s) { Trie *ptr=get(s); return ptr ? ptr->cnt : 0; }
     Trie *find(string const& s) {
         Trie *ptr = get(s); return ptr && ptr->leaf ? ptr : nullptr;
-    }${2:
-     ~Trie() \{for (auto it = ch.begin(); it != ch.end(); ++it) delete *it;\}}
+    }
 };

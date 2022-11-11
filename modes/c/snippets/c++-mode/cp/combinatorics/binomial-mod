@@ -1,22 +1,22 @@
 # -*- mode: snippet -*-
-# name: modular binomial coefficient
+# name: n choose k, modular binomial coefficient
 # key: f_binom
 # --
-#define ${1:MAXN} ${2:1001}
-const int ${3:MOD} = ${4:1e5+3}; // must be prime
-static int inv[$3];
-static int fact[$1+1];
-void init_binom() {
-    if (inv[1] == 1) return;
-    inv[1] = 1;
-    for (int i = 1; i < $3; ++i)
-        inv[i] = $3 - ($3/i) * inv[$3%i] % $3;
-
-    fact[0] = 1;
-    for (int i = 1; i < $2; ++i)
-        fact[i] = fact[i-1] * i % $3;
-}
-
-long long binom(int n, int k) {
-    return fact[n] * inv[fact[k]] % $3 * inv[fact[n-k]] % $3;
+const int ${1:MOD} = ${2:1e9+7}; // must be prime
+const int ${3:maxN} = ${4:1e5+3};
+${5:long long} inv[$3], fact[$3], ifact[$3];
+struct init_binom {
+    init_binom() {
+        fact[0] = ifact[0] = inv[1] = 1;
+        for (int i = 2; i < $3; ++i)
+            inv[i] = ($1 - $1/i) * inv[$1%i] % $1;
+        for (int i = 1; i < $3; ++i) {
+            fact[i] = fact[i-1] * i % $1;
+            ifact[i] = ifact[i-1] * inv[i] % $1;
+        }
+    }
+} init_binom_;
+$5 binom(int n, int k) {
+    if (n < k || k < 0) return 0;
+    return fact[n] * ifact[k] % $1 * ifact[n - k] % $1;
 }

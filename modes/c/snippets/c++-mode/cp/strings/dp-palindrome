@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: dp palindrome
+# key: s_pali
+# --
+vector<vector<bool>> pali(${1:n}, vector<bool>($1, false));
+for (int i = $1-1; i >= 0; --i) {
+    for (int j = i; j < $1; ++j) {
+        if (i == j) pali[i][j] = true;
+        else if (j == i+1) pali[i][j] = (s[i] == s[j]);
+        else pali[i][j] = (s[i] == s[j]) && pali[i+1][j-1];
+    }
+}

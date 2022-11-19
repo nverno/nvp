@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: vector orientation between points
+# key: f_orientation
+# --
+// ab X bc => - is clockwise, + counter-clockwise
+inline int orientation(const point& a, const point& b, const point& c) {
+    return a.x*(b.y-c.y) + b.x*(c.y-a.y) + c.x*(a.y-b.y);
+}
+
+bool cw(const point& a, const point& b, const point& c) {
+    return orientation(a, b, c) <= 0;
+}
+
+bool ccw(const point& a, const point& b, const point& c) {
+    return orientation(a, b, c) >= 0;
+}

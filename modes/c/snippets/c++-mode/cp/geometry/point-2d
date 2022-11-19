@@ -1,0 +1,84 @@
+# -*- mode: snippet -*-
+# name: 2D point data structure
+# key: d_point
+# --
+template <class T> struct Point { // from https://codeforces.com/blog/entry/48122
+  T x, y;
+  Point() : x(0), y(0) {}
+  Point(const T& x, const T& y) : x(x), y(y) {}
+  void swap(Point& other) { using std::swap; swap(x, other.x); swap(y, other.y); }
+  template <class U> explicit operator Point<U> () const {
+    return Point<U>(static_cast<U>(x), static_cast<U>(y)); }
+  template <class U> Point& operator = (const Point<U>& other) {
+    x = other.x; y = other.y; return *this; }
+  template <class U> Point& operator += (const Point<U>& other) {
+    x += other.x; y += other.y; return *this; }
+  template <class U> Point& operator -= (const Point<U>& other) {
+    x -= other.x; y -= other.y; return *this; }
+  template <class U> Point& operator *= (const U& factor) {
+    x *= factor; y *= factor; return *this; }
+  template <class U> Point& operator /= (const U& factor) {
+    x /= factor; y /= factor; return *this; }
+};
+template <class T> istream& operator >> (istream& is, Point<T>& point) {
+  return is >> point.x >> point.y; }
+template <class T> ostream& operator << (ostream& os, const Point<T>& point) {
+  return os << point.x << ' ' << point.y; }
+template <class T> inline Point<T> make_point(const T& x, const T& y) { return Point<T>(x, y); }
+template <class T> void swap(Point<T>& lhs, Point<T>& rhs) { lhs.swap(rhs); }
+
+#define FUNC1(name, arg, expr) \
+template <class T> inline auto name(const arg) -> decltype(expr) { return expr; }
+#define FUNC2(name, arg1, arg2, expr) \
+template <class U, class V> \
+inline auto name(const arg1, const arg2) -> decltype(expr) { return expr; }
+#define FUNC3(name, arg1, arg2, arg3, expr) \
+template <class U, class V, class W> \
+inline auto name(const arg1, const arg2, const arg3) -> decltype(expr) { return expr; }
+
+FUNC1(operator -, Point<T>& point, makePoint(-point.x, -point.y))
+FUNC2(operator +, Point<U>& lhs, Point<V>& rhs, makePoint(lhs.x + rhs.x, lhs.y + rhs.y))
+FUNC2(operator -, Point<U>& lhs, Point<V>& rhs, makePoint(lhs.x - rhs.x, lhs.y - rhs.y))
+FUNC2(operator *, U& factor, Point<V>& rhs, makePoint(factor * rhs.x, factor * rhs.y))
+FUNC2(operator *, Point<U>& lhs, V& factor, makePoint(lhs.x * factor, lhs.y * factor))
+FUNC2(operator /, Point<U>& lhs, V& factor, makePoint(lhs.x / factor, lhs.y / factor))
+
+FUNC2(operator *, Point<U>& lhs, Point<V>& rhs, lhs.x * rhs.x + lhs.y * rhs.y)
+FUNC2(operator ^, Point<U>& lhs, Point<V>& rhs, lhs.x * rhs.y - lhs.y * rhs.x)
+
+// < 0 if rhs <- lhs counter-clockwise, 0 if collinear, > 0 if clockwise.
+FUNC2(ccw, Point<U>& lhs, Point<V>& rhs, rhs ^ lhs)
+FUNC3(ccw, Point<U>& lhs, Point<V>& rhs, Point<W>& origin, ccw(lhs - origin, rhs - origin))
+
+FUNC2(operator ==, Point<U>& lhs, Point<V>& rhs, lhs.x == rhs.x && lhs.y == rhs.y)
+FUNC2(operator !=, Point<U>& lhs, Point<V>& rhs, !(lhs == rhs))
+
+FUNC2(operator <, Point<U>& lhs, Point<V>& rhs,
+    lhs.y < rhs.y || (lhs.y == rhs.y && lhs.x < rhs.x))
+FUNC2(operator >, Point<U>& lhs, Point<V>& rhs, rhs < lhs)
+FUNC2(operator <=, Point<U>& lhs, Point<V>& rhs, !(lhs > rhs))
+FUNC2(operator >=, Point<U>& lhs, Point<V>& rhs, !(lhs < rhs))
+
+// Angles and rotations (counter-clockwise).
+FUNC1(angle, Point<T>& point, atan2(point.y, point.x))
+FUNC2(angle, Point<U>& lhs, Point<V>& rhs, atan2(lhs ^ rhs, lhs * rhs))
+FUNC3(angle, Point<U>& lhs, Point<V>& rhs, Point<W>& origin,
+      angle(lhs - origin, rhs - origin))
+FUNC3(rotate, Point<U>& point, V& angleSin, W& angleCos,
+      makePoint(angleCos * point.x - angleSin * point.y,
+                angleSin * point.x + angleCos * point.y))
+FUNC2(rotate, Point<U>& point, V& angle, rotate(point, sin(angle), cos(angle)))
+FUNC3(rotate, Point<U>& point, V& angle, Point<W>& origin,
+      origin + rotate(point - origin, angle))
+FUNC1(perp, Point<T>& point, makePoint(-point.y, point.x))
+
+// Distances.
+FUNC1(abs, Point<T>& point, point * point)
+FUNC1(norm, Point<T>& point, sqrt(abs(point)))
+FUNC2(dist, Point<U>& lhs, Point<V>& rhs, norm(lhs - rhs))
+FUNC2(dist2, Point<U>& lhs, Point<V>& rhs, abs(lhs - rhs))
+FUNC2(bisector, Point<U>& lhs, Point<V>& rhs, lhs * norm(rhs) + rhs * norm(lhs))
+
+#undef FUNC1
+#undef FUNC2
+#undef FUNC3

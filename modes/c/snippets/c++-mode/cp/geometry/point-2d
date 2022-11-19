@@ -36,14 +36,15 @@ inline auto name(const arg1, const arg2) -> decltype(expr) { return expr; }
 template <class U, class V, class W> \
 inline auto name(const arg1, const arg2, const arg3) -> decltype(expr) { return expr; }
 
-FUNC1(operator -, Point<T>& point, makePoint(-point.x, -point.y))
-FUNC2(operator +, Point<U>& lhs, Point<V>& rhs, makePoint(lhs.x + rhs.x, lhs.y + rhs.y))
-FUNC2(operator -, Point<U>& lhs, Point<V>& rhs, makePoint(lhs.x - rhs.x, lhs.y - rhs.y))
-FUNC2(operator *, U& factor, Point<V>& rhs, makePoint(factor * rhs.x, factor * rhs.y))
-FUNC2(operator *, Point<U>& lhs, V& factor, makePoint(lhs.x * factor, lhs.y * factor))
-FUNC2(operator /, Point<U>& lhs, V& factor, makePoint(lhs.x / factor, lhs.y / factor))
+FUNC1(operator -, Point<T>& point, make_point(-point.x, -point.y))
+FUNC2(operator +, Point<U>& lhs, Point<V>& rhs, make_point(lhs.x + rhs.x, lhs.y + rhs.y))
+FUNC2(operator -, Point<U>& lhs, Point<V>& rhs, make_point(lhs.x - rhs.x, lhs.y - rhs.y))
+FUNC2(operator *, U& factor, Point<V>& rhs, make_point(factor * rhs.x, factor * rhs.y))
+FUNC2(operator *, Point<U>& lhs, V& factor, make_point(lhs.x * factor, lhs.y * factor))
+FUNC2(operator /, Point<U>& lhs, V& factor, make_point(lhs.x / factor, lhs.y / factor))
 
 FUNC2(operator *, Point<U>& lhs, Point<V>& rhs, lhs.x * rhs.x + lhs.y * rhs.y)
+// crossproduct
 FUNC2(operator ^, Point<U>& lhs, Point<V>& rhs, lhs.x * rhs.y - lhs.y * rhs.x)
 
 // < 0 if rhs <- lhs counter-clockwise, 0 if collinear, > 0 if clockwise.
@@ -65,12 +66,12 @@ FUNC2(angle, Point<U>& lhs, Point<V>& rhs, atan2(lhs ^ rhs, lhs * rhs))
 FUNC3(angle, Point<U>& lhs, Point<V>& rhs, Point<W>& origin,
       angle(lhs - origin, rhs - origin))
 FUNC3(rotate, Point<U>& point, V& angleSin, W& angleCos,
-      makePoint(angleCos * point.x - angleSin * point.y,
+      make_point(angleCos * point.x - angleSin * point.y,
                 angleSin * point.x + angleCos * point.y))
 FUNC2(rotate, Point<U>& point, V& angle, rotate(point, sin(angle), cos(angle)))
 FUNC3(rotate, Point<U>& point, V& angle, Point<W>& origin,
       origin + rotate(point - origin, angle))
-FUNC1(perp, Point<T>& point, makePoint(-point.y, point.x))
+FUNC1(perp, Point<T>& point, make_point(-point.y, point.x))
 
 // Distances.
 FUNC1(abs, Point<T>& point, point * point)

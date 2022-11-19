@@ -323,7 +323,7 @@ are aliases to symbols prefixed by \"nvp-\"."
            (nvp:acond ,@(cdr clauses)))))))
 
 (defmacro nvp:alambda (params &rest body)
-  "Anamorphic `lambda', binding the function to 'self'"
+  "Anamorphic `lambda', binding the function to `self'"
   (declare (indent defun) (debug t))
   `(cl-labels ((self ,params ,@body))
      #'self))
@@ -530,7 +530,7 @@ Syntax should be list of syntax class symbols or syntax codes."
 ;; - semantic-read-event : #<marker at 3072 in fw.el.gz>
 (defmacro nvp:input (type)
   "Return user input by TYPE.
-Trailing 's' indicates a string is returned. 
+Trailing `s' indicates a string is returned. 
 See Info node `(elisp) Input Events'.
 
 * ~~~ Last command/input keys

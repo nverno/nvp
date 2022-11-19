@@ -13,8 +13,8 @@
 
 (defsubst nvp-makefile--skip-escapes (search-fn)
   (if (eq search-fn 're-search-backward)
-      (eq (point-at-bol) (nvp:goto 'boll))
-    (eq (point-at-eol) (nvp:goto 'eoll))))
+      (eq (line-beginning-position) (nvp:goto 'boll))
+    (eq (line-end-position) (nvp:goto 'eoll))))
 
 ;; preceded by '[^$]$[{(]'
 (defsubst nvp-makefile-variable-or-function-p (pos)
@@ -60,7 +60,7 @@
                (or (re-search-forward (concat "^" ,target) nil t)
                    ;; if not found, put point back at start
                    (and (goto-char ,place) nil)))
-         (skip-chars-forward "^:" (point-at-eol))
+         (skip-chars-forward "^:" (line-end-position))
          (forward-char 1)
          ,@body))))
 

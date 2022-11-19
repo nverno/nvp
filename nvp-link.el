@@ -194,11 +194,11 @@ With \\[universal-argument] call in next visible window."
 (defun nvp-link--shell-collect ()
   (let (res)
     (nvp:with-restriction 'visible
-      (let ((end (1- (point-at-bol (point-max)))))
+      (let ((end (1- (line-beginning-position (point-max)))))
         (goto-char (point-min))
         (while (progn (comint-next-prompt 1) (< (point) end))
           (push (cons (string-chop-newline (nvp:tap 'tap 'line))
-                      (point-at-bol))
+                      (pos-bol))
                 res))))
     (nreverse res)))
 

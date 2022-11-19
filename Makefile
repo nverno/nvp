@@ -1,3 +1,4 @@
+SHELL = /bin/bash
 -include config.mk
 include default.mk
 

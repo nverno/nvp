@@ -43,7 +43,7 @@
                        path)))
     (setq exec-path path)
     (setenv "PATH" (mapconcat 'identity exec-path path-separator))
-    (setq eshell-path-env (getenv "PATH"))
+    ;; (setq eshell-path-env (getenv "PATH"))
     (run-hooks 'kerl-after-activation-hook)
     (when kerl-verbose
       (message "[kerl] %sctivated %s" (if new "A" "Dea") (or new "")))))

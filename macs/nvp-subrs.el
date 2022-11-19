@@ -143,7 +143,8 @@ The result may also contain atoms that where head of subalists."
 
 (defsubst nvp:list-unquote (args)
   "Unquote, unfunction, all elements in args - return as list.
-eg. '(#'a b 'c) => '(a b c), or #'fn => '(fn), or ('a #'b) => '(a b)."
+eg. \\='(#\\='a b \\='c) => \\='(a b c), or #\\='fn => \\='(fn),
+or (\\='a #\\='b) => \\='(a b)."
   (declare (pure t) (side-effect-free t))
   (while (memq (car-safe args) '(function quote))
     (setq args (cadr args)))

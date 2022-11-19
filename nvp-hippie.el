@@ -84,7 +84,7 @@
   "Non-nil if flex matching should ignore case.")
 
 (defvar nvp-he-window-scope 'visible
-  "Limits additional scopage for expanders: can be 'visible, 'global, or 'frame.")
+  "Limits additional scopage for expanders: can be \\='visible, \\='global, or \\='frame.")
 
 ;; function called with current string prefix to produce regexp to find candidates
 (defvar nvp-he-flex-matcher #'nvp-he-flex-camel/snake)

@@ -225,7 +225,7 @@ Optional:
   CREATE   if non-nil, map is initialized as sparse keymap.
   PREFIX   defines map as a prefix command with PREFIX as its name if it is a
            string.
-  WITH     specifies sets of bindings, from 'nvp--bindings-*', to add to map.
+  WITH     specifies sets of bindings, from `nvp--bindings-*', to add to map.
            These bindings are overwritten by any conflicts in BINDINGS.
   PREFIX-KEY append sequence to each binding in map
   PARENT   Set KEYMAP's parent

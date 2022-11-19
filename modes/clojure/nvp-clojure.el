@@ -4,7 +4,11 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'cider nil t)
-(nvp:decls :f (org-bookmark-jump-unhide))
+(nvp:decls :f (org-bookmark-jump-unhide
+               cider-pprint-eval-defun-at-point
+               cider-eval-defun-at-point cider-switch-to-repl-buffer
+               cider-repl-closing-return cider-insert-last-sexp-in-repl
+               cider-insert-in-repl cider-switch-to-last-clojure-buffer))
 
 ;; -------------------------------------------------------------------
 ;;; Util

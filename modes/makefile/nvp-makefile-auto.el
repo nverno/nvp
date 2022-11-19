@@ -50,8 +50,8 @@
 (defun nvp-makefile-list-deps (target)
   (save-excursion
     (nvp-makefile-goto-target target)
-    (skip-chars-forward ": \t" (point-at-eol))
-    (split-string (buffer-substring-no-properties (point) (point-at-eol)))))
+    (skip-chars-forward ": \t" (line-end-position))
+    (split-string (buffer-substring-no-properties (point) (line-end-position)))))
 
 (defun nvp-makefile-list-targets ()
   (setq makefile-need-target-pickup t)
@@ -87,15 +87,15 @@
   (nvp-makefile-with-target target
     (let* ((deps (split-string
                   (buffer-substring-no-properties
-                   (point) (point-at-eol))))
+                   (point) (line-end-position))))
            (there (member dep deps)))
       (if (and there (or toggle delete))
           (progn
-            (delete-region (point) (point-at-eol))
+            (delete-region (point) (line-end-position))
             (insert " ")
             (insert (mapconcat 'identity (delete dep deps) " ")))
         (when (not (or delete there))
-          (delete-region (point) (point-at-eol))
+          (delete-region (point) (line-end-position))
           (insert " ")
           (insert (mapconcat 'identity
                              (nconc deps (cons dep nil)) " ")))))))

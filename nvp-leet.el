@@ -25,7 +25,7 @@
         (save-excursion
           (goto-char (point-min))
           (while (re-search-forward "^Input:[^=]+= *" nil t)
-            (let ((lim (point-at-eol))
+            (let ((lim (line-end-position))
                   cur)
               (condition-case nil
                   (progn

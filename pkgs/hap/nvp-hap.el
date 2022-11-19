@@ -167,7 +167,7 @@
   (and end (narrow-to-region beg end))
   (let* ((end (progn
                 (forward-line nvp-hap-popup-max-lines)
-                (point-at-eol)))
+                (pos-eol)))
          (truncated (> (point-max) end)))
     (nvp-hap--skip-footers)
     (unless (eq beg (point))
@@ -224,7 +224,7 @@
              (info-lookup-other-window-flag nil))
          (ignore-errors
            (info-lookup-symbol arg)
-           (list (current-buffer) (point-at-bol) nil)))))))
+           (list (current-buffer) (pos-bol) nil)))))))
 
 ;;;###autoload
 (defun nvp-hap-elisp (command &optional arg &rest _args)

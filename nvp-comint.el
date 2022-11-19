@@ -96,7 +96,7 @@
       (prog1
           (buffer-substring-no-properties
            (point-min)
-           (max 1 (1- (point-at-bol))))
+           (max 1 (1- (line-beginning-position))))
         (and (buffer-name buf)
              (kill-buffer buf))))))
 

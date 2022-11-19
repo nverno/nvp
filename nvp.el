@@ -372,7 +372,7 @@ Dispatches to generic handlers with ARG."
 
 ;; -------------------------------------------------------------------
 ;;; Completion
-(nvp:decl vertico-directory-tidy vertico-insert vertico-exit)
+(nvp:decl vertico-directory-tidy vertico-insert vertico-exit vertico--metadata-get)
 
 (with-eval-after-load 'ido (require 'nvp-ido))
 

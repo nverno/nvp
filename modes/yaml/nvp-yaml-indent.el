@@ -67,7 +67,7 @@
 (defun nvp-yaml-indent-calculate-indent ()
   (let ((prev (nvp-yaml-indent-previous-block-indent)))
     (cond
-     ((or (= 1 (point-at-bol)) (nvp-yaml-indent-block-p))
+     ((or (= 1 (line-beginning-position)) (nvp-yaml-indent-block-p))
       prev)
      ((nvp-yaml-indent-item-p)
       (+ prev nvp-yaml-indent-offset))

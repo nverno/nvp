@@ -4,6 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
 (require 'cider-repl nil t)
+(nvp:decls :v (cider-repl-input-start-mark cider-repl-input-history))
 
 (defvar-local he-nrepl--index nil)
 (defvar-local he-nrepl--matches ())

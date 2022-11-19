@@ -906,12 +906,12 @@ Returns nil if unsuccessful, point otherwise."
 
 (cl-defmacro nvp:tap (type &optional tap beg end &key pulse hist)
   "Wrapper for bounds/contents of region/thing-at-points.
-Things at point default to 'symbols unless TAP is non-nil.
+Things at point default to \\='symbols unless TAP is non-nil.
 By regions of things at point are pulsed if PULSE is non-nil.
 If BEG and END are non-nil, they are used as region bounds instead of those 
 listed below.
 
-Trailing 'i' indicates to prompt for input if nothing is found.
+Trailing \"i\" indicates to prompt for input if nothing is found.
 
 `tap'    -- Thing string, no props
 `tapi'   -- 

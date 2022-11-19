@@ -51,7 +51,7 @@ When part of `before-save-hook', won't add condition on initial save."
     (let ((end (nvp-snippet-header-end)))
       (if (re-search-forward (concat "^#\\s-*" field ":") end t)
           (message "%s already defined: %S" field
-                   (buffer-substring (point) (point-at-eol)))
+                   (buffer-substring (point) (line-end-position)))
         (goto-char end)
         (beginning-of-line)
         (insert (format "# %s: %S\n" field value))))))

@@ -53,7 +53,7 @@
 
 (defun nvp-ocaml-previous-defun ()
   (interactive)
-  (let ((bl (point-at-bol)))
+  (let ((bl (pos-bol)))
     (nvp-ocaml--beginning-of-comment)
     (forward-comment (- (point-max)))
     (tuareg-beginning-of-defun)

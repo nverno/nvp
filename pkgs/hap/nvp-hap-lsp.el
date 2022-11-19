@@ -25,7 +25,7 @@
            (lsp-help-buf-name "*lsp-help*"))
        (with-current-buffer (get-buffer-create lsp-help-buf-name)
          (insert (string-trim-right (lsp--render-on-hover-content arg t)))
-         (list (current-buffer) (point-at-bol) nil))))))
+         (list (current-buffer) (pos-bol) nil))))))
 
 (provide 'nvp-hap-lsp)
 ;; Local Variables:

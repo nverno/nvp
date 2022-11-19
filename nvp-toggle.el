@@ -54,7 +54,7 @@ Decrement with prefix."
       (if (looking-at-p line)
           (message "interpreter already %s" interpreter)
         (when (looking-at "^#!")
-          (delete-region (point) (point-at-eol)))
+          (delete-region (point) (line-end-position)))
         (insert line)
         (save-buffer)
         (revert-buffer 'ignore-auto 'noconfirm)))))

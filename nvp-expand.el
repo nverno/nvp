@@ -59,7 +59,7 @@ Example: m,25+x?a%c => \"a\", \"b\", ..., \"z\"
   (interactive)
   (beginning-of-line)
   (when (and (re-search-forward "\\([^\[]*\\)\\[\\([^\]]+\\)\\]"
-                                (point-at-eol) 'noerror)
+                                (line-end-position) 'noerror)
              (match-string 2))
     (replace-match
      (mapconcat (lambda (s) (concat (match-string 1) s))

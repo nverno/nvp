@@ -82,7 +82,7 @@ replacing with NEW-VERSION."
     `(message (concat "[perlbrew]: " ,str) ,@args))
 
   (defmacro perlbrew--sys/version (version sys-call ver-call)
-    "If VERSION is 'system' do SYS-CALL, otherwise do VER-CALL."
+    "If VERSION is \\='system do SYS-CALL, otherwise do VER-CALL."
     `(if (string= ,version "system")
          (progn
            (perlbrew--update-path)

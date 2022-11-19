@@ -184,7 +184,7 @@ If program is not found at compile time, fallback to runtime search."
   "Define package root directory with default prefix as directory name or NAME.
 If SNIPPETS is non-nil, setup snippet loading for directory.
 If DIRS is non-nil it should be a list of variables to define as directories
-relative to the project root directory as symbols 'prefix--dir'.
+relative to the project root directory as symbols `prefix--dir'.
 AFTER-LOAD is a form to execute after file is loaded during which the root
 directory is bound to `root' and all `dirs' are let-bound to their symbols."
   (declare (indent 0) (debug t))

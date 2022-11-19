@@ -52,7 +52,7 @@ If SET-P is non-nil, set buffer-local values for `nvp-switch-cmd' and
   (with-current-buffer (let ((win (minibuffer-selected-window)))
                          (if (window-live-p win) (window-buffer win)
                            (current-buffer)))
-    (let ((minibuffer-completing-symbol nil)
+    (let (;(minibuffer-completing-symbol nil)
           (switch-cmd (or cmd nvp-switch-cmd (read-string "Command: ")))
           (switch-args (or args nvp-switch-args (read-string "Args: " "--help"))))
       (when set-p

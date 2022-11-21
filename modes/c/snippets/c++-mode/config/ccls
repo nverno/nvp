@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: default .ccls w/ system includes
+# key: ccls
+# --
+clang++
+%cpp -std=c++17
+-isystem/usr/include/x86_64-linux-gnu/c++/11
+-isystem/usr/include/c++/11
+-Ilib

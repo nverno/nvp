@@ -3,7 +3,7 @@
 # key: forb
 # --
 for (int b = 0; b < 30; ++b) {
-    if ((1 << b) & ${1:num}) {
+    if (${1:~mask}>>b & 1) {
         $0
     }
 }

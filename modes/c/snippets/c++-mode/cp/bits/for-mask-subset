@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for mask subset
+# key: forsub
+# --
+for (int sub = ${1:mask}; sub; sub = (sub-1)&$1) {
+    $0
+}

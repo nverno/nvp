@@ -24,7 +24,7 @@
   :parents (list c-macros-includes-abbrev-table))
 
 (define-abbrev-table 'c-mode-abbrev-table
-  '(
+  '(("so" "sizeof" nil :system t)
     ("ef" "EXIT_FAILURE" nil :system t)
     ("es" "EXIT_SUCCESS" nil :system t)
     ("szt" "size_t" nil :system t)

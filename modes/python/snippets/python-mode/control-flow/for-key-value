@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: for key-value
+# key: forkv
+# --
+for ${1:k}, ${2:v} in ${3:dict}.items():
+    $0

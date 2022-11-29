@@ -3,4 +3,4 @@
 # key: __eq__
 # --
 def __eq__(self, other):
-    return $0
+    return self.$1 == other.$1

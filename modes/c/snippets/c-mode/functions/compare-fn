@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: compare
-# key: compare
+# name: comparator
+# key: cmp
 # --
 int comparator(const void *a, const void *b) {
     const $1 *x = (const $1 *)a;

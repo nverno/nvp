@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: sqls sqlite3 config
+# key: sqls_sqlite3
+# --
+{
+  "sqls": {
+    "connections": [
+      {
+      "driver": "sqlite3",
+      "dataSourceName": "file:${1:/home/../dbname.db}"
+    }
+    ]
+  }
+}

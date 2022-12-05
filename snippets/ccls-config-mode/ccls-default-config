@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: ccls default config
+# key: ccls
+# --
+clang++
+%cpp -std=c++${1:17}
+-isystem/usr/include/x86_64-linux-gnu/c++/${2:11}
+-isystem/usr/include/c++/$2
+-Ilib

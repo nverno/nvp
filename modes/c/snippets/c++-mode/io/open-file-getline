@@ -1,11 +1,11 @@
 # -*- mode: snippet -*-
 # name: open-file-getline
-# key: getline
+# key: getlinef
 # --
-std::string ${1:line};
-std::ifstream ${2:infile}(${3:file});
-while (std::getline($2, $1)) {
-    std::istringstream ${4:iss}($1);
+string ${1:line};
+ifstream ${2:infile}(${3:file});
+while (getline($2, $1)) {
+    istringstream ${4:iss}($1);
     if (!(iss >> ${5:vars})) {
         break; // error
     }

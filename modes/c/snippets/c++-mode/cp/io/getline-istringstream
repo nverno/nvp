@@ -3,7 +3,7 @@
 # key: iss
 # --
 istringstream iss($1);
-string cur;
-while (getline(iss, cur, ${2:' '})) {
+string line;
+while (getline(iss, line, ${2:' '})) {
     $0
 }

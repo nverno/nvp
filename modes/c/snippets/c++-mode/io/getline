@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: getline
+# key: getline
+# --
+string line;
+while (getline(${1:cin}, line)) {
+    $0
+}

@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: convert string to uppercase
+# key: s_upper
+# --
+inline string to_uppercase(string s) {
+    for (int i = 0; i < (int)s.size(); ++i) 
+        if (s[i] >= 'a' && s[i] <= 'z')
+            s[i] = s[i] - 'a' + 'A';
+    return s;
+}

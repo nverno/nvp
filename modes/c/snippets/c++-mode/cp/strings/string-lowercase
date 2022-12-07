@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: convert string to lowercase 
+# key: s_lower
+# --
+inline string to_lowercase(string s) {
+    for (int i = 0; i < (int)s.size(); ++i) 
+        if (s[i] >= 'A' && s[i] <= 'Z')
+            s[i] = s[i] - 'A' + 'a';
+    return s;
+}

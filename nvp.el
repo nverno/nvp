@@ -114,7 +114,7 @@ or nil.")
 ;;; Functions
 
 ;; use add-function, any reason to run hooks?
-(defvar nvp-help-at-point-functions '(nvp-hap-company nvp-hap-info))
+(nvp:defvar :local t :permanent t nvp-help-at-point-functions '(nvp-hap-company nvp-hap-info))
 (defvar-local nvp-check-buffer-function #'checkdoc)
 (defvar-local nvp-disassemble-function #'disassemble)
 (defvar-local nvp-test-function #'nvp-ert-run-tests)
@@ -248,7 +248,7 @@ or nil.")
 
 
 ;; -------------------------------------------------------------------
-;;; Newline DWIM 
+;;; Newline DWIM
 
 (defvar-local nvp-newline-comment-continue t
   "Use comment continuations in applicable modes.")
@@ -322,7 +322,7 @@ Dispatches to generic handlers with ARG."
 
 
 ;; -------------------------------------------------------------------
-;;; Paredit 
+;;; Paredit
 (eval-when-compile (require 'paredit))
 (nvp:decl paredit-move-past-close-and paredit-blink-paren-match
   paredit-indent-region paredit-splice-reindent)

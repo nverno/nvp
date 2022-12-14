@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: sign of number
+# key: sign
+# --
+int sign(int v) {
+    return (0 < v) - (v < 0);
+}

@@ -1,6 +1,5 @@
 # -*- mode: snippet -*-
 # name: arg
-# key: arg
+# key: parg
 # --
-parser.add_argument('-$1', '--$2',
-                    $0)
+parser.add_argument('-$1', '--$2', $0)

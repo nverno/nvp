@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: parse_args
+# name: argparse parse args
 # key: pargs
 # --
 def parse_arguments():

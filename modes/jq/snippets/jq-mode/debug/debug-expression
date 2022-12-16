@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Snippet for debug expression
+# key: dbg
+# --
+(. as \$$c | {${1:name}: (${2:expr})} | debug | \$$c)

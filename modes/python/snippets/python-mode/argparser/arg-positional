@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: arg_positional
-# key: arg
+# name: argparse positional arg
+# key: parg
 # --
 parser.add_argument('${1:varname}', $0)

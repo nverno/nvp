@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Snippet for debug variable
+# key: dbgv
+# --
+(. as $$c | {$${1:var}} | debug | \$$c)

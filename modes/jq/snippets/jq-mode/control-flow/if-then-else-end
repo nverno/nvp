@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Snippet for if then else end
+# key: if
+# --
+if ${1:exp} then ${2:true} else ${3:false} end

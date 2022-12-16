@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Snippet for import JSON
+# key: impm
+# --
+include "${1:name}" as \$${2:name} {${3:metadata}};

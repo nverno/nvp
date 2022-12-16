@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Snippet for label $out | break $out
+# key: label
+# --
+label \$${1:var} | break \$${1:var}

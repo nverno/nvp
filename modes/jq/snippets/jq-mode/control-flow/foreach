@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Snippet for foreach expr as $var (init; update; extract)
+# key: for
+# --
+foreach ${1:.} as \$${2:i} (${3:init}; \$${2:i}; \$${2:i})

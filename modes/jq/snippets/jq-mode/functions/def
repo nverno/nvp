@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Snippet for def
+# key: def
+# --
+def ${1:name}: ${2:expr};

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: argparse infile or stdin
+# key: pargs-infile
+# --
+parser.add_argument('infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin)

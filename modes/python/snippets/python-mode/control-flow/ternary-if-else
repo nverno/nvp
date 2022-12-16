@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: ternary if-else
+# key: ?
+# --
+$1 if $2 else $3

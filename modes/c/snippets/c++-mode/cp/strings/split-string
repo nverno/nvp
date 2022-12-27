@@ -2,7 +2,7 @@
 # name: split string
 # key: s_split
 # --
-void split(string const& s, vector<string>& res, char c) {
+void split(string const& s, vector<string>& res, char c = ' ') {
     res.clear();
     istringstream iss(s);
     string cur;

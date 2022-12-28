@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: impl Deref for Type
+# key: deref
+# --
+impl std::ops::Deref for ${1:Type} {
+    type Target = ${2:Type};
+    fn deref(&self) -> &Self::Target {
+        &self.$0
+    }
+}

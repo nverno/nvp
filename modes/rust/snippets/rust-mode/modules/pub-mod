@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: public mod
+# key: pmod
+# --
+pub mod ${1:name}${2: {
+  $0
+}}${2:$(if (yas-text) "" ";")}

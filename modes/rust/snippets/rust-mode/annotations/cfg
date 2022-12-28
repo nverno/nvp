@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: #[cfg(...)]
+# key: cfg
+# --
+#[cfg($0)]

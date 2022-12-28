@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: trait
+# key: trait
+# --
+trait ${1:TraitName}${2:$(if (yas-text) ": " "")}${2:SuperTrait} {
+    $0
+}

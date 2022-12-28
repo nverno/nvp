@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: test function
+# key: test
+# condition: (nvp-yas-bolp)
+# --
+#[test]
+fn ${1:test_name}() {
+   $0
+}

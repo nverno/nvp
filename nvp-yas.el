@@ -69,6 +69,19 @@
       (length (split-string str "\\(\r\n\\|[\r\n]\\)"))
     0))
 
+;; from doom-snippets-lib.el
+(defun nvp-yas-bolp ()
+  "Return t if point is preceded only by indentation.
+Unlike `bolp', this ignores the trigger word for the current snippet."
+  (or (bolp)
+      (save-excursion
+        (if (region-active-p)
+            (goto-char (region-beginning))
+          (unless (memq (char-before) (list ?\  ?\n))
+            (backward-word)))
+        (skip-chars-backward " \t")
+        (bolp))))
+
 (defun nvp-yas-format (format &optional default trim)
   "Returns formatted string (see `doom-snippets-format').
 If TRIM is non-nil, whitespace is removed from selected text.

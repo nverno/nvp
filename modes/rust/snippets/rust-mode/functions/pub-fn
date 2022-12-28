@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: public function
+# key: pfn
+# --
+pub fn ${1:name}(${2:params})${3:$(if (yas-text) " -> " "")}${3:u32}${4: {
+    $0
+}}

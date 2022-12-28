@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: #[derive(...)]
+# key: der
+# condition: (nvp-yas-bolp)
+# --
+#[derive($1)]

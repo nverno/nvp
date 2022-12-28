@@ -1,7 +1,9 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
 
 (define-abbrev-table 'rust-mode-abbrev-table
-  '(("ret" "return" nil :system t)
+  '(("string" "String" nil :system t)
+    ("none" "None" nil :system t)
+    ("ret" "return" nil :system t)
     ("letm" "let mut" nil :system t))
   "Rust-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

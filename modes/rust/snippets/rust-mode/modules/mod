@@ -4,4 +4,4 @@
 # --
 mod ${1:name}${2: {
   $0
-}}${2:$(if (> (length yas-text) 0) "" ";")}
+}}${2:$(if (yas-text) "" ";")}

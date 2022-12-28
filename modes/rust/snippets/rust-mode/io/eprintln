@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: eprintln!(...)
+# key: eprln
+# --
+eprintln!("$1", ${2:`$%`});

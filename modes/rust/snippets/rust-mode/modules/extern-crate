@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: extern crate ...
+# key: ext
+# condition: (nvp-yas-bolp)
+# --
+extern crate ${1:name};

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: else... if
-# key: elsi
+# key: elif
 # --
 else if ${1:condition} {
     $0

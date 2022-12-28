@@ -2,6 +2,6 @@
 # name: if-let
 # key: ifl
 # --
-if let Some($1) = $2 {
+if let ${1:Some(${2:x})} = ${3:var} {
     $0
 }

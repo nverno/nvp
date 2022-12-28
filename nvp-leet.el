@@ -119,8 +119,9 @@
 (defun nvp-leet-set-rust ()
   (interactive)
   (setq leetcode-prefer-language "rust")
-  (setq leetcode-directory "~/class/leetcode/rust/src")
-  (advice-add 'leetcode--get-code-buffer :override #'nvp@leet-get-code-buffer))
+  (setq leetcode-directory "~/class/leetcode/rust/src/problem")
+  ;; (advice-add 'leetcode--get-code-buffer :override #'nvp@leet-get-code-buffer)
+  )
 
 (defun nvp-leet-unset-rust ()
   (interactive)

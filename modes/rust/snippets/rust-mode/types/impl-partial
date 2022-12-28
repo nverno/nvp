@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: impl PartialEq for Type
-# key: partial
+# key: imppartial
 # --
 impl PartialEq for ${1:Type} {
     fn eq(&self, other: &Self) -> bool {

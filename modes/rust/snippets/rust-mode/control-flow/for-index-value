@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for (idx, val) in vec.iter().enumerate()
+# key: forix
+# --
+for (${1:i}, ${2:x}) in ${3:vec}.iter().enumerate() {
+    $0
+}

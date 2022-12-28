@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: impl Deref for Type
-# key: deref
+# key: impderef
 # --
 impl std::ops::Deref for ${1:Type} {
     type Target = ${2:Type};

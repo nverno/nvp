@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: #[doc(inline)]
+# key: doc
+# condition: (nvp-yas-bolp)
+# --
+#[doc(inline)]

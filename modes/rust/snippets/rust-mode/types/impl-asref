@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: impl AsRef<Type> for Type
-# key: asref
+# key: impasref
 # --
 impl std::convert::AsRef<${1:Type}> for ${2:Type} {
     fn as_ref(&self) -> &$2 {

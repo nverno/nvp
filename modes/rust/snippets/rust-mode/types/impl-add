@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name : impl add(self, rhs)
+# key : impadd
+# --
+impl std::ops::Add for ${1:Type} {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self { $0 }
+    }
+}

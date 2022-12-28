@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: impl Error for Type { fn source(...) }
-# key: error
+# key: imperror
 # --
 impl std::error::Error for ${1:Type} {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: heapify
+# key: heap
+# --
+heapq.heapify($1)

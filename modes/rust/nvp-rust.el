@@ -2,11 +2,15 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'rust-mode)
+;; (require 'rust-mode)
 (nvp:decls :v (toml-mode-map))
 
 (cl-defmethod nvp-newline-dwim-comment
   (syntax arg &context (major-mode rust-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode rustic-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;; TODO:
@@ -84,15 +88,15 @@
 ;; rust-end-of-defun
 
 ;; toggle public visibility of function at point
-(defun nvp-rust-toggle-pub ()
-  (interactive)
-  (save-excursion
-    (rust-beginning-of-defun)
-    (if (and (looking-at-p "pub ")
-             (message "pub off"))
-        (delete-char 4)
-      (insert "pub ")
-      (message "pub on"))))
+;; (defun nvp-rust-toggle-pub ()
+;;   (interactive)
+;;   (save-excursion
+;;     (rust-beginning-of-defun)
+;;     (if (and (looking-at-p "pub ")
+;;              (message "pub off"))
+;;         (delete-char 4)
+;;       (insert "pub ")
+;;       (message "pub on"))))
 
 ;; toggle mutability of variable at point
 ;; (defun nvp-rust-toggle-mut ()
@@ -194,13 +198,13 @@
 ;;       (_ sym))))
 
 ;; get fields of enum at point
-(defun nvp-rust-enum-fields ()
-  (nvp-rust-collect-fields
-    (concat "^\\s-*" rust-re-type-or-constructor)))
+;; (defun nvp-rust-enum-fields ()
+;;   (nvp-rust-collect-fields
+;;     (concat "^\\s-*" rust-re-type-or-constructor)))
 
 ;; struct fields
-(defun nvp-rust-struct-fields ()
-  (nvp-rust-collect-fields "^\\s-*\\([_a-z0-9]+\\):"))
+;; (defun nvp-rust-struct-fields ()
+;;   (nvp-rust-collect-fields "^\\s-*\\([_a-z0-9]+\\):"))
 
 ;; get fields for struct / enum we be at
 ;; (defun nvp-rust-match ()
@@ -227,7 +231,7 @@
     (easy-menu-define nil km nil nvp-rust-menu)
     ;; (define-key km (kbd "<f2> m t") #'nvp-rust-tag-source)
     (define-key km (kbd "<f2> m .") #'xref-find-definitions)
-    (define-key km (kbd "<f2> M-p") #'nvp-rust-toggle-pub)
+    ;; (define-key km (kbd "<f2> M-p") #'nvp-rust-toggle-pub)
     ;; (define-key km (kbd "<f2> M-m") #'nvp-rust-toggle-mut)
     (define-key km (kbd "<f2> M-v") #'nvp-rust-slice)
     (define-key km (kbd "<f2> m j c") #'nvp-rust-open-cargo)

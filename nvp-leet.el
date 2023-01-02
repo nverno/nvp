@@ -80,6 +80,10 @@
 ;; -------------------------------------------------------------------
 ;;; Rust
 
+(defun nvp@leet-set-language ()
+  (setq leetcode-directory (expand-file-name leetcode-prefer-language "~/class/leetcode")))
+(advice-add 'leetcode-set-prefer-language :after #'nvp@leet-set-language)
+
 ;; slugify with '_' instead of '-'
 (defun nvp@leet-slugify-title (title)
   (let* ((str1 (replace-regexp-in-string "[\s-]+" "_" (downcase title)))

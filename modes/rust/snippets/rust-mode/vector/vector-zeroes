@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: vector of zeros
+# key: vz
+# --
+let mut ${1:v} = std::iter::repeat(0).take(${2:n}).collect::<Vec<_>>();

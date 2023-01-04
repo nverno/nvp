@@ -1,6 +1,7 @@
 ;; -*- coding: utf-8; -*-
 (define-abbrev-table 'awk-mode-abbrev-table
-  '(("begf" "BEGINFILE" nil :system t) 
+  '(("cont" "continue" nil :system t)
+    ("begf" "BEGINFILE" nil :system t) 
     ("endf" "ENDFILE"   nil :system t) 
     ("pr"   "print"     nil :system t) 
     ("beg"  "BEGIN"     nil :system t) 

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: math.sqrt
+# key: sqrt
+# -- 
+math.sqrt($1)

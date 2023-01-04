@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: tonumber(...)
+# key: stoi
+# --
+tonumber($1)

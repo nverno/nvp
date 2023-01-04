@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: math.ceil
+# key: ceil
+# -- 
+math.ceil($1)

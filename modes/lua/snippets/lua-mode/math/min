@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: math.min
+# key: min
+# -- 
+math.min($1)

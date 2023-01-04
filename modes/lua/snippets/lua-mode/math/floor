@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: math.floor
+# key: floor
+# -- 
+math.floor($1)

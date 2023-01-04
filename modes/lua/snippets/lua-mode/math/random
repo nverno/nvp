@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: math.random
+# key: random
+# -- 
+math.random($1)

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: math.abs
+# key: abs
+# -- 
+math.abs($1)

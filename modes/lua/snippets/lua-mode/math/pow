@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: math.pow
+# key: pow
+# -- 
+math.pow($1)

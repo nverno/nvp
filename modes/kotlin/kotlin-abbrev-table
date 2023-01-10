@@ -1,5 +1,6 @@
 ;; -*- coding: utf-8 -*-
-(define-abbrev-table 'kotlin-abbrev-table
-  '()
+(define-abbrev-table 'kotlin-mode-abbrev-table
+  '(("ret" "return" nil :system t)
+    ("cont" "continue" nil :system t))
   "Kotlin-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

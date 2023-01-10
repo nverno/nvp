@@ -1,0 +1,5 @@
+;; -*- coding: utf-8 -*-
+(define-abbrev-table 'kotlin-abbrev-table
+  '()
+  "Kotlin-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

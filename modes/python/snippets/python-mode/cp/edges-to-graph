@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: egdges to graph
+# key: etog
+# --
+${1:g} = [[] for _ in range(${2:n})]
+for u, v in ${3:edges}:
+    $1[u].append(v)
+    $1[v].append(u)

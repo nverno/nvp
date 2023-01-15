@@ -2,4 +2,4 @@
 # name: hash or_insert
 # key: hi
 # --
-$1.entry($2).or_insert($3)
+${1:m}.entry($2).or_insert($3)

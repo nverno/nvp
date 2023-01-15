@@ -2,5 +2,5 @@
 # name: hash increment value
 # key: hinc
 # --
-let ${1:cnt} = $2.entry($3).or_insert(0);
-*$1 += 1;
+let ${1:c} = ${2:cnt}.entry($3).or_insert(0);
+*$1 ${4:+}= 1;

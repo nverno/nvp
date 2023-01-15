@@ -1,0 +1,39 @@
+# -*- mode: snippet -*-
+# name: union find datastructure
+# key: d_uf
+# --
+pub struct UF {
+    parent: Vec<usize>,
+    sz: Vec<usize>,
+}
+impl UF {
+    fn new(sz: usize) -> Self {
+        let mut uf = UF {
+            parent: Vec::with_capacity(sz),
+            sz: Vec::with_capacity(sz),
+        };
+        for i in 0..sz {
+            uf.parent.push(i);
+            uf.sz.push(1);
+        }
+        uf
+    }
+    fn find(&mut self, i: usize) -> usize {
+        if self.parent[i] == i { return i; }
+        self.parent[i] = self.find(self.parent[i]);
+        self.parent[i]
+    }
+    fn merge(&mut self, x: usize, y: usize) {
+        let xx = self.find(x);
+        let yy = self.find(y);
+        if xx != yy {
+            if self.sz[xx] > self.sz[yy] {
+                self.parent[yy] = xx;
+                self.sz[xx] += self.sz[yy];
+            } else {
+                self.parent[xx] = yy;
+                self.sz[yy] += self.sz[xx];
+            }
+        }
+    }
+}

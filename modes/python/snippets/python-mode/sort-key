@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: sort by key
-# key: sortk
+# key: sortf
 # --
-sort(key=${1:lambda x: x[${2:0}]})
+sort(key=${1:lambda x: ${2:x[${3:0}]}})

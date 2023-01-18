@@ -5,7 +5,7 @@
 const SZ: usize = 26;
 
 #[derive(Default)]
-struct Trie {
+pub struct Trie {
     ch: [Option<Box<Trie>>; SZ],
     leaf: bool,
 }

@@ -7,7 +7,7 @@ pub struct UF {
     sz: Vec<usize>,
 }
 impl UF {
-    fn new(sz: usize) -> Self {
+    pub fn new(sz: usize) -> Self {
         let mut uf = UF {
             parent: Vec::with_capacity(sz),
             sz: Vec::with_capacity(sz),
@@ -18,12 +18,12 @@ impl UF {
         }
         uf
     }
-    fn find(&mut self, i: usize) -> usize {
+    pub fn find(&mut self, i: usize) -> usize {
         if self.parent[i] == i { return i; }
         self.parent[i] = self.find(self.parent[i]);
         self.parent[i]
     }
-    fn merge(&mut self, x: usize, y: usize) {
+    pub fn merge(&mut self, x: usize, y: usize) {
         let xx = self.find(x);
         let yy = self.find(y);
         if xx != yy {

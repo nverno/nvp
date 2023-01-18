@@ -5,13 +5,16 @@
 const SZ: usize = 26;
 
 #[derive(Default)]
-pub struct Trie {
+struct Trie {
     ch: [Option<Box<Trie>>; SZ],
     leaf: bool,
 }
 
 impl Trie {
-    pub fn add(&mut self, word: String) {
+    pub fn new() -> Trie {
+        Default::default()
+    }
+    pub fn add(&mut self, word: &str) {
         let mut node = self;
         for &c in word.as_bytes() {
             node = node.ch[(c - b'a') as usize]
@@ -19,7 +22,7 @@ impl Trie {
         }
         node.leaf = true;
     }
-    pub fn contains(&self, word: String) -> bool {
+    pub fn contains(&self, word: &str) -> bool {
         let mut node = self;
         for &c in word.as_bytes() {
             let idx = (c - b'a') as usize;
@@ -32,9 +35,9 @@ impl Trie {
         node.leaf
     }
     /// Search for any words matching WORD where '.' is a wildcard
-    pub fn search(&self, word: &[u8]) -> bool {
-        if let Some(&c) = word.first() {
-            if c == b'.' {
+    pub fn search(&self, word: &str) -> bool {
+        if let Some(c) = word.chars().next() {
+            if c == '.' {
                 for child in &self.ch {
                     if let Some(node) = child {
                         if node.search(&word[1..]) {
@@ -42,12 +45,12 @@ impl Trie {
                         }
                     }
                 }
-            } else if let Some(node) = &self.ch[(c-b'a') as usize] {
+            } else if let Some(node) = &self.ch[c as usize - 'a' as usize] {
                 return node.search(&word[1..]);
             }
             false
         } else {
             self.leaf
         }
-   }
+    }
 }

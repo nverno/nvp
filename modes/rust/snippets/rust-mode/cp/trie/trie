@@ -1,0 +1,53 @@
+# -*- mode: snippet -*-
+# name: trie
+# key: d_trie
+# --
+const SZ: usize = 26;
+
+#[derive(Default)]
+struct Trie {
+    ch: [Option<Box<Trie>>; SZ],
+    leaf: bool,
+}
+
+impl Trie {
+    pub fn add(&mut self, word: String) {
+        let mut node = self;
+        for &c in word.as_bytes() {
+            node = node.ch[(c - b'a') as usize]
+                .get_or_insert(Box::new(Default::default()));
+        }
+        node.leaf = true;
+    }
+    pub fn contains(&self, word: String) -> bool {
+        let mut node = self;
+        for &c in word.as_bytes() {
+            let idx = (c - b'a') as usize;
+            if let Some(n) = &node.ch[idx] {
+                node = &n;
+            } else {
+                return false;
+            }
+        }
+        node.leaf
+    }
+    /// Search for any words matching WORD where '.' is a wildcard
+    pub fn search(&self, word: &[u8]) -> bool {
+        if let Some(&c) = word.first() {
+            if c == b'.' {
+                for child in &self.ch {
+                    if let Some(node) = child {
+                        if node.search(&word[1..]) {
+                            return true;
+                        }
+                    }
+                }
+            } else if let Some(node) = &self.ch[(c-b'a') as usize] {
+                return node.search(&word[1..]);
+            }
+            false
+        } else {
+            self.leaf
+        }
+   }
+}

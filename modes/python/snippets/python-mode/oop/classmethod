@@ -3,5 +3,5 @@
 # key: cm
 # --
 @classmethod
-def ${1:meth}(cls, $0):
-    
+def ${1:meth}(cls, $1):
+    $0

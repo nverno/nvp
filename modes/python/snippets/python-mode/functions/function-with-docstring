@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: function w/ docstring
+# key: fundoc
+# --
+def ${1:name}($2):
+    \"\"\"$3
+    ${2:$(python-yas-args-to-docstring (yas-text))}
+    \"\"\"
+    $0

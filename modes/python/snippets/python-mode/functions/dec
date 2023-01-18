@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
 # name: decorator
 # key: dec
-# group : definitions
 # --
 def ${1:decorator}(func):
     $2

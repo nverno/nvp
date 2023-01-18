@@ -4,6 +4,6 @@
 # --
 def __init__(self$1):
     \"\"\"$2
-    ${1:$(python-yas-args-to-docstring)}
+    ${1:$(python-yas-args-to-docstring (yas-text))}
     \"\"\"
     $0

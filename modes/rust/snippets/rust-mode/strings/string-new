@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: string
-# key: s
+# key: sn
 # --
 let ${1:mut }$2 = String::new();

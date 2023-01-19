@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: new hash
-# key: hm
+# key: hn
 # --
 let mut ${1:h}: HashMap<$2, $3> = HashMap::new();

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: Result<T, E>
-# key: res
+# key: result
 # --
 Result<${1:T}, ${2:()}>

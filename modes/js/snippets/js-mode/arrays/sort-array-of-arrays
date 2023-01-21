@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: sort array of arrays
+# key: sorta
+# --
+${1:res}.sort((a, b) => {
+  let n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) 
+    if (a[i] != b[i]) return a[i] - b[i];
+  return a.length - b.length;
+})

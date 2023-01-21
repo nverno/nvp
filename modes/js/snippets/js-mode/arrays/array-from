@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Array.from(...)
+# key: arr
+# --
+let ${1:arr} = Array.from({length: ${2:n}}, () => 0);

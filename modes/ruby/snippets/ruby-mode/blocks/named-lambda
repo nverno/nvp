@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: named lambda
+# key: fnn
+# --
+${1:fun} = lambda do ${2:$(if (> (length yas-text) 0) " |" "")}${2:variable}${2:$(if (> (length yas-text) 0) "|" "")}
+  $0
+end

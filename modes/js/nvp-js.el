@@ -111,7 +111,7 @@
 ;;; Nodejs REPL: using as default in all js-derived modes
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(js2-mode js2-jsx-mode js-mode js-jsx-mode rjsx-mode)
+  (nvp-repl-add '(js2-mode js2-jsx-mode js-mode js-jsx-mode rjsx-mode typescript-mode)
     :modes '(nodejs-repl-mode)
     :procname (bound-and-true-p nodejs-repl-process-name)
     :init (lambda ()

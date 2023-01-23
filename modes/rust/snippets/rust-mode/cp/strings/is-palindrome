@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: is palindrome
+# key: s_is_pali
+# --
+fn is_pali(s: &Vec<char>) -> bool {
+    let (mut i, mut j) = (0, s.len()-1);
+    while (i < j) {
+        if (s[i] != s[j]) { return false; }
+        i += 1;
+        j -= 1;
+    }
+    return true;
+}

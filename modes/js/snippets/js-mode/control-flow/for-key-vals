@@ -2,6 +2,6 @@
 # name: for-key-vals
 # key: forkv
 # --
-for (${1:const} [key, val] of Object.entries(${2:obj})) {
+for (${1:const }[key, val] of Object.entries(${2:obj})) {
     $0
 }

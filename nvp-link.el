@@ -57,7 +57,8 @@
                 telega-chat-mode))
     ;; added
     (shortdoc-mode               . ace-link-help)
-    (shell-mode                  . nvp-link-shell))
+    (shell-mode                  . nvp-link-shell)
+    (markdown-mode               . nvp-link-markdown))
   "Mapping of `major-mode' to ace-link actions.")
 
 (defvar nvp-ace-link-minor-mode-actions
@@ -178,7 +179,7 @@ With \\[universal-argument] call in next visible window."
 (defun nvp-link--dired-collect ())
 
 ;;; TODO: Markdown
-(nvp:decl markdown-next-link markdown-link-at-pos)
+(nvp:decl markdown-next-link markdown-link-at-pos markdown-follow-thing-at-point)
 (defun nvp-link--markdown-collect ()
   (let (res)
     (nvp:with-restriction 'visible
@@ -187,6 +188,11 @@ With \\[universal-argument] call in next visible window."
         (push (cons (markdown-link-at-pos (point)) (point))
               res)))
     res))
+
+(nvp:define-link nvp-link-markdown
+    (--map (cdr it) (nvp-link--markdown-collect))
+  (goto-char (1+ it))
+  (markdown-follow-thing-at-point nil))
 
 ;;; Shell
 (nvp:decl comint-next-prompt)

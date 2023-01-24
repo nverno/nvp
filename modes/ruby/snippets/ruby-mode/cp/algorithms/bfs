@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: bfs
+# key: bfs
+# --
+q = [${1:0}]
+while !q.empty?
+  sz = q.length
+  sz.times do
+    ${2:idx} = q.shift
+    $0
+    end
+  end
+end

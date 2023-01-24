@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: bfs
+# key: bfs
+# --
+let mut q = VecDeque::from([${1:0}]);
+while !q.is_empty() {
+    let sz = q.len();
+    for _ in 0..sz {
+        if let Some(${2:idx}) = q.pop_front() {
+            $0
+        }
+    }
+}

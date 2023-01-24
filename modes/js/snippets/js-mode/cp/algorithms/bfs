@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: bfs
+# key: bfs
+# --
+let q = [${1:0}]
+while (q.length) {
+  let sz = q.length;
+  while (sz--) {
+    let ${2:idx} = q.shift();
+    $0
+  }
+}

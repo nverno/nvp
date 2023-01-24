@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: bfs
+# key: bfs
+# --
+q = deque([${1:0}])
+while q:
+    for _ in range(len(q)):
+        ${2:idx} = q.popleft()
+        $0

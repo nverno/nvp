@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: rotate string
+# key: s_rotate
+# --
+fn rotate(s: &str, b: i32) -> String {
+    let mut res = String::new();
+    let i: usize = s.len() - b as usize;
+    res += &s[i..];
+    res += &s[..i];
+    res
+}

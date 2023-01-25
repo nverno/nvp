@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: rotate string
+# key: s_rotate
+# --
+string rotate(string s, int d) {
+    reverse(s.begin(), s.end());
+    reverse(s.begin(), s.begin()+d);
+    reverse(s.begin()+d, s.end());
+    return s;
+}

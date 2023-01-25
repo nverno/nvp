@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: named closure
+# key: fnn
+# --
+let ${1:func} = |$2|${3:$(if (yas-text) " -> ")}$3 { $0 };

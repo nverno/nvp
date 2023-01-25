@@ -178,7 +178,7 @@ With \\[universal-argument] call in next visible window."
 ;;; TODO: dired
 (defun nvp-link--dired-collect ())
 
-;;; TODO: Markdown
+;;; Markdown
 (nvp:decl markdown-next-link markdown-link-at-pos markdown-follow-thing-at-point)
 (defun nvp-link--markdown-collect ()
   (let (res)

@@ -2,4 +2,4 @@
 # name: Array.from(...)
 # key: arr
 # --
-let ${1:arr} = Array.from({length: ${2:n}}, () => 0);
+let ${1:arr} = Array.from({length: ${2:n}}, () => ${3:0});

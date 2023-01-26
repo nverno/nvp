@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: array of arrays
+# key: aa
+# --
+$1 = [[${2:0}]*${3:n} for _ in range(${4:n})]

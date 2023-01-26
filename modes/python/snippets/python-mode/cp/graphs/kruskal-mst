@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: kruskal minimum spanning tree
+# key: g_mst
+# --
+# edges: [u, v, weight]
+def mst(n, edges${1:, tree}):
+    cost = 0
+    uf = UnionFind(n)
+    edges.sort(key=lambda x: -x[2])
+    for x,y,wt in edges:
+        if uf.find(x) != uf.find(y):
+            uf.merge(x, y)${1:$(if (yas-text) "
+            tree.append([x,y,wt])")}
+            cost += wt
+    return cost

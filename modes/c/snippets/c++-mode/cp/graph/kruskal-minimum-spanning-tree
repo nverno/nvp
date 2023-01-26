@@ -1,0 +1,21 @@
+# -*- mode: snippet -*-
+# name: kruskal minimum spanning tree
+# key: g_mst
+# --
+struct Edge {
+    int u, v, wt;
+    bool operator<(Edge const& o) { return wt < o.wt; }
+};
+int mst(int n, vector<Edge>& edges${1:, vector<Edge>& tree}) {
+    sort(edges.begin(), edges.end());
+    UF uf(n);
+    int cost = 0;
+    for (auto& e : edges) {
+        if (!uf.connected(e.u, e.v)) {
+            cost += e.wt;${1:$(if (yas-text) "
+            tree.push_back(e);")}
+            uf.merge(e.u, e.v);
+        }
+    }
+    return cost;
+}

@@ -14,7 +14,7 @@ impl Trie {
     pub fn new() -> Trie {
         Default::default()
     }
-    pub fn add(&mut self, word: &str) {
+    pub fn insert(&mut self, word: &str) {
         let mut node = self;
         for &c in word.as_bytes() {
             node = node.ch[(c - b'a') as usize]

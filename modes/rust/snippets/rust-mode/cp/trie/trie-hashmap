@@ -1,0 +1,52 @@
+# -*- mode: snippet -*-
+# name: trie using hashmap
+# key: d_trie_hash
+# --
+use std::collections::HashMap;
+use std::fmt::Debug;
+use std::hash::Hash;
+
+struct Trie<T> {
+    ch: HashMap<T, Trie<T>>,
+    leaf: bool,
+}
+impl<T: Hash + Eq + Copy + Debug> Trie<T> {
+    pub fn new() -> Self {
+        Self {
+            ch: HashMap::new(),
+            leaf: false,
+        }
+    }
+    pub fn insert(&mut self, word: impl Iterator<Item = T>) {
+        let mut cur = self;
+        for c in word {
+            cur = cur.ch.entry(c).or_insert_with(|| Trie::new());
+        }
+        cur.leaf = true;
+    }
+    pub fn get(&self, word: impl Iterator<Item = T>) -> Option<&Trie<T>> {
+        let mut cur = self;
+        for c in word {
+            if !cur.ch.contains_key(&c) {
+                return None;
+            }
+            cur = cur.ch.get(&c).unwrap();
+        }
+        Some(cur)
+    }
+    pub fn find(&self, word: impl Iterator<Item = T>) -> Option<&Trie<T>> {
+        match self.get(word) {
+            Some(node) => {
+                if node.leaf {
+                    Some(node)
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+    pub fn contains(&self, word: impl Iterator<Item = T>) -> bool {
+        matches!(self.find(word), Some(_))
+    }
+}

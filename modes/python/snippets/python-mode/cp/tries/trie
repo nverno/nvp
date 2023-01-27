@@ -1,0 +1,26 @@
+# -*- mode: snippet -*-
+# name: trie
+# key: d_trie
+# --
+from collections import defaultdict
+class TrieNode:
+    def __init__(self):
+        self.ch = defaultdict(TrieNode)
+        self.leaf = False
+class Trie:
+    def __init__(self): self.root = TrieNode()
+    def insert(self, word):
+        cur = self.root
+        for c in word: cur = cur.ch[c]
+        cur.leaf = True
+    def get(self, word):
+        cur = self.root
+        for c in word:
+            cur = cur.ch[c]
+            if cur == None: break
+        return cur
+    def find(self, word):
+        res = self.get(word)
+        return res if res != None and res.leaf else None
+    def contains(self, word):
+        return self.find(word) != None

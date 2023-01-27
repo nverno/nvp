@@ -16,9 +16,10 @@ struct Trie {
         ptr->leaf = true;
         ptr->val = s.c_str();
     }
+    bool contains(string const& s) { return find(s) != nullptr; }
     Trie *get(string const& s) {
         Trie *ptr = this;
-        for (char const &c: s) {ptr = ptr->ch[c-offset]; if (!(ptr && ptr->cnt)) break;}
+        for (char const &c: s) {ptr = ptr->ch[c-offset]; if (!(ptr && ptr->leaf)) break;}
         return ptr;
     }
     Trie *find(string const& s) {

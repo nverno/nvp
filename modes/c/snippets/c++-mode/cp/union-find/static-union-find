@@ -3,7 +3,7 @@
 # key: ds_uf
 # --
 template<int SZ> struct UF {
-    int uf[maxN], sz[maxN];
+    int uf[SZ], sz[SZ];
     UF() { init(); }
     void init() { iota(begin(uf), end(uf), 0); fill(begin(sz), end(sz), 1);}
     int find(int x) { return x == uf[x] ? x : uf[x] = find(uf[x]); }

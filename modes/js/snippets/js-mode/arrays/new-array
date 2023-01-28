@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: new array
+# key: a
+# --
+let ${1:arr} = Array(${2:n})${3:.fill($4)}

@@ -2,17 +2,20 @@
 # name: union find
 # key: d_uf
 # --
-class UnionFind:
+class UF:
     def __init__(self, n):
         self.parent = list(range(n))
-
-    def find(self, a):
-        acopy = a
-        while a != self.parent[a]:
-            a = self.parent[a]
-        while acopy != a:
-            self.parent[acopy], acopy = a, self.parent[acopy]
-        return a
-
-    def merge(self, a, b):
-        self.parent[self.find(b)] = self.find(a)
+        self.sz = [1]*n
+    def find(self, x):
+        xx = x
+        while x != self.parent[x]: x = self.parent[x]
+        while xx != x: self.parent[xx], xx = x, self.parent[xx]
+        return x
+    def connected(self, x, y): return self.find(x) == self.find(y)
+    def merge(self, x, y):
+        xx, yy = self.find(x), self.find(y)
+        if xx == yy: return False
+        if self.sz[xx] > self.sz[yy]: xx, yy = yy, xx
+        self.parent[xx] = yy
+        self.sz[yy] += self.sz[xx]
+        return True

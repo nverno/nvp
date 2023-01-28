@@ -1,0 +1,25 @@
+# -*- mode: snippet -*-
+# name: union find
+# key: d_uf
+# --
+class UF {
+  private par: number[];
+  private sz: number[];
+  constructor(n: number) {
+    this.par = Array.from({length: n}, (_, i) => i);
+    this.sz = Array(n).fill(1);
+  }
+  public find(x: number): number {
+    if (this.par[x] != x) this.par[x] = this.find(this.par[x]);
+    return this.par[x];
+  }
+  public connected(x: number, y: number): boolean { return this.find(x) == this.find(y); }
+  public merge(x: number, y: number): boolean {
+    let xx = this.find(x), yy = this.find(y);
+    if (xx == yy) return false;
+    if (this.sz[xx] > this.sz[yy]) xx = [yy, yy = xx][0];
+    this.par[xx] = yy;
+    this.sz[yy] += this.sz[xx];
+    return true;
+  }
+}

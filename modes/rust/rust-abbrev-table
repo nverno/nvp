@@ -2,7 +2,7 @@
 
 (define-abbrev-table 'rust-mode-abbrev-table
   '(("cont" "continue" nil :system t)
-    ("string" "String" nil :system t)
+    (" string" " String" nil :system t)
     ("none" "None" nil :system t)
     ("ret" "return" nil :system t)
     ("letm" "let mut" nil :system t))

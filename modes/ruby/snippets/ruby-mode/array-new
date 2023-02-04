@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: array
+# key: a
+# --
+${1:arr} = Array.new(${2:n})${3:{ |${4:i}| $5 \}}

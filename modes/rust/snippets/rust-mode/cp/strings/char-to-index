@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: char to index
+# key: cidx
+# --
+let cidx = |c: char| -> usize { (c as u8 - b'a') as usize };

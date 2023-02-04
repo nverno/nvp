@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for chars
+# key: forc
+# --
+for (char ${1:c} : ${2:s}.toCharArray()) {
+  $0      
+}

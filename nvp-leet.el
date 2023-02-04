@@ -81,7 +81,12 @@
 ;;; Rust
 
 (defun nvp@leet-set-language ()
-  (setq leetcode-directory (expand-file-name leetcode-prefer-language "~/class/leetcode")))
+  (let ((dir (expand-file-name
+              (pcase leetcode-prefer-language
+                ("java" "java/src")
+                (_ leetcode-prefer-language))
+              "~/class/leetcode")))
+    (setq leetcode-directory dir)))
 (advice-add 'leetcode-set-prefer-language :after #'nvp@leet-set-language)
 
 ;; slugify with '_' instead of '-'

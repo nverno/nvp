@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: m x n dimensions
+# key: mxn
+# --
+let (m, n) = (${1:grid}.len(), $1[0].len());

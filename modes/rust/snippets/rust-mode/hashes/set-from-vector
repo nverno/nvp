@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: set from vector
+# key: sf
+# --
+let mut ${1:s}: HashSet<_> = ${2:arr}.into_iter().collect();

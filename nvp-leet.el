@@ -84,6 +84,7 @@
   (let ((dir (expand-file-name
               (pcase leetcode-prefer-language
                 ("java" "java/src")
+                ("golang" "golang/src")
                 (_ leetcode-prefer-language))
               "~/class/leetcode")))
     (setq leetcode-directory dir)))

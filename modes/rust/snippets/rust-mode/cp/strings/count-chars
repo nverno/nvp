@@ -3,5 +3,5 @@
 # key: s_count
 # --
 let mut ${1:cnt} = vec![0; 26];
-let ${2:cidx} = |c: char| -> usize { (c as u8 - b'a') as usize };
-${3:s}.chars().for_each(|c| $1[$2(c)] += 1);
+let ${2:cidx} = |c: ${3:char}| \{ (c${3:$($s!= "u8" " as u8")} - b'a') as usize };
+${4:s}.${3:$($rust-iter 'String)}.for_each(|c| $1[$2(c)] += 1);

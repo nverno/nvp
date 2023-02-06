@@ -1,6 +1,7 @@
 
 (define-abbrev-table 'go-mode-abbrev-table
-  '(("cont" "continue" nil :system t)
+  '(("imp" "import" nil :system t)
+    ("cont" "continue" nil :system t)
     ("fprf" "fmt.Fprintf(os.Stderr, \"%s: %v\\n\", os.Args[0], err)" nil :system t)
     ("ret" "return" nil :system t)
     )

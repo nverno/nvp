@@ -2,6 +2,4 @@
 # name: sort
 # key: sort
 # --
-sort((a, b) => {
-  return ${1:a - b};
-});
+sort((a, b) => ${1:a - b});

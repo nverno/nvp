@@ -2,4 +2,4 @@
 # name: new hash
 # key: hn
 # --
-let mut ${1:h}: HashMap<$2, $3> = HashMap::new();
+let mut ${1:h}: HashMap<${2:_, _}> = HashMap::new();

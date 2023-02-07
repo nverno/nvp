@@ -9,7 +9,7 @@
 ;; (require 'rust-mode)
 (require 'rustic nil t)
 (nvp:decls :v (toml-mode-map) :f (rustic-cargo-current-test))
-(nvp:auto 'rustic-cargo rustic-cargo--get-test-target)
+(nvp:auto "rustic-cargo" rustic-cargo--get-test-target)
 
 (cl-defmethod nvp-newline-dwim-comment
   (syntax arg &context (major-mode rust-mode))

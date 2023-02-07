@@ -173,6 +173,7 @@
        ;; procs / inf
        nvp-proc-default-filter
        nvp-proc-default-sentinel
+       nvp-async-shell-command-to-string
        nvp-inf-read-process
        ;; imenu
        nvp-imenu-setup

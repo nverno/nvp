@@ -8,7 +8,7 @@
 
 ;;;###autoload
 (define-minor-mode swagger-mode "Swagger"
-  :lighter "Swag "
+  :lighter " Swag"
   (if swagger-mode
       (yas-activate-extra-mode 'swagger-mode)
     (yas-deactivate-extra-mode 'swagger-mode)))

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: print to console
+# key: pr
+# --
+console.log($0)

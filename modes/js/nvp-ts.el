@@ -35,6 +35,17 @@
             (run-ts nil 'no-switch)
             (get-buffer-process ts-comint-buffer))))
 
+(defun nvp-ts-get-file-mod (filename)
+  (concat "import * as "
+          (replace-regexp-in-string
+           "^[0-9_]+" ""
+           (replace-regexp-in-string "-" "_" (file-name-base filename)))
+          " from \""
+          (file-name-base filename)
+          "\"\n"))
+
+(advice-add 'ts-comint--get-load-file-cmd :override #'nvp-ts-get-file-mod)
+
 ;; -------------------------------------------------------------------
 ;;; Tsx
 ;; @see https://github.com/syl20bnr/spacemacs/blob/develop/layers/%2Blang/typescript/packages.el

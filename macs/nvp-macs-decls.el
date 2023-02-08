@@ -202,7 +202,8 @@
        nvp-org-links
        ;; setup
        nvp-setup-program
-       nvp-lookup-password)
+       nvp-lookup-password
+       nvp-pos-tip-show)
 
      (nvp:decl                          ; builtins
        minibuffer-keyboard-quit

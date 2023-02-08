@@ -158,6 +158,7 @@
 
 ;; From pos-tip.el
 ;; (1/25/23) `propertize' messes up popup for some reason on emacs v30 build
+;;;###autoload
 (defun nvp-pos-tip-show
   (string &optional tip-color pos window timeout width frame-coordinates dx dy)
   "Show STRING in a tooltip, which is a small X window, at POS in WINDOW

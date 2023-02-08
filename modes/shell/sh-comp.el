@@ -294,7 +294,8 @@ sourced files."
                       (or (save-excursion (sh-beginning-of-command)) beg)
                       pos
                       (process-get proc 'wordbreaks)
-                      (process-get proc 'bash-major-version))))
+                      ;; (process-get proc 'bash-major-version)
+                      )))
              (end (cond
                    ;; complete after '$'
                    ((and var (memq (char-syntax (char-after beg)) '(?> ?\))))

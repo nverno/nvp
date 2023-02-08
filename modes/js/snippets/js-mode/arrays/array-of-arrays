@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: array of arrays
+# key: aa
+# --
+let ${1:dp} = Array(${2:m+1});
+for (let i = 0; i < $2; i++) {
+  $2[i] = Array(${3:n+1}).fill(${4:0});
+}

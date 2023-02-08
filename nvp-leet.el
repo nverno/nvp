@@ -7,6 +7,7 @@
   (require 'let-alist))
 (require 'leetcode)
 (require 'aio)
+(require 'f)
 (nvp:decls :f (nvp-leetcode-hook))
 
 (defvar-local nvp-leet-problem-id nil)
@@ -78,7 +79,7 @@
 ;; (nvp:unadvise-commands #'nvp-leet-result-layout (leetcode-try leetcode-submit))
 
 ;; -------------------------------------------------------------------
-;;; Rust
+;;; Language setups
 
 (defun nvp@leet-set-language ()
   (let ((dir (expand-file-name
@@ -90,54 +91,49 @@
     (setq leetcode-directory dir)))
 (advice-add 'leetcode-set-prefer-language :after #'nvp@leet-set-language)
 
+(defsubst nvp-leet--rust-mod-name (buf)
+  (format "p%s" (replace-regexp-in-string "-" "_" (f-base buf))))
+
+(defun nvp-leet--rust-add-mod (modname modfile)
+  (with-current-buffer (find-file-noselect modfile)
+    (goto-char (point-min))
+    (insert (format "mod %s;\n" modname))
+    (save-buffer)))
+
+(defun nvp-leet-setup-rust ()
+  (interactive)
+  (let* ((file (buffer-file-name))
+         (dir (f-dirname file))
+         (srcdir (expand-file-name "src/problem" dir))
+         (modname (nvp-leet--rust-mod-name file))
+         (modfile (expand-file-name "mod.rs" srcdir))
+         (fname (expand-file-name (concat modname ".rs") srcdir)))
+    (copy-file file fname)
+    (nvp-leet--rust-add-mod modname modfile)
+    (find-file fname)
+    (save-excursion
+      (goto-char (point-min))
+      (insert "use crate::Solution;\n"))))
+
 ;; slugify with '_' instead of '-'
-(defun nvp@leet-slugify-title (title)
-  (let* ((str1 (replace-regexp-in-string "[\s-]+" "_" (downcase title)))
-         (res (replace-regexp-in-string "[(),]" "" str1)))
-    res))
+;; (defun nvp@leet-slugify-title (title)
+;;   (let* ((str1 (replace-regexp-in-string "[\s-]+" "_" (downcase title)))
+;;          (res (replace-regexp-in-string "[(),]" "" str1)))
+;;     res))
+;; (defun nvp@leet-get-slug-title (_code-buf)
+;;   (f-filename (f-dirname (buffer-file-name))))
 
-(nvp:decl f-filename f-dirname)
-(defun nvp@leet-get-slug-title (_code-buf)
-  (f-filename (f-dirname (buffer-file-name))))
-
-(defsubst nvp-leet--mod-name (buf-name)
-  (concat "p"
-          (file-name-sans-extension
-           (replace-regexp-in-string "-" "_" buf-name))))
-
-(defun nvp-leet--add-mod (mod)
-  (with-current-buffer
-      (find-file-noselect
-       (expand-file-name "main.rs" leetcode-directory))
-    (point-min)
-    (insert (format "pub mod %s;\n" mod))
-    (save-buffer)
-    (kill-buffer (current-buffer))))
-
-(defun nvp@leet-get-code-buffer (buf-name)
-  (let* ((mod (nvp-leet--mod-name buf-name))
-         (file (concat
-                (file-name-as-directory
-                 (expand-file-name mod leetcode-directory))
-                "mod.rs")))
-    (unless (file-exists-p file)
-      (nvp-leet--add-mod mod))
-    (with-current-buffer (find-file-noselect file)
-      (rename-buffer buf-name)
-      (current-buffer))))
-
-(defun nvp-leet-set-rust ()
-  (interactive)
-  (setq leetcode-prefer-language "rust")
-  (setq leetcode-directory "~/class/leetcode/rust/src/problem")
-  ;; (advice-add 'leetcode--get-code-buffer :override #'nvp@leet-get-code-buffer)
-  )
-
-(defun nvp-leet-unset-rust ()
-  (interactive)
-  (setq leetcode-prefer-language "cpp"
-        leetcode-directory "~/class/leetcode")
-  (advice-remove 'leetcode--get-code-buffer #'nvp@leet-get-code-buffer))
+;; (defun nvp@leet-get-code-buffer (buf-name)
+;;   (let* ((mod (nvp-leet--rust-mod-name buf-name))
+;;          (file (concat
+;;                 (file-name-as-directory
+;;                  (expand-file-name mod leetcode-directory))
+;;                 "mod.rs")))
+;;     (unless (file-exists-p file)
+;;       (nvp-leet--rust-add-mod mod))
+;;     (with-current-buffer (find-file-noselect file)
+;;       (rename-buffer buf-name)
+;;       (current-buffer))))
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode

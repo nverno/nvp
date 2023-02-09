@@ -178,7 +178,11 @@
   :lighter " LC"
   :keymap nvp-leet-mode-map
   (unless nvp-leet-window-configuration
-    (setq nvp-leet-window-configuration (current-window-configuration))))
+    (setq nvp-leet-window-configuration (current-window-configuration)))
+  ;; FIXME:
+  ;; (when (string= "rust" leetcode-prefer-language)
+  ;;   (nvp-leet-setup-rust))
+  )
 
 ;;; Results
 (define-minor-mode nvp-leet-result-mode "Leetcode results."

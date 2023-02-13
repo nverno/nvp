@@ -5,9 +5,6 @@
 (require 'nvp)
 (require 'nvp-python)
 (require 'python)
-(declare-function nvp-setup-local "nvp-setup")
-(declare-function w32-shell-execute "w32")
-(declare-function conda-env-activate "conda-env")
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -18,16 +15,9 @@
    (list (ido-completing-read "Set local variables for: "
                               '("python" "julia" "js"))))
   (pcase mode
-    ("python"
-     (nvp-setup-local "python-tools" :abbr-table "python-mode"))
-    ("julia"
-     (if (require 'julia-tools nil t)
-         (nvp-setup-local "julia-tools" :abbr-table "julia-mode")
-       (user-error "julia-tools not installed.")))
-    ("js"
-     (if (require 'js-tools nil t)
-         (nvp-setup-local "js-tools")
-       (user-error "js-utils not installed")))))
+    ("python" (nvp-setup-local "python" :abbr-table "python-mode"))
+    ("julia" (nvp-setup-local "julia" :abbr-table "julia-mode"))
+    ("js" (nvp-setup-local "js"))))
 
 ;; kill jupyter processes
 (defun nvp-jupyter-kill-processes ()
@@ -53,31 +43,41 @@
     (message "%s (pname . pid): %s" proc (or res "No matching processes found."))
     (car (read-from-string (format "%s" res)))))
 
+(defun nvp-jupyter-current-notebook ()
+  (ein:$notebook-notebook-path (ein:get-notebook)))
+
+;; (defun nvp@jupyter-sync (orig-fn notebook &rest args)
+;;   (apply orig-fn notebook args)
+;;   (message "[jupytext] %s"
+;;            (shell-command-to-string
+;;             (format "jupytext --sync %s"
+;;                     (ein:$notebook-notebook-path notebook)))))
+;; (advice-add 'ein:notebook-save-notebook-success :around #'nvp@jupyter-sync)
+
 ;; -------------------------------------------------------------------
 ;;; Setup 
 
 (defun nvp-jupyter-start-notebook ()
   ;; start inotebook so can load .ipynb instead of json file
   (and (executable-find "jupyter")
-       (start-process "jupyter" "*jupyter*" "jupyter" "notebook"))
-  (add-hook 'kill-buffer-hook 'nvp-jupyter-kill-processes nil 'local))
+       (start-process "jupyter" "*jupyter*" "jupyter" "notebook" "--no-browser"))
+  ;; (add-hook 'kill-buffer-hook 'nvp-jupyter-kill-processes nil 'local)
+  )
 
 ;; shared setup stuff for ein hooks, if START is non-nil then setup
 ;; proper python and start jupyter server
-(defmacro nvp-jupyter-setup-common (&optional start)
-  `(progn
-     (declare-function conda-env-activate "conda-env")
-     (declare-function nvp-setup-local "nvp")
-     (nvp-setup-local "python-tools" :abbr-table "python-mode")
-     (nvp:with-w32
-       ;; setups up local variables and adds directories containing
-       ;; python and ipython programs to exec-path
-       (nvp-python-add-paths (nvp:program "python") (nvp:program "ipython")))
-     ,@(when start
-         (list
-          ;; sci has matplotlib/pyplot etcetc.
-          '(conda-env-activate "sci")
-          '(nvp-jupyter-start-notebook)))))
+(defun nvp-jupyter-setup-common (&optional start)
+  (nvp-setup-local "python" :abbr-table "python-mode")
+  (nvp:with-w32
+    ;; setups up local variables and adds directories containing
+    ;; python and ipython programs to exec-path
+    (nvp-python-add-paths (nvp:program "python") (nvp:program "ipython")))
+  (when start
+    ;; sci has matplotlib/pyplot etcetc.
+    (add-hook 'conda-env-after-activate-hook #'nvp-jupyter-start-notebook nil t)
+    (conda-env-activate "sci")
+    ;; (nvp-jupyter-start-notebook)
+    ))
 
 (provide 'nvp-jupyter)
 ;;; nvp-jupyter.el ends here

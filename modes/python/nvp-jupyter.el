@@ -5,6 +5,7 @@
 (require 'nvp)
 (require 'nvp-python)
 (require 'python)
+(nvp:decls :f (ein:get-notebook ein:$notebook-notebook-name conda-env-activate))
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -44,14 +45,14 @@
     (car (read-from-string (format "%s" res)))))
 
 (defun nvp-jupyter-current-notebook ()
-  (ein:$notebook-notebook-path (ein:get-notebook)))
+  (ein:$notebook-notebook-name (ein:get-notebook)))
 
 ;; (defun nvp@jupyter-sync (orig-fn notebook &rest args)
 ;;   (apply orig-fn notebook args)
 ;;   (message "[jupytext] %s"
 ;;            (shell-command-to-string
 ;;             (format "jupytext --sync %s"
-;;                     (ein:$notebook-notebook-path notebook)))))
+;;                     (ein:$notebook-notebook-name notebook)))))
 ;; (advice-add 'ein:notebook-save-notebook-success :around #'nvp@jupyter-sync)
 
 ;; -------------------------------------------------------------------

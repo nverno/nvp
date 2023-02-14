@@ -202,6 +202,7 @@
        nvp-org-links
        ;; setup
        nvp-setup-program
+       nvp-setup-local
        nvp-lookup-password
        nvp-pos-tip-show)
 

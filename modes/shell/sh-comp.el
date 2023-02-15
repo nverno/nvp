@@ -317,8 +317,8 @@ sourced files."
                             (when (>= (point) pos)
                               (point)))
                         (scan-error pos)))))))
-        (when use-comp
-          (bash-completion--customize comp proc))
+        ;; (when use-comp
+        ;;   (bash-completion--customize comp proc))
         (when (and beg end)
           (nconc (list beg end)
                  (cond

@@ -19,5 +19,10 @@
                                       (expand-file-name static root))))
     (and (file-exists-p file) file)))
 
+;;;###autoload
+(define-minor-mode jinja-minor-mode "Jinja minor mode"
+  :lighter " Jinja"
+  (yas-activate-extra-mode 'jinja-mode))
+
 (provide 'nvp-jinja)
 ;;; nvp-jinja.el ends here

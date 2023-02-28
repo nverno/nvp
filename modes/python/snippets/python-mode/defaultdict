@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: collections.defaultdict
+# key: dd
+# --
+collections.defaultdict(${1:int})

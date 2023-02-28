@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Rc<RefCell<_>>
+# key: rr
+# --
+Rc<RefCell<$1>>

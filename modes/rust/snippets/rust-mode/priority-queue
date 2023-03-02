@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: priority queue
+# key: pq
+# --
+let mut pq = BinaryHeap::<${1:i32}>::new();
+while let Some(${2:x}) = pq.pop() {
+    $0
+}

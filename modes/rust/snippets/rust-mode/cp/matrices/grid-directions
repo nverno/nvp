@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: grid directions
+# key: dirs
+# --
+let dirs = vec![(-1,0), (0,1), (1,0), (0,-1)];

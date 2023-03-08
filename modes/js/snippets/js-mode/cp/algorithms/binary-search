@@ -1,0 +1,17 @@
+# -*- mode: snippet -*-
+# name: binary search
+# key: bs
+# --
+const check = (m: number): boolean => {
+  $0
+};
+let [l, r, res] = [${1:1}, ${2:1e9}, ${3:-1}];
+while (l <= r) {
+  let mid = Math.floor((l + r) / 2);
+  if (check(mid)) {
+    res = mid;
+    r = mid - 1;
+  } else {
+    l = mid + 1;
+  }
+}

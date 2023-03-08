@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: lambda / closure
-# key: |
+# key: fn
 # condition: (not (nvp-yas-bolp))
 # --
 |${1:params}|${2:$(if (yas-text) " -> " "")}${2:i32} ${3:{

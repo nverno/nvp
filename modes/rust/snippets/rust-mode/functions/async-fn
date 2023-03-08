@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: async function
-# key: afn
+# key: af
 # condition: (nvp-yas-bolp)
 # --
 async fn ${1:function_name}($2) ${3:-> ${4:i32} }{

@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: binary search
+# key: bs
+# --
+check := func(m int) bool {
+	$0
+}
+
+l, r, res := ${1:1}, ${2:int(1e9)}, ${3:-1}
+for l <= r {
+	mid := (l + r) / 2
+	if check(mid) {
+		res = mid
+		r = mid - 1
+	} else {
+		l = mid + 1
+	}
+}

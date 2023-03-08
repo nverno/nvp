@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: fn
-# key: fn
+# name: function
+# key: fun
 # condition: (nvp-yas-bolp)
 # --
 fn ${1:name}(${2:params})${3:$(if (yas-text) " -> " "")}${3:u32}${4: {

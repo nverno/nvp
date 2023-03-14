@@ -1,0 +1,30 @@
+# -*- mode: snippet -*-
+# name: fenwick/binary indexed tree
+# key: d_bit
+# --
+type Bit struct {
+	n   int
+	bit []int
+}
+
+func makeBit(sz int) *Bit {
+	bit := new(Bit)
+	bit.n = sz + 1
+	bit.bit = make([]int, bit.n)
+	return bit
+}
+func (bit *Bit) update(idx, v int) {
+	for i := idx + 1; i < bit.n; i += i & -i {
+		bit.bit[i] += v
+	}
+}
+func (bit *Bit) query(idx int) int {
+	res := 0
+	for i := idx + 1; i > 0; i -= i & -i {
+		res += bit.bit[i]
+	}
+	return res
+}
+func (bit *Bit) rquery(l, r int) int {
+	return bit.query(r) - bit.query(l-1)
+}

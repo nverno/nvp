@@ -1,0 +1,44 @@
+# -*- mode: snippet -*-
+# name: fenwick/binary indexed tree
+# key: d_bit
+# --
+use std::ops::{AddAssign, Sub, SubAssign};
+pub struct Bit<T>
+where
+    T: Default + Copy + AddAssign + SubAssign,
+{
+    bit: Vec<T>,
+}
+impl<T> Bit<T>
+where
+    T: Default + Copy + AddAssign + SubAssign + Sub<Output = T>,
+{
+    pub fn with_len(sz: usize) -> Self {
+        Self {
+            bit: vec![T::default(); sz + 1],
+        }
+    }
+    pub fn len(&self) -> usize {
+        self.bit.len()
+    }
+    pub fn query(&self, idx: usize) -> T {
+        let mut res = T::default();
+        let mut i = idx as i32 + 1;
+        while i > 0 {
+            res += self.bit[i as usize];
+            i -= i & -i;
+        }
+        res
+    }
+    pub fn rquery(&self, l: usize, r: usize) -> T {
+        self.query(r) - self.query(l - 1)
+    }
+    pub fn update(&mut self, idx: usize, val: T) {
+        let mut i = idx as i32 + 1;
+        let n = self.len() as i32;
+        while i < n {
+            self.bit[i as usize] += val;
+            i += i & -i;
+        }
+    }
+}

@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: fenwick/binary indexed tree
+# key: d_bit
+# --
+class Bit:
+    def __init__(self, sz):
+        self.n = sz + 1
+        self.bit = [0] * self.n
+    def update(self, i, v):
+        i += 1
+        while i < self.n:
+            self.bit[i] += v
+            i += i & -i
+    def query(self, i):
+        res = 0
+        i += 1
+        while i > 0:
+            res += self.bit[i]
+            i -= i & -i
+        return res
+    def rquery(self, l, r):
+        return self.query(r) - self.query(l-1)

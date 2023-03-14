@@ -1,0 +1,23 @@
+# -*- mode: snippet -*-
+# name: fenwick/binary indexed tree
+# key: d_bit
+# --
+class Bit {
+  private n: number;
+  private bit: number[];
+  constructor(sz: number) {
+    this.n = sz + 1;
+    this.bit = Array(this.n).fill(0);
+  }
+  public update(i: number, v: number) {
+    for (++i; i < this.n; i += i&-i) this.bit[i] += v;
+  }
+  public query(i: number): number {
+    let res = 0;
+    for (++i; i > 0; i -= i&-i) res += this.bit[i];
+    return res;
+  }
+  public rquery(l: number, r: number): number {
+    return this.query(r) - this.query(l-1);
+  }
+}

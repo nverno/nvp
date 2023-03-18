@@ -1,0 +1,46 @@
+# -*- mode: snippet -*-
+# name: trie
+# key: d_trie
+# --
+class Trie {
+  private ch: (Trie | undefined)[];
+  private leaf: boolean;
+  private cnt: number;
+  
+  constructor() {
+    this.ch = Array(26);
+    this.leaf = false;
+    this.cnt = 0;
+  }
+
+  insert(word: string): void {
+    let node: Trie = this;
+    for (let c of word) {
+      let idx = c.charCodeAt(0) - 'a'.charCodeAt(0);
+      if (!node.ch[idx]) node.ch[idx] = new Trie();
+      node = node.ch[idx];
+      node.cnt++;
+    }
+    node.leaf = true;
+  }
+
+  search(word: string): boolean {
+    let node: Trie = this;
+    for (let c of word) {
+      let idx = c.charCodeAt(0) - 'a'.charCodeAt(0);
+      if (node.ch[idx]) node = node.ch[idx];
+      else return false;
+    }
+    return node.leaf;
+  }
+
+  startsWith(prefix: string): boolean {
+    let node: Trie = this;
+    for (let c of prefix) {
+      let idx = c.charCodeAt(0) - "a".charCodeAt(0);
+      if (node.ch[idx] !== undefined) node = node.ch[idx];
+      else return false;
+    }
+    return node.cnt > 0;
+  }
+}

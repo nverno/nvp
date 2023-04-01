@@ -68,7 +68,7 @@
            append (nvp:-with-bindings bs)))
 
 (defsubst nvp:msg-from-bindings (bindings &optional prefix)
-  "Create message of 'PREFIX: [key] cmd, ...' from list of cons BINDINGS."
+  "Create message of \"PREFIX: [key] cmd, ...\" from list of cons BINDINGS."
   (or prefix (setq prefix "Transient: "))
   (let ((msg (if (listp bindings)
                  (concat
@@ -130,6 +130,33 @@
                                          (t (macroexp-progn enable)))
                                    ,c)))))
           `(define-key ,m (nvp:kbd ,key) ,c)))))
+
+
+(defmacro nvp:rebind-this-command (command &optional keymap)
+  "Rebing `this-command' to COMMAND.
+Search only within KEYMAP, as defined by `where-is-internal', which see.
+Defaults to only search global map."
+  `(when (called-interactively-p 'interactive)
+     (let* ((all-keys (where-is-internal this-command (or ,keymap global-map)))
+            (seps (seq-group-by
+                   (lambda (key)
+                     (and (vectorp key)
+                          (eq (elt key 0) 'menu-bar)))
+                   all-keys))
+            (keys (cdr (assq nil seps)))
+            non-modified-keys)
+       (dolist (key keys)
+         (if (member (event-modifiers (aref key 0)) '(nil (shift)))
+             (push key non-modified-keys)))
+       (if (> 1 (length keys))
+           (user-error "multiple bindings found for %S, not rebinding" this-command)
+         (let ((key (key-description (car keys))))
+           ;; FIXME: if multiple keymaps are passed, rebind in the one where
+           ;; binding was found
+           (define-key (or ,keymap global-map) (kbd key) ,command)
+           (setq unread-command-events
+                 (--map (cons t it) (listify-key-sequence (kbd key)))))))))
+
 
 
 ;;; Local, Transient, Overriding maps

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: len
+# key: l
+# --
+len($0)

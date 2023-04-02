@@ -24,6 +24,9 @@
 
 (defun nvp-ts-repl-program ()
   (when (require 'add-node-modules-path nil t)
+    ;; npm v >= 9 no longer has 'npm bin' command
+    (when (version< (string-trim-right (shell-command-to-string "npm -v")) "9")
+      (setq add-node-modules-path-command '("npm bin")))
     (add-node-modules-path))
   (cl-some (lambda (program) (executable-find program)) '("ts-node" "tsun")))
 

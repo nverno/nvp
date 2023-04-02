@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: for (i,x) in enumerate(...)
+# key: forix
+# --
+for (i, ${1:x}) in enumerate($2):
+    $0

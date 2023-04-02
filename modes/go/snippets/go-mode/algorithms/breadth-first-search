@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: bfs
+# key: bfs
+# --
+q := []${1:int}{${2:0}}
+for len(q) > 0 {
+    ${3:x} := q[0]
+    q = q[1:]
+    $0
+}

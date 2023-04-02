@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: fill array
+# key: fill
+# --
+for i := range ${1:arr} {
+    $1[i] = ${2:0}
+}

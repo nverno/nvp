@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: new array
+# key: a
+# --
+${1:arr} := make(${2:[]int}, ${3:0})

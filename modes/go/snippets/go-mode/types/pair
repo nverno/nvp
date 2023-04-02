@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: pair struct
+# key: pair
+# --
+type pair struct{ ${1:x}, ${2:y} ${3:int} }

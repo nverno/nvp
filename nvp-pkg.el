@@ -74,14 +74,22 @@
 associated .elc files."
   (interactive "P")
   (cl-loop for (defs . dirs) in `(,(cons nvp/auto (list nvp/config))
-                                  ,(cons nvp/auto-site (list nvp/site nvp/modes)))
+                                  ,(cons nvp/auto-site
+                                         (cl-remove-if-not #'file-directory-p 
+                                                           (append (directory-files nvp/site t "^[^.]")
+                                                                   (directory-files nvp/pkgs t "^[^.]"))
+                                                                   ;; (directory-files "./nvp/pkgs" t "^[^.]")
+                                                                   )
+                                         ;; (list nvp/site nvp/modes)
+                                         ))
            for generated-autoload-file = defs
            do
-           (package-autoload-ensure-default-file defs)
-           (mapc
-            (lambda (dir) (make-directory-autoloads
-                      (file-name-as-directory dir) generated-autoload-file))
-            dirs)
+           ;; (package-autoload-ensure-default-file defs)
+           (loaddefs-generate dirs generated-autoload-file nil nil nil 'generate-full)
+           ;; (mapc
+           ;;  (lambda (dir) (loaddefs-generate
+           ;;            (file-name-as-directory dir) generated-autoload-file))
+           ;;  dirs)
            (let ((buf (find-buffer-visiting defs)))
              (when buf (kill-buffer buf)))
            when arg                           ;byte-compile as well
@@ -123,7 +131,7 @@ R=recompile; F=force; P=if prefix;
     (pcase generated-autoload-file
       (`none (nvp-pkg-update-dir
               (read-from-minibuffer "Autoloads name: ") dir nil arg))
-      (_ (make-directory-autoloads dir generated-autoload-file)
+      (_ (loaddefs-generate dir generated-autoload-file)
          (nvp-pkg-subdir-compile dir do-compile nil)))))
 
 (provide 'nvp-pkg)

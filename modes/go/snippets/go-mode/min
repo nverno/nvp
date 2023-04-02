@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: min
+# key: min
+# --
+${1:// go >=v1.8
+func min[T constraints.Ordered](a, b T) T {
+	if a < b {
+		return a
+	\}
+	return b
+\}}${2:func min(a, b int) int {
+	if a < b {
+		return a
+	\}
+	return b
+\}}

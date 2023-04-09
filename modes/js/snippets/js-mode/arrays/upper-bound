@@ -1,0 +1,33 @@
+# -*- mode: snippet -*-
+# name: binary search: upper_bound
+# key: ub
+# --
+declare global {
+  interface Array<T> {
+    upperBound(cmp: any): number;
+  }
+}
+
+// first index where cmp(x) is true, or if cmp not a function, 
+// the first index where element greater than cmp
+Array.prototype.upperBound = function (cmp) {
+  let comparator = typeof cmp !== 'function' ? (x) => x > cmp : cmp;
+  let l = 0, r = this.length;
+  while (l < r) {
+    let mid = (l + r) >>> 1;
+    if (comparator(this[mid])) r = mid;
+    else l = mid + 1;
+  }
+  return r;
+};
+
+function upperBound(arr, cmp) {
+  let comparator = typeof cmp !== 'function' ? (x) => x > cmp : cmp;
+  let l = 0, r = arr.length;
+  while (l < r) {
+    let mid = (l + r) >>> 1;
+    if (comparator(arr[mid])) r = mid;
+    else l = mid + 1;
+  }
+  return r;
+}

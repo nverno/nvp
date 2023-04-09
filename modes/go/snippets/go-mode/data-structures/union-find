@@ -1,0 +1,44 @@
+# -*- mode: snippet -*-
+# name: union find/discrete sets union
+# key: d_uf
+# --
+type UF struct {
+	parent, sz []int
+}
+
+func (uf *UF) Init(n int) {
+	uf.parent = make([]int, n)
+	uf.sz = make([]int, n)
+	for i := range uf.parent {
+		uf.parent[i] = i
+		uf.sz[i] = 1
+	}
+}
+
+func (uf *UF) Find(x int) int {
+	root := x
+	for root != uf.parent[x] {
+		root = uf.parent[root]
+	}
+	for x != uf.parent[x] {
+		tmp := uf.parent[x]
+		uf.parent[x] = root
+		x = tmp
+	}
+	return root
+}
+
+func (uf *UF) Merge(x, y int) {
+	xx, yy := uf.Find(x), uf.Find(y)
+	if xx != yy {
+		if uf.sz[xx] > uf.sz[yy] {
+			uf.sz[xx], uf.sz[yy] = uf.sz[yy], uf.sz[xx]
+		}
+		uf.parent[xx] = yy
+		uf.sz[yy] += uf.sz[xx]
+	}
+}
+
+func (uf *UF) Connected(x, y int) bool {
+	return uf.Find(x) == uf.Find(y)
+}

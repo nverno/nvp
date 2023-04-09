@@ -2,6 +2,6 @@
 # name: type
 # key: type
 # --
-type $1 $2 {
+type $1 ${2:struct} {
   $0
 }

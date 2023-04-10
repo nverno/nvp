@@ -4,6 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'trace)
+(require 'trace-tree nil t)
 (nvp:auto "find-func" 'read-library-name 'find-library-name)
 (nvp:auto "nvp-elisp" 'nvp-elisp-matching-forms)
 (nvp:auto "s" 's-split)

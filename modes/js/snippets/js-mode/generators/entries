@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: entries generator
+# key: entries
+# --
+function* entries(obj: {[s: string]: any}|ArrayLike<any>|Iterable<any>): IterableIterator<[any,any]> {
+  for (let key in obj) {
+    yield [key, obj[key]]
+  }
+}

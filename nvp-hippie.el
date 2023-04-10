@@ -529,6 +529,19 @@ string).  It returns t if a new completion is found, nil otherwise."
   (let ((case-fold-search nil))
     (hippie-expand nil)))
 
+;;;###autoload
+(defun nvp-hippie-expand-minibuffer (arg)
+  "Wrapper around `hippie-expand' that also displays messages per
+`hippie-expand-verbose' in mode line when expanding in the minibuffer."
+  (interactive "P")
+  (require 'eldoc)
+  (let ((orig-message (symbol-function 'message)))
+    (nvp:with-letfs ((window-minibuffer-p #'ignore)
+                     (message (lambda (&rest args)
+                                (nvp:with-letf #'message orig-message
+                                  (apply #'eldoc-minibuffer-message args)))))
+      (call-interactively #'hippie-expand arg))))
+
 (provide 'nvp-hippie)
 ;;; nvp-hippie.el ends here
 

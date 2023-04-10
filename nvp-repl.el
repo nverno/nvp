@@ -217,8 +217,10 @@ Each function takes a process as an argument to test against.")
 
 ;; `display-buffer' action for popping between REPL/source buffers
 (defvar nvp-repl--display-action
-  '((display-buffer-use-some-window
+  '((display-buffer-reuse-window
+     display-buffer-use-some-window
      display-buffer-pop-up-window)
+    (reusable-frames . visible)
     (inhibit-switch-frame . t)
     (inhibit-same-window  . t)))
 

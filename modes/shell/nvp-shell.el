@@ -135,21 +135,26 @@ If none found, return list of all terminal buffers."
                    buffers))
         (car buffers))))
 
+(defsubst nvp-display-buffer--height (alist &optional key)
+  (when-let ((height (cdr (assq (or key 'window-height) alist))))
+    (if (floatp height)
+        (round (* height (frame-height)))
+      height)))
+
 ;; modified `display-buffer-split-below-and-attach'
 (defun nvp-display-buffer-split-below (buf alist)
   "Split current window and return bottom split."
-  (let ((height (cdr (assq 'window-height alist)))
-        newwin)
-    (when height
-      (when (floatp height)
-        (setq height (round (* height (frame-height)))))
-      (setq height (- (max height window-min-height))))
-    (setq newwin
-          (window--display-buffer
-           buf
-           (split-window-below height)
-           'window alist))
-    newwin))
+  (let ((height (nvp-display-buffer--height alist)))
+    (when height (setq height (- (max height window-min-height))))
+    (window--display-buffer buf (split-window-below height) 'window alist)))
+
+(defun nvp-display-buffer-below (buf alist)
+  (let ((height (nvp-display-buffer--height alist 'window-min-height))
+        (win (window-right (selected-window))))
+    (while (and win (< (window-height win) height))
+      (setq win (window-right win)))
+    (when win
+      (window--display-buffer buf win 'window alist))))
 
 (defvar nvp-shell-display-buffer-default-action
   '((display-buffer-reuse-window nvp-display-buffer-split-below)
@@ -157,26 +162,28 @@ If none found, return list of all terminal buffers."
     (window-height               . 0.5)
     (display-buffer-in-direction . left)))
 
-;; 1. do nothing if already selected
-;; 2. if next window is BUFFER, go there
-;; 3. split horizontally below if window large enough
-;; 4. otherwise, don't use current window
+;; 1. reuse window already displaying buffer
+;; 2. split horizontally below if window large enough
+;; 3. try to use window below, if one is large enough
+;; 4. use current window
+(defun nvp-shell--display-action (buffer)
+  (let ((win (selected-window)))
+    (cond
+     ((eq (current-buffer) buffer)
+      '(display-buffer-reuse-window))
+     ((and (> (window-height win)
+              split-height-threshold)
+           (window-splittable-p (selected-window)))
+      nvp-shell-display-buffer-default-action)
+     (t `((display-buffer-reuse-window
+           nvp-display-buffer-below
+           display-buffer-same-window)
+          (reusable-frames   . visible)
+          (window-min-height . ,(round (* 0.3 (frame-height)))))))))
+
 (defun nvp-shell-display-buffer (buffer)
-  (let* ((win (selected-window))
-         (display-buffer-overriding-action
-          (cond
-           ((eq (current-buffer) buffer)
-            '(display-buffer-reuse-window))
-           ((--when-let (window-right win)
-              (and (eq buffer (window-buffer it))
-                   '(display-buffer-below-selected))))
-           ((and (> (window-height win)
-                    split-height-threshold)
-                 (window-splittable-p (selected-window)))
-            nvp-shell-display-buffer-default-action)
-           (t '(display-buffer-pop-up-window
-                display-buffer-reuse-window
-                ((inhibit-same-window . t)))))))
+  (let ((display-buffer-overriding-action
+         (nvp-shell--display-action buffer)))
     (shell buffer)))
 
 ;;;###autoload

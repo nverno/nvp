@@ -58,7 +58,8 @@
     ;; added
     (shortdoc-mode               . ace-link-help)
     (shell-mode                  . nvp-link-shell)
-    (markdown-mode               . nvp-link-markdown))
+    (markdown-mode               . nvp-link-markdown)
+    (dired-mode                  . nvp-link-dired))
   "Mapping of `major-mode' to ace-link actions.")
 
 (defvar nvp-ace-link-minor-mode-actions
@@ -175,8 +176,26 @@ With \\[universal-argument] call in next visible window."
   (when it
     (funcall #'nvp-mark-goto-marker-at-point)))
 
-;;; TODO: dired
-(defun nvp-link--dired-collect ())
+;;; Dired
+(nvp:decl dired-next-dirline dired-get-filename dired-find-file)
+(defun nvp-link--dired-collect ()
+  (let (res)
+    (nvp:with-restriction 'visible
+      (goto-char (point-min))
+      (while (condition-case nil
+                 (progn
+                   (dired-next-dirline 1)
+                   t)
+               (error nil))
+        (let ((dir (dired-get-filename 'verbatim 'no-error)))
+          (unless (member dir '("." ".." nil))
+            (push (cons dir (point)) res)))))
+    res))
+
+(nvp:define-link nvp-link-dired
+    (--map (cdr it) (nvp-link--dired-collect))
+  (goto-char (1+ it))
+  (dired-find-file))
 
 ;;; Markdown
 (nvp:decl markdown-next-link markdown-link-at-pos markdown-follow-thing-at-point)

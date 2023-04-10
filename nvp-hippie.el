@@ -290,7 +290,7 @@ doesn't exceed LIMIT."
 
 ;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
 ;; only recompute `nvp-he-buffer-matches' when prefix has changed
-(defvar nvp-he-flex-completion-table
+(defvar-local nvp-he-flex-completion-table
   (nvp-he-completion-table
    (lambda (arg)
      (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
@@ -312,6 +312,11 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
   (prog1 (not (null he-expand-list))    ;return t if expansion is found
     (if he-expand-list (he-substitute-string (pop he-expand-list))
       (and old (he-reset-string)))))
+
+;; (defun nvp-try-expand-flex-other-buffers (old)
+;;   "Try to complete symbols from other interesting buffers using fuzzing
+;; matching."
+;;   )
 
 
 ;; -------------------------------------------------------------------

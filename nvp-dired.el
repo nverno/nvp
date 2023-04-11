@@ -24,9 +24,9 @@
     (beginning-of-line)
     (save-match-data
       (while (not (bobp))
-        (when (setq item (dired-get-filename 'verbatim 'no-error)))
-        (unless (member item '("." ".." nil))
-          (push (cons item (copy-marker (dired-move-to-filename))) index-alist))
+        (when (setq item (dired-get-filename 'verbatim 'no-error))
+          (unless (member item '("." ".." nil))
+            (push (cons item (copy-marker (dired-move-to-filename))) index-alist)))
         (forward-line -1)))
     index-alist))
 

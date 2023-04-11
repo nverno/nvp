@@ -299,7 +299,8 @@
   (if update
       (call-interactively 'nvp-c-create-or-update-header)
     (condition-case nil
-        (find-file-other-window (nvp-c--header-file-name)))))
+        (find-file-other-window (nvp-c--header-file-name))
+      (error "oop"))))
 
 (defun nvp-c-create-or-update-header (and-go)
   "Creates/updates header file with the function signatures in the current

@@ -51,7 +51,7 @@
 
 ;; header regexp nested under "Headers"
 (defvar-local nvp-imenu-comment-headers-re-1 nil
-  "Imenu header regexp nested under 'Headers'")
+  "Imenu header regexp nested under \"Headers\"")
 
 ;; sub-headers
 (defvar-local nvp-imenu-comment-headers-re-2 nil "Imenu sub-header regexp.")

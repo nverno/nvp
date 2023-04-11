@@ -25,7 +25,7 @@
 On error (read-only), quit without selecting."
   (interactive)
   (condition-case nil
-      (backward-delete-char 1)
+      (delete-char -1)
     (error
      (minibuffer-keyboard-quit))))
 

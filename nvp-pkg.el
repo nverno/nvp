@@ -7,7 +7,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'package)
-(require 'autoload)
+;; (require 'autoload)
 (nvp:decls)
 
 ;;; Package menu
@@ -56,13 +56,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Autoloads
-;; package.el:
-;; - `package-autoload-ensure-default-file'
-;; - `package-generate-autoloads'
-
-;; (require 'autoload)
-(defvar version-control)
-(defvar autoload-timestamps)
 
 ;; Update the main loaddefs files from directories with autoloads
 ;; as well as the subdirs that need autoloads and compilation.
@@ -102,7 +95,7 @@ associated .elc files."
 (defun nvp-pkg-update-dir (name pkg-dir &optional arg force)
   "Update directory PKG-DIR to autoloads NAME file and compile.
 ARG and FORCE are passed to `byte-recompile-directory'."
-  (package-generate-autoloads name pkg-dir)
+  (loaddefs-generate pkg-dir name)
   (add-to-list 'load-path pkg-dir)
   (nvp-pkg-subdir-compile pkg-dir arg force))
 

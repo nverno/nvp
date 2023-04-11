@@ -6,7 +6,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp:decls)
+(nvp:decls :f (web-mode))
 
 ;;; from spacemacs
 (defvar vue-imenu-expression

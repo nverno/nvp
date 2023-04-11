@@ -176,12 +176,12 @@ If PREDICATE is non-nil, only override bindings if when it evaluates to non-nil.
     (setq bindings (cdr (cdr bindings))))
   (let ((modemap (nvp:-normalize-modemap mode)))
     `(,@(if after-load `(with-eval-after-load ,after-load) '(progn))
-      ,@(if predicate `((when ,predicate)))
-      (let ((map (make-sparse-keymap)))
-        (set-keymap-parent map ,modemap)
-        ,@(cl-loop for (k . b) in bindings
-             collect `(nvp:bind map ,k ,b))
-        (push (cons ,mode map) minor-mode-overriding-map-alist)))))
+      (,@(if predicate `(when ,predicate) '(progn))
+       (let ((map (make-sparse-keymap)))
+         (set-keymap-parent map ,modemap)
+         ,@(cl-loop for (k . b) in bindings
+                    collect `(nvp:bind map ,k ,b))
+         (push (cons ,mode map) minor-mode-overriding-map-alist))))))
 
 (cl-defmacro nvp:set-local-keymap (&rest bindings
                                          &key keymap buffer use &allow-other-keys)

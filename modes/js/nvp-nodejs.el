@@ -45,7 +45,8 @@
                 nodejs-repl--filter-escape-sequnces
                 nodejs-repl--remove-duplicated-prompt
                 nodejs-repl--delete-prompt)
-              nvp-trace-group-alist))
+              nvp-trace-group-alist
+              :test #'member))
 
 (provide 'nvp-nodejs)
 ;; Local Variables:

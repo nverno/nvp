@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: pop slice
+# key: pop
+# --
+${1:st} = $1[:len($1)-1]

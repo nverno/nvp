@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: push slice
+# key: push
+# --
+${1:st} = append($1, ${2:x})

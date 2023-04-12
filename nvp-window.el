@@ -15,6 +15,17 @@
   ("s" . ace-swap-window)
   ("j" . ace-window))
 
+(nvp:bindings nvp-window-move-map :now
+  :create t
+  :repeat (nvp-window-transpose nvp-window-rotate nvp-window-swap)
+  :wrap (ace-swap-window)
+  :indicate t
+  ("t" . nvp-window-transpose)
+  ("r" . nvp-window-rotate)
+  ("|" . nvp-window-swap)
+  ("s" . ace-swap-window))
+
+
 ;;;###autoload
 (defun nvp-window-configuration-push ()
   (interactive)

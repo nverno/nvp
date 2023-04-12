@@ -61,14 +61,16 @@
                           (not (looking-back "(let\\*? *" (line-beginning-position))))
                       (error t))))))))))
 
-;; set local abbrev table according to implementation
-(defun nvp-scheme-sync-abbrev-table ()
-  (setq-local nvp-abbrev-local-table (format "%s-mode" geiser-impl--implementation))
-  (setq local-abbrev-table
-        (symbol-value (intern (format "%s-abbrev-table" nvp-abbrev-local-table)))))
+;; sync local abbrev table/snippets according to implementation
+(defun nvp-scheme-sync-mode ()
+  (let* ((mode (format "%s-mode" geiser-impl--implementation))
+         (abbr-table (format "%s-abbrev-table" mode)))
+    (setq nvp-abbrev-local-table mode
+          local-abbrev-table (symbol-value (intern abbr-table))
+          nvp-mode-name (intern mode))))
 
-(define-advice geiser-set-scheme (:after (&rest _args) "sync-abbrev-table")
-  (nvp-scheme-sync-abbrev-table))
+(define-advice geiser-set-scheme (:after (&rest _args) "sync-mode-vars")
+  (nvp-scheme-sync-mode))
 
 ;; -------------------------------------------------------------------
 ;;; Hippie Expand

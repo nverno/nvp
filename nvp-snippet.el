@@ -72,9 +72,12 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
           (snippet-dir
            (if (not nvp-mode-snippet-dir)
                (expand-file-name mode-name nvp/snippet)
-             (nvp-read-mode-var
-              "snippets"
-              (file-name-base nvp-mode-snippet-dir)))))
+             (let ((dir (nvp-read-mode-var
+                         "snippets"
+                         (file-name-base nvp-mode-snippet-dir))))
+               (if nvp-mode-name
+                   (expand-file-name (nvp:as-string nvp-mode-name) (f-parent dir))
+                 dir)))))
      (list mode-name
            snippet-dir
            (nvp:prefix 4 'do-dired)

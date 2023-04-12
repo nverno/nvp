@@ -106,6 +106,7 @@ or nil.")
 
 ;;-- Possibly mode vars
 (defvar-local nvp-mode-header-regex nil "Regex to move b/w headers.")
+(defvar-local nvp-mode-name nil "Mode to use instead of `major-mode'")
 (defvar-local nvp-mode-snippet-dir nil "Mode's snippet directory.")
 (defvar-local nvp-mode-install-targets () "Mode's external install targets.")
 

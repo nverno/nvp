@@ -102,7 +102,7 @@
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
 ;; so it matches replace-regexp-in-string, for example
 (defvar nvp-he-flex-prefix-from-re "[-:./]")
-(defvar nvp-he-flex-prefix-to-re "\\\\w*-")
+(defvar nvp-he-flex-prefix-to-re "\\\\w*[-:./]")
 
 ;; -------------------------------------------------------------------
 ;;; Matchers
@@ -157,7 +157,7 @@
   (setq-local nvp-he-flex-matcher #'nvp-he-flex-lisp)
   (setq-local nvp-he-flex-symbol-beg (or beg #'he-lisp-symbol-beg))
   (setq-local nvp-he-flex-prefix-from-re "[-:./]")
-  (setq-local nvp-he-flex-prefix-to-re "\\\\w*-"))
+  (setq-local nvp-he-flex-prefix-to-re "\\\\w*[-:./]"))
 
 ;; -------------------------------------------------------------------
 ;;; Completion Tables
@@ -256,8 +256,6 @@ doesn't exceed LIMIT."
      :test #'equal
      :from-end t)))
 
-;;; TODO: use this function to allow flex-expansion in other visible windows
-;;; as well
 ;; refs: `aw-window-list', `he--all-buffers', `next-window'
 (defun nvp-he-interesting-buffers ()
   "Return list of interesting buffers. This respects `hippie-expand-only-buffers',
@@ -274,8 +272,7 @@ doesn't exceed LIMIT."
                         (frame-visible-p f)))
               (string= "initial_terminal" (terminal-name f))
               ;; check if buffer is accepted by other hippie variables
-              (progn
-                (set-buffer buff)
+              (with-current-buffer buff
                 (if only-buffers
                     (not (he-buffer-member only-buffers))
                   (he-buffer-member ignore-buffers))))))
@@ -313,10 +310,57 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
     (if he-expand-list (he-substitute-string (pop he-expand-list))
       (and old (he-reset-string)))))
 
-;; (defun nvp-try-expand-flex-other-buffers (old)
-;;   "Try to complete symbols from other interesting buffers using fuzzing
-;; matching."
-;;   )
+
+(eval-when-compile
+  (defmacro nvp:with-flex-vars (&rest forms)
+    `(let ((nvp-he-case-fold nvp-he-case-fold)
+           (nvp-he-time-limit nvp-he-time-limit)
+           (nvp-he-min-length nvp-he-min-length)
+           (nvp-he-flex-matcher nvp-he-flex-matcher)
+           (nvp-he-flex-prefix-from-re nvp-he-flex-prefix-from-re)
+           (nvp-he-flex-prefix-to-re nvp-he-flex-prefix-to-re)
+           (nvp-he-flex-symbol-beg nvp-he-flex-symbol-beg)
+           (nvp-he-weight-function nvp-he-weight-function))
+       ,@forms)))
+
+
+(defun nvp-he--flex-other-buffers ()
+  (save-current-buffer
+    (nvp:with-flex-vars
+     (while (and he-search-bufs
+                 (not he-expand-list)
+                 (or (not hippie-expand-max-buffers)
+                     (< he-searched-n-bufs hippie-expand-max-buffers)))
+       (set-buffer (car he-search-bufs))
+       (save-excursion
+         (save-restriction
+           (goto-char (/ (+ (window-start) (window-end)) 2))
+           (when hippie-expand-no-restriction (widen))
+           (setq he-expand-list (funcall nvp-he-flex-completion-table he-search-string))))
+       (while (and he-expand-list
+                   (he-string-member (car he-expand-list) he-tried-table))
+         (setq he-expand-list (cdr he-expand-list)))
+       (unless he-expand-list
+         (setq he-search-bufs (cdr he-search-bufs)
+               he-searched-n-bufs (1+ he-searched-n-bufs)))))))
+
+
+;;;###autoload
+(defun nvp-try-expand-flex-other-buffers (old)
+  "Try to complete symbols from other interesting buffers using fuzzing
+matching."
+  (unless old
+    (he-init-string (funcall nvp-he-flex-symbol-beg) (point))
+    (setq he-search-bufs (cl-remove (current-buffer) (nvp-he-interesting-buffers))
+          he-searched-n-bufs 0
+          he-expand-list nil))
+  (unless he-expand-list
+    (and (not (string-empty-p he-search-string))
+         (nvp-he--flex-other-buffers)))
+  (prog1 (not (null he-expand-list))
+    (if he-expand-list (he-substitute-string (pop he-expand-list))
+      (and old (he-reset-string)))))
+
 
 
 ;; -------------------------------------------------------------------

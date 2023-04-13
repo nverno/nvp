@@ -75,13 +75,13 @@ associated .elc files."
                                                                    )
                                          ;; (list nvp/site nvp/modes)
                                          ))
-           for generated-autoload-file = defs
+           for autoload-file = defs
            do
            ;; (package-autoload-ensure-default-file defs)
-           (loaddefs-generate dirs generated-autoload-file nil nil nil 'generate-full)
+           (loaddefs-generate dirs autoload-file nil nil nil 'generate-full)
            ;; (mapc
            ;;  (lambda (dir) (loaddefs-generate
-           ;;            (file-name-as-directory dir) generated-autoload-file))
+           ;;            (file-name-as-directory dir) autoload-file))
            ;;  dirs)
            (let ((buf (find-buffer-visiting defs)))
              (when buf (kill-buffer buf)))
@@ -110,7 +110,7 @@ R=recompile; F=force; P=if prefix;
 5. default (P)                       -> prompt"
   (interactive (list (read-directory-name "Directory: ") current-prefix-arg))
   (setq dir (expand-file-name dir))
-  (let* ((generated-autoload-file
+  (let* ((autoload-file
           (pcase dir
             ((pred (string-prefix-p nvp/config dir)) nvp/auto)
             ((pred (string-prefix-p nvp/site dir)) nvp/auto-site)
@@ -118,13 +118,13 @@ R=recompile; F=force; P=if prefix;
                    (car-safe (directory-files dir t "loaddefs?.el"))
                    'none))))
          (do-compile
-          (and (or (string= generated-autoload-file nvp/auto-site) arg)
+          (and (or (string= autoload-file nvp/auto-site) arg)
                0)))
 
-    (pcase generated-autoload-file
+    (pcase autoload-file
       (`none (nvp-pkg-update-dir
               (read-from-minibuffer "Autoloads name: ") dir nil arg))
-      (_ (loaddefs-generate dir generated-autoload-file)
+      (_ (loaddefs-generate dir autoload-file)
          (nvp-pkg-subdir-compile dir do-compile nil)))))
 
 (provide 'nvp-pkg)

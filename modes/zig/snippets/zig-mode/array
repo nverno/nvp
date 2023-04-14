@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: array
+# key: a
+# --
+const ${1:arr} = [_]${2:i32}{ $3 };

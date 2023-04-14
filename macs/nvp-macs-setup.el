@@ -361,6 +361,18 @@ If it is a symbol/function (list) get its value(s)."
    (cl-loop for p in paths
             collect `(add-to-list 'load-path ,p))))
 
+(defmacro nvp:add-hook (mode &optional ts)
+  "Add hook for MODE.
+If TS, also set ts version of MODE's to hook to regular mode's hook."
+  (let* ((mode-hook (nvp:-normalize-hook (nvp:as-string mode)))
+         (ts-hook (intern (string-replace "-mode-" "-ts-mode-" (symbol-name mode-hook))))
+         (my-hook (intern (format "nvp-%s-hook" mode))))
+    `(progn
+       (add-hook ',mode-hook #',my-hook)
+       ,@(when ts
+           `((when (boundp ',mode-hook)
+               (setq ,ts-hook ,mode-hook)))))))
+
 (defmacro nvp:setup-hooks (hook &rest modes)
   "Add HOOK to all MODES hooks."
   (declare (indent 1))

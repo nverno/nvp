@@ -1,0 +1,6 @@
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+
+(define-abbrev-table 'zig-mode-abbrev-table
+  '(("ret" "return" nil :system t))
+  "Zig-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table))

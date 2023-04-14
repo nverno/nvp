@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: std.debug.print
+# key: dbg
+# --
+std.debug.print("$1"$2);

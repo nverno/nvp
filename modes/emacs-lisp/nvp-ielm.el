@@ -13,9 +13,10 @@
 
 (defvar nvp-ielm-hippie-expanders
   '(nvp-he-try-expand-history
-    nvp-try-expand-flex
-    nvp-try-expand-dabbrev-closest-first
-    try-expand-dabbrev-all-buffers
+    nvp-try-expand-flex-or-dabbrev
+    nvp-try-expand-flex-or-dabbrev-other-buffers
+    ;; nvp-try-expand-dabbrev-closest-first
+    ;; try-expand-dabbrev-all-buffers
     try-expand-dabbrev-from-kill
     try-complete-lisp-symbol
     try-complete-lisp-symbol-partially))

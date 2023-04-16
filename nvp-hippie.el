@@ -311,8 +311,36 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
       (and old (he-reset-string)))))
 
 
+(defvar-local nvp-he--current-expander #'nvp-try-expand-flex)
+
+(eval-when-compile 
+  (defmacro nvp:flex-or-dabbrev (flex-fn dabbrev-fn)
+    `(progn
+       (unless old
+        (setq nvp-he--current-expander
+              (if (save-excursion
+                    (search-backward-regexp
+                     nvp-he-flex-prefix-from-re (funcall nvp-he-flex-symbol-beg) t 1))
+                  #',flex-fn
+                #',dabbrev-fn)))
+       ;; (message "Using %s" nvp-he--current-expander)
+       (funcall nvp-he--current-expander old))))
+
+;;;###autoload
+(defun nvp-try-expand-flex-or-dabbrev (old)
+  "Try to complete symbol from current buffer using flex if prefix looks
+flexible, and dabbrev closest otherwise."
+  (nvp:flex-or-dabbrev nvp-try-expand-flex nvp-try-expand-dabbrev-closest-first))
+
+;;;###autoload
+(defun nvp-try-expand-flex-or-dabbrev-other-buffers (old)
+  "Try to complete symbol from other buffers using flex if prefix looks
+flexible, and dabbrev closest otherwise."
+  (nvp:flex-or-dabbrev nvp-try-expand-flex-other-buffers try-expand-dabbrev-all-buffers))
+
 (eval-when-compile
   (defmacro nvp:with-flex-vars (&rest forms)
+    (declare (debug t))
     `(let ((nvp-he-case-fold nvp-he-case-fold)
            (nvp-he-time-limit nvp-he-time-limit)
            (nvp-he-min-length nvp-he-min-length)
@@ -325,8 +353,8 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
 
 
 (defun nvp-he--flex-other-buffers ()
-  (save-current-buffer
-    (nvp:with-flex-vars
+  (nvp:with-flex-vars
+   (save-current-buffer
      (while (and he-search-bufs
                  (not he-expand-list)
                  (or (not hippie-expand-max-buffers)
@@ -336,14 +364,14 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
          (save-restriction
            (goto-char (/ (+ (window-start) (window-end)) 2))
            (when hippie-expand-no-restriction (widen))
-           (setq he-expand-list (funcall nvp-he-flex-completion-table he-search-string))))
+           (setq he-expand-list
+                 (funcall nvp-he-flex-completion-table he-search-string))))
        (while (and he-expand-list
                    (he-string-member (car he-expand-list) he-tried-table))
          (setq he-expand-list (cdr he-expand-list)))
        (unless he-expand-list
          (setq he-search-bufs (cdr he-search-bufs)
                he-searched-n-bufs (1+ he-searched-n-bufs)))))))
-
 
 ;;;###autoload
 (defun nvp-try-expand-flex-other-buffers (old)
@@ -360,7 +388,6 @@ matching."
   (prog1 (not (null he-expand-list))
     (if he-expand-list (he-substitute-string (pop he-expand-list))
       (and old (he-reset-string)))))
-
 
 
 ;; -------------------------------------------------------------------
@@ -564,7 +591,7 @@ string).  It returns t if a new completion is found, nil otherwise."
   (let ((hippie-expand-try-functions-list 
 	 '(nvp-try-expand-line-closest-first
 	   try-expand-line-all-buffers)))
-    (end-of-line)
+    ;; (end-of-line)
     (hippie-expand nil)))
 
 ;;;###autoload

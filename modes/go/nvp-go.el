@@ -7,11 +7,23 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'go-mode)
 (require 'xref)
-(nvp:decls :v (go-use-gocheck-for-testing))
+(nvp:decls :v (go-use-gocheck-for-testing gorepl-buffer-name)
+           :f (gorepl--run-gore))
 (nvp:auto "asdf" asdf-current-version)
 
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))
+
+;;; REPL
+(with-eval-after-load 'nvp-repl
+  (with-eval-after-load 'gorepl-mode
+    (nvp-repl-add '(go-mode go-ts-mode)
+      :modes '(gorepl-mode)
+      :bufname gorepl-buffer-name
+      :init (lambda ()
+              (save-window-excursion
+                (gorepl--run-gore)
+                (get-buffer-process (current-buffer)))))))
 
 ;; collect imports
 (defun nvp-go-imports ()

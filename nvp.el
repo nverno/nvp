@@ -46,8 +46,7 @@
   "Default org file.")
 
 (defvar nvp-default-directories
-  (list nvp/project nvp/class nvp/bin nvp/install nvp/work nvp/devel nvp/modes
-        nvp/nvp nvp/site nvp/emacs nvp/build nvp/private nvp/scratch)
+  (list nvp/project nvp/class nvp/bin nvp/work nvp/devel nvp/scratch)
   "Interesting directories.")
 
 (defvar nvp-window-configuration-stack ()

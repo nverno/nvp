@@ -165,3 +165,43 @@
 		nil)))))))
    nvp-font-greek-alist))
 
+
+;;;###autoload
+(defun nvp-jump-to-book (dir &optional action)
+  "Jump to book, either opening in emacs (eg. pdfs) or external for epubs.
+With double prefix, prompt for directory (default `nvp-local-books-directories'
+or `nvp/books'. 
+With triple prefix, offer recursive results."
+  (interactive
+   (let* ((arg (prefix-numeric-value current-prefix-arg))
+          (case-fold-search t)
+          (root (cond
+                  ((> arg 4)
+                   (expand-file-name
+                    (read-directory-name "Book Directory: " nvp/books)))
+                  ((bound-and-true-p nvp-local-books-directories)
+                   nvp-local-books-directories)
+                  (t nvp/books))))
+     (list root arg)))
+  (unless dir (user-error "No books directories found."))
+  (let* ((files (mapcar (lambda (f) (file-relative-name f dir))
+                        (if (eq action 16) ;recurse
+                            (directory-files-recursively dir "^[^.].*[^/]$")
+                          (directory-files dir t "^[^.]"))))
+         (book (nvp-completing-read "Book: " files nil 'match))
+         (fullname (expand-file-name book dir)))
+    (cond
+      ;; epubs
+      ((string-match-p "\\.epub$" book)
+       (nvp:with-gnu/w32
+           (if (executable-find "calibre")
+               (call-process "calibre" nil 0 nil fullname)
+             (call-process "firefox" nil 0 nil fullname))
+         (if (executable-find "sumatrapdf")
+             (call-process "sumatrapdf" nil 0 nil fullname)
+           (call-process (nvp:program "firefox") nil 0 nil fullname))))
+      ;; probably PDF, open in emacs
+      ((file-name-extension book)
+       (nvp-display-location fullname :file action))
+      ;; otherwise recurse in subdirs
+      (t (nvp-jump-to-book fullname action)))))

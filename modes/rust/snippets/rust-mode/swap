@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: swap
+# key: swap
+# --
+${1:let }($2, $3) = ($3, $2);

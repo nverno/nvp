@@ -20,6 +20,9 @@ ${1:`(replace-regexp-in-string "-" "_" (nvp-yas-bfn-no-ext))`}_install() {
         --uninstall)
         ;;
         --version)
+            _info "${1:$(capitalize yas-text)} versions:"
+            _info "current: $(${1:$(downcase yas-text)} --version 2>/dev/null || echo "not installed")"
+            _info "latest: "
         ;;
     esac
     _success "$1 \$1"

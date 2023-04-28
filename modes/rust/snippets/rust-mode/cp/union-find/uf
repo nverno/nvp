@@ -5,12 +5,14 @@
 pub struct UF {
     parent: Vec<usize>,
     sz: Vec<usize>,
+    count: usize,
 }
 impl UF {
     pub fn new(sz: usize) -> Self {
         Self {
             parent: (0..sz).collect(),
             sz: vec![1; sz],
+            count: sz,
         }
     }
     pub fn find(&mut self, x: usize) -> usize {
@@ -30,9 +32,13 @@ impl UF {
             }
             self.parent[xx] = yy;
             self.sz[yy] += self.sz[xx];
+            self.count -= 1;
             true
         } else {
             false
         }
+    }
+    pub fn count(&self) -> usize {
+        self.count
     }
 }

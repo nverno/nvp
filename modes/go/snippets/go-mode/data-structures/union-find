@@ -3,10 +3,12 @@
 # key: d_uf
 # --
 type UF struct {
+	count      int
 	parent, sz []int
 }
 
 func (uf *UF) Init(n int) {
+	uf.count = n
 	uf.parent = make([]int, n)
 	uf.sz = make([]int, n)
 	for i := range uf.parent {
@@ -17,7 +19,7 @@ func (uf *UF) Init(n int) {
 
 func (uf *UF) Find(x int) int {
 	root := x
-	for root != uf.parent[x] {
+	for root != uf.parent[root] {
 		root = uf.parent[root]
 	}
 	for x != uf.parent[x] {
@@ -28,17 +30,24 @@ func (uf *UF) Find(x int) int {
 	return root
 }
 
-func (uf *UF) Merge(x, y int) {
+func (uf *UF) Merge(x, y int) bool {
 	xx, yy := uf.Find(x), uf.Find(y)
 	if xx != yy {
 		if uf.sz[xx] > uf.sz[yy] {
-			uf.sz[xx], uf.sz[yy] = uf.sz[yy], uf.sz[xx]
+			xx, yy = yy, xx
 		}
 		uf.parent[xx] = yy
 		uf.sz[yy] += uf.sz[xx]
+		uf.count--
+		return true
 	}
+	return false
 }
 
 func (uf *UF) Connected(x, y int) bool {
 	return uf.Find(x) == uf.Find(y)
+}
+
+func (uf *UF) Count() int {
+	return uf.count
 }

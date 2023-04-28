@@ -1,0 +1,37 @@
+# -*- mode: snippet -*-
+# name: discrete sets/union find
+# key: d_uf
+# --
+class UF
+  attr_reader :count
+
+  # @param {Integer} size
+  def initialize(size)
+    @count = size
+    @parent = (0...size).to_a
+    @sz = Array.new(size, 1)
+  end
+
+  # @param {Integer} x
+  # @return {Integer}
+  def find(x)
+    root = x
+    while root != @parent[root]; root = @parent[root]; end
+    while x != @parent[x]; @parent[x], x = root, @parent[x]; end
+    root
+  end
+
+  # @param {Integer} x
+  # @param {Integer} y
+  # @return {bool}
+  def merge(x, y)
+    xx, yy = find(x), find(y)
+    return false if xx == yy
+
+    xx, yy = yy, xx if @sz[xx] > @sz[yy]
+    @parent[xx] = yy
+    @sz[yy] += @sz[xx]
+    @count -= 1
+    true
+  end
+end

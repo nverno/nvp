@@ -6,11 +6,12 @@ class UF:
     def __init__(self, n):
         self.parent = list(range(n))
         self.sz = [1]*n
+        self.count = n
     def find(self, x):
-        xx = x
-        while x != self.parent[x]: x = self.parent[x]
-        while xx != x: self.parent[xx], xx = x, self.parent[xx]
-        return x
+        root = x
+        while root != self.parent[root]: root = self.parent[root]
+        while x != self.parent[x]: self.parent[x], x = root, self.parent[x]
+        return root
     def connected(self, x, y): return self.find(x) == self.find(y)
     def merge(self, x, y):
         xx, yy = self.find(x), self.find(y)
@@ -18,4 +19,5 @@ class UF:
         if self.sz[xx] > self.sz[yy]: xx, yy = yy, xx
         self.parent[xx] = yy
         self.sz[yy] += self.sz[xx]
+        self.count -= 1
         return True

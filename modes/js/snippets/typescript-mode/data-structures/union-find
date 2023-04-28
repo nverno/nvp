@@ -1,13 +1,15 @@
 # -*- mode: snippet -*-
-# name: union find
+# name: discrete sets / union find
 # key: d_uf
 # --
 class UF {
   private par: number[];
   private sz: number[];
+  private _count: number;
   constructor(n: number) {
     this.par = Array.from({length: n}, (_, i) => i);
     this.sz = Array(n).fill(1);
+    this._count = n;
   }
   public find(x: number): number {
     if (this.par[x] != x) this.par[x] = this.find(this.par[x]);
@@ -20,6 +22,8 @@ class UF {
     if (this.sz[xx] > this.sz[yy]) xx = [yy, yy = xx][0];
     this.par[xx] = yy;
     this.sz[yy] += this.sz[xx];
+    --this._count;
     return true;
   }
+  public count() { return this._count; }
 }

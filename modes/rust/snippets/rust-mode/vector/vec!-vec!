@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: vec![vec![..]..]
+# key: vv
+# --
+let mut ${1:dp} = vec![vec![$2]$3];

@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: vector-uniform
-# key: vec
-# --
-vector<${1:int}> ${2:var}${3:(${4:10}, $1($5))};

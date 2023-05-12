@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: new vector
-# key: v
+# key: vn
 # --
 let mut ${1:v}: Vec<${2:i32}> = Vec::new();

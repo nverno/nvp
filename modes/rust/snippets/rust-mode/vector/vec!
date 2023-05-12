@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: get
-# key: g
+# name: new vector w/ macro
+# key: v
 # condition: (null yas--active-snippets)
 # --
-get<$1>($2)
+let mut ${1:v} = vec![$2];

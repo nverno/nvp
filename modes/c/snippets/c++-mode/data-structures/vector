@@ -1,5 +1,6 @@
 # -*- mode: snippet -*-
 # name: vector
 # key: v
+# condition: (null yas--active-snippets)
 # --
 vector<$1>

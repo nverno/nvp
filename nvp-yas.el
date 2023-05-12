@@ -113,6 +113,7 @@ If TRIM is non-nil, whitespace is removed from selected text.
 (defalias '$set 'nvp-yas-set-tmp)
 (defalias '$s= 'nvp-yas-string=)
 (defalias '$s!= 'nvp-yas-string!=)
+
 ;;; -------------------------------------------------------------------
 ;; Comments
 

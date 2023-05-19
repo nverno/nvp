@@ -11,3 +11,14 @@
   "Abbrev table used in `sql-mode' and `sql-interactive-mode'."
   :parents (list fundamental-mode-abbrev-table)
   :enable-function 'sql-in-code-context-p)
+
+(define-abbrev-table 'sql-sqlite-abbrev-table
+  '(("cols" "PRAGMA table_info" nil :system t))
+  "Sqlite shell abbrevs."
+  :enable-function (lambda () (eq sql-product 'sqlite)))
+
+(define-abbrev-table 'sql-interactive-mode-abbrev-table
+  '()
+  "Sql-Interactive-Mode Abbrevs."
+  :parents (list sql-mode-abbrev-table
+                 sql-sqlite-abbrev-table))

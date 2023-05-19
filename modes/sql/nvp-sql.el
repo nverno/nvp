@@ -2,51 +2,54 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls :v (sql-product sql-buffer zeal-at-point-docset))
-(declare-function sql-set-product "sql")
-(declare-function sql-set-sqli-buffer "sql")
-(declare-function sql-product-font-lock "sql")
+(require 'sql)
+(nvp:decls :v (zeal-at-point-docset))
+
+;;; Sqlite
+(defconst nvp-sql-sqlite-font-lock-keywords
+  (eval-when-compile
+    (list
+     ;; missing window functions
+     (sql-font-lock-keywords-builder
+      'font-lock-builtin-face nil
+      "rank" "cume_dist" "lag")
+     ;; OVER clause
+     (sql-font-lock-keywords-builder
+      'font-lock-builtin-face nil
+      "partition" "over" "preceding" "difference"))))
+
+(cl-eval-when (load)
+  (unless (cl-member (car nvp-sql-sqlite-font-lock-keywords)
+                     sql-mode-sqlite-font-lock-keywords :test #'equal)
+    (setq sql-mode-sqlite-font-lock-keywords
+          (append nvp-sql-sqlite-font-lock-keywords
+                  sql-mode-sqlite-font-lock-keywords))))
 
 ;; ------------------------------------------------------------
 ;;; SQLi
 
-;; font-lock everything in sql interactive mode
-(defun nvp-sql-sqli-font-lock ()
-  (unless (eq 'oracle sql-product)
-    (sql-product-font-lock nil nil)))
-
-;; Suppress indentation in sqli.
-(defun nvp-sql-sqli-suppress-indent ()
-  (set (make-local-variable 'indent-line-function)
-       (lambda () 'noindent)))
-
 ;; setup repl
 (defun nvp-sql-sqli-setup ()
-  (nvp-sql-sqli-font-lock)
-  (nvp-sql-sqli-suppress-indent)
+  ;; font-lock everything in sql interactive mode
+  (unless (eq 'oracle sql-product)
+    (sql-product-font-lock nil nil))
+  ;; Suppress indentation in sqli.
+  (set (make-local-variable 'indent-line-function) (lambda () 'noindent))
   (nvp-sql-psql-set-zeal))
 
-(defvar nvp-sql--sql-buffer)
+(defun nvp-sql-sqli-buffer ()
+  (save-window-excursion
+    (sql-show-sqli-buffer)
+    (get-buffer-process (current-buffer))))
 
-;; Switch to the corresponding sqli buffer.
-(defun nvp-sql-sqli-switch ()
-  (interactive)
-  (if (eq major-mode 'sql-mode)
-      (let ((buff (current-buffer)))
-        (if sql-buffer
-            (progn
-              (pop-to-buffer sql-buffer)
-              (goto-char (point-max)))
-          (sql-set-sqli-buffer)
-          (when sql-buffer
-            (nvp-sql-sqli-switch)))
-        (if sql-buffer
-            (setq nvp-sql--sql-buffer buff)
-          (user-error "No sqli buffer found.")))
-    (when nvp-sql--sql-buffer
-      (pop-to-buffer nvp-sql--sql-buffer))))
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(sql-mode)
+    :modes '(sql-interactive-mode)
+    :wait 0.1
+    :find-fn (lambda () (get-buffer sql-buffer))
+    :init #'nvp-sql-sqli-buffer))
 
-;;; Zeal
+;; Zeal
 
 ;; Default the zeal lookup to postgres when product changes.
 (defun nvp-sql-psql-set-zeal ()

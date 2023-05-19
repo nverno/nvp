@@ -1,0 +1,57 @@
+# -*- mode: snippet -*-
+# name: is graph bipartite
+# key: g_bipartite
+# --
+pub struct UF {
+    parent: Vec<usize>,
+    sz: Vec<usize>,
+    count: usize,
+}
+impl UF {
+    pub fn new(sz: usize) -> Self {
+        Self {
+            parent: (0..sz).collect(),
+            sz: vec![1; sz],
+            count: sz,
+        }
+    }
+    pub fn find(&mut self, x: usize) -> usize {
+        if self.parent[x] != x {
+            self.parent[x] = self.find(self.parent[x]);
+        }
+        self.parent[x]
+    }
+    pub fn connected(&mut self, x: usize, y: usize) -> bool {
+        self.find(x) == self.find(y)
+    }
+    pub fn merge(&mut self, x: usize, y: usize) -> bool {
+        let (mut xx, mut yy) = (self.find(x), self.find(y));
+        if xx != yy {
+            if self.sz[xx] > self.sz[yy] {
+                std::mem::swap(&mut xx, &mut yy);
+            }
+            self.parent[xx] = yy;
+            self.sz[yy] += self.sz[xx];
+            self.count -= 1;
+            true
+        } else {
+            false
+        }
+    }
+    pub fn count(&self) -> usize {
+        self.count
+    }
+}
+fn is_bipartite(g: &Vec<Vec<i32>>) -> bool {
+    let n = g.len();
+    let mut uf = UF::new(n);
+    for (u, es) in g.iter().enumerate() {
+        for v in es {
+            if uf.connected(u, *v as usize) {
+                return false;
+            }
+            uf.merge(es[0] as usize, *v as usize);
+        }
+    }
+    true
+}

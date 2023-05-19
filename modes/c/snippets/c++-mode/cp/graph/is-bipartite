@@ -1,0 +1,33 @@
+# -*- mode: snippet -*-
+# name: is graph bipartite
+# key: g_bipartite
+# --
+struct UF {
+    vector<int> uf, sz;
+    int count;
+    UF() {}
+    UF(int size) { init(size); }
+    void init(int size){count = size; uf.resize(size); iota(begin(uf), end(uf), 0); sz.assign(size, 1);}
+    int find(int x) { return x == uf[x] ? x : uf[x] = find(uf[x]); }
+    int operator[](int x) { return find(x); }
+    bool connected(int x, int y) { return find(x) == find(y); }
+    void merge(int x, int y) {
+        int xx = find(x), yy = find(y);
+        if (xx != yy) {
+            if (sz[xx] > sz[yy]) swap(xx, yy);
+            uf[xx] = yy; sz[yy] += sz[xx];
+            --count;
+        }
+    }
+};
+bool is_bipartite(vector<vector<int>>& g) {
+    int n = g.size();
+    UF uf(n);
+    for (int u = 0; u < n; ++u) {
+        for (auto& v : g[u]) {
+            if (uf.connected(u, v)) return false;
+            uf.merge(u, v);
+        }
+    }
+    return true;
+}

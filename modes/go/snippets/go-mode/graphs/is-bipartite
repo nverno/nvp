@@ -1,0 +1,68 @@
+# -*- mode: snippet -*-
+# name: is graph bipartite
+# key: g_bipartite
+# --
+type UF struct {
+	count      int
+	parent, sz []int
+}
+
+func (uf *UF) Init(n int) {
+	uf.count = n
+	uf.parent = make([]int, n)
+	uf.sz = make([]int, n)
+	for i := range uf.parent {
+		uf.parent[i] = i
+		uf.sz[i] = 1
+	}
+}
+
+func (uf *UF) Find(x int) int {
+	root := x
+	for root != uf.parent[root] {
+		root = uf.parent[root]
+	}
+	for x != uf.parent[x] {
+		tmp := uf.parent[x]
+		uf.parent[x] = root
+		x = tmp
+	}
+	return root
+}
+
+func (uf *UF) Merge(x, y int) bool {
+	xx, yy := uf.Find(x), uf.Find(y)
+	if xx != yy {
+		if uf.sz[xx] > uf.sz[yy] {
+			xx, yy = yy, xx
+		}
+		uf.parent[xx] = yy
+		uf.sz[yy] += uf.sz[xx]
+		uf.count--
+		return true
+	}
+	return false
+}
+
+func (uf *UF) Connected(x, y int) bool {
+	return uf.Find(x) == uf.Find(y)
+}
+
+func (uf *UF) Count() int {
+	return uf.count
+}
+
+func isBipartite(g [][]int) bool {
+	n := len(g)
+	uf := UF{}
+	uf.Init(n)
+	for u, es := range g {
+		for _, v := range es {
+			if uf.Connected(u, v) {
+				return false
+			}
+			uf.Merge(es[0], v)
+		}
+	}
+	return true
+}

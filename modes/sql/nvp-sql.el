@@ -46,7 +46,9 @@
   (nvp-repl-add '(sql-mode)
     :modes '(sql-interactive-mode)
     :wait 0.1
-    :find-fn (lambda () (get-buffer sql-buffer))
+    :find-fn (lambda () (-some->> sql-buffer
+                     (get-buffer)
+                     (get-buffer-process)))
     :init #'nvp-sql-sqli-buffer))
 
 ;; Zeal

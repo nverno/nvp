@@ -13,7 +13,8 @@
   :enable-function 'sql-in-code-context-p)
 
 (define-abbrev-table 'sql-sqlite-abbrev-table
-  '(("cols" "PRAGMA table_info" nil :system t))
+  '(("cols" "PRAGMA table_info" nil :system t)
+    ("head" ["SELECT * from  limit 10;" 10 nil nil] expand-abbrev-hook :system t))
   "Sqlite shell abbrevs."
   :enable-function (lambda () (eq sql-product 'sqlite)))
 

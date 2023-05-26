@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: array of array
+# key: aa
+# --
+${1:dp} := make([][]${2:int}, ${3:n})
+$1_ := make([]$2, $3*${4:m})
+for i := range $1_ {
+	$1_[i] = ${5:0}
+}
+for i := range $1 {
+	$1[i] = $1_[i*$4 : (i+1)*$4]
+}

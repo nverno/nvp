@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: INT_MAX/INT_MIN
+# key: INT_MAX
+# --
+const INT_MAX = int(^uint(0) >> 1)${1:
+const INT_MIN = -INT_MAX - 1}

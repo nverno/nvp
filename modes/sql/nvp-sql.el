@@ -12,7 +12,7 @@
      ;; missing window functions
      (sql-font-lock-keywords-builder
       'font-lock-builtin-face nil
-      "rank" "cume_dist" "lag")
+      "rank" "dense_rank" "cume_dist" "lag")
      ;; OVER clause
      (sql-font-lock-keywords-builder
       'font-lock-builtin-face nil

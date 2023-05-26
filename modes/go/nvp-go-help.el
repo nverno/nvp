@@ -1,5 +1,6 @@
 ;;; nvp-go-help.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
+;; FIXME: unused
 ;; help-at-point for go source
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -76,15 +77,6 @@
           (cond
            ((null sym)
             (call-interactively 'godoc))
-           ;; Formatted strings
-           ;; ((nth 3 (syntax-ppss))
-           ;;  (save-excursion
-           ;;    ;; back out of string and function call
-           ;;    (ignore-errors (up-list -2 t))
-           ;;    ;; if we in string in formatting function
-           ;;    (and (string-match-p
-           ;;          "\\(?:fmt\\|log\\).*f$" (thing-at-point 'symbol))
-           ;;         (nvp-go-help-string-format))))
            ((string-match-p nvp-go-type-re sym))
            ;; call popup versions of godoc or gogetdoc
            ;; use point at end of symbol so fm|t.Printf returns help for

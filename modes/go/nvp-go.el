@@ -14,6 +14,11 @@
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))
 
+;;; Newline dwim
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode go-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
 ;;; REPL
 (with-eval-after-load 'nvp-repl
   (with-eval-after-load 'gorepl-mode
@@ -34,25 +39,6 @@
                  (nvp-yas-split-args str))))
       (if join (mapconcat #'identity vals (if (stringp join) join ", "))
         vals))))
-
-;; collect imports
-(defun nvp-go-imports ()
-  (save-excursion
-    (goto-char (point-min))
-    (let ((import-re "\"\\([^\" \t\n]+\\)")
-          res)
-      (while (search-forward "import" nil 'move)
-        (if (not (looking-at-p "\\s-*("))
-            ;; single import
-            (when (re-search-forward import-re)
-              (push (match-string-no-properties 1) res))
-          ;; multiple imports ( ... )
-          (skip-chars-forward " \t(")
-          (while (not (looking-at-p ")"))
-            (when (re-search-forward import-re)
-              (push (match-string-no-properties 1) res))
-            (forward-line 1))))
-      res)))
 
 ;; find type(if method), function name, number of parameters, return type
 (defun nvp-go--function-info ()
@@ -93,32 +79,19 @@
   (beginning-of-line)
   (go-end-of-defun))
 
+;;; Compile / Run
+
+(defun nvp-go-run-main ()
+  (interactive)
+  (shell-command
+   (format "go run %s" (shell-quote-argument (buffer-file-name)))))
+
+(defun nvp-go-fmt-jump ()
+  (interactive)
+  (compile "go build -v && go test -v && go vet"))
+
 ;; -------------------------------------------------------------------
-;;; Interactive
-
-;;; Newline dwim
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode go-mode))
-  (nvp-newline-dwim--comment syntax arg " * "))
-
-;;; Insert/Toggle
-;; insert import if not there
-(defun nvp-go-insert-import (import)
-  (unless (member import (nvp-go-imports))
-    (save-excursion
-      (goto-char (point-min))
-      (if (not (search-forward "import" nil 'move))
-          (progn
-            (search-forward "package" nil 'move)
-            (insert (format "\n\nimport (\n\t\"%s\"\n)" import)))
-        (if (looking-at-p "\\s-*(")
-            (progn
-              (skip-chars-forward " \t(")
-              (insert (format "\n\"%s\"\n" import)))
-          (save-excursion
-            (end-of-line)
-            (insert "\n)"))
-          (insert (format " (\n\t\"%s\"\n" import)))))))
+;;; Tests
 
 ;; insert formatted print statement for current function into
 ;; `main'. Expands as yasnippet
@@ -154,20 +127,6 @@
           (forward-line -1)
           (indent-according-to-mode)
           (yas-expand-snippet stmt))))))
-
-;;; Compile / Run
-
-(defun nvp-go-run-main ()
-  (interactive)
-  (shell-command
-   (format "go run %s" (shell-quote-argument (buffer-file-name)))))
-
-(defun nvp-go-fmt-jump ()
-  (interactive)
-  (compile "go build -v && go test -v && go vet"))
-
-;; -------------------------------------------------------------------
-;;; Tests
 
 (defun nvp-go-test (arg)
   (interactive "P")

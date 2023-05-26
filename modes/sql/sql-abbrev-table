@@ -13,13 +13,13 @@
   :enable-function 'sql-in-code-context-p)
 
 (define-abbrev-table 'sql-sqlite-abbrev-table
-  '(("cols" "PRAGMA table_info" nil :system t)
-    ("head" ["SELECT * from  limit 10;" 10 nil nil] expand-abbrev-hook :system t))
+  '(("cols" "PRAGMA table_info" nil :system t))
   "Sqlite shell abbrevs."
   :enable-function (lambda () (eq sql-product 'sqlite)))
 
 (define-abbrev-table 'sql-interactive-mode-abbrev-table
-  '()
+  '(("nrow" "SELECT count(*) FROM" nil :system t)
+    ("head" ["SELECT * FROM  LIMIT 10;" 10 nil nil] expand-abbrev-hook :system t))
   "Sql-Interactive-Mode Abbrevs."
   :parents (list sql-mode-abbrev-table
                  sql-sqlite-abbrev-table))

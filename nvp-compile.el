@@ -101,7 +101,7 @@ With double prefix or more, use comint buffer for compilation."
   (when compilation-read-command
     (setq-local compile-command (compilation-read-command (eval compile-command))))
   (funcall-interactively
-   'compile (if (functionp compile-command) (funcall compile-command)
+   #'compile (if (functionp compile-command) (funcall compile-command)
               (eval compile-command))
    comint))
 

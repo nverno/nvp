@@ -70,12 +70,14 @@
                 "%s; bash'\n")
         cmd)))))
 
-(defun nvp-shell-compile ()
-  "Run current input in compilation buffer."
-  (interactive)
-  (nvp:with-buffer-proc proc
-    (-when-let (compile-command (nvp-shell--get-input 'add))
-      (call-interactively #'nvp-compile))))
+(defun nvp-shell-compile (&optional arg)
+  "Run current input in compilation buffer.
+With prefix ARG, prompt for command and don't force display in current buffer."
+  (interactive "P")
+  (let ((display-buffer-overriding-action (unless arg '((display-buffer-same-window)))))
+   (nvp:with-buffer-proc proc
+     (-when-let (compile-command (nvp-shell--get-input 'add))
+       (call-interactively #'nvp-compile)))))
 
 (defun nvp-shell-nautilus ()
   "Open nautilus in current directory."

@@ -111,7 +111,7 @@ With double prefix or more, use comint buffer for compilation."
 With prefix, SET-P is passed to `nvp-read-switch' to set local values."
   (interactive "P")
   (let ((compile-command
-         (apply 
+         (apply
           #'nvp-read-switch "Compile: " (or cmd (eval compile-command))
           cmd set-p args)))
     (funcall-interactively #'nvp-compile)))
@@ -132,11 +132,19 @@ ARGS are passed to `nvp-compile'."
     (setq compilation-finish-functions setup-func)
     (call-interactively 'nvp-compile)))
 
+;;;###autoload
+(defun nvp-compile-local (cmd &optional root key)
+  "Set `compile-command' to CMD in dir-locals.
+Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
+  (setq-local compile-command
+              (concat (if root (concat "cd " (projectile-project-root) " && ")) cmd))
+  (nvp-buffer-local-set-key (kbd (or key "C-c C-c")) #'compile))
+
 ;; ------------------------------------------------------------
 ;;; Cmake
 
 ;; Run cmake
-;; on windows do MSYS makefiles with GNU c++/c compilers from 
+;; on windows do MSYS makefiles with GNU c++/c compilers from
 ;; out-of-source build directory.
 ;;;###autoload
 (defun nvp-compile-cmake (&rest params)
@@ -177,7 +185,7 @@ ARGS are passed to `nvp-compile'."
         (xterm-color-colorize-buffer)
      (ansi-color-apply-on-region compilation-filter-start (point-max)))))
 
-;; move to next warning/error 
+;; move to next warning/error
 (defun nvp-compilation-next (n)
   "Move to next warning, error, or info message."
   (interactive "p")

@@ -182,7 +182,8 @@ Each function takes a process as an argument to test against.")
       (when-let ((proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
                  (p-buff (if (processp proc)
                              (funcall (repl:val "proc->buff") proc)
-                           proc)))
+                           (prog1 proc
+                             (setq proc (funcall (repl:val "buff->proc") proc))))))
         (if (nvp-repl-live-p proc)      ; found unregistered live one
             (nvp-repl-update proc (current-buffer) p-buff)
           (remhash p-buff nvp-repl--process-buffers)))

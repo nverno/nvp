@@ -4,7 +4,6 @@
 ;;
 ;;; FIXME: gud-mode seems to clobber kill-buffer-hooks,
 ;;         so shell history isn't being saved/read properly
-;; - replace nvp:repl-switch macro
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -12,7 +11,6 @@
 (require 'gud)
 (nvp:decls)
 
-;; -------------------------------------------------------------------
 ;;; GDB REPL
 
 ;;;###autoload
@@ -25,15 +23,6 @@
   (or name (setq name (if gud-minor-mode (symbol-name gud-minor-mode) "gdb")))
   (nvp-comint-setup-history (concat ".gud_" name "_history")))
 
-;;;###autoload(autoload 'nvp-gud-repl-switch "nvp-debug")
-(nvp:repl-switch "gud" (:repl-mode 'gud-mode
-                        :repl-find-fn
-                        #'(lambda ()
-                            (and (comint-check-proc gud-comint-buffer)
-                                 gud-comint-buffer)))
-  ;; FIXME: how to get the buffer returned from interactive call
-  ;; and add source buffer property after GDB has started?
-  (call-interactively 'gdb))
 
 ;;;###autoload(autoload 'nvp-gud-hydra/body "nvp-debug")
 ;; compiler doesnt understande these functions

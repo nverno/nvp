@@ -26,13 +26,19 @@
                nvp-env-add              ; nvp-env
                nvp-yas-var s-join
                objdump-mode)            ; emacs-objdump-mode
-           :v (c/R-abbrev-table company-clang-arguments))
+           :v (c/R-abbrev-table company-clang-arguments gud-comint-buffer))
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
 ;; don't expand after '_' or in strings/comments
 (defun nvp-c-abbrev-expand-p ()
   (nvp-abbrev-expand-not-after-punct-p '(_)))
+
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(c-mode c++-mode)
+    :modes '(gud-mode)
+    :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
+    :init #'gdb))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers

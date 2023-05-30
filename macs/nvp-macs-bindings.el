@@ -52,7 +52,19 @@
   ;; same as dired-toggle
   (defvar nvp--bindings-wgrep
     '(("C-x C-q" . wgrep-change-to-wgrep-mode)
-      ("w"       . wgrep-change-to-wgrep-mode))))
+      ("w"       . wgrep-change-to-wgrep-mode)))
+
+  (defvar nvp--bindings-comint
+    '(("C-c C-n" . nvp/comint-next-prompt)
+      ("M-N"     . nvp/comint-next-prompt)
+      ("C-c C-p" . nvp/comint-previous-prompt)
+      ("M-P"     . nvp/comint-previous-prompt)
+      ("C-c C-k" . comint-clear-buffer)
+      ("M-s-p"   . comint-previous-matching-input-from-input)
+      ("M-s-n"   . comint-next-matching-input-from-input)
+      ("<f2>mz"  . comint-stop-subjob)
+      ("<f2>md"  . comint-send-eof)
+      ("<f2>mD"  . nvp-comint-history-remove-duplicates))))
 
 ;;; Helpers
 

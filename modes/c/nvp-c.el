@@ -148,13 +148,13 @@
 ;; otherwise prompt / use default
 (nvp-make-or-compile-fn nvp-c-compile
   (:default-prompt (read-from-minibuffer "Compiler flags: "))
-  (let* ((flags (or args "-Wall -Werror -O2 -g -std=c11"))
+  (let* ((flags (or args "-Wall -Werror -O2 -ggdb -std=c11"))
          (file (file-name-nondirectory buffer-file-name))
          (out (file-name-sans-extension file))
          (command
           (format "%s %s -o %s%s %s" (nvp:program "gcc")
                   flags out (nvp:with-gnu/w32 ".out" ".exe") file)))
-    (unless (assoc 'compile-command (buffer-local-variables))
+    (unless (or args (assoc 'compile-command (buffer-local-variables)))
       (setq-local compile-command command))
     (funcall-interactively 'nvp-compile current-prefix-arg)))
 

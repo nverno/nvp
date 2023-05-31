@@ -55,18 +55,31 @@ Optionally, search LISP-ONLY files (no C sources)."
                                        load-file-rep-suffixes))))))
     lib))
 
+(defun nvp-jump--git-url ()
+  (let ((str (shell-command-to-string "git remote get-url origin")))
+    (--when-let (and (string-match
+                      "\\(?:git@github.com:\\|https://github.com/\\)\\([^ ]+\\)" str)
+                     (string-trim-right (match-string 1 str)))
+      (concat "https://github.com/" it))))
+
+;;; TODO: make more generic
 ;;;###autoload
 (defun nvp-jump-to-library-url (&optional choose)
   "Browse URL of either file defining symbol at point or prompt for library.
 (1) prefix or CHOOSE, prompt for library."
   (interactive "P")
   (let (url)
-    (if (and (not choose)
-             (eq major-mode 'emacs-lisp-mode)
-             (setq url (save-excursion (or (lm-header "URL")
-                                           (lm-header "Homepage")))))
-        (browse-url url)                ; found URL in current buffer!!
-      ;; no URL in emacs sources
+    (cond
+     ((and (not choose) (memq major-mode '(shell-mode eshell-mode)))
+      (--if-let (nvp-jump--git-url)
+          (browse-url it)
+        (user-error "No git repo here")))
+     ((and (not choose)
+           (eq major-mode 'emacs-lisp-mode)
+           (setq url (save-excursion (or (lm-header "URL")
+                                         (lm-header "Homepage")))))
+      (browse-url url))                ; found URL in current buffer!!
+     (t ;; no URL in emacs sources
       (--when-let (nvp--get-library-file 'lisp-only choose)
         (if (not (string= (file-name-extension it) "el"))
             (user-error "Library %S isn't elisp." it)
@@ -74,7 +87,7 @@ Optionally, search LISP-ONLY files (no C sources)."
             (insert-file-contents it)
             (if (setq url (lm-header "URL"))
                 (browse-url url)
-              (user-error "Library %S has no URL header" it))))))))
+              (user-error "Library %S has no URL header" it)))))))))
 
 (defun nvp--locate-library-source (library)
   (let* ((name (file-name-nondirectory library))

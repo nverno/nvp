@@ -190,7 +190,7 @@ Return cons of \\='(name                           . raw-link)."
 (defun nvp-org-src-maybe ()
   "When '<' is entered at the beginning of a line, load org-tempo.el."
   (interactive)
-  (when (and (looking-back "^" (line-beginning-position))
+  (when (and (looking-back "^\\s-*" (line-beginning-position))
              (require 'org-tempo))    ; load shortcuts
     (org-tempo-setup)
     (define-key org-mode-map "<" #'self-insert-command))

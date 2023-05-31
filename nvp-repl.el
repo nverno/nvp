@@ -23,6 +23,7 @@
   "Mode specific REPL variables"
   modes                              ; REPL major-modes to consider
   init                               ; init REPL => return process
+  init-callback                      ; after init REPL call a callback to link source/repl
   bufname                            ; buffer name to search for
   procname                           ; process name to search for
   find-fn                            ; custom function to find REPL
@@ -57,6 +58,13 @@
                                       :procname "shell"
                                       :bufname "*shell"
                                       :cd #'sh-cd-here)))
+
+(defun nvp-repl-remove (mode)
+  (interactive (list (intern (nvp-read-mode))))
+  (setq nvp-repl-alist
+        (-filter (lambda (e)
+                   (not (memq mode (car e))))
+                 nvp-repl-alist)))
 
 ;;;###autoload
 (defun nvp-repl-add (mmodes &rest args)
@@ -190,18 +198,31 @@ Each function takes a process as an argument to test against.")
       (or (nvp-repl-start)              ; initialize new REPL
           (user-error "Failed to initialize REPL"))))
 
+(defun nvp-repl-start-callback ()
+  "Associate repl with source from repl buffer after it starts."
+  (let ((src-buff (current-buffer)))
+    `(lambda ()
+       (cl-assert (buffer-live-p ,src-buff))
+       (if-let ((proc (get-buffer-process (current-buffer)))
+                (p-buff (process-buffer proc)))
+           (with-current-buffer ,src-buff
+             (nvp-repl-update proc ,src-buff p-buff))
+         (user-error "Failed to initialize REPL for %S" ,src-buff)))))
+
 (defun nvp-repl-start ()
   "Return a REPL buffer associated with current buffer."
-  (let ((wait (repl:val "wait"))
-        (proc (funcall (repl:val "init")))
-        p-buff)
-    (and wait (sit-for wait))
-    (unless (processp proc)
-      (setq p-buff proc
-            proc (funcall (repl:val "buff->proc") p-buff)))
-    (cl-assert (processp proc))
-    (nvp-repl-update proc (current-buffer) p-buff)
-    (repl:val "buff")))
+  (if-let (init (repl:val "init-callback"))
+      (prog1 'async (funcall init (nvp-repl-start-callback)))
+    (let ((wait (repl:val "wait"))
+          (proc (funcall (repl:val "init")))
+          p-buff)
+      (and wait (sit-for wait))
+      (unless (processp proc)
+        (setq p-buff proc
+              proc (funcall (repl:val "buff->proc") p-buff)))
+      (cl-assert (processp proc))
+      (nvp-repl-update proc (current-buffer) p-buff)
+      (repl:val "buff"))))
 
 
 ;; -------------------------------------------------------------------
@@ -238,7 +259,8 @@ TODO:
                   (if (buffer-live-p it) it
                     (other-buffer (current-buffer) 'visible))
                 (nvp-repl-get-buffer))))
-    (pop-to-buffer buff nvp-repl--display-action)))
+    (unless (eq 'async buff)
+      (pop-to-buffer buff nvp-repl--display-action))))
 
 ;; -------------------------------------------------------------------
 ;;; Basic REPL interaction

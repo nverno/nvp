@@ -2,4 +2,4 @@
 # name: grid directions
 # key: dirs
 # --
-let dirs = vec![(-1,0), (0,1), (1,0), (0,-1)];
+const dirs: [(i32, i32); 4] = [(-1,0), (0,1), (1,0), (0,-1)];

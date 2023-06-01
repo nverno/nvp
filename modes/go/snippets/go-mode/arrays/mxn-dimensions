@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mXn dimensions
+# key: mxn
+# --
+m, n := len(${1:grid}), len($1[0])

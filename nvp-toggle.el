@@ -205,16 +205,18 @@ the current paragraph."
 
 ;;;###autoload
 (defun nvp-toggle-brackets (&optional beg end)
-  "Toggle b/w open/close braces, eg. '{' <=> '['."
+  "Toggle b/w open/close braces, eg. ( => [ => {."
   (interactive (nvp:tap-or-region 'bdwim 'list :pulse t))
-  (let ((bs '(?\[ ?\{))
+  (let ((bs '(?\[ ?\{ ?\())
         (tbl (nvp-toggle-brackets-table)))
-    (-when-let (b (car (memq (char-after) bs)))
+    (-when-let (b (car (memq (char-after beg) bs)))
       (pcase b
+        (?\( (aset tbl ?\( ?\[)
+             (aset tbl ?\) ?\]))
         (?\[ (aset tbl ?\[ ?\{)
              (aset tbl ?\] ?\}))
-        (?\{ (aset tbl ?\{ ?\[)
-             (aset tbl ?\} ?\])))
+        (?\{ (aset tbl ?\{ ?\()
+             (aset tbl ?\} ?\))))
       (translate-region beg end tbl)))
   (nvp-repeat-command nil nil nil beg end))
 

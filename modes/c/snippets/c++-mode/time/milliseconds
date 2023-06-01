@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: milliseconds
+# key: time_ms
+# --
+uint64_t clock_ms() {
+  struct timeval tm;
+  gettimeofday(&tm, nullptr);
+  return static_cast<uint64_t>(tm.tv_sec*1000) + static_cast<uint64_t>(tm.tv_usec/1000);
+}

@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: bfs w/ step count
+# key: bfss
+# --
+q := []${1:int}{${2:0}}
+steps := 0
+for len(q) > 0 {
+	sz := len(q)
+	for iter := 0; iter < sz; iter++ {
+		${3:x} := q[0]
+		q = q[1:]
+		$0
+	}
+	steps++
+}

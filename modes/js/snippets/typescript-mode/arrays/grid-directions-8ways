@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: grid directions 8ways
+# key: ddirs
+# --
+const dirs = [[1, 1], [1, 0], [0, 1], [1, -1], [-1, 1], [0, -1], [-1, 0], [-1, -1]];

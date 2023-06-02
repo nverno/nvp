@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: for grid directions
+# key: fordir
+# --
+for (let [dx, dy] of dirs) {
+  let ${1:x} = ${2:i} + dx, ${3:y} = ${4:j} + dy;
+  if ($1 >= 0 && $3 >= 0 && $1 < ${5:m} && $3 < ${6:n} && $7) {
+    $0
+  }
+}

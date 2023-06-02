@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mXn dimensions
+# key: mxn
+# --
+let m = ${1:grid}.length, n = $1[0].length;

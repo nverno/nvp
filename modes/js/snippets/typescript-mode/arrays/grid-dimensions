@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: grid directions 4ways
+# key: dirs
+# --
+const dirs = [[1, 0], [0, 1], [0, -1], [-1, 0]];

@@ -2,6 +2,4 @@
 # name: setTimeout
 # key: st
 # --
-setTimeout(function() {
-	$0
-}, ${1:delay});
+setTimeout(() => {$0}, ${1:delay});

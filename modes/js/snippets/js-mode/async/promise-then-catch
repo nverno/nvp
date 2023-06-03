@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: promise()...then...catch
-# key: ff
+# key: ftc
 # --
 ${1:func}($2)
   .then(($3) => $4)${5:

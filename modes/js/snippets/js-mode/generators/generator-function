@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: generator function
+# key: fng
+# --
+var ${1:generator} = function*($2) {$0};

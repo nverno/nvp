@@ -2,6 +2,4 @@
 # name: setInterval
 # key: si
 # --
-setInterval(function() {
-	$0
-}, ${1:delay});
+setInterval(() => {$0}, ${1:delay});

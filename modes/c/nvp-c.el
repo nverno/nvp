@@ -50,6 +50,26 @@ CLANG if non-nil use clang system includes."
               (mapconcat (lambda (s) (concat "-isystem " s)) sysincludes " ")
               (mapconcat (lambda (s) (concat "-I" s)) extra " ")))))
 
+;;; C Style
+(defun nvp-c-style-from-clang-format (&optional prog)
+  "Determine C style format variables from clang-format.
+Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
+  (let ((prog (or prog "clang-format")))
+    (if (and (executable-find prog) (executable-find "yq"))
+        (let* ((conf (shell-command-to-string
+                      (format "%s -dump-config | yq '.IndentWidth,.UseTab,.BasedOnStyle'"
+                              (or prog "clang-format")))))
+          (cl-destructuring-bind (indent tabs style &rest args) (split-string conf "\n")
+            (message "%S %S %S" indent tabs style)
+            (let ((indent (string-to-number indent))
+                  (tabs (not (or (string-empty-p tabs)
+                                 (string-equal-ignore-case "Never" tabs))))
+                  res)
+              (when (> indent 0) (push (cons 'c-basic-offset indent) res))
+              (push (cons 'indent-tabs-mode tabs) res)
+              res)))
+      (user-error "%s and/or yq not found" prog))))
+
 ;;; Abbrevs
 ;; don't expand after '_' or in strings/comments
 (defun nvp-c-abbrev-expand-p ()

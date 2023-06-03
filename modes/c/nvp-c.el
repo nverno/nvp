@@ -30,6 +30,27 @@
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
+;;; Macroexpansion
+;; can set in .dir-locals
+(put 'c-macro-cppflags 'safe-local-variable #'stringp)
+;; (put 'c-macro-preprocessor 'safe-local-variable #'stringp)
+
+(defun nvp-c-macro-cppflags (&optional extra lang clang)
+  "Create flags for preprocessor.
+EXTRA will be appended as -I.
+LANG should have known system includes, eg. c/c++.
+CLANG if non-nil use clang system includes."
+  (let* ((lang (or (and lang (symbol-name lang)) "c++"))
+         (var (intern-soft (format "nvp-%s%s-include-dirs" (if clang "clang-" "") lang)))
+         (sysincludes (cl-remove-if (lambda (s) (string-prefix-p "." s))
+                                    (symbol-value var))))
+    (if (null sysincludes)
+        (user-error "%S includes not defined" lang)
+      (concat "-x" lang " -std=c++11 "
+              (mapconcat (lambda (s) (concat "-isystem " s)) sysincludes " ")
+              (mapconcat (lambda (s) (concat "-I" s)) extra " ")))))
+
+;;; Abbrevs
 ;; don't expand after '_' or in strings/comments
 (defun nvp-c-abbrev-expand-p ()
   (nvp-abbrev-expand-not-after-punct-p '(_)))
@@ -136,15 +157,6 @@
 (cl-defmethod nvp-newline-dwim-comment
   (syntax arg &context (major-mode c-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
-
-;;; XXX: remove
-(defun nvp-c-newline-x ()
-  (interactive)
-  (end-of-line)
-  (delete-horizontal-space)
-  (unless (eq (char-before) ?\;)
-    (insert ";"))
-  (newline-and-indent))
 
 ;; https://github.com/abo-abo/oremacs/
 (defun nvp-c-forward-sexp-function (arg)

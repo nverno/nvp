@@ -30,6 +30,20 @@
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
+;; newline-dwim
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode c-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
+;; #<marker at 78109 in cc-cmds.el.gz>
+(cl-defmethod nvp-parse-current-function (&context (major-mode c-mode) &rest _args)
+  (add-log-current-defun))
+
+;;; Font-lock
+(dolist (mode '(c-mode c++-mode))
+  (nvp:font-lock-add-defaults mode
+    ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
+
 ;;; Macroexpansion
 ;; can set in .dir-locals
 (put 'c-macro-cppflags 'safe-local-variable #'stringp)
@@ -149,13 +163,6 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
          (mapconcat 'identity
                     (mapcar (lambda (s) (concat "\n * @param " s)) args) ""))))
 
-;; -------------------------------------------------------------------
-;;; Font-lock
-
-(dolist (mode '(c-mode c++-mode))
-  (nvp:font-lock-add-defaults mode
-    ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
-
 ;;; Company
 (defun nvp-c-load-company-backend (backend)
   (interactive
@@ -169,16 +176,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
   (nvp-company-local backend)
   (setq company-clang-arguments (clang-complete-load-args)))
 
-
-;; -------------------------------------------------------------------
-;;; Movement
 
-;; newline-dwim
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode c-mode))
-  (nvp-newline-dwim--comment syntax arg " * "))
-
-;; https://github.com/abo-abo/oremacs/
+;; `forward-sexp-function' https://github.com/abo-abo/oremacs/
 (defun nvp-c-forward-sexp-function (arg)
   (if (looking-at "^#if")
       (forward-ifdef arg)               ;FIXME: forward after final #endif
@@ -311,13 +310,6 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
       (apply orig-fn args)
     (error (xref-go-back))))
 
-;;; Parse
-
-;; #<marker at 78109 in cc-cmds.el.gz>
-(cl-defmethod nvp-parse-current-function (&context (major-mode c-mode) &rest _args)
-  (add-log-current-defun))
-
-
 ;;; Environment
 
 (defvar nvp-c-ext-includes
@@ -330,7 +322,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;; set environment stuff for macro expanding
 ;; could also set local `c-macro-preprocessor'?
 (defun nvp-c-setenv (type)
-  "Add include path of TYPE to macroexpand all the shittles."
+  "Add include path of TYPE to macroexpand stuff."
   (interactive
    (list (ido-completing-read "Add include path for: " nvp-c-ext-includes)))
   (cl-destructuring-bind (kind loc regex) (assoc-string type nvp-c-ext-includes)
@@ -340,65 +332,6 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
        (setq-local nvp-abbrev-local-table "c/R"))
       (_ nil))
     (nvp-env-add "C_INCLUDE_PATH" (eval loc) regex)))
-
-;; -------------------------------------------------------------------
-;;; Headers
-
-;; jump to associated header, with arg create and/or update it as well
-(defun nvp-c-jump-or-update-header (update)
-  (interactive "P")
-  (if update
-      (call-interactively 'nvp-c-create-or-update-header)
-    (condition-case nil
-        (find-file-other-window (nvp-c--header-file-name))
-      (error "oop"))))
-
-(defun nvp-c-create-or-update-header (and-go)
-  "Creates/updates header file with the function signatures in the current
-source file."
-  (interactive (list t))
-  (let ((header (nvp-c--header-file-name))
-        (sigs (nvp-c-function-signatures nil 'ignore-main 'ignore-static))
-        (yas-wrap-around-region nil)
-        (init t))
-    (when (file-exists-p header)
-      (setq init nil)
-      (setq sigs
-            ;; remove any signatures that are already found in the header file
-            (cl-set-difference
-             sigs
-             (nvp-c-function-signatures header) :test 'string=)))
-    (when (or init sigs)
-      (with-current-buffer (find-file header)
-        (and sigs
-             (setq sigs (concat "\n" (mapconcat 'identity sigs ";\n") ";\n")))
-        (if init
-            ;; let ((yas-selected-text sigs))
-            (yas-expand-snippet
-             (yas-lookup-snippet "header" 'cc-mode)
-             nil nil `((function-signatures ,sigs)))
-          ;; insert at end, before final #endif
-          (goto-char (point-max))
-          (skip-chars-backward " \t\n\r\v") ;skip any trailing whitespace
-          (forward-line -1)
-          (insert sigs))))
-    (when and-go
-      (xref-push-marker-stack)
-      (find-file header))))
-
-;; add header guard
-(defun nvp-c-add-guard ()
-  (interactive)
-  (let ((guard (concat
-                (upcase (file-name-sans-extension
-                         (file-name-nondirectory buffer-file-name)))
-                "_H")))
-    (save-excursion
-      (goto-char (point-min))
-      (unless (looking-at-p (format "#ifndef _%s" guard))
-        (insert (format "#ifndef _%s\n#define _%s\n\n" guard guard))
-        (goto-char (point-max))
-        (insert (format "\n#endif /* _%s */" guard))))))
 
 ;; -------------------------------------------------------------------
 ;;; Doxygen

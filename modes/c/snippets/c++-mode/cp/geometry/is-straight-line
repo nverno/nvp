@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: check if points are on straight line
+# key: f_is_line
+# --
+bool is_line(vector<int>& a, vector<int>& b, vector<int>& c) {
+    int x = a[0], x1 = b[0], x2 = c[0],
+        y = a[1], y1 = b[1], y2 = c[1];
+    return (y - y1) * (x2 - x1) == (y2 - y1) * (x - x1);
+}

@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: get slope
+# key: f_slope
+# --
+enum slope_t {SLOP, HORZ, VERT};
+tuple<slope_t, int,int> slope(vector<int>& a, vector<int>& b) {
+    int x = b[0] - a[0],
+        y = b[1] - a[1];
+    if (x == 0 || y == 0) return {x == 0 ? HORZ : VERT, 0, 0};
+    int d = __gcd(x, y);
+    return {SLOP, x/d, y/d};
+}

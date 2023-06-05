@@ -81,15 +81,26 @@
 ;; -------------------------------------------------------------------
 ;;; Language setups
 
+(defvar nvp-leet-directory (expand-file-name "leetcode" (getenv "CLASSDIR")))
+
 (defun nvp@leet-set-language ()
   (let ((dir (expand-file-name
               (pcase leetcode-prefer-language
                 ("java" "java/src")
                 ("golang" "golang/src")
                 (_ leetcode-prefer-language))
-              "~/class/leetcode")))
+              nvp-leet-directory)))
     (setq leetcode-directory dir)))
 (advice-add 'leetcode-set-prefer-language :after #'nvp@leet-set-language)
+
+(defun nvp-leet-start-coding-database ()
+  (interactive)
+  (if (eq major-mode 'leetcode--problem-detail-mode)
+      (let ((leetcode-directory (expand-file-name "sql" nvp-leet-directory)))
+        (save-excursion
+          (goto-char (next-button (point-min)))
+          (call-interactively #'push-button)))
+    (user-error "Call from leetcode detail buffer.")))
 
 (defsubst nvp-leet--rust-mod-name (buf)
   (format "p%s" (replace-regexp-in-string "-" "_" (f-base buf))))

@@ -135,6 +135,21 @@ With prefix ARG, run `helm-make'."
             (push str targets)))))
     (nreverse targets)))
 
+(defun nvp-makefile-completing-read (makefile &optional prompt)
+  "Completing read for multiple targets from MAKEFILE.
+MAKEFILE should be a Makefile buffer or filename."
+  (let ((crm-separator "[ 	]*,[ 	]*"))
+    (completing-read-multiple
+     (or prompt "Targets(','separated): ")
+     (if (bufferp makefile)
+         (with-current-buffer makefile
+           (when (derived-mode-p 'makefile-mode)
+             (let ((makefile-need-target-pickup t))
+               (makefile-pickup-targets)
+               makefile-target-table)))
+       (when (file-exists-p makefile)
+         (nvp-makefile-targets--make makefile))))))
+
 ;; -------------------------------------------------------------------
 ;;; Tidy
 

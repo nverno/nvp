@@ -9,13 +9,16 @@
 (require 'nvp)
 
 ;;;###autoload
-(defun nvp-makefile-check ()
-  (interactive)
+(defun nvp-makefile-check (&optional targets)
+  "Dry run makefile TARGETS to report undefined variables in compilation buffer."
+  (interactive
+   (list
+    (mapconcat 'identity (nvp-makefile-completing-read (buffer-file-name)) " ")))
   (let ((compilation-error-regexp-alist '(makefile))
         (compilation-error-regexp-alist-alist
          '(makefile "\\([^:]+\\):\\([0-9]+\\)" 1 2)))
     (compilation-start
-     (concat "make -n --warn-undefined-variables -f " (buffer-file-name)))))
+     (concat "make -n --warn-undefined-variables -f " (buffer-file-name) " " targets))))
 
 (provide 'nvp-makecheck)
 ;; Local Variables:

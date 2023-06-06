@@ -194,6 +194,15 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;; -------------------------------------------------------------------
 ;;; Compile
 
+(defvar nvp-c-address-error-regexp
+  '(address-sanitizer
+    "^\\s-*#[0-9]+ [x[:xdigit:]]+ in [^\n]* \\([^\n:]+\\):\\([0-9]+\\)" 1 2)
+  "Compilation error regexp entry to match address sanitizer stack traces.")
+
+(with-eval-after-load 'compile
+  (add-to-list 'compilation-error-regexp-alist 'address-sanitizer t)
+  (add-to-list 'compilation-error-regexp-alist-alist nvp-c-address-error-regexp t))
+
 ;; run make / cmake if there are corresponding makefiles,
 ;; otherwise prompt / use default
 (nvp-make-or-compile-fn nvp-c-compile

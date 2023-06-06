@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: case
+# key: case
+# --
+CASE WHEN $1 THEN $2${3:ELSE $4} END

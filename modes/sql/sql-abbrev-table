@@ -1,7 +1,9 @@
 ;; -*- coding: utf-8; no-byte-compile: t; -*-
 
 (define-abbrev-table 'sql-mode-abbrev-table
-  '(("ins" "insert" nil :system t)
+  '(("gb" "GROUP BY" nil :system t)
+    ("ob" "ORDER BY" nil :system t)
+    ("ins" "insert" nil :system t)
     ("upd" "update" nil :system t)
     ("del" "delete" nil :system t)
     ("sel" "select" nil :system t)

@@ -46,7 +46,7 @@
 
 ;;; Macroexpansion
 ;; can set in .dir-locals
-(put 'c-macro-cppflags 'safe-local-variable #'stringp)
+;; (put 'c-macro-cppflags 'safe-local-variable #'stringp)
 ;; (put 'c-macro-preprocessor 'safe-local-variable #'stringp)
 
 (defun nvp-c-macro-cppflags (&optional extra lang clang)

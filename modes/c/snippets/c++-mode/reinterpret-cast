@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: reinterpret_cast
+# key: rcast
+# --
+reinterpret_cast<$1>($2)

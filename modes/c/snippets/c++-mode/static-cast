@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: static_cast
+# key: cast
+# --
+static_cast<$1>($2)

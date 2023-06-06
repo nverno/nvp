@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: select from
-# key: self
+# key: s
 # --
 SELECT $1
   FROM ${2:table}

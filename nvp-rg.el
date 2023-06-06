@@ -13,6 +13,7 @@
 (require 'nvp)
 (nvp:decls :v (projectile-globally-ignored-files
                projectile-globally-ignored-directories))
+(nvp:auto "projectile" projectile-acquire-root)
 
 ;; Override rg's `compilation-error-regexp-alist' matching
 ;; to use with `xterm-color-filter'

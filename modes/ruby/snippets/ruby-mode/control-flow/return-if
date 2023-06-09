@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: return... if
-# key: reti
+# key: ri
 # --
 return${1:$(if (> (length yas-text) 0) " " "")}${1:value} if ${2:condition}$0

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: lower_bound
+# key: lb
+# --
+let ${1:lb} = ${2:arr}.partition_point(|x| x < ${3:&target});

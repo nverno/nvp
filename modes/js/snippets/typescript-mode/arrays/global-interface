@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: global interface
+# key: global
+# --
+declare global {
+  interface ${1:Array<T>} {
+    ${2:upperBound(cmp: any): number;}
+  }
+}

@@ -2,7 +2,7 @@
 # name: lowerBound
 # key: lb
 # --
-func lowerBound(arr []int, target int) int {
+func lowerBound(arr []${1:int}, target $1) int {
 	l, r := 0, len(arr)
 	for l < r {
 		mid := (l + r) >> 1

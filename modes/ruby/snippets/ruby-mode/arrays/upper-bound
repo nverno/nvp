@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: upper_bound
+# key: ub
+# --
+${1:ub} = ${2:arr}.bsearch_index { |x| x > ${3:target} }

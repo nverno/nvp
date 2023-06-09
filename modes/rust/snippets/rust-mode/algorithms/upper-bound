@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: upper_bound
+# key: ub
+# --
+let ${1:ub} = ${2:arr}.partition_point(|x| x <= ${3:&target});

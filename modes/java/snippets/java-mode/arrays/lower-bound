@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: lower_bound
+# key: lb
+# --
+public int lowerBound(${1:int}[] arr, $1 target) {
+    int l = 0, r = arr.length;
+    while (l < r) {
+        int mid = (l + r) >> 1;
+        if (arr[mid] >= target) r = mid;
+        else l = mid + 1;
+    }
+    return r;
+}

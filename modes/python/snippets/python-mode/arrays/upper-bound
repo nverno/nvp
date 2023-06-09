@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: upper_bound
+# key: ub
+# --
+${1:ub} = bisect.bisect_right(${2:arr}, ${3:target})

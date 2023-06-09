@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: lower_bound
+# key: lb
+# --
+${1:lb} = bisect.bisect_left(${2:arr}, ${3:target})

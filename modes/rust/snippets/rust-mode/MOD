@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: MOD
+# key: MOD
+# --
+const MOD: i32 = 1e9 as i32 + 7;

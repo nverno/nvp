@@ -2,4 +2,4 @@
 # name: grid directions
 # key: dirs
 # --
-const dirs: [(i32, i32); 4] = [(-1,0), (0,1), (1,0), (0,-1)];
+const DIRS: [(i32, i32); 4] = [(-1,0), (0,1), (1,0), (0,-1)];

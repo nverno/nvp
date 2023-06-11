@@ -2,7 +2,7 @@
 # name: for grid directions
 # key: fordirs
 # --
-for (di, dj) in &dirs {
+for (di, dj) in &DIRS {
     let (${1:x}, ${2:y}) = (${3:i} as i32 + di, ${4:j} as i32 + dj);
     if $1 >= 0 && $2 >= 0 && $1 < ${5:m} as i32 && $2 < ${6:n} as i32${7: && !seen[x as usize][y as usize]} {
         let ($1, $2) = ($1 as usize, $2 as usize);

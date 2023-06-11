@@ -2,7 +2,7 @@
 # name: grid directions (8-ways)
 # key: ddirs
 # --
-const dirs: [(i32, i32); 8] = [
+const DIRS: [(i32, i32); 8] = [
     (-1, 0),
     (0, 1),
     (1, 0),

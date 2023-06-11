@@ -9,6 +9,13 @@
                org-element-parse-buffer org-element-map org-element-property
                org-tempo-setup))
 
+;;;###autoload
+(defun nvp-org-tags-view (&optional directory)
+  "Call `org-tags-view'. With prefix prompt for DIRECTORY to search tags."
+  (interactive (list (nvp:prefix 4 (read-directory-name "Directory: "))))
+  (let ((org-agenda-files (if directory (list directory) org-agenda-files)))
+    (call-interactively #'org-tags-view)))
+
 ;; -------------------------------------------------------------------
 ;;; Utils
 

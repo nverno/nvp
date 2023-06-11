@@ -48,7 +48,8 @@
 (defun nvp-c++-help-at-point (point)
   "Browse the documentation for the C++ symbol at POINT."
   (interactive "d")
-  (let* ((cpptype (nvp-c++-help-type-at point))
+  (let* ((cpptype (and (semantic-active-p)
+                       (nvp-c++-help-type-at point)))
 	 (ref (when (stringp cpptype)
 		(car (cl-member-if (lambda (S) (string-prefix-p (car S) cpptype))
 				   nvp-c++-help-online-sources)))))

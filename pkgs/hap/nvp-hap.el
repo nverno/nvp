@@ -24,6 +24,7 @@
 ;; Backends defined here:
 ;; - info
 ;; - elisp
+;; - company
 ;; TODO: man
 ;;
 ;; Refs:

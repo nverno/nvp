@@ -10,20 +10,20 @@
   (interactive "P")
   (dolist (theme custom-enabled-themes)
     (disable-theme theme))
-  (setq moe-theme-mode-line-color 'blue
+  (setq moe-theme-modeline-color 'blue
         moe-theme-highlight-buffer-id nil)
   (when revert
     (powerline-revert)))
 
 (defun nvp-theme-light ()
-  (setq moe-theme-mode-line-color 'cyan
+  (setq moe-theme-modeline-color 'cyan
         moe-theme-highlight-buffer-id t)
   (moe-light)
   (powerline-moe-theme))
 
 (defun nvp-theme-dark ()
   (load-theme 'gruvbox-dark-hard)
-  (setq moe-theme-mode-line-color 'blue
+  (setq moe-theme-modeline-color 'blue
         moe-theme-highlight-buffer-id nil)
   ;; (moe-dark)
   (powerline-moe-theme))

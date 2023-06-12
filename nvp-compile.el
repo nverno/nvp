@@ -13,7 +13,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)
-(nvp:decls :f (nvp-read-switch comint-after-pmark-p xterm-color-colorize-buffer))
+(nvp:decls :f (nvp-read-switch comint-after-pmark-p xterm-color-colorize-buffer
+                               nvp-buffer-local-set-key))
 (nvp:auto "ansi-color" 'ansi-color-apply-on-region)
 
 (defmacro nvp-with-compile-command (cmd &optional arg &rest body)

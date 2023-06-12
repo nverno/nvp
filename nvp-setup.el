@@ -29,7 +29,7 @@
 (defun nvp-setup-program (name &optional path)
   "Lookup program in preferable locations before falling back to PATH."
   (and (symbolp name) (setq name (symbol-name name)))
-  (and path (substitute-env-in-file-name path))
+  (and path (setq path (substitute-env-in-file-name path)))
   (or (nvp:with-gnu/w32
           (cl-loop for p in (delq nil (cons path nvp-program-search-paths))
              do (let ((f (expand-file-name name p)))

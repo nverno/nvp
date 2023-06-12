@@ -12,8 +12,11 @@
 ;;;###autoload
 (defun nvp-org-tags-view (&optional directory)
   "Call `org-tags-view'. With prefix prompt for DIRECTORY to search tags."
-  (interactive (list (nvp:prefix 4 (read-directory-name "Directory: "))))
-  (let ((org-agenda-files (if directory (list directory) org-agenda-files)))
+  (interactive
+   (list (nvp:prefix '>=4
+           (completing-read-multiple "Directory: " #'completion-file-name-table))))
+  (let ((org-agenda-files (if directory (nvp:as-list directory) org-agenda-files)))
+    (nvp:prefix-decrement)
     (call-interactively #'org-tags-view)))
 
 ;; -------------------------------------------------------------------

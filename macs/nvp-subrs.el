@@ -309,8 +309,9 @@ or (\\='a #\\='b) => \\='(a b)."
   (cl-loop for c across (reverse input)
            do (push c unread-command-events)))
 
-(defsubst nvp:prefix-decrement (&optional cnt)
-  (let ((num (ash (prefix-numeric-value current-prefix-arg) (* (or cnt 1) -2))))
+;; shift `current-prefix-arg', -1 => decrement one prefix
+(defsubst nvp:prefix-shift (cnt)
+  (let ((num (ash (prefix-numeric-value current-prefix-arg) (* cnt 2))))
     (setq current-prefix-arg (if (<= num 1) nil (list num)))))
 
 ;; -------------------------------------------------------------------

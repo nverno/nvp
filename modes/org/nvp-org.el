@@ -16,7 +16,7 @@
    (list (nvp:prefix '>=4
            (completing-read-multiple "Directory: " #'completion-file-name-table))))
   (let ((org-agenda-files (if directory (nvp:as-list directory) org-agenda-files)))
-    (nvp:prefix-decrement)
+    (nvp:prefix-shift -1)
     (call-interactively #'org-tags-view)))
 
 ;; -------------------------------------------------------------------

@@ -3,7 +3,7 @@
 # key: d_seg_max
 # --
 template<typename T>
-struct ${1:$(yas-choose-value "Max" "Min")}SegTree {
+struct ${1:`(yas-auto-next (yas-choose-value "Max" "Min"))`}SegTree {
     int n, h;
     vector<T> tree;
 

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: convert number to string
+# key: to_string
+# --
+strconv.Itoa(${1:x})

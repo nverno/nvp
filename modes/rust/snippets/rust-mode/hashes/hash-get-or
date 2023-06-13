@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: hash.get(..).unwrap_or(..)
+# key: hg
+# --
+${1:h}.get(${2:&key}).unwrap_or(${3:&0})

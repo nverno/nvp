@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: reduce
+# key: reduce
+# --
+reduce((acc, ${1:x}) => ${2:acc + x}, ${3:init})

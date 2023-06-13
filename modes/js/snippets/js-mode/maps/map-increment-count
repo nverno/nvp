@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: increment Map count
+# key: hinc
+# --
+${1:map}.set(${2:key}, 1 + ($1.get($2) || 0))

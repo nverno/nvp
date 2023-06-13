@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: template string code block
+# key: _
+# condition: (nvp-js-in-template-p)
+# --
+\${$1}

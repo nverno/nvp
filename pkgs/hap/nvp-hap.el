@@ -280,7 +280,7 @@ See also `pos-tip-show-no-propertize'."
 (defun nvp-hap-company (command &optional arg &rest _args)
   (-when-let (company-backend nvp-hap-company-backend)
     (cl-case command
-      (thingatpt (symbol-at-point))
+      (thingatpt (thing-at-point 'symbol))
       (doc-buffer
        (unless (stringp arg) (setq arg (symbol-name arg)))
        (when (eq company-backend 'company-cmake)

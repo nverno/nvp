@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: range
+# key: range
+# --
+[...Array(${1:n}).keys()]

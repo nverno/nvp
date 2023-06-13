@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: fold
+# key: fold
+# --
+${1:(0..n)}${2:.iter()}.fold(${3:String::new()}, |acc, ${4:x}| $5)

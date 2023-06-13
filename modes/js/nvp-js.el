@@ -125,6 +125,9 @@
   (or (string-match-p "\\(?:test\\|spec\\)" (nvp:dfn))
       (string-match-p ".*test\\.js\\'" (nvp:bfn))))
 
+;; in template string `...`
+(defun nvp-js-in-template-p () (eq 96 (nvp:ppss 'str)))
+
 ;;; Skewer
 (defun nvp-skewer-eval-last-expression (&optional print)
   (interactive "P")

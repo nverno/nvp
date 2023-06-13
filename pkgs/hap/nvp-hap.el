@@ -339,11 +339,14 @@ See also `pos-tip-show-no-propertize'."
       (thingatpt (thing-at-point 'symbol))
       (doc-buffer
        (when (company-call-backend 'candidates arg)
+         (if-let (buf (company-call-backend 'doc-buffer arg))
+             (list arg))
          ;; (when (eq company-backend 'company-cmake)
          ;;   ;; cmake needs to construct help arguments for candidate prior to call
          ;;   ;; to cmake
          ;;   (company-call-backend 'candidates arg))
-         (list (company-call-backend 'doc-buffer arg)))))))
+         ;; (list (company-call-backend 'doc-buffer arg))
+         )))))
 
 ;;;###autoload
 (defun nvp-hap-info (command &optional arg &rest _args)

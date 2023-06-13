@@ -3,7 +3,7 @@
 # key: d_seg_max
 # --
 template<typename T>
-struct ${1:Max}SegTree {
+struct ${1:$(yas-choose-value "Max" "Min")}SegTree {
     int n, h;
     vector<T> tree;
 
@@ -13,7 +13,7 @@ struct ${1:Max}SegTree {
         if (sz > 0 && (sz & (sz - 1)) != 0) {
             sz = (1 << (32 - __builtin_clz(sz)));
         }
-        tree.resize(2 * sz, ${2:0});
+        tree.resize(2 * sz, /*init=*/${2:0});
     }
 
     T ${1:$(downcase (yas-text))}Val() { return tree[0]; }
@@ -41,7 +41,7 @@ struct ${1:Max}SegTree {
     void update1(int i, int l, int r, int pos, T val) {
         if (pos < l || pos > r) return;
         if (l == r) {
-            tree[i] = ${3:max(val, tree[i])};
+            tree[i] = ${1:$(downcase (yas-text))}(val, tree[i]);
             return;
         }
 

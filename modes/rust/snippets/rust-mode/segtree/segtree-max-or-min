@@ -1,0 +1,61 @@
+# -*- mode: snippet -*-
+# name: min/max segtree
+# key: d_seg_max
+# --
+#[allow(dead_code)]
+struct SegTree<T> {
+    n: usize,
+    tree: Vec<T>,
+    default: T,
+}
+#[allow(dead_code)]
+impl<T: Clone + Copy + Ord + Default> SegTree<T> {
+    pub fn new(n: usize) -> Self {
+        SegTree::new_with_default(n, Default::default())
+    }
+    pub fn new_with_default(n: usize, val: T) -> Self {
+        let mut sz = n as u32;
+        if sz > 0 && (sz & (sz - 1)) != 0 {
+            sz = 1 << (32 - sz.leading_zeros());
+        }
+        Self {
+            n,
+            tree: vec![val; 2 * sz as usize],
+            default: val,
+        }
+    }
+    pub fn query(&self, l: usize, r: usize) -> T {
+        self.query1(0, l, r, 0, self.n - 1)
+    }
+    fn query1(&self, pos: usize, ql: usize, qr: usize, l: usize, r: usize) -> T {
+        if l >= ql && r <= qr {
+            return self.tree[pos];
+        }
+        if l > qr || r < ql {
+            return self.default;
+        }
+        let mid = l + (r - l) / 2;
+        let ln = 2 * pos + 1;
+        let rn = ln + 1;
+        self.query1(ln, ql, qr, l, mid)
+            .${1:`(yas-auto-next (yas-choose-value "min" "max"))`}(self.query1(rn, ql, qr, mid + 1, r))
+    }
+    pub fn update(&mut self, i: usize, val: T) {
+        self.update1(0, 0, self.n - 1, i, val);
+    }
+    fn update1(&mut self, i: usize, l: usize, r: usize, pos: usize, val: T) {
+        if pos < l || pos > r {
+            return;
+        }
+        if l == r {
+            self.tree[i] = self.tree[i].$1(val);
+            return;
+        }
+        let mid = l + (r - l) / 2;
+        let ln = 2 * i + 1;
+        let rn = ln + 1;
+        self.update1(ln, l, mid, pos, val);
+        self.update1(rn, mid + 1, r, pos, val);
+        self.tree[i] = self.tree[ln].$1(self.tree[rn]);
+    }
+}

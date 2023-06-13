@@ -17,15 +17,22 @@
                                  (lsp--make-request "textDocument/hover")
                                  (lsp--send-request)
                                  (lsp:hover-contents))))
-                 (and contents (not (equal "" contents)) contents)))
+                 (and contents (not (equal "" contents))
+                      (if (hash-table-p contents)
+                          (not (or (hash-table-empty-p contents)
+                                   (equal "" (gethash "value" contents))))
+                        t)
+                      contents)))
     (doc-string (string-trim-right (lsp--render-on-hover-content arg t)))
     (doc-buffer
      (let ((display-buffer-overriding-action
             '(nil . ((inhibit-switch-frame . t))))
-           (lsp-help-buf-name "*lsp-help*"))
+           (lsp-help-buf-name "*lsp-help*")
+           (inhibit-read-only t))
        (with-current-buffer (get-buffer-create lsp-help-buf-name)
+         (erase-buffer)
          (insert (string-trim-right (lsp--render-on-hover-content arg t)))
-         (list (current-buffer) (pos-bol) nil))))))
+         (list (current-buffer) (point-min) nil))))))
 
 (provide 'nvp-hap-lsp)
 ;; Local Variables:

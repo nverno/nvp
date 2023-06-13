@@ -320,6 +320,7 @@
 
     ("auto" "autoload" nil :system t)
     ("batp" "bound-and-true-p" nil :system t)
+    ("ccud" "condition-case-unless-debug" nil :system t)
     ("cpsc" "call-process-shell-command" nil :system t)
     ("defa" "define-advice" nil :system t)
     ("defc" "defconst" nil :system t)

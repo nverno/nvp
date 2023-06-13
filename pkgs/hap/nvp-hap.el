@@ -2,8 +2,6 @@
 
 ;;; Commentary:
 ;;
-;; TODO: call same backend on subsequent callbacks
-;; 
 ;; Help at point:
 ;; - display help for context around point in first applicable (1) popup tooltip,
 ;;   (2) help buffer, or (3) external application
@@ -67,8 +65,6 @@
 (defvar nvp-hap-popup-max-lines 25 "Max lines to display in popup.")
 (defvar nvp-hap-popup-timeout 60)
 
-;; cache doc-buffer to jump from popup
-(defvar nvp-hap--doc-buffer nil)
 (defvar nvp-hap--saved-window-configuration ())
 (defvar nvp-hap--electric-commands
   '(scroll-other-window scroll-other-window-down mwheel-scroll))
@@ -105,11 +101,9 @@
     (define-key map (kbd "C-h")   #'nvp-hap-show-doc-buffer)
     map))
 
-;; Manage the transient map. On exit, reset the cached doc-buffer and
-;; restore prior window configuration.
+;; Manage the transient map. On exit, restore prior window configuration.
 (defun nvp-hap-uninstall-keymap (&optional kill-map)
   (nvp-indicate-cursor-post)
-  (setq nvp-hap--doc-buffer nil)
   (nvp-hap--electric-restore-windows)
   (x-hide-tip)
   (and kill-map (setq overriding-terminal-local-map nil)))
@@ -122,6 +116,10 @@
 ;; -------------------------------------------------------------------
 ;;; Help Buffer
 
+;; cache doc-buffer to jump from popup
+(defvar-local nvp-hap--doc-buffer nil)
+(defvar-local nvp-hap--thingatpt nil)
+
 (defun nvp-hap-doc-buffer (&optional string)
   (with-current-buffer (get-buffer-create "*hap-documentation*")
     (erase-buffer)
@@ -129,23 +127,29 @@
       (save-excursion (insert string)))
     (current-buffer)))
 
-(defun nvp-hap-pop-to-buffer (thing &optional arg)
-  (interactive (list (nvp-hap--call 'thingatpt current-prefix-arg)))
-  (-when-let (buff (or nvp-hap--doc-buffer
-                       (nvp-hap--call 'doc-buffer thing arg)))
+(defun nvp-hap-get-doc-buffer ()
+  (or (and nvp-hap--doc-buffer (buffer-live-p (car nvp-hap--doc-buffer))
+           nvp-hap--doc-buffer)
+      (and nvp-hap--thingatpt
+           (-when-let (buf (nvp-hap-call-backend 'doc-buffer nvp-hap--thingatpt))
+             (setq nvp-hap--doc-buffer buf)
+             buf))))
+
+(defun nvp-hap-pop-to-buffer ()
+  (interactive)
+  (-when-let (buff (nvp-hap-get-doc-buffer))
     (setq nvp-hap--saved-window-configuration nil)
     (x-hide-tip)
     (pop-to-buffer (car buff))
     (unless (eq (cadr buff) :set)
       (goto-char (or (cadr buff) (point-min))))))
 
-(defun nvp-hap-show-doc-buffer (thing &optional arg)
-  (interactive (list (nvp-hap--call 'thingatpt current-prefix-arg)))
+(defun nvp-hap-show-doc-buffer ()
+  (interactive)
   (setq nvp-hap--saved-window-configuration nil)
   (let (other-window-scroll-buffer)
     (nvp-hap--electric-do
-      (-when-let (buff (or nvp-hap--doc-buffer
-                           (nvp-hap--call 'doc-buffer thing arg)))
+      (-when-let (buff (nvp-hap-get-doc-buffer))
         (setq other-window-scroll-buffer (get-buffer (car buff)))
         (let ((win (display-buffer (car buff) t)))
           (set-window-start
@@ -251,30 +255,78 @@ See also `pos-tip-show-no-propertize'."
           (concat (buffer-substring-no-properties beg (point)) "\n\n[...]")
         (buffer-substring-no-properties beg (point))))))
 
-(defun nvp-hap--docstring (thing &optional arg)
-  (-if-let (doc (nvp-hap--call 'doc-string thing arg))
+(defun nvp-hap--docstring (thing)
+  (-if-let (doc (nvp-hap-call-backend 'doc-string thing))
       (with-temp-buffer
         (insert doc)
         (nvp-hap--docstring-from-buffer (point-min)))
-    (-when-let (buff (or nvp-hap--doc-buffer
-                         (nvp-hap--call 'doc-buffer thing arg)))
-      (with-current-buffer (car buff)
+    (-when-let (buf (nvp-hap-get-doc-buffer))
+      (with-current-buffer (car buf)
         (nvp-hap--docstring-from-buffer
-         (or (cadr buff) (point-min)) (caddr buff))))))
+         (or (cadr buf) (point-min)) (caddr buf))))))
 
-(defun nvp-hap-show-popup (thing &optional arg)
-  (interactive
-   (list (nvp-hap--call 'thingatpt current-prefix-arg) current-prefix-arg))
-  (-when-let (doc (nvp-hap--docstring thing arg))
-    (let ((x-gtk-use-system-tooltips nil))
-      (unless (x-hide-tip)
-        (nvp-pos-tip-show doc nil nil nil nvp-hap-popup-timeout)))))
+(defun nvp-hap-show-popup ()
+  (when nvp-hap--thingatpt
+   (-when-let (doc (nvp-hap--docstring nvp-hap--thingatpt))
+     (let ((x-gtk-use-system-tooltips nil))
+       (unless (x-hide-tip)
+         (nvp-pos-tip-show doc nil nil nil nvp-hap-popup-timeout))))))
 
 
 ;; -------------------------------------------------------------------
 ;;; Backends
 
-(defvar-local nvp-hap-company-backend nil)
+(defvar-local nvp-hap-company-backend 'company-capf)
+(defvar-local nvp-hap-backend nil)
+
+(defun nvp-hap-call-backend (&rest args)
+  (condition-case-unless-debug err
+      (apply nvp-hap-backend args)
+    (user-error (user-error "Hap: backend %s user-error: %s"
+                            nvp-hap-backend (error-message-string err)))
+    (error (error "Hap: backend %s error \"%s\" with args %s"
+                  nvp-hap-backend (error-message-string err) args))))
+
+(defun nvp-hap-cancel ()
+  (setq nvp-hap-backend nil
+        nvp-hap--thingatpt nil
+        nvp-hap--doc-buffer nil)
+  (nvp-hap-uninstall-keymap 'kill-map))
+
+(defun nvp-hap--begin (&rest args)
+  (let (sym)
+    (cl-dolist (backend (if nvp-hap-backend (list nvp-hap-backend)
+                          nvp-help-at-point-functions))
+      (when (setq sym (let ((nvp-hap-backend backend))
+                        (nvp-hap-call-backend 'thingatpt args)))
+        (setq nvp-hap-backend backend
+              nvp-hap--thingatpt sym)
+        (condition-case-unless-debug err
+            (when (or (nvp-hap-show-popup)
+                      (nvp-hap-show-doc-buffer))
+              (cl-return sym))
+          (error (message "backend %s: %s" nvp-hap-backend (error-message-string err))
+                 (setq nvp-hap-backend nil
+                       nvp-hap--thingatpt nil)))))))
+
+;;;###autoload
+(defun nvp-help-at-point (&optional prefix)
+  "Show help for thing at point in a popup tooltip or help buffer."
+  (interactive "P")
+  (condition-case-unless-debug err
+      (progn
+        (nvp-hap-cancel)
+        (if (nvp-hap--begin prefix)
+            (nvp-hap-install-keymap)
+          (user-error "Nothing interesting here")))
+    (user-error
+     (nvp-hap-cancel)
+     (user-error "%s" (error-message-string err)))
+    (error
+     (nvp-hap-cancel)
+     (message "%s" (error-message-string err)))
+    (quit (nvp-hap-cancel))))
+
 
 ;;;###autoload
 (defun nvp-hap-company (command &optional arg &rest _args)
@@ -282,12 +334,12 @@ See also `pos-tip-show-no-propertize'."
     (cl-case command
       (thingatpt (thing-at-point 'symbol))
       (doc-buffer
-       (unless (stringp arg) (setq arg (symbol-name arg)))
-       (when (eq company-backend 'company-cmake)
-         ;; cmake needs to construct help arguments for candidate prior to call
-         ;; to cmake
-         (company-call-backend 'candidates arg))
-       (list (company-call-backend 'doc-buffer arg))))))
+       (when (company-call-backend 'candidates arg)
+         ;; (when (eq company-backend 'company-cmake)
+         ;;   ;; cmake needs to construct help arguments for candidate prior to call
+         ;;   ;; to cmake
+         ;;   (company-call-backend 'candidates arg))
+         (list (company-call-backend 'doc-buffer arg)))))))
 
 ;;;###autoload
 (defun nvp-hap-info (command &optional arg &rest _args)
@@ -317,20 +369,6 @@ See also `pos-tip-show-no-propertize'."
                 ((boundp arg) (describe-variable arg))
                 (t nil))
            (list (help-buffer) (point-min) nil)))))))
-
-;;;###autoload
-(defun nvp-help-at-point (thing &optional prefix)
-  "Show help for THING at point in a popup tooltip or help buffer."
-  (interactive
-   (list (nvp-hap--call 'thingatpt current-prefix-arg) current-prefix-arg))
-  (unless thing
-    (user-error "Nothing found at point"))
-  (nvp-hap-install-keymap)
-  (or (nvp-hap-show-popup thing prefix)
-      (nvp-hap-show-doc-buffer thing prefix)
-      (progn
-        (nvp-hap-uninstall-keymap 'kill-map)
-        (user-error "No help found for %s" thing))))
 
 (provide 'nvp-hap)
 ;;; nvp-hap.el ends here

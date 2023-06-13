@@ -18,10 +18,13 @@
                                  (lsp--send-request)
                                  (lsp:hover-contents))))
                  (and contents (not (equal "" contents))
-                      (if (hash-table-p contents)
-                          (not (or (hash-table-empty-p contents)
-                                   (equal "" (gethash "value" contents))))
-                        t)
+                      (cond
+                       ((hash-table-p contents)
+                        (not (or (hash-table-empty-p contents)
+                                 (equal "" (gethash "value" contents)))))
+                       ((vectorp contents)
+                        (> (length contents) 0))
+                       (t t))
                       contents)))
     (doc-string (string-trim-right (lsp--render-on-hover-content arg t)))
     (doc-buffer

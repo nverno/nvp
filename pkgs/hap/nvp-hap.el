@@ -103,7 +103,7 @@
 
 ;; Manage the transient map. On exit, restore prior window configuration.
 (defun nvp-hap-uninstall-keymap (&optional kill-map)
-  (nvp-indicate-cursor-post)
+  (ignore-errors (nvp-indicate-cursor-post))
   (nvp-hap--electric-restore-windows)
   (x-hide-tip)
   (and kill-map (setq overriding-terminal-local-map nil)))
@@ -150,12 +150,15 @@
   (let (other-window-scroll-buffer)
     (nvp-hap--electric-do
       (-when-let (buff (nvp-hap-get-doc-buffer))
-        (setq other-window-scroll-buffer (get-buffer (car buff)))
-        (let ((win (display-buffer (car buff) t)))
-          (set-window-start
-           win (if (eq (cadr buff) :set)
-                   (window-point win)
-                 (or (cadr buff) (point-min)))))))))
+        ;; don't show an empty help buffer
+        (unless (with-current-buffer (car buff)
+                  (zerop (buffer-size)))
+          (setq other-window-scroll-buffer (get-buffer (car buff)))
+          (let ((win (display-buffer (car buff) t)))
+            (set-window-start
+             win (if (eq (cadr buff) :set)
+                     (window-point win)
+                   (or (cadr buff) (point-min))))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Popup 
@@ -300,7 +303,8 @@ See also `pos-tip-show-no-propertize'."
       (when (setq sym (let ((nvp-hap-backend backend))
                         (nvp-hap-call-backend 'thingatpt args)))
         (setq nvp-hap-backend backend
-              nvp-hap--thingatpt sym)
+              nvp-hap--thingatpt sym
+              nvp-hap--doc-buffer nil)
         (condition-case-unless-debug err
             (when (or (nvp-hap-show-popup)
                       (nvp-hap-show-doc-buffer))

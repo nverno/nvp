@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for/fold
+# key: forf
+# --
+(for/fold ([${1:acc} ${2:init}])
+    ([${3:x} ${4:lst}])
+  $0)

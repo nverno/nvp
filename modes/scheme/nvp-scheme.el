@@ -56,10 +56,16 @@
                       (error t))))))))))
 
 ;; sync local abbrev table/snippets according to implementation
-(defun nvp-scheme-sync-mode ()
-  (let* ((mode (format "%s-mode" geiser-impl--implementation))
+(defun nvp-scheme-sync-mode (&optional no-yas)
+  (let* ((scheme geiser-impl--implementation)
+         (mode (format "%s-mode" scheme))
          (abbr-table (format "%s-abbrev-table" mode)))
-    (setq mode-name (format "λ[%s]" geiser-impl--implementation))
+    (setq mode-name (format "λ[%s]" scheme))
+    (unless no-yas
+      (if (eq 'racket geiser-impl--implementation)
+          (yas-deactivate-extra-mode 'guile-mode)
+        (yas-deactivate-extra-mode 'racket-mode))
+      (yas-activate-extra-mode (intern-soft mode)))
     (setq nvp-abbrev-local-table mode
           local-abbrev-table (symbol-value (intern abbr-table))
           nvp-mode-name (intern mode))))

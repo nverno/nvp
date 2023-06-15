@@ -2,18 +2,12 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (defvar geiser-active-implementations)
-  (defvar geiser-impl--implementation)
-  (defvar geiser-impl--implementations))
+(eval-when-compile (require 'nvp-macro))
 (require 'geiser)
 (require 'geiser-doc)
-(declare-function geiser-eval--get-module "geiser-eval")
-(autoload 'pos-tip-show "pos-tip")
-
-;; -------------------------------------------------------------------
-;;; Help
+(nvp:decls :v (geiser-impl--implementation)
+           :f (geiser-eval--get-module))
+(nvp:auto "pos-tip" 'pos-tip-show)
 
 ;; doc for symbol at point
 (defun nvp-scheme-help--doc-string (sym &optional module impl)

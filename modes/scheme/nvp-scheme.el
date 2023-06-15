@@ -5,9 +5,6 @@
 ;; - sending REPL regions from different modules:
 ;;   https://stackoverflow.com/questions/55546058/racket-mode-can-i-evaluate-a-single-form-within-a-given-namespace-at-the-repl
 
-;; TODO:
-;; - snippets => jump to snippet should depend on geiser-impl--implementation?
-
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'geiser)
@@ -62,6 +59,7 @@
 (defun nvp-scheme-sync-mode ()
   (let* ((mode (format "%s-mode" geiser-impl--implementation))
          (abbr-table (format "%s-abbrev-table" mode)))
+    (setq mode-name (format "λ[%s]" geiser-impl--implementation))
     (setq nvp-abbrev-local-table mode
           local-abbrev-table (symbol-value (intern abbr-table))
           nvp-mode-name (intern mode))))

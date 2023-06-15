@@ -21,6 +21,7 @@
 (require 'nvp-macs-process "macs/nvp-macs-process")
 (require 'nvp-macs-decls "macs/nvp-macs-decls")
 (require 'nvp-macs-fonts "macs/nvp-macs-fonts")
+(require 'nvp-macs-display "macs/nvp-macs-display")
 (require 'nvp-subrs "macs/nvp-subrs")
 
 ;; add compile time paths interactively
@@ -1240,7 +1241,7 @@ and set `this-command' to nil so opposite happens next time."
   `(if (not (eq this-command last-command))
        ,then
      (prog1 (progn ,@rest)
-       (setq this-command ,(or this-cmd ''nvp:toggled-if)))))
+       (setq this-command ,(or this-cmd ''nvp--toggled-if)))))
 
 (defmacro nvp:toggle-variable (variable)
   (declare (indent 1))

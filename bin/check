@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -o nounset -o pipefail -o errexit
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+# make sure no defubsts/macros show up in compiled code
+check_compiled() {
+    (
+        cd "$DIR/.."
+        rg --glob '**/*\.elc' \
+           --glob '!subrs/**' --glob '!**/*-subrs.elc' \
+           --glob '!macs/**' --glob '!nvp-macro.elc' \
+           --text --heading -o \
+           -e '(^|[^"])nvp:[^"\t\n ]+ [^"]'
+    )
+}
+
+usage() {
+    cat <<EOF_HELP
+USAGE: $(basename "$0") [-h|--help] [compiled]
+
+ARGS:
+	compiled	check compiled elisp for nvp subrs/macros
+
+OPTIONS:
+	-h|--help	Show this message
+EOF_HELP
+}
+
+while (( "$#" )); do
+    case "$1" in
+        compiled) check_compiled;;
+        -h|--help) usage && exit 0;;
+        *) usage && exit 1;;
+    esac
+    shift || true
+done

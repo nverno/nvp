@@ -287,7 +287,7 @@ With prefix, display in same frame using `display-buffer' ACTION."
         (help-str (nvp:lazy-val nvp-syntax-at-point-help)))
     (help-setup-xref (list #'nvp-syntax-at-point marker)
                      (called-interactively-p 'interactive))
-    (nvp-display-buffer-with-action action
+    (nvp:display-buffer-with-action action
       (with-help-window (help-buffer)
         (princ (nvp:centered-header "Syntax at <marker>"))
         (princ (apply #'format help-str ppss))
@@ -314,7 +314,7 @@ With prefix, display in same frame using `display-buffer' ACTION."
 
 ;; (defun nvp-describe-key-events (&optional arg)
 ;;   (interactive "P")
-;;   (nvp-display-buffer-with-action 4
+;;   (nvp:display-buffer-with-action 4
 ;;     (with-help-window (help-buffer)
 ;;         (let ((vars '(this-command
 ;;                       real-this-command

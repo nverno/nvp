@@ -18,19 +18,16 @@
      geiser-impl--implementation
      geiser-impl--implementations))
 
-;;; FIXME: use proper paths
 ;; determine available scheme implementations
 (defun nvp-scheme-active-implementations ()
   (let (res)
     (mapc
      (lambda (i)
-       (let* ((local
-               (expand-file-name (symbol-name i) "/usr/local/bin"))
-              (prog (or (and (file-exists-p local) local)
-                        (executable-find (symbol-name i)))))
-         (when prog
+       (let ((prog (nvp:as-string i)))
+         (--when-let (or (nvp:program-search prog)
+                         (executable-find prog))
            (push i res))))
-     geiser-active-implementations)
+     '(racket guile)) ;; geiser-active-implementations
     res))
 
 ;; -------------------------------------------------------------------

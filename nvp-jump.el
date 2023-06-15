@@ -287,7 +287,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
 ;;;###autoload
 (defun nvp-jump-to-register (action)
   (interactive (list (prefix-numeric-value current-prefix-arg)))
-  (nvp-display-with-action action
+  (nvp:display-with-action action
     (setq prefix-arg current-prefix-arg)
     (call-interactively #'jump-to-register)))
 

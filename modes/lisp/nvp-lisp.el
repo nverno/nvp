@@ -18,6 +18,7 @@
 (nvp:auto "nvp-elisp" 'nvp-elisp-abbrev-expand-var-p 'nvp-elisp-abbrev-expand-fn-p)
 
 ;; return list of available lisps and their arguments
+;; call during compile time when macros are loaded
 (defun nvp-lisp-implementations ()
   (let ((impls
          '(("sbcl"  sbcl ("sbcl" "--noinform") :coding-system utf-8-unix)

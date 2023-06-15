@@ -237,11 +237,11 @@
                         (nvp-log "Running %s %S" nil prog args)
                         (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
                           (nvp-install-execute-process proc ,file)))
-               (nvp:with-gnu
+               (when (not (eq system-type 'windows-nt))
                  ;; sudo commands
                  (cl-loop for (action cmd) in ,sudo
                           do (nvp-log "Unsupported :install")))
-               (nvp:with-w32
+               (when (eq system-type 'windows-nt)
                  ;; chocolatey
                  (cl-loop for pkg in ,choco
                           ;; FIXME: can't have process sentinel with this

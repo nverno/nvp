@@ -31,7 +31,8 @@
     ("true" "#t" nil :system t)
     ("false" "#f" nil :system t)
     )
-  :regexp "\\(?:^\\|[^A-Za-z0-9_.#/-]\\)\\([A-Za-z0-9_.#/-]+\\)")
+  :regexp "\\(?:^\\|[^A-Za-z0-9_.#/-]\\)\\([A-Za-z0-9_.#/-]+\\)"
+  :enable-function #'nvp-scheme-abbrev-var-expand-p)
 
 (define-abbrev-table 'racket-mode-abbrev-table
   '(("def" "define" nil :system t)

@@ -30,9 +30,10 @@
 ;; -------------------------------------------------------------------
 ;;; Abbrevs
 
+;; Function expansions
 ;; Don't expand in strings, comments, or function arguments. And don't
-;; expand after '-' or '/' for christ.
-(defun nvp-scheme-abbrev-expand-p ()
+;; expand after '-' or '/'.
+(defun nvp-scheme-abbrev-fun-expand-p ()
   (when (not (memq last-input-event '(?/ ?- ?\?)))
     (or (memq this-command '(expand-abbrev))
         (nvp:unless-ppss 'soc         ;not in strings/comments
@@ -54,6 +55,11 @@
                           (backward-sexp)
                           (not (looking-back "(let\\*? *" (line-beginning-position))))
                       (error t))))))))))
+
+;; variable expansion predicate
+(defun nvp-scheme-abbrev-var-expand-p ()
+  (not (or (nvp:ppss 'soc)
+           (memq last-input-event '(?\? ?- ?/)))))
 
 ;; sync local abbrev table/snippets according to implementation
 (defun nvp-scheme-sync-mode (&optional no-yas)

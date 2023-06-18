@@ -8,7 +8,7 @@
     )
   "Scheme-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table)
-  :enable-function 'nvp-scheme-abbrev-expand-p)
+  :enable-function 'nvp-scheme-abbrev-fun-expand-p)
 
 (define-abbrev-table 'guile-mode-abbrev-table
   '(;;("i" "ice-9" nil :system t)
@@ -61,7 +61,7 @@
   "Racket-Mode Abbrevs."
   :parents (list racket-mode-variable-abbrev-table scheme-mode-abbrev-table)
   ;; :regexp "\\(?:[ \t\(\)\{\}\[\]]\\|^\\)\\([A-Za-z0-9_.#/*?-]+\\)\\W*"
-  :enable-function 'nvp-scheme-abbrev-expand-p)
+  :enable-function 'nvp-scheme-abbrev-fun-expand-p)
 
 (define-abbrev-table 'geiser-repl-mode-abbrev-table
   '()

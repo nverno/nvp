@@ -1,0 +1,84 @@
+# -*- mode: snippet -*-
+# name: priority queue
+# key: d_pq
+# --
+type HeapNode = ${1:{
+  sum: number;
+  index: number[]
+\}}
+
+class MaxHeap {
+  private heap: HeapNode[];
+
+  constructor() {
+    this.heap = [null];
+  }
+
+  push = (node: HeapNode): HeapNode => {
+    const len: number = this.heap.length;
+    this.heap.push(node);
+    if (len == 1) return node;
+    this.#_heapifyUp();
+    return this.heap[1];
+  };
+
+  pop = (): HeapNode => {
+    if (this.heap.length == 1) return null;
+    if (this.heap.length == 2) return this.heap.pop();
+    const prevRoot: HeapNode = this.heap[1];
+    this.heap[1] = this.heap.pop();
+    this.#_heapifyDown();
+
+    return prevRoot;
+  };
+
+  getMax = () => this.size() > 1 ? this.heap[1] : null;
+  size = (): number => this.heap.length - 1;
+  empty = (): boolean => this.size() > 0;
+  getData = (): HeapNode[] => this.heap.slice(1);
+
+  #_swap = (i: number, j: number): void => {
+    [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
+  };
+
+  #_heapifyUp = () => {
+    let i = this.heap.length - 1;
+    while (!this.#_isRoot(i) && this.#_getParentNode(i)?.sum < this.heap[i].sum) {
+      this.#_swap(this.#_getParentIndex(i), i);
+      i = this.#_getParentIndex(i);
+    }
+  };
+
+  #_heapifyDown = () => {
+    if (this.heap.length < 3) return;
+    let i = 1;
+    let leftNode: HeapNode = this.#_getLeftNode(i);
+    let rightNode: HeapNode = this.#_getRightNode(i);
+
+    while (
+      leftNode !== undefined &&
+        (this.heap[i].sum < leftNode.sum || this.heap[i].sum < rightNode?.sum)
+    ) {
+      if (
+        this.heap[i].sum < leftNode.sum &&
+          (rightNode == undefined || leftNode.sum > rightNode.sum)
+      ) {
+        this.#_swap(this.#_getLeftIndex(i), i);
+        i = this.#_getLeftIndex(i);
+      } else {
+        this.#_swap(this.#_getRightIndex(i), i);
+        i = this.#_getRightIndex(i);
+      }
+      leftNode = this.#_getLeftNode(i);
+      rightNode = this.#_getRightNode(i);
+    }
+  };
+
+  #_isRoot = (i: number): boolean => i == 1;
+  #_getLeftIndex = (i: number): number => 2 * i;
+  #_getRightIndex = (i: number): number => 2 * i + 1;
+  #_getParentIndex = (i: number): number => Math.floor(i / 2);
+  #_getLeftNode = (i: number): HeapNode => this.heap[this.#_getLeftIndex(i)];
+  #_getRightNode = (i: number): HeapNode => this.heap[this.#_getRightIndex(i)];
+  #_getParentNode = (i: number): HeapNode => this.heap[this.#_getParentIndex(i)];
+};

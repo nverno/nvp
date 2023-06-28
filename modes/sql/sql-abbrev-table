@@ -14,7 +14,19 @@
   :parents (list fundamental-mode-abbrev-table)
   :enable-function 'sql-in-code-context-p)
 
-(define-abbrev-table 'sql-sqlite-abbrev-table
+(define-abbrev-table 'sql-mysql-mode-abbrev-table
+  '()
+  "MySql abbrevs."
+  :enable-function (lambda () (eq sql-product 'mysql))
+  :parents (list sql-mode-abbrev-table))
+
+(define-abbrev-table 'sql-sqlite-mode-abbrev-table
+  '()
+  "Sqlite abbrevs."
+  :enable-function (lambda () (eq sql-product 'sqlite))
+  :parents (list sql-mode-abbrev-table))
+
+(define-abbrev-table 'sql-interactive-sqlite-abbrev-table
   '(("cols" "PRAGMA table_info" nil :system t))
   "Sqlite shell abbrevs."
   :enable-function (lambda () (eq sql-product 'sqlite)))
@@ -24,4 +36,4 @@
     ("head" ["SELECT * FROM  LIMIT 10;" 10 nil nil] expand-abbrev-hook :system t))
   "Sql-Interactive-Mode Abbrevs."
   :parents (list sql-mode-abbrev-table
-                 sql-sqlite-abbrev-table))
+                 sql-interactive-sqlite-abbrev-table))

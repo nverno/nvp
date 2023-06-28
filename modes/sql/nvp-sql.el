@@ -5,6 +5,28 @@
 (require 'sql)
 (nvp:decls :v (zeal-at-point-docset))
 
+;; -------------------------------------------------------------------
+;;; Sql Products
+
+;; Sync abbrevs/snippets/etc. when changing b/w different sql products
+(defun nvp-sql-change-product (old-product new-product)
+  (let* ((prev-mode (intern-soft (format "sql-%s-mode" old-product)))
+         (new-mode-name (format "sql-%s-mode" new-product))
+         (new-mode (intern new-mode-name))
+         (new-abbr-table (format "%s-abbrev-table" new-mode-name)))
+    (setq nvp-mode-name new-mode)
+    (--when-let (intern-soft new-abbr-table)
+      (setq nvp-abbrev-local-table new-mode-name
+            local-abbrev-table (symbol-value it)))
+    (--when-let (intern-soft prev-mode)
+      (yas-deactivate-extra-mode it))
+    (yas-activate-extra-mode new-mode)))
+
+(define-advice sql-set-product (:around (orig-fn product) "sync-mode-vars")
+  (let ((old-product sql-product))
+    (apply orig-fn (list product))
+    (nvp-sql-change-product old-product product)))
+
 ;;; Sqlite
 (defconst nvp-sql-sqlite-font-lock-keywords
   (eval-when-compile

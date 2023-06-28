@@ -168,7 +168,7 @@ Optionally, search LISP-ONLY files (no C sources)."
   "Jump to external installation files."
   (interactive
    (list
-    (nvp-read-relative-recursively nvp/install "^[^.]+$" "Install file: ")
+    (nvp-read-relative-recursively nvp/bin "^[^.]+$" "Install file: ")
     current-prefix-arg))
   (nvp-display-location file :file action))
 

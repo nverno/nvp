@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: partition window function
+# key: part
+# --
+${1:COUNT(*)} OVER (PARTITION BY $2)

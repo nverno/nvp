@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: function over sliding window range
+# key: range
+# --
+${1:SUM(...)} OVER (${2:ORDER BY ${3:column}} RANGE BETWEEN INTERVAL ${4:7 DAY} PRECEDING AND CURRENT ROW)

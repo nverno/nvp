@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: cast
+# key: cast
+# --
+CAST($1 AS ${2:FLOAT})

@@ -102,7 +102,7 @@
 ;; r-r => "\\br\\w*-r[A-Za-z0-9-]*\\b"
 ;; so it matches replace-regexp-in-string, for example
 (defvar nvp-he-flex-prefix-from-re "[-:./_]")
-(defvar nvp-he-flex-prefix-to-re "\\\\w*[-:./_")
+(defvar nvp-he-flex-prefix-to-re "\\\\w*[-:./_]")
 
 ;; -------------------------------------------------------------------
 ;;; Matchers

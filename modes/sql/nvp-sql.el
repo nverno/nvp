@@ -74,7 +74,6 @@
     :init #'nvp-sql-sqli-buffer))
 
 ;; Zeal
-
 ;; Default the zeal lookup to postgres when product changes.
 (defun nvp-sql-psql-set-zeal ()
   (when (eq sql-product 'postgres)
@@ -84,12 +83,31 @@
   (nvp-sql-psql-set-zeal))
 
 ;;; Abbrevs
-
 ;; Don't expand in strings or comments.
 (defun sql-in-code-context-p ()
   (let ((ppss (syntax-ppss)))
     (and (null (elt ppss 3))    ; inside string
          (null (elt ppss 4))))) ; inside comment
+
+;;; SQLup
+;; modified `sqlup-maybe-capitalize-symbol' to not upcase words after '.'
+(nvp:decl sqlup-work-on-symbol)
+
+(defun nvp-sqlup-maybe-capitalize-symbol (direction)
+  "DIRECTION is either 1 for forward or -1 for backward"
+  (with-syntax-table (make-syntax-table sql-mode-syntax-table)
+    ;; Give \ symbol syntax so that it is included when we get a symbol. This is
+    ;; needed so that \c in postgres is not treated as the keyword C.
+    (modify-syntax-entry ?\\ "_")
+    (forward-symbol direction)
+    (let ((bnds (bounds-of-thing-at-point 'symbol)))
+      (when (and bnds (not (eq ?. (char-before (car bnds))))) 
+        (sqlup-work-on-symbol
+         (buffer-substring-no-properties (car bnds) (cdr bnds)) bnds)))))
+
+(with-eval-after-load 'sqlup-mode
+  (advice-add 'sqlup-maybe-capitalize-symbol
+              :override #'nvp-sqlup-maybe-capitalize-symbol))
 
 (provide 'nvp-sql)
 ;;; nvp-sql.el ends here

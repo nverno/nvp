@@ -35,7 +35,8 @@
   :enable-function #'nvp-scheme-abbrev-var-expand-p)
 
 (define-abbrev-table 'racket-mode-abbrev-table
-  '(("def" "define" nil :system t)
+  '(("req" "require" nil :system t)
+    ("def" "define" nil :system t)
 
     ("r" "require" nil :system t)
     

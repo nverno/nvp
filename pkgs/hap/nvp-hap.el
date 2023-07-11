@@ -77,6 +77,21 @@
          (setq nvp-hap--doc-buffer result))
     result))
 
+(defun nvp-hap-thing-at-point (prefix &optional type prompt completions)
+  "Get thing at point of TYPE (default \\='symbol).
+If nothing found, or PREFIX arg, read from minibuffer prompting with
+PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
+  (let ((sym (thing-at-point (or type 'symbol) t))
+        (force-prompt-p (> (prefix-numeric-value prefix) 1)))
+    (if (or force-prompt-p (not sym))
+        (let* ((prompt (or prompt "Describe: "))
+               (sym (string-trim
+                     (if completions (completing-read prompt nil nil sym)
+                       (read-from-minibuffer prompt sym)))))
+          (unless (string-blank-p sym)
+            sym))
+      sym)))
+
 ;;; Window configurations
 ;; `company--electric-restore-window-configuration', `company--electric-do'
 ;; FIXME: this very simple window config. fails often

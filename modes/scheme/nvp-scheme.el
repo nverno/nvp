@@ -7,13 +7,12 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'geiser)
+(require 'geiser nil t)
 (nvp:decls
  :f (geiser-eval-last-sexp
      abbrev-table-put abbrev-table-get)
  :v (geiser-active-implementations
-     geiser-impl--implementation
-     geiser-impl--implementations))
+     geiser-impl--implementation))
 
 ;; determine available scheme implementations
 (defun nvp-scheme-active-implementations ()
@@ -84,7 +83,7 @@
 
 (defun nvp-scheme-hippie-expand-setup (&optional repl)
   (nvp-he-flex-lisp-setup)
-  (setq-local hippie-expand-only-buffers '(scheme-mode))
+  (setq-local hippie-expand-only-buffers '(scheme-mode racket-mode))
   (when repl
     (nvp-he-history-setup :history 'comint-input-ring
                           :bol-fn 'comint-line-beginning-position

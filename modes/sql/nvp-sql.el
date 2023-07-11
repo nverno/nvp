@@ -40,12 +40,24 @@
       'font-lock-builtin-face nil
       "partition" "over" "preceding" "difference"))))
 
+;;; MySQL
+(defconst nvp-sql-mysql-font-lock-keywords
+  (eval-when-compile
+    (list (sql-font-lock-keywords-builder
+           'font-lock-builtin-face nil
+           "least" "greatest"))))
+
+(defun nvp-sql--add-keywords (product)
+  (let ((new-kwds (symbol-value
+                   (intern-soft (format "nvp-sql-%s-font-lock-keywords" product))))
+        (kwds (intern-soft (format "sql-mode-%s-font-lock-keywords" product))))
+    (when (and new-kwds kwds
+               (not (cl-member (car new-kwds) (symbol-value kwds) :test #'equal)))
+      (set kwds (append new-kwds (symbol-value kwds))))))
+
 (cl-eval-when (load)
-  (unless (cl-member (car nvp-sql-sqlite-font-lock-keywords)
-                     sql-mode-sqlite-font-lock-keywords :test #'equal)
-    (setq sql-mode-sqlite-font-lock-keywords
-          (append nvp-sql-sqlite-font-lock-keywords
-                  sql-mode-sqlite-font-lock-keywords))))
+  (dolist (product '("sqlite" "mysql"))
+    (nvp-sql--add-keywords product)))
 
 ;; ------------------------------------------------------------
 ;;; SQLi

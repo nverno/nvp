@@ -145,15 +145,18 @@ With \\[universal-argument] call in next visible window."
 ;;; Link Extensions
 
 (eval-when-compile
-  (defmacro nvp:define-link (name collector &rest action)
+  (cl-defmacro nvp:define-link (name &rest action
+                                     &key collector style
+                                     &allow-other-keys)
     "Wrap `avy-with', bind \\='it to return of COLLECTOR in ACTION."
-    (declare (indent 2) (debug t))
+    (declare (indent 1) (debug t))
+    (nvp:skip-keywords action)
     `(defun ,name ()
        (interactive)
        (let ((it (avy-with ,name
                    (avy-process
                     ,collector
-                    (avy--style-fn avy-style)))))
+                    (avy--style-fn ,(or style 'avy-style))))))
          ,@action))))
 
 ;;; Mark
@@ -172,30 +175,36 @@ With \\[universal-argument] call in next visible window."
     (nreverse res)))
 
 (nvp:define-link nvp-link-mark
-    (--map (cdr it) (nvp-link--mark-collect))
+  :collector (--map (cdr it) (nvp-link--mark-collect)) nil
   (when it
     (funcall #'nvp-mark-goto-marker-at-point)))
 
 ;;; Dired
 (nvp:decl dired-next-dirline dired-get-filename dired-find-file)
 (defun nvp-link--dired-collect ()
-  (let (res)
-    (nvp:with-restriction 'visible
-      (goto-char (point-min))
-      (while (condition-case nil
-                 (progn
-                   (dired-next-dirline 1)
-                   t)
-               (error nil))
-        (let ((dir (dired-get-filename 'verbatim 'no-error)))
-          (unless (member dir '("." ".." nil))
-            (push (cons dir (point)) res)))))
-    res))
+  (unwind-protect
+      (save-excursion
+        (let (res)
+          (when (fboundp 'smooth-scrolling-mode) (smooth-scrolling-mode -1))
+          (nvp:with-restriction 'visible
+            (goto-char (point-min))
+            (while (condition-case nil
+                       (progn
+                         (dired-next-dirline 1)
+                         t)
+                     (error nil))
+              (let ((dir (dired-get-filename 'verbatim 'no-error)))
+                (unless (member dir '("." ".." nil))
+                  (push (cons dir (point)) res)))))
+          res))
+    (when (fboundp 'smooth-scrolling-mode) (smooth-scrolling-mode 1))))
 
 (nvp:define-link nvp-link-dired
-    (--map (cdr it) (nvp-link--dired-collect))
-  (goto-char (1+ it))
-  (dired-find-file))
+  :collector (--map (cdr it) (nvp-link--dired-collect))
+  :style 'pre
+  (when (numberp it)
+    (goto-char (1+ it))
+    (dired-find-file)))
 
 ;;; Markdown
 (nvp:decl markdown-next-link markdown-link-at-pos markdown-follow-thing-at-point)
@@ -209,9 +218,10 @@ With \\[universal-argument] call in next visible window."
     res))
 
 (nvp:define-link nvp-link-markdown
-    (--map (cdr it) (nvp-link--markdown-collect))
-  (goto-char (1+ it))
-  (markdown-follow-thing-at-point nil))
+  :collector (--map (cdr it) (nvp-link--markdown-collect))
+  (when (numberp it)
+    (goto-char (1+ it))
+    (markdown-follow-thing-at-point nil)))
 
 ;;; Shell
 (nvp:decl comint-next-prompt)
@@ -228,14 +238,15 @@ With \\[universal-argument] call in next visible window."
     (nreverse res)))
 
 (nvp:define-link nvp-link-shell
-    (--map (cdr it) (nvp-link--shell-collect))
-  (avy-action-yank-line it))
+  :collector (--map (cdr it) (nvp-link--shell-collect))
+  (when (numberp it) (avy-action-yank-line it)))
 
 ;;; Lsp
 (nvp:define-link nvp-link-lsp
-    (nvp-link--overlay-collect 'lsp-link)
-  (goto-char (1+ it))
-  (push-button it))
+  :collector (nvp-link--overlay-collect 'lsp-link)
+  (when (numberp it)
+    (goto-char (1+ it))
+    (push-button it)))
 
 ;;; Imenu
 (nvp:auto "nvp-imenu" 'nvp-imenu-cleaned-alist)
@@ -248,8 +259,8 @@ With \\[universal-argument] call in next visible window."
               (nvp-imenu-cleaned-alist)))))
 
 (nvp:define-link nvp-link-imenu
-    (nvp-link--imenu-collect)
-  (goto-char it))
+  :collector (nvp-link--imenu-collect)
+  (when (numberp it) (goto-char it)))
 
 ;; use actual links in agenda buffer - the default is just the same
 ;; as `avy-goto-line'

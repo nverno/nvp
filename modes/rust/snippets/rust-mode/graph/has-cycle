@@ -1,0 +1,40 @@
+# -*- mode: snippet -*-
+# name: check for cycle
+# key: g_has_cycle
+# --
+#[derive(Clone)]
+enum Status {
+    None,
+    Active,
+    Done,
+}
+
+fn has_cycle(u: usize, g: &Vec<Vec<${1:usize}>>, state: &mut Vec<Status>) -> bool {
+    match state[u] {
+        Status::Active => return true,
+        Status::Done => return false,
+        _ => (),
+    }
+    state[u] = Status::Active;
+    for v in &g[u] {
+        if has_cycle(*v${1:$($s!= "usize" " as usize")}, g, state) {
+            return true;
+        }
+    }
+    state[u] = Status::Done;
+    false
+}
+
+let mut state = vec![Status::None; ${2:n}];
+
+for i in 0..$2 {
+    match state[i] {
+        Status::Done => $3,
+        Status::Active => $4,
+        _ => {
+            if !has_cycle(i, &${5:graph}, &mut state) {
+                $6
+            }
+        }
+    }
+}

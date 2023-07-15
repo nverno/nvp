@@ -77,20 +77,26 @@
          (setq nvp-hap--doc-buffer result))
     result))
 
+(defun nvp-hap-prefix-action (prefix)
+  (let ((val (prefix-numeric-value prefix)))
+    (when (> val 1)
+      (cons 'prompt val))))
+
 (defun nvp-hap-thing-at-point (prefix &optional type prompt completions)
   "Get thing at point of TYPE (default \\='symbol).
 If nothing found, or PREFIX arg, read from minibuffer prompting with
 PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
-  (let ((sym (thing-at-point (or type 'symbol) t))
-        (force-prompt-p (> (prefix-numeric-value prefix) 1)))
-    (if (or force-prompt-p (not sym))
-        (let* ((prompt (or prompt "Describe: "))
-               (sym (string-trim
-                     (if completions (completing-read prompt nil nil sym)
-                       (read-from-minibuffer prompt sym)))))
-          (unless (string-blank-p sym)
-            sym))
-      sym)))
+  (pcase-let ((`(,force-prompt-p . ,_val) (nvp-hap-prefix-action prefix)))
+    (let ((sym (thing-at-point (or type 'symbol) t)))
+      (if (or force-prompt-p (not sym))
+          (let* ((prompt (or prompt "Describe: "))
+                 (sym (string-trim
+                       (if completions
+                           (completing-read prompt completions nil t sym)
+                         (read-from-minibuffer prompt sym)))))
+            (unless (string-blank-p sym)
+              sym))
+        sym))))
 
 ;;; Window configurations
 ;; `company--electric-restore-window-configuration', `company--electric-do'
@@ -142,11 +148,12 @@ PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
       (save-excursion (insert string)))
     (current-buffer)))
 
-(defun nvp-hap-get-doc-buffer ()
+(defun nvp-hap-get-doc-buffer (&optional prefix)
   (or (and nvp-hap--doc-buffer (buffer-live-p (car nvp-hap--doc-buffer))
            nvp-hap--doc-buffer)
       (and nvp-hap--thingatpt
-           (-when-let (buf (nvp-hap-call-backend 'doc-buffer nvp-hap--thingatpt))
+           (-when-let (buf
+                       (nvp-hap-call-backend 'doc-buffer nvp-hap--thingatpt prefix))
              (setq nvp-hap--doc-buffer buf)
              buf))))
 
@@ -159,12 +166,12 @@ PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
     (unless (eq (cadr buff) :set)
       (goto-char (or (cadr buff) (point-min))))))
 
-(defun nvp-hap-show-doc-buffer ()
+(defun nvp-hap-show-doc-buffer (&optional prefix)
   (interactive)
   (setq nvp-hap--saved-window-configuration nil)
   (let (other-window-scroll-buffer)
     (nvp-hap--electric-do
-      (-when-let (buff (nvp-hap-get-doc-buffer))
+      (-when-let (buff (nvp-hap-get-doc-buffer prefix))
         ;; don't show an empty help buffer
         (unless (with-current-buffer (car buff)
                   (zerop (buffer-size)))
@@ -262,30 +269,31 @@ See also `pos-tip-show-no-propertize'."
 
 (defun nvp-hap--docstring-from-buffer (beg &optional end)
   (goto-char beg)
-  (and end (narrow-to-region beg end))
-  (let* ((end (progn
-                (forward-line nvp-hap-popup-max-lines)
-                (pos-eol)))
-         (truncated (> (point-max) end)))
-    (nvp-hap--skip-footers)
-    (unless (eq beg (point))
-      (if truncated
-          (concat (buffer-substring-no-properties beg (point)) "\n\n[...]")
-        (buffer-substring-no-properties beg (point))))))
+  (save-restriction
+    (and end (narrow-to-region beg end))
+    (let* ((end (progn
+                  (forward-line nvp-hap-popup-max-lines)
+                  (pos-eol)))
+           (truncated (> (point-max) end)))
+      (nvp-hap--skip-footers)
+      (unless (eq beg (point))
+        (if truncated
+            (concat (buffer-substring-no-properties beg (point)) "\n\n[...]")
+          (buffer-substring-no-properties beg (point)))))))
 
-(defun nvp-hap--docstring (thing)
-  (-if-let (doc (nvp-hap-call-backend 'doc-string thing))
+(defun nvp-hap--docstring (thing &optional prefix)
+  (-if-let (doc (nvp-hap-call-backend 'doc-string thing prefix))
       (with-temp-buffer
         (insert doc)
         (nvp-hap--docstring-from-buffer (point-min)))
-    (-when-let (buf (nvp-hap-get-doc-buffer))
+    (-when-let (buf (nvp-hap-get-doc-buffer prefix))
       (with-current-buffer (car buf)
         (nvp-hap--docstring-from-buffer
          (or (cadr buf) (point-min)) (caddr buf))))))
 
-(defun nvp-hap-show-popup ()
+(defun nvp-hap-show-popup (&optional prefix)
   (when nvp-hap--thingatpt
-   (-when-let (doc (nvp-hap--docstring nvp-hap--thingatpt))
+   (-when-let (doc (nvp-hap--docstring nvp-hap--thingatpt prefix))
      (let ((x-gtk-use-system-tooltips nil))
        (unless (x-hide-tip)
          (nvp-pos-tip-show doc nil nil nil nvp-hap-popup-timeout))))))
@@ -311,6 +319,8 @@ See also `pos-tip-show-no-propertize'."
         nvp-hap--doc-buffer nil)
   (nvp-hap-uninstall-keymap 'kill-map))
 
+;; passes prefix argument to `nvp-hap-show-*' functions in case
+;; prompt was forced to find symbol other than the one at point
 (defun nvp-hap--begin (&rest args)
   (let (sym)
     (cl-dolist (backend (if nvp-hap-backend (list nvp-hap-backend)
@@ -321,8 +331,8 @@ See also `pos-tip-show-no-propertize'."
               nvp-hap--thingatpt sym
               nvp-hap--doc-buffer nil)
         (condition-case-unless-debug err
-            (when (or (nvp-hap-show-popup)
-                      (nvp-hap-show-doc-buffer))
+            (when (or (nvp-hap-show-popup args)
+                      (nvp-hap-show-doc-buffer args))
               (cl-return sym))
           (error (message "backend %s: %s" nvp-hap-backend (error-message-string err))
                  (setq nvp-hap-backend nil

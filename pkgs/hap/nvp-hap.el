@@ -92,7 +92,7 @@ PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
           (let* ((prompt (or prompt "Describe: "))
                  (sym (string-trim
                        (if completions
-                           (completing-read prompt completions nil t sym)
+                           (completing-read prompt completions nil t)
                          (read-from-minibuffer prompt sym)))))
             (unless (string-blank-p sym)
               sym))
@@ -338,6 +338,16 @@ See also `pos-tip-show-no-propertize'."
                  (setq nvp-hap-backend nil
                        nvp-hap--thingatpt nil)))))))
 
+;;; TODO: allow cycling through backends
+(defun nvp-hap-choose-backend ()
+  (--when-let
+      (completing-read
+       "Backend: "
+       (mapcar (lambda (sym)
+                 (replace-regexp-in-string "nvp-hap-\\(.+\\)" "\\1" (symbol-name sym)))
+               nvp-help-at-point-functions))
+    (intern (concat "nvp-hap-" it))))
+
 ;;;###autoload
 (defun nvp-help-at-point (&optional prefix)
   "Show help for thing at point in a popup tooltip or help buffer."
@@ -345,6 +355,8 @@ See also `pos-tip-show-no-propertize'."
   (condition-case-unless-debug err
       (progn
         (nvp-hap-cancel)
+        (when (eq 16 (prefix-numeric-value prefix))
+          (setq nvp-hap-backend (nvp-hap-choose-backend)))
         (if (nvp-hap--begin prefix)
             (nvp-hap-install-keymap)
           (user-error "Nothing interesting here")))
@@ -356,12 +368,11 @@ See also `pos-tip-show-no-propertize'."
      (message "%s" (error-message-string err)))
     (quit (nvp-hap-cancel))))
 
-
 ;;;###autoload
 (defun nvp-hap-company (command &optional arg &rest _args)
   (-when-let (company-backend nvp-hap-company-backend)
     (cl-case command
-      (thingatpt (thing-at-point 'symbol))
+      (thingatpt (nvp-hap-thing-at-point (car arg) nil "Company: "))
       (doc-buffer
        (when (company-call-backend 'candidates arg)
          (if-let (buf (company-call-backend 'doc-buffer arg))

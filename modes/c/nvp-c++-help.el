@@ -11,19 +11,28 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'semantic/analyze)
+(require 'semantic/analyze nil t)
 (nvp:req 'nvp-c 'subrs)
+(nvp:decls :f (semantic-analyze-current-context
+               semantic-tag-p semantic-tag-with-position-p
+               semantic-go-to-tag semantic-tag-name
+               semantic-analyze-scope-nested-tags))
+
 
 ;; https://en.cppreference.com/w/
-(defvar nvp-c++-help-online-sources
+(defvar nvp-c++-online-docrefs
   '(("std::" .
      "http://en.cppreference.com/mwiki/index.php?title=Special:Search&search=%s")
     ("boost::" . "http://google.com/search?q=site:boost.org%%20%s")))
 
-;; Use semantic to determine the fully namespace-qualified type of the symbol at
-;; POINT.
-;; https://github.com/alexott/emacs-configs/rc/emacs-rc-ccmode.el
-(defun nvp-c++-help-type-at (point)
+
+;; -------------------------------------------------------------------
+;;; Semantic
+
+;; stolen from https://github.com/alexott/emacs-configs/rc/emacs-rc-ccmode.el
+(defun nvp-c++-semantic-tag (point)
+  "Use semantic to determine the fully namespace-qualified type of the symbol at
+POINT."
   (let* ((ctxt (semantic-analyze-current-context point))
 	 (pf (reverse (oref ctxt prefix)))
 	 (lastname (pop pf))
@@ -40,27 +49,26 @@
                          lastname)))))
     (concat (mapconcat 'concat names "::"))))
 
-;; -------------------------------------------------------------------
-;;; Commands
-
 ;; https://github.com/alexott/emacs-configs/rc/emacs-rc-ccmode.el
 ;;;###autoload
-(defun nvp-c++-help-at-point (point)
+(defun nvp-c++-semantic-browse-docs (point)
   "Browse the documentation for the C++ symbol at POINT."
   (interactive "d")
   (let* ((cpptype (and (semantic-active-p)
-                       (nvp-c++-help-type-at point)))
+                       (nvp-c++-semantic-tag point)))
 	 (ref (when (stringp cpptype)
 		(car (cl-member-if (lambda (S) (string-prefix-p (car S) cpptype))
-				   nvp-c++-help-online-sources)))))
+				   nvp-c++-online-docrefs)))))
     (if ref	
 	(browse-url (format (cdr ref) cpptype))
       (message "No documentation source found for %s" cpptype))))
 
+
 ;;;###autoload
-(defun nvp-c++-help (point)
+(defun nvp-c++-man (point)
   (interactive "d")
-  (let ((cpptype (nvp-c++-help-type-at point)))
+  (let ((cpptype (and (semantic-active-p)
+                      (nvp-c++-semantic-tag point))))
     (when cpptype
       (funcall-interactively 'manual-entry cpptype))))
 

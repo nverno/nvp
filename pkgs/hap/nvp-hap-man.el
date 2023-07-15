@@ -3,8 +3,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
+(require 'nvp-hap)
 (nvp:decls)
+(nvp:auto "man" Man-completion-table)
 
 (defvar nvp-hap-man--buffer "*hap-man*")
 
@@ -33,6 +34,16 @@
         (and (equal tmp (buffer-name buff))
              (kill-buffer buff)
              (message "Killed %S" buff))))))
+
+
+;;;###autoload
+(defun nvp-hap-man (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt
+     ;; only return thing at point with a prefix arg to explicity call man
+     (when (car arg)
+       (nvp-hap-thing-at-point (car arg) nil "Man: " 'Man-completion-table)))
+    (doc-buffer)))
 
 
 (provide 'nvp-hap-man)

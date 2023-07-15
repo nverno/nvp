@@ -2,12 +2,7 @@
 
 ;;; Commentary:
 ;;
-;; Get help from local sources, fallback to online lookup when
-;; all else fails.
-;;
-;; FIXME: the three HAP backends need to play nice -- whichever backend
-;;   found the identifier, it should be the one to then deal with it.
-;;   This needs to be fixed in nvp-hap.el and the plugins though.
+;; Get help from local sources, fallback to online lookup when those fail.
 ;;
 ;; Local Methods:
 ;; - man
@@ -41,7 +36,8 @@
 (defvar nvp-c-help-local-sources
   `((("/usr/include/unistd" "/usr/include/fcntl"
       "sys/time" "sys/wait" "sys/resource"
-      "/usr/include/signal") . (man "2 %s"))
+      "/usr/include/signal")
+     . (man "2 %s"))
     (,semantic-c-dependency-system-include-path . (man "3 %s"))))
 
 ;; -------------------------------------------------------------------

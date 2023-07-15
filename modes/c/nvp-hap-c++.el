@@ -3,8 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(require 'nvp-hap)
 (require 'nvp-hap-man)
 (nvp:decls)
 

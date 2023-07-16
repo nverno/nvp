@@ -35,7 +35,7 @@
 ;;;###autoload
 (defun nvp-hap-scheme (command &optional arg &rest _args)
   (cl-case command
-    (thingatpt (intern (nvp-hap-thing-at-point (car arg))))
+    (thingatpt (intern (nvp-hap-thing-at-point arg)))
     (doc-string (nvp-scheme-help--doc-string arg))
     (doc-buffer
      (save-window-excursion

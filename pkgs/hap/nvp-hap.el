@@ -79,13 +79,12 @@
 
 (defun nvp-hap-prefix-action (prefix)
   (let ((val (prefix-numeric-value prefix)))
-    (when (> val 1)
-      (cons 'prompt val))))
+    (cons (and (> val 4) 'prompt) val)))
 
 (defun nvp-hap-thing-at-point (prefix &optional type prompt completions)
   "Get thing at point of TYPE (default \\='symbol).
-If nothing found, or PREFIX arg, read from minibuffer prompting with
-PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
+If nothing found, or C-u C-u PREFIX arg, read from minibuffer prompting
+with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
   (pcase-let ((`(,force-prompt-p . ,_val) (nvp-hap-prefix-action prefix)))
     (let ((sym (thing-at-point (or type 'symbol) t)))
       (if (or force-prompt-p (not sym))
@@ -321,18 +320,18 @@ See also `pos-tip-show-no-propertize'."
 
 ;; passes prefix argument to `nvp-hap-show-*' functions in case
 ;; prompt was forced to find symbol other than the one at point
-(defun nvp-hap--begin (&rest args)
+(defun nvp-hap--begin (&optional prefix)
   (let (sym)
     (cl-dolist (backend (if nvp-hap-backend (list nvp-hap-backend)
                           nvp-help-at-point-functions))
       (when (setq sym (let ((nvp-hap-backend backend))
-                        (nvp-hap-call-backend 'thingatpt args)))
+                        (nvp-hap-call-backend 'thingatpt prefix)))
         (setq nvp-hap-backend backend
               nvp-hap--thingatpt sym
               nvp-hap--doc-buffer nil)
         (condition-case-unless-debug err
-            (when (or (nvp-hap-show-popup args)
-                      (nvp-hap-show-doc-buffer args))
+            (when (or (nvp-hap-show-popup prefix)
+                      (nvp-hap-show-doc-buffer prefix))
               (cl-return sym))
           (error (message "backend %s: %s" nvp-hap-backend (error-message-string err))
                  (setq nvp-hap-backend nil
@@ -352,27 +351,28 @@ See also `pos-tip-show-no-propertize'."
 (defun nvp-help-at-point (&optional prefix)
   "Show help for thing at point in a popup tooltip or help buffer."
   (interactive "P")
-  (condition-case-unless-debug err
-      (progn
-        (nvp-hap-cancel)
-        (when (eq 16 (prefix-numeric-value prefix))
-          (setq nvp-hap-backend (nvp-hap-choose-backend)))
+  (nvp-hap-cancel)
+  (let ((nvp-help-at-point-functions
+         (if (eq 64 (prefix-numeric-value prefix))
+             (list (nvp-hap-choose-backend))
+           nvp-help-at-point-functions)))
+    (condition-case-unless-debug err
         (if (nvp-hap--begin prefix)
             (nvp-hap-install-keymap)
-          (user-error "Nothing interesting here")))
-    (user-error
-     (nvp-hap-cancel)
-     (user-error "%s" (error-message-string err)))
-    (error
-     (nvp-hap-cancel)
-     (message "%s" (error-message-string err)))
-    (quit (nvp-hap-cancel))))
+          (user-error "Nothing interesting here"))
+      (user-error
+       (nvp-hap-cancel)
+       (user-error "%s" (error-message-string err)))
+      (error
+       (nvp-hap-cancel)
+       (message "%s" (error-message-string err)))
+      (quit (nvp-hap-cancel)))))
 
 ;;;###autoload
 (defun nvp-hap-company (command &optional arg &rest _args)
   (-when-let (company-backend nvp-hap-company-backend)
     (cl-case command
-      (thingatpt (nvp-hap-thing-at-point (car arg) nil "Company: "))
+      (thingatpt (nvp-hap-thing-at-point arg nil "Company: "))
       (doc-buffer
        (when (company-call-backend 'candidates arg)
          (if-let (buf (company-call-backend 'doc-buffer arg))

@@ -19,7 +19,7 @@
 ;; parse online documentation
 (defun nvp-hap-racket (command &optional arg &rest args)
   (cl-case command
-    (thingatpt (nvp-hap-thing-at-point (car arg) nil nil (racket--describe-terms)))
+    (thingatpt (nvp-hap-thing-at-point arg nil nil (racket--describe-terms)))
     (doc-buffer                         ; args has prefix
      (let ((how (if args (racket--buffer-file-name)
                     (pcase (get-text-property (point) 'racket-xp-doc)

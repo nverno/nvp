@@ -41,8 +41,8 @@
   (cl-case command
     (thingatpt
      ;; only return thing at point with a prefix arg to explicity call man
-     (when (car arg)
-       (nvp-hap-thing-at-point (car arg) nil "Man: " 'Man-completion-table)))
+     (when arg
+       (nvp-hap-thing-at-point arg nil "Man: " 'Man-completion-table)))
     (doc-buffer)))
 
 

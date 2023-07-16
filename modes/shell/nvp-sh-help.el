@@ -247,7 +247,7 @@
            cmd
            (if prompt
                ;; FIXME: calls CMD twice
-               (ido-completing-read
+               (completing-read
                 "Man Section: " (nvp-sh--man-sections cmd) nil t)
              section)
            recache)
@@ -307,7 +307,7 @@
     (nvp-sh--function-string
      cmd
      (if prompt
-         (ido-completing-read "Man Section: " (nvp-sh--man-sections cmd) nil t)
+         (completing-read "Man Section: " (nvp-sh--man-sections cmd) nil t)
        section)
      recache))))
 

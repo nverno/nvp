@@ -10,6 +10,16 @@
                lsp--make-request lsp--send-request lsp:hover-contents
                lsp--render-on-hover-content))
 
+(defmacro nvp-with-hap-lsp-buffer (&optional bufname &rest body)
+  (declare (indent 1))
+  `(let ((lsp-help-buf-name ,(or bufname "*lsp-help*")))
+     (with-current-buffer (get-buffer-create lsp-help-buf-name)
+       (let ((delay-mode-hooks t))
+         (lsp-help-mode)
+         (prog1 (with-help-window lsp-help-buf-name
+                  ,@body)
+           (run-mode-hooks))))))
+
 ;;;###autoload
 (defun nvp-hap-lsp (command &optional arg &rest _args)
   (cl-case command
@@ -29,11 +39,8 @@
     (doc-string (string-trim-right (lsp--render-on-hover-content arg t)))
     (doc-buffer
      (let ((display-buffer-overriding-action
-            '(nil . ((inhibit-switch-frame . t))))
-           (lsp-help-buf-name "*lsp-help*")
-           (inhibit-read-only t))
-       (with-current-buffer (get-buffer-create lsp-help-buf-name)
-         (erase-buffer)
+            '(nil . ((inhibit-switch-frame . t)))))
+       (nvp-with-hap-lsp-buffer nil
          (insert (string-trim-right (lsp--render-on-hover-content arg t)))
          (list (current-buffer) (point-min) nil))))))
 

@@ -5,10 +5,12 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-hap)
-(nvp:decls :f (lsp--text-document-position-params
-               lsp-describe-thing-at-point
-               lsp--make-request lsp--send-request lsp:hover-contents
-               lsp--render-on-hover-content))
+(nvp:decls
+ :v (lsp-help-buf-name)
+ :f (lsp--text-document-position-params
+     lsp-describe-thing-at-point lsp-help-mode
+     lsp--make-request lsp--send-request lsp:hover-contents
+     lsp--render-on-hover-content))
 
 (defmacro nvp-with-hap-lsp-buffer (&optional bufname &rest body)
   (declare (indent 1))

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for key-value in map
+# key: forkv
+# --
+for ${1:key}, ${2:val} := range ${3:map} {
+	$0
+}

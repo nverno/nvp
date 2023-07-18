@@ -6,9 +6,12 @@
 ;; - deps
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-;; (require 'rust-mode)
 (require 'rustic nil t)
-(nvp:decls :v (toml-mode-map) :f (rustic-cargo-current-test))
+(nvp:decls :v (toml-mode-map)
+           :f (rustic-cargo-current-test
+               rustic-cargo--get-test-target rustic-cargo-test
+               rustic-cargo--get-current-fn-name rustic-cargo--get-current-mod
+               lsp-rust-analyzer--related-tests lsp-rust-analyzer-related-tests))
 (nvp:auto "rustic-cargo" rustic-cargo--get-test-target)
 
 (cl-defmethod nvp-newline-dwim-comment
@@ -19,12 +22,47 @@
   (syntax arg &context (major-mode rustic-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
+
+(defun nvp-rust-move-to-current-fn ()
+  "Move point to current function decl if point is function decl."
+  (let* ((rustic-cargo-fn-regexp
+          ;; redefine to allow "pub" in function decls
+          "^\s*\\(?:async\s+\\)?\s-*\\(?:pub\s+\\)?\s*fn\s+\\([^(]+\\)\s*(")
+         (fn (rustic-cargo--get-current-line-fn-name))
+         pos)
+    (save-excursion 
+      (while (and (not fn) (setq pos (nvp:point 'bul)))
+        (goto-char pos)
+        (setq fn (rustic-cargo--get-current-line-fn-name))))
+    (when fn
+      (goto-char (car fn))
+      (backward-up-list)
+      (forward-word -1)
+      (point))))
+
+;; -------------------------------------------------------------------
+;;; Tests
+
 (defun nvp-rust-current-test-dwim ()
+  "Run related test.
+Choose test to run by
+(1) point is currently in a test, run that.
+(2) choose test from known tests related to the symbol at point
+(3) try known test related to function containing point
+(4) run cargo test" 
   (interactive)
-  (if (rustic-cargo--get-test-target)
-      (rustic-cargo-current-test)
-    (when (fboundp 'lsp-rust-analyzer-related-tests)
-      (call-interactively #'lsp-rust-analyzer-related-tests))))
+  (cond
+   ((rustic-cargo--get-test-target)
+    (rustic-cargo-current-test))
+   ((and (fboundp 'lsp-rust-analyzer--related-tests)
+         (or
+          (and (lsp-rust-analyzer--related-tests)
+               (call-interactively #'lsp-rust-analyzer-related-tests))
+          (save-excursion
+            (and (nvp-rust-move-to-current-fn)
+                 (and (lsp-rust-analyzer--related-tests)
+                      (call-interactively #'lsp-rust-analyzer-related-tests)))))))
+   (t (rustic-cargo-test))))
 
 ;; -------------------------------------------------------------------
 ;;; Insert / Toggle
@@ -89,70 +127,6 @@
 ;;                 (push (match-string-no-properties 1) opts))
 ;;            (forward-line 1))
 ;;          opts))))
-
-;; find type in let expression
-(defun nvp-rust-let-type ()
-  (let (case-fold-search)
-    ;; "\\_<\\([[:upper:]][_[:digit:][:nonascii:][:word:]]*\\)\\_>"
-    (when (re-search-forward
-           rust-re-type-or-constructor (line-end-position) t)
-      (match-string 1))))
-
-;; Get cases of thing at point (|):
-;;
-;; Option| ==> (:enum "Some" "None")
-;;
-;; fn blah(t: &Option<&Thing>) -> Thing {
-;;   match *t| ==> (:enum "Some" "None")
-;;
-;; let x = Some("value");
-;; x| ==> (:enum "Some" "None")
-;;
-;; let x: Option<u32> = ...
-;; x| ==> (:enum "Some" "None")
-;;
-;;; struct
-;;
-;; struct Point {
-;;   x: i32,
-;;   y: i32,
-;; }
-;; let point = Point| ==> (:struct "x" "y")
-;;
-;; FIXME: fix reading fields, matches by line ...
-
-;; (defun nvp-rust-cases ()
-;;   (-when-let* ((sym (symbol-at-point))
-;;                (sym (cl-find-if
-;;                      (lambda (s) (string= sym s)) (racer-complete))))
-;;     (pcase (get-text-property 0 'matchtype sym)
-;;       ((or "Let" "FnArg")
-;;        (nvp-rust-at-definition-of sym
-;;          (when (nvp-rust-let-type)
-;;            (nvp-rust-cases))))
-;;       ((or "Enum" "EnumVariant")
-;;        (nvp-rust-at-definition-of sym
-;;          (cons :enum (nvp-rust-enum-fields))))
-;;       ("Struct"
-;;        (nvp-rust-at-definition-of sym
-;;          (cons :struct (nvp-rust-struct-fields))))
-;;       (_ sym))))
-
-;; get fields of enum at point
-;; (defun nvp-rust-enum-fields ()
-;;   (nvp-rust-collect-fields
-;;     (concat "^\\s-*" rust-re-type-or-constructor)))
-
-;; struct fields
-;; (defun nvp-rust-struct-fields ()
-;;   (nvp-rust-collect-fields "^\\s-*\\([_a-z0-9]+\\):"))
-
-;; get fields for struct / enum we be at
-;; (defun nvp-rust-match ()
-;;   (interactive)
-;;   (let ((_meta (racer--call-at-point "find-definition")))
-;;     ;; FIXME:
-;;     ))
 
 (provide 'nvp-rust)
 ;;; nvp-rust.el ends here

@@ -2,6 +2,6 @@
 # name: method
 # key: meth
 # --
-func (${2:$$(downcase (yas-field-value 1))} *${1:Struct}) ${3:MethodName}(${4:arguments}) ${5:ReturnType} {
+func (${2:$$(yas-auto-next (downcase (yas-field-value 1)))} *${1:Struct}) ${3:MethodName}(${4:arguments}) ${5:ReturnType }{
 	$0
 }

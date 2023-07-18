@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: if ok
+# key: ifo
+# --
+if ${1:res}, ok := $2; ok {
+	$0
+}

@@ -123,7 +123,7 @@ http://pswinkels.blogspot.ca/2010/04/debugging-python-code-from-within-emacs.htm
     (re-search-backward
      "^\\(class\\|def\\)[ \t]+\\([a-zA-Z0-9_]+\\)" nil t)
     (let ((result
-            (buffer-substring-no-properties (match-beginning 2) (match-end 2))))
+           (buffer-substring-no-properties (match-beginning 2) (match-end 2))))
 
       (cons
        (buffer-substring-no-properties (match-beginning 1) (match-end 1))
@@ -136,13 +136,13 @@ http://pswinkels.blogspot.ca/2010/04/debugging-python-code-from-within-emacs.htm
            (file-name-directory buffer-file-name))))
     (cond ((funcall nose-project-root-test dn) (expand-file-name dn))
           ((equal (expand-file-name dn) "/") nil)
-        (t (nose-find-project-root
-             (file-name-directory (directory-file-name dn)))))))
+          (t (nose-find-project-root
+              (file-name-directory (directory-file-name dn)))))))
 
 (defun nose-project-root (dirname)
-  (cl-reduce '(lambda (x y) (or x y))
-          (mapcar (lambda (d) (member d (directory-files dirname)))
-                  nose-project-root-files)))
+  (cl-reduce (lambda (x y) (or x y))
+             (mapcar (lambda (d) (member d (directory-files dirname)))
+                     nose-project-root-files)))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

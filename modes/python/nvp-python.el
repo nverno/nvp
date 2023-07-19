@@ -5,9 +5,8 @@
 ;;         '().', so the function could be advised (similar to modification for
 ;;         octave in nvp-octave.el
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-python-ct "./compile/nvp-python-ct"))
+(eval-when-compile (require 'nvp-macro))
+(nvp:req 'nvp-python 'subrs)
 (require 'comint)
 (require 'python)
 (nvp:decls :f (conda-env-send-buffer
@@ -26,9 +25,9 @@
   (save-excursion
     (widen)
     (goto-char (point-min))
-    (when (nvp-python-encoding-comment-required-p)
+    (when (nvp:python-encoding-comment-required-p)
       (goto-char (point-min))
-      (let ((coding-system (nvp-python-detect-encoding)))
+      (let ((coding-system (nvp:python-detect-encoding)))
 	(when coding-system
 	  (if (looking-at "^#!") (beginning-of-line 2))
 	  (cond ((looking-at 
@@ -38,7 +37,7 @@
 		   (goto-char (match-beginning 2))
 		   (insert coding-system)))
 		((looking-at "\\s *#.*coding\\s *[:=]"))
-		(t (nvp-python-insert-coding-comment coding-system)))
+		(t (nvp:python-insert-coding-comment coding-system)))
 	  (when (buffer-modified-p)
 	    (basic-save-buffer-1)))))))
 
@@ -102,11 +101,11 @@ the console."
   (interactive "P")
   (and (python-info-current-line-comment-p)
        (forward-comment (point-max)))
-  (let ((bnds (nvp-python-statement-bounds)))
+  (let ((bnds (nvp:python-statement-bounds)))
     (when (and (not (bolp))                   ; maybe directly after statement
                (equal (car bnds) (cdr bnds))) ; and not in a statement
       (setq bnds (progn (beginning-of-line)   ; so, try from beginning of line
-                        (nvp-python-statement-bounds))))
+                        (nvp:python-statement-bounds))))
     (if (and (not arg) (not (equal (car bnds) (cdr bnds))))
         (python-shell-send-region (car bnds) (cdr bnds))
       (save-excursion
@@ -124,7 +123,7 @@ the console."
 ;; eval last expression
 (defun nvp-python-eval-last-sexp (arg)
   (interactive "P")
-  (let* ((bnds (nvp-python-statement-bounds))
+  (let* ((bnds (nvp:python-statement-bounds))
          (res (python-shell-send-string-no-output
                (buffer-substring-no-properties (car bnds) (cdr bnds)))))
     (when res

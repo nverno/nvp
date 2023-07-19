@@ -1328,10 +1328,10 @@ and set `this-command' to nil so opposite happens next time."
            (when (not (process-get ,(or repl-process
                                         '(get-buffer-process repl-buffer))
                                    :src-buffer))
-             ,(and repl-config `(funcall ,repl-config)))
-           (process-put ,(or repl-process
-                             '(get-buffer-process repl-buffer))
-                        :src-buffer src-buffer))))))
+             ,(and repl-config `(funcall ,repl-config))
+             (process-put ,(or repl-process
+                               '(get-buffer-process repl-buffer))
+                          :src-buffer src-buffer)))))))
 
 
 ;; -------------------------------------------------------------------

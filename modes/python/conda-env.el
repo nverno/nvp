@@ -49,11 +49,12 @@
 
 ;; read an installed environment -- return nil if "root"
 (defun conda-env-read-env ()
-  (let ((env (ido-completing-read
+  (let ((env (completing-read
               "Environment: " (cons "root"
                                     (directory-files
                                      (expand-file-name
-                                      "envs" conda-env-home) nil "^[^.]")))))
+                                      "envs" conda-env-home)
+                                     nil "^[^.]")))))
     (and (not (string= env "root")) env)))
 
 (defun conda-env-install (env pkg)
@@ -129,7 +130,7 @@
   (let* ((pythons
           (delq nil (mapcar #'(lambda (x) (and (executable-find x) x))
                             '("python" "ipython"))))
-         (program (if arg (ido-completing-read "Python: " pythons)
+         (program (if arg (completing-read "Python: " pythons)
                     (if (member "ipython" pythons) "ipython"
                       (car pythons))))
          (pyver (conda-env-python-major-version "python")))

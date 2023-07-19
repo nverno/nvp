@@ -37,7 +37,7 @@
 ;; called when opening a test buffer
 (defun nvp-c-test-buffer (type &optional runner)
   (setq-local nvp-c-test-runner runner)
-  (nvp-c-test--buffer type))
+  (nvp:c-test--buffer type))
 
 ;;;###autoload(autoload 'nvp-project-c-unity-setup "nvp-c-test")
 (nvp-define-project c-unity
@@ -67,14 +67,14 @@
   (funcall-interactively nvp-c-test-runner arg))
 
 ;; commands to run unit test
-(nvp-c-test--runner-fn nvp-c-test-default-runner nil
+(nvp:c-define-test-runner-fn nvp-c-test-default-runner nil
   "-Werror -Wall -std=c11 -O2 -s -DTEST -I.")
 
-(nvp-c-test--runner-fn nvp-c-test-run-unity-test nil
+(nvp:c-define-test-runner-fn nvp-c-test-run-unity-test nil
   (concat
    "-Werror -Wall -std=c11 -O2 -s -DTEST -I. -I"
-   (nvp-c-local-include-path "unity/src") " "
-   (nvp-c-local-include-path "unity/src/unity.c")))
+   (nvp:c-local-include-path "unity/src") " "
+   (nvp:c-local-include-path "unity/src/unity.c")))
 
 ;; compile associated unit test and run valgrind on it
 ;;;###autoload
@@ -88,7 +88,7 @@
                (buffer-file-name)))))
   (funcall-interactively
    nvp-test-run-unit-function current-prefix-arg
-   file (concat "valgrind " (nvp-c-out-file file))))
+   file (concat "valgrind " (nvp:c-out-file file))))
 
 ;;;###autoload
 (defun nvp-c-test-help-online ()

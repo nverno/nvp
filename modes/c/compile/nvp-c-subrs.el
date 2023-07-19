@@ -11,15 +11,15 @@
 ;; -------------------------------------------------------------------
 ;;; Basic utils
 
-(defsubst nvp-c-out-file (&optional file)
+(defsubst nvp:c-out-file (&optional file)
   (concat (nvp:no-ext file) (nvp:with-gnu/w32 ".out" ".exe")))
 
 ;; associated header file name
-(defsubst nvp-c--header-file-name (&optional buffer ext)
+(defsubst nvp:c--header-file-name (&optional buffer ext)
   (concat (nvp:no-ext buffer) (or ext ".h")))
 
 ;; assume first path will be root, eg ~/.local/include:etc
-(defsubst nvp-c-local-include-path (path)
+(defsubst nvp:c-local-include-path (path)
   (expand-file-name
    path
    (car (split-string (or (getenv "C_INCLUDE_PATH")
@@ -29,7 +29,7 @@
 ;;; Tests
 
 ;; locally set keys in test buffers to run tests
-(defmacro nvp-c-test--buffer (type)
+(defmacro nvp:c-test--buffer (type)
   `(progn
      (setq-local local-abbrev-table
                  (symbol-value (intern (concat ,type "-abbrev-table"))))
@@ -39,7 +39,7 @@
 
 ;; generate function to run unit tests
 ;; Runs tests in current buffer or FILE if non-nil
-(defmacro nvp-c-test--runner-fn (name &optional c++ flags libs)
+(defmacro nvp:c-define-test-runner-fn (name &optional c++ flags libs)
   (declare (indent defun))
   (let ((fn (nvp:as-symbol name)))
     `(progn
@@ -50,7 +50,7 @@ is non-nil."
          (interactive "P")
          (let* ((default-directory (if file (file-name-directory file)
                                      default-directory))
-                (out (nvp-c-out-file file))
+                (out (nvp:c-out-file file))
                 (compile-command
                  (concat
                   (nvp:concat
@@ -66,13 +66,13 @@ is non-nil."
 ;; -------------------------------------------------------------------
 ;;; C++
 
-(defmacro nvp-with-c++-vars (&rest body)
+(defmacro nvp:with-c++-vars (&rest body)
   (declare (indent defun))
   `(nvp-with-project
      (:test-re ".*test.*\.cpp" :root '("test" "tests" ".git" ".projectile"))
      ,@body))
 
-(defmacro nvp-c++-test--setup-buffer ()
+(defmacro nvp:c++-test--setup-buffer ()
   `(progn
      (setq-local local-abbrev-table boost-test-abbrev-table)
      (nvp:set-local-keymap :use t

@@ -128,7 +128,7 @@
   (interactive)
   (let ((func (nvp-c-help-function-at-point))
         ;; FIXME: use semanticdb to get include
-        (header (nvp-c--header-file-name)))
+        (header (nvp:c--header-file-name)))
     ;; don't try for static functions
     (if (and func (not (cdr func)) header)
         (progn

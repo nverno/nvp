@@ -238,7 +238,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
   (interactive "P")
   (let ((file (if arg (read-from-minibuffer "Output file: " "out.txt")
                 "out.txt"))
-        (out (file-name-nondirectory (nvp-c-out-file))))
+        (out (file-name-nondirectory (nvp:c-out-file))))
     (nvp-c-compile-and-run
      nil nil "-O3 -DTEST -std=c11"
      (concat "./" out " 2> " file

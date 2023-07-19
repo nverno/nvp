@@ -7,14 +7,14 @@
   (if update
       (call-interactively 'nvp-c-create-or-update-header)
     (condition-case nil
-        (find-file-other-window (nvp-c--header-file-name))
+        (find-file-other-window (nvp:c--header-file-name))
       (error "oop"))))
 
 (defun nvp-c-create-or-update-header (and-go)
   "Creates/updates header file with the function signatures in the current
 source file."
   (interactive (list t))
-  (let ((header (nvp-c--header-file-name))
+  (let ((header (nvp:c--header-file-name))
         (sigs (nvp-c-function-signatures nil 'ignore-main 'ignore-static))
         (yas-wrap-around-region nil)
         (init t))

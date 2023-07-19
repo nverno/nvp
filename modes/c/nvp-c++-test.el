@@ -23,7 +23,7 @@
 
 ;; if new expand template for new test
 (defun nvp-c++-test-setup-buffer (&optional new)
-  (nvp-c++-test--setup-buffer)
+  (nvp:c++-test--setup-buffer)
   (when (or current-prefix-arg new)
     (goto-char (point-max))
     (insert "\nbatc")
@@ -43,7 +43,7 @@
   (interactive)
   (browse-url "https://github.com/jsankey/boost.test-examples/"))
 
-(nvp-c-test--runner-fn nvp-c++-test-run-unit-test 'c++
+(nvp:c-define-test-runner-fn nvp-c++-test-run-unit-test 'c++
   ;; flags
   "-std=c++14 -O3 -s"
   ;; link

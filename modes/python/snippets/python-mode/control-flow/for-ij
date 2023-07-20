@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for i ... for j
+# key: forij
+# --
+for i in range(${1:m}):
+    for j in range(${2:n}):
+        $0

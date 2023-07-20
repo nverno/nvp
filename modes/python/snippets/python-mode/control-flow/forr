@@ -2,5 +2,5 @@
 # name: for range
 # key: forr
 # --
-for ${1:i} in range($2):
+for ${1:i} in range(${2:n}):
 	$0

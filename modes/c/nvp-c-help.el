@@ -26,7 +26,7 @@
 ;; sources determined by source file paths
 (defvar nvp-c-help-online-sources
   (let ((uri
-         "http://pubs.opengroup.org/onlinepubs/9699919799/functions/%s.html"
+         "https://pubs.opengroup.org/onlinepubs/9699919799/functions/%s.html"
          ;; "http://en.cppreference.com/mwiki/index.php?title=Special:Search&search=%s"
          ))
     (cl-loop for p in semantic-c-dependency-system-include-path
@@ -73,7 +73,12 @@
 ;; -------------------------------------------------------------------
 ;;; Hap backend
 
-(defun nvp-c-man--next-section (cmd)
+(defsubst nvp-c--parse-tag (tag)
+  (if (semantic-tag-p tag)
+      (list (semantic-tag-name tag) (semantic-tag-file-name tag))
+    (list tag)))
+
+(defun nvp-c--man-next-section (cmd)
   (let ((num (substring cmd 0 1)))
     (concat
      (pcase num
@@ -87,65 +92,26 @@
   (cl-case command
     (thingatpt (nvp-semantic-tag-at (point)))
     (doc-buffer
-     (let* ((tag-name arg)
-            (file (if (semantic-tag-p arg)
-                      (progn
-                        (setq tag-name (semantic-tag-name arg))
-                        (semantic-tag-file-name arg))))
-            (action (and (stringp file)
-                         (nvp:c-help-find-source 'local file))))
-       (when action
-         (pcase-let ((`(,cmd ,fmt ,args) action))
+     (pcase-let ((`(,tag-name ,file ,_args) (nvp-c--parse-tag arg)))
+       (--when-let (and (stringp file)
+                        (nvp:c-help-find-source 'local file))
+         (pcase-let ((`(,cmd ,fmt ,args) it))
            (pcase cmd
              ('man
               (let ((topic (format fmt tag-name)))
                 (or
                  (nvp-hap-man-buffer topic)
-                 (nvp-hap-man-buffer (nvp-c-man--next-section topic)))))
-             (_ (apply cmd (format fmt tag-name) args)))))))))
+                 (nvp-hap-man-buffer (nvp-c--man-next-section topic)))))
+             (_ (apply cmd (format fmt tag-name) args)))))))
+    (url
+     (pcase-let ((`(,tag-name ,file ,_args) (nvp-c--parse-tag arg)))
+       (--when-let (and (stringp file)
+                        (cdr (nvp:c-help-find-source 'online file)))
+         (format it tag-name))))))
 
 
 ;; -------------------------------------------------------------------
 ;;; Commands
-
-;; FIXME: remove
-(defun nvp-c-help-get-man-help (cmd)
-  (let ((buf (man cmd)))
-    (sit-for 0.1)                      ;FIXME
-    (unless (buffer-live-p buf)
-      (let ((num (substring cmd 0 1)))
-        (man (concat
-              (pcase num
-                (`"1" "2")
-                (`"2" "3")
-                (`"3" "2"))
-              (substring cmd 1)))))))
-
-;; FIXME: remove
-;; Lookup info in man or online for thing at point
-;;;###autoload
-(defun nvp-c-help-at-point (point &optional online)
-  (interactive "d")
-  (let* ((tag (nvp-semantic-tag-at point))
-         (file (and (semantic-tag-p tag)
-                    (semantic-tag-file-name tag))))
-    (if (or online current-prefix-arg)
-        (let ((ref (and (stringp file)
-                        (nvp:c-help-find-source 'online file))))
-          (if (not ref)
-              (message "No documentation source found for %S" tag)
-            (browse-url (format (cdr ref) (semantic-tag-name tag)))))
-      (let ((action (and (stringp file)
-                         (nvp:c-help-find-source 'local file)))
-            (tag-name (or (and (semantic-tag-p tag)
-                               (semantic-tag-name tag))
-                          tag)))
-        (when action
-          (pcase (car action)
-            ('man (nvp-c-help-get-man-help (format (cadr action) tag-name)))
-            (_ (apply (car action)
-                      (format (cadr action) tag-name)
-                      (cddr action)))))))))
 
 ;; TODO: index and search
 ;;;###autoload

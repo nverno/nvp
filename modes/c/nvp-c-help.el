@@ -17,6 +17,7 @@
 (require 'nvp-hap-semantic)
 (require 'nvp-c)
 (nvp:req 'nvp-c 'subrs)
+(nvp:auto "nvp-hap-man" 'nvp-hap-man-buffer)
 (nvp:decls :v (semantic-c-dependency-system-include-path))
 
 ;; -------------------------------------------------------------------
@@ -54,7 +55,7 @@
             (list (car tag))))))))
 
 (eval-when-compile
-  (defmacro nvp-c-help-find-source (type file)
+  (defmacro nvp:c-help-find-source (type file)
     "Find help location for TYPE as determined by FILE."
     (pcase type
       (`'online
@@ -69,13 +70,45 @@
             (cl-some (lambda (e) (string-match-p e ,file)) (car entry)))
           nvp-c-help-local-sources))))))
 
-;; TODO: if 'man 2' doesn't work, try 'man 3', eg. execvp in unistd
-;;      - how to hook into Man to know if there was a problem?
-;;        it creates the buffer no matter what, and runs async
-;; (defun nvp-c-help-Man-cooked-hook ()
-;;   (and (eq 0 (buffer-size))
-;;        (throw 'no-dice nil)))
-;; (setq Man-cooked-hook 'nvp-c-help-Man-cooked-hook)
+;; -------------------------------------------------------------------
+;;; Hap backend
+
+(defun nvp-c-man--next-section (cmd)
+  (let ((num (substring cmd 0 1)))
+    (concat
+     (pcase num
+       (`"1" "2")
+       (`"2" "3")
+       (`"3" "2"))
+     (substring cmd 1))))
+
+;;;###autoload
+(defun nvp-hap-c (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (nvp-semantic-tag-at (point)))
+    (doc-buffer
+     (let* ((tag-name arg)
+            (file (if (semantic-tag-p arg)
+                      (progn
+                        (setq tag-name (semantic-tag-name arg))
+                        (semantic-tag-file-name arg))))
+            (action (and (stringp file)
+                         (nvp:c-help-find-source 'local file))))
+       (when action
+         (pcase-let ((`(,cmd ,fmt ,args) action))
+           (pcase cmd
+             ('man
+              (let ((topic (format fmt tag-name)))
+                (or
+                 (nvp-hap-man-buffer topic)
+                 (nvp-hap-man-buffer (nvp-c-man--next-section topic)))))
+             (_ (apply cmd (format fmt tag-name) args)))))))))
+
+
+;; -------------------------------------------------------------------
+;;; Commands
+
+;; FIXME: remove
 (defun nvp-c-help-get-man-help (cmd)
   (let ((buf (man cmd)))
     (sit-for 0.1)                      ;FIXME
@@ -88,9 +121,7 @@
                 (`"3" "2"))
               (substring cmd 1)))))))
 
-;; -------------------------------------------------------------------
-;;; Commands
-
+;; FIXME: remove
 ;; Lookup info in man or online for thing at point
 ;;;###autoload
 (defun nvp-c-help-at-point (point &optional online)
@@ -100,12 +131,12 @@
                     (semantic-tag-file-name tag))))
     (if (or online current-prefix-arg)
         (let ((ref (and (stringp file)
-                        (nvp-c-help-find-source 'online file))))
+                        (nvp:c-help-find-source 'online file))))
           (if (not ref)
               (message "No documentation source found for %S" tag)
             (browse-url (format (cdr ref) (semantic-tag-name tag)))))
       (let ((action (and (stringp file)
-                         (nvp-c-help-find-source 'local file)))
+                         (nvp:c-help-find-source 'local file)))
             (tag-name (or (and (semantic-tag-p tag)
                                (semantic-tag-name tag))
                           tag)))

@@ -4,8 +4,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-hap)
+(require 'man)
 (nvp:decls)
-(nvp:auto "man" Man-completion-table)
 
 (defvar nvp-hap-man--buffer "*hap-man*")
 
@@ -16,34 +16,31 @@
         (start-process-shell-command "man" (or buffer nvp-hap-man--buffer) cmd)
       (call-process-shell-command cmd nil (or buffer nvp-hap-man--buffer)))))
 
-;;; TODO: getting symbol generic by mode
-(defun nvp-hap-man-thingatpt ()
-  (when-let ((sym (thing-at-point 'symbol)))
-    (let* ((tmp (generate-new-buffer-name (concat " " nvp-hap-man--buffer)))
-           (buff (get-buffer-create tmp)))
-      (unwind-protect
-          (with-current-buffer buff
-            (progn
-              (nvp-hap-man-lookup sym buff)
-              (goto-char (point-min))
-              (unless (looking-at-p "No manual")
-                (when (buffer-live-p (get-buffer nvp-hap-man--buffer))
-                  (kill-buffer nvp-hap-man--buffer))
-                (rename-buffer nvp-hap-man--buffer)
-                sym)))
-        (and (equal tmp (buffer-name buff))
-             (kill-buffer buff)
-             (message "Killed %S" buff))))))
+;; only return thing at point with a prefix arg to explicity call man or if
+;; there is a unique match for "thing", possibly followed by "(num)" for section
+(defun nvp-hap-man-thingatpt (&optional arg)
+  (if arg
+      (nvp-hap-thing-at-point arg nil "Man: " 'Man-completion-table)
+    (let* ((sym (thing-at-point 'symbol))
+           (comps (Man-completion-table sym nil nil)))
+      (when (or (eq t comps)
+                (and (stringp comps)
+                     (string-match-p (concat sym "\\(?:(\\d*)?\\)?") sym)))
+        sym))))
 
+(defun nvp-hap-man-buffer (topic)
+  (let* ((Man-notify-method 'quiet)
+         ;; added in emacs v30!
+         (Man-prefer-synchronous-call t)
+         (buf (man topic)))
+    (and (buffer-live-p buf)
+         (list buf (point-min) nil))))
 
 ;;;###autoload
 (defun nvp-hap-man (command &optional arg &rest _args)
   (cl-case command
-    (thingatpt
-     ;; only return thing at point with a prefix arg to explicity call man
-     (when arg
-       (nvp-hap-thing-at-point arg nil "Man: " 'Man-completion-table)))
-    (doc-buffer)))
+    (thingatpt (nvp-hap-man-thingatpt arg))
+    (doc-buffer (nvp-hap-man-buffer arg))))
 
 
 (provide 'nvp-hap-man)

@@ -16,25 +16,29 @@
 
 ;;;###autoload
 (defun nvp-hap-semantic (command &optional arg &rest _args)
-  (cl-case command
-    (thingatpt
-     (-when-let (tag (nvp-semantic-tag-at (point)))
-       (and (semantic-tag-p tag) tag)))
-    ;; (doc-string (semantic-documentation-for-tag arg))
-    (doc-buffer
-     (-when-let (tag (if (semantic-tag-p arg) arg
-                       (nvp-semantic-tag-at (point))))
-       (let ((doc (or (semantic-documentation-for-tag tag)
-                      ;; TODO: try includes
-                      ;; (when-let* ((tab semanticdb-current-table)
-                      ;;             (inc (semanticdb-includes-in-table tab))))
-                      )))
-         (with-current-buffer (nvp-hap-doc-buffer)
-           (insert "Tag: ")
-           (insert (semantic-format-tag-prototype tag))
-           (insert "\n\nSnarfed Documentation:\n\n")
-           (insert (if doc (princ doc) "  Documentation unavailable."))
-           (list (current-buffer) nil nil)))))))
+  (if (not (semantic-active-p))
+      (cl-pushnew 'nvp-hap-semantic nvp-hap--disabled-backends)
+    (cl-case command
+      (init (or (semantic-active-p)
+                (error "semantic not active")))
+      (thingatpt
+       (-when-let (tag (nvp-semantic-tag-at (point)))
+         (and (semantic-tag-p tag) tag)))
+      ;; (doc-string (semantic-documentation-for-tag arg))
+      (doc-buffer
+       (-when-let (tag (if (semantic-tag-p arg) arg
+                         (nvp-semantic-tag-at (point))))
+         (let ((doc (or (semantic-documentation-for-tag tag)
+                        ;; TODO: try includes
+                        ;; (when-let* ((tab semanticdb-current-table)
+                        ;;             (inc (semanticdb-includes-in-table tab))))
+                        )))
+           (with-current-buffer (nvp-hap-doc-buffer)
+             (insert "Tag: ")
+             (insert (semantic-format-tag-prototype tag))
+             (insert "\nSnarfed Documentation:\n\n")
+             (insert (if doc (princ doc) "  Documentation unavailable."))
+             (list (current-buffer) nil nil))))))))
 
 ;;;###autoload
 (defun nvp-hap-semantic-popup ()

@@ -303,6 +303,7 @@ See also `pos-tip-show-no-propertize'."
 
 (defvar-local nvp-hap-company-backend 'company-capf)
 (defvar-local nvp-hap-backend nil)
+(defvar-local nvp-hap--disabled-backends nil)
 
 (defun nvp-hap-call-backend (&rest args)
   (condition-case-unless-debug err
@@ -318,14 +319,47 @@ See also `pos-tip-show-no-propertize'."
         nvp-hap--doc-buffer nil)
   (nvp-hap-uninstall-keymap 'kill-map))
 
+;; same as `company-init-backend' pretty much
+(defun nvp-hap--init-backend (backend)
+  (and (symbolp backend)
+       (not (fboundp backend))
+       (ignore-errors (require backend nil t)))
+  (cond
+   ((symbolp backend)
+    (condition-case err
+        (progn
+          (funcall backend 'init)
+          (put backend 'hap-init t))
+      (error
+       (put backend 'hap-init 'failed)
+       (message "Hap backend '%s' failed to initialize:\n%s"
+                backend (error-message-string err))
+       (cl-pushnew backend nvp-hap--disabled-backends)
+       nil)))
+   ((functionp backend) t)
+   (t
+    (cl-dolist (b backend)
+      (unless (keywordp b)
+        (nvp-hap-init-backend b))))))
+
+(defun nvp-hap-init-backend (backend)
+  (unless (memq backend nvp-hap--disabled-backends)
+    (or (not (symbolp backend))
+        (eq t (get backend 'hap-init))
+        (unless (get backend 'hap-init)
+          (nvp-hap--init-backend backend)))))
+
+
 ;; passes prefix argument to `nvp-hap-show-*' functions in case
 ;; prompt was forced to find symbol other than the one at point
 (defun nvp-hap--begin (&optional prefix)
   (let (sym)
     (cl-dolist (backend (if nvp-hap-backend (list nvp-hap-backend)
                           nvp-help-at-point-functions))
-      (when (setq sym (let ((nvp-hap-backend backend))
-                        (nvp-hap-call-backend 'thingatpt prefix)))
+      (when (and
+             (nvp-hap-init-backend backend)
+             (setq sym (let ((nvp-hap-backend backend))
+                         (nvp-hap-call-backend 'thingatpt prefix))))
         (setq nvp-hap-backend backend
               nvp-hap--thingatpt sym
               nvp-hap--doc-buffer nil)

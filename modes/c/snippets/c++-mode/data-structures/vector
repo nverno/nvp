@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: vector
 # key: v
-# condition: (null yas--active-snippets)
+# condition: (nvp-yas-inactive-p)
 # --
 vector<$1>

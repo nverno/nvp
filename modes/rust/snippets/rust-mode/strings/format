@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: format!(..., ...)
 # key: fmt
-# condition: (null yas--active-snippets)
+# condition: (nvp-yas-inactive-p)
 # --
 format!("$1", ${2:`$%`})

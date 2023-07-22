@@ -1,5 +1,6 @@
 # -*- mode: snippet -*-
 # name: let
 # key: l
+# condition: (nvp-yas-inactive-p)
 # --
 let $1 = $2;

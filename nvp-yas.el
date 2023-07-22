@@ -98,6 +98,7 @@ If TRIM is non-nil, whitespace is removed from selected text.
 
 (defvaralias '$tmp 'nvp--yas-tmp)
 (defvar nvp--yas-tmp nil)
+(defun nvp-yas-inactive-p () (null yas--active-snippets))
 (defun nvp-yas-set-tmp (expr) (progn (setq nvp--yas-tmp (eval expr)) ""))
 (defun nvp-yas-newline-selected-newline () (nvp-yas-format "%n%s%n" nil t))
 (defun nvp-yas-newline-selected () (nvp-yas-format "%s%n" nil t))

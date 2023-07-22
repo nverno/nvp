@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: get
 # key: g
-# condition: (null yas--active-snippets)
+# condition: (nvp-yas-inactive-p)
 # --
 get<$1>($2)

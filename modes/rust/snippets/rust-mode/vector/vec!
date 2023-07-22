@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: new vector w/ macro
 # key: v
-# condition: (null yas--active-snippets)
+# condition: (nvp-yas-inactive-p)
 # type: command
 # --
 (if (nvp-yas-bolp)

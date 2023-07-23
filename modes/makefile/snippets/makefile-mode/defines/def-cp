@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: define CP
+# key: d_cp
+# --
+CP ?= install -p -m 644

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: define SHELL
+# key: d_shell
+# --
+SHELL = ${1:/bin/bash}

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: define RM
+# key: d_rm
+# --
+RM ?= rm -rf

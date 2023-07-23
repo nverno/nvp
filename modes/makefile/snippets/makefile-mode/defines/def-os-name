@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: OS
-# key: OS
+# key: d_os
 # --
 OS := \$(shell . /etc/os-release && echo $$NAME | awk '{print $$1}')

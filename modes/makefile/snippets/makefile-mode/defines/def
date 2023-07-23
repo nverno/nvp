@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: define program variable
+# key: dp
+# --
+${1:$(nvp--make-defvar)} ${2:?}= ${1:VAR}

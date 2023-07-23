@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: git clone github
+# key: gitcl
+# --
+git clone git@github.com:`
+(s-chop-prefix "https://github.com/" (nvp-yas-read #'read-string "url: "))`

@@ -2,4 +2,4 @@
 # name: var
 # key: _
 # --
-`(if (nth 3 (syntax-ppss)) "" "\"")`\${$1}`(unless (nth 3 (syntax-ppss)) "\"")`$0
+`($set (if (nvp-yas-in-soc) "" "\""))``$tmp`\${$1}`$tmp`$0

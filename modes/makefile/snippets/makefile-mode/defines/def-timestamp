@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: timestamp
-# key: timestamp
+# key: d_timestamp
 # --
 TIMESTAMP := \$(shell /bin/date "+%Y-%m-%d-%H:%M:%S")

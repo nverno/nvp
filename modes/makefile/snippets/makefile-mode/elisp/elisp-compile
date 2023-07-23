@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: compile to elc
-# key: elisp-compile
+# key: el-compile
 # --
 .PHONY: all clean
 

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: define top directory
+# key: d_top
+# --
+TOP := $(dir $(lastword $(MAKEFILE_LIST)))

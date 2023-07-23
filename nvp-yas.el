@@ -1,17 +1,13 @@
 ;;; nvp-yas.el --- snippet helpers -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
-;;; FIXME: make `yas-text' optional for generally usefule functions
-;; - should comment functions be separated out?
-;; - subrs are only useful if libraries require this during compile, since
-;;   I don't typically compile yas-snippets
 ;; XXX: should the base snippets be compiled? They rarely change
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'yasnippet))
 (nvp:auto "nvp-parse" 'nvp-parse-current-function)
-(nvp:auto "s" 's-upper-camel-case 's-snake-case 's-match)
+(nvp:auto "s" 's-upper-camel-case 's-snake-case 's-match 's-chop-prefix)
 
 (defvaralias '$% 'yas-selected-text)
 (nvp:decls :v (yas-moving-away-p yas-modified-p)

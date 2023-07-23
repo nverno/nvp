@@ -4,7 +4,7 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'hydra)
-  (defvar nvp-python-debug-breakpoint-string))
+  (defvar nvp-python-breakpoint-string))
 (require 'gud)
 (require 'nose)
 (require 'nvp-python)
@@ -12,28 +12,40 @@
 ;;; Debug
 
 ;;;###autoload
-(defun nvp-python-debug-annotate ()
+(defun nvp-python-annotate-breakpoints (&optional arg)
   "Highlight break point lines."
+  (interactive "P")
+  (if arg
+      (hi-lock-unface-buffer t)
+    (highlight-lines-matching-regexp "import i?pu?db")
+    (highlight-lines-matching-regexp "i?pu?db.set_trace()")))
+
+(defun nvp-python-remove-breakpoints ()
   (interactive)
-  (highlight-lines-matching-regexp "import i?pu?db")
-  (highlight-lines-matching-regexp "i?pu?db.set_trace()"))
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward
+            (concat "^\\s-*" nvp-python-debug-breakpoint-string "[ \t]*$") nil t)
+      (delete-line))))
 
 ;;;###autoload
 (defun nvp-python-toggle-breakpoint ()
   "Add or remove a debugging breakpoint at point."
   (interactive)
   (let ((line (thing-at-point 'line)))
-    (if (and line (string-match-p nvp-python-debug-breakpoint-string line))
-        (kill-whole-line)
+    (if (and line (string-match-p nvp-python-breakpoint-string line))
+        (delete-line)
       (progn
         (back-to-indentation)
-        (insert nvp-python-debug-breakpoint-string)
+        (insert nvp-python-breakpoint-string)
         (insert "\n")
         (python-indent-line)))))
 
 ;; -------------------------------------------------------------------
 ;;; GDB REPL 
 
+;; FIXME: use something like `nvp-gdb-init'. Need to add option to choose
+;; from multiple repls associated with modes
 (nvp:repl-switch "gud-pdb" (:repl-mode 'gud-mode
                             :repl-doc "Switch between PDB and source buffer."
                             :repl-find-fn

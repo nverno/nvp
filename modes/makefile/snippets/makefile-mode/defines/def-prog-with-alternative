@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: define program variable using alternative when available
+# key: dd
+# --
+${1:$(nvp--make-defvar)} ?= \$(shell command -v ${2:ALTERNATIVE} || printf ${1:DEFAULT})

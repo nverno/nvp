@@ -73,7 +73,7 @@
       (save-match-data
         (goto-char (point-min))
         (if (re-search-forward
-             (concat "^\\s-*" nvp-python-debug-breakpoint-string "$") nil t)
+             (concat "^\\s-*" nvp-python-debug-breakpoint-string "[ \t]*$") nil t)
             (funcall orig cmd t)
           (funcall orig cmd comint))))))
 
@@ -176,7 +176,7 @@ the console."
   (define-key pmap "c"              'nosestest-pdb-one)
   (define-key pmap "h"              'nvp-pdb-hydra/body)
   (define-key pmap (kbd "<f2> m z") 'nvp-gud-pdb-repl-switch)
-  (define-key pmap "H"              'nvp-python-debug-annotate))
+  (define-key pmap "H"              'nvp-python-annotate-breakpoints))
 
 (easy-menu-define nil nvp-python-mode-map nil
   `("PU"
@@ -191,7 +191,7 @@ the console."
      ["pdb" pdb t]
      ["switch to gud-pdb repl" nvp-gud-pdb-switch t]
      ["toggle pdb breakpoint" nvp-python-toggle-breakpoint t]
-     ["highlight traces" nvp-python-debug-annotate t]
+     ["highlight traces" nvp-python-annotate-breakpoints t]
      ["pdb hydra" nvp-pdb-hydra/body]
      "--"
      ("Nose"

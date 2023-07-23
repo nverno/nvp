@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: define INSTALL_INFO
+# key: d_info
+# --
+INSTALL_INFO ?= \$(shell command -v install-info || printf install-info)

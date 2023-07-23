@@ -3,5 +3,5 @@
 # key: texinfo
 # --
 #+TEXINFO_DIR_CATEGORY: ${1:Programming}
-#+TEXINFO_DIR_TITLE: ${2:Title}: (${3:texinfo file})
-#+TEXINFO_DIR_DESC: ${4:Section info}
+#+TEXINFO_DIR_TITLE: ${2:Title}: (${3:`(nvp-yas-bfn-no-ext)`}).
+#+TEXINFO_DIR_DESC: ${4:Section description}

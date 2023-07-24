@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: modular binary exponention
+# key: f_powmod
+# --
+(define (powmod x n [mod ${1:1000000007}])
+  (if (zero? n) 1
+      (let ([res (powmod x (quotient n 2) mod)])
+        (modulo
+         (* res (if (odd? n) (modulo (* x res) mod) res))
+         mod))))

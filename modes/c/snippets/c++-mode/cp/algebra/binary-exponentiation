@@ -9,7 +9,7 @@ long long powmod(long long x, long long y, long long mod = MOD) {
         if (y&1)
             res = res * x % mod;
         x = x * x % mod;
-            y >>= 1;
+        y >>= 1;
     }
     return res;
 }

@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: binary exponentiation
+# key: f_powmod
+# --
+fn powmod(mut x: ${1:i64}, mut n: $1, m: $1) -> $1 {
+    x %= m;
+    let mut res = 1;
+    while n > 0 {
+        if (n & 1) != 0 {
+            res = res * x % m;
+        }
+        x = x * x % m;
+        n >>= 1;
+    }
+    res
+}

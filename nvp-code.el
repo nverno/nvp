@@ -28,6 +28,13 @@
   ("l"     . hs-hide-level)
   ("s"     . hs-show-all))
 
+;;;###autoload
+(defun nvp-narrow-dwim (&optional beg end arg)
+  (interactive "r\nP")
+  (if (region-active-p)
+      (narrow-to-region beg end)
+    (narrow-to-defun arg)))
+
 ;;; Hideshow
 
 (defvar-local nvp-hs--hidden nil)

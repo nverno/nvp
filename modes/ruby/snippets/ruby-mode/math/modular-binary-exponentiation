@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: modular binary exponentiation
+# key: f_powmod
+# --
+def powmod(x, n, m = ${1:1000000007})
+  return 1 if n == 0
+
+  x = x % m
+  res = 1
+  while n > 0
+    res = res * x % m if n.odd?
+    x = x * x % m
+    n >>= 1
+  end
+  res
+end

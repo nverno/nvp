@@ -2,4 +2,4 @@
 # name: lang
 # key: lang
 # --
-#lang racket
+#lang ${1:racket}

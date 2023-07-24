@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: (define (fn ...))
+# key: fun
+# --
+(define (${1:fn}${2: args...})
+  $0)

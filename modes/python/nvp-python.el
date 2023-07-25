@@ -5,9 +5,7 @@
 ;;         '().', so the function could be advised (similar to modification for
 ;;         octave in nvp-octave.el
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'compile))
+(eval-when-compile (require 'nvp-macro))
 (nvp:req 'nvp-python 'subrs)
 (require 'comint)
 (require 'python)
@@ -78,34 +76,6 @@
              (concat "^\\s-*" nvp-python-debug-breakpoint-string "[ \t]*$") nil t)
             (funcall orig cmd t)
           (funcall orig cmd comint))))))
-
-(define-compilation-mode pyprofile-mode "PyProfile"
-  "Compilation mode to view python profile output from cProfile,
-line_profiler, and memory_profiler."
-  ;; XXX: filter out matches to non-local libraries
-  (setq-local compilation-error-regexp-alist-alist
-              '((cprofile "\\([^< 0-9][^: \n]+[^>]\\):\\([0-9]+\\)" 1 2 nil 0)
-                (lprofile "File: \\([^\n]+\\)\n[^\n]+line \\([0-9]+\\)" 1 2 nil 0)))
-  (setq-local compilation-error-regexp-alist '(cprofile lprofile)))
-
-(defun nvp-python-profile (profiler &optional prompt)
-  "Profile buffer with output to compilation buffer."
-  (interactive
-   (list (completing-read "Profiler"
-                          '("cProfile" "line_profiler" "memory_profiler") nil t)
-         current-prefix-arg))
-  (let ((compile-command
-         (concat
-          (pcase profiler
-            ("cProfile" "python -m cProfile -s tottime")
-            ("line_profiler" "kernprof -l -v")
-            ("memory_profiler" "python -m memory_profiler"))
-          " " (buffer-file-name))))
-    (compilation-start
-     (if (or prompt compilation-read-command)
-         (compilation-read-command compile-command)
-       compile-command)
-     'pyprofile-mode)))
 
 ;; -------------------------------------------------------------------
 ;;; REPL

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: find
+# key: find
+# --
+find ${1:.} -type ${2:f} -iname '${3:*.cpp}'${4: -exec $5 '\{\}' \\;}

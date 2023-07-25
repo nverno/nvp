@@ -5,7 +5,9 @@
 ;;         '().', so the function could be advised (similar to modification for
 ;;         octave in nvp-octave.el
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'compile))
 (nvp:req 'nvp-python 'subrs)
 (require 'comint)
 (require 'python)
@@ -76,6 +78,19 @@
              (concat "^\\s-*" nvp-python-debug-breakpoint-string "[ \t]*$") nil t)
             (funcall orig cmd t)
           (funcall orig cmd comint))))))
+
+(define-compilation-mode pyprofile-mode "PyProfile"
+  "Compilation mode to view python profile output."
+  (setq-local compilation-error-regexp-alist-alist
+              '((pyprofile "\\([^< 0-9][^: \n]+[^>]\\):\\([0-9]+\\)" 1 2 nil 0)))
+  (setq-local compilation-error-regexp-alist '(pyprofile)))
+
+(defun nvp-python-profile ()
+  "Profile buffer with output to compilation buffer."
+  (interactive)
+  (let ((compile-command
+         (concat "python -m cProfile -s tottime " (buffer-file-name))))
+    (compilation-start compile-command 'pyprofile-mode)))
 
 ;; -------------------------------------------------------------------
 ;;; REPL

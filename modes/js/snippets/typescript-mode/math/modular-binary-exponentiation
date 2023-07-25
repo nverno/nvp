@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: modular binary exponentiation
+# key: f_powmod
+# --
+const powmod = (x: number, n: number, m = ${1:1e9+7}): number => {
+  x = x % m;
+  let res = 1;
+  while (n > 0) {
+    if ((n&1) != 0) res = x * res % m;
+    x = x * x % m;
+    n >>= 1;
+  }
+  return res;
+};

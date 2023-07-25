@@ -20,6 +20,36 @@
   (interactive)
   (message "%d" (call-interactively #'hexl-octal-string-to-integer)))
 
+;;;###autoload
+(defun nvp-number-toggle-base ()
+  "Toggle base of number at point.
+decimal => hex, hex => decimal, octal => decimal."
+  (interactive)
+  (pcase-let ((`(,beg . ,end) (bounds-of-thing-at-point 'symbol)))
+    (if (memq ?. (list (char-after end) (char-before beg)))
+        (user-error "floating point number")
+      (save-match-data
+        (let* ((sym (buffer-substring-no-properties beg end))
+               (base (cond
+                      ((string-match "\\`$?0x" sym) (list (match-end 0) 16 10))
+                      ((string-match "\\`0o?" sym) (list (match-end 0) 8 10))
+                      ((string-match "\\`[1-9]" sym) (list 0 10 16))
+                      (t nil))))
+          (unless base (user-error "not a number at point"))
+          (cl-destructuring-bind (pos from to) base
+            (let ((str (substring sym pos)))
+              (unless (or (eq from 16)
+                          (string-match-p "[[:digit:]]+$" str))
+                (user-error "garbage in number"))
+              (save-mark-and-excursion
+                (delete-region beg end)
+                (insert (format (pcase to
+                                  (10 "%d")
+                                  (16 "0x%x")
+                                  (8 "0%o"))
+                                (string-to-number str from))))))))))
+  (nvp-repeat-command))
+
 ;; -------------------------------------------------------------------
 ;;; Popups
 ;; momentary-string-display #<marker at 110240 in subr.el.gz>

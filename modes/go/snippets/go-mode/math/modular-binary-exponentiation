@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: modular binary exponentiation
+# key: f_powmod
+# --
+func powmod(x int, n int, m_opt ...int) (res int) {
+	m := ${1:int(1e9 + 7)}
+	if len(m_opt) > 0 {
+		m = m_opt[0]
+	}
+	x = x % m
+	res = 1
+	for n > 0 {
+		if (n & 1) != 0 {
+			res = res * x % m
+		}
+		x = x * x % m
+		n = n >> 1
+	}
+	return res
+}

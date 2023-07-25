@@ -2,6 +2,6 @@
 # name: fun
 # key: fun
 # --
-func ${1:name}(${2:arguments}) ${3:returntype }{
+func ${1:name}(${2:arguments})${3: returntype} {
 	$0
 }

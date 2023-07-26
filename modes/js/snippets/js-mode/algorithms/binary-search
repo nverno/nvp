@@ -7,7 +7,7 @@ const check = (m: number): boolean => {
 };
 let [l, r, res] = [${1:1}, ${2:1e9}, ${3:-1}];
 while (l <= r) {
-  let mid = Math.floor((l + r) / 2);
+  let mid = (l + r) >> 1;
   if (check(mid)) {
     res = mid;
     r = mid - 1;

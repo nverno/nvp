@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: binary-search
+# key: bs
+# --
+(define (check m)
+  $0)
+(define (bsearch l r res)
+  (if (> l r) res
+      (let ([mid (+ l (quotient (- r l) 2))])
+        (if (check mid)
+            (bsearch l (- mid 1) mid)
+            (bsearch (+ mid 1) r res)))))
+(bsearch ${1:1} ${2:100000007} ${3:-1})

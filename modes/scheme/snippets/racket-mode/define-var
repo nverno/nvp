@@ -2,4 +2,4 @@
 # name: (define x ...)
 # key: d
 # --
-(define {x} $1)
+(define ${1:x} $2)

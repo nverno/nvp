@@ -8,7 +8,7 @@ end
 
 l, r, res = ${1:1}, ${2:1e9.to_i}, ${3:-1}
 while l <= r
-  mid = (l + r) / 2
+  mid = (l + r) >> 1
   if check.call(mid)
     res = mid
     r = mid - 1

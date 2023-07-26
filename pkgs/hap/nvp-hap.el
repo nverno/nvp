@@ -245,7 +245,8 @@ See also `pos-tip-show-no-propertize'."
     (cond
      ((and width
 	   (> (car w-h) width))
-      (setq string (pos-tip-fill-string string width nil 'none nil max-height)
+      ;; XXX(nvp): 7/25/23 modified to call with MARGIN=t and SQUEEZE
+      (setq string (pos-tip-fill-string string width t 'none 'squeeze max-height)
 	    w-h (pos-tip-string-width-height string)))
      ((or (> (car w-h) max-width)
 	  (> (cdr w-h) max-height))
@@ -277,8 +278,13 @@ See also `pos-tip-show-no-propertize'."
       (nvp-hap--skip-footers)
       (unless (eq beg (point))
         (if truncated
-            (concat (buffer-substring-no-properties beg (point)) "\n\n[...]")
-          (buffer-substring-no-properties beg (point)))))))
+            (concat (buffer-substring beg (point)) "\n\n[...]")
+          (buffer-substring beg (point)))
+        ;; (with-temp-buffer
+        ;;   (insert str)
+        ;;   (fill-region-as-paragraph (point-min) (point-max))
+        ;;   (buffer-substring (point-min) (point-max)))
+        ))))
 
 (defun nvp-hap--docstring (thing &optional prefix)
   (-if-let (doc (nvp-hap-call-backend 'doc-string thing prefix))
@@ -295,7 +301,7 @@ See also `pos-tip-show-no-propertize'."
    (-when-let (doc (nvp-hap--docstring nvp-hap--thingatpt prefix))
      (let ((x-gtk-use-system-tooltips nil))
        (unless (x-hide-tip)
-         (nvp-pos-tip-show doc nil nil nil nvp-hap-popup-timeout))))))
+         (nvp-pos-tip-show doc nil nil nil nvp-hap-popup-timeout (window-width)))))))
 
 
 ;; -------------------------------------------------------------------
@@ -409,8 +415,9 @@ See also `pos-tip-show-no-propertize'."
       (thingatpt (nvp-hap-thing-at-point arg nil "Company: "))
       (doc-buffer
        (when (company-call-backend 'candidates arg)
-         (if-let (buf (company-call-backend 'doc-buffer arg))
-             (list arg))
+         (when-let (buf (company-call-backend 'doc-buffer arg))
+           (sit-for 0.1)
+           (list buf))
          ;; (when (eq company-backend 'company-cmake)
          ;;   ;; cmake needs to construct help arguments for candidate prior to call
          ;;   ;; to cmake

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: vector of vector
+# key: vv
+# --
+(let* (${1:[n ${2:(string-length s)}]
+      }[${3:dp} (make-vector (* ${4:m} ${5:n}) ${6:0})])
+  (define (idx i j) (+ j (* i $4)))
+  $0)

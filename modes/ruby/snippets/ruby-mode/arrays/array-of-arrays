@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: array of arrays
+# key: aa
+# --
+${1:dp} = Array.new(${2:m}) { |i| Array.new(${3:n, 0}) \}

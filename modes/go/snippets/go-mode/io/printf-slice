@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: print vector/slice
+# key: prv
+# --
+fmt.Printf("%v\n", ${1:arr})

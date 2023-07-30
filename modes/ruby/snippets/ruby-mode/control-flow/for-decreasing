@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for decreasing
+# key: for-
+# --
+${1:(n-1)}.downto(${2:0}).each do |${1:i}|
+  $0
+end

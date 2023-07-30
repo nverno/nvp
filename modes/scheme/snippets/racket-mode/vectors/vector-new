@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: new vector
+# key: v
+# --
+(let ([${1:arr} (make-vector ${2:n} ${3:0})])
+  $0)

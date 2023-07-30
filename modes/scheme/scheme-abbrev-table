@@ -35,10 +35,7 @@
   :enable-function #'nvp-scheme-abbrev-var-expand-p)
 
 (define-abbrev-table 'racket-mode-abbrev-table
-  '(("req" "require" nil :system t)
-    ("def" "define" nil :system t)
-
-    ("r" "require" nil :system t)
+  '(("r" "require" nil :system t)
     
     ("n?" "number?" nil :system t)
     ("z?" "zero?" nil :system t)
@@ -47,18 +44,22 @@
     ("mp" "make-pipe" nil :system t)
     ("rl" "read-line" nil :system t)
     ("rs" "read-string" nil :system t)
+    ("sr" "string-ref" nil :system t)
     ("ss" "string-split" nil :system t)
+    ("vr" "vector-ref" nil :system t)
+    ("vs" "vector-set!" nil :system t)
     
     ("app" "append" nil :system t)
     ("cip" "close-input-port" nil :system t)
     ("cop" "close-output-port" nil :system t)
+    ("def" "define" nil :system t)
     ("err" "error" nil :system t)
     ("oif" "open-input-file" nil :system t)
     ("oof" "open-output-file" nil :system t)
+    ("req" "require" nil :system t)
 
     ("wiff" "with-input-from-file" nil :system t)
-    ("wotf" "with-output-to-file" nil :system t)
-    )
+    ("wotf" "with-output-to-file" nil :system t))
   "Racket-Mode Abbrevs."
   :parents (list racket-mode-variable-abbrev-table scheme-mode-abbrev-table)
   ;; :regexp "\\(?:[ \t\(\)\{\}\[\]]\\|^\\)\\([A-Za-z0-9_.#/*?-]+\\)\\W*"

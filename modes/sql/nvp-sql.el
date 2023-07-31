@@ -69,7 +69,9 @@
     (sql-product-font-lock nil nil))
   ;; Suppress indentation in sqli.
   (set (make-local-variable 'indent-line-function) (lambda () 'noindent))
-  (nvp-sql-psql-set-zeal))
+  (nvp-sql-psql-set-zeal)
+  ;; hippie-expansion from sqli history
+  (nvp-he-history-setup))
 
 (defun nvp-sql-sqli-buffer ()
   (save-window-excursion

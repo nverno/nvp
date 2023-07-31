@@ -47,6 +47,27 @@
                          (count-lines (overlay-start ov)
                                       (overlay-end ov))))))
 
+;; ignore hidden lines
+(defun nvp-move-visual-next5 ()
+  (interactive)
+  (line-move-visual 5 'noerror))
+
+(defun nvp-move-visual-prev5 ()
+  (interactive)
+  (line-move-visual -5 'noerror))
+
+(nvp:bindings nvp-hs-fast-map nil
+  :with fast-move
+  :create t :repeat t :indicate t
+  :wrap
+  (recenter-top-bottom scroll-up-command scroll-down-command forward-page backward-page)
+  ("n"     . nvp-move-visual-next5)
+  ("p"     . nvp-move-visual-prev5))
+
+(nvp:bindings hs-minor-mode-map 'hideshow
+  ("M-n" . nvp-move-visual-next5)
+  ("M-p" . nvp-move-visual-prev5))
+
 ;;;###autoload
 (defun nvp-hs-toggle (&optional arg)
   "Toggle hideshow on block.  With prefix toggle all."

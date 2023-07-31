@@ -24,6 +24,15 @@
       ("M-N"   . nvp-move-forward-paragraph)
       ("M-P"   . nvp-move-backward-paragraph)))
 
+  (defvar nvp--bindings-fast-move
+    '(("n"     . nvp-move-next5)
+      ("p"     . nvp-move-prev5)
+      ("C-l"   . recenter-top-bottom)
+      ("k"     . scroll-up-command)
+      ("i"     . scroll-down-command)
+      ("SPC"   . forward-page)
+      ("M-SPC" . backward-page)))
+  
   (defvar nvp--bindings-search
     '(("o" . occur)
       ;; XXX: don't override ???
@@ -232,13 +241,18 @@ menu entry."
 ;; -------------------------------------------------------------------
 ;;; General bindings
 
-(defsubst nvp:wrap--make-name (def)
-  (intern (concat "nvp/" (symbol-name def))))
+(defsubst nvp:wrap--prefix (mapname)
+  (replace-regexp-in-string
+   (concat "-\\(?:minor-\\)?\\(?:mode-\\)?" (regexp-opt '("map" "keymap")) "$")
+   "" mapname))
 
-(defmacro nvp:wrap-command (def)
+(defsubst nvp:wrap--make-name (def &optional prefix)
+  (intern (concat (or prefix "nvp") "/" (symbol-name def))))
+
+(defmacro nvp:wrap-command (def &optional prefix)
   "Creates wrapper for command DEF. Useful when advising a command for
 repetition that may get called by other unwanted routines."
-  (let ((name (nvp:wrap--make-name def)))
+  (let ((name (nvp:wrap--make-name def prefix)))
     `(defun ,name ()
        (interactive)
        (setq this-command ',def)
@@ -251,7 +265,8 @@ repetition that may get called by other unwanted routines."
                                   &key
                                   local buff-local minor
                                   autoload create prefix
-                                  repeat indicate wrap
+                                  repeat indicate
+                                  wrap wrap-pref
                                   parent
                                   with
                                   prefix-key
@@ -279,6 +294,7 @@ Transient:
            If t, create wrappers for all REPEAT commands,
            or, if \\='all, create wrappers for all commands.
            Note: only wrapped commands will be advised.
+  WRAP-PREF  Optional prefix for wrapped functions.
 
 Buggy:
   LOCAL makes map local var.        -- changes bindings for ALL mode buffers!!
@@ -294,7 +310,11 @@ Buggy:
           collect `(nvp:bindings ,km ,feature ,@bindings)))
     (while (keywordp (car bindings))
       (setq bindings (cdr (cdr bindings))))
-    (and with (setq bindings (append (nvp:-compose-bindings with) bindings)))
+    (when with
+      (setq bindings (append (cl-loop for b in (nvp:-compose-bindings with)
+                                      unless (assoc-string (car b) bindings)
+                                      collect b)
+                             bindings)))
     (and prefix-key (setq prefix-key (eval prefix-key))) ;can be symbol
     ;; (and (symbolp keymap) (setq keymap (symbol-name keymap)))
     (let ((modemap (nvp:-normalize-modemap keymap minor))
@@ -331,18 +351,19 @@ Buggy:
                   (setq wrap (--map (cdr it) bindings)
                         repeat (copy-sequence wrap))
                 (setq wrap (copy-sequence repeat)))))
-            (dolist (b bindings)
-              (and (memq (cdr b) wrap)
-                   (setf (cdr b) (nvp:wrap--make-name (cdr b)))))
-            (when (listp repeat)
-              (dolist (fn wrap)
-                (--when-let (memq fn repeat)
-                  (setf (car it) (nvp:wrap--make-name fn)))))
-            `(progn
-               ,(macroexp-progn
-                 (cl-loop for fn in wrap
-                    collect `(nvp:wrap-command ,fn)))))
-         
+            (let ((wrap-pref (or wrap-pref (nvp:wrap--prefix mapname))))
+              (dolist (b bindings)
+                (and (memq (cdr b) wrap)
+                     (setf (cdr b) (nvp:wrap--make-name (cdr b) wrap-pref))))
+              (when (listp repeat)
+                (dolist (fn wrap)
+                  (--when-let (memq fn repeat)
+                    (setf (car it) (nvp:wrap--make-name fn wrap-pref)))))
+              `(progn
+                 ,(macroexp-progn
+                   (cl-loop for fn in wrap
+                            collect
+                            `(nvp:wrap-command ,fn ,wrap-pref))))))
          ,(when repeat
             ;; 
             (when (memq repeat '(all t))

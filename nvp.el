@@ -582,8 +582,8 @@ command, call `vertico-insert'. If there is only one match call
   ("[" . isearch-repeat-backward))
 
 (nvp:bindings isearch-mode-map 'isearch
-  ("C-s" . nvp/isearch-repeat-forward)
-  ("C-r" . nvp/isearch-repeat-backward))
+  ("C-s" . nvp-isearch-fast/isearch-repeat-forward)
+  ("C-r" . nvp-isearch-fast/isearch-repeat-backward))
 
 
 ;; -------------------------------------------------------------------

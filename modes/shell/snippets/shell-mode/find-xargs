@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: find ... | xargs ...
+# key: findx
+# --
+find ${1:.} -type ${2:f} -name '${3:*.cpp}' -print0 | xargs -0 ${4:ls -lt}

@@ -3,26 +3,30 @@
 # key: build
 # --
 # shellcheck source=/dev/null
-
+`($set (replace-regexp-in-string "-" "_" (nvp-yas-bfn-no-ext)))`
 set -eo pipefail
 
 _${1:$(upcase yas-text)}_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd)"
 . "\$_${1:$(upcase yas-text)}_DIR/../vars.sh"
 
+${1:$(yas-text)}_current() {
+    ${1:$(downcase yas-text)} --version 2>/dev/null || return 1
+    return 0
+}
+
 $0
-${1:`(replace-regexp-in-string "-" "_" (nvp-yas-bfn-no-ext))`}_install() {
+${1:`$tmp`}_install() {
     _info "==> running $1 \$*"
+    if [ "\$1" == "--version" ]; then
+        shift && _process_version -c ${1:$(yas-text)}_current -l ${1:$(yas-text)}_latest "$@"
+        return $?
+    fi
     case "\$1" in
         --install)
         ;;
         --update)
         ;;
         --uninstall)
-        ;;
-        --version)
-            _info "${1:$(capitalize yas-text)} versions:"
-            _info "current: $(${1:$(downcase yas-text)} --version 2>/dev/null || echo "not installed")"
-            _info "latest: "
         ;;
     esac
     _success "$1 \$1"

@@ -60,18 +60,22 @@
 
 ;;; ctags
 ;;;###autoload
-(defun nvp-tag-list-decls (&optional lang kinds file)
+(defun nvp-tag-list-decls (&optional lang kinds file force)
   "List decls defined by language LANG of type KINDS from current buffer or
-FILE if non-nil."
-  (nvp:defq file (nvp:path 'bf) lang "all" kinds "*")
-  (->> (process-lines (nvp:program "ctags") "-x"
-                      (if lang (format "--kinds-%s=%s" lang kinds) "--kinds-all")
-                      file)
+FILE if non-nil. If FORCE, force interpretation as LANG."
+  (nvp:defq file (nvp:path 'bf) kinds "*")
+  (->> (apply #'process-lines
+              (delq nil
+                    (list
+                     (nvp:program "ctags-universal") "-x"
+                     (and force lang (not (string= lang "all"))
+                          (format "--language-force=%s" lang))
+                     (and lang kinds (format "--kinds-%s=%s" lang kinds))
+                     file)))
        (mapcar (lambda (s)
-                 (string-trim-left
-                  (replace-regexp-in-string
-                   "[ \t;{]*$" ""
-                   (cadr (split-string s file t " "))))))))
+                 (--when-let (cadr (split-string s file t " "))
+                   (string-trim-left (replace-regexp-in-string "[ \t;{]*$" "" it)))))
+       (delq nil)))
 
 ;; -------------------------------------------------------------------
 ;;; Using imenu

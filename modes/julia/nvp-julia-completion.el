@@ -43,7 +43,7 @@
 ;; #<marker at 6246 in powershell-completion.el>
 ;; completion-at-point for ring history
 (defun nvp-julia--capf-ring ()
-  (let ((end (point-at-eol))
+  (let ((end (pos-eol))
         (start (process-mark (get-buffer-process (current-buffer)))))
     (list start end (ring-elements comint-input-ring))))
 

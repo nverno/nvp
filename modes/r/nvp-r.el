@@ -134,38 +134,6 @@
       (while (re-search-forward nvp-r-datetime-regex end t)
         (replace-match "\'\\1\'")))))
 
-;;; Help
-
-;; FIXME: nvp-hap backend
-;; toggle help at point in popup
-(defun nvp-r-help-at-point (&optional command)
-  (interactive)
-  (let ((sym (ess-symbol-at-point)))
-    (when sym
-      (let* ((object (symbol-name sym))
-             (hb-name (concat "*help["
-                              ess-current-process-name
-                              "](" (replace-regexp-in-string
-                                    "^\\?\\|`" "" object) ")*"))
-             (old-hb-p (get-buffer hb-name))
-             (tbuffer (get-buffer-create hb-name))
-             (str
-              (if (or (not old-hb-p)
-                      current-prefix-arg
-                      (ess--help-get-bogus-buffer-substring old-hb-p))
-                  (ess-with-current-buffer tbuffer
-                    (setq ess-help-object object ess-help-type 'help)
-                    (ess--flush-help-into-current-buffer object command)
-                    (buffer-substring-no-properties (point-min) (point-max)))
-                (with-current-buffer tbuffer
-                  (buffer-substring-no-properties (point-min) (point-max))))))
-        (nvp:with-toggled-tip str
-          :help-fn (function
-                    (lambda ()
-                      (interactive)
-                      (x-hide-tip)
-                      (pop-to-buffer tbuffer))))))))
-
 ;; ------------------------------------------------------------
 ;;; Tags
 ;;; FIXME: remove / fix tag stuff

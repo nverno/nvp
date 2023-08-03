@@ -2,10 +2,10 @@
 ;;; Commentary:
 ;; TODO:
 ;; - add company jump to location function
+;; - fix macrostep-julia
+;; - fix capf w/ ess + latexsubs
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-hap))
+(eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'julia-mode)
 (require 'ess-site)
@@ -13,9 +13,12 @@
 (declare-function macrostep-expand "macrostep")
 (declare-function pos-tip-show "pos-tip")
 
+;;; XXX: `julia-latexsub' still called by ESS
+(unless (fboundp 'julia-latexsub)
+  (defun julia-latexsub (&rest _) nil))
+
 (autoload 'tag-utils-tag-dir "tag-utils")
 (autoload 'nvp-log "nvp-log")
-(autoload 'nvp-r-help-at-point "nvp-r")
 
 ;; -------------------------------------------------------------------
 ;;; Vars 
@@ -59,25 +62,6 @@
             (nvp-log "%s: %s" nil (process-name p) m)
             (when (eq 0 (process-exit-status p))
               (nvp-julia-tag-source noretry)))))
-
-;; -------------------------------------------------------------------
-;;; Help 
-
-(defun nvp-julia-help-at-point ()
-  (interactive)
-  (if (functionp 'nvp-r-help-at-point)
-      (call-interactively 'nvp-r-help-at-point)
-    ;; FIXME
-    (when-let* ((sym (thing-at-point 'symbol)))
-      (with-current-buffer 
-          (company-doc-buffer
-           (ess-julia-get-object-help-string sym))
-        (buffer-substring-no-properties (point-min) (point-max))))))
-
-;; toggle pophelp help for symbol at point in pos-tip
-;; (defun nvp-julia-popup-help-at-point ()
-;;   (interactive)
-;;   (nvp:with-toggled-tip (nvp-julia-popup-doc-at-point)))
 
 ;; -------------------------------------------------------------------
 ;;; Yas

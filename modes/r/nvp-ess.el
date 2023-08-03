@@ -43,5 +43,20 @@
       (call-interactively 'ess-eval-region)
     (ess-eval-line-and-step)))
 
+;; -------------------------------------------------------------------
+;;; Help at point
+
+;;;###autoload
+(defun nvp-hap-ess (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (ess-symbol-at-point))
+    (doc-buffer
+     (condition-case-unless-debug err
+         (save-window-excursion
+           (ess-display-help-on-object (symbol-name arg))
+           (list (current-buffer) nil))
+       (error (message "%s" (error-message-string err))
+              nil)))))
+
 (provide 'nvp-ess)
 ;;; nvp-ess.el ends here

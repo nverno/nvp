@@ -2,6 +2,6 @@
 # name: for/fold
 # key: forf
 # --
-(for/fold ([${1:acc} ${2:init}])
-    ([${3:x} ${4:lst}])
+(for/fold ([${1:acc} ${2:init}]${3: #:result $4})
+    ([${5:x} ${6:lst}])
   $0)

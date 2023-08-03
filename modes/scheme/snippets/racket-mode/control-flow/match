@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: match
+# key: m
+# --
+(match ${1:v}
+  [${2:..} $3]${4:
+  [${5:(or ...)}]}
+  [else $6])

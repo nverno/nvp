@@ -203,8 +203,7 @@
        ;; setup
        nvp-setup-program
        nvp-setup-local
-       nvp-lookup-password
-       nvp-pos-tip-show)
+       nvp-lookup-password)
 
      (nvp:decl                          ; builtins
        minibuffer-keyboard-quit

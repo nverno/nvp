@@ -26,6 +26,7 @@
 
 ;; autoloads
 (nvp:auto "projectile" 'projectile-project-root)
+(nvp:auto "pos-tip" 'pos-tip-show-no-propertize 'pos-tip-tooltip-width)
 
 ;; root directory
 (nvp:package-define-root)

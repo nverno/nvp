@@ -30,7 +30,9 @@
                        (add-text-properties
                         (match-beginning 0) (match-end 0)
                         (list 'face 'font-lock-warning-face) str)))
-             (nvp-pos-tip-show str nil nil nil 10))))))
+             (pos-tip-show-no-propertize
+              str nil nil nil 10
+              (pos-tip-tooltip-width (window-width) (frame-char-width))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Help at point

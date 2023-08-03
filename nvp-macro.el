@@ -1093,7 +1093,7 @@ Normally, HELP-KEY triggers a function to jump to a full help description
 related to the popup - hopefully in a buffer.
 BINDINGS are an alist of (key . function) of additional keys to bind in the
 transient keymap.
-TIMEOUT is passed to `nvp-pos-tip-show'.
+TIMEOUT is passed to `pos-tip-show-no-propertize'.
 If USE-GTK is non-nil use gtk tooltips.
 KEEP is passed to `set-transient-map'.
 HELP-BUFFER is buffer with full help documentation. This is only applicable to 
@@ -1121,7 +1121,9 @@ the default help function."
                        (keep keep))
     `(let ((x-gtk-use-system-tooltips ,use-gtk))
        (unless (x-hide-tip)
-         (nvp-pos-tip-show ,str nil nil nil ,timeout)
+         (pos-tip-show-no-propertize
+          ,str nil nil nil ,timeout
+          (pos-tip-tooltip-width (window-width) (frame-char-width)))
          (set-transient-map
           (let ((tmap (make-sparse-keymap)))
             (define-key tmap ,h-key ,h-fn)

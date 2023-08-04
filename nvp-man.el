@@ -44,8 +44,9 @@
 
 ;; get switches from man section from START-RE to END-RE
 ;; default to start of SECTION-RE to beginning of next section
-(defun nvp-help-man-switches (section-re &optional start-re end-re)
-  (or start-re (setq start-re ""))
+(defun nvp-help-man-switches (&optional section-re start-re end-re)
+  (or section-re (setq section-re "^OPTIONS"))
+  (or start-re (setq start-re "^\\s-+-"))
   (or end-re (setq end-re Man-heading-regexp))
   (goto-char (point-min))
   (when (re-search-forward section-re)

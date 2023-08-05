@@ -11,8 +11,7 @@
 (require 'rg)
 (require 'nvp-find)
 (require 'nvp)
-(nvp:decls :v (projectile-globally-ignored-files
-               projectile-globally-ignored-directories))
+(nvp:decls :v (projectile-globally-ignored-files projectile-globally-ignored-directories))
 (nvp:auto "projectile" projectile-acquire-root)
 
 ;; Override rg's `compilation-error-regexp-alist' matching
@@ -21,19 +20,36 @@
   (nvp:match-grouped-filename
    nvp-ag/rg-file-column-regex nvp-ag/rg-grouped-file-regex))
 
-;; use my own filter that works with `xterm-color'
-(advice-add 'rg-filter :override #'ignore)
-;; (defalias 'rg-filter 'ignore)
-
 ;; rg-mode is compilation-derived mode for results
 ;; this hook lets it work with xterm-color
 (defun nvp-rg-setup-xterm ()
+  ;; use filter that works with `xterm-color'
+  (advice-add 'rg-filter :override #'ignore)
+  ;; use `imenu-default-create-index-function'
+  (advice-add 'rg-configure-imenu :override #'ignore)
   (setq-local compilation-transform-file-match-alist nil)
   (push 'nvp-rg-group-xc compilation-error-regexp-alist)
   (push (cons 'nvp-rg-group-xc
               (list nvp-ag/rg-file-column-regex
                     'nvp-rg-match-grouped-filename-xc 1 2))
         compilation-error-regexp-alist-alist))
+
+(defun nvp-rg-remove-xterm ()
+  (advice-remove 'rg-filter #'ignore)
+  (advice-remove 'rg-configure-imenu #'ignore))
+
+(defun nvp-rg-recompile ()
+  "Recompile w/o xterm-color filter, using rg defaults."
+  (interactive)
+  (nvp-rg-remove-xterm)
+  (let ((compilation-start-hook
+         (delq 'nvp-compilation-start-hook compilation-start-hook))
+        (rg-mode-hook (delq 'nvp-rg-mode-hook rg-mode-hook))
+        (rg-ignore-ripgreprc t)
+        (rg-show-columns t)
+        (rg-show-header t)
+        (rg-align-line-column-separator ":"))
+    (rg-rerun-toggle-flag "--no-config")))
 
 (defun nvp-rg-get-project ()
   (pcase current-prefix-arg

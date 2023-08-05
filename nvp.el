@@ -21,7 +21,7 @@
 ;;; Aliases
 (defalias 'nvp-completing-read 'completing-read)
 (put 'nvp-completing-read 'lisp-indent-function 'defun)
-(defalias 'nvp-find-file-in-dir 'ido-find-file-in-dir)
+(defalias 'nvp-find-file-in-dir 'projectile-find-file-in-directory)
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
 
 ;; autoloads

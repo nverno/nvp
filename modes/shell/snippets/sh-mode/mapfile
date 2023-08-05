@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mapfile ... < <(...)
+# key: mf
+# --
+mapfile -t ${1:var} < <($2)

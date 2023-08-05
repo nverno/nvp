@@ -38,6 +38,7 @@
   "^\\([[:digit:]]+\\):\\([[:digit:]]+\\):")
 
 ;; imenu that should work for ag/rg grouped results buffers
+;; Note: override `rg-configure-imenu' to use w/ `imenu-default-create-index-function'
 (defun nvp-ag/rg-imenu-function ()
   (cl-block nil
     (when (re-search-backward nvp-ag/rg-file-column-regex nil 'move)

@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (nvp:decls :f (sqlite-mode sqlite-mode-list-data))
 
 (defun nvp-sqlite-list-data ()
@@ -19,16 +18,13 @@
 ;; -------------------------------------------------------------------
 ;;; Simple SQLi completion for Sqlite commands
 
-(defvar nvp-sqlite--interactive-commands nil)
-
-(defun nvp-sqlite-interactive-commands ()
-  (or nvp-sqlite--interactive-commands
-      (setq nvp-sqlite--interactive-commands
-            (let ((cmds (shell-command-to-string
-                         (concat
-                          "sqlite3 /dev/null '.help' 2>/dev/null "
-                          "| awk -F' +' '/^[.][[:alpha:]]+/ {print $1}'"))))
-              (split-string cmds)))))
+(nvp:define-cache-runonce nvp-sqlite-interactive-commands ()
+  "List of sqlite interactive commands."
+  (split-string
+   (shell-command-to-string
+    (concat
+     "sqlite3 /dev/null '.help' 2>/dev/null "
+     "| awk -F' +' '/^[.][[:alpha:]]+/ {print $1}'"))))
 
 ;;;###autoload
 (defun nvp-sqlite-completion-at-point ()

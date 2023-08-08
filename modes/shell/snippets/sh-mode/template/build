@@ -8,14 +8,20 @@ set -eo pipefail
 
 _${1:$(upcase yas-text)}_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd)"
 . "\$_${1:$(upcase yas-text)}_DIR/../vars.sh"
+${1:$(upcase yas-text)}_GIT_REPO=
 
-${1:$(yas-text)}_current() {
-    ${1:$(downcase yas-text)} --version 2>/dev/null || return 1
+${1:`$tmp`}_current() {
+    ${1:$(downcase yas-text)} --version 2>/dev/null | awk 'NR==1{match(\$0,/([0-9.]+)/,g);print g[1]}' || return 1
     return 0
 }
+$1_latest() {
+    local url
+    ! url="\$(github_latest_download_url "\$${1:$(upcase yas-text)}_GIT_REPO" "linux-\$(uname -m)")" &&
+        _error "failed to find download url"
 
+}
 $0
-${1:`$tmp`}_install() {
+$1_install() {
     _info "==> running $1 \$*"
     if [ "\$1" == "--version" ]; then
         shift && _process_version -c ${1:$(yas-text)}_current -l ${1:$(yas-text)}_latest "$@"
@@ -23,8 +29,16 @@ ${1:`$tmp`}_install() {
     fi
     case "\$1" in
         --install)
+            ! "\$($1_current)" 2>/dev/null && $1_install_latest || _info "already installed"
         ;;
         --update)
+            local current latest
+            latest="\$($1_latest)" || _error "failed to find latest version"
+            if ! current="\$($1_current)" || [[ "$current" != "$latest" ]]; then
+                $1_install_latest
+            else
+                _info "already have latest version: $latest"
+            fi
         ;;
         --uninstall)
         ;;

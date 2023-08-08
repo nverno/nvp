@@ -167,7 +167,9 @@
       (save-match-data
         (while (search-forward "(nvp-install-on-demand" nil t)
           (goto-char (match-beginning 0))
-          (kill-sexp 1))))
+          (let ((p (point)))
+            (forward-sexp 1)
+            (delete-region p (point))))))
     (let ((byte-compile-dest-file-function
            #'(lambda (_f) outfile)))
       (byte-compile-file tmp-file)

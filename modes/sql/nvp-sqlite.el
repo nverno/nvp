@@ -1,10 +1,23 @@
-;;; nvp-sqlite-completion.el --- simple sqli completion -*- lexical-binding: t; -*-
+;;; nvp-sqlite.el --- simple sqli completion -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp:decls)
+(nvp:decls :f (sqlite-mode sqlite-mode-list-data))
+
+(defun nvp-sqlite-list-data ()
+  "Expand/collapse all tables in `sqlite-mode' buffer."
+  (interactive nil sqlite-mode)
+  (save-excursion
+    (goto-char (point-min))
+    (while (not (eobp))
+      (when (eq (get-text-property (point) 'sqlite--type) 'table)
+        (call-interactively #'sqlite-mode-list-data))
+      (forward-line 1))))
+
+;; -------------------------------------------------------------------
+;;; Simple SQLi completion for Sqlite commands
 
 (defvar nvp-sqlite--interactive-commands nil)
 
@@ -33,9 +46,9 @@
             :exclusive 'no))))
 
 
-(provide 'nvp-sqlite-completion)
+(provide 'nvp-sqlite)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-sqlite-completion.el ends here
+;;; nvp-sqlite.el ends here

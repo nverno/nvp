@@ -80,14 +80,16 @@ Optionally, search LISP-ONLY files (no C sources)."
                                          (lm-header "Homepage")))))
       (browse-url url))                ; found URL in current buffer!!
      (t ;; no URL in emacs sources
-      (--when-let (nvp--get-library-file 'lisp-only choose)
-        (if (not (string= (file-name-extension it) "el"))
-            (user-error "Library %S isn't elisp." it)
-          (with-temp-buffer
-            (insert-file-contents it)
-            (if (setq url (lm-header "URL"))
-                (browse-url url)
-              (user-error "Library %S has no URL header" it)))))))))
+      (--if-let (and (not choose) (nvp-jump--git-url))
+          (browse-url it)
+        (--when-let (nvp--get-library-file 'lisp-only choose)
+          (if (not (string= (file-name-extension it) "el"))
+              (user-error "Library %S isn't elisp." it)
+            (with-temp-buffer
+              (insert-file-contents it)
+              (if (setq url (lm-header "URL"))
+                  (browse-url url)
+                (user-error "Library %S has no URL header" it))))))))))
 
 (defun nvp--locate-library-source (library)
   (let* ((name (file-name-nondirectory library))

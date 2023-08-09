@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: while IFS= read -r ...; do ... done < <(...)
+# key: whileread
+# --
+while${1: IFS=${2:$'\n'}} read -r${3: -d $''} ${4:line}; do
+    $0
+done < <($5)

@@ -37,7 +37,8 @@
                 slime-trace-dialog-mode
                 helpful-mode
                 ;; added
-                leetcode--problem-detail-mode))
+                leetcode--problem-detail-mode
+                process-menu-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-compilation))
               '(compilation-mode
                 grep-mode

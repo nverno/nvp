@@ -74,5 +74,50 @@
              res))))
       (nreverse res))))
 
+;; -------------------------------------------------------------------
+;;; Command line flags
+
+;; FIXME: handle '-l, --long-options'. Currently only gets first in comma-separated
+;; entries
+(defvar nvp-man-flag-re "^ \\{,8\\}\\(\\(?:--\\|\\+\\+\\)+\\(?:..\\)+\\)")
+
+(defvar nvp-man--flags (make-hash-table :test #'equal))
+
+(defun nvp-man-flags (topic)
+  "Find command-line flags and their locations in the manpage for TOPIC.
+Returns list of \\='(flag . line-number)."
+  (let ((man-args (Man-translate-references topic)))
+    (or (gethash man-args nvp-man--flags)
+        (Man-start-calling
+         (with-temp-buffer
+           (let ((exit-status
+                  (call-process shell-file-name nil (list (current-buffer) nil) nil
+                                shell-command-switch
+                                (format (Man-build-man-command) man-args)))
+                 (msg))
+             (or (and (numberp exit-status) (= exit-status 0))
+                 (and (numberp exit-status)
+                      (setq msg (format "exited abnormally with code %d" exit-status)))
+                 (setq msg exit-status))
+             (if msg (user-error msg)
+               (let (flags)
+                 (goto-char (point-min))
+                 (while (re-search-forward nvp-man-flag-re nil t)
+                   (push (cons (replace-regexp-in-string "." "" (match-string 1))
+                               (line-number-at-pos (match-beginning 1)))
+                         flags)
+                   ;; (beginning-of-line 2)
+                   (forward-line 1))
+                 (puthash man-args flags nvp-man--flags)))))))))
+
+;;;###autoload
+(defun nvp-man-jump-to-flag ()
+  "Jump to flag definition in `Man-mode' buffers."
+  (interactive nil Man-mode)
+  (--when-let (nvp-man-flags Man-arguments)
+    (let ((line (cdr (assoc-string (completing-read "Flag: " it nil t) it))))
+      (push-mark)
+      (funcall-interactively #'goto-line line))))
+
 (provide 'nvp-man)
 ;;; nvp-man.el ends here

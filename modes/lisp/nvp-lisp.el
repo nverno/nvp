@@ -18,7 +18,6 @@
 (nvp:auto "nvp-elisp" 'nvp-elisp-abbrev-expand-var-p 'nvp-elisp-abbrev-expand-fn-p)
 
 ;; return list of available lisps and their arguments
-;; call during compile time when macros are loaded
 (defun nvp-lisp-implementations ()
   (let ((impls
          '(("sbcl"  sbcl ("sbcl" "--noinform") :coding-system utf-8-unix)
@@ -26,8 +25,8 @@
            ("lisp"  cmucl ("cmucl" "-quiet") :coding-system iso-latin-1-unix)
            ("ccl"   ccl ("ccl")))))
     (cl-loop for (name . args) in impls
-       when (eval `(nvp:program ,name :default nil))
-       collect args)))
+             when (or (nvp:program-search name) (executable-find name))
+             collect args)))
 
 (defun nvp-lisp-start-slime ()
   (interactive)

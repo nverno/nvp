@@ -11,9 +11,15 @@
 (require 'racket-mode nil t)
 (nvp:auto "nvp-hap" nvp-hap-thing-at-point)
 
-(defun nvp-racket-format-buffer ()
+(defun nvp-racket-expand ()
   (interactive)
-  (racket-tidy-requires))
+  (call-interactively
+   (if (region-active-p)
+       #'racket-expand-region
+     (nvp:read-char-case "Expand: " 'verbose
+       (?s "[s]sexp" #'racket-expand-last-sexp)
+       (?d "[d]ef" #'racket-expand-definition)
+       (?f "[f]ile" #'racket-expand-file)))))
 
 ;; `nvp-hap-backend' help-at-point function for Racket using `racket-mode' to
 ;; parse online documentation

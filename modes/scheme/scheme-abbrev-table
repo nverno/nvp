@@ -35,29 +35,34 @@
   :enable-function #'nvp-scheme-abbrev-var-expand-p)
 
 (define-abbrev-table 'racket-mode-abbrev-table
-  '(("r" "require" nil :system t)
+  '(
+    ("r" "require" nil :system t)
     ("q" "quotient" nil :system t)
 
     ("n?" "number?" nil :system t)
     ("z?" "zero?" nil :system t)
 
-    ("ci" "char->integer" nil :system t)
+    ("cti" "char->integer" nil :system t)
     ("dv" "define-values" nil :system t)
     ("hr" "hash-ref" nil :system t)
     ("hs" "hash-set!" nil :system t)
     ("ir" "in-range" nil :system t)
-    ("lv" "list->vector" nil :system t)
+    ("ltv" "list->vector" nil :system t)
     ("lr" "list-ref" nil :system t)
     ("mh" "make-hash" nil :system t)
     ("mp" "make-pipe" nil :system t)
     ("mv" "make-vector" nil :system t)
     ("rl" "read-line" nil :system t)
     ("rs" "read-string" nil :system t)
+
     ("sa" "string-append" nil :system t)
-    ("sl" "string->list" nil :system t)
+    ("sl" "string-length" nil :system t)
+    ("stl" "string->list" nil :system t)
     ("sj" "string-join" nil :system t)
     ("sr" "string-ref" nil :system t)
     ("ss" "string-split" nil :system t)
+
+    ("vl" "vector-length" nil :system t)
     ("vr" "vector-ref" nil :system t)
     ("vs" "vector-set!" nil :system t)
     

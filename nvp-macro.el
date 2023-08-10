@@ -27,10 +27,10 @@
 ;; add compile time paths interactively
 (cl-eval-when (load eval)
   (dolist (subdir '("macs" "subrs"))
-   (let ((dir (expand-file-name
-               subdir
-               (file-name-directory (nvp:load-file-name)))))
-     (add-to-list 'load-path dir))))
+    (let ((dir (expand-file-name
+                subdir
+                (file-name-directory (nvp:load-file-name)))))
+      (add-to-list 'load-path dir))))
 
 ;;; Local Variables
 (defmacro nvp:ensure-local-variables ()
@@ -42,9 +42,10 @@
 
 (cl-defmacro nvp:with-fallback (&rest body &key fallback minibuffer-fallback
                                       &allow-other-keys)
-  "Catch \\='nvp-fallback in BODY. If `nvp-exit' is set to \\='fallback during
-BODY, call either FALLBACK or `nvp-fallback-function', if they are non-nil on
-result of BODY."
+  "Catch \\='nvp-fallback in BODY.
+If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
+`nvp-fallback-function', if they are non-nil on result of BODY.
+`nvp-fallback-minibuffer-function' is bound to MINIBUFFER-FALLBACK when non-nil."
   (declare (indent defun) (debug t))
   (nvp:skip-keywords body)
   (nvp:with-syms (res)
@@ -63,6 +64,7 @@ result of BODY."
 
 ;; parse symbols like '>12 to (> . 12)
 (defsubst nvp--prefix-parse-testsym (sym)
+  "Parse symbols, SYM, like \\='>12 to (> . 12)."
   (when (and (not (numberp sym)) (not (listp sym)) (symbolp sym))
     (--when-let (symbol-name sym)
       (when (string-match "\\([><=]+\\)\\([0-9]+\\)" it)
@@ -72,7 +74,7 @@ result of BODY."
                 (and num (string-to-number num))))))))
 
 (cl-defmacro nvp:prefix (num &optional then &rest else &key test &allow-other-keys)
-  "If `current-prefix-arg' equals NUM do THEN otherwise ELSE."
+  "If `current-prefix-arg' equals NUM, using TEST, do THEN otherwise ELSE."
   (declare (indent defun) (debug t))
   (nvp:skip-keywords else)
   (and test (setq test (car (nvp:list-unquote test))))
@@ -103,7 +105,8 @@ result of BODY."
 
 (defmacro nvp:with-results-buffer (&optional buffer-or-name title &rest body)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
-Make the temp buffer scrollable, in `view-mode' and kill when finished."
+Make the temp buffer scrollable, in `view-mode' and kill when finished.
+Add TITLE to results buffer."
   (declare (indent 2) (debug (sexp &rest form)))
   (macroexp-let2 nil hdr (if title `(nvp:centered-header ,title))
     `(let (other-window-scroll-buffer)
@@ -124,9 +127,9 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished."
                                             &allow-other-keys)
   "View results in buffer NAME in `tabulated-list-mode'.
 FORMAT and ENTRIES define `tabulated-list-format' and `tabulated-list-entries'
-to use.  
+to use.
 If ACTION is non-nil, `nvp-tabulated-list-select-action' will be bound to it,
-which will be called when selecting an entry.  
+which will be called when selecting an entry.
 The rest of BODY is evaluated in result buffer after `tabulated-list-mode'
 is activated, but before items are printed."
   (declare (indent defun) (debug t))
@@ -152,7 +155,7 @@ is activated, but before items are printed."
 
 (cl-defmacro nvp:msg (fmt &rest args &key keys delay duration
                           test &allow-other-keys)
-  "Print message, optionally using `substitute-command-keys' if KEYS.
+  "Print message FMT with ARGS, optionally using `substitute-command-keys' if KEYS.
 Message is displayed temporarily, restoring any previous message after
 DURATION or 2 seconds.
 
@@ -173,7 +176,7 @@ are both specified."
                    ,@(when test
                        `((not
                           ,(if (functionp test) `(funcall ,test)
-                            ` ,test))))
+                             ` ,test))))
                    (message
                     ,@(if keys
                           `("%s" (substitute-command-keys (format ,fmt ,@args)))
@@ -193,12 +196,13 @@ are both specified."
 
 ;; `org-no-popups'
 (defmacro nvp:with-no-popups (&rest body)
-  "Suppress popup windows."
+  "Suppress popup windows in BODY."
   `(let (pop-up-frames display-buffer-alist)
      ,@body))
 
 (defmacro nvp:prompt-with-message (prompt &optional format-string &rest args)
-  "Display message in mode-line while reading from minibuffer."
+  "Display message in mode-line while reading PROMPT from minibuffer.
+Message uses FORMAT-STRING and ARGS."
   (let ((read-fn 'read-from-minibuffer))
     (while (keywordp (car args))
       (if (eq ':read-fn (car args))
@@ -216,10 +220,11 @@ are both specified."
 
 ;; `magit-read-char-case'
 (defmacro nvp:read-char-case (prompt verbose &rest clauses)
+  "PROMPT for choice of CLAUSES. VERBOSE displays options."
   (declare (indent 2) (debug (form form &rest (characterp form body))))
   `(prog1 (pcase (read-char-choice
-                  (concat ,prompt
-                          ,(concat (mapconcat 'cadr clauses ", ")
+                  ,(concat prompt
+                           (concat (mapconcat 'cadr clauses ", ")
                                    (and verbose ", or [C-g] to abort") " "))
                   ',(mapcar 'car clauses))
             ,@(--map `(,(car it) ,@(cddr it)) clauses))
@@ -233,7 +238,9 @@ are both specified."
 
 ;;-- vertico
 (defmacro nvp:vertico-update-candidates (reset &rest update)
-  "Update completion candidates and vertico display."
+  "Update completion candidates and vertico display.
+RESET resets vertico candidates.
+UPDATE is used to create `minibuffer-completion-table'."
   (declare (indent defun) (debug t))
   `(progn
      ,(and update
@@ -243,7 +250,7 @@ are both specified."
        ,(when reset
           `(setq vertico--history-hash nil
                  vertico--lock-candidate nil))
-      (vertico--exhibit))))
+       (vertico--exhibit))))
 
 ;; -------------------------------------------------------------------
 ;;; Strings / Regexps
@@ -271,9 +278,10 @@ as STRING."
 ;; - `consult--local-let' :: buffer local let bind dynamic variables
 
 (cl-defmacro nvp:visible-windows (&key mode derived test-fn)
-  "List buffers visible in current frame. If MODE is non-nil, only return
-buffers with matching (or DERIVED) \\='major-mode. Otherwise if TEST-FN, is
-non-nil only list buffers where \\='(TEST-FN buffer) is non-nil."
+  "List buffers visible in current frame.
+If MODE is non-nil, only return buffers with matching (or DERIVED)
+\\='major-mode. Otherwise if TEST-FN, is non-nil only list buffers where
+\\='(TEST-FN buffer) is non-nil."
   (declare (indent defun) (debug t))
   (when (and mode test-fn) (error "nvp:visible-windows: %S is ignored" test-fn))
   (when (consp mode)
@@ -342,9 +350,8 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 `fs'     -- Short file name (no directory)
 `fse'    -- same, w/o extension
 `ext'    -- File extension
-`exp'    -- Try to substitute environment variables in path, otherwise try to 
-            expand path again when it is loaded.
-"
+`exp'    -- Try to substitute environment variables in path, otherwise try to
+            expand path again when it is loaded."
   (let ((type (eval type)))
     (cond
      ;; buffer files
@@ -407,7 +414,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
      ((eq type 'ext) `(file-name-extension (nvp:buff--2 ,b-o-p ,or-name)))
      ((eq type 'env)
       (if (not b-o-p)
-          (user-error "No path supplied with `env' to `nvp:path'.")
+          (user-error "No path supplied with `env' to `nvp:path'")
         (let ((res (substitute-env-in-file-name b-o-p)))
           (if (and res (file-exists-p res)) `,res
             `(substitute-env-in-file-name ,b-o-p)))))
@@ -425,8 +432,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 `cmt'  -- Inside a comment
 `soc'  -- Inside a string or comment
 
-`partial' -- `parse-partial-sexp' from min or BEG to current pos or POINT
-"
+`partial' -- `parse-partial-sexp' from min or BEG to current pos or POINT"
   (let ((type (eval type)))
     (cond
      ;; ~~~ In comments/strings
@@ -442,7 +448,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
       (if ppss ppss
         `(parse-partial-sexp ,(or beg '(point-min)) ,(or point '(point)))))
 
-     (t (user-error "%S unrecognized by `nvp:ppss'." type)))))
+     (t (user-error "%S unrecognized by `nvp:ppss'" type)))))
 
 (defmacro nvp:if-ppss (type then &rest else)
   "Do THEN if syntax at point is of TYPE, otherwise ELSE."
@@ -484,8 +490,7 @@ Start at POS if non-nil. Returns point at new position, or nil on failure.
 `ful' -- up forward list
 `bul' -- up backward list
 `fdl' -- down forward list
-`bdl' -- down list backward
-"
+`bdl' -- down list backward"
   (let ((type (eval type)))
     (cond
      ;; Return the point at different locations or nil
@@ -500,7 +505,7 @@ Start at POS if non-nil. Returns point at new position, or nil on failure.
 
 
 ;; -------------------------------------------------------------------
-;;; Positions 
+;;; Positions
 
 ;;-- Syntactic whitespace
 
@@ -549,7 +554,7 @@ Line continuations, recognized by ESCAPE, are treated as whitespace as well."
                       t))))))
 
 (defmacro nvp:skip-sws (direction &optional escape)
-  "Skip `forward' or `backward' across comments, whitespace, and line 
+  "Skip `forward' or `backward' across comments, whitespace, and line
 continuations."
   (and escape (stringp escape) (setq escape (string-to-char escape)))
   (let ((direction (eval direction)))
@@ -727,9 +732,9 @@ to it is returned.  This function does not modify the point or the mark."
          (while (progn
                   (beginning-of-line)
                   (unless (bobp)
-                   (save-excursion
-                     (forward-char -1)
-                     (eq (logand 1 (skip-chars-backward ,escape)) 1))))
+                    (save-excursion
+                      (forward-char -1)
+                      (eq (logand 1 (skip-chars-backward ,escape)) 1))))
            (beginning-of-line 0))
          (point)))
 
@@ -909,27 +914,27 @@ Returns nil if unsuccessful, point otherwise."
   "Wrapper for bounds/contents of region/thing-at-points.
 Things at point default to \\='symbols unless TAP is non-nil.
 By regions of things at point are pulsed if PULSE is non-nil.
-If BEG and END are non-nil, they are used as region bounds instead of those 
+If BEG and END are non-nil, they are used as region bounds instead of those
 listed below.
 
 Trailing \"i\" indicates to prompt for input if nothing is found.
 
 `tap'    -- Thing string, no props
-`tapi'   -- 
+`tapi'   --
 `tapp'   -- Thing string w/ props
-`tappi'  -- 
+`tappi'  --
 `btap'   -- Bounds of thing at point
-`btapi'  -- 
+`btapi'  --
 `dwim'   -- If region is active, region string, otherwise thing-at-point
             (no props)
 `dwimp'  -- Same, but with props
 `bdwim'  -- Bounds of region or thing at point
 `evar'   -- Elisp `variable-at-point'
-`evari'  -- 
+`evari'  --
 `evaru'  -- Elisp variable, but accept unbound as well
 `evarui' --
 `efunc'  -- Elisp `function-called-at-point'
-`efunci' -- 
+`efunci' --
 `tag'    -- Tag at point using `find-tag-default'"
   (let ((type (eval type)))
     (cond
@@ -1004,7 +1009,7 @@ In WIDEN is non-nil, save restriction and widen before finding bounds."
 
 
 ;; -------------------------------------------------------------------
-;;; Save/Restore envs 
+;;; Save/Restore envs
 
 (defmacro nvp:save-buffer-state (varlist &rest body)
   "Bind variables, `let*', in VARLIST and execute BODY.
@@ -1096,7 +1101,7 @@ transient keymap.
 TIMEOUT is passed to `pos-tip-show-no-propertize'.
 If USE-GTK is non-nil use gtk tooltips.
 KEEP is passed to `set-transient-map'.
-HELP-BUFFER is buffer with full help documentation. This is only applicable to 
+HELP-BUFFER is buffer with full help documentation. This is only applicable to
 the default help function."
   (declare (indent defun) (debug t))
   (macroexp-let2* nil ((str popup)
@@ -1128,7 +1133,7 @@ the default help function."
           (let ((tmap (make-sparse-keymap)))
             (define-key tmap ,h-key ,h-fn)
             ,@(cl-loop for (k . b) in bindings
-                 collect `(define-key tmap ,k ,b))
+                       collect `(define-key tmap ,k ,b))
             tmap)
           ,keep
           ,exit-fn)))))
@@ -1139,7 +1144,7 @@ the default help function."
 
 ;;-- Wrapper functions to call mode-local values
 (defmacro nvp:wrapper-function (symbol &optional doc)
-  "Creates a simple wrapper function to call local SYMBOL function with 
+  "Creates a simple wrapper function to call local SYMBOL function with
 list of args. Optionally use DOC for function."
   (let ((fn (intern (string-remove-suffix "-function" (symbol-name symbol))))
         ;; (arg (make-symbol "arg"))
@@ -1155,7 +1160,7 @@ list of args. Optionally use DOC for function."
 FUN-DOCS is an alist of pairs of symbols with optional docs."
   (macroexp-progn
    (cl-loop for (sym . doc) in fun-docs
-      collect `(nvp:wrapper-function ,sym ,doc))))
+            collect `(nvp:wrapper-function ,sym ,doc))))
 
 
 ;; -------------------------------------------------------------------
@@ -1187,7 +1192,7 @@ hash values are counts of strings, otherwise values are \\='t."
 (cl-defmacro nvp:define-cache (func arglist &rest body
                                     &key local predicate cache
                                     &allow-other-keys)
-  "Create a simple cache for FUNC results named FUNC or CACHE if non-nil. 
+  "Create a simple cache for FUNC results named FUNC or CACHE if non-nil.
 Cache is either defvar (possibly local) so is updated when set to nil,
 or PREDICATE is non-nil and returns nil."
   (declare (indent defun) (debug (sexp sexp sexp &form body)) (doc-string 3))
@@ -1236,7 +1241,7 @@ or PREDICATE is non-nil and returns nil."
 
 ;;-- Toggle
 (cl-defmacro nvp:toggled-if (then &rest rest &key this-cmd &allow-other-keys)
-  "Do THEN if `last-command' wasn't `this-command', otherwise do REST 
+  "Do THEN if `last-command' wasn't `this-command', otherwise do REST
 and set `this-command' to nil so opposite happens next time."
   (declare (indent 1))
   (nvp:skip-keywords rest)
@@ -1362,13 +1367,13 @@ and set `this-command' to nil so opposite happens next time."
 ;;; Advice
 
 (defmacro nvp:advise-commands (advice where funcs &optional props)
-  "Apply ADVICE to FUNCS at WHERE with PROPS. 
+  "Apply ADVICE to FUNCS at WHERE with PROPS.
 FUNCS can be a list, quoted or not."
   (declare (indent defun))
   (setq funcs (nvp:list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
-      collect `(advice-add ',func ,where ,advice ,props))))
+            collect `(advice-add ',func ,where ,advice ,props))))
 
 (defmacro nvp:unadvise-commands (advice funcs)
   "Remove ADVICE from FUNCS.
@@ -1377,15 +1382,15 @@ See `nvp:advise-commands'."
   (setq funcs (nvp:list-unquote funcs))
   (macroexp-progn
    (cl-loop for func in funcs
-      collect `(advice-remove ',func ,advice))))
+            collect `(advice-remove ',func ,advice))))
 
 (defmacro nvp:remove-all-advice (funcs)
   "Remove all advice from list of FUNCS."
   (declare (indent 0))
   `(progn
      ,@(cl-loop for fn in funcs
-          collect `(advice-mapc (lambda (advice _props) (advice-remove ',fn advice))
-                                ',fn))))
+                collect `(advice-mapc (lambda (advice _props) (advice-remove ',fn advice))
+                                      ',fn))))
 
 (defmacro nvp:eldoc-function (func &optional init)
   "Set local eldoc function."

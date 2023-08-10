@@ -12,7 +12,7 @@
     ("cre" "create" nil :system t))
   "Abbrev table used in `sql-mode' and `sql-interactive-mode'."
   :parents (list fundamental-mode-abbrev-table)
-  :enable-function 'sql-in-code-context-p)
+  :enable-function 'nvp-abbrev-expand-p)
 
 (define-abbrev-table 'sql-mysql-mode-abbrev-table
   '()

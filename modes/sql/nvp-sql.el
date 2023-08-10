@@ -96,13 +96,6 @@
 (defadvice sql-set-product (after set-zeal-docset activate)
   (nvp-sql-psql-set-zeal))
 
-;;; Abbrevs
-;; Don't expand in strings or comments.
-(defun sql-in-code-context-p ()
-  (let ((ppss (syntax-ppss)))
-    (and (null (elt ppss 3))    ; inside string
-         (null (elt ppss 4))))) ; inside comment
-
 ;;; SQLup
 ;; modified `sqlup-maybe-capitalize-symbol' to not upcase words after '.'
 (nvp:decl sqlup-work-on-symbol)

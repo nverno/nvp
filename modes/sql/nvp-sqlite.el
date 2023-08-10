@@ -5,6 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp:decls :f (sqlite-mode sqlite-mode-list-data))
 
+;;;###autoload
 (defun nvp-sqlite-list-data ()
   "Expand/collapse all tables in `sqlite-mode' buffer."
   (interactive nil sqlite-mode)

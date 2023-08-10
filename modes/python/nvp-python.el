@@ -12,11 +12,33 @@
 (nvp:decls :f (conda-env-send-buffer
                anaconda-mode-complete-extract-names anaconda-mode-call))
 
-(defvar nvp-python-cython-repo "https://github.com/python/cpython")
-
 (cl-defmethod nvp-parse-current-function
   (&context (major-mode python-mode) &rest _args)
   (add-log-current-defun))
+
+;;; Abbrevs
+;; C level only calls `expand-abbrev' when preceding char is word syntax
+;; so hook into `post-self-insert-hook'
+(defun nvp-python-expand-after-ops-hook ()
+  (and (memq (char-before (1- (point))) '(?| ?&))
+       (setq this-command 'nvp-python-expand-after-ops)
+       (expand-abbrev)))
+
+(defvar nvp-python-abbrev-syntax-table
+  (let ((tab (copy-syntax-table python-mode-syntax-table)))
+    (modify-syntax-entry ?| "w" tab)
+    (modify-syntax-entry ?& "w" tab)
+    tab))
+
+;; temporarily treat '|' and '&' as word syntax
+(defun nvp-python-expand-abbrev ()
+  (c-with-syntax-table nvp-python-abbrev-syntax-table
+    (abbrev--default-expand)))
+
+(defun nvp-python-abbrev-expand-p ()
+  (and (or (memq this-command '(expand-abbrev nvp-python-expand-after-ops))
+           (not (memq last-input-event '(?_ ?. ?- ?:))))
+       (not (nvp:ppss 'soc))))
 
 ;;; Encoding
 
@@ -217,15 +239,21 @@ the console."
    :mode 'python-mode
    :regexp "[a-zA-Z_0-9.]+"
    :doc-spec
-   '(("(python)Python Module Index" )
-     ("(python)Index"
+   ;; Note: info node will depend on python3-doc package installed
+   ;; which may add the version suffix
+   '(("(python3.10)Python Module Index")
+     ;; ("(python3.10)Built-in Functions")
+     ("(python3.10)Index"
       (lambda
         (item)
         (cond
          ((string-match
            "\\([A-Za-z0-9_]+\\)() (in module \\([A-Za-z0-9_.]+\\))" item)
           (format "%s.%s" (match-string 2 item)
-                  (match-string 1 item)))))))))
+                  (match-string 1 item)))
+         ((string-match
+           "built-in function; \\([A-Za-z][A-Za-z0-9]+\\)()" item)
+          (match-string 1 item))))))))
 
 ;;; W32 old env. stuff
 (nvp:with-w32

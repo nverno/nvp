@@ -1,7 +1,8 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
 
 (define-abbrev-table 'python-mode-abbrev-table
-  '(
+  '(("&&" "and" nil :system t)
+    ("||" "or" nil :system t)
     ("cont" "continue" nil :system t)
     ("imp" "import" nil :system t)
     ("ret" "return" nil :system t)
@@ -10,10 +11,9 @@
     ("fn2" "lambda x, y:" nil :system t)
     ("true" "True" nil :system t)
     ("false" "False" nil :system t)
-    ("none" "None" nil :system t)
-    )
+    ("none" "None" nil :system t))
   "Python-Mode Abbrevs."
-  :enable-function 'nvp-abbrev-expand-not-after-punct-p
+  :enable-function 'nvp-python-abbrev-expand-p
   :parents (list prog-mode-abbrev-table))
 
 (define-abbrev-table 'cython-mode-abbrev-table

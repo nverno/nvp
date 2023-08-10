@@ -16,12 +16,21 @@
         (start-process-shell-command "man" (or buffer nvp-hap-man--buffer) cmd)
       (call-process-shell-command cmd nil (or buffer nvp-hap-man--buffer)))))
 
+(cl-defgeneric nvp-hap-man-thing-at-point ()
+  (thing-at-point 'symbol))
+
+(cl-defmethod nvp-hap-man-thing-at-point (&context (major-mode c++-mode))
+  "Append std:: to lookup c++ man docs (stdman stdlib man pages)."
+  (when-let ((sym (thing-at-point 'symbol)))
+    (unless (string-prefix-p "std::" sym)
+      (concat "std::" sym))))
+
 ;; only return thing at point with a prefix arg to explicity call man or if
 ;; there is a unique match for "thing", possibly followed by "(num)" for section
 (defun nvp-hap-man-thingatpt (&optional arg)
   (if arg
       (nvp-hap-thing-at-point arg nil "Man: " 'Man-completion-table)
-    (let* ((sym (thing-at-point 'symbol))
+    (let* ((sym (nvp-hap-man-thing-at-point))
            (comps (Man-completion-table sym nil nil)))
       (when (or (eq t comps)
                 (and (stringp comps)

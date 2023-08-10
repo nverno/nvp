@@ -22,22 +22,25 @@
                   ,@body)
            (run-mode-hooks))))))
 
+(defun nvp-hap-lsp-thingatpt ()
+  (let ((contents (-some->> (lsp--text-document-position-params)
+                    (lsp--make-request "textDocument/hover")
+                    (lsp--send-request)
+                    (lsp:hover-contents))))
+    (and contents (not (equal "" contents))
+         (cond
+          ((hash-table-p contents)
+           (not (or (hash-table-empty-p contents)
+                    (equal "" (gethash "value" contents)))))
+          ((vectorp contents)
+           (> (length contents) 0))
+          (t t))
+         contents)))
+
 ;;;###autoload
 (defun nvp-hap-lsp (command &optional arg &rest _args)
   (cl-case command
-    (thingatpt (let ((contents (-some->> (lsp--text-document-position-params)
-                                 (lsp--make-request "textDocument/hover")
-                                 (lsp--send-request)
-                                 (lsp:hover-contents))))
-                 (and contents (not (equal "" contents))
-                      (cond
-                       ((hash-table-p contents)
-                        (not (or (hash-table-empty-p contents)
-                                 (equal "" (gethash "value" contents)))))
-                       ((vectorp contents)
-                        (> (length contents) 0))
-                       (t t))
-                      contents)))
+    (thingatpt (nvp-hap-lsp-thingatpt))
     (doc-string (string-trim-right (lsp--render-on-hover-content arg t)))
     (doc-buffer
      (let ((display-buffer-overriding-action

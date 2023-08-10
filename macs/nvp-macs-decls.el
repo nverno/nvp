@@ -97,6 +97,7 @@
     ido-default-file-method
     ;;=== external pkg ===
     zeal-at-point-docset
+    dash-docs-docsets
     company-candidates company-selection
     ;; yasnippet
     yas-selected-text yas-wrap-around-region

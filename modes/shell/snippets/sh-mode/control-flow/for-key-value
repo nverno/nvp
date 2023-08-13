@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: for key-value in associative array
+# key: forkv
+# --
+for ${1:key} in "\${!${2:arr}[@]}"; do
+    ${3:value}="\${$2[$1]}"
+    $0
+done
+

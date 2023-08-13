@@ -66,7 +66,7 @@
        "^\\(?:" (regexp-opt '("export" "declare"))
        ;; with optional flag
        "\\s-*\\(?:-[[:alpha:]]\\)?\\s-*\\)?"
-       "\\([[:alpha:]_][[:alnum:]_]*\\)=")
+       "\\([[:alpha:]_][[:alnum:]_]*\\)=?")
      1)))
 
 ;; track candidates from sourced files
@@ -111,7 +111,7 @@
     (cl-remove-duplicates (sh-comp--expand-file-names srcs))))
 
 ;; use imenu to create candidate list from buffer
-(defun sh-comp--buffer-candidates ()
+(defun sh-comp--buffer-candidates (fname)
   (ignore-errors 
     (with-syntax-table sh-mode-syntax-table
       (let* ((imenu-use-markers (buffer-file-name))
@@ -121,7 +121,10 @@
           (cl-loop for (type . vals) in index
              do
                (cl-loop for (elem . pos) in vals
-                  do (add-text-properties 0 1 (list 'annot type) elem)))
+                        do (add-text-properties
+                            0 1 (list 'annot type
+                                      'loc (cons fname (line-number-at-pos pos)))
+                            elem)))
           index)))))
 
 ;; update sources/candidates for FILE in DBFILE entry
@@ -135,7 +138,7 @@
              (imenu-create-index-function #'imenu-default-create-index-function)
              (sh-comp-additional-sources additional-sources)
              (srcs (sh-comp--buffer-sources))
-             (cands (sh-comp--buffer-candidates)))
+             (cands (sh-comp--buffer-candidates file)))
         (setf (sh-comp-dbfile-functions dbfile)
               (cdr (assoc (sh-comp:annotation function) cands)))
         (setf (sh-comp-dbfile-variables dbfile)
@@ -233,17 +236,20 @@ sourced files."
         (when func-start
           ;; collect local variables
           (while (re-search-backward
-                  "^[ \t]*local[ \t]+\\([^=\n]+\\)\\|\\(\\_<[[:alnum:]_]+\\)="
+                  "^[ \t]*local[ \t]+\\([^=\n]+\\)\\(=\\)?\\|\\(\\_<[[:alnum:]_]+\\)="
                   func-start t)
             ;; skip strings/comments
             (unless (nth 8 (syntax-ppss))
-              (-if-let (var (match-string 2))
-                  (progn
-                    (put-text-property 0 1 'annot (sh-comp:annotation local) var)
-                    (push var vars))
-                (dolist (var (split-string (match-string 1) " \t" 'omit " \t"))
-                  (put-text-property 0 1 'annot (sh-comp:annotation local) var)
-                  (push var vars)))))
+              (let ((pos (or (match-beginning 3) (match-beginning 2) (match-beginning 1))))
+               (-if-let (var (or (match-string 3) (match-string 2)))
+                   (progn
+                     (add-text-properties
+                      0 1 `(annot ,(sh-comp:annotation local) loc ,pos) var)
+                     (push var vars))
+                 (dolist (var (split-string (match-string 1) nil 'omit "[ \t]"))
+                   (add-text-properties
+                    0 1 `(annot ,(sh-comp:annotation local) loc ,pos) var)
+                   (push var vars))))))
           (delete-dups vars))))))
 
 ;; only update once while writing a symbol
@@ -333,7 +339,11 @@ sourced files."
                           (completion-table-dynamic
                            (lambda (_string) (sh-comp-candidates 'variables))))
                          :annotation-function
-                         (lambda (s) (or (get-text-property 0 'annot s) " <E>"))))
+                         (lambda (s) (or (get-text-property 0 'annot s) " <E>"))
+                         :company-location
+                         (lambda (s) (--when-let (get-text-property 0 'loc s)
+                                  (if (consp it) it
+                                    (cons (buffer-file-name) (line-number-at-pos it)))))))
                   (t
                    (list (completion-table-merge
                           (when use-comp
@@ -344,7 +354,11 @@ sourced files."
                           (completion-table-dynamic
                            (lambda (_string) (sh-comp-candidates 'functions))))
                          :annotation-function
-                         (lambda (s) (or (get-text-property 0 'annot s) " <S>")))))
+                         (lambda (s) (or (get-text-property 0 'annot s) " <S>"))
+                         :company-location
+                         (lambda (s) (--when-let (get-text-property 0 'loc s)
+                                  (if (consp it) it
+                                    (cons (buffer-file-name) (line-number-at-pos it))))))))
                  (list :exclusive 'no)))))))
 
 ;;; Company
@@ -398,27 +412,31 @@ sourced files."
         (buffer-substring beg end)))))
 
 (defun sh-comp--make-xref-location (ident file)
-  (let ((db (gethash file sh-comp-db)))
-    (unless db
-      (sh-comp-file-candidates file 'all 'recurse nil t))
-    (if (and (file-exists-p ident)
-             (cl-member (expand-file-name (substitute-in-file-name ident))
-                        (sh-comp-dbfile-sources db) :test #'equal))
-        (xref-make-sh-location ident 0)
-      (cl-labels ((getter
-                   (f)
-                   (let ((db (gethash f sh-comp-db)))
-                     (-when-let (id (or (cl-find ident (sh-comp-dbfile-functions db)
-                                                 :test #'string= :key #'car)
-                                        (cl-find ident (sh-comp-dbfile-variables db)
-                                                 :test #'string= :key #'car)))
-                       (xref-make-sh-location f (cdr id))))))
-        (-if-let (xref (getter file)) xref
-          (let* ((srcs (sh-comp-candidates 'sources file)) done xref)
-            (while (and srcs (not done))
-              (when (setq xref (getter (pop srcs)))
-                (setq done t)))
-            xref))))))
+  (-if-let (pos (let ((txt (assoc-string ident (sh-comp--local-variables))))
+                  (and txt (get-text-property 0 'loc txt))))
+      ;; local variable
+      (xref-make-sh-location file pos)
+    (let ((db (gethash file sh-comp-db)))
+      (unless db
+        (sh-comp-file-candidates file 'all 'recurse nil t))
+      (if (and (file-exists-p ident)
+               (cl-member (expand-file-name (substitute-in-file-name ident))
+                          (sh-comp-dbfile-sources db) :test #'equal))
+          (xref-make-sh-location ident 0)
+        (cl-labels ((getter
+                      (f)
+                      (let ((db (gethash f sh-comp-db)))
+                        (-when-let (id (or (cl-find ident (sh-comp-dbfile-functions db)
+                                                    :test #'string= :key #'car)
+                                           (cl-find ident (sh-comp-dbfile-variables db)
+                                                    :test #'string= :key #'car)))
+                          (xref-make-sh-location f (cdr id))))))
+          (-if-let (xref (getter file)) xref
+            (let* ((srcs (sh-comp-candidates 'sources file)) done xref)
+              (while (and srcs (not done))
+                (when (setq xref (getter (pop srcs)))
+                  (setq done t)))
+              xref)))))))
 
 (cl-defmethod xref-backend-definitions ((_backend (eql 'sh-comp)) identifier)
   (-when-let (loc (sh-comp--make-xref-location identifier (buffer-file-name)))

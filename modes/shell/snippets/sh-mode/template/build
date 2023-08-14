@@ -22,28 +22,29 @@ $1_latest() {
 }
 $0
 $1_install() {
-    _info "==> running $1 \$*"
-    if [ "\$1" == "--version" ]; then
-        shift && _process_version -c ${1:$(yas-text)}_current -l ${1:$(yas-text)}_latest "$@"
+    local action="\$1" && shift
+    _info "==> running $action \$*"
+    if [ "\$action" == "--version" ]; then
+        _process_version -c ${1:$(yas-text)}_current -l ${1:$(yas-text)}_latest "$@"
         return $?
     fi
-    case "\$1" in
+    case "\$action" in
         --install)
-            ! "\$($1_current)" 2>/dev/null && $1_install_latest || _info "already installed"
+            ! "\$($1_current \"\$@\")" 2>/dev/null && $1_install_latest "\$@" || _info "already installed"
         ;;
         --update)
             local current latest
-            latest="\$($1_latest)" || _error "failed to find latest version"
-            if ! current="\$($1_current)" || [[ "$current" != "$latest" ]]; then
-                $1_install_latest
+            latest="\$($1_latest \"\$@\")" || _error "failed to find latest version"
+            if ! current="\$($1_current \"\$@\")" || [[ "$current" != "$latest" ]]; then
+                $1_install_latest "\$@"
             else
-                _info "already have latest version: $latest"
+                _info "already have latest version: \$latest"
             fi
         ;;
         --uninstall)
         ;;
     esac
-    _success "$1 \$1"
+    _success "$1 \$action"
 }
 
 _process_args $1_install "\$@"

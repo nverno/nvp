@@ -2,6 +2,6 @@
 # name: for directory
 # key: ford
 # --
-for ${1:d} in ./ */; do
+while IFS= read -r -d '' ${1:d}; do
     $0
-done
+done < <(find ${2:.} -maxdepth 1 -type d \! \( -name '.' \) -print0)

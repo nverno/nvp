@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: export all variables
+# key: export
+# --
+# shellcheck disable=SC2046
+export \$(compgen -v)${1:"
+export -f ${2:functions}"}

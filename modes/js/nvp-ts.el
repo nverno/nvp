@@ -16,6 +16,15 @@
   (syntax arg &context (major-mode typescript-tsx-mode))
   (nvp-newline-dwim--comment syntax arg " * "))
 
+;;; Tree-sitter modes
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode typescript-ts-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
+(cl-defmethod nvp-newline-dwim-comment
+  (syntax arg &context (major-mode ts-tsx-mode))
+  (nvp-newline-dwim--comment syntax arg " * "))
+
 ;; -------------------------------------------------------------------
 ;;; REPL
 ;; > npm i ts-node typescript

@@ -1274,6 +1274,16 @@ and set `this-command' to nil so opposite happens next time."
                    '(point)))))
        ,(or first-time '(nvp-mark-defun)))))
 
+;; `cl-defmethod' for multiple modes
+(cl-defmacro nvp:defmethod (method args &rest body &key modes &allow-other-keys)
+  (declare (indent defun) (debug t))
+  (nvp:skip-keywords body)
+  (macroexp-progn
+   (cl-loop for mode in modes
+            collect `(cl-defmethod ,method
+                       ,(append args (list '&context `(major-mode ,mode)))
+                       ,@body))))
+
 ;; -------------------------------------------------------------------
 ;;; *Obsolete* Function generators
 ;; FIXME: most of these should either be generic or act on local variables

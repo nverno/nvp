@@ -31,8 +31,8 @@
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
 ;; newline-dwim
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode c-mode))
+(nvp:defmethod nvp-newline-dwim-comment (syntax arg)
+  :modes (c-mode c-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;; #<marker at 78109 in cc-cmds.el.gz>

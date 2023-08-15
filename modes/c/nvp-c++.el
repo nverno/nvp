@@ -14,8 +14,8 @@
 (nvp:req 'nvp-c 'subrs)
 (nvp:decls)
 
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode c++-mode))
+(nvp:defmethod nvp-newline-dwim-comment (syntax arg)
+  :modes (major-mode c++-mode c++-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
 (defvar nvp-c++-compiler-flags

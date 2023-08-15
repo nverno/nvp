@@ -31,7 +31,7 @@
   (cl-some (lambda (program) (executable-find program)) '("ts-node" "tsun")))
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(typescript-mode typescript-tsx-mode)
+  (nvp-repl-add '(typescript-mode typescript-ts-mode typescript-tsx-mode ts-tsx-mode)
     :modes '(ts-comint-mode)
     :bufname "*Typescript"
     :init (lambda ()

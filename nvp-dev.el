@@ -398,5 +398,18 @@ With \\[universal-argument] prompt for THING at point."
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
 
+;;;###autoload
+(defun nvp-treesit-install ()
+  "Install tree-sitter grammar."
+  (interactive)
+  (when (require 'treesit-auto nil t)
+    (unless treesit-language-source-alist
+      (setq treesit-language-source-alist (treesit-auto--build-treesit-source-alist))))
+  ;; Notes:
+  ;; To remap mode to tree-sitter mode
+  ;; (cl-pushnew '(<major-mode> . <treesit-mode>) major-mode-remap-alist :test #'equal)
+  ;; May need to restart emacs for shared grammar library to be loaded?
+  (call-interactively #'treesit-install-language-grammar))
+
 (provide 'nvp-dev)
 ;;; nvp-dev.el ends here

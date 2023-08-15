@@ -102,9 +102,9 @@
   (or (cl-loop for (modes . repl) in nvp-repl-alist
          when (memq mode modes)
          return repl)
-      (message "%S not explicitely associated with any REPLs:\
- using default shell" mode)
-      nvp-repl-default))
+      (prog1 nvp-repl-default
+        (message
+         "%S not explicitely associated with any REPLs: using default shell" mode))))
 
 (defun nvp-repl-ensure (&optional mode)
   "Ensure buffer has a REPL associated with MODE or current `major-mode'."
@@ -255,6 +255,10 @@ TODO:
 (1) prefix arg  => set REPL's working directory to same as source if possible.
 (2) prefix args => Open REPL in project root directory."
   (interactive "P")
+  ;; TODO:
+  ;; 1. With some prefix prompt for repl to use
+  ;; 2. Set REPLs working directory
+  ;; 3. Create new REPL for buffer
   (let ((buff (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
                   (if (buffer-live-p it) it
                     (other-buffer (current-buffer) 'visible))

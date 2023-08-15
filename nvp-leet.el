@@ -184,7 +184,8 @@
           (nvp-leet--setup-buffer problem-info)
           (nvp-leet-mode 1)
           (if (string= leetcode-prefer-language "rust")
-              (nvp-leet-setup-rust)))))))
+              (run-with-timer 0.2 nil #'nvp-leet-setup-rust)))))))
+
 (advice-add #'leetcode--start-coding :around #'nvp@leet-maybe-setup)
 
 (define-minor-mode nvp-leet-mode "Leetcode minor mode."

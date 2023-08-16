@@ -4,4 +4,4 @@
 # --
 while IFS= read -r -d '' ${1:d}; do
     $0
-done < <(find ${2:.} -maxdepth 1 -type d \! \( -name '.' \) -print0)
+done < <(find ${2:.} -maxdepth 1 -type d ${3:-iname '$4' }\! \\( -name '.' \\) -print0)

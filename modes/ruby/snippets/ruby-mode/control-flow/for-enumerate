@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for (i,x) in enumerate
+# key: forix
+# --
+${1:arr}.each.with_index do |${2:x}, ${3:i}|
+  $0
+end

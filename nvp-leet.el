@@ -111,9 +111,9 @@
     (insert (format "mod %s;\n" modname))
     (save-buffer)))
 
-(defun nvp-leet-setup-rust ()
+(defun nvp-leet-setup-rust (&optional file and-go)
   (interactive)
-  (let* ((file (buffer-file-name))
+  (let* ((file (or file (buffer-file-name)))
          (dir (f-dirname file))
          (srcdir (expand-file-name "src/problem" dir))
          (modname (nvp-leet--rust-mod-name file))
@@ -121,10 +121,12 @@
          (fname (expand-file-name (concat modname ".rs") srcdir)))
     (copy-file file fname)
     (nvp-leet--rust-add-mod modname modfile)
-    (find-file fname)
-    (save-excursion
-      (goto-char (point-min))
-      (insert "use crate::Solution;\n"))))
+    (with-current-buffer (find-file fname)
+      (save-excursion
+        (goto-char (point-min))
+        (insert "use crate::Solution;\n"))
+      (if and-go (pop-to-buffer (current-buffer))
+        (current-buffer)))))
 
 ;; slugify with '_' instead of '-'
 ;; (defun nvp@leet-slugify-title (title)
@@ -183,8 +185,10 @@
         (with-current-buffer (get-buffer buf-name)
           (nvp-leet--setup-buffer problem-info)
           (nvp-leet-mode 1)
-          (if (string= leetcode-prefer-language "rust")
-              (run-with-timer 0.2 nil #'nvp-leet-setup-rust)))))))
+          (when (string= leetcode-prefer-language "rust")
+            (let ((file (buffer-file-name)))
+              (run-with-timer
+               0.2 nil (lambda () (nvp-leet-setup-rust file 'and-go))))))))))
 
 (advice-add #'leetcode--start-coding :around #'nvp@leet-maybe-setup)
 
@@ -192,11 +196,7 @@
   :lighter " LC"
   :keymap nvp-leet-mode-map
   (unless nvp-leet-window-configuration
-    (setq nvp-leet-window-configuration (current-window-configuration)))
-  ;; FIXME:
-  ;; (when (string= "rust" leetcode-prefer-language)
-  ;;   (nvp-leet-setup-rust))
-  )
+    (setq nvp-leet-window-configuration (current-window-configuration))))
 
 ;;; Results
 (define-minor-mode nvp-leet-result-mode "Leetcode results."

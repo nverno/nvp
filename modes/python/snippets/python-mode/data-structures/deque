@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: deque
+# key: dq
+# --
+${1:from collections import deque
+}${2:d} = deque()

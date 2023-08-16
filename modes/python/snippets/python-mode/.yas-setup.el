@@ -12,12 +12,14 @@
   (string= "3" (conda-env-python-major-version "python")))
 
 ;; Split a python argument string into ((name, default)..) tuples
+;; https://github.com/AndreaCrotti/yasnippet-snippets/snippets/python-mode/.yas-setup.el
 (defun python-yas-split-args (arg-string)
   (mapcar (lambda (x)
             (split-string x "[[:blank:]]*=[[:blank:]]*" t))
           (split-string arg-string "[[:blank:]]*,[[:blank:]]*" t)))
 
 ;; Return docstring format for the python arguments in ARG-STRING
+;; https://github.com/AndreaCrotti/yasnippet-snippets/snippets/python-mode/.yas-setup.el
 (defun python-yas-args-to-docstring (&optional arg-string)
   (when (and arg-string (> 0 (length arg-string)))
     (let* ((indent (concat "\n" (make-string (current-column) 32)))

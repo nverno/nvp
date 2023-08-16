@@ -233,6 +233,9 @@ the console."
 ;; -------------------------------------------------------------------
 ;;; Info
 
+;;; TODO: for method lookup, need to transform symbol at point to be
+;; prefixed by <module...><class>, eg.
+;; "d.popleft" -> "collections.deque.popleft"
 (declare-function info-lookup-add-help "info-look")
 (with-eval-after-load 'info-look
   (info-lookup-add-help
@@ -247,13 +250,20 @@ the console."
       (lambda
         (item)
         (cond
+         ;; module functions / variables
          ((string-match
-           "\\([A-Za-z0-9_]+\\)() (in module \\([A-Za-z0-9_.]+\\))" item)
+           "\\([A-Za-z0-9_]+\\)\\(?:()\\)? (in module \\([A-Za-z0-9_.]+\\))" item)
           (format "%s.%s" (match-string 2 item)
                   (match-string 1 item)))
+         ;; builtins
          ((string-match
            "built-in function; \\([A-Za-z][A-Za-z0-9]+\\)()" item)
-          (match-string 1 item))))))))
+          (match-string 1 item))
+         ;; class methods
+         ((string-match
+           "\\([A-Za-z0-9_]+\\)() (\\([A-Za-z0-9_.]+\\) method)" item)
+          (format "%s.%s" (match-string 2 item)
+                  (match-string 1 item)))))))))
 
 ;;; W32 old env. stuff
 (nvp:with-w32

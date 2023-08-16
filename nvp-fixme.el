@@ -6,6 +6,7 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(nvp:auto "nvp-rg" nvp-rg-todos)
 
 (defconst nvp-fixme-keywords
   (eval-when-compile
@@ -60,21 +61,22 @@
 ;; -------------------------------------------------------------------
 ;;; Mode 
 
-(defvar nvp-fixme-menu
+(defvar-keymap nvp-fixme-mode-map
+  :doc "Fixme keymap"
+  "M-s-n" #'nvp-fixme-next
+  "M-s-p" #'nvp-fixme-previous
+  "M-s-o" #'nvp-fixme-occur
+  "M-s-l" #'nvp-rg-todos)
+
+(easy-menu-define nvp-fixme-mode-menu  nvp-fixme-mode-map
+  "Fixme menu."
   '("Fixme"
     ["Next" nvp-fixme-next t]
     ["Previous" nvp-fixme-previous t]
     ["Occur" nvp-fixme-occur t]
+    ["Project" nvp-rg-todos t]
     "---"
     ["Turn off" nvp-fixme-mode t]))
-
-(defvar nvp-fixme-mode-map
-  (let ((km (make-sparse-keymap)))
-    (easy-menu-define nil km nil nvp-fixme-menu)
-    (define-key km (kbd "M-s-n") 'nvp-fixme-next)
-    (define-key km (kbd "M-s-p") 'nvp-fixme-previous)
-    (define-key km (kbd "M-s-o") 'nvp-fixme-occur)
-    km))
 
 ;;;###autoload
 (define-minor-mode nvp-fixme-mode "Fixme"

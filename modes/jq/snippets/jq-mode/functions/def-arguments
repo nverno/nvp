@@ -2,4 +2,4 @@
 # name: Snippet for def with arguments
 # key: defa
 # --
-def ${1:name}(${2:args}): ${3:expr};
+def ${1:name}(${2:args;...}): ${3:expr};

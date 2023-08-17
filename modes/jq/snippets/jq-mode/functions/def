@@ -2,4 +2,4 @@
 # name: Snippet for def
 # key: def
 # --
-def ${1:name}: ${2:expr};
+def ${1:name}${2:(${3:args;...})}: ${4:expr};

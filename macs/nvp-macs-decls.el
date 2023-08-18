@@ -21,17 +21,13 @@ Note: "
         (with-temp-buffer
           (insert-file-contents file)
           (emacs-lisp-mode)                ; string/comment syntax
-          (condition-case nil
-              (goto-char (point-min))
-            (error (error "oops: point-min = %S" (point-min))))
+          (goto-char (point-min))
           (while (re-search-forward
                   (concat "\\(\\_<" prefix "[/@_:-][^ \n\t]+\\_>\\)") nil t)
             (unless (or (nvp:ppss 'soc)
                         (and ignore
                              (save-excursion
-                               (condition-case nil
-                                   (goto-char (match-beginning 0))
-                                 (error "Here"))
+                               (goto-char (match-beginning 0))
                                (looking-at-p ignore))))
               (ignore-errors
                 (push (intern (buffer-substring-no-properties
@@ -39,7 +35,7 @@ Note: "
                       (if (nvp:-decl-function-p (match-beginning 0))
                           fns
                         vars))))))
-      (error (error "oops: %S" (error-message-string err))))
+      (error (error "nvp:-decl-prefix: %S" (error-message-string err))))
     (list :f (cl-remove-duplicates fns)
           :v (cl-remove-duplicates vars))))
 

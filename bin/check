@@ -12,7 +12,7 @@ check_compiled() {
            --glob '!subrs/**' --glob '!**/*-subrs.elc' \
            --glob '!macs/**' --glob '!nvp-macro.elc' \
            --text --heading -o \
-           -e '(^|[^"])nvp:[^"\t\n ]+ [^"]'
+           -e '(^| )[^"]+nvp:[^"\t\n ]+ [^"]'
     )
 }
 

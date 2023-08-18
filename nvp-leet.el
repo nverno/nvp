@@ -102,8 +102,9 @@
           (call-interactively #'push-button)))
     (user-error "Call from leetcode detail buffer.")))
 
-(defsubst nvp-leet--rust-mod-name (buf)
-  (format "p%s" (replace-regexp-in-string "-" "_" (f-base buf))))
+(eval-when-compile
+  (defsubst nvp:leet--rust-mod-name (buf)
+   (format "p%s" (replace-regexp-in-string "-" "_" (f-base (buffer-name buf))))))
 
 (defun nvp-leet--rust-add-mod (modname modfile)
   (with-current-buffer (find-file-noselect modfile)
@@ -111,17 +112,19 @@
     (insert (format "mod %s;\n" modname))
     (save-buffer)))
 
-(defun nvp-leet-setup-rust (&optional file and-go)
-  (interactive)
-  (let* ((file (or file (buffer-file-name)))
-         (dir (f-dirname file))
+(defun nvp-leet-setup-rust (buffer &optional and-go)
+  (interactive (list (current-buffer) t))
+  (let* ((file (buffer-file-name buffer))
+         (dir (if file (f-dirname file)
+                (expand-file-name "rust" nvp-leet-directory)))
          (srcdir (expand-file-name "src/problem" dir))
-         (modname (nvp-leet--rust-mod-name file))
+         (modname (nvp:leet--rust-mod-name buffer))
          (modfile (expand-file-name "mod.rs" srcdir))
-         (fname (expand-file-name (concat modname ".rs") srcdir)))
-    (copy-file file fname)
+         (fname (expand-file-name (concat modname ".rs") srcdir))
+         (contents (with-current-buffer buffer (buffer-string))))
     (nvp-leet--rust-add-mod modname modfile)
     (with-current-buffer (find-file fname)
+      (insert contents)
       (save-excursion
         (goto-char (point-min))
         (insert "use crate::Solution;\n"))
@@ -137,7 +140,7 @@
 ;;   (f-filename (f-dirname (buffer-file-name))))
 
 ;; (defun nvp@leet-get-code-buffer (buf-name)
-;;   (let* ((mod (nvp-leet--rust-mod-name buf-name))
+;;   (let* ((mod (nvp:leet--rust-mod-name buf-name))
 ;;          (file (concat
 ;;                 (file-name-as-directory
 ;;                  (expand-file-name mod leetcode-directory))
@@ -182,13 +185,13 @@
     (let* ((buf-name (leetcode--get-code-buffer-name title))
            (buf (and buf-name (get-buffer buf-name))))
       (when buf
-        (with-current-buffer (get-buffer buf-name)
+        (with-current-buffer buf
           (nvp-leet--setup-buffer problem-info)
           (nvp-leet-mode 1)
           (when (string= leetcode-prefer-language "rust")
-            (let ((file (buffer-file-name)))
+            (let ((buffer buf))
               (run-with-timer
-               0.2 nil (lambda () (nvp-leet-setup-rust file 'and-go))))))))))
+               0.2 nil (lambda () (nvp-leet-setup-rust buffer 'and-go))))))))))
 
 (advice-add #'leetcode--start-coding :around #'nvp@leet-maybe-setup)
 

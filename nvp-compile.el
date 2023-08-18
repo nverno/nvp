@@ -61,7 +61,7 @@ has a file or directory local binding."
   (declare (indent defun))
   (let ((fn (if (symbolp name) name (intern name))))
     `(progn
-       (nvp:decl nvp-compile nvp-compile-cmake)
+       ;; (nvp:decl nvp-compile nvp-compile-cmake)
        (defun ,fn (&optional arg)
          ,doc
          (interactive "P")

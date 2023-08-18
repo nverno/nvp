@@ -13,18 +13,20 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'utop)
-(require 'tuareg)
+(nvp:decls :p "utop" :v (nvp-trace-group-alist))
+(nvp:decl-prefix "tuareg")
+(require 'utop nil t)
+(require 'tuareg nil t)
 (require 'nvp-ocaml)
 (require 'nvp-hippie-history)
-(nvp:decls :v (nvp-trace-group-alist))
 
 ;; debugging
 (with-eval-after-load 'nvp-trace
   (cl-pushnew '(utop utop-process-output
                      comint-redirect-cleanup
                      nvp-utop-redirect-filter)
-              nvp-trace-group-alist))
+              nvp-trace-group-alist
+              :test #'equal))
 
 ;;; Syntax
 ;; default syntax (fundamental) breaks motions

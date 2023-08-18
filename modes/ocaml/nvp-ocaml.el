@@ -6,9 +6,10 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'tuareg)
+(require 'tuareg nil t)
 (nvp:decls :f (nvp-async-shell-command-to-string utop-mode utop-prepare-for-eval)
-           :v (utop-buffer-name))
+           :v (utop-buffer-name)
+           :p "tuareg")
 
 (nvp:package-define-root :name nvp-ocaml :dirs ("etc"))
 

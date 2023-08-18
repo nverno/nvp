@@ -3,14 +3,14 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-ocaml)
-(require 'ocamldebug)
-(nvp:decls :f (ocamldebug))
+(require 'ocamldebug nil t)
+(nvp:decls :p "tuareg" :f (ocamldebug))
 
 ;; ocamldebug.el has `ocamldebug-prefix-map'
 (defvar ocaml-debug-key-prefix (kbd "<f2> d"))
 
 (eval-when-compile
-  (defmacro ocaml-debug:bindings (&rest bindings)
+  (defmacro nvp:ocaml-debug-bindings (&rest bindings)
     (declare (indent defun))
     `(with-eval-after-load 'ocamldebug
        (progn
@@ -19,7 +19,8 @@
                          (vconcat ocaml-debug-key-prefix ,k)
                          ',(intern (concat "ocamldebug-" name))))))))
 
-(ocaml-debug:bindings
+(defvar tuareg-mode-map)
+(nvp:ocaml-debug-bindings
   ("run"       . "\C-r")
   ("reverse"   . "\C-v")
   ("last"      . "\C-l")

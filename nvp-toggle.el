@@ -143,7 +143,7 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
   (nvp-toggle-local-variable var val 'dir))
 
 ;; -------------------------------------------------------------------
-;;; Font-lock
+;;; Font-lock / Chars
 
 ;;;###autoload
 (defun nvp-toggle-font-lock (arg)

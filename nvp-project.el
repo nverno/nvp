@@ -134,8 +134,8 @@ If LOCAL is non-nil find closest root."
      test-init-function
      test-buffer-function
      test-run-unit-function
-     projectile-test-prefix-function
-     projectile-test-suffix-function)
+     projectile-test-prefix-fn
+     projectile-test-suffix-fn)
   "Register project type and create hook to set local variables."
   (declare (indent defun))
   (let ((hook (intern (concat "nvp-project-" (symbol-name type) "-setup"))))
@@ -157,10 +157,11 @@ If LOCAL is non-nil find closest root."
         ,(and test-run-unit-function
               `(setq-local nvp-test-run-unit-function ,test-run-unit-function))
         ;; projectile tests
-        ,(and projectile-test-suffix-function
-              `(setq-local ,projectile-test-suffix-function))
-        ,(and projectile-test-prefix-function
-              `(setq-local ,projectile-test-prefix-function))))))
+        ,(and projectile-test-suffix-fn
+              `(setq-local projectile-test-suffix-function ,projectile-test-suffix-fn))
+        ,(and projectile-test-prefix-fn
+              `(setq-local projectile-test-prefix-function
+                           ,projectile-test-prefix-fn))))))
 
 
 (provide 'nvp-project)

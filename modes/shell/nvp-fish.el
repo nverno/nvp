@@ -2,8 +2,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(nvp:decl-prefix fish)
 (require 'company)
-(require 'fish-mode)
+(require 'fish-mode nil t)
 
 ;; default erases file if fish isn't installed!!
 (defsubst nvp-fish-ensure-indent ()

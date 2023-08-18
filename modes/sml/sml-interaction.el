@@ -20,8 +20,9 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(nvp:decls :p (:prefix sml :ignore sml-interaction))
+(require 'sml-mode nil t)
 (require 'comint)
-(require 'sml-mode)
 
 (defvar sml-interaction-buffer-name "*sml*")
 
@@ -129,13 +130,17 @@ or region if currently active."
                   comint-output-filter-functions))
            (proc (get-buffer-process (current-buffer))))
       (sml-prog-proc-send-string
-       proc (sml-prog-proc--call load-cmd tmp-file))
+       proc
+       (nvp:if-macro-fboundp sml-prog-proc--call
+           (sml-prog-proc--call load-cmd tmp-file)
+         ;; should be unreachable: for byte-compiler
+         tmp-file))
       (accept-process-output proc)
       (cl-remove-if (lambda (x) (or (string-prefix-p "val it =" x)
                                (string-prefix-p "-" x)))
                     (split-string
-                     (replace-regexp-in-string "\\[opening.*" ""
-                                               string-buffer) "\n"
+                     (replace-regexp-in-string "\\[opening.*" "" string-buffer)
+                     "\n"
                      t "\\s-")))))
 
 (defun sml-interaction-buffer (buffer)

@@ -2,7 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'groovy-mode)
+(nvp:decls :f (groovy-mode))
+(require 'groovy-mode nil t)
 
 (defvar nvp-gradle-imenu-regexp
   (list (list "Tasks" "task[ \t]+\\([a-zA-Z][a-zA-Z0-9_]*\\)" 1)))

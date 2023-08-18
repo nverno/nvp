@@ -66,7 +66,7 @@
 ;; jump to link when in an <a> or <link> tag
 (defun nvp-web-href-at-point ()
   (save-excursion
-    (pcase (bound-and-true-p engine)
+    (pcase (bound-and-true-p web-mode-engine)
       (`jinja2 (nvp-jinja-url-for))
       (`django (nvp-jinja-url-for))
       (_ (if (not (member (get-text-property (point) 'tag-name) '("a" "link")))

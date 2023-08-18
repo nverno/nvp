@@ -44,9 +44,9 @@
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-mips))
-    (prefix (and (derived-mode-p 'mips-mode))
-            (not (company-in-string-or-comment))
-            (or (company-grab-symbol) 'stop))
+    (prefix (and (derived-mode-p 'mips-mode)
+                 (not (company-in-string-or-comment))
+                 (or (company-grab-symbol) 'stop)))
     (annotation (company-mips--annotation arg))
     (candidates (all-completions arg mips-words))))
 

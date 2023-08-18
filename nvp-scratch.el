@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
-(nvp:decl nvp-comment-string)
+(nvp:auto "nvp-yas" nvp-comment-string)
 
 (defun nvp-scratch-switch-modes (mode &optional activate)
   "Switch major modes in scratch buffer."

@@ -52,7 +52,7 @@ Delete all space to the left beforehand."
 (defun j-space-none (x)
   "Insert X. Delete all space to the left beforehand."
   (j-space-right x)
-  (backward-delete-char 1))
+  (delete-char 1))
 
 (defun j-up ()
   "Move forward out of one level of parentheses or quotes."
@@ -63,7 +63,7 @@ Delete all space to the left beforehand."
         (goto-char (nth 8 s))
         (forward-sexp)
         (when (looking-back " '" (line-beginning-position))
-          (backward-delete-char 2)
+          (delete-char 2)
           (insert "'")))
       (ignore-errors (up-list))))
   (when (looking-back "\\( +\\))" (point-min))

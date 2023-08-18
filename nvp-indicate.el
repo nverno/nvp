@@ -77,34 +77,5 @@
     (set-face-background 'mode-line orig-color)
     (and power-p (set-face-background 'powerline-active0 pcolor))))
 
-;; ------------------------------------------------------------
-;;; Toggle font-locking for long lines
-
-;;;###autoload
-(defun nvp-indicate-long-lines (arg)
-  "Toggle indication of long lines (length with prefix ARG, default 80)."
-  (interactive "P")
-  (nvp:toggled-if 
-      (let ((len (if arg (read-number "Length: ") 80))
-            (font-lock-multiline t))
-        (font-lock-add-keywords
-         nil
-         `((,(format "^[^\n]\\{%d\\}\\([^\n]+\\)$" len)
-            (1 font-lock-warning-face t))))
-        (font-lock-flush)
-        (font-lock-ensure))
-    (font-lock-refresh-defaults))
-  (nvp-repeat-command))
-
-;;;###autoload
-(defun nvp-indicate-trailing-whitespace ()
-  "Toggle indicatation of trailing whitespace."
-  (interactive)
-  (setq show-trailing-whitespace (not show-trailing-whitespace))
-  (font-lock-flush)
-  (font-lock-ensure)
-  ;; when show-trailing-whitespace
-  (nvp-repeat-command nil nil '(("d" 'delete-trailing-whitespace))))
-
 (provide 'nvp-indicate)
 ;;; nvp-indicate.el ends here

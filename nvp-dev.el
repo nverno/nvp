@@ -14,8 +14,10 @@
 (require 'nvp)
 (require 'help-mode)
 
-(nvp:decls :f (nvp-read-mode advice-mapc advice-remove)
-           :v (c-lang-constants))
+(nvp:decls :f (nvp-read-mode
+               advice-mapc advice-remove
+               treesit-auto--build-treesit-source-alist treesit-install-language-grammar)
+           :v (c-lang-constants treesit-language-source-alist))
 (nvp:auto "nvp-util" 'nvp-s-wrap)
 (nvp:auto "s" 's-split-words)
 (nvp:auto "cl-extra" 'cl-prettyprint)
@@ -334,7 +336,7 @@ With prefix, display in same frame using `display-buffer' ACTION."
 
 
 ;; -------------------------------------------------------------------
-;;; Fonts
+;;; Fonts / Chars
 
 (defun nvp-font-fontify-region-face (face &optional beg end)
   "Fontify region or `thing-at-point' with font FACE.

@@ -5,9 +5,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'sml-mode)
-(declare-function tag-utils-tag-dir "tag-utils")
-(declare-function smie-forward-sexp "smie")
+(require 'sml-mode nil t)
+(nvp:decls :p sml :f (smie-forward-sexp))
 
 ;; default newline-dwim + comment continuation in nested comments
 (cl-defmethod nvp-newline-dwim-comment
@@ -21,15 +20,17 @@
 ;;; Install / Tags
 
 ;; FIXME: source installed externally, remove tag-utils stuff
+(declare-function tag-utils-tag-dir "tag-utils")
 ;; clone / update source, tag it
 ;; with two prefix arg, reinstall source if already have it
 ;; with single prefix, force retag
 (defun nvp-sml-tag-source (arg &optional noretry)
   (interactive "P")
+  (user-error "FIXME: tag-utils-tag-dir")
   (let ((have-src (file-exists-p nvp-sml-src-dir))
         (tags (expand-file-name "TAGS" nvp-sml-src-dir)))
     (if (and (not noretry)
-             (or (not have-src) (eq '(16) arg)))
+             (or (not have-src) (equal '(16) arg)))
         ;; Get source / reinstall if have
         (progn
           (when have-src
@@ -39,7 +40,7 @@
           )
       ;; Otherwise, tag source / load tags table
       (when have-src
-        (if (and (not (eq '(4) arg))
+        (if (and (not (equal '(4) arg))
                  (file-exists-p tags))
             ;; without prefix arg, just load tags table
             (visit-tags-table tags)
@@ -90,8 +91,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; REPL
-
-(declare-function sml-prog-proc-switch-to "sml-mode")
 
 (defun nvp-sml-inf-newline ()
   (interactive)

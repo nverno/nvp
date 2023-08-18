@@ -38,6 +38,7 @@ LOAD_PATH += -L $(SITEDIR)/llvm-mode
 LOAD_PATH += -L $(SITEDIR)/oat-mode
 
 BATCH   = ${EMACS} -Q --batch ${LOAD_PATH} \
+	--eval "(setq debug-on-error t)"   \
 	-l $(SITEDIR)/nvp-build-site.el -f nvp-build-paths
 COMPILE = ${BATCH} -f batch-byte-compile $(1)
 ifdef USE_CASK

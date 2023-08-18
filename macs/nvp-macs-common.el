@@ -428,6 +428,13 @@ are aliases to symbols prefixed by \"nvp-\"."
    (cl-loop for (var val) on var-vals by #'cddr
             collect `(setq-local ,var ,val))))
 
+;; auctex/tex.el -- `TeX--if-macro-fboundp'
+(defmacro nvp:if-macro-fboundp (name then &rest else)
+  (declare (indent 2) (debug (symbolp form &rest form)))
+  (if (fboundp name) then
+    `(if (fboundp ',name) (eval ',then)
+       ,@else)))
+
 
 ;; -------------------------------------------------------------------
 ;;; Strings / Regex

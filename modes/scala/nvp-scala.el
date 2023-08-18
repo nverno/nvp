@@ -2,16 +2,19 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'ensime)
+(nvp:decls :p "ensime"
+           :v (ensime-prefer-noninteractive ensime-auto-connect ensime-config-file-name)
+           :f (ensime))
+(require 'ensime nil t)
 (autoload 'projectile-project-p "projectile")
 
 ;; -------------------------------------------------------------------
 ;;; Ensime
 
 ;; switch between source and REPL buffers
-(nvp:repl-switch "ensime" (:repl-mode 'ensime-inf-mode
+(nvp:repl-switch "ensime" (:repl-mode #'ensime-inf-mode
                            :repl-buffer-name ensime-inf-buffer-name
-                           :repl-live-p 'ensime-inf-process-live-p
+                           :repl-live-p #'ensime-inf-process-live-p
                            :repl-switch-fn 'pop-to-buffer
                            :repl-history t)
   ;; start ensime server if necessary
@@ -70,7 +73,8 @@
 
 ;; -------------------------------------------------------------------
 ;;; SBT
-(require 'sbt-mode)
+(nvp:decl-prefix "sbt")
+(require 'sbt-mode nil t)
 
 (defun nvp-scala-pop-to-sbt (new-frame)
   "Get SBT REPL for this project or start (w/ prefix in `NEW FRAME')."
@@ -92,7 +96,7 @@
 (defun nvp-sbt-switch-submode-hook (&rest _ignored)
   (comint-write-input-ring))
 
-(advice-add 'sbt:switch-submode :before #'nvp-sbt-switch-submode-hook)
+(advice-add #'sbt:switch-submode :before #'nvp-sbt-switch-submode-hook)
 
 (provide 'nvp-scala)
 ;;; nvp-scala.el ends here

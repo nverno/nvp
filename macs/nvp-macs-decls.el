@@ -4,10 +4,59 @@
 ;;; Code:
 (require 'nvp-macs-common)
 
+(defun nvp:-decl-function-p (&optional pos)
+  "Determine if POS, or point, is at beginning of function.
+Note: simple check looks for preceding \"(\" or \"#'\"."
+  (if (eq ?\( (char-before pos)) t
+    (and (eq ?\' (char-before pos))
+         (eq ?\# (char-before (1- (or pos (point))))))))
+
+(defun nvp:-decl-prefix (prefix &optional ignore)
+  "Gather functions/variables with matching PKG prefix in current buffer.
+If IGNORE is non-nil, exclude those matching regexp IGNORE.
+Note: "
+  (let ((file (nvp:load-file-name))
+        fns vars)
+    (condition-case err
+        (with-temp-buffer
+          (insert-file-contents file)
+          (emacs-lisp-mode)                ; string/comment syntax
+          (condition-case nil
+              (goto-char (point-min))
+            (error (error "oops: point-min = %S" (point-min))))
+          (while (re-search-forward
+                  (concat "\\(\\_<" prefix "[/@_:-][^ \n\t]+\\_>\\)") nil t)
+            (unless (or (nvp:ppss 'soc)
+                        (and ignore
+                             (save-excursion
+                               (condition-case nil
+                                   (goto-char (match-beginning 0))
+                                 (error "Here"))
+                               (looking-at-p ignore))))
+              (ignore-errors
+                (push (intern (buffer-substring-no-properties
+                               (match-beginning 1) (match-end 1)))
+                      (if (nvp:-decl-function-p (match-beginning 0))
+                          fns
+                        vars))))))
+      (error (error "oops: %S" (error-message-string err))))
+    (list :f (cl-remove-duplicates fns)
+          :v (cl-remove-duplicates vars))))
+
+(cl-defmacro nvp:decl-prefix (prefix &key ignore)
+  "Add declares for functions/variables with matching PREFIX.
+If IGNORE is non-nil, exclude those matching regexp IGNORE."
+  (declare (debug t))
+  (cl-destructuring-bind (&key f v)
+      (nvp:-decl-prefix (nvp:as-string prefix) (and ignore (nvp:as-string ignore)))
+    `(progn
+       ,(when f `(nvp:decl ,@f))
+       ,(when v `(nvp:local-defvars ,@v)))))
+
 (defmacro nvp:local-defvars (&rest defvars)
   (macroexp-progn
    (cl-loop for dv in defvars
-      collect `(defvar ,dv))))
+            collect `(defvar ,dv))))
 
 (defmacro nvp:local-vars ()
   `(nvp:local-defvars
@@ -109,13 +158,17 @@
     url-http-end-of-headers
     url-request-method url-request-extra-headers url-request-data))
 
-(cl-defmacro nvp:decls (&key v f)
+(cl-defmacro nvp:decls (&key v f p)
+  (declare (debug t))
   `(progn
      (nvp:local-vars)
      ,(when v
         `(nvp:local-defvars ,@v))
      ,(when f
         `(nvp:decl ,@f))
+     ,(when p
+        `(nvp:decl-prefix ,(if (plistp p) (plist-get p :prefix) p)
+                          :ignore ,(and (plistp p) (plist-get p :ignore))))
      (nvp:decl
        ;; nvp
        nvp-repeat-command

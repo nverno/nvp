@@ -1,7 +1,13 @@
 ;; -*- coding: utf-8; -*- 
 
 (define-abbrev-table 'jq-mode-abbrev-table
-  '()
+  '(("imp" "import" nil :system t))
   "Jq-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table)
   :enable-function #'nvp-abbrev-expand-p)
+
+(define-abbrev-table 'jq-ts-mode-abbrev-table
+  '()
+  "Jq-Ts-Mode Abbrevs."
+  :parents (list prog-mode-abbrev-table
+                 jq-mode-abbrev-table))

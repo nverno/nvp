@@ -12,6 +12,7 @@
 
 ;; Note: install `npm i ts-node typescript' in project and this
 ;; should find the local REPL binary
+;;;###autoload
 (defun nvp-ts-repl-setup (&optional force)
   (unless (or (null force)
               (and ts-comint-program-command

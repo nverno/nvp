@@ -4,6 +4,7 @@
 *loaddefs?.el
 .yas-compiled-snippets.el
 .depend
+tmp/
 
 _build/
 .cask/

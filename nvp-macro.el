@@ -8,6 +8,7 @@
 
 ;;; Code:
 (require 'cl-lib)
+(require 'lisp-mode) ; `let-when-compile'
 (require 'subr-x)
 (require 'macroexp)
 (require 'inline)

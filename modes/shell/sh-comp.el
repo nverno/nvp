@@ -51,23 +51,23 @@
 
 ;; imenu regexp used to gather completion candidates
 ;; car of entry used to match type
-(defvar sh-comp-imenu-expression
-  `((,(sh-comp:annotation function)
-     ;; function FOO
-     ;; function FOO()
-     "^\\s-*function\\s-+\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*\\(?:()\\)?" 1)
-    (,(sh-comp:annotation function)
-     ;; FOO()
-     "^\\s-*\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*()" 1)
-    ;; Global variables
-    (,(sh-comp:annotation global)
-     ,(nvp:concat
-       ;; optionally prefixed by: export or declare
-       "^\\(?:" (regexp-opt '("export" "declare"))
-       ;; with optional flag
-       "\\s-*\\(?:-[[:alpha:]]\\)?\\s-*\\)?"
-       "\\([[:alpha:]_][[:alnum:]_]*\\)=?")
-     1)))
+(rx-let ((ident (group-n 1 (any "_" alpha) (* (any "_" alnum))))
+         (^ (seq line-start (* space)))
+         (sep (seq (+ space)))
+         (sep* (seq (* space))))
+  (let-when-compile (;; function FOO()? or FOO()
+                     (func (rx ^ (or (seq "function" sep ident sep* (? (literal "()")))
+                                     (seq ident sep* (literal "()")))))
+                     ;; Global variable: [export|declare] [-x]* VAR=?
+                     ;;              or: VAR=(VAL)?
+                     (global-var (rx ^ (or (seq (or "export" "declare") sep
+                                                (* (seq "-" alpha sep)) ; optional flags
+                                                ident (? "="))
+                                           (seq ident "=")))))
+    (defvar sh-comp-imenu-expression
+      (eval-when-compile
+        `((,(sh-comp:annotation function) ,func 1)
+          (,(sh-comp:annotation global) ,global-var 1))))))
 
 ;; track candidates from sourced files
 (defvar sh-comp-db (make-hash-table :test 'equal))

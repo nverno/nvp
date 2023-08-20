@@ -399,7 +399,9 @@ Buggy:
                                     ;; ,(if (consp b) `,@(cdr b))
                                     ))))
          ,(when parent
-            `(set-keymap-parent ,modemap ,parent))))))
+            `(,@(if (or create prefix (equal feature :now)) '(progn)
+                 `(with-eval-after-load ,(or feature `',(intern mapname))))
+              (set-keymap-parent ,modemap ,parent)))))))
 
 (provide 'nvp-macs-bindings)
 ;; Local Variables:

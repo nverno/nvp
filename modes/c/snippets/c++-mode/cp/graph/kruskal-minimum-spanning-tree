@@ -4,7 +4,7 @@
 # --
 struct Edge {
     int u, v, wt;
-    bool operator<(Edge const& o) { return wt < o.wt; }
+    bool operator<(Edge const& o) const { return wt < o.wt; }
 };
 int mst(int n, vector<Edge>& edges${1:, vector<Edge>& tree}) {
     sort(edges.begin(), edges.end());

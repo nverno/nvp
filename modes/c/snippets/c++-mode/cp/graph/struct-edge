@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: struct Edge
+# key: g_edge
+# --
+struct Edge {
+  int u, v, wt;
+  Edge(int u_, int v_, int wt_): u(u_), v(v_), wt(wt_) {}
+  bool operator<(Edge const& o) const { return wt < o.wt; }
+};

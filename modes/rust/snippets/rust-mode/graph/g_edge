@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: struct Edge
+# key: g_edge
+# --
+#[derive (Debug, Clone, Copy)]
+struct Edge {
+    u: usize,
+    v: usize,
+    wt: i32,${1:
+    idx: usize,}
+}

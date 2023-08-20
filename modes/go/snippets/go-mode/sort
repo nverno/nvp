@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: sort
+# key: sort
+# --
+sort.Slice(${1:arr}, func(i j int) bool {
+  return ${2:$1[i] < $1[j]}
+})

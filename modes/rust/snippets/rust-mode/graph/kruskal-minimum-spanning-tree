@@ -1,0 +1,21 @@
+# -*- mode: snippet -*-
+# name: kruskal minimum spanning tree
+# key: g_mst
+# --
+fn mst(n: usize, edges: &${1:$($s? "mut ")}[Edge], tree: &mut Vec<Edge>) -> i32 {${1:
+    edges.sort_unstable_by_key(|e| e.wt)}
+    let mut uf = UF::new(n);
+    let mut cost = 0;
+    for e in edges.iter() {
+        if !uf.connected(e.u, e.v) {
+            uf.merge(e.u, e.v);
+            cost += e.wt;
+            tree.push(*e);
+        }
+    }
+    if uf.count() == 1 {
+        cost
+    } else {
+        -1
+    }
+}

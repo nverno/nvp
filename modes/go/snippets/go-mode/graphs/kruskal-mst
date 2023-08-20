@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: kruskal mst
+# key: g_mst
+# --
+func mst(n int, edges []Edge${1:, tree *[]Edge}) int {
+	sort.Slice(es, func(i, j int) bool {
+		return es[i].Wt < es[j].Wt
+	})
+	cost, uf := 0, UF{}
+	uf.Init(n)
+	for _, e := range edges {
+		if !uf.Connected(e.U, e.V) {
+			uf.Merge(e.U, e.V)
+			cost += e.Wt${1:$($s? "
+			*tree = append(*tree, e)")}
+		}
+	}
+	if uf.Count() == 1 {
+		return cost
+	}
+	return -1
+}

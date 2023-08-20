@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: kruskal mst
+# key: g_mst
+# --
+type Edge struct {
+	U   int
+	V   int
+	Wt  int${1:
+	Idx int}
+}

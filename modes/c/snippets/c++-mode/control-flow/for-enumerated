@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: for enumerated
+# key: forix
+# --
+for (auto ${1:i} = 0; $1 < ${2:arr}.size(); ++$1) {
+  auto& ${3:x} = $2[$1];
+  $0
+}

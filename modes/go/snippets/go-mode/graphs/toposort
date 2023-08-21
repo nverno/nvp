@@ -1,0 +1,29 @@
+# -*- mode: snippet -*-
+# name: toposort
+# key: g_topo
+# --
+func dfs_topo(u int, cur *int, order []int, g []map[int]bool) bool {
+	order[u] = -1
+	for v := range g[u] {
+		if order[v] < 0 && (order[v] == -1 || !dfs_topo(v, cur, order, g)) {
+			return false
+		}
+	}
+	order[u] = (*cur)
+	(*cur)++
+	return true
+}
+
+func toposort(n int, g []map[int]bool) []int {
+	order := make([]int, n)
+	for i := 0; i < n; i++ {
+		order[i] = -2
+	}
+	cur := 0
+	for i := 0; i < n; i++ {
+		if order[i] == -2 && !dfs_topo(i, &cur, order, g) {
+			return []int{}
+		}
+	}
+	return order
+}

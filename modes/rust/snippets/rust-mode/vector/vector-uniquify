@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: uniquify vector
+# key: uniq
+# --
+for v in &mut ${1:arr} {
+    v.sort_unstable();
+    v.dedup();
+}

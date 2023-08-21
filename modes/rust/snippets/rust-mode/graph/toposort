@@ -1,0 +1,27 @@
+# -*- mode: snippet -*-
+# name: toposort
+# key: g_topo
+# --
+fn dfs_topo(u: usize, cur: &mut usize, order: &mut [i32], g: &[Vec<usize>]) -> bool {
+    order[u] = -1;
+    for &v in &g[u] {
+        if order[v] < 0 && (order[v] == -1 || !dfs_topo(v, cur, order, g)) {
+            return false;
+        }
+    }
+    order[u] = *cur as i32;
+    *cur += 1;
+    true
+}
+
+// return topo order of nodes 0..n in g, [] if cycle detected
+fn toposort(n: usize, g: &[Vec<usize>]) -> Vec<usize> {
+    let mut order = vec![-2; n];
+    let mut cur = 0;
+    for i in 0..n {
+        if order[i] == -2 && !dfs_topo(i, &mut cur, &mut order, g) {
+            return vec![];
+        }
+    }
+    order.iter().map(|&x| x as usize).collect()
+}

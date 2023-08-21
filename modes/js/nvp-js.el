@@ -106,6 +106,7 @@
 ;; - React: https://reactjs.org/docs/{react-component.html}
 ;; - npm docs <library> name launches site in browser
 
+;;; FIXME: use hap
 (defun nvp-js-help-at-point ()
   (interactive)
   (cond

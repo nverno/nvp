@@ -38,22 +38,30 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (require 'nvp)
 (nvp:decls)
 
+(nvp:defvar nvp-js-test-re (regexp-opt '("jest" "mocha" "jasmine") t))
+
+;; Get scripts from project package.json
+(defun nvp-js--project-scripts ()
+  (let ((pkg (expand-file-name "package.json" (nvp-project-root))))
+    (when (file-exists-p pkg)
+      (cdr (assq 'scripts (json-read-file pkg))))))
+
 ;; -------------------------------------------------------------------
 ;;; Configuration
-(nvp:defvar nvp-js-test-re (regexp-opt '("jest" "mocha" "jasmine") t))
 
 ;; set local values, eg. in .dir-locals.el
 (defun nvp-js-local-config (&optional dir)
   (when-let ((default-directory
-               (nvp-project-root
-                (or dir buffer-file-name default-directory))))
+              (nvp-project-root
+               (or dir buffer-file-name default-directory))))
     (nvp-async-shell-command-to-string
-     "npm list --depth=0 --only=dev --parseable | awk -F/ '{print $NF}'"
-     `(lambda (p res)
-        (let ((default-directory ,default-directory))
+      "npm list --depth=0 --only=dev --parseable | awk -F/ '{print $NF}'"
+      (lambda (p _res)
+        (let ((default-directory default-directory))
           (when (zerop (process-exit-status p))
             (unwind-protect
                 (with-current-buffer (process-buffer p)
@@ -66,7 +74,8 @@
                       (message "Project: %s\nTest framework: %s"
                                (abbreviate-file-name default-directory)
                                test))))
-              (kill-buffer (process-buffer p)))))))))
+              (kill-buffer (process-buffer p))))))
+      "*js-config*")))
 
 (provide 'nvp-js-project)
 ;; Local Variables:

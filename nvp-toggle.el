@@ -84,9 +84,9 @@ Decrement with prefix."
         (intern (concat str "-mode"))))))
 
 ;;;###autoload
-(defun nvp-toggle-local-variable (var &optional val dir footer)
+(defun nvp-toggle-local-variable (var &optional val dir footer dir-mode)
   "Toggle file/dir-local binding of VAR with VAL.
-If DIR is non-nil toggle dir-local variable.
+If DIR is non-nil toggle dir-local variable, for DIR-MODE.
 If FOOTER is non-nil toggle value in file's Local Variables."
   (setq var (nvp:as-symbol var))
   (let* ((curr (nvp-toggle--normalize-var var))
@@ -103,12 +103,12 @@ If FOOTER is non-nil toggle value in file's Local Variables."
               (prop #'modify-file-local-variable-prop-line)
               (dir  #'modify-dir-local-variable)
               (t    #'modify-file-local-variable)))
-         (dir-mode (and (not prop) dir (read-file-local-variable-mode)))
+         ;; (dir-mode (and (not prop) dir (read-file-local-variable-mode)))
          (start-state (buffer-chars-modified-tick))
          changed)
     (let ((orig-buff (current-buffer)))
       (save-excursion                   ;modify-file... moves point
-        (apply fn (if dir-mode (list dir-mode var val op) (list var val op)))
+        (apply fn (if dir (list dir-mode var val op) (list var val op)))
         (when (and prop (eq op 'delete))
           (nvp-toggle--cleanup-prop-line)))
       (setq changed (not (or (eq fn 'modify-dir-local-variable)
@@ -135,12 +135,13 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
      var (read-file-local-variable-value var) nil footer)))
 
 ;;;###autoload
-(defun nvp-toggle-dir-local-binding (var val)
-  "Toggle dir-local binding of VAR to VAL."
+(defun nvp-toggle-dir-local-binding (var val &optional mode)
+  "Toggle dir-local binding of VAR to VAL for MODE."
   (interactive
    (let ((var (read-file-local-variable "Add dir-local variable")))
-     (list var (read-file-local-variable-value var))))
-  (nvp-toggle-local-variable var val 'dir))
+     (list var (read-file-local-variable-value var)
+           (read-file-local-variable-mode))))
+  (nvp-toggle-local-variable var val 'dir nil mode))
 
 ;; -------------------------------------------------------------------
 ;;; Font-lock / Chars

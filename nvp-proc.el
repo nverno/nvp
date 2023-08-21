@@ -13,7 +13,7 @@
 (nvp:decls)
 
 ;;;###autoload
-(defun nvp-async-shell-command-to-string (command &optional callback)
+(defun nvp-async-shell-command-to-string (command &optional callback buffer)
   "Execute COMMAND as an `async-shell-command', running CALLBACK with results
 if non-nil. Default just barfs output in message win or lose."
   (nvp:defq callback
@@ -24,7 +24,8 @@ if non-nil. Default just barfs output in message win or lose."
            (kill-buffer (current-buffer)))))))
   (nvp:with-process command
     :proc-name "async-string"
-    :proc-buff (generate-new-buffer-name " *temp*")
+    :proc-buff (or (and buffer (get-buffer-create buffer))
+                   (generate-new-buffer-name " *temp*"))
     :shell t
     :callback callback))
 (put 'nvp-async-shell-command-to-string 'lisp-indent-function 'defun)

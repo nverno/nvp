@@ -3,12 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls :f (racket-tidy-requires
-               racket--buffer-file-name
-               racket--do-describe
-               racket--describe-goto
-               racket-back-end-name))
 (require 'racket-mode nil t)
+(nvp:decls :p ("racket"))
 (nvp:auto "nvp-hap" nvp-hap-thing-at-point)
 
 (defun nvp-racket-expand ()

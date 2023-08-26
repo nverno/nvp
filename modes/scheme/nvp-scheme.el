@@ -1,18 +1,14 @@
 ;;; nvp-scheme.el --- scheme helpers -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; - sending REPL regions from different modules:
 ;;   https://stackoverflow.com/questions/55546058/racket-mode-can-i-evaluate-a-single-form-within-a-given-namespace-at-the-repl
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'geiser nil t)
-(nvp:decls
- :f (geiser-eval-last-sexp
-     abbrev-table-put abbrev-table-get)
- :v (geiser-active-implementations
-     geiser-impl--implementation))
+(nvp:decls :p "geiser" :f (abbrev-table-put abbrev-table-get))
 
 ;; determine available scheme implementations
 (defun nvp-scheme-active-implementations ()

@@ -104,10 +104,10 @@
        (t (cider-pprint-eval-defun-at-point)))
     (cider-eval-defun-at-point)))
 
-(defadvice clojure-test-run-tests (before save-first activate)
+(define-advice clojure-test-run-tests (:before (&rest_) "save-first")
   (save-buffer))
 
-(defadvice nrepl-load-current-buffer (before save-first activate)
+(define-advice nrepl-load-current-buffer (:before (&rest_) "save-first")
   (save-buffer))
 
 (provide 'nvp-clojure)

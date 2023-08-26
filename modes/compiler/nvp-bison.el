@@ -9,8 +9,8 @@
 ;;;###autoload
 (defun nvp-bison-load-imenu ()
   (interactive)
-  (setq imenu-create-index-function 'imenu-default-create-index-function)
-  (setq imenu-generic-expression bison-imenu-regex))
+  (setq-local imenu-create-index-function 'imenu-default-create-index-function)
+  (setq-local imenu-generic-expression bison-imenu-regex))
 
 ;; -------------------------------------------------------------------
 ;;; parser.output

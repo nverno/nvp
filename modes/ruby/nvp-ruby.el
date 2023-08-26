@@ -3,9 +3,10 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'ruby-mode)
-(require 'inf-ruby)
+(require 'inf-ruby nil t)
 (nvp:decls
- :f (ruby-compilation-this-buffer projectile-rails-root robe-mode robe-start))
+ :p ("ruby" "inf-ruby" "robe" "projectile-rails")
+ :f (inf-ruby))
 
 (defun nvp-ruby--buffer-requires ()
   (save-excursion

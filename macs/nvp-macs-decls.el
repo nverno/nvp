@@ -49,6 +49,14 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ,(when f `(nvp:decl ,@f))
        ,(when v `(nvp:local-defvars ,@v)))))
 
+(cl-defmacro nvp:decl-prefixes (&rest decls)
+  (macroexp-progn
+   (cl-loop for d in decls
+            collect
+            `(nvp:decl-prefix
+              ,(if (plistp d) (plist-get d :prefix) d)
+              :ignore ,(and (plistp d) (plist-get d :ignore))))))
+
 (defmacro nvp:local-defvars (&rest defvars)
   (macroexp-progn
    (cl-loop for dv in defvars
@@ -163,8 +171,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
      ,(when f
         `(nvp:decl ,@f))
      ,(when p
-        `(nvp:decl-prefix ,(if (plistp p) (plist-get p :prefix) p)
-                          :ignore ,(and (plistp p) (plist-get p :ignore))))
+        `(nvp:decl-prefixes ,@(nvp:as-list p)))
      (nvp:decl
        ;; nvp
        nvp-repeat-command
@@ -250,6 +257,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-cache-create
        ;; nvp-org
        nvp-org-links
+       ;; theme
+       nvp-theme-switch
        ;; setup
        nvp-setup-program
        nvp-setup-local

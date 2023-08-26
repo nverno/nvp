@@ -93,7 +93,7 @@
   (when (eq sql-product 'postgres)
     (set (make-local-variable 'zeal-at-point-docset) "psql")))
 
-(defadvice sql-set-product (after set-zeal-docset activate)
+(define-advice sql-set-product (:after (&rest _) "set-zeal-docset")
   (nvp-sql-psql-set-zeal))
 
 ;;; SQLup

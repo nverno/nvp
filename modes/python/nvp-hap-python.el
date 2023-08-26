@@ -6,7 +6,7 @@
 (require 'nvp)
 (require 'nvp-hap)
 (require 'anaconda-mode nil t)
-(nvp:decls)
+(nvp:decls :p "anaconda")
 
 (defun nvp-anaconda-mode-show-doc-callback (result)
   "Process view doc RESULT."

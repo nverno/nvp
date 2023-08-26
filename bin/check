@@ -8,11 +8,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 check_compiled() {
     (
         cd "$DIR/.."
-        rg --glob '**/*\.elc' \
+        rg --glob '**/*\.elc'                          \
            --glob '!subrs/**' --glob '!**/*-subrs.elc' \
-           --glob '!macs/**' --glob '!nvp-macro.elc' \
-           --text --heading -o \
-           -e '(^| )[^"]+nvp:[^"\t\n ]+ [^"]'
+           --glob '!macs/**' --glob '!nvp-macro.elc'   \
+           --text --heading -o                         \
+           -e '(^|[^"])+nvp:[^"\n ]+'
+        # -e '(^| )[^"]+nvp:[^"\t\n ]+ [^"]'
     )
 }
 

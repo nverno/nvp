@@ -281,7 +281,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
       (goto-char (point-min))           ;might already be open
      (condition-case nil
          (when (re-search-forward
-                (concat "^(nvp:bindings[ ]+" (regexp-quote keymap)))
+                (concat "^(nvp[:]bindings[ ]+" (regexp-quote keymap)))
            (set-marker (mark-marker) (match-end 0)))
        (error (goto-char (point-min)))))
    (nvp-display-location buff :buffer action)))

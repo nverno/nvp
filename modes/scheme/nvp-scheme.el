@@ -23,8 +23,15 @@
          (--when-let (or (nvp:program-search prog)
                          (executable-find prog))
            (push i res))))
-     '(racket guile)) ;; geiser-active-implementations
+     '(racket guile mit-scheme)) ;; geiser-active-implementations
     res))
+
+;; map geiser implementation to name for abbrevs/snippets
+(eval-when-compile 
+  (defsubst nvp:scheme-implementation ()
+    (pcase geiser-impl--implementation
+      ('mit 'mit-scheme)
+      (x x))))
 
 ;; -------------------------------------------------------------------
 ;;; Abbrevs
@@ -62,18 +69,19 @@
 
 ;; sync local abbrev table/snippets according to implementation
 (defun nvp-scheme-sync-mode (&optional no-yas)
-  (let* ((scheme geiser-impl--implementation)
+  (let* ((scheme (nvp:scheme-implementation))
          (mode (format "%s-mode" scheme))
-         (abbr-table (format "%s-abbrev-table" mode)))
+         (abbr-table (format "%s-abbrev-table" mode))
+         (table (intern-soft abbr-table)))
     (setq mode-name (format "λ[%s]" scheme))
     (unless no-yas
-      (if (eq 'racket geiser-impl--implementation)
-          (yas-deactivate-extra-mode 'guile-mode)
-        (yas-deactivate-extra-mode 'racket-mode))
+      (dolist (scm (nvp-scheme-active-implementations))
+        (yas-deactivate-extra-mode
+         (intern-soft (concat (symbol-name scm) "-mode"))))
       (yas-activate-extra-mode (intern-soft mode)))
     (setq nvp-abbrev-local-table mode
-          local-abbrev-table (symbol-value (intern abbr-table))
-          nvp-mode-name (intern mode))))
+          nvp-mode-name (intern mode))
+    (setq local-abbrev-table (and table (symbol-value table)))))
 
 (define-advice geiser-set-scheme (:after (&rest _args) "sync-mode-vars")
   (nvp-scheme-sync-mode))
@@ -92,7 +100,8 @@
 ;; -------------------------------------------------------------------
 ;;; REPL
 
-;; enable abbrevs according to scheme implementiation
+;; Add to `pre-command-hook' in geiser repl hook.
+;; Enables abbrevs according to scheme implementiation
 ;; since `geiser-impl--implementation' isn't available when this
 ;; hook is run, the hack here should set the parent abbrev table
 ;; and remove the enable function the first time expand-abbrev is called
@@ -100,16 +109,17 @@
 ;; This removes previous parent tables unless SAVE-PARENTS is non-nil,
 ;; in case scheme was changed b/w REPL invocations
 (defun nvp-scheme-repl-init-abbrevs (&optional save-parents)
-  (let ((impl geiser-impl--implementation))
+  (let ((impl (nvp:scheme-implementation)))
     (when impl
       (let ((parents (and save-parents
                           (abbrev-table-get local-abbrev-table :parents)))
-            (table (concat (symbol-name impl) "-mode-abbrev-table")))
+            (table (intern-soft (concat (symbol-name impl) "-mode-abbrev-table"))))
         (abbrev-table-put
          local-abbrev-table
-         :parents (cons (symbol-value (intern table)) parents)))))
-  ;; now remove enable hook
-  (abbrev-table-put local-abbrev-table :enable-function nil))
+         :parents (delq nil (cons (symbol-value table) parents))))))
+  ;; now remove enable hook/pre-command-hook
+  (abbrev-table-put local-abbrev-table :enable-function nil)
+  (remove-hook 'pre-command-hook #'nvp-scheme-repl-init-abbrevs t))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

@@ -80,10 +80,15 @@
   "Racket-Mode Abbrevs."
   :parents (list racket-mode-variable-abbrev-table scheme-mode-abbrev-table)
   ;; :regexp "\\(?:[ \t\(\)\{\}\[\]]\\|^\\)\\([A-Za-z0-9_.#/*?-]+\\)\\W*"
-  :enable-function 'nvp-scheme-abbrev-fun-expand-p)
+  :enable-function #'nvp-scheme-abbrev-fun-expand-p)
+
+(define-abbrev-table 'mit-scheme-mode-abbrev-table
+  '()
+  "Mit-Scheme-Mode Abbrevs."
+  :parents (list scheme-mode-abbrev-table)
+  :enable-function #'nvp-scheme-abbrev-fun-expand-p)
 
 (define-abbrev-table 'geiser-repl-mode-abbrev-table
   '()
   "Geiser-Repl-Mode Abbrevs."
-  :enable-function 'nvp-scheme-repl-init-abbrevs)
-
+  :enable-function #'nvp-scheme-repl-init-abbrevs)

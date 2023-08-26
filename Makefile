@@ -50,7 +50,7 @@ test: ## Run tests
 	$(BATCH) -l ert $(addprefix  -l ,$(TESTS)) -f ert-run-tests-batch-and-exit
 
 check-compiled:  ## Check compiled files for subrs/macros
-	$(CURDIR)/bin/check compiled || true
+	@$(CURDIR)/bin/check compiled && exit 1 || echo "check-compiled: all good"
 
 README.md : el2markdown.el ${PKG}.el ## Generate README.md from source
 	$(BATCH) -l $< ${PKG}.el -f el2markdown-write-readme

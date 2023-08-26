@@ -400,26 +400,35 @@ If TS, also set ts version of MODE's to hook to regular mode's hook."
 
 ;;; Tree-sitter, treesit
 
-(defmacro nvp:setup-treesit (mode &optional ts-mode no-remap)
-  "Configure MODE to use tree-sitter when available.
-TS-MODE specifies tree-sitter major mode, defaults to MODE-ts-mode.
-Remaps major mode to tree-sitter version, unless NO-REMAP.
-Aliases tree-sitter mode abbrev to non-tree-sitter mode's abbrev table."
-  (let* ((modename (replace-regexp-in-string
-                    "\\(-mode\\)+" "-mode" (concat (nvp:as-string mode) "-mode")))
-         (mode (intern modename))
-         (lang (intern (replace-regexp-in-string "-mode\\'" "" modename)))
-         (ts-mode (or (and ts-mode (nvp:as-symbol ts-mode))
-                      (intern (replace-regexp-in-string "-mode\\'" "-ts-mode" modename))))
-         (ts-modename (symbol-name ts-mode)))
-   `(when (and (require 'treesit nil t)
-               (treesit-language-available-p ',lang))
-      (require ',ts-mode)
-      ,(unless no-remap
-         `(cl-pushnew '(,mode . ,ts-mode) major-mode-remap-alist :test #'equal))
-      ;; Use same abbrev table
-      (defvaralias ',(intern (concat ts-modename "-abbrev-table"))
-        ',(intern (concat modename "-abbrev-table"))))))
+(cl-defmacro nvp:setup-treesit
+    (lang &rest body &key ts-mode remap url install &allow-other-keys)
+  "Configure tree-sitter for LANG when available, or INSTALL from URL.
+TS-MODE specifies tree-sitter major mode, defaults to LANG-ts-mode.
+REMAP is a major mode to remap to tree-sitter version.
+Ts mode's abbrev table will be aliased to REMAP's table.
+Do BODY when treesit mode is available."
+  (declare (indent defun) (debug t))
+  (nvp:skip-keywords body)
+  (let* ((remap-modename (and remap (symbol-name remap)))
+         (ts-modename
+          (or (and ts-mode (nvp:as-string ts-mode))
+              (concat (nvp:as-string lang) "-ts-mode")))
+         (ts-mode (or ts-mode (intern ts-modename))))
+    `(when (and (require 'treesit nil t)
+                (or (treesit-language-available-p ',lang)
+                    ,(when install
+                       `(progn
+                          ,(when url
+                             `(cl-pushnew '(,lang ,url) treesit-language-source-alist
+                                          :test #'equal))
+                          (treesit-install-language-grammar ',lang))))
+                (require ',ts-mode nil t))
+       ,@(when remap
+           `((cl-pushnew '(,remap . ,ts-mode) major-mode-remap-alist :test #'equal)
+             ;; Use same abbrev table
+             (defvaralias ',(intern (concat ts-modename "-abbrev-table"))
+               ',(intern (concat remap-modename "-abbrev-table")))))
+       ,@body)))
 
 (provide 'nvp-macs-setup)
 ;; Local Variables:

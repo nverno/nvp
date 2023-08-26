@@ -371,6 +371,7 @@ If TS, also set ts version of MODE's to hook to regular mode's hook."
        (add-hook ',mode-hook #',my-hook)
        ,@(when ts
            `((when (boundp ',mode-hook)
+               (eval-when-compile (defvar ,mode-hook))
                (setq ,ts-hook ,mode-hook)))))))
 
 (defmacro nvp:setup-hooks (hook &rest modes)
@@ -396,6 +397,29 @@ If TS, also set ts version of MODE's to hook to regular mode's hook."
 (defmacro nvp:setup-cache (var filename)
   "Set cache FILENAME location."
   `(nvp:setq ,var (expand-file-name ,filename nvp/cache)))
+
+;;; Tree-sitter, treesit
+
+(defmacro nvp:setup-treesit (mode &optional ts-mode no-remap)
+  "Configure MODE to use tree-sitter when available.
+TS-MODE specifies tree-sitter major mode, defaults to MODE-ts-mode.
+Remaps major mode to tree-sitter version, unless NO-REMAP.
+Aliases tree-sitter mode abbrev to non-tree-sitter mode's abbrev table."
+  (let* ((modename (replace-regexp-in-string
+                    "\\(-mode\\)+" "-mode" (concat (nvp:as-string mode) "-mode")))
+         (mode (intern modename))
+         (lang (intern (replace-regexp-in-string "-mode\\'" "" modename)))
+         (ts-mode (or (and ts-mode (nvp:as-symbol ts-mode))
+                      (intern (replace-regexp-in-string "-mode\\'" "-ts-mode" modename))))
+         (ts-modename (symbol-name ts-mode)))
+   `(when (and (require 'treesit nil t)
+               (treesit-language-available-p ',lang))
+      (require ',ts-mode)
+      ,(unless no-remap
+         `(cl-pushnew '(,mode . ,ts-mode) major-mode-remap-alist :test #'equal))
+      ;; Use same abbrev table
+      (defvaralias ',(intern (concat ts-modename "-abbrev-table"))
+        ',(intern (concat modename "-abbrev-table"))))))
 
 (provide 'nvp-macs-setup)
 ;; Local Variables:

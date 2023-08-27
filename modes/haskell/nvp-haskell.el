@@ -4,19 +4,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp:decls)
-(nvp:decl haskell-ident-at-point nvp-cycle)
-
-
-;; -------------------------------------------------------------------
-;;; Commands
+(nvp:decls :p ("haskell"))
 
 (defun nvp-haskell-arrow ()
   (interactive)
   (nvp-cycle (nvp:input 'lcs) '("_" " -> ")))
-
-;; -------------------------------------------------------------------
-;;; Compilation
 
 ;; Make compilation-mode understand "at blah.hs:11:34-50" lines
 ;; output by GHC
@@ -30,10 +22,7 @@
       1 2 3 0 1))
     (add-to-list 'compilation-error-regexp-alist alias)))
 
-
-;; -------------------------------------------------------------------
 ;;; Align
-
 ;; https://github.com/jwiegley/dot-emacs/init.el#L1954
 (with-eval-after-load 'align
   '(nconc
@@ -47,10 +36,7 @@
               (haskell-arrows      . "\\(\\s-+\\)\\(->\\|→\\)\\s-+")
               (haskell-left-arrows . "\\(\\s-+\\)\\(<-\\|←\\)\\s-+")))))
 
-
-;; -------------------------------------------------------------------
 ;;; Help 
-
 (defvar nvp-hoogle-server-process nil)
 (defun nvp-haskell-hoogle (query &optional _arg)
   "Do a Hoogle search for QUERY."

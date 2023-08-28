@@ -126,6 +126,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-tag-function
     nvp-compile-function
     nvp-mark-defun-function
+    nvp-test-function
+    nvp-format-buffer-function
     ;; fallbacks
     nvp-exit
     nvp-fallback-function

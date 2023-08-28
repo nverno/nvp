@@ -16,7 +16,11 @@
 (require 'smartparens)
 
 (nvp:decls
- :f (winner-redo winner-undo isearch-repeat-forward isearch-repeat-backward consult-recent-file))
+ :f ( winner-redo winner-undo
+      isearch-repeat-forward isearch-repeat-backward
+      consult-recent-file
+      lsp-format-buffer
+      ggtags-find-tag-dwim))
 
 ;;; Aliases
 (defalias 'nvp-completing-read 'completing-read)
@@ -73,18 +77,17 @@ or nil.")
 (defvar nvp-exit nil "Exit flag")
 
 (defvar nvp-display-actions
-  '(
-    :buffer ((4 display-buffer-same-window
-                ((inhibit-switch-frame . nil))
-                ((inhibit-same-window  . nil)))
-             (1 display-buffer-pop-up-window
-                ((inhibit-same-window  . t))))
-    :file ((4 find-file)
-           (1 find-file-other-window))
-    :ido ((4 raise-frame)
-          (1 other-window))
-    :find-func ((4 find-function)
-                (1 find-function-other-window))))
+  '( :buffer ((4 display-buffer-same-window
+                 ((inhibit-switch-frame . nil))
+                 ((inhibit-same-window  . nil)))
+              (1 display-buffer-pop-up-window
+                 ((inhibit-same-window  . t))))
+     :file ((4 find-file)
+            (1 find-file-other-window))
+     :ido ((4 raise-frame)
+           (1 other-window))
+     :find-func ((4 find-function)
+                 (1 find-function-other-window))))
 
 ;;-- Local
 ;; Abbrevs
@@ -119,12 +122,13 @@ or nil.")
 (defvar-local nvp-check-buffer-function #'checkdoc)
 (defvar-local nvp-disassemble-function #'disassemble)
 (defvar-local nvp-test-function #'nvp-ert-run-tests)
-(defvar-local nvp-tag-function nil)
+(defvar-local nvp-tag-function #'ggtags-find-tag-dwim)
 (defvar-local nvp-compile-function #'nvp-compile-default)
 (defvar-local nvp-mark-defun-function #'mark-defun)
 (defvar-local nvp-project-root-function #'projectile-project-root)
 (defvar-local nvp-test-framework nil)
 (defvar-local nvp-fill-paragraph-function nil)
+(defvar-local nvp-format-buffer-function #'lsp-format-buffer)
 
 ;; TODO:
 ;; - test/tag functions should call hooks
@@ -133,9 +137,10 @@ or nil.")
 ;;   it just invokes local indirect function.
 ;; - They could just be alists registering modes to functions?
 (nvp:wrapper-fuctions
- (nvp-check-buffer-function . nil)
- (nvp-test-function         . nil)
- (nvp-tag-function          . nil))
+ (nvp-check-buffer-function  . nil)
+ (nvp-test-function          . nil)
+ (nvp-tag-function           . nil)
+ (nvp-format-buffer-function . nil))
 
 
 ;; -------------------------------------------------------------------

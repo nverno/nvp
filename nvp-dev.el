@@ -139,11 +139,14 @@
                   nvp-check-buffer-function
                   nvp-help-at-point-functions
                   nvp-disassemble-function
-                  nvp-test-function)))
+                  nvp-test-function
+                  nvp-fill-paragraph-function
+                  nvp-format-buffer-function)))
         (vars
          (--map (cons (symbol-name it) (symbol-value it))
                 '(nvp-abbrev-local-file
                   nvp-abbrev-local-table
+                  nvp-mode-name
                   nvp-mode-header-regex
                   nvp-mode-snippet-dir
                   nvp-mode-install-targets

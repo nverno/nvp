@@ -38,6 +38,12 @@
           (string-trim
            (shell-command-to-string "rustup show | awk 'NR==2 {print $3}'"))))
 
+(defun nvp-rustic-doc-search (&optional dumb)
+  "Wrapper for `rustic-doc-search' to call `rustic-doc-dumb-search' with
+prefix DUMB."
+  (interactive "P")
+  (call-interactively (if dumb #'rustic-doc-dumb-search #'rustic-doc-search)))
+
 ;; -------------------------------------------------------------------
 ;;; Tests
 

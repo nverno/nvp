@@ -7,9 +7,10 @@
     ("ret" "return" nil :system t)
     ("letm" "let mut" nil :system t))
   "Rust-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list prog-mode-abbrev-table)
+  :enable-function #'nvp-abbrev-expand-p)
 
 (define-abbrev-table 'rustic-mode-abbrev-table
   '()
   "Rustic-Mode Abbrevs."
-  :parents (list rust-mode-abbrev-table prog-mode-abbrev-table))
+  :parents (list rust-mode-abbrev-table))

@@ -7,21 +7,12 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'rustic nil t)
-(nvp:decls :v (toml-mode-map)
-           :f (rustic-cargo-current-test
-               rustic-cargo--get-test-target rustic-cargo-test
-               rustic-cargo--get-current-fn-name rustic-cargo--get-current-mod
-               lsp-rust-analyzer--related-tests lsp-rust-analyzer-related-tests))
+(nvp:decls :p ("rustic" "lsp-rust" "toml"))
 (nvp:auto "rustic-cargo" rustic-cargo--get-test-target)
 
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode rust-mode))
+(nvp:defmethod nvp-newline-dwim-comment (syntax arg)
+  :modes (rust-mode rust-ts-mode rustic-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
-
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode rustic-mode))
-  (nvp-newline-dwim--comment syntax arg " * "))
-
 
 (defun nvp-rust-move-to-current-fn ()
   "Move point to current function decl if point is function decl."
@@ -39,6 +30,13 @@
       (backward-up-list)
       (forward-word -1)
       (point))))
+
+;;; rustic-doc
+;; Set RUSTUP_HOME correctly so convert script finds std location
+(nvp:run-once rustic-doc-setup (:before (&rest _))
+  (setenv "RUSTUP_HOME"
+          (string-trim
+           (shell-command-to-string "rustup show | awk 'NR==2 {print $3}'"))))
 
 ;; -------------------------------------------------------------------
 ;;; Tests
@@ -63,70 +61,6 @@ Choose test to run by
                  (and (lsp-rust-analyzer--related-tests)
                       (call-interactively #'lsp-rust-analyzer-related-tests)))))))
    (t (rustic-cargo-test))))
-
-;; -------------------------------------------------------------------
-;;; Insert / Toggle
-
-;; rust mode functions:
-;; rust-in-comment-paragraph
-;; rust-in-macro
-;; rust-in-str-or-cmnt
-;; rust-beginning-or-defun
-;; rust-end-of-defun
-
-;; toggle public visibility of function at point
-;; (defun nvp-rust-toggle-pub ()
-;;   (interactive)
-;;   (save-excursion
-;;     (rust-beginning-of-defun)
-;;     (if (and (looking-at-p "pub ")
-;;              (message "pub off"))
-;;         (delete-char 4)
-;;       (insert "pub ")
-;;       (message "pub on"))))
-
-;; toggle mutability of variable at point
-;; (defun nvp-rust-toggle-mut ()
-;;   (interactive)
-;;   (save-excursion
-;;     (racer-find-definition)
-;;     (back-to-indentation)
-;;     (forward-char 4)
-;;     (if (and (looking-at-p "mut ")
-;;              (message "mutability off"))
-;;         (delete-char 4)
-;;       (insert "mut ")
-;;       (message "mutability on"))))
-
-;;; Enums / Struct
-
-;; (eval-when-compile
-;;   ;; do body business at item location
-;;   (defmacro nvp-rust-at-definition-of (item &rest body)
-;;     (declare (indent defun))
-;;     `(save-excursion
-;;        (with-current-buffer (find-file-noselect
-;;                              (get-text-property 0 'file ,item))
-;;          (goto-char (point-min))
-;;          (forward-line (1- (get-text-property 0 'line ,item)))
-;;          (forward-char (get-text-property 0 'col ,item))
-;;          ,@body)))
-
-;;   ;; collect stuff between beginning/end of rust def at point
-;;   (defmacro nvp-rust-collect-fields (regexp)
-;;     (declare (indent defun))
-;;     `(save-excursion
-;;        (rust-beginning-of-defun)
-;;        (let ((end (save-excursion
-;;                     (rust-end-of-defun)
-;;                     (point)))
-;;              (case-fold-search)
-;;              opts)
-;;          (while (< (point) end)
-;;            (and (looking-at ,regexp)
-;;                 (push (match-string-no-properties 1) opts))
-;;            (forward-line 1))
-;;          opts))))
 
 (provide 'nvp-rust)
 ;;; nvp-rust.el ends here

@@ -84,10 +84,11 @@ If ENV-VAR is nil, set with new VALUE."
   "Add VALUE to ENV-VAR interactively.
 With prefix, overwrite value instead of appending by default."
   (interactive
-   (let* ((var (read-envvar-name "Environment variable: " t))
+   (let* ((var (read-envvar-name "Environment variable: " nil))
           (current-val (getenv var)))
      (list var (nvp:prompt-with-message "Value: " "Current: %s" current-val)
-           (y-or-n-p "Clobber current value? "))))
+           (and current-val
+                (y-or-n-p "Clobber current value? ")))))
   (if clobber (setenv env-var value)
     (nvp-env-add env-var value))
   (message "%s=%s" env-var (getenv env-var)))

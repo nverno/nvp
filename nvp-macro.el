@@ -1421,7 +1421,7 @@ symbols is evaluated. See `define-advice'."
          (props         (and depth `((depth . ,depth))))
          (symbols (nvp:as-list symbol))
          (advice (cond ((or (stringp name) (symbolp name))
-                        (intern (format "%s@%s~once" (car symbol) name)))
+                        (intern (format "%s@%s~once" (car symbols) name)))
                        (t (error "Unrecognized name spec `%S'" name)))))
     `(prog1
          (defalias ',advice

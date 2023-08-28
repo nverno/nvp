@@ -400,8 +400,28 @@ If TS, also set ts version of MODE's to hook to regular mode's hook."
 
 ;;; Tree-sitter, treesit
 
+(declare-function treesit-auto--build-treesit-source-alist "treesit-auto")
+(defvar treesit-language-source-alist)
+(defmacro nvp:install-treesit (lang &optional auto url revision source-dir cc c++)
+  `(progn
+     ,(if auto
+          `(when (require 'treesit-auto nil t)
+             (unless treesit-language-source-alist
+               (setq treesit-language-source-alist
+                     (treesit-auto--build-treesit-source-alist))))
+        `(cl-pushnew '(,lang ,url ,revision ,source-dir ,cc ,c++)
+                     treesit-language-source-alist
+                     :test #'equal))
+     (treesit-install-language-grammar ',lang)
+     ;; `treesit-install-language-grammar' catches error, so return loadable
+     (treesit-language-available-p ',lang)))
+
 (cl-defmacro nvp:setup-treesit
-    (lang &rest body &key ts-mode remap url install ts-lib &allow-other-keys)
+    (lang &rest body
+          &key ts-mode remap install ts-lib
+          auto                          ; use treesit-auto                          
+          url revision source-dir cc c++
+          &allow-other-keys)
   "Configure tree-sitter for LANG when available, or INSTALL from URL.
 TS-MODE specifies tree-sitter major mode, defaults to LANG-ts-mode.
 REMAP is a major mode to remap to tree-sitter version.
@@ -417,18 +437,16 @@ Do BODY when treesit mode is available."
     `(when (and (require 'treesit nil t)
                 (or (treesit-language-available-p ',lang)
                     ,(when install
-                       `(progn
-                          ,(when url
-                             `(cl-pushnew '(,lang ,url) treesit-language-source-alist
-                                          :test #'equal))
-                          (treesit-install-language-grammar ',lang))))
+                       `(nvp:install-treesit
+                         ,lang ,auto ,url ,revision ,source-dir ,cc ,c++)))
                 (require ',(or ts-lib ts-mode) nil t))
        ,@(when remap
            `((cl-pushnew '(,remap . ,ts-mode) major-mode-remap-alist :test #'equal)
              ;; Use same abbrev table
              (defvaralias ',(intern (concat ts-modename "-abbrev-table"))
                ',(intern (concat remap-modename "-abbrev-table")))))
-       ,@body)))
+       (progn
+         ,@body))))
 
 (provide 'nvp-macs-setup)
 ;; Local Variables:

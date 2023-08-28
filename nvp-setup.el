@@ -89,6 +89,10 @@
      post-fn)                           ;function called after setup
   "Setup local variables for helper package - abbrevs, snippets, root dir."
   (setq mode (if mode (nvp:as-symbol mode) major-mode))
+  ;; use the standard mode when remapped,
+  ;; eg. use python-mode instead of python-ts-mode
+  (when-let ((remap (rassq mode major-mode-remap-alist)))
+    (setq mode (car remap)))
   (let ((mvars (gethash mode nvp-mode-cache nil))
         yas-dir mode-snips)
     (unless mvars

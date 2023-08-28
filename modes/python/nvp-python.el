@@ -12,8 +12,8 @@
 (nvp:decls :f (conda-env-send-buffer
                anaconda-mode-complete-extract-names anaconda-mode-call))
 
-(cl-defmethod nvp-parse-current-function
-  (&context (major-mode python-mode) &rest _args)
+(nvp:defmethod nvp-parse-current-function ()
+  :modes (python-mode python-ts-mode)
   (add-log-current-defun))
 
 ;;; Abbrevs
@@ -104,7 +104,7 @@
 
 ;; switch betweeen source and REPL buffers
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(python-mode)
+  (nvp-repl-add '(python-mode python-ts-mode)
     :modes '(inferior-python-mode)
     :find-fn #'python-shell-get-process
     :init (lambda ()
@@ -238,32 +238,34 @@ the console."
 ;; "d.popleft" -> "collections.deque.popleft"
 (declare-function info-lookup-add-help "info-look")
 (with-eval-after-load 'info-look
-  (info-lookup-add-help
-   :mode 'python-mode
-   :regexp "[a-zA-Z_0-9.]+"
-   :doc-spec
-   ;; Note: info node will depend on python3-doc package installed
-   ;; which may add the version suffix
-   '(("(python3.10)Python Module Index")
-     ;; ("(python3.10)Built-in Functions")
-     ("(python3.10)Index"
-      (lambda
-        (item)
-        (cond
-         ;; module functions / variables
-         ((string-match
-           "\\([A-Za-z0-9_]+\\)\\(?:()\\)? (in module \\([A-Za-z0-9_.]+\\))" item)
-          (format "%s.%s" (match-string 2 item)
-                  (match-string 1 item)))
-         ;; builtins
-         ((string-match
-           "built-in function; \\([A-Za-z][A-Za-z0-9]+\\)()" item)
-          (match-string 1 item))
-         ;; class methods
-         ((string-match
-           "\\([A-Za-z0-9_]+\\)() (\\([A-Za-z0-9_.]+\\) method)" item)
-          (format "%s.%s" (match-string 2 item)
-                  (match-string 1 item)))))))))
+  (let ((doc-spec
+         ;; Note: info node will depend on python3-doc package installed
+         ;; which may add the version suffix
+         '(("(python3.10)Python Module Index")
+           ;; ("(python3.10)Built-in Functions")
+           ("(python3.10)Index"
+            (lambda
+              (item)
+              (cond
+               ;; module functions / variables
+               ((string-match
+                 "\\([A-Za-z0-9_]+\\)\\(?:()\\)? (in module \\([A-Za-z0-9_.]+\\))" item)
+                (format "%s.%s" (match-string 2 item)
+                        (match-string 1 item)))
+               ;; builtins
+               ((string-match
+                 "built-in function; \\([A-Za-z][A-Za-z0-9]+\\)()" item)
+                (match-string 1 item))
+               ;; class methods
+               ((string-match
+                 "\\([A-Za-z0-9_]+\\)() (\\([A-Za-z0-9_.]+\\) method)" item)
+                (format "%s.%s" (match-string 2 item)
+                        (match-string 1 item)))))))))
+    (dolist (mode '(python-mode python-ts-mode))
+      (info-lookup-add-help
+       :mode mode
+       :regexp "[a-zA-Z_0-9.]+"
+       :doc-spec doc-spec))))
 
 ;;; W32 old env. stuff
 (nvp:with-w32

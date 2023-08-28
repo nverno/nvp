@@ -401,7 +401,7 @@ If TS, also set ts version of MODE's to hook to regular mode's hook."
 ;;; Tree-sitter, treesit
 
 (cl-defmacro nvp:setup-treesit
-    (lang &rest body &key ts-mode remap url install &allow-other-keys)
+    (lang &rest body &key ts-mode remap url install ts-lib &allow-other-keys)
   "Configure tree-sitter for LANG when available, or INSTALL from URL.
 TS-MODE specifies tree-sitter major mode, defaults to LANG-ts-mode.
 REMAP is a major mode to remap to tree-sitter version.
@@ -422,7 +422,7 @@ Do BODY when treesit mode is available."
                              `(cl-pushnew '(,lang ,url) treesit-language-source-alist
                                           :test #'equal))
                           (treesit-install-language-grammar ',lang))))
-                (require ',ts-mode nil t))
+                (require ',(or ts-lib ts-mode) nil t))
        ,@(when remap
            `((cl-pushnew '(,remap . ,ts-mode) major-mode-remap-alist :test #'equal)
              ;; Use same abbrev table

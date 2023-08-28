@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: pop_front/unshift slice
-# key: popf
-# --
-${1:st} = $1[1:]

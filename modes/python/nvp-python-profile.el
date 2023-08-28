@@ -11,7 +11,7 @@
 line_profiler, and memory_profiler."
   ;; XXX: filter out matches to non-local libraries
   (setq-local compilation-error-regexp-alist-alist
-              '((cprofile "\\([^< 0-9][^: \n]+[^>]\\):\\([0-9]+\\)" 1 2 nil 0)
+              '((cprofile "\\([^< :][^: \n]+[^>]\\):\\([0-9]+\\)" 1 2 nil 0)
                 (lprofile "File: \\([^\n]+\\)\n[^\n]+line \\([0-9]+\\)" 1 2 nil 0)))
   (setq-local compilation-error-regexp-alist '(cprofile lprofile)))
 

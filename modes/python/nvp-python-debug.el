@@ -46,12 +46,13 @@
 
 ;; FIXME: use something like `nvp-gdb-init'. Need to add option to choose
 ;; from multiple repls associated with modes
-(nvp:repl-switch "gud-pdb" (:repl-mode 'gud-mode
-                            :repl-doc "Switch between PDB and source buffer."
-                            :repl-find-fn
-                            #'(lambda ()
-                                (and (comint-check-proc gud-comint-buffer)
-                                     gud-comint-buffer)))
+(nvp:repl-switch "gud-pdb"
+  ( :repl-mode 'gud-mode
+    :repl-doc "Switch between PDB and source buffer."
+    :repl-find-fn
+    #'(lambda ()
+        (and (comint-check-proc gud-comint-buffer)
+             gud-comint-buffer)))
   ;; FIXME: buffer returned from interactive call and source
   ;; buffer property after PDB starts?
   (call-interactively 'pdb))

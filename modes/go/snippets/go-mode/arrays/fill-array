@@ -3,5 +3,5 @@
 # key: fill
 # --
 for i := range ${1:arr} {
-    $1[i] = ${2:0}
+    ${1:$(nvp-go-mirror-var)}[i] = ${2:0}
 }

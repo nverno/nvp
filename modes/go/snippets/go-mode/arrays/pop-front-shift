@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: pop_front/shift slice
+# key: popf
+# --
+${1:st} = ${1:$(nvp-go-mirror-var)}[1:]

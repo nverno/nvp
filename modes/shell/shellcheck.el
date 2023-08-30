@@ -76,7 +76,7 @@ This interactively adds a shellcheck comment directive in the source."
 
 (defun shellcheck-kill-buffer ()
   (interactive)
-  (nvp:ktb))
+  (kill-buffer (current-buffer)))
 
 (defvar shellcheck-mode-map
   (let ((map (make-sparse-keymap)))

@@ -626,10 +626,9 @@ in `global-map' or BINDING-MAP if non-nil."
         (delete-window)
       (bury-buffer))))
 
-;; weird this isn't builtin somewhere -- `kill-this-buffer' has issues
 (defun nvp-kill-this-buffer ()
   (interactive)
-  (nvp:ktb))
+  (kill-buffer (current-buffer)))
 
 (provide 'nvp)
 ;;; nvp.el ends here

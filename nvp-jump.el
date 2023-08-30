@@ -143,7 +143,8 @@ Optionally, search LISP-ONLY files (no C sources)."
 ;;;###autoload
 (defun nvp-jump-to-mode-hook (mode action)
   "Jump to location defining MODEs hook."
-  (interactive (list (nvp:prefix 16 (nvp-read-mode) major-mode) current-prefix-arg))
+  (interactive
+   (list (nvp:prefix 16 (nvp-read-mode) (nvp:major-mode nil t)) current-prefix-arg))
   (and (stringp mode) (setq mode (intern mode)))
   (let* ((str-mode-hook (format "%s-hook" mode))
          (hook-fn-name (format "nvp-%s-hook" (nvp:read-mode-name mode)))

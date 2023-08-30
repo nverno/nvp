@@ -39,8 +39,16 @@
   `(when (derived-mode-p 'comint-mode)
      (hack-local-variables)))
 
-;;; Fallback
+;;; Major Mode
+(defmacro nvp:major-mode (&optional mode original)
+  "If ORIGINAL, and MODE (default `major-mode') was remapped, return remapped
+mode."
+  (setq mode (if mode `',mode 'major-mode))
+  (if original
+      `(or (car (rassq ,mode major-mode-remap-alist)) ,mode)
+    `,mode))
 
+;;; Fallback
 (cl-defmacro nvp:with-fallback (&rest body &key fallback minibuffer-fallback
                                       &allow-other-keys)
   "Catch \\='nvp-fallback in BODY.

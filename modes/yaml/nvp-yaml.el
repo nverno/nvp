@@ -37,7 +37,8 @@
   (defvar nvp-yaml-ci-types
     `((travis
        (prompt ?t "[t]ravis")
-       (validate nvp-yaml-validate-call "travis" "lint" (buffer-file-name))
+       (validate nvp-yaml-validate-call "travis" "lint" "--pro" "-x" "--no-interactive"
+                 (buffer-file-name))
        (help "https://docs.travis-ci.com")
        ;; project info format:
        ;; 1. base uri
@@ -47,8 +48,7 @@
        (project "https://travis-ci.org/%s" nvp-yaml-project-repo "profile/nverno"))
       (circleci
        (prompt ?c "[c]irclci")
-       (validate nvp-yaml-validate-call "circleci" "config" "validate"
-                 (buffer-file-name))
+       (validate nvp-yaml-validate-call "circleci" "config" "validate" (buffer-file-name))
        (help format "https://circleci.com/docs/2.0/configuration-reference/#%s")
        (project "https://circleci.com/%s"
                 (lambda () (concat "gh/" (nvp-yaml-project-repo))) "dashboard"))
@@ -59,7 +59,7 @@
        (project "https://ci.appveyor.com/project%s" nvp-yaml-project-repo "s"))
       (codecov
        (prompt ?v "codeco[v]")
-       (validate nvp-yaml-validate-call "curl" "--data-binary"
+       (validate nvp-yaml-validate-call "curl" "-XPOST" "--data-binary"
                  (concat "@" (file-name-nondirectory (buffer-file-name)))
                  "https://codecov.io/validate")
        (help "https://docs.codecov.io/docs/codecovyml-reference")
@@ -92,7 +92,9 @@
 ;; return the git repo name of current project
 (defun nvp-yaml-project-repo ()
   (--when-let (nvp-yaml-project-url)
-    (replace-regexp-in-string "https://github.com/" "" it nil 'literal)))
+    (replace-regexp-in-string
+     "\\(?:git@github.com:\\|https://github.com/\\)"
+     "" it nil 'literal)))
 
 ;; either guess project name based on project root's directory name, or
 ;; prompt with prefix ARG
@@ -125,7 +127,9 @@
       ((pred stringp) (car it))
       ((or (pred functionp) (pred symbolp)) (funcall it))
       ((pred listp)
-       (if (stringp (car it)) it (apply (car it) (append (cdr it) args))))
+       (if (stringp (car it))
+           (if (= 1 (length it)) (car it) it)
+         (apply (car it) (append (eval `(list ,@(cdr it))) args))))
       (_ (user-error "Don't know how to handle %S" it)))))
 
 ;; -------------------------------------------------------------------
@@ -145,26 +149,33 @@
 (defun nvp-yaml-validate-call (type &rest args)
   "Validate buffer using local validator (async)."
   (let* ((prog (nvp:as-string type))
+         (args
+          (append
+           (list prog
+                 (with-current-buffer (get-buffer-create (concat "*lint-" prog "*"))
+                   (erase-buffer)
+                   (current-buffer))
+                 prog)
+           args))
          (proc
-          (nvp:with-process prog
-            :proc-name prog
-            :proc-args (args)
-            :proc-buff (nvp:comint-buffer
-                         :name (concat "*lint-" prog "*")
-                         (erase-buffer))
-            :proc-sentinel #'nvp-yaml-lint-sentinel)))
+          (let ((proc (apply #'start-process args)))
+            (progn
+              (set-process-filter proc 'nvp-proc-default-filter)
+              (set-process-sentinel proc (function nvp-yaml-lint-sentinel)) proc))))
     ;; travis process wont return on windows ionno
     (nvp:with-w32 (ignore-errors (process-send-eof prog)))
     proc))
 
 (defun nvp-yaml-lint-sentinel (p m)
   (with-current-buffer (process-buffer p)
+    (goto-char (point-min))
     (if (or (not (zerop (process-exit-status p)))
-            (re-search-forward (regexp-opt '("error" "warning")) nil t))
+            (let ((case-fold-search t))
+              (re-search-forward (rx (or "error" "warning")) nil t)))
         (progn
+          (goto-char (point-min))
           (nvp-indicate-modeline (format "bad yaml: %s" m) 'failure)
           (ansi-color-apply-on-region (point-min) (point-max))
-          (goto-char (point-min))
           (pop-to-buffer (process-buffer p)))
       (nvp-indicate-modeline "yaml iriiiiieeeee" 'success)
       (kill-buffer (current-buffer)))))

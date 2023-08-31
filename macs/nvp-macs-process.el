@@ -32,7 +32,7 @@
   "Get a new comint buffer from NAME and execute BODY there, returning buffer.
 If NEW is non-nil, use `generate-new-buffer', otherwise `get-buffer-create'.
 If RESULT is non-nil, return result of BODY instead of buffer."
-  (declare (indent defun) (debug body))
+  (declare (indent defun) (debug t))
   (while (keywordp (car body))
     (setq body (cdr (cdr body))))
   (or name (setq name "*nvp*"))

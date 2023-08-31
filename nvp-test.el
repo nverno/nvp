@@ -8,13 +8,13 @@
 (nvp:decl "ert" ert-run-tests-interactively)
 
 ;; called when visiting new test buffer, passed name of matching source file
-(defvar nvp-test-init-function 'ignore)
+(defvar nvp-test-init-function #'ignore)
 
 ;; called when visiting test buffer with no arguments
-(defvar nvp-test-init-buffer-function 'ignore)
+(defvar nvp-test-init-buffer-function #'ignore)
 
 ;; function to run unit file. Passed current buffer-file-name
-(defvar nvp-test-run-unit-function 'ignore)
+(defvar nvp-test-run-unit-function #'ignore)
 
 ;; filter test files
 (defvar nvp-test-prefixes '("test-" "test_" "t-" "t_" "Test"))
@@ -32,7 +32,7 @@ With prefix ARG, prompt for selector."
   (if (not (require 'ert nil t))
       (user-error "`ert' must be loaded to run this function")
     (eval-buffer (current-buffer))
-    (call-interactively 'ert-run-tests-interactively)))
+    (call-interactively #'ert-run-tests-interactively)))
 
 ;; -------------------------------------------------------------------
 ;;; Find test files 

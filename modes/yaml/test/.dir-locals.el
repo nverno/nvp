@@ -9,5 +9,4 @@
                                         (let ((default-directory
                                                (f-parent
                                                 (f-dirname (buffer-file-name)))))
-                                          (message "%S" default-directory )
                                           (call-interactively #'nvp-ert-run-tests)))))))

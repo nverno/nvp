@@ -267,10 +267,10 @@ MODES is of form (feature . mode)."
   (declare (indent 0))
   `(progn
      (declare-function diminish "diminish")
-     (eval-when-compile ,@(mapcar (lambda (f) `(defvar ,(cdr f))) modes))
+     (eval-when-compile ,@(mapcar (lambda (f) `(defvar ,(cadr f))) modes))
      ,(macroexp-progn
-       (cl-loop for (feat . mode) in modes
-                collect `(eval-after-load ',feat '(diminish ',mode))))))
+       (cl-loop for (feat mode to-what) in modes
+                collect `(eval-after-load ',feat '(diminish ',mode ,to-what))))))
 
 
 ;; -------------------------------------------------------------------

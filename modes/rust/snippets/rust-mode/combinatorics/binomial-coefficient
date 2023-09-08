@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: binomial coefficient
+# key: f_nchoosek
+# --
+fn choose(n: i64, k: i64${1:, m: i64}) -> i64 {
+    if (n < k) {
+        return choose(k, n${1:$($s? ", m")});
+    }
+    let mut res = 1;
+    for i in 1..=k as usize {
+        res = (res * (n - k + i as i64) / i as i64)${1:$($s? " % m")};
+    }
+    res
+}

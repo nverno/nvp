@@ -1,0 +1,36 @@
+# -*- mode: snippet -*-
+# name: combinations, binomial coefficient
+# key: f_binom
+# --
+impl Binom {
+    // maxN, MOD
+    pub fn new(sz: usize, m: i64) -> Binom {
+        let mut inv = vec![0; sz];
+        let mut fact = vec![0; sz];
+        let mut ifact = vec![0; sz];
+        fact[0] = 1;
+        ifact[0] = 1;
+        inv[1] = 1;
+        for i in 2..sz {
+            inv[i] = (m - m / i as i64) * inv[m as usize % i] % m;
+        }
+        for i in 1..sz {
+            fact[i] = fact[i - 1] * i as i64 % m;
+            ifact[i] = ifact[i - 1] * inv[i] % m;
+        }
+        Binom {
+            m,
+            inv,
+            fact,
+            ifact,
+        }
+    }
+    pub fn binom(&self, n: i64, k: i64) -> i64 {
+        if n < k || k < 0 {
+            return 0;
+        }
+        self.fact[n as usize] * self.ifact[k as usize] % self.m
+            * self.ifact[(n - k) as usize]
+            % self.m
+    }
+}

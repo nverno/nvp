@@ -1,5 +1,16 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
 
+(define-abbrev-table 'rust-attributes-abbrev-table
+  '(("#a" ["#[allow()]" 2 nil nil] expand-abbrev-hook :system t)
+    ("#c" ["#[cfg()]" 2 nil nil] expand-abbrev-hook :system t)
+    ("#d" ["#[derive()]" 2 nil nil] expand-abbrev-hook :system t)
+    ("#i" "#[inline]" nil :system t)
+    ("#t" "#[test]" nil :system t))
+  "Rust attributes abbrevs."
+  :regexp "\\(#\\w+\\)"
+  :parents (list prog-mode-abbrev-table)
+  :enable-function #'nvp-abbrev-expand-p)
+
 (define-abbrev-table 'rust-mode-abbrev-table
   '(("cont" "continue" nil :system t)
     (" string" " String" nil :system t)
@@ -7,7 +18,7 @@
     ("ret" "return" nil :system t)
     ("letm" "let mut" nil :system t))
   "Rust-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table)
+  :parents (list rust-attributes-abbrev-table)
   :enable-function #'nvp-abbrev-expand-p)
 
 (define-abbrev-table 'rustic-mode-abbrev-table

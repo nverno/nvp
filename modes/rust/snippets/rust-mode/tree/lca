@@ -1,0 +1,68 @@
+# -*- mode: snippet -*-
+# name: least common ancestor
+# key: t_lca
+# --
+pub struct LCA {
+    timer: usize,
+    log_n: usize,
+    up: Vec<Vec<usize>>,
+    tin: Vec<usize>,
+    tout: Vec<usize>,
+    pub depth: Vec<usize>,
+}
+
+impl LCA {
+    pub fn from_tree(root: usize, max_n: usize, tree: &Vec<Vec<usize>>) -> LCA {
+        let mut res = LCA::new(max_n);
+        res.dfs_lca(root, root, 0, tree);
+        res
+    }
+    pub fn new(max_n: usize) -> LCA {
+        let log_n = (max_n as f64).log2() as usize + 1;
+        LCA {
+            timer: 0,
+            log_n,
+            up: vec![vec![0; log_n]; max_n],
+            tin: vec![0; max_n],
+            tout: vec![0; max_n],
+            depth: vec![0; max_n],
+        }
+    }
+    fn dfs_lca(&mut self, u: usize, p: usize, d: usize, adj: &Vec<Vec<usize>>) {
+        self.tin[u] = self.timer;
+        self.timer += 1;
+        self.up[u][0] = p;
+        self.depth[u] = d;
+        for l in 1..self.log_n {
+            self.up[u][l] = self.up[self.up[u][l - 1]][l - 1];
+        }
+        for &v in &adj[u] {
+            if v != p {
+                self.dfs_lca(v, u, d + 1, adj);
+            }
+        }
+        self.tout[u] = self.timer;
+        self.timer += 1;
+    }
+    pub fn is_ancestor(&self, u: usize, v: usize) -> bool {
+        self.tin[u] <= self.tin[v] && self.tout[u] >= self.tout[v]
+    }
+    pub fn lca(&self, mut u: usize, v: usize) -> usize {
+        if self.is_ancestor(u, v) {
+            return u;
+        }
+        if self.is_ancestor(v, u) {
+            return v;
+        }
+        for l in (0..self.log_n).rev() {
+            if !self.is_ancestor(self.up[u][l], v) {
+                u = self.up[u][l];
+            }
+        }
+        self.up[u][0]
+    }
+    pub fn dist(&self, u: usize, v: usize) -> usize {
+        let l = self.lca(u, v);
+        self.depth[u] + self.depth[v] - 2 * self.depth[l]
+    }
+}

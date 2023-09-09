@@ -5,6 +5,8 @@
     ("#c" ["#[cfg()]" 2 nil nil] expand-abbrev-hook :system t)
     ("#d" ["#[derive()]" 2 nil nil] expand-abbrev-hook :system t)
     ("#i" "#[inline]" nil :system t)
+    ("#m" "#[macro_use]" nil :system t)
+    ("#me" "#[macro_export]" nil :system t)
     ("#t" "#[test]" nil :system t))
   "Rust attributes abbrevs."
   :regexp "\\(#\\w+\\)"

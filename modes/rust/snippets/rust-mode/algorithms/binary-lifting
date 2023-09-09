@@ -1,0 +1,60 @@
+# -*- mode: snippet -*-
+# name: binary lifting, jump table
+# key: d_jump
+# --
+`($set
+"if k <= MAXN {
+    self.logs[k]
+} else {
+    (k as f64).log2() as usize
+}")
+`${1:const MAXK: usize = 1e9 as usize;
+}const MAXN: usize = ${2:2e5} as usize;
+const LOGN: usize = ${2:$(ceiling (log (string-to-number (yas-text)) 2))};
+
+#[allow(dead_code)]
+pub struct JumpTable {
+    n: usize,
+    st: Vec<Vec<i32>>,
+    logs: Vec<usize>,
+}
+#[allow(dead_code)]
+impl JumpTable {
+    pub fn from_vec(p: &Vec<i32>) -> JumpTable {
+        let mut res = JumpTable::new(p.len());
+        res.process(p);
+        return res;
+    }
+    pub fn new(n: usize) -> JumpTable {
+        let mut st = vec![vec![-1; LOGN + 1]; MAXN + 1];
+        let mut logs = vec![0; MAXN + 1];
+        JumpTable { n, st, logs }
+    }
+    pub fn process(&mut self, p: &Vec<i32>) {
+        for i in 0..self.n {
+            self.st[i][0] = p[i];
+        }
+        let mut l = 1;
+        while 1 << l <= ${1:$($s? "MAXK" "MAXN")} {
+            for i in 0..self.n {
+                if self.st[i][l - 1] != -1 {
+                    self.st[i][l] = self.st[self.st[i][l - 1] as usize][l - 1];
+                }
+            }
+            l += 1;
+        }
+        for l in 2..=MAXN {
+            self.logs[l] = self.logs[l/2] + 1;
+        }
+    }
+    pub fn query(&self, x: i32, k: usize) -> i32 {
+    let mut l = ${1:$($s? "logs[k]" $tmp)};
+        let (mut k, mut x) = (k, x);
+        while k > 0 && x != -1 {
+            x = self.st[x as usize][l];
+            k -= 1 << l;
+            l = ${1:$($s? "logs[k]" $tmp)};
+        }
+        x as i32
+    }
+}

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for i,x in array
+# key: forix
+# --
+for (let [${1:i}, ${2:x}] of ${3:arr}.entries()) {
+  $0
+}

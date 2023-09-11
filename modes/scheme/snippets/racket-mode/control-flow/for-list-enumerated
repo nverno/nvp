@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for i,x in enumerated list
+# key: forix
+# --
+(for ((${1:i} (in-naturals))
+      (${2:x} (in-list ${3:lst})))
+  $0)

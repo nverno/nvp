@@ -385,7 +385,8 @@ With \\[universal-argument] prompt for THING at point."
       (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
         (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
                 (propertize str 'font-lock-face
-                            `(:family ,ff :slant italic)) ff "\n")))))
+                            `(:family ,ff :slant italic))
+                ff "\n")))))
 
 
 ;; -------------------------------------------------------------------

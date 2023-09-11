@@ -46,14 +46,15 @@
 ;; -------------------------------------------------------------------
 ;;; Hash
 
-(defsubst case-fold-string= (a b)
+(defsubst nvp:case-fold-string= (a b)
   (eq t (compare-strings a nil nil b nil nil t)))
 
-(defsubst case-fold-string-hash (a)
+(defsubst nvp:case-fold-string-hash (a)
   (sxhash (upcase a)))
 
 ;; case-insensitive hash-table
-(define-hash-table-test 'case-fold #'case-fold-string= #'case-fold-string-hash)
+(define-hash-table-test
+ 'case-fold #'nvp:case-fold-string= #'nvp:case-fold-string-hash)
 
 ;; -------------------------------------------------------------------
 ;;; Strings

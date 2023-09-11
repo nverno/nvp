@@ -2,7 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'cmake-mode)
+(require 'cmake-mode nil t)
+(nvp:decls :p "cmake-mode")
 
 (defun nvp-cmake-current-function ()
   (let ((ppss (parse-partial-sexp (point-min) (point))))
@@ -51,11 +52,13 @@
 
 ;;; Abbrevs
 
-(defvar nvp-cmake-abbrev-syntax-table
-  (let ((tab (copy-syntax-table cmake-mode-syntax-table)))
-    (modify-syntax-entry ?_ "w" tab)
-    (modify-syntax-entry ?- "w" tab)
-    tab))
+(defvar nvp-cmake-abbrev-syntax-table)
+(with-eval-after-load 'cmake-mode
+  (setq nvp-cmake-abbrev-syntax-table
+        (let ((tab (copy-syntax-table cmake-mode-syntax-table)))
+          (modify-syntax-entry ?_ "w" tab)
+          (modify-syntax-entry ?- "w" tab)
+          tab)))
 
 (defun nvp-cmake-expand-abbrev ()
   (nvp:with-letf 'forward-word 'forward-word-strictly

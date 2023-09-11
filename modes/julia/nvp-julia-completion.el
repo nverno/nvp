@@ -3,7 +3,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'company)
-(require 'julia-mode)
+(require 'julia-mode nil t)
+(nvp:decls :p "julia-mode")
 
 ;; ------------------------------------------------------------
 ;;* capf for latexsubs

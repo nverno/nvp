@@ -6,16 +6,15 @@
 ;; - fix capf w/ ess + latexsubs
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'company)
-(require 'julia-mode)
-(require 'ess-site)
-(require 'ess-julia)
-(declare-function macrostep-expand "macrostep")
-(declare-function pos-tip-show "pos-tip")
+;; (require 'company)
+;; (require 'julia-mode nil t)
+;; (require 'ess-site nil t)
+;; (require 'ess-julia nil t)
 
-;;; XXX: `julia-latexsub' still called by ESS
-(unless (fboundp 'julia-latexsub)
-  (defun julia-latexsub (&rest _) nil))
+(with-eval-after-load 'ess-julia
+  ;; FIXME: `julia-latexsub' still called by ESS
+  (unless (fboundp 'julia-latexsub)
+    (defun julia-latexsub (&rest _) nil)))
 
 (autoload 'tag-utils-tag-dir "tag-utils")
 (autoload 'nvp-log "nvp-log")

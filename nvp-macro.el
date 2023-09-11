@@ -1181,7 +1181,12 @@ hash values are counts of strings, otherwise values are \\='t."
   `(progn
      ,@(if case-fold
            '((define-hash-table-test
-              'case-fold #'case-fold-string= #'case-fold-string-hash)))
+              'case-fold
+              (lambda (a b) (eq t (compare-strings a nil nil b nil nil t)))
+              (lambda (a) (sxhash (upcase a)))
+              ;; #'case-fold-string=
+              ;; #'case-fold-string-hash
+              )))
      (--> (make-hash-table :test ,(if case-fold ''case-fold '#'equal)
                            :size (length ,strings))
           (prog1 it

@@ -3,7 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'docker)
+(require 'docker nil t)
 (require 'nvp)
 (nvp:decls)
 

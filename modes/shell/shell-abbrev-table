@@ -146,3 +146,10 @@
   '()
   "Bats-Mode Abbrevs."
   :parents (list sh-mode-abbrev-table))
+
+(define-abbrev-table 'vterm-mode-abbrev-table
+  '()
+  "Vterm-Mode Abbrevs."
+  ;; XXX: cant insert into vterm
+  ;; :parents (list shell-mode-abbrev-table)
+  )

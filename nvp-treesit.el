@@ -95,7 +95,8 @@
   "T/S menu."
   '("T/S"
     ["Inspect" treesit-inspect-node-at-point t]
-    ["Validate" nvp-treesit-validate t]))
+    ["Validate" nvp-treesit-validate t]
+    ["Toggle errors" nvp-treesit-toggle-errors t]))
 
 ;;;###autoload
 (define-minor-mode nvp-treesit-minor-mode
@@ -107,7 +108,8 @@
   ;; (powerline-revert)
   (if nvp-treesit-minor-mode
       (when (treesit-language-at (point))
-        (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t)
+        (and (nvp-treesit--query-compile)
+             (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t))
         (powerline-revert)
         (treesit-inspect-mode)
         (treesit-explore-mode))

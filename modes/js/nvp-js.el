@@ -33,13 +33,8 @@
 (require 'js)
 (require 'js2-mode nil t)
 (nvp:req 'nvp-js 'subrs)
-(nvp:decls :f (nodejs-repl-switch-to-repl
-               skewer-eval-print-last-expression skewer-eval-last-expression
-               httpd-start
-               js2-display-error-list
-               tern-get-docs
-               nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook)
-           :v (nodejs-repl-process-name httpd-root httpd-port yas-extra--modes))
+(nvp:decls :p (nodejs js2 tern skewer httpd yas)
+           :f (nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim -- other modes, js-jsx, js2-jsx, rjsx inherit from js/js2
@@ -51,7 +46,7 @@
 ;;; Nodejs REPL: using as default in all js-derived modes except typescript
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(js2-mode js2-jsx-mode js-mode js-jsx-mode rjsx-mode)
+  (nvp-repl-add '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode)
     :modes '(nodejs-repl-mode)
     :procname (bound-and-true-p nodejs-repl-process-name)
     :init (lambda ()
@@ -75,8 +70,11 @@
       ('rjsx-mode                      ; => js-jsx-mode w/ js2-minor-mode
        (nvp:js-switch-mode 'js-mode)
        (nvp-js-jsx-hook))
-      ('js2-mode (nvp:js-switch-mode 'rjsx-mode))
-      ((or 'js-mode 'js-jsx-mode)
+      ('js2-mode
+       (unless (fboundp 'rjsx-mode) (user-error "rjsx-mode not installed..."))
+       (nvp:js-switch-mode 'rjsx-mode))
+      ((or 'js-mode 'js-ts-mode 'js-jsx-mode)
+       (unless (fboundp 'rjsx-mode) (user-error "rjsx-mode not installed..."))
        (when (bound-and-true-p js2-minor-mode)
          (js2-minor-mode -1))
        (nvp:js-switch-mode 'rjsx-mode))
@@ -112,7 +110,8 @@
   (cond
    ((member 'js2-echo-error (get-text-property (point) 'cursor-sensor-functions))
     (js2-display-error-list))
-   (t (tern-get-docs))))
+   (t (when (fboundp 'tern-get-docs)
+        (tern-get-docs)))))
 
 ;; -------------------------------------------------------------------
 ;;; Assorted

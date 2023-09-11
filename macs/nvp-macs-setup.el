@@ -429,11 +429,13 @@ Ts mode's abbrev table will be aliased to REMAP's table.
 Do BODY when treesit mode is available."
   (declare (indent defun) (debug t))
   (nvp:skip-keywords body)
-  (let* ((remap-modename (and remap (symbol-name remap)))
+  (and remap (setq remap (nvp:as-list remap)))
+  (let* ((remap-modenames (and remap (mapcar #'symbol-name remap)))
          (ts-modename
           (or (and ts-mode (nvp:as-string ts-mode))
               (concat (nvp:as-string lang) "-ts-mode")))
-         (ts-mode (or ts-mode (intern ts-modename))))
+         (ts-mode (or ts-mode (intern ts-modename)))
+         (remap-list (and remap (mapcar (lambda (e) (cons e ts-mode)) remap))))
     `(when (and (require 'treesit nil t)
                 (or (treesit-language-available-p ',lang)
                     ,(when install
@@ -441,10 +443,14 @@ Do BODY when treesit mode is available."
                          ,lang ,auto ,url ,revision ,source-dir ,cc ,c++)))
                 (require ',(or ts-lib ts-mode) nil t))
        ,@(when remap
-           `((cl-pushnew '(,remap . ,ts-mode) major-mode-remap-alist :test #'equal)
-             ;; Use same abbrev table
-             (defvaralias ',(intern (concat ts-modename "-abbrev-table"))
-               ',(intern (concat remap-modename "-abbrev-table")))))
+           `((setq major-mode-remap-alist
+                   (cl-delete-duplicates
+                    (append ',remap-list major-mode-remap-alist) :test #'equal))
+             ,@(cl-loop for remap-name in remap-modenames
+                       collect
+                       ;; Use same abbrev table
+                       `(defvaralias ',(intern (concat ts-modename "-abbrev-table"))
+                          ',(intern (concat remap-name "-abbrev-table"))))))
        (progn
          ,@body))))
 

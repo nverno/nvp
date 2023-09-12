@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: tar archive directory name
+# key: tardir
+# --
+tar -t${1:$($s= ".gz" "z")}f ${2:tarball.tar}${1:.gz} | head -n1 | cut -f1 -d"/"

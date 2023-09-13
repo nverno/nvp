@@ -86,6 +86,7 @@
      snippets-dir                       ;snippet dir to use instead of mode name
      dir                                ;mode root directory
      abbr-table                         ;abbrev table to use for mode
+     override                           ; override previous entries
      post-fn)                           ;function called after setup
   "Setup local variables for helper package - abbrevs, snippets, root dir."
   (setq mode (if mode (nvp:as-symbol mode) major-mode))
@@ -95,7 +96,7 @@
     (setq mode (car remap)))
   (let ((mvars (gethash mode nvp-mode-cache nil))
         yas-dir mode-snips)
-    (unless mvars
+    (unless (and (not override) mvars)
       (nvp:defq dir (nvp-setup-package-root name))
       (if (not (and dir (file-exists-p dir)))
           (user-error

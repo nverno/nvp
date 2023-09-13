@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: declare local variable
+# key: l
+# --
+(local $${1:i} ${2:i32})

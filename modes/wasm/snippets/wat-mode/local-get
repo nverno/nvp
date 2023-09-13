@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: get local
+# key: g
+# --
+(local.get $${1:i})

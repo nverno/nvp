@@ -8,4 +8,5 @@
 (define-abbrev-table 'wast-mode-abbrev-table
   '()
   "Wast-Mode Abbrevs."
+  :parents (list wat-mode-abbrev-table)
   :enable-function #'nvp-abbrev-expand-p)

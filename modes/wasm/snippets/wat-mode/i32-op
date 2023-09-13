@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: i32 operation
+# key: .
+# --
+(i32.${1:add} $0)

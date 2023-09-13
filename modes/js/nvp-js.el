@@ -122,7 +122,7 @@
       (string-match-p ".*test\\.js\\'" (nvp:bfn))))
 
 ;; in template string `...`
-(defun nvp-js-in-template-p () (eq 96 (nvp:ppss 'str)))
+(defun nvp-js-in-template-p () (eq ?\` (nvp:ppss 'str)))
 
 ;;; Skewer
 (defun nvp-skewer-eval-last-expression (&optional print)

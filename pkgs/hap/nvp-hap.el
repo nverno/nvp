@@ -123,6 +123,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
     (define-key map (kbd "M-V")   #'scroll-other-window-down)
     (define-key map "h"           #'nvp-hap-pop-to-buffer)
     (define-key map (kbd "C-h")   #'nvp-hap-show-doc-buffer)
+    (define-key map (kbd "M-?")   #'nvp-hap-next-backend)
     map))
 
 ;; Manage the transient map. On exit, restore prior window configuration.
@@ -184,6 +185,13 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
              win (if (eq (cadr buff) :set)
                      (window-point win)
                    (or (cadr buff) (point-min))))))))))
+
+(defun nvp-hap-next-backend ()
+  (interactive)
+  (let ((nvp-help-at-point-functions
+         (or (cdr (member nvp-hap-backend nvp-help-at-point-functions))
+             nvp-help-at-point-functions)))
+    (funcall-interactively #'nvp-help-at-point)))
 
 ;; -------------------------------------------------------------------
 ;;; Popup 
@@ -324,9 +332,10 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
   (interactive "P")
   (nvp-hap-cancel)
   (let ((nvp-help-at-point-functions
-         (if (eq 64 (prefix-numeric-value prefix))
-             (list (nvp-hap-choose-backend))
-           nvp-help-at-point-functions)))
+         (cond
+          ((eq 64 (prefix-numeric-value prefix))
+           (list (nvp-hap-choose-backend)))
+          (t nvp-help-at-point-functions))))
     (condition-case-unless-debug err
         (if (nvp-hap--begin prefix)
             (nvp-hap-install-keymap)

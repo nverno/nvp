@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: WebAssembly.instantiate ...
+# key: wasminst
+# --
+const ${1:mod} = await WebAssembly.instantiate${2:Streaming}(new Uint8Array(${3:wasm}))
+  .then(obj => ${4:obj.instance.exports});

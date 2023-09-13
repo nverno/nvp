@@ -112,24 +112,38 @@ If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
 
 (nvp:decls :f (nvp-window-configuration-restore nvp-window-configuration-save))
 
-(defmacro nvp:with-results-buffer (&optional buffer-or-name title &rest body)
+(cl-defmacro nvp:with-results-buffer ( &rest body
+                                       &key buffer title revert-fn
+                                       (save-windows t)
+                                       (restore-windows t)
+                                       (action t)
+                                       &allow-other-keys)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished.
 Add TITLE to results buffer."
-  (declare (indent 2) (debug (sexp &rest form)))
+  (declare (indent defun) (debug (sexp &rest form)))
+  (nvp:skip-keywords body)
   (macroexp-let2 nil hdr (if title `(nvp:centered-header ,title))
     `(let (other-window-scroll-buffer)
-       (nvp-window-configuration-save)
+       ,(when save-windows '(nvp-window-configuration-save))
        (with-temp-buffer-window
-           ,(or buffer-or-name '(help-buffer))
-           t
+           ,(or buffer '(help-buffer))
+           ,(if (eq ':none action) nil action)
            nil
          (with-current-buffer standard-output
            (setq other-window-scroll-buffer (current-buffer))
            ,(if title `(princ ,hdr))
            ,@body
            (hl-line-mode)
-           (view-mode-enter nil #'nvp-window-configuration-restore))))))
+           (view-mode-enter
+            nil ,(and restore-windows '#'nvp-window-configuration-restore))
+           ,@(when revert-fn
+               `((setq-local revert-buffer-function
+                             (lambda (&rest args)
+                               ,(and save-windows '(nvp-window-configuration-restore))
+                               (funcall ,revert-fn args)
+                               (pop-to-buffer ,(or buffer '(help-buffer)))))
+                 (nvp-buffer-local-set-minor-mode-key 'view-mode "G" #'revert-buffer))))))))
 
 
 (cl-defmacro nvp:with-tabulated-list (&rest body &key name format entries action

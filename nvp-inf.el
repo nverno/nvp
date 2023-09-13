@@ -72,7 +72,7 @@
                       (process-get proc var)
                     (error (format "Process attribute %s not found" var)))))))
     (if (and res (string= var "plist"))
-        (nvp:with-results-buffer (help-buffer)
+        (nvp:with-results-buffer :buffer (help-buffer)
           (pp res))
       (nvp:inf-message proc res))))
 

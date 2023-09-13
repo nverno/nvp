@@ -251,7 +251,7 @@ With prefix, unload unicode abbrevs."
        "List abbrev table props: "
        (mapcar #'symbol-name (nvp-abbrev--nonempty))))))
   (let ((props (nvp-abbrev-get-plist (intern table))))
-    (nvp:with-results-buffer nil table
+    (nvp:with-results-buffer :title table
       (pcase-dolist (`(,k ,v) props)
         (princ (format "%S: %S\n" k v))))))
 

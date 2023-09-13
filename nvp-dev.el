@@ -114,14 +114,17 @@
 (defun nvp-dev-describe-variable (variable)
   "Try to pretty print VARIABLE in temp buffer."
   (interactive (list (nvp:tap 'evari)))
-  (let ((val (if (symbolp variable) (eval variable)
-               variable))
-        (print-escape-newlines t)
-        (print-circle t)
-        ;; (print-gensym t)
-        (inhibit-read-only t))
-    (nvp:with-results-buffer nil
-        (format "Variable ('%s'): %S" (type-of val) variable)
+  (let* ((val (if (symbolp variable) (eval variable)
+                variable))
+         (print-escape-newlines t)
+         (print-circle t)
+         ;; (print-gensym t)
+         (inhibit-read-only t))
+    (nvp:with-results-buffer
+      :title (format "Variable ('%s'): %S" (type-of val) variable)
+      :buffer (format "*describe[%s]*" variable)
+      :revert-fn (lambda (&rest _) (funcall #'nvp-dev-describe-variable variable))
+      :action :none
       (princ (nvp-pp-variable-to-string val))
       (emacs-lisp-mode))))
 
@@ -167,7 +170,7 @@
                (princ (format ";; %s" (car i)))
                (cl-prettyprint (cdr i))
                (princ "\n"))))))
-    (nvp:with-results-buffer nil (format "%S variables" mode)
+    (nvp:with-results-buffer :title (format "%S variables" mode)
       (princ ";;; Variables\n")
       (funcall print-fn vars 'values)
       (princ ";;; Functions\n")
@@ -187,7 +190,7 @@
               (--filter (string-prefix-p prefix (symbol-name it)) features)
               #'string-lessp))
          (title (format "Loaded '%s' features (%d)" prefix (length fs))))
-    (nvp:with-results-buffer nil title
+    (nvp:with-results-buffer :title title
       (cl-prettyprint fs))))
 
 ;; dump lang's `c-lang-constants'
@@ -200,7 +203,7 @@
   (let ((print-escape-newlines t)
         (print-circle t)
         (inhibit-read-only t))
-    (nvp:with-results-buffer nil (format "c-lang-constants for %s" mode)
+    (nvp:with-results-buffer :title (format "c-lang-constants for %s" mode)
       (dolist (v (append c-lang-constants ()))
         (when (symbolp v)
           (princ v)
@@ -229,7 +232,7 @@
                           field))
         start end text)
     (if (not overlays) (message "Nothing here :(")
-      (nvp:with-results-buffer nil (format "Overlays at %d in %S" pos obuf)
+      (nvp:with-results-buffer :title (format "Overlays at %d in %S" pos obuf)
         (dolist (o overlays)
           (setq start (overlay-start o)
                 end (overlay-end o)
@@ -380,7 +383,7 @@ With \\[universal-argument] prompt for THING at point."
          (cl-remove-duplicates 
           (sort (font-family-list) #'(lambda (x y) (string< (upcase x) (upcase y))))
           :test 'string=)))
-    (nvp:with-results-buffer (help-buffer) "Available Fonts"
+    (nvp:with-results-buffer :buffer (help-buffer) :title "Available Fonts"
       (font-lock-mode)
       (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
         (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
@@ -400,7 +403,7 @@ With \\[universal-argument] prompt for THING at point."
          lst)
     (maphash (lambda (k v) (push (cons v k) lst)) ht)
     (setq lst (cl-sort lst #'> :key #'car))
-    (nvp:with-results-buffer nil "Word Counts"
+    (nvp:with-results-buffer :title "Word Counts"
       (pcase-dolist (`(,k . ,v) lst)
         (princ (format "%d: %s\n" k v))))))
 

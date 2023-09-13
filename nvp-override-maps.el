@@ -62,14 +62,15 @@ bindings, avoiding errors from key sequences starting with non-prefix keys."
 
 ;; https://stackoverflow.com/a/14769115/2415684
 ;;;###autoload
-(defun nvp-local-set-minor-mode-key (mode key def)
+(defun nvp-buffer-local-set-minor-mode-key (mode key def)
   "Override a minor mode keybinding for the local buffer only using
 `minor-mode-overriding-map-alist'."
   (let* ((oldmap (cdr (assoc mode minor-mode-map-alist)))
          (newmap (or (cdr (assoc mode minor-mode-overriding-map-alist))
                      (let ((map (make-sparse-keymap)))
                        (set-keymap-parent map oldmap)
-                       (push `(,mode . ,map) minor-mode-overriding-map-alist)))))
+                       (push `(,mode . ,map) minor-mode-overriding-map-alist)
+                       map))))
     (define-key newmap key def)))
 
 (provide 'nvp-override-maps)

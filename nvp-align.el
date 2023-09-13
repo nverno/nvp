@@ -173,7 +173,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
   (-let (((rules excludes) (nvp-align--mode-rules mode))
          (groups (--filter (apply #'provided-mode-derived-p mode (eval it))
                            nvp-align--groups)))
-    (nvp:with-results-buffer nil (format "Align rules for %s" mode)
+    (nvp:with-results-buffer :title (format "Align rules for %s" mode)
       (princ ";;; Member groups\n")
       (pp groups)
       (princ "\n;;; Align Rules\n")

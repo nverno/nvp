@@ -264,7 +264,10 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; setup
        nvp-setup-program
        nvp-setup-local
-       nvp-lookup-password)
+       nvp-lookup-password
+       ;; override
+       nvp-buffer-local-set-key
+       nvp-buffer-local-set-minor-mode-key)
 
      (nvp:decl                          ; builtins
        minibuffer-keyboard-quit

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sort_by(f)
+# key: sortf
+# --
+${1:arr}.sort_by(|a, b| ${2:b.cmp(a)} )

@@ -79,32 +79,35 @@
 
 ;; checkout part of a repo
 ;;;###autoload
-(defun nvp-vc-git-sparse-clone (repo subdir local-dir)
-  "Clone SUBDIR from REPO to LOCAL-DIR."
+(defun nvp-vc-git-sparse-clone (repo branch subdir local-dir)
+  "Clone SUBDIR from REPO on BRANCH to LOCAL-DIR."
   (interactive
    (let* ((repo (read-string "Repository URI: "))
-          (subdir (read-string "Subdirectory to clone: "))
+          (branch (read-string "Branch: " "master"))
+          (subdir (let ((dir (read-string "Subdirectory to clone: ")))
+                    (if (string-suffix-p "/*" dir) dir
+                      (concat dir "/*"))))
           (ddir (car (last (split-string repo "/"))))
-          (local-dir (read-directory-name "Clone into: "
-                                          (or (getenv "DEVEL")
-                                              default-directory)
-                                          ddir nil ddir)))
-     (list repo subdir local-dir)))
+          (local-dir
+           (read-directory-name "Clone into: " default-directory ddir nil ddir)))
+     (list repo branch subdir local-dir)))
   (unless (file-exists-p local-dir)
     (mkdir local-dir))
   (let ((default-directory local-dir))
-    (call-process-shell-command
-     (format "git init && git remote add -f origin %s && \
-git config core.sparseCheckout true" repo) nil nil nil)
-    (with-current-buffer (find-file-noselect ".git/info/sparse-checkout")
-      (goto-char (point-max))
-      (insert subdir)
-      (pop-to-buffer-same-window (current-buffer))
-      (add-hook 'after-save-hook
-                #'(lambda ()
-                    (let ((default-directory `,local-dir))
-                      (start-process "git" nil "git" "pull" "origin" "master")))
-                nil 'local))))
+    (if (zerop (call-process-shell-command
+                (concat "git init && git remote add -f origin " repo
+                        " && git config core.sparseCheckout true")
+                nil nil nil))
+        (with-current-buffer (find-file-noselect ".git/info/sparse-checkout")
+          (goto-char (point-max))
+          (insert subdir)
+          (pop-to-buffer-same-window (current-buffer))
+          (add-hook 'after-save-hook
+                    (lambda ()
+                      (let ((default-directory local-dir))
+                        (start-process "git" nil "git" "pull" "origin" branch)))
+                    nil 'local))
+      (user-error "Failed to configure repo for sparse checkout"))))
 
 (provide 'nvp-vc)
 ;;; nvp-vc.el ends here

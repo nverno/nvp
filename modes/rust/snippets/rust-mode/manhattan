@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: manhattan distance
+# key: f_manhattan
+# --
+fn manh(p1: &[i32], p2: &[i32]) -> i32 {
+    p1.iter().zip(p2).fold(0, |acc, e| (e.0 - e.1).abs() + acc)
+}

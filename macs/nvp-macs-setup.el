@@ -371,7 +371,7 @@ If TS, also set ts version of MODE's to hook to regular mode's hook."
        (add-hook ',mode-hook #',my-hook)
        ,@(when ts
            `((when (boundp ',mode-hook)
-               (eval-when-compile (defvar ,mode-hook))
+               (eval-when-compile (defvar ,mode-hook) (defvar ,ts-hook))
                (setq ,ts-hook ,mode-hook)))))))
 
 (defmacro nvp:setup-hooks (hook &rest modes)

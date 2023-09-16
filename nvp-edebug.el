@@ -132,7 +132,7 @@
 ;;;###autoload(autoload 'nvp-edebug-emacs "nvp-edebug")
 (transient-define-prefix nvp-edebug-emacs ()
   "Toggle or run elisp debugging."
-  :value '("--quick" "--debug-init" "--current")
+  :value '("--quick" "--debug-init" "--dummy-current")
   [["Toggle"
     ("e" "Debug on error" toggle-debug-on-error)
     ("q" "Debug on quit" toggle-debug-on-quit)

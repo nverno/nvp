@@ -9,14 +9,13 @@
 (require 'xref)
 (nvp:decls :v (go-use-gocheck-for-testing gorepl-buffer-name)
            :f (gorepl--run-gore))
-(nvp:auto "asdf" asdf-current-version)
 
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))
 
 ;;; Newline dwim
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode go-mode))
+(nvp:defmethod nvp-newline-dwim-comment (syntax arg)
+  :modes (go-mode go-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;;; REPL

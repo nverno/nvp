@@ -1,10 +1,8 @@
 # -*- mode: snippet -*-
-# name: kruskal mst
-# key: g_mst
+# name: struct edge
+# key: d_edge
 # --
 type Edge struct {
-	U   int
-	V   int
-	Wt  int${1:
-	Idx int}
+	U, V${1:, Idx}   int
+	Wt  ${2:int}
 }

@@ -3,8 +3,8 @@
 # key: g_mst
 # --
 func mst(n int, edges []Edge${1:, tree *[]Edge}) int {
-	sort.Slice(es, func(i, j int) bool {
-		return es[i].Wt < es[j].Wt
+	sort.Slice(edges, func(i, j int) bool {
+		return edges[i].Wt < edges[j].Wt
 	})
 	cost, uf := 0, UF{}
 	uf.Init(n)

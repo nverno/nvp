@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: append
 # key: app
-# expand-env: ((yas-wrap-around-region 'nil))
+# expand-env: ((yas-wrap-around-region nil))
 # --
-${1:`$%`} = append($1, $2)
+${1:`(when (region-active-p) (yas-selected-text))`} = append($1, $2)

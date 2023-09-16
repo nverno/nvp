@@ -16,6 +16,7 @@
 (require 'elisp-mode)
 (require 'backtrace)
 (require 'edebug)
+(require 'transient)
 (nvp:decls :v (tramp-debug-on-error tramp-verbose)
            :f (nvp-help-describe-keymap))
 
@@ -105,53 +106,55 @@
         (setq tramp-verbose (if action 0 10))
         (message "Tramp debug on error %s" (if action "disabled" "enabled"))))))
 
-(eval-when-compile
-  (defmacro nvp-debug:launch-emacs (&rest args)
-    (declare (debug defun))
-    (let ((args (cons (nvp:with-gnu/w32 "emacs" "runemacs.exe") args)))
-      `(call-process-shell-command
-        (mapconcat #'shell-quote-argument (delq nil (list ,@args)) " ") nil 0 nil))))
+(transient-define-suffix nvp-edebug-emacs--launch (args)
+  "Launch emacs with ARGS."
+  (interactive (list (transient-args 'nvp-edebug-emacs)))
+  (let* ((grps (--group-by (string-prefix-p "--dummy" it) args))
+         (args (mapconcat #'shell-quote-argument (cdr (assq nil grps)) " "))
+         (dummy (cdr (assq t grps))))
+    (when (member "--dummy-current" dummy)
+      (setq args (concat args " " (buffer-file-name))))
+    (call-process-shell-command (concat "emacs " args) nil 0 nil)))
 
-(defun nvp-edebug-launch-bare-emacs (&optional arg)
-  "Start new emacs instance loading very minimal init (load paths + some basics).
-With prefix open current file."
-  (interactive "P")
-  (nvp-debug:launch-emacs
-   "-Q" "-l" (expand-file-name "init-site.el" nvp/etc) (if arg (buffer-file-name))))
+(transient-define-infix nvp-edebug-emacs--load ()
+  "Load init file."
+  :description "Load init"
+  :class 'transient-option
+  :argument "--load="
+  :reader
+  (lambda (prompt initial-input history)
+    (expand-file-name 
+     (format
+      "etc/init-%s.el"
+      (completing-read prompt '("bare" "site" "funcs") nil t initial-input history))
+     user-emacs-directory)))
 
-(defun nvp-edebug-launch-new-debug ()
-  "Start new emacs in debug mode."
-  (interactive)
-  (nvp-debug:launch-emacs "--debug-init"))
-
-
-;;;###autoload(autoload 'nvp-edebug-hydra-emacs/body "nvp-edebug")
-(nvp:hydra-set-property 'nvp-edebug-hydra-emacs)
-(defhydra nvp-edebug-hydra-emacs (:color blue)
-  "
-Toggle debugging functions:
-
-^toggle^    ^edebug^              ^other^
-^^^^^^^^------------------------------------------------------------
-_e_rror      _a_: all defuns      _t_ramp
-_q_uit       _l_: all local defs  _d_ebugger
-entr_y_      _f_: all forms       _b_are emacs (-l bare-site)
-_v_ariable   _c_urrent defun      _n_ew emacs (in debug)
-             _u_: unload
-"
-  ("a" edebug-all-defs)
-  ("b" nvp-edebug-launch-bare-emacs)
-  ("c" edebug-defun)
-  ("d" debug)                           ;debugger
-  ("e" toggle-debug-on-error)
-  ("f" edebug-all-forms)
-  ("l" nvp-edebug-toggle-all-local)
-  ("n" nvp-edebug-launch-new-debug)
-  ("q" toggle-debug-on-quit)
-  ("t" nvp-edebug-tramp-toggle-debug)
-  ("u" edebug-uninstall-read-eval-functions)
-  ("v" debug-on-variable-change)
-  ("y" debug-on-entry))
+;;;###autoload(autoload 'nvp-edebug-emacs "nvp-edebug")
+(transient-define-prefix nvp-edebug-emacs ()
+  "Toggle or run elisp debugging."
+  :value '("--quick" "--debug-init" "--current")
+  [["Toggle"
+    ("e" "Debug on error" toggle-debug-on-error)
+    ("q" "Debug on quit" toggle-debug-on-quit)
+    ("y" "Debug on entry" debug-on-entry)
+    ("v" "Watch variable" debug-on-variable-change)
+    ("V" "Cancel watch" cancel-debug-on-variable-change)]
+   ["Edebug"
+    ("a" "All defs" edebug-all-defs)
+    ("l" "All local defs" nvp-edebug-toggle-all-local)
+    ("f" "All forms" edebug-all-forms)
+    ("c" "Current defun" edebug-defun)
+    ("I" "Edebug install" edebug-install-read-eval-functions)
+    ("U" "Edebug uninstall" edebug-uninstall-read-eval-functions)]
+   ["Other"
+    ("t" "Toggle tramp debug" nvp-edebug-tramp-toggle-debug)
+    ("d" "Debugger" debug)]
+   ["Launch"
+    ("-d" "Enable debugger during init" "--debug-init")
+    ("-Q" "No init" "--quick")
+    ("-c" "Open current file" "--dummy-current")
+    ("-l" nvp-edebug-emacs--load)
+    ("L" "Launch" nvp-edebug-emacs--launch)]])
 
 (provide 'nvp-edebug)
 ;; Local Variables:

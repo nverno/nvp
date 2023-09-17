@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for x,y in directions
+# key: fordir
+# --
+for ${1:x}, ${2:y} in [(${3:i}+dx, ${4:j}+dy) for dx,dy in dirs]:
+    if x >= 0 and y >= 0 and x < ${5:m} and y < ${6:n}$7:
+        $0

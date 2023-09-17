@@ -2,8 +2,8 @@
 # name: array of array
 # key: aa
 # --
-${1:dp} := make([][]${2:int}, ${3:n})
-$1_ := make([]$2, ($3)*${4:m})
+${1:dp} := make([][]${2:int}, ${3:m})
+$1_ := make([]$2, ($3)*${4:n})
 for i := range $1_ {
 	$1_[i] = ${5:0}
 }

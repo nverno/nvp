@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: 4-way directions
+# key: dirs
+# --
+dirs = [(0,1),(0,-1),(1,0),(-1,0)]

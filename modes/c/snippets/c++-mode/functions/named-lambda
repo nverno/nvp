@@ -2,4 +2,4 @@
 # name: named lambda
 # key: fnn
 # --
-auto $1 = [&]($2) {$3};
+${1:function<${2:int(int,int)}>} $3 = [&]($4) {$5};

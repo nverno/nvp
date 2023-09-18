@@ -5,8 +5,8 @@
   "Wat-Mode Abbrevs."
   :enable-function #'nvp-abbrev-expand-p)
 
-(define-abbrev-table 'wast-mode-abbrev-table
+(define-abbrev-table 'wat-ts-wast-mode-abbrev-table
   '()
-  "Wast-Mode Abbrevs."
+  "Wat-Ts-Wast-Mode Abbrevs."
   :parents (list wat-mode-abbrev-table)
   :enable-function #'nvp-abbrev-expand-p)

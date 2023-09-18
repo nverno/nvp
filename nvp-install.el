@@ -179,7 +179,7 @@
 ;;;###autoload
 (cl-defmacro nvp-install-on-demand
     (&key libs optional git bit env env! script sudo choco msys
-          path cygwin depends)
+          path cygwin depends patch)
   (declare (indent defun) (debug t))
   (require 'nvp-macro)
   `(progn
@@ -239,6 +239,20 @@
                         (nvp-log "Running %s %S" nil prog args)
                         (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
                           (nvp-install-execute-process proc ,file)))
+               ;;--- Patch
+               (cl-loop for (file patch) in ,patch
+                        do
+                        (let ((default-directory user-emacs-directory))
+                          (nvp-install-execute-process
+                           (start-process-shell-command
+                                 "patch"
+                                 "*nvp-install*"
+                                 (format
+                                  (concat
+                                   "patch -s -N -u $(find elpa -type f -name '%s') "
+                                   "-i patches/%s || true")
+                                  file patch))
+                           ,file)))
                (when (not (eq system-type 'windows-nt))
                  ;; sudo commands
                  (cl-loop for (action cmd) in ,sudo

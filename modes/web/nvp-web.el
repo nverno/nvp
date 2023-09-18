@@ -36,8 +36,9 @@
   (interactive
    (list (read-directory-name "Root directory: " default-directory nil t)
          (read-number "Port: " 8017)))
-  (setq httpd-root directory)
-  (setq httpd-port port)
+  (setq httpd-root directory
+        httpd-port port
+        httpd-host 'local)
   (httpd-start)
   (browse-url (concat "http://localhost:" (number-to-string port) "/")))
 

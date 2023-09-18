@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: import-named
-# key: imp.
+# key: ..
 # --
 import ${2:{ $3 \}} from '$1';

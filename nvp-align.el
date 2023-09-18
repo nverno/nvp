@@ -95,7 +95,6 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; `align-rules-list'
 ;; 
 ;; #<marker at 13440 in align.el>
-;; FIXME:
 ;; Buggy rules:
 ;; - exc-dq-string
 ;;   - doesn't account for multiline strings
@@ -112,7 +111,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 (defvar nvp-align-eol-comment-modes
   '(sh-mode makefile-mode))
 
-;; Add / modify default rules
+;;; Add / modify default rules
 (setcdr (assq 'basic-line-continuation align-rules-list)
         `((regexp . "\\(\\s-*\\)\\\\$")
           (modes  . nvp-align-basic-lc-modes)
@@ -135,6 +134,11 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
                     (and (not (bolp))
                          (not (nvp:ppss 'soc))))))))
    align-rules-list))
+
+;; don't align '.' in multi-line strings
+(unless (assq 'valid (cdr (assq 'lisp-alist-dot align-rules-list)))
+  (push (cons 'valid (function (lambda () (not (nvp:ppss 'soc)))))
+        (cdr (assq 'lisp-alist-dot align-rules-list))))
 
 ;; better make macro regexp:  allow _ in macro names and '?='
 (setf

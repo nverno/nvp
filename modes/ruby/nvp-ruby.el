@@ -65,7 +65,7 @@
   '("^\\s-+[0-9]+: from \\([^\(][^:]+\\):\\([0-9]+\\)" 1 2))
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(ruby-mode)
+  (nvp-repl-add '(ruby-mode ruby-ts-mode)
     :modes '(inf-ruby-mode)
     :init #'nvp-ruby-start-robe))
 
@@ -113,15 +113,16 @@
 ;; -------------------------------------------------------------------
 ;;; Fold / Align
 
-(defvar hs-special-modes-alist)
-(with-eval-after-load 'hideshow
-  (unless (assoc 'ruby-mode hs-special-modes-alist)
-    (push (list 'ruby-mode "\\(def\\|do\\)" "end" "#") hs-special-modes-alist)))
-
 ;; ruby-hacks.el
 ;; setup align for ruby-mode
-(defconst align-ruby-modes '(ruby-mode)
+(defconst align-ruby-modes '(ruby-mode ruby-ts-mode)
   "align-perl-modes is a variable defined in `align.el'.")
+
+(defvar hs-special-modes-alist)
+(with-eval-after-load 'hideshow
+  (dolist (mode align-ruby-modes)
+    (unless (assoc mode hs-special-modes-alist)
+      (push (list mode "\\(def\\|do\\)" "end" "#") hs-special-modes-alist))))
 
 (defconst ruby-align-rules-list
   '((ruby-comma-delimiter
@@ -140,10 +141,12 @@ See the variable `align-rules-list' for more details.")
 
 (with-no-warnings
   (with-eval-after-load 'align
-    (add-to-list 'align-perl-modes 'ruby-mode)
-    (add-to-list 'align-dq-string-modes 'ruby-mode)
-    (add-to-list 'align-sq-string-modes 'ruby-mode)
-    (add-to-list 'align-open-comment-modes 'ruby-mode)
+    (dolist (mode align-ruby-modes)
+      (dolist (lst '(align-perl-modes
+                     align-dq-string-modes
+                     align-sq-string-modes
+                     align-open-comment-modes))
+        (add-to-list lst mode)))
     (dolist (it ruby-align-rules-list)
       (add-to-list 'align-rules-list it))))
 

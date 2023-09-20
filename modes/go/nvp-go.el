@@ -7,8 +7,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'go-mode)
 (require 'xref)
-(nvp:decls :v (go-use-gocheck-for-testing gorepl-buffer-name)
-           :f (gorepl--run-gore))
+(nvp:decls :p (gorepl) :v (go-use-gocheck-for-testing))
 
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))
@@ -26,8 +25,14 @@
       :bufname gorepl-buffer-name
       :init (lambda ()
               (save-window-excursion
-                (gorepl--run-gore)
+                (gorepl--run-gore '("-autoimport"))
                 (get-buffer-process (current-buffer)))))))
+
+(defun nvp-go-send-region-or-defun (beg end)
+  "Send current region or defun."
+  (interactive (nvp:tap-or-region 'bdwim 'defun :pulse t))
+  (when (and beg end)
+    (gorepl-eval-region beg end)))
 
 ;;; Yas
 (nvp:decl yas-text nvp-yas-split-args)

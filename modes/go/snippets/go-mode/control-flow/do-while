@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: do ... while ...
+# key: do
+# --
+for {
+	$0
+	if ${1:false} {
+		break
+	}
+}

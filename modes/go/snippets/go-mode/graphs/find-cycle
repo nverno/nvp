@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: find start of cycle
+# key: g_cycle
+# --
+func find_cycle(start int, nums []int) int {
+	slow, fast := nums[start], nums[start]
+	for {
+		slow = nums[slow]
+		fast = nums[nums[fast]]
+		if slow == fast {
+			break
+		}
+	}
+	slow = nums[0]
+	for slow != fast {
+		slow = nums[slow]
+		fast = nums[fast]
+	}
+	return fast
+}

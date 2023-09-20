@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: find start of cycle
+# key: g_cycle
+# --
+fn find_cycle(start: usize, nums: Vec<usize>) -> usize {
+    let (mut slow, mut fast) = (nums[start], nums[start]);
+    loop {
+        slow = nums[slow];
+        fast = nums[nums[fast]];
+        if slow == fast {
+            break;
+        }
+    }
+    slow = nums[0];
+    while slow != fast {
+        slow = nums[slow];
+        fast = nums[fast];
+    }
+    fast
+}

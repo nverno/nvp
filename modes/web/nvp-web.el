@@ -4,10 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'web-mode)
-(nvp:decls :f (impatient-mode
-               httpd-start httpd-running-p
-               lsp-describe-thing-at-point)
-           :v (httpd-root httpd-port lsp-mode))
+(nvp:decls :p (httpd impatient lsp))
 (nvp:auto "nvp-jinja" 'nvp-jinja-url-for)
 (nvp:auto "projectile" 'projectile-project-root)
 

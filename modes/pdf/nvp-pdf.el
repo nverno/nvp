@@ -15,7 +15,8 @@
     (pdf-tools-install t t t)
     ;; (call-interactively 'nvp-pdf-install-epdfinfo))
     ;; add enty that `pdf-tools-install' would add
-    (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry)))
+    (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry)
+    t))
 
 ;; -------------------------------------------------------------------
 ;;; Annotations

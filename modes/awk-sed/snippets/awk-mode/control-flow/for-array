@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for (v in arr)
+# key: fori
+# --
+for (${1:var} in ${2:arr}) {
+  $0
+}

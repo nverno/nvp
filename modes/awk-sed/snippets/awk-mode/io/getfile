@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: getline <file
+# key: getfile
+# --
+getline <${1:file}

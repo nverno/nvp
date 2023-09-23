@@ -1,0 +1,12 @@
+# -*- coding: utf-8; mode: snippet -*-
+# name: switch
+# key: swi
+# --
+switch (${1:expr}) {
+  case ${2:value|regex}:
+     ${3:stmt}
+     break$0
+  default:
+     ${4:stmt}
+     break
+}

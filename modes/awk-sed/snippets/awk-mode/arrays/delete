@@ -1,0 +1,5 @@
+# -*- coding: utf-8; mode: snippet -*-
+# name: delete array element
+# key: del
+# --
+delete ${1:arr}${2:[${3:x}]}

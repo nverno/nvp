@@ -2,8 +2,8 @@
 # name: command | getline
 # key: getline
 # --
-tmp="$1"  #command
-          while ((tmp|getline) > 0) {
-            $0
-          }
-          close(tmp)
+tmp="$1"  # command producing output
+while ((tmp |${2:&} getline${3: var}) > 0) {
+  ${4:print $3}$0
+}
+close(tmp)

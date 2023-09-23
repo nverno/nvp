@@ -93,9 +93,9 @@
            (if nvp-edebug--all-defs "enabled" "disabled")))
 
 ;; -------------------------------------------------------------------
-;;; Emacs / Tramp
+;;; Emacs / Tramp / URL
 
-(defun nvp-edebug-tramp-toggle-debug ()
+(defun nvp-edebug-emacs--toggle-tramp ()
   "Toggle `tramp-debug-on-error' on/off."
   (interactive)
   (ignore-errors
@@ -105,6 +105,13 @@
         (setq tramp-debug-on-error (not action))
         (setq tramp-verbose (if action 0 10))
         (message "Tramp debug on error %s" (if action "disabled" "enabled"))))))
+
+(transient-define-infix nvp-edebug-emacs--toggle-url ()
+  "Toggle `url-debug' on/off."
+  :description "Toggle URL debug"
+  :class 'transient-lisp-variable
+  :variable 'url-debug
+  :reader (lambda (&rest _) (not url-debug)))
 
 (transient-define-suffix nvp-edebug-emacs--launch (args)
   "Launch emacs with ARGS."
@@ -147,7 +154,8 @@
     ("I" "Edebug install" edebug-install-read-eval-functions)
     ("U" "Edebug uninstall" edebug-uninstall-read-eval-functions)]
    ["Other"
-    ("t" "Toggle tramp debug" nvp-edebug-tramp-toggle-debug)
+    ("t" "Toggle tramp debug" nvp-edebug-emacs--toggle-tramp)
+    ("u" nvp-edebug-emacs--toggle-url)
     ("d" "Debugger" debug)]
    ["Launch"
     ("-d" "Enable debugger during init" "--debug-init")

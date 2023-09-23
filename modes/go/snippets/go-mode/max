@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: max
+# key: max
+# --
+${1:// go >=v1.8
+func max[T constraints.Ordered](a, b T) T {
+	if a > b {
+		return a
+	\}
+	return b
+\}}${2:func max(a, b int) int {
+	if a > b {
+		return a
+	\}
+	return b
+\}}

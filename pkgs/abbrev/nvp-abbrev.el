@@ -101,6 +101,7 @@ or expansion."
       "  '()\n"
       (format "  \"%s Abbrevs.\"\n"
               (capitalize (replace-regexp-in-string "-abbrev-table" "" table)))
+      (format "  :enable-function #'nvp-abbrev-expand-p\n")
       (format "  :parents %s)" parents)))))
 
 ;; open abbrev file and search for the specified table

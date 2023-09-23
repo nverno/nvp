@@ -5,18 +5,9 @@
 ;; - make --warn-undefined-variables
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(nvp:req 'nvp-makefile 'subrs)
 (require 'compile)
 (require 'nvp)
-
-(eval-when-compile
-  (defsubst nvp:makefile-read-targets ()
-    (mapconcat 'identity (nvp-makefile-completing-read (buffer-file-name)) " "))
-
-  (defmacro nvp:makefile-with-compilation-vars (&rest body)
-    `(let ((compilation-error-regexp-alist '(makefile))
-           (compilation-error-regexp-alist-alist
-            '(makefile "\\([^:]+\\):\\([0-9]+\\)" 1 2)))
-       ,@body)))
 
 ;;;###autoload
 (defun nvp-makefile-check (&optional targets)

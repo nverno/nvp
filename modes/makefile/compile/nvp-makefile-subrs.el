@@ -4,25 +4,25 @@
 ;;; Code:
 (require 'nvp-macro)
 (require 'nvp)
-(nvp:decls :v (nvp-makefile-defun-regexp))
+(nvp:decls :v (nvp-makefile-defun-regexp) :f (nvp-makefile-completing-read))
 
-(defsubst nvp-makefile--defun-line-p ()
+(defsubst nvp:makefile--defun-line-p ()
   (save-excursion
     (beginning-of-line 1)
     (looking-at-p nvp-makefile-defun-regexp)))
 
-(defsubst nvp-makefile--skip-escapes (search-fn)
+(defsubst nvp:makefile--skip-escapes (search-fn)
   (if (eq search-fn 're-search-backward)
       (eq (line-beginning-position) (nvp:goto 'boll))
     (eq (line-end-position) (nvp:goto 'eoll))))
 
 ;; preceded by '[^$]$[{(]'
-(defsubst nvp-makefile-variable-or-function-p (pos)
+(defsubst nvp:makefile-variable-or-function-p (pos)
   (and (memq (char-before pos) '(?{ ?\())
        (eq (char-before (1- pos)) ?$)
        (not (eq (char-before (- pos 2)) ?$))))
 
-(defsubst nvp-makefile-rule-line-p (&optional pos)
+(defsubst nvp:makefile-rule-line-p (&optional pos)
   (save-excursion
     (and pos (goto-char pos))
     (beginning-of-line)
@@ -32,7 +32,7 @@
 ;;; Goto targets
 
 ;; put point at end of matching target named TARGET
-(defsubst nvp-makefile-goto-target (target)
+(defsubst nvp:makefile-goto-target (target)
   (let ((place (point)))
     (goto-char (point-min))
     (or (re-search-forward (concat "^" target) nil t)
@@ -48,7 +48,7 @@
 ;;            (and (not (bolp))
 ;;                 (insert "\n")))))
 
-(defmacro nvp-makefile-with-target (target &rest body)
+(defmacro nvp:makefile-with-target (target &rest body)
   "Execute BODY with point after ':' following TARGET."
   (declare (indent defun) (debug (symbolp &rest form)))
   (nvp:with-gensyms (place)
@@ -64,6 +64,15 @@
          (forward-char 1)
          ,@body))))
 
+;;; Compilation
+(defsubst nvp:makefile-read-targets ()
+  (mapconcat 'identity (nvp-makefile-completing-read (buffer-file-name)) " "))
+
+(defmacro nvp:makefile-with-compilation-vars (&rest body)
+  `(let ((compilation-error-regexp-alist '(makefile))
+         (compilation-error-regexp-alist-alist
+          '(makefile "\\([^:]+\\):\\([0-9]+\\)" 1 2)))
+     ,@body))
 
 (provide 'nvp-makefile-subrs)
 ;; Local Variables:

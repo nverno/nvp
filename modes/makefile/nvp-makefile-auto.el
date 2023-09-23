@@ -49,7 +49,7 @@
 ;; list dependencies for TARGET
 (defun nvp-makefile-list-deps (target)
   (save-excursion
-    (nvp-makefile-goto-target target)
+    (nvp:makefile-goto-target target)
     (skip-chars-forward ": \t" (line-end-position))
     (split-string (buffer-substring-no-properties (point) (line-end-position)))))
 
@@ -84,7 +84,7 @@
 (defun nvp-makefile-add-dep (target dep &optional toggle delete)
   ;; ensure target exists, adding it if it doesn't
   (nvp-makefile-add-target target)
-  (nvp-makefile-with-target target
+  (nvp:makefile-with-target target
     (let* ((deps (split-string
                   (buffer-substring-no-properties
                    (point) (line-end-position))))

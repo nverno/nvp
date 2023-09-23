@@ -119,7 +119,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
         ((table
           (cond
            ;; $(... or ${...
-           ((nvp-makefile-variable-or-function-p beg)
+           ((nvp:makefile-variable-or-function-p beg)
             (list
              (completion-table-merge
               (completion-table-with-cache
@@ -141,7 +141,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
              :company-location (apply-partially #'nvp-makecomp--location 'variables)
              :company-doc-buffer #'nvp-makecomp--doc-buffer))
            ;; rules => after <rulename>: ...
-           ((nvp-makefile-rule-line-p)
+           ((nvp:makefile-rule-line-p)
             (list
              (completion-table-with-cache
               (lambda (_string) (nvp-makecomp-candidates 'rules)))
@@ -158,7 +158,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
 
 (defun nvp-makecomp-var-or-func-botap ()
   (let ((bnds (bounds-of-thing-at-point 'symbol)))
-    (when (and bnds (nvp-makefile-variable-or-function-p (car bnds)))
+    (when (and bnds (nvp:makefile-variable-or-function-p (car bnds)))
       bnds)))
 (put 'makesym 'bounds-of-thing-at-point 'nvp-makecomp-var-or-func-botap)
 

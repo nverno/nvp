@@ -20,10 +20,9 @@
 (require 'make-mode)
 (nvp:req 'nvp-makefile 'subrs)
 (require 'nvp)
-(nvp:decls :f (nvp-makefile-indent
-               nvp-makefile-check
-               nvp-makecomp-eldoc-function
-               helm-make))
+(nvp:decls
+ :f ( nvp-makefile-indent nvp-makefile-check nvp-makecomp-eldoc-function helm-make)
+ :v (crm-separator))
 
 ;;; Navigation
 
@@ -47,11 +46,11 @@
   (let ((search-fn (if (> arg 0) #'re-search-backward #'re-search-forward))
         (pos (point-marker)))
     (and (< arg 0)                   ;searching forward -- skip initial beg . 
-         (nvp-makefile--defun-line-p)
+         (nvp:makefile--defun-line-p)
          (end-of-line))
     (while (and (funcall search-fn nvp-makefile-defun-regexp nil 'move)
-                (not (nvp-makefile--skip-escapes search-fn))))
-    (if (nvp-makefile--defun-line-p)
+                (not (nvp:makefile--skip-escapes search-fn))))
+    (if (nvp:makefile--defun-line-p)
         (or (nvp:point 'boll) (point))  ;found beg
       (and (goto-char pos) nil))))     ;failed
 
@@ -93,15 +92,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; Compile
-
-(defun nvp-makefile-save-and-compile (&optional arg)
-  "Save and compile.
-With prefix ARG, run `helm-make'."
-  (interactive "P")
-  (save-buffer)
-  (call-interactively
-   (if (and arg) (fboundp 'helm-make) #'helm-make) #'nvp-compile)
-  (pop-to-buffer next-error-last-buffer))
 
 ;; modified `helm--make-target-list-qp' in helm-make
 ;; read targets from 'make -prqnR' output
@@ -149,6 +139,20 @@ MAKEFILE should be a Makefile buffer or filename."
                makefile-target-table)))
        (when (file-exists-p makefile)
          (nvp-makefile-targets--make makefile))))))
+
+(defun nvp-makefile-save-and-compile (targets &optional arg)
+  "Save and compile.
+With prefix ARG, run `helm-make'."
+  (interactive
+   (progn
+     (save-buffer)
+     (list (and (not (and current-prefix-arg (fboundp 'helm-make)))
+                (nvp:makefile-read-targets))
+           current-prefix-arg)))
+  (if (and arg (fboundp 'helm-make)) (call-interactively #'helm-make)
+    (nvp:makefile-with-compilation-vars
+     (compilation-start
+      (concat "make -f " (buffer-file-name) " " targets)))))
 
 ;; -------------------------------------------------------------------
 ;;; Tidy

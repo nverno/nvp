@@ -26,8 +26,9 @@
          ;; (with-current-buffer nvp-anaconda-doc-buffer
          ;;   (erase-buffer))
          (anaconda-mode-call "show_doc" 'nvp-anaconda-mode-show-doc-callback)
-         (with-current-buffer nvp-anaconda-doc-buffer
-           (list (current-buffer) (pos-bol) nil)))))))
+         (when (buffer-live-p nvp-anaconda-doc-buffer)
+           (with-current-buffer nvp-anaconda-doc-buffer
+             (list (current-buffer) (pos-bol) nil))))))))
 
 (provide 'nvp-hap-python)
 ;; Local Variables:

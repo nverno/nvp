@@ -12,21 +12,22 @@
   (require 'hideshow))
 (require 'nvp)
 (nvp:auto "hideshow" hs-hide-all hs-toggle-hiding hs-hide-level hs-show-all)
-(nvp:decls
- :f (hs-toggle-hiding hs-show-all hs-hide-all hs-discard-overlays
-                      hs-inside-comment-p hs-hide-block-at-point)
- :v (hs-minor-mode hs-set-up-overlay hs-allow-nesting hs-c-start-regexp))
+(nvp:decls :p (hs))
 
 (nvp:bindings nvp-fold-keymap nil
-  :create t
+  :create t :indicate t
   :repeat (nvp-hs-hide-comments hs-toggle-hiding)
-  :indicate t
   ("<tab>" . hs-toggle-hiding)
   ("a"     . hs-hide-all)
   ("c"     . nvp-hs-hide-comments)
   ("f"     . nvp-hs-toggle)
   ("l"     . hs-hide-level)
-  ("s"     . hs-show-all))
+  ("s"     . hs-show-all)
+  ("q"     . nvp-hs-quit))
+
+(defun nvp-hs-quit ()
+  (interactive)
+  (hs-minor-mode -1))
 
 ;;;###autoload
 (defun nvp-narrow-dwim (&optional beg end arg)

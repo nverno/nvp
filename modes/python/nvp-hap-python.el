@@ -8,6 +8,8 @@
 (require 'anaconda-mode nil t)
 (nvp:decls :p "anaconda")
 
+(defvar nvp-anaconda-doc-buffer "*Anaconda*")
+
 (defun nvp-anaconda-mode-show-doc-callback (result)
   "Process view doc RESULT."
   (if (> (length result) 0)
@@ -15,14 +17,16 @@
     (message "No documentation available")))
 
 ;;;###autoload
-(defun nvp-hap-python (command &optional _arg &rest _args)
+(defun nvp-hap-python-anaconda (command &optional _arg &rest _args)
   (cl-case command
     (thingatpt (thing-at-point 'symbol))
     (doc-buffer
      (save-window-excursion
        (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t)))))
+         ;; (with-current-buffer nvp-anaconda-doc-buffer
+         ;;   (erase-buffer))
          (anaconda-mode-call "show_doc" 'nvp-anaconda-mode-show-doc-callback)
-         (with-current-buffer "*Anaconda*"
+         (with-current-buffer nvp-anaconda-doc-buffer
            (list (current-buffer) (pos-bol) nil)))))))
 
 (provide 'nvp-hap-python)

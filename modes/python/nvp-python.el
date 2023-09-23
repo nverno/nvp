@@ -9,8 +9,7 @@
 (nvp:req 'nvp-python 'subrs)
 (require 'comint)
 (require 'python)
-(nvp:decls :f (conda-env-send-buffer
-               anaconda-mode-complete-extract-names anaconda-mode-call))
+(nvp:decls :p (anaconda conda-env))
 
 (nvp:defmethod nvp-parse-current-function ()
   :modes (python-mode python-ts-mode)

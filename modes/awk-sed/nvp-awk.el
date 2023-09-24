@@ -32,6 +32,14 @@
      0)
     (nil "^\\s-*function\\s-+\\([[:alpha:]][[:alpha:]]+\\)\\s-*(" 1)))
 
+;;; Lint / Check
+
+(defun nvp-awk-check-buffer ()
+  "Lint buffer with results in compilation mode."
+  (interactive)
+  (compilation-start
+   (concat "awk --lint -f " (buffer-file-name))))
+
 ;; -------------------------------------------------------------------
 ;;; Completion
 
@@ -73,6 +81,7 @@
          'identity (--map-indexed (format "${%d:%s}" (1+ it-index) it) params)
          ", ") ")")))
 
+;; -------------------------------------------------------------------
 ;;; Eldoc
 
 (defvar nvp-awk-eldoc-cache (make-hash-table :test 'equal))
@@ -107,10 +116,12 @@
                         (if pars (concat "(" (mapconcat 'identity pars ", ") ")")
                           desc)))))))
 
-(defun nvp-awk-eldoc-function ()
+(defun nvp-awk-eldoc-function (callback &rest _ignored)
   (--when-let (nvp-awk-current-command)
-    (nvp-awk-eldoc--string it)))
+    (funcall callback (nvp-awk-eldoc--string it))))
 
+;; -------------------------------------------------------------------
+;;; Info
 
 (declare-function info-lookup-add-help "info-look")
 (with-eval-after-load 'info-look

@@ -92,9 +92,8 @@
   (message "Edebug all defs %s locally"
            (if nvp-edebug--all-defs "enabled" "disabled")))
 
-;; -------------------------------------------------------------------
-;;; Emacs / Tramp / URL
 
+;;; Tramp
 (defun nvp-edebug-emacs--toggle-tramp ()
   "Toggle `tramp-debug-on-error' on/off."
   (interactive)
@@ -106,20 +105,36 @@
         (setq tramp-verbose (if action 0 10))
         (message "Tramp debug on error %s" (if action "disabled" "enabled"))))))
 
+;;; Url
 (transient-define-infix nvp-edebug-emacs--toggle-url ()
   "Toggle `url-debug' on/off."
   :description "Toggle URL debug"
   :class 'transient-lisp-variable
   :variable 'url-debug
-  :reader (lambda (&rest _) (not url-debug)))
+  :reader
+  (lambda (prompt)
+    (if (null current-prefix-arg) (not url-debug)
+      (seq-uniq
+       (mapcar #'intern-soft
+               (completing-read-multiple prompt '(http dav retrieval handlers)))))))
 
-(transient-define-infix nvp-edebug-emacs--toggle-lsp ()
+;;; LSP
+(transient-define-infix nvp-edebug-emacs--toggle-lsp-io ()
   "Toggle lsp client-server logging."
-  :description "Toggle LSP logging"
+  :description "I/O logging"
   :class 'transient-lisp-variable
   :variable 'lsp-log-io
   :reader (lambda (&rest _) (not lsp-log-io)))
 
+(transient-define-infix nvp-edebug-emacs--toggle-lsp-server ()
+  "Toggle lsp server tracing."
+  :description "Server tracing"
+  :class 'transient-lisp-variable
+  :variable 'lsp-server-trace
+  :reader (lambda (prompt &rest _)
+            (completing-read prompt '("off" "messages" "verbose") nil t)))
+
+;;; Emacs
 (transient-define-suffix nvp-edebug-emacs--launch (args)
   "Launch emacs with ARGS."
   (interactive (list (transient-args 'nvp-edebug-emacs)))
@@ -160,18 +175,21 @@
     ("c" "Current defun" edebug-defun)
     ("I" "Edebug install" edebug-install-read-eval-functions)
     ("U" "Edebug uninstall" edebug-uninstall-read-eval-functions)]
-   ["Other"
-    ("d" "Debugger" debug)
-    ("/tr" "Toggle tramp debug" nvp-edebug-emacs--toggle-tramp
-     :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))
-    ("/url" nvp-edebug-emacs--toggle-url :if (lambda () (boundp 'url-debug)))
-    ("/lsp" nvp-edebug-emacs--toggle-lsp :if (lambda () (boundp 'lsp-log-io)))]
-   ["Launch"
+   ["Run"
+    ("d" "Debugger" debug)]
+   ["Emacs"
     ("-d" "Enable debugger during init" "--debug-init")
     ("-Q" "No init" "--quick")
     ("-c" "Open current file" "--dummy-current")
     ("-l" nvp-edebug-emacs--load)
-    ("L" "Launch" nvp-edebug-emacs--launch)]])
+    ("L" "Launch" nvp-edebug-emacs--launch)]]
+  [["Other"
+    ("/tr" "Toggle tramp debug" nvp-edebug-emacs--toggle-tramp
+     :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))
+    ("/url" nvp-edebug-emacs--toggle-url :if (lambda () (boundp 'url-debug)))]
+   [ :if (lambda () (featurep 'lsp-mode)) "LSP"
+     ("/io" nvp-edebug-emacs--toggle-lsp-io)
+     ("/server" nvp-edebug-emacs--toggle-lsp-server)]])
 
 (provide 'nvp-edebug)
 ;; Local Variables:

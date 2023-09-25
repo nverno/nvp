@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'lsp-mode)
 (require 'nvp)
-(nvp:decls)
+(nvp:decls :p (hs))
 
 ;; -------------------------------------------------------------------
 ;;; Log IO
@@ -70,7 +70,7 @@
   "Erase current lsp log buffer.
 With \\[universal-argument] ALL, erase all session log buffers."
   (interactive "P")
-  (lsp--erase-log-buffer all))
+  (lsp--erase-log-buffer (and all t)))
 
 (provide 'nvp-lsp)
 ;; Local Variables:

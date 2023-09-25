@@ -107,7 +107,7 @@
   '(("exp" "export" nil :system t)
     ("mapf" "mapfile" nil :system t)
     ("ro" "readonly" nil :system t)
-    ("here" "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd)\""
+    ("here" "DIR=\"$(cd \"$( dirname \"${BASH_SOURCE[0]}\")\" && pwd)\""
      nil :system t)
     ("ret" "return" nil :system t)
     ;; i/o

@@ -260,7 +260,7 @@ the console."
                  "\\([A-Za-z0-9_]+\\)() (\\([A-Za-z0-9_.]+\\) method)" item)
                 (format "%s.%s" (match-string 2 item)
                         (match-string 1 item)))))))))
-    (dolist (mode '(python-mode python-ts-mode))
+    (dolist (mode '(python-mode)) ; python-ts-mode
       (info-lookup-add-help
        :mode mode
        :regexp "[a-zA-Z_0-9.]+"

@@ -93,7 +93,9 @@
   ;; use the standard mode when remapped,
   ;; eg. use python-mode instead of python-ts-mode
   (when-let ((remap (rassq mode major-mode-remap-alist)))
-    (setq mode (car remap)))
+    (setq mode (car remap)
+          ;; `info-lookup' checks this before tring `major-mode'
+          info-lookup-mode mode))
   (let ((mvars (gethash mode nvp-mode-cache nil))
         yas-dir mode-snips)
     (unless (and (not override) mvars)

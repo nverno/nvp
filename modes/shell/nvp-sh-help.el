@@ -315,7 +315,9 @@
 (defun nvp-hap-sh (command &optional arg prefix &rest _args)
   (cl-case command
     (thingatpt (nvp-sh-current-command))
-    (doc-buffer (list (nvp-sh-help-more-help arg) :set nil))
+    (doc-buffer (save-window-excursion
+                  (--when-let (nvp-sh-help-more-help arg)
+                   (and (buffer-live-p it) (list it :set nil)))))
     (doc-string
      ;; - if cmd is '[[' or '[' return help for current switch or all if not found
      ;; - with C-u C-u prompt for 'man' section and recache

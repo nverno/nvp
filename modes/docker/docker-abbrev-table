@@ -1,7 +1,6 @@
 (define-abbrev-table 'dockerfile-mode-abbrev-table
   '()
   "Dockerfile Abbrevs."
-  ;; :parents (list)
   :parents (list prog-mode-abbrev-table)
   :enable-function #'nvp-abbrev-expand-p)
 

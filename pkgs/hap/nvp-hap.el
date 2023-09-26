@@ -23,19 +23,20 @@
 ;; - info
 ;; - elisp
 ;; - company
-;; TODO: man
 ;;
 ;; Refs:
 ;; popup.el/pos-tip.el/quickhelp.el to truncate pop-tips
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'pos-tip)
 (require 'company)
 (require 'company-quickhelp)
-(nvp:decls)
+(nvp:decls :v (info-lookup-other-window-flag)
+           :f (nvp-hap-treesit-active-p))
 (nvp:auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
-(defvar info-lookup-other-window-flag)
+
 
 ;; local override function to get doc for quickhelp-toggle
 (defvar nvp-quickhelp-toggle-function #'company-quickhelp-manual-begin)
@@ -74,12 +75,12 @@
   '(scroll-other-window scroll-other-window-down mwheel-scroll))
 
 ;; get first result from `nvp-help-at-point-functions'
-(defsubst nvp-hap--call (&rest args)
-  (let ((result (apply #'run-hook-with-args-until-success
-                       'nvp-help-at-point-functions args)))
-    (and result (eq (car args) 'doc-buffer)
-         (setq nvp-hap--doc-buffer result))
-    result))
+;; (defsubst nvp-hap--call (&rest args)
+;;   (let ((result (apply #'run-hook-with-args-until-success
+;;                        'nvp-help-at-point-functions args)))
+;;     (and result (eq (car args) 'doc-buffer)
+;;          (setq nvp-hap--doc-buffer result))
+;;     result))
 
 (defun nvp-hap-prefix-action (prefix)
   (let ((val (prefix-numeric-value prefix)))
@@ -249,10 +250,13 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 (defvar-local nvp-hap-company-backend 'company-capf)
 (defvar-local nvp-hap-backend nil)
 (defvar-local nvp-hap--disabled-backends nil)
+(defvar-local nvp-hap--treesit-p nil)
 
 (defun nvp-hap-call-backend (&rest args)
   (condition-case-unless-debug err
-      (apply nvp-hap-backend args)
+      (apply (if (functionp nvp-hap-backend) nvp-hap-backend
+               (plist-get nvp-hap-backend :backend))
+             args)
     (user-error (user-error "Hap: backend %s user-error: %s"
                             nvp-hap-backend (error-message-string err)))
     (error (error "Hap: backend %s error \"%s\" with args %s"
@@ -279,7 +283,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
        (put backend 'hap-init 'failed)
        (message "Hap backend '%s' failed to initialize:\n%s"
                 backend (error-message-string err))
-       (cl-pushnew backend nvp-hap--disabled-backends)
+       (push backend nvp-hap--disabled-backends)
        nil)))
    ((functionp backend) t)
    (t
@@ -288,12 +292,14 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
         (nvp-hap-init-backend b))))))
 
 (defun nvp-hap-init-backend (backend)
-  (unless (memq backend nvp-hap--disabled-backends)
-    (or (not (symbolp backend))
-        (eq t (get backend 'hap-init))
-        (unless (get backend 'hap-init)
-          (nvp-hap--init-backend backend)))))
-
+  (unless (member backend nvp-hap--disabled-backends)
+    (if (plistp backend)
+        (and (nvp-hap-init-backend (plist-get backend :backend))
+             (nvp-hap-treesit-active-p backend))
+      (or (and (symbolp backend)
+               (eq t (get backend 'hap-init)))
+          (unless (get backend 'hap-init)
+            (nvp-hap--init-backend backend))))))
 
 ;; passes prefix argument to `nvp-hap-show-*' functions in case
 ;; prompt was forced to find symbol other than the one at point
@@ -316,14 +322,22 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
                  (setq nvp-hap-backend nil
                        nvp-hap--thingatpt nil)))))))
 
-;;; TODO: allow cycling through backends
+(defsubst nvp-hap--backend-sym (sym)
+  (if (plistp sym) (plist-get sym :backend) sym))
+
+(defsubst nvp-hap--treesit-maybe-init (&optional backends)
+  (and (fboundp 'nvp-hap-treesit-init)
+       (nvp-hap-treesit-init backends)))
+
 (defun nvp-hap-choose-backend ()
   (--when-let
       (completing-read
        "Backend: "
-       (mapcar (lambda (sym)
-                 (replace-regexp-in-string "nvp-hap-\\(.+\\)" "\\1" (symbol-name sym)))
-               nvp-help-at-point-functions))
+       (mapcar
+        (lambda (sym)
+          (replace-regexp-in-string
+           "nvp-hap-\\(.+\\)" "\\1" (symbol-name (nvp-hap--backend-sym sym))))
+        nvp-help-at-point-functions))
     (intern (concat "nvp-hap-" it))))
 
 ;;;###autoload
@@ -331,6 +345,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
   "Show help for thing at point in a popup tooltip or help buffer."
   (interactive "P")
   (nvp-hap-cancel)
+  (nvp-hap--treesit-maybe-init)
   (let ((nvp-help-at-point-functions
          (cond
           ((eq 64 (prefix-numeric-value prefix))

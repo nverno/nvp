@@ -49,6 +49,7 @@
 
           :language 'dockerfile
           :feature 'escape-sequence
+          :override t
           '((escape_sequence) @font-lock-escape-face))))
     
     (setq dockerfile-ts-mode--font-lock-settings (append new-rules cur-rules))))

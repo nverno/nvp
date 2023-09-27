@@ -124,7 +124,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
     (define-key map (kbd "M-V")   #'scroll-other-window-down)
     (define-key map "h"           #'nvp-hap-pop-to-buffer)
     (define-key map (kbd "C-h")   #'nvp-hap-show-doc-buffer)
-    (define-key map (kbd "M-?")   #'nvp-hap-next-backend)
+    (define-key map (kbd "C-o")   #'nvp-hap-next-backend)
     map))
 
 ;; Manage the transient map. On exit, restore prior window configuration.

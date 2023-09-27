@@ -146,11 +146,11 @@ or nil.")
 ;; -------------------------------------------------------------------
 ;;; Faces
 
-(defface nvp-highlight-face
+(defface nvp-block-face
   '((((class color) (background light))
-     (:background "navy" :foreground "yellow" :weight bold :slant italic))
-    (t (:background "yellow" :foreground "navy" :weight bold :slant italic)))
-  "Really highlight stuff."
+     (:background "#f2e5bc" "#ffffd7" :inherit highlight))
+    (t (:background "#32302f" "#303030" :inherit highlight)))
+  "Face for special blocks."
   :group 'nvp)
 
 ;; see cperl gaudy array/hash faces
@@ -330,8 +330,7 @@ Dispatches to generic handlers with ARG."
 ;; -------------------------------------------------------------------
 ;;; Paredit
 (eval-when-compile (require 'paredit))
-(nvp:decl paredit-move-past-close-and paredit-blink-paren-match
-  paredit-indent-region paredit-splice-reindent)
+(nvp:decl paredit-move-past-close-and paredit-blink-paren-match)
 
 (defun nvp-paredit-close-round ()
   "Close paren skipping over possible comments and call `expand-abbrev'."
@@ -350,30 +349,6 @@ Dispatches to generic handlers with ARG."
           (delete-char -1)
           (delete-blank-lines))))
     (paredit-blink-paren-match nil)))
-
-;; Problem: `paredit-splice-reindent' doesn't account for `minibuffer-prompt'
-;; when `paredit' is active in the minibuffer, eg. during lisp evaluation
-;; This redefinition accounts for the minibuffer width during reindent so the
-;; point doesn't jump the width of the minibuffer after splicing
-(defun nvp-paredit-splice-reindent (start end)
-  (nvp:preserving-column
-    ;; If we changed the first subform of the enclosing list, we must
-    ;; reindent the whole enclosing list.
-    (if (paredit-handle-sexp-errors
-            (save-excursion
-              (backward-up-list)
-              (down-list)
-              (paredit-ignore-sexp-errors (forward-sexp))
-              (< start (point)))
-          nil)
-        (save-excursion (backward-up-list) (indent-sexp))
-      (paredit-indent-region start end))))
-
-(with-eval-after-load 'paredit
-  ;; Redefine `paredit-splice-reindent'
-  ;; this was a `defalias', but wasn't being loaded properly, I think it has
-  ;; to do with this file being required in the init which is then compiled??
-  (setf (symbol-function 'paredit-splice-reindent) #'nvp-paredit-splice-reindent))
 
 
 ;; -------------------------------------------------------------------

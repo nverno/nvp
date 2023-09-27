@@ -8,26 +8,16 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'make-mode)
+(require 'nvp-makefile)
 (nvp:req 'nvp-makefile 'subrs)
-(require 'nvp)
 
 ;; -------------------------------------------------------------------
 ;;; Used in snippets
 
-;; Special targets: collect matches from url
-(defun nvp-makefile-collect-topics (url regex)
-  (let (res)
-    (nvp:while-scanning-url url regex
-      (push (match-string-no-properties 1) res))
-    res))
-
 ;;;###autoload(autoload 'nvp-makefile-special-targets "nvp-makefile-auto")
 (nvp:define-cache-runonce nvp-makefile-special-targets ()
   "List of special make targets."
-  ;; propertize :manual (concat url (match-string 1))
-  (nvp-makefile-collect-topics
-   "https://www.gnu.org/software/make/manual/html_node/Special-Targets.html"
-   "dt[>< ]+code[<> ]+\\([.A-Za-z]+\\)"))
+  (process-lines (f-join nvp-makefile--dir "bin/special-targets.py")))
 
 ;; ------------------------------------------------------------
 ;;; Parse / Snippet helpers

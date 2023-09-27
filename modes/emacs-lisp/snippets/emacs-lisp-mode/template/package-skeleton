@@ -8,8 +8,10 @@
 
 ;; Author: `(concat user-full-name)` <`(concat user-mail-address)`>
 ;; URL: https://${2:github.com/nverno/}${3:`(nvp-yas-dfn)`}
-;; Package-Requires: 
+;; Version: 0.0.1
+;; Package-Requires: ((emacs "29.1"))
 ;; Created: `(format-time-string "%e %B %Y")`
+;; Keywords:
 
 ;; This file is not part of GNU Emacs.
 ;;

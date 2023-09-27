@@ -24,6 +24,8 @@
  :f ( nvp-makefile-indent nvp-makefile-check nvp-makecomp-eldoc-function helm-make)
  :v (crm-separator))
 
+(nvp:package-define-root :name "nvp-makefile")
+
 ;;; Navigation
 
 (eval-and-compile

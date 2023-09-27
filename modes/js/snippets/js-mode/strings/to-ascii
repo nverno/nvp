@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: char to ascii
+# key: f_toascii
+# --
+const toascii = (s, base='a') => s.charCodeAt(0) - base.charCodeAt(0);

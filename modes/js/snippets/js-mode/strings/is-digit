@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: char is digit
+# key: f_isdigit
+# --
+const isdigit = (c) => !isNaN(+c);

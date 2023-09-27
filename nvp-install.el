@@ -175,13 +175,30 @@
       (byte-compile-file tmp-file)
       (delete-file tmp-file))))
 
+(defun nvp-install-site-paths (path &rest repos)
+  (let ((paths
+         (delq nil
+               (append
+                (mapcar #'eval path)
+                (mapcar (lambda (r) (car (last (string-split r "/" t " ")))) repos)))))
+    (cl-loop for p in paths
+             as path = (cond
+                        ((stringp p)
+                         (if (file-name-absolute-p p) p
+                           (expand-file-name p nvp/site)))
+                        (t (error "unhandled path: %S" p)))
+             collect path)))
+
 ;;; Install dependencies on demand - when mode is first autoloaded
 ;;;###autoload
 (cl-defmacro nvp-install-on-demand
-    (&key libs optional git bit env env! script sudo choco msys
-          path cygwin depends patch)
+    (&key libs optional git bit env env! script path depends patch)
   (declare (indent defun) (debug t))
   (require 'nvp-macro)
+  (setq path (seq-uniq
+              (apply #'nvp-install-site-paths
+                     (nvp:as-list (eval path))
+                     (nvp:list-unquote (append (nvp-install-normalize-pkgnames git) bit)))))
   `(progn
      ,(when load-file-name
         (let ((file (file-name-sans-extension load-file-name)))
@@ -192,16 +209,16 @@
                ;; process counter
                (setq nvp-install--total-proc 0)
                ;;--- Dependencies ----------------------------------------
-               (cl-loop for dep in ,depends
+               (cl-loop for dep in ',depends
                         do (nvp-install-mode dep))
                ;;--- Packages --------------------------------------------
-               (cl-loop for pkg in ,libs
+               (cl-loop for pkg in ',libs
                         if (and (package-installed-p (intern pkg))
                                 (locate-library pkg))
                         do (nvp-log "%s already installed" nil pkg)
                         else do (nvp-log "Installing %s" nil pkg)
                         (package-install (intern pkg) t))
-               (cl-loop for pkg in ,optional
+               (cl-loop for pkg in ',optional
                         do (message "Package %s" pkg)
                         if (and (not (and (package-installed-p (intern pkg))
                                           (locate-library pkg)))
@@ -211,71 +228,58 @@
                ;;--- Git Installs ----------------------------------------
                ;; github / bitbucket
                (setq nvp-install-pending-dirs
-                     (append (nvp-install-normalize-pkgnames ,git) ,bit))
-               (cl-loop for pkg in ,git
+                     (append (nvp-install-normalize-pkgnames ',git) ',bit))
+               (cl-loop for pkg in ',git
                         do (let ((proc (nvp-install-git pkg)))
                              (nvp-install-execute-process proc ,file)))
-               (cl-loop for pkg in ,bit
+               (cl-loop for pkg in ',bit
                         do (let ((proc
                                   (nvp-install-git
                                    pkg "https://bitbucket.org")))
                              (nvp-install-execute-process proc ,file)))
                ;;--- Environment ----------------------------------------
                ;; Permanent
-               (cl-loop for (var val exec clobber) in ,env!
+               (cl-loop for (var val exec clobber) in ',env!
                         do
                         (nvp-log "Setting %s to %s%s" nil var val
                                  (if clobber " (clobbering)"))
                         (nvp-env-setenv! var val exec clobber))
                ;; FIXME: handle more than just PATH
                ;; Just adds to PATH currently 
-               (cl-loop for dir in ,env
+               (cl-loop for dir in ',env
                         do
                         (nvp-log "Adding %s to PATH" dir)
                         (nvp-env-path-add dir))
                ;;--- Scripts ---------------------------------------------
-               (cl-loop for (prog args) in ,script
+               (cl-loop for (prog args) in ',script
                         do
                         (nvp-log "Running %s %S" nil prog args)
                         (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
                           (nvp-install-execute-process proc ,file)))
                ;;--- Patch
-               (cl-loop for (file patch) in ,patch
+               (cl-loop for (file patch) in ',patch
                         do
                         (let ((default-directory user-emacs-directory))
                           (nvp-install-execute-process
                            (start-process-shell-command
-                                 "patch"
-                                 "*nvp-install*"
-                                 (format
-                                  (concat
-                                   "patch -s -N -u $(find elpa -type f -name '%s') "
-                                   "-i patches/%s || true")
-                                  file patch))
+                            "patch"
+                            "*nvp-install*"
+                            (format
+                             (concat
+                              "patch -s -N -u $(find elpa -type f -name '%s') "
+                              "-i patches/%s || true")
+                             file patch))
                            ,file)))
-               (when (not (eq system-type 'windows-nt))
-                 ;; sudo commands
-                 (cl-loop for (action cmd) in ,sudo
-                          do (nvp-log "Unsupported :install")))
-               (when (eq system-type 'windows-nt)
-                 ;; chocolatey
-                 (cl-loop for pkg in ,choco
-                          ;; FIXME: can't have process sentinel with this
-                          do (w32-shell-execute
-                              "runas" "cmd.exe" (format " /c cinst -y %s" pkg)))
-                 ;; FIXME: msys / cygwin
-                 (cl-loop for pkg in ,msys
-                          do (message "FIXME"))
-                 (cl-loop for pkg in ,cygwin
-                          do (message "FIXME")))
                ;;--- Compile ---------------------------------------------
                ;; If not processes were spawned, then do the compile
                ;; here since no sentinels will get called
                (when (zerop nvp-install--total-proc)
                  (nvp-install-compile ,file))))))
      ,(if path `(eval-and-compile
-                  (when (file-exists-p ,path)
-                    (add-to-list 'load-path ,path))))))
+                  (progn
+                    ,@(cl-loop for p in path
+                               if (file-exists-p p)
+                               collect `(add-to-list 'load-path ,p)))))))
 
 ;;;###autoload
 (defun nvp-install-mode (mode)

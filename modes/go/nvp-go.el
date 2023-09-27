@@ -5,9 +5,9 @@
 ;; - delve debugger setup
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'go-mode)
+(require 'go-mode nil t)
 (require 'xref)
-(nvp:decls :p (gorepl) :v (go-use-gocheck-for-testing))
+(nvp:decls :p (go gorepl))
 
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))

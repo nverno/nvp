@@ -3,9 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(require 'web-mode)
-(nvp:decls :v (emmet-expand-jsx-className? yas-activate-extra-mode))
+(require 'web-mode nil t)
+(nvp:decls :p (emmet yas web))
 
 ;;;###autoload
 (define-minor-mode react-minor-mode "React"

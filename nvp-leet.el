@@ -5,10 +5,9 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'let-alist))
-(require 'leetcode)
-(require 'aio)
+(require 'leetcode nil t)
 (require 'f)
-(nvp:decls :f (nvp-leetcode-hook))
+(nvp:decls :f (nvp-leetcode-hook) :p (leetcode))
 
 (defvar-local nvp-leet-problem-id nil)
 

@@ -7,7 +7,7 @@
 (defun nvp:-decl-function-p (&optional pos)
   "Determine if POS, or point, is at beginning of function.
 Note: simple check looks for preceding \"(\" or \"#'\"."
-  (if (eq ?\( (char-before pos)) t
+  (if (eq ?\( (char-before pos)) (not (eq ?\( (char-before (1- pos))))
     (and (eq ?\' (char-before pos))
          (eq ?\# (char-before (1- (or pos (point))))))))
 

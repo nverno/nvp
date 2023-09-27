@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'geiser nil t)
 (require 'geiser-doc nil t)
-(nvp:decls :p ("geiser"))
+(nvp:decls :p (geiser) :f (geiser-eval--get-module))
 (nvp:auto "nvp-hap" nvp-hap-thing-at-point)
 
 ;;;###autoload

@@ -3,10 +3,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(require 'typescript-mode)
-(require 'web-mode)
-(nvp:decls)
+(require 'typescript-mode nil t)
+(require 'web-mode nil t)
+(nvp:decls :p (typescript web) :f (web-mode))
 
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
   :modes (typescript-mode typescript-ts-mode typescript-tsx-mode ts-tsx-mode)

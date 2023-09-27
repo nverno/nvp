@@ -2,24 +2,26 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'json-mode)
+(require 'json-mode nil t)
+(nvp:decls :p (json))
 
-(defconst nvp-json-syntax-table
-  (let ((tab (copy-syntax-table json-mode-syntax-table)))
-    (modify-syntax-entry ?. "_" tab)
-    tab))
+(with-eval-after-load 'json-mode
+  (defconst nvp-json-syntax-table
+    (let ((tab (copy-syntax-table json-mode-syntax-table)))
+      (modify-syntax-entry ?. "_" tab)
+      tab))
 
-;; expand x.y => "x" : "y"
-(defun nvp-json-expand-dot (bnds)
-  (interactive
-   (list (with-syntax-table nvp-json-syntax-table
-           (bounds-of-thing-at-point 'symbol))))
-  (and bnds
-       (cl-destructuring-bind (a b)
-           (split-string (buffer-substring-no-properties (car bnds) (cdr bnds))
-                         "[.]" 'omit " ")
-         (delete-region (car bnds) (cdr bnds))
-         (insert (format "\"%s\": \"%s\"" a b)))))
+  ;; expand x.y => "x" : "y"
+  (defun nvp-json-expand-dot (bnds)
+    (interactive
+     (list (with-syntax-table nvp-json-syntax-table
+             (bounds-of-thing-at-point 'symbol))))
+    (and bnds
+         (cl-destructuring-bind (a b)
+             (split-string (buffer-substring-no-properties (car bnds) (cdr bnds))
+                           "[.]" 'omit " ")
+           (delete-region (car bnds) (cdr bnds))
+           (insert (format "\"%s\": \"%s\"" a b))))))
 
 ;; From
 ;; https://isamert.net/2022/01/04/dealing-with-apis-jsons-and-databases-in-org-mode.html

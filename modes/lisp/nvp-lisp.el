@@ -8,13 +8,8 @@
 ;; - info
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'slime)
-(nvp:decls :f (slime-repl-eval-string
-               slime-repl-buffer slime-switch-to-output-buffer
-               slime-connection-output-buffer slime-output-buffer
-               slime-fuzzy-completions
-               yas-hippie-try-expand)
-           :v (slime-repl-input))
+(require 'slime nil t)
+(nvp:decls :p (slime) :f (slime))
 (nvp:auto "nvp-elisp" 'nvp-elisp-abbrev-expand-var-p 'nvp-elisp-abbrev-expand-fn-p)
 
 ;; return list of available lisps and their arguments

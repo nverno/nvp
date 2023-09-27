@@ -1,4 +1,4 @@
-(autoload 'yaml-indent-indent-line "yaml-indent")
+(autoload 'nvp-yaml-indent-line "nvp-yaml-indent")
 
 ;; if non-nil then something was inserted, so
 ;; push-mark at end of insertion
@@ -14,7 +14,7 @@
                  (save-excursion
                    (not (re-search-forward (concat program "\\s-*=") nil t))))
         (insert "\n")
-        (yaml-indent-line)
+        (nvp-yaml-indent-line)
         (insert (format "- %s" (or insertion (concat (upcase program) "="))))
         (setq yas-yaml-inserted (point))
         nil))))

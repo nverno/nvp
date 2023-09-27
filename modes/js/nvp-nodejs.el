@@ -18,10 +18,9 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nodejs-repl)
+(require 'nodejs-repl nil t)
 (require 'nvp-js)
-(require 'nvp)
-(nvp:decls :v (nvp-trace-group-alist))
+(nvp:decls :p (nodejs) :v (nvp-trace-group-alist))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")

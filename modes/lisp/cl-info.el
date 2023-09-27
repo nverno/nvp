@@ -73,9 +73,9 @@
 ;; * HyperSpec: (gcl).     The Common Lisp HyperSpec.
 ;; <END>
 (eval-when-compile (require 'nvp-macro))
-(require 'slime)
-(defvar common-lisp-hyperspec-symbols)
-(nvp:decls :f (slime-symbol-name-at-point common-lisp-hyperspec-strip-cl-package))
+(require 'slime nil t)
+(nvp:decls :p (slime common-lisp)
+           :f (slime-symbol-name-at-point common-lisp-hyperspec-strip-cl-package))
 
 (defvar cl-info-symbols (make-hash-table :test #'equal))
 (defvar cl-info-urls (make-hash-table :test #'equal))

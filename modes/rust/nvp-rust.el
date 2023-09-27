@@ -7,7 +7,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'rustic nil t)
-(nvp:decls :p ("rustic" "lsp-rust" "toml"))
+(nvp:decls :p (rustic lsp-rust toml))
 (nvp:auto "rustic-cargo" rustic-cargo--get-test-target)
 
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)

@@ -3,8 +3,8 @@
 ;; FIXME: documentation, fixup nav functions
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'web-mode)
-(nvp:decls :p (httpd impatient lsp) :v (lsp-mode))
+(require 'web-mode nil t)
+(nvp:decls :p (web httpd impatient lsp) :v (lsp-mode))
 (nvp:auto "nvp-jinja" 'nvp-jinja-url-for)
 (nvp:auto "projectile" 'projectile-project-root)
 

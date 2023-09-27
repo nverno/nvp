@@ -9,9 +9,8 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'company-autoconf)
-(require 'nvp)
-(nvp:decls)
+(require 'company-autoconf nil t)
+(nvp:decls :p (company-autoconf))
 
 ;; -------------------------------------------------------------------
 ;;; Locally available macros

@@ -3,10 +3,10 @@
 ;; stuff applicable across ESS dialects
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'ess)
-(require 'ess-inf)
-(require 'ess-utils)
-(declare-function ess-mark-function-or-para "ess-mode")
+(nvp:decls :p (ess) :f (ess-get-process))
+(require 'ess nil t)
+(require 'ess-inf nil t)
+(require 'ess-utils nil t)
 
 ;; Mark paragraphs, successively on repeated commands
 ;;;###autoload

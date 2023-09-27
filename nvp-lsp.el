@@ -3,9 +3,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'lsp-mode)
+(require 'lsp-mode nil t)
 (require 'nvp)
-(nvp:decls :p (hs))
+(nvp:decls :p (hs lsp))
 
 ;; -------------------------------------------------------------------
 ;;; Log IO

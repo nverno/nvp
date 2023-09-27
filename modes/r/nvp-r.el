@@ -2,10 +2,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'ess-site)
-(require 'ess-inf)
-(require 'nvp)
-(nvp:decls)
+(require 'ess-site nil t)
+(require 'ess-inf nil t)
+(nvp:decls :p (ess) :v (inferior-R-program))
 (nvp:auto "s" 's-matched-positions-all)
 
 (defvar nvp-r-source-dir (expand-file-name "R/r-source" (getenv "DEVEL")))

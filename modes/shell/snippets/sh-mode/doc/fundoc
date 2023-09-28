@@ -1,6 +1,7 @@
 # -*- mode: snippet -*-
 # name: function-doc
 # key: fundoc
+# condition: nil
 # --
 ##
 # @info			$2

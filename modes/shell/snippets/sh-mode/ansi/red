@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ansi red
+# key: _red
+# condition: (nvp-yas-in-string)
+# --
+\e[01;31m$0\e[0m

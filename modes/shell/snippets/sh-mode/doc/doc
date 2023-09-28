@@ -2,6 +2,7 @@
 # name: doc
 # key: doc 
 # type: command
+# condition: nil
 # --
 (let ((yas-good-grace nil)
       (npars (read-number "Number params: ")))

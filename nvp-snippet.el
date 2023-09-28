@@ -38,11 +38,12 @@ When part of `before-save-hook', won't add condition on initial save."
              (remove-hook 'before-save-hook #'nvp-snippet-save-hook t)
              (nvp-snippet-add-field "condition" pred)))
     (let ((dir (ignore-errors (or (nvp:path 'ds) (nvp:path 'dn)))))
+      (hack-local-variables)
       (when-let*
-          ((test
-            (assoc-string dir (or (bound-and-true-p nvp-local-snippet-conditions)
-                                  nvp-snippet-default-conditions))))
-        (add-condition (cadr test))))))
+          ((test (or (bound-and-true-p nvp-local-snippet-conditions)
+                     (-some-> (assoc-string dir nvp-snippet-default-conditions)
+                       (cadr)))))
+        (add-condition test)))))
 
 (defun nvp-snippet-add-field (field value)
   "Add FIELD with VALUE unless FIELD is already defined."

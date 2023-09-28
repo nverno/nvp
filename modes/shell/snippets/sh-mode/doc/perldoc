@@ -1,6 +1,7 @@
 # -*- mode: snippet -*-
 # name: perldoc
 # key: pdoc
+# condition: nil
 # --
 : <<'END_OF_DOC'
 

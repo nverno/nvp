@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: ansi red
-# key: _red
+# name: ansi bold
+# key: _bold
 # condition: (nvp-yas-in-string)
 # --
-\e[01;31m$0${1:\e[0m}
+\e[1m$0${1:\e[0m}

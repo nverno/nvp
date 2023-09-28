@@ -4,11 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'dired)
 (nvp:decls :v (nvp-dired-external-filelist-cmd nvp-dired-external-program)
-           :f (comint-mode
-               org-texinfo-export-to-info org-latex-export-to-pdf comint-mode
-               dired-dwim-target-directory dired-read-shell-command  ; dired-aux
-               dired-filename-at-point                               ; dired-x
-               conda-env-read-env))                                  ; conda-env
+           :p (org dired conda comint))
 (nvp:auto "f" 'f-same-p)
 
 ;; -------------------------------------------------------------------
@@ -94,16 +90,14 @@
   (scroll-down-command)
   (dired-move-to-filename))
 
-(defhydra nvp-dired-hydra (:color red :hint nil)
-  "move"
-  ("M-n" nvp-dired-next5)
-  ("M-p" nvp-dired-prev5)
-  ("n" nvp-dired-next5)
-  ("p" nvp-dired-prev5)
-  ("i" nvp-dired-scroll-down)
-  ("k" nvp-dired-scroll-up)
-  ("l" dired-prev-dirline)
-  ("j" dired-next-dirline))
+(defvar-keymap nvp-dired-repeat-map
+  :repeat (nvp-dired-next5 nvp-dired-prev5)
+  "n" #'nvp-dired-next5
+  "p" #'nvp-dired-prev5
+  "i" #'nvp-dired-scroll-down
+  "k" #'nvp-dired-scroll-up
+  "l" #'dired-prev-dirline
+  "j" #'dired-next-dirline)
 
 
 ;; -------------------------------------------------------------------

@@ -8,8 +8,12 @@
 
 ;;; Font-locking
 
-(defface nvp-dockerfile-shell-face `((t :inherit (nvp-block-face) :extend t))
+(defface nvp-dockerfile-shell-face `((t :inherit (nvp-block-face)))
   "Face for \\='RUN shell commands.")
+
+(defface nvp-dockerfile-backslash-face
+  '((t :inherit font-lock-misc-punctuation-face :weight bold :extend t))
+  "Face for escaped lines.")
 
 ;; XXX(9/25/23): Update when/if builtin mode is updated to account for grammar
 ;; change
@@ -41,7 +45,17 @@
           :feature 'variable          ; feature not defined, need to add in hook
           '((env_pair
              name: (_) @font-lock-variable-name-face
-             value: (_) @font-lock-constant-face))
+             value: (_) @font-lock-constant-face)
+            (arg_instruction
+             name: (_) @font-lock-variable-name-face)
+            (label_pair
+             key: (_) @font-lock-property-name-face)
+            ;; (param
+            ;;  "--" _ @font-lock-variable-name-face)
+            ;; (mount_param
+            ;;  "mount" _ @font-lock-variable-name-face)
+            ;; (mount_param_param _ @font-lock-variable-name-face)
+            )
 
           :language 'dockerfile
           :feature 'shell
@@ -49,8 +63,9 @@
 
           :language 'dockerfile
           :feature 'escape-sequence
-          :override t
-          '((escape_sequence) @font-lock-escape-face))))
+          :override 'append
+          '((escape_sequence) @font-lock-escape-face
+            (line_continuation) @nvp-dockerfile-backslash-face))))
     
     (setq dockerfile-ts-mode--font-lock-settings (append new-rules cur-rules))))
 

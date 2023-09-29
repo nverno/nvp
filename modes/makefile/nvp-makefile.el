@@ -87,7 +87,7 @@
   ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
   ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
   ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend))
-  ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" 3 'font-lock-string-face))
+  ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" (3 'font-lock-negation-char-face prepend)))
 
 ;; `makefile-dependency-regex' => note this doesn't take into account quoting
 ;; `makefile-macroassign-regex' => doesn't handle #defines

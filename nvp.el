@@ -192,6 +192,11 @@ or nil.")
   "Slanted error face."
   :group 'nvp)
 
+(defface nvp-line-escape-face
+  '((t (:inherit font-lock-misc-punctuation-face :weight bold)))
+  "Line escape face."
+  :group 'nvp)
+
 ;; -------------------------------------------------------------------
 ;;; Company / Yasnippet
 

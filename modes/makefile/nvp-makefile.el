@@ -82,12 +82,14 @@
 ;; TODO:
 ;; - remove string fontification in #define blocks where it is incorrect.
 
+(defface makefile-shell '((t (:inherit (org-block)))) "Shell face")
+
 ;; better to fontify using `forward-sexp' to allow for closing parens in command
 (nvp:font-lock-add-defaults 'makefile-gmake-mode
   ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
   ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
   ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend))
-  ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" (3 'font-lock-negation-char-face prepend)))
+  ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" (3 'nvp-line-escape-face)))
 
 ;; `makefile-dependency-regex' => note this doesn't take into account quoting
 ;; `makefile-macroassign-regex' => doesn't handle #defines

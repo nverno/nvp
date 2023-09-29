@@ -134,6 +134,12 @@
   :reader (lambda (prompt &rest _)
             (completing-read prompt '("off" "messages" "verbose") nil t)))
 
+;;; Treesit
+(transient-define-infix nvp-edebug-emacs--toggle-ts-debug ()
+  :class 'transient-lisp-variable
+  :variable 'treesit--font-lock-verbose
+  :reader (lambda (&rest _) (not treesit--font-lock-verbose)))
+
 ;;; Emacs
 (transient-define-suffix nvp-edebug-emacs--launch (args)
   "Launch emacs with ARGS."
@@ -189,7 +195,10 @@
     ("/url" nvp-edebug-emacs--toggle-url :if (lambda () (boundp 'url-debug)))]
    [ :if (lambda () (featurep 'lsp-mode)) "LSP"
      ("/io" nvp-edebug-emacs--toggle-lsp-io)
-     ("/server" nvp-edebug-emacs--toggle-lsp-server)]])
+     ("/server" nvp-edebug-emacs--toggle-lsp-server)]
+   [ :if (lambda () (and (boundp 'treesit-buffer-root-node) (treesit-buffer-root-node)))
+     ("/tsm" "Dev mode" nvp-treesit-minor-mode)
+     ("/tsd" "Toggle Font debug" nvp-edebug-emacs--toggle-ts-debug)]])
 
 (provide 'nvp-edebug)
 ;; Local Variables:

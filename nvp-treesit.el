@@ -107,16 +107,50 @@
   ;; `treesit-inspect-mode' wants to put the node info
   ;; (powerline-revert)
   (if nvp-treesit-minor-mode
-      (when (treesit-language-at (point))
-        (and (nvp-treesit--query-compile)
-             (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t))
-        (powerline-revert)
-        (treesit-inspect-mode)
-        (treesit-explore-mode))
+      (progn
+        (add-hook 'window-buffer-change-functions #'nvp-treesit--change-window-hook nil t)
+        (when (treesit-language-at (point))
+          (and (nvp-treesit--query-compile)
+               (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t))
+          (powerline-revert)
+          (treesit-inspect-mode)
+          (treesit-explore-mode)))
     (remove-hook 'after-change-functions #'nvp-treesit--update-errors t)
-    (treesit-inspect-mode -1)
-    (treesit-explore-mode -1)
-    (nvp-theme-switch)))
+    (remove-hook 'window-buffer-change-functions #'nvp-treesit--change-window-hook t)
+    ;; (ignore-errors 
+    ;;   (treesit-inspect-mode -1)
+    ;;   (treesit-explore-mode -1))
+    ))
+;; (nvp-theme-switch)
+
+(defun nvp-treesit-minor-mode-on ()
+  (interactive)
+  (when (treesit-language-at (point))
+    (nvp:with-letf #'completing-read
+        (lambda (&rest _)
+          (symbol-name
+           (car (mapcar #'treesit-parser-language (treesit-parser-list nil nil t)))))
+      (with-current-buffer (current-buffer)
+        (save-window-excursion (nvp-treesit-minor-mode 1))
+        ;; (add-hook 'window-buffer-change-functions
+        ;;           #'nvp-treesit--change-window-hook nil t)
+        ))))
+
+(defun nvp-treesit--change-window-hook (win)
+  (with-current-buffer (window-buffer win)
+    (when (and nvp-treesit-minor-mode
+               treesit--explorer-buffer)
+      ;; (treesit--explorer-refresh)
+      (delete-other-windows)
+      (window--display-buffer
+       (get-buffer treesit--explorer-buffer)
+       (split-window-horizontally)
+       'window))))
+
+;;;###autoload
+(define-globalized-minor-mode nvp-treesit-mode
+  nvp-treesit-minor-mode nvp-treesit-minor-mode-on
+  :group 'treesit)
 
 (provide 'nvp-treesit)
 ;; Local Variables:

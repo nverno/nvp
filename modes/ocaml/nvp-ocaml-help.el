@@ -38,8 +38,7 @@
     (thingatpt (nvp:ocaml--thingatpt))
     (doc-buffer 
      (--when-let (nvp-ocaml--desc arg)
-       (let ((display-buffer-overriding-action
-              '(nil . ((inhibit-switch-frame . t)))))
+       (save-window-excursion
          (with-help-window (help-buffer)
            (with-current-buffer standard-output
              (insert it))

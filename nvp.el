@@ -193,7 +193,8 @@ or nil.")
   :group 'nvp)
 
 (defface nvp-line-escape-face
-  '((t (:inherit font-lock-misc-punctuation-face :weight bold)))
+  '((t ( :inherit font-lock-misc-punctuation-face
+         :weight bold :foreground "hot pink" :override t)))
   "Line escape face."
   :group 'nvp)
 

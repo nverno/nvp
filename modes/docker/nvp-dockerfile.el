@@ -11,10 +11,6 @@
 (defface nvp-dockerfile-shell-face `((t :inherit (nvp-block-face)))
   "Face for \\='RUN shell commands.")
 
-(defface nvp-dockerfile-backslash-face
-  '((t :inherit font-lock-misc-punctuation-face :weight bold :extend t))
-  "Face for escaped lines.")
-
 ;; XXX(9/25/23): Update when/if builtin mode is updated to account for grammar
 ;; change
 (with-eval-after-load 'dockerfile-ts-mode
@@ -65,7 +61,7 @@
           :feature 'escape-sequence
           :override 'append
           '((escape_sequence) @font-lock-escape-face
-            (line_continuation) @nvp-dockerfile-backslash-face))))
+            (line_continuation) @nvp-line-escape-face))))
     
     (setq dockerfile-ts-mode--font-lock-settings (append new-rules cur-rules))))
 

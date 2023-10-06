@@ -7,29 +7,43 @@
 ;; names: tuareg-current-fun-name
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-hap)
 (require 'nvp-ocaml)
 (with-no-warnings (require 'merlin-company nil t))
-(nvp:decls :f (merlin/complete zeal-at-point))
+(nvp:decls :f (merlin-complete zeal-at-point))
 
 (defvar nvp-ocaml-help-syntax-table
   (let ((st (make-syntax-table)))
     (modify-syntax-entry ?. "_" st)
+    (modify-syntax-entry ?' "_" st)
     st))
 
-;; display help for function at point in popup tooltip
+(eval-when-compile
+ (defsubst nvp:ocaml--thingatpt (&optional type)
+   (with-syntax-table nvp-ocaml-help-syntax-table
+     (thing-at-point (or type 'symbol)))))
+
+(defun nvp-ocaml--desc (str)
+  (--when-let (car-safe (merlin-complete str))
+    (let ((doc (cdr (assoc 'info it)))
+          (type (cdr (assoc 'desc it))))
+      (when (and type (string-empty-p type)) (setq type nil))
+      (when (and doc (string-empty-p doc)) (setq doc nil))
+      (when (or doc type)
+        (concat "val " str " : " type
+                (and doc (concat "\n\n(** " doc " *)")))))))
+
 ;;;###autoload
-(defun nvp-ocaml-help-at-point ()
-  (interactive)
-  (with-syntax-table nvp-ocaml-help-syntax-table
-    (let ((candidate (thing-at-point 'symbol)))
-      (when candidate
-        (let ((info (car-safe (merlin/complete candidate))))
-          (when info
-            (let ((doc (cdr (assoc 'info info)))
-                  (type (cdr (assoc 'desc info))))
-              (nvp:with-toggled-tip
-                (concat "val " candidate " : " type "\n\n(** " doc " *)")))))))))
+(cl-defun nvp-hap-merlin (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (nvp:ocaml--thingatpt))
+    (doc-buffer 
+     (--when-let (nvp-ocaml--desc arg)
+       (let ((display-buffer-overriding-action
+              '(nil . ((inhibit-switch-frame . t)))))
+         (with-help-window (help-buffer)
+           (with-current-buffer standard-output
+             (insert it))
+           (list (current-buffer) (point-min) nil)))))))
 
 ;;;###autoload
 (defun nvp-ocaml-zeal-at-point (arg)

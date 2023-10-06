@@ -14,7 +14,7 @@
 (nvp:package-define-root :name nvp-ocaml :dirs ("etc"))
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(tuareg-mode utop-mode ocaml-ts-mode)
+  (nvp-repl-add '(tuareg-mode utop-mode ocaml-ts-mode caml-mode)
     :modes '(utop-mode)
     :find-fn (lambda () (ignore-errors (get-buffer utop-buffer-name)))
     :init (lambda ()
@@ -41,7 +41,7 @@
 (defun nvp-ocaml-library-path ()
   (when (executable-find "opam")
     (--when-let
-        (shell-command-to-string "eval $(opam config env); opam config var lib")
+        (shell-command-to-string "eval $(opam config env); opam var lib")
       (string-trim-right it))))
 
 ;; -------------------------------------------------------------------
@@ -74,8 +74,8 @@
 ;;; Newlines
 
 ;; default newline-dwim + comment continuation in nested comments
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode tuareg-mode))
+(nvp:defmethod nvp-newline-dwim-comment (syntax arg)
+  :modes (tuareg-mode ocaml-ts-mode caml-mode)
   (nvp-newline-dwim--comment syntax arg))
 
 ;;; XXX: remove these?

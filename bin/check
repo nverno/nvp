@@ -11,6 +11,7 @@ check_compiled() {
         rg --glob '**/*\.elc'                          \
            --glob '!subrs/**' --glob '!**/*-subrs.elc' \
            --glob '!macs/**' --glob '!nvp-macro.elc'   \
+           --glob '!**/unused/**.elc'                  \
            --text --heading -o                         \
            -e '(^|[^"])+nvp:[^"\n ]+'
         # -e '(^| )[^"]+nvp:[^"\t\n ]+ [^"]'

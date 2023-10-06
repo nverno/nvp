@@ -89,21 +89,28 @@
 
 (defsubst nvp-install-normalize-pkgnames (pkgs)
   (setq pkgs (nvp:as-list pkgs))
-  (--map (string-remove-suffix ".el" it) pkgs))
+  (--map (string-remove-suffix
+          ".el" (pcase it
+                  ((pred plistp) (plist-get it :repo))
+                  (_ it)))
+         pkgs))
 
 ;; Install git repo into site-lisp, default to github
 (defun nvp-install-git (repo &optional root)
-  (let* ((git-uri (format "%s/%s" (or root "git@github.com:") repo))
+  (let* ((repository (if (plistp repo) (plist-get repo :repo) repo))
+         (git-uri (format "%s/%s" (or root "git@github.com:") repository))
          (pkg (car
                (nvp-install-normalize-pkgnames
-                (car (last (split-string repo "/"))))))
+                (car (last (split-string repository "/"))))))
          (default-directory nvp/site)
-         (buff (get-buffer-create "*nvp-install*")))
+         (buff (get-buffer-create "*nvp-install*"))
+         (git-args (if (plistp repo) (list "-b" (plist-get repo :branch)))))
     (if (file-exists-p pkg)
         (progn
           (cd pkg)
           (start-process pkg buff "git" "pull"))
-      (start-process pkg buff "git" "clone" git-uri pkg))))
+      (apply #'start-process
+             (append (list pkg buff "git" "clone") git-args (list git-uri pkg))))))
 
 ;; keep list of active processes, to build after they all finish
 (defvar nvp-install-active-procs nil)

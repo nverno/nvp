@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: while
+# key: whi
+# --
+(for/fold ([${1:acc} ${2:init}]
+           [${3:i} ${4:n}]
+           ${5: #:result ${6:acc}})
+          ([_ (in-naturals)] #:break ${7:(< i 0)})
+  (values $0 (- i 1)))

@@ -4,7 +4,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'dired)
 (nvp:decls :v (nvp-dired-external-filelist-cmd nvp-dired-external-program)
-           :p (org dired conda comint))
+           :p (org dired conda comint)
+           :f (org-texinfo-export-to-info))
 (nvp:auto "f" 'f-same-p)
 
 ;; -------------------------------------------------------------------

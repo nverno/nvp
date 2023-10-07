@@ -8,7 +8,34 @@
 (nvp:auto "find-func" 'read-library-name 'find-library-name)
 (nvp:auto "nvp-elisp" 'nvp-elisp-matching-forms)
 (nvp:auto "s" 's-split)
+(nvp:auto "trace-tree" trace-tree-enable trace-tree-disable)
 (nvp:decl flatten-tree)
+
+
+;;;###autoload(autoload 'nvp-trace-menu "nvp-trace")
+(transient-define-prefix nvp-trace-menu ()
+  "Trace"
+  [["Trace"
+    ("f" "Defun" trace-function)
+    ("b" "Defun background" trace-function-background)
+    ("u" "Untrace defun" untrace-function)
+    ("q" "Untrace all" nvp-untrace-all)
+    ("Q" "Quit" nvp-trace-kill
+     :if (lambda () (bound-and-true-p nvp-trace-minor-mode)))]
+   ["Groups"
+    ("g" "Group" nvp-trace-group)
+    ("G" "Untrace group" nvp-untrace-group
+     :if (lambda () (bound-and-true-p nvp-trace--current)))
+    ("l" "Library" nvp-trace-library)
+    ("h" "Hooks" nvp-trace-hooks)]]
+  ["Results"
+   ("j" "Jump to results" nvp-trace-display-results
+    :if (lambda () (and (boundp 'trace-buffer)
+                   (buffer-live-p (get-buffer trace-buffer)))))
+   ("tt" "Enable trace-tree" trace-tree-enable
+    :if (lambda () (featurep 'trace-tree)))
+   ("tq" "Disable trace-tree" trace-tree-disable
+    :if (lambda () (featurep 'trace-tree)))])
 
 (defvar-local nvp-trace--mode-line " Trace")
 (defvar nvp-trace--active nil "Non-nil when tracing")
@@ -18,11 +45,14 @@
 (defun nvp-trace--abbreviate (names)
   (cond
    ((stringp names) names)
-   ((<= (length names) 1) (car names))
-   (t (mapconcat
-       (lambda (name)
-         (mapconcat (lambda (ss) (substring ss 0 1)) (s-split "-" name t) "-"))
-       names "|"))))
+   (t (concat (nvp:as-string (car names)) "..."))
+   ;; ((<= (length names) 1) (car names))
+   ;; (t (mapconcat
+   ;;     (lambda (name)
+   ;;       (mapconcat
+   ;;        (lambda (ss) (substring ss 0 1)) (s-split "-" (symbol-name name) t) "-"))
+   ;;     names "|"))
+   ))
 
 (defun nvp-trace-mode-line ()
   "Report current trace in the modeline."
@@ -89,14 +119,6 @@
   (setq nvp-trace--active nil)
   (nvp-trace-update-mode-line))
 
-;;;###autoload(autoload 'nvp-trace-hydra/body "nvp-trace")
-(nvp:hydra-set-property 'nvp-trace-hydra)
-(defhydra nvp-trace-hydra (:color blue )
-  ("f" trace-function "trace func")
-  ("b" trace-function-background "trace func background")
-  ("u" untrace-function "untrace func")
-  ("q" untrace-all "untrace all"))
-
 (defvar nvp-trace-group-alist
   '((popups display-buffer
             pop-to-buffer
@@ -109,20 +131,33 @@
     (defmacro cl-defmacro)
     (defsubst cl-defsubst)))
 
+(eval-when-compile
+  (defsubst nvp:trace--read (prompt &optional force-read)
+    (or (and (null force-read)
+             (--when-let (completing-read prompt nvp-trace-group-alist)
+               (assq (intern it) nvp-trace-group-alist)))
+        (let* ((name (read-string "Group name: "))
+               (grp (cons (intern-soft name)
+                          (read--expression prompt))))
+          (prog1 grp
+            (push grp nvp-trace-group-alist))))))
+
 ;;;###autoload
 (defun nvp-trace-group (group)
   "Trace GROUP of functions defined in `nvp-trace-group-alist'."
-  (interactive (list (completing-read "Trace group: " nvp-trace-group-alist)))
-  (dolist (fn (cdr (assoc (intern group) nvp-trace-group-alist)))
+  (interactive (list (nvp:trace--read "Trace: " current-prefix-arg)))
+  (dolist (fn (cdr group))
     (trace-function-background fn))
   (nvp-trace-minor-mode 1)
-  (nvp-trace-add group 'grp))
+  (nvp-trace-add (cdr group) 'grp))
 
 (defun nvp-untrace-group (group)
   "Untrace functions in GROUP."
-  (interactive (list (completing-read "Untrace group: " nvp-trace-group-alist)))
-  (dolist (fn (cdr (assoc (intern group) nvp-trace-group-alist)))
-    (untrace-function fn)))
+  (interactive (list (nvp:trace--read "Untrace: " current-prefix-arg)))
+  (dolist (fn (cdr group))
+    (untrace-function fn)
+    (setq nvp-trace--current (delq fn nvp-trace--current)))
+  (nvp-trace-update-mode-line))
 
 ;;;###autoload
 (defun nvp-trace-display-results ()

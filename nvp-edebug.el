@@ -17,8 +17,9 @@
 (require 'backtrace)
 (require 'edebug)
 (require 'transient)
-(nvp:decls :v (tramp-debug-on-error tramp-verbose lsp-log-io)
-           :f (nvp-help-describe-keymap))
+(nvp:decls :p (nvp-treesit smie treesit lsp tramp)
+           :f (nvp-help-describe-keymap treesit-buffer-root-node))
+(nvp:auto "nvp-trace" nvp-trace-menu)
 
 ;; -------------------------------------------------------------------
 ;;; Debugger
@@ -164,6 +165,24 @@
       (completing-read prompt '("bare" "site" "funcs") nil t initial-input history))
      user-emacs-directory)))
 
+(transient-define-prefix nvp-edebug-smie ()
+  "Smie debug"
+  [["Smie"
+    ("d" "Debug smie-rules-function" smie-edebug)
+    ("?" "Show rules at point" smie-config-show-indent :transient t)]
+   ["Guess"
+    ("g" "Guess config" smie-config-guess :transient t)
+    ("S" "Set indent" smie-config-set-indent :transient t)
+    ("s" "Save config" smie-config-save)]])
+
+(transient-define-prefix nvp-edebug-treesit ()
+  "Treesit debug"
+  [["Dev Mode"
+    ("l" "local" nvp-treesit-minor-mode)
+    ("g" "global" nvp-treesit-mode)]
+   ["Debug"
+    ("f" "Toggle Font debug" nvp-edebug-emacs--toggle-ts-debug)]])
+
 ;;;###autoload(autoload 'nvp-edebug-emacs "nvp-edebug")
 (transient-define-prefix nvp-edebug-emacs ()
   "Toggle or run elisp debugging."
@@ -182,6 +201,7 @@
     ("I" "Edebug install" edebug-install-read-eval-functions)
     ("U" "Edebug uninstall" edebug-uninstall-read-eval-functions)]
    ["Run"
+    ("t" "Trace" nvp-trace-menu)
     ("d" "Debugger" debug)]
    ["Emacs"
     ("-d" "Enable debugger during init" "--debug-init")
@@ -190,15 +210,17 @@
     ("-l" nvp-edebug-emacs--load)
     ("L" "Launch" nvp-edebug-emacs--launch)]]
   [["Other"
-    ("/tr" "Toggle tramp debug" nvp-edebug-emacs--toggle-tramp
-     :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))
-    ("/url" nvp-edebug-emacs--toggle-url :if (lambda () (boundp 'url-debug)))]
-   [ :if (lambda () (featurep 'lsp-mode)) "LSP"
-     ("/io" nvp-edebug-emacs--toggle-lsp-io)
-     ("/server" nvp-edebug-emacs--toggle-lsp-server)]
-   [ :if (lambda () (and (boundp 'treesit-buffer-root-node) (treesit-buffer-root-node)))
-     ("/tsm" "Dev mode" nvp-treesit-minor-mode)
-     ("/tsd" "Toggle Font debug" nvp-edebug-emacs--toggle-ts-debug)]])
+    ("/ts" "Tree-sitter" nvp-edebug-treesit
+     :if (lambda () (ignore-errors (treesit-buffer-root-node))))
+    ("/sm" "Smie" nvp-edebug-smie
+     :if (lambda () (eq 'smie-indent-line indent-line-function)))
+    ("/url" nvp-edebug-emacs--toggle-url :if (lambda () (boundp 'url-debug)))
+    ("/tramp" "Toggle tramp debug" nvp-edebug-emacs--toggle-tramp
+     :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))]
+   [ :if (lambda () (featurep 'lsp-mode))
+     "LSP"
+     ("/lsp-io" nvp-edebug-emacs--toggle-lsp-io)
+     ("/lsp-server" nvp-edebug-emacs--toggle-lsp-server)]])
 
 (provide 'nvp-edebug)
 ;; Local Variables:

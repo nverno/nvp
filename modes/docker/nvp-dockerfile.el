@@ -11,6 +11,19 @@
 (defface nvp-dockerfile-shell-face `((t :inherit (nvp-block-face)))
   "Face for \\='RUN shell commands.")
 
+(defvar dockerfile-ts--treesit-range-rules
+  (when (treesit-available-p)
+    (treesit-range-rules
+     :embed 'bash
+     :host 'dockerfile
+     '((shell_command) @bash))))
+
+(defun dockerfile-ts--setup-bash ()
+  (when (treesit-ready-p 'bash)
+    (treesit-parser-create 'bash)))
+
+(defun dockerfile-ts--treesit-language-at-point ())
+
 ;; XXX(9/25/23): Update when/if builtin mode is updated to account for grammar
 ;; change
 (with-eval-after-load 'dockerfile-ts-mode

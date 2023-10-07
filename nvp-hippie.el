@@ -262,24 +262,15 @@ doesn't exceed LIMIT."
 `hippie-expand-ignore-buffers' and `nvp-he-window-scope'."
   (let ((only-buffers hippie-expand-only-buffers) ; usually buffer-local
         (ignore-buffers hippie-expand-ignore-buffers))
-    (mapcar
-     #'window-buffer
-     (cl-remove-if
-      (lambda (w)
-        (let ((f (window-frame w))
-              (buff (window-buffer w)))
-          (or (not (and (frame-live-p f)
-                        (frame-visible-p f)))
-              (string= "initial_terminal" (terminal-name f))
-              ;; check if buffer is accepted by other hippie variables
-              (with-current-buffer buff
-                (if only-buffers
-                    (not (he-buffer-member only-buffers))
-                  (he-buffer-member ignore-buffers))))))
-      (cl-ecase nvp-he-window-scope
-        (visible (cl-mapcan #'window-list (visible-frame-list)))
-        (global (cl-mapcan #'window-list (frame-list)))
-        (frame (window-list)))))))
+    (cl-remove-if
+     (lambda (buf)
+       (with-current-buffer buf
+         (if only-buffers (not (he-buffer-member only-buffers))
+           (he-buffer-member ignore-buffers))))
+     (cl-ecase nvp-he-window-scope
+       (visible (mapcar #'window-buffer (cl-mapcan #'window-list (visible-frame-list))))
+       (global (buffer-list))
+       (frame (buffer-list (selected-frame)))))))
 
 
 ;; -------------------------------------------------------------------
@@ -287,10 +278,14 @@ doesn't exceed LIMIT."
 
 ;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
 ;; only recompute `nvp-he-buffer-matches' when prefix has changed
-(defvar-local nvp-he-flex-completion-table
-  (nvp-he-completion-table
-   (lambda (arg)
-     (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
+(defvar-local nvp-he--flex-completion-table nil)
+
+(defun nvp-he-flex-completion-table (arg)
+  (unless nvp-he--flex-completion-table
+    (setq nvp-he--flex-completion-table
+          (lambda (arg)
+            (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
+  (funcall nvp-he--flex-completion-table arg))
 
 ;;;###autoload
 (defun nvp-try-expand-flex (old)
@@ -302,7 +297,7 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
       (setq he-tried-table (cons he-search-string he-tried-table)))
     (setq he-expand-list                ;build expansion list
           (and (not (equal "" he-search-string))
-               (funcall nvp-he-flex-completion-table he-search-string))))
+               (funcall #'nvp-he-flex-completion-table he-search-string))))
   (while (and he-expand-list            ;remove candidates already found
               (he-string-member (car he-expand-list) he-tried-table))
     (setq he-expand-list (cdr he-expand-list)))
@@ -365,7 +360,7 @@ flexible, and dabbrev closest otherwise."
            (goto-char (/ (+ (window-start) (window-end)) 2))
            (when hippie-expand-no-restriction (widen))
            (setq he-expand-list
-                 (funcall nvp-he-flex-completion-table he-search-string))))
+                 (funcall #'nvp-he-flex-completion-table he-search-string))))
        (while (and he-expand-list
                    (he-string-member (car he-expand-list) he-tried-table))
          (setq he-expand-list (cdr he-expand-list)))

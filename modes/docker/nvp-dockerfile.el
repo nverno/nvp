@@ -18,11 +18,32 @@
      :host 'dockerfile
      '((shell_command) @bash))))
 
+(defun dockerfile-ts--treesit-language-at-point (point)
+  (let ((node (treesit-node-at point 'dockerfile)))
+    (if (equal (treesit-node-type node) "shell_command")
+        'bash
+      'dockerfile)))
+
+;; Inject bash parser for shell commands
 (defun dockerfile-ts--setup-bash ()
   (when (treesit-ready-p 'bash)
-    (treesit-parser-create 'bash)))
-
-(defun dockerfile-ts--treesit-language-at-point ())
+    (require 'sh-script)
+    (treesit-parser-create 'bash)
+    (setq-local treesit-language-at-point-function
+                #'dockerfile-ts--treesit-language-at-point)
+    (setq-local treesit-range-settings dockerfile-ts--treesit-range-rules)
+    (setq-local treesit-font-lock-settings
+                (append
+                 sh-mode--treesit-settings
+                 treesit-font-lock-settings))
+    (setq-local treesit-font-lock-feature-list
+                (--zip-with (seq-uniq (append it other))
+                            treesit-font-lock-feature-list
+                            '(( comment function)
+                              ( command declaration-command keyword string)
+                              ( builtin-variable constant heredoc number
+                                string-interpolation variable)
+                              ( bracket delimiter misc-punctuation operator))))))
 
 ;; XXX(9/25/23): Update when/if builtin mode is updated to account for grammar
 ;; change
@@ -68,6 +89,7 @@
 
           :language 'dockerfile
           :feature 'shell
+          :override 'append
           '((shell_command) @nvp-dockerfile-shell-face)
 
           :language 'dockerfile

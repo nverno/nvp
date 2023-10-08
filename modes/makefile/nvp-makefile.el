@@ -100,11 +100,12 @@
 ;; modified `helm--make-target-list-qp' in helm-make
 ;; read targets from 'make -prqnR' output
 (defun nvp-makefile-targets--make (makefile)
-  (let ((dir (if (file-directory-p makefile) makefile
-               (file-name-directory makefile)))
-        target targets)
+  (let (target targets)
     (with-temp-buffer
-      (insert (shell-command-to-string (concat "make -prqnRs -C " dir)))
+      (insert (shell-command-to-string
+               (format "make -prqnRs %s %s"
+                       (if (file-directory-p makefile) "-C" "-f")
+                       makefile)))
       (goto-char (point-min))
       ;; (re-search-forward "^# Files")
       (while (re-search-forward "^\\([^#:\n\t ]+\\):\\([^=]\\|$\\)" nil t)
@@ -135,7 +136,9 @@ MAKEFILE should be a Makefile buffer or filename."
   (let ((crm-separator "[ 	]*,[ 	]*"))
     (completing-read-multiple
      (or prompt "Targets(','separated): ")
-     (if (bufferp makefile)
+     (if (and (bufferp makefile)
+              (with-current-buffer makefile
+                (derived-mode-p 'makefile-mode)))
          (with-current-buffer makefile
            (when (derived-mode-p 'makefile-mode)
              (let ((makefile-need-target-pickup t))

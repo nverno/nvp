@@ -27,7 +27,7 @@
 include " (buffer-file-name) "
 _SHELL := \\$(SHELL)
 SHELL = \\$(warning [\\$@])\\$(_SHELL) -x
-run-debug: " targets "
+.FORCE run-debug: " targets "
 TARGET
 "))))
 

@@ -82,7 +82,7 @@
    (list
     (or (treesit-language-at (point))
         (completing-read "Language: " (mapcar #'car treesit-language-source-alist)))
-    (read-from-minibuffer "Query: ")))
+    (read--expression "Query: ")))
   (treesit-query-validate lang query))
 
 (defvar-keymap nvp-treesit-minor-mode-map

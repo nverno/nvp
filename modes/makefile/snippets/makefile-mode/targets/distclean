@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: distclean
+# key: distclean
+# --
+distclean: clean
+	\$(RM) -rf \$\$(git ls-files --others --ignored --exclude-standard)

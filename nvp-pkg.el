@@ -66,15 +66,17 @@
 (\\[universal-argument]\\[universal-argument]) FORCE compile all .el files with
 associated .elc files."
   (interactive "P")
-  (cl-loop for (defs . dirs) in `(,(cons nvp/auto (list nvp/config))
-                                  ,(cons nvp/auto-site
-                                         (cl-remove-if-not #'file-directory-p 
-                                                           (append (directory-files nvp/site t "^[^.]")
-                                                                   (directory-files nvp/pkgs t "^[^.]"))
-                                                                   ;; (directory-files "./nvp/pkgs" t "^[^.]")
-                                                                   )
-                                         ;; (list nvp/site nvp/modes)
-                                         ))
+  (cl-loop for (defs . dirs) in
+           `(,(cons nvp/auto (list nvp/config))
+             ,(cons nvp/auto-site
+                    (cl-remove-if-not
+                     #'file-directory-p 
+                     (append (directory-files nvp/site t "^[^.]")
+                             (directory-files nvp/pkgs t "^[^.]"))
+                     ;; (directory-files "./nvp/pkgs" t "^[^.]")
+                     )
+                    ;; (list nvp/site nvp/modes)
+                    ))
            for autoload-file = defs
            do
            ;; (package-autoload-ensure-default-file defs)

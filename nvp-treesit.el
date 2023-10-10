@@ -53,13 +53,14 @@
     (overlay-put ov 'face 'nvp-treesit-error)
     (overlay-put ov 'nvp-treesit t)))
 
-(defun nvp-treesit--update-errors ()
+(defun nvp-treesit--update-errors (beg end &rest _)
   "Update error/missing node overlays."
   (when nvp-treesit--errors-query
     (and-let* ((lang (treesit-language-at (point))))
       (if-let ((ranges
                 (treesit-query-range
-                 lang nvp-treesit--errors-query (point-min) (point-max))))
+                 lang nvp-treesit--errors-query beg end ;; (point-min) (point-max)
+                 )))
           (prog1 t
             (dolist (range ranges)
               (nvp-treesit--make-error-overlay (car range) (1+ (cdr range)))))

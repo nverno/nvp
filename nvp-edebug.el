@@ -136,10 +136,14 @@
             (completing-read prompt '("off" "messages" "verbose") nil t)))
 
 ;;; Treesit
-(transient-define-infix nvp-edebug-emacs--toggle-ts-debug ()
+(transient-define-infix nvp-edebug-treesit--toggle-ts-debug ()
   :class 'transient-lisp-variable
   :variable 'treesit--font-lock-verbose
   :reader (lambda (&rest _) (not treesit--font-lock-verbose)))
+(transient-define-infix nvp-edebug-treesit--toggle-indent-verbose ()
+  :class 'transient-lisp-variable
+  :variable 'treesit--indent-verbose
+  :reader (lambda (&rest _) (not treesit--indent-verbose)))
 
 ;;; Emacs
 (transient-define-suffix nvp-edebug-emacs--launch (args)
@@ -181,7 +185,8 @@
     ("l" "local" nvp-treesit-minor-mode)
     ("g" "global" nvp-treesit-mode)]
    ["Debug"
-    ("f" "Toggle Font debug" nvp-edebug-emacs--toggle-ts-debug)]])
+    ("i" "Toggle indent verbose" nvp-edebug-treesit--toggle-indent-verbose)
+    ("f" "Toggle Font debug" nvp-edebug-treesit--toggle-ts-debug)]])
 
 ;;;###autoload(autoload 'nvp-edebug-emacs "nvp-edebug")
 (transient-define-prefix nvp-edebug-emacs ()

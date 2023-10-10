@@ -151,25 +151,29 @@
     ("K" "Function on key" find-function-on-key)]
    ["Documentation"
     ("m" "Man" man)
-    ("M" "Consult man" consult-man)
     ("i" "Info" nvp-info-menu)
     ("d" "Dash" consult-dash)
-    ("Di" "Dash Install" nvp-dash-docs-install)
-    ("Da" "Dash Activate" dash-docs-activate-docset)
-    ("Dd" "Dash Deactivate" dash-docs-deactivate-docset)]
-   ["Cheat-sh"
-    ("cc" "Cheat-sh" cheat-sh)
-    ("cl" "Cheat-sh List" cheat-sh-list)
-    ("cl" "Cheatsheet lookup" cheatsheet-lookup)]]
+    ("M" "Consult man" consult-man)]
+   ["Cheat.sh"
+    ("cc" "Search" cheat-sh)
+    ("cl" "List" cheat-sh-list)]
+   ["External"
+    ("ec" "Cheatsheet Lookup" cheatsheet-lookup)
+    ("el" "Lookup-help links" lookup-help)]]
   [["Words"
     ("w" "Lookup Dwim" nvp-help-word-dwim)]
+   ;; TODO: simplify+remove
    ["Numbers"
     ("nt" "Toggle Base" nvp-number-toggle-base)
     ("nh" "Hex string to Int" nvp-number-hex-string-to-integer)
     ("no" "Octal string to Int" nvp-number-octal-string-to-integer)]
+   ["Manage Dash"
+    ("Di" "Dash Install" nvp-dash-docs-install)
+    ("Da" "Dash Activate" dash-docs-activate-docset)
+    ("Dd" "Dash Deactivate" dash-docs-deactivate-docset)]
    ["Libs"
     ;; (":sos" "Sos Keybindings" nvp-sos)
-    (":sm" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])
+    (":sp" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])
 
 (provide 'nvp-help)
 ;;; nvp-help.el ends here

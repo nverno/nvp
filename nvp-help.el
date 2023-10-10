@@ -137,6 +137,39 @@
 
 ;;; https://www.emacswiki.org/emacs/help-fns%2b.el
 ;; describe-package ?
+;; -------------------------------------------------------------------
+;;; Transient
+
+(require 'transient)
+
+;;;###autoload(autoload 'nvp-help-menu "nvp-help")
+(transient-define-prefix nvp-help-menu ()
+  "Help"
+  [["Goto Definition"
+    ("f" "Function" find-function)
+    ("v" "Variable" find-variable)
+    ("K" "Function on key" find-function-on-key)]
+   ["Documentation"
+    ("m" "Man" man)
+    ("M" "Consult man" consult-man)
+    ("i" "Info" nvp-info-menu)
+    ("d" "Dash" consult-dash)
+    ("Di" "Dash Install" nvp-dash-docs-install)
+    ("Da" "Dash Activate" dash-docs-activate-docset)
+    ("Dd" "Dash Deactivate" dash-docs-deactivate-docset)]
+   ["Cheat-sh"
+    ("cc" "Cheat-sh" cheat-sh)
+    ("cl" "Cheat-sh List" cheat-sh-list)
+    ("cl" "Cheatsheet lookup" cheatsheet-lookup)]]
+  [["Words"
+    ("w" "Lookup Dwim" nvp-help-word-dwim)]
+   ["Numbers"
+    ("nt" "Toggle Base" nvp-number-toggle-base)
+    ("nh" "Hex string to Int" nvp-number-hex-string-to-integer)
+    ("no" "Octal string to Int" nvp-number-octal-string-to-integer)]
+   ["Libs"
+    ;; (":sos" "Sos Keybindings" nvp-sos)
+    (":sm" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])
 
 (provide 'nvp-help)
 ;;; nvp-help.el ends here

@@ -70,20 +70,19 @@ or prompt for manual with ARG."
 ;;; Mine
 
 (defvar nvp-info-nodes-need-refresh () "Update list when \"dir\" changes.")
-(cl-eval-when (load compile eval)
-  (nvp:define-cache nvp-info-nodes ()
-    ;; "List of my info manuals."
-    :predicate (not nvp-info-nodes-need-refresh)
-    (setq nvp-info-nodes-need-refresh nil)
-    (with-temp-buffer
-      (insert-file-contents-literally (expand-file-name "dir" nvp/info))
-      (goto-char (point-min))
-      (search-forward "* Menu")
-      (let (nodes)
-        (while (re-search-forward
-                "^\\*[^\:]+:\\s-*(\\([^)]+\\))\\." nil 'move)
-          (push (match-string-no-properties 1) nodes))
-        nodes))))
+(nvp:define-cache nvp-info-nodes ()
+  ;; "List of my info manuals."
+  :predicate (not nvp-info-nodes-need-refresh)
+  (setq nvp-info-nodes-need-refresh nil)
+  (with-temp-buffer
+    (insert-file-contents-literally (expand-file-name "dir" nvp/info))
+    (goto-char (point-min))
+    (search-forward "* Menu")
+    (let (nodes)
+      (while (re-search-forward
+              "^\\*[^\:]+:\\s-*(\\([^)]+\\))\\." nil 'move)
+        (push (match-string-no-properties 1) nodes))
+      nodes)))
 
 (cl-eval-when (load)
   (file-notify-add-watch
@@ -118,6 +117,33 @@ or prompt for manual with ARG."
    (let ((fname (concat "org/" (file-name-nondirectory Info-current-file) ".org")))
      (list (expand-file-name fname nvp/info) current-prefix-arg)))
   (nvp-display-location file :file action))
+
+;; -------------------------------------------------------------------
+;;; Transient
+
+(require 'transient)
+
+;;;###autoload(autoload 'nvp-info-menu "nvp-info")
+(transient-define-prefix nvp-info-menu () "Info"
+  [["Info"
+    ("s" "Symbol" info-lookup-symbol)
+    ("k" "Keybinding" Info-goto-emacs-key-command-node)
+    ("F" "File" info-lookup-file)]
+   ["Search"
+    ("a" "Apropos" info-apropos)
+    ("l" "Display Manual" info-display-manual)
+    ("n" "Lookup node" nvp-info-lookup-node)
+    ("f" "Finder" info-finder)
+    ("i" "Info" info)
+    ("h" "History" Info-history)
+    ("R" "Reset" info-lookup-reset)]
+   ["Mine"
+    ("o" "Mine" nvp-info-open-mine)
+    ("j" "Jump" nvp-info-goto-source)
+    ("I" "Install" nvp-info-install-mine)]
+   ["Emacs"
+    ("e" "Emacs manual" info-emacs-manual)
+    ("E" "Emacs Command Node" Info-goto-emacs-command-node)]])
 
 (provide 'nvp-info)
 ;;; nvp-info.el ends here

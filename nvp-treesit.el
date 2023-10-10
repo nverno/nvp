@@ -85,10 +85,33 @@
     (read--expression "Query: ")))
   (treesit-query-validate lang query))
 
+;;;###autoload
+(defun nvp-treesit-explorer-jump ()
+  "Pop b/w source and explorer buffers."
+  (interactive)
+  (let ((buf
+         (cond
+          ((eq major-mode 'treesit--explorer-tree-mode)
+           (when (buffer-live-p treesit--explorer-source-buffer)
+             treesit--explorer-source-buffer))
+          (t
+           (unless (and treesit-explore-mode
+                        (buffer-live-p treesit--explorer-buffer))
+             (setq-local treesit--explorer-last-node nil)
+             (nvp:with-letf #'completing-read
+                 (lambda (&rest _)
+                   ;;  (car (mapcar #'treesit-parser-language
+                   ;;               (treesit-parser-list nil nil t))))
+                   (symbol-name (treesit-language-at (point))))
+               (treesit-explore-mode 1)))
+           treesit--explorer-buffer))))
+    (pop-to-buffer buf)))
+
 (defvar-keymap nvp-treesit-minor-mode-map
   :doc "T/S keymap"
   "C-c C-v" #'nvp-treesit-validate
   "C-c C-s" #'nvp-treesit-toggle-errors
+  "C-c C-z" #'nvp-treesit-explorer-jump
   "C-M-?"   #'treesit-inspect-node-at-point)
 
 (easy-menu-define nvp-treesit-minor-mode-menu nvp-treesit-minor-mode-map
@@ -107,45 +130,35 @@
   ;; `treesit-inspect-mode' wants to put the node info
   ;; (powerline-revert)
   (if nvp-treesit-minor-mode
-      (progn
-        (add-hook 'window-buffer-change-functions #'nvp-treesit--change-window-hook nil t)
-        (when (treesit-language-at (point))
-          (and (nvp-treesit--query-compile)
-               (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t))
-          (powerline-revert)
-          (treesit-inspect-mode)
-          (treesit-explore-mode)))
+      (when (treesit-language-at (point))
+        (powerline-revert)
+        (treesit-inspect-mode)
+        ;; (add-hook 'window-buffer-change-functions
+        ;;           #'nvp-treesit--change-window-hook nil t)
+        (and (nvp-treesit--query-compile)
+             (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t)))
     (remove-hook 'after-change-functions #'nvp-treesit--update-errors t)
-    (remove-hook 'window-buffer-change-functions #'nvp-treesit--change-window-hook t)
-    ;; (ignore-errors 
-    ;;   (treesit-inspect-mode -1)
-    ;;   (treesit-explore-mode -1))
-    ))
-;; (nvp-theme-switch)
+    ;; (remove-hook 'window-buffer-change-functions #'nvp-treesit--change-window-hook t)
+    ;; (nvp-theme-switch)
+    (ignore-errors 
+      (treesit-inspect-mode -1)
+      (treesit-explore-mode -1))))
 
 (defun nvp-treesit-minor-mode-on ()
   (interactive)
   (when (treesit-language-at (point))
-    (nvp:with-letf #'completing-read
-        (lambda (&rest _)
-          (symbol-name
-           (car (mapcar #'treesit-parser-language (treesit-parser-list nil nil t)))))
-      (with-current-buffer (current-buffer)
-        (save-window-excursion (nvp-treesit-minor-mode 1))
-        ;; (add-hook 'window-buffer-change-functions
-        ;;           #'nvp-treesit--change-window-hook nil t)
-        ))))
+    (nvp-treesit-minor-mode 1)))
 
-(defun nvp-treesit--change-window-hook (win)
-  (with-current-buffer (window-buffer win)
-    (when (and nvp-treesit-minor-mode
-               treesit--explorer-buffer)
-      ;; (treesit--explorer-refresh)
-      (delete-other-windows)
-      (window--display-buffer
-       (get-buffer treesit--explorer-buffer)
-       (split-window-horizontally)
-       'window))))
+;; (defun nvp-treesit--change-window-hook (win)
+;;   (with-current-buffer (window-buffer win)
+;;     (when (and nvp-treesit-minor-mode
+;;                treesit--explorer-buffer)
+;;       (treesit--explorer-refresh)
+;;       (delete-other-windows)
+;;       (window--display-buffer
+;;        (get-buffer treesit--explorer-buffer)
+;;        (split-window-horizontally)
+;;        'window))))
 
 ;;;###autoload
 (define-globalized-minor-mode nvp-treesit-mode

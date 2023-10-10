@@ -15,10 +15,10 @@ ${1:`$tmp`}_current() {
     return 0
 }
 $1_latest() {
-    local url
-    ! url="\$(github_latest_download_url "\$${1:$(upcase yas-text)}_GIT_REPO" "linux-\$(uname -m)")" &&
-        _error "failed to find download url"
-
+    local ver
+    ! ver="\$(github_latest_release "\$${1:$(upcase yas-text)}_GIT_REPO" "${2:linux-\$(uname -m)}${3:.tar.gz$}")" && return 1
+    echo "\$ver"
+    return 0
 }
 $0
 $1_install() {

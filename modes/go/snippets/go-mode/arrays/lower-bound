@@ -2,7 +2,8 @@
 # name: lowerBound
 # key: lb
 # --
-func lowerBound(arr []${1:int}, target $1) int {
+${2:var lowerBound func([]int, int) int
+}${2:$($s? "lowerBound = func" "func lowerBound")}(arr []${1:int}, target $1) int {
 	l, r := 0, len(arr)
 	for l < r {
 		mid := (l + r) >> 1

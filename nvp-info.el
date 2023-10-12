@@ -54,10 +54,11 @@ or prompt for manual with ARG."
 
 (defvar nvp-info--imenu-categories-expression '((nil "^\\([[:alnum:]]+\\)" 1)))
 
-(defun nvp-info-imenu (&optional categories)
-  "With prefix CATEGORIES, select from sections headings."
-  (interactive "P")
-  (if (null categories) (call-interactively #'imenu)
+(defun nvp-info-imenu ()
+  "Look for categories in Top node only."
+  (interactive)
+  (if (not (equal "Top" Info-current-node))
+      (call-interactively #'imenu)
     (let ((imenu-generic-expression nvp-info--imenu-categories-expression)
           (imenu-create-index-function #'imenu-default-create-index-function)
           (saved-index imenu--index-alist)

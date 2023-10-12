@@ -72,7 +72,8 @@ associated .elc files."
                     (cl-remove-if-not
                      #'file-directory-p 
                      (append (directory-files nvp/site t "^[^.]")
-                             (directory-files nvp/pkgs t "^[^.]"))
+                             (directory-files nvp/pkgs t "^[^.]")
+                             (directory-files nvp/modes t "^[^.]"))
                      ;; (directory-files "./nvp/pkgs" t "^[^.]")
                      )
                     ;; (list nvp/site nvp/modes)

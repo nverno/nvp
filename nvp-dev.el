@@ -42,6 +42,8 @@
     ("C" "Coding systems" list-coding-systems)
     ("h" "Command history" list-command-history)]
    ["Modify"
+    (":t" "Add transient dev" nvp-transient-add-dev)
+    
     (":a" "Remove advice" nvp-dev-advice-remove-all)
     (":h" "Add/Remove hook" nvp-hook-add-or-remove)
     (":f" "Font face on region" nvp-font-fontify-region-face)]]

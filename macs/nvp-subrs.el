@@ -375,6 +375,31 @@ or (\\='a #\\='b) => \\='(a b)."
 (defsubst nvp:proc-find-by-name (name)
   (nvp:proc-find name :test #'string-match-p :key #'process-name))
 
+;; -------------------------------------------------------------------
+;;; Print
+
+;;; TODO: read/write local configs
+;; (defun nvp:-read-file-contents (file)
+;;   (with-demoted-errors "Reading file error: %S"
+;;     (and (file-exists-p file)
+;;          (with-temp-buffer
+;;            (insert-file-contents file)
+;;            (read (current-buffer))))))
+;; (defun nvp:-pp-to-file (list file)
+;;   (setq list (cl-sort (copy-sequence list) #'string< :key #'car))
+;;   (with-temp-file file
+;;     (let ((print-level nil)
+;;           (print-length nil)
+;;           (pp-default-function 'pp-28)
+;;           (fill-column 999))
+;;       (pp list (current-buffer)))))
+
+(defsubst nvp:pp-object (obj &optional stream)
+  (let ((print-level nil)
+        (print-length nil)
+        (pp-default-function 'pp-28)
+        (fill-column 999))
+    (pp obj stream)))
 
 (provide 'nvp-subrs)
 ;; Local Variables:

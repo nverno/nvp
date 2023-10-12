@@ -215,9 +215,10 @@
     ("-l" nvp-edebug-emacs--load)
     ("L" "Launch" nvp-edebug-emacs--launch)]]
   [["Other"
-    ("/ts" "Tree-sitter" nvp-edebug-treesit
+    ("/tree" "Tree-sitter" nvp-edebug-treesit
      :if (lambda () (ignore-errors (treesit-buffer-root-node))))
-    ("/sm" "Smie" nvp-edebug-smie
+    ("/tran" "Transient" nvp-transient-menu)
+    ("/smie" "Smie" nvp-edebug-smie
      :if (lambda () (eq 'smie-indent-line indent-line-function)))
     ("/url" nvp-edebug-emacs--toggle-url :if (lambda () (boundp 'url-debug)))
     ("/tramp" "Toggle tramp debug" nvp-edebug-emacs--toggle-tramp

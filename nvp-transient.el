@@ -8,29 +8,53 @@
 
 (transient-define-suffix nvp-transient--args ()
   "Show current infix args."
-  :description "Infix args"
   (interactive)
   (message "%S" (transient-args transient-current-command)))
 
-(transient-define-suffix nvp-transient--value ()
-  "Show current value."
-  :description "Current Value"
+(eval-when-compile
+  (defmacro nvp:pp-results (obj &optional title)
+    `(nvp:with-results-buffer
+       :title ,title
+       (nvp:pp-object ,obj (current-buffer)))))
+
+(transient-define-suffix nvp-transient--layout ()
+  "Show layout."
   (interactive)
-  (message "%S" (transient-get-value)))
+  (let* ((cmd transient-current-command)
+         (layout (get cmd 'transient--layout)))
+    (nvp:pp-results layout (format "`%S' Layout" cmd))))
 
 (transient-define-suffix nvp-transient--object ()
   "Show object."
-  :description "Object"
   (interactive)
-  (message "%S" transient-current-prefix))
+  (nvp:pp-results transient-current-prefix
+                 (format "%S" transient-current-command)))
 
 (defvar nvp-transient--dev-suffixes
-  '(("a" nvp-transient--args :transient t)
-    ("v" nvp-transient--value :transient t)
-    ("o" nvp-transient--object :transient t)))
+  '(("a" "Infix args" nvp-transient--args :transient t)
+    ("l" "Layout" nvp-transient--layout :transient t)
+    ("o" "Object" nvp-transient--object :transient t)))
 
-(defvar nvp-transient--dev-description "Nvp")
+(defconst nvp-transient--dev-description "[NVP] Dev")
 (defvar nvp-transient--done-deved nil)
+
+(transient-define-infix nvp-transient-menu--debug ()
+  "Toggle debug"
+  :class 'transient-lisp-variable
+  :variable 'transient--debug
+  :reader (lambda (&rest _) (not transient--debug)))
+
+;;;###autoload(autoload 'nvp-transient-menu "nvp-transient")
+(transient-define-prefix nvp-transient-menu ()
+  "Modify transients"
+  [["Add"
+    ("a" "Add dev bindings" nvp-transient-add-dev)]
+   [ :if-non-nil nvp-transient--done-deved
+     "Remove"
+     ("r" "Remove bindings" nvp-transient-remove-dev)
+     ("R" "Remove from all transients" nvp-transient-remove-all)]]
+  ["Debug"
+   ("d" "Toggle debug" nvp-transient-menu--debug)])
 
 ;;;###autoload
 (defun nvp-transient-add-dev (transient &optional loc prefix)
@@ -44,25 +68,28 @@ With \\[universal-argument] prompt for LOC and PREFIX key."
                       nvp-transient--dev-suffixes)))
     (when (transient-insert-suffix transient loc
             `[,nvp-transient--dev-description ,@sufs])
-      (cl-pushnew (list transient loc prefix) nvp-transient--done-deved :test #'equal))))
+      (cl-pushnew (list transient loc prefix)
+                  nvp-transient--done-deved :test #'equal))))
 
-(defun nvp-transient-remove-dev (transient)
+(defun nvp-transient-remove-dev (transients)
   "Remove dev commands from TRANSIENT."
-  (interactive (list (read--expression "Transient: ")))
-  (when-let ((val (get transient 'transient--layout)))
-    (put transient 'transient--layout
-         (seq-remove
-          (lambda (e) (equal nvp-transient--dev-description
-                        (plist-get (aref e 2) :description)))
-          val)))
+  (interactive (list (mapcar #'intern
+                             (completing-read-multiple
+                              "Transients: " nvp-transient--done-deved nil t))))
+  (dolist (transient transients)
+    (when-let ((val (get transient 'transient--layout)))
+      (put transient 'transient--layout
+           (seq-remove (lambda (e) (equal nvp-transient--dev-description
+                                     (plist-get (aref e 2) :description)))
+                       val))))
   (setq nvp-transient--done-deved
-        (cl-delete transient nvp-transient--done-deved :test (lambda (x e) (eq x (car e))))))
+        (seq-filter (lambda (e) (not (seq-contains-p transients (car e) #'eq)))
+                    nvp-transient--done-deved)))
 
 (defun nvp-transient-remove-all ()
   "Remove dev commands from all modified transients."
   (interactive)
-  (dolist (x nvp-transient--done-deved)
-    (nvp-transient-remove-dev (car x))))
+  (nvp-transient-remove-dev (mapcar #'car nvp-transient--done-deved)))
 
 (provide 'nvp-transient)
 ;; Local Variables:

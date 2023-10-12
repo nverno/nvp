@@ -117,6 +117,11 @@
   (let ((fn (intern (concat "nvp-repl-" val))))
     `(,fn nvp-repl-current)))
 
+(defmacro nvp-repl-with (fields &rest body)
+  (declare (indent defun) (debug t))
+  `(pcase-let (((cl-struct nvp-repl ,@fields) nvp-repl-current))
+     ,@body))
+
 ;; -------------------------------------------------------------------
 ;;; Functions to find REPLs
 
@@ -131,32 +136,36 @@ Each function takes a process as an argument to test against.")
 
 ;; find REPL using a custom function
 (defun nvp-repl-find-custom ()
-  (--when-let (repl:val "find-fn") (funcall it)))
+  (nvp-repl-with (find-fn)
+    (and find-fn (funcall find-fn))))
 
 ;; match process buffer
 (defun nvp-repl-find-bufname ()
-  (--when-let (repl:val "bufname")
-    (nvp:proc-find it
-      :key (lambda (p) (buffer-name (funcall (repl:val "proc->buff") p)))
-      :test #'string-match-p)))
+  (nvp-repl-with (bufname proc->buff)
+    (when bufname
+      (nvp:proc-find bufname
+        :key (lambda (p) (buffer-name (funcall proc->buff p)))
+        :test #'string-match-p))))
 
 ;; match process name
 (defun nvp-repl-find-procname ()
-  (--when-let (repl:val "procname")
-    (nvp:proc-find it :key #'process-name :test #'string-match-p)))
+  (nvp-repl-with (procname)
+   (when procname
+     (nvp:proc-find procname :key #'process-name :test #'string-match-p))))
 
 ;; match major-mode
 (defun nvp-repl-find-modes ()
-  (--when-let (repl:val "modes")
-    (nvp:proc-find-if
-     (lambda (p-buf) (and p-buf (memq (buffer-local-value 'major-mode p-buf) it)))
-     :key (lambda (p) (funcall (repl:val "proc->buff") p)))))
+  (nvp-repl-with (modes proc->buff)
+    (when modes
+      (nvp:proc-find-if
+        (lambda (p-buf) (and p-buf (memq (buffer-local-value 'major-mode p-buf) modes)))
+        :key (lambda (p) (funcall proc->buff p))))))
 
 ;; -------------------------------------------------------------------
 ;;; REPL processes
 
 ;; non-nil if PROC is alive
-(defsubst nvp-repl-live-p (proc) (funcall (repl:val "live") proc))
+(defsubst nvp-repl-live-p (proc) (funcall (nvp-repl-live nvp-repl-current) proc))
 
 ;; check REPL has an associated process and it is alive
 ;; if it had a proc that died, this updates its proc to nil
@@ -178,7 +187,7 @@ Each function takes a process as an argument to test against.")
   (nvp:defq p-buff (funcall (repl:val "proc->buff") proc))
   (setf (repl:val "proc") proc
         (repl:val "buff") p-buff)
-  (puthash p-buff src-buff nvp-repl--process-buffers))
+  (prog1 p-buff (puthash p-buff src-buff nvp-repl--process-buffers)))
 
 ;; -------------------------------------------------------------------
 ;;; Initialize new REPLs
@@ -187,15 +196,16 @@ Each function takes a process as an argument to test against.")
   "Return a REPL buffer if one exists, otherwise attempt to start one."
   (nvp-repl-ensure)
   (or (nvp-repl-buffer)
-      (when-let ((proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
-                 (p-buff (if (processp proc)
-                             (funcall (repl:val "proc->buff") proc)
-                           (prog1 proc
-                             (setq proc (funcall (repl:val "buff->proc") proc))))))
-        (if (nvp-repl-live-p proc)      ; found unregistered live one
-            (nvp-repl-update proc (current-buffer) p-buff)
-          (remhash p-buff nvp-repl--process-buffers)))
-      (or (nvp-repl-start)              ; initialize new REPL
+      (nvp-repl-with (proc->buff buff->proc)
+        (when-let ((proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
+                   (p-buff (if (processp proc)
+                               (funcall proc->buff proc)
+                             (prog1 proc
+                               (setq proc (funcall buff->proc proc))))))
+          (if (nvp-repl-live-p proc)     ; found unregistered live one
+              (nvp-repl-update proc (current-buffer) p-buff)
+            (remhash p-buff nvp-repl--process-buffers))))
+      (or (nvp-repl-start)             ; initialize new REPL
           (user-error "Failed to initialize REPL"))))
 
 (defun nvp-repl-start-callback ()

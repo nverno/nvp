@@ -27,6 +27,36 @@
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
 
+(require 'transient)
+
+;;;###autoload(autoload 'nvp-dev-menu "nvp-dev")
+(transient-define-prefix nvp-dev-menu ()
+  "Dev menu"
+  [["At point"
+    ("s" "Syntax" nvp-syntax-at-point)
+    ("o" "Overlays" nvp-dev-list-overlays)]
+   ["Display"
+    ("v" "Variable" nvp-dev-describe-variable)
+    ("m" "Mode config" nvp-dev-describe-mode)
+    ("c" "Charset" nvp-help-display-charset)
+    ("C" "Coding systems" list-coding-systems)
+    ("h" "Command history" list-command-history)]
+   ["Modify"
+    (":a" "Remove advice" nvp-dev-advice-remove-all)
+    (":h" "Add/Remove hook" nvp-hook-add-or-remove)
+    (":f" "Font face on region" nvp-font-fontify-region-face)]]
+  [["Resources"
+    ("t" "Timers" list-timers)
+    ("T" "Threads" list-threads)]
+   ["Fonts"
+    ("ff" "Faces" list-faces-display)
+    ("fF" "Fonts" nvp-font-list)
+    ("fa" "Available fontsets" list-fontsets)]
+   ["Load"
+    ("lf" "List nvp features" nvp-dev-features)
+    ("ld" "List dynamic libs" list-dynamic-libraries)
+    ("ls" "Load-path shadows" list-load-path-shadows)]])
+
 (nvp:bindings nvp-dev-keymap nil
   :create t
   ("a"  . nvp-dev-advice-remove-all)
@@ -49,7 +79,8 @@
   ("s"  . nvp-syntax-at-point)
   ("S"  . smie-config-show-indent)
   ("u"  . nvp-dev-stats-uniq)
-  ("v"  . nvp-dev-describe-variable))
+  ("v"  . nvp-dev-describe-variable)
+  ("z"  . nvp-dev-menu))
 
 ;; -------------------------------------------------------------------
 ;;; Advice

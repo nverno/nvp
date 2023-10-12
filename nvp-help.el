@@ -87,7 +87,7 @@
 
 ;; `list-block-of-chars' function does legwork
 ;;;###autoload
-(defun nvp-help-list-charsets (&optional arg)
+(defun nvp-help-display-charset (&optional arg)
   "List names of charsets."
   (interactive "P")
   (if arg

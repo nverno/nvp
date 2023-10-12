@@ -52,6 +52,22 @@ or prompt for manual with ARG."
 
 ;;; Imenu support
 
+(defvar nvp-info--imenu-categories-expression '((nil "^\\([[:alnum:]]+\\)" 1)))
+
+(defun nvp-info-imenu (&optional categories)
+  "With prefix CATEGORIES, select from sections headings."
+  (interactive "P")
+  (if (null categories) (call-interactively #'imenu)
+    (let ((imenu-generic-expression nvp-info--imenu-categories-expression)
+          (imenu-create-index-function #'imenu-default-create-index-function)
+          (saved-index imenu--index-alist)
+          (imenu--index-alist nil)
+          (imenu-auto-rescan t))
+      (imenu--make-index-alist)
+      (unwind-protect
+          (call-interactively #'imenu)
+        (setq imenu--index-alist saved-index)))))
+
 (defun nvp-info-imenu-create-index-function ()
   (goto-char (point-min))
   (search-forward "* Menu:")

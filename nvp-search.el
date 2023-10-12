@@ -1,10 +1,4 @@
 ;;; nvp-search.el --- search-map; search/replace -*- lexical-binding: t; -*-
-;;
-;;; Commentary:
-;; - occur
-;; - highlight regexps
-;; - hi-lock
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -38,24 +32,6 @@ With prefix ARG multi-occur in buffers of the same mode."
   (interactive)
   (multi-occur
    (nvp-buffer-matching-mode major-mode) (car (occur-read-primary-args))))
-
-;; -------------------------------------------------------------------
-;;; Hi-lock
-(eval-when-compile (defvar hi-lock-file-patterns))
-
-;;;###autoload
-(defun nvp-hi-lock-forward ()
-  "Jump between hi-lock matches."
-  (interactive)
-  (goto-char
-   (apply
-    #'min
-    (mapcar
-     (lambda (pattern)
-       (save-excursion
-         (re-search-forward (car pattern) nil 'noerror)
-         (point)))
-     hi-lock-file-patterns))))
 
 (provide 'nvp-search)
 ;;; nvp-search.el ends here

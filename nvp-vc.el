@@ -38,7 +38,7 @@
         (let (res)
           (goto-char (point-min))
           (while (not (eobp))
-            (and (looking-at "\\([[:alnum:]]+\\)\\(.*\\)")
+            (and (looking-at "\\([[:alnum:]-_]+\\)\\(.*\\)")
                  (push (list (match-string 1)
                              `[,(match-string 1) ,(match-string 2)])
                        res))
@@ -58,7 +58,7 @@
   (interactive)
   (nvp:with-tabulated-list
     :name "git-aliases"
-    :format [("Alias" 10 t) ("Expansion" 60 t)]
+    :format [("Alias" 18 t) ("Expansion" 60 t)]
     :entries (nvp-git-aliases)
     :action (lambda (_id entry)
               (kill-new (elt entry 1))

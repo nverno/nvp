@@ -203,6 +203,11 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
   (add-to-list 'compilation-error-regexp-alist 'address-sanitizer t)
   (add-to-list 'compilation-error-regexp-alist-alist nvp-c-address-error-regexp t))
 
+(defsubst nvp-c--compiler ()
+  (if (memq major-mode '(c++-mode c++-ts-mode))
+      (nvp:program "g++")
+    (nvp:program "gcc")))
+
 ;; run make / cmake if there are corresponding makefiles,
 ;; otherwise prompt / use default
 (nvp-make-or-compile-fn nvp-c-compile
@@ -211,7 +216,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
          (file (file-name-nondirectory buffer-file-name))
          (out (file-name-sans-extension file))
          (command
-          (format "%s %s -o %s%s %s" (nvp:program "gcc")
+          (format "%s %s -o %s%s %s" (nvp-c--compiler)
                   flags out (nvp:with-gnu/w32 ".out" ".exe") file)))
     (unless (or args (assoc 'compile-command (buffer-local-variables)))
       (setq-local compile-command command))
@@ -224,7 +229,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                        (file-name-nondirectory buffer-file-name))
                       (nvp:with-gnu/w32 ".out" ".exe")))
          (command
-          (concat (or compiler (nvp:program "gcc")) " "
+          (concat (or compiler (nvp-c--compiler)) " "
                   (or flags "-s -O3") " "
                   buffer-file-name " -o " out "; "
                   (or (and (eq post-action 'no-run) "")
@@ -252,7 +257,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;; show assembly in other window, delete assembly output
 (defun nvp-c-compile-asm ()
   (interactive)
-  (let ((compile-command (format "gcc -Og -S %s" buffer-file-name))
+  (let ((compile-command (format "%s -Og -S %s" (nvp-c--compiler) buffer-file-name))
         (asm-file
          (concat (file-name-sans-extension buffer-file-name) ".s")))
     (with-current-buffer (call-interactively 'nvp-compile)
@@ -270,7 +275,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;; (autoload 'gdb-disassembly-mode "gdb-mi")
 (defun nvp-c-compile-objdump ()
   (interactive)
-  (let ((compile-command (format "gcc -Og -c %s; objdump -d %s.o; rm %s.o"
+  (let ((compile-command (format "%s -Og -c %s; objdump -d %s.o; rm %s.o"
+                                 (nvp-c--compiler)
                                  buffer-file-name
                                  (file-name-sans-extension buffer-file-name)
                                  (file-name-sans-extension buffer-file-name)))
@@ -289,16 +295,12 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
   (interactive "P")
   (let* ((prog (file-name-sans-extension buffer-file-name))
          (strace-file (concat prog ".strace"))
-         (compile-command (format (nvp:concat "gcc -Og %s -o %s; "
-                                              "strace -o %s %s %s")
-                                  buffer-file-name
-                                  prog
-                                  strace-file
-                                  prog
-                                  (if arg
-                                      (read-from-minibuffer
-                                       "Additional arguments to function: ")
-                                    "")))
+         (compile-command
+          (format "%s -Og %s -o %s; strace -o %s %s %s"
+                  (nvp-c--compiler) buffer-file-name prog strace-file prog
+                  (if arg (read-from-minibuffer
+                           "Additional arguments to function: ")
+                    "")))
          compilation-scroll-output)
     (with-current-buffer (call-interactively 'nvp-compile)
       (pop-to-buffer (current-buffer))

@@ -110,15 +110,16 @@
 
 (defvar-keymap nvp-treesit-minor-mode-map
   :doc "T/S keymap"
-  "C-c C-v" #'nvp-treesit-validate
-  "C-c C-s" #'nvp-treesit-toggle-errors
-  "C-c C-z" #'nvp-treesit-explorer-jump
-  "C-M-?"   #'treesit-inspect-node-at-point)
+  "C-c C-v"  #'nvp-treesit-validate
+  "C-c C-s"  #'nvp-treesit-toggle-errors
+  "<f2> z j" #'nvp-treesit-explorer-jump
+  "C-M-?"    #'treesit-inspect-node-at-point)
 
 (easy-menu-define nvp-treesit-minor-mode-menu nvp-treesit-minor-mode-map
   "T/S menu."
   '("T/S"
     ["Inspect" treesit-inspect-node-at-point t]
+    ["Explorer" nvp-treesit-explorer-jump t]
     ["Validate" nvp-treesit-validate t]
     ["Toggle errors" nvp-treesit-toggle-errors t]))
 

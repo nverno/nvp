@@ -87,15 +87,17 @@
   (treesit-query-validate lang query))
 
 ;;;###autoload
-(defun nvp-treesit-explorer-jump ()
+(defun nvp-treesit-explorer-jump (&optional reset)
   "Pop b/w source and explorer buffers."
-  (interactive)
+  (interactive "P")
   (let ((buf
          (cond
           ((eq major-mode 'treesit--explorer-tree-mode)
            (when (buffer-live-p treesit--explorer-source-buffer)
              treesit--explorer-source-buffer))
           (t
+           (when (and reset (buffer-live-p treesit--explorer-buffer))
+             (kill-buffer treesit--explorer-buffer))
            (unless (and treesit-explore-mode
                         (buffer-live-p treesit--explorer-buffer))
              (setq-local treesit--explorer-last-node nil)

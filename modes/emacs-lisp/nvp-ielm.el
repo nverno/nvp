@@ -30,28 +30,19 @@
    (let (ielm-dynamic-return)
      (newline-and-indent))))
 
-;; synchronize with default switching function and update default-directory
-(with-no-warnings
-  (define-advice ielm-change-working-buffer (:after (&rest _args) "update-src")
-    (with-current-buffer (process-buffer (ielm-process))
-      (process-put (ielm-process) :src-buffer ielm-working-buffer)
-      (setq default-directory
-            (buffer-local-value 'default-directory ielm-working-buffer)))))
-
-
 ;;; Fonts
 
 (defconst nvp-ielm-font-lock-keywords
   `(,@(mapcar #'nvp-comint-font-lock-keywords lisp-el-font-lock-keywords-2)
     ,@(mapcar #'nvp-comint-font-lock-keywords lisp-cl-font-lock-keywords-2)))
 
-(nvp:font-lock-add-defaults 'inferior-emacs-lisp-mode
-  ((nvp:re-opt '("IELM error" "Eval error" "Read error")) .
-   (0 font-lock-warning-face prepend))
-  (:splice
-   (mapcar #'nvp-comint-font-lock-keywords lisp-el-font-lock-keywords-2))
-  (:splice
-   (mapcar #'nvp-comint-font-lock-keywords lisp-cl-font-lock-keywords-2)))
+;; (nvp:font-lock-add-defaults 'inferior-emacs-lisp-mode
+;;   ((nvp:re-opt '("IELM error" "Eval error" "Read error")) .
+;;    (0 font-lock-warning-face prepend))
+;;   (:splice
+;;    (mapcar #'nvp-comint-font-lock-keywords lisp-el-font-lock-keywords-2))
+;;   (:splice
+;;    (mapcar #'nvp-comint-font-lock-keywords lisp-cl-font-lock-keywords-2)))
 
 ;; (font-lock-add-keywords 'inferior-emacs-lisp-mode nvp-ielm-font-lock-keywords)
 

@@ -19,7 +19,7 @@
 (nvp:auto "nvp-sh" 'nvp-sh-get-process)
 (nvp:decls :f (ielm-change-working-buffer sh-cd-here))
 
-(cl-defstruct (nvp-repl (:constructor nvp-repl-make))
+(cl-defstruct (nvp--repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"
   modes                              ; REPL major-modes to consider
   init                               ; init REPL => return process
@@ -31,8 +31,9 @@
   (live       #'process-live-p)      ; check if REPL process is alive
   (buff->proc #'get-buffer-process)  ; get buffer associated with process
   (proc->buff #'process-buffer)      ; process associated w/ buffer
-  ;; the rest are related to interaction (not really implemented)
-  (send-fn    #'comint-send-string)  ; function to send string to REPL
+  ;; the rest are related to interaction
+  (send-string    #'comint-send-string) ; function to send string to REPL
+  (send-input     #'comint-send-input)  ; function to send current input from REPL
   filters                            ; filters applied to text sent to REPL
   cd                                 ; command to change REPL working dir
   cwd                                ; get current working directory
@@ -76,11 +77,13 @@
 (put 'nvp-repl-add 'lisp-indent-function 'defun)
 
 ;; initialize some REPLs
+(nvp:decl ielm-send-input)
 (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
   :init #'ielm
   :modes '(inferior-emacs-lisp-mode)
   :procname "ielm"
   :bufname "*ielm"
+  :send-input #'ielm-send-input
   :wait 0.1
   :cd (lambda ()
         (if (eq major-mode 'inferior-emacs-lisp-mode)
@@ -90,7 +93,7 @@
               (message "%s not asociated with a source buffer" (current-buffer)))
           (ielm-change-working-buffer (current-buffer)))))
 
-(nvp-repl-add '(sh-mode bats-mode)
+(nvp-repl-add '(sh-mode bash-ts-mode bats-mode)
   :init #'nvp-sh-get-process
   :modes '(shell-mode)
   :procname "shell"
@@ -100,8 +103,8 @@
 ;; return repl for MODE, or default
 (defun nvp-repl-for-mode (mode)
   (or (cl-loop for (modes . repl) in nvp-repl-alist
-         when (memq mode modes)
-         return repl)
+               when (memq mode modes)
+               return repl)
       (prog1 nvp-repl-default
         (message
          "%S not explicitely associated with any REPLs: using default shell" mode))))
@@ -111,16 +114,17 @@
   (or nvp-repl-current
       (setq nvp-repl-current (nvp-repl-for-mode (or mode major-mode)))))
 
-;; may switch storage of REPL vars
-(defmacro repl:val (val)
-  (declare (debug t))
-  (let ((fn (intern (concat "nvp-repl-" val))))
-    `(,fn nvp-repl-current)))
+(eval-when-compile
+  ;; may switch storage of REPL vars
+  (defmacro repl:val (val)
+    (declare (debug t))
+    (let ((fn (intern (concat "nvp--repl-" val))))
+      `(,fn nvp-repl-current)))
 
-(defmacro nvp-repl-with (fields &rest body)
-  (declare (indent defun) (debug t))
-  `(pcase-let (((cl-struct nvp-repl ,@fields) nvp-repl-current))
-     ,@body))
+  (defmacro nvp:repl-with (fields &rest body)
+    (declare (indent defun) (debug t))
+    `(pcase-let (((cl-struct nvp--repl ,@fields) nvp-repl-current))
+       ,@body)))
 
 ;; -------------------------------------------------------------------
 ;;; Functions to find REPLs
@@ -136,12 +140,12 @@ Each function takes a process as an argument to test against.")
 
 ;; find REPL using a custom function
 (defun nvp-repl-find-custom ()
-  (nvp-repl-with (find-fn)
+  (nvp:repl-with (find-fn)
     (and find-fn (funcall find-fn))))
 
 ;; match process buffer
 (defun nvp-repl-find-bufname ()
-  (nvp-repl-with (bufname proc->buff)
+  (nvp:repl-with (bufname proc->buff)
     (when bufname
       (nvp:proc-find bufname
         :key (lambda (p) (buffer-name (funcall proc->buff p)))
@@ -149,13 +153,13 @@ Each function takes a process as an argument to test against.")
 
 ;; match process name
 (defun nvp-repl-find-procname ()
-  (nvp-repl-with (procname)
-   (when procname
-     (nvp:proc-find procname :key #'process-name :test #'string-match-p))))
+  (nvp:repl-with (procname)
+    (when procname
+      (nvp:proc-find procname :key #'process-name :test #'string-match-p))))
 
 ;; match major-mode
 (defun nvp-repl-find-modes ()
-  (nvp-repl-with (modes proc->buff)
+  (nvp:repl-with (modes proc->buff)
     (when modes
       (nvp:proc-find-if
         (lambda (p-buf) (and p-buf (memq (buffer-local-value 'major-mode p-buf) modes)))
@@ -165,7 +169,7 @@ Each function takes a process as an argument to test against.")
 ;;; REPL processes
 
 ;; non-nil if PROC is alive
-(defsubst nvp-repl-live-p (proc) (funcall (nvp-repl-live nvp-repl-current) proc))
+(defsubst nvp-repl-live-p (proc) (funcall (nvp--repl-live nvp-repl-current) proc))
 
 ;; check REPL has an associated process and it is alive
 ;; if it had a proc that died, this updates its proc to nil
@@ -196,7 +200,7 @@ Each function takes a process as an argument to test against.")
   "Return a REPL buffer if one exists, otherwise attempt to start one."
   (nvp-repl-ensure)
   (or (nvp-repl-buffer)
-      (nvp-repl-with (proc->buff buff->proc)
+      (nvp:repl-with (proc->buff buff->proc)
         (when-let ((proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
                    (p-buff (if (processp proc)
                                (funcall proc->buff proc)
@@ -279,22 +283,44 @@ TODO:
 ;; -------------------------------------------------------------------
 ;;; Basic REPL interaction
 
-(defun nvp-repl-send-string (str)
-  (comint-send-string (nvp-repl-process) str))
+;; (defun nvp-repl-send-input (&optional no-newline)
+;;   "Send repl's current input, appending a final newline unless NO-NEWLINE."
+;;   (unless nvp-repl-current
+;;     (user-error "No current REPL")))
 
-(defun nvp-repl-send-region (start end)
-  (interactive "r")
-  (nvp-repl-send-string (buffer-substring-no-properties start end)))
+(defun nvp-repl-send-string (str &optional and-go no-insert no-newline)
+  "Send STR to current REPL, appending a final newline unless NO-NEWLINE.
+STR is inserted into REPL unless NO-INSERT."
+  (unless nvp-repl-current
+    (user-error "No REPL associated with buffer."))
+  (nvp:repl-with (send-input send-string)
+    (unless no-newline (setq str (concat str "\n")))
+    (--if-let (nvp-repl-get-buffer)
+        (progn
+          (if no-insert
+              (funcall send-string (nvp-repl-process) str)
+            (with-current-buffer it
+              (insert str)
+              (funcall send-input)))
+          (when and-go
+            (pop-to-buffer it)))
+      (user-error "Couldn't create REPL."))))
 
-(defun nvp-repl-send-line ()
-  (interactive)
+(defun nvp-repl-send-region (start end &optional and-go)
+  (interactive "r\nP")
+  (nvp-repl-send-string (buffer-substring-no-properties start end) and-go))
+
+(defun nvp-repl-send-line (&optional and-go)
+  (interactive "P")
   (nvp-repl-send-string
-   (buffer-substring-no-properties (nvp:point 'bol) (nvp:point 'eoll))))
+   (buffer-substring-no-properties (nvp:point 'bol) (nvp:point 'eoll))
+   and-go))
 
-(defun nvp-repl-send-buffer ()
-  (interactive)
+(defun nvp-repl-send-buffer (&optional and-go)
+  (interactive "P")
   (nvp-repl-send-string
-   (buffer-substring-no-properties (point-min) (point-max))))
+   (buffer-substring-no-properties (point-min) (point-max))
+   and-go))
 
 (defun nvp-repl-cd-here (&optional dir)
   (interactive "P")
@@ -304,11 +330,34 @@ TODO:
         (funcall it)
         (nvp-repl-update (repl:val "proc") (current-buffer))))))
 
-;;; TODO:
-;; (defun nvp-repl-send-defun ()
-;;   (interactive)
-;;   (nvp-repl-send-string
-;;    (buffer-substring-no-properties (c-point ))))
+(defun nvp-repl-send-defun (start end &optional and-go)
+  (interactive
+   (let ((bnds (nvp:tap-or-region 'bdwim 'defun :pulse t)))
+     (if bnds (append bnds (list current-prefix-arg))
+       (list nil current-prefix-arg))))
+  (nvp-repl-send-string
+   (buffer-substring-no-properties start end)
+   and-go))
+
+;; -------------------------------------------------------------------
+;;; Transient 
+(require 'transient)
+
+;;;###autoload(autoload 'nvp-repl-menu "nvp-repl")
+(transient-define-prefix nvp-repl-menu ()
+  "REPL menu"
+  [ :if-non-nil nvp-repl-current
+    ["Eval"
+     ("l" "Line" nvp-repl-send-line)
+     ("r" "Region" nvp-repl-send-region)
+     ("d" "Defun" nvp-repl-send-defun)
+     ("b" "Buffer" nvp-repl-send-buffer)]
+    ["Repl"
+     ("j" "Jump" nvp-repl-jump)
+     ("c" "Change Working directory/buffer" nvp-repl-cd-here)]]
+  [ :if-nil nvp-repl-current
+    "Start"
+    ("j" "Jump" nvp-repl-jump)])
 
 (provide 'nvp-repl)
 ;; Local Variables:

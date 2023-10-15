@@ -23,6 +23,7 @@
     (nvp-repl-add '(go-mode go-ts-mode)
       :modes '(gorepl-mode)
       :bufname gorepl-buffer-name
+      :send-fn #'gorepl-eval-region
       :init (lambda ()
               (save-window-excursion
                 (gorepl--run-gore '("-autoimport"))

@@ -346,18 +346,18 @@ STR is inserted into REPL unless NO-INSERT."
 ;;;###autoload(autoload 'nvp-repl-menu "nvp-repl")
 (transient-define-prefix nvp-repl-menu ()
   "REPL menu"
-  [ :if-non-nil nvp-repl-current
-    ["Eval"
+  [[ :if-non-nil nvp-repl-current
+     "Eval"
      ("l" "Line" nvp-repl-send-line)
      ("r" "Region" nvp-repl-send-region)
      ("d" "Defun" nvp-repl-send-defun)
      ("b" "Buffer" nvp-repl-send-buffer)]
-    ["Repl"
-     ("j" "Jump" nvp-repl-jump)
-     ("c" "Change Working directory/buffer" nvp-repl-cd-here)]]
-  [ :if-nil nvp-repl-current
-    "Start"
-    ("j" "Jump" nvp-repl-jump)])
+   ["Repl"
+    ("j" "Jump" nvp-repl-jump)
+    ("c" "Change Working directory/buffer" nvp-repl-cd-here
+     :if-non-nil nvp-repl-current)]]
+  ["Manage Repls"
+   (":r" "Remove" nvp-repl-remove)])
 
 (provide 'nvp-repl)
 ;; Local Variables:

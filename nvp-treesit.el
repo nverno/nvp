@@ -139,8 +139,9 @@
         (treesit-inspect-mode)
         ;; (add-hook 'window-buffer-change-functions
         ;;           #'nvp-treesit--change-window-hook nil t)
-        (and (nvp-treesit--query-compile)
-             (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t)))
+        ;; (and (nvp-treesit--query-compile)
+        ;;      (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t))
+        )
     (remove-hook 'after-change-functions #'nvp-treesit--update-errors t)
     ;; (remove-hook 'window-buffer-change-functions #'nvp-treesit--change-window-hook t)
     ;; (nvp-theme-switch)

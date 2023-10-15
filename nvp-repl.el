@@ -53,12 +53,13 @@
 (defvar nvp-repl--process-buffers (make-hash-table))
 
 ;; default REPL to use - shell
-(defvar nvp-repl-default (apply #'nvp-repl-make
-                                (list :init #'nvp-sh-get-process
-                                      :modes '(shell-mode)
-                                      :procname "shell"
-                                      :bufname "*shell"
-                                      :cd #'sh-cd-here)))
+(defvar nvp-repl-default
+  (apply #'nvp-repl-make
+         (list :init #'nvp-sh-get-process
+               :modes '(shell-mode)
+               :procname "shell"
+               :bufname "*shell"
+               :cd (lambda (&rest _) (funcall-interactively #'sh-cd-here)))))
 
 (defun nvp-repl-remove (mode)
   (interactive (list (intern (nvp-read-mode))))
@@ -98,7 +99,7 @@
   :modes '(shell-mode)
   :procname "shell"
   :bufname "*shell"
-  :cd (lambda (&rest _) #'sh-cd-here))
+  :cd (lambda (&rest _) (funcall-interactively #'sh-cd-here)))
 
 ;; return repl for MODE, or default
 (defun nvp-repl-for-mode (mode)

@@ -34,6 +34,11 @@
   ;; the rest are related to interaction
   (send-string    #'comint-send-string) ; function to send string to REPL
   (send-input     #'comint-send-input)  ; function to send current input from REPL
+  send-line
+  send-region
+  send-defun
+  send-sexp
+  send-buffer
   filters                            ; filters applied to text sent to REPL
   cd                                 ; command to change REPL working dir
   cwd                                ; get current working directory
@@ -86,7 +91,7 @@
   :bufname "*ielm"
   :send-input #'ielm-send-input
   :wait 0.1
-  :cd (lambda ()
+  :cd (lambda (&rest _)
         (if (eq major-mode 'inferior-emacs-lisp-mode)
             (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
                 (and (buffer-live-p it)
@@ -248,8 +253,6 @@ Each function takes a process as an argument to test against.")
 ;;   racket/guile remove declarations, etc.
 ;; - setting REPL wd
 ;; - open REPL in project root
-;; - region DWIM
-;; - send current defun
 ;; - sending buffer should call indirect hook to clean input
 
 ;; `display-buffer' action for popping between REPL/source buffers
@@ -289,7 +292,7 @@ TODO:
 ;;   (unless nvp-repl-current
 ;;     (user-error "No current REPL")))
 
-(defun nvp-repl-send-string (str &optional and-go no-insert no-newline)
+(defun nvp-repl-send-string (str &optional no-insert no-newline)
   "Send STR to current REPL, appending a final newline unless NO-NEWLINE.
 STR is inserted into REPL unless NO-INSERT."
   (unless nvp-repl-current
@@ -297,31 +300,59 @@ STR is inserted into REPL unless NO-INSERT."
   (nvp:repl-with (send-input send-string)
     (unless no-newline (setq str (concat str "\n")))
     (--if-let (nvp-repl-get-buffer)
-        (progn
-          (if no-insert
-              (funcall send-string (nvp-repl-process) str)
-            (with-current-buffer it
-              (insert str)
-              (funcall send-input)))
-          (when and-go
-            (pop-to-buffer it)))
+        (progn (if no-insert
+                   (funcall send-string (nvp-repl-process) str)
+                 (with-current-buffer it
+                   (insert str)
+                   (funcall send-input))))
       (user-error "Couldn't create REPL."))))
+
+(eval-when-compile
+  (defmacro nvp:repl-send (sender sender-args and-go fallback-args &optional apply)
+    (declare (indent defun))
+    `(progn (--if-let (repl:val ,sender)
+                (funcall-interactively it ,@sender-args)
+              (,(if apply 'apply 'funcall) #'nvp-repl-send-string ,@fallback-args))
+            (and ,and-go (pop-to-buffer (nvp-repl-buffer))))))
 
 (defun nvp-repl-send-region (start end &optional and-go)
   (interactive "r\nP")
-  (nvp-repl-send-string (buffer-substring-no-properties start end) and-go))
+  (nvp:repl-send "send-region" (start end) and-go
+    ((buffer-substring-no-properties start end))))
 
 (defun nvp-repl-send-line (&optional and-go)
   (interactive "P")
-  (nvp-repl-send-string
-   (buffer-substring-no-properties (nvp:point 'bol) (nvp:point 'eoll))
-   and-go))
+  (nvp:repl-send "send-line" () and-go
+    ((buffer-substring-no-properties (nvp:point 'bol) (nvp:point 'eoll)))))
+
+(defun nvp-repl-send-sexp (&optional and-go)
+  (interactive "P")
+  (nvp:repl-send "send-sexp" () and-go ((thing-at-point 'sexp))))
+
+(defun nvp-repl-send-dwim (&optional and-go)
+  "Send region or line."
+  (interactive "P")
+  (if (region-active-p)
+      (funcall-interactively
+       #'nvp-repl-send-region (region-beginning) (region-end) and-go)
+    (funcall-interactively #'nvp-repl-send-line and-go)))
 
 (defun nvp-repl-send-buffer (&optional and-go)
   (interactive "P")
-  (nvp-repl-send-string
-   (buffer-substring-no-properties (point-min) (point-max))
-   and-go))
+  (nvp:repl-send "send-buffer" () and-go
+    ((buffer-substring-no-properties (point-min) (point-max)))))
+
+(defun nvp-repl-send-defun (&optional and-go)
+  (interactive "P")
+  (nvp:repl-send "send-defun" () and-go
+    ((apply #'buffer-substring-no-properties
+            (nvp:tap-or-region 'bdwim 'defun :pulse t)))))
+
+(defun nvp-repl-send-defun-or-region (&optional and-go)
+  (interactive "P")
+  (if (region-active-p) (call-interactively #'nvp-repl-send-region)
+    (call-interactively #'nvp-repl-send-defun))
+  (and and-go (pop-to-buffer (nvp-repl-buffer))))
 
 (defun nvp-repl-cd-here (&optional dir)
   "Set repl working directory to DIR (default `default-directory').
@@ -338,17 +369,9 @@ Prompt with \\[universal-argument]."
       ;; TODO: signal unsupported error
       (user-error "Not supported by current repl."))))
 
-(defun nvp-repl-send-defun (start end &optional and-go)
-  (interactive
-   (let ((bnds (nvp:tap-or-region 'bdwim 'defun :pulse t)))
-     (if bnds (append bnds (list current-prefix-arg))
-       (list nil current-prefix-arg))))
-  (nvp-repl-send-string
-   (buffer-substring-no-properties start end)
-   and-go))
-
 ;; -------------------------------------------------------------------
 ;;; Transient 
+
 (require 'transient)
 
 ;;;###autoload(autoload 'nvp-repl-menu "nvp-repl")
@@ -356,9 +379,11 @@ Prompt with \\[universal-argument]."
   "REPL menu"
   [[ :if-non-nil nvp-repl-current
      "Eval"
-     ("l" "Line" nvp-repl-send-line)
+     ("s" "Last sexp" nvp-repl-send-sexp)
+     ("l" "Line or region" nvp-repl-send-line)
      ("r" "Region" nvp-repl-send-region)
-     ("d" "Defun" nvp-repl-send-defun)
+     ("f" "Defun" nvp-repl-send-defun)
+     ("d" "Defun or region" nvp-repl-send-defun-or-region)
      ("b" "Buffer" nvp-repl-send-buffer)]
    ["Repl"
     ("j" "Jump" nvp-repl-jump)

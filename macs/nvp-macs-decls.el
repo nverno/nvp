@@ -222,6 +222,14 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; repls / shell
        nvp-comint-setup-history
        nvp-repl-add
+       nvp-repl-jump
+       nvp-repl-send-string
+       nvp-repl-send-region
+       nvp-repl-send-line
+       nvp-repl-send-buffer
+       nvp-repl-send-defun
+       nvp-repl-cd-here
+       nvp-repl-menu
        nvp-shell
        nvp-shell-launch-terminal
        ;; indication

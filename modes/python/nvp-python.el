@@ -106,6 +106,9 @@
   (nvp-repl-add '(python-mode python-ts-mode)
     :modes '(inferior-python-mode)
     :find-fn #'python-shell-get-process
+    :cd (lambda (&optional dir)
+          (nvp-repl-send-string
+           (format "import os; os.chdir(\"%s\")" (or dir default-directory))))
     :init (lambda ()
             (save-window-excursion
               (call-interactively #'conda-env-send-buffer)))))

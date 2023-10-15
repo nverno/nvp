@@ -98,7 +98,7 @@
   :modes '(shell-mode)
   :procname "shell"
   :bufname "*shell"
-  :cd #'sh-cd-here)
+  :cd (lambda (&rest _) #'sh-cd-here))
 
 ;; return repl for MODE, or default
 (defun nvp-repl-for-mode (mode)
@@ -323,12 +323,19 @@ STR is inserted into REPL unless NO-INSERT."
    and-go))
 
 (defun nvp-repl-cd-here (&optional dir)
-  (interactive "P")
+  "Set repl working directory to DIR (default `default-directory').
+Prompt with \\[universal-argument]."
+  (interactive
+   (list (if current-prefix-arg
+             (expand-file-name (read-directory-name "Directory: " default-directory))
+           default-directory)))
   (when nvp-repl-current
-    (--when-let (repl:val "cd")
-      (let ((default-directory (if dir dir default-directory)))
-        (funcall it)
-        (nvp-repl-update (repl:val "proc") (current-buffer))))))
+    (--if-let (repl:val "cd")
+        (let ((default-directory (or dir default-directory)))
+          (funcall it dir)
+          (nvp-repl-update (repl:val "proc") (current-buffer)))
+      ;; TODO: signal unsupported error
+      (user-error "Not supported by current repl."))))
 
 (defun nvp-repl-send-defun (start end &optional and-go)
   (interactive

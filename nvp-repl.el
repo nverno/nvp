@@ -41,6 +41,7 @@
   send-buffer
   filters                            ; filters applied to text sent to REPL
   cd                                 ; command to change REPL working dir
+  pwd                                ; command to get REPL working directory
   cwd                                ; get current working directory
   ;; set internally
   proc                               ; REPL process
@@ -64,14 +65,9 @@
                :modes '(shell-mode)
                :procname "shell"
                :bufname "*shell"
-               :cd (lambda (&rest _) (funcall-interactively #'sh-cd-here)))))
-
-(defun nvp-repl-remove (mode)
-  (interactive (list (intern (nvp-read-mode))))
-  (setq nvp-repl-alist
-        (-filter (lambda (e)
-                   (not (memq mode (car e))))
-                 nvp-repl-alist)))
+               :pwd "pwd"
+               :cd (lambda (dir) (let ((default-directory dir))
+                              (funcall-interactively #'sh-cd-here))))))
 
 ;;;###autoload
 (defun nvp-repl-add (mmodes &rest args)
@@ -83,7 +79,7 @@
 (put 'nvp-repl-add 'lisp-indent-function 'defun)
 
 ;; initialize some REPLs
-(nvp:decl ielm-send-input)
+(nvp:decl ielm-send-input ielm-print-working-buffer)
 (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
   :init #'ielm
   :modes '(inferior-emacs-lisp-mode)
@@ -91,6 +87,7 @@
   :bufname "*ielm"
   :send-input #'ielm-send-input
   :wait 0.1
+  :pwd #'ielm-print-working-buffer
   :cd (lambda (&rest _)
         (if (eq major-mode 'inferior-emacs-lisp-mode)
             (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
@@ -104,7 +101,9 @@
   :modes '(shell-mode)
   :procname "shell"
   :bufname "*shell"
-  :cd (lambda (&rest _) (funcall-interactively #'sh-cd-here)))
+  :pwd "pwd"
+  :cd (lambda (dir) (let ((default-directory dir))
+                 (funcall-interactively #'sh-cd-here))))
 
 ;; return repl for MODE, or default
 (defun nvp-repl-for-mode (mode)
@@ -354,20 +353,59 @@ STR is inserted into REPL unless NO-INSERT."
     (call-interactively #'nvp-repl-send-defun))
   (and and-go (pop-to-buffer (nvp-repl-buffer))))
 
-(defun nvp-repl-cd-here (&optional dir)
+(eval-when-compile
+  (defsubst nvp:repl--repl-buffer-p ()
+    (gethash (current-buffer) nvp-repl--process-buffers))
+
+  (defmacro nvp:repl-with-src-buffer (&rest body)
+    (declare (indent defun) (debug t))
+    (nvp:with-syms (buf)
+      `(let ((,buf (if nvp-repl-current (current-buffer)
+                     (nvp:repl--repl-buffer-p))))
+         (unless (and ,buf (buffer-live-p ,buf))
+           (user-error "No source buffer associated with current buffer."))
+         (with-current-buffer ,buf
+           ,@body)))))
+
+(defun nvp-repl-cd (&optional dir)
   "Set repl working directory to DIR (default `default-directory').
 Prompt with \\[universal-argument]."
   (interactive
    (list (if current-prefix-arg
              (expand-file-name (read-directory-name "Directory: " default-directory))
            default-directory)))
-  (when nvp-repl-current
-    (--if-let (repl:val "cd")
-        (let ((default-directory (or dir default-directory)))
-          (funcall it dir)
-          (nvp-repl-update (repl:val "proc") (current-buffer)))
-      ;; TODO: signal unsupported error
-      (user-error "Not supported by current repl."))))
+  (unless dir (setq dir default-directory))
+  (nvp:repl-with-src-buffer
+    (let ((default-directory dir))
+      (--if-let (repl:val "cd")
+          (progn (pcase it
+                   ((pred stringp) (nvp-repl-send-string (format it default-directory)))
+                   ((pred functionp) (funcall-interactively it default-directory))
+                   ;; TODO: signal unsupported error
+                   (_ (user-error "unhandled cd type")))
+                 (nvp-repl-update (repl:val "proc") (current-buffer))
+                 (with-current-buffer (nvp-repl-buffer)
+                   (setq default-directory dir)))
+        (user-error "not implemented")))))
+
+(defun nvp-repl-pwd (&optional and-go)
+  (interactive "P")
+  (nvp:repl-with-src-buffer 
+    (--if-let (repl:val "pwd")
+        (progn (pcase it
+                 ((pred stringp) (nvp-repl-send-string it))
+                 ((pred functionp) (funcall it))
+                 ((pred symbolp) (eval it))
+                 (_ (user-error "unhandled pwd type")))
+               (and and-go (pop-to-buffer (nvp-repl-buffer))))
+      (user-error "not implemented"))))
+
+(defun nvp-repl-remove (mode)
+  (interactive (list (intern (nvp-read-mode))))
+  (setq nvp-repl-alist
+        (-filter (lambda (e)
+                   (not (memq mode (car e))))
+                 nvp-repl-alist)))
 
 ;; -------------------------------------------------------------------
 ;;; Transient 
@@ -387,8 +425,8 @@ Prompt with \\[universal-argument]."
      ("b" "Buffer" nvp-repl-send-buffer)]
    ["Repl"
     ("j" "Jump" nvp-repl-jump)
-    ("c" "Change Working directory/buffer" nvp-repl-cd-here
-     :if-non-nil nvp-repl-current)]]
+    ("c" "Change Working directory/buffer" nvp-repl-cd)
+    ("C" "Current working directory" nvp-repl-pwd)]]
   ["Manage Repls"
    (":r" "Remove" nvp-repl-remove)])
 

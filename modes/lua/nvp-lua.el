@@ -14,6 +14,9 @@
     :send-region #'lua-send-region
     :send-buffer #'lua-send-buffer
     :find-fn #'lua-get-create-process
+    ;; os.execute(\"pwd\")
+    :cd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
+    :pwd "lfs=require 'lfs'; print(lfs.currentdir())"
     :init #'lua-get-create-process))
 
 (provide 'nvp-lua)

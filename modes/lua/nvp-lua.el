@@ -6,6 +6,8 @@
 (nvp:decls)
 (require 'lua-mode)
 
+;;; Repl
+
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(lua-mode lua-ts-mode)
     :send-string #'lua-send-string
@@ -14,10 +16,16 @@
     :send-region #'lua-send-region
     :send-buffer #'lua-send-buffer
     :find-fn #'lua-get-create-process
-    ;; os.execute(\"pwd\")
     :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
     :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
     :init #'lua-get-create-process))
+
+;;; Help
+
+(defun nvp-lua-documentation (thing)
+  (interactive (list (read-string "Help: " (lua-funcname-at-point))))
+  (let ((url (concat lua-documentation-url "#pdf-" thing)))
+    (funcall lua-documentation-function url)))
 
 (provide 'nvp-lua)
 ;; Local Variables:

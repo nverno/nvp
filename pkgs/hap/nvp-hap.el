@@ -248,6 +248,8 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 ;;; Backends
 
 (defvar-local nvp-hap-company-backend 'company-capf)
+(defvar-local nvp-hap-syntax-table nil
+  "When non-nil, syntax table to use when determining thing at point.")
 (defvar-local nvp-hap-backend nil)
 (defvar-local nvp-hap--disabled-backends nil)
 (defvar-local nvp-hap--treesit-p nil)
@@ -310,7 +312,10 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
       (when (and
              (nvp-hap-init-backend backend)
              (setq sym (let ((nvp-hap-backend backend))
-                         (nvp-hap-call-backend 'thingatpt prefix))))
+                         (if nvp-hap-syntax-table
+                             (with-syntax-table nvp-hap-syntax-table
+                               (nvp-hap-call-backend 'thingatpt prefix))
+                           (nvp-hap-call-backend 'thingatpt prefix)))))
         (setq nvp-hap-backend backend
               nvp-hap--thingatpt sym
               nvp-hap--doc-buffer nil)

@@ -135,16 +135,6 @@
   :reader (lambda (prompt &rest _)
             (completing-read prompt '("off" "messages" "verbose") nil t)))
 
-;;; Treesit
-(transient-define-infix nvp-edebug-treesit--toggle-ts-debug ()
-  :class 'transient-lisp-variable
-  :variable 'treesit--font-lock-verbose
-  :reader (lambda (&rest _) (not treesit--font-lock-verbose)))
-(transient-define-infix nvp-edebug-treesit--toggle-indent-verbose ()
-  :class 'transient-lisp-variable
-  :variable 'treesit--indent-verbose
-  :reader (lambda (&rest _) (not treesit--indent-verbose)))
-
 ;;; Emacs
 (transient-define-suffix nvp-edebug-emacs--launch (args)
   "Launch emacs with ARGS."
@@ -215,7 +205,7 @@
     ("-l" nvp-edebug-emacs--load)
     ("L" "Launch" nvp-edebug-emacs--launch)]]
   [["Other"
-    ("/tree" "Tree-sitter" nvp-edebug-treesit
+    ("/tree" "Tree-sitter" nvp-treesit-menu
      :if (lambda () (ignore-errors (treesit-buffer-root-node))))
     ("/tran" "Transient" nvp-transient-menu)
     ("/smie" "Smie" nvp-edebug-smie

@@ -6,6 +6,9 @@
 (require 'treesit nil t)
 (nvp:decls :p ("treesit-auto"))
 
+(defun nvp-treesit-ready-p ()
+  (ignore-errors (treesit-buffer-root-node)))
+
 ;; Setup treesitter sources
 (defun nvp-treesit--setup-sources ()
   (when (require 'treesit-auto nil t)
@@ -169,6 +172,43 @@
 (define-globalized-minor-mode nvp-treesit-mode
   nvp-treesit-minor-mode nvp-treesit-minor-mode-on
   :group 'treesit)
+
+;; -------------------------------------------------------------------
+;;; Transient
+
+(require 'transient)
+(nvp:auto "ts-util" ts-util-nodes)
+
+(transient-define-infix nvp-treesit-menu--toggle-ts-debug ()
+  :class 'transient-lisp-variable
+  :variable 'treesit--font-lock-verbose
+  :reader (lambda (&rest _) (not treesit--font-lock-verbose)))
+
+(transient-define-infix nvp-treesit-menu--toggle-indent-verbose ()
+  :class 'transient-lisp-variable
+  :variable 'treesit--indent-verbose
+  :reader (lambda (&rest _) (not treesit--indent-verbose)))
+
+;;;###autoload(autoload 'nvp-treesit-menu "nvp-treesit")
+(transient-define-prefix nvp-treesit-menu ()
+  "Treesit"
+  [ :if nvp-treesit-ready-p
+    ["Current"
+     ("?" "Inspect node" treesit-inspect-node-at-point)
+     ("e" "Toggle errors" nvp-treesit-toggle-errors)]
+    ["Explorer"
+     ("j" "Jump" nvp-treesit-explorer-jump)]
+    ["Query"
+     ("v" "Validate" nvp-treesit-validate)]]
+  [["Parsers"
+    ("pn" "List nodes" ts-util-nodes)
+    ("pi" "Install parser" nvp-treesit-install)]
+   ["Dev Mode"
+    ("ml" "local" nvp-treesit-minor-mode)
+    ("mg" "global" nvp-treesit-mode)]
+   ["Debug"
+    (":i" "Toggle indent verbose" nvp-treesit-menu--toggle-indent-verbose)
+    (":f" "Toggle font debug" nvp-treesit-menu--toggle-ts-debug)]])
 
 (provide 'nvp-treesit)
 ;; Local Variables:

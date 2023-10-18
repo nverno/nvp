@@ -110,7 +110,8 @@
               (nvp-repl-send-string
                (format "import os; os.chdir(\"%s\")" (or dir default-directory))))
     :pwd-cmd "import os; os.getcwd()"
-    :help-cmd 
+    :help-cmd (lambda (&optional thing)
+                (nvp-repl-send-string (if thing (format "help(%s)" thing) "help()")))
     :init (lambda ()
             (save-window-excursion
               (call-interactively #'conda-env-send-buffer)))))

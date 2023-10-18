@@ -81,7 +81,8 @@
   :enable-function 'nvp-elisp-abbrev-expand-fn-p)
 
 (define-abbrev-table 'emacs-lisp-mode-abbrev-table
-  '(("d" "defun" nil :system t)
+  '(
+    ("d" "defun" nil :system t)
     ("f" "lambda" nil :system t)
     ("l" "let" nil :system t)
     ("m" "message" nil :system t)
@@ -326,6 +327,7 @@
     ("defc" "defconst" nil :system t)
     ("defh" "defhydra" nil :system t)
     ("defi" "define-inline" nil :system t)
+    ("defk" "defvar-keymap" nil :system t)
     ("defs" "defsubst" nil :system t)
     ("dirf" "directory-files" nil :system t)
     ("dofa" "define-obsolete-function-alias" nil :system t)

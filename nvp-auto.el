@@ -4,7 +4,6 @@
 ;;
 ;; Random autoloads
 ;; - some movement functions
-;; - hydras: yank/pop, goto-line
 ;; - some other randoms
 ;;
 ;;; Code:
@@ -49,39 +48,6 @@
   (interactive "^p")
   (or arg (setq arg 1))
   (nvp-move-forward-paragraph (- arg)))
-
-
-;; -------------------------------------------------------------------
-;;; Hydras
-
-;;;###autoload(autoload 'nvp-hydra-page/backward-page "nvp-auto")
-;;;###autoload(autoload 'nvp-hydra-page/forward-page "nvp-auto")
-(defhydra nvp-hydra-page () "page"
-  ("[" forward-page)
-  ("]" backward-page)
-  ("o" nvp-outline-hydra/body :exit t))
-
-;;;###autoload(autoload 'nvp-hydra-goto-line/goto-line "nvp-auto")
-(nvp:hydra-set-property 'nvp-hydra-goto-line)
-(defhydra nvp-hydra-goto-line (goto-map) "line"
-  ("g" goto-line "go")
-  ("b" (push-mark (car mark-ring) nil 'activate) "mark to start" :bind nil)
-  ("m" set-mark-command "mark" :bind nil)
-  ("p" (set-mark-command 1) "pop" :bind nil)
-  ("e" exchange-point-and-mark "exchange" :bind nil)
-  ("q" nil "quit" :bind nil))
-
-;; Yank / Pop
-;;;###autoload(autoload 'nvp-hydra-yank-pop/yank "nvp-auto")
-;;;###autoload(autoload 'nvp-hydra-yank-pop/yank-pop "nvp-auto")
-(nvp:hydra-set-property 'nvp-hydra-yank-pop)
-(defhydra nvp-hydra-yank-pop ()
-  "yank"
-  ("C-y" yank nil)
-  ("M-y" yank-pop nil)
-  ("y" (yank-pop 1) "next")
-  ("Y" (yank-pop -1) "prev")
-  ("h" consult-yank-replace "list"))
 
 
 ;; -------------------------------------------------------------------

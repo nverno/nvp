@@ -18,22 +18,18 @@
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;;; REPL
+
 (with-eval-after-load 'nvp-repl
   (with-eval-after-load 'gorepl-mode
     (nvp-repl-add '(go-mode go-ts-mode)
       :modes '(gorepl-mode)
       :bufname gorepl-buffer-name
-      ;; :send-input #'gorepl-eval-region
+      ;; :send-input #'gorepl-eval
+      :send-buffer #'gorepl-run-load-current-file
       :init (lambda ()
               (save-window-excursion
                 (gorepl--run-gore '("-autoimport"))
                 (get-buffer-process (current-buffer)))))))
-
-(defun nvp-go-send-region-or-defun (beg end)
-  "Send current region or defun."
-  (interactive (nvp:tap-or-region 'bdwim 'defun :pulse t))
-  (when (and beg end)
-    (gorepl-eval-region beg end)))
 
 ;;; Help
 

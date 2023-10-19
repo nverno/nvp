@@ -34,7 +34,7 @@
 (require 'company)
 (require 'company-quickhelp)
 (nvp:decls :v (info-lookup-other-window-flag)
-           :f (nvp-hap-treesit-active-p))
+           :f (nvp-hap-treesit-local-active-p))
 (nvp:auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
 
 
@@ -297,7 +297,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
   (unless (member backend nvp-hap--disabled-backends)
     (if (plistp backend)
         (and (nvp-hap-init-backend (plist-get backend :backend))
-             (nvp-hap-treesit-active-p backend))
+             (nvp-hap-treesit-local-active-p backend))
       (or (and (symbolp backend)
                (eq t (get backend 'hap-init)))
           (unless (get backend 'hap-init)

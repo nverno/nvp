@@ -8,7 +8,8 @@
 
 ;;; Font-locking
 
-(defface nvp-dockerfile-shell-face `((t :inherit (nvp-block-face)))
+(defface nvp-dockerfile-shell-face
+  `((t :inherit (nvp-block-face) :extend t))
   "Face for \\='RUN shell commands.")
 
 (defvar dockerfile-ts--treesit-range-rules
@@ -16,6 +17,7 @@
     (treesit-range-rules
      :embed 'bash
      :host 'dockerfile
+     :local t
      '((shell_command) @bash))))
 
 (defun dockerfile-ts--treesit-language-at-point (point)
@@ -28,7 +30,7 @@
 (defun dockerfile-ts--setup-bash ()
   (when (treesit-ready-p 'bash)
     (require 'sh-script)
-    (treesit-parser-create 'bash)
+    ;; (treesit-parser-create 'bash)
     (setq-local treesit-language-at-point-function
                 #'dockerfile-ts--treesit-language-at-point)
     (setq-local treesit-range-settings dockerfile-ts--treesit-range-rules)

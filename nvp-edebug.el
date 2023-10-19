@@ -159,9 +159,19 @@
       (completing-read prompt '("bare" "site" "funcs") nil t initial-input history))
      user-emacs-directory)))
 
+(defun nvp-edebug-smie--toggle-verbose ()
+  "Toggle smie indent verbose."
+  (interactive)
+  (if (advice-member-p #'smie-config-show-indent 'smie-indent-line)
+      (progn (advice-remove 'smie-indent-line #'smie-config-show-indent)
+             (message "Disabled verbose indent"))
+    (advice-add 'smie-indent-line :after #'smie-config-show-indent)
+    (message "Enabled verbose indent")))
+
 (transient-define-prefix nvp-edebug-smie ()
   "Smie debug"
   [["Smie"
+    ("v" "Toggle indent verbose" nvp-edebug-smie--toggle-verbose :transient t)
     ("d" "Debug smie-rules-function" smie-edebug)
     ("?" "Show rules at point" smie-config-show-indent :transient t)]
    ["Guess"

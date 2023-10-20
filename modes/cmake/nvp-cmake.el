@@ -5,6 +5,8 @@
 (require 'cmake-mode nil t)
 (nvp:decls :p "cmake-mode")
 
+(nvp:package-define-root :name nvp-cmake)
+
 (defun nvp-cmake-current-function ()
   (let ((ppss (parse-partial-sexp (point-min) (point))))
     (when (nth 0 ppss)
@@ -65,13 +67,15 @@
     (c-with-syntax-table nvp-cmake-abbrev-syntax-table
       (abbrev--default-expand))))
 
-(defun nvp-cmake-add-abbrevs ()
-  (interactive)
-  (let ((prog (concat (file-name-directory (locate-library "nvp-cmake"))
-                      "etc/dump-vars")))
-    (mapc
-     (lambda (a) (define-abbrev cmake-mode-abbrev-table (downcase a) a))
-     (process-lines prog))))
+(defun nvp-cmake-add-abbrevs (&optional prefix)
+  (interactive "P")
+  (let ((prog (expand-file-name "bin/dump-vars.awk" (nvp:package-root nvp-cmake))))
+    (pcase prefix
+      ('(4) (nvp:with-results-buffer :title "Cmake properties/variables"
+              (call-process-shell-command prog nil (current-buffer))))
+      (_ (mapc
+          (lambda (a) (define-abbrev cmake-mode-abbrev-table (downcase a) a))
+          (process-lines prog))))))
 
 (provide 'nvp-cmake)
 ;;; nvp-cmake.el ends here

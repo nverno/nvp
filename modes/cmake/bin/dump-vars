@@ -7,5 +7,5 @@ filter() {
         -e '/</d'
 }
 
-cmake --help-variable-list | filter
-cmake --help-property-list | filter    
+cmake --help-variable-list | filter | uniq
+cmake --help-property-list | filter | uniq

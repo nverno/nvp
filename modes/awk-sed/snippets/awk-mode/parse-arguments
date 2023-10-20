@@ -1,0 +1,19 @@
+# -*- mode: snippet -*-
+# name: process script arguments
+# key: pargs
+# --
+pos = 0
+while (ARGV[++pos]) {
+  match(ARGV[pos], /^--${1:arg}(=(.*)?)?$/, group)
+  if (RSTART) {
+    delete ARGV[pos]
+    if (group[2])
+      ${2:$1} = group[2]
+    else {
+      $2 = ARGV[++pos]
+      delete ARGV[pos]
+    }
+    continue
+  }${3: # match more args}
+  break
+}

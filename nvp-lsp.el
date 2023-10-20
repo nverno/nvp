@@ -4,8 +4,32 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'lsp-mode nil t)
+(require 'transient)
 (require 'nvp)
 (nvp:decls :p (hs lsp))
+
+
+;;; Transient
+
+(transient-define-infix nvp-lsp-menu--toggle-lsp-io ()
+  "Toggle lsp client-server logging."
+  :class 'transient-lisp-variable
+  :variable 'lsp-log-io
+  :reader (lambda (&rest _) (not lsp-log-io)))
+
+(transient-define-infix nvp-lsp-menu--toggle-lsp-server ()
+  "Toggle lsp server tracing."
+  :class 'transient-lisp-variable
+  :variable 'lsp-server-trace
+  :reader (lambda (prompt &rest _)
+            (completing-read prompt '("off" "messages" "verbose") nil t)))
+
+;;;###autoload(autoload 'nvp-lsp-menu "nvp-lsp")
+(transient-define-prefix nvp-lsp-menu ()
+  "Lsp"
+  ["Debug"
+   ("i" "I/O logging" nvp-lsp-menu--toggle-lsp-io)
+   ("s" "Server tracing" nvp-lsp-menu--toggle-lsp-server)])
 
 ;; -------------------------------------------------------------------
 ;;; Log IO

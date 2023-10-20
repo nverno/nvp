@@ -119,22 +119,6 @@
        (mapcar #'intern-soft
                (completing-read-multiple prompt '(http dav retrieval handlers)))))))
 
-;;; LSP
-(transient-define-infix nvp-edebug-emacs--toggle-lsp-io ()
-  "Toggle lsp client-server logging."
-  :description "I/O logging"
-  :class 'transient-lisp-variable
-  :variable 'lsp-log-io
-  :reader (lambda (&rest _) (not lsp-log-io)))
-
-(transient-define-infix nvp-edebug-emacs--toggle-lsp-server ()
-  "Toggle lsp server tracing."
-  :description "Server tracing"
-  :class 'transient-lisp-variable
-  :variable 'lsp-server-trace
-  :reader (lambda (prompt &rest _)
-            (completing-read prompt '("off" "messages" "verbose") nil t)))
-
 ;;; Emacs
 (transient-define-suffix nvp-edebug-emacs--launch (args)
   "Launch emacs with ARGS."
@@ -215,6 +199,7 @@
     ("-l" nvp-edebug-emacs--load)
     ("L" "Launch" nvp-edebug-emacs--launch)]]
   [["Other"
+    ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode)))
     ("/tree" "Tree-sitter" nvp-treesit-menu
      :if (lambda () (ignore-errors (treesit-buffer-root-node))))
     ("/tran" "Transient" nvp-transient-menu)
@@ -222,11 +207,7 @@
      :if (lambda () (eq 'smie-indent-line indent-line-function)))
     ("/url" nvp-edebug-emacs--toggle-url :if (lambda () (boundp 'url-debug)))
     ("/tramp" "Toggle tramp debug" nvp-edebug-emacs--toggle-tramp
-     :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))]
-   [ :if (lambda () (featurep 'lsp-mode))
-     "LSP"
-     ("/lsp-io" nvp-edebug-emacs--toggle-lsp-io)
-     ("/lsp-server" nvp-edebug-emacs--toggle-lsp-server)]])
+     :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))]])
 
 (provide 'nvp-edebug)
 ;; Local Variables:

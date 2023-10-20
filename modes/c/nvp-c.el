@@ -90,23 +90,11 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
   (nvp-abbrev-expand-not-after-punct-p '(_)))
 
 ;;; GDB
-
-(defun nvp-gdb-init (callback)
-  (fset 'repl-init
-        `(lambda ()
-           (remove-hook 'gud-mode-hook 'repl-init)
-           (funcall ,callback)))
-  (unwind-protect
-      (progn
-        (add-hook 'gud-mode-hook 'repl-init)
-        (call-interactively #'gdb))
-    (remove-hook 'gud-mode-hook 'repl-init)))
-
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(c-mode c-ts-mode c++-mode c++-ts-mode)
     :modes '(gud-mode)
     :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
-    :init-callback #'nvp-gdb-init))
+    :init-callback #'gdb))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers

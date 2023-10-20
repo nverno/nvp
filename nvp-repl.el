@@ -224,21 +224,37 @@ Each function takes a process as an argument to test against.")
       (or (nvp-repl-start)             ; initialize new REPL
           (user-error "Failed to initialize REPL"))))
 
-(defun nvp-repl-start-callback ()
+(defun nvp-repl-start-callback (&optional and-go)
   "Associate repl with source from repl buffer after it starts."
   (let ((src-buff (current-buffer)))
     `(lambda ()
        (cl-assert (buffer-live-p ,src-buff))
        (if-let ((proc (get-buffer-process (current-buffer)))
                 (p-buff (process-buffer proc)))
-           (with-current-buffer ,src-buff
-             (nvp-repl-update proc ,src-buff p-buff))
+           (progn
+             (with-current-buffer ,src-buff
+               (nvp-repl-update proc ,src-buff p-buff))
+             ,(when and-go '(pop-to-buffer (current-buffer))))
          (user-error "Failed to initialize REPL for %S" ,src-buff)))))
+
+(defun nvp--repl-init-with-callback ()
+  "Run repl initialization with temporary repl mode hooks added to associate
+repl with source buffer."
+  (nvp:repl-with (init-callback modes)
+    (let ((hooks (mapcar (lambda (m) (intern (concat (symbol-name m) "-hook"))) modes)))
+      (fset 'nvp-repl--init
+            `(lambda ()
+               (dolist (hook ',hooks) (remove-hook hook #'nvp-repl--init))
+               (funcall ,(nvp-repl-start-callback t))))
+      (condition-case nil
+          (progn (dolist (hook hooks) (add-hook hook #'nvp-repl--init))
+                 (call-interactively init-callback))
+        (error (dolist (hook hooks) (remove-hook hook #'nvp-repl--init)))))))
 
 (defun nvp-repl-start ()
   "Return a REPL buffer associated with current buffer."
   (if-let (init (repl:val "init-callback"))
-      (prog1 'async (funcall init (nvp-repl-start-callback)))
+      (prog1 'async (nvp--repl-init-with-callback))
     (let ((wait (repl:val "wait"))
           (proc (funcall (repl:val "init")))
           p-buff)
@@ -253,13 +269,6 @@ Each function takes a process as an argument to test against.")
 
 ;; -------------------------------------------------------------------
 ;;; Commands
-
-;; TODO: mode specific commands
-;; - indirect call for sending region, eg. in perl lines should be joined,
-;;   racket/guile remove declarations, etc.
-;; - setting REPL wd
-;; - open REPL in project root
-;; - sending buffer should call indirect hook to clean input
 
 ;; `display-buffer' action for popping between REPL/source buffers
 (defvar nvp-repl--display-action
@@ -300,6 +309,12 @@ TODO:
 
 ;; -------------------------------------------------------------------
 ;;; Basic REPL interaction
+;;
+;; TODO: mode specific commands
+;; - indirect call for sending region, eg. in perl lines should be joined,
+;;   racket/guile remove declarations, etc.
+;; - open REPL in project root
+;; - sending buffer should call indirect hook to clean input
 
 ;; (defun nvp-repl-send-input (&optional no-newline)
 ;;   "Send repl's current input, appending a final newline unless NO-NEWLINE."
@@ -344,12 +359,14 @@ STR is inserted into REPL unless NO-INSERT."
   (nvp:repl-send "send-sexp" () and-go ((thing-at-point 'sexp))))
 
 (defun nvp-repl-send-dwim (&optional and-go)
-  "Send region or line."
+  "Send region or sexp (if defined by repl), or fallback to line."
   (interactive "P")
-  (if (region-active-p)
-      (funcall-interactively
-       #'nvp-repl-send-region (region-beginning) (region-end) and-go)
-    (funcall-interactively #'nvp-repl-send-line and-go)))
+  (cond
+   ((region-active-p)
+    (nvp-repl-send-region (region-beginning) (region-end) and-go))
+   ((repl:val "send-sexp")
+    (nvp-repl-send-sexp and-go))
+   (t (nvp-repl-send-line and-go))))
 
 (defun nvp-repl-send-buffer (&optional and-go)
   (interactive "P")
@@ -364,9 +381,10 @@ STR is inserted into REPL unless NO-INSERT."
 
 (defun nvp-repl-send-defun-or-region (&optional and-go)
   (interactive "P")
-  (if (region-active-p) (call-interactively #'nvp-repl-send-region)
-    (call-interactively #'nvp-repl-send-defun))
-  (and and-go (pop-to-buffer (nvp-repl-buffer))))
+  (cond
+   ((region-active-p)
+    (nvp-repl-send-region (region-beginning) (region-end) and-go))
+   (t (nvp-repl-send-defun and-go))))
 
 ;; -------------------------------------------------------------------
 ;;; REPL commands
@@ -452,7 +470,7 @@ Prompt with \\[universal-argument]."
 (transient-define-prefix nvp-repl-menu ()
   "REPL menu"
   [[ :if-non-nil nvp-repl-current
-     "Eval"
+     "Send"
      ("s" "Last sexp" nvp-repl-send-sexp)
      ("l" "Line or region" nvp-repl-send-line)
      ("r" "Region" nvp-repl-send-region)

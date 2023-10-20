@@ -17,6 +17,35 @@
        (?d "[d]ef" #'racket-expand-definition)
        (?f "[f]ile" #'racket-expand-file)))))
 
+;;; Repl
+
+(defun nvp-racket-send-buffer (&optional _and-go)
+  (interactive "P")
+  (save-excursion
+    (goto-char (point-min))
+    (while (and (not (eobp))
+                (looking-at-p "[ \t]*$\\|^#"))
+      (forward-line))
+    (racket-send-region (point) (point-max))))
+
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(racket-mode)
+    :modes '(racket-repl-mode)
+    :bufname racket-repl-buffer-name
+    :send-string #'ignore
+    :send-region #'racket-send-region
+    :send-defun #'racket-send-definition
+    :send-sexp #'racket-send-last-sexp
+    :send-buffer #'nvp-racket-send-buffer
+    ;; :eval-sexp #'racket-eval-last-sexp
+    :init-callback 
+    (lambda (&optional prefix)
+      ;; PREFIX '(16) - with debugging, `racket-error-context' "debug"
+      (interactive "P")
+      (racket-run-and-switch-to-repl prefix))))
+
+;;; Help
+
 ;; `nvp-hap-backend' help-at-point function for Racket using `racket-mode' to
 ;; parse online documentation
 (defun nvp-hap-racket (command &optional arg &rest args)
@@ -24,9 +53,9 @@
     (thingatpt (nvp-hap-thing-at-point arg nil nil (racket--describe-terms)))
     (doc-buffer                         ; args has prefix
      (let ((how (if args (racket--buffer-file-name)
-                    (pcase (get-text-property (point) 'racket-xp-doc)
-                      (`(,path ,anchor) `(,path . ,anchor))
-                      (_                (racket--buffer-file-name))))))
+                  (pcase (get-text-property (point) 'racket-xp-doc)
+                    (`(,path ,anchor) `(,path . ,anchor))
+                    (_                (racket--buffer-file-name))))))
        (save-window-excursion
          (let ((display-buffer-overriding-action
                 '(nil . ((inhibit-switch-frame . t)))))

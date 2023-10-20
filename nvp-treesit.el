@@ -4,7 +4,20 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'treesit nil t)
-(nvp:decls :p ("treesit-auto"))
+(nvp:decls :p ("treesit-auto") :f (treesit-auto--build-treesit-source-alist))
+
+;;;###autoload
+(defun nvp-treesit-add-font-lock (new-fonts &optional prepend feature-list)
+  ;; Add additional font-lock settings + features they define in hooks
+  (setq-local treesit-font-lock-settings
+              (if prepend (append new-fonts treesit-font-lock-settings)
+                (append treesit-font-lock-settings new-fonts)))
+  (setq-local treesit-font-lock-feature-list
+              (--zip-with (seq-uniq (append it other))
+                          treesit-font-lock-feature-list
+                          (or feature-list
+                              (list (mapcar (lambda (e) (nth 2 e)) new-fonts)
+                                    nil nil nil)))))
 
 (defun nvp-treesit-ready-p ()
   (ignore-errors (treesit-buffer-root-node)))

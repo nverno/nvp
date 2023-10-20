@@ -17,7 +17,7 @@
   (require 'comint))
 (require 'nvp)
 (nvp:auto "nvp-sh" 'nvp-sh-get-process)
-(nvp:decls :f (ielm-change-working-buffer sh-cd-here))
+(nvp:decls :f (nvp-repl--init ielm-change-working-buffer sh-cd-here))
 
 (cl-defstruct (nvp--repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"

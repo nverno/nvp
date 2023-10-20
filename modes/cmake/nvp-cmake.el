@@ -73,15 +73,21 @@
     (c-with-syntax-table nvp-cmake-abbrev-syntax-table
       (abbrev--default-expand))))
 
+(defvar nvp-cmake-builtin-variables
+  (eval-when-compile
+    (process-lines
+     (expand-file-name "bin/dump-vars.awk" (nvp:package-root nvp-cmake)))))
+
 (defun nvp-cmake-add-abbrevs (&optional prefix)
   (interactive "P")
-  (let ((prog (expand-file-name "bin/dump-vars.awk" (nvp:package-root nvp-cmake))))
-    (pcase prefix
-      ('(4) (nvp:with-results-buffer :title "Cmake properties/variables"
-              (call-process-shell-command prog nil (current-buffer))))
-      (_ (mapc
-          (lambda (a) (define-abbrev cmake-mode-abbrev-table (downcase a) a))
-          (process-lines prog))))))
+  (pcase prefix
+    ('(4)
+     (nvp:with-results-buffer :title "Cmake properties/variables"
+       (call-process-shell-command
+        (expand-file-name "bin/dump-vars.awk" (nvp:package-root nvp-cmake))
+        nil (current-buffer))))
+    (_ (mapc (lambda (a) (define-abbrev cmake-mode-abbrev-table (downcase a) a))
+             nvp-cmake-builtin-variables))))
 
 (provide 'nvp-cmake)
 ;;; nvp-cmake.el ends here

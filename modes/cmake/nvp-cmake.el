@@ -34,23 +34,29 @@
              (string-trim-right
               (shell-command-to-string
                (concat "cmake --help-" (symbol-name type)
-                       " " (shell-quote-argument cmd)
-                       " | awk 'FNR==1 && $1 != \"Argument\" {printf \"%s: \", $1}"
-                       " FNR==4'")))))
+                       " " (shell-quote-argument cmd) " | awk 'FNR==4'")))))
         (and (not (equal "" res))
              (puthash cmd res nvp-cmake-eldoc-cache)))))
 
-(defun nvp-cmake-eldoc-function ()
+(defun nvp-cmake-eldoc-function (callback &rest _ignored)
   "Return eldoc string for cmake variables/commands."
   (let ((case-fold-search nil)
-        (sym (thing-at-point 'symbol)))
-    (or (when sym
-          (or (and (string-match-p "^[A-Z]+" sym) ; variable/property
-                   (or (nvp-cmake--get-eldoc-string sym 'variable)
-                       (nvp-cmake--get-eldoc-string sym 'property)))
-              (nvp-cmake--get-eldoc-string sym 'command)))
-        (--when-let (nvp-cmake-current-function)
-          (nvp-cmake--get-eldoc-string it 'command)))))
+        (sym (thing-at-point 'symbol))
+        (face 'font-lock-variable-name-face))
+    (--when-let
+        (or (when sym
+              (or (and (string-match-p "^[A-Z]+" sym) ; variable/property
+                       (or (nvp-cmake--get-eldoc-string sym 'variable)
+                           (nvp-cmake--get-eldoc-string sym 'property)))
+                  (--when-let (nvp-cmake--get-eldoc-string sym 'command)
+                    (prog1 it (setq face 'font-lock-function-name-face)))))
+            (--when-let (nvp-cmake-current-function)
+              (setq face 'font-lock-function-name-face
+                    sym it)
+              (nvp-cmake--get-eldoc-string it 'command)))
+      (funcall callback it
+               :thing sym
+               :face face))))
 
 ;;; Abbrevs
 

@@ -518,7 +518,8 @@ command, call `vertico-insert'. If there is only one match call
 
 ;; when running in batch mode `shell-mode-hook' is undefined
 (unless noninteractive
-  (advice-add 'shell-command :around #'nvp@shell-command-no-hook))
+  (dolist (cmd '(shell-command async-shell-command))
+    (advice-add cmd :around #'nvp@shell-command-no-hook)))
 
 ;; dont move point
 (defun nvp@save-excurison (orig-fn &rest args)

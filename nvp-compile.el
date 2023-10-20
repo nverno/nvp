@@ -150,20 +150,31 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
 ;;;###autoload
 (defun nvp-compile-cmake (&rest params)
   (interactive)
-  (let* ((params (or params (and current-prefix-arg
-                                 (read-from-minibuffer "CMake Params: "))))
-         (build-dir (make-temp-file "_build" t))
+  (let* ((params (or params
+                     (and current-prefix-arg
+                          (list (read-from-minibuffer "CMake Params: ")))))
+         (build-dir (if current-prefix-arg
+                        (let ((dir (read-directory-name
+                                    "Build directory: " nil "build")))
+                          (unless (make-directory dir 'parents)
+                            (user-error "Failed to make build directory"))
+                          dir)
+                      (make-temp-file "build" t)))
          (args (mapconcat 'identity
-                          `(,(file-name-directory buffer-file-name)
+                          (append
+                           (list
+                            (file-name-directory buffer-file-name)
                             ;; for MSYS
-                            ,(nvp:with-w32 "-G \"MSYS Makefiles\"")
+                            (nvp:with-w32 "-G \"MSYS Makefiles\"")
                             "-DCMAKE_CXX_COMPILER=g++"
                             "-DCMAKE_C_COMPILER=gcc"
-                            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
-                            ,@params)
+                            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON")
+                           params)
                           " "))
-         (default-directory build-dir))
-    (async-shell-command (format "cmake %s" args) "*cmake*")))
+         (default-directory build-dir)
+         (compile-command 
+          (format "%s %s" (nvp:program "cmake" :path "/usr/bin") args)))
+    (funcall-interactively #'compile compile-command)))
 
 ;; -------------------------------------------------------------------
 ;;; Related commands

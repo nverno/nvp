@@ -11,6 +11,9 @@ function process_vars(cmd, langs, seen) {
   while ((tmp | getline var) > 0) {
     if (!seen[var]) {
       v = gensub(/(.*)<LANG>(.*)/, lang, 1, var)
+      v = gensub(/(.*)<CONFIG>(.*)/,
+        "\\1DEBUG\\2\n\\1RELEASE\\2\n\\1RELWITHDEBINFO\\2\n\\1MINSIZEREL\\2",
+        1, var)
       if (v !~ /<.*>/)
         print v
     }

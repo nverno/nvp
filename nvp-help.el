@@ -141,6 +141,8 @@
 ;;; Transient
 
 (require 'transient)
+(nvp:decl hyperpolyglot cheatsheet-lookup lookup-help cheat-sh cheat-sh-list
+  dash-docs-install dash-docs-activate-docset dash-docs-deactivate-docset)
 
 ;;;###autoload(autoload 'nvp-help-menu "nvp-help")
 (transient-define-prefix nvp-help-menu ()
@@ -159,7 +161,8 @@
     ("cl" "List" cheat-sh-list)]
    ["External"
     ("ec" "Cheatsheet Lookup" cheatsheet-lookup)
-    ("el" "Lookup-help links" lookup-help)]]
+    ("el" "Lookup-help links" lookup-help)
+    ("eh" "Hyperpolyglot" hyperpolyglot)]]
   [["Words"
     ("w" "Lookup Dwim" nvp-help-word-dwim)]
    ;; TODO: simplify+remove

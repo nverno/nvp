@@ -164,7 +164,8 @@
     ("el" "Lookup-help links" lookup-help)
     ("eh" "Hyperpolyglot" hyperpolyglot)]]
   [["Words"
-    ("w" "Lookup Dwim" nvp-help-word-dwim)]
+    ("ws" "Spell" ispell)
+    ("ww" "Lookup Dwim" nvp-help-word-dwim)]
    ;; TODO: simplify+remove
    ["Numbers"
     ("nt" "Toggle Base" nvp-number-toggle-base)

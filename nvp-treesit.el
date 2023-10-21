@@ -116,6 +116,7 @@
              (kill-buffer treesit--explorer-buffer))
            (unless (and treesit-explore-mode
                         (buffer-live-p treesit--explorer-buffer))
+             ;; TODO: remove after patch
              (setq-local treesit--explorer-last-node nil)
              (nvp:with-letf #'completing-read
                  (lambda (&rest _)

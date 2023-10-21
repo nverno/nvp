@@ -81,7 +81,7 @@
 ;; -------------------------------------------------------------------
 ;;; Compile
 
-(defvar nvp-python-debug-breakpoint-string
+(defvar nvp-python-breakpoint-string
   (cond ((executable-find "ipdb") "import ipdb; ipdb.set_trace()")
         ((executable-find "pudb") "import pudb; pudb.set_trace()")
         (t "import pdb; pdb.set_trace()"))
@@ -94,7 +94,7 @@
       (save-match-data
         (goto-char (point-min))
         (if (re-search-forward
-             (concat "^\\s-*" nvp-python-debug-breakpoint-string "[ \t]*$") nil t)
+             (concat "^\\s-*" nvp-python-breakpoint-string "[ \t]*$") nil t)
             (funcall orig cmd t)
           (funcall orig cmd comint))))))
 

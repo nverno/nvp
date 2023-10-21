@@ -247,12 +247,24 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 ;; -------------------------------------------------------------------
 ;;; Backends
 
+(defvar nvp-hap-verbose t)
 (defvar-local nvp-hap-company-backend 'company-capf)
 (defvar-local nvp-hap-syntax-table nil
   "When non-nil, syntax table to use when determining thing at point.")
 (defvar-local nvp-hap-backend nil)
 (defvar-local nvp-hap--disabled-backends nil)
 (defvar-local nvp-hap--treesit-p nil)
+
+(defun nvp-hap-message (msg &rest args)
+  (when nvp-hap-verbose
+    (let ((backend (cond
+                    ((null nvp-hap-backend))
+                    ((symbolp nvp-hap-backend)
+                     (symbol-name nvp-hap-backend))
+                    ((plistp nvp-hap-backend)
+                     (symbol-name (plist-get nvp-hap-backend :backend)))
+                    (t (format "%S" nvp-hap-backend)))))
+      (apply #'message (concat "[hap] " backend (and backend ": ") msg) args))))
 
 (defun nvp-hap-call-backend (&rest args)
   (condition-case-unless-debug err
@@ -319,6 +331,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
         (setq nvp-hap-backend backend
               nvp-hap--thingatpt sym
               nvp-hap--doc-buffer nil)
+        (nvp-hap-message "found %S" sym)
         (condition-case-unless-debug err
             (when (or (nvp-hap-show-popup prefix)
                       (nvp-hap-show-doc-buffer prefix))

@@ -2,7 +2,7 @@
 
 BEGIN {
   print ";; -*- lexical-binding: t -*-"
-  print "("
+  printf "("
 }
 
 /builtInSymbols/ {
@@ -11,7 +11,7 @@ BEGIN {
 }
 
 /\s*name:/ && s {
-  match($0, /"[^\"]+"/, a)
+  match($0, /"[^"]+"/, a)
   print "(" a[0]
 }
 
@@ -23,7 +23,7 @@ BEGIN {
 
 /\s*description:/ && s {
   gsub(/\\"/, "'", $0)
-  match($0, /"[^\"]+"/, a)
+  match($0, /"[^"]+"/, a)
   print ":desc", a[0] ")"
 }
 

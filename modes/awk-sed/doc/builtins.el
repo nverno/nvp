@@ -1,5 +1,5 @@
-(
-("atan2"
+;; -*- lexical-binding: t -*-
+(("atan2"
 :param ("y""x")
 :desc "Return the arctangent of y / x in radians. You can use 'pi = atan2(0, -1)' to retrieve the value of pi.")
 ("cos"

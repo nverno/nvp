@@ -13,8 +13,7 @@ function process_vars(cmd, langs, seen) {
       v = gensub(/(.*)<LANG>(.*)/, lang, 1, var)
       v = gensub(/(.*)<CONFIG>(.*)/,
         "\\1DEBUG\\2\n\\1RELEASE\\2\n\\1RELWITHDEBINFO\\2\n\\1MINSIZEREL\\2",
-        1, var
-      )
+        1, var)
       
       if (v !~ /<.*>/)
         print v

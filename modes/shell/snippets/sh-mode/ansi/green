@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: ansi red
-# key: _r
+# name: green
+# key: _g
 # condition: (nvp-yas-in-string)
 # --
-\e[01;31m${1:error}${2:\e[0m}
+\e[01;32m${1:success}${2:\e[0m}

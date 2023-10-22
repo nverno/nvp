@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: color
-# key: c
+# key: _c
 # expand-env: (cols '(("default" . 39) ("black" . 30) ("red" . 31) ("green" . 32)))
-# condition: (yas-inside-string)
+# condition: (nvp-yas-in-string)
 # --
 \e\[`(cdr (assoc (completing-read "Color: " cols)) cols)`m\e\[0m

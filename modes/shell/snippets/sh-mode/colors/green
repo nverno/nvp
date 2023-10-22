@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: green
-# key: green
-# --
-"\\e[01;32m${1:success}$0\\e[0m"

@@ -67,7 +67,7 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
   (->> (apply #'process-lines
               (delq nil
                     (list
-                     (nvp:program "ctags-universal") "-x"
+                     (nvp:program "ctags") "-x"
                      (and force lang (not (string= lang "all"))
                           (format "--language-force=%s" lang))
                      (and lang kinds (format "--kinds-%s=%s" lang kinds))

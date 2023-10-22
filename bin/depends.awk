@@ -67,14 +67,14 @@ match($0, /\(provide\s+'([[:alnum:]-]+)\)/, p) {
 }
 
 END {
-  if (status) exit status
-
+  if (status)
+    exit status
+    
   for (dep in deps) {
     split(dep, pair, SUBSEP)
     if (libs[deps[dep]])
       print pair[1] "c: " libs[deps[dep]]
-      
-    else 
+    else
       print "# " pair[1] "c: " deps[dep] # non-local dependencies
   }
 }

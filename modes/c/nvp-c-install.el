@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; nvp-c-install.el --- install -*- lexical-binding: t; -*-
 
 ;;; Commentary:

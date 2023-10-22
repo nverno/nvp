@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: blue
-# key: blue
+# key: _b
 # condition: (nvp-yas-in-string)
 # --
 \e[36m${1:info}${2:\e[0m}

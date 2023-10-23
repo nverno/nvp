@@ -93,9 +93,9 @@
     (setq-local treesit-range-settings dockerfile-ts--treesit-range-rules))
 
   (setq-local treesit-font-lock-feature-list
-              `(( function string ,@nvp-dockerfile-ts--features)
+              `(( function string comment ,@nvp-dockerfile-ts--features)
                 ( keyword command declaration-command string-interpolation)
-                ( builtin-variable constant heredoc variable)
+                ( builtin-variable constant heredoc variable assignment function)
                 ( number bracket delimiter operator misc-punctuation)))
   (setq-local treesit-font-lock-settings
               (append nvp-dockerfile-ts--font-settings nvp-dockerfile-ts--embedded))

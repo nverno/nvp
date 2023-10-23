@@ -11,17 +11,26 @@
 
 ;; from hexl.el
 ;;;###autoload
-(defun nvp-number-hex-string-to-integer ()
-  (interactive)
-  (message "%d" (call-interactively #'hexl-hex-string-to-integer)))
+(defun nvp-number-hex-string-to-integer (&optional hex)
+  (interactive (list (thing-at-point 'number)))
+  (message "%d" (or hex (call-interactively #'hexl-hex-string-to-integer))))
 
 ;;;###autoload
 (defun nvp-number-octal-string-to-integer ()
   (interactive)
   (message "%d" (call-interactively #'hexl-octal-string-to-integer)))
 
+(defun nvp-number--to-binary (n)
+  (let (v)
+    (while (> n 0)
+      (push (number-to-string (logand n 1)) v)
+      (setq n (ash n -1)))
+    (mapconcat #'identity v "")))
+
+(defvar nvp-number--base '(2 8 10 16))
+
 ;;;###autoload
-(defun nvp-number-toggle-base ()
+(defun nvp-number-toggle-base (&optional cur-base offset)
   "Toggle base of number at point.
 decimal => hex, hex => decimal, octal => decimal."
   (interactive)
@@ -30,26 +39,39 @@ decimal => hex, hex => decimal, octal => decimal."
         (user-error "floating point number")
       (save-match-data
         (let* ((sym (buffer-substring-no-properties beg end))
-               (base (cond
-                      ((string-match "\\`$?0x" sym) (list (match-end 0) 16 10))
-                      ((string-match "\\`0o?" sym) (list (match-end 0) 8 10))
-                      ((string-match "\\`[1-9]" sym) (list 0 10 16))
+               (pos (cond
+                      (cur-base (cons offset cur-base))
+                      ((string-match "\\`$?0x" sym) (cons (match-end 0) 16))
+                      ((string-match "\\`0b" sym) (cons (match-end 0) 2))
+                      ((string-match "\\`0o?" sym) (cons (match-end 0) 8))
+                      ((string-match "\\`[1-9]" sym)
+                       (cons 0 (if (string-match-p "[2-9]" sym) 10 2)))
                       (t nil))))
-          (unless base (user-error "not a number at point"))
-          (cl-destructuring-bind (pos from to) base
-            (let ((str (substring sym pos)))
+          (unless pos (user-error "not a number at point"))
+          (cl-destructuring-bind (off . from) pos
+            (let ((str (substring sym off))
+                  (to (nth (mod (1+ (/ from 5)) (length nvp-number--base))
+                           nvp-number--base)))
               (unless (or (eq from 16)
                           (string-match-p "[[:digit:]]+$" str))
                 (user-error "garbage in number"))
+              (setq cur-base to)
               (save-mark-and-excursion
                 (delete-region beg end)
-                (insert (format (pcase to
-                                  (10 "%d")
-                                  (16 "0x%x")
-                                  (8 "0%o"))
-                                (string-to-number str from))))))))))
-  (nvp-repeat-command))
-
+                (insert (format
+                         (pcase to
+                           (2 (setq offset 2)
+                              (cl-assert (= from 16))
+                              (concat "0b" (nvp-number--to-binary
+                                            (string-to-number str from))))
+                           (8 (setq offset 0) "%#o")
+                           (10 (setq offset 0) "%d")
+                           (16 (setq offset 2) "%#x"))
+                         (string-to-number str from))))))))))
+  ;; FIXME: args aren't lexically captured if called like
+  ;; (nvp-repeat-command nil nil nil cur-base offset)
+  (nvp-repeat-command)) 
+  
 ;; -------------------------------------------------------------------
 ;;; Popups
 ;; momentary-string-display #<marker at 110240 in subr.el.gz>

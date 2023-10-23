@@ -30,10 +30,10 @@
   (hs-minor-mode -1))
 
 ;;;###autoload
-(defun nvp-narrow-dwim (&optional beg end arg)
-  (interactive "r\nP")
+(defun nvp-narrow-dwim (&optional arg)
+  (interactive "P")
   (if (region-active-p)
-      (narrow-to-region beg end)
+      (narrow-to-region (region-beginning) (region-end))
     (narrow-to-defun arg)))
 
 ;;; Hideshow

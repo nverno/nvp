@@ -40,9 +40,9 @@
 
 ;;-- Global -- most machine specific are compiled in init
 (nvp:defvar nvp-program-search-paths
-  (nvp:with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
-    `(,nvp/bin ,nvp/binw))
-  "Preferred search locations for executables.")
+            (nvp:with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
+              `(,nvp/bin ,nvp/binw))
+            "Preferred search locations for executables.")
 
 (defvar nvp-default-notes-files '("notes.org" "todo.org")
   "Default notes files.")
@@ -461,11 +461,11 @@ command, call `vertico-insert'. If there is only one match call
            (pcase-dolist (`(,k ,b) bindings)
              (define-key map (kbd k) (eval b)))
            (define-key map (vector repeat-key)
-             (if args
-                 `(lambda () (interactive)
-                    (setq this-command ',this-command)
-                    (funcall-interactively #',this-command ,@args))
-               this-command))
+                       (if args
+                           `(lambda () (interactive)
+                              (setq this-command ',this-command)
+                              (funcall-interactively #',this-command ,@args))
+                         this-command))
            map)
          t
          (unless no-indicator
@@ -553,9 +553,9 @@ command, call `vertico-insert'. If there is only one match call
    (or map
        (let ((km (make-sparse-keymap)))
          (define-key km (vector (nvp:input 'lbi))
-           `(lambda ()
-              (interactive)
-              (apply #',this-command ,args)))
+                     `(lambda ()
+                        (interactive)
+                        (apply #',this-command ,args)))
          km))
    t))
 

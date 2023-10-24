@@ -2,6 +2,7 @@
 # name: for_files
 # key: forf
 # --
-for ${1:f} in \$(find ${2:~} -type f -name "$3"); do
+${1:\(cd ${2:~};
+}find ${3:.} -type f -name "${4:*.txt}" -print0 | while IFS= read -r -d '' ${5:file}; do
     $0
-done
+done${1:$($s? ")")}

@@ -150,6 +150,16 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;; (modify-syntax-entry ?\" "_" snippet-mode-syntax-table)
 ;; (modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
 ;; (modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
+(defvar nvp-snippet--xref-syntax-table
+  (let ((table (copy-syntax-table snippet-mode-syntax-table)))
+    (modify-syntax-entry ?$ "_" table)
+    (modify-syntax-entry ?\? "_" table)
+    table))
+
+(defun nvp-snippet-xref-find-definitions ()
+  (interactive)
+  (with-syntax-table nvp-snippet--xref-syntax-table
+    (call-interactively #'xref-find-definitions)))
 
 ;; Return marker at end of snippet header.
 (nvp:define-cache nvp-snippet-header-end ()

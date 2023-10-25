@@ -31,14 +31,6 @@
                 (gorepl--run-gore '("-autoimport"))
                 (get-buffer-process (current-buffer)))))))
 
-;;; Help
-
-;; temporarily capture `package.function' as symbol
-(defvar nvp-go-thingatpt-syntax-table
-  (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?. "_" st)
-    st))
-
 ;;; Yas
 (nvp:decl yas-text nvp-yas-split-args)
 (defun nvp-go-params (&optional str types join)

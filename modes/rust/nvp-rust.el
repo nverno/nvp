@@ -31,6 +31,15 @@
       (forward-word -1)
       (point))))
 
+;;; Compilation
+
+;; fix error when `compilation--start-time' isn't set in compilation buffer
+(define-advice rustic-compilation-setup-buffer
+    (:around (orig-fn buf &rest args) "start-time")
+  (apply orig-fn buf args)
+  (with-current-buffer buf
+    (setq compilation--start-time (float-time))))
+
 ;;; rustic-doc
 ;; Set RUSTUP_HOME correctly so convert script finds std location
 (nvp:run-once rustic-doc-setup (:before (&rest _))

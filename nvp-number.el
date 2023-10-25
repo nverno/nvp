@@ -5,6 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
 (nvp:decls)
+(nvp:auto "hexl" hexl-hex-string-to-integer hexl-octal-string-to-integer)
 
 ;;;###autoload(autoload 'nvp-number-menu "nvp-number")
 (transient-define-prefix nvp-number-menu ()
@@ -99,7 +100,6 @@ decimal => hex, hex => decimal, octal => decimal."
                          (string-to-number str from))))))))))
   (nvp-repeat-command))
    
-;; from hexl.el
 ;;;###autoload
 (defun nvp-number-hex-string-to-integer (&optional hex)
   (interactive (list (thing-at-point 'number)))

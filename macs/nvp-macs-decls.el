@@ -183,6 +183,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-move-forward-heading
        nvp-mode-header-regex
        nvp-newline-dwim--comment
+       ;; util
+       nvp-regex-map-across-matches
        ;; install / package
        nvp-pkg-directory-dwim
        ;; project

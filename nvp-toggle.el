@@ -5,8 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'files-x)
-(nvp:decls :v (time-stamp-pattern time-stamp-count time-stamp-active)
-           :f (time-stamp))
+(nvp:decls :p (time-stamp) :v (time-stamp-count))
 (nvp:auto "nvp-util" 'nvp-regex-map-across-matches)
 
 ;;;###autoload

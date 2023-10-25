@@ -1,65 +1,10 @@
 ;;; nvp-go-help.el ---  -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; FIXME: unused
 ;; help-at-point for go source
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-go)
-(nvp:decls :v (godoc-command)
-           :f (godoc-and-godef godoc-at-point godoc-gogetdoc godoc--read-query))
-
-;; if non-nil use gtk tooltips
-(defvar nvp-go-use-gtk nil)
-
-;; -------------------------------------------------------------------
-;;; Utils
-
-(eval-when-compile
-  ;; toggle help popup with pos-tip
-  (cl-defmacro with-toggled-tip (&key help-doc type highlight)
-    (declare (indent defun) (debug t))
-    `(let ((x-gtk-use-system-tooltips nvp-go-use-gtk))
-       (or (x-hide-tip)
-           (let ((str ,help-doc))
-             ;; FIXME: pos-tip can't display font-lock? or losing
-             ;;        properties somehow
-             ;; if HIGHLIGHT: when TYPE is non-nil and matches STR,
-             ;; then propertize the match in STR
-             ,(when highlight
-                `(when ,type (string-match ,type str)
-                       (add-text-properties
-                        (match-beginning 0) (match-end 0)
-                        (list 'face 'font-lock-warning-face) str)))
-             (pos-tip-show-no-propertize
-              str nil nil nil 10
-              (pos-tip-tooltip-width (window-width) (frame-char-width))))))))
-
-;; -------------------------------------------------------------------
-;;; Help at point
-
-;;; godoc functions
-;; redefine so they dont pop to buffers
-;; hijack `godoc-gogetdoc'
-(defun nvp-go-help-gogetdoc-at-point (point)
-  (interactive "d")
-  (cl-letf (((symbol-function 'display-buffer)
-             #'(lambda (&rest _ignored)
-                 (replace-regexp-in-string "[\r\n]+" "" (buffer-string)))))
-    (with-toggled-tip :help-doc (godoc-gogetdoc point))))
-
-;; call godoc synchronously for popups
-(defun nvp-go-help--godoc (query command)
-  (interactive (list (godoc--read-query) godoc-command))
-  (call-process-shell-command
-   (concat command " " query) nil "*go-help*")
-  (with-current-buffer "*go-help*"
-    (prog1 (replace-regexp-in-string "[\n\r]+$" "" (buffer-string))
-      (kill-buffer))))
-
-(defun nvp-go-help-godoc-at-point (point)
-  (interactive "d")
-  (cl-letf (((symbol-function 'go--godoc) 'nvp-go-help--godoc))
-    (with-toggled-tip :help-doc (godoc-and-godef point))))
+(nvp:decls :p (godoc))
 
 ;; temporarily capture `package.function' as symbol
 (defvar nvp-go-help-symbol-syntax
@@ -67,28 +12,68 @@
     (modify-syntax-entry ?. "_" st)
     st))
 
-(defvar nvp-go-type-re "")
+;;; Godef
+(defun nvp-go--godef-thingatpt ()
+  (--when-let (godef--call (point))
+    (let ((output (car it)))
+      (when (and (godef--successful-p output)
+                 (not (string-match-p "godef: .* not a valid identifier" output)))
+        it))))
 
+(defun nvp-hap-godef (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (nvp-go--godef-thingatpt))
+    (doc-string (mapconcat 'identity (butlast (cdr arg)) "\n"))))
+
+;;; Godoc
+(defun nvp-go--thingatpt ()
+  (with-syntax-table nvp-go-help-symbol-syntax
+    (bounds-of-thing-at-point 'symbol)))
+
+;; call godoc synchronously for popups
+(defun nvp-go-godoc (query command)
+  (interactive (list (godoc--read-query) godoc-command))
+  (let ((buf (with-current-buffer (get-buffer-create "*go-help*")
+               (erase-buffer)
+               (current-buffer))))
+    (if (zerop (call-process-shell-command (concat command " " query) nil buf))
+        buf
+      (user-error "No help for %s" query))))
+
+;; Hap backend for godef, go doc, and gogetdoc
 ;;;###autoload
-(defun nvp-go-help-at-point (arg)
-  (interactive "P")
-  (or (x-hide-tip)
-      (with-syntax-table nvp-go-help-symbol-syntax
-        (let* ((bnds (bounds-of-thing-at-point 'symbol))
-               (sym (thing-at-point 'symbol)))
-          (cond
-           ((null sym)
-            (call-interactively 'godoc))
-           ((string-match-p nvp-go-type-re sym))
-           ;; call popup versions of godoc or gogetdoc
-           ;; use point at end of symbol so fm|t.Printf returns help for
-           ;; Printf
-           (t
-            (if arg
-                (funcall-interactively
-                 #'nvp-go-help-gogetdoc-at-point (1- (cdr bnds)))
-              (funcall-interactively
-               #'nvp-go-help-godoc-at-point (1- (cdr bnds))))))))))
+(defun nvp-hap-godoc (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (or (if (>= (prefix-numeric-value arg) 4)
+                       (cons 'prompt (prefix-numeric-value arg)))
+                   (nvp-go--thingatpt)))
+    (doc-buffer
+     (cl-letf (((symbol-function 'go--godoc) 'nvp-go-godoc))
+       ;; call popup versions of godoc or gogetdoc
+       ;; use point at end of symbol so fm|t.Printf returns help for
+       ;; Printf
+       (--when-let (pcase arg
+                     (`(prompt . ,val)
+                      (pcase val
+                        (16 (call-interactively #'godoc))
+                        (_
+                         (let ((point
+                                (or (ignore-errors (1- (cdr (nvp-go--thingatpt))))
+                                    (point))))
+                           (save-window-excursion
+                             (let ((display-buffer-overriding-action
+                                    '(nil . ((inhibit-switch-frame . t)))))
+                               (window-buffer (godoc-gogetdoc point))))))))
+                     (`(,_ . ,end) (godoc-and-godef (1- end))))
+         (list it nil))))))
 
-(provide 'go-help)
+;;; Gogetdoc
+(defun nvp-hap-gogetdoc (command &optional _arg &rest _args)
+  (cl-case command
+    (thingatpt (nvp-go--godef-thingatpt))
+    (doc-buffer
+     (save-window-excursion
+       (list (window-buffer (godoc-gogetdoc (point))) nil)))))
+
+(provide 'nvp-go-help)
 ;;; nvp-go-help.el ends here

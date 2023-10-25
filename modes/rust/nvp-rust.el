@@ -33,6 +33,7 @@
 
 ;;; Compilation
 
+;; FIXME: https://github.com/brotzeit/rustic/pull/531
 ;; fix error when `compilation--start-time' isn't set in compilation buffer
 (define-advice rustic-compilation-setup-buffer
     (:around (orig-fn buf &rest args) "start-time")

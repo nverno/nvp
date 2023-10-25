@@ -22,26 +22,6 @@
                                   (_ "15/Last modified: <%%>$")))))
     (time-stamp)))
 
-;;;###autoload
-(defun nvp-toggle-increment-numbers (arg &optional bnds inc)
-  "Iincrement numbers in region. 
-Decrement with prefix."
-  (interactive "P")
-  (or bnds
-      (setq bnds (nvp:tap 'bdwim 'symbol))
-      (user-error "No region to search in."))
-  (nvp:defq inc (if arg -1 1))
-  (let (deactivate-mark)
-    (nvp-regex-map-across-matches
-     (lambda (ms)
-       (replace-match (number-to-string (+ inc (string-to-number ms)))))
-     "\\([-]?[[:digit:]]+\\)" bnds 1))
-  (nvp-repeat-command ?= nil
-    `(("-" (lambda nil
-             (interactive)
-             (nvp-toggle-increment-numbers 1 ',bnds -1))
-       :msg "decrement"))))
-
 ;; -------------------------------------------------------------------
 ;;; Toggle file/directory local variables
 

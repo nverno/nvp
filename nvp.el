@@ -458,14 +458,14 @@ command, call `vertico-insert'. If there is only one match call
         (unless no-indicator (nvp-indicate-cursor-pre))
         (set-transient-map
          (let ((map (make-sparse-keymap)))
-           (pcase-dolist (`(,k ,b) bindings)
-             (define-key map (kbd k) (eval b)))
            (define-key map (vector repeat-key)
                        (if args
                            `(lambda () (interactive)
                               (setq this-command ',this-command)
                               (funcall-interactively #',this-command ,@args))
                          this-command))
+           (pcase-dolist (`(,k ,b) bindings)
+             (define-key map (kbd k) (eval b)))
            map)
          t
          (unless no-indicator

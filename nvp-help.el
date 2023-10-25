@@ -163,14 +163,10 @@
     ("ec" "Cheatsheet Lookup" cheatsheet-lookup)
     ("el" "Lookup-help links" lookup-help)
     ("eh" "Hyperpolyglot" hyperpolyglot)]]
-  [["Words"
+  [["Words/Numbers"
+    ("n" "Number" nvp-number-menu)
     ("ws" "Spell" ispell)
     ("ww" "Lookup Dwim" nvp-help-word-dwim)]
-   ;; TODO: simplify+remove
-   ["Numbers"
-    ("nt" "Toggle Base" nvp-number-toggle-base)
-    ("nh" "Hex string to Int" nvp-number-hex-string-to-integer)
-    ("no" "Octal string to Int" nvp-number-octal-string-to-integer)]
    ["Manage Dash"
     ("Di" "Dash Install" nvp-dash-docs-install)
     ("Da" "Dash Activate" dash-docs-activate-docset)

@@ -40,6 +40,9 @@
   send-defun
   send-sexp
   send-buffer
+  send-file
+  ;; TODO: history `nvp-comint-setup-history'
+  ;; history-file
   ;; REPL commands
   help-cmd                        ; command to display REPL help
   cd-cmd                          ; command to change REPL working dir
@@ -337,26 +340,53 @@ STR is inserted into REPL unless NO-INSERT."
       (user-error "Couldn't create REPL."))))
 
 (eval-when-compile
-  (defmacro nvp:repl-send (sender sender-args and-go fallback-args &optional apply)
+  (defmacro nvp:region (thing)
+    `(--when-let (bounds-of-thing-at-point ',thing)
+       (list (car it) (cdr it))))
+  
+  (cl-defmacro nvp:repl-send ( sender sender-args and-go
+                               &rest fallback &key region &allow-other-keys)
     (declare (indent defun))
-    `(progn (--if-let (repl:val ,sender)
-                (funcall-interactively it ,@sender-args)
-              (,(if apply 'apply 'funcall) #'nvp-repl-send-string ,@fallback-args))
-            (and ,and-go (pop-to-buffer (nvp-repl-buffer))))))
+    (nvp:skip-keywords fallback)
+    `(nvp:repl-with ,(if region (seq-uniq (list 'send-region sender))
+                       (list sender))
+       (if ,sender (funcall-interactively ,sender ,@sender-args)
+         ,(if fallback `((,@fallback))
+            (if (not region)
+                `(user-error
+                  ,(concat "Repl doesnt understand '" (symbol-name sender) "'"))
+              (macroexp-let2 nil region
+                             (if (symbolp region) `(nvp:region ,region)
+                               `(delq nil ,region))
+                `(progn
+                   ,@(when (not (eq sender 'send-region))
+                       `((and ,region
+                              (apply #'nvp-indicate-pulse-region-or-line ,region))))
+                   (cond
+                    ,@(when (not (eq sender 'send-region))
+                        `(((and ,region send-region) (apply send-region ,region))))
+                    (t
+                     (if ,region
+                         (funcall #'nvp-repl-send-string
+                                  (apply #'buffer-substring-no-properties ,region))
+                       (user-error
+                        ,(concat "No region for '" (symbol-name sender) "'"))))))))))
+       (and ,and-go (pop-to-buffer (nvp-repl-buffer))))))
 
 (defun nvp-repl-send-region (start end &optional and-go)
   (interactive "r\nP")
-  (nvp:repl-send "send-region" (start end) and-go
-    ((buffer-substring-no-properties start end))))
+  (when (repl:val "send-region")
+    (nvp-indicate-pulse-region-or-line start end))
+  (nvp:repl-send send-region (start end) and-go :region (list start end)))
 
 (defun nvp-repl-send-line (&optional and-go)
   (interactive "P")
-  (nvp:repl-send "send-line" () and-go
-    ((buffer-substring-no-properties (nvp:point 'bol) (nvp:point 'eoll)))))
+  (nvp:repl-send send-line () and-go
+    :region (list (nvp:point 'bol) (nvp:point 'eoll))))
 
 (defun nvp-repl-send-sexp (&optional and-go)
   (interactive "P")
-  (nvp:repl-send "send-sexp" () and-go ((thing-at-point 'sexp))))
+  (nvp:repl-send send-sexp () and-go :region sexp))
 
 (defun nvp-repl-send-dwim (&optional and-go)
   "Send region or sexp (if defined by repl), or fallback to line."
@@ -370,14 +400,11 @@ STR is inserted into REPL unless NO-INSERT."
 
 (defun nvp-repl-send-buffer (&optional and-go)
   (interactive "P")
-  (nvp:repl-send "send-buffer" () and-go
-    ((buffer-substring-no-properties (point-min) (point-max)))))
+  (nvp:repl-send send-buffer () and-go :region buffer))
 
 (defun nvp-repl-send-defun (&optional and-go)
   (interactive "P")
-  (nvp:repl-send "send-defun" () and-go
-    ((apply #'buffer-substring-no-properties
-            (nvp:tap-or-region 'bdwim 'defun :pulse t)))))
+  (nvp:repl-send send-defun () and-go :region defun))
 
 (defun nvp-repl-send-defun-or-region (&optional and-go)
   (interactive "P")
@@ -385,6 +412,10 @@ STR is inserted into REPL unless NO-INSERT."
    ((region-active-p)
     (nvp-repl-send-region (region-beginning) (region-end) and-go))
    (t (nvp-repl-send-defun and-go))))
+
+(defun nvp-repl-send-file (file &optional and-go)
+  (interactive "f\nP")
+  (nvp:repl-send send-file (file) and-go))
 
 ;; -------------------------------------------------------------------
 ;;; REPL commands

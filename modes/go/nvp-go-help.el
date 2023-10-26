@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-go)
-(nvp:decls :p (godoc))
+(nvp:decls :p (godoc godef) :f (godoc))
 
 ;; temporarily capture `package.function' as symbol
 (defvar nvp-go-help-symbol-syntax

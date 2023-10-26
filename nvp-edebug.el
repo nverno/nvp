@@ -126,6 +126,13 @@
   :variable 'projectile-verbose
   :reader (lambda (&rest _) (not projectile-verbose)))
 
+;;; Filenotify
+(defvar file-notify-debug)
+(transient-define-infix nvp-edebug-emacs--filenotify-debug ()
+  :class 'transient-lisp-variable
+  :variable 'file-notify-debug
+   :reader (lambda (&rest _) (not file-notify-debug)))
+
 ;;; Emacs
 (transient-define-suffix nvp-edebug-emacs--launch (args)
   "Launch emacs with ARGS."
@@ -209,6 +216,7 @@
     ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode)))
     ("/tree" "Tree-sitter" nvp-treesit-menu
      :if (lambda () (ignore-errors (treesit-buffer-root-node))))
+    ("/file" "Filenotify debug" nvp-edebug-emacs--filenotify-debug)
     ("/proj" "Projectile verbose" nvp-edebug-emacs--projectile-verbose
      :if-non-nil projectile-mode)
     ("/tran" "Transient" nvp-transient-menu)

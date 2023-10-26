@@ -3,22 +3,25 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls)
-(require 'lua-mode)
+(require 'lua-ts-mode nil t)
+(nvp:decls :p (lua) :v (nvp-repl--display-action))
 
 ;;; Repl
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(lua-mode lua-ts-mode)
-    :send-string #'lua-send-string
-    :send-defun (lambda () (call-interactively #'lua-send-defun))
-    :send-line #'lua-send-current-line
-    :send-region #'lua-send-region
-    :send-buffer #'lua-send-buffer
-    :find-fn #'lua-get-create-process
+    :send-region #'lua-ts-send-region
+    :send-buffer #'lua-ts-send-buffer
+    :send-file #'lua-ts-send-file
+    :bufname (regexp-quote lua-ts-inferior-buffer)
     :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
     :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
-    :init #'lua-get-create-process))
+    ;; :history-file ".lua_history"
+    :init (lambda ()
+            (save-window-excursion
+              (let ((display-buffer-overriding-action nvp-repl--display-action))
+                (funcall-interactively #'lua-ts-inferior-lua)
+                (nvp-comint-setup-history ".lua_history"))))))
 
 ;;; Help
 

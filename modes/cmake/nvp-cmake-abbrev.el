@@ -16,6 +16,7 @@
           (modify-syntax-entry ?- "w" tab)
           tab)))
 
+;;;###autoload
 (defun nvp-cmake-expand-abbrev ()
   (nvp:with-letf 'forward-word 'forward-word-strictly
     (c-with-syntax-table nvp-cmake-abbrev-syntax-table

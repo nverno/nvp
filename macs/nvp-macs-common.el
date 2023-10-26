@@ -335,58 +335,6 @@ are aliases to symbols prefixed by \"nvp-\"."
 (defmacro eieio-declare-slot (name)
   (cl-pushnew name eieio--known-slot-names) nil)
 
-;; bind cl-defstruct slots
-;; (defsubst nvp-cache--names (struct-type)
-;;   (declare (pure t) (side-effect-free t))
-;;   (let* ((class (cl--struct-get-class struct-type))
-;;          (slots (cl--struct-class-slots class)))
-;;     (cl-loop for i across slots
-;;        collect (cl--slot-descriptor-name i))))
-
-;; (defun nvp-struct--oref (struct slot)
-;;   (declare (compiler-macro
-;;             (lambda (exp)
-;;               (ignore struct slot)
-;;               exp)))
-;;   (aref struct (cl-struct-slot-offset (type-of struct) slot)))
-
-;; (defsubst nvp-struct--tag (struct)
-;;   (aref struct 0))
-
-;; TODO: make this work like `with-slots', so type doesn't need to be
-;;       specified at compile-time. Problem is how to make the BODY setf-able.
-;; eieio with-slots: #<marker at 12490 in eieio.el.gz>
-(defmacro nvp:with-struct-slots (spec-list inst &rest body)
-  "See `with-slots' for CLOS explanation."
-  (declare (indent 2) (debug t))
-  (macroexp-let2 nil inst inst
-    `(cl-symbol-macrolet
-         ,(mapcar (lambda (entry)
-                    (let* ((var (if (listp entry) (car entry) entry))
-                           (slot (if (listp entry) (cadr entry) entry))
-                           ;; (idx (cl-struct-slot-offset (type-of inst) slot))
-                           )
-                      (list var `(eieio-oref ,inst ',slot))))
-                  spec-list)
-       ,@body)))
-
-;; (defclass foo2 ()
-;;   ((a :initform "a")
-;;    (b :initform "b")
-;;    (c :initform nil)))
-;; (setq tst2 (make-instance 'foo2))
-;; (with-slots (a b c) tst2
-;;   (setq c (concat a b)))
-;; tst2
-
-;; (cl-defstruct foo a b c)
-;; (setq tst (make-foo :a "a" :b "B"))
-;; (with-slots (a b c) tst
-;;   (setq c (concat a b)))
-
-;; (nvp:with-struct-slots (a b c) tst
-;;   (setq c (concat a b)))
-
 ;; -------------------------------------------------------------------
 ;;; Declares / Autoloads
 ;; silence byte-compiler warnings

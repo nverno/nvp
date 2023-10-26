@@ -7,6 +7,13 @@
 
 (nvp:package-define-root :name nvp-cmake)
 
+;; prefer over miniconda's cmake
+(defvar nvp-cmake-executable (nvp:program "cmake" :path "/usr/bin"))
+
+(defvar nvp-cmake-build-directory "build"
+  "Path to cmake build directory. Either an absolute path, or a relative path
+to build directory from project root.")
+
 (defun nvp-cmake-current-function ()
   (let ((ppss (parse-partial-sexp (point-min) (point))))
     (when (nth 0 ppss)

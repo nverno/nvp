@@ -161,9 +161,6 @@ With prefix ARG, run `helm-make'."
      (compilation-start
       (concat "make -f " (buffer-file-name) " " targets)))))
 
-;; -------------------------------------------------------------------
-;;; Tidy
-
 (defun nvp-makefile-format-buffer (&optional beg end)
   (interactive "r")
   (unless (and (use-region-p) beg end (> end beg))
@@ -171,27 +168,6 @@ With prefix ARG, run `helm-make'."
           end (point-max)))
   (nvp-makefile-indent beg end)
   (align nil beg end))
-
-;; cleanup buffer before save
-(defun nvp-makefile-cleanup-buffer ()
-  (unless (or buffer-read-only (not (buffer-modified-p)))
-    t
-    ;; fixup indent
-    ;; (nvp-makefile-indent)
-    ;; align [?:]= before first rule
-    ;; (align (point-min) (point-max))     ;use builtin align rules for now
-    ;; (let ((end (save-excursion
-    ;;              ;; find first rule
-    ;;              (progn (goto-char (point-min))
-    ;;                     (re-search-forward "^[^ ]+:" nil t)
-    ;;                     (point)))))
-    ;;   (align-regexp (point-min) end (nvp:concat
-    ;;                                  "\\(?:[^<?]\\)\\(\\s-*\\)"
-    ;;                                  "\\(=\\|[:?+]=\\)")
-    ;;                 1))
-    ;; align trailing '\'
-    ;; (align-regexp (point-min) (point-max) "\\(\\s-*\\)\\\\\\s-*$")
-    ))
 
 (provide 'nvp-makefile)
 ;;; nvp-makefile.el ends here

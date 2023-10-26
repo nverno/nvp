@@ -121,13 +121,18 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-repl-default
     nvp-repl-find-functions
     nvp-help-at-point-functions
-    nvp-check-buffer-function
-    nvp-disassemble-function
-    nvp-tag-function
+    nvp-check-buffer-default-function
+    nvp-disassemble-default-function
+    nvp-debug-default-function
+    nvp-tag-default-function
+    nvp-test-default-function
+    nvp-format-buffer-default-function
+    nvp-abbrev-default-function
+    nvp-toggle-default-function
+    nvp-run-default-function
+    nvp-compile-default-function
     nvp-compile-function
     nvp-mark-defun-function
-    nvp-test-function
-    nvp-format-buffer-function
     ;; fallbacks
     nvp-exit
     nvp-fallback-function

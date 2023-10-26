@@ -301,9 +301,9 @@ With prefix, pop other window, with double prefix, prompt for MODE."
   (interactive
    (list (nvp:prefix 16 (intern (nvp-read-mode)) major-mode) current-prefix-arg))
   (nvp-window-configuration-save)
-  (let ((buff (get-buffer-create "*scratch*"))
-        (default-directory nvp/scratch))
+  (let ((buff (get-buffer-create "*scratch*")))
     (with-current-buffer buff
+      (setq default-directory nvp/scratch)
       (nvp-scratch-switch-modes mode 'activate)
       (nvp-display-location buff :buffer action))))
 

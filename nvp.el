@@ -117,30 +117,43 @@ or nil.")
 ;; -------------------------------------------------------------------
 ;;; Functions
 
-;; use add-function, any reason to run hooks?
-(nvp:defvar :local t :permanent t nvp-help-at-point-functions '(nvp-hap-company nvp-hap-info))
-(defvar-local nvp-check-buffer-function #'checkdoc)
-(defvar-local nvp-disassemble-function #'disassemble)
-(defvar-local nvp-test-function #'nvp-ert-run-tests)
-(defvar-local nvp-tag-function #'ggtags-find-tag-dwim)
+(nvp:auto "flycheck" 'flycheck-list-errors)
+(nvp:decl projectile-test-project)
+
+(defvar-local nvp-project-root-function #'projectile-project-root)
 (defvar-local nvp-compile-function #'nvp-compile-default)
 (defvar-local nvp-mark-defun-function #'mark-defun)
-(defvar-local nvp-project-root-function #'projectile-project-root)
-(defvar-local nvp-test-framework nil)
 (defvar-local nvp-fill-paragraph-function nil)
-(defvar-local nvp-format-buffer-function #'lsp-format-buffer)
+(defvar-local nvp-test-framework nil)
 
-;; TODO:
-;; - test/tag functions should call hooks
-;; - not decided on check-buffer: this could do both buffer cleanup / linting
-;;   either calling a hook or invoking a type of menu with options. Currently,
-;;   it just invokes local indirect function.
-;; - They could just be alists registering modes to functions?
-(nvp:wrapper-fuctions
- (nvp-check-buffer-function  . nil)
- (nvp-test-function          . nil)
- (nvp-tag-function           . nil)
- (nvp-format-buffer-function . nil))
+;;; Mode local hooks
+;; use add-function, any reason to run hooks?
+(nvp:defvar :local t :permanent t
+            nvp-help-at-point-functions '(nvp-hap-company nvp-hap-info))
+
+(defconst nvp-mode-function-hooks
+  (eval-when-compile 
+    (cl-loop for type in '( check-buffer format-buffer tag test compile debug
+                            disassemble abbrev toggle run docs)
+             for name = (intern (concat "nvp-" (symbol-name type) "-functions"))
+             collect name))
+  "Mode local function hooks.")
+
+(eval-when-compile
+  (defmacro nvp:define-function-hooks ()
+    (macroexp-progn
+     `(,@(cl-loop
+          for h in nvp-mode-function-hooks
+          for def = (intern (replace-regexp-in-string
+                             "\\(.*\\)-functions" "\\1-default-function"
+                             (symbol-name h)))
+          nconc `((defvar-local ,h nil)
+                  (defvar-local ,def nil)))))))
+(nvp:define-function-hooks)
+(setq-default nvp-tag-default-function #'ggtags-find-tag-dwim)
+(setq-default nvp-format-buffer-default-function #'lsp-format-buffer)
+(setq-default nvp-check-buffer-default-function #'flycheck-list-errors)
+(setq-default nvp-test-default-function #'projectile-test-project)
 
 
 ;; -------------------------------------------------------------------

@@ -247,7 +247,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 ;; -------------------------------------------------------------------
 ;;; Backends
 
-(defvar nvp-hap-verbose t)
+(defvar nvp-hap-verbose nil)
 (defvar-local nvp-hap-company-backend 'company-capf)
 (defvar-local nvp-hap-syntax-table nil
   "When non-nil, syntax table to use when determining thing at point.")

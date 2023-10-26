@@ -16,7 +16,12 @@
 (cl-defstruct (nvp-mode-vars (:constructor nvp-mode-vars-make)
                              (:copier nil))
   "Store the local variables setup when a mode hook first runs."
-  dir snippets abbr-file abbr-table)
+  dir snippets abbr-file abbr-table
+  ;; functions
+  check-buffer format-buffer tag test compile debug disassemble abbrev
+  toggle run docs
+  ;; installs
+  install-targets)
 
 (defvar nvp-mode-cache (make-hash-table)
   "Store local variables for modes once they have been loaded.")
@@ -77,18 +82,32 @@
       (if (file-directory-p path) path
         (directory-file-name (file-name-directory path))))))
 
+(eval-when-compile
+  (defmacro nvp:setup-local-hooks (mode-vars)
+    (macroexp-progn
+     `(,@(cl-loop for hook in nvp-mode-function-hooks
+                  for slot = (replace-regexp-in-string
+                              "nvp-\\(.*\\)-functions" "\\1" (symbol-name hook))
+                  for getter = (intern (concat "nvp-mode-vars-" slot))
+                  collect `(setq ,hook (,getter ,mode-vars)))))))
+
 ;;;###autoload
 (cl-defun nvp-setup-local
-    (name                               ;package root dir name
+    (name                               ; package root dir name
      &key
-     mode                               ;major-mode or key for hash
-     abbr-file                          ;file containing mode abbrevs
-     snippets-dir                       ;snippet dir to use instead of mode name
-     dir                                ;mode root directory
-     abbr-table                         ;abbrev table to use for mode
+     mode                               ; major-mode or key for hash
+     abbr-file                          ; file containing mode abbrevs
+     snippets-dir                       ; snippet dir to use instead of mode name
+     dir                                ; mode root directory
+     abbr-table                         ; abbrev table to use for mode
      override                           ; override previous entries
-     post-fn)                           ;function called after setup
+     post-fn                            ; function called after setup
+     ;; functions / hooks
+     check-buffer format-buffer tag test compile debug disassemble abbrev
+     toggle run docs
+     install-targets)
   "Setup local variables for helper package - abbrevs, snippets, root dir."
+  (declare (indent 1))
   (setq mode (if mode (nvp:as-symbol mode) major-mode))
   ;; use the standard mode when remapped,
   ;; eg. use python-mode instead of python-ts-mode
@@ -96,8 +115,10 @@
     (setq mode (car remap)
           ;; `info-lookup' checks this before tring `major-mode'
           info-lookup-mode mode))
+  (setq nvp-mode-name mode)
   (let ((mvars (gethash mode nvp-mode-cache nil))
         yas-dir mode-snips)
+    ;; initialization that happens once
     (unless (and (not override) mvars)
       (nvp:defq dir (nvp-setup-package-root name))
       (if (not (and dir (file-exists-p dir)))
@@ -115,27 +136,55 @@
                      :dir dir
                      :snippets mode-snips
                      :abbr-file abbr-file
-                     :abbr-table abbr-table))
-        ;; FIXME: initialize mode here
+                     :abbr-table abbr-table
+                     :check-buffer check-buffer
+                     :format-buffer format-buffer
+                     :tag tag
+                     :test test
+                     :compile compile
+                     :debug debug
+                     :disassemble disassemble
+                     :abbrev abbrev
+                     :toggle toggle
+                     :run run
+                     :docs docs
+                     :install-targets install-targets))
+        ;; Initialize/load mode stuff
         ;; - ensure load-path
-        ;; - load-autoloads/activate mode
         ;; - load snippets
         ;; - load abbrevs
-        ;; - etc.
         (when (file-exists-p yas-dir)
-         (unless (member yas-dir yas-snippet-dirs)
-           (push yas-dir yas-snippet-dirs)
-           (yas-load-directory yas-dir)))
+          (unless (member yas-dir yas-snippet-dirs)
+            (push yas-dir yas-snippet-dirs)
+            (yas-load-directory yas-dir)))
         (cl-pushnew dir load-path :test #'string=)
         (ignore-errors (quietly-read-abbrev-file abbr-file))
         (puthash mode mvars nvp-mode-cache)))
-    (setq nvp-mode-snippet-dir (nvp-mode-vars-snippets mvars)
-          nvp-abbrev-local-file (nvp-mode-vars-abbr-file mvars)
-          nvp-abbrev-local-table (nvp-mode-vars-abbr-table mvars))
-    (setq local-abbrev-table
-          (symbol-value
-           (intern-soft (concat (nvp-mode-vars-abbr-table mvars) "-abbrev-table")))))
+    ;; initialization that happens every time
+    (pcase-let (((cl-struct nvp-mode-vars snippets abbr-file abbr-table) mvars))
+      (setq nvp-mode-snippet-dir snippets
+            nvp-abbrev-local-file abbr-file
+            nvp-abbrev-local-table abbr-table
+            nvp-mode-install-targets install-targets
+            local-abbrev-table
+            (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))))
+    (nvp:setup-local-hooks mvars))
   (when post-fn (funcall post-fn)))
+
+;; ;;;###autoload
+;; (cl-defun nvp-setup-mode (_mode &key check format test tag compile debug disassemble)
+;;   (declare (indent 1))
+;;   (pcase-dolist (`(,type ,vals) `((check-buffer ,check)
+;;                                   (format-buffer ,format)
+;;                                   (test ,test)
+;;                                   (tag ,tag)
+;;                                   (compile ,compile)
+;;                                   (debug ,debug)
+;;                                   (disassemble ,disassemble)))
+;;     (when vals
+;;       (let ((lst (intern (concat "nvp-" (symbol-name type) "-functions"))))
+;;         (dolist (v vals)
+;;           (add-hook lst v nil t))))))
 
 (provide 'nvp-setup)
 ;;; nvp-setup.el ends here

@@ -189,6 +189,7 @@ Like `sh-current-defun-name' but ignore variables."
 
 ;; enforce uft-8-unix and align when killing buffer
 (defun nvp-sh-tidy-buffer ()
+  (interactive)
   (unless (or buffer-read-only (null (buffer-file-name)) (not (buffer-modified-p)))
     (ignore-errors (align (point-min) (point-max)))
     (and (buffer-modified-p)

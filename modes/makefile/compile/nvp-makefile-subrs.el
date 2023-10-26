@@ -6,6 +6,10 @@
 (require 'nvp)
 (nvp:decls :v (nvp-makefile-defun-regexp) :f (nvp-makefile-completing-read))
 
+(defsubst nvp:makefile-p ()
+  (or (derived-mode-p 'makefile-mode)
+      (memq major-mode '(makefile-ts-mode))))
+
 (defsubst nvp:makefile--defun-line-p ()
   (save-excursion
     (beginning-of-line 1)

@@ -172,12 +172,14 @@
                   end-of-defun-function
                   nvp-compile-function
                   nvp-mark-defun-function
-                  nvp-check-buffer-function
-                  nvp-help-at-point-functions
-                  nvp-disassemble-function
-                  nvp-test-function
                   nvp-fill-paragraph-function
-                  nvp-format-buffer-function)))
+                  nvp-help-at-point-functions
+                  nvp-check-buffer-default-function nvp-check-buffer-functions
+                  nvp-disassemble-default-function nvp-disassemble-functions
+                  nvp-test-default-function nvp-test-functions
+                  nvp-tag-default-function nvp-tag-functions
+                  nvp-debug-default-function nvp-debug-functions
+                  nvp-format-buffer-default-function nvp-format-buffer-functions)))
         (vars
          (--map (cons (symbol-name it) (symbol-value it))
                 '(nvp-abbrev-local-file

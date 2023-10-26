@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (require 'eproject)
 (declare-function look-for "eproject" 1 t)
 

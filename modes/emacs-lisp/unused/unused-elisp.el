@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 ;;; FIXME: update or remove
 ;; convert selected bindings to macro form and align

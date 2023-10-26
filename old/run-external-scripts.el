@@ -1,4 +1,4 @@
-;;; From nvp-ext -- no longer used
+;;; From nvp-ext -- no longer used  -*- lexical-binding: t; -*-
 
 ;; do sudo command and return process object
 (defun nvp-ext-sudo-command (&optional password command buffer)

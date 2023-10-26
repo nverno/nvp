@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 ;; make indentation based regexp
 (defun nvp-indent-regexp ()

@@ -1,4 +1,4 @@
-;; -------------------------------------------------------------------
+;; -------------------------------------------------------------------  -*- lexical-binding: t; -*-
 ;;; Headers
 
 ;; jump to associated header, with arg create and/or update it as well

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (require 'nvp-test-helpers)
 (require 'ert)
 (require 'nvp-bookmark)

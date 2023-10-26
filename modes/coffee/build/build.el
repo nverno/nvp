@@ -1,4 +1,4 @@
-;; -*- no-byte-compile: t; -*-
+;; -*- no-byte-compile: t; lexical-binding: t; -*-
 (require 'json)
 
 (setq winpy "C:/Program Files/Anaconda/python.exe")

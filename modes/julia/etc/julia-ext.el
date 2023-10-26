@@ -1,4 +1,4 @@
-;; julia-ext.el --- -*- no-byte-compile: t -*-
+;; julia-ext.el --- -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Remove all extra dependencies
 

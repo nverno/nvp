@@ -1,4 +1,4 @@
-;; flychecker using ensime
+;; flychecker using ensime  -*- lexical-binding: t; -*-
 ;; https://github.com/lunaryorn/.emacs.d/blob/master/lisp/flycheck-ensime.el
 (require 'flycheck)
 (require 'ensime)

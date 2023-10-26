@@ -1,4 +1,4 @@
-;;; Shell  -*- no-byte-compile: t; -*-
+;;; Shell  -*- no-byte-compile: t; lexical-binding: t -*-
 ;; -------------------------------------------------------------------
 ;;; Pcomplete 
 

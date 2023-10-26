@@ -1,4 +1,4 @@
-;;; Save data -- FIXME: remove if this not used anywhere?
+;;; Save data -- FIXME: remove if this not used anywhere?  -*- lexical-binding: t; -*-
 
 ;; recentf.el
 (defun nvp-save-variable (var file &optional header coding)

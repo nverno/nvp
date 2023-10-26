@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (("Overview" . "#overview")
  ("Literals: Functions, Objects and Arrays" . "#literals")
  ("Lexical Scoping and Variable Safety" . "#lexical-scope")

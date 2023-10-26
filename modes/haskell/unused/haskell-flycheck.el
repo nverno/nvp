@@ -1,4 +1,4 @@
-;;; flycheck stack-ghci
+;;; flycheck stack-ghci  -*- lexical-binding: t; -*-
 ;; http://ioctl.it/posts/2015-07-03-stack-flycheck.html
 ;; (when (eq haskell-process-type 'stack-ghci))
 (require 'flycheck)

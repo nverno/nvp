@@ -1,4 +1,4 @@
-;;; nvp-inf.el --- inferior processes -*- lexical-binding: t; -*-
+;;; nvp-inf.el --- inferior processes  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;

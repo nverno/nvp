@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+;;  -*- lexical-binding: t; -*-
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'hydra))
 (require 'eclim)

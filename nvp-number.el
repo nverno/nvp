@@ -13,15 +13,17 @@
   [["Toggle"
     ("t" "Base" nvp-number-toggle-base)
     ("+" "Increment" nvp-number-increment)
-    ("-" "Decrement" (lambda ()
-                       (interactive)
-                       (funcall-interactively #'nvp-number-increment t)))]
+    ("-" "Decrement" nvp-number-decrement)]
    ["Insert"
     ("l" "Limit" nvp-number-insert-limit)
     ("d" "Random decimal" nvp-number-insert-random)
     ("h" "Random hex" nvp-number-insert-random-hex)]
    ["Show"
     ("?" "Decimal" nvp-number-show-decimal)]])
+
+(defun nvp-number-decrement (&optional bnds inc)
+  (interactive)
+  (funcall-interactively #'nvp-number-increment t bnds inc))
 
 ;;;###autoload
 (defun nvp-number-increment (arg &optional bnds inc)

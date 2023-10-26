@@ -1,4 +1,4 @@
-;;* libs: eproject
+;;* libs: eproject  -*- lexical-binding: t; -*-
 (require 'eproject)
 
 ;; local files

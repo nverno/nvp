@@ -1,4 +1,4 @@
-;;; cygwin-tools --- 
+;;; cygwin-tools ---  -*- lexical-binding: t; -*- 
 (eval-when-compile
   (require 'cl-lib))
 (require 'w32-tools)

@@ -1,4 +1,4 @@
-;;; test helper functions/macros
+;;; test helper functions/macros  -*- lexical-binding: t; -*-
 (require 'nvp)
 (require 'nvp-macro)
 (require 'ert)

@@ -1,4 +1,4 @@
-;;; inf-julia --- inferior julia -*- lexical-binding: t -*-
+;;; inf-julia --- inferior julia  -*- lexical-binding: t; -*-
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (defvar term-prompt-regexp)

@@ -1,4 +1,4 @@
-;;; fakecygpty.el --- Support for using cygwin pty with NTEmacs.
+;;; fakecygpty.el --- Support for using cygwin pty with NTEmacs.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2014, 2016  Daisuke Kobayashi
 

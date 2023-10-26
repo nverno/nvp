@@ -1,4 +1,4 @@
-;; ess-julia.el --- ESS julia mode and inferior interaction -*- no-byte-compile: t -*-
+;; ess-julia.el --- ESS julia mode and inferior interaction -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2012-2015 Vitalie Spinu and the ESS Core team.
 ;;

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (require 'eproject)
 (declare-function magit-run-git "magit-process")
 

@@ -27,7 +27,6 @@ has a file or directory local binding."
               ,cmd)))
      ,@body))
 
-;; FIXME: Obsolete
 ;; Create compile function, check for makefiles/cmake first, otherwise
 ;; execute BODY. Prefix argument executes PROMPT-ACTION, and its
 ;; result is bound to ARGS, which can be used in the body.
@@ -41,15 +40,11 @@ has a file or directory local binding."
                    (cdr (assoc 'compile-command file-local-variables-alist))
                    "make -k")))
           (nvp-compile)))
-      (cmake-action
-       '(nvp-compile-cmake args))
-      (default-prompt
-        '(read-from-minibuffer "Compile args: "))
+      (cmake-action '(funcall-interactively #'nvp-cmake-compile))
+      (default-prompt '(read-from-minibuffer "Compile args: "))
       (prompt-action
        `((cond
-          ,@(and cmake-action
-                 '((have-cmake
-                    (read-from-minibuffer "CMake args: "))))
+          ,@(and cmake-action '((have-cmake)))
           ,@(and make-action
                  '((have-make
                     (format "make %s" (read-from-minibuffer "Make args: ")))))
@@ -61,7 +56,6 @@ has a file or directory local binding."
   (declare (indent defun))
   (let ((fn (if (symbolp name) name (intern name))))
     `(progn
-       ;; (nvp:decl nvp-compile nvp-compile-cmake)
        (defun ,fn (&optional arg)
          ,doc
          (interactive "P")
@@ -140,41 +134,6 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
   (setq-local compile-command
               (concat (if root (concat "cd " (projectile-project-root) " && ")) cmd))
   (nvp-buffer-local-set-key (kbd (or key "C-c C-c")) #'compile))
-
-;; ------------------------------------------------------------
-;;; Cmake
-
-;; Run cmake
-;; on windows do MSYS makefiles with GNU c++/c compilers from
-;; out-of-source build directory.
-;;;###autoload
-(defun nvp-compile-cmake (&rest params)
-  (interactive)
-  (let* ((params (or params
-                     (and current-prefix-arg
-                          (list (read-from-minibuffer "CMake Params: ")))))
-         (build-dir (if current-prefix-arg
-                        (let ((dir (read-directory-name
-                                    "Build directory: " nil "build")))
-                          (unless (make-directory dir 'parents)
-                            (user-error "Failed to make build directory"))
-                          dir)
-                      (make-temp-file "build" t)))
-         (args (mapconcat 'identity
-                          (append
-                           (list
-                            (file-name-directory buffer-file-name)
-                            ;; for MSYS
-                            (nvp:with-w32 "-G \"MSYS Makefiles\"")
-                            "-DCMAKE_CXX_COMPILER=g++"
-                            "-DCMAKE_C_COMPILER=gcc"
-                            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON")
-                           params)
-                          " "))
-         (default-directory build-dir)
-         (compile-command 
-          (format "%s %s" (nvp:program "cmake" :path "/usr/bin") args)))
-    (funcall-interactively #'compile compile-command)))
 
 ;; -------------------------------------------------------------------
 ;;; Related commands

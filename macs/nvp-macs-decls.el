@@ -260,7 +260,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; compile
        nvp-compile
        nvp-compile-default
-       nvp-compile-cmake
+       nvp-cmake-compile
        ;; environment
        nvp-env-add
        nvp-env-path-add

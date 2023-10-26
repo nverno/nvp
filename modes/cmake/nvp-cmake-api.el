@@ -11,12 +11,12 @@
 ;; > jq '.reply["client-nvp"]["query.json"]["responses"]' <index-*.json>
 ;; where kind = [codemodel|cache|cmakeFiles]
 (defvar nvp-cmake-queries
-  '((targets "codemodel-*" "[.configurations[].targets[].name]")
-    (variables nvp-cmake--variables)
+  '((target "codemodel-*" "[.configurations[].targets[].name]")
+    (variable nvp-cmake--variables)
     (cache "cache-*" "[.entries[] | [.name, .value]]")
-    (files "cmakeFiles-*" "[.inputs[] | select(.isGenerated != true and .isExternal != true) | .path]")
-    (files-external "cmakeFiles-*" "[.inputs[] | select(.isExternal) | .path]")
-    (files-generated "cmakeFiles-*" "[.inputs[] | select(.isGenerated) | .path]"))
+    (file "cmakeFiles-*" "[.inputs[] | select(.isGenerated != true and .isExternal != true) | .path]")
+    (file-external "cmakeFiles-*" "[.inputs[] | select(.isExternal) | .path]")
+    (file-generated "cmakeFiles-*" "[.inputs[] | select(.isGenerated) | .path]"))
   "Cmake API queries: lists of NAME [(REPLY-GLOB JQ-QUERY JQ-ARGS)|FUNCTION].")
 
 (defvar nvp-cmake--api-buffer "*cmake-api*")
@@ -35,19 +35,19 @@
                        :false-object :false))
 
   (cl-defmacro nvp:with-api (&rest body &key root &allow-other-keys)
-    "Do BODY with \\='default-directory bound to cmake api directory."
+    "Do BODY with \\='default-directory bound to cmake api directory.
+\\='it-project, \\='it-build and \\='it-api are bound to directories."
     (declare (indent defun))
     (nvp:skip-keywords body)
-    (nvp:with-syms (project build-dir api-dir)
-      `(if-let* ((,project (or ,root (nvp-project-root)))
-                 (,build-dir (nvp-cmake--build-directory ,project))
-                 (,api-dir (expand-file-name ".cmake/api/v1/" ,build-dir)))
-           (if (f-directory-p ,api-dir)
-               (let ((default-directory ,api-dir))
-                 ,@body)
-             (user-error "Missing CMake api directory: %S" ,api-dir))
-         (user-error
-          "Missing CMake build dir: project %S, builddir: %S" ,project ,build-dir))))
+    `(if-let* ((it-project (or ,root (nvp-project-root)))
+               (it-build (nvp-cmake--build-directory it-project))
+               (it-api (expand-file-name ".cmake/api/v1/" it-build)))
+         (if (f-directory-p it-api)
+             (let ((default-directory it-api))
+               ,@body)
+           (user-error "Missing CMake api directory: %S" it-api))
+       (user-error
+        "Missing CMake build dir: project %S, builddir: %S" it-project it-build)))
   
   (cl-defmacro nvp:with-reply (reply-glob &rest body &key root &allow-other-keys)
     "Do BODY with \\='reply bound to reply files matching REPLY-GLOB in project
@@ -74,12 +74,6 @@ ROOT."
                           (mapconcat 'identity reply " "))))
              ,@body))))))
 
-(defun nvp-cmake--build-directory (&optional root)
-  "Return cmake build directory, optionally using project ROOT."
-  (if (f-absolute-p nvp-cmake-build-directory)
-      nvp-cmake-build-directory
-    (f-expand nvp-cmake-build-directory (or root (nvp-project-root)))))
-
 (defun nvp-cmake--build (&optional root init)
   "Run cmake build to generate API responses."
   (let ((build-dir (nvp-cmake--build-directory root)))
@@ -90,13 +84,13 @@ ROOT."
           :proc-args (build-dir))
       (user-error "Missing cmake build directory: %S" build-dir))))
 
-(defun nvp-cmake--query-json (&optional root)
+(defun nvp-cmake--query-json (&optional root rebuild)
   "Generate JSON query request for CMake file API and build."
   (nvp:with-api :root root
     (let* ((query-dir (expand-file-name "query/client-nvp/"))
            (query (expand-file-name "query.json" query-dir)))
       (make-directory query-dir t)
-      (unless (file-exists-p query)
+      (when (or rebuild (not (file-exists-p query)))
         (with-temp-file query
           (insert "{
   \"requests\": [
@@ -105,7 +99,8 @@ ROOT."
     {\"kind\": \"cmakeFiles\", \"version\": 1}
   ]
 }"))
-        (nvp-cmake--build root)))))
+        (let ((default-directory it-project))
+          (nvp-cmake--build it-project))))))
 
 (defun nvp-cmake--query-jq (type)
   "Get results from jq query TYPE."
@@ -119,12 +114,16 @@ ROOT."
 
 (defun nvp-cmake--variables (&rest _)
   "Get variables and their values from generated cmake files."
+  ;; when cmake is run with 'cmake -P', CMAKE_[SOURCE|BIN]_DIR set to current
+  ;; working directory
   (let ((root (f-parent (nvp-cmake--build-directory))))
-    (--when-let (nvp-cmake--query-jq 'files-generated)
-      (let ((script (make-temp-file "cmake-api" nil ".json")))
+    (--when-let (append (nvp-cmake--query-jq 'file-generated)
+                        (nvp-cmake--query-jq 'file-external))
+      (let ((default-directory root)
+            (script (make-temp-file "cmake-api" nil ".cmake")))
         (with-temp-file script
           (dolist (file it)
-            (insert (format "include(\"%s\")\n" (expand-file-name file root))))
+            (insert (format "include(\"%s\")\n" (expand-file-name file))))
           (insert (f-read-text nvp-cmake--dump-vars)))
         (with-current-buffer (get-buffer-create nvp-cmake--api-buffer)
           (erase-buffer)
@@ -132,7 +131,9 @@ ROOT."
            (format "%s -P %s" nvp-cmake-executable script) nil (current-buffer))
           (goto-char (point-min))
           (seq-filter (lambda (e) (not (string-match-p "CMAKE_ARG" (car e))))
-                      (read (current-buffer))))))))
+                      (read (current-buffer))))
+        (when (file-exists-p script)
+          (delete-file script))))))
 
 (defun nvp-cmake--query (type &optional query-fn)
   "Get results for query TYPE."
@@ -147,36 +148,35 @@ ROOT."
 ;; -------------------------------------------------------------------
 ;;; Interface
 
-(defun nvp-cmake-project-p (&optional root)
-  "Return project root if it is a cmake project."
-  (let ((root (or root (nvp-project-root))))
-    (when (file-exists-p (expand-file-name "CMakeLists.txt" root))
-      root)))
-
-(defun nvp-cmake-ensure-query (&optional root init)
+(defun nvp-cmake-ensure-query (&optional root init rebuild)
   "Ensure query is run in cmake project ROOT.
-If INIT, run cmake build if it hasn't been run."
-  (--if-let (nvp-cmake-project-p)
+If INIT, run cmake build if it hasn't been run.
+If REBUILD, run query even if it has already run."
+  (--if-let (nvp-cmake-project-p root)
       (let ((build-dir (nvp-cmake--build-directory it)))
         (unless (file-exists-p build-dir)
           (and init (nvp-cmake--build it 'init)))
-        (nvp-cmake--query-json root))
+        (nvp-cmake--query-json it rebuild))
     (user-error "Not in a recognized cmake project")))
 
 ;;;###autoload
-(defun nvp-cmake-completing-read (&optional prompt type)
-  "Completing read for cmake targets, or TYPE, with PROMPT.
+(defun nvp-cmake-completing-read (&optional type prompt rebuild)
+  "Completing read for cmake target, or TYPE, with PROMPT.
 TYPE is entry from `nvp-cmake-queries'."
-  (let* ((vals (nvp-cmake--query (or type 'targets)))
-         (choice (completing-read (or prompt "Target: ") vals)))
+  (nvp-cmake-ensure-query nil 'init rebuild)
+  (let* ((vals (nvp-cmake--query (or type 'target)))
+         (choice
+          (completing-read
+           (or prompt (concat (capitalize (symbol-name type)) ": ")) vals)))
     (assoc-string choice vals)))
 
 ;;;###autoload
-(defun nvp-cmake-list (type)
+(defun nvp-cmake-list (type &optional rebuild)
   "List computed cmake values of TYPE."
   (interactive
-   (list (intern (completing-read "Type: " (mapcar #'car nvp-cmake-queries)))))
-  (nvp-cmake-ensure-query nil 'init)
+   (list (intern (completing-read "Type: " (mapcar #'car nvp-cmake-queries)))
+         current-prefix-arg))
+  (nvp-cmake-ensure-query nil 'init rebuild)
   (let ((res (nvp-cmake--query type)))
     (nvp:with-results-buffer :title (format "Cmake %S" type)
       (dolist (v res)

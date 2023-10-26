@@ -119,6 +119,13 @@
        (mapcar #'intern-soft
                (completing-read-multiple prompt '(http dav retrieval handlers)))))))
 
+;;; Projectile
+(defvar projectile-verbose)
+(transient-define-infix nvp-edebug-emacs--projectile-verbose ()
+  :class 'transient-lisp-variable
+  :variable 'projectile-verbose
+  :reader (lambda (&rest _) (not projectile-verbose)))
+
 ;;; Emacs
 (transient-define-suffix nvp-edebug-emacs--launch (args)
   "Launch emacs with ARGS."
@@ -202,6 +209,8 @@
     ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode)))
     ("/tree" "Tree-sitter" nvp-treesit-menu
      :if (lambda () (ignore-errors (treesit-buffer-root-node))))
+    ("/proj" "Projectile verbose" nvp-edebug-emacs--projectile-verbose
+     :if-non-nil projectile-mode)
     ("/tran" "Transient" nvp-transient-menu)
     ("/smie" "Smie" nvp-edebug-smie
      :if (lambda () (eq 'smie-indent-line indent-line-function)))

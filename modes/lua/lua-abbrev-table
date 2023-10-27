@@ -5,4 +5,5 @@
     ("!=" "~=" nil :system t))
   "Lua-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table)
+  :regexp "\\(\\_<[!_:\\.A-Za-z0-9=]+\\)\\W*"
   :enable-function #'nvp-abbrev-expand-p)

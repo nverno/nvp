@@ -177,15 +177,6 @@
     ("S" "Set indent" smie-config-set-indent :transient t)
     ("s" "Save config" smie-config-save)]])
 
-(transient-define-prefix nvp-edebug-treesit ()
-  "Treesit debug"
-  [["Dev Mode"
-    ("l" "local" nvp-treesit-minor-mode)
-    ("g" "global" nvp-treesit-mode)]
-   ["Debug"
-    ("i" "Toggle indent verbose" nvp-edebug-treesit--toggle-indent-verbose)
-    ("f" "Toggle Font debug" nvp-edebug-treesit--toggle-ts-debug)]])
-
 ;;;###autoload(autoload 'nvp-edebug-emacs "nvp-edebug")
 (transient-define-prefix nvp-edebug-emacs ()
   "Toggle or run elisp debugging."

@@ -45,6 +45,21 @@
        (setq this-command 'nvp-abbrev-expand-after-symbols)
        (expand-abbrev)))
 
+;; Generate a `post-self-insert-hook' to run `expand-abbrev' using
+;; either SYNTAX or CHARS
+;;;###autoload
+(cl-defun nvp-abbrev-make-post-insert-hook (&key syntax chars)
+  (unless (xor syntax chars)
+    (user-error "Must be SYNTAX or CHARS"))
+  (let ((sym (cl-gensym "nvp-abbrev-hook"))
+        (fn `(lambda ()
+               (and (memq ,@(if syntax
+                                `((car (syntax-after (1- (point)))) ',syntax)
+                              `(last-input-event ',chars)))
+                    (setq this-command 'nvp-abbrev---expand)
+                    (expand-abbrev)))))
+    (defalias `,sym fn)))
+
 ;; -------------------------------------------------------------------
 ;;; Expand Hooks
 

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: ternary
+# key: ?
+# --
+${1:x} and ${2:y} or ${3:z}

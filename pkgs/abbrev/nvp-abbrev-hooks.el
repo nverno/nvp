@@ -49,15 +49,17 @@
 ;; either SYNTAX or CHARS
 ;;;###autoload
 (cl-defun nvp-abbrev-make-post-insert-hook (&key syntax chars)
-  (unless (xor syntax chars)
-    (user-error "Must be SYNTAX or CHARS"))
+  ;; (unless (xor syntax chars)
+  ;;   (user-error "Must be SYNTAX or CHARS"))
   (let ((sym (cl-gensym "nvp-abbrev-hook"))
         (fn `(lambda ()
-               (and (memq ,@(if syntax
-                                `((car (syntax-after (1- (point)))) ',syntax)
-                              `(last-input-event ',chars)))
-                    (setq this-command 'nvp-abbrev---expand)
-                    (expand-abbrev)))))
+               (and
+                (or ,@(when syntax
+                        `((memq (car (syntax-after (1- (point)))) ',syntax)))
+                    ,@(when chars
+                        `((memq (char-before (1- (point))) ',chars))))
+                (setq this-command 'nvp-abbrev---expand)
+                (expand-abbrev)))))
     (defalias `,sym fn)))
 
 ;; -------------------------------------------------------------------
@@ -100,6 +102,7 @@
 ;; dont expand in strings/comments
 ;;;###autoload
 (defun nvp-abbrev-expand-p ()
+  ;;(memq this-command '(expand-abbrev nvp-abbrev---expand))
   (not (nvp:ppss 'soc)))
 
 ;; don't expand in strings/comments or after [_.-:]

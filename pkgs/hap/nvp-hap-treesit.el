@@ -30,7 +30,8 @@
    :ts-modes '(dockerfile-ts-mode bash-ts-mode)
    :backend #'nvp-hap-sh))
 
-(nvp-hap-add-backend nvp-hap-treesit--sh-backend)
+(cl-eval-when (load)
+  (nvp-hap-add-backend nvp-hap-treesit--sh-backend))
 
 
 ;; list of local parsers at point

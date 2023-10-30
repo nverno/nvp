@@ -15,30 +15,6 @@
   :modes (python-mode python-ts-mode)
   (add-log-current-defun))
 
-;;; Abbrevs
-;; C level only calls `expand-abbrev' when preceding char is word syntax
-;; so hook into `post-self-insert-hook'
-(defun nvp-python-expand-after-ops-hook ()
-  (and (memq (char-before (1- (point))) '(?| ?&))
-       (setq this-command 'nvp-python-expand-after-ops)
-       (expand-abbrev)))
-
-(defvar nvp-python-abbrev-syntax-table
-  (let ((tab (copy-syntax-table python-mode-syntax-table)))
-    (modify-syntax-entry ?| "w" tab)
-    (modify-syntax-entry ?& "w" tab)
-    tab))
-
-;; temporarily treat '|' and '&' as word syntax
-(defun nvp-python-expand-abbrev ()
-  (c-with-syntax-table nvp-python-abbrev-syntax-table
-    (abbrev--default-expand)))
-
-(defun nvp-python-abbrev-expand-p ()
-  (and (or (memq this-command '(expand-abbrev nvp-python-expand-after-ops))
-           (not (memq last-input-event '(?_ ?. ?- ?:))))
-       (not (nvp:ppss 'soc))))
-
 ;;; Encoding
 
 ;; Insert a magic comment header with the proper encoding if necessary.

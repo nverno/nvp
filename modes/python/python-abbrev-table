@@ -13,7 +13,8 @@
     ("false" "False" nil :system t)
     ("none" "None" nil :system t))
   "Python-Mode Abbrevs."
-  :enable-function 'nvp-python-abbrev-expand-p
+  :enable-function 'nvp-abbrev-expand-p
+  :regexp "\\(&&\\|||\\|\\<[_:\\.A-Za-z0-9]+\\)\\W*"
   :parents (list prog-mode-abbrev-table))
 
 (define-abbrev-table 'cython-mode-abbrev-table

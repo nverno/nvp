@@ -80,6 +80,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(sql-mode)
+    :name 'sql
     :modes '(sql-interactive-mode)
     :wait 0.1
     :find-fn (lambda () (-some->> sql-buffer

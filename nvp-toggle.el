@@ -48,7 +48,7 @@
 
 (eval-when-compile 
   ;; get value corresponding to variable which may be shortened, eg. `mode'
-  (defsubst nvp-toggle--normalize-var (var)
+  (defsubst nvp:toggle--normalize-var (var)
     (pcase var
       (`mode major-mode)
       (`coding buffer-file-coding-system)
@@ -57,7 +57,7 @@
              (symbol-value var)))))
 
   ;; normalize possible shortened mode names
-  (defsubst nvp-toggle--normalize-mode (val)
+  (defsubst nvp:toggle--normalize-mode (val)
     (let ((str (nvp:as-string val)))
       (if (string-match-p "-mode\\'" str) val
         (intern (concat str "-mode"))))))
@@ -68,10 +68,10 @@
 If DIR is non-nil toggle dir-local variable, for DIR-MODE.
 If FOOTER is non-nil toggle value in file's Local Variables."
   (setq var (nvp:as-symbol var))
-  (let* ((curr (nvp-toggle--normalize-var var))
+  (let* ((curr (nvp:toggle--normalize-var var))
          (op (if (or (not curr)
                      (and val (not (equal curr (if (eq var 'mode)
-                                                   (nvp-toggle--normalize-mode val)
+                                                   (nvp:toggle--normalize-mode val)
                                                  val)))))
                  'add-or-replace
                'delete))

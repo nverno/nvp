@@ -14,6 +14,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(lua-mode lua-ts-mode)
+    :name 'lua
     :send-region #'lua-ts-send-region
     :send-buffer #'lua-ts-send-buffer
     :send-file #'lua-ts-send-file

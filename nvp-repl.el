@@ -17,10 +17,11 @@
   (require 'comint))
 (require 'nvp)
 (nvp:auto "nvp-sh" 'nvp-sh-get-process)
-(nvp:decls :f (nvp-repl--init ielm-change-working-buffer sh-cd-here))
+(nvp:decls :p (hippie comint sh ielm) :f (nvp-repl--init))
 
 (cl-defstruct (nvp--repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"
+  name                               ; REPL name
   modes                              ; REPL major-modes to consider
   init                               ; init REPL => return process
   init-callback                      ; after init REPL call a callback to link source/repl
@@ -32,40 +33,57 @@
   (buff->proc #'get-buffer-process)  ; get buffer associated with process
   (proc->buff #'process-buffer)      ; process associated w/ buffer
   ;; the rest are related to interaction
-  filters                            ; filters applied to text sent to REPL
-  (send-string    #'comint-send-string) ; function to send string to REPL
-  (send-input     #'comint-send-input)  ; function to send current input from REPL
+  filters                                ; filters applied to text sent to REPL
+  (send-string    #'comint-send-string)  ; function to send string to REPL
+  (send-input     #'comint-send-input)   ; function to send current input from REPL
   send-line
   send-region
   send-defun
   send-sexp
   send-buffer
   send-file
-  ;; TODO: history `nvp-comint-setup-history'
-  ;; history-file
   ;; REPL commands
   help-cmd                        ; command to display REPL help
   cd-cmd                          ; command to change REPL working dir
   pwd-cmd                         ; command to get REPL working directory/buffer
+  ;; History
+  history-file
   ;; set internally
   proc                               ; REPL process
   buff                               ; REPL output buffer (may not have a proc)
   )
 (put 'nvp-repl-make 'lisp-indent-function 'defun)
 
-(defvar-local nvp-repl-current ()
-  "REPL associated with current buffer.")
-(defvar nvp-repl-alist '()
-  "Mapping modes to repls.")
-
-;; map repl buffers -> source buffers
+;; Cache defined repls
+(defvar nvp-repl--repl-cache (make-hash-table))
+;; `major-mode' -> repl mapping
+(defvar nvp-repl-cache (make-hash-table))
 ;; Note: repl buffers may not be processes, eg. slime repls
 (defvar nvp-repl--process-buffers (make-hash-table))
 
+(defvar-local nvp-repl-current ()
+  "REPL associated with current buffer.")
+
+;;;###autoload
+(defun nvp-repl-add (mmodes &rest args)
+  "Create new mappings of major modes MMODES to repl created from ARGS."
+  (unless (listp mmodes) (setq mmodes (cons mmodes nil)))
+  (let* ((repl (if (nvp--repl-p (car args)) (car args)
+                 (apply #'nvp-repl-make args)))
+         (name (nvp--repl-name repl)))
+    (unless name
+      (user-error "Repl name is nil"))
+    (puthash name repl nvp-repl--repl-cache)
+    (dolist (mode mmodes)
+      (cl-pushnew name (gethash mode nvp-repl-cache)))))
+(put 'nvp-repl-add 'lisp-indent-function 'defun)
+
 ;; default REPL to use - shell
-(defvar nvp-repl-default
+(nvp:decl sh-cd-here)
+(defvar nvp-repl--shell-repl
   (apply #'nvp-repl-make
-         (list :init #'nvp-sh-get-process
+         (list :name 'shell
+               :init #'nvp-sh-get-process
                :modes '(shell-mode)
                :procname "shell"
                :bufname "*shell"
@@ -74,26 +92,25 @@
                            (nvp-repl-send-string
                             (if thing (format "help %s" thing) "help")))
                :cd-cmd (lambda (dir) (let ((default-directory dir))
-                                  (funcall-interactively #'sh-cd-here))))))
+                                  (funcall-interactively #'sh-cd-here)))
+               :history-file ".bash_history")))
 
-;;;###autoload
-(defun nvp-repl-add (mmodes &rest args)
-  "Create new mappings of major modes MMODES to repl created from ARGS."
-  (unless (listp mmodes) (setq mmodes (cons mmodes nil)))
-  (let ((repl (apply #'nvp-repl-make args)))
-    (setq mmodes (cons mmodes repl))
-    (cl-pushnew mmodes nvp-repl-alist :test #'equal)))
-(put 'nvp-repl-add 'lisp-indent-function 'defun)
+(defvar nvp-repl-default 'shell
+  "Default REPL when buffer has no repl associations.")
 
-;; initialize some REPLs
-(nvp:decl ielm-send-input ielm-print-working-buffer)
+;;; Initialize some REPLs
+(nvp-repl-add '(sh-mode bash-ts-mode bats-mode) nvp-repl--shell-repl)
+
+(nvp:decl ielm-send-input)
 (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
+  :name 'ielm
   :init #'ielm
   :modes '(inferior-emacs-lisp-mode)
   :procname "ielm"
   :bufname "*ielm"
   :send-input #'ielm-send-input
   :wait 0.1
+  :history-file ".ielm_history"
   :help-cmd "(describe-mode ielm-working-buffer)"
   :pwd-cmd #'ielm-print-working-buffer
   :cd-cmd (lambda (&rest _)
@@ -104,30 +121,25 @@
                   (message "%s not asociated with a source buffer" (current-buffer)))
               (ielm-change-working-buffer (current-buffer)))))
 
-(nvp-repl-add '(sh-mode bash-ts-mode bats-mode)
-  :init #'nvp-sh-get-process
-  :modes '(shell-mode)
-  :procname "shell"
-  :bufname "*shell"
-  :help-cmd (lambda (&optional thing)
-              (nvp-repl-send-string (if thing (format "help %s" thing) "help")))
-  :pwd-cmd "pwd"
-  :cd-cmd (lambda (dir) (let ((default-directory dir))
-                     (funcall-interactively #'sh-cd-here))))
+(defsubst nvp-repl--choose (repls)
+  (if (length> repls 1)
+      (completing-read "Repl: " repls nil t)
+    (car repls)))
 
 ;; return repl for MODE, or default
 (defun nvp-repl-for-mode (mode)
-  (or (cl-loop for (modes . repl) in nvp-repl-alist
-               when (memq mode modes)
-               return repl)
-      (prog1 nvp-repl-default
-        (message
-         "%S not explicitely associated with any REPLs: using default shell" mode))))
+  (--if-let (gethash mode nvp-repl-cache)
+      (gethash (nvp-repl--choose it) nvp-repl--repl-cache)
+    (prog1 (gethash nvp-repl-default nvp-repl--repl-cache)
+      (message
+       "%S not explicitely associated with any REPLs: using default %S"
+       mode nvp-repl-default))))
 
 (defun nvp-repl-ensure (&optional mode)
   "Ensure buffer has a REPL associated with MODE or current `major-mode'."
   (or nvp-repl-current
       (setq nvp-repl-current (nvp-repl-for-mode (or mode major-mode)))))
+
 
 (eval-when-compile
   ;; may switch storage of REPL vars
@@ -254,20 +266,33 @@ repl with source buffer."
                  (call-interactively init-callback))
         (error (dolist (hook hooks) (remove-hook hook #'nvp-repl--init)))))))
 
+(defun nvp-repl--setup-history (proc-buff)
+  (nvp:repl-with (history-file)
+    (when history-file
+      (with-current-buffer proc-buff
+        ;; XXX: handle non-comint modes
+        (when (and (derived-mode-p 'comint-mode)
+                   (not (and comint-input-ring-file-name
+                             (string= (file-name-base comint-input-ring-file-name)
+                                      history-file)
+                             (memq 'nvp-he-try-expand-history
+                                   hippie-expand-try-functions-list))))
+          (nvp-comint-setup-history history-file))))))
+
 (defun nvp-repl-start ()
   "Return a REPL buffer associated with current buffer."
-  (if-let (init (repl:val "init-callback"))
+  (if (repl:val "init-callback")
       (prog1 'async (nvp--repl-init-with-callback))
-    (let ((wait (repl:val "wait"))
-          (proc (funcall (repl:val "init")))
-          p-buff)
-      (and wait (sit-for wait))
-      (unless (processp proc)
-        (setq p-buff proc
-              proc (funcall (repl:val "buff->proc") p-buff)))
-      (cl-assert (processp proc))
-      (nvp-repl-update proc (current-buffer) p-buff)
-      (repl:val "buff"))))
+    (nvp:repl-with (wait init buff->proc proc->buff)
+      (let ((proc (funcall init)) p-buff)
+        (and wait (sit-for wait))
+        (unless (processp proc)
+          (setq p-buff proc
+                proc (funcall buff->proc p-buff)))
+        (cl-assert (processp proc))
+        (nvp-repl-update proc (current-buffer) p-buff)
+        (nvp-repl--setup-history (funcall proc->buff proc))
+        (repl:val "buff")))))
 
 
 ;; -------------------------------------------------------------------
@@ -278,7 +303,7 @@ repl with source buffer."
   '((display-buffer-reuse-window
      display-buffer-use-some-window
      display-buffer-pop-up-window)
-    (reusable-frames . visible)
+    (reusable-frames      . visible)
     (inhibit-switch-frame . t)
     (inhibit-same-window  . t)))
 
@@ -305,10 +330,7 @@ TODO:
 (defun nvp-repl-remove (mode)
   "Remove any repl associations with MODE."
   (interactive (list (intern (nvp-read-mode))))
-  (setq nvp-repl-alist
-        (-filter (lambda (e)
-                   (not (memq mode (car e))))
-                 nvp-repl-alist)))
+  (remhash mode nvp-repl-cache))
 
 ;; -------------------------------------------------------------------
 ;;; Basic REPL interaction
@@ -414,7 +436,10 @@ STR is inserted into REPL unless NO-INSERT."
    (t (nvp-repl-send-defun and-go))))
 
 (defun nvp-repl-send-file (file &optional and-go)
-  (interactive "f\nP")
+  (interactive
+   (let* ((file (buffer-file-name))
+          (fname (ignore-errors (file-name-nondirectory file))))
+     (list (read-file-name "File: " nil file t fname) current-prefix-arg)))
   (nvp:repl-send send-file (file) and-go))
 
 ;; -------------------------------------------------------------------
@@ -507,7 +532,8 @@ Prompt with \\[universal-argument]."
      ("r" "Region" nvp-repl-send-region)
      ("f" "Defun" nvp-repl-send-defun)
      ("d" "Defun or region" nvp-repl-send-defun-or-region)
-     ("b" "Buffer" nvp-repl-send-buffer)]
+     ("b" "Buffer" nvp-repl-send-buffer)
+     ("F" "File" nvp-repl-send-file)]
    [ :if nvp-repl-current
      "Commands"
      ("h" "Help" nvp-repl-help :transient t)

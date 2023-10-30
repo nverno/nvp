@@ -40,17 +40,6 @@
   (interactive)
   (ruby-end-of-block -1))
 
-;;; Robe
-(defun nvp-ruby-start-robe ()
-  (interactive)
-  (robe-mode)
-  (save-window-excursion
-    (or
-     (ignore-errors (inf-ruby-console-auto))
-     (inf-ruby inf-ruby-default-implementation)))
-  (robe-start)
-  (get-buffer-process inf-ruby-buffer))
-
 ;;; Compile
 (defun nvp-ruby-compile ()
   (interactive)
@@ -60,14 +49,36 @@
 ;; -------------------------------------------------------------------
 ;;; REPL
 
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(ruby-mode ruby-ts-mode rspec-mode)
+    :name 'ruby
+    :modes '(inf-ruby-mode)
+    :init #'nvp-ruby-start-robe
+    :send-string #'ruby-send-string
+    :send-region #'ruby-send-region
+    :send-defun #'ruby-send-definition
+    :send-sexp #'ruby-send-last-sexp
+    :send-file #'ruby-load-file
+    :send-buffer #'ruby-send-buffer
+    :send-line #'ruby-send-line
+    :history-file ".irb_history"
+    :help-cmd "help"
+    :cd-cmd ".cd %s"
+    :pwd-cmd ".pwd"))
+
+;;; Robe
+(defun nvp-ruby-start-robe ()
+  (interactive)
+  (robe-mode)
+  (save-window-excursion
+    (or (ignore-errors (inf-ruby-console-auto))
+        (inf-ruby inf-ruby-default-implementation)))
+  (robe-start)
+  (get-buffer-process inf-ruby-buffer))
+
 ;; add compilation jumps in traceback output from REPL
 (defvar nvp-ruby-inf-compilation-regexp
   '("^\\s-+[0-9]+: from \\([^\(][^:]+\\):\\([0-9]+\\)" 1 2))
-
-(with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(ruby-mode ruby-ts-mode)
-    :modes '(inf-ruby-mode)
-    :init #'nvp-ruby-start-robe))
 
 ;; Interpret '?' in irb similar to octave/ess
 (defconst nvp-ruby-inf-help
@@ -75,40 +86,14 @@
     ("pry"  . "show-source -d %s")))
 
 (defun nvp-ruby-inf-sender (proc str)
-  (-if-let
-      (help-str (and (string-match "^ *\\? *\\(.+\\)" str)
-                     (match-string 1 str)))
+  (-if-let (help-str (and (string-match "^ *\\? *\\(.+\\)" str)
+                          (match-string 1 str)))
       (progn
         (comint-simple-send
-         proc
-         (format
-          (cdr (assoc inf-ruby-default-implementation nvp-ruby-inf-help))
-          help-str)))
+         proc (format
+               (cdr (assoc inf-ruby-default-implementation nvp-ruby-inf-help))
+               help-str)))
     (comint-simple-send proc str)))
-
-(defun nvp-ruby-send-block ()
-  (interactive)
-  (condition-case nil
-      (progn
-        (ruby-send-block-and-go)
-        (ruby-switch-to-last-ruby-buffer))
-    (error
-     (progn
-       (ruby-send-definition-and-go)
-       (ruby-switch-to-last-ruby-buffer)))))
-
-(defun nvp-ruby-send-last-sexp-and-step ()
-  (interactive)
-  (end-of-line)
-  (ruby-send-last-sexp)
-  (forward-char 1))
-
-(defun nvp-ruby-send-file ()
-  (interactive)
-  (save-buffer)
-  (ruby-send-region-and-go
-   (point-min)
-   (point-max)))
 
 ;; -------------------------------------------------------------------
 ;;; Fold / Align

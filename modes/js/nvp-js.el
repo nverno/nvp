@@ -47,6 +47,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode)
+    :name 'nodejs
     :modes '(nodejs-repl-mode)
     :procname (bound-and-true-p nodejs-repl-process-name)
     :init (lambda ()

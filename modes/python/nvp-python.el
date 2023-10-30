@@ -80,6 +80,7 @@
 ;; switch betweeen source and REPL buffers
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(python-mode python-ts-mode)
+    :name 'python
     :modes '(inferior-python-mode)
     :find-fn #'python-shell-get-process
     :cd-cmd (lambda (&optional dir)

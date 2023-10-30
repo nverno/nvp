@@ -36,6 +36,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(lisp-mode)
+    :name 'slime
     :modes '(slime-repl-mode)
     :live #'(lambda (p)
               (and (process-buffer p)

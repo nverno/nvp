@@ -30,6 +30,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(racket-mode)
+    :name 'racket
     :modes '(racket-repl-mode)
     :bufname racket-repl-buffer-name
     :send-string #'ignore

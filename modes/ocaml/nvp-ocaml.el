@@ -15,6 +15,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(tuareg-mode utop-mode ocaml-ts-mode caml-mode)
+    :name 'utop
     :modes '(utop-mode)
     :find-fn (lambda () (ignore-errors (get-buffer utop-buffer-name)))
     :init (lambda ()

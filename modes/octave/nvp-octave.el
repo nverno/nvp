@@ -27,6 +27,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(octave-mode)
+    :name 'octave
     :modes '(inferior-octave-mode)
     :bufname inferior-octave-buffer
     :init (lambda ()

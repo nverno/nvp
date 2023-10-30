@@ -136,7 +136,7 @@ Replacement for `sh-shell-process', which see."
                  (string= bufname (buffer-name (process-buffer sh-shell-process)))))
         sh-shell-process                  ; have a live process already
       (setq sh-shell-process
-            (let ((proc (nvp-shell-get-process nil bufname sh-shell)))
+            (let ((proc (nvp-shell-get-process bufname nil sh-shell)))
               (or proc
                   (get-buffer-process
                    (let ((explicit-shell-file-name sh-shell-file))

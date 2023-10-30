@@ -96,17 +96,17 @@
          ;; if a specific shell is supplied, find a match that was also started
          ;; interactively, otherwise just look for an interactive (hopefully) shell
          (if sh-name (lambda (cmd)
-                       (and (string= sh-name (file-name-base (car cmd)))
+                       (and cmd (string= sh-name (file-name-base (car cmd)))
                             (cl-find "-i" (cdr cmd) :test #'string=)))
-           (lambda (cmd) (cl-find "-i" cmd :test #'string=))))
+           (lambda (cmd) (and cmd (cl-find "-i" cmd :test #'string=)))))
         (buff-name (if (eq t buff-name) (buffer-name (current-buffer))
                      buff-name)))
-   (nvp:proc-find-if
-     (lambda (p)
-       (when (process-live-p p)
-         (or (and proc-name (string= proc-name (process-name p)))
-             (and buff-name (string= buff-name (buffer-name (process-buffer p))))
-             (funcall interactive-shell-p (process-command p))))))))
+    (nvp:proc-find-if
+      (lambda (p)
+        (when (process-live-p p)
+          (or (and proc-name (string= proc-name (process-name p)))
+              (and buff-name (string= buff-name (buffer-name (process-buffer p))))
+              (funcall interactive-shell-p (process-command p))))))))
 
 (provide 'nvp-shell-common)
 ;; Local Variables:

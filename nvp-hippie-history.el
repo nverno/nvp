@@ -53,6 +53,10 @@
     (comint-mode              . comint-line-beginning-position))
   "Mapping of modes to functions returning line beginning position.")
 
+(defvar nvp-he-history-transform-alist
+  '((inferior-emacs-lisp-mode . nvp-he-history-remove-trailing-paren))
+  "Mapping of modes to expansion transformation functions.")
+
 ;; default function to retrieve history elements for prefix
 (defun nvp-he-history-default-fn (prefix history)
   ;; eg. minibuffer-history-variable -> read-expression-history -> contents
@@ -109,7 +113,9 @@
          (bol (or bol-fn
                   (cdr (assoc major-mode nvp-he-history-bol-alist))
                   (and comint-p
-                       (cdr (assoc 'comint-mode nvp-he-history-bol-alist))))))
+                       (cdr (assoc 'comint-mode nvp-he-history-bol-alist)))))
+         (expand-fn (or expand-fn
+                        (cdr (assoc major-mode nvp-he-history-transform-alist)))))
     (when (and (or (functionp bol) (fboundp bol))
                (or history-fn (not (null history))))
       (setq nvp-he-history history)

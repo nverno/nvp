@@ -92,6 +92,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;;; GDB
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(c-mode c-ts-mode c++-mode c++-ts-mode)
+    :name 'gdb
     :modes '(gud-mode)
     :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
     :init-callback #'gdb))

@@ -19,6 +19,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(typescript-mode typescript-ts-mode typescript-tsx-mode ts-tsx-mode)
+    :name 'typescript
     :modes '(ts-comint-mode)
     :bufname "*Typescript"
     :init (lambda ()

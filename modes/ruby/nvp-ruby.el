@@ -46,6 +46,17 @@
   (ruby-compilation-this-buffer)
   (other-window 1))
 
+;;; Types
+(defun nvp-ruby-yardocify-types (start end)
+  "Fix types between START and END to conform to yardoc specs."
+  (interactive
+   (if (region-active-p) (list (region-beginning) (region-end))
+     (list (point-min) (point-max))))
+  (save-mark-and-excursion
+    (goto-char start)
+    (while (re-search-forward "{\\([^[\n}]+\\)\\(\\[\\]\\)\?}" end t)
+      (replace-match (if (match-string 2) "[Array<\\1>]" "[\\1]") t nil nil 0))))
+
 ;; -------------------------------------------------------------------
 ;;; REPL
 

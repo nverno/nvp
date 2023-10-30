@@ -18,7 +18,7 @@
     :name 'utop
     :modes '(utop-mode)
     :find-fn (lambda () (ignore-errors (get-buffer utop-buffer-name)))
-    :init (lambda ()
+    :init (lambda (&optional _prefix)
             (require 'utop)
             (utop-prepare-for-eval)
             (get-buffer-process utop-buffer-name))))

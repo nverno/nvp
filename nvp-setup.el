@@ -108,7 +108,6 @@
      toggle run profile docs
      install-targets)
   "Setup local variables for helper package - abbrevs, snippets, root dir."
-  (declare (indent 1))
   (setq mode (if mode (nvp:as-symbol mode) major-mode))
   ;; use the standard mode when remapped,
   ;; eg. use python-mode instead of python-ts-mode
@@ -172,6 +171,7 @@
             (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))))
     (nvp:setup-local-hooks mvars))
   (when post-fn (funcall post-fn)))
+(put 'nvp-setup-local 'lisp-indent-function 'defun)
 
 ;; ;;;###autoload
 ;; (cl-defun nvp-setup-mode (_mode &key check format test tag compile debug disassemble)

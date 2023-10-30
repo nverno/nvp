@@ -73,7 +73,7 @@
   ;; hippie-expansion from sqli history
   (nvp-he-history-setup))
 
-(defun nvp-sql-sqli-buffer ()
+(defun nvp-sql-sqli-buffer (&optional _prefix)
   (save-window-excursion
     (sql-show-sqli-buffer)
     (get-buffer-process (current-buffer))))

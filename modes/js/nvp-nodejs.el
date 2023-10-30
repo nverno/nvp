@@ -11,20 +11,36 @@
 ;; - the process seems to randomly interfere with comint, dumping junk in
 ;;   the console, fuckin w/ the input
 ;; - the current design involves a barrage of `comint-output-filter-functions'
-;;   which fucks with xterm-color processing, no doubt
+;;   which fucks with xterm-color processing
 ;;
 ;; Would it work to use babel to convert es6 modules to requireJS format
 ;; recognized by the REPL?
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nodejs-repl nil t)
 (require 'nvp-js)
 (nvp:decls :p (nodejs) :v (nvp-trace-group-alist))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
   (comint-write-input-ring))
+
+(with-eval-after-load 'nvp-repl
+  (when (fboundp #'nodejs-repl-switch-to-repl)
+    (nvp-repl-add nvp-js-modes
+      :name 'nodejs
+      :modes '(nodejs-repl-mode)
+      :procname (bound-and-true-p nodejs-repl-process-name)
+      :send-region #'nodejs-repl-send-region
+      :send-buffer #'nodejs-repl-send-buffer
+      :send-file #'nodejs-repl-load-file
+      :send-sexp #'nodejs-repl-send-last-expression
+      :history-file ".node_history"
+      :help-cmd ".help"
+      :init (lambda (&optional _prefix)
+              (save-window-excursion
+                (ignore-errors
+                  (call-interactively #'nodejs-repl-switch-to-repl)))))))
 
 (defun nvp-nodejs-region-or-sexp ()
   "Send region or last sexp and step."

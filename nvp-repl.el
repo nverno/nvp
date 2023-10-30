@@ -2,16 +2,16 @@
 
 ;;; Commentary:
 ;;
-;; Always switch to REPL in other window by default, same window
+;; Unified REPL interface:
+;;  - `nvp-repl-jump' pops b/w source buffers and repls, starting them when
+;;    necessary.
+;; 
 ;; TODO:
-;; - send-dwim (region / previous sexp)
-;; - send-defun
 ;; - redirect output
+;; - eval + print results
 ;;
-;; other options:
-;; - https://github.com/kaz-yos/eval-in-repl -- meh
-
 ;;; Code:
+
 (eval-when-compile
   (require 'nvp-macro)
   (require 'comint))
@@ -121,26 +121,6 @@
                   (message "%s not asociated with a source buffer" (current-buffer)))
               (ielm-change-working-buffer (current-buffer)))))
 
-(defsubst nvp-repl--choose (repls)
-  (if (length> repls 1)
-      (completing-read "Repl: " repls nil t)
-    (car repls)))
-
-;; return repl for MODE, or default
-(defun nvp-repl-for-mode (mode)
-  (--if-let (gethash mode nvp-repl-cache)
-      (gethash (nvp-repl--choose it) nvp-repl--repl-cache)
-    (prog1 (gethash nvp-repl-default nvp-repl--repl-cache)
-      (message
-       "%S not explicitely associated with any REPLs: using default %S"
-       mode nvp-repl-default))))
-
-(defun nvp-repl-ensure (&optional mode)
-  "Ensure buffer has a REPL associated with MODE or current `major-mode'."
-  (or nvp-repl-current
-      (setq nvp-repl-current (nvp-repl-for-mode (or mode major-mode)))))
-
-
 (eval-when-compile
   ;; may switch storage of REPL vars
   (defmacro repl:val (val)
@@ -151,12 +131,30 @@
   (defmacro nvp:repl-with (fields &rest body)
     (declare (indent defun) (debug t))
     `(pcase-let (((cl-struct nvp--repl ,@fields) nvp-repl-current))
-       ,@body)))
+       ,@body))
+
+  (defsubst nvp:repl--choose (repls)
+    (if (length> repls 1)
+        (intern (completing-read "Repl: " repls nil t))
+      (car repls))))
+
+;; return repl for MODE, or default
+(defun nvp-repl-for-mode (mode)
+  (--if-let (gethash mode nvp-repl-cache)
+      (gethash (nvp:repl--choose it) nvp-repl--repl-cache)
+    (prog1 (gethash nvp-repl-default nvp-repl--repl-cache)
+      (message
+       "%S not explicitely associated with any REPLs: using default %S"
+       mode nvp-repl-default))))
+
+(defun nvp-repl-ensure (&optional mode)
+  "Ensure buffer has a REPL associated with MODE or current `major-mode'."
+  (or nvp-repl-current
+      (setq nvp-repl-current (nvp-repl-for-mode (or mode major-mode)))))
 
 ;; -------------------------------------------------------------------
 ;;; Functions to find REPLs
 
-;;; XXX: this list could be determined when REPL is defined
 (defvar nvp-repl-find-functions
   '(nvp-repl-find-custom
     nvp-repl-find-bufname
@@ -223,7 +221,7 @@ Each function takes a process as an argument to test against.")
 ;; -------------------------------------------------------------------
 ;;; Initialize new REPLs
 
-(defun nvp-repl-get-buffer ()
+(defun nvp-repl-get-buffer (&optional prefix)
   "Return a REPL buffer if one exists, otherwise attempt to start one."
   (nvp-repl-ensure)
   (or (nvp-repl-buffer)
@@ -236,7 +234,7 @@ Each function takes a process as an argument to test against.")
           (if (nvp-repl-live-p proc)     ; found unregistered live one
               (nvp-repl-update proc (current-buffer) p-buff)
             (remhash p-buff nvp-repl--process-buffers))))
-      (or (nvp-repl-start)             ; initialize new REPL
+      (or (nvp-repl-start prefix)       ; initialize new REPL
           (user-error "Failed to initialize REPL"))))
 
 (defun nvp-repl-start-callback (&optional and-go)
@@ -279,12 +277,12 @@ repl with source buffer."
                                    hippie-expand-try-functions-list))))
           (nvp-comint-setup-history history-file))))))
 
-(defun nvp-repl-start ()
+(defun nvp-repl-start (&optional prefix)
   "Return a REPL buffer associated with current buffer."
   (if (repl:val "init-callback")
       (prog1 'async (nvp--repl-init-with-callback))
     (nvp:repl-with (wait init buff->proc proc->buff)
-      (let ((proc (funcall init)) p-buff)
+      (let ((proc (funcall init prefix)) p-buff)
         (and wait (sit-for wait))
         (unless (processp proc)
           (setq p-buff proc
@@ -308,22 +306,21 @@ repl with source buffer."
     (inhibit-same-window  . t)))
 
 ;;;###autoload
-(defun nvp-repl-jump (&optional _action)
+(defun nvp-repl-jump (&optional prefix)
   "Jump between source and REPL buffers, staring if necessary.
-If the associated source buffer no longer exists, pop to next visible window.
+If the associated source buffer no longer exists, pop to next visible
+window.
 
-TODO:
-(1) prefix arg  => set REPL's working directory to same as source if possible.
-(2) prefix args => Open REPL in project root directory."
+PREFIX arguments:
+ \\[universal-argument]		Prefix passed to repl init function
+ \\[universal-argument] \\[universal-argument] 	Prompt for new repl, becomes current"
   (interactive "P")
-  ;; TODO:
-  ;; 1. With some prefix prompt for repl to use
-  ;; 2. Set REPLs working directory
-  ;; 3. Create new REPL for buffer
+  ;; TODO: force create new REPL for buffer
+  (when (equal '(64) prefix) (setq nvp-repl-current nil))
   (let ((buff (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
                   (if (buffer-live-p it) it
                     (other-buffer (current-buffer) 'visible))
-                (nvp-repl-get-buffer))))
+                (nvp-repl-get-buffer prefix))))
     (unless (eq 'async buff)
       (pop-to-buffer buff nvp-repl--display-action))))
 

@@ -30,7 +30,7 @@
       :history-file ".gore_history"
       :help-cmd (lambda (&optional thing)
                   (nvp-repl-send-string (if thing (concat ":doc " thing) ":help")))
-      :init (lambda ()
+      :init (lambda (&optional _prefix)
               (save-window-excursion
                 (gorepl--run-gore '("-autoimport"))
                 (get-buffer-process (current-buffer)))))))

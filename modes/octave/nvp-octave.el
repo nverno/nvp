@@ -30,7 +30,7 @@
     :name 'octave
     :modes '(inferior-octave-mode)
     :bufname inferior-octave-buffer
-    :init (lambda ()
+    :init (lambda (&optional _prefix)
             (save-window-excursion
               (inferior-octave)
               (get-buffer-process inferior-octave-buffer)))))

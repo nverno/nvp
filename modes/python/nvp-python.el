@@ -89,7 +89,7 @@
     :pwd-cmd "import os; os.getcwd()"
     :help-cmd (lambda (&optional thing)
                 (nvp-repl-send-string (if thing (format "help(%s)" thing) "help()")))
-    :init (lambda ()
+    :init (lambda (&optional _prefix)
             (save-window-excursion
               (call-interactively #'conda-env-send-buffer)))))
 

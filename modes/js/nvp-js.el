@@ -33,8 +33,12 @@
 (require 'js)
 (require 'js2-mode nil t)
 (nvp:req 'nvp-js 'subrs)
-(nvp:decls :p (nodejs js2 tern skewer httpd yas)
+(nvp:decls :p (js2 tern httpd yas)
            :f (nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook))
+
+
+(defvar nvp-js-modes
+  '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim -- other modes, js-jsx, js2-jsx, rjsx inherit from js/js2
@@ -42,18 +46,13 @@
   :modes (js-mode js-ts-mode)           ;js2-mode js3-mode rjsx-mode
   (nvp-newline-dwim--comment syntax arg " * "))
 
-;; -------------------------------------------------------------------
-;;; Nodejs REPL: using as default in all js-derived modes except typescript
+;;; REPLs
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode)
-    :name 'nodejs
-    :modes '(nodejs-repl-mode)
-    :procname (bound-and-true-p nodejs-repl-process-name)
-    :init (lambda ()
-            (save-window-excursion
-              (ignore-errors
-                (call-interactively #'nodejs-repl-switch-to-repl))))))
+  (require 'nvp-nodejs)
+  (require 'nvp-skewer)
+  ;; (require 'nvp-indium)
+  )
 
 ;; -------------------------------------------------------------------
 ;;; Toggle b/w JsX <=> JS
@@ -124,13 +123,6 @@
 
 ;; in template string `...`
 (defun nvp-js-in-template-p () (eq ?\` (nvp:ppss 'str)))
-
-;;; Skewer
-(defun nvp-skewer-eval-last-expression (&optional print)
-  (interactive "P")
-  (call-interactively 
-   (if print #'skewer-eval-print-last-expression
-     #'skewer-eval-last-expression)))
 
 ;;; http server: httpd
 (defun nvp-httpd-here ()

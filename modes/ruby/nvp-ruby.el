@@ -78,7 +78,7 @@
     :pwd-cmd ".pwd"))
 
 ;;; Robe
-(defun nvp-ruby-start-robe ()
+(defun nvp-ruby-start-robe (&optional _prefix)
   (interactive)
   (robe-mode)
   (save-window-excursion

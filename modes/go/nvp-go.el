@@ -49,5 +49,15 @@
   (interactive)
   (compile "go build -v && go test -v && go vet"))
 
+;;; Disassembly
+(defun nvp-go-lensm (exe filter)
+  (interactive
+   (list (read-file-name "Executable: " nil nil nil (f-base (buffer-file-name)))
+         (read-string "Filter: " (go--function-name))))
+  (unless (executable-find "lensm")
+    (user-error "Need to install lensm: nvp build lensm"))
+  (start-process-shell-command
+   "lensm" nil (format "lensm -watch -filter %s %s" filter exe)))
+
 (provide 'nvp-go)
 ;;; nvp-go.el ends here

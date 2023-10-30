@@ -17,7 +17,8 @@
                           treesit-font-lock-feature-list
                           (or feature-list
                               (list (mapcar (lambda (e) (nth 2 e)) new-fonts)
-                                    nil nil nil)))))
+                                    nil nil nil))))
+  (treesit-font-lock-recompute-features))
 
 (defun nvp-treesit-ready-p ()
   (ignore-errors (treesit-buffer-root-node)))

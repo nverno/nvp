@@ -6,6 +6,7 @@
 (require 'nvp)
 (require 'yasnippet)
 (nvp:decl "nvp-read" nvp-read-mode nvp-read-mode-var)
+(nvp:auto "f" f-parent)
 
 (defvar nvp-snippet-default-conditions
   '(("comment" (nvp-yas-in-comment))

@@ -1,0 +1,13 @@
+;; -*- coding: utf-8; -*-
+
+(define-abbrev-table 'vhdl-mode-abbrev-table
+  '()
+  "Vhdl-Mode Abbrevs."
+  :enable-function #'nvp-abbrev-expand-p
+  :parents (list prog-mode-abbrev-table))
+
+(define-abbrev-table 'vhdl-ts-mode-abbrev-table
+  '()
+  "Vhdl-Ts-Mode Abbrevs."
+  :enable-function #'nvp-abbrev-expand-p
+  :parents (list vhdl-mode-abbrev-table))

@@ -2,4 +2,6 @@
 # name: named lambda
 # key: fnn
 # --
-${1:function<${2:int(int,int)}>} $3 = [&]($4) {$5};
+function<${3:$($s? (yas-text) "void")}(${2:$(nvp-c-yas-types ",")})> ${1:name} = [&]($2)${3:$($s? " -> ")}${3:int} {
+  $0
+};

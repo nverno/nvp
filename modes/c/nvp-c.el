@@ -132,6 +132,11 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
   (let ((vars (mapcar #'nvp-yas-var (nvp-c-split-string (or str (yas-text))))))
     (if sep (s-join sep vars) vars)))
 
+(defun nvp-c-yas-types (&optional sep str)
+  (let ((types (mapcar (lambda (s) (car (split-string s nil t " ")))
+                       (nvp-c-split-string (or str (yas-text))))))
+    (if sep (s-join sep types) types)))
+
 ;; pull out functions signatures from current buffer using ctags
 (defun nvp-c-function-signatures (&optional file ignore-main ignore-static)
   (--when-let (nvp-tag-list-decls "c" "fp" file)

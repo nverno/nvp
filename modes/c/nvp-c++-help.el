@@ -54,21 +54,24 @@ POINT."
 (defun nvp-c++-semantic-browse-docs (point)
   "Browse the documentation for the C++ symbol at POINT."
   (interactive "d")
-  (let* ((cpptype (and (semantic-active-p)
-                       (nvp-c++-semantic-tag point)))
-	 (ref (when (stringp cpptype)
-		(car (cl-member-if (lambda (S) (string-prefix-p (car S) cpptype))
+  (nvp:c-check-semantic)
+  (let* ((cpptype (nvp-c++-semantic-tag point))
+         (ref (when (stringp cpptype)
+	        (car (cl-member-if (lambda (S) (string-prefix-p (car S) cpptype))
 				   nvp-c++-online-docrefs)))))
     (if ref	
-	(browse-url (format (cdr ref) cpptype))
+        (browse-url (format (cdr ref) cpptype))
       (message "No documentation source found for %s" cpptype))))
 
 
 ;;;###autoload
 (defun nvp-c++-man (point)
   (interactive "d")
-  (let ((cpptype (and (semantic-active-p)
-                      (nvp-c++-semantic-tag point))))
+  (nvp:c-check-semantic)
+  (unless (and (fboundp 'semantic-active-p)
+               (semantic-active-p))
+    (user-error "Semantic not active."))
+  (let ((cpptype (nvp-c++-semantic-tag point)))
     (when cpptype
       (funcall-interactively 'manual-entry cpptype))))
 

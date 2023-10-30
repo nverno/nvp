@@ -123,6 +123,7 @@
 ;;;###autoload
 (defun nvp-c-help-jump-to-function-header ()
   (interactive)
+  (nvp:c-check-semantic)
   (let ((func (nvp-c-help-function-at-point))
         ;; FIXME: use semanticdb to get include
         (header (nvp:c--header-file-name)))

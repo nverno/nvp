@@ -170,7 +170,7 @@
          (--map (cons (symbol-name it) (symbol-value it))
                 '(beginning-of-defun-function
                   end-of-defun-function
-                  nvp-compile-function
+                  nvp-compile-default-function
                   nvp-mark-defun-function
                   nvp-fill-paragraph-function
                   nvp-help-at-point-functions

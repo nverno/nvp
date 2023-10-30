@@ -42,7 +42,7 @@
              nvp-checkmake-args)))
   (if-let ((check (executable-find "checkmake")))
       (let ((args (mapconcat 'identity args " ")))
-        (compilation-start (concat check " " args " " file 'checkmake-mode)))
+        (compilation-start (concat check " " args " " file) #'checkmake-mode))
     (user-error "Install checkmake: 'nvp build make lint'")))
 
 ;;;###autoload

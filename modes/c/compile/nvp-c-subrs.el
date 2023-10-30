@@ -8,6 +8,11 @@
 (defvar nvp-abbrev-local-table)
 (defvar boost-test-abbrev-table)
 
+(defsubst nvp:c-check-semantic ()
+  (unless (and (fboundp 'semantic-active-p)
+               (semantic-active-p))
+    (user-error "Semantic not active.")))
+
 ;; -------------------------------------------------------------------
 ;;; Basic utils
 

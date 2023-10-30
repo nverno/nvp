@@ -10,19 +10,23 @@ PKG_EL  := $(shell find modes/ pkgs/ -type f -name \*.el                    \
 		-o -path \*/ext/\* -o -path \*/build/\* -o -path \*/scratch/\* \))
 PKG_ELC := ${PKG_EL:.el=.elc}
 
-FILTER_MODE = $(filter $(addprefix modes/,$(1))/%,$(2))
-CLEAN_MODE = $(info cleaning $(1)) \
+FILTER_MODE =  $(filter $(addprefix modes/,$(1))/%,$(2))
+CLEAN_MODE  =  $(info cleaning $(1))    \
 	@$(RM) $(call FILTER_MODE,$(1),${PKG_ELC})
-BUILD_PKG = $(info building $(mode)) \
+BUILD_PKG   =  $(info building $(mode)) \
 	@$(call COMPILE,$(call FILTER_MODE,$(1),${PKG_EL}))
-TESTS := $(wildcard test/*-tests.el)
+TESTS       := $(wildcard test/*-tests.el)
 
-.PHONY: test rebuild
-all:
+.PHONY: test rebuild all
+all: pre-commit
 	${COMPILE} ${EL} ${PKG_EL}
 
 %.elc: %.el
 	${COMPILE} $^
+
+pre-commit: $(TOP)/.git/hooks/pre-commit
+$(TOP)/.git/hooks/pre-commit: $(BINDIR)/pre-commit
+	@cp $^ $@
 
 rebuild: ## Recompile macs/subrs/and all base configs
 	$(RM) $(CURDIR)/*.elc $(CURDIR)/macs/*.elc $(CURDIR)/subrs/*.elc

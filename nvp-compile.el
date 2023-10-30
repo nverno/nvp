@@ -82,7 +82,7 @@ With double prefix or more, use comint buffer for compilation."
   (setq current-prefix-arg arg)
   (nvp:defq compile-fn
     (or (bound-and-true-p nvp-local-compile-function)
-        (bound-and-true-p nvp-compile-function)
+        (bound-and-true-p nvp-compile-default-function)
         #'nvp-compile-default))
   (and (eq compile-fn 'default) (setq compile-fn #'nvp-compile-default))
   (call-interactively compile-fn))

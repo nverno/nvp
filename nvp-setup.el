@@ -12,6 +12,7 @@
   (require 'smie))
 (require 'nvp)
 (require 'yasnippet)
+(defvar info-lookup-mode)
 
 (cl-defstruct (nvp-mode-vars (:constructor nvp-mode-vars-make)
                              (:copier nil))
@@ -19,7 +20,7 @@
   dir snippets abbr-file abbr-table
   ;; functions
   check-buffer format-buffer tag test compile debug disassemble abbrev
-  toggle run docs
+  toggle run profile docs
   ;; installs
   install-targets)
 
@@ -104,7 +105,7 @@
      post-fn                            ; function called after setup
      ;; functions / hooks
      check-buffer format-buffer tag test compile debug disassemble abbrev
-     toggle run docs
+     toggle run profile docs
      install-targets)
   "Setup local variables for helper package - abbrevs, snippets, root dir."
   (declare (indent 1))
@@ -147,6 +148,7 @@
                      :abbrev abbrev
                      :toggle toggle
                      :run run
+                     :profile profile
                      :docs docs
                      :install-targets install-targets))
         ;; Initialize/load mode stuff

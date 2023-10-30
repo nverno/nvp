@@ -131,7 +131,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-toggle-default-function
     nvp-run-default-function
     nvp-compile-default-function
-    nvp-compile-function
+    nvp-compile-default-function
     nvp-mark-defun-function
     ;; fallbacks
     nvp-exit

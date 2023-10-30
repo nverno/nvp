@@ -1,0 +1,10 @@
+#!/bin/sh
+
+exec 1>&2
+if ! make check-compiled; then
+    cat <<\EOF
+Error: macros/defsubsts found in compiled code    
+EOF
+
+    exit 1
+fi

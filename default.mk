@@ -11,12 +11,13 @@ MKDIR ?= install -p -d                            #755 regardless
 INSTALL_INFO ?= $(shell command -v ginstall-info || printf install-info)
 MAKEINFO     ?= makeinfo
 
-PKG           = nvp
-EL            = $(filter-out %-autoloads.el, $(wildcard *.el)) $(wildcard macs/*.el) \
+TOP           := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+PKG           =  nvp
+EL            =  $(filter-out %-autoloads.el, $(wildcard *.el)) $(wildcard macs/*.el) \
 		$(wildcard subrs/*.el)
-ELC           = ${EL:.el=.elc}
-BIN           = bin
-LATEX_ABBREVS = etc/unicode-latex-abbrev-table
+ELC           =  ${EL:.el=.elc}
+BIN           =  bin
+LATEX_ABBREVS =  etc/unicode-latex-abbrev-table
 
 # Include site variables
 EMACSDIR = $(HOME)/.emacs.d
@@ -24,6 +25,7 @@ LISPDIR  = $(EMACSDIR)/lisp
 SITEDIR  = $(EMACSDIR)/site-lisp
 PRIVDIR  = $(EMACSDIR)/private
 ELPADIR  = $(EMACSDIR)/elpa
+BINDIR   = $(TOP)/bin
 
 LOAD_PATH ?= 
 LOAD_PATH += -L .

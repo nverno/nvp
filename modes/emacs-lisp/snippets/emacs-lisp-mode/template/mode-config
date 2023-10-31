@@ -3,6 +3,7 @@
 # key: mode-config
 # expand-env: ((modename (bound-and-true-p modename)))
 # --
+;; -*- lexical-binding: t -*-
 (nvp-install-on-demand$1)
 (eval-when-compile (require 'nvp-macro))
 

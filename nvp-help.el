@@ -29,14 +29,22 @@
 (defun nvp-push-button-and-go (&optional n)
   "Push the Nth button and stay in same frame."
   (interactive "p")
-  (or n (setq n 1))
-  (cl-block nil
-    (goto-char (point-min))
-    (while (and (> n 0) (< (point) (point-max)))
-      (goto-char (next-char-property-change (point)))
-      (cl-decf n)
-      (if (and (= n 0) (get-text-property (point) 'button))
-          (cl-return (nvp-push-button 'same-window))))))
+  (if n (setq n (abs n))
+    (setq n 1))
+  (when (button-at (point))
+    (cl-decf n))
+  (let ((pos (point))
+        (lim (point-max)))
+    (while (and (> n 0) (< pos lim))
+      (setq pos (next-button pos))
+      (if pos (cl-decf n)
+        (if (> pos (point))
+            (setq pos (point-min)
+                  lim (point))
+          (user-error "Not enough buttons"))))
+    (cl-assert (get-text-property pos 'button) t)
+    (goto-char pos)
+    (nvp-push-button 'same-window)))
 
 ;; -------------------------------------------------------------------
 ;;; Words

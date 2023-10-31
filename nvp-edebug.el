@@ -93,9 +93,25 @@
   (message "Edebug all defs %s locally"
            (if nvp-edebug--all-defs "enabled" "disabled")))
 
+;;; Toggle: projectile, filenotify, edebug settings
+
+(defvar projectile-verbose)
+(defvar file-notify-debug)
+(defvar nvp-hap-verbose)
+
+(nvp:def-transient-toggle-vars nvp-edebug-menu
+  edebug-on-error edebug-on-quit edebug-unwrap-results edebug-trace
+  edebug-sit-on-break
+  projectile-verbose
+  file-notify-debug
+  nvp-hap-verbose)
+
+(transient-define-infix nvp-edebug-menu--global-break-condition ()
+  :class 'transient-lisp-variable
+  :variable 'edebug-global-break-condition)
 
 ;;; Tramp
-(defun nvp-edebug-emacs--toggle-tramp ()
+(defun nvp-edebug-menu--toggle-tramp ()
   "Toggle `tramp-debug-on-error' on/off."
   (interactive)
   (ignore-errors
@@ -107,7 +123,7 @@
         (message "Tramp debug on error %s" (if action "disabled" "enabled"))))))
 
 ;;; Url
-(transient-define-infix nvp-edebug-emacs--toggle-url ()
+(transient-define-infix nvp-edebug-menu--toggle-url-debug ()
   "Toggle `url-debug' on/off."
   :description "Toggle URL debug"
   :class 'transient-lisp-variable
@@ -119,24 +135,10 @@
        (mapcar #'intern-soft
                (completing-read-multiple prompt '(http dav retrieval handlers)))))))
 
-;;; Projectile
-(defvar projectile-verbose)
-(transient-define-infix nvp-edebug-emacs--projectile-verbose ()
-  :class 'transient-lisp-variable
-  :variable 'projectile-verbose
-  :reader (lambda (&rest _) (not projectile-verbose)))
-
-;;; Filenotify
-(defvar file-notify-debug)
-(transient-define-infix nvp-edebug-emacs--filenotify-debug ()
-  :class 'transient-lisp-variable
-  :variable 'file-notify-debug
-   :reader (lambda (&rest _) (not file-notify-debug)))
-
 ;;; Emacs
-(transient-define-suffix nvp-edebug-emacs--launch (args)
+(transient-define-suffix nvp-edebug-menu--launch (args)
   "Launch emacs with ARGS."
-  (interactive (list (transient-args 'nvp-edebug-emacs)))
+  (interactive (list (transient-args 'nvp-edebug-menu)))
   (let* ((grps (--group-by (string-prefix-p "--dummy" it) args))
          (args (mapconcat #'shell-quote-argument (cdr (assq nil grps)) " "))
          (dummy (cdr (assq t grps))))
@@ -144,7 +146,7 @@
       (setq args (concat args " " (buffer-file-name))))
     (call-process-shell-command (concat "emacs " args) nil 0 nil)))
 
-(transient-define-infix nvp-edebug-emacs--load ()
+(transient-define-infix nvp-edebug-menu--load ()
   "Load init file."
   :description "Load init"
   :class 'transient-option
@@ -177,45 +179,54 @@
     ("S" "Set indent" smie-config-set-indent :transient t)
     ("s" "Save config" smie-config-save)]])
 
-;;;###autoload(autoload 'nvp-edebug-emacs "nvp-edebug")
-(transient-define-prefix nvp-edebug-emacs ()
+;;;###autoload(autoload 'nvp-edebug-menu "nvp-edebug")
+(transient-define-prefix nvp-edebug-menu ()
   "Toggle or run elisp debugging."
   :value '("--quick" "--debug-init" "--dummy-current")
-  [["Toggle"
-    ("e" "Debug on error" toggle-debug-on-error)
-    ("q" "Debug on quit" toggle-debug-on-quit)
-    ("y" "Debug on entry" debug-on-entry)
-    ("v" "Watch variable" debug-on-variable-change)
-    ("V" "Cancel watch" cancel-debug-on-variable-change)]
+  [["Debug"
+    ("e" "On error" toggle-debug-on-error)
+    ("q" "On quit" toggle-debug-on-quit)
+    ("y" "On entry" debug-on-entry)
+    ("v" "Var. watch" debug-on-variable-change)
+    ("V" "Cancel var." cancel-debug-on-variable-change)
+    ("D" "Debugger" debug)]
    ["Edebug"
+    ("d" "Defun" edebug-defun)
+    ("l" "Local defs" nvp-edebug-toggle-all-local)
     ("a" "All defs" edebug-all-defs)
-    ("l" "All local defs" nvp-edebug-toggle-all-local)
     ("f" "All forms" edebug-all-forms)
-    ("c" "Current defun" edebug-defun)
-    ("I" "Edebug install" edebug-install-read-eval-functions)
-    ("U" "Edebug uninstall" edebug-uninstall-read-eval-functions)]
-   ["Run"
-    ("t" "Trace" nvp-trace-menu)
-    ("d" "Debugger" debug)]
-   ["Emacs"
-    ("-d" "Enable debugger during init" "--debug-init")
-    ("-Q" "No init" "--quick")
-    ("-c" "Open current file" "--dummy-current")
-    ("-l" nvp-edebug-emacs--load)
-    ("L" "Launch" nvp-edebug-emacs--launch)]]
+    ("I" "Install" edebug-install-read-eval-functions)
+    ("U" "Uninstall" edebug-uninstall-read-eval-functions)]
+   ["Edebug config"
+    (":e" "Debug on error" nvp-edebug-menu--toggle-edebug-on-error)
+    (":q" "Debug on quit" nvp-edebug-menu--toggle-edebug-on-quit)
+    (":u" "Unwrap results" nvp-edebug-menu--toggle-edebug-unwrap-results)
+    (":t" "Trace" nvp-edebug-menu--toggle-edebug-trace)
+    (":p" "Pause on break" nvp-edebug-menu--toggle-edebug-sit-on-break)
+    (":b" "Break condition" nvp-edebug-menu--global-break-condition)]
+   ["Trace"
+    ("t" "Trace" nvp-trace-menu :transient nil)]]
   [["Other"
     ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode)))
     ("/tree" "Tree-sitter" nvp-treesit-menu
      :if (lambda () (ignore-errors (treesit-buffer-root-node))))
-    ("/file" "Filenotify debug" nvp-edebug-emacs--filenotify-debug)
-    ("/proj" "Projectile verbose" nvp-edebug-emacs--projectile-verbose
+    ("/hap" "Hap" nvp-edebug-menu--toggle-nvp-hap-verbose
+     :if (lambda () (boundp 'nvp-hap-verbose)))
+    ("/file" "Filenotify debug" nvp-edebug-menu--toggle-file-notify-debug)
+    ("/proj" "Projectile verbose" nvp-edebug-menu--toggle-projectile-verbose
      :if-non-nil projectile-mode)
     ("/tran" "Transient" nvp-transient-menu)
     ("/smie" "Smie" nvp-edebug-smie
      :if (lambda () (eq 'smie-indent-line indent-line-function)))
-    ("/url" nvp-edebug-emacs--toggle-url :if (lambda () (boundp 'url-debug)))
-    ("/tramp" "Toggle tramp debug" nvp-edebug-emacs--toggle-tramp
-     :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))]])
+    ("/url" nvp-edebug-menu--toggle-url-debug :if (lambda () (boundp 'url-debug)))
+    ("/tramp" "Toggle tramp debug" nvp-edebug-menu--toggle-tramp
+     :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))]
+   ["Emacs"
+    ("-d" "Enable debugger during init" "--debug-init")
+    ("-Q" "No init" "--quick")
+    ("-c" "Open current file" "--dummy-current")
+    ("-l" nvp-edebug-menu--load)
+    ("L" "Launch" nvp-edebug-menu--launch)]])
 
 (provide 'nvp-edebug)
 ;; Local Variables:

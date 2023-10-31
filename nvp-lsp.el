@@ -2,22 +2,19 @@
 ;;
 ;;; Commentary:
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
 (require 'lsp-mode nil t)
 (require 'transient)
 (require 'nvp)
 (nvp:decls :p (hs lsp))
 
-
 ;;; Transient
 
-(transient-define-infix nvp-lsp-menu--toggle-lsp-io ()
-  "Toggle lsp client-server logging."
-  :class 'transient-lisp-variable
-  :variable 'lsp-log-io
-  :reader (lambda (&rest _) (not lsp-log-io)))
+(nvp:def-transient-toggle-vars nvp-lsp-menu
+  lsp-log-io)
 
-(transient-define-infix nvp-lsp-menu--toggle-lsp-server ()
+(transient-define-infix nvp-lsp-menu--toggle-lsp-server-trace ()
   "Toggle lsp server tracing."
   :class 'transient-lisp-variable
   :variable 'lsp-server-trace
@@ -25,11 +22,10 @@
             (completing-read prompt '("off" "messages" "verbose") nil t)))
 
 ;;;###autoload(autoload 'nvp-lsp-menu "nvp-lsp")
-(transient-define-prefix nvp-lsp-menu ()
-  "Lsp"
+(transient-define-prefix nvp-lsp-menu () "Lsp"
   ["Debug"
-   ("i" "I/O logging" nvp-lsp-menu--toggle-lsp-io)
-   ("s" "Server tracing" nvp-lsp-menu--toggle-lsp-server)])
+   ("i" "I/O logging" nvp-lsp-menu--toggle-lsp-log-io)
+   ("s" "Server tracing" nvp-lsp-menu--toggle-lsp-server-trace)])
 
 ;; -------------------------------------------------------------------
 ;;; Log IO

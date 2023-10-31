@@ -316,7 +316,7 @@ PREFIX arguments:
  \\[universal-argument] \\[universal-argument] 	Prompt for new repl, becomes current"
   (interactive "P")
   ;; TODO: force create new REPL for buffer
-  (when (equal '(64) prefix) (setq nvp-repl-current nil))
+  (when (equal '(16) prefix) (setq nvp-repl-current nil))
   (let ((buff (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
                   (if (buffer-live-p it) it
                     (other-buffer (current-buffer) 'visible))
@@ -473,8 +473,12 @@ STR is inserted into REPL unless NO-INSERT."
                     ,(if args `(format ,cmd ,@args) `,cmd)))
                   ((pred functionp) (funcall ,cmd ,@args))
                   ((pred symbolp) (eval ,cmd))
+                  (`(:fn ,fn :return-type ,fn-type)
+                   (pcase fn-type
+                     ('string (nvp-repl-send-string (funcall fn ,@args)))
+                     (_ (user-error "unhandled '%S' :return-type '%S'" ',cmd fn-type))))
                   (_ (user-error
-                      ,(concat "unhandled " (symbol-name cmd) " type: %S") ,cmd)))
+                      ,(concat "unhandled " (symbol-name cmd) " type: '%S'") ,cmd)))
                 ,@body))))
   
   (defmacro nvp:with-repl-src-buffer (&rest body)
@@ -530,12 +534,12 @@ Prompt with \\[universal-argument]."
      ("f" "Defun" nvp-repl-send-defun)
      ("d" "Defun or region" nvp-repl-send-defun-or-region)
      ("b" "Buffer" nvp-repl-send-buffer)
-     ("F" "File" nvp-repl-send-file)]
+     ("F" "Load File" nvp-repl-send-file)]
    [ :if nvp-repl-current
      "Commands"
      ("h" "Help" nvp-repl-help :transient t)
      ("w" "Show working directory/buffer" nvp-repl-pwd :transient t)
-     (":w" "Change Working directory/buffer" nvp-repl-cd)]]
+     ("W" "Change Working directory/buffer" nvp-repl-cd)]]
   [["Repl"
     ("j" "Jump" nvp-repl-jump)]
    ["Manage Repls"

@@ -39,6 +39,7 @@
     :send-sexp #'racket-send-last-sexp
     :send-buffer #'nvp-racket-send-buffer
     ;; :eval-sexp #'racket-eval-last-sexp
+    :history-file ".racket_history"
     :init-callback 
     (lambda (&optional prefix)
       ;; PREFIX '(16) - with debugging, `racket-error-context' "debug"

@@ -35,3 +35,8 @@
   '()
   "Typescript-Tsx-Mode Abbrevs."
   :parents (list js-mode-abbrev-table))
+
+(define-abbrev-table 'skewer-repl-mode-abbrev-table
+  '()
+  "Skewer-Repl Abbrevs."
+  :parents (list js-mode-abbrev-table))

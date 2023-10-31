@@ -21,7 +21,7 @@
 (define-abbrev-table 'inf-ruby-mode-abbrev-table
   '()
   "Inf-Ruby-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list ruby-mode-abbrev-table))
 
 (define-abbrev-table 'rhtml-mode-abbrev-table
   '()

@@ -38,11 +38,7 @@
 (defconst nvp-transient--dev-description "[NVP] Dev")
 (defvar nvp-transient--done-deved nil)
 
-(transient-define-infix nvp-transient-menu--debug ()
-  "Toggle debug"
-  :class 'transient-lisp-variable
-  :variable 'transient--debug
-  :reader (lambda (&rest _) (not transient--debug)))
+(nvp:def-transient-toggle-vars nvp-transient-menu transient--debug)
 
 ;;;###autoload(autoload 'nvp-transient-menu "nvp-transient")
 (transient-define-prefix nvp-transient-menu ()
@@ -54,7 +50,7 @@
      ("r" "Remove bindings" nvp-transient-remove-dev)
      ("R" "Remove from all transients" nvp-transient-remove-all)]]
   ["Debug"
-   ("d" "Toggle debug" nvp-transient-menu--debug)])
+   ("d" "Toggle debug" nvp-transient-menu--toggle-transient--debug)])
 
 ;;;###autoload
 (defun nvp-transient-add-dev (transient &optional loc prefix)

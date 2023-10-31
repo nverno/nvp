@@ -21,12 +21,11 @@
     :bufname (regexp-quote lua-ts-inferior-buffer)
     :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
     :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
-    ;; :history-file ".lua_history"
+    :history-file ".lua_history"
     :init (lambda (&optional _prefix)
             (save-window-excursion
               (let ((display-buffer-overriding-action nvp-repl--display-action))
-                (funcall-interactively #'lua-ts-inferior-lua)
-                (nvp-comint-setup-history ".lua_history"))))))
+                (funcall-interactively #'lua-ts-inferior-lua))))))
 
 ;;; Help
 

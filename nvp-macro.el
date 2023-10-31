@@ -106,6 +106,22 @@ If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
            ,@else)
       test-fn)))
 
+;; -------------------------------------------------------------------
+;;; Transient
+
+(defmacro nvp:def-transient-toggle-vars (menu &rest vars)
+  "Define infix toggles on transient MENU for VARS."
+  (declare (indent defun))
+  (macroexp-progn
+   (cl-loop
+    for var in vars
+    collect (let ((name
+                   (concat (symbol-name menu) "--toggle-" (symbol-name var))))
+              `(transient-define-infix ,(intern name) ()
+                 :class 'transient-lisp-variable
+                 :variable ',var
+                 :reader (lambda (&rest _) (not ,var)))))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Output / Messages

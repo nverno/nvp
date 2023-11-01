@@ -102,6 +102,7 @@
 (nvp:def-transient-toggle-vars nvp-edebug-menu
   edebug-on-error edebug-on-quit edebug-unwrap-results edebug-trace
   edebug-sit-on-break
+  byte-compile-generate-call-tree
   projectile-verbose
   file-notify-debug
   nvp-hap-verbose)
@@ -205,7 +206,9 @@
     (":p" "Pause on break" nvp-edebug-menu--toggle-edebug-sit-on-break)
     (":b" "Break condition" nvp-edebug-menu--global-break-condition)]
    ["Trace"
-    ("t" "Trace" nvp-trace-menu :transient nil)]]
+    ("t" "Trace" nvp-trace-menu :transient nil)
+    (":c" "Generate callgraph"
+     nvp-edebug-menu--toggle-byte-compile-generate-call-tree)]]
   [["Other"
     ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode)))
     ("/tree" "Tree-sitter" nvp-treesit-menu

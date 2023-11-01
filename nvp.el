@@ -442,8 +442,33 @@ command, call `vertico-insert'. If there is only one match call
 ;; -------------------------------------------------------------------
 ;;; Repeat
 
-(defvar nvp-repeat-key-enabled t)
+;; Change cursor color when `repeat-mode' transient map is active
+(defvar nvp-repeat--last-cursor nil)
 
+(defun nvp-repeat-set-cursor (&optional map)
+  (if map
+      (unless nvp-repeat--last-cursor
+        (setq nvp-repeat--last-cursor (face-attribute 'cursor :background))
+        (set-cursor-color "#e31422"))
+    (and nvp-repeat--last-cursor
+         (set-cursor-color nvp-repeat--last-cursor))
+    (setq nvp-repeat--last-cursor nil)))
+
+(add-function :after repeat-echo-function #'nvp-repeat-set-cursor)
+
+(defvar-keymap nvp-repeat-winner-map
+  :repeat t
+  "p" #'winner-undo
+  "n" #'winner-redo)
+
+(defvar-keymap nvp-repeat-isearch-map
+  :repeat t
+  "]" #'isearch-repeat-forward
+  "[" #'isearch-repeat-backward)
+(put 'isearch-repeat-forward 'repeat-check-key 'no)
+(put 'isearch-repeat-backward 'repeat-check-key 'no)
+
+;;; FIXME: replace `nvp-repeat-command' eventually
 (defun nvp-repeat-msg (repeat-key &optional bindings)
   (concat
    (format "[%S] repeat" repeat-key)
@@ -458,6 +483,8 @@ command, call `vertico-insert'. If there is only one match call
                        (format "[%S]" (car b))))
                     (_ (format "[%S]" (car b))))))
               bindings ", ")))
+
+(defvar nvp-repeat-key-enabled t)
 
 ;; enable transient map for calling command
 ;; defaults to last basic char (no caps)
@@ -491,6 +518,11 @@ command, call `vertico-insert'. If there is only one match call
 ;; -------------------------------------------------------------------
 ;;; Marks
 
+(defvar-keymap nvp-repeat-mark-defun-map
+  :repeat (:enter (nvp-mark-defun) nvp-mark-expand-to-previous-comments)
+  "c" #'nvp-mark-expand-to-previous-comments
+  "h" #'nvp-mark-defun)
+
 ;; FIXME:
 ;; currently calls beginning of function twice since I was lazy to write a
 ;; function that would skip back over the previous comments. The seemingly
@@ -510,10 +542,7 @@ command, call `vertico-insert'. If there is only one match call
     ;; (when interactive
     ;;   (setq prefix-arg (max 1 (/ (lsh arg -1) 4))))
     (funcall nvp-mark-defun-function arg)
-    (and skip-comments (comment-forward (point-max)))
-    (when interactive
-      (nvp-repeat-command nil nil
-        '(("c" #'nvp-mark-expand-to-previous-comments))))))
+    (and skip-comments (comment-forward (point-max)))))
 
 
 ;; -------------------------------------------------------------------
@@ -552,39 +581,25 @@ command, call `vertico-insert'. If there is only one match call
     (apply old-fn args)))
 
 ;; use ido-completing-read
-(defun nvp@read-with-ido (old-fn &rest args)
-  (nvp:with-letf 'completing-read 'ido-completing-read
-    (apply old-fn args)))
+;; (defun nvp@read-with-ido (old-fn &rest args)
+;;   (nvp:with-letf 'completing-read 'ido-completing-read
+;;     (apply old-fn args)))
 
 ;; use ido-completion when reading environment variables interactively
 ;; (nvp:advise-commands #'nvp@read-with-ido
 ;;   :around '(read-envvar-name bookmark-jump))
 
 ;; after advice: repeat command with last basic input, or install transient MAP
-(defun nvp@repeat (&optional map &rest args)
-  (set-transient-map
-   (or map
-       (let ((km (make-sparse-keymap)))
-         (define-key km (vector (nvp:input 'lbi))
-                     `(lambda ()
-                        (interactive)
-                        (apply #',this-command ,args)))
-         km))
-   t))
-
-(nvp:bindings nvp-winner-map 'winner
-  :create t :repeat t :indicate t
-  ("p" . winner-undo)
-  ("n" . winner-redo))
-
-(nvp:bindings nvp-isearch-fast-map 'isearch
-  :create t :repeat t :wrap t :indicate t
-  ("]" . isearch-repeat-forward)
-  ("[" . isearch-repeat-backward))
-
-(nvp:bindings isearch-mode-map 'isearch
-  ("C-s" . nvp-isearch-fast/isearch-repeat-forward)
-  ("C-r" . nvp-isearch-fast/isearch-repeat-backward))
+;; (defun nvp@repeat (&optional map &rest args)
+;;   (set-transient-map
+;;    (or map
+;;        (let ((km (make-sparse-keymap)))
+;;          (define-key km (vector (nvp:input 'lbi))
+;;                      `(lambda ()
+;;                         (interactive)
+;;                         (apply #',this-command ,args)))
+;;          km))
+;;    t))
 
 
 ;; -------------------------------------------------------------------

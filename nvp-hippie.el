@@ -86,6 +86,9 @@
 (defvar nvp-he-window-scope 'visible
   "Limits additional scopage for expanders: can be \\='visible, \\='global, or \\='frame.")
 
+(defvar-local nvp-he-skip-leading-regexp nil
+  "Regexp for skipping leading characters of an abbrev.")
+
 ;; function called with current string prefix to produce regexp to find candidates
 (defvar nvp-he-flex-matcher #'nvp-he-flex-camel/snake)
 
@@ -156,6 +159,7 @@
 (defun nvp-he-flex-lisp-setup (&optional beg)
   (setq-local nvp-he-flex-matcher #'nvp-he-flex-lisp)
   (setq-local nvp-he-flex-symbol-beg (or beg #'he-lisp-symbol-beg))
+  (setq-local nvp-he-skip-leading-regexp "@")
   (setq-local nvp-he-flex-prefix-from-re "[-:./]")
   (setq-local nvp-he-flex-prefix-to-re "\\\\w*[-:./]"))
 
@@ -287,12 +291,21 @@ doesn't exceed LIMIT."
             (nvp-he-buffer-matches (funcall nvp-he-flex-matcher arg)))))
   (funcall nvp-he--flex-completion-table arg))
 
+(defun nvp-he--start-of-abbrev ()
+  (if nvp-he-skip-leading-regexp
+      (save-excursion
+        (goto-char (funcall nvp-he-flex-symbol-beg))
+        (while (looking-at nvp-he-skip-leading-regexp)
+          (forward-char 1))
+        (point))
+    (funcall nvp-he-flex-symbol-beg)))
+
 ;;;###autoload
 (defun nvp-try-expand-flex (old)
   "Try to complete symbols from current buffer using fuzzy matching.
 Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
   (unless old
-    (he-init-string (funcall nvp-he-flex-symbol-beg) (point))
+    (he-init-string (nvp-he--start-of-abbrev) (point))
     (unless (he-string-member he-search-string he-tried-table)
       (setq he-tried-table (cons he-search-string he-tried-table)))
     (setq he-expand-list                ;build expansion list
@@ -308,16 +321,17 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
 
 (defvar-local nvp-he--current-expander #'nvp-try-expand-flex)
 
-(eval-when-compile 
+(eval-when-compile
   (defmacro nvp:flex-or-dabbrev (flex-fn dabbrev-fn)
+    (declare (debug t))
     `(progn
        (unless old
-        (setq nvp-he--current-expander
-              (if (save-excursion
-                    (search-backward-regexp
-                     nvp-he-flex-prefix-from-re (funcall nvp-he-flex-symbol-beg) t 1))
-                  #',flex-fn
-                #',dabbrev-fn)))
+         (setq nvp-he--current-expander
+               (if (save-excursion
+                     (search-backward-regexp
+                      nvp-he-flex-prefix-from-re (funcall nvp-he-flex-symbol-beg) t 1))
+                   #',flex-fn
+                 #',dabbrev-fn)))
        ;; (message "Using %s" nvp-he--current-expander)
        (funcall nvp-he--current-expander old))))
 
@@ -331,7 +345,8 @@ flexible, and dabbrev closest otherwise."
 (defun nvp-try-expand-flex-or-dabbrev-other-buffers (old)
   "Try to complete symbol from other buffers using flex if prefix looks
 flexible, and dabbrev closest otherwise."
-  (nvp:flex-or-dabbrev nvp-try-expand-flex-other-buffers try-expand-dabbrev-all-buffers))
+  (nvp:flex-or-dabbrev
+   nvp-try-expand-flex-other-buffers try-expand-dabbrev-all-buffers))
 
 (eval-when-compile
   (defmacro nvp:with-flex-vars (&rest forms)
@@ -441,6 +456,20 @@ removes itself."
 (defvar nvp-he-search-loc-forward (make-marker))
 (defvar nvp-he-search-loc-backward (make-marker))
 
+(defun nvp-he-dabbrev-beg ()
+  (let ((op (point)))
+    (save-excursion
+      (if hippie-expand-dabbrev-skip-space
+	  (skip-syntax-backward ". "))
+      (if (= (skip-syntax-backward
+              (if hippie-expand-dabbrev-as-symbol "w_" "w"))
+	     0)
+	  op
+        (when nvp-he-skip-leading-regexp
+          (while (looking-at nvp-he-skip-leading-regexp)
+            (forward-char 1)))
+	(point)))))
+
 ;;;###autoload
 (defun nvp-try-expand-dabbrev-closest-first (old)
   "Try to expand word \"dynamically\", searching the current buffer.
@@ -449,7 +478,7 @@ for subsequent calls (for further possible expansions of the same
 string).  It returns t if a new expansion is found, nil otherwise."
   (let (expansion)
     (unless old
-      (he-init-string (he-dabbrev-beg) (point))
+      (he-init-string (nvp-he-dabbrev-beg) (point))
       (set-marker nvp-he-search-loc-backward he-string-beg)
       (set-marker nvp-he-search-loc-forward he-string-end))
     (if (not (equal he-search-string ""))

@@ -2,8 +2,9 @@
 # name: clean
 # key: clean
 # --
+.PHONY: clean${1:$($s? " distclean")}
 clean:
-	\$(RM) -r core *~ *.o *.out *.exe $0${1:
+	\$(RM) -r *~ *.core *.o *.out *.exe $0${1:
 
 distclean: clean
-	\$(RM)}
+	\$(RM) -rf \$\$(git ls-files --others --ignored --exclude-standard)}

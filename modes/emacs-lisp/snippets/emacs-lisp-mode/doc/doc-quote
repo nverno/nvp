@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: doc-quote
-# key: __
+# key: '
 # condition: (nvp-yas-in-string)
 # --
 \\\\='

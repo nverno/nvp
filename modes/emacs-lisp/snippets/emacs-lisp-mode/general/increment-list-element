@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: increment-list
-# key: inc
-# --
-(setq ${1:lst} (cdr $1))

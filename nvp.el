@@ -70,11 +70,11 @@
   "Function to call on exit from completing read.")
 
 (defvar nvp-fallback-function nil
-  "If non-nil, function to call after `nvp-fallback-command'. The first argument
-is the result of `nvp-fallback-minibuffer-default' if called from minibuffer,
-or nil.")
+  "Function to call after `nvp-fallback-command'.
+The first argument is the result of `nvp-fallback-minibuffer-default' if
+called from minibuffer, or nil.")
 
-(defvar nvp-exit nil "Exit flag")
+(defvar nvp-exit nil "Exit flag.")
 
 (defvar nvp-display-actions
   '( :buffer ((4 display-buffer-same-window
@@ -109,7 +109,7 @@ or nil.")
 
 ;;-- Possibly mode vars
 (defvar-local nvp-mode-header-regex nil "Regex to move b/w headers.")
-(defvar-local nvp-mode-name nil "Mode to use instead of `major-mode'")
+(defvar-local nvp-mode-name nil "Mode to use instead of `major-mode'.")
 (defvar-local nvp-mode-snippet-dir nil "Mode's snippet directory.")
 (defvar-local nvp-mode-install-targets () "Mode's external install targets.")
 
@@ -220,7 +220,7 @@ or nil.")
 (make-variable-buffer-local 'company-backends)
 
 (defun nvp-company-local (&rest backends)
-  "Add backends to local `company-backends' (in a hook)."
+  "Add BACKENDS to local `company-backends' (in a hook)."
   (dolist (b backends)
     (unless (member b company-backends)
       (push b company-backends))))
@@ -230,14 +230,17 @@ or nil.")
 ;;; Movement
 
 (defun nvp-move-next5 (&rest _ignored)
+  "Move 5 lines forward."
   (interactive)
   (forward-line 5))
 
 (defun nvp-move-prev5 (&rest _ignored)
+  "Move 5 lines previous."
   (interactive)
   (forward-line -5))
 
 (defun nvp-move-forward-defun ()
+  "Move forward defun."
   (interactive)
   (nvp:push-mark nvp-move-forward-defun)
   (beginning-of-defun -1))
@@ -252,6 +255,8 @@ or nil.")
   (nvp:heading-create-re))
 
 (defun nvp-move-forward-heading (&optional back error)
+  "Move forward heading.
+Move backward if BACK. If ERROR throw error when no more headings."
   (interactive)
   (condition-case nil
       (progn
@@ -265,6 +270,8 @@ or nil.")
      (and error (signal error t)))))
 
 (defun nvp-move-previous-heading (&optional error)
+  "Move backward headings.
+If ERROR, throw error when no more headings."
   (interactive)
   (nvp-move-forward-heading 'back error))
 
@@ -309,19 +316,19 @@ or nil.")
 
 ;; generics with defaults - lisp modes don't do anything special
 (cl-defgeneric nvp-newline-dwim-prefix (&optional arg)
-  "Generic function to handle newline dwim in special contexts."
+  "Generic function to handle newline dwim in special contexts with prefix ARG."
   (newline arg 'interactive))
 
 (cl-defgeneric nvp-newline-dwim-comment (_syntax arg)
-  "Generic function to handle newline dwim in comments."
+  "Generic function to handle newline dwim in comments with prefix ARG."
   (newline arg 'interactive))
 
 (cl-defgeneric nvp-newline-dwim-string (_syntax arg)
-  "Generic function to handle newline dwim in strings."
+  "Generic function to handle newline dwim in strings with prefix ARG."
   (newline arg 'interactive))
 
 (cl-defgeneric nvp-newline-dwim-default (&optional arg)
-  "Generic function to handle newline dwim syntactically."
+  "Generic function to handle newline dwim syntactically with prefix ARG."
   (let ((syntax (parse-partial-sexp (point-min) (point))))
     (cond
      ((nvp:ppss 'str syntax)
@@ -333,7 +340,7 @@ or nil.")
 
 (cl-defmethod nvp-newline-dwim-default
   (&context (major-mode emacs-lisp-mode) &optional arg _pairs)
-  "Nothing special for lisp newlines."
+  "Nothing special for MAJOR-MODE Lisp newlines (prefix ARG)."
   (newline arg 'interactive))
 
 (defun nvp-newline-dwim (&optional arg)
@@ -377,8 +384,7 @@ Dispatches to generic handlers with ARG."
   (eq 'file (vertico--metadata-get 'category)))
 
 (defun nvp-vertico-directory-up (&optional _)
-  "Like `vertico-directory-up' except works when completing against
-relative paths."
+  "Like `vertico-directory-up' except works when completing against relative paths."
   (interactive)
   (when (and (> (point) (minibuffer-prompt-end))
              (eq (char-before) ?/)
@@ -390,10 +396,9 @@ relative paths."
     t))
 
 (defun nvp-vertico-expand-or-insert ()
-  "When completing files, try expand to longest common prefix using partial
-matching, otherwise just call `vertico-insert'. If this was previous
-command, call `vertico-insert'. If there is only one match call
-`vertico-exit'."
+  "When completing files, try expand to LCP using partial matching.
+Otherwise just call `vertico-insert'. If this was previous command, call
+`vertico-insert'. If there is only one match call `vertico-exit'."
   (interactive)
   (--if-let (and (not (eq this-command last-command))
                  (nvp-vertico-completing-file-p)
@@ -424,7 +429,7 @@ command, call `vertico-insert'. If there is only one match call
     (throw 'nvp-fallback input)))
 
 (defun nvp-fallback-command (&rest args)
-  "Set `nvp-exit' and call fallback functions."
+  "Set `nvp-exit' and call fallback functions with ARGS."
   (interactive)
   (setq nvp-exit 'fallback)
   (and (minibufferp)
@@ -507,7 +512,7 @@ command, call `vertico-insert'. If there is only one match call
 
 ;; FIXME: on repeats the point moves back one line for some reason.
 (defun nvp-mark-defun (&optional arg)
-  "Mark defun, skipping preceding comments."
+  "Call mark defun with ARG, skipping preceding comments."
   (interactive (list (prefix-numeric-value current-prefix-arg)))
   (let ((skip-comments (not (region-active-p))))
     ;; (when interactive
@@ -578,8 +583,8 @@ command, call `vertico-insert'. If there is only one match call
 
 ;; don't require use-package
 (defun nvp-autoload-keymap (keymap-symbol package &optional binding-map)
-  "Autoload KEYMAP-SYMBOL from PACKAGE, binding calling keys as prefix
-in `global-map' or BINDING-MAP if non-nil."
+  "Autoload KEYMAP-SYMBOL from PACKAGE.
+Binds calling keys as prefix in `global-map' or BINDING-MAP if non-nil."
   (require package)
   (if (and (boundp keymap-symbol)
            (keymapp (symbol-value keymap-symbol)))
@@ -608,6 +613,7 @@ in `global-map' or BINDING-MAP if non-nil."
       (bury-buffer))))
 
 (defun nvp-kill-this-buffer ()
+  "Just kill the current buffer."
   (interactive)
   (kill-buffer (current-buffer)))
 

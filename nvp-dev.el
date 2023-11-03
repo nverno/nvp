@@ -151,6 +151,7 @@
                 variable))
          (print-escape-newlines t)
          (print-circle t)
+         (print-length nil)
          ;; (print-gensym t)
          (inhibit-read-only t))
     (nvp:with-results-buffer

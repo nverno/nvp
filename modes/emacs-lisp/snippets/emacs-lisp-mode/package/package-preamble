@@ -2,7 +2,5 @@
 # name: preamble
 # key: pkg-macs
 # --
-(eval-when-compile
-  (require 'nvp-macro))
-${2:
+(eval-when-compile (require 'nvp-macro))${1:
 (nvp:package-define-root ${3::snippets t})}

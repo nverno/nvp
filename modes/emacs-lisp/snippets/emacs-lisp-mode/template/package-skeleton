@@ -2,12 +2,12 @@
 # name: package
 # key: pkg
 # --
-;;; `(nvp-yas-bfn)` --- $1 -*- lexical-binding: t; -*-
+;;; `(nvp-yas-bfn)` --- $1 -*- lexical-binding: t; -*-${2:
 
-;; This is free and unencumbered software released into the public domain.
+;; This is free and unencumbered software released into the public domain.}
 
 ;; Author: `(concat user-full-name)` <`(concat user-mail-address)`>
-;; URL: https://${2:github.com/nverno/}${3:`(nvp-yas-dfn)`}
+;; URL: https://${3:github.com/nverno/}${4:`(nvp-yas-dfn)`}
 ;; Version: 0.0.1
 ;; Package-Requires: ((emacs "29.1"))
 ;; Created: `(format-time-string "%e %B %Y")`
@@ -31,12 +31,12 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-${4:
-;; [![Build Status](https://travis-ci.org/nverno/$3.svg?branch=master)](https://travis-ci.org/nverno/$3)
+${5:
+;; [![Build Status](https://travis-ci.org/nverno/$4.svg?branch=master)](https://travis-ci.org/nverno/$4)
 ;;
 ;;; Description:
 ;;
-;;  $5
+;;  $6
 ;;
 ;;; Installation:
 ;;

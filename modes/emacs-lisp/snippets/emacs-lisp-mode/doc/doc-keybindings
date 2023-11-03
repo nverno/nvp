@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: doc-keybindings
-# key: _b
+# key: map
 # condition: (nvp-yas-in-string)
 # --
 Key bindings:
-\\\\{${1}-mode-map}
+\\\\{${1:some}-mode-map}

@@ -3,8 +3,10 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (require 'treesit nil t)
-(nvp:decls :p ("treesit-auto") :f (treesit-auto--build-treesit-source-alist))
+(nvp:decls :p (treesit-auto ts)
+           :f (treesit-auto--build-treesit-source-alist ts-error-toggle))
 
 ;;;###autoload
 (defun nvp-treesit-add-font-lock (new-fonts &optional prepend feature-list)
@@ -45,54 +47,6 @@
   (call-interactively #'treesit-install-language-grammar))
 
 ;; -------------------------------------------------------------------
-;;; Errors / missing nodes
-
-(defface nvp-treesit-error
-  '((((supports :underline (:style wave)))
-     :underline (:style wave :color "Red1"))
-    (t :underline t :inherit error))
-  "Face for tree sitter errors / missing nodes.")
-
-(defvar-local nvp-treesit--errors-query nil
-  "Tree sitter query to match errors and missing identifiers")
-
-(defun nvp-treesit--query-compile ()
-  "Compile error/missing quiery."
-  (when (treesit-available-p)
-    (and-let* ((lang (treesit-language-at (point))))
-      (setq nvp-treesit--errors-query
-            (treesit-query-compile lang '(((identifier) @id (:equal "" @id))
-                                          (ERROR) @err))))))
-
-(defun nvp-treesit--make-error-overlay (beg end)
-  "Make error overlay from BEG to END."
-  (let ((ov (make-overlay beg end)))
-    (overlay-put ov 'face 'nvp-treesit-error)
-    (overlay-put ov 'nvp-treesit t)))
-
-(defun nvp-treesit--update-errors (beg end &rest _)
-  "Update error/missing node overlays."
-  (when nvp-treesit--errors-query
-    (and-let* ((lang (treesit-language-at (point))))
-      (if-let ((ranges
-                (treesit-query-range
-                 lang nvp-treesit--errors-query beg end ;; (point-min) (point-max)
-                 )))
-          (prog1 t
-            (dolist (range ranges)
-              (nvp-treesit--make-error-overlay (car range) (1+ (cdr range)))))
-        (remove-overlays (point-min) (point-max) 'nvp-treesit t)
-        nil))))
-
-(defun nvp-treesit-toggle-errors ()
-  "Toggle tree sitter error overlays in buffer."
-  (interactive)
-  (when nvp-treesit--errors-query
-    (if (memq #'nvp-treesit--update-errors after-change-functions)
-        (remove-hook 'after-change-functions #'nvp-treesit--update-errors t)
-      (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t))))
-
-;; -------------------------------------------------------------------
 ;;; Dev Minor Mode
 
 (defun nvp-treesit-validate (lang query)
@@ -117,21 +71,20 @@
              (kill-buffer treesit--explorer-buffer))
            (unless (and treesit-explore-mode
                         (buffer-live-p treesit--explorer-buffer))
-             ;; TODO: remove after patch
-             (setq-local treesit--explorer-last-node nil)
              (nvp:with-letf #'completing-read
                  (lambda (&rest _)
-                   ;;  (car (mapcar #'treesit-parser-language
-                   ;;               (treesit-parser-list nil nil t))))
                    (symbol-name (treesit-language-at (point))))
                (treesit-explore-mode 1)))
            treesit--explorer-buffer))))
     (pop-to-buffer buf)))
 
+;; -------------------------------------------------------------------
+;;; Minor mode
+
 (defvar-keymap nvp-treesit-minor-mode-map
   :doc "T/S keymap"
   "C-c C-v"  #'nvp-treesit-validate
-  "C-c C-s"  #'nvp-treesit-toggle-errors
+  "C-c C-s"  #'ts-error-toggle
   "<f2> z j" #'nvp-treesit-explorer-jump
   "C-M-?"    #'treesit-inspect-node-at-point)
 
@@ -141,7 +94,7 @@
     ["Inspect" treesit-inspect-node-at-point t]
     ["Explorer" nvp-treesit-explorer-jump t]
     ["Validate" nvp-treesit-validate t]
-    ["Toggle errors" nvp-treesit-toggle-errors t]))
+    ["Toggle errors" ts-error-toggle t]))
 
 ;;;###autoload
 (define-minor-mode nvp-treesit-minor-mode
@@ -154,13 +107,9 @@
   (if nvp-treesit-minor-mode
       (when (treesit-language-at (point))
         (powerline-revert)
-        (treesit-inspect-mode)
         ;; (add-hook 'window-buffer-change-functions
         ;;           #'nvp-treesit--change-window-hook nil t)
-        ;; (and (nvp-treesit--query-compile)
-        ;;      (add-hook 'after-change-functions #'nvp-treesit--update-errors nil t))
-        )
-    (remove-hook 'after-change-functions #'nvp-treesit--update-errors t)
+        (treesit-inspect-mode))
     ;; (remove-hook 'window-buffer-change-functions #'nvp-treesit--change-window-hook t)
     ;; (nvp-theme-switch)
     (ignore-errors 
@@ -191,9 +140,6 @@
 ;; -------------------------------------------------------------------
 ;;; Transient
 
-(require 'transient)
-(nvp:auto "ts-util" ts-util-nodes)
-
 (nvp:def-transient-toggle-vars nvp-treesit-menu
   treesit--font-lock-verbose
   treesit--indent-verbose)
@@ -204,13 +150,14 @@
   [ :if nvp-treesit-ready-p
     ["Current"
      ("?" "Inspect node" treesit-inspect-node-at-point)
-     ("e" "Toggle errors" nvp-treesit-toggle-errors)]
+     ("e" "Toggle errors" ts-error-toggle)]
     ["Explorer"
      ("j" "Jump" nvp-treesit-explorer-jump)]
     ["Query"
      ("v" "Validate" nvp-treesit-validate)]]
   [["Parsers"
-    ("l" "List nodes" ts-util-nodes)
+    ("l" "List nodes" ts-parser-list-nodes :transient t)
+    ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t)
     ("i" "Install parser" nvp-treesit-install)]
    ["Dev Mode"
     ("m" "global" nvp-treesit-mode)

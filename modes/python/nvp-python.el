@@ -83,6 +83,11 @@
     :name 'python
     :modes '(inferior-python-mode)
     :find-fn #'python-shell-get-process
+    :send-string #'python-shell-send-string
+    :send-region #'python-shell-send-region
+    :send-file #'python-shell-send-file
+    :eval-string #'python-shell-send-string-no-output
+    :eval-sexp #'nvp-python-eval-last-sexp
     :cd-cmd "import os; os.chdir(\"%s\")"
     :pwd-cmd "import os; os.getcwd()"
     :help-cmd '(:no-arg "help()" :with-arg "help(%s)")
@@ -122,7 +127,7 @@ the console."
      (forward-line))))
 
 ;; eval last expression
-(defun nvp-python-eval-last-sexp (arg)
+(defun nvp-python-eval-last-sexp (&optional arg)
   (interactive "P")
   (let* ((bnds (nvp:python-statement-bounds))
          (res (python-shell-send-string-no-output
@@ -130,9 +135,7 @@ the console."
     (when res
       (if arg
           (let ((standard-output (current-buffer)))
-            (terpri)
-            (princ res)
-            (terpri))
+            (princ res))
         (message "%s" res)))))
 
 ;; send interrupt/kill

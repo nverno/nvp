@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'vhdl-ts-mode nil t)
-(nvp:decls)
+(nvp:decls :v (vhdl-ts--treesit-settings))
 
 (defface nvp-vhdl-package-face
   '((t ( :inherit font-lock-function-name-face

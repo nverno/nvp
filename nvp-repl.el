@@ -42,6 +42,9 @@
   send-sexp
   send-buffer
   send-file
+  ;; Eval: execute silently in REPL, return output
+  eval-string
+  eval-sexp
   ;; REPL commands
   help-cmd                        ; command to display REPL help
   cd-cmd                          ; command to change REPL working dir
@@ -109,6 +112,7 @@
   :procname "ielm"
   :bufname "*ielm"
   :send-input #'ielm-send-input
+  :eval-sexp #'eval-last-sexp
   :wait 0.1
   :history-file ".ielm_history"
   :help-cmd "(describe-mode ielm-working-buffer)"
@@ -320,7 +324,8 @@ PREFIX arguments:
   (let ((buff (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
                   (if (buffer-live-p it) it
                     (other-buffer (current-buffer) 'visible))
-                (nvp-repl-get-buffer prefix))))
+                (prog1 (nvp-repl-get-buffer prefix)
+                  (nvp-repl-minor-mode 1)))))
     (unless (eq 'async buff)
       (pop-to-buffer buff nvp-repl--display-action))))
 
@@ -348,12 +353,13 @@ PREFIX arguments:
 STR is inserted into REPL unless NO-INSERT."
   (unless nvp-repl-current
     (user-error "No REPL associated with buffer."))
-  (nvp:repl-with (send-input send-string)
+  (nvp:repl-with (send-input send-string proc)
     (unless no-newline (setq str (concat str "\n")))
     (--if-let (nvp-repl-get-buffer)
         (progn (if no-insert
                    (funcall send-string (nvp-repl-process) str)
                  (with-current-buffer it
+                   (goto-char (process-mark proc))
                    (insert str)
                    (funcall send-input))))
       (user-error "Couldn't create REPL."))))
@@ -440,6 +446,33 @@ STR is inserted into REPL unless NO-INSERT."
   (nvp:repl-send send-file (file) and-go))
 
 ;; -------------------------------------------------------------------
+;;; Eval
+
+(defun nvp-repl-eval-string (&optional insert)
+  (interactive "P")
+  (nvp:repl-with (eval-string)
+    (unless eval-string
+      (user-error "unsupported: eval-string"))
+    (let ((res (funcall-interactively eval-string)))
+      (when (and res (not (string-empty-p res)))
+        (if insert
+            (let ((standard-output (current-buffer)))
+              (princ res))
+          (message "%S" res))))))
+
+(defun nvp-repl-eval-sexp (&optional insert)
+  (interactive "P")
+  (nvp:repl-with (eval-sexp)
+    (unless eval-sexp
+      (user-error "unsupported: eval-sexp"))
+    (funcall-interactively eval-sexp insert)
+    ;; (if insert
+    ;;     (let ((standard-output (current-buffer)))
+    ;;       (princ res))
+    ;;   (message "%S" res))
+    ))
+
+;; -------------------------------------------------------------------
 ;;; REPL commands
 
 (defun nvp-repl-current ()
@@ -520,6 +553,24 @@ Prompt with \\[universal-argument]."
     (and and-go (pop-to-buffer (nvp-repl-buffer)))))
 
 ;; -------------------------------------------------------------------
+;;; Minor mode
+
+(defvar-keymap nvp-repl-minor-mode-map
+  "C-c C-c"   #'nvp-repl-send-dwim
+  "C-c C-e"   #'nvp-repl-send-sexp
+  "C-c C-x e" #'nvp-repl-eval-sexp
+  "C-c C-b"   #'nvp-repl-send-buffer
+  "C-c C-l"   #'nvp-repl-send-line
+  "C-c C-r"   #'nvp-repl-send-region
+  "C-c C-f"   #'nvp-repl-send-file
+  "C-M-x"     #'nvp-repl-send-defun-or-region)
+
+;;;###autoload
+(define-minor-mode nvp-repl-minor-mode
+  "REPL Minor mode."
+  :lighter " Ɍepl")
+
+;; -------------------------------------------------------------------
 ;;; Transient 
 
 (require 'transient)
@@ -536,6 +587,9 @@ Prompt with \\[universal-argument]."
      ("d" "Defun or region" nvp-repl-send-defun-or-region)
      ("b" "Buffer" nvp-repl-send-buffer)
      ("F" "Load File" nvp-repl-send-file)]
+   [ :if-non-nil nvp-repl-current
+     "Eval"
+     ("e" "Last sexp" nvp-repl-eval-sexp)]
    [ :if nvp-repl-current
      "Commands"
      ("h" "Help" nvp-repl-help :transient t)

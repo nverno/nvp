@@ -255,7 +255,17 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 (defvar-local nvp-hap--disabled-backends nil)
 (defvar-local nvp-hap--treesit-p nil)
 
-(defun nvp-hap-message (msg &rest args)
+(defun nvp-hap--msg-fontify (type str)
+  (put-text-property 
+   0 (length str) 'face `(:foreground
+                          ,(pcase type
+                             ('info "blue")
+                             ('warn "yellow")
+                             ('error "red")))
+   str)
+  str)
+
+(defun nvp-hap-message (type msg &rest args)
   (when nvp-hap-verbose
     (let ((backend (cond
                     ((null nvp-hap-backend))
@@ -264,17 +274,15 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
                     ((plistp nvp-hap-backend)
                      (symbol-name (plist-get nvp-hap-backend :backend)))
                     (t (format "%S" nvp-hap-backend)))))
-      (apply #'message (concat "[hap] " backend (and backend ": ") msg) args))))
+      (apply #'message
+             (concat (nvp-hap--msg-fontify type "[hap] ")
+                     backend (and backend ": ") msg)
+             args))))
 
 (defun nvp-hap-call-backend (&rest args)
-  (condition-case-unless-debug err
-      (apply (if (functionp nvp-hap-backend) nvp-hap-backend
-               (plist-get nvp-hap-backend :backend))
-             args)
-    (user-error (user-error "Hap: backend %s user-error: %s"
-                            nvp-hap-backend (error-message-string err)))
-    (error (error "Hap: backend %s error \"%s\" with args %s"
-                  nvp-hap-backend (error-message-string err) args))))
+  (apply (if (functionp nvp-hap-backend) nvp-hap-backend
+           (plist-get nvp-hap-backend :backend))
+         args))
 
 (defun nvp-hap-cancel ()
   (setq nvp-hap-backend nil
@@ -321,24 +329,26 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
   (let (sym)
     (cl-dolist (backend (if nvp-hap-backend (list nvp-hap-backend)
                           nvp-help-at-point-functions))
-      (when (and
-             (nvp-hap-init-backend backend)
-             (setq sym (let ((nvp-hap-backend backend))
-                         (if nvp-hap-syntax-table
-                             (with-syntax-table nvp-hap-syntax-table
-                               (nvp-hap-call-backend 'thingatpt prefix))
-                           (nvp-hap-call-backend 'thingatpt prefix)))))
-        (setq nvp-hap-backend backend
-              nvp-hap--thingatpt sym
-              nvp-hap--doc-buffer nil)
-        (nvp-hap-message "found %S" sym)
-        (condition-case-unless-debug err
+      (condition-case-unless-debug err
+          (when (and
+                 (nvp-hap-init-backend backend)
+                 (setq sym (let ((nvp-hap-backend backend))
+                             (if nvp-hap-syntax-table
+                                 (with-syntax-table nvp-hap-syntax-table
+                                   (nvp-hap-call-backend 'thingatpt prefix))
+                               (nvp-hap-call-backend 'thingatpt prefix)))))
+            (setq nvp-hap-backend backend
+                  nvp-hap--thingatpt sym
+                  nvp-hap--doc-buffer nil)
+            (nvp-hap-message 'info "found %S" sym)
             (when (or (nvp-hap-show-popup prefix)
                       (nvp-hap-show-doc-buffer prefix))
-              (cl-return sym))
-          (error (message "backend %s: %s" nvp-hap-backend (error-message-string err))
-                 (setq nvp-hap-backend nil
-                       nvp-hap--thingatpt nil)))))))
+              (cl-return sym)))
+        (error
+         (let ((nvp-hap-backend backend))
+           (nvp-hap-message 'error "error: %s" (error-message-string err)))
+         (setq nvp-hap-backend nil
+               nvp-hap--thingatpt nil))))))
 
 (defsubst nvp-hap--backend-sym (sym)
   (if (plistp sym) (plist-get sym :backend) sym))

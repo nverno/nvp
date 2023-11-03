@@ -77,9 +77,11 @@
 ;; -------------------------------------------------------------------
 ;;; Command line flags
 
-;; FIXME: handle '-l, --long-options'. Currently only gets first in comma-separated
-;; entries
-(defvar nvp-man-flag-re "^ \\{,8\\}\\(\\(?:--\\|\\+\\+\\)+\\(?:..\\)+\\)")
+(defvar nvp-man-flag-re
+  (concat "\\(\\(?:--\\|\\+\\+\\)+\\(?:[^,][^,]\\)+\\)"
+          ;; optional trailing: [ '[' .* ']' | ' ' arg ] [,]
+          "\\(?:\\[[^\\]\n\r]+\\]\\| [^-,\n\r]+\\)?\\(?:,,\\)?"))
+(defvar nvp-man--indent-re "^ \\{,16\\}")
 
 (defvar nvp-man--flags (make-hash-table :test #'equal))
 
@@ -102,10 +104,17 @@ Returns list of \\='(flag . line-number)."
              (if msg (user-error msg)
                (let (flags)
                  (goto-char (point-min))
-                 (while (re-search-forward nvp-man-flag-re nil t)
-                   (push (cons (replace-regexp-in-string "." "" (match-string 1))
-                               (line-number-at-pos (match-beginning 1)))
-                         flags)
+                 (while (re-search-forward
+                         (concat nvp-man--indent-re nvp-man-flag-re) nil t)
+                   (let ((line (line-number-at-pos (match-beginning 1))))
+                     (push (cons (replace-regexp-in-string "." "" (match-string 1))
+                                 line)
+                           flags)
+                     (while (looking-at (concat ",?\\s-*" nvp-man-flag-re))
+                       (push (cons (replace-regexp-in-string "." "" (match-string 1))
+                                   line)
+                             flags)
+                       (goto-char (match-end 0))))
                    ;; (beginning-of-line 2)
                    (forward-line 1))
                  (puthash man-args flags nvp-man--flags)))))))))

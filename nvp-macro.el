@@ -1303,6 +1303,13 @@ and set `this-command' to nil so opposite happens next time."
        (funcall set ',variable (not (funcall get ',variable))))))
 
 ;;-- Marks
+(defmacro nvp:push-mark (cmd)
+  "Push mark on first invocation of CMD."
+  `(or (not (eq this-command ',cmd))
+       (eq last-command ',cmd)
+       (and transient-mark-mode mark-active)
+       (push-mark)))
+
 (defmacro nvp:mark-defun (&optional first-time &rest rest)
   "Mark blocks, expanding successively."
   `(let (deactivate-mark)

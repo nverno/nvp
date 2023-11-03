@@ -56,6 +56,7 @@
 ;;;###autoload
 (defun nvp-indicate-abort ()
   (interactive)
+  (and (fboundp 'nvp-repeat-abort) (nvp-repeat-abort))
   (nvp-indicate-cursor-post))
 
 ;; ------------------------------------------------------------

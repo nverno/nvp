@@ -64,10 +64,10 @@
       ("w"       . wgrep-change-to-wgrep-mode)))
 
   (defvar nvp--bindings-comint
-    '(("C-c C-n" . nvp/comint-next-prompt)
-      ("M-N"     . nvp/comint-next-prompt)
-      ("C-c C-p" . nvp/comint-previous-prompt)
-      ("M-P"     . nvp/comint-previous-prompt)
+    '(("C-c C-n" . comint-next-prompt)
+      ("M-N"     . comint-next-prompt)
+      ("C-c C-p" . comint-previous-prompt)
+      ("M-P"     . comint-previous-prompt)
       ("C-c C-k" . comint-clear-buffer)
       ("M-s-p"   . comint-previous-matching-input-from-input)
       ("M-s-n"   . comint-next-matching-input-from-input)
@@ -249,14 +249,34 @@ menu entry."
 (defsubst nvp:wrap--make-name (def &optional prefix)
   (intern (concat (or prefix "nvp") "/" (symbol-name def))))
 
-(defmacro nvp:wrap-command (def &optional prefix)
+(defmacro nvp:wrap-command (def &optional prefix no-this-command no-interactive)
   "Creates wrapper for command DEF. Useful when advising a command for
 repetition that may get called by other unwanted routines."
   (let ((name (nvp:wrap--make-name def prefix)))
     `(defun ,name ()
        (interactive)
-       (setq this-command ',def)
-       (call-interactively ',def))))
+       ,@(unless no-this-command
+           `((setq this-command ',def)))
+       ,(if no-interactive
+            `(funcall ',def)
+          `(call-interactively ',def)))))
+
+(defmacro nvp:def-keymap (name &rest defs)
+  "Wrap `defvar-keymap' with additional keywords \\=':wrap and \\=':wrap-pref.
+These specify commands to be wrapped to allow for commands to be part of
+multiple repeat maps."
+  (declare (indent defun) (debug t))
+  (let (wrap wrap-pref)
+    (nvp:skip-keywords defs (wrap wrap-pref) (:wrap :wrap-pref))
+    (let (wrapped)
+      (when wrap
+        (let ((prefix (or wrap-pref (nvp:wrap--prefix (symbol-name name)))))
+          (dolist (fn wrap)
+            (push
+             `(nvp:wrap-command ,fn ,prefix 'no-this-command)
+             wrapped))))
+      `(progn ,@wrapped
+              (defvar-keymap ,name ,@defs)))))
 
 ;; option to check for override?
 ;; do (when-let ((curr (lookup-key (current-global-map) `(nvp:kbd ,k)))))

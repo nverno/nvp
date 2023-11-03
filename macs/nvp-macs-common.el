@@ -70,11 +70,13 @@ If MINOR is non-nil, convert to minor mode hook symbol."
 ;; -------------------------------------------------------------------
 ;;; Normalize macro arguments
 
-(defmacro nvp:skip-keywords (body &optional collect)
+(defmacro nvp:skip-keywords (body &optional collect only)
   "Skip past any keywords in BODY. Optionally, setq and keyword-values
 found in COLLECT. A var in COLLECT is assigned a value if there is a keyword
 named \\=':var."
-  `(while (keywordp (car ,body))
+  `(while ,(if only `(and (keywordp (car ,body))
+                          (memq (car ,body) ',only))
+             `(keywordp (car ,body)))
      ,@(when collect
          `((cond
             ,@(cl-loop

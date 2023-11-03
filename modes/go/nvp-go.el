@@ -7,7 +7,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'go-mode nil t)
 (require 'xref)
-(nvp:decls :p (go gorepl))
+(nvp:decls :p (go))
+(nvp:auto "f" f-base)
 
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))
@@ -18,22 +19,8 @@
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;;; REPL
-
 (with-eval-after-load 'nvp-repl
-  (with-eval-after-load 'gorepl-mode
-    (nvp-repl-add '(go-mode go-ts-mode)
-      :name 'go
-      :modes '(gorepl-mode)
-      :bufname gorepl-buffer-name
-      ;; :send-input #'gorepl-eval
-      :send-buffer #'gorepl-run-load-current-file
-      :history-file ".gore_history"
-      :help-cmd (lambda (&optional thing)
-                  (nvp-repl-send-string (if thing (concat ":doc " thing) ":help")))
-      :init (lambda (&optional _prefix)
-              (save-window-excursion
-                (gorepl--run-gore '("-autoimport"))
-                (get-buffer-process (current-buffer)))))))
+  (require 'nvp-gorepl))
 
 ;;; Yas
 (nvp:decl yas-text nvp-yas-split-args)

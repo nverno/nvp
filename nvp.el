@@ -239,10 +239,7 @@ or nil.")
 
 (defun nvp-move-forward-defun ()
   (interactive)
-  (or (not (eq this-command 'nvp-move-forward-defun))
-      (eq last-command 'nvp-move-forward-defun)
-      (and transient-mark-mode mark-active)
-      (push-mark))
+  (nvp:push-mark nvp-move-forward-defun)
   (beginning-of-defun -1))
 
 (defalias 'nvp-move-backward-defun 'beginning-of-defun)
@@ -442,32 +439,6 @@ command, call `vertico-insert'. If there is only one match call
 ;; -------------------------------------------------------------------
 ;;; Repeat
 
-;; Change cursor color when `repeat-mode' transient map is active
-(defvar nvp-repeat--last-cursor nil)
-
-(defun nvp-repeat-set-cursor (&optional map)
-  (if map
-      (unless nvp-repeat--last-cursor
-        (setq nvp-repeat--last-cursor (face-attribute 'cursor :background))
-        (set-cursor-color "#e31422"))
-    (and nvp-repeat--last-cursor
-         (set-cursor-color nvp-repeat--last-cursor))
-    (setq nvp-repeat--last-cursor nil)))
-
-(add-function :after repeat-echo-function #'nvp-repeat-set-cursor)
-
-(defvar-keymap nvp-repeat-winner-map
-  :repeat t
-  "p" #'winner-undo
-  "n" #'winner-redo)
-
-(defvar-keymap nvp-repeat-isearch-map
-  :repeat t
-  "]" #'isearch-repeat-forward
-  "[" #'isearch-repeat-backward)
-(put 'isearch-repeat-forward 'repeat-check-key 'no)
-(put 'isearch-repeat-backward 'repeat-check-key 'no)
-
 ;;; FIXME: replace `nvp-repeat-command' eventually
 (defun nvp-repeat-msg (repeat-key &optional bindings)
   (concat
@@ -519,7 +490,7 @@ command, call `vertico-insert'. If there is only one match call
 ;;; Marks
 
 (defvar-keymap nvp-repeat-mark-defun-map
-  :repeat (:enter (nvp-mark-defun) nvp-mark-expand-to-previous-comments)
+  :repeat (:enter (nvp-mark-defun))
   "c" #'nvp-mark-expand-to-previous-comments
   "h" #'nvp-mark-defun)
 
@@ -535,9 +506,9 @@ command, call `vertico-insert'. If there is only one match call
   (beginning-of-defun-comments))
 
 ;; FIXME: on repeats the point moves back one line for some reason.
-(defun nvp-mark-defun (&optional arg interactive)
+(defun nvp-mark-defun (&optional arg)
   "Mark defun, skipping preceding comments."
-  (interactive (list (prefix-numeric-value current-prefix-arg) 'interactive))
+  (interactive (list (prefix-numeric-value current-prefix-arg)))
   (let ((skip-comments (not (region-active-p))))
     ;; (when interactive
     ;;   (setq prefix-arg (max 1 (/ (lsh arg -1) 4))))

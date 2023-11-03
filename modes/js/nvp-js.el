@@ -47,7 +47,6 @@
   (nvp-newline-dwim--comment syntax arg " * "))
 
 ;;; REPLs
-
 (with-eval-after-load 'nvp-repl
   (require 'nvp-nodejs)
   (require 'nvp-skewer)

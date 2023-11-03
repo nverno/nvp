@@ -73,8 +73,7 @@
     :send-buffer #'ruby-send-buffer
     :send-line #'ruby-send-line
     :history-file ".irb_history"
-    :help-cmd '( :fn (lambda (&optional arg) (if arg (format "? %s" arg) "help"))
-                 :return-type string)
+    :help-cmd '(:no-arg "help" :with-arg "? %s")
     :cd-cmd ".cd %s"
     :pwd-cmd ".pwd"))
 

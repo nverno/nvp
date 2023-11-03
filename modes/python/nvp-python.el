@@ -83,12 +83,9 @@
     :name 'python
     :modes '(inferior-python-mode)
     :find-fn #'python-shell-get-process
-    :cd-cmd (lambda (&optional dir)
-              (nvp-repl-send-string
-               (format "import os; os.chdir(\"%s\")" (or dir default-directory))))
+    :cd-cmd "import os; os.chdir(\"%s\")"
     :pwd-cmd "import os; os.getcwd()"
-    :help-cmd (lambda (&optional thing)
-                (nvp-repl-send-string (if thing (format "help(%s)" thing) "help()")))
+    :help-cmd '(:no-arg "help()" :with-arg "help(%s)")
     :init (lambda (&optional _prefix)
             (save-window-excursion
               (call-interactively #'conda-env-send-buffer)))))

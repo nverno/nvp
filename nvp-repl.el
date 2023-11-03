@@ -473,10 +473,11 @@ STR is inserted into REPL unless NO-INSERT."
                     ,(if args `(format ,cmd ,@args) `,cmd)))
                   ((pred functionp) (funcall ,cmd ,@args))
                   ((pred symbolp) (eval ,cmd))
-                  (`(:fn ,fn :return-type ,fn-type)
-                   (pcase fn-type
-                     ('string (nvp-repl-send-string (funcall fn ,@args)))
-                     (_ (user-error "unhandled '%S' :return-type '%S'" ',cmd fn-type))))
+                  ,@(when args
+                      `((`(:no-arg ,no-arg :with-arg ,with-arg)
+                         (cl-assert (and (stringp no-arg) (stringp with-arg)))
+                         (nvp-repl-send-string
+                          (if ,@args (format with-arg ,@args) no-arg)))))
                   (_ (user-error
                       ,(concat "unhandled " (symbol-name cmd) " type: '%S'") ,cmd)))
                 ,@body))))

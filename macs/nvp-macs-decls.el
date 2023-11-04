@@ -181,7 +181,6 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
         `(nvp:decl-prefixes ,@(nvp:as-list p)))
      (nvp:decl
        ;; nvp
-       nvp-repeat-command
        nvp-autoload-keymap
        nvp-mark-defun
        nvp-move-previous-heading

@@ -125,6 +125,10 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
 ;; -------------------------------------------------------------------
 ;;; Font-lock / Chars
 
+(defvar-keymap nvp-repeat-toggle-font-lock-map
+  :repeat t
+  "f" #'nvp-toggle-font-lock)
+
 ;;;###autoload
 (defun nvp-toggle-font-lock (arg)
   "Toggle font-lock additions on/off in current buffer.
@@ -149,11 +153,15 @@ With prefix ARG, just refresh defaults."
               ;; were never added
               (font-lock-add-keywords major-mode mode-fonts))
           (font-lock-add-keywords major-mode mode-fonts))
-        (font-lock-refresh-defaults)))
-    (nvp-repeat-command)))
+        (font-lock-refresh-defaults)))))
 
 ;; -------------------------------------------------------------------
 ;;; Text
+
+(defvar-keymap nvp-repeat-toggle-tabify-map
+  :repeat t
+  "t"     #'nvp-toggle-tabify
+  "<tab>" #'nvp-toggle-tab-width)
 
 (defun nvp-toggle-tabify (&optional beg end)
   "Tab/Untabify buffer regions - full visible buffer with prefix, otherwise
@@ -161,8 +169,7 @@ the current paragraph."
   (interactive
    (nvp:tap-or-region 'bdwim (nvp:prefix '>1 'buffer 'paragraph) :pulse t))
   (nvp:toggled-if (untabify beg end)
-    (tabify beg end))
-  (nvp-repeat-command nil nil nil beg end))
+    (tabify beg end)))
 
 ;; from https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el
 (defun nvp-toggle-tab-width ()
@@ -170,8 +177,7 @@ the current paragraph."
   (let* ((widths [8 4 2])
          (m (or (cl-position tab-width widths) -1)))
     (setf tab-width (aref widths (mod (1+ m) (length widths)))))
-  (message (format "tab-width: %d" tab-width))
-  (nvp-repeat-command))
+  (message (format "tab-width: %d" tab-width)))
 
 ;; -------------------------------------------------------------------
 ;;; Delimiters: brackets / strings
@@ -180,8 +186,12 @@ the current paragraph."
 (nvp:define-cache-runonce nvp-toggle-brackets-table ()
   (let ((tbl (make-string 256 0)))
     (cl-loop for i from 0 upto 255
-          do (aset tbl i i))
+             do (aset tbl i i))
     tbl))
+
+(defvar-keymap nvp-repeat-toggle-brackets-map
+  :repeat t
+  "b" #'nvp-toggle-brackets)
 
 ;;;###autoload
 (defun nvp-toggle-brackets (&optional beg end)
@@ -197,14 +207,13 @@ the current paragraph."
              (aset tbl ?\] ?\}))
         (?\{ (aset tbl ?\{ ?\()
              (aset tbl ?\} ?\))))
-      (translate-region beg end tbl)))
-  (nvp-repeat-command nil nil nil beg end))
+      (translate-region beg end tbl))))
 
 ;; toggle between quotes
 (nvp:define-cache-runonce nvp-toggle-strings-table ()
   (let ((tbl (make-string 256 0)))
     (cl-loop for i from 0 upto 255
-          do (aset tbl i i))
+             do (aset tbl i i))
     tbl))
 
 (defun nvp-bounds-of-string-at-point (&optional pt)
@@ -216,6 +225,10 @@ the current paragraph."
 
 (put 'string 'bounds-of-thing-at-point 'nvp-bounds-of-string-at-point)
 
+(defvar-keymap nvp-repeat-toggle-quotes-map
+  :repeat t
+  "q" #'nvp-toggle-quotes)
+
 ;;; XXX: escape / unescape toggle quotes
 ;;;###autoload
 (defun nvp-toggle-quotes (&optional beg end)
@@ -226,8 +239,7 @@ the current paragraph."
       (pcase (char-after beg)
         (?\" (aset tbl ?\" ?\'))
         (?\' (aset tbl ?\' ?\")))
-      (translate-region beg end tbl))
-    (nvp-repeat-command nil nil nil beg end)))
+      (translate-region beg end tbl))))
 
 (provide 'nvp-toggle)
 ;;; nvp-toggle.el ends here

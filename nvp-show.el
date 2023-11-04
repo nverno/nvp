@@ -6,6 +6,13 @@
 (require 'nvp)
 (nvp:decls)
 
+(defvar-keymap nvp-repeat-show-format-map
+  :repeat t
+  "a" #'nvp-show-nonascii
+  "l" #'nvp-show-long-lines
+  "w" #'nvp-show-trailing-whitespace
+  "d" #'delete-trailing-whitespace)
+
 ;;;###autoload
 (defun nvp-show-nonascii (&optional remove all)
   "Toggle display of zero-width non-ascii characters in current buffer.
@@ -30,7 +37,7 @@ With prefix \\[universal-argument] \\[universal-argument] ALL show all non-ascii
 (defun nvp-show-long-lines (arg)
   "Toggle indication of long lines (length with prefix ARG, default 80)."
   (interactive "P")
-  (nvp:toggled-if 
+  (nvp:toggled-if
       (let ((len (if arg (read-number "Length: ") 80))
             (font-lock-multiline t))
         (font-lock-add-keywords
@@ -39,8 +46,7 @@ With prefix \\[universal-argument] \\[universal-argument] ALL show all non-ascii
             (1 font-lock-warning-face t))))
         (font-lock-flush)
         (font-lock-ensure))
-    (font-lock-refresh-defaults))
-  (nvp-repeat-command))
+    (font-lock-refresh-defaults)))
 
 ;;;###autoload
 (defun nvp-show-trailing-whitespace ()
@@ -48,10 +54,7 @@ With prefix \\[universal-argument] \\[universal-argument] ALL show all non-ascii
   (interactive)
   (setq show-trailing-whitespace (not show-trailing-whitespace))
   (font-lock-flush)
-  (font-lock-ensure)
-  ;; when show-trailing-whitespace
-  (nvp-repeat-command nil nil '(("d" 'delete-trailing-whitespace))))
-
+  (font-lock-ensure))
 
 (provide 'nvp-show)
 ;; Local Variables:

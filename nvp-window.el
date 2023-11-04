@@ -47,6 +47,12 @@
     (set-window-dedicated-p window (not dedicated-p))
     (message "window dedicated: %s" (if dedicated-p "off" "on"))))
 
+(defvar-keymap nvp-repeat-window-swap-map
+  :repeat t
+  "t" #'nvp-window-transpose
+  "r" #'nvp-window-rotate
+  "s" #'nvp-window-swap)
+
 ;; Transpose the buffers shown in two windows.
 ;; from https://github.com/re5et/.emacs.d/blob/master/my/my-functions.el
 ;;;###autoload
@@ -59,8 +65,7 @@
 	(set-window-buffer (selected-window) next-win)
 	(set-window-buffer (funcall selector) this-win)
 	(select-window (funcall selector)))
-      (setq arg (if (cl-plusp arg) (1- arg) (1+ arg)))))
-  (nvp-repeat-command))
+      (setq arg (if (cl-plusp arg) (1- arg) (1+ arg))))))
 
 ;;;###autoload
 (defun nvp-window-rotate ()
@@ -70,8 +75,7 @@
     (dolist (window-and-buffer windows-and-buffers)
       (-let (((wnd . buf) window-and-buffer))
         (select-window wnd)
-        (switch-to-buffer buf))))
-  (nvp-repeat-command))
+        (switch-to-buffer buf)))))
 
 ;;;###autoload
 (defun nvp-window-swap ()
@@ -97,8 +101,7 @@
           (set-window-buffer (selected-window) this-win)
           (set-window-buffer (next-window) next-win)
           (select-window first-win)
-          (if this-win-2nd (other-window 1)))))
-  (nvp-repeat-command))
+          (if this-win-2nd (other-window 1))))))
 
 ;; Hydra wiki
 ;;;###autoload(autoload 'nvp-window-hydra/body "nvp-window")

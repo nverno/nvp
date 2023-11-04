@@ -14,6 +14,10 @@
 (nvp:auto "hideshow" hs-hide-all hs-toggle-hiding hs-hide-level hs-show-all)
 (nvp:decls :p (hs))
 
+(defvar-keymap nvp-repeat-hideshow-toggle-map
+  "f" #'nvp-hs-toggle)
+
+;;; TODO: refactor
 (nvp:bindings nvp-fold-keymap nil
   :create t :indicate t
   :repeat (nvp-hs-hide-comments hs-toggle-hiding)
@@ -57,6 +61,7 @@
   (interactive)
   (line-move-visual -5 'noerror))
 
+;;; TODO: refactor
 (nvp:bindings nvp-hs-fast-map nil
   :with fast-move
   :create t :repeat t :indicate t
@@ -75,12 +80,11 @@
   (interactive "P")
   (unless (bound-and-true-p hs-minor-mode)
     (hs-minor-mode))
-  (if arg
+  (if (or arg (eq last-command 'nvp-hs-toggle))
       (if (setq nvp-hs--hidden (not nvp-hs--hidden))
           (hs-show-all)
         (hs-hide-all))
-    (hs-toggle-hiding))
-  (nvp-repeat-command nil nil nil 1))
+    (hs-toggle-hiding)))
 
 ;; https://www.emacswiki.org/emacs/HideShow
 (defun nvp-hs-hide-comments ()

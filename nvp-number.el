@@ -6,6 +6,7 @@
 (require 'transient)
 (nvp:decls)
 (nvp:auto "hexl" hexl-hex-string-to-integer hexl-octal-string-to-integer)
+(nvp:auto "nvp-util" 'nvp-regex-map-across-matches)
 
 ;;;###autoload(autoload 'nvp-number-menu "nvp-number")
 (transient-define-prefix nvp-number-menu ()
@@ -21,6 +22,13 @@
    ["Show"
     ("?" "Decimal" nvp-number-show-decimal)]])
 
+(defvar-keymap nvp-repeat-number-increment-map
+  :repeat t
+  "=" #'nvp-number-increment
+  "+" #'nvp-number-increment
+  "-" #'nvp-number-decrement)
+(put 'nvp-number-increment 'repeat-check-key 'no)
+
 (defun nvp-number-decrement (&optional bnds inc)
   (interactive)
   (funcall-interactively #'nvp-number-increment t bnds inc))
@@ -35,18 +43,8 @@ Decrement with prefix ARG."
   (nvp:defq inc (if arg -1 1))
   (let (deactivate-mark)
     (nvp-regex-map-across-matches
-     (lambda (ms)
-       (replace-match (number-to-string (+ inc (string-to-number ms)))))
-     "\\([-]?[[:digit:]]+\\)" bnds 1))
-  (nvp-repeat-command ?= nil
-    `(("+" (lambda nil
-             (interactive)
-             (nvp-toggle-increment-numbers nil ',bnds))
-       :msg "decrement")
-      ("-" (lambda nil
-             (interactive)
-             (nvp-toggle-increment-numbers 1 ',bnds -1))
-       :msg "decrement"))))
+     (lambda (ms) (replace-match (number-to-string (+ inc (string-to-number ms)))))
+     "\\([-]?[[:digit:]]+\\)" bnds 1)))
 
 ;; -------------------------------------------------------------------
 ;;; Conversion
@@ -59,6 +57,10 @@ Decrement with prefix ARG."
       (push (number-to-string (logand n 1)) v)
       (setq n (ash n -1)))
     (mapconcat #'identity v "")))
+
+(defvar-keymap nvp-repeat-number-base-map
+  :repeat t
+  "n" #'nvp-number-toggle-base)
 
 ;;;###autoload
 (defun nvp-number-toggle-base (&optional cur-base offset)
@@ -99,8 +101,7 @@ decimal => hex, hex => decimal, octal => decimal."
                            (8 (setq offset 0) "%#o")
                            (10 (setq offset 0) "%d")
                            (16 (setq offset 2) "%#x"))
-                         (string-to-number str from))))))))))
-  (nvp-repeat-command))
+                         (string-to-number str from)))))))))))
    
 ;;;###autoload
 (defun nvp-number-hex-string-to-integer (&optional hex)

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (declare-function yas-text "yasnippet")
 
 (defsubst web-yas-type ()

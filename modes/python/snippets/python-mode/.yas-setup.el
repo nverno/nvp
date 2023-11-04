@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (eval-when-compile
   (defvar yas-text)
   (defvar start-point))

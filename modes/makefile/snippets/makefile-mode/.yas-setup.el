@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (declare-function s-replace "s")
 (declare-function s-split-up-to "s")
 (declare-function yas-text "yasnippet")

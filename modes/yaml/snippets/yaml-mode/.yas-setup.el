@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (autoload 'nvp-yaml-indent-line "nvp-yaml-indent")
 
 ;; if non-nil then something was inserted, so

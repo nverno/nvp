@@ -120,6 +120,10 @@ With prefix sort in REVERSE."
 ;; -------------------------------------------------------------------
 ;;; Duplicate
 
+(defvar-keymap nvp-repeat-duplicate-line-map
+  :repeat t
+  "l" #'nvp-duplicate-line-or-region)
+
 ;; Duplicates the current line or region arg times.
 ;; if there's no region, the current line will be duplicated
 ;; (or last non-empty).
@@ -130,8 +134,7 @@ With prefix sort in REVERSE."
       (let ((beg (region-beginning))
             (end (region-end)))
         (nvp--duplicate-region arg beg end))
-    (nvp--duplicate-last-nonempty-line arg)
-    (nvp-repeat-command)))
+    (nvp--duplicate-last-nonempty-line arg)))
 
 ;; duplicate the current line num times.
 (defun nvp-duplicate-current-line (&optional num)
@@ -143,8 +146,7 @@ With prefix sort in REVERSE."
         (goto-char (point-max))
         (newline)
         (forward-char -1))
-      (nvp--duplicate-region num (nvp:point 'bol) (1+ (nvp:point 'eol)))))
-  (nvp-repeat-command))
+      (nvp--duplicate-region num (nvp:point 'bol) (1+ (nvp:point 'eol))))))
 
 (defun nvp--duplicate-back-and-dupe ()
   (interactive)

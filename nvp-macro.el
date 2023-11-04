@@ -191,6 +191,32 @@ is activated, but before items are printed."
            ,(when action `(setq nvp-tabulated-list-select-action ,action)))
          (pop-to-buffer buf)))))
 
+(cl-defmacro nvp:msg-repeated (fmt &rest args &key clobber &allow-other-keys)
+  "Construct minibuffer message by applying `message' to FMT with ARGS.
+Message is appended to current minibuffer messages and updated on repeated
+calls.
+CLOBBER can be specify a message prefix to clobber instead of appending to."
+  (let* ((prefix (car (string-split fmt "%")))
+         (repeat-prefix (concat "[" prefix))
+         (replace (concat "\\[" prefix ".*\\'")))
+    (nvp:skip-keywords args)
+    (nvp:with-syms (msg cur)
+      `(unless (minibufferp)
+         (let ((message-log-max nil)
+               (,cur (current-message))
+               (,msg (funcall #'format ,fmt ,@args)))
+           (if ,cur
+               (cond
+                (,(if clobber `(or (string-prefix-p ,prefix ,cur t)
+                                   (string-prefix-p ,clobber ,cur t))
+                    `(string-prefix-p ,prefix ,cur t))
+                 (message ,msg))
+                ((string-search ,repeat-prefix ,cur)
+                 (message
+                  "%s [%s]" (replace-regexp-in-string ,replace "" ,cur) ,msg))
+                (t (message "%s [%s]" ,cur ,msg)))
+             (message ,msg)))))))
+
 
 (cl-defmacro nvp:msg (fmt &rest args &key keys delay duration
                           test &allow-other-keys)

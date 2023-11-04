@@ -12,19 +12,18 @@
 (nvp:decls)
 
 (defvar nvp-iedit-restrictions '(buffer defun line))
+(defconst nvp-iedit--n (length nvp-iedit-restrictions))
 
 (defvar-local nvp-iedit--idx 0)
 (defun nvp-iedit--next ()
-  (cl-decf nvp-iedit--idx)
-  (and (< nvp-iedit--idx 0)
-       (setq nvp-iedit--idx (+ nvp-iedit--idx (length nvp-iedit-restrictions)))))
+  (setq nvp-iedit--idx
+        (mod (+ nvp-iedit--idx (1- nvp-iedit--n)) nvp-iedit--n)))
 
 ;; Add iedit bindings
-(defvar-keymap iedit-mode-keymap
-  :keymap iedit-mode-keymap
-  "C-=" #'nvp-iedit-cycle-regions
-  "M-o" nil
-  "M-O" #'nvp-iedit-occur)
+(nvp:bindings iedit-mode-keymap :now
+  ("C-=" . nvp-iedit-cycle-regions)
+  ("M-o" . nil)
+  ("M-O" . nvp-iedit-occur))
 
 (defvar-keymap nvp-repeat-iedit-cycle-map
   :repeat t
@@ -42,7 +41,7 @@
   (if iedit-mode (progn (setq nvp-iedit--idx 0)
                         (iedit-done))
     (iedit-mode)
-    (setq nvp-iedit--idx (nvp:lsb arg 2))
+    (setq nvp-iedit--idx (mod (nvp:lsb arg 2) nvp-iedit--n))
     (pcase (nth nvp-iedit--idx nvp-iedit-restrictions)
       ('line (iedit-restrict-current-line))
       ('defun (iedit-restrict-function))
@@ -51,22 +50,11 @@
       :test (bound-and-true-p iedit-mode) :delay 0.3 :keys t)))
 
 (defun nvp-iedit-report ()
-  (let ((message-log-max nil))
-    (unless (minibufferp)
-      (let ((cur-msg (current-message))
-            (msg (format "Restricted to current %s, %d matches."
-                         (nth nvp-iedit--idx nvp-iedit-restrictions)
-                         (length iedit-occurrences-overlays))))
-        (if cur-msg
-            (cond ((or (string-prefix-p "Restricted to " cur-msg t)
-                       (string-prefix-p "No more matches" cur-msg t))
-                   (message msg))
-                  ((string-search "[Restricted to " cur-msg)
-                   (message "%s [%s]" (replace-regexp-in-string
-                                       "\\[Restricted to .*\\'" "" cur-msg)
-                            msg))
-                  (t (message "%s [%s]" cur-msg msg)))
-          (message msg))))))
+  (nvp:msg-repeated
+   "Restricted to current %s, %d matches."
+   :clobber "No more matches"
+   (nth nvp-iedit--idx nvp-iedit-restrictions)
+   (length iedit-occurrences-overlays)))
 
 ;; allow expanding of restricted region when in `iedit-mode'
 (defun nvp-iedit-cycle-regions ()
@@ -76,7 +64,7 @@
     (let* ((occ-regexp (iedit-regexp-quote (iedit-current-occurrence-string))))
       (if (region-active-p)
           ;; start 'region cycle from same index as 'line
-          (progn (setq nvp-iedit--idx (1- (length nvp-iedit-restrictions)))
+          (progn (setq nvp-iedit--idx (1- nvp-iedit--n))
                  (iedit-restrict-region (region-beginning) (region-end)))
         (nvp-iedit--next)
         (pcase (nth nvp-iedit--idx nvp-iedit-restrictions)

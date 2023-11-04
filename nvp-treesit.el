@@ -148,13 +148,15 @@
 (transient-define-prefix nvp-treesit-menu ()
   "Treesit"
   [ :if nvp-treesit-ready-p
-    ["Current"
-     ("?" "Inspect node" treesit-inspect-node-at-point)
-     ("e" "Toggle errors" ts-error-toggle)]
+    ["Query"
+     ("q" "Highlight query" ts-query-highlight-query :transient t)
+     ("Q" "Remove highlights" ts-query-remove-highlights :transient t)
+     ("v" "Validate" nvp-treesit-validate)]
     ["Explorer"
      ("j" "Jump" nvp-treesit-explorer-jump)]
-    ["Query"
-     ("v" "Validate" nvp-treesit-validate)]]
+    ["Current"
+     ("?" "Inspect node" treesit-inspect-node-at-point)
+     ("e" "Toggle errors" ts-error-toggle)]]
   [["Parsers"
     ("l" "List nodes" ts-parser-list-nodes :transient t)
     ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t)
@@ -163,9 +165,9 @@
     ("m" "global" nvp-treesit-mode)
     ("M" "local" nvp-treesit-minor-mode)]
    ["Debug"
-    (":i" "Toggle indent verbose"
+    (":i" "Indent verbose"
      nvp-treesit-menu--toggle-treesit--indent-verbose)
-    (":f" "Toggle font debug"
+    (":f" "Font debug"
      nvp-treesit-menu--toggle-treesit--font-lock-verbose)]])
 
 (provide 'nvp-treesit)

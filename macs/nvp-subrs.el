@@ -89,6 +89,20 @@
             (nvp:s-repeat width char))))
 
 ;; -------------------------------------------------------------------
+;;; Bits
+
+(defsubst nvp:lsb (num &optional inc)
+  "Least significant bit in NUM.
+If INC, shift bits by INC instead of 1."
+  (or (and inc (not (zerop inc))) (setq inc 1))
+  (unless (zerop num)
+    (let ((res 0))
+      (while (zerop (logand num 1))
+        (setq num (ash num (- inc)))
+        (cl-incf res))
+      res)))
+
+;; -------------------------------------------------------------------
 ;;; Lists
 
 ;; Split LST into N length sublists.

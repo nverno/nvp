@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: (point-min) (point-max)
+# key: pm
+# --
+(point-min) (point-max)

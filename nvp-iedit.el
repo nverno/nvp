@@ -11,53 +11,62 @@
 (require 'iedit)
 (nvp:decls)
 
+(defvar nvp-iedit-restrictions '(buffer defun line))
+
+(defvar-local nvp-iedit--idx 0)
+(defun nvp-iedit--next ()
+  (cl-decf nvp-iedit--idx)
+  (and (< nvp-iedit--idx 0)
+       (setq nvp-iedit--idx (+ nvp-iedit--idx (length nvp-iedit-restrictions)))))
+
 ;; Add iedit bindings
-(nvp:bindings iedit-mode-keymap :now
-  ("C-=" . nvp-iedit-cycle-regions)
-  ("M-o" . nil)
-  ("M-O" . nvp-iedit-occur))
+(defvar-keymap iedit-mode-keymap
+  :keymap iedit-mode-keymap
+  "C-=" #'nvp-iedit-cycle-regions
+  "M-o" nil
+  "M-O" #'nvp-iedit-occur)
+
+(defvar-keymap nvp-repeat-iedit-cycle-map
+  :repeat t
+  "=" #'nvp-iedit-cycle-regions)
 
 (defun nvp-iedit-occur ()
+  "Call `occur' with current `iedit-current-occurrence-string'."
   (interactive)
   (occur (regexp-quote (iedit-current-occurrence-string))))
 
-;; current level of iedit restriction: line, defun, buffer, region
-(defvar-local nvp-iedit-restriction 'buffer)
-
-(advice-add 'iedit-restrict-function
-            :after (lambda (&rest _args) (setq nvp-iedit-restriction 'defun)))
-
-(advice-add 'iedit-restrict-current-line
-            :after (lambda (&rest _args) (setq nvp-iedit-restriction 'line)))
-
-;; (add-hook 'iedit-mode-end-hook #'(lambda () (setq nvp-iedit-restriction 'buffer)))
-;; (add-hook 'iedit-aborting-hook #'(lambda () (setq nvp-iedit-restriction nil)))
-
 ;;;###autoload
-(defun nvp-iedit-dwim (arg)
+(defun nvp-iedit-dwim (&optional arg)
   "With prefix ARG narrow to defun, with two prefix narrow to current line."
-  (interactive "P")
-  (if iedit-mode
-      (progn
-        (setq nvp-iedit-restriction 'buffer)
-        (iedit-done))
+  (interactive "p")
+  (if iedit-mode (progn (setq nvp-iedit--idx 0)
+                        (iedit-done))
     (iedit-mode)
-    (pcase arg
-      (`(16)
-       (setq nvp-iedit-restriction 'line)
-       (iedit-restrict-current-line))
-      (`(4)
-       (setq nvp-iedit-restriction 'defun)
-       (iedit-restrict-function))
-      (_))
+    (setq nvp-iedit--idx (nvp:lsb arg 2))
+    (pcase (nth nvp-iedit--idx nvp-iedit-restrictions)
+      ('line (iedit-restrict-current-line))
+      ('defun (iedit-restrict-function))
+      (_ ))
     (nvp:msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
-      :test (bound-and-true-p iedit-mode) :delay 1 :keys t)))
+      :test (bound-and-true-p iedit-mode) :delay 0.3 :keys t)))
 
-(eval-when-compile
-  (defsubst nvp:iedit-report ()
-    (or (minibufferp)
-        (message "Restricted to current %s, %d matches."
-                 nvp-iedit-restriction (length iedit-occurrences-overlays)))))
+(defun nvp-iedit-report ()
+  (let ((message-log-max nil))
+    (unless (minibufferp)
+      (let ((cur-msg (current-message))
+            (msg (format "Restricted to current %s, %d matches."
+                         (nth nvp-iedit--idx nvp-iedit-restrictions)
+                         (length iedit-occurrences-overlays))))
+        (if cur-msg
+            (cond ((or (string-prefix-p "Restricted to " cur-msg t)
+                       (string-prefix-p "No more matches" cur-msg t))
+                   (message msg))
+                  ((string-search "[Restricted to " cur-msg)
+                   (message "%s [%s]" (replace-regexp-in-string
+                                       "\\[Restricted to .*\\'" "" cur-msg)
+                            msg))
+                  (t (message "%s [%s]" cur-msg msg)))
+          (message msg))))))
 
 ;; allow expanding of restricted region when in `iedit-mode'
 (defun nvp-iedit-cycle-regions ()
@@ -66,32 +75,26 @@
   (when iedit-mode
     (let* ((occ-regexp (iedit-regexp-quote (iedit-current-occurrence-string))))
       (if (region-active-p)
-          (progn
-            (setq nvp-iedit-restriction 'region)
-            (iedit-restrict-region (region-beginning) (region-end)))
-        (pcase nvp-iedit-restriction
-          ((or 'line 'region)            ;restrict to defun
-           (setq nvp-iedit-restriction 'defun)
-           (save-mark-and-excursion
-             (setq mark-active nil)
-             (nvp-mark-defun)
-             (let ((beg (region-beginning))
-                   (end (region-end)))
-               (goto-char beg)
-               (while (and (< (point) end)
-                           (condition-case nil
-                               (iedit-add-occurrence-overlay
-                                occ-regexp nil 'forward end)
-                             (error (forward-word)))))))
-           (nvp:iedit-report))
-          (`defun                        ;expand to buffer
-              (setq nvp-iedit-restriction 'buffer)
-              (iedit-make-occurrences-overlays occ-regexp (point-min) (point-max))
-            (nvp:iedit-report))
-          (_                             ;currently buffer => recycle
-           (setq nvp-iedit-restriction 'line)
-           (iedit-restrict-current-line)))))
-    (nvp-repeat-command)))
+          ;; start 'region cycle from same index as 'line
+          (progn (setq nvp-iedit--idx (1- (length nvp-iedit-restrictions)))
+                 (iedit-restrict-region (region-beginning) (region-end)))
+        (nvp-iedit--next)
+        (pcase (nth nvp-iedit--idx nvp-iedit-restrictions)
+          ('defun (save-mark-and-excursion
+                    (setq mark-active nil)
+                    (nvp-mark-defun)
+                    (let ((beg (region-beginning))
+                          (end (region-end)))
+                      (goto-char beg)
+                      (while (and (< (point) end)
+                                  (condition-case nil
+                                      (iedit-add-occurrence-overlay
+                                       occ-regexp nil 'forward end)
+                                    (error (forward-word))))))))
+          ('buffer (iedit-make-occurrences-overlays
+                    occ-regexp (point-min) (point-max)))
+          (_ (iedit-restrict-current-line)))
+        (nvp-iedit-report)))))
 
 (provide 'nvp-iedit)
 ;;; nvp-iedit.el ends here

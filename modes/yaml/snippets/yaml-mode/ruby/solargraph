@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: solargraph
+# key: solargraph
+# --
+include:
+  - "${1:ruby/**/}*.rb"
+reporters:
+  - rubocop
+  - require_not_found
+  - typecheck:typed${2:
+max_files: 1000}

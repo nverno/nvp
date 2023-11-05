@@ -8,23 +8,6 @@
  :p ("ruby" "inf-ruby" "robe" "projectile-rails")
  :f (inf-ruby))
 
-(defun nvp-ruby--buffer-requires ()
-  (save-excursion
-    (goto-char (point-min))
-    (let (res)
-      (while
-          (re-search-forward "^require +\\(?:['\"]\\)\\([^\n\"']+\\)" nil 'move)
-        (push (match-string 1) res))
-      res)))
-
-(defun nvp-ruby-require (lib)
-  (unless (cl-member lib (nvp-ruby--buffer-requires) :test 'string=)
-    (save-excursion
-      (goto-char (point-min))
-      (forward-comment (point-max))
-      (skip-syntax-backward " >")
-      (insert (concat "\nrequire \"" lib "\"")))))
-
 ;;; Snippets
 
 ;; create arg initializtion from yas-text
@@ -149,6 +132,23 @@ See the variable `align-rules-list' for more details.")
 ;; -------------------------------------------------------------------
 ;;; Debug
 
+(defun nvp-ruby--buffer-requires ()
+  (save-excursion
+    (goto-char (point-min))
+    (let (res)
+      (while
+          (re-search-forward "^require +\\(?:['\"]\\)\\([^\n\"']+\\)" nil 'move)
+        (push (match-string 1) res))
+      res)))
+
+(defun nvp-ruby-require (lib)
+  (unless (cl-member lib (nvp-ruby--buffer-requires) :test 'string=)
+    (save-excursion
+      (goto-char (point-min))
+      (forward-comment (point-max))
+      (skip-syntax-backward " >")
+      (insert (concat "\nrequire \"" lib "\"")))))
+
 (defun nvp-ruby--insert-breakpoint ()
   (nvp-ruby-require "pry")
   (insert "binding.pry"))
@@ -166,19 +166,6 @@ See the variable `align-rules-list' for more details.")
   (interactive "P")
   (if arg (nvp-ruby--remove-breakpoints)
     (nvp-ruby--insert-breakpoint)))
-
-;; -------------------------------------------------------------------
-;;; Rspec
-
-(defconst nvp-rspec-font-lock-keywords
-  `((,(regexp-opt
-       '("expect" "describe" "it" "context" "before"
-         "feature" "scenario")
-       'symbols)
-     (1 font-lock-function-name-face))))
-
-(defun nvp-rspec-font-lock ()
-  (font-lock-add-keywords 'ruby-mode nvp-rspec-font-lock-keywords))
 
 (provide 'nvp-ruby)
 ;;; nvp-ruby.el ends here

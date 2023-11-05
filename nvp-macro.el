@@ -212,6 +212,9 @@ is activated, but before items are printed."
 Message is appended to current minibuffer messages and updated on repeated
 calls.
 CLOBBER can be specify a message prefix to clobber instead of appending to."
+  (declare (indent defun))
+  (unless (stringp fmt) (setq fmt (eval fmt)))
+  (cl-assert (stringp fmt))
   (let* ((prefix (car (string-split fmt "%")))
          (repeat-prefix (concat "[" prefix))
          (replace (concat "\\[" prefix ".*\\'")))
@@ -234,46 +237,55 @@ CLOBBER can be specify a message prefix to clobber instead of appending to."
              (message ,msg)))))))
 
 
-(cl-defmacro nvp:msg (fmt &rest args &key keys delay duration
+(cl-defmacro nvp:msg (fmt &rest args &key keys delay duration append keymap
                           test &allow-other-keys)
-  "Print message FMT with ARGS, optionally using `substitute-command-keys' if KEYS.
-Message is displayed temporarily, restoring any previous message after
-DURATION or 2 seconds.
+  "Print message FMT with ARGS.
 
 If TEST is non-nil, message will only be displayed if it evaluates
-truthy (if TEST is a function it will be called with no arguments). If
-DELAY is non-nil, message is delayed for that many seconds, eg. allowing
+truthy (if TEST is a function it will be called with no arguments).
+
+If KEYS, use `substitute-command-keys' for commands, optionally using
+KEYMAP for lookup.
+
+If APPEND, message is appended to any current message.
+Otherwise, message is displayed temporarily, restoring any previous message
+after DURATION or 2 seconds.
+
+If DELAY is non-nil, message is delayed for that many seconds, eg. allowing
 previous messages to be read.
 
 The original message will be restored after DELAY + DURATION when those
 are both specified."
   (declare (indent defun) (debug (sexp &rest form)))
   (nvp:skip-keywords args)
-  (nvp:with-syms (orig-msg)
-    (let ((msg
-           `(function
-             (lambda ()
-               (or (minibufferp)
-                   ,@(when test
-                       `((not
-                          ,(if (functionp test) `(funcall ,test)
-                             ` ,test))))
-                   (message
-                    ,@(if keys
-                          `("%s" (substitute-command-keys (format ,fmt ,@args)))
-                        `(,fmt ,@args)))))))
-          (post-msg
-           `(function
-             (lambda (orig-msg)
-               (and orig-msg (not (minibufferp)) (message orig-msg))))))
-      `(let ((,orig-msg (current-message)))
-         ,(if delay
-              `(run-with-idle-timer ,delay nil ,msg)
-            `(funcall ,msg))
-         (and ,orig-msg
-              (run-with-idle-timer
-               ,(+ (or delay 0) (or duration 2)) nil
-               (apply-partially ,post-msg ,orig-msg)))))))
+  (let ((message (if keys (let ((overriding-local-map (eval keymap)))
+                            (format (substitute-command-keys fmt) args))
+                   (format fmt args))))
+    (nvp:with-syms (orig-msg)
+      (let ((do-msg `(let ((message-log-max nil))
+                       (or (minibufferp)
+                           ,@(when test
+                               `((not ,(if (functionp test) `(funcall ,test) `,test))))
+                           ,(if append
+                                `(message
+                                  (if-let ((cur (current-message)))
+                                      (concat cur " [" ,message "]")
+                                    ,message))
+                              `(message ,message))))))
+        (if append do-msg
+          (let ((msg `(function (lambda () ,do-msg)))
+                (post-msg
+                 `(function
+                   (lambda (orig-msg)
+                     (and orig-msg (not (minibufferp)) (message orig-msg))))))
+            `(let ((,orig-msg (current-message)))
+               ,(if delay
+                    `(run-with-idle-timer ,delay nil ,msg)
+                  `(funcall ,msg))
+               (and ,orig-msg
+                    (run-with-idle-timer
+                     ,(+ (or delay 0) (or duration 2)) nil
+                     (apply-partially ,post-msg ,orig-msg))))))))))
 
 ;; `org-no-popups'
 (defmacro nvp:with-no-popups (&rest body)

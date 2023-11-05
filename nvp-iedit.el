@@ -47,14 +47,15 @@
       ('defun (iedit-restrict-function))
       (_ ))
     (nvp:msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
-      :test (bound-and-true-p iedit-mode) :delay 0.3 :keys t)))
+      :test (bound-and-true-p iedit-mode)
+      :keys t :keymap iedit-mode-keymap
+      :append t)))
 
 (defun nvp-iedit-report ()
-  (nvp:msg-repeated
-   "Restricted to current %s, %d matches."
-   :clobber "No more matches"
-   (nth nvp-iedit--idx nvp-iedit-restrictions)
-   (length iedit-occurrences-overlays)))
+  (nvp:msg-repeated "Restricted to %s, %d matches."
+    :clobber "No more matches"
+    (nth nvp-iedit--idx nvp-iedit-restrictions)
+    (length iedit-occurrences-overlays)))
 
 ;; allow expanding of restricted region when in `iedit-mode'
 (defun nvp-iedit-cycle-regions ()

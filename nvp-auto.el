@@ -16,15 +16,14 @@
 ;; -------------------------------------------------------------------
 ;;; Movement
 
-(defvar-keymap nvp-repeat-move-char-map
-  :repeat t
-  "j" #'nvp-move-char-this-line)
-
 ;; jump to next char on this line. if matching char,
 ;; pressing the same key again jumps to the next one, etc.
 ;;;###autoload
 (defun nvp-move-char-this-line (&optional char)
-  (interactive (list (char-to-string (read-char "Char: " t))))
+  (interactive
+   (list (if (eq this-command last-command)
+             (get this-command 'char)
+           (put this-command 'char (char-to-string (read-char "Char: " t))))))
   (nvp:push-mark nvp-move-char-this-line)
   (let ((case-fold-search t))
     (condition-case nil
@@ -33,11 +32,7 @@
                (beginning-of-line)
                (or (search-forward char (nvp:point 'eol))
                    (goto-char pt))))))
-  ;; FIXME: need to temporarily set `repeat-keep-prefix'
-  ;; or pass prefix using a wrapper fun like `nvp-repeat-command'
-  ;; or a `pre-command-hook' like `repeat-pre-hook'
-  ;; (nvp-repeat-command nil nil nil char)
-  )
+  (nvp:repeat-this-command char))
 
 ;; see `paragraph-start' and `paragraph-separate' to extend
 ;;;###autoload

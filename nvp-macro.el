@@ -122,7 +122,23 @@ If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
                  :variable ',var
                  :reader (lambda (&rest _) (not ,var)))))))
 
-
+;; -------------------------------------------------------------------
+;;; Repeat
+
+(defmacro nvp:repeat-this-command (&optional key no-indicate)
+  "Repeat `this-command' on last basic input or KEY.
+Don't change cursor when NO-INDICATE."
+  (let ((repeat-key (or key `(nvp:input 'lbi))))
+   `(when (and (null overriding-terminal-local-map)
+               (not (memq this-command `(,last-command nvp--repeat))))
+      ,@(unless no-indicate '((nvp-indicate-cursor-pre)))
+      (set-transient-map
+       (let ((map (make-sparse-keymap)))
+         (define-key map (vector ,repeat-key) this-command)
+         map)
+       t
+       ,@(unless no-indicate '((lambda () (nvp-indicate-cursor-post))))))))
+
 ;; -------------------------------------------------------------------
 ;;; Output / Messages
 

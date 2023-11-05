@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: print to stderr
+# key: fprf
+# --
+io.stderr:write(string.format("${1:%s}\n", $2))

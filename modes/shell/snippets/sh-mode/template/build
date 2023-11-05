@@ -8,7 +8,8 @@ set -eo pipefail
 
 _${1:$(upcase yas-text)}_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd)"
 . "\$_${1:$(upcase yas-text)}_DIR/../vars.sh"
-${1:$(upcase yas-text)}_GIT_REPO=
+${1:$(upcase yas-text)}_GIT_REPO=$2
+$1_GLOB="linux-$(uname -m).tar.gz"
 
 ${1:`$tmp`}_current() {
     ${1:$(downcase yas-text)} --version 2>/dev/null | awk 'NR==1{match(\$0,/([0-9.]+)/,g);print g[1]}' || return 1
@@ -16,9 +17,7 @@ ${1:`$tmp`}_current() {
 }
 $1_latest() {
     local ver
-    ! ver="\$(github_latest_release "\$${1:$(upcase yas-text)}_GIT_REPO" "${2:linux-\$(uname -m)}${3:.tar.gz$}")" && return 1
-    echo "\$ver"
-    return 0
+    github_latest_release "\$${1:$(upcase yas-text)}_GIT_REPO" "\$${1:$(upcase yas-text)}_GLOB"
 }
 $0
 $1_install() {

@@ -60,6 +60,19 @@ SHELL = \\$(warning [\\$@])\\$(_SHELL) -x
 TARGET
 "))))
 
+;;;###autoload
+(defun nvp-makefile-remake (&optional args)
+  "Run remake with ARGS.
+Default to dry-run trace."
+  (interactive
+   (list (if current-prefix-arg (list (read-string "remake debug: " "-X"))
+           '("--trace" "-n"))))
+  (let ((args (mapconcat 'identity args " ")))
+    (nvp:makefile-with-compilation-vars
+     (compilation-start (concat "remake " args)
+      (not
+       (null (string-match-p (rx (seq symbol-start (or "-X" "--debugger"))) args)))))))
+
 (provide 'nvp-makecheck)
 ;; Local Variables:
 ;; coding: utf-8

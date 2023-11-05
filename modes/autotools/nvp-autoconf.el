@@ -12,6 +12,21 @@
 (require 'company-autoconf nil t)
 (nvp:decls :p (company-autoconf))
 
+(nvp:font-lock-add-defaults 'autoconf-mode
+  ;; quoted vars, special vars, function arguments
+  (:quoted ?\" "\\(\\$\\){?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)"
+           (1 'font-lock-misc-punctuation-face prepend)
+           (2 'font-lock-variable-name-face prepend))
+  ;; first function in quoted backquote expressions, "`cmd ...`"
+  (:quoted ?\" "`\\s-*\\([[:alnum:]_\\-]+\\)" (1 'sh-quoted-exec prepend))
+  ("\\(\\$\\)\\([$!@_A-Za-z]+\\)"
+   (1 'font-lock-misc-punctuation-face prepend)
+   (2 'font-lock-variable-name-face prepend))
+  ;; gaudy array faces
+  ("\\(\\$\\){\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
+   (1 'font-lock-misc-punctuation-face prepend)
+   (2 'nvp-italic-variable-face prepend)))
+
 ;; -------------------------------------------------------------------
 ;;; Locally available macros
 
@@ -47,20 +62,21 @@
 ;; create index to lookup autoconf macros ((macro . page) ...)
 (defun nvp-autoconf--create-index ()
   (when (file-exists-p nvp-autoconf-manual)
-   (with-temp-buffer
-     (call-process "pdftotext" nil t nil (file-truename nvp-autoconf-manual) "-")
-     (goto-char (point-min))
-     (search-forward "B.5 Autoconf Macro Index")
-     (let (res)
-       (while (not (or (looking-at-p "Appendix")
-                       (eobp)))
-         (and (looking-at nvp-autoconf-macro-regexp)
-              (push (cons (concat "AC_" (match-string-no-properties 1))
-                          (string-to-number (match-string-no-properties 2)))
-                    res))
-         (forward-line))
-       (nvp-autoconf--save-index res)
-       res))))
+    (with-temp-buffer
+      (call-process "pdftotext" nil t nil (file-truename nvp-autoconf-manual) "-")
+      (goto-char (point-min))
+      (when (and (search-forward "B.5 Autoconf Macro Index")
+                 (search-forward "Appendix"))
+        (forward-line 2)
+        (let (res)
+          (while (not (eobp))
+            (and (looking-at nvp-autoconf-macro-regexp)
+                 (push (cons (concat "AC_" (match-string-no-properties 1))
+                             (string-to-number (match-string-no-properties 2)))
+                       res))
+            (forward-line))
+          (nvp-autoconf--save-index res)
+          res)))))
 
 ;; give cache a unique name
 (defsubst nvp-autoconf--index-file ()

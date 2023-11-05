@@ -10,7 +10,7 @@
 (autoload 'find-library-name "find-func")
 
 (eval-and-compile
-  (defvar nvp-mark--regex "#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9.]+\\)>"))
+  (defvar nvp-mark--regex "#<marker at \\([^ \t\n]+\\) in \\([-a-zA-Z0-9./]+\\)>"))
 
 (defvar-local nvp-mark--fontified-p nil
   "Non-nil if marks in buffer are currently fontified")
@@ -56,10 +56,11 @@
       (list (xref-make (substring-no-properties ident) loc)))))
 
 (defun nvp-mark--filename (file)
-  (setq file (replace-regexp-in-string "\\..*$" "" file))
-  (condition-case nil
-      (find-library-name file)
-    (expand-file-name file default-directory)))
+  (or (ignore-errors (find-library-name (file-name-base file)))
+      (if (file-name-absolute-p file) file
+        (or (--> (expand-file-name file default-directory)
+                 (and (file-exists-p it) it))
+            (expand-file-name file user-emacs-directory)))))
 
 (defun nvp-mark--position (place)
   (if (numberp place) place
@@ -145,12 +146,12 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
             (with-silent-modifications
               (add-text-properties
                (match-beginning 0) (match-end 0)
-               `(display ,(format "#%s<%s>" file place)
+               `(display ,(format "#%s<%s>" (file-name-base file) place)
                          printed-value ,(match-string 0)
                          keymap ,nvp-mark-keymap
                          read-only t
                          file-place ,(cons file place)))))))
-     (0 'font-lock-constant-face t))))
+     (0 'font-lock-type-face t))))
 
 ;; remove special mark display when disabling fontification
 (defun nvp-mark--remove-display ()

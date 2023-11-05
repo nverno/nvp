@@ -1,0 +1,29 @@
+# -*- mode: snippet -*-
+# name: xref
+# key: xref
+# --
+(defun ${1:my}--xref-backend () '$1)
+
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql '$1)))
+  (completion-table-dynamic (lambda (_string) nil) 'switch))
+
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql '$1)))
+  (thing-at-point 'symbol))
+
+(cl-defstruct (xref-$1-location
+               (:constructor xref-make-$1-location (file pos)))
+  "$1 xref location."
+  file pos)
+
+(cl-defmethod xref-backend-definitions ((_backend (eql '$1)) identifier)
+  (-when-let (loc (xref-make-$1-location identifer (buffer-file-name)))
+    (list (xref-make identifer loc))))
+
+(cl-defmethod xref-location-marker ((l xref-$1-location))
+  (pcase-let (((cl-struct xref-$1-location file pos) l))
+    (let ((buf (and (file-exists-p file)
+                    (find-file-noselect file))))
+      (with-current-buffer buf
+        (save-excursion
+          (goto-char pos)
+          (point-marker))))))

@@ -129,7 +129,7 @@
     ("ywar" "yas-wrap-around-region" nil :system t)
     )
   "Snippet-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list prog-mode-abbrev-table emacs-lisp-mode-abbrev-table))
 
 (define-abbrev-table 'special-mode-abbrev-table '())
 

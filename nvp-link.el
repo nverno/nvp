@@ -39,7 +39,8 @@
                 ;; added
                 leetcode--problem-detail-mode
                 shellcheck-mode
-                process-menu-mode))
+                process-menu-mode
+                shortdoc-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-compilation))
               '(compilation-mode
                 grep-mode
@@ -58,8 +59,8 @@
                 eshell-mode
                 telega-chat-mode))
     ;; added
-    (shortdoc-mode               . ace-link-help)
     (shell-mode                  . nvp-link-shell)
+    (lsp-help-mode               . nvp-link-lsp-help)
     (markdown-mode               . nvp-link-markdown)
     (dired-mode                  . nvp-link-dired))
   "Mapping of `major-mode' to ace-link actions.")
@@ -249,6 +250,13 @@ With \\[universal-argument] call in next visible window."
   (when (numberp it)
     (goto-char (1+ it))
     (push-button it)))
+
+(nvp:decl lsp--help-open-link)
+(nvp:define-link nvp-link-lsp-help
+  :collector (--map (cdr it) (ace-link--help-collect))
+  (when (numberp it)
+    (goto-char (1+ it))
+    (funcall-interactively #'lsp--help-open-link)))
 
 ;;; Imenu
 (nvp:auto "nvp-imenu" 'nvp-imenu-cleaned-alist)

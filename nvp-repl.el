@@ -238,7 +238,9 @@ Each function takes a process as an argument to test against.")
           (if (nvp-repl-live-p proc)     ; found unregistered live one
               (nvp-repl-update proc (current-buffer) p-buff)
             (remhash p-buff nvp-repl--process-buffers))))
-      (or (nvp-repl-start prefix)       ; initialize new REPL
+      (or (--when-let (nvp-repl-start prefix)  ; initialize new REPL
+            (nvp-repl-minor-mode 1)
+            it)
           (user-error "Failed to initialize REPL"))))
 
 (defun nvp-repl-start-callback (&optional and-go)
@@ -323,9 +325,11 @@ PREFIX arguments:
   (when (equal '(16) prefix) (setq nvp-repl-current nil))
   (let ((buff (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
                   (if (buffer-live-p it) it
-                    (other-buffer (current-buffer) 'visible))
-                (prog1 (nvp-repl-get-buffer prefix)
-                  (nvp-repl-minor-mode 1)))))
+                    (puthash (current-buffer) nil nvp-repl--process-buffers)
+                    (user-error "Source buffer no longer alive")
+                    ;; (other-buffer (current-buffer) 'visible)
+                    )
+                (nvp-repl-get-buffer prefix))))
     (unless (eq 'async buff)
       (pop-to-buffer buff nvp-repl--display-action))))
 

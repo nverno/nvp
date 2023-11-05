@@ -10,7 +10,8 @@
 
 (define-advice lua-ts-inferior-lua (:around (orig-fn) "dont-be-dumb")
   (let ((display-buffer-overriding-action nvp-repl--display-action))
-    (funcall orig-fn)))
+    (save-window-excursion
+      (funcall orig-fn))))
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(lua-mode lua-ts-mode)

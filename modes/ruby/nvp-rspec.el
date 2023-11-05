@@ -12,6 +12,7 @@
        'symbols)
      (1 font-lock-function-name-face))))
 
+;;;###autoload
 (defun nvp-rspec-font-lock ()
   (font-lock-add-keywords 'ruby-mode nvp-rspec-font-lock-keywords))
 

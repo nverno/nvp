@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'avy)
-(nvp:decls :v (org-link-any-re) :f (ace-link ace-link-org))
+(nvp:decls :p (ace) :v (org-link-any-re) :f (ace-link--help-collect))
 
 (defvar nvp-link-default-imenu t
   "Jump to imenu in visibile window when no other handlers.")

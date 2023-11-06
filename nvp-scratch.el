@@ -28,11 +28,12 @@
         kill-buffer-query-functions)
     (kill-buffer (current-buffer))))
 
-(defvar nvp-scratch-minor-mode-map
-  (let ((km (make-sparse-keymap)))
-    (define-key km (kbd "C-c C-k") #'nvp-scratch-kill-buffer)
-    (define-key km (kbd "C-c C-s") #'nvp-scratch-switch-modes)
-    km))
+(eval-and-compile
+  (defvar nvp-scratch-minor-mode-map
+   (let ((km (make-sparse-keymap)))
+     (define-key km (kbd "C-c C-k") #'nvp-scratch-kill-buffer)
+     (define-key km (kbd "C-c C-s") #'nvp-scratch-switch-modes)
+     km)))
 
 ;;;###autoload
 (define-minor-mode nvp-scratch-minor-mode

@@ -4,7 +4,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-python)
 (require 'transient)
-;; (require 'gud)
+(nvp:decls :p (gud))
+
 
 ;;;###autoload(autoload 'nvp-python-debug-menu "nvp-python-debug")
 (transient-define-prefix nvp-python-debug-menu ()
@@ -33,30 +34,7 @@
   ;; buffer property after PDB starts?
   (call-interactively 'pdb))
 
-;;; PDB Hydra
-;; (nvp:hydra-set-property 'nvp-pdb-hydra :verbosity 1)
-;; (with-no-warnings
-;;   (defhydra nvp-pdb-hydra (:color amaranth
-;;                            :pre nvp-indicate-cursor-pre
-;;                            :post nvp-indicate-cursor-post)
-;;     ;; movement
-;;     ("h" backward-char nil)
-;;     ("j" next-line nil)
-;;     ("k" previous-line nil)
-;;     ("l" forward-char nil)
-;;     ;; pdb
-;;     ("b" nvp-python-toggle-breakpoint "pdb break")
-;;     ;; gud
-;;     ("C-b" gud-break "break")
-;;     ("c" gud-remove "clear")
-;;     ;; nose
-;;     ("a" nosetests-pdb-all "nose-all")
-;;     ("m" nosetests-pdb-module "nose-mod")
-;;     ("o" nosetests-pdb-one "nose1")
-;;     ;; quit
-;;     ("q" nil "exit")))
-
-;;; Debug
+;;; Breakpoints
 
 ;;;###autoload
 (defun nvp-python-annotate-breakpoints (&optional arg)

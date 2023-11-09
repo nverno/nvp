@@ -121,22 +121,25 @@ ROOT."
   ;; working directory
   (let ((root (f-parent (nvp-cmake--build-directory))))
     (--when-let (append (nvp-cmake--query-jq 'file-generated)
-                        (nvp-cmake--query-jq 'file-external))
+                        ;; (nvp-cmake--query-jq 'file-external)
+                        )
       (let ((default-directory root)
             (script (make-temp-file "cmake-api" nil ".cmake")))
         (with-temp-file script
           (dolist (file it)
-            (insert (format "include(\"%s\")\n" (expand-file-name file))))
+            (when (cl-member (f-ext file) '("cmake" "txt") :test #'string=)
+              (insert (format "include(\"%s\")\n" (expand-file-name file)))))
           (insert (f-read-text nvp-cmake--dump-vars)))
-        (with-current-buffer (get-buffer-create nvp-cmake--api-buffer)
-          (erase-buffer)
-          (call-process-shell-command
-           (format "%s -P %s" nvp-cmake-executable script) nil (current-buffer))
-          (goto-char (point-min))
-          (seq-filter (lambda (e) (not (string-match-p "CMAKE_ARG" (car e))))
-                      (read (current-buffer))))
-        (when (file-exists-p script)
-          (delete-file script))))))
+        (prog1 
+            (with-current-buffer (get-buffer-create nvp-cmake--api-buffer)
+              (erase-buffer)
+              (call-process-shell-command
+               (format "%s -P %s" nvp-cmake-executable script) nil (current-buffer))
+              (goto-char (point-min))
+              (seq-filter (lambda (e) (not (string-match-p "CMAKE_ARG" (car e))))
+                          (read (current-buffer))))
+          (when (file-exists-p script)
+            (delete-file script)))))))
 
 (defun nvp-cmake--query (type &optional query-fn)
   "Get results for query TYPE."

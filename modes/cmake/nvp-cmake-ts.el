@@ -120,7 +120,7 @@
 
 ;;; Indentation
 
-(defvar cmake-ts-mode-align-arguments nil
+(defvar cmake-ts-mode-align-arguments t
   "When non-nil, align all arguments in argument list with first argument.")
 
 (defun cmake-ts-mode--arg-anchor (&rest args)
@@ -134,7 +134,7 @@
   (if cmake-ts-mode-align-arguments 0 cmake-ts-mode-indent-offset))
 
 (setq cmake-ts-mode--indent-rules
-      `((cmake
+      '((cmake
          ((parent-is "source_file") parent 0)
          ((node-is ")") parent-bol 0)
          ((node-is "else_command") parent-bol 0)
@@ -147,7 +147,7 @@
          ((node-is "function_def") parent-bol 0)
          ((parent-is "if") parent-bol cmake-ts-mode-indent-offset)
          ((parent-is "body") grand-parent cmake-ts-mode-indent-offset)
-         ((match "" "argument_list" nil 1) cmake-ts-mode--arg-anchor
+         ((match "" "argument_list" nil 2) cmake-ts-mode--arg-anchor
           cmake-ts-mode--arg-offset)
          ((parent-is "argument_list") parent-bol cmake-ts-mode-indent-offset)
          ((node-is "argument") parent-bol cmake-ts-mode-indent-offset)
@@ -181,26 +181,26 @@
    :language 'cmake
    :feature 'builtin
    `(((foreach_command
-       ((argument_list (argument) @font-lock-constant-face)
+       ((argument_list (argument) @font-lock-keyword-face)
         (:match ,(rx-to-string
                   `(seq bol
                         (or ,@cmake-ts-mode--foreach-options)
                         eol))
-                @font-lock-constant-face))))
+                @font-lock-keyword-face))))
      ((if_command
-       ((argument_list (argument) @font-lock-constant-face)
+       ((argument_list (argument) @font-lock-keyword-face)
         (:match ,(rx-to-string
                   `(seq bol
                         (or ,@cmake-ts-mode--if-conditions)
                         eol))
-                @font-lock-constant-face))))
+                @font-lock-keyword-face))))
      (elseif_command
-      ((argument_list (argument) @font-lock-constant-face)
+      ((argument_list (argument) @font-lock-keyword-face)
        (:match ,(rx-to-string
                  `(seq bol
                        (or ,@cmake-ts-mode--if-conditions)
                        eol))
-               @font-lock-constant-face)))
+               @font-lock-keyword-face)))
      ((unquoted_argument) @font-lock-type-face
       ;; Message <mode>
       (:match ,(rx (or "STATUS" "WARNING" "ERROR" "DEBUG" "TRACE"

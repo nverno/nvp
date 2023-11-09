@@ -46,6 +46,18 @@
   ;; May need to restart emacs for shared grammar library to be loaded?
   (call-interactively #'treesit-install-language-grammar))
 
+(defun nvp-treesit-update (&optional parser)
+  "Update PARSER grammar or all grammars."
+  (interactive
+   (list (if current-prefix-arg
+             (intern
+              (completing-read "Language: "
+                               (mapcar #'car treesit-language-source-alist))))))
+  (let ((langs (if parser (list parser)
+                 (mapcar #'car treesit-language-source-alist))))
+    (dolist (lang langs)
+      (treesit-install-language-grammar lang))))
+
 ;; -------------------------------------------------------------------
 ;;; Dev Minor Mode
 
@@ -161,7 +173,8 @@
     ("l" "List nodes" ts-parser-list-nodes :transient t)
     ("L" "List parser sources" ts-util-list-sources :transient t)
     ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t)
-    ("i" "Install parser" nvp-treesit-install)]
+    ("i" "Install parser" nvp-treesit-install)
+    ("U" "Update parser(s)" nvp-treesit-update)]
    ["Dev Mode"
     ("m" "global" nvp-treesit-mode)
     ("M" "local" nvp-treesit-minor-mode)]

@@ -75,7 +75,11 @@
         `(transient-define-prefix nvp-gud-menu ()
            "GUD"
            :info-manual "Info (debugger)"
-           ,@menu)))))
+           ,@menu
+           (interactive)
+           (if (fboundp 'gud-minor-mode)
+               (transient-setup 'nvp-gud-menu)
+             (user-error "GUD not loaded")))))))
 
 ;;;###autoload(autoload 'nvp-gud-menu "nvp-debug")
 (nvp:def-gud-menu)

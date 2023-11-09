@@ -34,7 +34,7 @@
                        :null-object nil
                        :false-object :false))
 
-  (cl-defmacro nvp:with-api (&rest body &key root &allow-other-keys)
+  (cl-defmacro nvp:with-api (&rest body &key root (init-api t) &allow-other-keys)
     "Do BODY with \\='default-directory bound to cmake api directory.
 \\='it-project, \\='it-build and \\='it-api are bound to directories."
     (declare (indent defun))
@@ -42,7 +42,10 @@
     `(if-let* ((it-project (or ,root (nvp-project-root)))
                (it-build (nvp-cmake--build-directory it-project))
                (it-api (expand-file-name ".cmake/api/v1/" it-build)))
-         (if (f-directory-p it-api)
+         (if (or (f-directory-p it-api)
+                 ,(when init-api
+                     `(and (f-directory-p it-build)
+                           (prog1 t (make-directory it-api 'parents)))))
              (let ((default-directory it-api))
                ,@body)
            (user-error "Missing CMake api directory: %S" it-api))
@@ -54,7 +57,7 @@
 ROOT."
     (declare (indent 1))
     (nvp:skip-keywords body)
-    `(nvp:with-api :root ,root
+    `(nvp:with-api :root ,root :init-api t
        (if-let ((reply (f-glob (concat "reply/" ,reply-glob))))
            (progn ,@body)
          (user-error "Missing cmake api reply: api-dir: %S" default-directory))))
@@ -68,7 +71,7 @@ ROOT."
                     (cdr (assq ,type nvp-cmake-queries))))
          (unless jq-query (user-error "bad jq query %S" ,type))
          (nvp:with-reply ,glob
-           :root ,root
+           :root ,root :init-api t
            (let ((reply (if (length= reply 1) (car reply)
                           (cl-pushnew "-s" jq-args :test #'string=)
                           (mapconcat 'identity reply " "))))
@@ -84,13 +87,13 @@ ROOT."
           :proc-args (build-dir))
       (user-error "Missing cmake build directory: %S" build-dir))))
 
-(defun nvp-cmake--query-json (&optional root rebuild)
+(defun nvp-cmake--query-json (&optional root rerun)
   "Generate JSON query request for CMake file API and build."
-  (nvp:with-api :root root
+  (nvp:with-api :root root :init-api t
     (let* ((query-dir (expand-file-name "query/client-nvp/"))
            (query (expand-file-name "query.json" query-dir)))
       (make-directory query-dir t)
-      (when (or rebuild (not (file-exists-p query)))
+      (when (or rerun (not (file-exists-p query)))
         (with-temp-file query
           (insert "{
   \"requests\": [
@@ -148,22 +151,22 @@ ROOT."
 ;; -------------------------------------------------------------------
 ;;; Interface
 
-(defun nvp-cmake-ensure-query (&optional root init rebuild)
+(defun nvp-cmake-ensure-query (&optional root init rerun)
   "Ensure query is run in cmake project ROOT.
 If INIT, run cmake build if it hasn't been run.
-If REBUILD, run query even if it has already run."
+If RERUN, re-run cmake api query even if it has already run."
   (--if-let (nvp-cmake-project-p root)
       (let ((build-dir (nvp-cmake--build-directory it)))
         (unless (file-exists-p build-dir)
           (and init (nvp-cmake--build it 'init)))
-        (nvp-cmake--query-json it rebuild))
+        (nvp-cmake--query-json it rerun))
     (user-error "Not in a recognized cmake project")))
 
 ;;;###autoload
-(defun nvp-cmake-completing-read (&optional type prompt rebuild)
+(defun nvp-cmake-completing-read (&optional type prompt rerun)
   "Completing read for cmake target, or TYPE, with PROMPT.
 TYPE is entry from `nvp-cmake-queries'."
-  (nvp-cmake-ensure-query nil 'init rebuild)
+  (nvp-cmake-ensure-query nil 'init rerun)
   (let* ((vals (nvp-cmake--query (or type 'target)))
          (choice
           (completing-read
@@ -171,13 +174,13 @@ TYPE is entry from `nvp-cmake-queries'."
     (assoc-string choice vals)))
 
 ;;;###autoload
-(defun nvp-cmake-list (type &optional rebuild)
-  "List computed cmake values of TYPE."
-  (interactive
-   (list (intern (completing-read "Type: " (mapcar #'car nvp-cmake-queries)))
-         current-prefix-arg))
-  (nvp-cmake-ensure-query nil 'init rebuild)
-  (let ((res (nvp-cmake--query type)))
+(defun nvp-cmake-list (&optional rerun)
+  "List computed cmake values, prompting for type.
+With prefix arg, RERUN cmake query beforehand."
+  (interactive "P")
+  (nvp-cmake-ensure-query nil 'init rerun)
+  (let* ((type (intern (completing-read "Type: " (mapcar #'car nvp-cmake-queries))))
+         (res (nvp-cmake--query type)))
     (nvp:with-results-buffer :title (format "Cmake %S" type)
       (dolist (v res)
         (pp v)))))

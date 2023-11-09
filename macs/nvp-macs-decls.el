@@ -241,6 +241,10 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; indication
        nvp-indicate-pulse-region-or-line
        nvp-indicate-modeline
+       ;; Repeat
+       nvp-repeat-abort
+       nvp-indicate-abort
+       nvp-repeat-set-cursor
        nvp-indicate-cursor-pre
        nvp-indicate-cursor-post
        ;; procs / inf

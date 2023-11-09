@@ -1,25 +1,18 @@
-;;; nvp-nodejs.el --- REPL -*- lexical-binding: t; -*-
+;;; nvp-nodejs.el --- Node REPL -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;
-;; (3/17/20) not very useful ATM
-;;; XXX:
-;; - can't ever load anything into it
+;;; FIXME:
 ;; - doesn't support imports AFAICT => (11/23/20) node doesn't
 ;; - doesn't seem to find libraries by default, probably need some config
 ;; - no redefinition of symbols -- even when let bound or null...
-;; - the process seems to randomly interfere with comint, dumping junk in
-;;   the console, fuckin w/ the input
-;; - the current design involves a barrage of `comint-output-filter-functions'
-;;   which fucks with xterm-color processing
-;;
 ;; Would it work to use babel to convert es6 modules to requireJS format
 ;; recognized by the REPL?
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-js)
-(nvp:decls :p (nodejs) :v (nvp-trace-group-alist))
+(unless (featurep 'nvp-js) (require 'nvp-js))
+(nvp:decls :p (nodejs) :v (nvp-trace-group-alist nvp-js-modes))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")

@@ -3,8 +3,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-js)
-(nvp:decls :p (skewer web html css) :f (list-skewer-clients run-skewer))
+(unless (featurep 'nvp-js) (require 'nvp-js))
+(nvp:decls :p (skewer web html css) :f (list-skewer-clients run-skewer)
+           :v (nvp-js-modes))
 
 (with-eval-after-load 'nvp-repl
   (when (fboundp 'skewer-repl)

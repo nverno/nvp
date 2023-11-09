@@ -94,3 +94,9 @@
   '()
   "Geiser-Repl-Mode Abbrevs."
   :enable-function #'nvp-scheme-repl-init-abbrevs)
+
+(define-abbrev-table 'racket-repl-mode-abbrev-table
+  '()
+  "Racket-Repl-Mode Abbrevs."
+  :enable-function #'nvp-abbrev-expand-p
+  :parents (list racket-mode-abbrev-table))

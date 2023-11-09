@@ -4,10 +4,11 @@
 ;; > npm i ts-node typescript
 ;; and this should setup ts-comint to work properly with node module binary
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
 (require 'ts-comint nil t)
-(require 'nvp-ts)
-(nvp:decls :p (ts add-node) :v (ts-comint-buffer) :f (run-ts))
+(unless (featurep 'nvp-ts) (require 'nvp-ts))
+(nvp:decls :p (ts add-node) :v (ts-comint-buffer nvp-typescript-modes) :f (run-ts))
 
 (defun nvp-ts-repl-program ()
   (when (require 'add-node-modules-path nil t)

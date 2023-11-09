@@ -2,33 +2,26 @@
 ;;
 ;;; Commentary:
 ;;
-;; TODO
-;; ~~~~~~~~~~~~~~
-;; - REPLs => nodejs, skewer, indium (none have worked very well)
-;;   - Need to be able to reevaluate consts -- indium was able to solve that
-;;     problem -- look there
-;;   - process-filter bug -- xterm-color related probably
-;;   - random input from REPL breaks user input
-;;   - fix blocking, eg. accept-process-output loop or something
-;;   - Debugger is less important since devtools are really good
-;; - js2-xref: rarely produces anything very useful -- probably needs config +
-;;   it relies on ag/rg, not real parsing
-;; - debugging w/ indium supposed to work with both Chrome and node, but I've
-;;   found it to be pretty sporadic, often failing to connect -- my configuration
-;;   probably has problems
-;; - good documentation - even for builtin JS functions, should at least be able
-;;   to easily jump to online documentation
-;;   Need help-at-point for both JS functions and React functions
+;; Help refs:
+;; - React: https://reactjs.org/docs/{react-component.html}
+;; - npm docs <library> name launches site in browser
+;;
+;; TODO:
+;; - REPLs => nodejs, skewer, indium
+;;   - [✓] process-filter bug -- xterm-color related probably
+;;   - [✓] random input from REPL breaks user input
+;;   - [✓] fix blocking, eg. accept-process-output loop or something
+;;   - Need to be able to reevaluate consts (indium solved this)
+;;   - [ ] debugging w/ indium supposed to work with both Chrome and node
+;;     Fix configuration to solve failing connections
+;; - help-at-point for React
 ;; - The default npm config with projectile is bare
-;; - npm interface - probably not worth the effort, since the shell works just
-;;   fine
-;; - Add local binary paths when in project: add-node-modules-path
 ;; - Package.json parser:
 ;;   - get list script targets for projectile-run/test/compile commands
 ;;   - Create basic projectile npm/react project runners
 ;; - Add react 31s snippets?  Problem is they may contain CSS as well
-;;
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
 (require 'js)
 (require 'js2-mode nil t)
@@ -48,12 +41,17 @@
 
 ;;; REPLs
 (with-eval-after-load 'nvp-repl
-  (require 'nvp-nodejs)
-  (require 'nvp-skewer)
+  ;; FIXME: indium
   ;; (require 'nvp-indium)
-  )
+  (require 'nvp-nodejs)
+  (require 'nvp-skewer))
 
-;; -------------------------------------------------------------------
+;;; Httpd server
+(defun nvp-httpd-here ()
+  (interactive)
+  (setq httpd-root default-directory)
+  (httpd-start))
+
 ;;; Toggle b/w JsX <=> JS
 ;; JsX options (3/7/20): rjsx (better), or js-jsx-mode w/ js2-minor-mode
 (eval-when-compile
@@ -79,7 +77,6 @@
        (nvp:js-switch-mode 'rjsx-mode))
       (_ (user-error "%S not matched against any JsX modes" major-mode)))))
 
-;; -------------------------------------------------------------------
 ;;; Font locking
 
 ;; shebang in node scripts not recognized by js2
@@ -97,25 +94,8 @@
   (syntax-propertize-rules
    ("\\`\\(#\\)!.*/[^ \t\n]+" (1 "!"))))
 
-;; -------------------------------------------------------------------
-;;; Help
-;;
-;; - React: https://reactjs.org/docs/{react-component.html}
-;; - npm docs <library> name launches site in browser
+;;; Snippets
 
-;;; FIXME: use hap
-(defun nvp-js-help-at-point ()
-  (interactive)
-  (cond
-   ((member 'js2-echo-error (get-text-property (point) 'cursor-sensor-functions))
-    (js2-display-error-list))
-   (t (when (fboundp 'tern-get-docs)
-        (tern-get-docs)))))
-
-;; -------------------------------------------------------------------
-;;; Assorted
-
-;;; yas
 (defun nvp-js-test-p ()
   (or (string-match-p "\\(?:test\\|spec\\)" (nvp:dfn))
       (string-match-p ".*test\\.js\\'" (nvp:bfn))))
@@ -123,15 +103,7 @@
 ;; in template string `...`
 (defun nvp-js-in-template-p () (eq ?\` (nvp:ppss 'str)))
 
-;;; http server: httpd
-(defun nvp-httpd-here ()
-  (interactive)
-  (setq httpd-root default-directory)
-  (httpd-start))
-
-;; -------------------------------------------------------------------
 ;;; Setup
-
 ;; from spacemacs
 (defun nvp-js-jsx-file-p ()
   "Enable rsjx mode using `magic-mode-alist'."

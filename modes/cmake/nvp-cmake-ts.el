@@ -238,27 +238,27 @@
 
 ;;; Imenu
 
-(defun cmake-ts-mode--imenu-p (node)
+(defun cmake-ts-mode--imenu-p (type node)
   (pcase (treesit-node-type node)
     (`"normal_command"
-     (string-match-p
-      (rx bos (or "add_custom_target") eos)
+     (string-match-p (rx-to-string `(seq bos ,type eos))
       (treesit-node-text
        (treesit-node-child node 0))))
     (_ nil)))
 
 (defun cmake-ts-mode--defun-name (node)
   (treesit-node-text
-   (treesit-node-child 
-    (treesit-search-subtree
-     node "argument_list"
-     nil t 1)
-    0 t)))
+   (treesit-node-child
+    (treesit-search-subtree node "argument_list" nil t 1)
+    0 'named)))
 
 (defvar cmake-ts-mode--imenu-settings
-  '(("Function" "\\`function_command\\'")
+  `(("Function" "\\`function_command\\'")
     ("Macro" "\\`macro_command\\'")
-    ("Target" "\\`normal_command\\'" cmake-ts-mode--imenu-p)))
+    ("Target" "\\`normal_command\\'"
+     ,(apply-partially #'cmake-ts-mode--imenu-p "add_custom_target"))
+    ("Option" "\\`normal_command\\'"
+     ,(apply-partially #'cmake-ts-mode--imenu-p "option"))))
 
 ;; Update `cmake-ts-mode'
 (setq cmake-ts-mode--font-lock-settings

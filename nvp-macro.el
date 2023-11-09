@@ -1383,6 +1383,7 @@ and set `this-command' to nil so opposite happens next time."
 (cl-defmacro nvp:defmethod (method args &rest body &key modes &allow-other-keys)
   (declare (indent defun) (debug t))
   (nvp:skip-keywords body)
+  (when (symbolp modes) (setq modes (eval modes)))
   (macroexp-progn
    (cl-loop for mode in modes
             collect `(cl-defmethod ,method

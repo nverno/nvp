@@ -19,12 +19,15 @@
    (list
     (let ((default (or (ignore-errors (symbol-name gud-minor-mode)) "gdb")))
       (read-from-minibuffer
-       (nvp:prompt-default "Mode: " default) nil nil nil nil default))))
+       (nvp:prompt-default "Mode: " default) default nil nil nil default))))
   (or name (setq name (if gud-minor-mode (symbol-name gud-minor-mode) "gdb")))
   (nvp-comint-setup-history (concat ".gud_" name "_history")))
 
 ;; -------------------------------------------------------------------
 ;;; Transient
+
+(nvp:def-transient-toggle-vars nvp-gud-menu
+  gud-highlight-current-line)
 
 (eval-when-compile
   (defmacro nvp:def-gud-menu ()
@@ -65,21 +68,22 @@
                (vector "GUD"
                        (cmd "R" "Refresh" gud-refresh)
                        (cmd "k" "Stop" gud-stop-subjob)
-                       (cmd "?" "Info (debug)" gud-goto-info))
-               (vector
-                :if (lambda ()
-                      (memq gud-minor-mode
-                            '(gdbmi lldb guiler dbx sdb xdb pdb)))
-                "Layout"
-                '("T" "Show GUD tooltips" gud-tooltip-mode))))))
+                       (cmd "?" "Info (debug)" gud-goto-info)))
+              ["Settings"
+               (":l" "Highlight current line"
+                nvp-gud-menu--toggle-gud-highlight-current-line)
+               ;; :if (lambda () (memq gud-minor-mode '(gdbmi lldb guiler dbx sdb xdb pdb)))
+               (":t" "Enable GUD tooltip mode" gud-tooltip-mode)])))
         `(transient-define-prefix nvp-gud-menu ()
            "GUD"
            :info-manual "Info (debugger)"
            ,@menu
            (interactive)
-           (if (fboundp 'gud-minor-mode)
-               (transient-setup 'nvp-gud-menu)
-             (user-error "GUD not loaded")))))))
+           (transient-setup 'nvp-gud-menu)
+           ;; (if (fboundp 'gud-minor-mode)
+           ;;     (transient-setup 'nvp-gud-menu)
+           ;;   (user-error "GUD not loaded"))
+           )))))
 
 ;;;###autoload(autoload 'nvp-gud-menu "nvp-debug")
 (nvp:def-gud-menu)

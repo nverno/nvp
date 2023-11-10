@@ -1,0 +1,6 @@
+;; -*- coding: utf-8; -*-
+
+(define-abbrev-table 'json-mode-abbrev-table
+  '()
+  "Json-Mode Abbrevs."
+  :parents nil)

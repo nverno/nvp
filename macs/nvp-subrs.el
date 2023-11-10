@@ -227,6 +227,12 @@ or (\\='a #\\='b) => \\='(a b)."
 ;; -------------------------------------------------------------------
 ;;; Buffers
 
+(defsubst nvp:line-empty-p (&optional n)
+  (and (not (bobp))
+       (save-excursion
+	 (beginning-of-line (or n 1))
+	 (looking-at-p "[ \t]*$"))))
+
 ;; -------------------------------------------------------------------
 ;;; Files
 

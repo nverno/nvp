@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: debug print
+# key: dbg
+# --
+echo -e "\e[01;33mdebug\e[0m: $1 = \$${2:\{}$1${2:$($s? \"[*]\}\")}"

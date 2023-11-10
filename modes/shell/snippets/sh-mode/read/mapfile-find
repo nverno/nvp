@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mapfile ... < <(find ...)
+# key: mff
+# --
+mapfile -t ${1:files} < <(find . -type f -iname $2)

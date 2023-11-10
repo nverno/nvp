@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: shebang
+# key: !
+# --
+#!/usr/bin/swipl -q ${1:-t `(nvp-yas-bfn)` -f}
+
+$0
+
+%% Local Variables:
+%% mode: prolog
+%% End:

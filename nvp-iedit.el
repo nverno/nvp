@@ -21,13 +21,13 @@
 
 ;; Add iedit bindings
 (nvp:bindings iedit-mode-keymap :now
-  ("C-=" . nvp-iedit-cycle-regions)
-  ("M-o" . nil)
-  ("M-O" . nvp-iedit-occur))
+  ("M-C-;" . nvp-iedit-cycle-regions)
+  ("M-o"   . nil)
+  ("M-O"   . nvp-iedit-occur))
 
 (defvar-keymap nvp-repeat-iedit-cycle-map
   :repeat t
-  "=" #'nvp-iedit-cycle-regions)
+  ";" #'nvp-iedit-cycle-regions)
 
 (defun nvp-iedit-occur ()
   "Call `occur' with current `iedit-current-occurrence-string'."

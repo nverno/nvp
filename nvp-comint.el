@@ -25,28 +25,34 @@
 
 ;;; History
 
-(defun nvp-comint-history-remove-duplicates ()
-  "Remove duplicates from history and write history file."
+;;;###autoload
+(defun nvp-comint-history-remove-duplicates (&optional silent)
+  "Remove duplicates from history and write history file.
+Prompt unless SILENT or `noninteractive'."
   (interactive)
+  (and noninteractive (setq silent t))
   (let ((proc (nvp:buffer-process)))
-    (when (and (processp proc)
-               (derived-mode-p 'comint-mode)
-               (not (null comint-input-ring-file-name)))
+    (unless (and (processp proc)
+                 (derived-mode-p 'comint-mode)
+                 (not (null comint-input-ring-file-name)))
+      (user-error "No comint history in this buffer."))
+    (when (or silent (y-or-n-p "Remove history duplicates?"))
       (let* ((history-buf (get-buffer-create " *Temp Input History*"))
              (ring comint-input-ring)
              (file comint-input-ring-file-name)
-             (index (ring-length ring))
+             (initial-size (ring-length ring))
+             (index initial-size)
              (hash (make-hash-table :test #'equal))
-             (hist
-              (let ((h ()) str)
-                (while (> index 0)
-                  (setq index (1- index))
-                  (setq str (ring-ref ring index))
-                  (unless (gethash str hash nil)
-                    (puthash str 1 hash)
-                    (push str h)))
-                h))
-             (index (length hist)))
+             (hist (let ((h ()) str)
+                     (while (> index 0)
+                       (setq index (1- index))
+                       (setq str (ring-ref ring index))
+                       (unless (gethash str hash nil)
+                         (puthash str 1 hash)
+                         (push str h)))
+                     h))
+             (final-size (length hist))
+             (index final-size))
         (with-current-buffer history-buf
           (erase-buffer)
           (while (> index 0)
@@ -54,7 +60,11 @@
             (insert (nth index hist) comint-input-ring-separator))
           (write-region (buffer-string) nil file nil 'no-message)
           (kill-buffer nil))
-        (comint-read-input-ring)))))
+        (comint-read-input-ring 'silent)
+        (unless silent
+          (nvp:msg "%s reduced from %s to %s" :append t
+            :clobber "Remove history"
+            (file-name-nondirectory file) initial-size final-size))))))
 
 
 ;; use if wanting to read history file over tramp connection

@@ -10,13 +10,12 @@
 (defun nvp-scratch-switch-modes (mode &optional activate)
   "Switch major modes in scratch buffer."
   (interactive (list (intern (nvp-read-mode))))
-  (cond
-   ((provided-mode-derived-p mode 'emacs-lisp-mode)
-    (setq mode 'lisp-interaction-mode))
-   ((provided-mode-derived-p mode 'comint-mode)
-    (setq mode 'sh-mode))
-   (t (and activate                     ;default when jumping to new scratch
-           (setq mode 'lisp-interaction-mode))))
+  (cond ((provided-mode-derived-p mode 'emacs-lisp-mode)
+         (setq mode 'lisp-interaction-mode))
+        ((provided-mode-derived-p mode 'comint-mode)
+         (setq mode 'sh-mode))
+        (t (and activate                ; default when jumping to new scratch
+                (setq mode 'lisp-interaction-mode))))
   ;; TODO: don't clobber used scratch buffer - cache by modified tick?
   (or (eq mode major-mode) (funcall mode))
   (or (bound-and-true-p nvp-scratch-minor-mode) (nvp-scratch-minor-mode)))

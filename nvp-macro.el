@@ -129,15 +129,15 @@ If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
   "Repeat `this-command' on last basic input or KEY.
 Don't change cursor when NO-INDICATE."
   (let ((repeat-key (or key `(nvp:input 'lbi))))
-   `(when (and (null overriding-terminal-local-map)
-               (not (memq this-command `(,last-command nvp--repeat))))
-      ,@(unless no-indicate '((nvp-indicate-cursor-pre)))
-      (set-transient-map
-       (let ((map (make-sparse-keymap)))
-         (define-key map (vector ,repeat-key) this-command)
-         map)
-       t
-       ,@(unless no-indicate '((lambda () (nvp-indicate-cursor-post))))))))
+    `(when (and (null overriding-terminal-local-map)
+                (not (memq this-command `(,last-command nvp--repeat))))
+       ,@(unless no-indicate '((nvp-indicate-cursor-pre)))
+       (set-transient-map
+        (let ((map (make-sparse-keymap)))
+          (define-key map (vector ,repeat-key) this-command)
+          map)
+        t
+        ,@(unless no-indicate '((lambda () (nvp-indicate-cursor-post))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Output / Messages
@@ -237,8 +237,9 @@ CLOBBER can be specify a message prefix to clobber instead of appending to."
              (message ,msg)))))))
 
 
-(cl-defmacro nvp:msg (fmt &rest args &key keys delay duration append keymap
-                          test &allow-other-keys)
+(cl-defmacro nvp:msg (fmt &rest args
+                          &key test delay duration keys keymap append clobber
+                          &allow-other-keys)
   "Print message FMT with ARGS.
 
 If TEST is non-nil, message will only be displayed if it evaluates
@@ -258,20 +259,26 @@ The original message will be restored after DELAY + DURATION when those
 are both specified."
   (declare (indent defun) (debug (sexp &rest form)))
   (nvp:skip-keywords args)
-  (let ((message (if keys (let ((overriding-local-map (eval keymap)))
-                            (format (substitute-command-keys fmt) args))
-                   (format fmt args))))
+  (macroexp-let2 nil message
+                 (if keys `(let ((overriding-local-map (eval ',keymap)))
+                             (format (substitute-command-keys ,fmt) ,@args))
+                   `(format ,fmt ,@args))
     (nvp:with-syms (orig-msg)
-      (let ((do-msg `(let ((message-log-max nil))
-                       (or (minibufferp)
-                           ,@(when test
-                               `((not ,(if (functionp test) `(funcall ,test) `,test))))
-                           ,(if append
-                                `(message
-                                  (if-let ((cur (current-message)))
-                                      (concat cur " [" ,message "]")
-                                    ,message))
-                              `(message ,message))))))
+      (let ((do-msg
+             `(let ((message-log-max nil))
+                (or (minibufferp)
+                    ,@(when test
+                        `((not ,(if (functionp test) `(funcall ,test) `,test))))
+                    ,(if append
+                         `(message
+                           (if-let ((cur (current-message)))
+                               ,(if clobber
+                                    `(if (string-prefix-p ,clobber cur)
+                                         ,message
+                                       (concat cur " [" ,message "]"))
+                                  `(concat cur " [" ,message "]"))
+                             ,message))
+                       `(message ,message))))))
         (if append do-msg
           (let ((msg `(function (lambda () ,do-msg)))
                 (post-msg

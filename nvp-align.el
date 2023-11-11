@@ -49,7 +49,8 @@
 ;; better to use `align-mode-rules-list' to account for comments/strings
 ;;;###autoload
 (defun nvp-align-comments (beg end)
-  (interactive "*r")
+  (interactive (nvp:with-region beg end 'paragraph :pulse t
+                 (list beg end)))
   (let ((start (regexp-quote (string-trim comment-start)))
         indent-tabs-mode align-to-tab-stop)
     (if (not (eq major-mode 'c-mode))

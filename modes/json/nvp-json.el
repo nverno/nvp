@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'json-ts-mode nil t)
-(nvp:decls :p (json))
+(nvp:decls :p (json jsons))
 
 (defvar nvp-json-syntax-table)
 (with-eval-after-load 'json-ts-mode
@@ -78,6 +78,16 @@ With the :node executor, \"it\" is bound to the BODY json."
         (insert node)
         (shell-command-on-region (point-min) (point-max) "node -p" nil 't)
         (buffer-string))))))
+
+(nvp:auto "nvp-hap" nvp-hap-doc-buffer)
+(defun nvp-hap-json (command &optional _arg &rest _args)
+  (cl-case command
+    (thingatpt (jsons-get-path))
+    (doc-buffer
+     (let* ((py-path (jsons-print-path-python))
+            (jq-path (jsons-print-path-jq)))
+       (list (nvp-hap-doc-buffer
+              (format "jq: %s\npython: %s" py-path jq-path)))))))
 
 (provide 'nvp-json)
 ;;; nvp-json.el ends here

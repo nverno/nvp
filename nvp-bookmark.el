@@ -77,6 +77,17 @@ behaviour of default)."
     (funcall-interactively #'bookmark-load))
   (call-interactively #'bookmark-bmenu-list))
 
+(defun nvp-bookmark-remove-duplicates ()
+  "Remove bookmarks that have same \\='filename and \\='position."
+  (interactive)
+  (->> (seq-uniq
+        bookmark-alist
+        (lambda (a b)
+          (and (eq (assoc-default 'position a) (assoc-default 'position b))
+               (string= (assoc-default 'filename a) (assoc-default 'filename b)))))
+       (setq bookmark-alist))
+  (when (derived-mode-p 'bookmark-bmenu-mode)
+    (revert-buffer)))
 
 
 ;; -------------------------------------------------------------------

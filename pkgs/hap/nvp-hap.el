@@ -136,7 +136,8 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 
 (defun nvp-hap-install-keymap ()
   (nvp-indicate-cursor-pre)
-  (set-transient-map nvp-hap-keymap t #'nvp-hap-uninstall-keymap))
+  (set-transient-map
+   nvp-hap-keymap t #'nvp-hap-uninstall-keymap (not nvp-hap-verbose)))
 
 
 ;; -------------------------------------------------------------------
@@ -149,18 +150,15 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 (defun nvp-hap-doc-buffer (&optional string)
   (with-current-buffer (get-buffer-create "*hap-documentation*")
     (erase-buffer)
-    (when string
-      (save-excursion (insert string)))
+    (and string (save-excursion (insert string)))
     (current-buffer)))
 
 (defun nvp-hap-get-doc-buffer (&optional prefix)
   (or (and nvp-hap--doc-buffer (buffer-live-p (car nvp-hap--doc-buffer))
            nvp-hap--doc-buffer)
       (and nvp-hap--thingatpt
-           (-when-let (buf
-                       (nvp-hap-call-backend 'doc-buffer nvp-hap--thingatpt prefix))
-             (setq nvp-hap--doc-buffer buf)
-             buf))))
+           (setq nvp-hap--doc-buffer
+                 (nvp-hap-call-backend 'doc-buffer nvp-hap--thingatpt prefix)))))
 
 (defun nvp-hap-pop-to-buffer ()
   (interactive)
@@ -236,12 +234,12 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 
 (defun nvp-hap-show-popup (&optional prefix)
   (when nvp-hap--thingatpt
-   (-when-let (doc (nvp-hap--docstring nvp-hap--thingatpt prefix))
-     (let ((x-gtk-use-system-tooltips nil))
-       (unless (x-hide-tip)
-         (pos-tip-show-no-propertize
-          doc nil nil nil nvp-hap-popup-timeout
-          (pos-tip-tooltip-width (window-width) (frame-char-width))))))))
+    (-when-let (doc (nvp-hap--docstring nvp-hap--thingatpt prefix))
+      (let ((x-gtk-use-system-tooltips nil))
+        (unless (x-hide-tip)
+          (pos-tip-show-no-propertize
+           doc nil nil nil nvp-hap-popup-timeout
+           (pos-tip-tooltip-width (window-width) (frame-char-width))))))))
 
 
 ;; -------------------------------------------------------------------
@@ -255,28 +253,25 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 (defvar-local nvp-hap--disabled-backends nil)
 (defvar-local nvp-hap--treesit-p nil)
 
-(defun nvp-hap--msg-fontify (type str)
-  (put-text-property 
-   0 (length str) 'face `(:foreground
-                          ,(pcase type
-                             ('info "blue")
-                             ('warn "yellow")
-                             ('error "red")))
-   str)
-  str)
+(defconst nvp-hap--message-type-face
+  `((1 . ,compilation-error-face)
+    (2 . ,compilation-warning-face)
+    (3 . ,compilation-info-face)
+    (4 . (:foreground "#61ACBB" :weight bold))));; ,compilation-info-face
+
+(defun nvp-hap--propertize (type str)
+  (propertize str 'face (alist-get type nvp-hap--message-type-face)))
 
 (defun nvp-hap-message (type msg &rest args)
   (when nvp-hap-verbose
-    (let ((backend (cond
-                    ((null nvp-hap-backend))
-                    ((symbolp nvp-hap-backend)
-                     (symbol-name nvp-hap-backend))
-                    ((plistp nvp-hap-backend)
-                     (symbol-name (plist-get nvp-hap-backend :backend)))
-                    (t (format "%S" nvp-hap-backend)))))
+    (let ((backend (cond ((null nvp-hap-backend))
+                         ((symbolp nvp-hap-backend)
+                          (symbol-name nvp-hap-backend))
+                         ((plistp nvp-hap-backend)
+                          (symbol-name (plist-get nvp-hap-backend :backend)))
+                         (t (format "%S" nvp-hap-backend)))))
       (apply #'message
-             (concat (nvp-hap--msg-fontify type "[hap] ")
-                     backend (and backend ": ") msg)
+             (concat (nvp-hap--propertize type (or backend "[hap]")) ": " msg)
              args))))
 
 (defun nvp-hap-call-backend (&rest args)
@@ -303,8 +298,8 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
           (put backend 'hap-init t))
       (error
        (put backend 'hap-init 'failed)
-       (message "Hap backend '%s' failed to initialize:\n%s"
-                backend (error-message-string err))
+       (nvp-hap-message 1 "Hap backend '%s' failed to initialize:\n%s"
+                        backend (error-message-string err))
        (push backend nvp-hap--disabled-backends)
        nil)))
    ((functionp backend) t)
@@ -340,15 +335,14 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
             (setq nvp-hap-backend backend
                   nvp-hap--thingatpt sym
                   nvp-hap--doc-buffer nil)
-            (nvp-hap-message 'info "found %S" sym)
+            (nvp-hap-message 4 "found %S" sym)
             (when (or (nvp-hap-show-popup prefix)
                       (nvp-hap-show-doc-buffer prefix))
               (cl-return sym)))
-        (error
-         (let ((nvp-hap-backend backend))
-           (nvp-hap-message 'error "error: %s" (error-message-string err)))
-         (setq nvp-hap-backend nil
-               nvp-hap--thingatpt nil))))))
+        (error (let ((nvp-hap-backend backend))
+                 (nvp-hap-message 1 "%s" (error-message-string err)))
+               (setq nvp-hap-backend nil
+                     nvp-hap--thingatpt nil))))))
 
 (defsubst nvp-hap--backend-sym (sym)
   (if (plistp sym) (plist-get sym :backend) sym))
@@ -375,21 +369,18 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
   (nvp-hap-cancel)
   (nvp-hap--treesit-maybe-init)
   (let ((nvp-help-at-point-functions
-         (cond
-          ((eq 64 (prefix-numeric-value prefix))
-           (list (nvp-hap-choose-backend)))
-          (t nvp-help-at-point-functions))))
+         (cond ((eq 64 (prefix-numeric-value prefix))
+                (list (nvp-hap-choose-backend)))
+               (t nvp-help-at-point-functions))))
     (condition-case-unless-debug err
         (if (nvp-hap--begin prefix)
             (nvp-hap-install-keymap)
           (user-error "Nothing interesting here"))
-      (user-error
-       (nvp-hap-cancel)
-       (user-error "%s" (error-message-string err)))
-      (error
-       (nvp-hap-cancel)
-       (message "%s" (error-message-string err)))
+      (user-error (user-error (error-message-string err)))
+      (error (nvp-hap-cancel)
+             (nvp-hap-message 1 "%s" (error-message-string err)))
       (quit (nvp-hap-cancel)))))
+
 
 ;;;###autoload
 (defun nvp-hap-company (command &optional arg &rest _args)
@@ -431,11 +422,13 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
      (save-window-excursion
        (let ((display-buffer-overriding-action
               '(nil . ((inhibit-switch-frame . t)))))
-         (when (cond
-                ((fboundp arg) (describe-function arg))
-                ((boundp arg) (describe-variable arg))
-                (t nil))
-           (list (help-buffer) (point-min) nil)))))))
+         (when (or (fboundp arg) (boundp arg))
+           (with-current-buffer (help-buffer)
+             (cl-letf (((symbol-function #'message) (symbol-function #'ignore)))
+               (if (fboundp arg)
+                   (describe-function arg)
+                 (describe-variable arg)))
+             (list (current-buffer) (point-min) nil))))))))
 
 (provide 'nvp-hap)
 ;;; nvp-hap.el ends here

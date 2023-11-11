@@ -29,6 +29,12 @@
   :repeat t
   ";" #'nvp-iedit-cycle-regions)
 
+(defvar-keymap nvp-repeat-iedit-prev-map
+  :repeat t
+  "SPC" #'iedit-prev-occurrence)
+(put 'iedit-prev-occurrence 'repeat-check-key 'no)
+
+
 (defun nvp-iedit-occur ()
   "Call `occur' with current `iedit-current-occurrence-string'."
   (interactive)

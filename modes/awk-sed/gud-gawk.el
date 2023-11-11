@@ -8,8 +8,24 @@
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls)
 (require 'gud)
+(nvp:decls)
+
+(declare-function gud-statement "gud" (arg))
+(declare-function gud-until     "gud" (arg))
+(declare-function gud-pv        "gud" (arg))
+(declare-function gud-print     "gud" (arg))
+(declare-function gud-down      "gud" (arg))
+(declare-function gud-up        "gud" (arg))
+(declare-function gud-jump      "gud" (arg))
+(declare-function gud-finish    "gud" (arg))
+(declare-function gud-cont      "gud" (arg))
+(declare-function gud-next      "gud" (arg))
+(declare-function gud-stepi     "gud" (arg))
+(declare-function gud-step      "gud" (arg))
+(declare-function gud-remove    "gud" (arg))
+(declare-function gud-tbreak    "gud" (arg))
+(declare-function gud-break     "gud" (arg))
 
 (defcustom gud-gawkdb-command-name "gawk -D -f %f"
   "Command that executes the Gawk debugger."

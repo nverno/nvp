@@ -46,3 +46,24 @@
 
 (put 'nvp-repeat-command 'lisp-indent-function 'defun)
 
+;; use ido-completing-read
+;; (defun nvp@read-with-ido (old-fn &rest args)
+;;   (nvp:with-letf 'completing-read 'ido-completing-read
+;;     (apply old-fn args)))
+
+;; use ido-completion when reading environment variables interactively
+;; (nvp:advise-commands #'nvp@read-with-ido
+;;   :around '(read-envvar-name bookmark-jump))
+
+;; after advice: repeat command with last basic input, or install transient MAP
+;; (defun nvp@repeat (&optional map &rest args)
+;;   (set-transient-map
+;;    (or map
+;;        (let ((km (make-sparse-keymap)))
+;;          (define-key km (vector (nvp:input 'lbi))
+;;                      `(lambda ()
+;;                         (interactive)
+;;                         (apply #',this-command ,args)))
+;;          km))
+;;    t))
+

@@ -240,8 +240,6 @@ called from minibuffer, or nil.")
   (nvp:push-mark nvp-move-forward-defun)
   (beginning-of-defun -1))
 
-(defalias 'nvp-move-backward-defun 'beginning-of-defun)
-
 ;;--- Headings
 ;; these may vary by mode
 ;; Get or create header regex based on comment syntax.
@@ -498,27 +496,6 @@ Otherwise just call `vertico-insert'. If this was previous command, call
                          (if (window-live-p win) (window-buffer win)
                            (current-buffer)))
     (apply old-fn args)))
-
-;; use ido-completing-read
-;; (defun nvp@read-with-ido (old-fn &rest args)
-;;   (nvp:with-letf 'completing-read 'ido-completing-read
-;;     (apply old-fn args)))
-
-;; use ido-completion when reading environment variables interactively
-;; (nvp:advise-commands #'nvp@read-with-ido
-;;   :around '(read-envvar-name bookmark-jump))
-
-;; after advice: repeat command with last basic input, or install transient MAP
-;; (defun nvp@repeat (&optional map &rest args)
-;;   (set-transient-map
-;;    (or map
-;;        (let ((km (make-sparse-keymap)))
-;;          (define-key km (vector (nvp:input 'lbi))
-;;                      `(lambda ()
-;;                         (interactive)
-;;                         (apply #',this-command ,args)))
-;;          km))
-;;    t))
 
 
 ;; -------------------------------------------------------------------

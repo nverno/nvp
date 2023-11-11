@@ -172,16 +172,21 @@ This is useful, e.g, for use with `visual-line-mode'."
   "q" #'nvp-fill-paragraph-toggle)
 
 ;;;###autoload
-(defun nvp-fill-paragraph-toggle (&optional column)
-  "Toggle paragraph filling. With prefix, prompt for `fill-column'."
-  (interactive (list (and current-prefix-arg (read-number "Fill column: "))))
+(defun nvp-fill-paragraph-toggle (&optional column justify)
+  "Toggle paragraph filling. With prefix, prompt for `fill-column'. With two
+prefix, justify as well."
+  (interactive
+   (list (and (eq 4 (prefix-numeric-value current-prefix-arg))
+              (read-number "Fill column: " fill-column))
+         (eq 16 (prefix-numeric-value current-prefix-arg))))
   (let ((fill-column (or column (nvp:toggled-if fill-column most-positive-fixnum)))
         (fill-fn (or nvp-fill-paragraph-function
                      fill-paragraph-function
-                     #'fill-paragraph)))
+                     #'prog-fill-reindent-defun)))
+    ;; #'fill-paragraph
     (deactivate-mark t)
     (funcall (if (commandp fill-fn) 'funcall-interactively 'funcall)
-             fill-fn 'fill-paragraph)))
+             fill-fn (and justify 'fill-paragraph))))
 
 (provide 'nvp-edit-aux)
 ;; Local Variables:

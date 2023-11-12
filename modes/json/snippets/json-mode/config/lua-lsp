@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: lua lsp
+# key: lua
+# --
+{
+  "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+  "workspace.library": [
+    "${3rd}/luassert/library"$1
+  ]
+}

@@ -1,26 +1,43 @@
-;;; nvp-code.el ---  -*- lexical-binding: t; -*-
+;;; nvp-fold.el --- code folding -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;;
-;; - code folding
-;; - hi-lock
-;; - narrow
-;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'hideshow))
+(eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (require 'nvp)
 (nvp:auto "hideshow" hs-hide-all hs-toggle-hiding hs-hide-level hs-show-all)
-(nvp:decls :p (hs))
+(nvp:decls :p (hs) :f (hs-hide-block-at-point))
+
+(nvp:def-transient-toggle-vars nvp-hideshow-menu hs-allow-nesting)
+
+(transient-define-prefix nvp-hideshow-menu ()
+  [ :if (lambda () (bound-and-true-p hs-minor-mode))
+    ["Hide"
+     ("a" "All" hs-hide-all)
+     ("B" "Block" hs-hide-block)
+     ("c" "Comments" nvp-hs-hide-comments)
+     ("l" "Level" hs-hide-level)]
+    ["Show"
+     ("s" "All" hs-show-all)
+     ("b" "Block" hs-show-block)]
+    ["Settings"
+     (":n" "Remember nested" nvp-hideshow-menu--toggle-hs-allow-nesting)]]
+  [ :if-not (lambda () (bound-and-true-p hs-minor-mode))
+    ["Hideshow" ("t" "Toggle" nvp-hs-toggle)]])
 
 (defvar-keymap nvp-repeat-hideshow-toggle-map
-  "f" #'nvp-hs-toggle)
+  :repeat t
+  "<tab>" #'hs-toggle-hiding
+  "t"     #'hs-toggle-hiding
+  "a"     #'hs-hide-all
+  "s"     #'hs-show-all
+  "c"     #'nvp-hs-hide-comments
+  "l"     #'hs-hide-level
+  "f"     #'nvp-hs-toggle)
 
-;;; TODO: refactor
-(nvp:bindings nvp-fold-keymap nil
-  :create t :indicate t
-  :repeat (nvp-hs-hide-comments hs-toggle-hiding)
+;; autoloaded
+(nvp:bindings nvp-fold-keymap nil :create t
+  ("<f2>"  . nvp-hideshow-menu)
   ("<tab>" . hs-toggle-hiding)
   ("a"     . hs-hide-all)
   ("c"     . nvp-hs-hide-comments)
@@ -28,29 +45,6 @@
   ("l"     . hs-hide-level)
   ("s"     . hs-show-all)
   ("q"     . nvp-hs-quit))
-
-(defun nvp-hs-quit ()
-  (interactive)
-  (hs-minor-mode -1))
-
-;;;###autoload
-(defun nvp-narrow-dwim (&optional arg)
-  (interactive "P")
-  (if (region-active-p)
-      (narrow-to-region (region-beginning) (region-end))
-    (narrow-to-defun arg)))
-
-;;; Hideshow
-
-(defvar-local nvp-hs--hidden nil)
-
-(defun nvp-hs-display-line-counts (ov)
-  (when (eq 'code (overlay-get ov 'hs))
-    (overlay-put ov 'face 'font-lock-comment-face)
-    (overlay-put ov 'display
-                 (format " ... %d lines"
-                         (count-lines (overlay-start ov)
-                                      (overlay-end ov))))))
 
 ;; ignore hidden lines
 (defun nvp-move-visual-next5 ()
@@ -74,13 +68,28 @@
   ("M-n" . nvp-move-visual-next5)
   ("M-p" . nvp-move-visual-prev5))
 
+(defun nvp-hs-quit ()
+  (interactive)
+  (hs-minor-mode -1))
+
+;;; Overlay
+(defun nvp-hs-display-line-counts (ov)
+  (when (eq 'code (overlay-get ov 'hs))
+    (overlay-put ov 'face 'font-lock-comment-face)
+    (overlay-put ov 'display
+                 (format " ... %d lines"
+                         (count-lines (overlay-start ov)
+                                      (overlay-end ov))))))
+
+(defvar-local nvp-hs--hidden nil)
+
 ;;;###autoload
 (defun nvp-hs-toggle (&optional arg)
   "Toggle hideshow on block.  With prefix toggle all."
   (interactive "P")
   (unless (bound-and-true-p hs-minor-mode)
     (hs-minor-mode))
-  (if (or arg (eq last-command 'nvp-hs-toggle))
+  (if arg ;; (eq last-command 'nvp-hs-toggle)
       (if (setq nvp-hs--hidden (not nvp-hs--hidden))
           (hs-show-all)
         (hs-hide-all))
@@ -88,26 +97,26 @@
 
 ;; https://www.emacswiki.org/emacs/HideShow
 (defun nvp-hs-hide-comments ()
-  "Hide all top level blocks, if they are comments, displaying only first line.
+  "Hide all top level comments and display only the first line.
 Move point to the beginning of the line, and run the normal hook
 `hs-hide-hook'.  See documentation for `run-hooks'."
   (interactive)
   (hs-life-goes-on
    (save-excursion
-     (unless hs-allow-nesting
-       (hs-discard-overlays (point-min) (point-max)))
+     ;; (unless hs-allow-nesting
+     ;;   (hs-discard-overlays (point-min) (point-max)))
      (goto-char (point-min))
      (let ((spew (make-progress-reporter "Hiding all comment blocks..."
                                          (point-min) (point-max)))
            (re (concat "\\(" hs-c-start-regexp "\\)")))
        (while (re-search-forward re (point-max) t)
          (if (match-beginning 1)
-           ;; found a comment, probably
-           (let ((c-reg (hs-inside-comment-p)))
-             (when (and c-reg (car c-reg))
-               (if (> (count-lines (car c-reg) (nth 1 c-reg)) 1)
-                   (hs-hide-block-at-point t c-reg)
-                 (goto-char (nth 1 c-reg))))))
+             ;; found a comment, probably
+             (let ((c-reg (hs-inside-comment-p)))
+               (when (and c-reg (car c-reg))
+                 (if (> (count-lines (car c-reg) (nth 1 c-reg)) 1)
+                     (hs-hide-block-at-point t c-reg)
+                   (goto-char (nth 1 c-reg))))))
          (progress-reporter-update spew (point)))
        (progress-reporter-done spew)))
    (beginning-of-line)
@@ -121,5 +130,5 @@ Move point to the beginning of the line, and run the normal hook
 ;;;###autoload
 (add-hook 'hs-minor-mode-hook #'nvp-hs-mode-hook)
 
-(provide 'nvp-code)
-;;; nvp-code.el ends here
+(provide 'nvp-fold)
+;;; nvp-fold.el ends here

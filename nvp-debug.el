@@ -38,7 +38,7 @@
       (let ((menu
              (list
               (vector
-               :if-non-nil 'gud-minor-mode
+               :if (lambda () (bound-and-true-p gud-minor-mode))
                (vector "Go"
                        (cmd "n" "Next line" gud-next)
                        (cmd "N" "Next instruction" gud-nexti)
@@ -61,7 +61,7 @@
                        (cmd "*" "Dump dereference" gud-pstar)
                        (cmd "x" "Execute" gud-statement)))
               (vector
-               :if-non-nil 'gud-minor-mode
+               :if (lambda () (bound-and-true-p gud-minor-mode))
                (vector "Stack"
                        (cmd "u" "Up frame" gud-up)
                        (cmd "d" "Down frame" gud-down))
@@ -71,7 +71,8 @@
                        (cmd "?" "Info (debug)" gud-goto-info)))
               ["Settings"
                (":l" "Highlight current line"
-                nvp-gud-menu--toggle-gud-highlight-current-line)
+                nvp-gud-menu--toggle-gud-highlight-current-line
+                :if (lambda () (bound-and-true-p gud-minor-mode)))
                ;; :if (lambda () (memq gud-minor-mode '(gdbmi lldb guiler dbx sdb xdb pdb)))
                (":t" "Enable GUD tooltip mode" gud-tooltip-mode)])))
         `(transient-define-prefix nvp-gud-menu ()

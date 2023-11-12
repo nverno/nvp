@@ -160,7 +160,7 @@
     ("os" "object-slots" nil :system t)
     ("pb" "process-buffer" nil :system t)
     ("pg" "plist-get" nil :system t)
-    ("pl" "process-list" nil :system t)
+    ("pl" "process-lines" nil :system t)
     ("pm" "point-max" nil :system t)
     ("pn" "process-name" nil :system t)
     ("rb" "region-beginning" nil :system t)

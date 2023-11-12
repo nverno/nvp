@@ -471,6 +471,13 @@ Otherwise just call `vertico-insert'. If this was previous command, call
     (funcall nvp-mark-defun-function arg)
     (and skip-comments (comment-forward (point-max)))))
 
+;;; Narrowing
+(defun nvp-narrow-dwim (&optional arg)
+  (interactive "P")
+  (if (region-active-p)
+      (narrow-to-region (region-beginning) (region-end))
+    (narrow-to-defun arg)))
+
 
 ;; -------------------------------------------------------------------
 ;;; Advices

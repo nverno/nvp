@@ -17,7 +17,7 @@ EL            =  $(filter-out %-autoloads.el, $(wildcard *.el)) $(wildcard macs/
 		$(wildcard subrs/*.el)
 ELC           =  ${EL:.el=.elc}
 BIN           =  bin
-LATEX_ABBREVS =  etc/unicode-latex-abbrev-table
+LATEX_ABBREVS =  $(TOP)/abbrevs/unicode-latex-abbrev-table
 
 # Include site variables
 EMACSDIR = $(HOME)/.emacs.d

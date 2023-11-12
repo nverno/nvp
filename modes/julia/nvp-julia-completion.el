@@ -4,7 +4,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'company)
 (require 'julia-mode nil t)
-(nvp:decls :p "julia-mode")
+(nvp:decls :p (julia))
 
 ;; ------------------------------------------------------------
 ;;* capf for latexsubs

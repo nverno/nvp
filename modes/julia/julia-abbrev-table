@@ -4,9 +4,10 @@
   '(
     ("fi" "end" nil :system t)
     ("ass" "@assert" nil :system t)
+    ("imp" "import" nil :system t)
     ("ret" "return" nil :system t)
     ("pr" ["print()" 1 nil nil] expand-abbrev-hook :system t)
     ("elif" "elseif" nil :system t)
-    )
+    ("usi" "using" nil :system t))
   "Julia-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

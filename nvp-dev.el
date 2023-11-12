@@ -162,6 +162,7 @@
       (princ (nvp-pp-variable-to-string val))
       (emacs-lisp-mode))))
 
+;;;###autoload
 (defun nvp-dev-describe-mode (&optional mode)
   (interactive (list (nvp:prefix 4 (nvp-read-mode) major-mode)))
   (let ((print-escape-newlines t)

@@ -90,6 +90,9 @@
 ;;;###autoload(autoload 'nvp-run "nvp-mode")
 (nvp:define-mode-function run)
 
+;;;###autoload(autoload 'nvp-configure "nvp-mode")
+(nvp:define-mode-function configure)
+
 ;;;###autoload(autoload 'nvp-profile "nvp-mode")
 (nvp:define-mode-function profile)
 
@@ -117,8 +120,7 @@
   [["Run"
     ("r" "Run" nvp-run :if-non-nil nvp-run-functions)
     ("c" "Compile" nvp-mode-compile)
-    ("t" "Test" nvp-test)
-    ("T" "Tag" nvp-tag)]
+    ("t" "Test" nvp-test)]
    ["Editing"
     ("a" "Abbrev" nvp-abbrev :if-non-nil nvp-abbrev-functions)
     ("q" "Toggle" nvp-toggle :if-non-nil nvp-toggle-functions)
@@ -128,7 +130,9 @@
     ("p" "Profile" nvp-profile :if-non-nil nvp-profile-functions)
     ("d" "Debug" nvp-debug :if-non-nil nvp-debug-functions)
     ("D" "Disassemble" nvp-disassemble :if-non-nil nvp-disassemble-functions)]]
-  [["Install"
+  [["External"
+    ("T" "Tag" nvp-tag)
+    ("C" "Configure" nvp-configure :if-non-nil nvp-configure-functions)
     ("i" "Install" nvp-install :if-non-nil nvp-mode-install-targets)]
    ["Help"
     ("s" "Search docs" nvp-docs :if-non-nil nvp-docs-functions)

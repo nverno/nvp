@@ -128,7 +128,7 @@ called from minibuffer, or nil.")
 (defconst nvp-mode-function-hooks
   (eval-when-compile 
     (cl-loop for type in '( check-buffer format-buffer tag test compile debug
-                            disassemble abbrev toggle run profile docs)
+                            disassemble abbrev toggle run profile configure docs)
              for name = (intern (concat "nvp-" (symbol-name type) "-functions"))
              collect name))
   "Mode local function hooks.")
@@ -144,11 +144,13 @@ called from minibuffer, or nil.")
           nconc `((defvar-local ,h nil)
                   (defvar-local ,def nil)))))))
 (nvp:define-function-hooks)
-(setq-default nvp-compile-default-function #'nvp-compile-default)
-(setq-default nvp-tag-default-function #'ggtags-find-tag-dwim)
+(setq-default nvp-compile-default-function       #'nvp-compile-default)
+(setq-default nvp-tag-default-function           #'ggtags-find-tag-dwim)
 (setq-default nvp-format-buffer-default-function #'lsp-format-buffer)
-(setq-default nvp-check-buffer-default-function #'flycheck-list-errors)
-(setq-default nvp-test-default-function #'projectile-test-project)
+(setq-default nvp-check-buffer-default-function  #'flycheck-list-errors)
+(setq-default nvp-test-default-function          #'projectile-test-project)
+(setq-default nvp-configure-default-function     #'projectile-configure-project)
+(setq-default nvp-run-default-function           #'projectile-run-project)
 
 
 ;; -------------------------------------------------------------------

@@ -20,7 +20,7 @@
   dir snippets abbr-file abbr-table
   ;; functions
   check-buffer format-buffer tag test compile debug disassemble abbrev
-  toggle run profile docs
+  toggle run profile configure docs
   ;; installs
   install-targets)
 
@@ -105,7 +105,7 @@
      post-fn                            ; function called after setup
      ;; functions / hooks
      check-buffer format-buffer tag test compile debug disassemble abbrev
-     toggle run profile docs
+     toggle run profile configure docs
      install-targets)
   "Setup local variables for helper package - abbrevs, snippets, root dir."
   (setq mode (if mode (nvp:as-symbol mode) major-mode))
@@ -148,6 +148,7 @@
                      :toggle toggle
                      :run run
                      :profile profile
+                     :configure configure
                      :docs docs
                      :install-targets install-targets))
         ;; Initialize/load mode stuff

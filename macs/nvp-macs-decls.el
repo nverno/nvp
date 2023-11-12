@@ -122,6 +122,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-repl-find-functions
     nvp-help-at-point-functions
     nvp-check-buffer-default-function
+    nvp-configure-default-function
     nvp-disassemble-default-function
     nvp-debug-default-function
     nvp-tag-default-function
@@ -299,6 +300,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
      (nvp:decl                          ; external packages
        pos-tip-show
        projectile-project-name
+       projectile-run-project
+       projectile-configure-project
        do-smooth-scroll
        ;; paredit
        paredit-comment-dwim

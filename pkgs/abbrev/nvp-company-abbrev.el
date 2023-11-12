@@ -19,7 +19,7 @@ Respects abbrev table :regexp and :enable-function properties."
   (cl-case command
     (interactive (company-begin-backend 'nvp-company-abbrev))
     (prefix (nvp-abbrev-completion-prefix))
-    (candidates (nvp-abbrev-completion-candidates arg 'annotate))
+    (candidates (nvp-abbrev-completion-candidates arg 'annotate 'expansion))
     (meta (abbrev-expansion arg))
     (annotation (or (get-text-property 0 'annotation arg) "<abbrev>"))))
 

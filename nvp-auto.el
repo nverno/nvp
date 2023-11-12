@@ -145,6 +145,7 @@ With prefix, prompts for DATE."
   (insert
    (nvp:read-char-case "Char: " 'verbose
      (?c "[c]heck" "✓")
+     (?d "[d]down" "⬎")
      (?i "[i]n" "∈")
      (?s "[s]mile" "☻")
      (?p "[p]rev" "└─"))))

@@ -68,11 +68,11 @@
 ;; and matches its table's `:regexp'
 (defun nvp-abbrev-completion--prefix ()
   (cl-loop for tab in (nvp-abbrev-completion--active-tables)
-     as re = (abbrev-table-get (symbol-value tab) :regexp)
-     if (not re)
-     return (nvp-abbrev-completion--grab)
-     when (looking-back re (line-beginning-position))
-     return (list (match-string-no-properties 1) (match-beginning 0) (point))))
+           as re = (abbrev-table-get (symbol-value tab) :regexp)
+           if (not re)
+           return (nvp-abbrev-completion--grab)
+           when (looking-back re (line-beginning-position))
+           return (list (match-string-no-properties 1) (match-beginning 0) (point))))
 
 ;; return beginning position of prefix for hippie
 (defun nvp-abbrev-completion-prefix-beg ()
@@ -86,18 +86,20 @@
       (nvp-grab-symbol)))
 
 ;; Return completion candidates, taking into account per-table :regexp
-(defun nvp-abbrev-completion-candidates (arg &optional annotate)
+(defun nvp-abbrev-completion-candidates (arg &optional annotate expansion)
   (cl-loop for tab in (nvp-abbrev-completion--active-tables)
-     as comps = (delete "" (all-completions arg (symbol-value tab)))
-     when annotate
-     do (mapc (lambda (comp)
-                (put-text-property 0 1 'annotation (symbol-name tab) comp))
-              comps)
-     nconc comps))
+           as comps = (delete "" (all-completions arg (symbol-value tab)))
+           when annotate
+           do (mapc (lambda (comp)
+                      (put-text-property 0 1 'annotation  (if expansion
+                                                              (abbrev-expansion comp)
+                                                            (symbol-name tab))
+                                         comp))
+                    comps)
+           nconc comps))
 
 ;; -------------------------------------------------------------------
 ;;; Abbrevs
-(require 'hippie-exp)
 
 ;; #<marker at 30147 in hippie-exp.el.gz>
 ;;;###autoload
@@ -105,6 +107,7 @@
   "Try to expand word from locally active abbrev tables.
 Accounts for :enable-function and :regexp table properties when selecting
 candidates."
+  (require 'hippie-exp)
   (cl-block nil
     (unless old
       (let ((beg (nvp-abbrev-completion-prefix-beg)))

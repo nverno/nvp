@@ -1,7 +1,8 @@
 ;; -*- coding: utf-8; -*-
 
 (define-abbrev-table 'lua-mode-abbrev-table
-  '(("ret" "return" nil :system t)
+  '(("r" "require" nil :system t)
+    ("ret" "return" nil :system t)
     ("!=" "~=" nil :system t))
   "Lua-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table)

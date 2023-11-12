@@ -52,9 +52,8 @@
       ('line (iedit-restrict-current-line))
       ('defun (iedit-restrict-function))
       (_ ))
-    (nvp:msg "Toggle restrictions with \\[nvp-iedit-cycle-regions]"
+    (nvp:msg "Toggle restrictions with \\<iedit-mode-keymap>\\[nvp-iedit-cycle-regions]"
       :test (bound-and-true-p iedit-mode)
-      :keys t :keymap iedit-mode-keymap
       :append t)))
 
 (defun nvp-iedit-report ()

@@ -69,12 +69,7 @@ them."
   (interactive "r")
   (save-mark-and-excursion
     (apply #'call-process-region
-           beg end
-           nvp-perltidy
-           'delete
-           '(t nil)
-           nil
-           nvp-perltidy-args)))
+           beg end nvp-perltidy 'delete '(t nil) nil nvp-perltidy-args)))
 
 (defun nvp-perltidy-buffer ()
   "Call perltidy on entire buffer."

@@ -3,5 +3,5 @@
 # key: map
 # condition: (nvp-yas-in-string)
 # --
-Key bindings:
-\\\\{${1:some}-mode-map}
+${1:Key bindings:
+}\\\\<${2:keymap}>

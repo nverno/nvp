@@ -3,4 +3,4 @@
 # key: _
 # condition: (nvp-yas-in-string)
 # --
-\\\\[${1:universal-argument}]
+${1:\\\\<${2:global-map}>}\\\\[${3:universal-argument}]

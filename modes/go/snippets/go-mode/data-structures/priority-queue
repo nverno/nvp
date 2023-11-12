@@ -8,16 +8,32 @@ import (
 
 type Item struct {
 	Value    ${1:int} // The value of the item; arbitrary.
-	Priority int // The priority of the item in the queue.
+	Priority int // The priority of the item in the queue.${2: "
+	Index int"}
 }
 
 type PriorityQueue []*Item
 
 // We want Pop to give us the highest, not lowest, priority so we use greater than here.
 func (pq PriorityQueue) Less(i, j int) bool          { return pq[i].Priority ${1:>} pq[j].Priority }
-func (pq PriorityQueue) Swap(i, j int)               { pq[i], pq[j] = pq[j], pq[i] }
-func (pq *PriorityQueue) Push(x /*any*/ interface{}) { *pq = append(*pq, x.(*Item)) }
 func (pq PriorityQueue) Len() int                    { return len(pq) }
+${2:$($s? "// Modify heap elements: Items need additional Index field
+func (pq PriorityQueue) Swap(i, j int)               {
+	pq[i], pq[j] = pq[j], pq[i]
+	pq[i].Index = j
+	pq[j].Index = i
+}
+func (pq *PriorityQueue) Push(x /*any*/ interface{}) {
+	idx := len(pq)
+	*pq = append(*pq, x.(*Item))
+	pq[idx].Index = idx
+}
+func (pq *PriorityQueue) Update(item *Item, priority int) {
+	item.Priority = priority
+	heap.Fix(pq, item.Index)
+}")}${2:$($s? "" "
+func (pq PriorityQueue) Swap(i, j int)               { pq[i], pq[j] = pq[j], pq[i] }
+func (pq *PriorityQueue) Push(x /*any*/ interface{}) { *pq = append(*pq, x.(*Item)) }")}
 
 func (pq *PriorityQueue) Pop() /*any*/ interface{} {
 	old := *pq
@@ -28,12 +44,13 @@ func (pq *PriorityQueue) Pop() /*any*/ interface{} {
 	return item
 }
 
-${2:
+${3:
 pq := make(PriorityQueue, 0)
-for i, x := range ${3:arr} {
+for i, x := range ${4:arr} {
     pq.Push(&Item{
         Value:    i,
-        Priority: x,
+        Priority: x,${2:$($s? "
+				Index: 0")}
     \})
 \}
 heap.Init(&pq)}

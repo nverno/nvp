@@ -43,9 +43,9 @@
     (erase-buffer)
     (unless comment-start (setq comment-start "#"))
     (insert (nvp-comment-string "Jah lives chilren\n" 2))
-    (nvp:msg "Press \\[nvp-scratch-kill-buffer] to kill this buffer \
-or \\[nvp-scratch-switch-modes] to switch major modes. "
-      :keys t :keymap nvp-scratch-minor-mode-map)))
+    (nvp:msg "Press \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-kill-buffer] to kill \
+this buffer or \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-switch-modes] \
+to switch major modes.")))
 
 (provide 'nvp-scratch)
 ;; Local Variables:

@@ -62,8 +62,7 @@ Prompt unless SILENT or `noninteractive'."
           (kill-buffer nil))
         (comint-read-input-ring 'silent)
         (unless silent
-          (nvp:msg "%s reduced from %s to %s" :append t
-            :clobber "Remove history"
+          (nvp:msg "%s reduced from %s to %s" :append t :clobber "Remove history"
             (file-name-nondirectory file) initial-size final-size))))))
 
 

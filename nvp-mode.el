@@ -98,8 +98,12 @@
   (interactive)
   (setq prefix-arg current-prefix-arg)
   (when nvp-mode-install-targets
-    (--> (completing-read "Install: " nvp-mode-install-targets nil t)
-         (user-error "unimplemented: %s" it))))
+    (let ((targs (--group-by (stringp it) nvp-mode-install-targets)))
+      (--if-let (cdr (assq nil targs))
+          (let ((fn (intern (completing-read "Install: " it nil t))))
+            (call-interactively fn))
+        (--> (completing-read "Install: " (cdr (assq t targs)) nil t)
+             (user-error "unimplemented: %s" it))))))
 
 (transient-define-infix nvp-mode-menu--toggle-verbose ()
   :class 'transient-lisp-variable

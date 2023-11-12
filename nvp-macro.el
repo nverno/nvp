@@ -238,15 +238,12 @@ CLOBBER can be specify a message prefix to clobber instead of appending to."
 
 
 (cl-defmacro nvp:msg (fmt &rest args
-                          &key test delay duration keys keymap append clobber
+                          &key test delay duration append clobber
                           &allow-other-keys)
   "Print message FMT with ARGS.
 
 If TEST is non-nil, message will only be displayed if it evaluates
 truthy (if TEST is a function it will be called with no arguments).
-
-If KEYS, use `substitute-command-keys' for commands, optionally using
-KEYMAP for lookup.
 
 If APPEND, message is appended to any current message.
 Otherwise, message is displayed temporarily, restoring any previous message
@@ -259,10 +256,7 @@ The original message will be restored after DELAY + DURATION when those
 are both specified."
   (declare (indent defun) (debug (sexp &rest form)))
   (nvp:skip-keywords args)
-  (macroexp-let2 nil message
-                 (if keys `(let ((overriding-local-map (eval ',keymap)))
-                             (format (substitute-command-keys ,fmt) ,@args))
-                   `(format ,fmt ,@args))
+  (macroexp-let2 nil message `(format (substitute-command-keys ,fmt) ,@args)
     (nvp:with-syms (orig-msg)
       (let ((do-msg
              `(let ((message-log-max nil))

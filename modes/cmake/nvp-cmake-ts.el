@@ -134,28 +134,36 @@
   (if cmake-ts-mode-align-arguments 0 cmake-ts-mode-indent-offset))
 
 (setq cmake-ts-mode--indent-rules
-      '((cmake
-         ((parent-is "source_file") parent 0)
-         ((node-is ")") parent-bol 0)
-         ((node-is "else_command") parent-bol 0)
-         ((node-is "elseif_command") parent-bol 0)
-         ((node-is "endforeach_command") parent-bol 0)
-         ((node-is "endfunction_command") parent-bol 0)
-         ((node-is "endif_command") parent-bol 0)
-         ((node-is "endblock") parent-bol 0)
-         ((node-is "endmacro") parent-bol 0)
-         ((node-is "function_def") parent-bol 0)
-         ((parent-is "if") parent-bol cmake-ts-mode-indent-offset)
-         ((parent-is "body") grand-parent cmake-ts-mode-indent-offset)
-         ((match "" "argument_list" nil 2) cmake-ts-mode--arg-anchor
-          cmake-ts-mode--arg-offset)
-         ((parent-is "argument_list") parent-bol cmake-ts-mode-indent-offset)
-         ((node-is "argument") parent-bol cmake-ts-mode-indent-offset)
-         ((parent-is "foreach_loop") parent-bol cmake-ts-mode-indent-offset)
-         ((parent-is "function_def") parent-bol cmake-ts-mode-indent-offset)
-         ((parent-is "normal_command") parent-bol cmake-ts-mode-indent-offset)
-         ((parent-is "quoted") no-indent)
-         (no-node parent-bol cmake-ts-mode-indent-offset))))
+  `((cmake
+     ((node-is ")") parent-bol 0)
+     ((node-is "else_command") parent-bol 0)
+     ((node-is "elseif_command") parent-bol 0)
+     ((node-is "endforeach_command") parent-bol 0)
+     ((node-is "endfunction_command") parent-bol 0)
+     ((node-is "endif_command") parent-bol 0)
+     ;;-- start added
+     ((node-is "endblock") parent-bol 0)
+     ((node-is "endmacro") parent-bol 0)
+     ((parent-is "quoted") no-indent)
+     ;;-- end added
+     ((parent-is "foreach_loop") parent-bol cmake-ts-mode-indent-offset)
+     ((parent-is "function_def") parent-bol cmake-ts-mode-indent-offset)
+     ((parent-is "if_condition") parent-bol cmake-ts-mode-indent-offset)
+     ((parent-is "normal_command") parent-bol cmake-ts-mode-indent-offset)
+     ;;; Release v0.4.0 wraps arguments in an argument_list node.
+     ,@(ignore-errors
+         (treesit-query-capture 'cmake '((argument_list) @capture))
+         ;;-- start added
+         `(((match "" "argument_list" nil 2) cmake-ts-mode--arg-anchor
+            cmake-ts-mode--arg-offset)
+           ((parent-is "argument_list") parent-bol cmake-ts-mode-indent-offset))
+         ;;-- end added
+         ;; `(((parent-is "argument_list") grand-parent cmake-ts-mode-indent-offset))
+         )
+     ;;; Release v0.3.0 wraps the body of commands into a body node.
+     ,@(ignore-errors
+         (treesit-query-capture 'cmake '((body) @capture))
+         `(((parent-is "body") grand-parent cmake-ts-mode-indent-offset))))))
 
 ;;; Font-lock
 
@@ -166,7 +174,7 @@
    :override t
    `(((normal_command
        (identifier) @font-lock-keyword-face)
-      (:match ,(rx bos (or "return") eos) @font-lock-keyword-face))
+      (:match ,(rx bos (or "return" "break") eos) @font-lock-keyword-face))
      
      (function_command
       (argument_list

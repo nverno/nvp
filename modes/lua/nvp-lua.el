@@ -6,6 +6,21 @@
 (require 'lua-ts-mode nil t)
 (nvp:decls :p (lua) :v (nvp-repl--display-action))
 
+;;; Tree-sitter
+(with-eval-after-load 'lua-ts-mode
+  (setq lua-ts--font-lock-settings
+        (append
+         (treesit-font-lock-rules
+          :language 'lua
+          :feature 'string
+          '((string) @font-lock-string-face)
+          :language 'lua
+          :feature 'escape
+          :override t
+          '((escape_sequence) @font-lock-escape-face))
+         (seq-filter (lambda (e)
+                       (not (memq (nth 2 e) '(escape string))))
+                     lua-ts--font-lock-settings))))
 ;;; Repl
 
 (define-advice lua-ts-inferior-lua (:around (orig-fn) "dont-be-dumb")

@@ -240,6 +240,14 @@ called from minibuffer, or nil.")
   (nvp:push-mark nvp-move-forward-defun)
   (beginning-of-defun -1))
 
+;; wrap here so when `beginning-of-defun' is remapped, like in treesit, it
+;; doesn't mess up bindings/repeat maps
+(defun nvp-move-previous-defun (&optional arg)
+  "Move backward defun."
+  (interactive "P")
+  (nvp:push-mark nvp-move-previous-defun)
+  (beginning-of-defun arg))
+
 ;;--- Headings
 ;; these may vary by mode
 ;; Get or create header regex based on comment syntax.

@@ -205,3 +205,15 @@ With triple prefix, offer recursive results."
        (nvp-display-location fullname :file action))
       ;; otherwise recurse in subdirs
       (t (nvp-jump-to-book fullname action)))))
+
+(defun nvp-dev-stats-uniq (beg end &optional _arg)
+  "Print counts (case-insensitive) of unique words in region BEG to END."
+  (interactive "r\nP")
+  (let* ((words (s-split-words (buffer-substring-no-properties beg end)))
+         (ht (nvp:hash-strings words 'case-fold 'count))
+         lst)
+    (maphash (lambda (k v) (push (cons v k) lst)) ht)
+    (setq lst (cl-sort lst #'> :key #'car))
+    (nvp:with-results-buffer :title "Word Counts"
+      (pcase-dolist (`(,k . ,v) lst)
+        (princ (format "%d: %s\n" k v))))))

@@ -11,23 +11,18 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-display))
-(require 'nvp)
+(require 'transient)
 (require 'help-mode)
+(require 'nvp)
 
-(nvp:decls :f (nvp-read-mode
-               advice-mapc advice-remove
-               treesit-auto--build-treesit-source-alist treesit-install-language-grammar)
-           :v (c-lang-constants treesit-language-source-alist))
+(nvp:decls :p (advice treesit) :f (nvp-read-mode) :v (c-lang-constants))
 (nvp:auto "nvp-util" 'nvp-s-wrap)
-(nvp:auto "s" 's-split-words)
 (nvp:auto "cl-extra" 'cl-prettyprint)
 
 (define-button-type 'help-marker
   :supertype 'help-xref
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
-
-(require 'transient)
 
 ;;;###autoload(autoload 'nvp-dev-menu "nvp-dev")
 (transient-define-prefix nvp-dev-menu ()
@@ -80,7 +75,6 @@
   ("o"  . nvp-dev-list-overlays)
   ("s"  . nvp-syntax-at-point)
   ("S"  . smie-config-show-indent)
-  ("u"  . nvp-dev-stats-uniq)
   ("v"  . nvp-dev-describe-variable)
   ("z"  . nvp-dev-menu))
 
@@ -96,56 +90,70 @@
 ;; -------------------------------------------------------------------
 ;;; Pretty print data
 
+(defun nvp-pp-struct (struct &optional level)
+  "Pretty print STRUCT entry."
+  (let* ((type (type-of struct))
+         (slots (cl--class-slots (cl-find-class type)))
+         (slot-strings
+          (mapcar
+           (lambda (slot)
+             (let ((name (cl--slot-descriptor-name slot)))
+               (list (if (and level (> level 0))
+                         (string-pad (cl-prin1-to-string name) 15)
+                       (cl-prin1-to-string name))
+                     (cl-prin1-to-string (cl--slot-descriptor-type slot))
+                     (cl-prin1-to-string (cl--slot-descriptor-initform slot))
+                     (nvp-pp-variable-to-string
+                      (cl-struct-slot-value type name struct)
+                      (and level (1+ level))))))
+           slots)))
+    (cl--print-table '("Name        " "Type" "Default" "Current") slot-strings)
+    (insert "\n")))
+
 ;; ielm's nice formatting: #<marker at 14912 in ielm.el.gz>
+(defun nvp-pp-hash (hash &optional level)
+  (let (entries)
+    (maphash
+     (lambda (key val)
+       (push (list (propertize (cl-prin1-to-string key) 'face 'bold)
+                   (nvp-pp-variable-to-string val (and level (1+ level))))
+             entries))
+     hash)
+    (cl--print-table '("Key" "Value") entries)))
 
-(defun nvp-pp-hash (hash)
-  (with-temp-buffer
-    (lisp-mode-variables nil)
-    (set-syntax-table emacs-lisp-mode-syntax-table)
-    (maphash (lambda (key val)
-               (pp key)
-               (princ " => ")
-               (pp val)
-               (terpri))
-             hash)
-    (buffer-string)))
-
-(defun nvp-pp-variable-to-string (variable)
+(defun nvp-pp-variable-to-string (variable &optional level)
+  (or level (setq level 0))
   (let ((print-escape-newlines t)
         (print-quoted t)
+        (pp-default-function 'pp-29)
         (var (if (symbolp variable) (eval variable)
                variable)))
-    (pcase var
-      ((pred hash-table-p)
-       (nvp-pp-hash var))
-      ;; TODO: structs/classes
-      (_
-       ;; (cl-prin1-to-string var)
-       (pp-to-string var)))))
+    (cl-macrolet ((get-string (fn var)
+                    `(with-temp-buffer
+                       (when (> level 0)
+                         (insert (propertize "⬎\n" 'face 'bold)))
+                       (,fn ,var level)
+                       (when (> level 0)
+                         (remove-text-properties (point-min) (point-max) '(display)))
+                       (buffer-string))))
+      (let ((str (pcase var
+                   ((pred hash-table-p)
+                    (get-string nvp-pp-hash var))
+                   ((pred cl-struct-p)
+                    (get-string nvp-pp-struct var))
+                   (_ (cl-prin1-to-string var)))))
+        (if (> level 0)
+            (replace-regexp-in-string "\n" (concat (make-string level ? ) "\n") str)
+          str)))))
 
-;; (defun nvp-dev-mode-cache (mode)
-;;   "Examine, refresh MODE's config cache.
-;; With prefix, examine contents instead of resetting them."
-;;   (interactive (list (intern (completing-read "Mode: " nvp-mode-cache))))
-;;   (require 'nvp-setup)
-;;   (if current-prefix-arg
-;;       (let ((cols 5))
-;;         (nvp-with-view-list
-;;           :name "mode-cache"
-;;           :mode-name "Mode Cache"
-;;           :format
-;;           (cl-loop for slot across 'nvp-mode-vars
-;;              do (message "%S" slot))
-;;           (mapcar #'symbol-name (cdr (cl-struct-slot-info 'nvp-mode-vars)))
-;;           [("Dir" 12) ("Snippets" 12) ("Abbr-file" 12) ("Abbr-table" 12)]
-;;           :entries
-;;           (car (cl-struct-slot-info 'nvp-mode-vars))
-;;           (cl-loop repeat cols
-;;                vconcat [("")])))
-;;       (remhash mode nvp-mode-cache)))
+(defun nvp-dev--fontify-syntax ()
+  ;; Fontify strings/comments w/o clobbering current text properties
+  (set-syntax-table emacs-lisp-mode-syntax-table)
+  (setq-local syntax-propertize-function #'elisp-mode-syntax-propertize)
+  (font-lock-default-fontify-syntactically (point-min) (point-max)))
 
 (defun nvp-dev-describe-variable (variable)
-  "Try to pretty print VARIABLE in temp buffer."
+  "Pretty print VARIABLE."
   (interactive (list (nvp:tap 'evari)))
   (let* ((val (if (symbolp variable) (eval variable)
                 variable))
@@ -159,66 +167,62 @@
       :buffer (format "*describe[%s]*" variable)
       :revert-fn (lambda (&rest _) (funcall #'nvp-dev-describe-variable variable))
       :action :none
-      (princ (nvp-pp-variable-to-string val))
-      (emacs-lisp-mode))))
+      (insert (nvp-pp-variable-to-string val 0))
+      (nvp-dev--fontify-syntax))))
 
 ;;;###autoload
 (defun nvp-dev-describe-mode (&optional mode)
-  (interactive (list (nvp:prefix 4 (nvp-read-mode) major-mode)))
+  (interactive (list (nvp:prefix 4 (nvp-read-mode) (or nvp-mode-name major-mode))))
   (let ((print-escape-newlines t)
         (print-circle t)
         (inhibit-read-only t)
-        (funcs
-         (--map (cons (symbol-name it) (symbol-value it))
-                '(beginning-of-defun-function
-                  end-of-defun-function
-                  nvp-compile-default-function
-                  nvp-mark-defun-function
-                  nvp-fill-paragraph-function
-                  nvp-help-at-point-functions
-                  nvp-check-buffer-default-function nvp-check-buffer-functions
-                  nvp-disassemble-default-function nvp-disassemble-functions
-                  nvp-test-default-function nvp-test-functions
-                  nvp-tag-default-function nvp-tag-functions
-                  nvp-debug-default-function nvp-debug-functions
-                  nvp-format-buffer-default-function nvp-format-buffer-functions)))
-        (vars
-         (--map (cons (symbol-name it) (symbol-value it))
-                '(nvp-abbrev-local-file
-                  nvp-abbrev-local-table
-                  nvp-mode-name
-                  nvp-mode-header-regex
-                  nvp-mode-snippet-dir
-                  nvp-mode-install-targets
-                  completion-at-point-functions
-                  company-backends
-                  hippie-expand-try-functions-list)))
-        (keys
-         (--map (cons it (lookup-key (current-active-maps) (kbd it)))
-                '("RET" "<f5>" "M-?"
-                  "<f2>mzz" "C-c C-z"
-                  "<f2>mc" "<f2>mt" "<f2>mT" "<f2>md" "<f2>mD")))
+        (pp-default-function 'pp-29)
+        (funcs (--map (cons (symbol-name it) (symbol-value it))
+                      `(beginning-of-defun-function
+                        end-of-defun-function
+                        forward-sexp-function
+                        forward-sentence-function
+                        nvp-mark-defun-function
+                        nvp-fill-paragraph-function
+                        nvp-help-at-point-functions
+                        ,@nvp-mode-default-functions)))
+        (vars (--map (cons (symbol-name it) (symbol-value it))
+                     '(nvp-abbrev-local-file
+                       nvp-abbrev-local-table
+                       nvp-mode-header-regex
+                       completion-at-point-functions
+                       company-backends
+                       hippie-expand-try-functions-list)))
+        (keys (--map (cons it (lookup-key (current-active-maps) (kbd it)))
+                     '("RET" "<f5>" "M-?"
+                       "<f2>mzz" "C-c C-z"
+                       "<f2>mc" "<f2>mt" "<f2>mT" "<f2>md" "<f2>mD")))
         (fonts (assoc mode nvp-mode-font-additions))
         (print-fn
-         (lambda (lst &optional values)
-           (dolist (i lst)
-             (if (not values)
-                 (princ (format ";; %s => %S\n" (car i) (cdr i)))
-               (princ (format ";; %s" (car i)))
-               (cl-prettyprint (cdr i))
-               (princ "\n"))))))
-    (nvp:with-results-buffer :title (format "%S variables" mode)
-      (princ ";;; Variables\n")
-      (funcall print-fn vars 'values)
-      (princ ";;; Functions\n")
-      (funcall print-fn funcs)
-      (princ ";;; Keys\n")
-      (funcall print-fn keys)
-      (when fonts
-        (princ "\n;;; Fonts\n")
-        (ignore-errors (cl-prettyexpand fonts))
-        (princ "\n"))
-      (emacs-lisp-mode))))
+         (lambda (lst &optional column-name)
+           (cl--print-table
+            (list (or column-name "Symbol") "Value")
+            (mapcar (lambda (el) (list (propertize (car el) 'face 'bold)
+                                  (cl-prin1-to-string (cdr el))))
+                    lst))
+           (insert "\n"))))
+    (cl-macrolet ((header (str)
+                    (macroexp-let2 nil str str
+                      `(insert (propertize ,str 'face 'bold) "\n"
+                               (make-string (length ,str) ?-) "\n"))))
+      (nvp:with-results-buffer :title (format "%S variables" mode)
+        :action :none
+        (header (symbol-name mode))
+        (--when-let (gethash mode nvp-mode-cache) (nvp-pp-struct it))
+        (funcall print-fn vars "Variables")
+        (funcall print-fn funcs "Functions")
+        (funcall print-fn keys "Keys")
+        (when fonts
+          (header "\nFonts")
+          (ignore-errors (cl-prettyexpand fonts))
+          (insert "\n"))
+        (nvp-dev--fontify-syntax)
+        (pop-to-buffer (current-buffer))))))
 
 (defun nvp-dev-features (prefix)
   "List my loaded `features', or prompt for PREFIX."
@@ -250,7 +254,6 @@
             (error (princ "<failed>")))
           (terpri))))))
 
-
 ;; -------------------------------------------------------------------
 ;;; Overlays
 
@@ -397,18 +400,18 @@ With \\[universal-argument] prompt for THING at point."
 ;; non-nil if monospaced font
 (defun nvp-font-is-mono-p (font-family)
   (let (m-width l-width)
-   (with-temp-buffer
-     (set-window-buffer (selected-window) (current-buffer))
-     (text-scale-set 4)
-     (insert (propertize "l l l l l" 'face `((:family ,font-family))))
-     (goto-char (line-end-position))
-     (setq l-width (car (posn-x-y (posn-at-point))))
-     (newline)
-     (forward-line)
-     (insert (propertize "m m m m m" 'face `((:family ,font-family) italic)))
-     (goto-char (line-end-position))
-     (setq m-width (car (posn-x-y (posn-at-point))))
-     (eq l-width m-width))))
+    (with-temp-buffer
+      (set-window-buffer (selected-window) (current-buffer))
+      (text-scale-set 4)
+      (insert (propertize "l l l l l" 'face `((:family ,font-family))))
+      (goto-char (line-end-position))
+      (setq l-width (car (posn-x-y (posn-at-point))))
+      (newline)
+      (forward-line)
+      (insert (propertize "m m m m m" 'face `((:family ,font-family) italic)))
+      (goto-char (line-end-position))
+      (setq m-width (car (posn-x-y (posn-at-point))))
+      (eq l-width m-width))))
 
 ;; https://www.emacswiki.org/emacs/GoodFonts
 (defun nvp-font-list ()
@@ -427,22 +430,6 @@ With \\[universal-argument] prompt for THING at point."
                 (propertize str 'font-lock-face
                             `(:family ,ff :slant italic))
                 ff "\n")))))
-
-
-;; -------------------------------------------------------------------
-;;; Assorted
-
-(defun nvp-dev-stats-uniq (beg end &optional _arg)
-  "Print counts (case-insensitive) of unique words in region BEG to END."
-  (interactive "r\nP")
-  (let* ((words (s-split-words (buffer-substring-no-properties beg end)))
-         (ht (nvp:hash-strings words 'case-fold 'count))
-         lst)
-    (maphash (lambda (k v) (push (cons v k) lst)) ht)
-    (setq lst (cl-sort lst #'> :key #'car))
-    (nvp:with-results-buffer :title "Word Counts"
-      (pcase-dolist (`(,k . ,v) lst)
-        (princ (format "%d: %s\n" k v))))))
 
 (provide 'nvp-dev)
 ;;; nvp-dev.el ends here

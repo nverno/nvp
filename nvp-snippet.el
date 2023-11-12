@@ -179,19 +179,17 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;; (defsubst nvp-snippet-code-p (&optional pnt)
 ;;   ())
 
-(defvar nvp-snippet--field-vars
-  (eval-when-compile
-    (append
-     '("-*- mode: snippet -*-")
-     (mapcar
-      #'(lambda (x) (concat x ": "))
-      '("key" "name" "condition" "expand-env" "uuid" "group" "type")))))
+(defconst nvp-snippet--field-vars
+  (cons
+   "-*- mode: snippet -*-"
+   (--map (concat it ": ")
+          '("key" "name" "condition" "expand-env" "uuid" "group" "type"))))
 
 (defvar nvp-snippet--env-vars
   '("((yas-indent-line 'fixed))" "((yas-wrap-around-region 'nil))"))
 
 ;; completion at point, use yas headers in header section, elisp capf otherwise
-(defun nvp-snippet-capf ()
+(defun nvp-snippet-completion-at-point ()
   (if (nvp-snippet-header-p)
       (save-excursion
         (let* ((end (point))
@@ -206,7 +204,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
           (cond
            ((eq (char-before) ?#)
             (list beg end nvp-snippet--field-vars))
-           ((and colon-p (not (eq end beg)))
+           (colon-p ;(not (eq end beg))
             (pcase field
               (`"expand-env" (list beg end nvp-snippet--env-vars))
               (`"type" (list beg end '("snippet" "command")))))

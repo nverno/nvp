@@ -125,24 +125,24 @@ called from minibuffer, or nil.")
 (nvp:defvar :local t :permanent t
             nvp-help-at-point-functions '(nvp-hap-company nvp-hap-info))
 
+(eval-and-compile
+  (defconst nvp-mode-hooks
+    '( check-buffer format-buffer tag test compile debug
+       disassemble abbrev toggle run profile configure docs)))
+
 (defconst nvp-mode-function-hooks
-  (eval-when-compile 
-    (cl-loop for type in '( check-buffer format-buffer tag test compile debug
-                            disassemble abbrev toggle run profile configure docs)
-             for name = (intern (concat "nvp-" (symbol-name type) "-functions"))
-             collect name))
-  "Mode local function hooks.")
+  (mapcar (lambda (type) (intern (concat "nvp-" (symbol-name type) "-functions")))
+          nvp-mode-hooks))
+
+(defconst nvp-mode-default-functions
+  (mapcar (lambda (el) (intern (format "nvp-%s-default-function" (symbol-name el))))
+          nvp-mode-hooks))
 
 (eval-when-compile
   (defmacro nvp:define-function-hooks ()
     (macroexp-progn
-     `(,@(cl-loop
-          for h in nvp-mode-function-hooks
-          for def = (intern (replace-regexp-in-string
-                             "\\(.*\\)-functions" "\\1-default-function"
-                             (symbol-name h)))
-          nconc `((defvar-local ,h nil)
-                  (defvar-local ,def nil)))))))
+     `(,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-function-hooks)
+       ,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-default-functions)))))
 (nvp:define-function-hooks)
 (setq-default nvp-compile-default-function       #'nvp-compile-default)
 (setq-default nvp-tag-default-function           #'ggtags-find-tag-dwim)

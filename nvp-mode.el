@@ -136,7 +136,7 @@
     ("i" "Install" nvp-install :if-non-nil nvp-mode-install-targets)]
    ["Help"
     ("s" "Search docs" nvp-docs :if-non-nil nvp-docs-functions)
-    ("M-?" "Describe mode" nvp-dev-describe-mode :transient t)]
+    ("M-?" "Describe mode" nvp-dev-describe-mode :transient nil)]
    ["Settings"
     (":v" "Toggle verbose" nvp-mode-menu--toggle-verbose)]])
 

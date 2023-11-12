@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: mapcar ...
+# key: mc
+# type: command
+# --
+(if (eq (char-before) ?\()
+    (yas-expand-snippet "mapcar (lambda (el) $0) $1")
+  (yas-expand-snippet "(mapcar (lambda (el) $0) $1)"))

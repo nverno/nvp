@@ -1,11 +1,7 @@
 ;;; nvp-setup.el --- setup hooks/helpers -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
-;; Mode setup helpers
-
-;;; FIXME: better setup with packages
-
+;; Mode setup
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
@@ -20,9 +16,7 @@
   dir snippets abbr-file abbr-table
   ;; functions
   check-buffer format-buffer tag test compile debug disassemble abbrev
-  toggle run profile configure docs
-  ;; installs
-  install-targets)
+  install toggle run profile configure docs)
 
 (defvar nvp-mode-cache (make-hash-table)
   "Store local variables for modes once they have been loaded.")
@@ -94,20 +88,21 @@
 
 ;;;###autoload
 (cl-defun nvp-setup-local
-    (name                               ; package root dir name
+    (name          ; package root dir name
+     &rest kwargs  ; rest of KWARGS passed to `nvp-mode-vars-make'
      &key
-     mode                               ; major-mode or key for hash
-     abbr-file                          ; file containing mode abbrevs
-     snippets-dir                       ; snippet dir to use instead of mode name
-     dir                                ; mode root directory
-     abbr-table                         ; abbrev table to use for mode
-     override                           ; override previous entries
-     post-fn                            ; function called after setup
-     ;; functions / hooks
-     check-buffer format-buffer tag test compile debug disassemble abbrev
-     toggle run profile configure docs
-     install-targets)
+     mode          ; major-mode or key for hash
+     abbr-file     ; file containing mode abbrevs
+     snippets-dir  ; snippet dir to use instead of mode name
+     dir           ; mode root directory
+     abbr-table    ; abbrev table to use for mode
+     override      ; override previous entries
+     post-fn       ; function called after setup
+     &allow-other-keys
+     &aux args)
   "Setup local variables for helper package - abbrevs, snippets, root dir."
+  (setq args (nvp:arglist-remove-kwargs
+              '(:mode :snippets-dir :override :post-fn) kwargs))
   (setq mode (if mode (nvp:as-symbol mode) major-mode))
   ;; use the standard mode when remapped,
   ;; eg. use python-mode instead of python-ts-mode
@@ -116,41 +111,26 @@
           ;; `info-lookup' checks this before tring `major-mode'
           info-lookup-mode mode))
   (setq nvp-mode-name mode)
-  (let ((mvars (gethash mode nvp-mode-cache nil))
-        yas-dir mode-snips)
+  (let ((mvars (gethash mode nvp-mode-cache nil)) yas-dir mode-snips)
     ;; initialization that happens once
     (unless (and (not override) mvars)
-      (nvp:defq dir (nvp-setup-package-root name))
+      (or dir (setq dir (nvp-setup-package-root name)))
       (if (not (and dir (file-exists-p dir)))
           (user-error
            "Setup for '%s' failed to find package root" (nvp:as-string name))
-        (nvp:defq abbr-file
-          (ignore-errors (car (directory-files dir t "abbrev-table"))))
+        (unless abbr-file
+          (setq abbr-file (ignore-errors (car (directory-files dir t "abbrev-table")))))
         ;; top-level snippets dir to load
         (setq yas-dir (or (ignore-errors (car (directory-files dir t "snippets")))
                           nvp/snippet))
         (setq mode-snips
               (expand-file-name (or snippets-dir (symbol-name mode)) yas-dir))
-        (nvp:defq abbr-table (symbol-name mode))
-        (setq mvars (nvp-mode-vars-make
-                     :dir dir
-                     :snippets mode-snips
-                     :abbr-file abbr-file
-                     :abbr-table abbr-table
-                     :check-buffer check-buffer
-                     :format-buffer format-buffer
-                     :tag tag
-                     :test test
-                     :compile compile
-                     :debug debug
-                     :disassemble disassemble
-                     :abbrev abbrev
-                     :toggle toggle
-                     :run run
-                     :profile profile
-                     :configure configure
-                     :docs docs
-                     :install-targets install-targets))
+        (or abbr-table (setq abbr-table (symbol-name mode)))
+        (setq mvars (apply #'nvp-mode-vars-make `( :dir ,dir
+                                                   :snippets ,mode-snips
+                                                   :abbr-file ,abbr-file
+                                                   :abbr-table ,abbr-table
+                                                   ,@args)))
         ;; Initialize/load mode stuff
         ;; - ensure load-path
         ;; - load snippets
@@ -167,27 +147,11 @@
       (setq nvp-mode-snippet-dir snippets
             nvp-abbrev-local-file abbr-file
             nvp-abbrev-local-table abbr-table
-            nvp-mode-install-targets install-targets
             local-abbrev-table
             (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))))
     (nvp:setup-local-hooks mvars))
   (when post-fn (funcall post-fn)))
 (put 'nvp-setup-local 'lisp-indent-function 'defun)
-
-;; ;;;###autoload
-;; (cl-defun nvp-setup-mode (_mode &key check format test tag compile debug disassemble)
-;;   (declare (indent 1))
-;;   (pcase-dolist (`(,type ,vals) `((check-buffer ,check)
-;;                                   (format-buffer ,format)
-;;                                   (test ,test)
-;;                                   (tag ,tag)
-;;                                   (compile ,compile)
-;;                                   (debug ,debug)
-;;                                   (disassemble ,disassemble)))
-;;     (when vals
-;;       (let ((lst (intern (concat "nvp-" (symbol-name type) "-functions"))))
-;;         (dolist (v vals)
-;;           (add-hook lst v nil t))))))
 
 (provide 'nvp-setup)
 ;;; nvp-setup.el ends here

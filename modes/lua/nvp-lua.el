@@ -28,9 +28,12 @@
     (save-window-excursion
       (funcall orig-fn))))
 
+(defvar lua-repl-mode-hook nil)
+
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(lua-mode lua-ts-mode)
     :name 'lua
+    :modes '(lua-repl-mode)
     :send-region #'lua-ts-send-region
     :send-buffer #'lua-ts-send-buffer
     :send-file #'lua-ts-send-file
@@ -41,8 +44,12 @@
     :history-file ".lua_history"
     :init (lambda (&optional _prefix)
             (save-window-excursion
-              (let ((display-buffer-overriding-action nvp-repl--display-action))
-                (funcall-interactively #'lua-ts-inferior-lua))))))
+              (let* ((display-buffer-overriding-action nvp-repl--display-action)
+                     (proc (funcall-interactively #'lua-ts-inferior-lua)))
+                (with-current-buffer (process-buffer proc)
+                  (setq major-mode 'lua-repl-mode)
+                  (run-hooks 'lua-repl-mode-hook))
+                proc)))))
 
 ;;; Fold
 

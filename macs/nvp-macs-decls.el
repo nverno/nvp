@@ -101,7 +101,6 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-mode-cache
     nvp-mode-header-regex
     nvp-mode-snippet-dir
-    nvp-mode-install-targets
     nvp-mode-font-additions
     nvp-local-compile-function
     nvp-local-notes-file
@@ -121,6 +120,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-repl-default
     nvp-repl-find-functions
     nvp-help-at-point-functions
+    nvp-install-default-function
     nvp-check-buffer-default-function
     nvp-configure-default-function
     nvp-disassemble-default-function

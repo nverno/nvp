@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: print(string.format(...))
+# key: prf
+# --
+print(string.format("$1\n", $2))

@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: coroutine.create
+# key: cor
+# --
+${1:co} = coroutine.create(function()
+  $0${2:
+  coroutine.yield()}
+  return
+end)

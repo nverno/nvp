@@ -100,8 +100,8 @@
 (defun nvp-install ()
   (interactive)
   (setq prefix-arg current-prefix-arg)
-  (when nvp-mode-install-targets
-    (let ((targs (--group-by (stringp it) nvp-mode-install-targets)))
+  (when nvp-install-functions
+    (let ((targs (--group-by (stringp it) nvp-install-functions)))
       (--if-let (cdr (assq nil targs))
           (let ((fn (intern (completing-read "Install: " it nil t))))
             (call-interactively fn))
@@ -133,7 +133,7 @@
   [["External"
     ("T" "Tag" nvp-tag)
     ("C" "Configure" nvp-configure :if-non-nil nvp-configure-functions)
-    ("i" "Install" nvp-install :if-non-nil nvp-mode-install-targets)]
+    ("i" "Install" nvp-install :if-non-nil nvp-install-functions)]
    ["Help"
     ("s" "Search docs" nvp-docs :if-non-nil nvp-docs-functions)
     ("M-?" "Describe mode" nvp-dev-describe-mode :transient nil)]

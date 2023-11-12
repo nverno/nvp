@@ -34,6 +34,9 @@
   "SPC" #'iedit-prev-occurrence)
 (put 'iedit-prev-occurrence 'repeat-check-key 'no)
 
+;; Push mark before iterating occurrences
+(nvp:@push-mark iedit-next-occurrence)
+(nvp:@push-mark iedit-prev-occurrence)
 
 (defun nvp-iedit-occur ()
   "Call `occur' with current `iedit-current-occurrence-string'."

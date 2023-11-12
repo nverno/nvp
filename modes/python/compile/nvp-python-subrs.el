@@ -3,7 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'nvp-macro)
-(require 'python)
+(require 'python nil t)
 
 ;;; Encoding
 ;; from prelude to guess encoding

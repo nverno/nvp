@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (require 'nvp-shell)
 (require 'ert)
 

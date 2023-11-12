@@ -1357,13 +1357,17 @@ and set `this-command' to nil so opposite happens next time."
            (get (or (get ',variable 'custom-get) 'default-value)))
        (funcall set ',variable (not (funcall get ',variable))))))
 
-;;-- Marks
+;;; Mark
 (defmacro nvp:push-mark (cmd)
   "Push mark on first invocation of CMD."
-  `(or (not (eq this-command ',cmd))
-       (eq last-command ',cmd)
+  `(or (not (eq this-command ,cmd))
+       (eq last-command ,cmd)
        (and transient-mark-mode mark-active)
        (push-mark)))
+
+(defmacro nvp:@push-mark (sym)
+  `(define-advice ,sym (:before (&rest _) "push-mark")
+     (nvp:push-mark ',sym)))
 
 (defmacro nvp:mark-defun (&optional first-time &rest rest)
   "Mark blocks, expanding successively."

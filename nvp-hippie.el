@@ -624,6 +624,10 @@ string).  It returns t if a new completion is found, nil otherwise."
   (let ((case-fold-search nil))
     (hippie-expand nil)))
 
+(defvar-keymap nvp-repeat-hippie-minibuffer-map
+  :repeat t
+  "/" #'nvp-hippie-expand-minibuffer)
+
 ;;;###autoload
 (defun nvp-hippie-expand-minibuffer (arg)
   "Wrapper around `hippie-expand' that also displays messages per

@@ -2,10 +2,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-python)
 (require 'transient)
+(require 'nvp-python)
 (nvp:decls :p (gud))
-
 
 ;;;###autoload(autoload 'nvp-python-debug-menu "nvp-python-debug")
 (transient-define-prefix nvp-python-debug-menu ()

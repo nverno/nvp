@@ -1,4 +1,4 @@
-;; https://github.com/syohex/emacs-progutil/blob/master/progutil-ruby.el
+;; https://github.com/syohex/emacs-progutil/blob/master/progutil-ruby.el  -*- lexical-binding: t; -*-
 (defun progutil-ruby-insert-bar ()
   (interactive)
   (if (looking-back "\\(?:do\\s-+\\|{\\)" (line-beginning-position))

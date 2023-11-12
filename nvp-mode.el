@@ -108,14 +108,12 @@
         (--> (completing-read "Install: " (cdr (assq t targs)) nil t)
              (user-error "unimplemented: %s" it))))))
 
-(transient-define-infix nvp-mode-menu--toggle-verbose ()
-  :class 'transient-lisp-variable
-  :variable 'nvp-mode-verbose
-  :reader (lambda (&rest _) (not nvp-mode-verbose)))
+;;; Transient
+(nvp:def-transient-toggle-vars nvp-mode-menu nvp-mode-verbose)
 
-;;; TODO: with some prefix, prompt to choose mode
 ;;;###autoload(autoload 'nvp-mode-menu "nvp-mode")
 (transient-define-prefix nvp-mode-menu ()
+  ;; TODO: with some prefix, prompt to choose mode
   "Mode"
   [["Run"
     ("r" "Run" nvp-run :if-non-nil nvp-run-functions)
@@ -138,7 +136,7 @@
     ("s" "Search docs" nvp-docs :if-non-nil nvp-docs-functions)
     ("M-?" "Describe mode" nvp-dev-describe-mode :transient nil)]
    ["Settings"
-    (":v" "Toggle verbose" nvp-mode-menu--toggle-verbose)]])
+    (":v" "Toggle verbose" nvp-mode-menu--toggle-nvp-mode-verbose)]])
 
 (provide 'nvp-mode)
 ;; Local Variables:

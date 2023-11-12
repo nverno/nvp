@@ -1,4 +1,4 @@
-SHELL ?= /bin/bash
+# SHELL ?= /bin/bash
 EMACS ?= emacs
 AWK   ?= gawk
 SED   ?= sed

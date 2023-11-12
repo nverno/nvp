@@ -2,7 +2,7 @@
 # name: psuedo class declaration
 # key: class
 # --
-${1:ClassName} = {}
+${1:_M} = {}
 $1.new = function($2)
     local self = {}
 

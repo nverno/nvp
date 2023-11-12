@@ -2,9 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'nvp-python)
-(require 'python)
 (nvp:decls :f (ein:get-notebook ein:$notebook-notebook-name conda-env-activate))
 
 ;; -------------------------------------------------------------------

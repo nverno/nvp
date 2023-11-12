@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 (cl-defmacro nvp-use-transient-bindings
     (&optional bindings

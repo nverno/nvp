@@ -1,4 +1,4 @@
-;;; ruby-hacks.el --- provide features for ruby-mode
+;;; ruby-hacks.el --- provide features for ruby-mode  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2006 Dmitry Galinsky <dima dot exe at gmail dot com>
 ;; Copyright (C) 2008 Chris Wanstrath <chris@ozmm.org>

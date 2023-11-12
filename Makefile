@@ -28,11 +28,13 @@ pre-commit: $(TOP)/.git/hooks/pre-commit
 $(TOP)/.git/hooks/pre-commit: $(BINDIR)/pre-commit
 	@cp $^ $@
 
-rebuild: ## Recompile macs/subrs/and all base configs
-	$(RM) $(CURDIR)/*.elc $(CURDIR)/macs/*.elc $(CURDIR)/subrs/*.elc
+rebuild: clean-all  ## Recompile macs/subrs/and all base configs
 	$(MAKE)
 
-.PHONY: clean-pkgs build-pkgs
+.PHONY: clean-pkgs build-pkgs clean-all
+clean-all:
+	@find $(TOP) -type f -name '*.elc' -exec rm {} \;
+
 clean-pkgs: ## Clean all pkgs
 	$(foreach mode,${PKGS},$(call CLEAN_MODE,$(mode)))
 

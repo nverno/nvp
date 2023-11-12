@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: repeat ... until(condition)
-# key: rep
+# key: do
 # --
 repeat
   $1
-until($2)
+until $2

@@ -121,9 +121,10 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 
 (defun nvp-snippet-indent-line ()
   (interactive)
-  (condition-case nil
-      (funcall-interactively indent-line-function)
-    (error (indent-relative))))
+  (let ((indent-line-function
+         (if (eq last-command this-command) #'indent-relative
+           #'indent-to-left-margin)))
+    (funcall-interactively #'indent-for-tab-command)))
 
 ;; de/in-crement snippet expansion numbers in selected region
 (defun nvp-snippet-increment-count (bounds)

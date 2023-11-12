@@ -6,7 +6,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'python)
+(require 'python nil t)
+(nvp:decls :p (python))
 (nvp:auto "pythonic" 'pythonic-activate 'pythonic-deactivate)
 (defvar python-shell-virtualenv-root)
 

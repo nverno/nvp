@@ -8,6 +8,7 @@
 
 ;;; Tree-sitter
 (with-eval-after-load 'lua-ts-mode
+  ;; TODO: remove after patch
   (setq lua-ts--font-lock-settings
         (append
          (treesit-font-lock-rules

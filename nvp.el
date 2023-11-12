@@ -222,62 +222,6 @@ called from minibuffer, or nil.")
 
 
 ;; -------------------------------------------------------------------
-;;; Movement
-
-(defun nvp-move-next5 (&rest _ignored)
-  "Move 5 lines forward."
-  (interactive)
-  (forward-line 5))
-
-(defun nvp-move-prev5 (&rest _ignored)
-  "Move 5 lines previous."
-  (interactive)
-  (forward-line -5))
-
-(defun nvp-move-forward-defun ()
-  "Move forward defun."
-  (interactive)
-  (nvp:push-mark nvp-move-forward-defun)
-  (beginning-of-defun -1))
-
-;; wrap here so when `beginning-of-defun' is remapped, like in treesit, it
-;; doesn't mess up bindings/repeat maps
-(defun nvp-move-previous-defun (&optional arg)
-  "Move backward defun."
-  (interactive "P")
-  (nvp:push-mark nvp-move-previous-defun)
-  (beginning-of-defun arg))
-
-;;--- Headings
-;; these may vary by mode
-;; Get or create header regex based on comment syntax.
-(nvp:define-cache nvp-mode-header-regex ()
-  :local t
-  (nvp:heading-create-re))
-
-(defun nvp-move-forward-heading (&optional back error)
-  "Move forward heading.
-Move backward if BACK. If ERROR throw error when no more headings."
-  (interactive)
-  (condition-case nil
-      (progn
-        (forward-line (if back -1 1))
-        (if back (re-search-backward (nvp-mode-header-regex))
-          (re-search-forward (nvp-mode-header-regex)))
-        (forward-line 0))
-    (error
-     (forward-line (if back 1 -1))
-     (user-error (format "No %s headings" (if back "previous" "more")))
-     (and error (signal error t)))))
-
-(defun nvp-move-previous-heading (&optional error)
-  "Move backward headings.
-If ERROR, throw error when no more headings."
-  (interactive)
-  (nvp-move-forward-heading 'back error))
-
-
-;; -------------------------------------------------------------------
 ;;; Newline DWIM
 
 (defvar-local nvp-newline-comment-continue t
@@ -350,31 +294,6 @@ Dispatches to generic handlers with ARG."
   (interactive "*P")
   (funcall-interactively 'nvp-newline-dwim-default arg))
 
-
-;; -------------------------------------------------------------------
-;;; Paredit
-(eval-when-compile (require 'paredit))
-(nvp:decl paredit-move-past-close-and paredit-blink-paren-match)
-
-(defun nvp-paredit-close-round ()
-  "Close paren skipping over possible comments and call `expand-abbrev'."
-  (interactive)
-  (expand-abbrev)
-  (let ((beg (point))                   ; keep comment on same line
-        (end (paredit-move-past-close-and ?\) (lambda () (point)))))
-    (unless (eq (line-number-at-pos) (line-number-at-pos beg))
-      ;; we moved across lines -- skip back over comments / whitespace
-      (forward-char -1)                 ; skip closer
-      (forward-comment (- (point-max)))
-      (when (not (eq (point) (1- end)))
-        (insert-char ?\))
-        (save-excursion
-          (goto-char (1+ end))
-          (delete-char -1)
-          (delete-blank-lines))))
-    (paredit-blink-paren-match nil)))
-
-
 ;; -------------------------------------------------------------------
 ;;; Completion
 (nvp:decl vertico-directory-tidy vertico-insert vertico-exit vertico--metadata-get)
@@ -440,43 +359,6 @@ Otherwise just call `vertico-insert'. If this was previous command, call
   (setf (symbol-function 'vertico-directory-up) #'nvp-vertico-directory-up)
   (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
 
-;; -------------------------------------------------------------------
-;;; Marks
-
-(defvar-keymap nvp-repeat-mark-defun-map
-  :repeat (:enter (nvp-mark-defun))
-  "c" #'nvp-mark-expand-to-previous-comments
-  "h" #'nvp-mark-defun)
-
-;; FIXME:
-;; currently calls beginning of function twice since I was lazy to write a
-;; function that would skip back over the previous comments. The seemingly
-;; obvious `forward-comment' and other comment skipping functions all seem to
-;; skip over both comments + whitespace which isn't what this should do.
-(defun nvp-mark-expand-to-previous-comments ()
-  "Move back previous comment block and end at beginning of line."
-  (interactive)
-  (forward-line 1)
-  (beginning-of-defun-comments))
-
-;; FIXME: on repeats the point moves back one line for some reason.
-(defun nvp-mark-defun (&optional arg)
-  "Call mark defun with ARG, skipping preceding comments."
-  (interactive (list (prefix-numeric-value current-prefix-arg)))
-  (let ((skip-comments (not (region-active-p))))
-    ;; (when interactive
-    ;;   (setq prefix-arg (max 1 (/ (lsh arg -1) 4))))
-    (funcall nvp-mark-defun-function arg)
-    (and skip-comments (comment-forward (point-max)))))
-
-;;; Narrowing
-(defun nvp-narrow-dwim (&optional arg)
-  (interactive "P")
-  (if (region-active-p)
-      (narrow-to-region (region-beginning) (region-end))
-    (narrow-to-defun arg)))
-
-
 ;; -------------------------------------------------------------------
 ;;; Advices
 

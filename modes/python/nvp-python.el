@@ -8,8 +8,8 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp:req 'nvp-python 'subrs)
 (require 'comint)
-(require 'python)
-(nvp:decls :p (anaconda conda-env))
+(require 'python nil t)
+(nvp:decls :p (python anaconda conda-env))
 
 (nvp:defmethod nvp-parse-current-function ()
   :modes (python-mode python-ts-mode)

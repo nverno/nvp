@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mirror if yas-text ${x:$($s? ...)}
+# key: __
+# --
+\${${1:1}:\$(\$s? "$2")}

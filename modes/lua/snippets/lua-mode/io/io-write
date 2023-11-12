@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: io.write
+# key: iow
+# --
+io.write("$1" __${2:$($s? ", ")}${2:x})

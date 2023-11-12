@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
-# name: psuedo method declaration
+# name: pseudo method declaration
 # key: self:
 # --
 function self:${1:methodName}($2)
-    $0
+  $0
 end

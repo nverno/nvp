@@ -1,4 +1,6 @@
+;; -*- lexical-binding: t; -*-
 
+(nvp:decl nvp-stringify)
 (defmacro nvp-cache-file-path (filename)
   "Create cache path for FILENAME."
   `(expand-file-name ,(nvp-stringify filename) nvp/cache))

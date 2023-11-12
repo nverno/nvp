@@ -24,7 +24,7 @@
    (list (if (eq this-command last-command)
              (get this-command 'char)
            (put this-command 'char (char-to-string (read-char "Char: " t))))))
-  (nvp:push-mark nvp-move-char-this-line)
+  (nvp:push-mark 'nvp-move-char-this-line)
   (let ((case-fold-search t))
     (condition-case nil
         (search-forward char (nvp:point 'eol))

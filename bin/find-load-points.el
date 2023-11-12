@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (require 'cl-lib)
 
 (defvar my-init-file "~/.emacs.d/init.elc")
@@ -31,7 +32,7 @@ If CONTINUE is non-nil, don't stop after first load."
             (apply f sym args)))))))
 
 (defun find-initial-load ()
-  "Call with 'emacs -q -l /this/file.el -f find-initial-load'."
+  "Call with \"emacs -q -l /this/file.el -f find-initial-load\"."
   (find-load-point "tramp" 'continue)
   (load my-init-file))
 

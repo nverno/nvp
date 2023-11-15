@@ -3,22 +3,23 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'gorepl-mode nil t)
+(require 'nvp-repl)
 (nvp:decls :p (gorepl))
 
-(with-eval-after-load 'nvp-repl
-  (when (fboundp #'gorepl-run-load-current-file)
-    (nvp-repl-add '(go-mode go-ts-mode)
-      :name 'go
-      :modes '(gorepl-mode)
-      :bufname gorepl-buffer-name
-      ;; :send-input #'gorepl-eval
-      :send-buffer #'gorepl-run-load-current-file
-      :history-file ".gore_history"
-      :help-cmd '(:no-arg ":help" :with-arg ":doc %s")
-      :init (lambda (&optional _prefix)
-              (save-window-excursion
-                (gorepl--run-gore '("-autoimport"))
-                (get-buffer-process (current-buffer)))))))
+(when (fboundp #'gorepl-run-load-current-file)
+  (nvp-repl-add '(go-mode go-ts-mode)
+    :name 'go
+    :modes '(gorepl-mode)
+    :bufname gorepl-buffer-name
+    ;; :send-input #'gorepl-eval
+    :send-buffer #'gorepl-run-load-current-file
+    :history-file ".gore_history"
+    :help-cmd '(:no-arg ":help" :with-arg ":doc %s")
+    :init (lambda (&optional _prefix)
+            (save-window-excursion
+              (gorepl--run-gore '("-autoimport"))
+              (get-buffer-process (current-buffer))))))
 
 (provide 'nvp-gorepl)
 ;; Local Variables:

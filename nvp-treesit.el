@@ -171,7 +171,7 @@
      ("e" "Toggle errors" ts-error-toggle)]]
   [["Parsers"
     ("l" "List nodes" ts-parser-list-nodes :transient t)
-    ("L" "List parser sources" ts-util-list-sources :transient t)
+    ("L" "List sources" ts-util-list-parser-sources :transient t)
     ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t)
     ("i" "Install parser" nvp-treesit-install)
     ("U" "Update parser(s)" nvp-treesit-update)]

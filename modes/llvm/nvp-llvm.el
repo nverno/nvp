@@ -2,11 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'llvm-mode nil t)
 (require 'nvp)
-(nvp:decls :f (llvm-mode-lookup-instruction-online
-               c-lineup-assignments c-set-style)
-           :v (c-basic-offset))
+(nvp:decls :p (llvm c))
 
 ;;; Help
 

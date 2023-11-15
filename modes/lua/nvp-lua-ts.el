@@ -6,21 +6,6 @@
 (require 'lua-ts-mode)
 (nvp:decls :p (lua))
 
-;; TODO: remove after patch
-(setq lua-ts--font-lock-settings
-      (append
-       (treesit-font-lock-rules
-        :language 'lua
-        :feature 'string
-        '((string) @font-lock-string-face)
-        :language 'lua
-        :feature 'escape
-        :override t
-        '((escape_sequence) @font-lock-escape-face))
-       (seq-filter (lambda (e)
-                     (not (memq (nth 2 e) '(escape string))))
-                   lua-ts--font-lock-settings)))
-
 ;; non-nil to align arguments with parent
 (defvar lua-ts-align-arguments nil)
 

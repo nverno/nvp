@@ -6,36 +6,8 @@
 (require 'lua-ts-mode nil t)
 (nvp:decls :p (lua) :v (nvp-repl--display-action))
 
-;;; Repl
-
-(define-advice lua-ts-inferior-lua (:around (orig-fn) "dont-be-dumb")
-  (let ((display-buffer-overriding-action nvp-repl--display-action))
-    (save-window-excursion
-      (funcall orig-fn))))
-
-;; Note: `lua-ts-mode' doesn't define a major mode for the REPL
-(defvar lua-repl-mode-hook nil)
-
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(lua-mode lua-ts-mode)
-    :name 'lua
-    :modes '(lua-repl-mode)
-    :send-region #'lua-ts-send-region
-    :send-buffer #'lua-ts-send-buffer
-    :send-file #'lua-ts-send-file
-    :bufname (regexp-quote lua-ts-inferior-buffer)
-    :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
-    :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
-    :help-cmd "_G"
-    :history-file ".lua_history"
-    :init (lambda (&optional _prefix)
-            (save-window-excursion
-              (let* ((display-buffer-overriding-action nvp-repl--display-action)
-                     (proc (funcall-interactively #'lua-ts-inferior-lua)))
-                (with-current-buffer (process-buffer proc)
-                  (setq major-mode 'lua-repl-mode)
-                  (run-hooks 'lua-repl-mode-hook))
-                proc)))))
+  (require 'nvp-lua-repl))
 
 ;;; Fold
 
@@ -45,6 +17,22 @@
         '("\\(?:local \\)?function\\|if\\|do\\|while\\|for\\|{\\|\\[\\["
           "end\\|}\\|\\]\\]" "--" nil)))
 
+;;; Snippets
+
+(nvp:decl nvp-yas-split-args yas-field-value)
+
+;; return keys from 'key1 [= val1][, key_i [= val_i]]*'
+(defun nvp-lua--keys (&optional str)
+  (nvp-yas-split-args (or str yas-text) "[ \t]*=[^,]*,?[ \t]*"))
+
+;; produce "-" when range is decreasing from INIT to LIMIT
+(defun nvp-lua--step-sign (init limit)
+  (let ((vinit (yas-field-value init))
+        (vlim (yas-field-value limit)))
+    (when (and vinit vlim (> (string-to-number vinit) (string-to-number vlim)))
+      "-")))
+
+;; -------------------------------------------------------------------
 ;;; Help
 
 (defvar nvp-lua--rocks nil)
@@ -95,12 +83,6 @@ With prefix arg ROCK show luarocks documentation for THING."
       (if (string= "so" (file-name-extension loc))
           (dired (file-name-directory loc))
         (find-file-other-window (cadr mod))))))
-
-;;; Snippets
-
-(nvp:decl nvp-yas-split-args)
-(defun nvp-lua--keys (&optional str)
-  (nvp-yas-split-args (or str yas-text) "[ \t]*=[^,]*,?[ \t]*"))
 
 (provide 'nvp-lua)
 ;; Local Variables:

@@ -56,9 +56,9 @@ With prefix, prompt for MODE buffers to kill."
      (list mode mbufs)))
   (and (stringp mode) (setq mode (intern mode)))
   (or buffs (setq buffs (nvp-buffer-matching-mode mode)))
-  (when (nvp:prompt-with-message
-         "Kill all mode buffers?" "%S" :read-fn 'y-or-n-p
-         (--map (buffer-name it) buffs))
+  (when (nvp:prompt-with-message "Kill all mode buffers?"
+          :read-fn 'y-or-n-p
+          :message "%S" (--map (buffer-name it) buffs))
     (message "Killing all %S buffers..." mode)
     (mapc (lambda (buf) (kill-buffer buf)) buffs)))
 

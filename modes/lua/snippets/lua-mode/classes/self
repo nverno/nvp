@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: pseudo method declaration
-# key: self:
+# key: meth
 # --
-function self:${1:methodName}($2)
+function ${1:self}:${2:method}($3)
   $0
 end

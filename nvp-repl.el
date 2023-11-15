@@ -298,6 +298,13 @@ repl with source buffer."
         (nvp-repl--setup-history (funcall proc->buff proc))
         (repl:val "buff")))))
 
+(defun nvp-repl--check-source-buffer (buf)
+  (if (buffer-live-p buf) buf
+    (let ((src-buf (nvp:prompt-with-message "Source buffer: "
+                     :read-fn #'read-buffer
+                     :message "Source buffer %S dead" buf)))
+      (puthash (current-buffer) src-buf nvp-repl--process-buffers))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -324,11 +331,7 @@ PREFIX arguments:
   ;; TODO: force create new REPL for buffer
   (when (equal '(16) prefix) (setq nvp-repl-current nil))
   (let ((buff (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
-                  (if (buffer-live-p it) it
-                    (puthash (current-buffer) nil nvp-repl--process-buffers)
-                    (user-error "Source buffer no longer alive")
-                    ;; (other-buffer (current-buffer) 'visible)
-                    )
+                  (nvp-repl--check-source-buffer it)
                 (nvp-repl-get-buffer prefix))))
     (unless (eq 'async buff)
       (pop-to-buffer buff nvp-repl--display-action))))

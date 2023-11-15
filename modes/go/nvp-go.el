@@ -1,8 +1,6 @@
 ;;; nvp-go.el ---  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;; TODO:
-;; - delve debugger setup
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'go-mode nil t)

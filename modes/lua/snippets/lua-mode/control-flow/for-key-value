@@ -2,6 +2,6 @@
 # name: for i, x in pairs(table)
 # key: forkv
 # --
-for k, ${1:v} in pairs(${2:table}) do
+for ${1:k}, ${2:v} in pairs(${3:table}) do
   $0
 end

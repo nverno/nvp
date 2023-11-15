@@ -3,7 +3,7 @@
 # key: forc
 # --
 for i = 1, #${1:str} do
-  local c = $1:sub(i,i)
+  local c = $1:sub(i, i)
   $0
 end
 -- for c in $1:gmatch"." do

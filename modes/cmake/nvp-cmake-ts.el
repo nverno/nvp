@@ -14,11 +14,11 @@
 (nvp:decls)
 
 (defface nvp-cmake-assignment-face
-  '((t (:inherit font-lock-variable-name-face :weight bold)))
+  '((t (:inherit font-lock-variable-name-face)))
   "Face for custom targets and assignments.")
 
 (defface nvp-cmake-function-face
-  '((t (:inherit font-lock-function-name-face)))
+  '((t (:inherit font-lock-function-name-face :weight bold)))
   "Face for function definition.")
 
 (defvar nvp-cmake-builtin-re
@@ -120,7 +120,7 @@
 
 ;;; Indentation
 
-(defvar cmake-ts-mode-align-arguments t
+(defvar cmake-ts-mode-align-arguments nil
   "When non-nil, align all arguments in argument list with first argument.")
 
 (defun cmake-ts-mode--arg-anchor (&rest args)
@@ -135,6 +135,7 @@
 
 (setq cmake-ts-mode--indent-rules
   `((cmake
+     ((parent-is "source_file") parent-bol 0)
      ((node-is ")") parent-bol 0)
      ((node-is "else_command") parent-bol 0)
      ((node-is "elseif_command") parent-bol 0)
@@ -225,8 +226,15 @@
    `(((normal_command
        (identifier) @_name
        (argument_list :anchor (argument) @first-child
-                      @nvp-cmake-assignment-face))
-      (:match ,(rx bos (or "set" "add")) @_name)))
+                      @nvp-cmake-function-face))
+      (:match ,(rx bos (or "add_executable" "add_custom_target")) @_name))
+
+     ;; ((normal_command
+     ;;   (identifier) @_name
+     ;;   (argument_list :anchor (argument) @first-child
+     ;;                  @nvp-cmake-assignment-face))
+     ;;  (:match ,(rx bos (or "set" "add")) @_name))
+     )
 
    :language 'cmake
    :feature 'property
@@ -276,6 +284,7 @@
                          cmake-ts-mode--font-lock-settings))))
 
 ;; local settings in `cmake-ts-mode'
+;;;###autoload
 (defun nvp-cmake-ts-enable ()
   ;; Add font-lock features
   (setf (car treesit-font-lock-feature-list)

@@ -3,7 +3,7 @@
 # key: ccls
 # --
 clang++
-%cpp -std=c++${1:17}
--isystem/usr/include/x86_64-linux-gnu/c++/${2:11}
+%cpp -std=c++${1:20}
+-isystem/usr/include/x86_64-linux-gnu/c++/${2:12}
 -isystem/usr/include/c++/$2
 -Ilib

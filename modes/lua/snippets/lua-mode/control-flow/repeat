@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: repeat ... until(condition)
-# key: do
+# key: rep
 # --
 repeat
   $1

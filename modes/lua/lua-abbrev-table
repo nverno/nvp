@@ -2,9 +2,18 @@
 
 (define-abbrev-table 'lua-mode-abbrev-table
   '(("r" "require" nil :system t)
+    ("t" "table" nil :system t)
+    ("pr" "print" nil :system t)
+    ("cor" "coroutine" nil :system t)
+    ("get" "getmetatable" nil :system t)
     ("ret" "return" nil :system t)
+    ("set" "setmetatable" nil :system t)
+
+    ("!" "not" nil :system t)
+    ("||" "or" nil :system t)
+    ("&&" "and" nil :system t)
     ("!=" "~=" nil :system t))
   "Lua-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table)
-  :regexp "\\(\\_<[!_:\\.A-Za-z0-9=]+\\)\\W*"
+  :regexp "\\(\\_<[!&|_:\\.A-Za-z0-9=]+\\)\\W*"
   :enable-function #'nvp-abbrev-expand-p)

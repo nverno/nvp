@@ -294,19 +294,22 @@ are both specified."
   `(let (pop-up-frames display-buffer-alist)
      ,@body))
 
-(defmacro nvp:prompt-with-message (prompt &optional format-string &rest args)
+(cl-defmacro nvp:prompt-with-message
+    (prompt &rest args
+            &key message (read-fn 'read-from-minibuffer)
+            &allow-other-keys)
   "Display message in mode-line while reading PROMPT from minibuffer.
 Message uses FORMAT-STRING and ARGS."
-  (let ((read-fn 'read-from-minibuffer))
-    (while (keywordp (car args))
-      (if (eq ':read-fn (car args))
-          (setq read-fn (car (nvp:list-unquote (cadr args)))))
-      (setq args (cddr args)))
-    `(progn
-       (require 'eldoc)
-       (minibuffer-with-setup-hook
-           (:append (lambda () (eldoc-minibuffer-message ,format-string ,@args)))
-         (,read-fn ,prompt)))))
+  (declare (indent 1))
+  (while (keywordp (car args))
+    (if (eq ':read-fn (car args))
+        (setq read-fn (car (nvp:list-unquote (cadr args)))))
+    (setq args (cddr args)))
+  `(progn
+     (require 'eldoc)
+     (minibuffer-with-setup-hook
+         (:append (lambda () (eldoc-minibuffer-message ,message ,@args)))
+       (,read-fn ,prompt))))
 
 
 ;; -------------------------------------------------------------------

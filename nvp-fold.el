@@ -2,7 +2,9 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'hideshow)                   ; hs-life-goes-on
+  (require 'nvp-macro))
 (require 'transient)
 (require 'nvp)
 (nvp:auto "hideshow" hs-hide-all hs-toggle-hiding hs-hide-level hs-show-all)

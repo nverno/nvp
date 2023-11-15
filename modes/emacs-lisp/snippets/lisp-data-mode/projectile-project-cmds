@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: projectile commands
+# key: projectile
+# --
+((nil . ((projectile-project-compilation-cmd . "${1:make build}")
+         (projectile-project-test-cmd         . "${2:make test}")
+         (projectile-project-run-cmd          . "${3:make run}")
+         (projectile-project-install-cmd      . "${4:make install}")
+         (projectile-project-configure-cmd    . "${5:make configure}"))))

@@ -86,7 +86,8 @@ With prefix, overwrite value instead of appending by default."
   (interactive
    (let* ((var (read-envvar-name "Environment variable: " nil))
           (current-val (getenv var)))
-     (list var (nvp:prompt-with-message "Value: " "Current: %s" current-val)
+     (list var (nvp:prompt-with-message "Value: "
+                 :message "Current: %s" current-val)
            (and current-val
                 (y-or-n-p "Clobber current value? ")))))
   (if clobber (setenv env-var value)

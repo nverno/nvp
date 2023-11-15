@@ -3,5 +3,5 @@
 # key: forit
 # --
 for ${1:i} in ${2:iterator}($3) do
-    $0
+  $0
 end

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for i, v in ipairs(arg)
+# key: forp
+# --
+for i, ${1:x} in ${2:ipairs(${3:arg})} do
+  $0
+end

@@ -3,5 +3,5 @@
 # key: whi
 # --
 while ${1:true} do
-    $0
+  $0
 end

@@ -2,4 +2,4 @@
 # name: io.open
 # key: openf
 # --
-io.open(${1:"${2:filename}"}, "${3:r}")
+io.open(${1:"${2:filename}"}, "${3:w+}")

@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: module
+# key: mod
+# --
+local ${1:M} = {}
+
+${2:function $1.${3:name}}
+
+return $1

@@ -1,0 +1,35 @@
+# -*- mode: snippet -*-
+# name: Segment tree w/ update
+# key: d_seg
+# --
+class SegmentTree:
+    def __init__(self, lo, hi) -> None:
+        self.lo = lo
+        self.hi = hi
+        self.val = 0
+        self.lazy = 0
+        if lo + 1 < hi:
+            mid = (lo + hi) // 2
+            self.left = SegmentTree(lo, mid)
+            self.right = SegmentTree(mid, hi)
+
+    def update(self, val):
+        self.lazy += val
+        self.val += val * (self.hi - self.lo)
+
+    def query(self, lo, hi):
+        if self.lo >= lo and self.hi <= hi:
+            res = self.val
+            self.update(1)
+            return res
+        mid = (self.lo + self.hi) // 2
+        res = 0
+        self.left.update(self.lazy)
+        self.right.update(self.lazy)
+        self.lazy = 0
+        if lo < mid:
+            res += self.left.query(lo, hi)
+        if hi > mid:
+            res += self.right.query(lo, hi)
+        self.val = self.left.val + self.right.val
+        return res

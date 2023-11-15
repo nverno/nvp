@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: MOD
+# key: mod
+# --
+MOD = 1_000_000_007

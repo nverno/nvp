@@ -2,11 +2,15 @@
 # name: psuedo class declaration
 # key: class
 # --
-${1:_M} = {}
-$1.new = function($2)
-    local self = {}
+${1:_M} = {${2:name = "", size = 0}}
 
-    ${3:-- code}
-
-    return self
+function $1:new (${2:$(string-join (nvp-lua--keys) ", ")})
+  local self = {}${2:$(when (yas-text)
+                        (concat "\n  "
+                          (mapconcat 'identity
+                            (--map (format "  self.%s = %s" it it)
+                                   (nvp-lua--keys))
+                            "\n")))}
+  ${3:-- code}
+  return self
 end

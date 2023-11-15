@@ -96,6 +96,12 @@ With prefix arg ROCK show luarocks documentation for THING."
           (dired (file-name-directory loc))
         (find-file-other-window (cadr mod))))))
 
+;;; Snippets
+
+(nvp:decl nvp-yas-split-args)
+(defun nvp-lua--keys (&optional str)
+  (nvp-yas-split-args (or str yas-text) "[ \t]*=[^,]*,?[ \t]*"))
+
 (provide 'nvp-lua)
 ;; Local Variables:
 ;; coding: utf-8

@@ -9,7 +9,7 @@
 ;; TODO:
 ;; - redirect output
 ;; - eval + print results
-;;
+;; - command to interrupt / kill repl process
 ;;; Code:
 
 (eval-when-compile
@@ -298,12 +298,14 @@ repl with source buffer."
         (nvp-repl--setup-history (funcall proc->buff proc))
         (repl:val "buff")))))
 
-(defun nvp-repl--check-source-buffer (buf)
-  (if (buffer-live-p buf) buf
-    (let ((src-buf (nvp:prompt-with-message "Source buffer: "
-                     :read-fn #'read-buffer
-                     :message "Source buffer %S dead" buf)))
-      (puthash (current-buffer) src-buf nvp-repl--process-buffers))))
+(defun nvp-repl--check-source-buffer (buf &optional prefix)
+  (if (and (null prefix) (buffer-live-p buf)) buf
+    (let ((src-buf
+           (nvp:prompt-with-message "Source buffer: "
+             :read-fn #'read-buffer
+             :read-args (nil t)
+             :message (if prefix "Current buffer %S" "Source buffer %S dead") buf)))
+      (puthash (current-buffer) (get-buffer src-buf) nvp-repl--process-buffers))))
 
 
 ;; -------------------------------------------------------------------
@@ -324,14 +326,17 @@ repl with source buffer."
 If the associated source buffer no longer exists, pop to next visible
 window.
 
-PREFIX arguments:
- \\[universal-argument]		Prefix passed to repl init function
- \\[universal-argument] \\[universal-argument] 	Prompt for new repl, becomes current"
+When call from source buffer, with PREFIX arguments:
+ \\[universal-argument]		Prefix passed to repl init function on startup.
+ \\[universal-argument] \\[universal-argument] 	Prompt for new repl, becomes current.
+
+When called from a repl buffer with PREFIX:
+ \\[universal-argument] Prompt for a buffer to set as source."
   (interactive "P")
   ;; TODO: force create new REPL for buffer
   (when (equal '(16) prefix) (setq nvp-repl-current nil))
   (let ((buff (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
-                  (nvp-repl--check-source-buffer it)
+                  (nvp-repl--check-source-buffer it prefix)
                 (nvp-repl-get-buffer prefix))))
     (unless (eq 'async buff)
       (pop-to-buffer buff nvp-repl--display-action))))

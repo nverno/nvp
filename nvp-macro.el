@@ -296,7 +296,7 @@ are both specified."
 
 (cl-defmacro nvp:prompt-with-message
     (prompt &rest args
-            &key message (read-fn 'read-from-minibuffer)
+            &key message (read-fn 'read-from-minibuffer) read-args
             &allow-other-keys)
   "Display message in mode-line while reading PROMPT from minibuffer.
 Message uses FORMAT-STRING and ARGS."
@@ -309,7 +309,7 @@ Message uses FORMAT-STRING and ARGS."
      (require 'eldoc)
      (minibuffer-with-setup-hook
          (:append (lambda () (eldoc-minibuffer-message ,message ,@args)))
-       (,read-fn ,prompt))))
+       (funcall ',read-fn ,prompt ,@read-args))))
 
 
 ;; -------------------------------------------------------------------

@@ -3,13 +3,14 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
-(require 'nvp-python)
 (nvp:decls :p (gud))
 
 ;;;###autoload(autoload 'nvp-python-debug-menu "nvp-python-debug")
 (transient-define-prefix nvp-python-debug-menu ()
   "Python debug"
   ;; toggle `gud-pdb-command-name'
+  ["Debugger"
+   ("d" "Pdb" pdb)]
   ["Breakpoint"
    ("b" "Toggle" nvp-python-toggle-breakpoint)
    ("h" "Highlight" nvp-python-annotate-breakpoints)
@@ -17,6 +18,25 @@
   ["Profile"
    ("p" "Profile" nvp-python-profile)
    ("c" "Callgraph" nvp-python-callgraph)])
+
+;;; Compile
+
+(defvar nvp-python-breakpoint-string
+  (cond ((executable-find "ipdb") "import ipdb; ipdb.set_trace()")
+        ((executable-find "pudb") "import pudb; pudb.set_trace()")
+        (t "import pdb; pdb.set_trace()"))
+  "Breakpoint string to highlight.")
+
+;; if debug breakpoint is detected in source, then compile in comint mode
+;; (define-advice compile (:around (orig cmd &optional comint) "py-maybe-debug")
+;;   (when (derived-mode-p major-mode 'python-mode)
+;;     (save-excursion
+;;       (save-match-data
+;;         (goto-char (point-min))
+;;         (if (re-search-forward
+;;              (concat "^\\s-*" nvp-python-breakpoint-string "[ \t]*$") nil t)
+;;             (funcall orig cmd t)
+;;           (funcall orig cmd comint))))))
 
 ;;; GDB REPL 
 

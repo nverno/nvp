@@ -4,8 +4,6 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'anaconda-mode nil t)
-(require 'nvp)
-(require 'nvp-hap)
 (nvp:decls :p "anaconda")
 
 (defvar nvp-anaconda-doc-buffer "*Anaconda*")

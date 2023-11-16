@@ -11,8 +11,7 @@
 ;; switch between python/julia/js and load those tools
 (defun nvp-jupyter-switch-mode (mode)
   (interactive
-   (list (ido-completing-read "Set local variables for: "
-                              '("python" "julia" "js"))))
+   (list (completing-read "Set local variables for: " '("python" "julia" "js"))))
   (pcase mode
     ("python" (nvp-setup-local "python" :abbr-table "python-mode"))
     ("julia" (nvp-setup-local "julia" :abbr-table "julia-mode"))

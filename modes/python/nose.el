@@ -53,8 +53,7 @@
 ;;             (local-set-key "\C-cpm" 'nosetests-pdb-module)
 ;;             (local-set-key "\C-cp." 'nosetests-pdb-one)))
 
-(eval-when-compile
-  (require 'cl-lib))
+(eval-when-compile (require 'cl-lib))
 
 (defvar nose-project-root-files '(".projectile"
                                   "setup.cfg"

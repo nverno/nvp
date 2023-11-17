@@ -9,7 +9,13 @@
 ;;;###autoload
 (define-minor-mode react-minor-mode "React"
   :lighter " ℝ"
-  (yas-activate-extra-mode 'react-mode))
+  (if react-minor-mode
+      (let ((yas-dir (expand-file-name "web/snippets/react-mode" nvp/modes)))
+        (unless (member yas-dir yas-snippet-dirs)
+          (push yas-dir yas-snippet-dirs)
+          (yas-load-directory yas-dir))
+        (yas-activate-extra-mode 'react-mode))
+    (yas-deactivate-extra-mode 'react-mode)))
 
 ;;;###autoload
 (defun nvp-web-setup-react ()

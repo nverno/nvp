@@ -116,7 +116,7 @@
   ;; TODO: with some prefix, prompt to choose mode
   "Mode"
   [["Run"
-    ("r" "Run" nvp-run :if-non-nil nvp-run-functions)
+    ("r" "Run" nvp-run)
     ("c" "Compile" nvp-mode-compile)
     ("t" "Test" nvp-test)]
    ["Editing"
@@ -130,8 +130,8 @@
     ("D" "Disassemble" nvp-disassemble :if-non-nil nvp-disassemble-functions)]]
   [["External"
     ("T" "Tag" nvp-tag)
-    ("C" "Configure" nvp-configure :if-non-nil nvp-configure-functions)
-    ("i" "Install" nvp-install :if-non-nil nvp-install-functions)]
+    ("C" "Configure" nvp-configure)
+    ("i" "Install" nvp-install)]
    ["Help"
     ("s" "Search docs" nvp-docs :if-non-nil nvp-docs-functions)
     ("M-?" "Describe mode" nvp-dev-describe-mode :transient nil)]

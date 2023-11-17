@@ -170,9 +170,10 @@
      ("?" "Inspect node" treesit-inspect-node-at-point)
      ("e" "Toggle errors" ts-error-toggle)]]
   [["Parsers"
-    ("l" "List nodes" ts-parser-list-nodes :transient t)
-    ("L" "List sources" ts-util-list-parser-sources :transient t)
-    ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t)
+    ("l" "List nodes" ts-parser-list-nodes)
+    ("L" "List sources" ts-util-list-parser-sources)
+    ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t
+     :if nvp-treesit-ready-p)
     ("i" "Install parser" nvp-treesit-install)
     ("U" "Update parser(s)" nvp-treesit-update)]
    ["Dev Mode"

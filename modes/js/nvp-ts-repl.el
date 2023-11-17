@@ -7,7 +7,7 @@
 
 (eval-when-compile (require 'nvp-macro))
 (require 'ts-comint nil t)
-(unless (featurep 'nvp-ts) (require 'nvp-ts))
+(require 'nvp-repl)
 (nvp:decls :p (ts add-node) :v (ts-comint-buffer nvp-typescript-modes) :f (run-ts))
 
 (defun nvp-ts-repl-program ()
@@ -27,22 +27,22 @@
                    (executable-find ts-comint-program-command)))
     (setq ts-comint-program-command (nvp-ts-repl-program))))
 
-(with-eval-after-load 'nvp-repl
-  (when (fboundp 'run-ts)
-    (nvp-repl-add nvp-typescript-modes
-      :name 'typescript
-      :modes '(ts-comint-mode)
-      :bufname (regexp-quote "*Typescript")
-      :send-string #'ts-send-string
-      :send-region #'ts-send-region
-      :send-sexp #'ts-send-last-sexp
-      :send-buffer #'ts-send-buffer
-      :send-file #'ts-load-file
-      :history-file ".ts_history"
-      :init (lambda (&optional _prefix)
-              (nvp-ts-repl-setup 'force)
-              (run-ts nil 'no-switch)
-              (get-buffer-process ts-comint-buffer)))))
+(when (fboundp 'run-ts)
+  (nvp-repl-add nvp-typescript-modes
+    :name 'typescript
+    :modes '(ts-comint-mode)
+    :bufname (regexp-quote "*Typescript")
+    :send-string #'ts-send-string
+    :send-region #'ts-send-region
+    :send-sexp #'ts-send-last-sexp
+    :send-buffer #'ts-send-buffer
+    :send-file #'ts-load-file
+    :history-file ".ts_history"
+    :init (lambda (&optional _prefix)
+            (or (nvp-ts-repl-setup 'force)
+                (user-error "No ts repl found (need to npm i ts-node?)"))
+            (run-ts nil 'no-switch)
+            (get-buffer-process ts-comint-buffer))))
 
 (defun nvp-ts-repl-get-file-mod (filename)
   (concat "import * as "

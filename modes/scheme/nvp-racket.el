@@ -28,6 +28,11 @@
       (forward-line))
     (racket-send-region (point) (point-max))))
 
+(defun nvp-racket-repl-init (&optional _prefix)
+  (interactive "P")
+  (racket--repl-ensure-buffer-and-session
+   (lambda (buf) (pop-to-buffer buf))))
+
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(racket-mode)
     :name 'racket
@@ -40,11 +45,18 @@
     :send-buffer #'nvp-racket-send-buffer
     ;; :eval-sexp #'racket-eval-last-sexp
     :history-file ".racket_history"
-    :init-callback 
+    :init-callback ; #'nvp-racket-repl-init
     (lambda (&optional prefix)
       ;; PREFIX '(16) - with debugging, `racket-error-context' "debug"
       (interactive "P")
-      (racket-run-and-switch-to-repl prefix))))
+      ;; (racket--repl-ensure-buffer-and-session
+      ;;  (lambda (buf) (get-buffer-process buf)))
+      (racket-run-and-switch-to-repl prefix)
+      ;; (condition-case err
+      ;;     (racket-run-and-switch-to-repl prefix)
+      ;;   (error (message (error-message-string err))))
+      )
+    ))
 
 ;;; Help
 
@@ -59,8 +71,7 @@
                     (`(,path ,anchor) `(,path . ,anchor))
                     (_                (racket--buffer-file-name))))))
        (save-window-excursion
-         (let ((display-buffer-overriding-action
-                '(nil . ((inhibit-switch-frame . t)))))
+         (let ((display-buffer-overriding-action #'display-buffer-no-window))
            (racket--do-describe how nil arg)
            (let (buf)
              (while (or (not (setq buf (get-buffer (format "*Racket Describe <%s>*"

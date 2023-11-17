@@ -3,13 +3,11 @@
 ;; TODO:
 ;; - auto-abbrevs
 ;; - sbcl: jump to source
-;; - hap
-;; - pophelp
 ;; - info
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'slime nil t)
-(nvp:decls :p (slime) :f (slime))
+(nvp:decls :p (slime) :f (slime) :v (*slime-company--meta-request*))
 (nvp:auto "nvp-elisp" 'nvp-elisp-abbrev-expand-var-p 'nvp-elisp-abbrev-expand-fn-p)
 
 ;; return list of available lisps and their arguments
@@ -34,6 +32,22 @@
 ;; -------------------------------------------------------------------
 ;;; REPL
 
+(defun nvp-lisp-eval-last-sexp (&optional prefix)
+  "Eval last sexp and print output in buffer with PREFIX."
+  (interactive "P")
+  (funcall (if prefix #'slime-pprint-eval-last-expression
+             #'slime-eval-last-expression)))
+
+(defun nvp-lisp-eval-buffer (&optional buffer-name)
+  "Evaluate BUFFER-NAME using asdf:load-system for .asd file and
+`slime-eval-buffer' otherwise."
+  (interactive (list (buffer-name)))
+  (if (not (string-match-p
+            "asd" (file-name-extension (or buffer-name (buffer-name)))))
+      (call-interactively #'slime-eval-buffer)
+    (let ((system (file-name-sans-extension buffer-name)))
+      (slime-repl-eval-string (format "(asdf:load-system \"%s\")" system)))))
+
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(lisp-mode)
     :name 'slime
@@ -48,45 +62,28 @@
     :init #'(lambda (&optional _prefix)
               (save-window-excursion
                 (with-current-buffer (slime-output-buffer t)
-                  slime-buffer-connection)))))
-
-;; evaluate buffer - if in .asd file, call asdf:load-system on it,
-;; otherwise do regular slime eval-buffer
-(defun nvp-lisp-eval-buffer (&optional buffer-name)
-  (interactive (list (buffer-name)))
-  (if (not (string-match-p
-            "asd" (file-name-extension (or buffer-name (buffer-name)))))
-      (call-interactively #'slime-eval-buffer)
-    (let ((system (file-name-sans-extension buffer-name)))
-      (slime-repl-eval-string (format "(asdf:load-system \"%s\")" system)))))
+                  slime-buffer-connection)))
+    ;; :eval-defun #'slime-eval-defun
+    ;; :eval-region #'slime-eval-region
+    :eval-sexp #'nvp-lisp-eval-last-sexp
+    :send-buffer #'nvp-lisp-eval-buffer
+    :help-cmd (lambda (&rest _) (slime-repl-shortcut-help))
+    :pwd-cmd (lambda (&rest _) (slime-eval '(swank:default-directory)))
+    :cd-cmd (lambda (dir)
+              (push (slime-eval '(swank:default-directory))
+                    slime-repl-directory-stack)
+              (slime-set-default-directory dir))))
 
 ;; -------------------------------------------------------------------
-;;; Help
+;;; Help at point 
 
-;; From http://bc.tech.coop/blog/070515.html
-(defun nvp-lisp-lispdoc ()
-  "Searches lispdoc.com for SYMBOL, which is by default the symbol 
-currently under the curser."
-  (interactive)
-  (let* ((word-at-point (word-at-point))
-	 (symbol-at-point (symbol-at-point))
-	 (default (symbol-name symbol-at-point))
-	 (inp (read-from-minibuffer
-	       (if (or word-at-point symbol-at-point)
-		   (concat "Symbol (default " default "): ")
-		 "Symbol (no default): "))))
-    (if (and (string= inp "")
-             (not word-at-point)
-             (not symbol-at-point))
-	(message "you didn't enter a symbol!")
-      (let ((search-type (read-from-minibuffer
-			  "full-text (f) or basic (b) search (default b)? ")))
-	(browse-url (concat "http://lispdoc.com?q="
-			    (if (string= inp "") default inp)
-			    "&search="
-			    (if (string-equal search-type "f")
-				"full+text+search"
-			      "basic+search")))))))
+(defun nvp-hap-lisp (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (and (slime-connected-p)
+                    (slime-symbol-at-point)))
+    (doc-buffer
+     (unless *slime-company--meta-request*
+       (list (slime-company--doc-buffer arg))))))
 
 ;; -------------------------------------------------------------------
 ;;; Hippie Expand

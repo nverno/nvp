@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: no-byte-compile
+# key: nbc
+# --
+(("${1:directory}" (nil (no-byte-compile . t))))

@@ -1,4 +1,4 @@
-;;; org-batch-export.el --- Export org files to various formats from command-line.
+;;; org-batch-export.el --- Export org files to various formats from command-line.  -*- lexical-binding: t; -*-
 ;;; Code:
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/git/org-mode/lisp"))
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))

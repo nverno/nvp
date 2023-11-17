@@ -75,7 +75,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'slime nil t)
 (nvp:decls :p (slime common-lisp)
-           :f (slime-symbol-name-at-point common-lisp-hyperspec-strip-cl-package))
+           :f (common-lisp-hyperspec-strip-cl-package))
 
 (defvar cl-info-symbols (make-hash-table :test #'equal))
 (defvar cl-info-urls (make-hash-table :test #'equal))
@@ -1070,7 +1070,7 @@
 ;;;###autoload
 (defun cl-info (symbol-name)
   (interactive
-   (list (let* ((symbol-at-point (slime-symbol-name-at-point))
+   (list (let* ((symbol-at-point (slime-symbol-at-point))
 		(stripped-symbol 
 		 (and symbol-at-point
 		      (downcase

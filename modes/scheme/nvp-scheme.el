@@ -96,6 +96,8 @@
 ;; -------------------------------------------------------------------
 ;;; REPL
 
+;;; TODO: `nvp-add-repl'
+
 ;; Add to `pre-command-hook' in geiser repl hook.
 ;; Enables abbrevs according to scheme implementiation
 ;; since `geiser-impl--implementation' isn't available when this

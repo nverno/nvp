@@ -5,28 +5,17 @@
 ;; Various options:
 ;; - etags bundled w/ emacs (basically just elisp/C/C++)
 ;; - ctags
-;; - universal-ctags (better, actively maintained ctags fork, many languages)
+;; - universal-ctags
 ;; - Python pygments parsers - many languages
-;; - GNU global w/ universal-ctags + pygments (best)
+;; - GNU global w/ universal-ctags + pygments
 ;;
 ;; Bugs (3/6/20):
-;; - In configuration of global (~/.globalrc) -- I've found that using
-;;   pygments-parser w/ custom ctags (added langdefs in universal-ctags parser)
-;;   gives a warning about unknown langdef, but then still works -- see
-;;   ~/dotfiles/code/.globalrc for my reasoning about why the warning occurs
 ;; - ggtags.el: tags starting with regex characters cause errors, eg.
 ;;   ggtags-process-string("global" "-c" "$0") =>
 ;;   global error: "only name char is allowed with -c option"
 ;;   Maintainer of ggtags.el says this should be fixed in global, see issue:
 ;;   https://github.com/leoliu/ggtags/issues/191
 ;;   Workaround `nvp-ggtags-bounds-of-tag-function' for now.
-;;
-;; TODO:
-;; - might be worth adding support for something like dumb-jump/smart-jump for
-;;   situations where global/universal-ctags aren't available
-;; - Generic function to tag language specific source directories that may be
-;;   outside of the current project root (system libraries, source installs, etc)
-;; - Integrate better with projectile tagging
 ;;
 ;; References for developing customizable templated commands:
 ;; - grep #<marker at 25028 in grep.el.gz>
@@ -35,7 +24,11 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (require 'nvp)
+(nvp:decls :p (ggtags))
+
+(defvar nvp-tags-ctags-program (nvp:program "ctags"))
 
 ;; workaround ggtags.el/global not accepting regex chars
 (defun nvp-ggtags-bounds-of-tag-function ()
@@ -45,20 +38,6 @@
       (skip-chars-forward "?$*+^\\." end) ; so no idents prefixed with '$' or '.'
       (cons (point) end))))
 
-;;; FIXME: none of this is currently used
-(cl-defgeneric nvp-tag-command ()
-  "Command to generate tags.")
-
-;; find-tag default functions - see subr.el: #<marker at 149978 in subr.el>
-(defun nvp-tag-get-default ()
-  (or (and (region-active-p)
-           (/= (point) (mark))
-           (buffer-substring-no-properties (point) (mark)))
-      (funcall (or find-tag-default-function
-                   (get major-mode 'find-tag-default-function)
-                   'find-tag))))
-
-;;; ctags
 ;;;###autoload
 (defun nvp-tag-list-decls (&optional lang kinds file force)
   "List decls defined by language LANG of type KINDS from current buffer or
@@ -67,7 +46,7 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
   (->> (apply #'process-lines
               (delq nil
                     (list
-                     (nvp:program "ctags") "-x"
+                     nvp-tags-ctags-program "-x"
                      (and force lang (not (string= lang "all"))
                           (format "--language-force=%s" lang))
                      (and lang kinds (format "--kinds-%s=%s" lang kinds))
@@ -77,34 +56,45 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
                    (string-trim-left (replace-regexp-in-string "[ \t;{]*$" "" it)))))
        (delq nil)))
 
-;; -------------------------------------------------------------------
-;;; Using imenu
+(defun nvp-tag-list-language-config (lang)
+  "List ctags language configuration for LANG."
+  (interactive
+   (list (completing-read
+          "Language: "
+          (process-lines nvp-tags-ctags-program "--list-languages") nil t)))
+  (nvp:with-results-buffer :buffer (concat "*Help[ctags-" lang "]*")
+    :action :none
+    (dolist (cmd '("maps" "kinds-full" "fields" "features" "extras"
+                   "roles" "params" "aliases" "subparsers"))
+      (insert (propertize cmd 'face 'bold-italic))
+      (insert "\n")
+      (save-excursion
+        (call-process nvp-tags-ctags-program nil (current-buffer) nil
+                      (concat "--list-" cmd "=" lang)))
+      (add-text-properties (point) (point-max) '(face 'font-lock-comment-face))
+      (goto-char (point-max)))
+    (pop-to-buffer (current-buffer))))
 
-;; FIXME: What was this used for? Just remote tagging?
-;; ;;;###autoload
-;; (defun nvp-tag-directory-imenu (dir tagfile)
-;;   "Use imenu regexp to call find .. | etags .. in shell command."
-;;   (interactive "DDirectory to tag:
-;; GTags file (default TAGS): ")
-;;   (when (or (eq (length (file-name-nondirectory tagfile) 0))
-;;             (file-directory-p tagfile))
-;;     (setq tagfile (concat (file-name-as-directory tagfile) "TAGS")))
-;;   (when (file-remote-p tagfile)
-;;     (require 'tramp)
-;;     (setq tagfile (with-parsed-tramp-file-name tagfile foo foo-localname)))
-;;   (when (file-remote-p dir)
-;;     (require 'tramp)
-;;     (setq dir (with-parsed-tramp-file-name dir foo foo-localname)))
-;;   (unless imenu-generic-expression
-;;     (error "No `imenu-generic-expression' defined for %s" major-mode))
-;;   (let* ((find-cmd
-;;           (format "find %s -type f -size 1M \\( -regex \".*\\.\"")))))
+(nvp:decl tags-reset-tags-tables projectile-regenerate-tags)
 
-;; (defun nvp-xref-find-etags ()
-;;   (interactive)
-;;   (let* ((xref-backend-functions '(etags--xref-backend))
-;;          (thing (xref-backend-identifier-at-point 'etags)))
-;;     (xref-find-definitions-other-window thing)))
+;;;###autoload(autoload 'nvp-tag-menu "nvp-tag")
+(transient-define-prefix nvp-tag-menu ()
+  [ :if-non-nil tags-file-name
+    "Tags"
+    ("a" "Apropos" tags-apropos)
+    ("s" "Search" tags-search)
+    ("f" "List file tags" list-tags)
+    ("q" "Query replace regexp" tags-query-replace)]
+  [["Tables"
+    ("l" "Load table" visit-tags-table)
+    ("c" "Choose table" select-tags-table :if-non-nil tags-table-set-list)
+    ("R" "Regen project tags" projectile-regenerate-tags)
+    ("K" "Reset tables" tags-reset-tags-tables :if-non-nil tags-file-name)]
+   ["Help"
+    ("hl" "List language config" nvp-tag-list-language-config)]]
+  ;; settings
+  ;; `tags-apropos-verbose' list filenames
+  )
 
 (provide 'nvp-tag)
 ;;; nvp-tag.el ends here

@@ -124,29 +124,6 @@
 ;;; Initialize some REPLs
 (nvp-repl-add '(sh-mode bash-ts-mode bats-mode) nvp-repl--shell-repl)
 
-(nvp:decl ielm-send-input)
-(nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
-  :name 'ielm
-  :init #'ielm
-  :modes '(inferior-emacs-lisp-mode)
-  :procname "ielm"
-  :bufname "*ielm"
-  :send-input #'ielm-send-input
-  :eval-sexp #'eval-last-sexp
-  :wait 0.1
-  :history-file ".ielm_history"
-  :help-cmd (lambda (&rest _)
-              (save-window-excursion (describe-mode ielm-working-buffer))
-              (display-buffer (help-buffer)))
-  :pwd-cmd #'ielm-print-working-buffer
-  :cd-cmd (lambda (&rest _)
-            (if (eq major-mode 'inferior-emacs-lisp-mode)
-                (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
-                    (and (buffer-live-p it)
-                         (ielm-change-working-buffer it))
-                  (message "%s not asociated with a source buffer" (current-buffer)))
-              (ielm-change-working-buffer (current-buffer)))))
-
 (eval-when-compile
   ;; may switch storage of REPL vars
   (defmacro repl:val (val)

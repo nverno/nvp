@@ -9,7 +9,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'lisp-mode)
 (require 'ielm)
-(require 'nvp-comint)
+(nvp:decls :p (nvp-repl))
 
 (defvar nvp-ielm-hippie-expanders
   '(nvp-he-try-expand-history
@@ -21,20 +21,53 @@
     try-complete-lisp-symbol
     try-complete-lisp-symbol-partially))
 
+;; use `pop-to-buffer' and set local `ielm-working-buffer'
+(define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
+  (let ((orig-buff (current-buffer)))
+   (with-current-buffer (get-buffer-create "*ielm*")
+     (nvp:with-letf #'pop-to-buffer-same-window #'ignore
+       (funcall orig-fn))
+     (prog1 (current-buffer)
+       (setq-local ielm-working-buffer orig-buff)
+       (and current-prefix-arg (pop-to-buffer (current-buffer)))))))
+
+(with-eval-after-load 'nvp-repl
+  (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
+    :name 'ielm
+    :init #'ielm
+    :modes '(inferior-emacs-lisp-mode)
+    :procname "ielm"
+    :bufname "*ielm"
+    :send-input #'ielm-send-input
+    :eval-sexp #'eval-last-sexp
+    :wait 0.1
+    :history-file ".ielm_history"
+    :help-cmd (lambda (&rest _)
+                (save-window-excursion (describe-mode ielm-working-buffer))
+                (display-buffer (help-buffer)))
+    :pwd-cmd #'ielm-print-working-buffer
+    :cd-cmd (lambda (&rest _)
+              (if (eq major-mode 'inferior-emacs-lisp-mode)
+                  (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
+                      (and (buffer-live-p it)
+                           (ielm-change-working-buffer it))
+                    (message "%s not asociated with a source buffer" (current-buffer)))
+                (ielm-change-working-buffer (current-buffer))))))
+
 ;; insert nl and indent - ielm-return always wants to eval when smartparens
 ;; close sexps
 (defun nvp-ielm-nl (&optional arg)
   "Insert nl and indent unless point is at end-of-line."
   (interactive "P")
   (if (eolp) (ielm-return arg)
-   (let (ielm-dynamic-return)
-     (newline-and-indent))))
+    (let (ielm-dynamic-return)
+      (newline-and-indent))))
 
 ;;; Fonts
 
-(defconst nvp-ielm-font-lock-keywords
-  `(,@(mapcar #'nvp-comint-font-lock-keywords lisp-el-font-lock-keywords-2)
-    ,@(mapcar #'nvp-comint-font-lock-keywords lisp-cl-font-lock-keywords-2)))
+;; (defconst nvp-ielm-font-lock-keywords
+;;   `(,@(mapcar #'nvp-comint-font-lock-keywords lisp-el-font-lock-keywords-2)
+;;     ,@(mapcar #'nvp-comint-font-lock-keywords lisp-cl-font-lock-keywords-2)))
 
 ;; (nvp:font-lock-add-defaults 'inferior-emacs-lisp-mode
 ;;   ((nvp:re-opt '("IELM error" "Eval error" "Read error")) .

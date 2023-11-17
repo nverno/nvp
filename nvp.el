@@ -9,14 +9,9 @@
 ;; only external libraries required at startup: (actually in `emacs-startup-hook')
 (require 'company)
 (require 'smartparens)
-
-(nvp:decls
- :f ( winner-redo winner-undo
-      isearch-repeat-forward isearch-repeat-backward
-      consult-recent-file
-      lsp-format-buffer
-      ggtags-find-tag-dwim))
-
+(nvp:decls :p (projectile winner isearch consult lsp)
+           :f (lsp-format-buffer projectile-regenerate-tags))
+           
 ;;; Aliases
 (defalias 'nvp-completing-read 'completing-read)
 (put 'nvp-completing-read 'lisp-indent-function 'defun)
@@ -143,8 +138,9 @@ called from minibuffer, or nil.")
        ,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-default-functions)))))
 (nvp:define-function-hooks)
 (setq-default nvp-compile-default-function       #'nvp-compile-default)
-(setq-default nvp-tag-default-function           #'ggtags-find-tag-dwim)
 (setq-default nvp-format-buffer-default-function #'lsp-format-buffer)
+(setq-default nvp-tag-default-function           #'projectile-regenerate-tags)
+(setq-default nvp-install-default-function       #'projectile-install-project)
 (setq-default nvp-check-buffer-default-function  #'flycheck-list-errors)
 (setq-default nvp-test-default-function          #'projectile-test-project)
 (setq-default nvp-configure-default-function     #'projectile-configure-project)

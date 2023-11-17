@@ -7,8 +7,10 @@
   (require 'nvp-parse))
 (require 'pp)
 (require 'company-elisp)
-(nvp:decls :f (company-elisp--candidates-predicate company-elisp--fns-regexp)
-           :v (nvp-elisp-defuns-regexp nvp-elisp-var-binding-regexp))
+(nvp:decls :p (company-elisp))
+           
+(with-eval-after-load 'nvp-repl
+  (require 'nvp-ielm))
 
 ;; modified from company-elisp to incorporate more things
 ;; used to determine abbrev expansion / toggling
@@ -296,19 +298,6 @@ If in `declare-function', convert to autoload."
 ;; variable expansion
 (defun nvp-elisp-abbrev-expand-var-p ()
   (nvp-elisp:abbrev-expand-p 'fboundp))
-
-;; ------------------------------------------------------------
-;;; Advices
-
-;; use `pop-to-buffer' and set local `ielm-working-buffer'
-(define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
-  (let ((orig-buff (current-buffer)))
-   (with-current-buffer (get-buffer-create "*ielm*")
-     (nvp:with-letf #'pop-to-buffer-same-window #'ignore
-       (funcall orig-fn))
-     (prog1 (current-buffer)
-       (setq-local ielm-working-buffer orig-buff)
-       (and current-prefix-arg (pop-to-buffer (current-buffer)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Compile

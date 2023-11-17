@@ -126,8 +126,10 @@
   (let ((print-escape-newlines t)
         (print-quoted t)
         (pp-default-function 'pp-29)
-        (var (if (symbolp variable) (eval variable)
-               variable)))
+        (var (or (and (symbolp variable)
+                      (boundp variable)
+                      (symbol-value variable))
+                 variable)))
     (cl-macrolet ((get-string (fn var)
                     `(with-temp-buffer
                        (when (> level 0)

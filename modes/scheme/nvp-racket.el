@@ -26,37 +26,45 @@
     (while (and (not (eobp))
                 (looking-at-p "[ \t]*$\\|^#"))
       (forward-line))
-    (racket-send-region (point) (point-max))))
+    (racket--send-region-to-repl (point) (point-max))))
 
-(defun nvp-racket-repl-init (&optional _prefix)
+;; return repl buffer for session ID
+(defun nvp-racket--repl-buffer (id)
+  (seq-some (lambda (buf)
+              (when (buffer-live-p buf)
+                (with-current-buffer buf
+                  (when (and (eq major-mode 'racket-repl-mode)
+                             (eq racket--repl-session-id id))
+                    (current-buffer)))))
+            (buffer-list)))
+
+(defun nvp-racket--repl-init (&optional prefix)
+  "Start racket repl.
+With \\[universal-argument] \\[universal-argument] PREFIX instrument for
+debugging."
   (interactive "P")
-  (racket--repl-ensure-buffer-and-session
-   (lambda (buf) (pop-to-buffer buf))))
+  (save-window-excursion
+    (racket-run-and-switch-to-repl prefix)
+    (get-buffer racket-repl-buffer-name)))
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(racket-mode)
     :name 'racket
     :modes '(racket-repl-mode)
-    :bufname racket-repl-buffer-name
+    :live #'numberp
+    :process-p #'numberp
+    :buff->proc (lambda (buf) (with-current-buffer buf (racket--repl-session-id)))
+    :proc->buff #'nvp-racket--repl-buffer
+    :clear-buffer nil
+    ;; :eval-sexp #'racket-eval-last-sexp
+    :send-input nil
     :send-string #'ignore
     :send-region #'racket-send-region
     :send-defun #'racket-send-definition
     :send-sexp #'racket-send-last-sexp
     :send-buffer #'nvp-racket-send-buffer
-    ;; :eval-sexp #'racket-eval-last-sexp
-    :history-file ".racket_history"
-    :init-callback ; #'nvp-racket-repl-init
-    (lambda (&optional prefix)
-      ;; PREFIX '(16) - with debugging, `racket-error-context' "debug"
-      (interactive "P")
-      ;; (racket--repl-ensure-buffer-and-session
-      ;;  (lambda (buf) (get-buffer-process buf)))
-      (racket-run-and-switch-to-repl prefix)
-      ;; (condition-case err
-      ;;     (racket-run-and-switch-to-repl prefix)
-      ;;   (error (message (error-message-string err))))
-      )
-    ))
+    :wait 0.1
+    :init #'nvp-racket--repl-init))
 
 ;;; Help
 

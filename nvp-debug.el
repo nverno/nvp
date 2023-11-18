@@ -24,29 +24,70 @@
   (nvp-comint-setup-history (concat ".gud_" name "_history")))
 
 ;; -------------------------------------------------------------------
+;;; Breakpoint statements
+
+(defvar-local nvp-debug-breakpoint-string nil)
+
+;;;###autoload
+(defun nvp-debug-toggle-breakpoint (&optional conditional)
+  (interactive "P")
+  (unless nvp-debug-breakpoint-string (user-error "unimplemented"))
+  (let ((line (thing-at-point 'line)))
+    (if (and line (string-match-p
+                   (car (split-string nvp-debug-breakpoint-string "%s")) line))
+        (delete-line)
+      (let ((dbg-str (format nvp-debug-breakpoint-string
+                         (if conditional "${1:cond}" ""))))
+       (progn
+         (goto-char (line-beginning-position))
+         (open-line 1)
+         (indent-according-to-mode)
+         (if conditional (yas-expand-snippet dbg-str)
+           (insert dbg-str)))))))
+
+(defun nvp-debug-remove-breakpoints (&optional breakpoint-prefix)
+  (interactive (list (if current-prefix-arg (read-string "Breakpoint prefix: ")
+                       (and nvp-debug-breakpoint-string
+                            (car (split-string nvp-debug-breakpoint-string "%s"))))))
+  (unless breakpoint-prefix (user-error "unimplemented"))
+  (let ((count 0))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward (concat "^\\s-*" breakpoint-prefix) nil t)
+        (cl-incf count)
+        (delete-line)))
+    (message "Remove %d breakpoints" count)))
+
+;; -------------------------------------------------------------------
 ;;; Transient
 
 (nvp:def-transient-toggle-vars nvp-gud-menu
   gud-highlight-current-line)
 
+(defun nvp-gud-refresh (&optional arg)
+  (interactive "P")
+  (let ((display-buffer-overriding-action
+         '(nil . ((inhibit-same-window . t)))))
+    (funcall-interactively #'gud-refresh arg)))
+
 (eval-when-compile
   (defmacro nvp:def-gud-menu ()
     (declare (indent defun))
-    (cl-macrolet ((cmd (key desc command)
+    (cl-macrolet ((cmd (key desc command &optional exit)
                     `(list ,key ,desc ',command
-                           :if (lambda () (fboundp ',command)))))
+                           :if (lambda () (fboundp ',command)) :transient ,(not exit))))
       (let ((menu
              (list
               (vector
                :if (lambda () (bound-and-true-p gud-minor-mode))
                (vector "Go"
-                       (cmd "n" "Next line" gud-next)
+                       (cmd "n" "Next line (skip func)" gud-next)
                        (cmd "N" "Next instruction" gud-nexti)
-                       (cmd "s" "Step line" gud-step)
+                       (cmd "s" "Step line (into func)" gud-step)
                        (cmd "S" "Step instruction" gud-stepi)
                        (cmd "r" "Run" gud-run)
                        (cmd "g" "Continue-run" gud-go)
-                       (cmd "c" "Continue" gud-continue)
+                       (cmd "c" "Continue" gud-cont)
                        (cmd "j" "Jump" gud-jump)
                        (cmd "u" "Until" gud-until)
                        (cmd "f" "Finish function" gud-finish))
@@ -57,7 +98,8 @@
                        (cmd "D" "Remove" gud-remove))
                (vector "Print"
                        (cmd "p" "Print" gud-print)
-                       (cmd "p" "Print" gud-pp) ; elisp
+                       (cmd "P" "Print" gud-pp) ; elisp
+                       (cmd "t" "Trace" gud-trace)
                        (cmd "*" "Dump dereference" gud-pstar)
                        (cmd "x" "Execute" gud-statement)))
               (vector
@@ -66,9 +108,9 @@
                        (cmd "u" "Up frame" gud-up)
                        (cmd "d" "Down frame" gud-down))
                (vector "GUD"
-                       (cmd "R" "Refresh" gud-refresh)
-                       (cmd "k" "Stop" gud-stop-subjob)
-                       (cmd "?" "Info (debug)" gud-goto-info)))
+                       (cmd "l" "Refresh" nvp-gud-refresh)
+                       (cmd "k" "Stop" gud-stop-subjob 'exit)
+                       (cmd "?" "Info (debug)" gud-goto-info 'exit)))
               ["Settings"
                (":l" "Highlight current line"
                 nvp-gud-menu--toggle-gud-highlight-current-line

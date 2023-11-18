@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
-(nvp:decls :p (gud))
+(nvp:decls :p (gud) :v (nvp-python-breakpoint-string))
 
 ;;;###autoload(autoload 'nvp-python-debug-menu "nvp-python-debug")
 (transient-define-prefix nvp-python-debug-menu ()
@@ -20,12 +20,6 @@
    ("c" "Callgraph" nvp-python-callgraph)])
 
 ;;; Compile
-
-(defvar nvp-python-breakpoint-string
-  (cond ((executable-find "ipdb") "import ipdb; ipdb.set_trace()")
-        ((executable-find "pudb") "import pudb; pudb.set_trace()")
-        (t "import pdb; pdb.set_trace()"))
-  "Breakpoint string to highlight.")
 
 ;; if debug breakpoint is detected in source, then compile in comint mode
 ;; (define-advice compile (:around (orig cmd &optional comint) "py-maybe-debug")
@@ -63,27 +57,6 @@
       (hi-lock-unface-buffer t)
     (highlight-lines-matching-regexp "import i?pu?db")
     (highlight-lines-matching-regexp "i?pu?db.set_trace()")))
-
-(defun nvp-python-remove-breakpoints ()
-  (interactive)
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward
-            (concat "^\\s-*" nvp-python-breakpoint-string "[ \t]*$") nil t)
-      (delete-line))))
-
-;;;###autoload
-(defun nvp-python-toggle-breakpoint ()
-  "Add or remove a debugging breakpoint at point."
-  (interactive)
-  (let ((line (thing-at-point 'line)))
-    (if (and line (string-match-p nvp-python-breakpoint-string line))
-        (delete-line)
-      (progn
-        (back-to-indentation)
-        (insert nvp-python-breakpoint-string)
-        (insert "\n")
-        (python-indent-line)))))
 
 (provide 'nvp-python-debug)
 ;;; nvp-python-debug.el ends here

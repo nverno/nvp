@@ -307,8 +307,8 @@ repl with source buffer."
                 proc (funcall buff->proc p-buff)))
         (cl-assert (funcall process-p proc))
         (nvp-repl-update proc (current-buffer) p-buff)
-        (nvp-repl--setup-history p-buff)
-        (nvp--repl-buff nvp-repl-current)))))
+        (prog1 (setq p-buff (repl:val "buff"))
+          (nvp-repl--setup-history p-buff))))))
 
 (defun nvp-repl--check-source-buffer (buf &optional prefix)
   (if (and (null prefix) (buffer-live-p buf)) buf

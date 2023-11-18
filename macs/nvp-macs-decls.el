@@ -102,6 +102,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-mode-header-regex
     nvp-mode-snippet-dir
     nvp-mode-font-additions
+    nvp-debug-breakpoint-string
     nvp-local-compile-function
     nvp-local-notes-file
     nvp-local-books-directories

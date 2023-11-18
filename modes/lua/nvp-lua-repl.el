@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
 (require 'lua-ts-mode nil t)
-(nvp:decls :p (gorepl lua))
+(nvp:decls :p (lua))
 
 ;;; Repl
 
@@ -20,14 +20,14 @@
 (nvp-repl-add '(lua-mode lua-ts-mode)
   :name 'lua
   ;; :modes '(lua-repl-mode)
+  :bufname (regexp-quote lua-ts-inferior-buffer)
+  :history-file ".lua_history"
   :send-region #'lua-ts-send-region
   :send-buffer #'lua-ts-send-buffer
   :send-file #'lua-ts-send-file
-  :bufname (regexp-quote lua-ts-inferior-buffer)
   :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
   :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
   :help-cmd "_G"
-  :history-file ".lua_history"
   :init (lambda (&optional _prefix)
           (save-window-excursion
             (let* ((display-buffer-overriding-action nvp-repl--display-action)

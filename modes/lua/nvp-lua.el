@@ -42,6 +42,9 @@
             (cl-loop for line in (process-lines "luarocks" "list" "--porcelain")
                      for parts = (string-split line)
                      collect (cons (car parts) (nth 3 parts))))))
+(eval-when-compile
+  (defsubst nvp:lua-read-rock (&optional recompute)
+    (completing-read "Library: " (nvp-lua--rocks recompute) nil t)))
 
 ;; modules and locations for LIBRARY
 (defun nvp-lua--modules (library)
@@ -53,11 +56,9 @@
 (defun nvp-lua-documentation (thing &optional rock)
   "Lookup THING using `lua-documentation-url'.
 With prefix arg ROCK show luarocks documentation for THING."
-  (interactive
-   (list (if current-prefix-arg
-             (completing-read "Rock: " (nvp-lua--rocks) nil t)
-           (read-string "Help: " (lua-funcname-at-point)))
-         current-prefix-arg))
+  (interactive (list (if current-prefix-arg (nvp:lua-read-rock)
+                       (read-string "Help: " (lua-funcname-at-point)))
+                     current-prefix-arg))
   (if rock
       (let ((docs (process-lines "luarocks" "doc" thing "--list" "--porcelain")))
         (--if-let (--first (string-suffix-p "README.md" it t) docs)
@@ -68,12 +69,10 @@ With prefix arg ROCK show luarocks documentation for THING."
 
 (defun nvp-lua-jump-to-library (library &optional homepage)
   "Jump to lua LIBRARY module source or HOMEPAGE with prefix arg."
-  (interactive
-   (list (completing-read "Library: " (nvp-lua--rocks) nil t) current-prefix-arg))
-  (if homepage
-      (let ((home (car (process-lines "luarocks" "show" "--home" library))))
-        (if home (browse-url home)
-          (user-error "No home for '%s'" library)))
+  (interactive (list (nvp:lua-read-rock) current-prefix-arg))
+  (if homepage (let ((home (car (process-lines "luarocks" "show" "--home" library))))
+                 (if home (browse-url home)
+                   (user-error "No home for '%s'" library)))
     (let* ((mods (nvp-lua--modules library))
            (mod (if (length= mods 1) (car mods)
                   (assoc-string (completing-read "Module: " mods nil t) mods)))

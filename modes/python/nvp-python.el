@@ -18,6 +18,12 @@
 (defsubst nvp-python-statement-bounds ()
   (cons (python-nav-beginning-of-statement) (python-nav-end-of-statement)))
 
+(defvar nvp-python-breakpoint-string
+  (cond ((executable-find "ipdb") "import ipdb; ipdb.set_trace()")
+        ((executable-find "pudb") "import pudb; pudb.set_trace()")
+        (t "import pdb; pdb.set_trace()"))
+  "Breakpoint string to highlight.")
+
 ;;; REPL
 
 ;; switch betweeen source and REPL buffers

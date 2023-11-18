@@ -13,9 +13,12 @@
 
 (defvar hs-special-modes-alist)
 (with-eval-after-load 'hideshow
-  (setf (cdr (assq 'lua-ts-mode hs-special-modes-alist))
-        '("\\(?:local \\)?function\\|if\\|do\\|while\\|for\\|{\\|\\[\\["
-          "end\\|}\\|\\]\\]" "--" nil)))
+  (let ((rules '("\\(?:local \\)?function\\|if\\|do\\|while\\|for\\|{\\|\\[\\["
+                 "end\\|}\\|\\]\\]" "--" nil)))
+    (dolist (mode '(lua-ts-mode lua-mode))
+      (if (assq mode hs-special-modes-alist)
+          (setf (cdr (assq 'lua-ts-mode hs-special-modes-alist)) rules)
+        (push `(,mode ,@rules) hs-special-modes-alist)))))
 
 ;;; Snippets
 

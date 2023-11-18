@@ -87,8 +87,8 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
     ("q" "Query replace regexp" tags-query-replace)]
   [["Tables"
     ("l" "Load table" visit-tags-table)
-    ("c" "Choose table" select-tags-table :if-non-nil tags-table-set-list)
-    ("R" "Regen project tags" projectile-regenerate-tags)
+    ("c" "Choose table" select-tags-table)
+    ("R" "Regen project tags" projectile-regenerate-tags :if-non-nil tags-file-name)
     ("K" "Reset tables" tags-reset-tags-tables :if-non-nil tags-file-name)]
    ["Help"
     ("hl" "List language config" nvp-tag-list-language-config)]]

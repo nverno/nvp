@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'lua-ts-mode)
 (nvp:decls :p (lua))
 
 (setq lua-ts--font-lock-settings
@@ -44,15 +43,19 @@
                  ((or (parent-is "arguments")
                       (parent-is "parameters")
                       (parent-is "table_constructor"))
-                  (nth-sibling 1) 0))
+                  (nth-sibling 1) 0)
+                 ((and (n-p-gp "block" "function_definition" "arguments")
+                       lua-ts--nested-function-argument-matcher)
+                  parent lua-ts-indent-offset)
+                 ((n-p-gp "end" "function_definition" "arguments") parent 0))
              `(((parent-is ,(rx (or "arguments" "parameters" "table_constructor")))
-                standalone-parent lua-ts-indent-offset)))
+                standalone-parent lua-ts-indent-offset)
+               ((n-p-gp "block" "function_definition" "arguments")
+                standalone-parent lua-ts-indent-offset)
+               ((n-p-gp "end" "function_definition" "arguments") standalone-parent 0)))
          ((and (n-p-gp "block" "function_definition" "parenthesized_expression")
                lua-ts--nested-function-block-matcher
                lua-ts--nested-function-block-include-matcher)
-          parent lua-ts-indent-offset)
-         ((and (n-p-gp "block" "function_definition" "arguments")
-               lua-ts--nested-function-argument-matcher)
           parent lua-ts-indent-offset)
          ((match "function_definition" "parenthesized_expression")
           standalone-parent lua-ts-indent-offset)
@@ -69,7 +72,6 @@
                lua-ts--nested-function-end-matcher
                lua-ts--nested-function-last-function-matcher)
           parent 0)
-         ((n-p-gp "end" "function_definition" "arguments") parent 0)
          ((or (match "end" "function_definition")
               (node-is "end"))
           standalone-parent 0)
@@ -86,9 +88,9 @@
          ((parent-is "chunk") column-0 0)
          ((parent-is "ERROR") no-indent 0))))
 
-(provide 'nvp-lua-ts)
-;; Local Variables:
-;; coding: utf-8
-;; indent-tabs-mode: nil
-;; End:
+      (provide 'nvp-lua-ts)
+      ;; Local Variables:
+      ;; coding: utf-8
+      ;; indent-tabs-mode: nil
+      ;; End:
 ;;; nvp-lua-ts.el ends here

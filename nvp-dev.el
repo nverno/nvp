@@ -121,11 +121,20 @@
      hash)
     (cl--print-table '("Key" "Value") entries)))
 
+(defun nvp-pp--format-string (print-rep)
+  (if (< (length print-rep) 68)
+      print-rep
+    (with-temp-buffer
+      (insert print-rep)
+      (pp-buffer)
+      (buffer-string))))
+
 (defun nvp-pp-variable-to-string (variable &optional level)
   (or level (setq level 0))
-  (let ((print-escape-newlines t)
+  (let ((print-escape-newlines nil)
+        (print-circle t)
         (print-quoted t)
-        (pp-default-function 'pp-29)
+        ;; (pp-default-function 'pp-29)
         (var (or (and (symbolp variable)
                       (boundp variable)
                       (symbol-value variable))
@@ -143,7 +152,7 @@
                     (get-string nvp-pp-hash var))
                    ((pred cl-struct-p)
                     (get-string nvp-pp-struct var))
-                   (_ (cl-prin1-to-string var)))))
+                   (_ (nvp-pp--format-string (cl-prin1-to-string var))))))
         (if (> level 0)
             (replace-regexp-in-string "\n" (concat (make-string level ? ) "\n") str)
           str)))))
@@ -170,6 +179,7 @@
       :revert-fn (lambda (&rest _) (funcall #'nvp-dev-describe-variable variable))
       :action :none
       (insert (nvp-pp-variable-to-string val 0))
+      (and (= (char-before) ?\n) (delete-char -1))
       (nvp-dev--fontify-syntax))))
 
 ;;;###autoload

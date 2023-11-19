@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'web-mode nil t)
-(nvp:decls :p (emmet yas web))
+(nvp:decls :p (emmet yas web) :v (web-mode-set-content-type))
 
 ;;;###autoload
 (define-minor-mode react-minor-mode "React"

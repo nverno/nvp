@@ -6,7 +6,7 @@
 (require 'nvp)
 (require 'nvp-cmake)
 (require 'cmake-mode nil t)
-(nvp:decls)
+(nvp:decls :p (cmake) :v (cmake-mode-abbrev-table))
 
 (defvar nvp-cmake-abbrev-syntax-table)
 (with-eval-after-load 'cmake-mode

@@ -4,7 +4,6 @@
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
-(require 'lsp-mode nil t)
 (require 'transient)
 (require 'nvp)
 (nvp:decls :p (hs lsp))
@@ -58,6 +57,7 @@
 (defvar hs-hide-comments-when-hiding-all)
 (defvar-local nvp--lsp-logio-hidden nil)
 
+;;;###autoload
 (defun nvp-lsp-logio-setup (&optional fontify)
   ;; variables to set for hideshow to work
   (setq-local comment-start "")

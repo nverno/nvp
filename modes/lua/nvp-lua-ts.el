@@ -5,9 +5,10 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp:decls :p (lua))
 
-(setq lua-ts--font-lock-settings
-      (seq-filter (lambda (el) (not (eq 'error (nth 3 el))))
-                  lua-ts--font-lock-settings))
+(with-eval-after-load 'lua-ts-mode
+  (setq lua-ts--font-lock-settings
+        (seq-filter (lambda (el) (not (eq 'error (nth 3 el))))
+                    lua-ts--font-lock-settings)))
 
 ;; non-nil to align arguments with parent
 (defvar lua-ts-align-arguments nil)

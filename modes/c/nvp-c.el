@@ -95,7 +95,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
     :name 'gdb
     :modes '(gud-mode)
     :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
-    :init-callback #'gdb))
+    :init #'gdb
+    :init-use-hook t))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers

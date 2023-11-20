@@ -223,6 +223,7 @@
     ("efn" "expand-file-name" nil :system t)
     ("eal" "eval-after-load" nil :system t)
     ("emd" "easy-menu-define" nil :system t)
+    ("ems" "error-message-string" nil :system t)
     ("eod" "end-of-defun" nil :system t)
     ("eol" "end-of-line" nil :system t)
     ("err" "error" nil :system t)

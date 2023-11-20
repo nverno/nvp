@@ -206,12 +206,13 @@
     (":p" "Pause on break" nvp-edebug-menu--toggle-edebug-sit-on-break)
     (":b" "Break condition" nvp-edebug-menu--global-break-condition)]
    ["Trace"
-    ("t" "Trace" nvp-trace-menu :transient nil)
+    ("t" "Trace" nvp-trace-menu :transient transient--do-replace)
     (":c" "Generate callgraph"
      nvp-edebug-menu--toggle-byte-compile-generate-call-tree)]]
   [["Other"
-    ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode)))
-    ("/tree" "Tree-sitter" nvp-treesit-menu
+    ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode))
+     :transient transient--do-replace)
+    ("/tree" "Tree-sitter" nvp-treesit-menu :transient transient--do-replace
      :if (lambda () (ignore-errors (treesit-buffer-root-node))))
     ("/hap" "Hap" nvp-edebug-menu--toggle-nvp-hap-verbose
      :if (lambda () (boundp 'nvp-hap-verbose)))
@@ -219,7 +220,7 @@
     ("/proj" "Projectile verbose" nvp-edebug-menu--toggle-projectile-verbose
      :if-non-nil projectile-mode)
     ("/tran" "Transient" nvp-transient-menu)
-    ("/smie" "Smie" nvp-edebug-smie
+    ("/smie" "Smie" nvp-edebug-smie :transient transient--do-replace
      :if (lambda () (eq 'smie-indent-line indent-line-function)))
     ("/url" nvp-edebug-menu--toggle-url-debug :if (lambda () (boundp 'url-debug)))
     ("/tramp" "Toggle tramp debug" nvp-edebug-menu--toggle-tramp

@@ -1,12 +1,13 @@
-;;; nvp-lsp.el --- LSP utils -*- lexical-binding: t; -*-
+;;; nvp-lsp.el --- LSP addons -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
+;; + Enhanced lsp log I/O mode with font-locking and folding
+;; + transient menu
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
-(require 'nvp)
-(nvp:decls :p (hs lsp))
+(nvp:decls :p (hs lsp) :f (lsp--erase-log-buffer))
 
 ;;; Transient
 

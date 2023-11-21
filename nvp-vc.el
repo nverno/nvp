@@ -74,7 +74,6 @@
 ;; -------------------------------------------------------------------
 ;;; Random Git
 
-;; checkout part of a repo
 ;;;###autoload
 (defun nvp-vc-git-sparse-clone (repo branch subdir local-dir)
   "Clone SUBDIR from REPO on BRANCH to LOCAL-DIR."
@@ -103,7 +102,8 @@
                     (lambda ()
                       (let ((default-directory local-dir))
                         (start-process "git" nil "git" "pull" "origin" branch)))
-                    nil 'local))
+                    nil 'local)
+          (nvp:msg "\\<global-map>\\[save-buffer] to complete sparse checkout"))
       (user-error "Failed to configure repo for sparse checkout"))))
 
 (provide 'nvp-vc)

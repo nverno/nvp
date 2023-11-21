@@ -10,9 +10,7 @@
 (require 'nvp-test)
 (require 'nvp-c)
 (nvp:req 'nvp-c 'subrs)
-(nvp:decls :f (clang-complete-create-or-update
-               yas-expand-snippet yas-lookup-snippet)
-           :v (yas-selected-text))
+(nvp:decls :p (clang yas))
 (nvp:auto "yasnippet" 'yas-expand)
 
 ;; function to run unit test from test buffer
@@ -38,26 +36,6 @@
 (defun nvp-c-test-buffer (type &optional runner)
   (setq-local nvp-c-test-runner runner)
   (nvp:c-test--buffer type))
-
-;;;###autoload(autoload 'nvp-project-c-unity-setup "nvp-c-test")
-(nvp-define-project c-unity
-  :test-fmt "test_%s"
-  :test-init-function (apply-partially 'nvp-c-test-init "unity")
-  :test-buffer-function (apply-partially 'nvp-c-test-buffer
-                                         "unity" 'nvp-c-test-run-unity-test)
-  :test-run-unit-function 'nvp-c-test-run-unity-test)
-
-(nvp-define-project c-check
-  :test-fmt "test_%s"
-  :test-init-function (apply-partially 'nvp-c-test-init "check")
-  :test-buffer-function (apply-partially 'nvp-c-test-buffer "check")
-  :test-run-unit-function 'nvp-c-test-default-runner)
-
-(nvp-define-project c-cunit
-  :test-fmt "test_%s"
-  :test-init-function (apply-partially 'nvp-c-test-init "cunit")
-  :test-buffer-function (apply-partially 'nvp-c-test-buffer "cunit")
-  :test-run-unit-function 'nvp-c-test-default-runner)
 
 ;; -------------------------------------------------------------------
 ;;; Commands

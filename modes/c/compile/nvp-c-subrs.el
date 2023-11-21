@@ -71,12 +71,6 @@ is non-nil."
 ;; -------------------------------------------------------------------
 ;;; C++
 
-(defmacro nvp:with-c++-vars (&rest body)
-  (declare (indent defun))
-  `(nvp-with-project
-     (:test-re ".*test.*\.cpp" :root '("test" "tests" ".git" ".projectile"))
-     ,@body))
-
 (defmacro nvp:c++-test--setup-buffer ()
   `(progn
      (setq-local local-abbrev-table boost-test-abbrev-table)

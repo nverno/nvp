@@ -6,6 +6,7 @@
 (require 'f)
 (require 'nvp)
 (require 'nvp-cmake)
+(nvp:decls)
 
 ;; XXX: read reply files from index-*.json[reply][client-nvp][query.json][responses]
 ;; > jq '.reply["client-nvp"]["query.json"]["responses"]' <index-*.json>

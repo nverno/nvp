@@ -29,13 +29,6 @@
     (insert "\nbatc")
     (call-interactively 'yas-expand)))
 
-;;;###autoload(autoload 'nvp-project-c++-boost-setup "nvp-c++-test")
-(nvp-define-project c++-boost
-  :test-fmt "test_%s"
-  :test-init-function 'nvp-c++-test-init
-  :test-buffer-function 'nvp-c++-test-setup-buffer
-  :test-run-unit-function 'nvp-c++-test-run-unit-test)
-
 ;; -------------------------------------------------------------------
 ;;; Commands 
 

@@ -4,8 +4,9 @@
 ;; TODO: completely refactor
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-project)
-(nvp:decl "ert" ert-run-tests-interactively)
+(nvp:decls)
+(nvp:auto "projectile" projectile-root-top-down)
+(nvp:auto "nvp-project" nvp-project-locate-root)
 
 ;; called when visiting new test buffer, passed name of matching source file
 (defvar nvp-test-init-function #'ignore)
@@ -20,6 +21,11 @@
 (defvar nvp-test-prefixes '("test-" "test_" "t-" "t_" "Test"))
 (defvar nvp-test-suffixes '("-test" "-tests" "_test"))
 (defvar nvp-test-extension-re nil)
+
+(defvar-local nvp-project--root '(".git" ".projectile" "test" "tests"))
+(defvar-local nvp-project--test-re ".*tests?")
+(defvar-local nvp-project--test-dir '("test" "tests" "t"))
+(defvar-local nvp-project--test-fmt "test-%s")
 
 ;; -------------------------------------------------------------------
 ;;; TODO: Default unit test runner
@@ -48,7 +54,7 @@ With prefix ARG, prompt for selector."
 ;; possible test directories (choose first found):
 ;; - test tests t
 (defun nvp-test-dir (&optional local create test-dirs)
-  (let* ((default-directory (nvp-project-locate-root local))
+  (let* ((default-directory (nvp-project-locate-root local nvp-project--root))
          (test-dir (cl-find-if (lambda (d)
                                  (and (file-exists-p d)
                                       (file-directory-p d)

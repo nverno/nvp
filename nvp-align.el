@@ -86,7 +86,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;;;###autoload
 (defun nvp-align-cols (start end)
   (interactive "r")
-  (nvp-align-repeat start end "\\(\"[^\"]+\"\\|\'[^\']+'\\|[^ ]+\\)")
+  (nvp-align-repeat start end "\\(\"[^\"]+\"\\|\'[^\']+'\\|[^ ]+\\)" t)
   (indent-region start end))
 
 ;; -------------------------------------------------------------------

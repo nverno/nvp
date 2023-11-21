@@ -25,6 +25,8 @@
 ;; possible local locations
 (defvar nvp-install-local-locations '("~/.local/bin/" "/usr/local/bin/"))
 
+(defvar nvp-install-buffer-name "*nvp-install*")
+
 ;; locate program in local locations
 ;;;###autoload
 (defun nvp-install-find-local-program (program &optional path)
@@ -36,7 +38,8 @@
                    (cl-return f))))
     (bound-and-true-p (intern (concat "nvp-" program "-program")))))
 
-;;--- Parse ----------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Parse arguments
 
 (defvar nvp-install-mode-patterns
   '("libs:" "optional:" "git:" "bit:" "env:" "script:"))
@@ -85,30 +88,28 @@
                  do (goto-char (match-end 0))
                  and collect (cons pattern (nvp-install-parse-line)))))))
 
-;;--- Git installs ---------------------------------------------------
+;; -------------------------------------------------------------------
+;;; Git Installs 
 
 (defsubst nvp-install-normalize-pkgnames (pkgs)
   (setq pkgs (nvp:as-list pkgs))
-  (--map (string-remove-suffix
-          ".el" (pcase it
-                  ((pred plistp) (plist-get it :repo))
-                  (_ it)))
+  (--map (string-remove-suffix ".el" (pcase it
+                                       ((pred plistp) (plist-get it :repo))
+                                       (_ it)))
          pkgs))
 
 ;; Install git repo into site-lisp, default to github
 (defun nvp-install-git (repo &optional root)
   (let* ((repository (if (plistp repo) (plist-get repo :repo) repo))
          (git-uri (format "%s/%s" (or root "git@github.com:") repository))
-         (pkg (car
-               (nvp-install-normalize-pkgnames
-                (car (last (split-string repository "/"))))))
+         (pkg (car (nvp-install-normalize-pkgnames
+                    (car (last (split-string repository "/"))))))
          (default-directory nvp/site)
-         (buff (get-buffer-create "*nvp-install*"))
+         (buff (get-buffer-create nvp-install-buffer-name))
          (git-args (if (plistp repo) (list "-b" (plist-get repo :branch)))))
     (if (file-exists-p pkg)
-        (progn
-          (cd pkg)
-          (start-process pkg buff "git" "pull"))
+        (progn (cd pkg)
+               (start-process pkg buff "git" "pull"))
       (apply #'start-process
              (append (list pkg buff "git" "clone") git-args (list git-uri pkg))))))
 
@@ -117,17 +118,6 @@
 
 ;; git/bit packages the build
 (defvar nvp-install-pending-dirs nil)
-
-;; Remake site-lisp after final git install.
-(defun nvp-install-git-sentinel (proc msg)
-  (nvp-log "%s: %s" nil (process-name proc) msg)
-  (setq nvp-install-active-procs (delq proc nvp-install-active-procs))
-  (if (zerop (process-exit-status proc))
-      (when (not nvp-install-active-procs)
-        (nvp-install-pending-dirs))
-    ;; something wrong
-    (nvp-log "Not rebuilding site-lisp")
-    (pop-to-buffer "*nvp-install*")))
 
 ;; build installed / updated git packages
 (defun nvp-install-pending-dirs ()
@@ -139,9 +129,10 @@
   (setq nvp-install-pending-dirs nil)
   (load-file nvp/auto-site)
   (nvp-log "Finished installing site-lisp.")
-  (pop-to-buffer "*nvp-install*"))
+  (kill-buffer nvp-install-buffer-name))
 
-;;--- On Demand ------------------------------------------------------
+;; -------------------------------------------------------------------
+;;; On Demand 
 
 ;; number of processes to wait for before compiling
 (defvar nvp-install--total-proc 0)
@@ -261,7 +252,8 @@
                (cl-loop for (prog args) in ',script
                         do
                         (nvp-log "Running %s %S" nil prog args)
-                        (let ((proc (apply 'start-process prog "*nvp-install*" prog args)))
+                        (let ((proc (apply 'start-process
+                                           prog nvp-install-buffer-name prog args)))
                           (nvp-install-execute-process proc ,file)))
                ;;--- Patch
                (cl-loop for (file patch) in ',patch
@@ -270,7 +262,7 @@
                           (nvp-install-execute-process
                            (start-process-shell-command
                             "patch"
-                            "*nvp-install*"
+                            nvp-install-buffer-name
                             (format
                              (concat
                               "patch -s -N -u $(find elpa -type f -name '%s') "

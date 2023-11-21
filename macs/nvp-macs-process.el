@@ -60,7 +60,7 @@ Return process object."
                                            on-error
                                            on-success
                                            proc-filter
-                                           (display-action t))
+                                           display-action)
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
   (declare (indent defun))
@@ -74,10 +74,14 @@ if process exit status isn't 0."
        (set-process-sentinel ,proc
                              #'(lambda (p m)
                                  (nvp-log "%s: %s" nil (process-name p) m)
-                                 (if (zerop (process-exit-status p))
-                                     ,on-success
-                                   ,on-err)))
-       (display-buffer (process-buffer ,proc) ,display-action))))
+                                 (let ((exit (process-exit-status p)))
+                                   (if (or (and (numberp exit) (zerop exit))
+                                           (and (stringp exit)
+                                                (string-match-p "finished" exit)))
+                                      ,on-success
+                                    ,on-err))))
+       ,@(unless (null display-action)
+           `((display-buffer (process-buffer ,proc) ,display-action))))))
 
 ;; -------------------------------------------------------------------
 ;;; Main wrapper

@@ -111,14 +111,14 @@
 ;;;###autoload
 (define-minor-mode nvp-treesit-minor-mode
   "Treesit development minor mode."
-  :lighter " T/S"
+  :lighter " 🌲"
   :keymap nvp-treesit-minor-mode-map
   ;; XXX: powerline doesn't display `mode-line-misc-info' where
   ;; `treesit-inspect-mode' wants to put the node info
   ;; (powerline-revert)
   (if nvp-treesit-minor-mode
       (when (treesit-language-at (point))
-        (powerline-revert)
+        ;; (powerline-revert)
         ;; (add-hook 'window-buffer-change-functions
         ;;           #'nvp-treesit--change-window-hook nil t)
         (treesit-inspect-mode))

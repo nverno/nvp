@@ -35,9 +35,7 @@
   (let (deactivate-mark)
     (nvp-with-log-buffer buffer-name
      (insert-before-markers
-      (apply #'format
-             (replace-regexp-in-string "[\r\n]+" "\n" (concat text "\n"))
-             args)))))
+      (apply #'format (replace-regexp-in-string "[\r\n]+" "\n" text) args)))))
 
 ;; ------------------------------------------------------------
 ;;; Mode

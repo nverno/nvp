@@ -7,9 +7,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(require 'magit nil t)
-(nvp:decls :f (git-messenger:popup-message))
+(nvp:decls :p (magit))
 
 ;; -------------------------------------------------------------------
 ;;; Magit
@@ -68,8 +66,7 @@
 ;;; Gitconfig-mode
 (defun nvp-gitconfig-jump-to-alias (alias)
   "Jump to alias in .gitconfig file."
-  (interactive
-   (list (completing-read "Alias: " (nvp-git-aliases))))
+  (interactive (list (completing-read "Alias: " (nvp-git-aliases))))
   (goto-char (point-min))
   (search-forward "[alias]" nil t)
   (re-search-forward (concat "^\\s-*" (regexp-quote alias)) nil t))

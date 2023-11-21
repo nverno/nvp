@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: const MOD
+# key: mod
+# --
+(define MOD ${1:1000000007})

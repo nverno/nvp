@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: until
-# key: until
+# key: unt
 # --
 until ${1:condition}
   $0

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: if1
-# key: if1
+# key: if-
 # --
 if $1 then $2 else $3 end$0

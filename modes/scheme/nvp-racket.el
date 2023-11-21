@@ -7,6 +7,9 @@
 (nvp:decls :p ("racket"))
 (nvp:auto "nvp-hap" nvp-hap-thing-at-point)
 
+(with-eval-after-load 'nvp-repl
+  (require 'nvp-racket-repl))
+
 (defun nvp-racket-expand ()
   (interactive)
   (call-interactively
@@ -17,55 +20,7 @@
        (?d "[d]ef" #'racket-expand-definition)
        (?f "[f]ile" #'racket-expand-file)))))
 
-;;; Repl
-
-(defun nvp-racket-send-buffer (&optional _and-go)
-  (interactive "P")
-  (save-excursion
-    (goto-char (point-min))
-    (while (and (not (eobp))
-                (looking-at-p "[ \t]*$\\|^#"))
-      (forward-line))
-    (racket--send-region-to-repl (point) (point-max))))
-
-;; return repl buffer for session ID
-(defun nvp-racket--repl-buffer (id)
-  (seq-some (lambda (buf)
-              (when (buffer-live-p buf)
-                (with-current-buffer buf
-                  (when (and (eq major-mode 'racket-repl-mode)
-                             (eq racket--repl-session-id id))
-                    (current-buffer)))))
-            (buffer-list)))
-
-(defun nvp-racket--repl-init (&optional prefix)
-  "Start racket repl.
-With \\[universal-argument] \\[universal-argument] PREFIX instrument for
-debugging."
-  (interactive "P")
-  (save-window-excursion
-    (racket-run-and-switch-to-repl prefix)
-    (get-buffer racket-repl-buffer-name)))
-
-(with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(racket-mode)
-    :name 'racket
-    :modes '(racket-repl-mode)
-    :live #'numberp
-    :process-p #'numberp
-    :buff->proc (lambda (buf) (with-current-buffer buf (racket--repl-session-id)))
-    :proc->buff #'nvp-racket--repl-buffer
-    :clear-buffer nil
-    ;; :eval-sexp #'racket-eval-last-sexp
-    :send-input nil
-    :send-string #'ignore
-    :send-region #'racket-send-region
-    :send-defun #'racket-send-definition
-    :send-sexp #'racket-send-last-sexp
-    :send-buffer #'nvp-racket-send-buffer
-    :wait 0.1
-    :init #'nvp-racket--repl-init))
-
+;; -------------------------------------------------------------------
 ;;; Help
 
 ;; `nvp-hap-backend' help-at-point function for Racket using `racket-mode' to

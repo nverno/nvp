@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: elsif
-# key: elsif
+# key: els
 # --
 elsif ${1:condition}
   $0

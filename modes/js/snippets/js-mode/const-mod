@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: const MOD
+# key: mod
+# --
+const MOD = 1_000_000_007;

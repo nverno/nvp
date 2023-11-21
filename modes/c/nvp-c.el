@@ -102,17 +102,17 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
           (trim-p t)                     ; non-nil if skipping beginning blanks
           res)                           ; list of resulting strings
       (cl-loop for c across str
-         for i from 0 upto (length str)
-         do (pcase c
-              (`?  (and trim-p (cl-incf prev)))
-              (`?< (cl-incf bcount))
-              (`?> (cl-decf bcount))
-              ((pred (equal delim))
-               (when (zerop bcount)
-                 (push (substring str prev i) res)
-                 (setf prev (1+ i))
-                 (setf trim-p t)))
-              (_ (setf trim-p nil))))
+               for i from 0 upto (length str)
+               do (pcase c
+                    (`?  (and trim-p (cl-incf prev)))
+                    (`?< (cl-incf bcount))
+                    (`?> (cl-decf bcount))
+                    ((pred (equal delim))
+                     (when (zerop bcount)
+                       (push (substring str prev i) res)
+                       (setf prev (1+ i))
+                       (setf trim-p t)))
+                    (_ (setf trim-p nil))))
       (push (string-trim-right (substring str prev)) res)
       (nreverse res))))
 
@@ -129,12 +129,11 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 (defun nvp-c-function-signatures (&optional file ignore-main ignore-static)
   (--when-let (nvp-tag-list-decls "c" "fp" file)
     (if (or ignore-main ignore-static)
-        (let ((ignore (regexp-opt
-                       (cl-remove-if
-                        #'null
-                        (list (and ignore-main "main")
-                              (and ignore-static "static")))
-                       'symbols)))
+        (let ((ignore (format "\\_<%s\\_>"
+                              (regexp-opt
+                               (delq nil `(,(and ignore-main "main")
+                                           ,(and ignore-static "static")))
+                               'symbols))))
           (cl-remove-if (lambda (s) (string-match-p ignore s)) it))
       it)))
 
@@ -148,13 +147,9 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;;; Company
 (defun nvp-c-load-company-backend (backend)
   (interactive
-   (list
-    (eval
-     (cadr
-      (read-multiple-choice
-       "Load: "
-       '((?c 'company-clang)
-         (?i 'company-irony)))))))
+   (list (eval (cadr (read-multiple-choice "Load: "
+                                           '((?c 'company-clang)
+                                             (?i 'company-irony)))))))
   (nvp-company-local backend)
   (setq company-clang-arguments (clang-complete-load-args)))
 
@@ -293,7 +288,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                             (lambda () (delete-file buffer-file-name))
                             nil 'local))
                 nil 'local))))
-  
+
 ;;; XREFs
 
 ;;;###autoload

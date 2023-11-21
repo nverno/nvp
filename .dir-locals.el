@@ -4,7 +4,9 @@
 ((nil
   (projectile-project-type            . elisp)
   (projectile-project-compilation-cmd . "make rebuild")
-  (nvp-local-notes-file               . "~/org/code/emacs.org")
+  (projectile-project-test-cmd        . "make test")
+  (projectile-project-configure-cmd   . "make check-compiled")
+  (projectile-project-install-cmd     . "make unicode")
   (bug-reference-url-format           . "https://github.com/nverno/%s"))
  (emacs-lisp-mode
   ;; (outline-regexp                  . "\f\\|\\`;\\|;;\\*\\|;;;\\*\\|(def[cvu]\\|(setq\\|;;;;\\*")

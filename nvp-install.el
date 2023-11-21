@@ -128,7 +128,7 @@
           (nvp-pkg-directory-dwim dir)))
   (setq nvp-install-pending-dirs nil)
   (load-file nvp/auto-site)
-  (nvp-log "Finished installing site-lisp.")
+  (nvp-log "Finished installing site-lisp.\n")
   (kill-buffer nvp-install-buffer-name))
 
 ;; -------------------------------------------------------------------
@@ -213,8 +213,8 @@
                (cl-loop for pkg in ',libs
                         if (and (package-installed-p (intern pkg))
                                 (locate-library pkg))
-                        do (nvp-log "%s already installed" nil pkg)
-                        else do (nvp-log "Installing %s" nil pkg)
+                        do (nvp-log "%s already installed\n" nil pkg)
+                        else do (nvp-log "Installing %s\n" nil pkg)
                         (package-install (intern pkg) t))
                (cl-loop for pkg in ',optional
                         do (message "Package %s" pkg)
@@ -239,19 +239,19 @@
                ;; Permanent
                (cl-loop for (var val exec clobber) in ',env!
                         do
-                        (nvp-log "Setting %s to %s%s" nil var val
+                        (nvp-log "Setting %s to %s%s\n" nil var val
                                  (if clobber " (clobbering)"))
                         (nvp-env-setenv! var val exec clobber))
                ;; FIXME: handle more than just PATH
                ;; Just adds to PATH currently 
                (cl-loop for dir in ',env
                         do
-                        (nvp-log "Adding %s to PATH" dir)
+                        (nvp-log "Adding %s to PATH\n" dir)
                         (nvp-env-path-add dir))
                ;;--- Scripts ---------------------------------------------
                (cl-loop for (prog args) in ',script
                         do
-                        (nvp-log "Running %s %S" nil prog args)
+                        (nvp-log "Running %s %S\n" nil prog args)
                         (let ((proc (apply 'start-process
                                            prog nvp-install-buffer-name prog args)))
                           (nvp-install-execute-process proc ,file)))

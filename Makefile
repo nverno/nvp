@@ -58,14 +58,6 @@ test: ## Run tests
 check-compiled:  ## Check compiled files for subrs/macros
 	@$(CURDIR)/bin/check compiled && exit 1 || echo "check-compiled: all good"
 
-README.md : el2markdown.el ${PKG}.el ## Generate README.md from source
-	$(BATCH) -l $< ${PKG}.el -f el2markdown-write-readme
-
-.INTERMEDIATE: el2markdown.el
-el2markdown.el:
-	wget \
-  -q -O $@ "https://github.com/Lindydancer/el2markdown/raw/master/el2markdown.el"
-
 .PHONY: unicode
 unicode:  ## Generate latex/unicode abbrevs
 	@julia ${BIN}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}

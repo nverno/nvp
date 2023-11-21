@@ -23,12 +23,21 @@
 ;; - transient (used by magit/rg)
 ;;
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
 (require 'nvp)
-(nvp:decls :p (ggtags))
+(nvp:decls :p (ggtags tags projectile))
 
-(defvar nvp-tags-ctags-program (nvp:program "ctags"))
+
+(defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
+
+;;;###autoload
+(defun nvp-etags-find-definitions ()
+  (interactive)
+  (let* ((xref-backend-functions '(etags--xref-backend))
+         (thing (xref-backend-identifier-at-point 'etags)))
+    (xref-find-definitions-other-window thing)))
 
 ;; workaround ggtags.el/global not accepting regex chars
 (defun nvp-ggtags-bounds-of-tag-function ()
@@ -56,7 +65,7 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
                    (string-trim-left (replace-regexp-in-string "[ \t;{]*$" "" it)))))
        (delq nil)))
 
-(defun nvp-tag-list-language-config (lang)
+(defun nvp-tag-show-language-config (lang)
   "List ctags language configuration for LANG."
   (interactive
    (list (completing-read
@@ -75,7 +84,36 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
       (goto-char (point-max)))
     (pop-to-buffer (current-buffer))))
 
-(nvp:decl tags-reset-tags-tables projectile-regenerate-tags)
+;; Apply FN to project excludes / tags file in project root
+(defun nvp-tag--run-with-project (fn)
+  (let ((default-directory (projectile-acquire-root))
+        (tags-exclude (projectile-tags-exclude-patterns))
+        (project-tags-file (expand-file-name projectile-tags-file-name)))
+    (funcall fn project-tags-file tags-exclude)))
+
+(defun nvp-tag-show-file-languages ()
+  "Show ctags guessed language for all files in project."
+  (interactive)
+  (nvp:with-tabulated-list
+    :name "ctags-languages"
+    :format [("File" 50 t) ("Language" 15 t)]
+    :entries
+    (nvp-tag--run-with-project
+     (lambda (file excludes)
+       (let ((cmd (format projectile-tags-command
+                          file (concat " --print-language " excludes) "."))
+             res)
+         (with-temp-buffer
+           (unless (zerop (process-file-shell-command cmd nil (current-buffer)))
+             (user-error
+              (string-trim (buffer-substring-no-properties (point-min) (point-max)))))
+           (goto-char (point-min))
+           (while (re-search-forward "^\\([^:]+\\): \\(\\S-+\\)" nil t)
+             (push (list (match-string 1) `[,(match-string 1) ,(match-string 2)])
+                   res)
+             (forward-line 1))
+           res))))
+    (setq tabulated-list-sort-key '("Language" . nil))))
 
 ;;;###autoload(autoload 'nvp-tag-menu "nvp-tag")
 (transient-define-prefix nvp-tag-menu ()
@@ -88,13 +126,13 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
   [["Tables"
     ("l" "Load table" visit-tags-table)
     ("c" "Choose table" select-tags-table)
-    ("R" "Regen project tags" projectile-regenerate-tags :if-non-nil tags-file-name)
+    ("R" "Re/gen project tags" projectile-regenerate-tags)
     ("K" "Reset tables" tags-reset-tags-tables :if-non-nil tags-file-name)]
    ["Help"
-    ("hl" "List language config" nvp-tag-list-language-config)]]
-  ;; settings
-  ;; `tags-apropos-verbose' list filenames
-  )
-
+    ("hg" "Show ctags language for files" nvp-tag-show-file-languages)
+    ("hl" "Show ctags language config" nvp-tag-show-language-config)]])
+;; settings
+;; `tags-apropos-verbose' list filenames
+  
 (provide 'nvp-tag)
 ;;; nvp-tag.el ends here

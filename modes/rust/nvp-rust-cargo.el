@@ -1,0 +1,58 @@
+;;; nvp-rust-cargo.el --- cargo -*- lexical-binding: t; -*-
+;;
+;;; Commentary:
+;;; Code:
+(eval-when-compile (require 'nvp-macro))
+(require 'transient)
+(require 'rustic nil t)
+
+(nvp:decls :p (rustic))
+
+(nvp:def-transient-toggle-vars nvp-cargo-menu
+  rustic-cargo-test-disable-warnings
+  rustic-cargo-use-last-stored-arguments)
+
+;;;###autoload(autoload 'nvp-cargo-menu "nvp-rust-cargo")
+(transient-define-prefix nvp-cargo-menu ()
+  [["Run"
+    ("r" "Run" rustic-cargo-run)
+    ("b" "Build" rustic-cargo-build)
+    ("c" "Compile" rustic-compile)
+    ("t" "Test" rustic-cargo-test)
+    ("B" "Bench" rustic-cargo-bench)
+    ("!" "Shell command" rustic-run-shell-command)]
+   ["Lint/Format"
+    ("C" "Check" rustic-cargo-check)
+    ("f" "Format" rustic-cargo-fmt)
+    ("l" "Clippy" rustic-cargo-clippy)
+    ("L" "Clippy fix" rustic-cargo-clippy-fix)]
+   ["Manage Crates"
+    ("a" "Add" rustic-cargo-add)
+    ("R" "Remove" rustic-cargo-rm)
+    ("m" "Add missing" rustic-cargo-add-missing-dependencies)
+    ("o" "Outdated" rustic-cargo-outdated)
+    ("u" "Update" rustic-cargo-update)
+    ("U" "Upgrade" rustic-cargo-upgrade)]
+   ["Documentation"
+    ("s" "Search crates" cargo-search-crates)
+    ("d" "Open docs" rustic-cargo-doc)
+    ("D" "Build docs" rustic-cargo-build-doc)]
+   ["Project"
+    ("i" "Install" rustic-cargo-install)
+    ("K" "Clean" rustic-cargo-clean)
+    ("L" "Login" rustic-cargo-login)
+    "--"
+    ("I" "Init" rustic-cargo-init)
+    ("N" "New" rustic-cargo-new)]
+   ["Settings"
+    (":s" "Use stored args"
+     nvp-cargo-menu--toggle-rustic-cargo-use-last-stored-arguments)
+    (":w" "Test warnings"
+     nvp-cargo-menu--toggle-rustic-cargo-test-disable-warnings)]])
+
+(provide 'nvp-rust-cargo)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
+;;; nvp-rust-cargo.el ends here

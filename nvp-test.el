@@ -22,13 +22,11 @@
 (defvar nvp-test-suffixes '("-test" "-tests" "_test"))
 (defvar nvp-test-extension-re nil)
 
+;;; XXX: remove
 (defvar-local nvp-project--root '(".git" ".projectile" "test" "tests"))
 (defvar-local nvp-project--test-re ".*tests?")
 (defvar-local nvp-project--test-dir '("test" "tests" "t"))
 (defvar-local nvp-project--test-fmt "test-%s")
-
-;; -------------------------------------------------------------------
-;;; TODO: Default unit test runner
 
 ;;;###autoload
 (defun nvp-ert-run-tests ()

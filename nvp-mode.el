@@ -96,6 +96,9 @@
 ;;;###autoload(autoload 'nvp-profile "nvp-mode")
 (nvp:define-mode-function profile)
 
+;;;###autoload(autoload 'nvp-jump "nvp-mode")
+(nvp:define-mode-function jump)
+
 ;;;###autoload
 (defun nvp-install ()
   (interactive)
@@ -128,7 +131,8 @@
     ("p" "Profile" nvp-profile :if-non-nil nvp-profile-functions)
     ("d" "Debug" nvp-debug :if-non-nil nvp-debug-functions)
     ("D" "Disassemble" nvp-disassemble :if-non-nil nvp-disassemble-functions)]]
-  [["External"
+  [["Actions"
+    ("j" "Jump" nvp-jump :if-non-nil nvp-jump-functions)
     ("T" "Tag" nvp-tag)
     ("C" "Configure" nvp-configure)
     ("i" "Install" nvp-install)]

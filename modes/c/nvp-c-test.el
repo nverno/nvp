@@ -68,12 +68,12 @@
    nvp-test-run-unit-function current-prefix-arg
    file (concat "valgrind " (nvp:c-out-file file))))
 
-;;;###autoload
-(defun nvp-c-test-help-online ()
-  (interactive)
-  (browse-url "https://github.com/ThrowTheSwitch/Unity/blob/master/docs/UnityAssertionsCheatSheetSuitableforPrintingandPossiblyFraming.pdf")
-  ;; (browse-url "https://libcheck.github.io/check/index.html")
-  )
+;; ;;;###autoload
+;; (defun nvp-c-test-help-online ()
+;;   (interactive)
+;;   (browse-url "https://github.com/ThrowTheSwitch/Unity/blob/master/docs/UnityAssertionsCheatSheetSuitableforPrintingandPossiblyFraming.pdf")
+;;   ;; (browse-url "https://libcheck.github.io/check/index.html")
+;;   )
 
 (provide 'nvp-c-test)
 ;;; nvp-c-test.el ends here

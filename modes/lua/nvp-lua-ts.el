@@ -89,9 +89,9 @@
          ((parent-is "chunk") column-0 0)
          ((parent-is "ERROR") no-indent 0))))
 
-      (provide 'nvp-lua-ts)
-      ;; Local Variables:
-      ;; coding: utf-8
-      ;; indent-tabs-mode: nil
-      ;; End:
+(provide 'nvp-lua-ts)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-lua-ts.el ends here

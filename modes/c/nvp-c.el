@@ -2,31 +2,18 @@
 ;;; Commentary:
 ;;
 ;; TODO:
-;; - Move env setup ffi - R, lisp - to separate file.
-;;   Should do env., snippets, abbrevs, etc all together.
-;; - factor out subrs
-;; - move any additional newline behaviour to normal newline with prefix
 ;; - merge all the compile stuff and remove compile macros
-;;
-;; FIXME:
-;; - function signatures => generic parsing method
-;; - integrate compile w/ projectile + generic interface to build tools
-;;
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-compile))
-(require 'nvp-parse)
 (require 'nvp)
+(require 'nvp-parse)
 (nvp:req 'nvp-c 'subrs)
-(nvp:auto "nvp-tag" 'nvp-tag-list-decls)
-(nvp:decls :f (forward-ifdef
-               clang-complete-load-args ; clang-complete
-               asdf-where               ; asdf
-               nvp-env-add              ; nvp-env
-               nvp-yas-var s-join
-               objdump-mode)            ; emacs-objdump-mode
+(nvp:decls :f (forward-ifdef clang-complete-load-args asdf-where nvp-env-add nvp-yas-var
+                             s-join objdump-mode)
            :v (c/R-abbrev-table company-clang-arguments gud-comint-buffer))
+(nvp:auto "nvp-tag" 'nvp-tag-list-decls)
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 

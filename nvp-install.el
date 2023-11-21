@@ -281,9 +281,13 @@
                                collect `(add-to-list 'load-path ,p)))))))
 
 ;;;###autoload
-(defun nvp-install-mode (mode)
-  (interactive (list (nvp-read-mode-config)))
-  (load (nvp:mode-config-path mode)))
+(defun nvp-install-mode (mode &optional reinstall)
+  (interactive (list (nvp-read-mode-config) current-prefix-arg))
+  (let* ((path (nvp:mode-config-path mode))
+         (elc (concat path "c")))
+    (when (and reinstall (file-exists-p elc))
+      (delete-file elc))
+    (load path)))
 
 ;;;###autoload
 (defun nvp-install-modes (modes)

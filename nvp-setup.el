@@ -16,7 +16,7 @@
   dir snippets abbr-file abbr-table
   ;; functions
   check-buffer format-buffer tag test compile debug disassemble abbrev
-  install toggle run profile configure docs)
+  install toggle run profile configure docs jump)
 
 (defvar nvp-mode-cache (make-hash-table)
   "Store local variables for modes once they have been loaded.")

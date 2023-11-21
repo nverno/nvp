@@ -114,10 +114,10 @@
 ;;; Commands
 
 ;; TODO: index and search
-;;;###autoload
-(defun nvp-c-help-std ()
-  (interactive)
-  (browse-url "http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf"))
+;; ;;;###autoload
+;; (defun nvp-c-help-std ()
+;;   (interactive)
+;;   (browse-url "http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf"))
 
 ;; jump to function in header file
 ;;;###autoload

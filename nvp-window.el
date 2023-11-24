@@ -6,7 +6,7 @@
 (require 'nvp)
 (require 'windmove)
 (require 'transient)
-(nvp:decls :p (winner ace))
+(nvp:decls :p (winner ace) :f (ace-window))
 (nvp:auto "winner" winner-redo winner-undo)
 
 (defvar nvp-window--interactive-stack ())
@@ -102,6 +102,24 @@
 ;; -------------------------------------------------------------------
 ;;; Transient menu
 
+(defun nvp-window-menu--split-vertical ()
+  (interactive)
+  (split-window-right)
+  (windmove-right))
+
+(defun nvp-window-menu--split-horiz ()
+  (interactive)
+  (split-window-below)
+  (windmove-down))
+
+(defun nvp-window-menu--ace-swap ()
+  (interactive)
+  (ace-window 4))
+
+(defun nvp-window-menu--ace-delete ()
+  (interactive)
+  (ace-window 16))
+
 ;;;###autoload(autoload 'nvp-window-menu "nvp-window")
 (transient-define-prefix nvp-window-menu ()
   [["Movement"
@@ -110,36 +128,16 @@
     ("i" "↑" windmove-up :transient t)
     ("l" "→" windmove-right :transient t)]
    ["Split"
-    ("v" "Vertical" (lambda ()
-                      (interactive)
-                      (split-window-right)
-                      (windmove-right))
-     :transient t)
-    ("x" "Horizontal" (lambda ()
-                        (interactive)
-                        (split-window-below)
-                        (windmove-down))
-     :transient t)
-    ("z" "Undo" (lambda ()
-                  (interactive)
-                  (winner-undo)
-                  (setq this-command 'winner-undo))
-     :transient t)
+    ("v" "Vertical" nvp-window-menu--split-vertical :transient t)
+    ("x" "Horizontal" nvp-window-menu--split-horiz :transient t)
+    ("z" "Undo" winner-undo :transient t)
     ("Z" "Reset" winner-redo :transient t)]
    ["Switch"
-    ("a" "Ace" (lambda ()
-                 (interactive)
-                 (ace-window 1)))
-    ("s" "Swap" (lambda ()
-                  (interactive)
-                  (ace-window 4))
-     :transient t)]
+    ("a" "Ace" ace-window)
+    ("s" "Swap" nvp-window-menu--ace-swap :transient t)]
    ["Delete"
     ("d" "Delete" delete-window :transient t)
-    ("D" "Ace delete" (lambda ()
-                        (interactive)
-                        (ace-window 16))
-     :transient t)
+    ("D" "Ace delete" nvp-window-menu--ace-delete :transient t)
     ("o" "Delete all other" delete-other-windows :transient t)]
    ["Resize"
     ("r" "Resize" nvp-window-resize-menu :transient transient--do-replace)]])

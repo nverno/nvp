@@ -11,7 +11,8 @@
 (eval-when-compile
   (require 'nvp-macro)
   (require 'smartparens))
-(nvp:decls :f (paredit-kill) :v (sort-fold-case))
+(require 'transient)
+(nvp:decls :p (sp paredit sort) :v (sort-fold-case))
 (autoload 'sp-wrap-with-pair "smartparens")
 
 ;;; Indent
@@ -116,6 +117,17 @@ With prefix sort in REVERSE."
   (nvp-sort:defaults start end
     (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
 
+;;;###autoload(autoload 'nvp-sort-menu "nvp-edit")
+(transient-define-prefix nvp-sort-menu ()
+  [["Lines"
+    ("f" "First word" nvp-sort-lines-first-word)
+    ("s" "First symbol" nvp-sort-lines-first-symbol)]
+   ["List"
+    ("a" "Alist" nvp-sort-alist)
+    ("l" "List" nvp-sort-list)]
+   ["Region"
+    ("S" "Symbols" nvp-sort-symbols)
+    ("w" "Words" nvp-sort-words)]])
 
 ;; -------------------------------------------------------------------
 ;;; Duplicate

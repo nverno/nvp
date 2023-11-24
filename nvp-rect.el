@@ -10,6 +10,21 @@
   (remove-hook 'transient-exit-hook #'nvp-rect--exit-hook)
   (deactivate-mark))
 
+(defun nvp-rect-menu--reset ()
+  (interactive)
+  (if (region-active-p)
+      (deactivate-mark)
+    (rectangle-mark-mode 1)))
+
+;; Exchange point and mark.
+(defun nvp-rect-ex-point-mark ()
+  (interactive)
+  (if rectangle-mark-mode
+      (rectangle-exchange-point-and-mark)
+    (let ((mk (mark)))
+      (rectangle-mark-mode 1)
+      (goto-char mk))))
+
 ;;;###autoload(autoload 'nvp-rect-menu "nvp-rect")
 (transient-define-prefix nvp-rect-menu ()
   [["Move"
@@ -30,24 +45,10 @@
     ("c" "Clear" clear-rectangle :transient t)]
    ["Mark"
     ("e" "Exchange point" nvp-rect-ex-point-mark :transient t)
-    ("r" "Reset mark" (lambda ()
-                        (interactive)
-                        (if (region-active-p)
-                            (deactivate-mark)
-                          (rectangle-mark-mode 1)))
-     :transient t)]]
+    ("r" "Reset mark" nvp-rect-menu--reset :transient t)]]
   (interactive)
   (rectangle-mark-mode 1)
   (transient-setup 'nvp-rect-menu))
-
-;; Exchange point and mark.
-(defun nvp-rect-ex-point-mark ()
-  (interactive)
-  (if rectangle-mark-mode
-      (rectangle-exchange-point-and-mark)
-    (let ((mk (mark)))
-      (rectangle-mark-mode 1)
-      (goto-char mk))))
 
 (provide 'nvp-rect)
 ;; Local Variables:

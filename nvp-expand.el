@@ -3,9 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls :v (tiny-beg)
-           :f (tiny-expand))
-(nvp:auto "nvp-edit-aux" 'nvp-list-wrap-quotes)
+(nvp:decls :p (tiny) :v (tiny-beg) :f (tiny-expand))
+(nvp:auto "nvp-edit-aux" 'nvp-list-wrap)
 
 ;;;###autoload
 (defun nvp-expand-range (&optional sep)
@@ -44,14 +43,14 @@ for string to wrap.
 Example: m,25+x?a%c => \"a\", \"b\", ..., \"z\"
 "
   (interactive "P")
-  (cond
-   ((eq (car-safe arg) 4)
-    (tiny-expand)
-    (nvp-list-wrap-quotes tiny-beg (point)))
-   ((eq (car-safe arg) 16)
-    (tiny-expand)
-    (nvp-list-wrap-quotes tiny-beg (point) 'prompt))
-   (t (tiny-expand))))
+  (pcase arg
+    ('(4)
+     (tiny-expand)
+     (funcall #'nvp-list-wrap tiny-beg (point) "\"" "\""))
+    ('(16)
+     (tiny-expand)
+     (funcall-interactively #'nvp-list-wrap tiny-beg (point) nil nil nil 'prompt))
+    (_ (tiny-expand))))
 
 ;;;###autoload
 (defun nvp-expand-or-pattern ()

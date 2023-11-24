@@ -10,18 +10,89 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
+(require 'transient)
 (nvp:decls :f (paredit-delete-indentation))
 
 (nvp:bindings nvp-list-keymap :now
   :create t
-  ("c"  . nvp-list-insert-commas)
-  ("("  . nvp-list-wrap-parens)
-  ("["  . nvp-list-wrap-brackets)
-  ("{"  . nvp-list-wrap-squiggles)
-  ("\"" . nvp-list-wrap-quotes))
+  ("<f2>" . nvp-list-menu)
+  (","    . nvp-list-insert-commas))
+
+(dolist (c '("(" "[" "{" "\"" "'" "~" "*" "`" "=" "_" "/"))
+  (define-key nvp-list-keymap c #'nvp-list-wrap))
+
+(transient-define-infix nvp-list-menu--element-re ()
+  :class 'transient-lisp-variable
+  :variable 'nvp-list-element-re)
+
+(transient-define-infix nvp-list-menu--sep-re ()
+  :class 'transient-lisp-variable
+  :variable 'nvp-list-sep-re)
+
+(transient-define-prefix nvp-list-menu ()
+  [["Wrap"
+    ("(" "()" nvp-list-wrap)
+    ("{" "{}" nvp-list-wrap)
+    ("[" "[]" nvp-list-wrap)
+    ("\"" "\"\"" nvp-list-wrap)
+    ("'" "''" nvp-list-wrap)]
+   ["Wrap"
+    ("~" "~" nvp-list-wrap)
+    ("*" "*" nvp-list-wrap)
+    ("=" "=" nvp-list-wrap)
+    ("_" "_" nvp-list-wrap)
+    ("/" "/" nvp-list-wrap)]
+   ["Insert"
+    ("," "x[, xs]*" nvp-list-insert-commas)]]
+  ["Configure"
+   (":e" "Element regexp" nvp-list-menu--element-re)
+   (":s" "Separator regexp" nvp-list-menu--sep-re)])
 
 ;; -------------------------------------------------------------------
 ;;; Lists
+
+(defvar nvp-list-pairs '(("{" . "}")
+                         ("(" . ")")
+                         ("\"" . "\"")
+                         ("[" . "]")
+                         ("'" . "'")))
+
+(defvar nvp-list-element-re "[^ )(\t\n,']+" "Regexp matching a list element.")
+
+(defvar nvp-list-sep-re "[, \t\n]" "Regexp matching list separator.")
+
+(defun nvp-list-wrap (start end &optional opener closer sep prompt)
+  "Wrap list elements between START and END with OPENER and CLOSER.
+OPENER defaults to last basic input character.
+CLOSER defaults to matching element in `nvp-list-pairs', or OPENER.
+SEP is a regexp matching list element separators.
+If PROMPT is non-nil, prompt for OPENER/CLOSER."
+  (interactive (let ((bnds (nvp:tap 'bdwim 'list nil nil :pulse t)))
+                 (list (car bnds) (cdr bnds) nil nil nil current-prefix-arg)))
+  (unless (and start end (< start end))
+    (user-error "No region"))
+  (let* ((closer closer)
+         (opener (if prompt
+                     (let ((pair (read--expression "Wrap items with (a . b): ")))
+                       (cl-assert (or (consp pair) (stringp pair)))
+                       (setq closer (if (consp pair) (cdr pair)
+                                      (or (assoc-default pair nvp-list-pairs) pair)))
+                       (if (consp pair) (car pair) pair))
+                   (let ((opener (or opener (nvp:input 'lcs))))
+                     (setq closer (or (assoc-default opener nvp-list-pairs) opener))
+                     opener)))
+         (elem-re (concat "\\s-*\\(" (or nvp-list-element-re "[^ \t\n,]+")
+                          "\\)" (or sep nvp-list-sep-re "[, \t\n]") "*"))
+         (str (buffer-substring-no-properties start end)))
+    (delete-region start end)
+    (insert (with-temp-buffer
+              (insert str)
+              (goto-char (point-min))
+              (while (re-search-forward elem-re nil t)
+                (replace-match
+                 (concat opener (match-string-no-properties 1) closer)
+                 t nil nil 1))
+              (buffer-substring-no-properties (point-min) (point-max))))))
 
 ;; Adds commas after numbers in list, like matlab -> R.
 (defun nvp-list-insert-commas (str &optional beg end)
@@ -35,73 +106,6 @@
         (goto-char beg)
         (insert res)))))
 
-(eval-when-compile
-  ;; Wrap items in list between DELIM, default wrapping with WRAP
-  ;; Create list wrapping functions, wrapping items between DELIMS with
-  ;; WRAP by default, prompting for wrapping string with prefix.  IGNORE
-  ;; is regexp to ignore in list, ie commas and spaces and MATCH is regex
-  ;; to capture items.
-  (cl-defmacro nvp-wrap-list-items
-      (name &key
-            (delims '("(" . ")"))
-            (match "[^)(, \n\t\r]+")
-            (ignore "[, \n\t\r]*")
-            (wrap '("\"" . "\"")))
-    "Create list wrapping function.
-
-\(fn NAME ...)"
-    (declare (debug defun) (indent defun))
-    (let ((fn (intern (concat "nvp-list-wrap-" (symbol-name name))))
-          (doc (format
-                (concat
-                 "Wrap items of list in selected region between "
-                 "%s...%s with items\nwith %s..%s by default or"
-                 "string ARG, prompting with prefix.")
-                (car delims) (cdr delims) (car wrap) (cdr wrap)))
-          (delim-re (concat ignore "\\(" match "\\)")))
-      `(defun ,fn (start end &optional arg)
-         ,doc
-         (interactive "r\nP")
-         (let* ((wrap (or (and arg
-                               (car
-                                (read-from-string
-                                 (read-from-minibuffer
-                                  "Wrap items with(a . b): "))))
-                          ',wrap))
-                (str (buffer-substring-no-properties start end)))
-           (delete-region start end)
-           (insert
-            (with-temp-buffer
-              (insert str)
-              (goto-char (point-min))
-              (re-search-forward ,(regexp-quote (car delims)) nil t)
-              (while (re-search-forward ,delim-re nil t)
-                (replace-match (concat (car wrap)
-                                       (match-string-no-properties 1)
-                                       (cdr wrap))
-                               t nil nil 1))
-              (buffer-string))))))))
-
-;; FIXME: Combine into single interface, wrapping with next character
-;;        Also, become syntax aware
-;; wrap items in list b/w "("..")", defaulting to wrapping with quotes
-(nvp-wrap-list-items quotes :wrap ("\"" . "\""))
-(nvp-wrap-list-items parens :wrap ("(" . ")"))
-(nvp-wrap-list-items brackets :wrap ("[" . "]"))
-(nvp-wrap-list-items squiggles :wrap ("{" . "}"))
-
-
-;; -------------------------------------------------------------------
-;;; Charset 
-
-;; https://www.emacswiki.org/emacs/UnicodeEncoding
-;; Read a unicode code point and insert said character.  Input uses
-;; `read-quoted-char-radix' (set to 16 in build/nvp-encoding).
-(defun nvp-unicode-insert (char)
-  (interactive (list (read-quoted-char "Char: ")))
-  (insert-char char))
-
-
 ;; -------------------------------------------------------------------
 ;;; Paredit -- little used commands
 
@@ -131,7 +135,6 @@ paren."
           (insert " ")
           (insert comt))))))
 
-
 ;; -------------------------------------------------------------------
 ;;; Fill 
 

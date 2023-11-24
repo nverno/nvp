@@ -7,6 +7,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'hippie-exp)
+(nvp:decls :p (ring comint eshell))
 (declare-function eshell-beginning-of-input "esh-mode")
 (declare-function comint-line-beginning-position "comint")
 

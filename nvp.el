@@ -121,15 +121,15 @@ called from minibuffer, or nil.")
 (eval-and-compile
   (defconst nvp-mode-hooks
     '( check-buffer format-buffer tag test compile debug install
-       disassemble abbrev toggle run profile configure docs jump)))
+       disassemble abbrev toggle run profile configure docs jump))
 
-(defconst nvp-mode-function-hooks
-  (mapcar (lambda (type) (intern (concat "nvp-" (symbol-name type) "-functions")))
-          nvp-mode-hooks))
+  (defconst nvp-mode-function-hooks
+    (mapcar (lambda (type) (intern (concat "nvp-" (symbol-name type) "-functions")))
+            nvp-mode-hooks))
 
-(defconst nvp-mode-default-functions
-  (mapcar (lambda (el) (intern (format "nvp-%s-default-function" (symbol-name el))))
-          nvp-mode-hooks))
+  (defconst nvp-mode-default-functions
+    (mapcar (lambda (el) (intern (format "nvp-%s-default-function" (symbol-name el))))
+            nvp-mode-hooks)))
 
 (eval-when-compile
   (defmacro nvp:define-function-hooks ()

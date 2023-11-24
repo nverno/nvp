@@ -13,9 +13,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)
-(nvp:decls :f (nvp-read-switch comint-after-pmark-p xterm-color-colorize-buffer
-                               nvp-buffer-local-set-key))
+(nvp:decls :p (comint xterm) :f (nvp-read-switch nvp-buffer-local-set-key))
 (nvp:auto "ansi-color" 'ansi-color-apply-on-region)
+(nvp:auto "projectile" 'projectile-project-root)
 
 (defmacro nvp-with-compile-command (cmd &optional arg &rest body)
   "Bind `compile-command' to CMD unless ARG, if non-nil, or `compile-command'

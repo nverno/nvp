@@ -20,9 +20,7 @@
 (require 'make-mode)
 (nvp:req 'nvp-makefile 'subrs)
 (require 'nvp)
-(nvp:decls
- :f ( nvp-makefile-indent nvp-makefile-check nvp-makecomp-eldoc-function helm-make)
- :v (crm-separator))
+(nvp:decls :p (helm crm compilation) :f (nvp-makefile-indent))
 
 (nvp:package-define-root :name "nvp-makefile")
 

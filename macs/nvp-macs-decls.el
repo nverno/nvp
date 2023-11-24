@@ -24,7 +24,9 @@ Note: "
           (goto-char (point-min))
           (while (re-search-forward
                   (concat "\\(\\_<" prefix "[/@_:-][^ \n\t]+\\_>\\)") nil t)
-            (unless (or (nvp:ppss 'soc)
+            (unless (or (let* ((syn (syntax-ppss nil)))
+                          (or (car (setq syn (nthcdr 3 syn)))
+                              (car (setq syn (cdr syn))) (nth 3 syn)))
                         (and ignore
                              (save-excursion
                                (goto-char (match-beginning 0))

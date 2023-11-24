@@ -15,6 +15,7 @@
 (require 'abbrev)
 (require 'nvp)
 (nvp:req 'nvp-abbrev 'subrs)
+(nvp:decls :p (he))
 
 ;; if non-nil, update active table cache
 (defvar-local nvp-abbrev-completion-need-refresh nil)

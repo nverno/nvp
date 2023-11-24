@@ -67,7 +67,7 @@
      'string<)))
 
 (defun company-coffee-prefix ()
-  (and (derived-mode-p major-mode company-coffee-modes)
+  (and (derived-mode-p company-coffee-modes)
        (not (company-in-string-or-comment))
        (company-grab-symbol)))
 

@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
 (require 'nvp)
-(nvp:decls :p (flycheck) :v (flycheck-mode))
+(nvp:decls :p (flycheck) :v (flycheck-mode) :f (-map flycheck-mode))
 (nvp:auto "nvp-dev" nvp-dev-describe-mode)
 (nvp:auto "flycheck" flycheck-list-errors)
 

@@ -4,6 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'outline)
+(require 'transient)
 
 ;;;###autoload
 (defun nvp-outline-add-locals (&optional arg)
@@ -23,33 +24,40 @@ Append to `outline-regexp' with prefix."
                 ";;\\*\\|;;;\\*\\|(\\(?:cl-\\)?def[hcuvm]\\|(setq\\|nvp[:]bind")))
       ";;; End:"))))
 
-;;;###autoload(autoload 'nvp-outline-hydra/body "nvp-outline")
-(nvp:hydra-set-property 'nvp-outline-hydra)
-(defhydra nvp-outline-hydra (:color red)
-  "
-^Hide^              ^Show^           ^Move
-^^^^^^------------------------------------------------------
-_h_: body            _l_: all         _u_: up
-_o_: other           _SPC_: toggle    _j_: next visible
-                                  _k_: previous visible
-_<backtab>_: subtree _TAB_: subtree   _n_: forward same level
-                                  _p_: backward same level
-"
-  ;; Hide
-  ("h" outline-hide-body)                 ; Hide everything but headings (all body)
-  ("o" outline-hide-other)                ; Hide other branches
-  ("<backtab>" outline-hide-subtree)      ; Hide everything in entry and sub-entries
-  ;; Show
-  ("l" outline-show-all)                  ; Show (expand) everything
-  ("TAB" outline-show-subtree)            ; Show (expand) everything in heading & below
-  ("SPC" outline-toggle-children)
-  ;; Move
-  ("u" outline-up-heading)                ; Up
-  ("j" outline-next-visible-heading)      ; Next
-  ("k" outline-previous-visible-heading)  ; Previous
-  ("n" outline-forward-same-level)        ; Forward - same level
-  ("p" outline-backward-same-level)       ; Backward - same level
-  ("q" nil "quit"))
+(defun nvp-outline--exit-hook ()
+  (outline-minor-mode -1)
+  (remove-hook 'transient-exit-hook #'nvp-outline--exit-hook))
+
+;;;###autoload(autoload 'nvp-outline-menu "nvp-outline")
+(transient-define-prefix nvp-outline-menu ()
+  [["Toggle"
+    ("SPC" "Children" outline-toggle-children :transient t)
+    ("<tab>" "Cycle" outline-cycle :transient t)]
+   ["Hide"
+    ("B" "All/Body" outline-hide-body :transient t)
+    ("S" "Subtree" outline-hide-subtree :transient t)
+    ("o" "Other" outline-hide-other :transient t)]
+   ["Show"
+    ("b" "All" outline-show-all :transient t)
+    ("s" "Subtree" outline-show-subtree :transient t)
+    ("h" "Headings" outline-show-only-headings :transient t)]]
+  [["Move"
+    ("u" "Up heading" outline-up-heading :transient t)
+    ("j" "Next visible" outline-next-visible-heading :transient t)
+    ("k" "Prev visible" outline-previous-visible-heading :transient t)
+    ("n" "Forward same level" outline-forward-same-level :transient t)
+    ("p" "Backward same level" outline-backward-same-level :transient t)]
+   ["Change"
+    ("J" "Move down" outline-move-subtree-down :transient t)
+    ("K" "Move up" outline-move-subtree-up :transient t)
+    ("<" "Promote" outline-promote :transient t)
+    (">" "Demote" outline-demote :transient t)
+    ("U" "Undo" undo :transient t)
+    ("A" "Add locals" nvp-outline-add-locals :transient t)]]
+  (interactive)
+  (outline-minor-mode 1)
+  (add-hook 'transient-exit-hook #'nvp-outline--exit-hook)
+  (transient-setup 'nvp-outline-menu))
 
 (provide 'nvp-outline)
 ;; Local Variables:

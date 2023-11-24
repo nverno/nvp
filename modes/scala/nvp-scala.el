@@ -2,11 +2,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls :p "ensime"
-           :v (ensime-prefer-noninteractive ensime-auto-connect ensime-config-file-name)
-           :f (ensime))
 (require 'ensime nil t)
-(autoload 'projectile-project-p "projectile")
+(nvp:decls :p (ensime sbt) :f (ensime) :v (ensime-auto-connect))
+(nvp:auto "projectile" 'projectile-project-p)
 
 ;; -------------------------------------------------------------------
 ;;; Ensime

@@ -3,11 +3,11 @@
 ;;; Commentary:
 ;; auto yasnippets
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
-(require 'auto-yasnippet)
-(defvar aya-current)
-(nvp:decls :f (nvp-jump-to-new-snippet)
-           :v (aya-current))
+(require 'transient)
+(require 'auto-yasnippet nil t)
+(nvp:decls :p (aya) :f (nvp-jump-to-new-snippet) :v (aya-current))
 
 (defconst nvp-aya-new-template "\
 # -*- mode: snippet -*-
@@ -16,13 +16,13 @@
 # --
 `aya-current`")
 
-;;;###autoload(autoload 'nvp-aya-hydra/body "nvp-snippet-aya")
-(nvp:hydra-set-property 'nvp-aya-hydra)
-(defhydra nvp-aya-hydra (:color blue)
-  ("c" aya-create "create(~)")
-  ("e" aya-expand "expand")
-  ("j" nvp-jump-to-aya-snippet "jump/persist")
-  ("o" aya-create-one-line "one-liner($)"))
+;;;###autoload(autoload 'nvp-aya-menu "nvp-snippet-aya")
+(transient-define-prefix nvp-aya-menu ()
+  ["Auto-Snippet"
+   ("c" "Create(~)" aya-create)
+   ("e" "Expand" aya-expand)
+   ("j" "Jump/persist" nvp-jump-to-aya-snippet)
+   ("o" "One-liner($)" aya-create-one-line)])
 
 ;;;###autoload
 (defun nvp-jump-to-aya-snippet ()

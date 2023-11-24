@@ -27,8 +27,9 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
 (require 'nvp)
-(nvp:decls :p (ggtags tags projectile))
-
+(nvp:decls :p (ggtags tags projectile xref)
+           :v ( projectile-tags-file-name projectile-tags-command
+                projectile-tags-exclude-patterns xref-backend-functions))
 
 (defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
 

@@ -171,7 +171,11 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     vertico--input
     ;; url
     url-http-end-of-headers
-    url-request-method url-request-extra-headers url-request-data))
+    url-request-method url-request-extra-headers url-request-data
+    ;; projectile
+    projectile-tags-file-name
+    projectile-tags-command
+    projectile-tags-exclude-patterns))
 
 (cl-defmacro nvp:decls (&key v f p)
   (declare (debug t))
@@ -302,10 +306,12 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
 
      (nvp:decl                          ; external packages
        pos-tip-show
+       do-smooth-scroll
+       ;; projectile
        projectile-project-name
        projectile-run-project
        projectile-configure-project
-       do-smooth-scroll
+       projectile-acquire-root
        ;; paredit
        paredit-comment-dwim
        ;; vertico

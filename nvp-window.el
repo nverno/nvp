@@ -1,30 +1,32 @@
-;;; nvp-window.el --- window hydra from git -*- lexical-binding: t; -*-
+;;; nvp-window.el --- window maps -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'windmove)
-(nvp:decls :f (winner-undo winner-redo ace-window ace-swap-window))
+(require 'transient)
+(nvp:decls :p (winner ace))
+(nvp:auto "winner" winner-redo winner-undo)
 
 (defvar nvp-window--interactive-stack ())
-(nvp:bindings nvp-window-fast-map :now
-  :create t :repeat (nvp-window-configuration-pop) :indicate t
-  ("," . nvp-window-configuration-pop)
-  ("d" . nvp-window-toggle-dedicated)
-  ("s" . ace-swap-window)
-  ("j" . ace-window))
 
-(nvp:bindings nvp-window-move-map :now
-  :create t
-  :repeat (nvp-window-transpose nvp-window-rotate nvp-window-swap)
+(nvp:def-keymap nvp-repeat-window-conf-map
+  :wrap (ace-swap-window ace-window)
+  :repeat (:enter (nvp-window-configuration-pop))
+  "," #'nvp-window-configuration-pop
+  "d" #'nvp-window-toggle-dedicated
+  "s" #'nvp-repeat-window-conf/ace-swap-window
+  "j" #'nvp-repeat-window-conf/ace-window)
+
+(nvp:def-keymap nvp-repeat-window-swap-map
   :wrap (ace-swap-window)
-  :indicate t
-  ("t" . nvp-window-transpose)
-  ("r" . nvp-window-rotate)
-  ("|" . nvp-window-swap)
-  ("s" . ace-swap-window))
-
+  :repeat t
+  "t" #'nvp-window-transpose
+  "r" #'nvp-window-rotate
+  "|" #'nvp-window-swap
+  "s" #'nvp-repeat-window-swap/ace-swap-window)
+(put 'nvp-repeat-window-swap/ace-swap-window 'repeat-check-key 'no)
 
 ;;;###autoload
 (defun nvp-window-configuration-push ()
@@ -46,12 +48,6 @@
   (let ((dedicated-p (window-dedicated-p window)))
     (set-window-dedicated-p window (not dedicated-p))
     (message "window dedicated: %s" (if dedicated-p "off" "on"))))
-
-(defvar-keymap nvp-repeat-window-swap-map
-  :repeat t
-  "t" #'nvp-window-transpose
-  "r" #'nvp-window-rotate
-  "s" #'nvp-window-swap)
 
 ;; Transpose the buffers shown in two windows.
 ;; from https://github.com/re5et/.emacs.d/blob/master/my/my-functions.el
@@ -103,68 +99,61 @@
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
 
-;; Hydra wiki
-;;;###autoload(autoload 'nvp-window-hydra/body "nvp-window")
-(nvp:hydra-set-property 'nvp-window-hydra)
-(defhydra nvp-window-hydra (:color red)
-   "
-Movement^^        ^Split^       ^Switch^   ^Resize^
-----------------------------------------------------------------
-_j_ ←          _v_ertical        _a_ce 1   _r_esize
-_k_ ↓          _x_ horizontal    _s_wap    _D_lt Other
-_i_ ↑          _z_ undo          _S_ave    _o_nly this  
-_l_ →          _Z_ reset         _d_elete  _q_uit
-"                                     
-   ("j" windmove-left)
-   ("k" windmove-down)
-   ("i" windmove-up)
-   ("l" windmove-right)
-   ("r" nvp-window-resize-hydra/body :exit t)
-   ("a" (lambda ()
-          (interactive)
-          (ace-window 1)
-          (add-hook 'ace-window-end-once-hook
-                    'nvp-window-hydra/body))
-    :exit t)
-   ("v" (lambda ()
-          (interactive)
-          (split-window-right)
-          (windmove-right)))
-   ("x" (lambda ()
-          (interactive)
-          (split-window-below)
-          (windmove-down)))
-   ("s" (lambda ()
-          (interactive)
-          (ace-window 4)
-          (add-hook 'ace-window-end-once-hook
-                    'nvp-window-hydra/body)))
-   ("S" save-buffer)
-   ("d" delete-window)
-   ("D" (lambda ()
-          (interactive)
-          (ace-window 16)
-          (add-hook 'ace-window-end-once-hook
-                    'nvp-window-hydra/body)))
-   ("o" delete-other-windows)
-   ("z" (progn
-          (winner-undo)
-          (setq this-command 'winner-undo)))
-   ("Z" winner-redo)
-   ("q" nil))
+;; -------------------------------------------------------------------
+;;; Transient menu
+
+;;;###autoload(autoload 'nvp-window-menu "nvp-window")
+(transient-define-prefix nvp-window-menu ()
+  [["Movement"
+    ("j" "←" windmove-left :transient t)
+    ("k" "↓" windmove-down :transient t)
+    ("i" "↑" windmove-up :transient t)
+    ("l" "→" windmove-right :transient t)]
+   ["Split"
+    ("v" "Vertical" (lambda ()
+                      (interactive)
+                      (split-window-right)
+                      (windmove-right))
+     :transient t)
+    ("x" "Horizontal" (lambda ()
+                        (interactive)
+                        (split-window-below)
+                        (windmove-down))
+     :transient t)
+    ("z" "Undo" (lambda ()
+                  (interactive)
+                  (winner-undo)
+                  (setq this-command 'winner-undo))
+     :transient t)
+    ("Z" "Reset" winner-redo :transient t)]
+   ["Switch"
+    ("a" "Ace" (lambda ()
+                 (interactive)
+                 (ace-window 1)))
+    ("s" "Swap" (lambda ()
+                  (interactive)
+                  (ace-window 4))
+     :transient t)]
+   ["Delete"
+    ("d" "Delete" delete-window :transient t)
+    ("D" "Ace delete" (lambda ()
+                        (interactive)
+                        (ace-window 16))
+     :transient t)
+    ("o" "Delete all other" delete-other-windows :transient t)]
+   ["Resize"
+    ("r" "Resize" nvp-window-resize-menu :transient transient--do-replace)]])
 
 ;; -------------------------------------------------------------------
 ;;; Resizing windows
 
-(nvp:hydra-set-property 'nvp-window-resize-hydra)
-(defhydra nvp-window-resize-hydra (:color red)
-  "resize"
-   ("j" nvp-window-move-splitter-left "←")
-   ("k" nvp-window-move-splitter-down "↓")
-   ("i" nvp-window-move-splitter-up "↑")
-   ("l" nvp-window-move-splitter-right "→")
-   ("b" nvp-window-hydra/body "back" :exit t)
-   ("q" nil "quit"))
+(transient-define-prefix nvp-window-resize-menu ()
+  ["Resize"
+   ("j" "←" nvp-window-move-splitter-left :transient t)
+   ("k" "↓" nvp-window-move-splitter-down :transient t)
+   ("i" "↑" nvp-window-move-splitter-up :transient t)
+   ("l" "→" nvp-window-move-splitter-right :transient t)
+   ("b" "Back" nvp-window-menu :transient transient--do-replace)])
 
 ;; Move window splitter left.
 (defun nvp-window-move-splitter-left (arg)

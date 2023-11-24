@@ -14,10 +14,18 @@
 ;; -------------------------------------------------------------------
 ;;; Used in snippets
 
+(eval-when-compile
+  (defsubst nvp:makefile-special-targets ()
+    (process-lines (expand-file-name "bin/special-targets.py" nvp-makefile--dir))))
+
+(defvar nvp-makefile-special-targets
+  (eval-when-compile (ignore-errors (nvp:makefile-special-targets)))
+  "List of special make targets.")
+
 ;;;###autoload(autoload 'nvp-makefile-special-targets "nvp-makefile-auto")
 (nvp:define-cache-runonce nvp-makefile-special-targets ()
   "List of special make targets."
-  (process-lines (f-join nvp-makefile--dir "bin/special-targets.py")))
+  (nvp:makefile-special-targets))
 
 ;; ------------------------------------------------------------
 ;;; Parse / Snippet helpers

@@ -11,7 +11,7 @@
 (require 'rg)
 (require 'nvp-find)
 (require 'nvp)
-(nvp:decls :v (projectile-globally-ignored-files projectile-globally-ignored-directories))
+(nvp:decls :p (projectile) :v (projectile-relevant-known-projects))
 (nvp:auto "projectile" projectile-acquire-root)
 
 ;; Override rg's `compilation-error-regexp-alist' matching

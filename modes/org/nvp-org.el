@@ -8,6 +8,7 @@
 (nvp:decls :f (outline-show-subtree
                org-element-parse-buffer org-element-map org-element-property
                org-tempo-setup))
+(nvp:auto "nvp-parse" 'nvp-parse-current-function)
 
 ;;;###autoload
 (defun nvp-org-tags-view (&optional directory)

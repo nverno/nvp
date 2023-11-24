@@ -7,7 +7,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls :p (magit))
+(nvp:decls :p (magit) :f (magit-mode-get-buffers))
 
 ;; -------------------------------------------------------------------
 ;;; Magit

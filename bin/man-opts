@@ -1,7 +1,0 @@
-#!/usr/bin/awk -f
-
-function average(first, last) {
-    @abc
-    
-    return
-}

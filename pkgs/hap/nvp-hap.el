@@ -33,7 +33,7 @@
 (require 'pos-tip)
 (require 'company)
 (require 'company-quickhelp)
-(nvp:decls :v (info-lookup-other-window-flag)
+(nvp:decls :p (compilation) :v (info-lookup-other-window-flag)
            :f (nvp-hap-treesit-local-active-p))
 (nvp:auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
 
@@ -65,6 +65,9 @@
 
 
 ;;; Help-at-point
+
+(defvar nvp-hap-verbose nil "Non-nil for verbose messaging.")
+(defvar-local nvp-hap-backend nil "Active backend.")
 
 ;; see `company--group-lighter' for idea to display current backend in mode-line
 (defvar nvp-hap-popup-max-lines 25 "Max lines to display in popup.")
@@ -245,11 +248,9 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 ;; -------------------------------------------------------------------
 ;;; Backends
 
-(defvar nvp-hap-verbose nil)
 (defvar-local nvp-hap-company-backend 'company-capf)
 (defvar-local nvp-hap-syntax-table nil
   "When non-nil, syntax table to use when determining thing at point.")
-(defvar-local nvp-hap-backend nil)
 (defvar-local nvp-hap--disabled-backends nil)
 (defvar-local nvp-hap--treesit-p nil)
 

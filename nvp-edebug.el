@@ -13,13 +13,17 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'nvp)
 (require 'elisp-mode)
 (require 'backtrace)
 (require 'edebug)
 (require 'transient)
 (nvp:decls :p (nvp-treesit smie treesit lsp tramp)
-           :f (nvp-help-describe-keymap treesit-buffer-root-node))
+           :f (treesit-buffer-root-node smie-config-show-indent)
+           :v (tramp-debug-on-error tramp-verbose))
 (nvp:auto "nvp-trace" nvp-trace-menu)
+(nvp:auto "nvp-help" nvp-help-describe-keymap)
+(nvp:auto "dash" -map)
 
 ;; -------------------------------------------------------------------
 ;;; Debugger

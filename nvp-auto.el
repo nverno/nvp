@@ -11,26 +11,24 @@
 (require 'nvp)
 (nvp:decls :f (auth-source-search))
 (nvp:auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
-(nvp:auto "nvp-outline" nvp-outline-hydra/body)
 
 ;; -------------------------------------------------------------------
 ;;; Movement
 
-;; jump to next char on this line. if matching char,
-;; pressing the same key again jumps to the next one, etc.
 ;;;###autoload
-(defun nvp-move-char-this-line (&optional char)
+(defun nvp-move-next-matching-char (&optional char)
+  "Jump to next matching CHAR."
   (interactive
    (list (if (eq this-command last-command)
              (get this-command 'char)
            (put this-command 'char (char-to-string (read-char "Char: " t))))))
-  (nvp:push-mark 'nvp-move-char-this-line)
+  (nvp:push-mark 'nvp-move-next-matching-char)
   (let ((case-fold-search t))
     (condition-case nil
-        (search-forward char (nvp:point 'eol))
+        (search-forward char)
       (error (let ((pt (point)))
-               (beginning-of-line)
-               (or (search-forward char (nvp:point 'eol))
+               (goto-char (point-min))
+               (or (search-forward char)
                    (goto-char pt))))))
   (nvp:repeat-this-command char))
 

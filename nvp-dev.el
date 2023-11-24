@@ -15,7 +15,8 @@
 (require 'help-mode)
 (require 'nvp)
 
-(nvp:decls :p (advice treesit) :f (nvp-read-mode) :v (c-lang-constants))
+(nvp:decls :p (advice treesit) :f (nvp-read-mode)
+           :v (c-lang-constants pp-default-function))
 (nvp:auto "nvp-util" 'nvp-s-wrap)
 (nvp:auto "cl-extra" 'cl-prettyprint)
 

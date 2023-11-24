@@ -29,7 +29,6 @@
 (nvp:decls :p (js2 tern httpd yas)
            :f (nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook))
 
-
 (defvar nvp-js-modes
   '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode))
 

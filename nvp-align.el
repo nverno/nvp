@@ -9,27 +9,44 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (require 'nvp)
 (require 'align)
 (nvp:decls :f (nvp-read-mode cl-prettyprint))
 
 (nvp:bindings nvp-align-keymap nil
   :create t
-  ("A"   . align)
-  ("a"   . nvp-align)
-  ("C"   . nvp-align-cols)
-  ("c"   . align-current)
-  ("Dh"  . align-highlight-rule)
-  ("Du"  . align-unhighlight-rule)
-  ("e"   . align-entire)
-  ("M-?" . nvp-align-show-rules)
-  (";"   . nvp-align-comments)
-  ("r"   . align-repeat))
+  ("<f2>" . nvp-align-menu)
+  ("A"    . align)
+  ("a"    . nvp-align)
+  ("C"    . nvp-align-cols)
+  ("c"    . align-current)
+  ("Dh"   . align-highlight-rule)
+  ("Du"   . align-unhighlight-rule)
+  ("e"    . align-entire)
+  ("M-?"  . nvp-align-show-rules)
+  (";"    . nvp-align-comments)
+  ("r"    . align-regexp)
+  ("R"    . nvp-align-repeat))
 
 (mapc
  (lambda (key)
    (define-key nvp-align-keymap `[,key] #'nvp-align-by-last-char))
  (string-to-list "#=.,|\\:"))
+
+;;;###autoload(autoload 'nvp-align-menu "nvp-align")
+(transient-define-prefix nvp-align-menu ()
+  [["Align"
+    ("a" "Align" nvp-align)
+    ("c" "Current" align-current)
+    ("C" "Columns" nvp-align-cols)
+    (";" "Comments" nvp-align-comments)
+    ("r" "Regexp" align-regexp)
+    ("R" "Repeat" nvp-align-repeat)]
+   ["Show"
+    ("h" "Highlight rule" align-highlight-rule :transient t)
+    ("H" "Un-highlight rule" align-unhighlight-rule :transient t)
+    ("?" "Show mode rules" nvp-align-show-rules)]])
 
 ;;;###autoload
 (defun nvp-align (&optional arg beg end)
@@ -125,8 +142,8 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
                ;; not whitespace, escape char, or comment begin
                (concat (nvp:regex-complement (?- ?\\ ?<))
                        "\\(\\s-+\\)\\s<+.*$"))
-         '(modes . nvp-align-eol-comment-modes)
-         '(group . 1)
+         '(modes  . nvp-align-eol-comment-modes)
+         '(group  . 1)
          (cons 'valid
                (function
                 (lambda ()
@@ -149,8 +166,8 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
  (concat "^[ ]*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
          "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
 
-;; -------------------------------------------------------------------
-;;; Display rules
+;; 
+;;;
 
 (defvar nvp-align--groups
   '(;; All predefined mode groupings

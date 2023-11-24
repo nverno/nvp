@@ -11,29 +11,28 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(unless (featurep 'nvp-js) (require 'nvp-js))
+(require 'nvp-repl)
 (nvp:decls :p (nodejs) :v (nvp-trace-group-alist nvp-js-modes))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
   (comint-write-input-ring))
 
-(with-eval-after-load 'nvp-repl
-  (when (fboundp #'nodejs-repl-switch-to-repl)
-    (nvp-repl-add nvp-js-modes
-      :name 'nodejs
-      :modes '(nodejs-repl-mode)
-      :procname (bound-and-true-p nodejs-repl-process-name)
-      :send-region #'nodejs-repl-send-region
-      :send-buffer #'nodejs-repl-send-buffer
-      :send-file #'nodejs-repl-load-file
-      :send-sexp #'nodejs-repl-send-last-expression
-      :history-file ".node_history"
-      :help-cmd ".help"
-      :init (lambda (&optional _prefix)
-              (save-window-excursion
-                (ignore-errors
-                  (call-interactively #'nodejs-repl-switch-to-repl)))))))
+(when (fboundp #'nodejs-repl-switch-to-repl)
+  (nvp-repl-add nvp-js-modes
+    :name 'nodejs
+    :modes '(nodejs-repl-mode)
+    :procname (bound-and-true-p nodejs-repl-process-name)
+    :send-region #'nodejs-repl-send-region
+    :send-buffer #'nodejs-repl-send-buffer
+    :send-file #'nodejs-repl-load-file
+    :send-sexp #'nodejs-repl-send-last-expression
+    :history-file ".node_history"
+    :help-cmd ".help"
+    :init (lambda (&optional _prefix)
+            (save-window-excursion
+              (ignore-errors
+                (call-interactively #'nodejs-repl-switch-to-repl))))))
 
 (defun nvp-nodejs-region-or-sexp ()
   "Send region or last sexp and step."

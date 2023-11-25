@@ -2,30 +2,35 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'hideshow)                   ; hs-life-goes-on
-  (require 'nvp-macro))
+(eval-when-compile (require 'nvp-macro))
 (require 'transient)
+(require 'hideshow)
 (require 'nvp)
-(nvp:auto "hideshow" hs-hide-all hs-toggle-hiding hs-hide-level hs-show-all)
-(nvp:decls :p (hs) :f (hs-hide-block-at-point))
+(nvp:decls)
 
 (nvp:def-transient-toggle-vars nvp-hideshow-menu hs-allow-nesting)
 
+(defun nvp-hideshow-menu--quit ()
+  (interactive)
+  (hs-minor-mode -1))
+
 (transient-define-prefix nvp-hideshow-menu ()
-  [ :if (lambda () (bound-and-true-p hs-minor-mode))
-    ["Hide"
-     ("a" "All" hs-hide-all)
-     ("B" "Block" hs-hide-block)
-     ("c" "Comments" nvp-hs-hide-comments)
-     ("l" "Level" hs-hide-level)]
-    ["Show"
-     ("s" "All" hs-show-all)
-     ("b" "Block" hs-show-block)]
-    ["Settings"
-     (":n" "Remember nested" nvp-hideshow-menu--toggle-hs-allow-nesting)]]
-  [ :if-not (lambda () (bound-and-true-p hs-minor-mode))
-    ["Hideshow" ("t" "Toggle" nvp-hs-toggle)]])
+  [["Toggle"
+    ("t" "Toggle" hs-toggle-hiding)
+    ("q" "Quit" nvp-hideshow-menu--quit)]
+   ["Hide"
+    ("a" "All" hs-hide-all)
+    ("B" "Block" hs-hide-block)
+    ("c" "Comments" nvp-hs-hide-comments)
+    ("l" "Level" hs-hide-level)]
+   ["Show"
+    ("s" "All" hs-show-all)
+    ("b" "Block" hs-show-block)]
+   ["Settings"
+    (":n" "Remember nested" nvp-hideshow-menu--toggle-hs-allow-nesting)]]
+  (interactive)
+  (hs-minor-mode 1)
+  (transient-setup 'nvp-hideshow-menu))
 
 (defvar-keymap nvp-repeat-hideshow-toggle-map
   :repeat t

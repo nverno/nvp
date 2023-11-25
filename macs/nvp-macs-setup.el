@@ -447,10 +447,14 @@ Do BODY when treesit mode is available."
                    (cl-delete-duplicates
                     (append ',remap-list major-mode-remap-alist) :test #'equal))
              ,@(cl-loop for remap-name in remap-modenames
-                       collect
-                       ;; Use same abbrev table
-                       `(defvaralias ',(intern (concat ts-modename "-abbrev-table"))
-                          ',(intern (concat remap-name "-abbrev-table"))))))
+                        for remap-table = (intern (concat remap-name "-abbrev-table"))
+                        for ts-table = (intern (concat ts-modename "-abbrev-table"))
+                        nconc
+                        ;; Use same abbrev table, suppress warnings about it
+                        `((cl-pushnew '((defvaralias losing-value ,ts-table))
+                                      warning-suppress-log-types
+                                      :test #'equal)
+                          (defvaralias 'ts-table ',remap-table)))))
        (progn
          ,@body))))
 

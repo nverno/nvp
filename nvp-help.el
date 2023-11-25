@@ -8,6 +8,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (require 'nvp)
 (nvp:decls :f (dictionary-search dictionary-match-words powerthesaurus-lookup-dwim))
 (nvp:auto "nvp-read" 'nvp-read-keymap)
@@ -143,14 +144,39 @@
         ;; correctly.
         (insert (nvp-help--sort-keymap name))))))
 
-;;; https://www.emacswiki.org/emacs/help-fns%2b.el
-;; describe-package ?
 ;; -------------------------------------------------------------------
 ;;; Transient
 
-(require 'transient)
-(nvp:decl hyperpolyglot cheatsheet-lookup lookup-help cheat-sh cheat-sh-list
-  dash-docs-install dash-docs-activate-docset dash-docs-deactivate-docset)
+(nvp:decl-prefixes devdocs dash hyperpolyglot cheatsheet lookup cheat)
+
+;;;###autoload(autoload 'nvp-devdocs-menu "nvp-help")
+(transient-define-prefix nvp-devdocs-menu ()
+  [["Search"
+    ("s" "Search in active docs" devdocs-browser-open)
+    ("c" "Choose docs to search in" devdocs-browser-open-in)]
+   ["Docsets"
+    ("i" "Install" devdocs-browser-install-doc)
+    ("u" "Upgrade" devdocs-browser-upgrade-doc)
+    ("r" "Uninstall" devdocs-browser-uninstall-doc)
+    ("U" "Upgrade all docs" devdocs-browser-upgrade-all-docs)
+    ("m" "Update metadata" devdocs-browser-update-docs)]]
+  (interactive)
+  (unless (fboundp 'devdocs-browser-open)
+    (user-error "Install devdocs-browser."))
+  (transient-setup 'nvp-devdocs-menu))
+
+;;;###autoload(autoload 'nvp-dash-menu "nvp-help")
+(transient-define-prefix nvp-dash-menu ()
+  [["Search"
+    ("s" "Search dash" consult-dash)]
+   ["Docsets"
+    ("i" "Install" nvp-dash-docs-install)
+    ("a" "Activate" dash-docs-activate-docset)
+    ("d" "Deactivate" dash-docs-deactivate-docset)]]
+  (interactive)
+  (unless (fboundp 'dash-docs-activate-docset)
+    (user-error "Install dash-docs."))
+  (transient-setup 'nvp-dash-menu))
 
 ;;;###autoload(autoload 'nvp-help-menu "nvp-help")
 (transient-define-prefix nvp-help-menu ()
@@ -161,24 +187,25 @@
     ("K" "Function on key" find-function-on-key)]
    ["Documentation"
     ("m" "Man" man)
+    ("M" "Consult man" consult-man)
     ("i" "Info" nvp-info-menu)
-    ("d" "Dash" consult-dash)
-    ("M" "Consult man" consult-man)]
+    ("s" "Devdocs" nvp-devdocs-menu
+     :transient transient--do-replace
+     :if (lambda () (fboundp 'devdocs-browser-open)))
+    ("d" "Dash" consult-dash
+     :transient transient--do-replace
+     :if (lambda () (fboundp 'dash-docs-activate-docset)))]
    ["Cheat.sh"
     ("cc" "Search" cheat-sh)
     ("cl" "List" cheat-sh-list)]
    ["External"
-    ("ec" "Cheatsheet Lookup" cheatsheet-lookup)
-    ("el" "Lookup-help links" lookup-help)
-    ("eh" "Hyperpolyglot" hyperpolyglot)]]
+    ("C" "Cheatsheet Lookup" cheatsheet-lookup)
+    ("l" "Lookup-help links" lookup-help)
+    ("p" "Hyperpolyglot" hyperpolyglot)]]
   [["Words/Numbers"
-    ("n" "Number" nvp-number-menu)
+    ("n" "Number" nvp-number-menu :transient transient--do-replace)
     ("ws" "Spell" ispell)
     ("ww" "Lookup Dwim" nvp-help-word-dwim)]
-   ["Manage Dash"
-    ("Di" "Dash Install" nvp-dash-docs-install)
-    ("Da" "Dash Activate" dash-docs-activate-docset)
-    ("Dd" "Dash Deactivate" dash-docs-deactivate-docset)]
    ["Libs"
     ;; (":sos" "Sos Keybindings" nvp-sos)
     (":sp" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])

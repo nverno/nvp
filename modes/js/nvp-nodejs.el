@@ -12,7 +12,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(nvp:decls :p (nodejs) :v (nvp-trace-group-alist nvp-js-modes))
+(nvp:decls :p (nodejs) :v (nvp-js-modes))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
@@ -41,19 +41,6 @@
       (call-interactively 'nodejs-repl-send-region)
     (call-interactively 'nodejs-repl-send-last-expression))
   (forward-line))
-
-;; -------------------------------------------------------------------
-;;; Find problem with REPL
-
-;; debugging
-(with-eval-after-load 'nvp-trace
-  (cl-pushnew '(nodejs                  ; all `comint-output-filter-functions'
-                nodejs-repl--clear-cache
-                nodejs-repl--filter-escape-sequnces
-                nodejs-repl--remove-duplicated-prompt
-                nodejs-repl--delete-prompt)
-              nvp-trace-group-alist
-              :test #'member))
 
 (provide 'nvp-nodejs)
 ;; Local Variables:

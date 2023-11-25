@@ -32,7 +32,7 @@
        (and current-prefix-arg (pop-to-buffer (current-buffer)))))))
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(emacs-lisp-mode lisp-interaction-mode)
+  (nvp-repl-add '(emacs-lisp-mode lisp-data-mode lisp-interaction-mode)
     :name 'ielm
     :init #'ielm
     :modes '(inferior-emacs-lisp-mode)

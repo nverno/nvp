@@ -6,6 +6,10 @@
 ;; - manage history
 ;; - redirect output
 ;;
+;; Debugging variables:
+;; - xterm-color-debug
+;; - comint-redirect-verbose
+;;
 ;; TODO:
 ;; - default `comint-input-filter-functions' to ignore blanks, compress newlines
 ;;
@@ -22,7 +26,6 @@
            (comint-write-input-ring))
       (delete-process proc))))
 
-
 ;;; History
 
 ;;;###autoload
@@ -86,7 +89,6 @@ Prompt unless SILENT or `noninteractive'."
   (apply #'nvp-he-history-setup args))
 (put 'nvp-comint-setup-history 'lisp-indent-function 1)
 
-
 ;;; I/O
 (defun nvp-comint-redirect-to-string (command)
   (let* ((proc (nvp:buffer-process))
@@ -127,7 +129,6 @@ Prompt unless SILENT or `noninteractive'."
                   (accept-process-output proc 1)))
       (and prompt (comint-send-string proc "\n"))))) ;optionally print a new prompt
 
-
 ;;; Font-locking
 ;; http://www.modernemacs.com/post/comint-highlighting/
 ;; https://github.com/hylang/hy-mode/blob/master/hy-font-lock.el

@@ -142,6 +142,7 @@ With prefix, prompts for DATE."
   (interactive)
   (insert
    (nvp:read-char-case "Char: " 'verbose
+     (?l "[l]ambda" "λ")
      (?c "[c]heck" "✓")
      (?d "[d]down" "⬎")
      (?i "[i]n" "∈")

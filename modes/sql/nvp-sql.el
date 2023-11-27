@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'sql)
-(nvp:decls :v (zeal-at-point-docset))
+(nvp:decls :p (yas) :v (nvp-mode-name zeal-at-point-docset))
 
 ;; -------------------------------------------------------------------
 ;;; Sql Products

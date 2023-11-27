@@ -178,6 +178,7 @@
     ("s=" "string=" nil :system t)
     ("sb" "search-backward" nil :system t)
     ("sc" "shell-command" nil :system t)
+    ("sd" "setq-default" nil :system t)
     ("se" "save-excursion" nil :system t)
     ("sf" "search-forward" nil :system t)
     ("sl" "setq-local" nil :system t)

@@ -21,6 +21,7 @@
 (require 'nvp)
 (nvp:decls :f (w32-shell-execute))
 (nvp:auto "nvp-read" 'nvp-read-mode-config)
+(nvp:auto "nvp-log" 'nvp-log)
 
 ;; possible local locations
 (defvar nvp-install-local-locations '("~/.local/bin/" "/usr/local/bin/"))

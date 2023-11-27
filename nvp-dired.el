@@ -3,8 +3,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'dired)
-(nvp:decls :v (nvp-dired-external-filelist-cmd nvp-dired-external-program)
-           :p (org dired conda comint)
+(nvp:decls :p (org dired conda comint)
+           :v (nvp-dired-external-filelist-cmd nvp-dired-external-program)
            :f (org-texinfo-export-to-info))
 (nvp:auto "f" 'f-same-p)
 
@@ -313,9 +313,7 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
           "nohup 1>/dev/null 2>/dev/null %s \"%s\""
           (if (and (> (length file-list) 1)
                    (setq list-switch
-                         (cadr
-                          (assoc cmd
-                                 nvp-dired-external-filelist-cmd))))
+                         (cadr (assoc cmd nvp-dired-external-filelist-cmd))))
               (format "%s %s" cmd list-switch)
             cmd)
           (mapconcat #'expand-file-name file-list "\" \""))))

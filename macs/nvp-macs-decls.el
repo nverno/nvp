@@ -100,6 +100,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp/install
     nvp/private
     ;; my vars
+    nvp-mode-name
     nvp-mode-cache
     nvp-mode-header-regex
     nvp-mode-snippet-dir
@@ -146,6 +147,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-he-flex-symbol-beg nvp-he-case-fold-search
     ;; builtin hippie
     hippie-expand-try-functions-list hippie-expand-only-buffers
+    he-search-string he-tried-table he-expand-list
     ;;=== emacs base ===
     package-user-dir
     recentf-list
@@ -164,7 +166,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     dash-docs-docsets
     company-candidates company-selection
     ;; yasnippet
-    yas-selected-text yas-wrap-around-region
+    yas-text yas-selected-text yas-wrap-around-region
     ;; ace-link
     ace-link-fallback-function
     ;; vertico
@@ -208,6 +210,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-read-elisp-symbol
        nvp-read-elisp-function
        nvp-read-elisp-variable
+       nvp-read-mode
        nvp-completing-read
        nvp-find-file-in-dir
        ;; modes
@@ -250,11 +253,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-indicate-pulse-region-or-line
        nvp-indicate-modeline
        ;; Repeat
-       nvp-repeat-abort
-       nvp-indicate-abort
-       nvp-repeat-set-cursor
-       nvp-indicate-cursor-pre
-       nvp-indicate-cursor-post
+       nvp-repeat-set-cursor nvp-repeat-abort
+       nvp-indicate-abort nvp-indicate-cursor-pre nvp-indicate-cursor-post
        ;; procs / inf
        nvp-proc-default-filter
        nvp-proc-default-sentinel
@@ -302,7 +302,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
        w32-shell-execute
        xref-pop-marker-stack xref-push-marker-stack
-       org-comment-dwim)
+       org-comment-dwim
+       he-substitute-string he-reset-string he-string-member he-init-string)
 
      (nvp:decl                          ; external packages
        pos-tip-show
@@ -325,9 +326,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ace-link-help
        ace-link-info
        ;; yasnippet
-       yas-expand-snippet
-       yas-lookup-snippet
-       yas-hippie-try-expand)))
+       yas-text yas-activate-extra-mode
+       yas-expand-snippet yas-lookup-snippet yas-hippie-try-expand)))
 
 (provide 'nvp-macs-decls)
 ;; Local Variables:

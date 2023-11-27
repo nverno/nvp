@@ -12,7 +12,7 @@
   (require 'nvp-macro)
   (require 'smartparens))
 (require 'transient)
-(nvp:decls :p (sp paredit sort) :v (sort-fold-case))
+(nvp:decls :p (sp paredit sort) :v (sort-fold-case) :f (paredit-kill))
 (autoload 'sp-wrap-with-pair "smartparens")
 
 ;;; Indent

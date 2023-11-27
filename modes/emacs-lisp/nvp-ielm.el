@@ -31,6 +31,7 @@
        (setq-local ielm-working-buffer orig-buff)
        (and current-prefix-arg (pop-to-buffer (current-buffer)))))))
 
+(defvar nvp-repl--process-buffers)
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(emacs-lisp-mode lisp-data-mode lisp-interaction-mode)
     :name 'ielm

@@ -454,7 +454,7 @@ Do BODY when treesit mode is available."
                         `((cl-pushnew '((defvaralias losing-value ,ts-table))
                                       warning-suppress-log-types
                                       :test #'equal)
-                          (defvaralias 'ts-table ',remap-table)))))
+                          (defvaralias ',ts-table ',remap-table)))))
        (progn
          ,@body))))
 

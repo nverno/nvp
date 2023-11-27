@@ -152,7 +152,7 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
   (interactive)
   (let ((inhibit-read-only t))
     ;; prefer xterm when available
-    (if (boundp 'xterm-color-colorize-buffer)
+    (if (fboundp 'xterm-color-colorize-buffer)
         (xterm-color-colorize-buffer)
      (ansi-color-apply-on-region compilation-filter-start (point-max)))))
 

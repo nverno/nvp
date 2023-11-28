@@ -201,6 +201,9 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-mode-header-regex
        nvp-newline-dwim--comment
        nvp-company-local
+       ;; hap
+       nvp-help-at-point nvp-hap-elisp nvp-hap-info nvp-hap-man nvp-hap-lsp
+       nvp-hap-company nvp-hap-semantic nvp-hap-treesit nvp-hap-local nvp-hap-word
        ;; util
        nvp-regex-map-across-matches
        ;; install / package
@@ -226,6 +229,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-log-default
        nvp-display-fallback-function
        nvp-display-fallback-dired
+       nvp-display-location
        ;; windows
        nvp-window-configuration-restore
        nvp-window-configuration-save
@@ -293,6 +297,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-theme-switch
        ;; setup
        nvp-setup-program nvp-setup-local
+       ;; nvp-auto
        nvp-install-mode nvp-install-modes
        nvp-lookup-password
        ;; override
@@ -312,27 +317,18 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        imenu--make-index-alist imenu-default-create-index-function)
 
      (nvp:decl                          ; external packages
-       pos-tip-show
+       pos-tip-show pos-tip-tooltip-width pos-tip-show-no-propertize
        do-smooth-scroll
        diminish
-       ;; lsp
        lsp lsp-deferred lsp-mode
-       ;; projectile
        projectile-acquire-root projectile-project-name
        projectile-run-project projectile-install-project projectile-configure-project
-       ;; paredit
        paredit-mode paredit-comment-dwim
-       ;; smartparens
        smartparens-mode
-       ;; vertico
        vertico--exhibit
-       ;; consult
        consult-yank-replace
-       ;; transient
        transient-get-value
-       ;; ace-link
        ace-link ace-link-help ace-link-info
-       ;; yasnippet
        yas-minor-mode yas-text yas-activate-extra-mode
        yas-expand-snippet yas-lookup-snippet yas-hippie-try-expand)))
 

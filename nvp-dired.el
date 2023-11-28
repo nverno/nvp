@@ -135,6 +135,18 @@
 ;; -------------------------------------------------------------------
 ;;; Dired actions
 
+(defun nvp-dired-do-eval (form &optional silent)
+  "Evaluate FORM in marked files.
+With prefix SILENT, save files without prompting."
+  (interactive (list (read--expression "Form to run on files: ") current-prefix-arg))
+  (save-window-excursion
+    (mapc (lambda (file)
+            (with-current-buffer (find-file file)
+              (eval form)
+              (when (or silent (y-or-n-p "Save file? "))
+                (save-buffer))))
+          (dired-get-marked-files))))
+
 ;; Add buffer file name or marked file to kill.
 ;;;###autoload
 (defun nvp-dired-or-buffer-filename (&optional arg)

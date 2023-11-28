@@ -80,25 +80,23 @@ By default, with single prefix or 3 or more, read compilation command.
 With double prefix or more, use comint buffer for compilation."
   (interactive "P")
   (setq current-prefix-arg arg)
-  (nvp:defq compile-fn
-    (or (bound-and-true-p nvp-local-compile-function)
-        (bound-and-true-p nvp-compile-default-function)
-        #'nvp-compile-default))
+  (nvp:defq compile-fn (or (bound-and-true-p nvp-local-compile-function)
+                           (bound-and-true-p nvp-compile-default-function)
+                           #'nvp-compile-default))
   (and (eq compile-fn 'default) (setq compile-fn #'nvp-compile-default))
   (call-interactively compile-fn))
 
 (defun nvp-compile-default (&optional comint read-command)
   "Basic compilation."
-  (interactive
-   (let ((arg (prefix-numeric-value current-prefix-arg)))
-     (list (>= arg 16) (or (eq arg 4) (> arg 16)))))
+  (interactive (let ((arg (prefix-numeric-value current-prefix-arg)))
+                 (list (>= arg 16) (or (eq arg 4) (> arg 16)))))
   (setq-local compilation-read-command read-command)
   (when compilation-read-command
     (setq-local compile-command (compilation-read-command (eval compile-command))))
-  (funcall-interactively
-   #'compile (if (functionp compile-command) (funcall compile-command)
-              (eval compile-command))
-   comint))
+  (funcall-interactively #'compile (if (functionp compile-command)
+                                       (funcall compile-command)
+                                     (eval compile-command))
+                         comint))
 
 ;;;###autoload
 (defun nvp-compile-with-switches (set-p &optional cmd &rest args)
@@ -106,9 +104,8 @@ With double prefix or more, use comint buffer for compilation."
 With prefix, SET-P is passed to `nvp-read-switch' to set local values."
   (interactive "P")
   (let ((compile-command
-         (apply
-          #'nvp-read-switch "Compile: " (or cmd (eval compile-command))
-          cmd set-p args)))
+         (apply #'nvp-read-switch "Compile: " (or cmd (eval compile-command))
+                cmd set-p args)))
     (funcall-interactively #'nvp-compile)))
 
 ;;;###autoload
@@ -154,7 +151,7 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
     ;; prefer xterm when available
     (if (fboundp 'xterm-color-colorize-buffer)
         (xterm-color-colorize-buffer)
-     (ansi-color-apply-on-region compilation-filter-start (point-max)))))
+      (ansi-color-apply-on-region compilation-filter-start (point-max)))))
 
 ;; move to next warning/error
 (defun nvp-compilation-next (n)

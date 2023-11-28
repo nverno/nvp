@@ -5,9 +5,9 @@
     ("t" "table" nil :system t)
     ("pr" "print" nil :system t)
     ("cor" "coroutine" nil :system t)
-    ("get" "getmetatable" nil :system t)
+    ("getm" "getmetatable" nil :system t)
     ("ret" "return" nil :system t)
-    ("set" "setmetatable" nil :system t)
+    ("setm" "setmetatable" nil :system t)
 
     ("!" "not" nil :system t)
     ("||" "or" nil :system t)

@@ -148,6 +148,7 @@
 ;;; Transient
 
 (nvp:decl-prefixes devdocs dash hyperpolyglot cheatsheet lookup cheat)
+(nvp:auto "powerthesaurus"'powerthesaurus-transient)
 
 ;;;###autoload(autoload 'nvp-devdocs-menu "nvp-help")
 (transient-define-prefix nvp-devdocs-menu ()
@@ -189,11 +190,9 @@
     ("m" "Man" man)
     ("M" "Consult man" consult-man)
     ("i" "Info" nvp-info-menu)
-    ("s" "Devdocs" nvp-devdocs-menu
-     :transient transient--do-replace
+    ("s" "Devdocs" nvp-devdocs-menu :transient transient--do-replace
      :if (lambda () (fboundp 'devdocs-browser-open)))
-    ("d" "Dash" consult-dash
-     :transient transient--do-replace
+    ("d" "Dash" consult-dash :transient transient--do-replace
      :if (lambda () (fboundp 'dash-docs-activate-docset)))]
    ["Cheat.sh"
     ("cc" "Search" cheat-sh)
@@ -204,8 +203,10 @@
     ("p" "Hyperpolyglot" hyperpolyglot)]]
   [["Words/Numbers"
     ("n" "Number" nvp-number-menu :transient transient--do-replace)
-    ("ws" "Spell" ispell)
-    ("ww" "Lookup Dwim" nvp-help-word-dwim)]
+    ("w" "Word dwim" nvp-help-word-dwim)
+    ("W" "Powerthesaurus" powerthesaurus-transient :transient transient--do-replace
+     :if (lambda () (featurep 'powerthesaurus)))
+    ("S" "Spellcheck" ispell)]
    ["Libs"
     ;; (":sos" "Sos Keybindings" nvp-sos)
     (":sp" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])

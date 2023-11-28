@@ -8,7 +8,7 @@
 
 (eval-when-compile (require 'nvp-macro))
 (require 'python nil t)
-(nvp:decls :p (python conda-env))
+(nvp:decls :p (python conda-env) :f (conda-env-send-buffer))
 
 (nvp:defmethod nvp-parse-current-function ()
   :modes (python-mode python-ts-mode)

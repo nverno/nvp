@@ -4,8 +4,12 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'lua-ts-mode nil t)
-(nvp:decls :p (lua) :v (nvp-repl--display-action))
 
+(nvp:decls :p (lua) :v (nvp-repl--display-action) :f (lua-funcname-at-point))
+(defvar lua-documentation-url)
+(defvar lua-documentation-function)
+
+;;; REPL
 (with-eval-after-load 'nvp-repl
   (require 'nvp-lua-repl))
 

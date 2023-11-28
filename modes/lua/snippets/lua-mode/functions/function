@@ -3,5 +3,5 @@
 # key: fun
 # --
 function ${1:name}($2)
-    ${3:-- code}
+  $0
 end

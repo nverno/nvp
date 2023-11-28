@@ -159,9 +159,9 @@
 (defun nvp-he-flex-lisp-setup (&optional beg)
   (setq-local nvp-he-flex-matcher #'nvp-he-flex-lisp)
   (setq-local nvp-he-flex-symbol-beg (or beg #'he-lisp-symbol-beg))
-  (setq-local nvp-he-skip-leading-regexp "@")
-  (setq-local nvp-he-flex-prefix-from-re "[-:./]")
-  (setq-local nvp-he-flex-prefix-to-re "\\\\w*[-:./]"))
+  (setq-local nvp-he-skip-leading-regexp "[@]")
+  (setq-local nvp-he-flex-prefix-from-re "[-.]")
+  (setq-local nvp-he-flex-prefix-to-re "\\\\w*[-.:/]"))
 
 ;; -------------------------------------------------------------------
 ;;; Completion Tables

@@ -38,8 +38,7 @@
     ("C" "Coding systems" list-coding-systems)
     ("h" "Command history" list-command-history)]
    ["Modify"
-    (":t" "Add transient dev" nvp-transient-add-dev)
-    
+    ("/t" "Transient" nvp-transient-menu :transient transient--do-replace)
     (":a" "Remove advice" nvp-dev-advice-remove-all)
     (":h" "Add/Remove hook" nvp-hook-add-or-remove)
     (":f" "Font face on region" nvp-font-fontify-region-face)]]
@@ -57,27 +56,27 @@
 
 (nvp:bindings nvp-dev-keymap nil
   :create t
-  ("a"  . nvp-dev-advice-remove-all)
-  ("c"  . nvp-help-list-charsets)
-  ("D"  . describe-current-display-table) ; #<marker at 3963 in disp-table.el.gz>
-  ("f"  . nvp-dev-features)
-  ("Fr" . nvp-font-fontify-region-face)
-  ("Fl" . nvp-font-list)
-  ("H"  . nvp-hook-add-or-remove)
-  ("ld" . list-dynamic-libraries)
-  ("lf" . list-faces-display)
-  ("lF" . list-fontsets)
-  ("li" . list-command-history)
-  ("lc" . list-coding-systems)
-  ("ls" . list-load-path-shadows)
-  ("lt" . list-timers)
-  ("lT" . list-threads)
-  ("m"  . nvp-dev-describe-mode)
-  ("o"  . nvp-dev-list-overlays)
-  ("s"  . nvp-syntax-at-point)
-  ("S"  . smie-config-show-indent)
-  ("v"  . nvp-dev-describe-variable)
-  ("z"  . nvp-dev-menu))
+  ("<f2>" . nvp-dev-menu)
+  ("a"    . nvp-dev-advice-remove-all)
+  ("c"    . nvp-help-list-charsets)
+  ("D"    . describe-current-display-table) ; #<marker at 3963 in disp-table.el.gz>
+  ("f"    . nvp-dev-features)
+  ("Fr"   . nvp-font-fontify-region-face)
+  ("Fl"   . nvp-font-list)
+  ("H"    . nvp-hook-add-or-remove)
+  ("ld"   . list-dynamic-libraries)
+  ("lf"   . list-faces-display)
+  ("lF"   . list-fontsets)
+  ("li"   . list-command-history)
+  ("lc"   . list-coding-systems)
+  ("ls"   . list-load-path-shadows)
+  ("lt"   . list-timers)
+  ("lT"   . list-threads)
+  ("m"    . nvp-dev-describe-mode)
+  ("o"    . nvp-dev-list-overlays)
+  ("s"    . nvp-syntax-at-point)
+  ("S"    . smie-config-show-indent)
+  ("v"    . nvp-dev-describe-variable))
 
 ;; -------------------------------------------------------------------
 ;;; Advice

@@ -26,8 +26,10 @@
 (require 'js)
 (require 'js2-mode nil t)
 (nvp:req 'nvp-js 'subrs)
-(nvp:decls :p (js2 tern httpd yas)
+(nvp:decls :p (js2 tern yas)
            :f (nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook))
+(declare-function httpd-start "httpd")
+(defvar httpd-root)
 
 (defvar nvp-js-modes
   '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode))

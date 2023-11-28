@@ -2,7 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (nvp:decls :p (llvm c))
 
 ;;; Help
@@ -10,7 +9,7 @@
 ;; TODO: local lookup -- index sphinx docs?
 (defun nvp-llvm-help-at-point ()
   (interactive)
-  (call-interactively #'llvm-mode-lookup-instruction-online))
+  (call-interactively #'llvm-ts-mode-lookup-instruction-online))
 
 ;;; C-related
 

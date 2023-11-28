@@ -28,17 +28,17 @@
 ;; popup.el/pos-tip.el/quickhelp.el to truncate pop-tips
 ;;
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'pos-tip)
 (require 'company)
-(require 'company-quickhelp)
-(nvp:decls :p (compilation) :v (info-lookup-other-window-flag)
-           :f (nvp-hap-treesit-local-active-p))
+(require 'compile)                      ; compilation faces
+(nvp:decls :v (info-lookup-other-window-flag) :f (nvp-hap-treesit-local-active-p))
 (nvp:auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
 
-
 ;; local override function to get doc for quickhelp-toggle
+(declare-function company-quickhelp-manual-begin "company-quickhelp")
 (defvar nvp-quickhelp-toggle-function #'company-quickhelp-manual-begin)
 
 ;; Character pixel width

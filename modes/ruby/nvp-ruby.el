@@ -4,9 +4,10 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'ruby-mode)
 (require 'inf-ruby nil t)
-(nvp:decls
- :p ("ruby" "inf-ruby" "robe" "projectile-rails")
- :f (inf-ruby))
+(nvp:decls :p (ruby inf-ruby robe projectile-rails) :f (inf-ruby))
+(declare-function robe-start "robe")
+(declare-function robe-mode "robe")
+(declare-function ruby-compilation-this-buffer "ruby-compilation")
 
 ;;; Snippets
 

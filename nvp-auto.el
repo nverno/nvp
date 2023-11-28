@@ -11,6 +11,24 @@
 (require 'nvp)
 (nvp:decls :f (auth-source-search))
 (nvp:auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
+(nvp:auto "nvp-read" nvp-read-mode-config)
+
+;; -------------------------------------------------------------------
+;;; Install
+
+;;;###autoload
+(defun nvp-install-mode (mode &optional reinstall)
+  (interactive (list (nvp-read-mode-config) current-prefix-arg))
+  (let* ((path (nvp:mode-config-path mode))
+         (elc (concat path "c")))
+    (when (and reinstall (file-exists-p elc))
+      (delete-file elc))
+    (load path)))
+
+;;;###autoload
+(defun nvp-install-modes (modes)
+  "Install packages for list of MODES."
+  (mapc #'nvp-install-mode modes))
 
 ;; -------------------------------------------------------------------
 ;;; Movement

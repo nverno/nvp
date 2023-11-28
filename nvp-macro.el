@@ -16,7 +16,6 @@
 (require 'hydra)
 (require 'cc-defs)
 (require 'seq)
-(require 'nvp-install)
 (require 'nvp-macs-common "macs/nvp-macs-common")
 (require 'nvp-macs-setup "macs/nvp-macs-setup")
 (require 'nvp-macs-bindings "macs/nvp-macs-bindings")
@@ -24,6 +23,7 @@
 (require 'nvp-macs-decls "macs/nvp-macs-decls")
 (require 'nvp-macs-fonts "macs/nvp-macs-fonts")
 (require 'nvp-macs-display "macs/nvp-macs-display")
+(require 'nvp-install "macs/nvp-install")
 (require 'nvp-subrs "macs/nvp-subrs")
 
 ;; add compile time paths interactively

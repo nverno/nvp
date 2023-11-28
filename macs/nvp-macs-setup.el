@@ -436,27 +436,29 @@ Do BODY when treesit mode is available."
               (concat (nvp:as-string lang) "-ts-mode")))
          (ts-mode (or ts-mode (intern ts-modename)))
          (remap-list (and remap (mapcar (lambda (e) (cons e ts-mode)) remap))))
-    `(when (and (require 'treesit nil t)
-                (or (treesit-language-available-p ',lang)
-                    ,(when install
-                       `(nvp:install-treesit
-                         ,lang ,auto ,url ,revision ,source-dir ,cc ,c++)))
-                (require ',(or ts-lib ts-mode) nil t))
-       ,@(when remap
-           `((setq major-mode-remap-alist
-                   (cl-delete-duplicates
-                    (append ',remap-list major-mode-remap-alist) :test #'equal))
-             ,@(cl-loop for remap-name in remap-modenames
-                        for remap-table = (intern (concat remap-name "-abbrev-table"))
-                        for ts-table = (intern (concat ts-modename "-abbrev-table"))
-                        nconc
-                        ;; Use same abbrev table, suppress warnings about it
-                        `((cl-pushnew '((defvaralias losing-value ,ts-table))
-                                      warning-suppress-log-types
-                                      :test #'equal)
-                          (defvaralias ',ts-table ',remap-table)))))
-       (progn
-         ,@body))))
+    `(progn
+       (eval-when-compile (require 'treesit nil t))
+       (when (and (require 'treesit nil t)
+                  (or (treesit-language-available-p ',lang)
+                      ,(when install
+                         `(nvp:install-treesit
+                           ,lang ,auto ,url ,revision ,source-dir ,cc ,c++)))
+                  (require ',(or ts-lib ts-mode) nil t))
+         ,@(when remap
+             `((setq major-mode-remap-alist
+                     (cl-delete-duplicates
+                      (append ',remap-list major-mode-remap-alist) :test #'equal))
+               ,@(cl-loop for remap-name in remap-modenames
+                          for remap-table = (intern (concat remap-name "-abbrev-table"))
+                          for ts-table = (intern (concat ts-modename "-abbrev-table"))
+                          nconc
+                          ;; Use same abbrev table, suppress warnings about it
+                          `((cl-pushnew '((defvaralias losing-value ,ts-table))
+                                        warning-suppress-log-types
+                                        :test #'equal)
+                            (defvaralias ',ts-table ',remap-table)))))
+         (progn
+           ,@body)))))
 
 (provide 'nvp-macs-setup)
 ;; Local Variables:

@@ -1,10 +1,8 @@
-;;; nvp-install.el --- -*- lexical-binding: t; -*-
-
+;;; nvp-install.el --- Install configs on first load -*- lexical-binding: t; -*-
+;;
 ;;; Commentary:
 ;;
-;;; TODO: complete overhaul
-;;
-;; It's ugly but it works fine for now...
+;; It's ugly but it works...
 ;;
 ;; Rewrite:
 ;; - interface to makefile install
@@ -15,13 +13,15 @@
 ;; - async external installs
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-local nil t)
-  (require 'nvp-macro))
-(require 'nvp)
-(nvp:decls :f (w32-shell-execute))
-(nvp:auto "nvp-read" 'nvp-read-mode-config)
-(nvp:auto "nvp-log" 'nvp-log)
+
+(require 'nvp-macs-common "macs/nvp-macs-common")
+(require 'nvp-macs-process "macs/nvp-macs-process")
+(require 'nvp-macs-decls "macs/nvp-macs-decls")
+(require 'nvp-macs-setup "macs/nvp-macs-setup")
+
+(nvp:decls)
+(declare-function nvp-pkg-directory-dwim "nvp-pkg")
+(autoload 'nvp-log "nvp-log")
 
 ;; possible local locations
 (defvar nvp-install-local-locations '("~/.local/bin/" "/usr/local/bin/"))
@@ -188,12 +188,14 @@
                         (t (error "unhandled path: %S" p)))
              collect path)))
 
+(defun nvp-install--mode (mode)
+  (load (nvp:mode-config-path mode)))
+
 ;;; Install dependencies on demand - when mode is first autoloaded
-;;;###autoload
 (cl-defmacro nvp-install-on-demand
     (&key libs optional git bit env env! script path depends patch)
   (declare (indent defun) (debug t))
-  (require 'nvp-macro)
+  (require 'nvp-local)
   (setq path (seq-uniq
               (apply #'nvp-install-site-paths
                      (nvp:as-list (eval path))
@@ -209,7 +211,7 @@
                (setq nvp-install--total-proc 0)
                ;;--- Dependencies ----------------------------------------
                (cl-loop for dep in ',depends
-                        do (nvp-install-mode dep))
+                        do (nvp-install--mode dep))
                ;;--- Packages --------------------------------------------
                (cl-loop for pkg in ',libs
                         if (and (package-installed-p (intern pkg))
@@ -281,19 +283,9 @@
                                if (file-exists-p p)
                                collect `(add-to-list 'load-path ,p)))))))
 
-;;;###autoload
-(defun nvp-install-mode (mode &optional reinstall)
-  (interactive (list (nvp-read-mode-config) current-prefix-arg))
-  (let* ((path (nvp:mode-config-path mode))
-         (elc (concat path "c")))
-    (when (and reinstall (file-exists-p elc))
-      (delete-file elc))
-    (load path)))
-
-;;;###autoload
-(defun nvp-install-modes (modes)
-  "Install packages for list of MODES."
-  (mapc #'nvp-install-mode modes))
-
 (provide 'nvp-install)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-install.el ends here

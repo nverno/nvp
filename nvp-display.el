@@ -10,8 +10,8 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)                          ;nvp-display-actions
-(nvp:decl yas-expand-snippet yas-lookup-snippet find-function-other-window)
+(require 'nvp)                          ; nvp-display-actions
+(nvp:decls)
 
 (defsubst nvp-display-init-template (template &optional mode start end &rest bindings)
   "Use TEMPLATE to init a new file.

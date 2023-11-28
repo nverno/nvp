@@ -2,7 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
-(require 'nvp-macs-common)
+(require 'nvp-macs-common "macs/nvp-macs-common")
 
 (defun nvp:-decl-function-p (&optional pos)
   "Determine if POS, or point, is at beginning of function.
@@ -154,13 +154,16 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     ielm-working-buffer ielm-dynamic-return
     org-babel-do-load-languages org-src-lang-modes
     local-abbrev-table
-    bug-reference-bug-regexp
-    bug-reference-url-format
+    bug-reference-bug-regexp bug-reference-url-format
+    crm-separator
+    compilation-error-regexp-alist compilation-error-regexp-alist-alist
+    compilation-error-face compilation-warning-face compilation-info-face
+    explicit-shell-file-name
+    imenu-generic-expression imenu--index-alist imenu-auto-rescan
     ;; align
     align-to-tab-stop
     ;; ido
-    ido-default-buffer-method
-    ido-default-file-method
+    ido-default-buffer-method ido-default-file-method
     ;;=== external pkg ===
     zeal-at-point-docset
     dash-docs-docsets
@@ -197,6 +200,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-move-forward-heading
        nvp-mode-header-regex
        nvp-newline-dwim--comment
+       nvp-company-local
        ;; util
        nvp-regex-map-across-matches
        ;; install / package
@@ -288,8 +292,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; theme
        nvp-theme-switch
        ;; setup
-       nvp-setup-program
-       nvp-setup-local
+       nvp-setup-program nvp-setup-local
+       nvp-install-mode nvp-install-modes
        nvp-lookup-password
        ;; override
        nvp-buffer-local-set-key
@@ -303,18 +307,23 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        w32-shell-execute
        xref-pop-marker-stack xref-push-marker-stack
        org-comment-dwim
-       he-substitute-string he-reset-string he-string-member he-init-string)
+       he-substitute-string he-reset-string he-string-member he-init-string
+       find-function-other-window
+       imenu--make-index-alist imenu-default-create-index-function)
 
      (nvp:decl                          ; external packages
        pos-tip-show
        do-smooth-scroll
+       diminish
+       ;; lsp
+       lsp lsp-deferred lsp-mode
        ;; projectile
-       projectile-project-name
-       projectile-run-project
-       projectile-configure-project
-       projectile-acquire-root
+       projectile-acquire-root projectile-project-name
+       projectile-run-project projectile-install-project projectile-configure-project
        ;; paredit
-       paredit-comment-dwim
+       paredit-mode paredit-comment-dwim
+       ;; smartparens
+       smartparens-mode
        ;; vertico
        vertico--exhibit
        ;; consult
@@ -322,11 +331,9 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; transient
        transient-get-value
        ;; ace-link
-       ace-link
-       ace-link-help
-       ace-link-info
+       ace-link ace-link-help ace-link-info
        ;; yasnippet
-       yas-text yas-activate-extra-mode
+       yas-minor-mode yas-text yas-activate-extra-mode
        yas-expand-snippet yas-lookup-snippet yas-hippie-try-expand)))
 
 (provide 'nvp-macs-decls)

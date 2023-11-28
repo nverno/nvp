@@ -109,6 +109,8 @@
 (defvar nvp-go-fn-re-2
   "^func[ ]+\\(([[:alnum:]]*?[ ]?[*]?\\([[:alnum:]]+\\))[ ]+\\)?Test[[:alnum:]_]+(.*)")
 
+(defvar go-use-gocheck-for-testing)
+
 (defun nvp-go-run-test-current-function ()
   (interactive)
   (if (string-match "_test\\.go" buffer-file-name)

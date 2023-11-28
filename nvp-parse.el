@@ -11,6 +11,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp:auto "nvp-imenu" 'nvp-imenu-sort-relative-positions 'nvp-imenu-cleaned-alist)
+(nvp:decls)
 
 (put 'nvp-parse-bad-location 'error-conditions '(nvp-parse-bad-location error))
 (put 'nvp-parse-bad-location 'error-message "Location not available: ")

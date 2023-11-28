@@ -4,9 +4,14 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'dired)
 (nvp:decls :p (org dired conda comint)
-           :v (nvp-dired-external-filelist-cmd nvp-dired-external-program)
-           :f (org-texinfo-export-to-info))
+           :v (nvp-dired-external-filelist-cmd nvp-dired-external-program))
 (nvp:auto "f" 'f-same-p)
+
+(declare-function org-texinfo-export-to-info "ox-texinfo")
+(declare-function org-latex-export-to-pdf "ox-latex")
+(declare-function dired-read-shell-command "dired-aux")
+(declare-function dired-dwim-target-directory "dired-aux")
+(declare-function comint-mode "comint")
 
 ;; -------------------------------------------------------------------
 ;;; Imenu
@@ -180,6 +185,7 @@
 ;;-- Open external files
 
 ;; Open current or marked dired files in external app.
+(nvp:auto "conda-env" 'conda-env-read-env)
 (defun nvp-dired-external-open ()
   (interactive)
   (let ((files (or (dired-get-marked-files)
@@ -190,7 +196,6 @@
                    (ext (file-name-extension path)))
                (pcase ext
                  ("ipynb"
-                  (require 'conda-env)
                   (let ((env (conda-env-read-env)))
                     (start-process-shell-command
                      "jupyter-notebook"

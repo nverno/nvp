@@ -7,12 +7,13 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:req 'nvp-find 'subrs)
 (require 'rg)
 (require 'nvp-find)
-(require 'nvp)
-(nvp:decls :p (projectile) :v (projectile-relevant-known-projects))
+(nvp:req 'nvp-find 'subrs)
+
+(nvp:decls :p (projectile))
 (nvp:auto "projectile" projectile-acquire-root)
+(declare-function projectile-relevant-known-projects "projectile")
 
 ;; Override rg's `compilation-error-regexp-alist' matching
 ;; to use with `xterm-color-filter'

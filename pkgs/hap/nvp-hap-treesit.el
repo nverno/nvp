@@ -5,6 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'treesit)
 (require 'nvp-hap)
+(declare-function nvp-hap-sh "nvp-sh-help")
 
 (cl-defstruct (nvp--hap-ts (:constructor nvp-hap-ts-make))
   "Hap tree-sitter backend"

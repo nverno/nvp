@@ -10,6 +10,12 @@
 (require 'cl-lib)
 (require 'dash)
 
+(defvar nvp-local-notes-file)
+(defvar nvp-default-notes-files)
+(defvar nvp/nvp)
+(defvar pp-default-function)
+(declare-function comint-mode "comint")
+
 ;;; Conversion
 (defsubst nvp:as-symbol (string-or-symbol)
   (declare (pure t) (side-effect-free t))

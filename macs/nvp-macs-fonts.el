@@ -13,6 +13,7 @@
 ;;
 ;;; Code:
 (require 'nvp-macs-common)
+(require 'nvp-macs-setup)
 (require 'cc-defs)
 (require 'cc-fonts)
 (defvar nvp-mode-font-additions)

@@ -10,6 +10,7 @@
 (nvp:decls :p (ring comint eshell))
 (declare-function eshell-beginning-of-input "esh-mode")
 (declare-function comint-line-beginning-position "comint")
+(declare-function ring-elements "ring")
 
 ;; -------------------------------------------------------------------
 ;;; Variables to control getting / expanding mode history

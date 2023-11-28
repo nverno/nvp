@@ -309,6 +309,7 @@
     ("swe" "save-window-excursion" nil :system t)
     ("tap" "thing-at-point" nil :system t)
     ("tck" "this-command-keys" nil :system t)
+    ("tdp" "transient-define-prefix" nil :system t)
     ("tna" "treesit-node-at" nil :system t)
     ("tnt" "treesit-node-text" nil :system t)
     ("tnc" "treesit-node-child" nil :system t)

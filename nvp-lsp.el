@@ -7,10 +7,10 @@
 
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
-(nvp:decls :p (hs lsp) :f (lsp--erase-log-buffer))
+(nvp:decls :p (hs lsp) :f (lsp--erase-log-buffer hs-toggle-hiding))
 
 ;;; Transient
-
+(defvar lsp-log-io)
 (nvp:def-transient-toggle-vars nvp-lsp-menu
   lsp-log-io)
 

@@ -5,6 +5,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
+(nvp:decls)
 
 (transient-define-suffix nvp-transient--args ()
   "Show current infix args."

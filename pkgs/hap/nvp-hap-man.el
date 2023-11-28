@@ -19,7 +19,8 @@
 (cl-defgeneric nvp-hap-man-thing-at-point ()
   (thing-at-point 'symbol))
 
-(cl-defmethod nvp-hap-man-thing-at-point (&context (major-mode c++-mode))
+(nvp:defmethod nvp-hap-man-thing-at-point ()
+  :modes (c++-mode c++-ts-mode)
   "Append std:: to lookup c++ man docs (stdman stdlib man pages)."
   (when-let ((sym (thing-at-point 'symbol)))
     (unless (string-prefix-p "std::" sym)

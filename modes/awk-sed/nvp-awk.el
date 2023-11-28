@@ -8,15 +8,15 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'cc-awk)
-(require 'nvp)
 (require 'info-look)
 (nvp:decls)
 
 ;;; Syntax
 
-(modify-syntax-entry ?@ "'" awk-mode-syntax-table)
-(modify-syntax-entry ?$ "'" awk-mode-syntax-table)
+(defvar awk-mode-syntax-table)
+(with-eval-after-load 'cc-awk
+  (modify-syntax-entry ?@ "'" awk-mode-syntax-table)
+  (modify-syntax-entry ?$ "'" awk-mode-syntax-table))
 
 ;;; Font-locking
 
@@ -37,8 +37,7 @@
 (defun nvp-awk-check-buffer ()
   "Lint buffer with results in compilation mode."
   (interactive)
-  (compilation-start
-   (concat "awk --lint -f " (buffer-file-name))))
+  (compilation-start (concat "awk --lint -f " (buffer-file-name))))
 
 ;; -------------------------------------------------------------------
 ;;; Completion

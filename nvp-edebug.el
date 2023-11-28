@@ -184,6 +184,40 @@
     ("S" "Set indent" smie-config-set-indent :transient t)
     ("s" "Save config" smie-config-save)]])
 
+;;; Native compile
+(defun nvp-native-comp--read-level (prompt &rest _)
+  (string-to-number
+   (completing-read
+    prompt (--map (number-to-string it) (number-sequence 0 3)) nil t)))
+
+(transient-define-infix nvp-native-comp-menu--verbosity ()
+  :class 'transient-lisp-variable
+  :variable 'native-comp-verbose
+  :reader #'nvp-native-comp--read-level)
+
+(transient-define-infix nvp-native-comp-menu--debug ()
+  :class 'transient-lisp-variable
+  :variable 'native-comp-debug
+  :reader #'nvp-native-comp--read-level)
+
+(defvar native-comp-async-report-warnings-errors)
+(defvar native-comp-always-compile)
+(nvp:def-transient-toggle-vars nvp-native-comp-menu
+  native-comp-async-report-warnings-errors
+  native-comp-always-compile)
+
+(transient-define-prefix nvp-native-comp-menu ()
+  [[ :if-mode emacs-lisp-mode "Compile"
+     ("c" "Compile" emacs-lisp-native-compile)
+     ("l" "Compile and load" emacs-lisp-native-compile-and-load)]
+   ["Settings"
+    (":v" "Verbosity" nvp-native-comp-menu--verbosity)
+    (":d" "Debug" nvp-native-comp-menu--debug)
+    (":w" "Report async warnings/errors"
+     nvp-native-comp-menu--toggle-native-comp-async-report-warnings-errors)
+    (":a" "Always compile"
+     nvp-native-comp-menu--toggle-native-comp-always-compile)]])
+
 ;;;###autoload(autoload 'nvp-edebug-menu "nvp-edebug")
 (transient-define-prefix nvp-edebug-menu ()
   "Toggle or run elisp debugging."
@@ -214,6 +248,7 @@
     (":c" "Generate callgraph"
      nvp-edebug-menu--toggle-byte-compile-generate-call-tree)]]
   [["Other"
+    ("/tran" "Transient" nvp-transient-menu :transient transient--do-replace)
     ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode))
      :transient transient--do-replace)
     ("/tree" "Tree-sitter" nvp-treesit-menu :transient transient--do-replace
@@ -223,7 +258,7 @@
     ("/file" "Filenotify debug" nvp-edebug-menu--toggle-file-notify-debug)
     ("/proj" "Projectile verbose" nvp-edebug-menu--toggle-projectile-verbose
      :if-non-nil projectile-mode)
-    ("/tran" "Transient" nvp-transient-menu)
+    ("/comp" "Native comp" nvp-native-comp-menu :transient transient--do-replace)
     ("/smie" "Smie" nvp-edebug-smie :transient transient--do-replace
      :if (lambda () (eq 'smie-indent-line indent-line-function)))
     ("/url" nvp-edebug-menu--toggle-url-debug :if (lambda () (boundp 'url-debug)))

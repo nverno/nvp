@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'avy)
-(nvp:decls :p (ace) :v (org-link-any-re))
+(nvp:decls :p (ace) :v (org-link-any-re) :f (ace-link-org))
 (nvp:auto "ace-link" ace-link--help-collect)
 
 (defvar nvp-link-default-imenu t

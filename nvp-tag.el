@@ -36,7 +36,7 @@
 (defun nvp-etags-find-definitions ()
   (interactive)
   (let* ((xref-backend-functions '(etags--xref-backend))
-         (thing (xref-backend-identifier-at-point 'etags)))
+         (thing (xref--read-identifier "Find definitions of: ")))
     (xref-find-definitions-other-window thing)))
 
 ;; workaround ggtags.el/global not accepting regex chars

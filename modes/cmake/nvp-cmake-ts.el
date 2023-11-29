@@ -9,7 +9,6 @@
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'cmake-ts-mode)
 (nvp:decls)
 

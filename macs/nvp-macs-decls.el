@@ -239,6 +239,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-he-history-remove-trailing-paren
        nvp-try-expand-flex
        nvp-he-flex-lisp
+       nvp-he-elisp-setup
        nvp-he-flex-lisp-setup
        nvp-he-flex-camel/snake
        nvp-he-chained-symbol-beg
@@ -279,6 +280,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-grab-symbol
        nvp-abbrev-expand-p
        nvp-abbrev-expand-not-after-punct-p
+       nvp-abbrev-expand-after-symbols-hook
        ;; test
        nvp-ert-run-tests
        ;; compile
@@ -329,7 +331,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        consult-yank-replace
        transient-get-value
        ace-link ace-link-help ace-link-info
-       yas-minor-mode yas-text yas-activate-extra-mode
+       yas-minor-mode yas-text yas-activate-extra-mode yas-deactivate-extra-mode
        yas-expand-snippet yas-lookup-snippet yas-hippie-try-expand)))
 
 (provide 'nvp-macs-decls)

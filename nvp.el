@@ -6,9 +6,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-local)
-;; only external libraries required at startup: (actually in `emacs-startup-hook')
 (require 'company)
-(require 'smartparens)
 (nvp:decls :p (projectile winner isearch consult lsp)
            :f (lsp-format-buffer projectile-regenerate-tags))
            
@@ -202,20 +200,6 @@ called from minibuffer, or nil.")
   "Line escape face."
   :group 'nvp)
 
-;; -------------------------------------------------------------------
-;;; Company / Yasnippet
-
-(with-eval-after-load 'yasnippet (require 'nvp-yas))
-
-;; Note: this is set in compiled init -- but just in case
-(make-variable-buffer-local 'company-backends)
-
-(defun nvp-company-local (&rest backends)
-  "Add BACKENDS to local `company-backends' (in a hook)."
-  (dolist (b backends)
-    (unless (member b company-backends)
-      (push b company-backends))))
-
 
 ;; -------------------------------------------------------------------
 ;;; Newline DWIM
@@ -389,27 +373,6 @@ Otherwise just call `vertico-insert'. If this was previous command, call
                          (if (window-live-p win) (window-buffer win)
                            (current-buffer)))
     (apply old-fn args)))
-
-
-;; -------------------------------------------------------------------
-;;; Bindings
-
-;; don't require use-package
-(defun nvp-autoload-keymap (keymap-symbol package &optional binding-map)
-  "Autoload KEYMAP-SYMBOL from PACKAGE.
-Binds calling keys as prefix in `global-map' or BINDING-MAP if non-nil."
-  (require package)
-  (if (and (boundp keymap-symbol)
-           (keymapp (symbol-value keymap-symbol)))
-      (let* ((kv (this-command-keys-vector))
-             (key (key-description kv))
-             (keymap (symbol-value keymap-symbol)))
-        (define-key (or binding-map global-map) (kbd key) keymap)
-        (setq unread-command-events
-              (--map (cons t it) (listify-key-sequence kv))))
-    (error (format "package.el %s failed to define keymap %s"
-                   package keymap-symbol))))
-
 
 ;; -------------------------------------------------------------------
 ;;; Windows / Buffers

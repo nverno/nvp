@@ -12,13 +12,14 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
+(require 'nodejs-repl nil t)
 (nvp:decls :p (nodejs) :v (nvp-js-modes))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
   (comint-write-input-ring))
 
-(when (fboundp #'nodejs-repl-switch-to-repl)
+(when (fboundp 'nodejs-repl-switch-to-repl)
   (nvp-repl-add nvp-js-modes
     :name 'nodejs
     :modes '(nodejs-repl-mode)

@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'nvp-cmake)
 (nvp:decls)
 
@@ -28,12 +27,10 @@
 ;; single line doc for CMD
 (defun nvp-cmake--get-eldoc-string (cmd type)
   (or (gethash cmd nvp-cmake-eldoc-cache)
-      (let ((res
-             (string-trim-right
-              (shell-command-to-string
-               (concat
-                nvp-cmake-executable " --help-" (symbol-name type)
-                " " (shell-quote-argument cmd) " | awk 'FNR==4'")))))
+      (let ((res (string-trim-right
+                  (shell-command-to-string
+                   (concat nvp-cmake-executable " --help-" (symbol-name type)
+                           " " (shell-quote-argument cmd) " | awk 'FNR==4'")))))
         (and (not (equal "" res))
              (puthash cmd res nvp-cmake-eldoc-cache)))))
 

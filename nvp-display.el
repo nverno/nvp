@@ -13,7 +13,7 @@
 (require 'nvp)                          ; nvp-display-actions
 (nvp:decls)
 
-(defsubst nvp-display-init-template (template &optional mode start end &rest bindings)
+(defun nvp-display-init-template (template &optional mode start end &rest bindings)
   "Use TEMPLATE to init a new file.
 MODE and BINDINGS are passed to `yas-expand-snippet'."
   (cl-progv (mapcar #'car bindings) (mapcar #'cadr bindings)

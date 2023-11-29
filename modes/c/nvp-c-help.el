@@ -13,12 +13,10 @@
 ;; - just tries to determine the function at hand and plugs it into the url
 ;;
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-hap-semantic)
-(require 'nvp-c)
 (nvp:req 'nvp-c 'subrs)
-(nvp:auto "nvp-hap-man" 'nvp-hap-man-buffer)
-(nvp:decls :v (semantic-c-dependency-system-include-path))
+(nvp:decls :p (semantic nvp-hap) :f (semantic-tag-name))
 
 ;; -------------------------------------------------------------------
 ;;; Sources
@@ -90,7 +88,8 @@
 ;;;###autoload
 (defun nvp-hap-c (command &optional arg &rest _args)
   (cl-case command
-    (thingatpt (nvp-semantic-tag-at (point)))
+    (init (nvp-hap-semantic-init))
+    (thingatpt (nvp-hap-semantic-tag-at (point)))
     (doc-buffer
      (pcase-let ((`(,tag-name ,file ,_args) (nvp-c--parse-tag arg)))
        (--when-let (and (stringp file)

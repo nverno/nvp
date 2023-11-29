@@ -27,8 +27,8 @@
   "Do BODY but catch \\='nvp-fallback. If result doesn't exist, then
 return its directory name."
   (declare (indent 1))
-  (let ((handler (plist-get body :handler)))
-    (nvp:skip-keywords body)
+  (let (handler)
+    (nvp:skip-keywords body (handler))
     (nvp:with-syms (res)
       `(progn
          (let* ((nvp-exit nil)

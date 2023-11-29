@@ -3,18 +3,15 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'nvp-cmake)
-(require 'cmake-mode nil t)
-(nvp:decls :p (cmake) :v (cmake-mode-abbrev-table))
+(nvp:decls :v (cmake-mode-abbrev-table))
 
-(defvar nvp-cmake-abbrev-syntax-table)
-(with-eval-after-load 'cmake-mode
-  (setq nvp-cmake-abbrev-syntax-table
-        (let ((tab (copy-syntax-table cmake-mode-syntax-table)))
-          (modify-syntax-entry ?_ "w" tab)
-          (modify-syntax-entry ?- "w" tab)
-          tab)))
+(defvar nvp-cmake-abbrev-syntax-table
+  (let ((tab (make-syntax-table)))
+    (modify-syntax-entry ?_ "w" tab)
+    (modify-syntax-entry ?- "w" tab)
+    (modify-syntax-entry ?$ "'" tab)
+    tab))
 
 ;;;###autoload
 (defun nvp-cmake-expand-abbrev ()
@@ -33,11 +30,10 @@
 With PREFIX, just list them."
   (interactive "P")
   (pcase prefix
-    ('(4)
-     (nvp:with-results-buffer :title "Cmake properties/variables"
-       (call-process-shell-command
-        (expand-file-name "bin/dump-vars.awk" (nvp:package-root nvp-cmake))
-        nil (current-buffer))))
+    ('(4) (nvp:with-results-buffer :title "Cmake properties/variables"
+            (call-process-shell-command
+             (expand-file-name "bin/dump-vars.awk" (nvp:package-root nvp-cmake))
+             nil (current-buffer))))
     (_ (mapc (lambda (a) (define-abbrev cmake-mode-abbrev-table (downcase a) a))
              nvp-cmake-builtin-variables))))
 

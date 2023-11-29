@@ -4,17 +4,19 @@
 # expand-env: ((modename (bound-and-true-p modename)))
 # --
 ;; -*- lexical-binding: t -*-
-(nvp-install-on-demand$1)
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (nvp-install-on-demand$1))
+(nvp:decls)
 
 ;; -------------------------------------------------------------------
 ;;; Settings
 
 ;; -------------------------------------------------------------------
 ;;; Bindings
-
-(nvp:bindings "${2:`modename`}-mode" ${3:nil}
-  ($4))
+${3:
+(nvp:bindings "${2:`modename`}-mode" ${4:nil}
+  ($5))}
 
 ;; -------------------------------------------------------------------
 ;;; Hooks

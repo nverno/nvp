@@ -2,8 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'f)
-(require 'cmake-mode nil t)
 (nvp:decls :p (cmake-mode cmake-ts) :f (nvp-cmake-completing-read))
 
 (nvp:package-define-root :name nvp-cmake)
@@ -24,9 +22,9 @@ to build directory from project root.")
 
 (defun nvp-cmake--build-directory (&optional root)
   "Return cmake build directory, optionally using project ROOT."
-  (if (f-absolute-p nvp-cmake-build-directory)
+  (if (file-name-absolute-p nvp-cmake-build-directory)
       nvp-cmake-build-directory
-    (f-expand nvp-cmake-build-directory (or root (nvp-project-root)))))
+    (expand-file-name nvp-cmake-build-directory (or root (nvp-project-root)))))
 
 (defun nvp-cmake-project-p (&optional root)
   "Return project root if it is a cmake project."

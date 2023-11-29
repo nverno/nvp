@@ -5,8 +5,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
 (require 'treesit nil t)
-(nvp:decls :p (treesit-auto ts)
-           :f (treesit-auto--build-treesit-source-alist ts-error-toggle))
+(nvp:decls :p (ts) :f (ts-error-toggle))
+(declare-function treesit-auto--build-treesit-source-alist "treesit-auto")
 
 ;;;###autoload
 (defun nvp-treesit-add-font-lock (new-fonts &optional prepend feature-list)

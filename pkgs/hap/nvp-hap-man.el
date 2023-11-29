@@ -38,6 +38,7 @@
                      (string-match-p (concat sym "\\(?:(\\d*)?\\)?") sym)))
         sym))))
 
+;;;###autoload
 (defun nvp-hap-man-buffer (topic)
   (let* ((Man-notify-method 'quiet)
          ;; added in emacs v30!
@@ -51,7 +52,6 @@
   (cl-case command
     (thingatpt (nvp-hap-man-thingatpt arg))
     (doc-buffer (nvp-hap-man-buffer arg))))
-
 
 (provide 'nvp-hap-man)
 ;; Local Variables:

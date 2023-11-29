@@ -4,7 +4,6 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'f)
-(require 'nvp)
 (require 'nvp-cmake)
 (nvp:decls)
 

@@ -1,33 +1,12 @@
 ;;; nvp-tag.el --- tagging utilities -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;;
-;; Various options:
-;; - etags bundled w/ emacs (basically just elisp/C/C++)
-;; - ctags
-;; - universal-ctags
-;; - Python pygments parsers - many languages
-;; - GNU global w/ universal-ctags + pygments
-;;
-;; Bugs (3/6/20):
-;; - ggtags.el: tags starting with regex characters cause errors, eg.
-;;   ggtags-process-string("global" "-c" "$0") =>
-;;   global error: "only name char is allowed with -c option"
-;;   Maintainer of ggtags.el says this should be fixed in global, see issue:
-;;   https://github.com/leoliu/ggtags/issues/191
-;;   Workaround `nvp-ggtags-bounds-of-tag-function' for now.
-;;
-;; References for developing customizable templated commands:
-;; - grep #<marker at 25028 in grep.el.gz>
-;; - format-spec.el (builtin)
-;; - transient (used by magit/rg)
-;;
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
-(require 'nvp)
-(nvp:decls :p (ggtags tags projectile xref) :f (projectile-tags-exclude-patterns)
+(nvp:decls :p (ggtags tags projectile xref)
+           :f (xref--read-identifier projectile-tags-exclude-patterns)
            :v (projectile-tags-file-name projectile-tags-command xref-backend-functions))
 
 (defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
@@ -40,6 +19,12 @@
     (xref-find-definitions-other-window thing)))
 
 ;; workaround ggtags.el/global not accepting regex chars
+;; - ggtags.el: tags starting with regex characters cause errors, eg.
+;;   ggtags-process-string("global" "-c" "$0") =>
+;;   global error: "only name char is allowed with -c option"
+;;   Maintainer of ggtags.el says this should be fixed in global, see issue:
+;;   https://github.com/leoliu/ggtags/issues/191
+;;   Workaround `nvp-ggtags-bounds-of-tag-function' for now.
 (defun nvp-ggtags-bounds-of-tag-function ()
   (-when-let ((beg . end) (find-tag-default-bounds))
     (save-excursion

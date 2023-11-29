@@ -79,7 +79,10 @@
               (cl-loop for (var _value) on var-vals by #'cddr
                        collect `(defvar ,var))))
      ,@(cl-loop for (var value) on var-vals by #'cddr
-                collect `(setq ,var (eval-when-compile ,value)))))
+                collect `(setq ,var ,(if (and (listp value)
+                                              (eq ':no-compile (car value)))
+                                         `,(cadr value)
+                                       `(eval-when-compile ,value))))))
 
 (defmacro nvp:cset (&rest var-vals)
   (declare (indent 0))

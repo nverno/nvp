@@ -3,12 +3,10 @@
 ;;; Commentary:
 ;; Mode setup
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'smie))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
-(defvar info-lookup-mode)
+(nvp:decls :v (smie-closer-alist smartparens-mode-map info-lookup-mode))
 
 (cl-defstruct (nvp-mode-vars (:constructor nvp-mode-vars-make)
                              (:copier nil))
@@ -42,12 +40,13 @@
 ;;;###autoload
 (defun nvp-setup-smie-bindings ()
   "Locally override minor mode bindings when smie functions are available."
-  (nvp:use-minor-mode-overriding-map 'smartparens-mode
-    :after-load 'smie
-    :predicate (not (null smie-closer-alist))
-    ("C-M-f"    . smie-forward-sexp-command)
-    ("C-M-b"    . smie-backward-sexp-command)
-    ("<f2> q c" . smie-close-block)))
+  (with-eval-after-load 'smartparens
+    (nvp:use-minor-mode-overriding-map 'smartparens-mode
+      :after-load 'smie
+      :predicate (not (null smie-closer-alist))
+      ("C-M-f"    . smie-forward-sexp-command)
+      ("C-M-b"    . smie-backward-sexp-command)
+      ("<f2> q c" . smie-close-block))))
 
 ;; ------------------------------------------------------------
 ;;; Setup

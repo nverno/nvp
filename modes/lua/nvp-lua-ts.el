@@ -5,10 +5,84 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp:decls :p (lua))
 
+
+(defvar lua-ts-mode--assignment-query
+  (when (treesit-available-p)
+    (treesit-query-compile 'lua '((identifier) @id)))
+  "Query to capture identifiers in assignment_exp.")
+
+(defun lua-ts-mode--fontify-assignment-lhs (node override start end &rest _)
+  "Fontify the lhs NODE of an assignment_exp.
+For OVERRIDE, START, END, see `treesit-font-lock-rules'."
+  (dolist (node (treesit-query-capture
+                 node lua-ts-mode--assignment-query nil nil t))
+    (treesit-fontify-with-override
+     (treesit-node-start node) (treesit-node-end node)
+     (pcase (treesit-node-type node)
+       ("identifier" 'font-lock-variable-name-face))
+     override start end)))
+
 (with-eval-after-load 'lua-ts-mode
-  (setq lua-ts--font-lock-settings
-        (seq-filter (lambda (el) (not (eq 'error (nth 3 el))))
-                    lua-ts--font-lock-settings)))
+  (cl-pushnew "self" lua-ts--builtins :test #'string=)
+
+  (defvar nvp-lua-ts-font-lock-before
+    (treesit-font-lock-rules     
+     :language 'lua
+     :feature 'definition
+     '((function_declaration
+        name: (identifier) @font-lock-function-name-face)
+       (assignment_statement
+        (variable_list name: [(identifier)]) @font-lock-function-name-face
+        (expression_list value: (function_definition)))
+       (table_constructor
+        (field
+         name: (identifier) @font-lock-function-name-face
+         value: (function_definition)))
+       (function_declaration
+        name: (dot_index_expression (identifier) @font-lock-function-name-face))
+       (function_declaration
+        name: (method_index_expression
+               table: (identifier) @font-lock-type-face
+               method: (identifier) @font-lock-function-name-face))
+       (function_declaration
+        (method_index_expression
+         (dot_index_expression
+          table: (identifier) @font-lock-type-face
+          field: (identifier) @font-lock-property-name-face)))
+       (parameters
+        name: (identifier) @font-lock-variable-name-face)
+       (for_numeric_clause name: (identifier) @font-lock-variable-name-face))))
+
+  (defvar nvp-lua-ts-font-lock-after
+    (treesit-font-lock-rules
+     :language 'lua
+     :feature 'assignment
+     ;; '((variable_list
+     ;;    [(identifier)
+     ;;     (bracket_index_expression)]
+     ;;    @font-lock-variable-name-face)
+     ;;   (variable_list
+     ;;    (dot_index_expression
+     ;;     table: (identifier))
+     ;;    @font-lock-variable-name-face))
+     '((variable_list) @lua-ts-mode--fontify-assignment-lhs)
+     :language 'lua
+     :feature 'variable
+     '((function_call
+        arguments: (arguments (identifier) @font-lock-variable-use-face))
+       (function_call
+        name: (method_index_expression
+               table: (identifier) @font-lock-type-face))
+       [(identifier)] @font-lock-variable-use-face)))
+  
+  (let ((features (cons 'error (--map (nth 2 it)
+                                      (append nvp-lua-ts-font-lock-before
+                                              nvp-lua-ts-font-lock-after)))))
+    (setq lua-ts--font-lock-settings
+          (append
+           nvp-lua-ts-font-lock-before
+           (--filter (not (memq (nth 2 it) features)) lua-ts--font-lock-settings)
+           nvp-lua-ts-font-lock-after))))
 
 ;; non-nil to align arguments with parent
 (defvar lua-ts-align-arguments nil)

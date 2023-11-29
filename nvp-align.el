@@ -129,7 +129,9 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 (defvar nvp-align-eol-comment-modes
   '(sh-mode makefile-mode))
 
+;; -------------------------------------------------------------------
 ;;; Add / modify default rules
+
 (setcdr (assq 'basic-line-continuation align-rules-list)
         `((regexp . "\\(\\s-*\\)\\\\$")
           (modes  . nvp-align-basic-lc-modes)
@@ -158,16 +160,15 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
   (push (cons 'valid (function (lambda () (not (nvp:ppss 'soc)))))
         (cdr (assq 'lisp-alist-dot align-rules-list))))
 
-;; better make macro regexp:  allow _ in macro names and '?='
-(setf
- (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
- ;; careful not to mess with assignments in shell scripts
- ;; ie. ignores aligning any assignments prefixed with tabs
- (concat "^[ ]*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[\?:]?="
-         "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
+;; better make macro regexp:  allow _ in macro names and '[-+?]='
+(setf (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
+      ;; careful not to mess with assignments in shell scripts
+      ;; ie. ignores aligning any assignments prefixed with tabs
+      (concat "^[ ]*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[?:+-]?="
+              "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
 
-;; 
-;;;
+;; -------------------------------------------------------------------
+;;; Show rules
 
 (defvar nvp-align--groups
   '(;; All predefined mode groupings
@@ -179,19 +180,18 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 
 ;; Collect align/exclude rules for MODE
 (defun nvp-align--mode-rules (&optional mode)
-  (nvp:defq mode major-mode)
-  (--map
-   (--filter
-    (--> (eval (cdr (assoc 'modes (cddr it))))
-         (or (memq mode it) (apply #'provided-mode-derived-p mode it)))
-    it)
-   `(,align-rules-list ,align-exclude-rules-list)))
+  (or mode (setq mode major-mode))
+  (--map (--filter (--> (eval (cdr (assoc 'modes (cddr it))))
+                        (or (memq mode it)
+                            (apply #'provided-mode-derived-p mode it)))
+                   it)
+         `(,align-rules-list ,align-exclude-rules-list)))
 
 ;;;###autoload
 (defun nvp-align-show-rules (&optional mode)
   "Show align/exclude rules applicable to `major-mode' or MODE."
   (interactive (list (nvp:prefix 4 (intern (nvp-read-mode)) major-mode)))
-  (nvp:defq mode major-mode)
+  (or mode (setq mode major-mode))
   (-let (((rules excludes) (nvp-align--mode-rules mode))
          (groups (--filter (apply #'provided-mode-derived-p mode (eval it))
                            nvp-align--groups)))

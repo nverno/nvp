@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: table sorted keys
+# key: f_keys
+# --
+local function sorted_keys(t)
+  local a = {}
+  for k, v in pairs(t) do a[#a + 1] = k end
+  table.sort(a)
+  return a
+end

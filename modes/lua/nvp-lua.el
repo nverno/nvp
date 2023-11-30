@@ -62,8 +62,8 @@
 
 (defun nvp-lua-documentation (thing &optional rock)
   "Lookup THING using `lua-documentation-url'.
-With prefix arg ROCK show luarocks documentation for THING."
-  (interactive (list (if current-prefix-arg (nvp:lua-read-rock)
+With \\[universal-argument] prefix arg ROCK show luarocks documentation for THING."
+  (interactive (list (if current-prefix-arg (nvp:lua-read-rock t)
                        (read-string "Help: " (lua-funcname-at-point)))
                      current-prefix-arg))
   (if rock

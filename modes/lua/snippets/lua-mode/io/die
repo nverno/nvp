@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: die
+# key: f_die
+# --
+local function die(str) io.stderr:write(str,'\n'); os.exit(1) end

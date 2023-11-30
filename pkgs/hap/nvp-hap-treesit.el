@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'treesit)
 (require 'nvp-hap)
-(declare-function nvp-hap-sh "nvp-sh-help")
+(declare-function nvp-hap-bash "nvp-sh-help")
 
 (cl-defstruct (nvp--hap-ts (:constructor nvp-hap-ts-make))
   "Hap tree-sitter backend"
@@ -29,7 +29,7 @@
    :parsers '(bash)
    :context '((dockerfile-ts-mode dockerfile "shell"))
    :ts-modes '(dockerfile-ts-mode bash-ts-mode)
-   :backend #'nvp-hap-sh))
+   :backend #'nvp-hap-bash))
 
 (cl-eval-when (load)
   (nvp-hap-add-backend nvp-hap-treesit--sh-backend))

@@ -17,13 +17,12 @@
       (goto-char (match-end 1))
       (skip-chars-forward "=\"")
       (if (looking-at (regexp-quote var))
-          (progn
-            (save-match-data
-              (skip-syntax-forward "'")
-              (forward-sexp 1)
-              (and (eq (char-before) ?})
-                   (delete-char -1)))
-            (replace-match ""))
+          (progn (save-match-data
+                   (skip-syntax-forward "'")
+                   (forward-sexp 1)
+                   (and (eq (char-before) ?})
+                        (delete-char -1)))
+                 (replace-match ""))
         (insert var)
         (forward-sexp 1)
         (insert "}")))))

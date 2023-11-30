@@ -139,9 +139,7 @@
 (defsubst nvp-sh--cond-switches ()
   (nvp-help-man-switches "^CONDITIONAL EXP" "\\s-+-" "^[[:alpha:]]"))
 
-
 ;;; Cache / Lookup
-
 (defvar nvp-sh--doc-cache (make-hash-table :test 'equal))
 (defvar nvp-sh--conditional-cache (make-hash-table :test 'equal))
 
@@ -186,16 +184,6 @@
               "\n")
        nvp-sh--conditional-cache))))
 
-
-;; -------------------------------------------------------------------
-;;; Additional Help
-;;
-;; When popup is being displayed, hitting "h" displays buffer with
-;; more help for current command.
-;; - For bash builtins, this is 'man "bash-builtins"' and the window is
-;;   scrolled to the description of the command at point.
-;; - For other commands, just call Man on command.
-
 ;;; Man sections for completing read. Not optimal, currently calls
 ;; man twice - once to get completions, and again to get popup.
 (defsubst nvp-sh--man-sections (cmd)
@@ -206,7 +194,7 @@
 ;; when Man finishes, set point in MAN-BUFFER to be
 ;; after description of CMD
 ;; (for `nvp-sh-help-more-help' on bash-builtins)
-(defun nvp-sh--Man-after-notify (man-buffer cmd)
+(defun nvp-sh--Man-after-notify (man-buffer cmd &optional display)
   (save-mark-and-excursion
     (with-current-buffer man-buffer
       (goto-char (point-min))
@@ -217,122 +205,66 @@
           (and (eq 'Man-overstrike (get-text-property (point) 'face))
                (throw 'done nil))))
       (set-window-point (get-buffer-window man-buffer) (point))))
-  (display-buffer man-buffer 'not-this-window))
+  (prog1 man-buffer
+    (and display (display-buffer man-buffer 'not-this-window))))
 
 ;; Too much trouble trying to figure out how to make Man
 ;; run synchronously or redefine Man notify command
 (defsubst nvp-sh--Man-notify (man-buffer cmd)
-  (run-with-timer 0.2 nil 'nvp-sh--Man-after-notify man-buffer cmd))
+  (run-with-timer 0.2 nil 'nvp-sh--Man-after-notify man-buffer cmd 'display))
 
-
 ;; -------------------------------------------------------------------
 ;;; Help at point
+;;
+;; When popup is being displayed, hitting "h" displays buffer with
+;; more help for current command.
+;; - For bash builtins, this is 'man "bash-builtins"' and the window is
+;;   scrolled to the description of the command at point.
+;; - For other commands, just call Man on command.
 
 (defvar Man-notify-method)
 (defun nvp-sh-help-more-help (cmd)
   (interactive)
-  (nvp-sh:with-bash/man cmd
-      (let ((Man-notify-method 'meek))
-        (man "bash-builtins")
-        (nvp-sh--Man-after-notify "*Man bash-builtins*" cmd))
-    (man cmd)))
-
-;; show help in popup tooltip for CMD
-;; show SECTION from 'man', prompting with prefix
-(defun nvp-sh-help-command-at-point (cmd &optional prompt section recache)
-  (interactive (list (thing-at-point 'symbol)))
-  (when cmd
-    (nvp:with-toggled-tip
-      (or (nvp-sh--function-string
-           cmd
-           (if prompt
-               ;; FIXME: calls CMD twice
-               (completing-read
-                "Man Section: " (nvp-sh--man-sections cmd) nil t)
-             section)
-           recache)
-          (format "No help found for %s" cmd))
-      :help-fn (lambda ()
-                 (interactive)
-                 (nvp-sh-help-more-help cmd)))))
-
-;; display help for conditional expressions: '[[' '['
-(defun nvp-sh-help-conditional (switch &optional ignore)
-  (interactive
-   (if (x-hide-tip)
-       (list nil 'ignore)
-     (list (completing-read "Switch: " nvp-sh--conditional-cache))))
-  (when (not ignore)
-    (nvp:with-toggled-tip
-      (nvp-sh--conditional-string switch) :help-fn :none)))
-
-;; popup help for thing at point
-;; - with C-u, show help for thing directly at point
-;; - with C-u C-u, prompt for 'man' section, display result in popup
-;; and recache result
-;; - default, determine current function (not thing-at-point)
-;; and find help for that.  If in [[ ... ]] or [ ... ],
-;; show help for current switch, eg. "-d", or all possible switches
-;;;###autoload
-(defun nvp-sh-help-at-point (arg)
-  (interactive "P")
-  (if (equal arg '(4))
-      (call-interactively 'nvp-sh-help-command-at-point)
-    (let ((cmd (nvp-sh-current-command)))
-      (cond
-       ((member cmd '("[[" "["))
-        ;; return help for current switch or all if not found
-        (nvp-sh-help-conditional (nvp-sh--conditional-switch)))
-       (t
-        ;; with C-u C-u prompt for 'man' section and recache
-        (nvp-sh-help-command-at-point
-         cmd (equal arg '(16)) nil (equal arg '(16))))))))
-
-
-;; -------------------------------------------------------------------
-;;; HAP
-
-;;; TODO: replace all the rest with this
+  (let ((Man-notify-method 'quiet)
+        (Man-prefer-synchronous-call t))
+    (nvp-sh:with-bash/man cmd
+        (nvp-sh--Man-after-notify (man "bash-builtins") cmd)
+      (man cmd))))
 
 ;; return docstring for conditional, builtin, or function
 ;; if PROMPT is non-nil, offer completing read for switches or man section,
 ;; depending on the CMD
 (defun nvp-sh--command-docstring (cmd &optional prompt section recache)
-  (cond
-   ((member cmd '("[[" "["))
-    (and prompt
-         (setq cmd (completing-read "Switch: " nvp-sh--conditional-cache)))
-    (nvp-sh--conditional-string cmd))
-   (t
-    (nvp-sh--function-string
-     cmd
-     (if prompt
-         (completing-read "Man Section: " (nvp-sh--man-sections cmd) nil t)
-       section)
-     recache))))
+  (let ((message-log-max nil) (inhibit-message t))
+    (cond
+     ((member cmd '("[[" "["))
+      (nvp-sh--conditional-string
+       (if prompt (completing-read "Switch: " nvp-sh--conditional-cache)
+         (nvp-sh--conditional-switch))))
+     (t
+      (nvp-sh--function-string
+       cmd (if prompt
+               (completing-read "Man Section: " (nvp-sh--man-sections cmd) nil t)
+             section)
+       recache)))))
 
 ;;;###autoload
-(defun nvp-hap-sh (command &optional arg prefix &rest _args)
+(defun nvp-hap-bash (command &optional arg prefix &rest _args)
+  "Lookup help for current command.
+With \\[universal-argument], lookup thing point without looking for current
+command.."
   (cl-case command
-    (thingatpt (nvp-sh-current-command))
+    (thingatpt (if (equal '(4) arg)
+                   (thing-at-point 'symbol)
+                 (nvp-sh-current-command)))
     (doc-buffer (save-window-excursion
                   (--when-let (nvp-sh-help-more-help arg)
-                   (and (buffer-live-p it) (list it :set nil)))))
-    (doc-string
-     ;; - if cmd is '[[' or '[' return help for current switch or all if not found
-     ;; - with C-u C-u prompt for 'man' section and recache
-     (or (nvp-sh--command-docstring
-          arg (equal '(16) prefix) nil (equal '(16) prefix))
-         "")
-     ;; (let ((doc-str (if (nvp-sh--bash-builtin-p arg)
-     ;;                    (nvp-sh-bash-builtin-help-sync arg)
-     ;;                  (shell-command-to-string (format "man %s" arg)))))
-     ;;   (and (not (or (member doc-str '(nil ""))
-     ;;                 (string-prefix-p "No manual entry" doc-str)))
-     ;;        (list (company-doc-buffer doc-str) (point-min) nil)))
-     )))
+                    (and (buffer-live-p it) (list it :set nil)))))
+    ;; - if cmd is '[[' or '[' return help for current switch or all if not found
+    ;; - with C-u C-u prompt for 'man' section and recache
+    (doc-string (nvp-sh--command-docstring
+                 arg (equal '(16) prefix) nil (equal '(16) prefix)))))
 
-
 ;; -------------------------------------------------------------------
 ;;; Company 
 
@@ -360,19 +292,21 @@
          (company-doc-buffer doc-str))))
 
 ;; FIXME: merge into `nvp-hap'
+;; modified `company-quickhelp--doc'
 (defun nvp-sh-quickhelp-doc (selected)
   (cl-letf (((symbol-function 'completing-read)
              #'company-quickhelp--completing-read))
-    (let* ((doc-buff (nvp-sh-doc-buffer selected))
-           (doc-and-meta
-            (with-current-buffer doc-buff
-              (company-quickhelp--docstring-from-buffer (point-min))))
-           (truncated (plist-get doc-and-meta :truncated))
-           (doc (plist-get doc-and-meta :doc)))
-      (unless (member doc '(nil ""))
-        (if truncated
-            (concat doc "\n\n[...]")
-          doc)))))
+    (let ((message-log-max nil) (inhibit-message t))
+      (when-let* ((doc-buf (nvp-sh-doc-buffer selected))
+                  (doc-and-meta (with-current-buffer doc-buf
+                                  (company-quickhelp--docstring-from-buffer
+                                   (point-min))))
+                  (truncated (plist-get doc-and-meta :truncated))
+                  (doc (plist-get doc-and-meta :doc)))
+        (unless (member doc '(nil ""))
+          (if truncated
+              (concat doc "\n\n[...]")
+            doc))))))
 
 ;; local `nvp-quickhelp-toggle-function' override
 (defun nvp-sh-quickhelp-toggle ()

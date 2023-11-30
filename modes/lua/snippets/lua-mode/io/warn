@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: warn
+# key: f_warn
+# --
+local function warn(str) io.stderr:write(str,'\n') end

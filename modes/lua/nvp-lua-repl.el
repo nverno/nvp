@@ -15,7 +15,8 @@
       (funcall orig-fn))))
 
 ;; Note: `lua-ts-mode' doesn't define a major mode for the REPL
-(defvar lua-repl-mode-hook nil)
+(define-minor-mode lua-repl-minor-mode "Lua REPL minor mode"
+  :keymap (make-sparse-keymap))
 
 (nvp-repl-add '(lua-mode lua-ts-mode)
   :name 'lua
@@ -29,13 +30,10 @@
   :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
   :help-cmd "_G"
   :init (lambda (&optional _prefix)
-          (save-window-excursion
-            (let* ((display-buffer-overriding-action nvp-repl--display-action)
-                   (proc (funcall-interactively #'lua-ts-inferior-lua)))
-              (with-current-buffer (process-buffer proc)
-                ;; (setq major-mode 'lua-repl-mode)
-                (run-hooks 'lua-repl-mode-hook))
-              proc))))
+          (let ((proc (funcall-interactively #'lua-ts-inferior-lua)))
+            (with-current-buffer (process-buffer proc)
+              (lua-repl-minor-mode 1))
+            proc)))
 
 (provide 'nvp-lua-repl)
 ;; Local Variables:

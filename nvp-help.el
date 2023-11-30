@@ -192,7 +192,7 @@
     ("i" "Info" nvp-info-menu)
     ("s" "Devdocs" nvp-devdocs-menu :transient transient--do-replace
      :if (lambda () (fboundp 'devdocs-browser-open)))
-    ("d" "Dash" consult-dash :transient transient--do-replace
+    ("d" "Dash" nvp-dash-menu :transient transient--do-replace
      :if (lambda () (fboundp 'dash-docs-activate-docset)))]
    ["Cheat.sh"
     ("cc" "Search" cheat-sh)

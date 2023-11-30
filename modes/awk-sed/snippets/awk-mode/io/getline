@@ -2,7 +2,7 @@
 # name: command | getline
 # key: getline
 # --
-tmp="$1"${5:  # command producing output}
+tmp = "${1:command to run}"
 while ((tmp |${2:&} getline${3: var}) > 0) {
   ${4:print $3}$0
 }

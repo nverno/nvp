@@ -8,17 +8,13 @@
 ;; - useful smie debugging output: #<marker at 7444 in tuareg-opam.el>
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-display))
+(eval-when-compile (require 'nvp-macro))
 (require 'transient)
 (require 'help-mode)
-(require 'nvp)
-
-(nvp:decls :p (advice treesit) :f (nvp-read-mode)
-           :v (c-lang-constants pp-default-function))
 (nvp:auto "nvp-util" 'nvp-s-wrap)
 (nvp:auto "cl-extra" 'cl-prettyprint)
+(nvp:decls :p (advice treesit) :f (nvp-read-mode)
+           :v (c-lang-constants pp-default-function))
 
 (define-button-type 'help-marker
   :supertype 'help-xref

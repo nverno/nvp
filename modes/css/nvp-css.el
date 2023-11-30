@@ -12,7 +12,7 @@
   (let* ((compile-command
           (concat "sass " (buffer-file-name) " "
                   (concat (file-name-sans-extension (buffer-file-name)) ".css"))))
-    (call-interactively 'nvp-compile)))
+    (call-interactively #'nvp-compile)))
 
 (nvp:font-lock-add-defaults 'less-css-mode
   ;; Mixins w/ parameters

@@ -159,6 +159,10 @@ With prefix ARG, run `helm-make'."
      (compilation-start
       (concat "make -f " (buffer-file-name) " " targets)))))
 
+(declare-function align-region "align")
+(defvar align-rules-list)
+(defvar align-exclude-rules-list)
+
 (defun nvp-makefile-format-buffer (&optional beg end)
   (interactive "r")
   (unless (use-region-p)

@@ -6,7 +6,7 @@
 ;;  - move to generic compile function that will check for build type, eg.
 ;;    make or cmake, etc.
 ;;  - integrate all the compile / build / make with projectile as a start
-;; 
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp:req 'nvp-compile)                  ; nvp-make-or-compile-fn
@@ -22,7 +22,7 @@
   "-Wall -Wshadow -fsanitize=address -fsanitize=undefined -O2 -g -std=c++17")
 
 ;; -------------------------------------------------------------------
-;;; Commands 
+;;; Commands
 
 ;;; Compile
 ;; pretty much same as c-tools-compile

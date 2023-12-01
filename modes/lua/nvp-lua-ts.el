@@ -3,6 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'treesit nil t)
 (nvp:decls :p (lua))
 
 
@@ -22,11 +23,12 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
        ("identifier" 'font-lock-variable-name-face))
      override start end)))
 
+
 (with-eval-after-load 'lua-ts-mode
   (cl-pushnew "self" lua-ts--builtins :test #'string=)
 
   (defvar nvp-lua-ts-font-lock-before
-    (treesit-font-lock-rules     
+    (treesit-font-lock-rules
      :language 'lua
      :feature 'definition
      '((function_declaration
@@ -74,7 +76,7 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
         name: (method_index_expression
                table: (identifier) @font-lock-type-face))
        [(identifier)] @font-lock-variable-use-face)))
-  
+
   (let ((features (cons 'error (--map (nth 2 it)
                                       (append nvp-lua-ts-font-lock-before
                                               nvp-lua-ts-font-lock-after)))))

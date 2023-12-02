@@ -145,7 +145,9 @@
   "Launch emacs with ARGS."
   (interactive (list (transient-args 'nvp-edebug-menu)))
   (let* ((grps (--group-by (string-prefix-p "--dummy" it) args))
-         (args (mapconcat #'shell-quote-argument (cdr (assq nil grps)) " "))
+         (args (concat
+                (mapconcat #'shell-quote-argument (cdr (assq nil grps)) " ")
+                " --eval \"(setq debug-on-error t)\""))
          (dummy (cdr (assq t grps))))
     (when (member "--dummy-current" dummy)
       (setq args (concat args " " (buffer-file-name))))

@@ -150,6 +150,7 @@
   nil)
 
 ;; hook to run after snippet exits
+;;;###autoload
 (defun nvp-makefile-yas-exit-hook ()
   (when nvp-makefile-current-target
     (nvp-makefile-add-dep nvp-makefile-current-target nvp-makefile-yas-text)

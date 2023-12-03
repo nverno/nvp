@@ -130,43 +130,22 @@ See the variable `align-rules-list' for more details.")
     (dolist (it ruby-align-rules-list)
       (add-to-list 'align-rules-list it))))
 
-;; -------------------------------------------------------------------
-;;; Debug
+;; (defun nvp-ruby--buffer-requires ()
+;;   (save-excursion
+;;     (goto-char (point-min))
+;;     (let (res)
+;;       (while
+;;           (re-search-forward "^require +\\(?:['\"]\\)\\([^\n\"']+\\)" nil 'move)
+;;         (push (match-string 1) res))
+;;       res)))
 
-(defun nvp-ruby--buffer-requires ()
-  (save-excursion
-    (goto-char (point-min))
-    (let (res)
-      (while
-          (re-search-forward "^require +\\(?:['\"]\\)\\([^\n\"']+\\)" nil 'move)
-        (push (match-string 1) res))
-      res)))
-
-(defun nvp-ruby-require (lib)
-  (unless (cl-member lib (nvp-ruby--buffer-requires) :test 'string=)
-    (save-excursion
-      (goto-char (point-min))
-      (forward-comment (point-max))
-      (skip-syntax-backward " >")
-      (insert (concat "\nrequire \"" lib "\"")))))
-
-(defun nvp-ruby--insert-breakpoint ()
-  (nvp-ruby-require "pry")
-  (insert "binding.pry"))
-
-(defun nvp-ruby--remove-breakpoints ()
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward
-            "\\(^require ['\"]pry['\"]\\|binding\.pry\\)\\s-*" nil 'move)
-      (replace-match "")
-      (delete-blank-lines))))
-
-(defun nvp-ruby-breakpoint (arg)
-  "Insert breakpoint, with prefix remove all pry stuff."
-  (interactive "P")
-  (if arg (nvp-ruby--remove-breakpoints)
-    (nvp-ruby--insert-breakpoint)))
+;; (defun nvp-ruby-require (lib)
+;;   (unless (cl-member lib (nvp-ruby--buffer-requires) :test 'string=)
+;;     (save-excursion
+;;       (goto-char (point-min))
+;;       (forward-comment (point-max))
+;;       (skip-syntax-backward " >")
+;;       (insert (concat "\nrequire \"" lib "\"")))))
 
 (provide 'nvp-ruby)
 ;;; nvp-ruby.el ends here

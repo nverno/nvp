@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: char to index
+# key: cidx
+# --
+const cidx = (c: string, base = 'a') => c.charCodeAt(0) - base.charCodeAt(0);

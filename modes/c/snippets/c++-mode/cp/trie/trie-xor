@@ -1,0 +1,38 @@
+# -*- mode: snippet -*-
+# name: Xor Trie
+# key: d_trie_xor
+# --
+struct XorTrie {
+  static constexpr int MAX_B = ${1:1 << 19};
+  XorTrie *p[2] = {};
+  void insert(int n) {
+    XorTrie *r = this;
+    for (int b = MAX_B; b > 0; b >>= 1) {
+      int bit = (n & b) > 0;
+      if (r->p[bit] == nullptr)
+        r->p[bit] = new XorTrie();
+      r = r->p[bit];
+    }
+  }
+  bool remove(int n, int b = MAX_B) {
+    if (b == 0)
+      return true;
+    int bit = (n & b) > 0;
+    if (p[bit] != nullptr && p[bit]->remove(n, b >> 1)) {
+      delete p[bit];
+      p[bit] = nullptr;
+    }
+    return p[0] == p[1]; // both are nullptr
+  }
+  int maxXor(int n) {
+    int res = 0;
+    XorTrie *r = this;
+    for (int b = MAX_B; b > 0; b >>= 1)
+      if (int bit = (n & b) > 0; r->p[!bit] != nullptr) {
+        res += b;
+        r = r->p[!bit];
+      } else
+        r = r->p[bit];
+    return res;
+  }
+};

@@ -74,20 +74,26 @@ has a file or directory local binding."
 
 ;;;###autoload
 (defun nvp-compile (&optional arg compile-fn)
-  "Compile using COMPILE-FN if non-nil, otherwise
-first of local `nvp-local-compile-function' or `nvp-compile-default'.
-By default, with single prefix or 3 or more, read compilation command.
-With double prefix or more, use comint buffer for compilation."
+  "Compile using COMPILE-FN with prefix ARG.
+If ARG is 3 or more \\[universal-argument] or COMPILE-FN is \\='default use
+`compile'. Otherwise, if COMPILE-FN is nil, use the first non-nil of
+`nvp-local-compile-function', `nvp-compile-default-function' or
+`nvp-compile-default'."
   (interactive "P")
+  (setq compile-fn (or (and (eq compile-fn 'default) #'nvp-compile-default)
+                       compile-fn
+                       (pcase (prefix-numeric-value arg)
+                         ((guard (> 16)) #'compile)
+                         (_ (or (bound-and-true-p nvp-local-compile-function)
+                                (bound-and-true-p nvp-compile-default-function)
+                                #'nvp-compile-default)))))
   (setq current-prefix-arg arg)
-  (nvp:defq compile-fn (or (bound-and-true-p nvp-local-compile-function)
-                           (bound-and-true-p nvp-compile-default-function)
-                           #'nvp-compile-default))
-  (and (eq compile-fn 'default) (setq compile-fn #'nvp-compile-default))
   (call-interactively compile-fn))
 
 (defun nvp-compile-default (&optional comint read-command)
-  "Basic compilation."
+  "Compile using `compile-command'.
+Use comint with 2 or more \\[universal-argument].
+Read command with 1 or 3 or more \\[universal-argument]."
   (interactive (let ((arg (prefix-numeric-value current-prefix-arg)))
                  (list (>= arg 16) (or (eq arg 4) (> arg 16)))))
   (setq-local compilation-read-command read-command)

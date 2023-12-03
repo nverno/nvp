@@ -20,7 +20,10 @@
 (require 'make-mode)
 (nvp:req 'nvp-makefile 'subrs)
 (require 'nvp)
-(nvp:decls :p (helm crm compilation) :f (nvp-makefile-indent))
+(nvp:auto "align" align-region)
+
+(nvp:decls :p (helm crm compilation) :f (nvp-makefile-indent)
+           :v (align-rules-list align-exclude-rules-list))
 
 (nvp:package-define-root :name "nvp-makefile")
 
@@ -159,15 +162,9 @@ With prefix ARG, run `helm-make'."
      (compilation-start
       (concat "make -f " (buffer-file-name) " " targets)))))
 
-(declare-function align-region "align")
-(defvar align-rules-list)
-(defvar align-exclude-rules-list)
-
 (defun nvp-makefile-format-buffer (&optional beg end)
-  (interactive "r")
-  (unless (use-region-p)
-    (setq beg (point-min)
-          end (point-max)))
+  (interactive (if (region-active-p) (list (region-beginning) (region-end))
+                 (list (point-min) (point-max))))
   (nvp-makefile-indent beg end)
   (let (indent-tabs-mode)
     (align-region beg end "^\\s-*$" align-rules-list align-exclude-rules-list)))

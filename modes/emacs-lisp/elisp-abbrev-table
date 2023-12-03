@@ -159,6 +159,7 @@
     ("mm" "major-mode" nil :system t)
     ("os" "object-slots" nil :system t)
     ("pb" "process-buffer" nil :system t)
+    ("pf" "process-file" nil :system t)
     ("pg" "plist-get" nil :system t)
     ("pl" "process-lines" nil :system t)
     ("pm" "point-max" nil :system t)

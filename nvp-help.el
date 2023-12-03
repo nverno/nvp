@@ -153,17 +153,21 @@
 ;;;###autoload(autoload 'nvp-devdocs-menu "nvp-help")
 (transient-define-prefix nvp-devdocs-menu ()
   [["Search"
-    ("s" "Search in active docs" devdocs-browser-open)
-    ("c" "Choose docs to search in" devdocs-browser-open-in)]
+    ("s" "Search in active docs" devdocs-lookup)
+    ("S" "Search DevDocs website" devdocs-search)
+    ("d" "Goto doc (1st page)" devdocs-peruse)
+    ;; ("c" "Choose docs to search in" devdocs-browser-open-in)
+    ]
    ["Docsets"
-    ("i" "Install" devdocs-browser-install-doc)
-    ("u" "Upgrade" devdocs-browser-upgrade-doc)
-    ("r" "Uninstall" devdocs-browser-uninstall-doc)
-    ("U" "Upgrade all docs" devdocs-browser-upgrade-all-docs)
-    ("m" "Update metadata" devdocs-browser-update-docs)]]
+    ("i" "Install" devdocs-install)
+    ("r" "Uninstall" devdocs-delete)
+    ("u" "Upgrade all" devdocs-update-all)
+    ;; ("U" "Upgrade all docs" devdocs-browser-upgrade-all-docs)
+    ;; ("m" "Update metadata" devdocs-browser-update-docs)
+    ]]
   (interactive)
-  (unless (fboundp 'devdocs-browser-open)
-    (user-error "Install devdocs-browser."))
+  (unless (fboundp 'devdocs-lookup)
+    (user-error "Install devdocs."))
   (transient-setup 'nvp-devdocs-menu))
 
 ;;;###autoload(autoload 'nvp-dash-menu "nvp-help")
@@ -191,7 +195,7 @@
     ("M" "Consult man" consult-man)
     ("i" "Info" nvp-info-menu)
     ("s" "Devdocs" nvp-devdocs-menu :transient transient--do-replace
-     :if (lambda () (fboundp 'devdocs-browser-open)))
+     :if (lambda () (fboundp 'devdocs-lookup)))
     ("d" "Dash" nvp-dash-menu :transient transient--do-replace
      :if (lambda () (fboundp 'dash-docs-activate-docset)))]
    ["Cheat.sh"

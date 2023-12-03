@@ -30,10 +30,6 @@
     (inhibit-switch-frame . t)
     (inhibit-same-window  . t)))
 
-(defvar nvp-repl-no-minor-modes
-  '(c-mode c-ts-mode c++-mode c++-ts-mode)
-  "Modes to not setup minor mode for repl interaction.")
-
 (defvar nvp-repl-default 'shell
   "Default REPL when buffer has no repl associations.")
 
@@ -238,12 +234,42 @@ well."
         (repl:val "buff") p-buff)
   (prog1 p-buff (puthash p-buff src-buff nvp-repl--process-buffers)))
 
+
 ;; -------------------------------------------------------------------
-;;; initialize new repls
+;;; Minor mode
+
+(defvar nvp-repl-no-minor-modes
+  '(c-mode c-ts-mode c++-mode c++-ts-mode)
+  "Modes to not setup minor mode for repl interaction.")
+
+(defvar-keymap nvp-repl-source-minor-mode-map
+  "C-c C-c"   #'nvp-repl-send-dwim
+  "C-c C-e"   #'nvp-repl-send-sexp
+  "C-c C-x e" #'nvp-repl-eval-sexp
+  "C-c C-b"   #'nvp-repl-send-buffer
+  "C-c C-l"   #'nvp-repl-send-line
+  "C-c C-r"   #'nvp-repl-send-region
+  "C-c C-f"   #'nvp-repl-send-file
+  "C-M-x"     #'nvp-repl-send-defun-or-region
+  "C-c C-k"   #'nvp-repl-clear)
+
+;;;###autoload
+(define-minor-mode nvp-repl-minor-mode
+  "REPL buffer minor mode."
+  :lighter " Ɍepl")
+
+;;;###autoload
+(define-minor-mode nvp-repl-source-minor-mode
+  "REPL source buffer minor mode."
+  :lighter " Ɍepl")
 
 (defun nvp-repl--source-minor-mode-on ()
-  (unless (memq major-mode nvp-repl-no-minor-modes)
+  (unless (or (memq major-mode nvp-repl-no-minor-modes)
+              nvp-repl-source-minor-mode)
     (nvp-repl-source-minor-mode 1)))
+
+;; -------------------------------------------------------------------
+;;; Initialize new repls
 
 (defun nvp-repl--setup-repl-buffer (&optional history-file)
   (nvp-repl-minor-mode)
@@ -353,6 +379,9 @@ When called from a repl buffer with PREFIX:
  \\[universal-argument] Prompt for a buffer to set as source."
   (interactive "P")
   (when (equal '(16) prefix) (setq nvp-repl-current nil))
+  (when (and nvp-repl-current
+             (null nvp-repl-source-minor-mode))
+    (nvp-repl--source-minor-mode-on))
   (let ((buff (--if-let (nvp-repl--get-source)
                   (nvp-repl--check-source-buffer it prefix)
                 (nvp-repl-get-buffer prefix))))
@@ -406,7 +435,7 @@ STR is inserted into REPL unless NO-INSERT."
     `(nvp-with-repl ,(if region (seq-uniq (list 'send-region sender))
                        (list sender))
        (if ,sender (funcall-interactively ,sender ,@sender-args)
-         ,(if fallback `((,@fallback))
+         ,(if fallback `(progn ,@fallback)
             (if (not region)
                 `(user-error
                   ,(concat "Repl doesnt understand '" (symbol-name sender) "'"))
@@ -453,9 +482,20 @@ STR is inserted into REPL unless NO-INSERT."
     (nvp-repl-send-sexp and-go))
    (t (nvp-repl-send-line and-go))))
 
+(defun nvp-repl--skip-shebang (start)
+  (save-restriction
+    (widen)
+    (save-excursion
+      (goto-char start)
+      (if (and (eq start (point-min))
+               (looking-at-p "#!/"))
+          (line-beginning-position 2)
+        start))))
+
 (defun nvp-repl-send-buffer (&optional and-go)
   (interactive "P")
-  (nvp:repl-send send-buffer () and-go :region buffer))
+  (nvp:repl-send send-buffer () and-go
+    :region (list (nvp-repl--skip-shebang (point-min)) (point-max))))
 
 (defun nvp-repl-send-defun (&optional and-go)
   (interactive "P")
@@ -474,7 +514,12 @@ STR is inserted into REPL unless NO-INSERT."
    (let* ((file (buffer-file-name))
           (fname (ignore-errors (file-name-nondirectory file))))
      (list (read-file-name "File: " nil file t fname) current-prefix-arg)))
-  (nvp:repl-send send-file (file) and-go))
+  (nvp:repl-send send-file (file) and-go
+    (let ((repl-current nvp-repl-current))
+      (with-temp-buffer
+        (setq nvp-repl-current repl-current)
+        (insert-file-contents-literally file)
+        (nvp-repl-send-buffer)))))
 
 (defun nvp-repl-clear ()
   "Clear repl output buffer."
@@ -488,6 +533,8 @@ STR is inserted into REPL unless NO-INSERT."
 
 ;; -------------------------------------------------------------------
 ;;; Eval
+;; TODO: show result in overlay in source buffer
+;; #<marker at 19542 in inf-ruby.el>
 
 (defun nvp-repl-eval-string (&optional insert)
   (interactive "P")
@@ -585,33 +632,14 @@ Prompt with \\[universal-argument]."
     (and and-go (pop-to-buffer (nvp-repl-buffer)))))
 
 ;; -------------------------------------------------------------------
-;;; Minor mode
-
-(defvar-keymap nvp-repl-source-minor-mode-map
-  "C-c C-c"   #'nvp-repl-send-dwim
-  "C-c C-e"   #'nvp-repl-send-sexp
-  "C-c C-x e" #'nvp-repl-eval-sexp
-  "C-c C-b"   #'nvp-repl-send-buffer
-  "C-c C-l"   #'nvp-repl-send-line
-  "C-c C-r"   #'nvp-repl-send-region
-  "C-c C-f"   #'nvp-repl-send-file
-  "C-M-x"     #'nvp-repl-send-defun-or-region
-  "C-c C-k"   #'nvp-repl-clear)
-
-;;;###autoload
-(define-minor-mode nvp-repl-minor-mode
-  "Minor mode in REPL buffer."
-  :lighter " Ɍepl")
-
-;;;###autoload
-(define-minor-mode nvp-repl-source-minor-mode
-  "REPL Minor mode."
-  :lighter " Ɍepl")
-
-;; -------------------------------------------------------------------
 ;;; Transient 
 
 (require 'transient)
+
+(defvar-local nvp-repl-load-startup-file t)
+
+(nvp:def-transient-toggle-vars nvp-repl-config-menu
+  nvp-repl-load-startup-file)
 
 ;;;###autoload(autoload 'nvp-repl-menu "nvp-repl")
 (transient-define-prefix nvp-repl-menu ()
@@ -637,7 +665,10 @@ Prompt with \\[universal-argument]."
   [["Repl"
     ("j" "Jump" nvp-repl-jump)]
    ["Manage Repls"
-    (":r" "Remove" nvp-repl-remove)]])
+    (":r" "Remove" nvp-repl-remove)]
+   ["Settings"
+    (":l" "Load startup file"
+     nvp-repl-config-menu--toggle-nvp-repl-load-startup-file)]])
 
 (provide 'nvp-repl)
 ;; Local Variables:

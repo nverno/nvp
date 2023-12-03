@@ -2,7 +2,7 @@
 
 (define-abbrev-table 'lua-mode-abbrev-table
   '(("r" "require" nil :system t)
-    ("t" "table" nil :system t)
+    ;; ("t" "table" nil :system t)
     ("pr" "print" nil :system t)
     ("cor" "coroutine" nil :system t)
     ("getm" "getmetatable" nil :system t)

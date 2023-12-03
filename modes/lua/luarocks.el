@@ -47,14 +47,30 @@
       ("html" (browse-url (browse-url-file-url (expand-file-name file))))
       (_ (find-file-other-window file)))))
 
+(defun luarocks-command-to-string (&rest args)
+  (with-temp-buffer
+    (let* ((status (apply #'process-file luarocks-command
+                          nil (current-buffer) nil args))
+           (res (string-chop-newline
+                 (buffer-substring-no-properties (point-min) (point-max)))))
+      (unless (zerop status)
+        (user-error "%s: exit %s" res status))
+      res)))
+
 (eval-when-compile
   (defmacro luarocks:menu--read-rock (&optional prompt nil-ok-p)
-    `(let ((args (transient-args 'luarocks-menu)) recache res)
+    `(let ((args (transient-args transient-current-command)) recache res)
        (dolist (a args)
          (pcase a
            ("--recache" (setq recache t))
            (_ (push a res))))
        (list (luarocks-read-rock ,prompt recache ,nil-ok-p) res))))
+
+(defun luarocks--filter-args (prefix args)
+  (cl-loop for a in args
+           with l = (length prefix)
+           if (string-prefix-p prefix a)
+           collect (concat "-" (substring a l))))
 
 ;;;###autoload
 (defun luarocks-open (rock &optional args)
@@ -109,6 +125,26 @@ Locations are homepage, docs, or modules."
         (goto-char (point-min))
         (pop-to-buffer (current-buffer))))))
 
+(defun luarocks-path (&optional args)
+  (interactive (list (luarocks--filter-args
+                      "--path" (transient-args transient-current-command))))
+  (cond ((member "--export" args)
+         (pcase-dolist (`(,var . ,cmd) '(("LUA_PATH" . "--lr-path")
+                                         ("LUA_CPATH" . "--lr-cpath")))
+           (let ((path (luarocks-command-to-string "path" cmd)))
+             (setenv var (concat path (if (equal var "LUA_PATH") ";./?.lua;;"
+                                        ";./?.so;;"))))))
+        (t
+         (nvp:with-results-buffer :buffer "*luarocks[path]*"
+           (apply #'process-file
+                  luarocks-command nil (current-buffer) nil "path" args)))))
+
+(defun luarocks-kill-buffers (&optional _args)
+  (interactive (list (transient-args transient-current-command)))
+  (--map (when (string-prefix-p "*luarocks" (buffer-name it))
+           (kill-buffer it))
+         (buffer-list)))
+
 ;;;###autoload(autoload 'luarocks-menu "luarocks")
 (transient-define-prefix luarocks-menu ()
   "Luarocks menu."
@@ -121,6 +157,10 @@ Locations are homepage, docs, or modules."
     ("m" "Module" ("-m" "--module"))]
    ;; TODO: search/show
    ["Search"]
+   ["Path"
+    ("-a" "Append to PATH" ("--append" "--path-append"))
+    ("-e" "Export lua c/path" ("-e" "--path-export"))
+    ("p" "Path" luarocks-path)]
    ["Config"
     ("k" "Key" ("-k" "--key ") :class transient-option)
     ("v" "Value" ("-v" "--value ") :class transient-option)
@@ -132,7 +172,7 @@ Locations are homepage, docs, or modules."
    ("o" "Open" luarocks-open)
    ("c" "Config" luarocks-config)
    ;; ("s" "Search" luarocks-search)
-   ])
+   ("K" "Kill buffers" luarocks-kill-buffers)])
 
 (provide 'luarocks)
 ;; Local Variables:

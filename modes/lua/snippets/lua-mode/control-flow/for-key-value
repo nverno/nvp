@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: for i, x in pairs(table)
-# key: forkv
-# --
-for ${1:k}, ${2:v} in pairs(${3:table}) do
-  $0
-end

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: function oneliner
-# key: fn
+# key: fn-
 # --
 function${1:$($s? " ")}${1:name}($2) $3 end

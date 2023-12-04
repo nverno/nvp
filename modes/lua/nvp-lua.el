@@ -35,6 +35,31 @@
     (when (and vinit vlim (> (string-to-number vinit) (string-to-number vlim)))
       "-")))
 
+;;; Toggle
+(defun nvp-lua-toggle-local ()
+  "Toggle local for current function or assignment expression."
+  (interactive)
+  (let ((node (treesit-node-at (point))))
+    (if (treesit-node-match-p node "local")
+        (progn (delete-region (treesit-node-start node) (treesit-node-end node))
+               (indent-according-to-mode))
+      (--when-let 
+          (treesit-parent-until
+           node
+           (lambda (n)
+             (treesit-node-match-p
+              n (rx (or "assignment_statement" "function_declaration")))))
+        (save-excursion
+          (goto-char (treesit-node-start it))
+          (if (pcase (treesit-node-type it)
+                ("assignment_statement"
+                 (looking-back "\\_<local\\_>\\s-+" (line-beginning-position)))
+                ("function_declaration"
+                 (looking-at "\\_<local\\_>\\s-*"))
+                (_ nil))
+              (delete-region (match-beginning 0) (match-end 0))
+            (insert "local ")))))))
+
 (provide 'nvp-lua)
 ;; Local Variables:
 ;; coding: utf-8

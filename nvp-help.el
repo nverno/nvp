@@ -194,9 +194,9 @@
     ("m" "Man" man)
     ("M" "Consult man" consult-man)
     ("i" "Info" nvp-info-menu)
-    ("s" "Devdocs" nvp-devdocs-menu :transient transient--do-replace
+    ("d" "Devdocs" nvp-devdocs-menu :transient transient--do-replace
      :if (lambda () (fboundp 'devdocs-lookup)))
-    ("d" "Dash" nvp-dash-menu :transient transient--do-replace
+    ("D" "Dash" nvp-dash-menu :transient transient--do-replace
      :if (lambda () (fboundp 'dash-docs-activate-docset)))]
    ["Cheat.sh"
     ("cc" "Search" cheat-sh)

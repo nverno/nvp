@@ -95,6 +95,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (if do-dired (dired snippet-dir)
     (let ((yas-wrap-around-region nil)  ;don't insert selected twice
           (yas-selected-text text)
+          (yas-indent-line 'fixed)
           (default-directory snippet-dir))
       (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
       (snippet-mode)

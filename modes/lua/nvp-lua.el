@@ -32,7 +32,9 @@
 (defun nvp-lua--step-sign (init limit)
   (let ((vinit (yas-field-value init))
         (vlim (yas-field-value limit)))
-    (when (and vinit vlim (> (string-to-number vinit) (string-to-number vlim)))
+    (when (and vinit vlim
+               (string-match-p "^[0-9.-]+" vlim)
+               (> (string-to-number vinit) (string-to-number vlim)))
       "-")))
 
 ;;; Toggle

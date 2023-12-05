@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: pop from table
+# key: pop
+# --
+table.remove(${1:table})

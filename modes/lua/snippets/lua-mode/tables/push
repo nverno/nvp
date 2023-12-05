@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: push to table
+# key: push
+# --
+table.insert(${1:table}, ${2:val})

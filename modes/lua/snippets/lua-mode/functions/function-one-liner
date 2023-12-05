@@ -2,4 +2,4 @@
 # name: function oneliner
 # key: fn-
 # --
-function${1:$($s? " ")}${1:name}($2) $3 end
+local function${1:$($s? " ")}${1:name}($2) $3 end

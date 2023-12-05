@@ -149,27 +149,29 @@ Locations are homepage, docs, or modules."
 (transient-define-prefix luarocks-menu ()
   "Luarocks menu."
   :value '("--recache" "--json")
+  :incompatible '(("--home" "--docs" "--module"))
   ["Arguments"
    ("-r" "Recache" ("-r" "--recache"))]
-  [["Open"
-    ("h" "Homepage" ("-h" "--home"))
-    ("d" "Docs" ("-d" "--docs"))
-    ("m" "Module" ("-m" "--module"))]
-   ;; TODO: search/show
-   ["Search"]
-   ["Path"
-    ("-a" "Append to PATH" ("--append" "--path-append"))
-    ("-e" "Export lua c/path" ("-e" "--path-export"))
-    ("p" "Path" luarocks-path)]
-   ["Config"
-    ("k" "Key" ("-k" "--key ") :class transient-option)
-    ("v" "Value" ("-v" "--value ") :class transient-option)
-    ("-s" "Scope" ("-s" "--scope ") :class transient-option
-     :choices ("system" "user" "project"))
-    ("-j" "Json" ("-j" "--json"))
-    ("-U" "Unset" ("-u" "--unset"))]]
+  [ :pad-keys 2
+    ["Open"
+     ("h" "Homepage" ("-h" "--home"))
+     ("d" "Docs" ("-d" "--docs"))
+     ("m" "Module" ("-m" "--module"))]
+    ;; TODO: search/show
+    ;; ["Search"]
+    ["Path"
+     ("-a" "Append to PATH" ("--append" "--path-append"))
+     ("-e" "Export lua c/path" ("-e" "--path-export"))]
+    ["Config"
+     ("k" "Key" ("-k" "--key ") :class transient-option)
+     ("v" "Value" ("-v" "--value ") :class transient-option)
+     ("-s" "Scope" ("-s" "--scope ") :class transient-option
+      :choices ("system" "user" "project"))
+     ("-j" "Json" ("-j" "--json"))
+     ("-U" "Unset" ("-u" "--unset"))]]
   ["Actions"
    ("o" "Open" luarocks-open)
+   ("p" "Path" luarocks-path)
    ("c" "Config" luarocks-config)
    ;; ("s" "Search" luarocks-search)
    ("K" "Kill buffers" luarocks-kill-buffers)])

@@ -40,10 +40,6 @@
   "Install tree-sitter grammar."
   (interactive)
   (nvp-treesit--setup-sources)
-  ;; Notes:
-  ;; To remap mode to tree-sitter mode
-  ;; (cl-pushnew '(<major-mode> . <treesit-mode>) major-mode-remap-alist :test #'equal)
-  ;; May need to restart emacs for shared grammar library to be loaded?
   (call-interactively #'treesit-install-language-grammar))
 
 (defun nvp-treesit-update (&optional parser)
@@ -159,15 +155,17 @@
 ;;;###autoload(autoload 'nvp-treesit-menu "nvp-treesit")
 (transient-define-prefix nvp-treesit-menu ()
   "Treesit"
+  :refresh-suffixes t
   [ :if nvp-treesit-ready-p
     ["Query"
      ("q" "Highlight query" ts-query-highlight-query :transient t)
-     ("Q" "Remove highlights" ts-query-remove-highlights :transient t)
+     ("Q" "Remove highlights" ts-query-remove-highlights :transient t
+      :if-non-nil ts-query--langs)
      ("v" "Validate" nvp-treesit-validate)]
     ["Explorer"
      ("j" "Jump" nvp-treesit-explorer-jump)]
     ["Current"
-     ("?" "Inspect node" treesit-inspect-node-at-point)
+     ("?" "Inspect node" treesit-inspect-node-at-point :transient t)
      ("e" "Toggle errors" ts-error-toggle)]]
   [["Parsers"
     ("l" "List nodes" ts-parser-list-nodes)

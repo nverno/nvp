@@ -67,6 +67,13 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
   (setq nvp-lua-ts-font-lock-after
         (treesit-font-lock-rules
          :language 'lua
+         :feature 'comment
+         '(((comment) @font-lock-doc-face
+            (:match "\\`---" @font-lock-doc-face))
+           (comment) @lua-ts--comment-font-lock
+           (hash_bang_line) @font-lock-comment-face)
+
+         :language 'lua
          :feature 'assignment
          '((variable_list) @nvp-lua-ts-mode--fontify-assignment-lhs)
          ;; '((variable_list

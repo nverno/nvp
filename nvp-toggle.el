@@ -196,7 +196,8 @@ the current paragraph."
 ;;;###autoload
 (defun nvp-toggle-brackets (&optional beg end)
   "Toggle b/w open/close braces, eg. ( => [ => {."
-  (interactive (nvp:tap-or-region 'bdwim 'list :pulse t))
+  (interactive (nvp:repeat-args (beg end)
+                   (nvp:tap-or-region 'bdwim 'list :pulse t)))
   (let ((bs '(?\[ ?\{ ?\())
         (tbl (nvp-toggle-brackets-table)))
     (-when-let (b (car (memq (char-after beg) bs)))
@@ -207,7 +208,8 @@ the current paragraph."
              (aset tbl ?\] ?\}))
         (?\{ (aset tbl ?\{ ?\()
              (aset tbl ?\} ?\))))
-      (translate-region beg end tbl))))
+      (translate-region beg end tbl)))
+  (nvp:repeat-this-command beg end))
 
 ;; toggle between quotes
 (nvp:define-cache-runonce nvp-toggle-strings-table ()

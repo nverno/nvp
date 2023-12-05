@@ -131,7 +131,7 @@ If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
 Don't change cursor when NO-INDICATE."
   (let ((repeat-key (or key `(nvp:input 'lbi))))
     `(when (and (null overriding-terminal-local-map)
-                (not (memq this-command `(,last-command nvp--repeat))))
+                (not (memq this-command (list last-command 'nvp--repeat))))
        ,@(unless no-indicate '((nvp-indicate-cursor-pre)))
        (set-transient-map
         (let ((map (make-sparse-keymap)))
@@ -139,6 +139,21 @@ Don't change cursor when NO-INDICATE."
           map)
         t
         ,@(unless no-indicate '((lambda () (nvp-indicate-cursor-post))))))))
+
+(defmacro nvp:repeat-args (args &rest body)
+  "Setup ARGS to be saved for command during repeats.
+ARGS are the arguments for the current command, in order.
+BODY should return a list as normally done in an interactive spec."
+  (declare (indent 1))
+  (nvp:with-syms (res)
+    `(if (eq this-command last-command)
+         (list ,@(cl-loop for a in args
+                          collect `(get this-command ',a)))
+       (let ((,res (progn ,@body)))
+         (prog1 ,res
+           ,@(cl-loop for a in args
+                      for idx from 0
+                      collect `(put this-command ',a (nth ,idx ,res))))))))
 
 ;; -------------------------------------------------------------------
 ;;; Output / Messages

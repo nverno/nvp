@@ -407,15 +407,15 @@ When called from a repl buffer with PREFIX:
 ;;   (unless nvp-repl-current
 ;;     (user-error "No current REPL")))
 
-(defun nvp-repl-send-string (str &optional no-insert no-newline)
+(defun nvp-repl-send-string (str &optional insert no-newline)
   "Send STR to current REPL, appending a final newline unless NO-NEWLINE.
-STR is inserted into REPL unless NO-INSERT."
+If INSERT, STR is inserted into REPL."
   (unless nvp-repl-current
     (user-error "No REPL associated with buffer."))
   (nvp-with-repl (send-input send-string proc)
     (unless no-newline (setq str (concat str "\n")))
     (--if-let (nvp-repl-get-buffer)
-        (progn (if no-insert
+        (progn (if (null insert)
                    (funcall send-string (nvp-repl-process) str)
                  (with-current-buffer it
                    (goto-char (process-mark proc))

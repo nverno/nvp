@@ -6,15 +6,16 @@
 ;; #<marker at 19542 in inf-ruby.el>
 ;;
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
-(require 'nvp)
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-repl))
+(require 'comint)
 (nvp:decls)
 
 (defcustom nvp-repl-eval-result :overlay
   "Method to display eval result."
-  :type '(choice
-          (const :overlay :tag "Show results in overlay")
-          (const :message :tag "Show results in message"))
+  :type '(choice (const :overlay :tag "Show results in overlay")
+                 (const :message :tag "Show results in message"))
   :group 'nvp-repl)
 
 (defface nvp-repl-eval-overlay-face
@@ -22,43 +23,54 @@
      :background "grey90" :box (:line-width -1 :color "yellow"))
     (((class color) (background dark))
      :background "grey10" :box (:line-width -1 :color "black")))
-  "Face used to display evaluation results at the end of line.")
+  "Face used to display evaluation results at the end of line."
+  :group 'nvp-repl)
 
 ;;;###autoload
 (defun nvp-repl-eval-result-value ()
-  (let ((proc (inf-ruby-proc)))
-    (with-current-buffer (or (inf-ruby-buffer)
-                             inf-ruby-buffer)
+  "Get result of last eval from repl."
+  (nvp-with-repl (repl-buff repl-proc eval-filter)
+    (with-current-buffer repl-buff
       (while (not (and comint-last-prompt
                        (goto-char (car comint-last-prompt))
-                       (looking-at inf-ruby-first-prompt-pattern)))
-        (accept-process-output proc))
-      (re-search-backward inf-ruby-prompt-pattern)
-      (or (re-search-forward "[ \n]=> " (car comint-last-prompt) t)
-          ;; Evaluation seems to have failed.
-          ;; Try to extract the error string.
-          (let* ((inhibit-field-text-motion t)
-                 (s (buffer-substring-no-properties (point) (line-end-position))))
-            (while (string-match inf-ruby-prompt-pattern s)
-              (setq s (replace-match "" t t s)))
-            (error "%s" s)))
-      (if (looking-at " *$")
-          (progn
-            (goto-char (1+ (match-end 0)))
-            (replace-regexp-in-string
-             "\n +" " "
-             (buffer-substring-no-properties
-              (point)
-              (progn
-                (forward-sexp)
-                (point)))))
-        (buffer-substring-no-properties (point) (line-end-position))))))
+                       (looking-at comint-prompt-regexp)))
+        (accept-process-output repl-proc))
+      (let* ((end (point))
+             (beg (and (re-search-backward comint-prompt-regexp)
+                       (match-end 0)))
+             (res (string-trim (buffer-substring-no-properties beg end))))
+        (while (string-match comint-prompt-regexp res)
+          (setq res (replace-match "" t t res)))
+        (if eval-filter
+            (funcall eval-filter res)
+          res)
+        ;; (or (re-search-forward "[ \n]=> " (car comint-last-prompt) t)
+        ;;     ;; Evaluation seems to have failed.
+        ;;     ;; Try to extract the error string.
+        ;;     (let* ((inhibit-field-text-motion t)
+        ;;            (s (buffer-substring-no-properties (point) (line-end-position))))
+        ;;       (while (string-match comint-prompt-regexp s)
+        ;;         (setq s (replace-match "" t t s)))
+        ;;       (error "%s" s)))
+        ;; (if (looking-at " *$")
+        ;;     (progn
+        ;;       (goto-char (1+ (match-end 0)))
+        ;;       (replace-regexp-in-string
+        ;;        "\n +" " "
+        ;;        (buffer-substring-no-properties
+        ;;         (point)
+        ;;         (progn
+        ;;           (forward-sexp)
+        ;;           (point)))))
+        ;;   (buffer-substring-no-properties (point) (line-end-position)))
+        ))))
 
 ;;;###autoload
 (defun nvp-repl-eval-show-result (res)
-  (if (eq ':overlay nvp-repl-eval-result)
-      (nvp-repl--eval-overlay res)
-    (message "%s" res)))
+  "Show RES according to `nvp-repl-eval-result'."
+  (pcase nvp-repl-eval-result
+    (':overlay (nvp-repl--eval-overlay res))
+    (_ (message "%s" res))))
 
 (defun nvp-repl--make-overlay (l r type &rest props)
   "Place an overlay between L and R and return it.
@@ -167,7 +179,7 @@ This function also removes itself from `pre-command-hook'."
 
 (defun nvp-repl--eval-overlay (value)
   "Make overlay for VALUE at POINT."
-  (inf-ruby--make-result-overlay value (point) 'command)
+  (nvp-repl--make-result-overlay value (point) 'command)
   value)
 
 (provide 'nvp-repl-eval)

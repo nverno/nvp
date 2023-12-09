@@ -70,6 +70,7 @@ Each function takes a process as an argument to test against.")
   send-buffer
   send-file
   ;; Eval: execute silently in REPL, return output
+  eval-filter
   eval-string
   eval-sexp
   ;; REPL commands
@@ -79,8 +80,8 @@ Each function takes a process as an argument to test against.")
   ;; History
   history-file
   ;; set internally
-  proc                               ; REPL process
-  buff)                              ; REPL output buffer (may not have a proc)
+  repl-proc                      ; REPL process
+  repl-buff)                     ; REPL output buffer (may not have a repl-proc)
 (put 'nvp-repl-make 'lisp-indent-function 'defun)
 
 ;; Cache defined repls
@@ -95,6 +96,9 @@ Each function takes a process as an argument to test against.")
 (defsubst nvp-repl--get-source ()
   (declare (pure t) (side-effect-free t))
   (gethash (current-buffer) nvp-repl--process-buffers))
+
+(defsubst nvp-repl--set-source (repl-buf src-buf)
+  (puthash repl-buf src-buf nvp-repl--process-buffers))
 
 ;; Get `nvp-repl-current' from either source or REPL buffer
 (defun nvp-repl-current ()
@@ -158,7 +162,8 @@ Each function takes a process as an argument to test against.")
   "in a source buffer, do body with bound repl fields.
 if allow-repl is non-nil, bind fields from current repl in repl buffers as
 well."
-  (declare (indent defun) (debug t))
+  (declare (indent defun)
+           (debug (&define cl-macro-list def-form cl-declarations def-body)))
   (nvp:skip-keywords body)
   `(pcase-let (((cl-struct nvp--repl ,@fields)
                 ,(if allow-repl '(nvp-repl-current) 'nvp-repl-current)))
@@ -211,17 +216,17 @@ well."
 ;; -------------------------------------------------------------------
 ;;; repl processes
 
-;; non-nil if proc is alive
-(defsubst nvp-repl-live-p (proc) (funcall (nvp--repl-live nvp-repl-current) proc))
+;; non-nil if repl-proc is alive
+(defsubst nvp-repl-live-p (repl-proc) (funcall (nvp--repl-live nvp-repl-current) repl-proc))
 
 ;; check repl has an associated process and it is alive
-;; if it had a proc that died, this updates its proc to nil
+;; if it had a repl-proc that died, this updates its repl-proc to nil
 ;; returns the live process when available
 (defun nvp-repl-process ()
-  (--when-let (repl:val "proc")
+  (--when-let (repl:val "repl-proc")
     (if (ignore-errors (nvp-repl-live-p it)) it
-      (setf (repl:val "proc") nil
-            (repl:val "buff") nil))))
+      (setf (repl:val "repl-proc") nil
+            (repl:val "repl-buff") nil))))
 
 ;; get repl buffer if it has a live process
 (defun nvp-repl-buffer ()
@@ -230,12 +235,11 @@ well."
 
 ;; update repls proc/buff and link process-buffer (which may not be an
 ;; actual process, eg. slime repl) with source buffer
-(defun nvp-repl-update (proc src-buff &optional p-buff)
-  (nvp:defq p-buff (funcall (repl:val "proc->buff") proc))
-  (setf (repl:val "proc") proc
-        (repl:val "buff") p-buff)
-  (prog1 p-buff (puthash p-buff src-buff nvp-repl--process-buffers)))
-
+(defun nvp-repl-update (repl-proc src-buff &optional p-buff)
+  (nvp:defq p-buff (funcall (repl:val "proc->buff") repl-proc))
+  (setf (repl:val "repl-proc") repl-proc
+        (repl:val "repl-buff") p-buff)
+  (prog1 p-buff (nvp-repl--set-source p-buff src-buff)))
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode
@@ -305,8 +309,8 @@ async repl init functions should call callback with repl-buf and repl-proc."
 (defun nvp-repl--init-repl-hook (src-buf buff->proc &optional and-go)
   "associate repl with source from repl mode hook."
   `(lambda ()
-     (if-let ((proc (funcall ',buff->proc (current-buffer))))
-         (nvp-repl--init-setup ,src-buf proc (current-buffer) ,and-go)
+     (if-let ((repl-proc (funcall ',buff->proc (current-buffer))))
+         (nvp-repl--init-setup ,src-buf repl-proc (current-buffer) ,and-go)
        (user-error "failed to initialize repl for %s" ,src-buf))))
 
 (defun nvp-repl--init-with-repl-hooks (&optional and-go)
@@ -332,7 +336,7 @@ repl with source buffer."
              :read-fn #'read-buffer
              :read-args (nil t)
              :message (if prefix "Current buffer %S" "Source buffer %S dead") buf)))
-      (puthash (current-buffer) (get-buffer src-buf) nvp-repl--process-buffers))))
+      (nvp-repl--set-source (current-buffer) (get-buffer src-buf)))))
 
 (defun nvp-repl-start (&optional prefix)
   "Return a REPL buffer associated with current buffer."
@@ -353,19 +357,20 @@ repl with source buffer."
 (defun nvp-repl-get-buffer (&optional prefix)
   "Return a REPL buffer if one exists, otherwise attempt to start one."
   (nvp-repl-ensure)
-  (or (nvp-repl-buffer)
+  (or (--when-let (nvp-repl-buffer)
+        (prog1 it (and prefix (nvp-repl--set-source it (current-buffer)))))
       (nvp-with-repl (process-p proc->buff buff->proc)
-        (when-let ((proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
-                   (p-buff (if (funcall process-p proc)
-                               (funcall proc->buff proc)
-                             (setq proc (funcall buff->proc proc)))))
-          (if (nvp-repl-live-p proc)  ; found unregistered live one
-              (nvp-repl-update proc (current-buffer) p-buff)
+        (when-let ((repl-proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
+                   (p-buff (if (funcall process-p repl-proc)
+                               (funcall proc->buff repl-proc)
+                             (setq repl-proc (funcall buff->proc repl-proc)))))
+          (if (nvp-repl-live-p repl-proc)  ; found unregistered live one
+              (nvp-repl-update repl-proc (current-buffer) p-buff)
             (remhash p-buff nvp-repl--process-buffers))))
       (or (nvp-repl-start prefix)     ; initialize new REPL
           (user-error "Failed to initialize REPL"))))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Commands
 
@@ -376,7 +381,7 @@ If the associated source buffer no longer exists, pop to next visible
 window.
 
 When call from source buffer, with PREFIX arguments:
- \\[universal-argument]		Prefix passed to repl init function on startup.
+ \\[universal-argument]		Set buffer as repl source, passed to init on startup.
  \\[universal-argument] \\[universal-argument] 	Prompt for new repl, becomes current.
 
 When called from a repl buffer with PREFIX:
@@ -386,11 +391,11 @@ When called from a repl buffer with PREFIX:
   (when (and nvp-repl-current
              (null nvp-repl-source-minor-mode))
     (nvp-repl--source-minor-mode-on))
-  (let ((buff (--if-let (nvp-repl--get-source)
+  (let ((repl-buff (--if-let (nvp-repl--get-source)
                   (nvp-repl--check-source-buffer it prefix)
                 (nvp-repl-get-buffer prefix))))
-    (unless (eq 'async buff)
-      (pop-to-buffer buff nvp-repl--display-action))))
+    (unless (eq 'async repl-buff)
+      (pop-to-buffer repl-buff nvp-repl--display-action))))
 
 (defun nvp-repl-remove (mode)
   "Remove any repl associations with MODE."
@@ -416,13 +421,13 @@ When called from a repl buffer with PREFIX:
 If INSERT, STR is inserted into REPL."
   (unless nvp-repl-current
     (user-error "No REPL associated with buffer."))
-  (nvp-with-repl (send-input send-string proc)
+  (nvp-with-repl (send-input send-string repl-proc)
     (unless no-newline (setq str (concat str "\n")))
     (--if-let (nvp-repl-get-buffer)
         (progn (if (null insert)
                    (funcall send-string (nvp-repl-process) str)
                  (with-current-buffer it
-                   (goto-char (process-mark proc))
+                   (goto-char (process-mark repl-proc))
                    (insert str)
                    (funcall send-input))))
       (user-error "Couldn't create REPL."))))
@@ -539,36 +544,33 @@ If INSERT, STR is inserted into REPL."
 ;;; Eval
 
 (nvp:decl nvp-repl-eval-show-result nvp-repl-eval-result-value)
-(defun nvp-repl-print-result (&optional insert)
-  "Print the result of the last evaluation in the current buffer."
-  (let ((result (nvp-repl-eval-result-value)))
-    (if insert
-        (insert result)
-      (nvp-repl-eval-show-result result))))
 
-(defun nvp-repl-eval-string (&optional insert)
-  (interactive "P")
+(defun nvp-repl-print-result (&optional res insert)
+  "Print the result of the last evaluation in the current buffer."
+  (unless res (setq res (nvp-repl-eval-result-value)))
+  (if insert
+      (let ((standard-output (current-buffer)))
+        (princ res))
+    (nvp-repl-eval-show-result res)))
+
+(defun nvp-repl--eval-string (str)
   (nvp-with-repl (eval-string)
-    (unless eval-string
-      (user-error "unsupported: eval-string"))
-    (let ((res (funcall-interactively eval-string)))
-      (when (and res (not (string-empty-p res)))
-        (if insert
-            (let ((standard-output (current-buffer)))
-              (princ res))
-          (message "%S" res))))))
+    (if eval-string (funcall eval-string)
+      (nvp-repl-send-string str)
+      (nvp-repl-eval-result-value))))
+
+(defun nvp-repl-eval-string (str &optional insert)
+  (interactive "s\nP")
+  (nvp-repl-print-result (nvp-repl--eval-string str) insert))
 
 (defun nvp-repl-eval-sexp (&optional insert)
   (interactive "P")
   (nvp-with-repl (eval-sexp)
-    (unless eval-sexp
-      (user-error "unsupported: eval-sexp"))
-    (funcall-interactively eval-sexp insert)
-    ;; (if insert
-    ;;     (let ((standard-output (current-buffer)))
-    ;;       (princ res))
-    ;;   (message "%S" res))
-    ))
+    (if eval-sexp (funcall-interactively eval-sexp insert)
+      (save-excursion
+        (skip-syntax-backward " ")
+        (nvp-repl-send-sexp))
+      (nvp-repl-print-result nil insert))))
 
 ;; -------------------------------------------------------------------
 ;;; REPL commands - run in REPL
@@ -624,7 +626,7 @@ Prompt with \\[universal-argument]."
   (nvp:with-repl-src-buffer
     (let ((default-directory dir))
       (nvp:call-repl-cmd cd-cmd (default-directory)
-        (nvp-repl-update (repl:val "proc") (current-buffer))
+        (nvp-repl-update (repl:val "repl-proc") (current-buffer))
         (with-current-buffer (nvp-repl-buffer)
           (setq default-directory dir))))))
 
@@ -665,6 +667,7 @@ Prompt with \\[universal-argument]."
      ("F" "Load File" nvp-repl-send-file)]
    [ :if-non-nil nvp-repl-current
      "Eval"
+     ("S" "String" nvp-repl-eval-string)
      ("e" "Last sexp" nvp-repl-eval-sexp)]
    [ :if nvp-repl-current
      "Commands"

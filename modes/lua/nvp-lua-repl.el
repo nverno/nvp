@@ -36,6 +36,7 @@ With two \\[universal-argument] prompt for lua command."
   :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
   :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
   :help-cmd "_G"
+  :eval-filter (lambda (s) (replace-regexp-in-string lua-ts-inferior-prompt-continue "" s))
   :init #'nvp-lua-repl-init)
 
 ;; -------------------------------------------------------------------

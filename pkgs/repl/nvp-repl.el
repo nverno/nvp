@@ -67,6 +67,7 @@ Each function takes a process as an argument to test against.")
   send-region
   send-defun
   send-sexp
+  send-statement
   send-buffer
   send-file
   ;; Eval: execute silently in REPL, return output
@@ -253,18 +254,22 @@ well."
 (defvar-keymap nvp-repl-source-minor-mode-map
   "C-c C-c"   #'nvp-repl-send-dwim
   "C-c C-e"   #'nvp-repl-send-sexp
-  "C-c C-x e" #'nvp-repl-eval-sexp
   "C-c C-b"   #'nvp-repl-send-buffer
   "C-c C-l"   #'nvp-repl-send-line
   "C-c C-r"   #'nvp-repl-send-region
   "C-c C-f"   #'nvp-repl-send-file
   "C-M-x"     #'nvp-repl-send-defun-or-region
+  "C-c C-x e" #'nvp-repl-eval-sexp
+  "C-c C-x s" #'nvp-repl-eval-string
   "C-c C-k"   #'nvp-repl-clear)
 
 ;;;###autoload
 (define-minor-mode nvp-repl-minor-mode
   "REPL buffer minor mode."
-  :lighter " Ɍepl")
+  :lighter " Ɍepl"
+  (when (derived-mode-p 'comint-mode)
+    (add-hook 'comint-output-filter-functions
+              #'comint-postoutput-scroll-to-bottom nil t)))
 
 ;;;###autoload
 (define-minor-mode nvp-repl-source-minor-mode
@@ -482,11 +487,13 @@ If INSERT, STR is inserted into REPL."
   (nvp:repl-send send-sexp () and-go :region sexp))
 
 (defun nvp-repl-send-dwim (&optional and-go)
-  "Send region or sexp (if defined by repl), or fallback to line."
+  "Send region, statement, sexp, or line."
   (interactive "P")
   (cond
    ((region-active-p)
     (nvp-repl-send-region (region-beginning) (region-end) and-go))
+   ((repl:val "send-statement")
+    (nvp-repl-send-stmt-or-sentence and-go))
    ((repl:val "send-sexp")
     (nvp-repl-send-sexp and-go))
    (t (nvp-repl-send-line and-go))))
@@ -517,6 +524,13 @@ If INSERT, STR is inserted into REPL."
     (nvp-repl-send-region (region-beginning) (region-end) and-go))
    (t (nvp-repl-send-defun and-go))))
 
+(defun nvp-repl-send-stmt-or-sentence (&optional and-go)
+  (interactive "P")
+  (nvp:repl-send send-statement () and-go
+    :region (let ((bnds (or (bounds-of-thing-at-point 'statement)
+                            (bounds-of-thing-at-point 'sentence))))
+              (list (car bnds) (cdr bnds)))))
+
 (defun nvp-repl-send-file (file &optional and-go)
   "Send FILE to repl and pop to repl buffer when AND-GO."
   (interactive
@@ -545,23 +559,24 @@ If INSERT, STR is inserted into REPL."
 
 (nvp:decl nvp-repl-eval-show-result nvp-repl-eval-result-value)
 
-(defun nvp-repl-print-result (&optional res insert)
+(defun nvp-repl-eval-insert (res)
+  (let ((standard-output (current-buffer)))
+    (princ res)))
+
+(defun nvp-repl-show-result (&optional res insert)
   "Print the result of the last evaluation in the current buffer."
+  (message "nvp-repl-show-result: %S %S" res insert)
   (unless res (setq res (nvp-repl-eval-result-value)))
   (if insert
-      (let ((standard-output (current-buffer)))
-        (princ res))
+      (nvp-repl-eval-insert res)
     (nvp-repl-eval-show-result res)))
 
-(defun nvp-repl--eval-string (str)
-  (nvp-with-repl (eval-string)
-    (if eval-string (funcall eval-string)
-      (nvp-repl-send-string str)
-      (nvp-repl-eval-result-value))))
-
 (defun nvp-repl-eval-string (str &optional insert)
-  (interactive "s\nP")
-  (nvp-repl-print-result (nvp-repl--eval-string str) insert))
+  (interactive "sEval: \nP")
+  (nvp-with-repl (eval-string)
+    (if eval-string (funcall eval-string str insert)
+      (nvp-repl-send-string str)
+      (nvp-repl-show-result nil insert))))
 
 (defun nvp-repl-eval-sexp (&optional insert)
   (interactive "P")
@@ -570,7 +585,7 @@ If INSERT, STR is inserted into REPL."
       (save-excursion
         (skip-syntax-backward " ")
         (nvp-repl-send-sexp))
-      (nvp-repl-print-result nil insert))))
+      (nvp-repl-show-result nil insert))))
 
 ;; -------------------------------------------------------------------
 ;;; REPL commands - run in REPL
@@ -587,6 +602,8 @@ If INSERT, STR is inserted into REPL."
       (pcase-let (((cl-struct nvp--repl ,@vals) nvp-repl-current))
         ,@body)))
 
+  ;; Call `nvp-repl-send-string' with 'insert so input goes through
+  ;; `comint-input-sender' in order to handle repl commands
   (defmacro nvp:call-repl-cmd (cmd &optional args &rest body)
     (declare (indent 2))
     `(nvp:with-repl-vals (,cmd)
@@ -594,14 +611,14 @@ If INSERT, STR is inserted into REPL."
          (progn (pcase ,cmd
                   ((pred stringp)
                    (nvp-repl-send-string
-                    ,(if args `(format ,cmd ,@args) `,cmd)))
+                    ,(if args `(format ,cmd ,@args) `,cmd) 'insert))
                   ((pred functionp) (funcall ,cmd ,@args))
                   ((pred symbolp) (eval ,cmd))
                   ,@(when args
                       `((`(:no-arg ,no-arg :with-arg ,with-arg)
                          (cl-assert (and (stringp no-arg) (stringp with-arg)))
                          (nvp-repl-send-string
-                          (if ,@args (format with-arg ,@args) no-arg)))))
+                          (if ,@args (format with-arg ,@args) no-arg) 'insert))))
                   (_ (user-error
                       ,(concat "unhandled " (symbol-name cmd) " type: '%S'") ,cmd)))
                 ,@body))))
@@ -659,6 +676,7 @@ Prompt with \\[universal-argument]."
   [[ :if-non-nil nvp-repl-current
      "Send"
      ("s" "Last sexp" nvp-repl-send-sexp)
+     ("S" "Statement or sentence" nvp-repl-send-stmt-or-sentence)
      ("l" "Line or region" nvp-repl-send-line)
      ("r" "Region" nvp-repl-send-region)
      ("f" "Defun" nvp-repl-send-defun)
@@ -667,7 +685,7 @@ Prompt with \\[universal-argument]."
      ("F" "Load File" nvp-repl-send-file)]
    [ :if-non-nil nvp-repl-current
      "Eval"
-     ("S" "String" nvp-repl-eval-string)
+     ("E" "String" nvp-repl-eval-string)
      ("e" "Last sexp" nvp-repl-eval-sexp)]
    [ :if nvp-repl-current
      "Commands"

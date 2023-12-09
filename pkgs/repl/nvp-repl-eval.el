@@ -2,8 +2,9 @@
 ;;
 ;;; Commentary:
 ;;
-;; Modified from `inf-ruby'
-;; #<marker at 19542 in inf-ruby.el>
+;; References:
+;; - racket-show :: #<marker at 4057 in racket-show.el>
+;; - inf-ruby :: #<marker at 19542 in inf-ruby.el>
 ;;
 ;;; Code:
 (eval-when-compile
@@ -70,7 +71,7 @@
   "Show RES according to `nvp-repl-eval-result'."
   (pcase nvp-repl-eval-result
     (':overlay (nvp-repl--eval-overlay res))
-    (_ (message "%s" res))))
+    (_ (message "=> %s" res))))
 
 (defun nvp-repl--make-overlay (l r type &rest props)
   "Place an overlay between L and R and return it.

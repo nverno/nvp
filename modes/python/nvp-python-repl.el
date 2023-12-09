@@ -17,21 +17,25 @@
 (defvar nvp-python-compilation-regexp
   '("^\\([^<\n]+\\) in <[^>]+>\n\\(?:\\s-*[0-9]+.*\n\\)*---> \\([0-9]+\\)" 1 2))
 
+(defun nvp-python-repl-init (&optional _prefix)
+  (interactive "P")
+  (save-window-excursion
+    (call-interactively #'conda-env-send-buffer)))
+
 (nvp-repl-add '(python-mode python-ts-mode)
   :name 'python
   :modes '(inferior-python-mode)
+  :init #'nvp-python-repl-init
   :find-fn #'python-shell-get-process
   :send-string #'python-shell-send-string
-  :send-region #'python-shell-send-region
-  :send-file #'python-shell-send-file
   :eval-string #'python-shell-send-string-no-output
+  :send-region #'python-shell-send-region
+  :send-statement #'python-shell-send-statement
+  :send-file #'python-shell-send-file
   ;:eval-sexp #'nvp-python-eval-last-sexp
   :cd-cmd "import os; os.chdir(\"%s\")"
   :pwd-cmd "import os; os.getcwd()"
-  :help-cmd '(:no-arg "help()" :with-arg "help(%s)")
-  :init (lambda (&optional _prefix)
-          (save-window-excursion
-            (call-interactively #'conda-env-send-buffer))))
+  :help-cmd '(:no-arg "help()" :with-arg "help(%s)"))
 
 ;; bounds of current python statement
 (defsubst nvp-python-statement-bounds ()

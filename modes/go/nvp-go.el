@@ -18,7 +18,7 @@
 
 ;;; REPL
 (with-eval-after-load 'nvp-repl
-  (require 'nvp-gorepl))
+  (require 'nvp-go-repl))
 
 ;;; Yas
 (nvp:decl yas-text nvp-yas-split-args)

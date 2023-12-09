@@ -6,6 +6,7 @@
 ;;   https://stackoverflow.com/questions/55546058/racket-mode-can-i-evaluate-a-single-form-within-a-given-namespace-at-the-repl
 ;;
 ;;; Code:
+
 (eval-when-compile (require 'nvp-macro))
 (require 'geiser nil t)
 (nvp:decls :p "geiser" :f (abbrev-table-put abbrev-table-get))
@@ -13,13 +14,12 @@
 ;; determine available scheme implementations
 (defun nvp-scheme-active-implementations ()
   (let (res)
-    (mapc
-     (lambda (i)
-       (let ((prog (nvp:as-string i)))
-         (--when-let (or (nvp:program-search prog)
-                         (executable-find prog))
-           (push i res))))
-     '(racket guile mit-scheme)) ;; geiser-active-implementations
+    (mapc (lambda (i)
+            (let ((prog (nvp:as-string i)))
+              (--when-let (or (nvp:program-search prog)
+                              (executable-find prog))
+                (push i res))))
+          '(racket guile mit-scheme))   ; geiser-active-implementations
     res))
 
 ;; map geiser implementation to name for abbrevs/snippets

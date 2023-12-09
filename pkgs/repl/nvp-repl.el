@@ -30,8 +30,10 @@
     (inhibit-switch-frame . t)
     (inhibit-same-window  . t)))
 
-(defvar nvp-repl-default 'shell
-  "Default REPL when buffer has no repl associations.")
+(defcustom nvp-repl-default 'shell
+  "Default REPL when buffer has no repl associations."
+  :type 'symbol
+  :group 'nvp-repl)
 
 (defvar nvp-repl-find-functions
   '(nvp-repl-find-custom
@@ -238,9 +240,11 @@ well."
 ;; -------------------------------------------------------------------
 ;;; Minor mode
 
-(defvar nvp-repl-no-minor-modes
+(defcustom nvp-repl-no-minor-modes
   '(c-mode c-ts-mode c++-mode c++-ts-mode)
-  "Modes to not setup minor mode for repl interaction.")
+  "Modes to not setup minor mode for repl interaction."
+  :type '(repeat symbol)
+  :group 'nvp-repl)
 
 (defvar-keymap nvp-repl-source-minor-mode-map
   "C-c C-c"   #'nvp-repl-send-dwim
@@ -533,8 +537,14 @@ If INSERT, STR is inserted into REPL."
 
 ;; -------------------------------------------------------------------
 ;;; Eval
-;; TODO: show result in overlay in source buffer
-;; #<marker at 19542 in inf-ruby.el>
+
+(nvp:decl nvp-repl-eval-show-result nvp-repl-eval-result-value)
+(defun nvp-repl-print-result (&optional insert)
+  "Print the result of the last evaluation in the current buffer."
+  (let ((result (nvp-repl-eval-result-value)))
+    (if insert
+        (insert result)
+      (nvp-repl-eval-show-result result))))
 
 (defun nvp-repl-eval-string (&optional insert)
   (interactive "P")

@@ -39,7 +39,7 @@
     :modes '(inferior-emacs-lisp-mode)
     :procname "ielm"
     :bufname "*ielm"
-    :send-input #'ielm-send-input
+    :send-input #'ielm-eval-input
     :eval-sexp #'eval-last-sexp
     :wait 0.1
     :history-file ".ielm_history"

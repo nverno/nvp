@@ -1,16 +1,13 @@
-;;; nvp-ruby.el --- rubls -*- lexical-binding: t; -*-
+;;; nvp-ruby.el --- ruby stuff -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'ruby-mode)
-(require 'inf-ruby nil t)
-(nvp:decls :p (ruby inf-ruby robe projectile-rails) :f (inf-ruby))
-(declare-function robe-start "robe")
-(declare-function robe-mode "robe")
-(declare-function ruby-compilation-this-buffer "ruby-compilation")
+
+;;; REPL
+(with-eval-after-load 'nvp-repl
+  (require 'nvp-ruby-repl))
 
 ;;; Snippets
-
 ;; create arg initializtion from yas-text
 ;; (i,j) => @i = i\n@j = j or (io=$stdin, ...) => @io = io\n...
 (defsubst nvp-ruby-yas-init-args ()
@@ -20,11 +17,13 @@
              "\n"))
 
 ;;; Movement
+(declare-function ruby-end-of-block "ruby-mode")
 (defun nvp-ruby-beginning-of-block ()
   (interactive)
   (ruby-end-of-block -1))
 
 ;;; Compile
+(declare-function ruby-compilation-this-buffer "ruby-compilation")
 (defun nvp-ruby-compile ()
   (interactive)
   (ruby-compilation-this-buffer)
@@ -40,55 +39,6 @@
     (goto-char start)
     (while (re-search-forward "{\\([^[\n}]+\\)\\(\\[\\]\\)\?}" end t)
       (replace-match (if (match-string 2) "[Array<\\1>]" "[\\1]") t nil nil 0))))
-
-;; -------------------------------------------------------------------
-;;; REPL
-
-(with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(ruby-mode ruby-ts-mode rspec-mode)
-    :name 'ruby
-    :modes '(inf-ruby-mode)
-    :init #'nvp-ruby-start-robe
-    :send-string #'ruby-send-string
-    :send-region #'ruby-send-region
-    :send-defun #'ruby-send-definition
-    :send-sexp #'ruby-send-last-sexp
-    :send-file #'ruby-load-file
-    :send-buffer #'ruby-send-buffer
-    :send-line #'ruby-send-line
-    :history-file ".irb_history"
-    :help-cmd '(:no-arg "help" :with-arg "? %s")
-    :cd-cmd ".cd %s"
-    :pwd-cmd ".pwd"))
-
-;;; Robe
-(defun nvp-ruby-start-robe (&optional _prefix)
-  (interactive)
-  (robe-mode)
-  (save-window-excursion
-    (or (ignore-errors (inf-ruby-console-auto))
-        (inf-ruby inf-ruby-default-implementation)))
-  (robe-start)
-  (get-buffer-process inf-ruby-buffer))
-
-;; add compilation jumps in traceback output from REPL
-(defvar nvp-ruby-inf-compilation-regexp
-  '("^\\s-+[0-9]+: from \\([^\(][^:]+\\):\\([0-9]+\\)" 1 2))
-
-;; Interpret '?' in irb similar to octave/ess
-(defconst nvp-ruby-inf-help
-  '(("ruby" . "help\n%s\n")
-    ("pry"  . "show-source -d %s")))
-
-(defun nvp-ruby-inf-sender (proc str)
-  (-if-let (help-str (and (string-match "^ *\\? *\\(.+\\)" str)
-                          (match-string 1 str)))
-      (progn
-        (comint-simple-send
-         proc (format
-               (cdr (assoc inf-ruby-default-implementation nvp-ruby-inf-help))
-               help-str)))
-    (comint-simple-send proc str)))
 
 ;; -------------------------------------------------------------------
 ;;; Fold / Align

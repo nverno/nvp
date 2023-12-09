@@ -2,8 +2,6 @@
 ;;
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
-(nvp:decls)
 
 (defconst nvp-rspec-font-lock-keywords
   `((,(regexp-opt

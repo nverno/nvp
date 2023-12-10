@@ -22,20 +22,18 @@
 
 ;; get functions and type signatures for MODULE
 (defun nvp-ocaml-abbrev-module-sig (module)
-  (let
-      ((proc
-        (nvp:with-process "opam"
-          :proc-buff "*ocaml-sigs*"
-          :proc-args ("config" "exec" "--" "ocaml"
-                      "-init" (expand-file-name ".ocamlinit-bare" nvp-ocaml--etc))
-          :callback
-          (lambda (p _m)
-            (if (not (zerop (process-exit-status p)))
-                (progn (message "failed!")
-                       (pop-to-buffer (process-buffer p)))
-              (with-current-buffer (process-buffer p)
-                (prog1 (nvp-ocaml--parse-sigs)
-                  (kill-this-buffer))))))))
+  (let ((proc (nvp:with-process "opam"
+                :proc-buff "*ocaml-sigs*"
+                :proc-args ("exec" "--" "ocaml"
+                            "-init" (expand-file-name
+                                     ".ocamlinit-bare" nvp-ocaml--etc))
+                :callback (lambda (p _m)
+                            (if (not (zerop (process-exit-status p)))
+                                (progn (message "failed!")
+                                       (pop-to-buffer (process-buffer p)))
+                              (with-current-buffer (process-buffer p)
+                                (prog1 (nvp-ocaml--parse-sigs)
+                                  (kill-this-buffer))))))))
     (process-send-string
      proc (format "module type S = module type of %s;;\n" module))))
 

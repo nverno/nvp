@@ -2,9 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-ocaml)
 (require 'ocamldebug nil t)
-(nvp:decls :p "tuareg" :f (ocamldebug))
+(nvp:decls :p (tuareg) :f (ocamldebug))
 
 ;; ocamldebug.el has `ocamldebug-prefix-map'
 (defvar ocaml-debug-key-prefix (kbd "<f2> d"))
@@ -20,20 +19,21 @@
                          ',(intern (concat "ocamldebug-" name))))))))
 
 (defvar tuareg-mode-map)
-(nvp:ocaml-debug-bindings
-  ("run"       . "\C-r")
-  ("reverse"   . "\C-v")
-  ("last"      . "\C-l")
-  ("backtrace" . "\C-t")
-  ("open"      . "\C-o")
-  ("close"     . "\C-c")
-  ("finish"    . "\C-f")
-  ("print"     . "\C-p")
-  ("next"      . "\C-n")
-  ("up"        . "<")
-  ("down"      . ">")
-  ("step"      . "s")
-  ("break"     . "\C-b"))
+(with-eval-after-load 'tuareg
+  (nvp:ocaml-debug-bindings
+    ("run"       . "\C-r")
+    ("reverse"   . "\C-v")
+    ("last"      . "\C-l")
+    ("backtrace" . "\C-t")
+    ("open"      . "\C-o")
+    ("close"     . "\C-c")
+    ("finish"    . "\C-f")
+    ("print"     . "\C-p")
+    ("next"      . "\C-n")
+    ("up"        . "<")
+    ("down"      . ">")
+    ("step"      . "s")
+    ("break"     . "\C-b")))
 
 (defun nvp-ocaml-debug-help ()
   (interactive)

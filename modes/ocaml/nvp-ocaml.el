@@ -7,21 +7,12 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'tuareg nil t)
-(nvp:decls :f (nvp-async-shell-command-to-string utop-mode utop-prepare-for-eval)
-           :v (utop-buffer-name)
-           :p "tuareg")
+(nvp:decls :p (tuareg))
 
 (nvp:package-define-root :name nvp-ocaml :dirs ("etc"))
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(tuareg-mode utop-mode ocaml-ts-mode caml-mode)
-    :name 'utop
-    :modes '(utop-mode)
-    :find-fn (lambda () (ignore-errors (get-buffer utop-buffer-name)))
-    :init (lambda (&optional _prefix)
-            (require 'utop)
-            (utop-prepare-for-eval)
-            (get-buffer-process utop-buffer-name))))
+  (require 'nvp-utop))
 
 ;; -------------------------------------------------------------------
 ;;;  Config

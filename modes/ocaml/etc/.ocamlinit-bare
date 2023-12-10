@@ -1,8 +1,8 @@
+#use "topfind";;
 let () =
   try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH")
   with Not_found -> ()
 ;;
 
-#use "topfind";;
 Topfind.don't_load ["compiler-libs.toplevel"];;
 #require "core.top";;

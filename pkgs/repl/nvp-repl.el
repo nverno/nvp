@@ -197,7 +197,7 @@ well."
   (nvp-with-repl (bufname proc->buff)
     (when bufname
       (nvp:proc-find bufname
-        :key (lambda (p) (buffer-name (funcall proc->buff p)))
+        :key (lambda (p) (or (buffer-name (funcall proc->buff p)) regexp-unmatchable))
         :test #'string-match-p))))
 
 ;; match process name
@@ -432,7 +432,8 @@ If INSERT, STR is inserted into REPL."
         (progn (if (null insert)
                    (funcall send-string (nvp-repl-process) str)
                  (with-current-buffer it
-                   (goto-char (process-mark repl-proc))
+                   ;; (goto-char (process-mark repl-proc))
+                   (ignore repl-proc)
                    (insert str)
                    (funcall send-input))))
       (user-error "Couldn't create REPL."))))

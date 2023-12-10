@@ -12,13 +12,11 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(nvp:decls :p "utop" :v (nvp-trace-group-alist))
-(nvp:decl-prefix "tuareg")
+(require 'nvp-repl)
+(require 'nvp-hippie-history)
 (require 'utop nil t)
 (require 'tuareg nil t)
-(require 'nvp-ocaml)
-(require 'nvp-hippie-history)
+(nvp:decls :p (utop tuareg) :v (nvp-trace-group-alist nvp-ocaml--etc))
 
 ;; debugging
 (with-eval-after-load 'nvp-trace
@@ -28,13 +26,58 @@
               nvp-trace-group-alist
               :test #'equal))
 
+;;; REPL
+
+(defun nvp-utop-init (&optional _prefix)
+  (utop-prepare-for-eval)
+  (get-buffer-process utop-buffer-name))
+
+(defun nvp-utop-change-directory ()
+  (interactive)
+  (let ((dir (if (eq major-mode 'utop-mode)
+                 (read-directory-name "Change directory to: ")
+               default-directory)))
+    (utop-eval-string (format "#cd \"%s\";;" dir))))
+
+;; Eval commands
+(defun nvp-utop-eval-phrase (&optional arg step)
+  (interactive "P")
+  (if arg (tuareg-eval-phrase)
+    (utop-prepare-for-eval)
+    (-let (((beg end _end-with-cmts) (funcall utop-discover-phrase)))
+      (nvp-indicate-pulse-region-or-line beg end)
+      (utop-eval beg end)
+      (when step
+        (goto-char end)
+        (forward-line 1)))))
+
+(defun nvp-utop-eval-phrase-and-step (&optional arg)
+  (interactive "P")
+  (funcall-interactively 'nvp-utop-eval-phrase arg 'step))
+
+(nvp-repl-add '(tuareg-mode utop-mode ocaml-ts-mode caml-mode)
+  :name 'utop
+  :modes '(utop-mode)
+  :find-fn (lambda () (ignore-errors (get-buffer utop-buffer-name)))
+  :init #'nvp-utop-init
+  :send-input #'utop-eval-input
+  :send-string #'utop-eval-string
+  :send-statement #'utop-eval-phrase
+  :send-buffer #'utop-eval-buffer
+  :send-region #'utop-eval-region
+  :clear-buffer #'ignore
+  :help-cmd '(:no-arg "#help;;" :with-arg "#show %s;;")
+  :cd-cmd "#cd \"%s\";;"
+  :pwd-cmd "#pwd;;")
+
 ;;; Syntax
 ;; default syntax (fundamental) breaks motions
 ;; . needs to be "." (punctuation) since utop's company-prefix is
 ;; found with company-grab-symbol-cons "\\.", which creates a
 ;; a cons of (<module> . prefix), where "." can't have symbol syntax
 ;; otherwise, when candidate is inserted, the module is erased...
-(setq utop-mode-syntax-table (copy-syntax-table tuareg-mode-syntax-table))
+(with-eval-after-load 'tuareg
+  (setq utop-mode-syntax-table (copy-syntax-table tuareg-mode-syntax-table)))
 
 (defvar nvp-utop-prompt-regexp "utop[\\[0-9\\]+]> ")
 
@@ -58,31 +101,7 @@
   (insert ";;")
   (call-interactively 'utop-eval-input-or-newline))
 
-(defun nvp-utop-change-directory ()
-  (interactive)
-  (let ((dir (if (eq major-mode 'utop-mode)
-                 (read-directory-name "Change directory to: ")
-               default-directory)))
-    (utop-eval-string (format "#cd \"%s\";;" dir))))
 
-;;; Eval commands
-
-(defun nvp-utop-eval-phrase (&optional arg step)
-  (interactive "P")
-  (if arg (tuareg-eval-phrase)
-    (utop-prepare-for-eval)
-    (-let (((beg end _end-with-cmts) (funcall utop-discover-phrase)))
-      (nvp-indicate-pulse-region-or-line beg end)
-      (utop-eval beg end)
-      (when step
-        (goto-char end)
-        (forward-line 1)))))
-
-(defun nvp-utop-eval-phrase-and-step (&optional arg)
-  (interactive "P")
-  (funcall-interactively 'nvp-utop-eval-phrase arg 'step))
-
-
 ;;; Utop Process
 
 ;; store unfinished output

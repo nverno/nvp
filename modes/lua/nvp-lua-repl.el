@@ -9,6 +9,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
 (require 'lua-ts-mode nil t)
+(require 'inf-lua nil t)
 (require 'comint)
 (nvp:decls :p (lua) :f (inf-lua-run))
 
@@ -27,16 +28,17 @@ With two \\[universal-argument] prompt for lua command."
                   (or (null prefix) (>= (prefix-numeric-value prefix) 16))
                   lua-ts-inferior-startfile))))
 
-(nvp-repl-add '(lua-mode lua-ts-mode)
-  :name 'lua
-  :modes '(inf-lua-mode)
-  :bufname (regexp-quote lua-ts-inferior-buffer)
-  :history-file ".lua_history"
-  :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
-  :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
-  :help-cmd "_G"
-  :eval-filter (lambda (s) (replace-regexp-in-string lua-ts-inferior-prompt-continue "" s))
-  :init #'nvp-lua-repl-init)
+(with-eval-after-load 'inf-lua
+  (nvp-repl-add '(lua-mode lua-ts-mode)
+    :name 'lua
+    :modes '(inf-lua-mode)
+    :bufname (regexp-quote "*Lua*")
+    :history-file ".lua_history"
+    :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
+    :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
+    :help-cmd "_G"
+    :eval-filter (lambda (s) (replace-regexp-in-string lua-ts-inferior-prompt-continue "" s))
+    :init #'nvp-lua-repl-init))
 
 (provide 'nvp-lua-repl)
 ;; Local Variables:

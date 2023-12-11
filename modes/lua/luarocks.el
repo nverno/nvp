@@ -100,6 +100,11 @@ Locations are homepage, docs, or modules."
             :action (lambda (_id entry) (luarocks-find-file entry)))))))))
 
 ;;;###autoload
+(defun luarocks-jump-to-module (rock)
+  (interactive (list (luarocks-read-rock "Rock: " current-prefix-arg)))
+  (luarocks-open rock '("--module")))
+
+;;;###autoload
 (defun luarocks-config (&optional rock args)
   "Call luarocks config."
   (interactive (luarocks:menu--read-rock "Open: " 'nil-ok-p))
@@ -148,7 +153,7 @@ Locations are homepage, docs, or modules."
 ;;;###autoload(autoload 'luarocks-menu "luarocks")
 (transient-define-prefix luarocks-menu ()
   "Luarocks menu."
-  :value '("--recache" "--json")
+  :value '("--recache" "--json" "--module")
   :incompatible '(("--home" "--docs" "--module"))
   ["Arguments"
    ("-r" "Recache" ("-r" "--recache"))]
@@ -171,6 +176,7 @@ Locations are homepage, docs, or modules."
      ("-U" "Unset" ("-u" "--unset"))]]
   ["Actions"
    ("o" "Open" luarocks-open)
+   ("j" "Open" luarocks-open)
    ("p" "Path" luarocks-path)
    ("c" "Config" luarocks-config)
    ;; ("s" "Search" luarocks-search)

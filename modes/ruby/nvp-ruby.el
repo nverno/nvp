@@ -37,8 +37,16 @@
      (list (point-min) (point-max))))
   (save-mark-and-excursion
     (goto-char start)
-    (while (re-search-forward "{\\([^[\n}]+\\)\\(\\[\\]\\)\?}" end t)
-      (replace-match (if (match-string 2) "[Array<\\1>]" "[\\1]") t nil nil 0))))
+    (while (re-search-forward "{\\([^[\n}]+\\)\\(\\(?:\\[\\]\\)*\\)\?}" end t)
+      (let* ((cnt (when (match-string 2)
+                    (goto-char (match-beginning 2))
+                    (save-match-data
+                      (count-matches "\\(\\[\\]\\)" (point) (line-end-position)))))
+             (rep-str
+              (if cnt
+                  (concat "[" (s-repeat cnt "Array<") "\\1" (s-repeat cnt ">") "]")
+                "[\\1]")))
+        (replace-match rep-str t nil nil 0)))))
 
 ;; -------------------------------------------------------------------
 ;;; Fold / Align

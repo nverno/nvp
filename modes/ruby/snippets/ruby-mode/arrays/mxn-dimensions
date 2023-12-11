@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mXn dimensions
+# key: mxn
+# --
+m, n = ${1:mat}.length, $1[0].length

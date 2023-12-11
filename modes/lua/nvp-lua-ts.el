@@ -62,7 +62,12 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
               field: (identifier) @font-lock-property-name-face)))
            (parameters
             name: (identifier) @font-lock-variable-name-face)
-           (for_numeric_clause name: (identifier) @font-lock-variable-name-face))))
+           (for_numeric_clause name: (identifier) @font-lock-variable-name-face))
+         :language 'lua
+         :feature 'builtin
+         `(((identifier) @font-lock-builtin-face
+            (:match ,(regexp-opt lua-ts--builtins 'symbols)
+                    @font-lock-builtin-face)))))
 
   (setq nvp-lua-ts-font-lock-after
         (treesit-font-lock-rules

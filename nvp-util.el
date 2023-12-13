@@ -8,7 +8,6 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 
 ;; -------------------------------------------------------------------
 ;;; Strings 
@@ -68,6 +67,7 @@ Like `s-word-wrap' but allow for PREFIX."
                (setq ,beg (1+ (match-beginning ,subexp)))
                ,@body)))))))
 
+;;;###autoload
 (defun nvp-regex-map-across-matches (fun regex bnds subexp)
   "Apply FUN to all REGEX matches in BNDS.
 If non-nil use SUBEXP regexp group."

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: exchange
+# key: exchange
+# --
+${1:b} = std::mem::replace(&mut ${2:a}, ${3:x});

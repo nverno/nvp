@@ -6,7 +6,6 @@
 (require 'transient)
 (nvp:decls)
 (nvp:auto "hexl" hexl-hex-string-to-integer hexl-octal-string-to-integer)
-(nvp:auto "nvp-util" 'nvp-regex-map-across-matches)
 
 ;;;###autoload(autoload 'nvp-number-menu "nvp-number")
 (transient-define-prefix nvp-number-menu ()

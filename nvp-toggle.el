@@ -6,7 +6,6 @@
 (require 'nvp)
 (require 'files-x)
 (nvp:decls :p (time-stamp) :v (time-stamp-count time-stamp-active time-stamp-pattern))
-(nvp:auto "nvp-util" 'nvp-regex-map-across-matches)
 
 ;;;###autoload
 (defun nvp-toggle-timestamp (arg)
@@ -209,7 +208,7 @@ the current paragraph."
         (?\{ (aset tbl ?\{ ?\()
              (aset tbl ?\} ?\))))
       (translate-region beg end tbl)))
-  (nvp:repeat-this-command beg end))
+  (nvp:repeat-this-command))
 
 ;; toggle between quotes
 (nvp:define-cache-runonce nvp-toggle-strings-table ()

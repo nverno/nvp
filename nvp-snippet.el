@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'yasnippet)
-(nvp:decl "nvp-read" nvp-read-mode nvp-read-mode-var)
+(nvp:decls)
 (nvp:auto "f" f-parent)
 
 (defvar nvp-snippet-default-conditions
@@ -127,16 +127,29 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
            #'indent-to-left-margin)))
     (funcall-interactively #'indent-for-tab-command)))
 
-;; de/in-crement snippet expansion numbers in selected region
-(defun nvp-snippet-increment-count (bounds)
-  (interactive (list (nvp:tap 'bdwim)))
-  (cl-destructuring-bind (beg . end) bounds
-    (goto-char beg)
-    (while (re-search-forward "\$\{?\\([[:digit:]]\\)" end 'move)
-      (replace-match (number-to-string
-                      (+ (if current-prefix-arg -1 1)
-                         (string-to-number (match-string 1))))
-                     nil nil nil 1))))
+(defvar-keymap nvp-repeat-snippet-inc-map
+  :repeat t
+  "=" #'nvp-snippet-increment-count
+  "+" #'nvp-snippet-increment-count
+  "-" #'nvp-snippet-decrement-count)
+(put 'nvp-snippet-increment-count 'repeat-check-key 'no)
+
+(defun nvp-snippet-increment-count (beg end &optional inc)
+  "De/increment snippet expansion numbers in region BEG to END."
+  (interactive (nvp:repeat-args (beg end inc)
+                 (append (nvp:tap-or-region 'bdwim 'sexp :pulse t)
+                         (list (if current-prefix-arg -1 1)))))
+  (or inc (setq inc 1))
+  (nvp-regex-map-across-matches
+   (lambda (ms) (replace-match (number-to-string (+ inc (string-to-number ms)))
+                          nil nil nil 1))
+   "\$\{?\\([[:digit:]]\\)" (cons beg end) 1))
+
+(defun nvp-snippet-decrement-count (beg end)
+  (interactive (nvp:repeat-args (beg end)
+                 (nvp:tap-or-region 'bdwim 'sexp :pulse t)))
+  (setq this-command 'nvp-snippet-increment-count)
+  (nvp-snippet-increment-count beg end -1))
 
 ;;; FIXME:
 (defun nvp-snippet-help-at-point ()

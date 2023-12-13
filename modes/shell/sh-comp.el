@@ -29,7 +29,7 @@
                bash-completion--completion-table-with-cache bash-completion-comm
                bash-completion-reset bash-completion--stub-start))
 
-(defvar sh-comp-use-bash-completion t
+(defvar sh-comp-use-bash-completion nil
   "Non-nil to use `bash-completion' during completion at point.")
 
 ;; This is useful for including local sources that are included via non-constant

@@ -1,5 +1,10 @@
 # -*- mode: snippet -*-
 # name: new array
 # key: a
+# type: command
 # --
-let ${1:arr} = Array(${2:n})${3:.fill($4)}
+(if (looking-back "=\\s-*" (line-beginning-position))
+    (yas-expand-snippet "Array(${1:n})${2:.fill(${3:0})}")
+  (when (looking-back "^\\s-*")
+    (insert "let "))
+  (yas-expand-snippet "${1:arr} = Array(${2:n})${3:.fill(${4:0})}"))

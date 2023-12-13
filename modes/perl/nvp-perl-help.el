@@ -118,7 +118,7 @@
                     (nvp-perl-read-module nil nil local))))
      (list thing (not local))))
   (if online
-      (browse-url (format "http://search.cpan.org/perldoc?%s" thing))
+      (browse-url (format "https://search.cpan.org/perldoc?%s" thing))
     (cperl-perldoc thing)))
 
 ;;; Cpan / Cpanm
@@ -127,7 +127,7 @@
 ;;;###autoload
 (defun nvp-perl-help-cpan-online (query)
   (interactive "sQuery: ")
-  (browse-url (format "http://search.cpan.org/search?query=%s&mode=all" query)))
+  (browse-url (format "https://search.cpan.org/search?query=%s&mode=all" query)))
 
 ;; -------------------------------------------------------------------
 ;;; TODO: help-at-point

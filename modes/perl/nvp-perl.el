@@ -18,15 +18,15 @@
 (require 'cperl-mode)
 (nvp:req 'nvp-perl 'subrs)
 (nvp:auto "find-lisp" 'find-lisp-find-files)
-(nvp:decls)
+(nvp:decls :p (perl-reply))
 
-(nvp:with-w32
-  ;; load windows environment helpers
-  (add-to-list
-   'load-path
-   (expand-file-name "w32" (file-name-directory
-                            (or load-file-name (buffer-file-name)))))
-  (require 'perl-w32tools))
+(with-eval-after-load 'nvp-repl
+  (require 'perl-reply)
+  (nvp-repl-add '(cperl-mode perl-mode)
+    :name 'perl
+    :modes '(perl-reply-mode)
+    :find-fn (lambda () (get-buffer perl-reply-buffer))
+    :init (lambda (&optional _prefix) (funcall #'perl-reply-process))))
 
 ;;; Things at point
 
@@ -75,9 +75,8 @@
 (defun nvp-perl-eldoc-function ()
   (ignore-errors
     (nvp:unless-ppss 'soc
-      (car
-       (let ((cperl-message-electric-keyword nil))
-         (cperl-get-help))))))
+      (car (let ((cperl-message-electric-keyword nil))
+             (cperl-get-help))))))
 
 ;; ------------------------------------------------------------
 ;;; Insert / Toggle

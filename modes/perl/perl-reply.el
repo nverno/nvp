@@ -2,17 +2,13 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'comint)
-(require 'perl-mode)
 (require 'cperl-mode)
+(require 'comint)
 
 (defvar perl-reply-font-lock-keywords (cperl-load-font-lock-keywords-2))
 (defvar perl-reply-program "reply")
 (defvar perl-reply-filter-regexp "\\`\\s-+")
 (defvar perl-reply-buffer "*reply*")
-
-;; -------------------------------------------------------------------
-;;; Process
 
 ;; return repl process / start one if needed
 (defun perl-reply-process (&optional prompt)
@@ -41,39 +37,6 @@
    (replace-regexp-in-string "[\r\n]*$" " " str))
   (comint-send-string (perl-reply-process) "\n"))
 
-;; -------------------------------------------------------------------
-;;; Commands
-
-(defun perl-reply-eval-region (start end)
-  (interactive "r")
-  (perl-reply-send-string (buffer-substring-no-properties start end)))
-
-(defun perl-reply-eval-line ()
-  (interactive)
-  (perl-reply-eval-region (line-beginning-position) (line-end-position)))
-
-(defun perl-reply-eval-buffer ()
-  (interactive)
-  (perl-reply-eval-region (point-min) (point-max)))
-
-(defun perl-reply-eval-last-sexp ()
-  (interactive))
-
-(defun perl-reply-eval-defun ()
-  (interactive))
-
-;;;###autoload
-(define-minor-mode perl-reply-minor-mode
-  "Minor mode for perl reply REPL."
-  :lighter " Reply"
-  :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "C-c C-r") #'perl-reply-eval-region)
-            (define-key map (kbd "C-x C-e") #'perl-reply-eval-last-sexp)
-            (define-key map (kbd "C-c C-b") #'perl-reply-eval-buffer)
-            (define-key map (kbd "M-C-x")   #'perl-reply-eval-defun)
-            map))
-
-;;;###autoload(defalias 'run-perl 'perl-reply-run)
 ;;;###autoload
 (defun perl-reply-run (&optional prompt)
   (interactive "P")

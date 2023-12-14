@@ -8,7 +8,6 @@
 ;; 
 ;; TODO:
 ;; - redirect output
-;; - command to interrupt / kill repl process
 ;;
 ;; Shortcuts: `defslime-repl-shortcut'
 ;;

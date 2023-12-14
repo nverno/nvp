@@ -152,9 +152,11 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 
 (defun nvp-hap-doc-buffer (&optional string)
   (with-current-buffer (get-buffer-create "*hap-documentation*")
-    (erase-buffer)
-    (and string (save-excursion (insert string)))
-    (current-buffer)))
+    (kill-all-local-variables)
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (and string (save-excursion (insert string)))
+      (current-buffer))))
 
 (defun nvp-hap-get-doc-buffer (&optional prefix)
   (or (and nvp-hap--doc-buffer (buffer-live-p (car nvp-hap--doc-buffer))

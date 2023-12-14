@@ -2,6 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(nvp:decls :p (yari nvp-hap))
 
 ;;; REPL
 (with-eval-after-load 'nvp-repl
@@ -38,15 +39,16 @@
   (save-mark-and-excursion
     (goto-char start)
     (while (re-search-forward "{\\([^[\n}]+\\)\\(\\(?:\\[\\]\\)*\\)\?}" end t)
-      (let* ((cnt (when (match-string 2)
-                    (goto-char (match-beginning 2))
-                    (save-match-data
-                      (count-matches "\\(\\[\\]\\)" (point) (line-end-position)))))
-             (rep-str
-              (if cnt
-                  (concat "[" (s-repeat cnt "Array<") "\\1" (s-repeat cnt ">") "]")
-                "[\\1]")))
-        (replace-match rep-str t nil nil 0)))))
+      (when (nvp:ppss 'cmt)
+        (let* ((cnt (when (match-string 2)
+                      (goto-char (match-beginning 2))
+                      (save-match-data
+                        (count-matches "\\(\\[\\]\\)" (point) (line-end-position)))))
+               (rep-str
+                (if cnt
+                    (concat "[" (s-repeat cnt "Array<") "\\1" (s-repeat cnt ">") "]")
+                  "[\\1]")))
+          (replace-match rep-str t nil nil 0))))))
 
 ;; -------------------------------------------------------------------
 ;;; Fold / Align

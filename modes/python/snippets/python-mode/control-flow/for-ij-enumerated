@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for (i, r) ... for (j, c)
+# key: forij
+# --
+for i, ${1:r} in enumerate(${2:mat}):
+    for j, ${3:c} in enumerate(${4:$1}):
+        $0

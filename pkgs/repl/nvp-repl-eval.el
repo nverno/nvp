@@ -5,6 +5,7 @@
 ;; References:
 ;; - racket-show :: #<marker at 4057 in racket-show.el>
 ;; - inf-ruby :: #<marker at 19542 in inf-ruby.el>
+;; - shell :: `shell-eval-command' #<marker at 64025 in shell.el.gz>
 ;;
 ;;; Code:
 (eval-when-compile

@@ -32,12 +32,12 @@ With two \\[universal-argument] prompt for lua command."
   (nvp-repl-add '(lua-mode lua-ts-mode)
     :name 'lua
     :modes '(inf-lua-mode)
-    :bufname (regexp-quote "*Lua*")
+    :find-fn (lambda () (inf-lua-process))
     :history-file ".lua_history"
     :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
     :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
     :help-cmd "_G"
-    :eval-filter (lambda (s) (replace-regexp-in-string lua-ts-inferior-prompt-continue "" s))
+    :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))
     :init #'nvp-lua-repl-init))
 
 (provide 'nvp-lua-repl)

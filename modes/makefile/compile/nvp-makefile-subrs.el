@@ -23,8 +23,9 @@
 ;; preceded by '[^$]$[{(]'
 (defsubst nvp:makefile-variable-or-function-p (pos)
   (and (memq (char-before pos) '(?{ ?\())
-       (eq (char-before (1- pos)) ?$)
-       (not (eq (char-before (- pos 2)) ?$))))
+       (cl-decf pos))
+  (and (eq (char-before pos) ?$)
+       (not (eq (char-before (1- pos )) ?$))))
 
 (defsubst nvp:makefile-rule-line-p (&optional pos)
   (save-excursion

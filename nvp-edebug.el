@@ -232,6 +232,7 @@
     ("V" "Cancel var." cancel-debug-on-variable-change)
     ("D" "Debugger" debug)]
    ["Edebug"
+    ("m" "Active menu" nvp-edebug-active-menu :transient transient--do-replace)
     ("d" "Defun" edebug-defun)
     ("l" "Local defs" nvp-edebug-toggle-all-local)
     ("a" "All defs" edebug-all-defs)

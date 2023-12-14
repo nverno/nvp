@@ -110,9 +110,17 @@
     (unless (looking-at-p nvp-leet--line-skip-re)
       (insert (concat preamble "\n")))))
 
+(defun nvp-leet--setup-buffer ()
+  (indent-region (point-min) (point-max))
+  (goto-char (point-max))
+  (forward-line -1)
+  (while (not (or (bobp) (looking-at-p "^\\s-*$")))
+    (forward-line -1))
+  (indent-according-to-mode))
+
 (declare-function nvp-ruby-yardocify-types "nvp-ruby")
 
-(defun nvp@leet-maybe-setup (orig-fn problem problem-info)
+(defun nvp@leet-setup (orig-fn problem problem-info)
   (let ((title (leetcode-problem-title problem-info)))
     (funcall orig-fn problem problem-info)
     (let* ((buf-name (leetcode--get-code-buffer-name title))
@@ -121,8 +129,8 @@
         (with-current-buffer buf
           (save-restriction
             (widen)
-            (nvp-leet--setup-buffer problem-info)
             (nvp-leet-minor-mode 1)
+            (setq nvp-leet-problem-id (leetcode-problem-id problem-info))
             (pcase leetcode-prefer-language
               ("rust" (let ((buffer buf))
                         (run-with-timer
@@ -134,9 +142,10 @@
               ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max)))
               ("python3" (nvp-leet--insert-preamble
                           "from typing import List, Optional"))
-              (_ nil))))))))
+              (_ nil)))
+          (nvp-leet--setup-buffer))))))
 
-(advice-add #'leetcode--start-coding :around #'nvp@leet-maybe-setup)
+(advice-add #'leetcode--start-coding :around #'nvp@leet-setup)
 
 ;;; Sql
 (defun nvp-leet-start-coding-database ()
@@ -175,15 +184,13 @@
          (problem-id nvp-leet-problem-id))
     (nvp-leet--rust-add-mod modname modfile)
     (with-current-buffer (find-file fname)
-      (setq nvp-leet--indirect-buffer buffer
-            nvp-leet--line-skip-re "use crate::Solution"
-            nvp-leet-problem-id problem-id)
-      (when (eq (point-min) (point-max))
-        (insert contents)
-        (save-excursion
-          (goto-char (point-min))
-          (insert "use crate::Solution;\n")))
       (nvp-leet-indirect-minor-mode 1)
+      (setq nvp-leet--indirect-buffer buffer
+            nvp-leet-problem-id problem-id)
+      (and (eq (point-min) (point-max))
+           (insert contents))
+      (nvp-leet--insert-preamble "use crate::Solution;")
+      (nvp-leet--setup-buffer)
       (if and-go (pop-to-buffer (current-buffer))
         (current-buffer)))))
 

@@ -156,18 +156,65 @@ TYPE is one of \\='all, \\='variables or \\='rules."
 
 ;;; Eldoc
 
-(defun nvp-makecomp-var-or-func-botap ()
+(defun nvp-makecomp-current-thing ()
   (let ((bnds (bounds-of-thing-at-point 'symbol)))
-    (when (and bnds (nvp:makefile-variable-or-function-p (car bnds)))
-      bnds)))
-(put 'makesym 'bounds-of-thing-at-point 'nvp-makecomp-var-or-func-botap)
+    (if (and bnds (eq ?$ (char-before (car bnds))))
+        (list 'autovar (1- (car bnds)) (cdr bnds))
+      (let ((lim (nvp:point 'boll)))
+        (save-excursion
+          (or (progn
+                (ignore-errors (up-list -1 t t))
+                (when (>= (point) lim)
+                  (forward-char 1)
+                  (and (setq bnds (bounds-of-thing-at-point 'symbol))
+                       (nvp:makefile-variable-or-function-p (car bnds))
+                       (list 'fun-or-var (car bnds) (cdr bnds)))))
+              (progn
+                (goto-char lim)
+                (and (looking-at "^[ ]*\\([^#:\n\t ]+\\):")
+                     (list 'target (match-beginning 1) (match-end 1))))))))))
+
+(defvar nvp-makecomp--eldoc-cache (make-hash-table :test #'equal))
+
+(defun nvp-makecomp-info-sig (thing &optional type)
+  (or (gethash thing nvp-makecomp--eldoc-cache)
+      (save-window-excursion
+        (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t))))
+              (info-lookup-other-window-flag nil))
+          (ignore-errors (info-lookup-symbol thing))
+          (--> (pcase type
+                 ('autovar
+                  (forward-line 1)
+                  (skip-syntax-forward " ")
+                  (buffer-substring-no-properties
+                   (point) (cdr (bounds-of-thing-at-point 'sentence))))
+                 ('target
+                  (replace-regexp-in-string
+                   "[\n\r\t ]+" " " (thing-at-point 'sentence)))
+                 (_
+                  (goto-char (point-min))
+                  (when (re-search-forward (concat "\\([$](" thing ".*)\\)") nil t)
+                    (match-string 1))))
+               (puthash thing it nvp-makecomp--eldoc-cache))))))
 
 ;;;###autoload
-(defun nvp-makecomp-eldoc-function ()
-  (-when-let* ((sym (thing-at-point 'makesym))
-               (val (assoc sym (nvp-makecomp-candidates 'variables))))
-    (concat (propertize sym 'face 'font-lock-variable-name-face)
-            ": " (nth 1 val))))
+(defun nvp-makecomp-eldoc-function (callback &rest _ignored)
+  (when-let* ((thing (nvp-makecomp-current-thing))
+              (type (car thing))
+              (face (if (eq 'autovar type) 'font-lock-variable-name-face
+                      'font-lock-function-name-face))
+              (sym (buffer-substring-no-properties (cadr thing) (caddr thing)))
+              (sig (or (and (eq 'fun-or-var type)
+                            (-some--> (assoc sym (nvp-makecomp-candidates 'variables))
+                              (prog1 (nth 1 it)
+                                (setq face 'font-lock-variable-name-face
+                                      type 'variable))))
+                       (nvp-makecomp-info-sig sym type))))
+    (when (length> sig 80)
+      (setq sig (concat (substring sig nil 75) "..."))
+      (and (not (eq 'variable type))
+           (puthash sym sig nvp-makecomp--eldoc-cache)))
+    (funcall callback sig :thing sym :face face)))
 
 
 ;; -------------------------------------------------------------------

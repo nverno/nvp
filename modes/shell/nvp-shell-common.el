@@ -32,6 +32,8 @@
               ;; command
               (up-list -1 t t))))
         (skip-syntax-forward " " start)
+        (when (derived-mode-p '(makefile-mode makefile-ts-mode))
+          (skip-chars-forward "@-"))
         (cond
          ;; '[[' or '['
          ((looking-back "\\(?:^\\|[^[]\\)\\(\\[+\\)[ \t]*" (line-beginning-position))

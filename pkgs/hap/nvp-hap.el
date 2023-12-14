@@ -405,7 +405,10 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
 (defun nvp-hap-info (command &optional arg &rest _args)
   (cl-case command
     (thingatpt (-when-let (mode (info-lookup-select-mode))
-                 (ignore-errors (info-lookup-guess-default 'symbol mode))))
+                 (ignore-errors
+                   (save-excursion
+                     (skip-syntax-forward "w_")
+                     (info-lookup-guess-default 'symbol mode)))))
     (doc-buffer
      (save-window-excursion
        (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t))))

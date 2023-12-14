@@ -38,10 +38,13 @@
                      (string-match-p (concat sym "\\(?:(\\d*)?\\)?") sym)))
         sym))))
 
+(define-advice Man-getpage-in-background (:around (orig topic) "shutup")
+  (nvp:with-letf #'message #'ignore
+    (funcall orig topic)))
+
 ;;;###autoload
 (defun nvp-hap-man-buffer (topic)
   (let* ((Man-notify-method 'quiet)
-         ;; added in emacs v30!
          (Man-prefer-synchronous-call t)
          (buf (man topic)))
     (and (buffer-live-p buf)

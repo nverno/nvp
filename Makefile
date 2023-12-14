@@ -19,10 +19,10 @@ TESTS       := $(wildcard test/*-tests.el)
 
 .PHONY: test rebuild all
 all: pre-commit
-	${COMPILE} ${EL} ${PKG_EL}
+	$(COMPILE) $(EL) $(PKG_EL)
 
 %.elc: %.el
-	${COMPILE} $^
+	$(COMPILE) $^
 
 pre-commit: $(TOP)/.git/hooks/pre-commit
 $(TOP)/.git/hooks/pre-commit: $(BINDIR)/pre-commit

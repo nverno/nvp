@@ -21,7 +21,7 @@
 (defun nvp-ruby--repl-input-filter (str)
   (-if-let (help-str (and (string-match "^ *\\? *\\(.+\\)" str)
                           (match-string 1 str)))
-      (format (cdr (assoc inf-ruby-default-implementation nvp-ruby-inf-help))
+      (format (assoc-default inf-ruby-default-implementation nvp-ruby-inf-help)
               help-str)
     str))
 
@@ -38,6 +38,15 @@
   (and (fboundp 'robe-start) (robe-start))
   (get-buffer-process inf-ruby-buffer))
 
+(defun nvp-ruby-repl-help-cmd (&optional thing)
+  (with-current-buffer (nvp-repl-buffer)
+    (--when-let (get-buffer-process (current-buffer))
+      (comint-send-string
+       it (nvp-ruby--repl-input-filter
+           (if thing (format "? %s" thing) "help")))
+      ;; Fix prompt after 'help', and dont leave as last command to repeat
+      (comint-send-string it "\nnil\n"))))
+
 (when (fboundp 'inf-ruby-mode)
   (nvp-repl-add '(ruby-mode ruby-ts-mode rspec-mode)
     :name 'ruby
@@ -53,7 +62,7 @@
     :send-line #'ruby-send-line
     :eval-sexp #'ruby-send-last-sexp
     :history-file ".irb_history"
-    :help-cmd '(:no-arg "help" :with-arg "? %s")
+    :help-cmd #'nvp-ruby-repl-help-cmd
     :cd-cmd ".cd %s"
     :pwd-cmd ".pwd"))
 

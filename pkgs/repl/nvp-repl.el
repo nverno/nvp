@@ -254,6 +254,18 @@ well."
   :type '(repeat symbol)
   :group 'nvp-repl)
 
+(defvar-keymap nvp-repl-keymap
+  :prefix 'nvp-repl-keymap
+  "h" #'nvp-repl-help
+  "d" #'nvp-repl-cd
+  "p" #'nvp-repl-pwd
+  "s" #'nvp-repl-set-source)
+;; "l" #'nvp-repl-load-file
+  
+(defvar-keymap nvp-repl-minor-mode-map
+  "C-c C-k" #'nvp-repl-clear
+  "C-c C-h" #'nvp-repl-keymap)
+
 (defvar-keymap nvp-repl-source-minor-mode-map
   "C-c C-c"   #'nvp-repl-send-dwim
   "C-c C-e"   #'nvp-repl-send-sexp
@@ -662,6 +674,11 @@ Prompt with \\[universal-argument]."
   (nvp:call-repl-cmd help-cmd (thing)
     (and and-go (pop-to-buffer (nvp-repl-buffer)))))
 
+(defun nvp-repl-set-source ()
+  "Set source buffer for repl."
+  (interactive)
+  (nvp-repl--check-source-buffer nil))
+
 ;; -------------------------------------------------------------------
 ;;; Transient 
 
@@ -692,7 +709,7 @@ Prompt with \\[universal-argument]."
    [ :if nvp-repl-current
      "Commands"
      ("k" "Clear" nvp-repl-clear :transient t)
-     ("h" "Help" nvp-repl-help :transient t)
+     ("h" "Help" nvp-repl-help)
      ("w" "Show working directory/buffer" nvp-repl-pwd :transient t)
      ("W" "Change Working directory/buffer" nvp-repl-cd)]]
   [["Repl"

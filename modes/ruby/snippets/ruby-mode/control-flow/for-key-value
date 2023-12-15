@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for key-val in hash
+# key: forkv
+# --
+${1:h}.each_pair do |${2:k}, ${3:v}|
+  $0
+end

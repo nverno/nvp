@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: map increment
+# key: hinc
+# --
+if x, ok := ${1:map}[${2:k}]; ok {
+	$1[$2] = ${3:x + 1}
+} else {
+	$1[$2] = ${4:1}
+}

@@ -123,8 +123,9 @@ With prefix, prompts for DATE."
 ;;;###autoload
 (defun nvp-comment-timestamped (date)
   "Insert comment with date. Prompt for date with prefix."
-  (interactive
-   (list (nvp:prefix '>1 (calendar-read-date) (calendar-current-date))))
+  (interactive (if current-prefix-arg
+                   (calendar-read-date)
+                 (calendar-current-date)))
   (call-interactively (pcase major-mode
                         (`org-mode #'org-comment-dwim)
                         (_ (if (bound-and-true-p paredit-mode)

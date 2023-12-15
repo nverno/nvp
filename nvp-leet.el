@@ -99,10 +99,6 @@
     (setq leetcode-directory dir)))
 (advice-add 'leetcode-set-prefer-language :after #'nvp@leet-set-language)
 
-(defun nvp-leet--setup-buffer (problem-info)
-  "Set variables in problem's source code buffer."
-  (setq-local nvp-leet-problem-id (leetcode-problem-id problem-info)))
-
 (defun nvp-leet--insert-preamble (preamble)
   (setq-local nvp-leet--line-skip-re (regexp-quote preamble))
   (save-excursion

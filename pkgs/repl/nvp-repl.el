@@ -86,6 +86,7 @@ Each function takes a process as an argument to test against.")
 
 ;; Cache defined repls
 (defvar nvp-repl--repl-cache (make-hash-table))
+(defvar nvp-repl-modes '())
 ;; `major-mode' -> repl mapping
 (defvar nvp-repl-cache (make-hash-table))
 ;; Note: repl buffers may not be processes, eg. slime repls
@@ -124,6 +125,8 @@ Each function takes a process as an argument to test against.")
     (unless name
       (user-error "repl name is nil"))
     (puthash name repl nvp-repl--repl-cache)
+    (--when-let (nvp--repl-modes repl)
+      (setq nvp-repl-modes (cl-remove-duplicates (append it nvp-repl-modes))))
     (dolist (mode mmodes)
       (cl-pushnew name (gethash mode nvp-repl-cache)))))
 (put 'nvp-repl-add 'lisp-indent-function 'defun)
@@ -139,8 +142,9 @@ Each function takes a process as an argument to test against.")
                :bufname "*shell"
                :pwd-cmd "pwd"
                :help-cmd '(:no-arg "help" :with-arg "help %s")
-               :cd-cmd (lambda (dir) (let ((default-directory dir))
-                                  (funcall-interactively #'sh-cd-here)))
+               :cd-cmd (lambda (dir)
+                         (let ((default-directory dir))
+                           (funcall-interactively #'sh-cd-here)))
                :history-file ".bash_history")))
 
 ;;; initialize some repls
@@ -276,7 +280,7 @@ well."
   :lighter " Ɍepl")
 
 (defun nvp-repl--source-minor-mode-on ()
-  (unless (or (memq major-mode nvp-repl-no-minor-modes)
+  (unless (or (memq major-mode (append nvp-repl-no-minor-modes nvp-repl-modes))
               nvp-repl-source-minor-mode)
     (nvp-repl-source-minor-mode 1)))
 
@@ -345,18 +349,17 @@ repl with source buffer."
 (defun nvp-repl-start (&optional prefix)
   "Return a REPL buffer associated with current buffer."
   (nvp-with-repl (init init-async init-use-hook wait process-p buff->proc)
-    (cond
-     (init-async
-      (prog1 'async (nvp-repl--make-async-callback (current-buffer) t)))
-     (init-use-hook
-      (prog1 'async (nvp-repl--init-with-repl-hooks t)))
-     (t (let ((repl-proc (funcall init prefix)) repl-buf)
-          (and wait (sit-for wait))
-          (unless (funcall process-p repl-proc)
-            (setq repl-buf repl-proc
-                  repl-proc (funcall buff->proc repl-buf)))
-          (cl-assert (funcall process-p repl-proc))
-          (nvp-repl--init-setup (current-buffer) repl-proc repl-buf))))))
+    (cond (init-async (prog1 'async
+                        (nvp-repl--make-async-callback (current-buffer) t)))
+          (init-use-hook (prog1 'async
+                           (nvp-repl--init-with-repl-hooks t)))
+          (t (let ((repl-proc (funcall init prefix)) repl-buf)
+               (and wait (sit-for wait))
+               (unless (funcall process-p repl-proc)
+                 (setq repl-buf repl-proc
+                       repl-proc (funcall buff->proc repl-buf)))
+               (cl-assert (funcall process-p repl-proc))
+               (nvp-repl--init-setup (current-buffer) repl-proc repl-buf))))))
 
 (defun nvp-repl-get-buffer (&optional prefix)
   "Return a REPL buffer if one exists, otherwise attempt to start one."
@@ -392,12 +395,13 @@ When called from a repl buffer with PREFIX:
  \\[universal-argument] Prompt for a buffer to set as source."
   (interactive "P")
   (when (equal '(16) prefix) (setq nvp-repl-current nil))
-  (when (and nvp-repl-current
-             (null nvp-repl-source-minor-mode))
-    (nvp-repl--source-minor-mode-on))
   (let ((repl-buff (--if-let (nvp-repl--get-source)
-                  (nvp-repl--check-source-buffer it prefix)
-                (nvp-repl-get-buffer prefix))))
+                       (nvp-repl--check-source-buffer it prefix)
+                     (if (memq major-mode nvp-repl-modes)
+                         (prog1 (nvp-repl--check-source-buffer nil prefix)
+                           (nvp-repl-minor-mode 1))
+                       (--when-let (nvp-repl-get-buffer prefix)
+                         (prog1 it (nvp-repl--source-minor-mode-on)))))))
     (unless (eq 'async repl-buff)
       (pop-to-buffer repl-buff nvp-repl--display-action))))
 
@@ -489,14 +493,13 @@ If INSERT, STR is inserted into REPL."
 (defun nvp-repl-send-dwim (&optional and-go)
   "Send region, statement, sexp, or line."
   (interactive "P")
-  (cond
-   ((region-active-p)
-    (nvp-repl-send-region (region-beginning) (region-end) and-go))
-   ((repl:val "send-statement")
-    (nvp-repl-send-stmt-or-sentence and-go))
-   ((repl:val "send-sexp")
-    (nvp-repl-send-sexp and-go))
-   (t (nvp-repl-send-line and-go))))
+  (cond ((region-active-p)
+         (nvp-repl-send-region (region-beginning) (region-end) and-go))
+        ((repl:val "send-statement")
+         (nvp-repl-send-stmt-or-sentence and-go))
+        ((repl:val "send-sexp")
+         (nvp-repl-send-sexp and-go))
+        (t (nvp-repl-send-line and-go))))
 
 (defun nvp-repl--skip-shebang (start)
   (save-restriction
@@ -504,7 +507,7 @@ If INSERT, STR is inserted into REPL."
     (save-excursion
       (goto-char start)
       (if (and (eq start (point-min))
-               (looking-at-p "#!/"))
+               (looking-at-p "#!\\s*/"))
           (line-beginning-position 2)
         start))))
 
@@ -519,10 +522,9 @@ If INSERT, STR is inserted into REPL."
 
 (defun nvp-repl-send-defun-or-region (&optional and-go)
   (interactive "P")
-  (cond
-   ((region-active-p)
-    (nvp-repl-send-region (region-beginning) (region-end) and-go))
-   (t (nvp-repl-send-defun and-go))))
+  (cond ((region-active-p)
+         (nvp-repl-send-region (region-beginning) (region-end) and-go))
+        (t (nvp-repl-send-defun and-go))))
 
 (defun nvp-repl-send-stmt-or-sentence (&optional and-go)
   (interactive "P")

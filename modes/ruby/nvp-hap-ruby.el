@@ -10,21 +10,23 @@
 (defun nvp-hap--yari-thingatpt (arg)
   (let ((sym (thing-at-point 'symbol t)))
     (pcase (nvp-hap-prefix-action arg)
-      ('prompt (completing-read "Yari: " (yari-ruby-obarray) nil t sym))
+      (`(prompt . ,_)
+       (completing-read "Yari: " (yari-ruby-obarray) nil t sym))
       (_ (when sym
-           (if (null (string-search "." sym))
-               (try-completion sym (yari-ruby-obarray))
-             (or (try-completion
-                  (if (let ((case-fold-search nil))
-                        (string-match-p "\\`[A-Z]" sym))
-                      (replace-regexp-in-string "[.]" "#" sym)
-                    sym)
-                  (yari-ruby-obarray))
-                 (completing-read
-                  "Yari: "
-                  (completion-pcm--all-completions
-                   "" `(any ,(concat "#" (car (last (split-string sym "[.]" t)))))
-                   (yari-ruby-obarray) nil)))))))))
+           (or (and (null (string-search "." sym))
+                    (try-completion sym (yari-ruby-obarray)))
+               (try-completion
+                (if (let ((case-fold-search nil))
+                      (string-match-p "\\`[A-Z]" sym))
+                    (replace-regexp-in-string "[.]" "#" sym)
+                  sym)
+                (yari-ruby-obarray))
+               (completing-read
+                "Yari: "
+                (completion-pcm--all-completions
+                 "" `(any ,(concat
+                            "#" (car (last (split-string sym "[.]" t)))))
+                 (yari-ruby-obarray) nil))))))))
 
 ;;;###autoload
 (defun nvp-hap-yari (command &optional arg &rest _args)

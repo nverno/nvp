@@ -27,8 +27,12 @@
 (declare-function ruby-compilation-this-buffer "ruby-compilation")
 (defun nvp-ruby-compile ()
   (interactive)
+  (add-hook 'compilation-filter-hook #'inf-ruby-auto-enter)
   (ruby-compilation-this-buffer)
-  (other-window 1))
+  (other-window 1)
+  (add-hook 'kill-buffer-hook
+            (lambda () (remove-hook 'compilation-filter-hook #'inf-ruby-auto-enter))
+            nil t))
 
 ;;; Types
 (defun nvp-ruby-yardocify-types (start end)

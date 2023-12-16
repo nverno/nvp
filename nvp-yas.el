@@ -36,6 +36,11 @@
 (defsubst nvp-yas-or-values (str &optional seps)
   (split-string str (or seps "[\]\[|]") 'omit " "))
 
+(defsubst nvp-line-empty-p ()
+  (save-excursion
+    (beginning-of-line)
+    (looking-at-p "[ \t]*$")))
+
 ;; -------------------------------------------------------------------
 ;;; Docstrings
 

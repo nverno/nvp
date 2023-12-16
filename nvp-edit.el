@@ -38,19 +38,19 @@ Defaults to `defun' at point."
     "Sort region between START and END by BODY, using defaults and indent
 region afterward."
     (declare (indent defun) (debug (sexp sexp &rest form)))
-    `(unwind-protect
-         (save-excursion
+    `(save-excursion
+       (unwind-protect
            (save-restriction
              (save-match-data
                (let ((sort-fold-case t))
-                 ,@body))))
-       (indent-region ,start ,end))))
+                 ,@body)))
+         (indent-region ,start ,end)))))
 
 ;;;###autoload
 (defun nvp-sort-lines-first-word (start end &optional reverse)
   "Sort lines b/w START and END by first alphanumeric characters.
 With prefix sort in REVERSE."
-  (interactive "r\nP")
+  (interactive `(,@(nvp:tap-or-region 'bdwim 'buffer :pulse t) ,current-prefix-arg))
   (nvp-sort:defaults start end
     (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
 
@@ -58,7 +58,7 @@ With prefix sort in REVERSE."
 (defun nvp-sort-lines-first-symbol (beg end &optional reverse no-fold)
   "Sort lines by first symbol.  Symbols are first compared by length and
 then using `compare-buffer-substrings'."
-  (interactive "r\nP")
+  (interactive `(,@(nvp:tap-or-region 'bdwim 'buffer :pulse t) ,current-prefix-arg))
   (save-excursion
     (save-restriction
       (narrow-to-region beg end)

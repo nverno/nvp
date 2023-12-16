@@ -150,8 +150,8 @@ called from minibuffer, or nil.")
 
 (defface nvp-block-face
   '((((class color) (background light))
-     (:background "#f2e5bc" "#ffffd7" :inherit highlight))
-    (t (:background "#32302f" "#303030" :inherit highlight)))
+     (:background "#f2e5bc" "#ffffd7" :inherit shadow :extend t))
+    (t (:background "#32302f" "#303030" :inherit shadow :extend t)))
   "Face for special blocks."
   :group 'nvp)
 
@@ -255,13 +255,12 @@ called from minibuffer, or nil.")
 (cl-defgeneric nvp-newline-dwim-default (&optional arg)
   "Generic function to handle newline dwim syntactically with prefix ARG."
   (let ((syntax (parse-partial-sexp (point-min) (point))))
-    (cond
-     ((nvp:ppss 'str syntax)
-      (nvp-newline-dwim-string syntax arg))
-     ((nvp:ppss 'cmt syntax)
-      (nvp-newline-dwim-comment syntax arg))
-     ;; default to adding newline between paren delimiters
-     (t (nvp-newline-dwim--parens arg)))))
+    (cond ((nvp:ppss 'str syntax)
+           (nvp-newline-dwim-string syntax arg))
+          ((nvp:ppss 'cmt syntax)
+           (nvp-newline-dwim-comment syntax arg))
+          ;; default to adding newline between paren delimiters
+          (t (nvp-newline-dwim--parens arg)))))
 
 (cl-defmethod nvp-newline-dwim-default
   (&context (major-mode emacs-lisp-mode) &optional arg _pairs)

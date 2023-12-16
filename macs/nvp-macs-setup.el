@@ -94,7 +94,12 @@
                 collect `(funcall (or (get ',var 'custom-set) 'set-default)
                                   ',var ,val))))
 
-
+;; -------------------------------------------------------------------
+;;; Lists 
+
+(cl-defmacro nvp:push-list (x place &rest args)
+  `(setq ,place (funcall #'cl-remove-duplicates (append ,x ,place) ,@args)))
+
 ;; -------------------------------------------------------------------
 ;;; Programs
 

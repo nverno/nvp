@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: for chars
+# key: forc
+# --
+${1:s}.each_char { |c| $0 }

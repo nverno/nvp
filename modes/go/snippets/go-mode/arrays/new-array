@@ -3,6 +3,6 @@
 # key: a
 # type: command
 # --
-(if (nvp:line-empty-p)
+(if (nvp-line-empty-p)
 		(yas-expand-snippet "${1:a} := make(${2:[]int}, ${3:0})")
 	(yas-expand-snippet "make(${1:[]int}, ${2:0})"))

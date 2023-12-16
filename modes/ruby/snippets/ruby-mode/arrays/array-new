@@ -1,5 +1,8 @@
 # -*- mode: snippet -*-
 # name: array
 # key: a
+# type: command
 # --
-${1:arr} = Array.new(${2:n})${3:{ |${4:i}| $5 \}}
+(if (nvp-line-empty-p)
+    (yas-expand-snippet "${1:arr} = Array.new(${2:n}).fill(${3:0})")
+  (yas-expand-snippet "Array.new(${1:n}).fill(${2:0})"))

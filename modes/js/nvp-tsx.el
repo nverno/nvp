@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'web-mode nil t)
-(require 'nvp-ts)
+(require 'nvp-typescript)
 (nvp:decls :p (web) :f (web-mode))
 
 ;; @see https://github.com/syl20bnr/spacemacs/layers/+lang/typescript/packages.el

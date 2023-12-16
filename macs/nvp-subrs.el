@@ -247,21 +247,14 @@ or (\\='a #\\='b) => \\='(a b)."
 (defsubst nvp:no-ext (&optional path)
   (file-name-sans-extension (or path (buffer-file-name) (buffer-name))))
 (defsubst nvp:bfn ()
-  (file-name-nondirectory
-   (or
-    (buffer-file-name)
-    (buffer-name))))
+  (file-name-nondirectory (or (buffer-file-name) (buffer-name))))
 (defsubst nvp:bfn-no-ext ()
-  (file-name-base
-   (or
-    (buffer-file-name)
-    (buffer-name))))
+  (file-name-base (or (buffer-file-name) (buffer-name))))
 (defsubst nvp:dfn ()
   (file-name-nondirectory
    (directory-file-name
-    (or
-     (file-name-directory (file-truename buffer-file-name))
-     (file-truename default-directory)))))
+    (or (file-name-directory (file-truename buffer-file-name))
+        (file-truename default-directory)))))
 (defsubst nvp:fn (&optional path)
   (file-name-nondirectory (directory-file-name (or path (buffer-file-name)))))
 

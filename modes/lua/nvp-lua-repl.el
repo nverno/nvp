@@ -26,7 +26,7 @@ With two \\[universal-argument] prompt for lua command."
     (funcall #'inf-lua-run (equal '(16) prefix) nil
              (and nvp-repl-load-startup-file
                   (or (null prefix) (>= (prefix-numeric-value prefix) 16))
-                  lua-ts-inferior-startfile))))
+                  inf-lua-startfile))))
 
 (with-eval-after-load 'inf-lua
   (nvp-repl-add '(lua-mode lua-ts-mode)

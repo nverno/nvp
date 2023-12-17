@@ -21,6 +21,7 @@
 ;;      (lua-ts-mode--assignment-identifier
 ;;       (treesit-node-child-by-field-name node "table")))
 ;;     (_ (error "shouldnt happen: %S" node))))
+
 ;; (defun lua-ts-mode--fontify-assignment-lhs (node override start end &rest _)
 ;;   "Fontify the lhs NODE of an assignment_exp.
 ;; For OVERRIDE, START, END, see `treesit-font-lock-rules'."
@@ -30,6 +31,23 @@
 ;;        (treesit-node-start identifier) (treesit-node-end identifier)
 ;;        'font-lock-variable-name-face
 ;;        override start end))))
+
+(defvar lua-ts-mode--identifier-query
+  (when (treesit-available-p)
+    (treesit-query-compile 'lua '((identifier) @id))))
+
+(defun lua-ts-mode--fontify-table (node override start end &rest _)
+  (when-let ((node (pcase (treesit-node-type node)
+                     ((or "method_index_expression"
+                          "dot_index_expression")
+                      (treesit-node-child-by-field-name node "table"))
+                     ("identifier" nil))))
+   (dolist (node (treesit-query-capture
+                  node lua-ts-mode--identifier-query nil nil t))
+     (treesit-fontify-with-override
+      (treesit-node-start node) (treesit-node-end node)
+      'font-lock-type-face
+      override start end))))
 
 (with-eval-after-load 'lua-ts-mode
   (setq lua-ts--font-lock-settings-orig lua-ts--font-lock-settings
@@ -47,12 +65,12 @@
             name: (dot_index_expression (identifier) @font-lock-function-name-face))
            (function_declaration
             name: (method_index_expression
-                   table: (identifier) @font-lock-type-face
+                   table: (_) @lua-ts-mode--fontify-table
                    method: (identifier) @font-lock-function-name-face))
            (function_declaration
             (method_index_expression
              (dot_index_expression
-              table: (identifier) @font-lock-type-face
+              table: (_) @lua-ts-mode--fontify-table
               field: (identifier) @font-lock-property-name-face)))
            (assignment_statement
             (variable_list name: [(identifier)]) @font-lock-function-name-face
@@ -77,20 +95,24 @@
             (:match "\\`---" @font-lock-doc-face))
            (comment) @lua-ts--comment-font-lock
            (hash_bang_line) @font-lock-comment-face)
+
+         :language 'lua
+         :feature 'namespace
+         :override t
+         '((function_declaration
+            name: (_) @lua-ts-mode--fontify-table)
+           (function_call
+            name: (_) @lua-ts-mode--fontify-table))
+
          ;; :language 'lua
          ;; :feature 'assignment
          ;; '((for_numeric_clause name: (identifier) @font-lock-variable-name-face)
          ;;   (variable_list (_) @lua-ts-mode--fontify-assignment-lhs))
+
          :language 'lua
          :feature 'variable
          '((function_call
             arguments: (arguments (identifier) @font-lock-variable-use-face))
-           (function_call
-            name: (method_index_expression
-                   table: (identifier) @font-lock-type-face))
-           (function_call
-            name: (dot_index_expression
-                   table: (identifier) @font-lock-type-face))
            [(identifier)] @font-lock-variable-use-face))))
 
 ;;;###autoload
@@ -196,6 +218,13 @@
   (when interactive
     (let (lua-ts-mode-hook)
       (lua-ts-mode))))
+
+;;; Add missing features once
+(nvp:run-once lua-ts-mode (:after (&rest _))
+  (dolist (v '(namespace))
+    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+  (nvp-lua-ts-load-mods nil t)
+  (treesit-font-lock-recompute-features))
 
 (provide 'nvp-lua-ts)
 ;; Local Variables:

@@ -50,6 +50,33 @@
 ;; -------------------------------------------------------------------
 ;;; Things at point
 
+;; skip over prefix '@'
+(defun nvp-elisp-bounds-of-symbol-at-point ()
+  (when-let ((bnds (bounds-of-thing-at-point 'symbol)))
+    (while (and (< (car bnds) (cdr bnds))
+                (memq (char-after (car bnds)) '(?@)))
+      (setf (car bnds) (1+ (car bnds))))
+    bnds))
+(put 'elisp-symbol 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-symbol-at-point)
+
+;; for emacs-lisp `thing-at-point-provider-alist'
+(defun nvp-elisp-symbol-at-point () (thing-at-point 'elisp-symbol))
+
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql 'elisp)))
+  (--when-let (bounds-of-thing-at-point 'elisp-symbol)
+    (let ((ident (buffer-substring-no-properties (car it) (cdr it))))
+      ;; Use a property to transport the location of the identifier.
+      (propertize ident 'pos (car it)))))
+
+;; Dont include prefix '@' in iedit
+(defvar nvp-elisp-iedit-syntax
+  (let ((tab (copy-syntax-table emacs-lisp-mode-syntax-table)))
+    (modify-syntax-entry ?@ "'" tab)
+    tab))
+(define-advice iedit-start (:around (orig-fn &rest args) "set-syntax")
+  (with-syntax-table nvp-elisp-iedit-syntax
+    (apply orig-fn args)))
+
 (defun nvp-elisp-bounds-of-cons ()
   "Return bounds of dotted cons, eg (sexp . sexp)."
   (save-excursion
@@ -62,7 +89,6 @@
           (skip-chars-forward "^.)")
           (and (eq ?. (char-after))
                (cl-return (bounds-of-thing-at-point 'list))))))))
-
 (put 'cons 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons)
 
 (defun nvp-elisp-bounds-of-alist ()
@@ -83,7 +109,6 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
         (when-let ((bnds (nvp:tap 'btap 'cons)))
           (goto-char (1- (car bnds)))
           (bounds-of-thing-at-point 'list))))))
-
 (put 'alist 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-alist)
 
 ;; -------------------------------------------------------------------

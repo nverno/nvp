@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: deepcopy table
+# name: deepcopy object
 # key: f_deepcopy
 # --
 local function deepcopy(object)  -- http://lua-users.org/wiki/CopyTable

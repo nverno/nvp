@@ -50,8 +50,8 @@
       (user-error "No ts repl found (need to npm i ts-node?)"))
   (run-ts nil 'no-switch)
   (with-current-buffer ts-comint-buffer
-    (setq-local comint-prompt-regexp "^> ")
-    (add-hook 'comint-output-filter-functions 'ts-comint-filter-output nil t)
+    (setq-local comint-prompt-regexp "> ")
+    ;; (add-hook 'comint-output-filter-functions 'ts-comint-filter-output nil t)
     (get-buffer-process (current-buffer))))
 
 (when (fboundp 'run-ts)

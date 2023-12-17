@@ -3,8 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'lua-ts-mode nil t)
-
+(when (require 'lua-ts-mode nil t)
+  (require 'nvp-lua-ts))
 (nvp:decls :p (lua))
 
 ;;; REPL

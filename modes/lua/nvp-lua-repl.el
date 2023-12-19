@@ -11,7 +11,7 @@
 (require 'lua-ts-mode nil t)
 (require 'inf-lua nil t)
 (require 'comint)
-(nvp:decls :p (lua) :f (inf-lua-run))
+(nvp:decls :p (inf-lua lua) :f (inf-lua-run))
 
 
 (defun nvp-lua-repl-init (&optional prefix)

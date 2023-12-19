@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls :p (yari nvp-hap))
+(nvp:decls :p (yari nvp-hap inf-ruby))
 
 ;;; REPL
 (with-eval-after-load 'nvp-repl

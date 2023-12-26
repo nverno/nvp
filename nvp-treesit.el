@@ -181,7 +181,10 @@
     (":i" "Indent verbose"
      nvp-treesit-menu--toggle-treesit--indent-verbose)
     (":f" "Font debug"
-     nvp-treesit-menu--toggle-treesit--font-lock-verbose)]])
+     nvp-treesit-menu--toggle-treesit--font-lock-verbose)]]
+  (interactive)
+  (require 'ts-util)
+  (transient-setup 'nvp-treesit-menu))
 
 (provide 'nvp-treesit)
 ;; Local Variables:

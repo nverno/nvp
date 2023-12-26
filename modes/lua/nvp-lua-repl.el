@@ -1,10 +1,6 @@
 ;;; nvp-lua-repl.el --- Lua REPL -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
-;;
-;; FIXME: use `comint-indirect-setup-function' for font-locking
-;; #<marker at 28479 in shell.el.gz>
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)

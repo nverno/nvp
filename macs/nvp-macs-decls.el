@@ -281,6 +281,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-abbrev-expand-p
        nvp-abbrev-expand-not-after-punct-p
        nvp-abbrev-expand-after-symbols-hook
+       nvp-abbrev-make-post-insert-hook
        ;; test
        nvp-ert-run-tests
        ;; compile

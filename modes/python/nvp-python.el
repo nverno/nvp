@@ -43,8 +43,7 @@
                 (format "%s.%s" (match-string 2 item)
                         (match-string 1 item)))
                ;; builtins
-               ((string-match
-                 "built-in function; \\([A-Za-z][A-Za-z0-9]+\\)()" item)
+               ((string-match "\\(built-in function; [A-Za-z][A-Za-z0-9]+\\)()" item)
                 (match-string 1 item))
                ;; class methods
                ((string-match

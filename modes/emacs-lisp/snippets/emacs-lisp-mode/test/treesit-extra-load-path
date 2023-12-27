@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: treesit-extra-load-path
+# key: tselp
+# --
+(setq treesit-extra-load-path '("`(expand-file-name "tree-sitter" user-emacs-directory)`"))

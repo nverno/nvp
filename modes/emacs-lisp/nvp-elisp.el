@@ -73,9 +73,6 @@
   (let ((tab (copy-syntax-table emacs-lisp-mode-syntax-table)))
     (modify-syntax-entry ?@ "'" tab)
     tab))
-(define-advice iedit-start (:around (orig-fn &rest args) "set-syntax")
-  (with-syntax-table nvp-elisp-iedit-syntax
-    (apply orig-fn args)))
 
 (defun nvp-elisp-bounds-of-cons ()
   "Return bounds of dotted cons, eg (sexp . sexp)."

@@ -182,20 +182,21 @@ TYPE is one of \\='all, \\='variables or \\='rules."
         (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t))))
               (info-lookup-other-window-flag nil))
           (ignore-errors (info-lookup-symbol thing))
-          (--> (pcase type
-                 ('autovar
-                  (forward-line 1)
-                  (skip-syntax-forward " ")
-                  (buffer-substring-no-properties
-                   (point) (cdr (bounds-of-thing-at-point 'sentence))))
-                 ('target
-                  (replace-regexp-in-string
-                   "[\n\r\t ]+" " " (thing-at-point 'sentence)))
-                 (_
-                  (goto-char (point-min))
-                  (when (re-search-forward (concat "\\([$](" thing ".*)\\)") nil t)
-                    (match-string 1))))
-               (puthash thing it nvp-makecomp--eldoc-cache))))))
+          (save-excursion
+            (--> (pcase type
+                   ('autovar
+                    (forward-line 1)
+                    (skip-syntax-forward " ")
+                    (buffer-substring-no-properties
+                     (point) (cdr (bounds-of-thing-at-point 'sentence))))
+                   ('target
+                    (replace-regexp-in-string
+                     "[\n\r\t ]+" " " (thing-at-point 'sentence)))
+                   (_
+                    (goto-char (point-min))
+                    (when (re-search-forward (concat "\\([$](" thing ".*)\\)") nil t)
+                      (match-string 1))))
+                 (puthash thing it nvp-makecomp--eldoc-cache)))))))
 
 ;;;###autoload
 (defun nvp-makecomp-eldoc-function (callback &rest _ignored)

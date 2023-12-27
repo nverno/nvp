@@ -38,6 +38,16 @@
 (nvp:@push-mark iedit-next-occurrence)
 (nvp:@push-mark iedit-prev-occurrence)
 
+;;; Syntax
+(defvar-local nvp-iedit-syntax-table nil
+  "Special syntax to use with iedit, when non-nil.")
+
+(define-advice iedit-start (:around (orig-fn &rest args) "with-syntax")
+  (if (bound-and-true-p nvp-iedit-syntax-table)
+      (with-syntax-table nvp-iedit-syntax-table
+        (apply orig-fn args))
+    (apply orig-fn args)))
+
 (defun nvp-iedit-occur ()
   "Call `occur' with current `iedit-current-occurrence-string'."
   (interactive)

@@ -314,6 +314,10 @@ are aliases to symbols prefixed by \"nvp-\"."
 ;;; Anamorphs
 ;; See ch. 14 of On Lisp
 
+(defmacro --mapcc (form list &optional sep)
+  (declare (important-return-value t))
+  `(mapconcat (lambda (it) (ignore it) ,form) ,list ,(or sep " ")))
+
 (defmacro nvp:awhile (expr &rest body)
   "Anamorphic `while'."
   (declare (indent 1) (debug t))
@@ -468,13 +472,14 @@ Syntax should be list of syntax class symbols or syntax codes."
 ;;          ,@body))))
 
 ;;; Load file name
-(defmacro nvp:load-file-name ()
+(defmacro nvp:load-file-name (&optional directory)
   "Expand to the file's name."
-  '(cond
-    (load-in-progress load-file-name)
-    ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
-     byte-compile-current-file)
-    (t (buffer-file-name))))
+  `(,@(if directory '(file-name-directory) '(progn))
+    (cond
+     (load-in-progress load-file-name)
+     ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+      byte-compile-current-file)
+     (t (buffer-file-name)))))
 
 
 ;; -------------------------------------------------------------------

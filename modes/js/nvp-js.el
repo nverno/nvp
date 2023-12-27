@@ -78,23 +78,6 @@
        (nvp:js-switch-mode 'rjsx-mode))
       (_ (user-error "%S not matched against any JsX modes" major-mode)))))
 
-;;; Font locking
-
-;; shebang in node scripts not recognized by js2
-(defun nvp-js2-font-lock-additions ()
-  (font-lock-add-keywords
-   nil
-   '(("\\`\\(#!\\s-*.*/[^ \t\n]+\\)\\s-*\\([^ \t\n]+\\)\\s-*$"
-      (1 font-lock-comment-face t)
-      (2 'nvp-italic-type-face t))))
-  (font-lock-flush)
-  (font-lock-ensure))
-
-;;; XXX: gets overwritten by stuff js2 does -- not sure why
-(defalias 'nvp-js2-syntax-propertize-shebang
-  (syntax-propertize-rules
-   ("\\`\\(#\\)!.*/[^ \t\n]+" (1 "!"))))
-
 ;;; Snippets
 
 (defun nvp-js-test-p ()

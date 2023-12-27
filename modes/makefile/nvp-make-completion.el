@@ -30,7 +30,8 @@
 (nvp:auto "s" 's-lowercase-p)
 (nvp:decls :f (xref-make xref-location) :v (info-lookup-other-window-flag))
 
-(nvp:package-define-root :name nvp-makefile)
+(defvar nvp-makefile--dir (nvp:load-file-name))
+
 (defconst nvp-makecomp-program
   (expand-file-name "bin/makevars.awk" nvp-makefile--dir))
 
@@ -59,13 +60,12 @@
 (defvar nvp-makecomp-db (make-hash-table :test #'equal))
 
 (defun nvp-makecomp--update (file dbfile)
-  (-when-let (data (car
-                    (read-from-string
-                     (shell-command-to-string
-                      ;; when no targets in file there is output to stderr
-                      (format "make %s -f %s .DEFAULT_GOAL= 2>/dev/null | %s"
-                              nvp-makecomp-program-switches
-                              file nvp-makecomp-program)))))
+  (-when-let (data (car (read-from-string
+                         (shell-command-to-string
+                          ;; when no targets in file there is output to stderr
+                          (format "make %s -f %s .DEFAULT_GOAL= 2>/dev/null | %s"
+                                  nvp-makecomp-program-switches
+                                  file nvp-makecomp-program)))))
     (setf (nvp-makecomp-file-variables dbfile) (alist-get 'variables data))
     (setf (nvp-makecomp-file-rules dbfile) (alist-get 'rules data))))
 

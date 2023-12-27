@@ -34,20 +34,20 @@
 
 ;; get list of all table properties, converting parent tables into symbols
 (defun nvp-abbrev-get-plist (table)
-  (unless (abbrev-table-p table) (setq table (symbol-value table)))
+  (or (abbrev-table-p table) (setq table (symbol-value table)))
   (when-let* ((sym (obarray-get table ""))
               (props (symbol-plist sym)))
     (cl-loop for (k v) on props by #'cddr
-       if (eq :parents k)
-       collect (list k (nvp-abbrev--all-parents table 'names))
-       else
-       collect (list k v))))
+             if (eq :parents k)
+             collect (list k (nvp-abbrev--all-parents table 'names))
+             else
+             collect (list k v))))
 
 ;; -------------------------------------------------------------------
 ;;; Generics
 
 (cl-defgeneric nvp-abbrev-grab-region (beg end)
-  "Generic function to return abbrev from region BEG to END . 
+  "Generic function to return abbrev from region BEG to END .
 Should return sexp of form (abbrev                          . expansion)."
   (let ((exp (buffer-substring-no-properties beg end)))
     (cons (read-string (format "Abbrev for %s: " exp)) exp)))
@@ -74,35 +74,32 @@ or expansion."
 (cl-defmethod nvp-abbrev-table-name
   (&context (major-mode emacs-lisp-mode) &optional local-table abbrev exp)
   "Determine with abbrev table to use based on prefix and possibly context."
-  (if (not abbrev) (cl-call-next-method)
+  (if (not abbrev)
+      (cl-call-next-method)
     (let* ((abbr (or exp abbrev))
            (table-prefix
-            (and abbr
-                 (cdr (cl-find-if (lambda (pref) (string-prefix-p pref abbr))
-                                  '(("cl-"  . "emacs-lisp-cl")
-                                    ("nvp-" . "emacs-lisp-nvp")) :key #'car)))))
+            (and abbr (cdr (cl-find-if (lambda (pref) (string-prefix-p pref abbr))
+                                       '(("cl-"  . "emacs-lisp-cl")
+                                         ("nvp-" . "emacs-lisp-nvp"))
+                                       :key #'car)))))
       (regexp-quote
        (format "%s-abbrev-table" (or table-prefix local-table major-mode))))))
 
 ;; insert starter abbrev table template
 (defun nvp-abbrev--insert-template (table &optional parents)
-  (nvp:defq parents (if (derived-mode-p 'prog-mode) '(prog-mode)
-                      '(fundamental-mode)))
+  (or parents (setq parents (if (derived-mode-p 'prog-mode)
+                                '(prog-mode)
+                              '(fundamental-mode))))
   (let ((parents
-         (concat
-          "(list "
-          (mapconcat (lambda (s) (concat (symbol-name s) "-abbrev-table")) parents " ")
-          ")")))
-    (insert
-     (concat
-      (when (zerop (buffer-size))
-        ";; -*- coding: utf-8; -*-\n")
-      "\n(define-abbrev-table '" table "\n"
-      "  '()\n"
-      (format "  \"%s Abbrevs.\"\n"
-              (capitalize (replace-regexp-in-string "-abbrev-table" "" table)))
-      (format "  :enable-function #'nvp-abbrev-expand-p\n")
-      (format "  :parents %s)" parents)))))
+         (concat "(list " (--mapcc (format "%s-abbrev-table" it) parents) ")")))
+    (insert (concat (and (zerop (buffer-size)) ";; -*- coding: utf-8; -*-\n")
+                    "\n(define-abbrev-table '" table "\n"
+                    "  '()\n"
+                    (format "  \"%s Abbrevs.\"\n"
+                            (capitalize
+                             (replace-regexp-in-string "-abbrev-table" "" table)))
+                    (format "  :enable-function #'nvp-abbrev-expand-p\n")
+                    (format "  :parents %s)" parents)))))
 
 ;; open abbrev file and search for the specified table
 ;; if it doesn't exist insert starter template
@@ -122,7 +119,6 @@ or expansion."
   (setq-local imenu-generic-expression
               '((nil "^(define-abbrev-table '\\([^ \n]+\\)" 1))))
 
-
 ;; -------------------------------------------------------------------
 ;;; Commands
 
@@ -134,11 +130,10 @@ abbrev. When abbrev text is selected, searching is done first by length
 then lexically."
   (interactive "P")
   (let* ((local-abbrevs (bound-and-true-p nvp-abbrev-local-table))
-         (prefix (cond
-                  ((use-region-p)
-                   (nvp-abbrev-grab-region (region-beginning) (region-end)))
-                  (arg (nvp-abbrev--grab-prev arg))
-                  (t nil)))
+         (prefix (cond ((use-region-p)
+                        (nvp-abbrev-grab-region (region-beginning) (region-end)))
+                       (arg (nvp-abbrev--grab-prev arg))
+                       (t nil)))
          (expansion (and (consp prefix) (prog1 (cdr prefix)
                                           (setq prefix (car prefix)))))
          (table (nvp-abbrev-table-name local-abbrevs prefix expansion)))
@@ -146,49 +141,44 @@ then lexically."
       (with-current-buffer (nvp-abbrev--get-table
                             table (or (bound-and-true-p nvp-abbrev-local-file)
                                       (expand-file-name table nvp/abbrevs)))
-        (if (not prefix)      ;blank start: no prefix or expansion
-            (progn
-              (ignore-errors (down-list))
-              (when (y-or-n-p "Expand new snippet?")
-                (yas-expand-snippet "(\"$1\" \"$2\" nil :system t)\n")))
+        (if (not prefix)                ; blank start: no prefix or expansion
+            (progn (ignore-errors (down-list))
+                   (when (y-or-n-p "Expand new snippet?")
+                     (yas-expand-snippet "(\"$1\" \"$2\" nil :system t)\n")))
           (narrow-to-defun)
           (let ((end (save-excursion (forward-list) (1- (point)))))
             (when prefix
-              (while
-                  (and (re-search-forward
-                        "[^\\(?:(define-\\)](\"\\(\\w+\\)" end 'move)
-                       (let ((str (match-string-no-properties 1)))
-                         (or (> (length prefix) (length str))
-                             (string> prefix str)))))
+              (while (and (re-search-forward
+                           "[^\\(?:(define-\\)](\"\\(\\w+\\)" end 'move)
+                          (let ((str (match-string-no-properties 1)))
+                            (or (length> prefix (length str))
+                                (string> prefix str)))))
               ;; insert default template for prefix
               (back-to-indentation)
               (yas-expand-snippet
                (format "(\"%s\" \"%s\" nil :system t)\n" prefix
                        (if expansion (concat "${1:" expansion "}") "$1"))))))
         ;; reload abbrev table after modification
-        (cl-labels ((nvp-abbrev-save-hook
-                     ()
-                     (widen)
-                     (quietly-read-abbrev-file (buffer-file-name))
-                     ;; refresh cached active abbrev tables
-                     (setq nvp-abbrev-completion-need-refresh t)))
+        (cl-labels ((nvp-abbrev-save-hook ()
+                      (widen)
+                      (quietly-read-abbrev-file (buffer-file-name))
+                      ;; refresh cached active abbrev tables
+                      (setq nvp-abbrev-completion-need-refresh t)))
           (add-hook 'after-save-hook #'nvp-abbrev-save-hook t 'local))))))
 
-;; add unicode abbrevs to local table parents
 ;;;###autoload
 (defun nvp-abbrev-add-parent (table &optional file)
   "Add abbrev TABLE as parent of `local-abbrev-table'.
 If FILE is non-nil, read abbrevs from FILE."
-  (interactive
-   (list (nvp-abbrev--read-table
-          "Add parent abbrev table: "
-          (mapcar #'symbol-name abbrev-table-name-list))))
+  (interactive (list (nvp-abbrev--read-table
+                      "Add parent abbrev table: "
+                      (mapcar #'symbol-name abbrev-table-name-list))))
   (when file
     (quietly-read-abbrev-file file))
   (let ((parents (abbrev-table-get local-abbrev-table :parents)))
     (abbrev-table-put
      local-abbrev-table :parents (cons (symbol-value (intern table)) parents)))
-  (message "Activated %s abbrevs locally." table))
+  (nvp:msg "Activated %s abbrevs locally." table))
 
 ;;;###autoload
 (defun nvp-abbrev-load-unicode (arg)
@@ -205,28 +195,26 @@ With prefix, unload unicode abbrevs."
 (defun nvp-abbrev-remove-parent (table &optional parents)
   "Remove parent TABLE from `local-abbrev-table' PARENTS."
   (interactive
-   (let ((parents
-          (mapcar #'abbrev-table-name
-                  (abbrev-table-get local-abbrev-table :parents))))
-     (list (intern (nvp-abbrev--read-table
-                    "Remove local abbrev parent: " (mapcar #'symbol-name parents)))
+   (let ((parents (mapcar #'abbrev-table-name
+                          (abbrev-table-get local-abbrev-table :parents))))
+     (list (intern (nvp-abbrev--read-table "Remove local abbrev parent: "
+                                           (mapcar #'symbol-name parents)))
            parents)))
   (let ((new-p (mapcar #'symbol-value (remq table parents))))
     (abbrev-table-put local-abbrev-table :parents new-p))
-  (message "Removed local %S abbrevs."
-           (if (abbrev-table-p table) (abbrev-table-name table) table)))
+  (nvp:msg "Removed local %S abbrevs."
+    (if (abbrev-table-p table) (abbrev-table-name table) table)))
 
 ;; write abbrev table
 ;; temporarily rebind `abbrev--write' to write :system abbrevs
 ;;;###autoload
 (defun nvp-abbrev-write-abbrev-table (table file)
   "Write abbrev TABLE to FILE as :system abbrevs."
-  (interactive
-   (list
-    (if current-prefix-arg
-        (abbrev-table-name local-abbrev-table)
-      (nvp-abbrev--read-table
-       "Abbrev table: " (mapcar #'symbol-name (nvp-abbrev--nonempty))))
+  (interactive (list (if current-prefix-arg
+                         (abbrev-table-name local-abbrev-table)
+                       (nvp-abbrev--read-table
+                        "Abbrev table: "
+                        (mapcar #'symbol-name (nvp-abbrev--nonempty))))
     (read-file-name "Write abbrevs to: ")))
   (let ((abbrev-table-name-list (list (intern table))))
     (cl-letf (((symbol-function 'abbrev--write)
@@ -244,13 +232,11 @@ With prefix, unload unicode abbrevs."
 ;;;###autoload
 (defun nvp-abbrev-properties (table)
   "List all abbrev table properties."
-  (interactive
-   (list
-    (if current-prefix-arg
-        (abbrev-table-name local-abbrev-table)
-      (nvp-abbrev--read-table
-       "List abbrev table props: "
-       (mapcar #'symbol-name (nvp-abbrev--nonempty))))))
+  (interactive (list (if current-prefix-arg
+                         (abbrev-table-name local-abbrev-table)
+                       (nvp-abbrev--read-table
+                        "List abbrev table props: "
+                        (mapcar #'symbol-name (nvp-abbrev--nonempty))))))
   (let ((props (nvp-abbrev-get-plist (intern table))))
     (nvp:with-results-buffer :title table
       (pcase-dolist (`(,k ,v) props)

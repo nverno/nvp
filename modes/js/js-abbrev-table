@@ -1,6 +1,7 @@
 ;; -*- coding: utf-8;-*-
 (define-abbrev-table 'js-mode-abbrev-table
-  '(("imp" "import" nil :system t)
+  '(("cl" ["console.log()" 1 nil nil] expand-abbrev-hook :system t)
+    ("imp" "import" nil :system t)
     ("tof" "typeof" nil :system t)
     ("exp" "export" nil :system t)
     ("expd" "export default" nil :system t)

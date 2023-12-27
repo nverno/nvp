@@ -165,6 +165,7 @@ With prefix ARG, run `helm-make'."
 (defun nvp-makefile-format-buffer (&optional beg end)
   (interactive (if (region-active-p) (list (region-beginning) (region-end))
                  (list (point-min) (point-max))))
+  (require 'align)
   (nvp-makefile-indent beg end)
   (let (indent-tabs-mode)
     (align-region beg end "^\\s-*$" align-rules-list align-exclude-rules-list)))

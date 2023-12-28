@@ -49,6 +49,7 @@ Otherwise, look for version control directories, returing the longest path."
       (projectile-project-info)
     (message "Not in a known project.")))
 
+;;;###autoload
 (defun nvp-project-invalidate-cmds ()
   "Reset cached projectile project commands."
   (interactive)

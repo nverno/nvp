@@ -5,7 +5,9 @@
 
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
+(nvp:decls)
 (autoload 'f-read-text "f")
+
 
 (defcustom luarocks-command "luarocks"
   "Command to run luarocks executable."
@@ -138,7 +140,9 @@ Locations are homepage, docs, or modules."
 
 ;;;###autoload
 (defun luarocks-config (&optional args)
-  "Call luarocks config."
+  "Call luarocks config.
+When displaying config with as Json (with --json), it's prettified with Jq
+and displayed in `json-ts-mode'. Otherwise, display in `lua-ts-mode'."
   (interactive (list (luarocks--filter-args
                       '("--json" "--unset" "--scope" "--key" "--value")
                       (transient-args transient-current-command))))
@@ -157,21 +161,25 @@ Locations are homepage, docs, or modules."
          (setq key-val (concat key-val (substring a (match-end 0)))))
         (_ nil)))
     (with-current-buffer (get-buffer-create "*luarocks[config]*")
-      (erase-buffer)
-      (call-process-shell-command
-       (format "luarocks config %s %s %s"
-               (mapconcat 'identity (append flags global-args) " ")
-               key-val
-               jq-cmd)
-       nil (current-buffer) t)
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (call-process-shell-command
+         (format "luarocks config %s %s %s"
+                 (mapconcat 'identity (append flags global-args) " ")
+                 key-val jq-cmd)
+         nil (current-buffer) t))
       (if (not (string-empty-p jq-cmd))
           (json-ts-mode)
         (lua-ts-mode))
       (goto-char (point-min))
+      (view-mode)
       (pop-to-buffer (current-buffer)))))
 
 ;;;###autoload
 (defun luarocks-search (&optional query args)
+  "Search rocks for QUERY with ARGS.
+Results are in `tabulated-list-mode'. The default selection action installs
+the rock at point."
   (interactive (list (read-string "Search: ")
                      (luarocks--filter-args
                       '("--binary" "--source")
@@ -187,9 +195,19 @@ Locations are homepage, docs, or modules."
                 (let ((rock (elt entry 0))
                       (version (elt entry 1)))
                   (when (y-or-n-p (format "Install %s v%s? " rock version))
-                    (start-process-shell-command
-                     "luarocks" (format "*luarocks-install[%s]*" rock)
-                     (concat "luarocks install " (elt entry 0))))))
+                    (let ((proc-buf (get-buffer-create
+                                     (format "*luarocks-install[%s]*" rock))))
+                      (nvp:with-process "luarocks"
+                        :proc-buff proc-buf
+                        :proc-args ("install" rock)
+                        :on-success (progn (nvp-indicate-modeline
+                                            (format "Installed '%s'" rock))
+                                           (kill-buffer))
+                        :on-failure (progn (xterm-color-colorize-buffer)
+                                           (view-mode)
+                                           (nvp-indicate-modeline "oops" 'failure)
+                                           (pop-to-buffer (current-buffer))))
+                      (display-buffer proc-buf)))))
       (setq tabulated-list-sort-key '("Rock" . nil)))))
 
 

@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'treesit nil t)
-(nvp:decls :p (lua))
+(nvp:decls :p (lua) :v (lua-ts--builtins lua-ts-mode-hook))
 
 (defvar lua-ts-align-arguments nil
   "Non-nil to align arguments with parent")
@@ -37,23 +37,25 @@
     (treesit-query-compile 'lua '((identifier) @id))))
 
 (defun lua-ts-mode--fontify-table (node override start end &rest _)
-  (when-let ((node (pcase (treesit-node-type node)
-                     ((or "method_index_expression"
-                          "dot_index_expression")
-                      (treesit-node-child-by-field-name node "table"))
-                     ("identifier" nil))))
-   (dolist (node (treesit-query-capture
-                  node lua-ts-mode--identifier-query nil nil t))
-     (treesit-fontify-with-override
-      (treesit-node-start node) (treesit-node-end node)
-      'font-lock-type-face
-      override start end))))
+  (when-let* ((face 'font-lock-type-face)
+              (node (pcase (treesit-node-type node)
+                      ("method_index_expression"
+                       (treesit-node-child-by-field-name node "table"))
+                      ("dot_index_expression"
+                       (setq face 'font-lock-constant-face)
+                       (treesit-node-child-by-field-name node "table"))
+                      ("identifier" nil))))
+    (dolist (node (treesit-query-capture
+                   node lua-ts-mode--identifier-query nil nil t))
+      (treesit-fontify-with-override
+       (treesit-node-start node) (treesit-node-end node)
+       face override start end))))
 
 (with-eval-after-load 'lua-ts-mode
   (setq lua-ts--font-lock-settings-orig lua-ts--font-lock-settings
         lua-ts--simple-indent-rules-orig lua-ts--simple-indent-rules)
-  
-  (cl-pushnew "self" lua-ts--builtins :test #'string=)
+
+  ;; (cl-pushnew "self" lua-ts--builtins :test #'string=)
 
   (setq nvp-lua-ts-font-lock-before
         (treesit-font-lock-rules
@@ -84,8 +86,10 @@
          :language 'lua
          :feature 'builtin
          `(((identifier) @font-lock-builtin-face
-            (:match ,(regexp-opt lua-ts--builtins 'symbols)
-                    @font-lock-builtin-face)))))
+            (:match ,(rx-to-string `(seq bos (or ,@lua-ts--builtins) eos))
+                    @font-lock-builtin-face))
+           ((identifier) @font-lock-keyword-face
+            (:match ,(rx bos "self" eos) @font-lock-keyword-face)))))
 
   (setq nvp-lua-ts-font-lock-after
         (treesit-font-lock-rules
@@ -98,11 +102,11 @@
 
          :language 'lua
          :feature 'namespace
-         :override t
+         ;; :override t
          '((function_declaration
-            name: (_) @lua-ts-mode--fontify-table)
+            name: [(method_index_expression) (dot_index_expression)] @lua-ts-mode--fontify-table)
            (function_call
-            name: (_) @lua-ts-mode--fontify-table))
+            name: [(method_index_expression) (dot_index_expression)] @lua-ts-mode--fontify-table))
 
          ;; :language 'lua
          ;; :feature 'assignment

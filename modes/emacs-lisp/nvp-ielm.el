@@ -62,15 +62,14 @@
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(emacs-lisp-mode lisp-data-mode lisp-interaction-mode)
     :name 'ielm
-    :init #'ielm
     :modes '(inferior-emacs-lisp-mode)
+    :init #'ielm
     :procname "ielm"
-    :bufname "*ielm"
-    :send-input #'ielm-send-input
-    :send-string #'nvp-ielm-send-string
-    :eval-filter (lambda (s) (replace-regexp-in-string "[ \n\t]+" " " s))
     :wait 0.1
     :history-file ".ielm_history"
+    :eval-filter (lambda (s) (replace-regexp-in-string "[ \n\t]+" " " s))
+    :send-input #'ielm-send-input
+    :send-string #'nvp-ielm-send-string
     :help-cmd #'nvp-ielm-help
     :pwd-cmd #'ielm-print-working-buffer
     :cd-cmd #'nvp-ielm-cd))

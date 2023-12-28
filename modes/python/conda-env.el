@@ -7,8 +7,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'python nil t)
-(nvp:decls :p (python))
-(nvp:auto "pythonic" 'pythonic-activate 'pythonic-deactivate)
+(nvp:decls :p (python pythonic))
+
 (defvar python-shell-virtualenv-root)
 
 ;; conda envs directory
@@ -98,16 +98,15 @@
           python-shell-extra-pythonpaths (and env (list (car path)))
           python-shell-virtualenv-root (and env (car path)))
     (if (not env)
-        (progn
-          (pythonic-deactivate)
-          (remove-hook 'comint-mode-hook #'conda-env-comint-hook))
+        (progn (and (fboundp 'pythonic-deactivate) (pythonic-deactivate))
+               (remove-hook 'comint-mode-hook #'conda-env-comint-hook))
       (add-hook 'comint-mode-hook #'conda-env-comint-hook)
-      (pythonic-activate (car path)))
+      (and (fboundp 'pythonic-activate) (pythonic-activate (car path))))
     (setq conda-env-python-major-version
           (conda-env-python-major-version "python" t))
     (run-hooks 'conda-env-after-activate-hook)
     (when conda-env-verbose
-      (message "%sctivated %s" (if env "A" "Dea") env))))
+      (nvp:msg "Conda %sactivated %s" (if env "" "de") (or env "(using root)")))))
 
 ;; deactivate conda environment if currently active
 (defun conda-env-deactivate ()

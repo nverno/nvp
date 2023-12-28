@@ -4,9 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(require 'lua-ts-mode nil t)
 (require 'inf-lua nil t)
-(require 'comint)
 (nvp:decls :p (inf-lua lua) :f (inf-lua-run))
 
 
@@ -28,13 +26,13 @@ With two \\[universal-argument] prompt for lua command."
   (nvp-repl-add '(lua-mode lua-ts-mode)
     :name 'lua
     :modes '(inf-lua-mode)
-    :find-fn (lambda () (inf-lua-process))
+    :init #'nvp-lua-repl-init
+    :find-fn #'inf-lua-process
     :history-file ".lua_history"
     :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
     :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
-    :help-cmd "_G"
-    :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))
-    :init #'nvp-lua-repl-init))
+    :help-cmd "_G"                      ; TODO
+    :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))))
 
 (provide 'nvp-lua-repl)
 ;; Local Variables:

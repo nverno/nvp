@@ -289,17 +289,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                             nil 'local))
                 nil 'local))))
 
-;;; XREFs
-
-;;;###autoload
-(define-advice semantic-ia-fast-jump (:around (orig-fn &rest args) "push-mark")
-  (xref-push-marker-stack)
-  (condition-case nil
-      (apply orig-fn args)
-    (error (xref-go-back))))
-
 ;;; Environment
-
 (defvar nvp-c-ext-includes
   '(("unity" (expand-file-name ".local/include/unity/src" (getenv "HOME"))
      "/unity/src")

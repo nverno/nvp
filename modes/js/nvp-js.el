@@ -6,11 +6,8 @@
 ;; - React: https://reactjs.org/docs/{react-component.html}
 ;; - npm docs <library> name launches site in browser
 ;;
-;; TODO:
 ;; - REPLs => nodejs, skewer, indium
-;;   - [✓] process-filter bug -- xterm-color related probably
-;;   - [✓] random input from REPL breaks user input
-;;   - [✓] fix blocking, eg. accept-process-output loop or something
+;; TODO:
 ;;   - Need to be able to reevaluate consts (indium solved this)
 ;;   - [ ] debugging w/ indium supposed to work with both Chrome and node
 ;;     Fix configuration to solve failing connections
@@ -24,12 +21,9 @@
 
 (eval-when-compile (require 'nvp-macro))
 (require 'js)
-(require 'js2-mode nil t)
 (nvp:req 'nvp-js 'subrs)
-(nvp:decls :p (js2 tern yas)
+(nvp:decls :p (js2 tern yas httpd)
            :f (nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook))
-(declare-function httpd-start "httpd")
-(defvar httpd-root)
 
 (defvar nvp-js-modes
   '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode))
@@ -48,6 +42,7 @@
   (require 'nvp-skewer))
 
 ;;; Httpd server
+(defvar httpd-root)
 (defun nvp-httpd-here ()
   (interactive)
   (setq httpd-root default-directory)

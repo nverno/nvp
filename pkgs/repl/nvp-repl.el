@@ -445,7 +445,10 @@ If INSERT, STR is inserted into REPL."
     (unless no-newline (setq str (concat str "\n")))
     (--if-let (nvp-repl-get-buffer)
         (progn (if (null insert)
-                   (funcall send-string (nvp-repl-process) str)
+                   (let ((proc (nvp-repl-process)))
+                     (with-current-buffer it
+                       (insert-before-markers "\n")
+                       (funcall send-string proc str)))
                  (with-current-buffer it
                    ;; (goto-char (process-mark repl-proc))
                    (ignore repl-proc)
@@ -473,7 +476,7 @@ If INSERT, STR is inserted into REPL."
                              (if (symbolp region) `(nvp:region ,region)
                                `(delq nil ,region))
                 `(progn
-                   ,@(when (not (eq sender 'send-region))
+                   ,@(when t ; (not (eq sender 'send-region))
                        `((and ,region
                               (apply #'nvp-indicate-pulse-region-or-line ,region))))
                    (cond

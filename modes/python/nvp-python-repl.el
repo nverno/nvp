@@ -10,7 +10,7 @@
 
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(require 'python nil t)
+(require 'python)
 (nvp:decls :p (conda-env) :f (conda-env-send-buffer))
 
 ;; add regexp for errors in code sent to REPL

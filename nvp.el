@@ -136,7 +136,8 @@ called from minibuffer, or nil.")
        ,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-default-functions)))))
 (nvp:define-function-hooks)
 (setq-default nvp-compile-default-function       #'nvp-compile-default)
-(setq-default nvp-format-buffer-default-function #'lsp-format-buffer)
+(with-eval-after-load 'lsp
+  (setq-default nvp-format-buffer-default-function #'lsp-format-buffer)) 
 (setq-default nvp-tag-default-function           #'projectile-regenerate-tags)
 (setq-default nvp-install-default-function       #'projectile-install-project)
 (setq-default nvp-check-buffer-default-function  #'flycheck-list-errors)
@@ -372,6 +373,15 @@ Otherwise just call `vertico-insert'. If this was previous command, call
                          (if (window-live-p win) (window-buffer win)
                            (current-buffer)))
     (apply old-fn args)))
+
+(defun nvp@push-marker (orig-fn &rest args)
+  "Push marker onto stack before calling ORIG-FN with ARGS."
+  (xref-push-marker-stack)
+  (condition-case nil
+      (apply orig-fn args)
+    (error (xref-go-back))))
+(nvp:advise-commands #'nvp@push-marker :around
+  '(find-function find-variable find-function-on-key semantic-ia-fast-jump))
 
 ;; -------------------------------------------------------------------
 ;;; Windows / Buffers

@@ -5,35 +5,42 @@
 ;;; FIXME:
 ;; - doesn't support imports AFAICT => (11/23/20) node doesn't
 ;; - doesn't seem to find libraries by default, probably need some config
-;; - no redefinition of symbols -- even when let bound or null...
-;; Would it work to use babel to convert es6 modules to requireJS format
-;; recognized by the REPL?
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
 (require 'nodejs-repl nil t)
-(nvp:decls :p (nodejs) :v (nvp-js-modes))
+(nvp:decls :p (nodejs comint) :v (nvp-js-modes))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
   (comint-write-input-ring))
 
+;;; TODO: dont echo all the .editor stuff in the repl
+(defun nvp-nodejs-repl-send-region (process start end)
+  "Send the current region from START to END to the `nodejs-repl-process'."
+  (interactive "r")
+  ;; Enclose the region in .editor ... EOF as this is more robust.
+  ;; See: https://github.com/abicky/nodejs-repl.el/issues/17
+  (comint-send-string process ".editor\n")
+  (comint-send-region process start end)
+  (comint-send-string process "\n\x04"))
+;; (defun nodejs-repl-send-string-no-output (string &optional ))
+
 (when (fboundp 'nodejs-repl-switch-to-repl)
   (nvp-repl-add nvp-js-modes
     :name 'nodejs
     :modes '(nodejs-repl-mode)
-    :procname (bound-and-true-p nodejs-repl-process-name)
+    :init (lambda (&optional _prefix)
+            (save-window-excursion
+              (ignore-errors
+                (call-interactively #'nodejs-repl-switch-to-repl))))
+    :find-fn (lambda () (get-process nodejs-repl-process-name))
+    :history-file ".node_history"
     :send-region #'nodejs-repl-send-region
     :send-buffer #'nodejs-repl-send-buffer
     :send-file #'nodejs-repl-load-file
     :send-sexp #'nodejs-repl-send-last-expression
-    :history-file ".node_history"
-    :help-cmd ".help"
-    :init (lambda (&optional _prefix)
-            (save-window-excursion
-              (ignore-errors
-                (call-interactively #'nodejs-repl-switch-to-repl))))))
+    :help-cmd ".help"))
 
 (defun nvp-nodejs-region-or-sexp ()
   "Send region or last sexp and step."

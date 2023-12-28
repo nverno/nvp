@@ -10,8 +10,8 @@
 
 ;; indicatation colors
 (defvar nvp-indicate-colors
-  '((failure . "#e31422")               ;red
-    (success . "#44de11")))             ;green
+  '((failure . "#e31422")               ; red
+    (success . "#44de11")))             ; green
 
 ;; store indicators
 (defvar nvp-indicate--cache (make-hash-table))
@@ -25,7 +25,7 @@
 ;;;###autoload
 (defun nvp-indicate-pulse-region-or-line (&optional beg end face)
   "Momentarily highlight line or region between BEG and END."
-  (or face (setq face 'next-error))
+  (or face (setq face 'region))
   (if (and beg end)
       (pulse-momentary-highlight-region beg end face)
     (pulse-momentary-highlight-one-line (point) face)))
@@ -37,9 +37,8 @@
          (pcolor (and power-p (face-background 'powerline-active0)))
          (orig-color (face-background 'mode-line))
          (temp-col (cdr (assoc (or type 'success) nvp-indicate-colors))))
-    (when msg (message (concat (format "[%s] " (if type (upcase (symbol-name type))
-                                                 "SUCCESS"))
-                               msg)))
+    (when msg
+      (message "[%s] %s" (if type (upcase (symbol-name type)) "SUCCESS") msg))
     (set-face-background 'mode-line temp-col)
     (and power-p (set-face-background 'powerline-active0 temp-col))
     (sit-for 3)

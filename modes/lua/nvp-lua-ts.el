@@ -53,9 +53,8 @@
 
 (with-eval-after-load 'lua-ts-mode
   (setq lua-ts--font-lock-settings-orig lua-ts--font-lock-settings
-        lua-ts--simple-indent-rules-orig lua-ts--simple-indent-rules)
-
-  ;; (cl-pushnew "self" lua-ts--builtins :test #'string=)
+        lua-ts--simple-indent-rules-orig lua-ts--simple-indent-rules
+        lua-ts--builtins (--filter (not (string= it "self")) lua-ts--builtins))
 
   (setq nvp-lua-ts-font-lock-before
         (treesit-font-lock-rules
@@ -85,11 +84,11 @@
 
          :language 'lua
          :feature 'builtin
-         `(((identifier) @font-lock-builtin-face
+         `(((identifier) @font-lock-keyword-face
+            (:match ,(rx bos "self" eos) @font-lock-keyword-face))
+           ((identifier) @font-lock-builtin-face
             (:match ,(rx-to-string `(seq bos (or ,@lua-ts--builtins) eos))
-                    @font-lock-builtin-face))
-           ((identifier) @font-lock-keyword-face
-            (:match ,(rx bos "self" eos) @font-lock-keyword-face)))))
+                    @font-lock-builtin-face)))))
 
   (setq nvp-lua-ts-font-lock-after
         (treesit-font-lock-rules
@@ -104,9 +103,11 @@
          :feature 'namespace
          ;; :override t
          '((function_declaration
-            name: [(method_index_expression) (dot_index_expression)] @lua-ts-mode--fontify-table)
+            name: [(method_index_expression) (dot_index_expression)]
+            @lua-ts-mode--fontify-table)
            (function_call
-            name: [(method_index_expression) (dot_index_expression)] @lua-ts-mode--fontify-table))
+            name: [(method_index_expression) (dot_index_expression)]
+            @lua-ts-mode--fontify-table))
 
          ;; :language 'lua
          ;; :feature 'assignment

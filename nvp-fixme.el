@@ -15,20 +15,21 @@
 (defvar nvp-fixme-todo-keywords '("TODO" "WIP"))
 (defvar nvp-fixme-note-keywords '("NOTE" "XXX" "INFO" "DOCS" "PERF" "TEST"))
 
+;;; Fixme(nvp):
 (defconst nvp-fixme-font-lock-keywords
   (cl-flet ((reg-it (kws face)
-              (list (rx-to-string
-                     `(seq (group-n 1 bow (or ,@kws) eow)
-                           (? (group-n 3 "(")
-                              (group-n 5 (* (not (or ")" "\n"))))
-                              (group-n 4 ")"))
-                           (* white)
-                           (group-n 2 ":")))
-                    `(1 ',face t)
-                    '(2 'font-lock-delimiter-face t)
-                    '(3 'font-lock-bracket-face t t)
-                    '(4 'font-lock-bracket-face t t)
-                    '(5 'font-lock-constant-face t t))))
+              (let ((re (rx-to-string
+                         `(seq (group-n 1 bow (regexp ,(nvp:rx-or kws)) eow)
+                               (? (group-n 3 "(")
+                                  (group-n 5 (* (not (or ")" "\n"))))
+                                  (group-n 4 ")"))
+                               (* white)
+                               (group-n 2 ":")))))
+                (list re `(1 ',face t)
+                      '(2 'font-lock-delimiter-face t)
+                      '(3 'font-lock-bracket-face t t)
+                      '(4 'font-lock-bracket-face t t)
+                      '(5 'font-lock-constant-face t t)))))
     `((,@(reg-it nvp-fixme-danger-keywords compilation-error-face))
       (,@(reg-it nvp-fixme-warning-keywords compilation-warning-face))
       (,@(reg-it nvp-fixme-todo-keywords compilation-warning-face))

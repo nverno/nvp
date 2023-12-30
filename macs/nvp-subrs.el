@@ -95,6 +95,20 @@
             (nvp:s-repeat width char))))
 
 ;; -------------------------------------------------------------------
+;;; Regexps
+
+;; Create regexp matching any symbol in sequence case-insensitively
+(defsubst nvp:rx-or (strs)
+  (let ((s (rx-to-string `(or ,@(mapcar #'upcase strs)))))
+    (mapconcat 'identity
+               (cl-loop for c across s
+                        for ss = (char-to-string c)
+                        collect (if (or (and (>= c ?a) (<= c ?z))
+                                        (and (>= c ?A) (<= c ?Z)))
+                                    (concat "[" (upcase ss) (downcase ss) "]")
+                                  ss)))))
+
+;; -------------------------------------------------------------------
 ;;; Bits
 
 (defsubst nvp:lsb (num &optional inc)

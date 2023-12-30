@@ -86,11 +86,10 @@
 
 (defun nvp-web-help-at-point ()
   (interactive)
-  (cond
-   (lsp-mode (call-interactively 'lsp-describe-thing-at-point))
-   ((cl-member web-mode-engine '("django" "jinja2") :test 'string=)
-    (browse-url "http://jinja.pocoo.org/docs/2.10/"))
-   (t (message "TODO"))))
+  (cond (lsp-mode (call-interactively 'lsp-describe-thing-at-point))
+        ((cl-member web-mode-engine '("django" "jinja2") :test 'string=)
+         (browse-url "http://jinja.pocoo.org/docs/2.10/"))
+        (t (message "TODO"))))
 
 (provide 'nvp-web)
 ;;; nvp-web.el ends here

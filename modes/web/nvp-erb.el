@@ -3,13 +3,14 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (nvp:decls)
 
 ;;;###autoload
-(define-minor-mode erb-mode "ERB minor mode"
+(define-minor-mode erb-minor-mode "ERB minor mode"
   :lighter " ERB"
-  (yas-activate-extra-mode 'erb-mode))
+  (if erb-minor-mode
+      (yas-activate-extra-mode 'erb-mode)
+    (yas-deactivate-extra-mode 'erb-mode)))
 
 (provide 'nvp-erb)
 ;; Local Variables:

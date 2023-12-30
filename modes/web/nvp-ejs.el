@@ -3,13 +3,14 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (nvp:decls)
 
 ;;;###autoload
-(define-minor-mode ejs-mode "EJS minor mode"
+(define-minor-mode ejs-minor-mode "EJS minor mode"
   :lighter " EJS"
-  (yas-activate-extra-mode 'ejs-mode))
+  (if ejs-minor-mode
+      (yas-activate-extra-mode 'ejs-mode)
+    (yas-deactivate-extra-mode 'ejs-mode)))
 
 (provide 'nvp-ejs)
 ;; Local Variables:

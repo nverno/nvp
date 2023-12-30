@@ -9,7 +9,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
 (require 'nodejs-repl nil t)
-(nvp:decls :p (nodejs comint) :v (nvp-js-modes))
+(nvp:decls :p (nodejs comint))
 
 ;; nodejs-repl doesn't manage comint history files
 (define-advice nodejs-repl-quit-or-cancel (:before (&rest _) "write-history")
@@ -27,7 +27,7 @@
 ;; (defun nodejs-repl-send-string-no-output (string &optional ))
 
 (when (fboundp 'nodejs-repl-switch-to-repl)
-  (nvp-repl-add nvp-js-modes
+  (nvp-repl-add '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode)
     :name 'nodejs
     :modes '(nodejs-repl-mode)
     :init (lambda (&optional _prefix)

@@ -6,7 +6,8 @@
 (require 'nvp-repl)
 (require 'comint)
 (require 'inf-ruby nil t)
-(nvp:decls :p (inf-ruby robe))
+(nvp:decls :p (inf-ruby robe) :f (robe-mode))
+
 
 ;; add compilation jumps in traceback output from REPL
 (defvar nvp-ruby-inf-compilation-regexp
@@ -15,13 +16,14 @@
 ;; Interpret '?' in irb similar to octave/ess
 (defconst nvp-ruby-inf-help
   '(("ruby" . "help\n%s\n")
-    ("pry"  . "show-source -d %s")))
+    ("pry"  . "show-source -d %s")
+    (nil    .  "")))
 
 ;; translate '?' in STR
 (defun nvp-ruby--repl-input-filter (str)
   (-if-let (help-str (and (string-match "^ *\\? *\\(.+\\)" str)
                           (match-string 1 str)))
-      (format (assoc-default inf-ruby-default-implementation nvp-ruby-inf-help)
+      (format (assoc-default inf-ruby-buffer-command nvp-ruby-inf-help)
               help-str)
     str))
 

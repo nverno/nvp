@@ -22,11 +22,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'js)
 (nvp:req 'nvp-js 'subrs)
-(nvp:decls :p (js2 tern yas httpd)
+(nvp:decls :p (js2 tern yas)
            :f (nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook))
-
-(defvar nvp-js-modes
-  '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode))
 
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim -- other modes, js-jsx, js2-jsx, rjsx inherit from js/js2
@@ -40,13 +37,6 @@
   ;; (require 'nvp-indium)
   (require 'nvp-nodejs)
   (require 'nvp-skewer))
-
-;;; Httpd server
-(defvar httpd-root)
-(defun nvp-httpd-here ()
-  (interactive)
-  (setq httpd-root default-directory)
-  (httpd-start))
 
 ;;; Toggle b/w JsX <=> JS
 ;; JsX options (3/7/20): rjsx (better), or js-jsx-mode w/ js2-minor-mode

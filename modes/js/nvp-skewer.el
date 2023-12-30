@@ -4,11 +4,13 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(nvp:decls :p (skewer web html css) :f (list-skewer-clients run-skewer)
-           :v (nvp-js-modes))
+(nvp:decls :p (skewer web html css) :f (list-skewer-clients run-skewer))
 
 (when (fboundp 'skewer-repl)
-  (nvp-repl-add (append '(web-mode html-mode css-mode css-ts-mode) nvp-js-modes)
+  (nvp-repl-add '( js-mode js-ts-mode js2-mode
+                   js2-jsx-mode js-jsx-mode rjsx-mode
+                   css-mode css-ts-mode
+                   web-mode html-mode html-ts-mode mhtml-mode)
     :name 'skewer
     :modes '(skewer-repl-mode)
     :bufname (regexp-quote "*skewer-repl*")

@@ -9,7 +9,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'lisp-mode)
 (require 'ielm)
-(nvp:decls :p (nvp-repl) :v (nvp-repl--process-buffers))
+(nvp:decls :p (nvp-repl)
+           :f (nvp-repl-current-buffer) :v (nvp-repl--process-buffers))
 
 (defvar nvp-ielm-hippie-expanders
   '(nvp-he-try-expand-history

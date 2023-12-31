@@ -5,7 +5,6 @@
 ;; This just provides simple mode for abbrev/snippet control mostly.
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (nvp:decls :f (web-mode))
 
 ;;; from spacemacs

@@ -3,15 +3,15 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls :p (typescript))
+(nvp:decls :p (typescript ecma))
 
 (eval-and-compile
   (defvar nvp-typescript-modes
     '(typescript-mode typescript-ts-mode typescript-tsx-mode tsx-ts-mode)))
 
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
-   :modes nvp-typescript-modes
-   (nvp-newline-dwim--comment syntax arg " * "))
+  :modes nvp-typescript-modes
+  (nvp-newline-dwim--comment syntax arg " * "))
 
 (with-eval-after-load 'nvp-repl
   (require 'nvp-typescript-repl))
@@ -50,16 +50,6 @@
 
 ;; -------------------------------------------------------------------
 ;;; `typescript-ts-mode' patches
-
-(defvar typescript-ts-mode--operators
-  '("=>" "?" "??" "..."                 ; added 12/15/23
-    "=" "+=" "-=" "*=" "/=" "%=" "**=" "<<=" ">>=" ">>>=" "&=" "^="
-    "|=" "&&=" "||=" "??=" "==" "!=" "===" "!==" ">" ">=" "<" "<=" "+"
-    "-" "*" "/" "%" "++" "--" "**" "&" "|" "^" "~" "<<" ">>" ">>>"
-    "&&" "||" "!" "?.")
-  "TypeScript operators for tree-sitter font-locking.")
-
-(require 'typescript-ts-mode)
 
 (defun typescript-ts-mode--compile-assignment-query (lang)
   "Compile query that captures object, index, and property identifiers."
@@ -104,60 +94,56 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
              (treesit-node-start node) (treesit-node-end node)
              face override start end)))))))
 
-(defun nvp-typescript-ts-font-lock-rules (language)
-  (append
-   (ecma-ts-font-lock-rules language)
-   (treesit-font-lock-rules
-    :language language
-    :feature 'assignment
-    '((assignment_expression
-       left: (identifier) @font-lock-variable-name-face)
-      (assignment_expression
-       left: (_) @typescript-ts-mode--fontify-assignment-lhs)
-      (augmented_assignment_expression
-       left: (identifier) @font-lock-variable-name-face)
-      (augmented_assignment_expression
-       left: (_) @typescript-ts-mode--fontify-assignment-lhs)
-      (update_expression
-       argument: (identifier) @font-lock-variable-name-face)
-      (update_expression
-       argument: (_) @typescript-ts-mode--fontify-assignment-lhs))
+(defvar nvp-typescript-ts-font-lock-rules nil)
+(defvar nvp-tsx-ts-font-lock-rules nil)
 
-    :language language
-    :feature 'delimiter
-    '((["," "." ";" ":" "?:"]) @font-lock-delimiter-face)
-
-    :language language
-    :feature 'namespace
-    '(["module" "global"] @font-lock-keyword-face
-      (internal_module
-       name: (identifier) @font-lock-type-face)
-      (internal_module
-       name: (nested_identifier
-              [(identifier) (property_identifier)] @font-lock-type-face))
-      (module
-       name: (identifier) @font-lock-function-name-face)
-      (module
-       name: (nested_identifier
-              [(identifier) (property_identifier)] @font-lock-function-name-face)))
-   
-    :language language
-    :feature 'variable
-    '((identifier) @font-lock-variable-use-face
-      (property_identifier) @font-lock-property-use-face))))
-
-(defun nvp@typescript-ts-font-lock (orig-fn language)
+(defun nvp-typescript-ts-font-lock-rules (rules-fn language)
   (when (eq 'tsx language)
     (setq-local typescript-ts-mode--assignment-query
                 tsx-ts-mode--assignment-lhs-query))
-  (let* ((new-rules (nvp-typescript-ts-font-lock-rules language))
-         (features (--map (nth 2 it) (append (car new-rules) (cadr new-rules))))
-         (rules (--filter (not (memq (nth 2 it) features))
-                          (funcall orig-fn language))))
-    (append (car new-rules) rules (cadr new-rules))))
+  (let ((v (intern (format "nvp-%s-ts-font-lock-rules" language))))
+    (or (and nil nvp-typescript-ts-font-lock-rules)
+        (let ((new-rules
+               (treesit-font-lock-rules
+                :language language
+                :feature 'assignment
+                '((assignment_expression
+                   left: (identifier) @font-lock-variable-name-face)
+                  (assignment_expression
+                   left: (_) @typescript-ts-mode--fontify-assignment-lhs)
+                  (augmented_assignment_expression
+                   left: (identifier) @font-lock-variable-name-face)
+                  (augmented_assignment_expression
+                   left: (_) @typescript-ts-mode--fontify-assignment-lhs)
+                  (update_expression
+                   argument: (identifier) @font-lock-variable-name-face)
+                  (update_expression
+                   argument: (_) @typescript-ts-mode--fontify-assignment-lhs))
+
+                :language language
+                :feature 'ts-extension
+                '(["?:"] @font-lock-delimiter-face)
+                
+                :language language
+                :feature 'namespace
+                '(["module" "global"] @font-lock-keyword-face
+                  (internal_module
+                   name: (identifier) @font-lock-type-face)
+                  (internal_module
+                   name: (nested_identifier
+                          [(identifier) (property_identifier)]
+                          @font-lock-type-face))
+                  (module
+                   name: (identifier) @font-lock-function-name-face)
+                  (module
+                   name: (nested_identifier
+                          [(identifier) (property_identifier)]
+                          @font-lock-function-name-face)))))
+              (old-rules (funcall rules-fn language)))
+          (set v (ecma-ts-merge-rules language (append old-rules new-rules)))))))
 
 (advice-add 'typescript-ts-mode--font-lock-settings
-            :around #'nvp@typescript-ts-font-lock)
+            :around #'nvp-typescript-ts-font-lock-rules)
 
 ;;; Add missing features once
 (nvp:run-once typescript-ts-mode (:after (&rest _))

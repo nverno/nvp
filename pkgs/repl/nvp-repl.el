@@ -13,12 +13,11 @@
 ;;
 ;;; Code:
 
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'comint))
+(eval-when-compile (require 'nvp-macro))
+(require 'comint)
 (require 'nvp)
 (nvp:auto "nvp-sh" 'nvp-sh-get-process)
-(nvp:decls :p (hippie comint sh ielm) :f (nvp-repl--init))
+(nvp:decls :p (sh) :f (nvp-repl--init))
 
 ;; `display-buffer' action for popping between REPL/source buffers
 (defvar nvp-repl--display-action
@@ -254,6 +253,7 @@ well."
   :type '(repeat symbol)
   :group 'nvp-repl)
 
+(defvar nvp-repl-keymap)
 (defvar-keymap nvp-repl-keymap
   :prefix 'nvp-repl-keymap
   "h" #'nvp-repl-help

@@ -2,13 +2,6 @@
 
 ;;; Commentary:
 ;;
-;; TODO: Project setup, configuration, running, testing, and compiling
-;;
-;; Need support for project types:
-;; - React - create-react-app boostrapped projects
-;; - Node/npm
-;; - yarn
-;;
 ;; Configuration (work w/ projectile-configure-project?):
 ;; - local binary paths: ./node_modules/.bin/
 ;;   > npm (or yarn) bin [cmd] => will list path to local bin
@@ -22,24 +15,9 @@
 ;;   command, etc., also needs to recognize correct sourcemaps
 ;; - .env / .env.development variables
 ;; - babel configuration (es6, jsx, ts) using preset-env, in config file
-;; - travis runner?
-;;
-;; Run => start development environment
-;; Test: only worry about jest framework
-;;   + need mappings b/w files
-;;   + test runner script in package.json
-;;   + could have option for coverage
-;;   + would be nice to have output with XREFs to failures
-;;   + Also, ability to run specific unit tests/groups of tests with regexps or
-;;     something similar
-;; Compile:
-;;   + Build project to produce static site
-;;   + Deploy somehow?
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'transient)
-(require 'nvp)
 (nvp:decls)
 
 (nvp:defvar nvp-js-test-re (regexp-opt '("jest" "mocha" "jasmine") t))

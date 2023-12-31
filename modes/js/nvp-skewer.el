@@ -6,6 +6,11 @@
 (require 'nvp-repl)
 (nvp:decls :p (skewer web html css) :f (list-skewer-clients run-skewer))
 
+;; doesn't recognize web-mode as an html-mode and unecessarily does some shit
+(define-advice skewer-html-eval-tag (:around (fn &rest args) "html-mode")
+  (let ((major-mode 'html-mode))
+    (apply fn args)))
+
 (when (fboundp 'skewer-repl)
   (nvp-repl-add '( js-mode js-ts-mode js2-mode
                    js2-jsx-mode js-jsx-mode rjsx-mode

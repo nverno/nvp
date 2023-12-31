@@ -22,9 +22,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'js)
 (nvp:req 'nvp-js 'subrs)
-(nvp:decls :p (js2 tern yas)
-           :f (nvp-js-jsx-hook nvp-js2-hook nvp-jsx-hook nvp-rjsx-hook))
-
+(nvp:decls :p (js2 ecma) :f (nvp-js-jsx-hook js2-minor-mode))
+           
 ;; when in /* continued comments or doxygen, add comment continuation for
 ;; newline-dwim -- other modes, js-jsx, js2-jsx, rjsx inherit from js/js2
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
@@ -63,17 +62,6 @@
        (nvp:js-switch-mode 'rjsx-mode))
       (_ (user-error "%S not matched against any JsX modes" major-mode)))))
 
-;;; Snippets
-
-(defun nvp-js-test-p ()
-  (or (string-match-p "\\(?:test\\|spec\\)" (nvp:dfn))
-      (string-match-p ".*test\\.js\\'" (nvp:bfn))))
-
-;; in template string `...`
-(defun nvp-js-in-template-p () (eq ?\` (nvp:ppss 'str)))
-
-;;; Setup
-;; from spacemacs
 (defun nvp-js-jsx-file-p ()
   "Enable rsjx mode using `magic-mode-alist'."
   (when buffer-file-name
@@ -84,6 +72,28 @@
          (not (nvp:ppss 'soc nil (match-beginning 1))))))
 
 (add-to-list 'magic-mode-alist '(nvp-js-jsx-file-p . rjsx-mode))
+
+;;; Snippets
+
+(defun nvp-js-test-p ()
+  (or (string-match-p "\\(?:test\\|spec\\)" (nvp:dfn))
+      (string-match-p ".*test\\.js\\'" (nvp:bfn))))
+
+;; in template string `...`
+(defun nvp-js-in-template-p () (eq ?\` (nvp:ppss 'str)))
+
+;; -------------------------------------------------------------------
+;;; `js-ts-mode' Patch
+
+(nvp:decl ecma-ts-merge-rules)
+(setq js--treesit-font-lock-settings
+      (ecma-ts-merge-rules 'javascript js--treesit-font-lock-settings))
+
+;;; Add missing features once
+(nvp:run-once js-ts-mode (:after (&rest _))
+  (dolist (v '(variable builtin namespace preproc))
+    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+  (treesit-font-lock-recompute-features))
 
 (provide 'nvp-js)
 ;; Local Variables:

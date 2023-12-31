@@ -157,26 +157,26 @@
   "Treesit"
   :refresh-suffixes t
   [ :if nvp-treesit-ready-p
-    ["Query"
+    ["Queries"
      ("q" "Highlight query" ts-query-highlight-query :transient t)
      ("Q" "Remove highlights" ts-query-remove-highlights :transient t
       :if-non-nil ts-query--langs)
      ("v" "Validate" nvp-treesit-validate)]
-    ["Explorer"
-     ("j" "Jump" nvp-treesit-explorer-jump)]
-    ["Current"
+    ["Inspect"
+     ("j" "Jump to Explorer" nvp-treesit-explorer-jump)
      ("?" "Inspect node" treesit-inspect-node-at-point :transient t)
      ("e" "Toggle errors" ts-error-toggle)]]
   [["Parsers"
     ("l" "List nodes" ts-parser-list-nodes)
-    ("L" "List sources" ts-parser-list-sources)
+    ("L" "List sources" ts-util-list-sources)
     ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t
      :if nvp-treesit-ready-p)
     ("i" "Install parser" nvp-treesit-install)
     ("U" "Update parser(s)" nvp-treesit-update)]
-   ["Dev Mode"
-    ("m" "global" nvp-treesit-mode)
-    ("M" "local" nvp-treesit-minor-mode)]
+   ["Dev"
+    ("g" "Go to query directories" ts-util-jump-to-queries)
+    ("m" "Global mode" nvp-treesit-mode)
+    ("M" "Local mode" nvp-treesit-minor-mode)]
    ["Debug"
     (":i" "Indent verbose"
      nvp-treesit-menu--toggle-treesit--indent-verbose)

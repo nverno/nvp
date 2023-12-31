@@ -102,6 +102,9 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     ;; my vars
     nvp-mode-name
     nvp-mode-cache
+    nvp-mode-default-functions
+    nvp-mode-function-hooks
+    nvp-mode-hooks
     nvp-mode-header-regex
     nvp-mode-snippet-dir
     nvp-mode-font-additions

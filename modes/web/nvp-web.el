@@ -8,6 +8,9 @@
 (nvp:auto "nvp-jinja" 'nvp-jinja-url-for)
 (nvp:auto "projectile" 'projectile-project-root)
 
+(with-eval-after-load 'nvp-repl
+  (require 'nvp-skewer))
+
 ;; -------------------------------------------------------------------
 ;;; Navigation
 

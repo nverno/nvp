@@ -27,45 +27,50 @@
              (executable-find ts-comint-program-command))
         (setq ts-comint-program-command (nvp-typescript-repl-program)))))
 
-;; From `js-comint'
-(defvar ts-comint-drop-regexp
-  "\\(\x1b\\[[0-9]+[GJK]\\|^[ \t]*undefined[\r\n]+\\)"
-  "Regex to silence matching output.")
+;; (defvar ts-comint-drop-regexp
+;;   "\\(\x1b\\[[0-9]+[GJK]\\|^[ \t]*undefined[\r\n]+\\)"
+;;   "Regex to silence matching output.")
 
 ;; FIXME: doesn't handle multi-line echoed input
-(defun ts-comint-filter-output (_string)
-  "Filter extra escape sequences from STRING."
-  (let ((beg (or comint-last-output-start
-                 (point-min-marker)))
-        (end (process-mark (get-buffer-process (current-buffer)))))
-    (save-excursion
-      (goto-char beg)
-      ;; Remove ansi escape sequences used in readline.js
-      (while (re-search-forward ts-comint-drop-regexp end t)
-        (replace-match "")))))
+;; (defun nvp-typescript-repl--preoutput-filter (string)
+;;   "Filter extra escape sequences from STRING."
+;;   (if (string= "> " string) ""
+;;     (if (string-prefix-p "undefined" string)
+;;         (substring string (length "undefined"))
+;;       string))
+;;   ;; (let ((beg (or comint-last-output-start
+;;   ;;                (point-min-marker)))
+;;   ;;       (end (process-mark (get-buffer-process (current-buffer)))))
+;;   ;;   (save-excursion
+;;   ;;     (goto-char beg)
+;;   ;;     ;; Remove ansi escape sequences used in readline.js
+;;   ;;     (while (re-search-forward ts-comint-drop-regexp end t)
+;;   ;;       (replace-match ""))))
+;;   )
 
 (defun nvp-typescript-repl-init (&optional _prefix)
   (interactive "P")
   (or (nvp-typescript-repl-setup 'force)
       (user-error "No ts repl found (need to npm i ts-node?)"))
+  ;; let ((process-environment (append (list "NODE_NO_READLINE=1")
+  ;;                                   (copy-sequence process-environment))))
   (run-ts nil 'no-switch)
-  (with-current-buffer ts-comint-buffer
-    (setq-local comint-prompt-regexp "> ")
-    ;; (add-hook 'comint-output-filter-functions 'ts-comint-filter-output nil t)
-    (get-buffer-process (current-buffer))))
+  (get-buffer-process ts-comint-buffer))
 
 (when (fboundp 'run-ts)
   (nvp-repl-add nvp-typescript-modes
     :name 'typescript
     :modes '(ts-comint-mode)
-    :bufname (regexp-quote "*Typescript")
     :init #'nvp-typescript-repl-init
+    :find-fn (lambda () (get-buffer-process ts-comint-buffer))
     ;; :send-string #'ts-send-string
     :send-region #'ts-send-region
     :send-sexp #'ts-send-last-sexp
     :send-buffer #'ts-send-buffer
     :send-file #'ts-load-file
     :help-cmd '(:no-arg ".help" :with-arg ".type %s")
+    :pwd-cmd "process.cwd()"
+    :cd-cmd "process.chdir(\"%s\")"
     :history-file ".ts_history"))
 
 (defun nvp-typescript-repl-get-file-mod (filename)

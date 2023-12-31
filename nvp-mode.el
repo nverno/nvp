@@ -111,8 +111,17 @@
         (--> (completing-read "Install: " (cdr (assq t targs)) nil t)
              (user-error "unimplemented: %s" it))))))
 
-;;; Transient
+;; -------------------------------------------------------------------
+;;; Menu
+
 (nvp:def-transient-toggle-vars nvp-mode-menu nvp-mode-verbose)
+
+(defun nvp-mode-clear-cache (&optional all)
+  (interactive "P")
+  (if all (clrhash nvp-mode-cache)
+    (if nvp-mode-name
+        (remhash nvp-mode-name nvp-mode-cache)
+      (user-error "`nvp-mode-name' isnt defined"))))
 
 ;;;###autoload(autoload 'nvp-mode-menu "nvp-mode")
 (transient-define-prefix nvp-mode-menu ()
@@ -140,7 +149,8 @@
     ("s" "Search docs" nvp-docs :if-non-nil nvp-docs-functions)
     ("M-?" "Describe mode" nvp-dev-describe-mode :transient nil)]
    ["Settings"
-    (":v" "Toggle verbose" nvp-mode-menu--toggle-nvp-mode-verbose)]])
+    (":v" "Toggle verbose" nvp-mode-menu--toggle-nvp-mode-verbose)
+    (":r" "Clear config" nvp-mode-clear-cache)]])
 
 (provide 'nvp-mode)
 ;; Local Variables:

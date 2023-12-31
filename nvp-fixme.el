@@ -15,7 +15,7 @@
 (defvar nvp-fixme-todo-keywords '("TODO" "WIP"))
 (defvar nvp-fixme-note-keywords '("NOTE" "XXX" "INFO" "DOCS" "PERF" "TEST"))
 
-;;; Fixme(nvp):
+;;; fixme(nvp):
 (defconst nvp-fixme-font-lock-keywords
   (cl-flet ((reg-it (kws face)
               (let ((re (rx-to-string

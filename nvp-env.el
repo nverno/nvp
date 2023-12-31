@@ -90,9 +90,10 @@ With prefix, overwrite value instead of appending by default."
                  :message "Current: %s" current-val)
            (and current-val
                 (y-or-n-p "Clobber current value? ")))))
+  (and (string-empty-p value) (setq value nil))
   (if clobber (setenv env-var value)
     (nvp-env-add env-var value))
-  (message "%s=%s" env-var (getenv env-var)))
+  (message "%s%s" env-var (if value (concat "=" (getenv env-var)) " unset")))
 
 ;; ------------------------------------------------------------
 ;;; PATH

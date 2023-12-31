@@ -2,5 +2,5 @@
 # name: shebang
 # key: !
 # --
-#! /usr/bin/env node${1:
+#!/usr/bin/env node${1:
 'use strict';}

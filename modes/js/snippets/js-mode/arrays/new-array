@@ -5,5 +5,5 @@
 # --
 (if (looking-back "=\\s-*" (line-beginning-position))
     (yas-expand-snippet "Array(${1:n})${2:.fill(${3:0})}")
-  (and (nvp:line-empty-p) (insert "let "))
+  (and (nvp-line-empty-p) (insert "let "))
   (yas-expand-snippet "${1:arr} = Array(${2:n})${3:.fill(${4:0})}"))

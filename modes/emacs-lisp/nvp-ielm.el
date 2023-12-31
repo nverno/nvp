@@ -61,7 +61,8 @@
     (ielm-eval-input str for-effect)))
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(emacs-lisp-mode lisp-data-mode lisp-interaction-mode)
+  (nvp-repl-add '( emacs-lisp-mode lisp-data-mode lisp-interaction-mode
+                   command-history-mode)
     :name 'ielm
     :modes '(inferior-emacs-lisp-mode)
     :init #'ielm

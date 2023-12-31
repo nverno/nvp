@@ -197,13 +197,20 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
         `(nvp:decl-prefixes ,@(nvp:as-list p)))
      (nvp:decl
        ;; nvp
-       nvp-autoload-keymap
-       nvp-mark-defun
-       nvp-move-previous-heading
-       nvp-move-forward-heading
-       nvp-mode-header-regex
        nvp-newline-dwim--comment
+       nvp-completing-read
+       nvp-find-file-in-dir
+       ;; from compiled init
+       nvp-autoload-keymap
+       nvp-mode-header-regex
+       nvp-mark-defun nvp-mark-expand-to-previous-comments
        nvp-company-local
+       nvp-narrow-dwim
+       nvp-paredit-close-round
+       nvp-move-previous-heading nvp-move-forward-heading
+       nvp-xref-go nvp-etags-find-definitions
+       nvp-repeat-set-cursor nvp-repeat-abort
+       nvp-indicate-abort nvp-indicate-cursor-pre nvp-indicate-cursor-post
        ;; hap
        nvp-help-at-point nvp-hap-elisp nvp-hap-info nvp-hap-man nvp-hap-lsp
        nvp-hap-company nvp-hap-semantic nvp-hap-treesit nvp-hap-local nvp-hap-word
@@ -212,8 +219,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; install / package
        nvp-pkg-directory-dwim
        ;; project
-       nvp-project-root
-       nvp-project-parent
+       nvp-project-root nvp-project-parent
        ;; nvp-cycle.el
        nvp-cycle
        ;; reading
@@ -221,8 +227,6 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-read-elisp-function
        nvp-read-elisp-variable
        nvp-read-mode
-       nvp-completing-read
-       nvp-find-file-in-dir
        ;; modes
        nvp-scratch-minor-mode
        ;; logging
@@ -264,9 +268,6 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; indication
        nvp-indicate-pulse-region-or-line
        nvp-indicate-modeline
-       ;; Repeat
-       nvp-repeat-set-cursor nvp-repeat-abort
-       nvp-indicate-abort nvp-indicate-cursor-pre nvp-indicate-cursor-post
        ;; procs / inf
        nvp-proc-default-filter
        nvp-proc-default-sentinel

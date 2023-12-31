@@ -11,7 +11,7 @@
 
 ;;; Transient
 (defvar lsp-log-io)
-(nvp:def-transient-toggle-vars nvp-lsp-menu
+(nvp:transient-toggle nvp-lsp-menu
   lsp-log-io)
 
 (transient-define-infix nvp-lsp-menu--toggle-lsp-server-trace ()

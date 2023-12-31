@@ -1,9 +1,9 @@
 ;;; nvp-fixme.el --- simple fixme minor-mode -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
+;;
 ;; Minor mode to highlight and navigate b/w fixmes and todos
-
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)
@@ -15,7 +15,6 @@
 (defvar nvp-fixme-todo-keywords '("TODO" "WIP"))
 (defvar nvp-fixme-note-keywords '("NOTE" "XXX" "INFO" "DOCS" "PERF" "TEST"))
 
-;;; fixme(nvp):
 (defconst nvp-fixme-font-lock-keywords
   (cl-flet ((reg-it (kws face)
               (let ((re (rx-to-string

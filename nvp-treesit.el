@@ -148,7 +148,7 @@
 ;; -------------------------------------------------------------------
 ;;; Transient
 
-(nvp:def-transient-toggle-vars nvp-treesit-menu
+(nvp:transient-toggle nvp-treesit-menu
   treesit--font-lock-verbose
   treesit--indent-verbose)
 

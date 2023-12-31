@@ -192,6 +192,7 @@
     ("tl" "thread-last" nil :system t)
     ("to" "type-of" nil :system t)
     ("ue" "user-error" nil :system t)
+    ("up" "unwind-protect" nil :system t)
     ("wf" "write-file" nil :system t)
     ("wg" "widget-get" nil :system t)
 

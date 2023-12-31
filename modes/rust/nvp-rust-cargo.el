@@ -9,7 +9,7 @@
 (nvp:decls :p (rustic) :v (rustic-cargo-test-disable-warnings))
 
 (with-eval-after-load 'rustic
-  (nvp:def-transient-toggle-vars nvp-cargo-menu
+  (nvp:transient-toggle nvp-cargo-menu
     rustic-cargo-test-disable-warnings
     rustic-cargo-use-last-stored-arguments)
 

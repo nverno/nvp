@@ -11,13 +11,6 @@
 
 (defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
 
-;;;###autoload
-(defun nvp-etags-find-definitions ()
-  (interactive)
-  (let* ((xref-backend-functions '(etags--xref-backend))
-         (thing (xref--read-identifier "Find definitions of: ")))
-    (xref-find-definitions-other-window thing)))
-
 ;; workaround ggtags.el/global not accepting regex chars
 ;; - ggtags.el: tags starting with regex characters cause errors, eg.
 ;;   ggtags-process-string("global" "-c" "$0") =>
@@ -38,16 +31,16 @@
 FILE if non-nil. If FORCE, force interpretation as LANG."
   (nvp:defq file (nvp:path 'bf) kinds "*")
   (->> (apply #'process-lines
-              (delq nil
-                    (list
-                     nvp-tags-ctags-program "-x"
-                     (and force lang (not (string= lang "all"))
-                          (format "--language-force=%s" lang))
-                     (and lang kinds (format "--kinds-%s=%s" lang kinds))
-                     file)))
+              (delq nil (list
+                         nvp-tags-ctags-program "-x"
+                         (and force lang (not (string= lang "all"))
+                              (format "--language-force=%s" lang))
+                         (and lang kinds (format "--kinds-%s=%s" lang kinds))
+                         file)))
        (mapcar (lambda (s)
                  (--when-let (cadr (split-string s file t " "))
-                   (string-trim-left (replace-regexp-in-string "[ \t;{]*$" "" it)))))
+                   (string-trim-left
+                    (replace-regexp-in-string "[ \t;{]*$" "" it)))))
        (delq nil)))
 
 (defun nvp-tag-show-language-config (lang)

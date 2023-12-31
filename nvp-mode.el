@@ -114,7 +114,7 @@
 ;; -------------------------------------------------------------------
 ;;; Menu
 
-(nvp:def-transient-toggle-vars nvp-mode-menu nvp-mode-verbose)
+(nvp:transient-toggle nvp-mode-menu nvp-mode-verbose)
 
 (defun nvp-mode-clear-cache (&optional all)
   (interactive "P")

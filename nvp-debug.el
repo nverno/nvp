@@ -61,7 +61,7 @@
 ;; -------------------------------------------------------------------
 ;;; Transient
 
-(nvp:def-transient-toggle-vars nvp-gud-menu
+(nvp:transient-toggle nvp-gud-menu
   gud-highlight-current-line)
 
 (defun nvp-gud-refresh (&optional arg)

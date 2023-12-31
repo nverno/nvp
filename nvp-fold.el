@@ -8,7 +8,7 @@
 (require 'nvp)
 (nvp:decls)
 
-(nvp:def-transient-toggle-vars nvp-hideshow-menu hs-allow-nesting)
+(nvp:transient-toggle nvp-hideshow-menu hs-allow-nesting)
 
 (defun nvp-hideshow-menu--quit ()
   (interactive)

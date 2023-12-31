@@ -1,11 +1,6 @@
 ;;; nvp-help.el --- help commands -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-;;
-;; Autoloaded help generic commands
-;;; TODO:
-;; - list package dependencies: see `package--get-deps'
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
@@ -73,37 +68,6 @@
       (funcall-interactively #'powerthesaurus-lookup-dwim)
     (browse-url (format "http://en.wiktionary.org/wiki/%s"
                         (save-excursion (car (ispell-get-word nil)))))))
-
-;; -------------------------------------------------------------------
-;;; Faces 
-
-;; Show the name of face under point.
-;;;###autoload
-(defun nvp-help-font-face (pos)
-  "Info on char face at POS."
-  (interactive "d")
-  (let ((face (if current-prefix-arg
-                  (read-face-name "Face: ")
-                (or (get-char-property (point) 'read-face-name)
-                    (get-char-property (point) 'face)
-                    (read-face-name "Face: ")))))
-    (describe-face face)
-    (if face (message "Face: %s" face)
-      (message "No face at %d" pos))))
-
-;; -------------------------------------------------------------------
-;;; Chars
-
-;; `list-block-of-chars' function does legwork
-;;;###autoload
-(defun nvp-help-display-charset (&optional arg)
-  "List names of charsets."
-  (interactive "P")
-  (if arg
-      (list-character-sets nil)
-    (let* ((table (mapcar (lambda (x) (list (symbol-name x))) charset-list))
-           (charset (nvp-completing-read "Charset: " table)))
-     (list-charset-chars (intern charset)))))
 
 ;; -------------------------------------------------------------------
 ;;; Bindings
@@ -211,6 +175,8 @@
     ("W" "Powerthesaurus" powerthesaurus-transient :transient transient--do-replace
      :if (lambda () (featurep 'powerthesaurus)))
     ("S" "Spellcheck" ispell)]
+   ["Fonts/Faces/Charsets"
+    ("F" "Font menu" nvp-font-menu :transient transient--do-replace)]
    ["Libs"
     ;; (":sos" "Sos Keybindings" nvp-sos)
     (":sp" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])

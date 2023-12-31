@@ -39,7 +39,7 @@
 (defconst nvp-transient--dev-description "[NVP] Dev")
 (defvar nvp-transient--done-deved nil)
 
-(nvp:def-transient-toggle-vars nvp-transient-menu transient--debug)
+(nvp:transient-toggle nvp-transient-menu transient--debug)
 
 ;;;###autoload(autoload 'nvp-transient-menu "nvp-transient")
 (transient-define-prefix nvp-transient-menu ()

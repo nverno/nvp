@@ -253,7 +253,7 @@ well."
   :type '(repeat symbol)
   :group 'nvp-repl)
 
-(defvar nvp-repl-keymap)
+(declare-function nvp-repl-keymap "")
 (defvar-keymap nvp-repl-keymap
   :prefix 'nvp-repl-keymap
   "h" #'nvp-repl-help
@@ -689,7 +689,7 @@ Prompt with \\[universal-argument]."
 
 (defvar-local nvp-repl-load-startup-file t)
 
-(nvp:def-transient-toggle-vars nvp-repl-config-menu
+(nvp:transient-toggle nvp-repl-config-menu
   nvp-repl-load-startup-file)
 
 ;;;###autoload(autoload 'nvp-repl-menu "nvp-repl")

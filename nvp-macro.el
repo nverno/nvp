@@ -110,7 +110,7 @@ If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
 ;; -------------------------------------------------------------------
 ;;; Transient
 
-(defmacro nvp:def-transient-toggle-vars (menu &rest vars)
+(defmacro nvp:transient-toggle (menu &rest vars)
   "Define infix toggles on transient MENU for VARS."
   (declare (indent defun))
   (macroexp-progn

@@ -122,39 +122,6 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
   (nvp-toggle-local-variable var val 'dir nil mode))
 
 ;; -------------------------------------------------------------------
-;;; Font-lock / Chars
-
-(defvar-keymap nvp-repeat-toggle-font-lock-map
-  :repeat t
-  "f" #'nvp-toggle-font-lock)
-
-;;;###autoload
-(defun nvp-toggle-font-lock (arg)
-  "Toggle font-lock additions on/off in current buffer.
-With prefix ARG, just refresh defaults."
-  (interactive "P")
-  (if arg
-      (nvp:toggled-if (font-lock-refresh-defaults)
-        (font-lock-flush)
-        (font-lock-ensure))
-    ;; otherwise, remove fonts added via `font-lock-add-keywords'
-    (let ((mode-fonts (cdr (assq major-mode nvp-mode-font-additions))))
-      (if (null mode-fonts)
-          (user-error "No additional fonts for %S" major-mode)
-        ;; if additional fonts are currently applied, there should be an
-        ;; entry in `font-lock-keywords-alist'
-        (if-let ((fonts (cdr (assq major-mode font-lock-keywords-alist))))
-            (if (cl-some (lambda (elt)
-                           (cl-find elt fonts :key #'caar :test #'equal))
-                         mode-fonts)
-                (font-lock-remove-keywords major-mode mode-fonts)
-              ;; otherwise there are mode-fonts, but they have been removed or
-              ;; were never added
-              (font-lock-add-keywords major-mode mode-fonts))
-          (font-lock-add-keywords major-mode mode-fonts))
-        (font-lock-refresh-defaults)))))
-
-;; -------------------------------------------------------------------
 ;;; Text
 
 (defvar-keymap nvp-repeat-toggle-tabify-map

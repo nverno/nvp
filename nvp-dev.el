@@ -11,10 +11,10 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
 (require 'help-mode)
+(nvp:decls :p (advice) :v (c-lang-constants pp-default-function))
+
 (nvp:auto "nvp-util" 'nvp-s-wrap)
 (nvp:auto "cl-extra" 'cl-prettyprint)
-(nvp:decls :p (advice treesit) :f (nvp-read-mode)
-           :v (c-lang-constants pp-default-function))
 
 (define-button-type 'help-marker
   :supertype 'help-xref
@@ -30,21 +30,14 @@
    ["Display"
     ("v" "Variable" nvp-dev-describe-variable)
     ("m" "Mode config" nvp-dev-describe-mode)
-    ("c" "Charset" nvp-help-display-charset)
-    ("C" "Coding systems" list-coding-systems)
     ("h" "Command history" list-command-history)]
    ["Modify"
     ("/t" "Transient" nvp-transient-menu :transient transient--do-replace)
     (":a" "Remove advice" nvp-dev-advice-remove-all)
-    (":h" "Add/Remove hook" nvp-hook-add-or-remove)
-    (":f" "Font face on region" nvp-font-fontify-region-face)]]
+    (":h" "Add/Remove hook" nvp-hook-add-or-remove)]]
   [["Resources"
     ("t" "Timers" list-timers)
     ("T" "Threads" list-threads)]
-   ["Fonts"
-    ("ff" "Faces" list-faces-display)
-    ("fF" "Fonts" nvp-font-list)
-    ("fa" "Available fontsets" list-fontsets)]
    ["Load"
     ("lf" "List nvp features" nvp-dev-features)
     ("ld" "List dynamic libs" list-dynamic-libraries)
@@ -54,15 +47,10 @@
   :create t
   ("<f2>" . nvp-dev-menu)
   ("a"    . nvp-dev-advice-remove-all)
-  ("c"    . nvp-help-list-charsets)
   ("D"    . describe-current-display-table) ; #<marker at 3963 in disp-table.el.gz>
   ("f"    . nvp-dev-features)
-  ("Fr"   . nvp-font-fontify-region-face)
-  ("Fl"   . nvp-font-list)
   ("H"    . nvp-hook-add-or-remove)
   ("ld"   . list-dynamic-libraries)
-  ("lf"   . list-faces-display)
-  ("lF"   . list-fontsets)
   ("li"   . list-command-history)
   ("lc"   . list-coding-systems)
   ("ls"   . list-load-path-shadows)
@@ -387,57 +375,6 @@ With prefix, display in same frame using `display-buffer' ACTION."
 ;;       (with-current-buffer standard-output
 ;;         (let ((inhibit-read-only t))
 ;;           (hl-line-mode))))))
-
-
-;; -------------------------------------------------------------------
-;;; Fonts / Chars
-
-(defun nvp-font-fontify-region-face (face &optional beg end)
-  "Fontify region or `thing-at-point' with font FACE.
-With \\[universal-argument] prompt for THING at point."
-  (interactive
-   (let* ((thing
-           (if current-prefix-arg
-               (intern (read-from-minibuffer "Thing to fontify: "))
-             'symbol))
-          (bnds (nvp:tap 'btap thing)))
-     (list (read-face-name "Fontifaction face: ") (car bnds) (cdr bnds))))
-  (put-text-property beg end 'font-lock-face face))
-
-;; https://gist.github.com/haxney/3055728
-;; non-nil if monospaced font
-(defun nvp-font-is-mono-p (font-family)
-  (let (m-width l-width)
-    (with-temp-buffer
-      (set-window-buffer (selected-window) (current-buffer))
-      (text-scale-set 4)
-      (insert (propertize "l l l l l" 'face `((:family ,font-family))))
-      (goto-char (line-end-position))
-      (setq l-width (car (posn-x-y (posn-at-point))))
-      (newline)
-      (forward-line)
-      (insert (propertize "m m m m m" 'face `((:family ,font-family) italic)))
-      (goto-char (line-end-position))
-      (setq m-width (car (posn-x-y (posn-at-point))))
-      (eq l-width m-width))))
-
-;; https://www.emacswiki.org/emacs/GoodFonts
-(defun nvp-font-list ()
-  "Display various available fonts."
-  (interactive)
-  (let ((str "The quick brown fox jumps over the lazy dog \
-´`''\"\"1lI|¦!Ø0Oo{[()]}.,:; ")
-        (font-families
-         (cl-remove-duplicates 
-          (sort (font-family-list) #'(lambda (x y) (string< (upcase x) (upcase y))))
-          :test 'string=)))
-    (nvp:with-results-buffer :buffer (help-buffer) :title "Available Fonts"
-      (font-lock-mode)
-      (dolist (ff (cl-remove-if-not 'nvp-font-is-mono-p font-families))
-        (insert (propertize str 'font-lock-face `(:family ,ff)) ff "\n"
-                (propertize str 'font-lock-face
-                            `(:family ,ff :slant italic))
-                ff "\n")))))
 
 (provide 'nvp-dev)
 ;;; nvp-dev.el ends here

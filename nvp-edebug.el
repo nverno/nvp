@@ -65,21 +65,20 @@
 
 ;; Completion for frame-locals in edebug buffer
 ;; needs to switch buffer before completing in minibuffer
-(advice-add 'edebug-eval-expression :around
-            (nvp:def nvp@edebug-locals (orig-fn expr)
-              (interactive
-               (let ((hookfun
-                      (lambda ()
-                        (add-function
-                         :around
-                         (local 'elisp--local-variables-completion-table)
-                         #'nvp@do-switch-buffer))))
-                 (unwind-protect
-                     (progn
-                       (add-hook 'eval-expression-minibuffer-setup-hook hookfun)
-                       (list (read--expression "[nvp] Eval in stack: ")))
-                   (remove-hook 'eval-expression-minibuffer-setup-hook hookfun))))
-              (funcall orig-fn expr)))
+(defun nvp@edebug-locals (orig-fn expr)
+  (interactive
+   (let ((hookfun
+          (lambda ()
+            (add-function
+             :around (local 'elisp--local-variables-completion-table)
+             #'nvp@do-switch-buffer))))
+     (unwind-protect
+         (progn (add-hook 'eval-expression-minibuffer-setup-hook hookfun)
+                (list (read--expression "[nvp] Eval in stack: ")))
+       (remove-hook 'eval-expression-minibuffer-setup-hook hookfun))))
+  (funcall orig-fn expr))
+
+(advice-add 'edebug-eval-expression :around #'nvp@edebug-locals)
 
 (defun nvp-edebug-help ()
   (interactive)
@@ -103,7 +102,7 @@
 (defvar file-notify-debug)
 (defvar nvp-hap-verbose)
 
-(nvp:def-transient-toggle-vars nvp-edebug-menu
+(nvp:transient-toggle nvp-edebug-menu
   edebug-on-error edebug-on-quit edebug-unwrap-results edebug-trace
   edebug-sit-on-break
   byte-compile-generate-call-tree
@@ -204,7 +203,7 @@
 
 (defvar native-comp-async-report-warnings-errors)
 (defvar native-comp-always-compile)
-(nvp:def-transient-toggle-vars nvp-native-comp-menu
+(nvp:transient-toggle nvp-native-comp-menu
   native-comp-async-report-warnings-errors
   native-comp-always-compile)
 

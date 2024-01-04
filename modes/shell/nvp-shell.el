@@ -201,7 +201,8 @@ specified, prefer shell in current directory if available."
          (shell-file-name (if remote "/bin/bash"
                             (or shell-name (getenv "SHELL"))))
          (switch-to-buffer-obey-display-actions t)
-         (split-height-threshold 60))
+         (split-height-threshold 60)
+         (comint-terminfo-terminal "xterm-256color"))
     (if buffer (shell buffer)
       (if remote
           (shell (format "*shell:%s*"

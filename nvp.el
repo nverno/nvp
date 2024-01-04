@@ -135,15 +135,17 @@ called from minibuffer, or nil.")
      `(,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-function-hooks)
        ,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-default-functions)))))
 (nvp:define-function-hooks)
-(setq-default nvp-compile-default-function       #'nvp-compile-default)
+(setq-default nvp-compile-default-function         #'nvp-compile-default)
 (with-eval-after-load 'lsp
   (setq-default nvp-format-buffer-default-function #'lsp-format-buffer)) 
-(setq-default nvp-tag-default-function           #'projectile-regenerate-tags)
-(setq-default nvp-install-default-function       #'projectile-install-project)
-(setq-default nvp-check-buffer-default-function  #'flycheck-list-errors)
-(setq-default nvp-test-default-function          #'projectile-test-project)
-(setq-default nvp-configure-default-function     #'projectile-configure-project)
-(setq-default nvp-run-default-function           #'projectile-run-project)
+(setq-default nvp-tag-default-function             #'projectile-regenerate-tags)
+(setq-default nvp-install-default-function         #'projectile-install-project)
+(setq-default nvp-check-buffer-default-function    #'flycheck-list-errors)
+(setq-default nvp-test-default-function            #'projectile-test-project)
+(setq-default nvp-configure-default-function       #'projectile-configure-project)
+(setq-default nvp-run-default-function             #'projectile-run-project)
+(and (fboundp 'devdocs-lookup)
+     (setq-default nvp-docs-default-function       #'devdocs-lookup))
 
 
 ;; -------------------------------------------------------------------

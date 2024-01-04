@@ -218,14 +218,14 @@
                                 (locate-library pkg))
                         do (nvp-log "%s already installed\n" nil pkg)
                         else do (nvp-log "Installing %s\n" nil pkg)
-                        (package-install (intern pkg) t))
+                        (package-install (intern pkg) 'dont-select))
                (cl-loop for pkg in ',optional
                         do (message "Package %s" pkg)
                         if (and (not (and (package-installed-p (intern pkg))
                                           (locate-library pkg)))
                                 (y-or-n-p
                                  (format "Install optional package: %s? " pkg)))
-                        do (package-install (intern pkg) t))
+                        do (package-install (intern pkg) 'dont-select))
                ;;--- Git Installs ----------------------------------------
                ;; github / bitbucket
                (setq nvp-install-pending-dirs

@@ -197,7 +197,7 @@ Like `sh-current-defun-name' but ignore variables."
 
 (defun nvp-sh-locals ()
   "Define local variables to be called in hook."
-  (nvp:setq-local
+  (setq-local
     beginning-of-defun-function #'nvp-sh-beginning-of-defun
     end-of-defun-function       #'nvp-sh-end-of-defun
     bug-reference-bug-regexp "\\(shellcheck [^=]+\\)=\\(SC[[:digit:]]\\{4\\}\\)"
@@ -205,14 +205,13 @@ Like `sh-current-defun-name' but ignore variables."
   (cl-pushnew 'nvp-he-try-expand-shell-alias hippie-expand-try-functions-list)
   (add-hook 'kill-buffer-hook              #'nvp-sh-tidy-buffer nil 'local)
   (add-hook 'xref-backend-functions        #'sh-comp--xref-backend nil t)
-  ;; Completion
   (add-hook 'completion-at-point-functions #'sh-comp-completion-at-point nil t)
   ;; local version of `company-active-map' to rebind popup/help functions
   (add-function :before-until (local 'nvp-quickhelp-toggle-function)
                 #'nvp-sh-quickhelp-toggle)
-  (nvp:setq-local company-active-map nvp-sh-company-active-map
-                  company-backends (remq 'company-capf company-backends)
-                  company-transformers '(company-sort-by-backend-importance))
+  (setq-local company-active-map nvp-sh-company-active-map
+              company-backends (remq 'company-capf company-backends)
+              company-transformers '(company-sort-by-backend-importance))
   (push 'company-capf company-backends)
   (unless (require 'bash-completion nil t)
     ;; only use company-shell if bash-completion isn't installed

@@ -44,5 +44,38 @@
   (start-process-shell-command
    "lensm" nil (format "lensm -watch -filter %s %s" filter exe)))
 
+;;; Tree-sitter
+(defvar nvp-go-ts--builtin-functions
+  '("append" "cap" "clear" "close" "complex" "copy" "delete" "imag" "len" "make"
+    "max" "min" "new" "panic" "print" "println" "real" "recover"))
+
+(defvar nvp-go-ts--builtin-types
+  '("any" "bool" "byte" "comparable" "complex128" "complex64" "error" "float32"
+    "float64" "int" "int16" "int32" "int64" "int8" "rune" "string" "uint"
+    "uint16" "uint32" "uint64" "uint8" "uintptr"))
+
+(defvar nvp-go-ts-font-lock-settings
+  (treesit-font-lock-rules
+   :language 'go
+   :feature 'builtin
+   ;; :override t
+   `((call_expression
+      function: ((identifier) @font-lock-builtin-face
+                 (:match ,(rx-to-string
+                           `(seq bos (or ,@nvp-go-ts--builtin-functions) eos))
+                         @font-lock-builtin-face))))))
+
+(with-eval-after-load 'go-ts-mode
+  (let* ((features (--map (nth 2 it) nvp-go-ts-font-lock-settings))
+         (rules (--filter (not (memq (nth 2 it) features))
+                          go-ts-mode--font-lock-settings)))
+    (setq go-ts-mode--font-lock-settings
+          (append nvp-go-ts-font-lock-settings rules))))
+
+(nvp:run-once go-ts-mode (:after (&rest _))
+  (dolist (v '(builtin namespace))
+    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+  (treesit-font-lock-recompute-features))
+
 (provide 'nvp-go)
 ;;; nvp-go.el ends here

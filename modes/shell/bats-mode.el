@@ -148,7 +148,7 @@
 (defvar bats-font-lock-keywords
   `(("\\(@test\\)" 1 font-lock-keyword-face)
     (,(nvp:re-opt '("load" "run" "skip")) 1 font-lock-function-name-face)
-    (,(nvp:re-opt '("setup" "teardown")) 1 'nvp-italic-type-face)))
+    (,(nvp:re-opt '("setup" "teardown")) 1 'nvp-special-type-face)))
 
 (defvar bats-mode-map
   (let ((km (make-sparse-keymap)))

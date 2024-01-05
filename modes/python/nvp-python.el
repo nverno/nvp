@@ -21,6 +21,37 @@
   "Breakpoint string to highlight.")
 
 ;; -------------------------------------------------------------------
+;;; Tree-sitter mods
+
+(defvar nvp-python-ts-font-lock-settings
+  (treesit-font-lock-rules
+   :language 'python
+   :feature 'nvp
+   :override t
+   '((import_from_statement
+      module_name: [(dotted_name (identifier)) (identifier)]
+      @nvp-namespace-face)
+     (import_statement
+      name: [(aliased_import name: (dotted_name (identifier)))
+             (dotted_name (identifier))]
+      @nvp-namespace-face)
+     (aliased_import
+      name: (dotted_name (identifier)) @nvp-namespace-face)
+     (aliased_import
+      alias: (_) @nvp-namespace-face)
+     (attribute
+      object: (identifier) @nvp-namespace-face))))
+
+(with-eval-after-load 'python
+  (unless (--find (eq 'nvp (nth 2 it)) python--treesit-settings)
+    (nvp:push-list
+     nvp-python-ts-font-lock-settings python--treesit-settings :back t)))
+
+(nvp:run-once python-ts-mode (:after (&rest _))
+  (cl-pushnew 'nvp (cadddr treesit-font-lock-feature-list))
+  (treesit-font-lock-recompute-features))
+
+;; -------------------------------------------------------------------
 ;;; Info
 
 ;;; TODO: for method lookup, need to transform symbol at point to be

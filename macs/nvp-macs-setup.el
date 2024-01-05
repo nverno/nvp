@@ -97,8 +97,11 @@
 ;; -------------------------------------------------------------------
 ;;; Lists 
 
-(cl-defmacro nvp:push-list (x place &rest args)
-  `(setq ,place (funcall #'cl-remove-duplicates (append ,x ,place) ,@args)))
+(cl-defmacro nvp:push-list (x place &rest args &key back &allow-other-keys)
+  (nvp:skip-keywords args)
+  `(setq ,place (funcall #'cl-remove-duplicates
+                         ,(if back `(append ,place ,x) `(append ,x ,place))
+                         ,@args)))
 
 ;; -------------------------------------------------------------------
 ;;; Programs

@@ -25,7 +25,7 @@
   ;; gaudy array faces
   ("\\(\\$\\){\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
    (1 'font-lock-misc-punctuation-face prepend)
-   (2 'nvp-italic-variable-face prepend)))
+   (2 'nvp-special-variable-face prepend)))
 
 ;; -------------------------------------------------------------------
 ;;; Locally available macros

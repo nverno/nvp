@@ -151,6 +151,17 @@ called from minibuffer, or nil.")
 ;; -------------------------------------------------------------------
 ;;; Faces
 
+(defface nvp-namespace-face
+  '((t (:inherit font-lock-type-face :slant normal)))
+  "Face for namespaces."
+  :group 'nvp)
+
+(defface nvp-line-escape-face
+  '((t ( :inherit font-lock-misc-punctuation-face
+         :weight bold :foreground "hot pink" :override t)))
+  "Line escape face."
+  :group 'nvp)
+
 (defface nvp-block-face
   '((((class color) (background light))
      (:background "#f2e5bc" "#ffffd7" :inherit shadow :extend t))
@@ -158,8 +169,7 @@ called from minibuffer, or nil.")
   "Face for special blocks."
   :group 'nvp)
 
-;; see cperl gaudy array/hash faces
-(defface nvp-italic-variable-face
+(defface nvp-special-variable-face
   `((((class grayscale) (background light))
      (:background "Gray90" :weight bold :slant italic))
     (((class grayscale) (background dark))
@@ -169,10 +179,10 @@ called from minibuffer, or nil.")
     (((class color) (background dark))
      (:inherit font-lock-variable-name-face :weight bold :slant italic))
     (t (:weight bold)))
-  "Gaudy variable font locking - bold & italicized."
+  "Special variable face."
   :group 'nvp)
 
-(defface nvp-italic-type-face
+(defface nvp-special-type-face
   `((((class grayscale) (background light))
      (:background "Gray90" :weight bold :slant italic))
     (((class grayscale) (background dark))
@@ -182,7 +192,7 @@ called from minibuffer, or nil.")
     (((class color) (background dark))
      (:inherit font-lock-type-face :weight bold :slant italic))
     (t (:weight bold :slant italic)))
-  "Gaudy type face - bold & italicized."
+  "Special type face."
   :group 'nvp)
 
 (defface nvp-info-face `((t (:inherit font-lock-variable-name-face :slant italic)))
@@ -190,17 +200,11 @@ called from minibuffer, or nil.")
   :group 'nvp)
 
 (defface nvp-warning-face `((t (:inherit font-lock-keyword-face :slant italic)))
-  "Slanted warning face."
+  "Warning face."
   :group 'nvp)
 
 (defface nvp-error-face `((t (:inherit font-lock-warning-face :slant italic)))
-  "Slanted error face."
-  :group 'nvp)
-
-(defface nvp-line-escape-face
-  '((t ( :inherit font-lock-misc-punctuation-face
-         :weight bold :foreground "hot pink" :override t)))
-  "Line escape face."
+  "Error face."
   :group 'nvp)
 
 

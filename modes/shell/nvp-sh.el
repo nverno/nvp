@@ -108,13 +108,13 @@ Used to set `end-of-defun-function'."
 (nvp:font-lock-add-defaults 'sh-mode
   ;; gaudy array faces
   ("\\${\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
-   (1 'nvp-italic-variable-face prepend))
+   (1 'nvp-special-variable-face prepend))
   ;; redirections
-  ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-italic-type-face prepend))
+  ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-special-type-face prepend))
   ;; doxy params
   ("^# *\\(@[[:alpha:]]+\\)\\s-*\\(\$[[:digit:]]\\)\\(.*\\)$"
    (1 font-lock-doc-face prepend)
-   (2 'nvp-italic-variable-face prepend)
+   (2 'nvp-special-variable-face prepend)
    (3 font-lock-doc-face prepend))
   ;; quoted vars, special vars, function arguments
   (:quoted ?\" "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)"

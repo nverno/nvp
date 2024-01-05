@@ -90,16 +90,21 @@
            'ecma-ts-interpreter-face override start end))))))
 
 (defun ecma-ts--fontify-comment (node override start end &rest _)
-  (let ((txt (treesit-node-text node))
-        (b (treesit-node-start node))
-        (e (treesit-node-end node)))
-    (if (and (string-prefix-p "/**" txt)
-             (string-suffix-p "*/" txt))
-        (treesit-fontify-with-override b e 'font-lock-doc-face override start end)
+  (let* ((txt (treesit-node-text node))
+         (b (treesit-node-start node))
+         (e (treesit-node-end node))
+         (multiline-p (and (string-prefix-p "/*" txt) (string-suffix-p "*/" txt)))
+         (doc-p (and multiline-p (string-prefix-p "/**" txt))))
+    (treesit-fontify-with-override
+     b e (if doc-p 'font-lock-doc-face 'font-lock-comment-face)
+     override start end)
+    (if (not multiline-p)
+        (treesit-fontify-with-override
+         b (+ 2 b) 'font-lock-comment-delimiter-face 'append start end)
       (treesit-fontify-with-override
-       b (+ 2 b) 'font-lock-comment-delimiter-face override start end)
+       b (+ (if doc-p 3 2) b) 'font-lock-comment-delimiter-face 'append start end)
       (treesit-fontify-with-override
-       (+ 2 b) e 'font-lock-comment-face override start end))))
+       (- e 2) e 'font-lock-comment-delimiter-face 'append start end))))
 
 ;;;###autoload
 (defun ecma-ts-font-lock-rules (lang)
@@ -155,7 +160,18 @@
       [(true) (false) (statement_identifier)]
       @font-lock-constant-face
       ;; FIXME: move types or other feature
-      [(undefined) (null)] @font-lock-type-face))
+      [(undefined) (null)] @font-lock-type-face)
+
+    :language lang
+    :feature 'expression
+    '((assignment_expression
+       left: [(identifier) @font-lock-function-name-face
+              (member_expression
+               property: (property_identifier) @font-lock-function-name-face)]
+       right: [(function) (arrow_function)])
+      (variable_declarator
+       name: (identifier) @font-lock-function-name-face
+       value: [(function) (arrow_function)])))
 
    ;; Appended after rest of rules
    (treesit-font-lock-rules

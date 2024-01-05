@@ -151,11 +151,6 @@ called from minibuffer, or nil.")
 ;; -------------------------------------------------------------------
 ;;; Faces
 
-(defface nvp-namespace-face
-  '((t (:inherit font-lock-type-face :slant normal)))
-  "Face for namespaces."
-  :group 'nvp)
-
 (defface nvp-line-escape-face
   '((t ( :inherit font-lock-misc-punctuation-face
          :weight bold :foreground "hot pink" :override t)))
@@ -167,6 +162,17 @@ called from minibuffer, or nil.")
      (:background "#f2e5bc" "#ffffd7" :inherit shadow :extend t))
     (t (:background "#32302f" "#303030" :inherit shadow :extend t)))
   "Face for special blocks."
+  :group 'nvp)
+
+(defface nvp-namespace-face
+  '((t ( :inherit font-lock-type-face :slant normal
+         :underline (:color "#845" :style line :position t))))
+  "Face for namespaces."
+  :group 'nvp)
+
+(defface nvp-namespace-use-face
+  '((t (:inherit 'nvp-namespace-face :slant italic :underline nil)))
+  "Face for namespace uses."
   :group 'nvp)
 
 (defface nvp-special-variable-face

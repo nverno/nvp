@@ -91,7 +91,7 @@
 
 ;;; Add missing features once
 (nvp:run-once js-ts-mode (:after (&rest _))
-  (dolist (v '(variable builtin namespace preproc))
+  (dolist (v '(variable builtin namespace preproc expression))
     (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
   (treesit-font-lock-recompute-features))
 

@@ -338,5 +338,82 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
     (align-regexp beg end "\\(\\s-*\\)/\\*\\*")
     (align-regexp beg end "\\(\\s-*\\)\\*/")))
 
+;; -------------------------------------------------------------------
+;;; Tree-sitter
+
+;; Fontify doc comments and comment delimiters
+(defun nvp-c-ts--fontify-comment (node override start end &rest _)
+  (let* ((txt (treesit-node-text node))
+         (b (treesit-node-start node))
+         (e (treesit-node-end node))
+         (multiline-p (and (string-prefix-p "/*" txt) (string-suffix-p "*/" txt)))
+         (doc-p (and multiline-p (string-prefix-p "/**" txt))))
+    (treesit-fontify-with-override
+     b e (if doc-p 'font-lock-doc-face 'font-lock-comment-face)
+     override start end)
+    (if (not multiline-p)
+        (treesit-fontify-with-override
+         b (+ 2 b) 'font-lock-comment-delimiter-face 'append start end)
+      (treesit-fontify-with-override
+       b (+ (if doc-p 3 2) b) 'font-lock-comment-delimiter-face 'append start end)
+      (treesit-fontify-with-override
+       (- e 2) e 'font-lock-comment-delimiter-face 'append start end))))
+
+(defun nvp-c-ts--fontify-call-expression (node override start end &rest _args)
+  (pcase (treesit-node-type node)
+    ("qualified_identifier"
+     (nvp-c-ts--fontify-call-expression
+      (treesit-node-child-by-field-name node "name") override start end))
+    ("field_expression"
+     (nvp-c-ts--fontify-call-expression
+      (treesit-node-child-by-field-name node "field") override start end))
+    (_ (treesit-fontify-with-override
+        (treesit-node-start node) (treesit-node-end node)
+        'font-lock-function-call-face
+        override start end))))
+
+;; Add font-locking for SOME_IDENT constants, doc comments, and namespaces in
+;; c++.
+(defun nvp-c-ts-font-lock-settings (language)
+  (let ((rules (list
+                :language language
+                :feature 'comment
+                :override t
+                '((comment) @nvp-c-ts--fontify-comment)
+
+                :language language
+                :feature 'constant
+                :override t
+                '([(true) (false) (null)] @font-lock-constant-face
+                  ((identifier) @font-lock-constant-face
+                   (:match "\\`[_A-Z][_A-Za-z0-9]*\\'"
+                           @font-lock-constant-face)))
+                :language language
+                :feature 'function
+                :override t
+                `((call_expression
+                   function: (_) @nvp-c-ts--fontify-call-expression)))))
+    (apply #'treesit-font-lock-rules
+           (if (eq language 'cpp)
+               (append
+                rules
+                (list
+                 :language language
+                 :feature 'namespace
+                 :override t
+                 '((using_declaration
+                    "namespace" (identifier) @nvp-namespace-face)
+                   (namespace_identifier) @nvp-namespace-use-face)
+                 ))
+             rules))))
+
+(define-advice c-ts-mode--font-lock-settings (:around (orig-fn language) "nvp")
+  (append (funcall orig-fn language) (nvp-c-ts-font-lock-settings language)))
+
+(nvp:run-once c++-ts-mode (:after (&rest _))
+  (dolist (v '(namespace))
+    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+  (treesit-font-lock-recompute-features))
+
 (provide 'nvp-c)
 ;;; nvp-c.el ends here

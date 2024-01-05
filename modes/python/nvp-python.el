@@ -36,11 +36,11 @@
              (dotted_name (identifier))]
       @nvp-namespace-face)
      (aliased_import
-      name: (dotted_name (identifier)) @nvp-namespace-face)
+      name: (dotted_name (identifier)) @nvp-namespace-use-face)
      (aliased_import
       alias: (_) @nvp-namespace-face)
      (attribute
-      object: (identifier) @nvp-namespace-face))))
+      object: (identifier) @nvp-namespace-use-face))))
 
 (with-eval-after-load 'python
   (unless (--find (eq 'nvp (nth 2 it)) python--treesit-settings)

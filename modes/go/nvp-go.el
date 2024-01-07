@@ -56,6 +56,11 @@
 
 (defvar nvp-go-ts-font-lock-settings
   (treesit-font-lock-rules
+   ;; Fixme: operators not added to `go-ts-mode--font-lock-settings'
+   :language 'go
+   :feature 'operator
+   `([,@go-ts-mode--operators] @font-lock-operator-face)
+
    :language 'go
    :feature 'builtin
    ;; :override t
@@ -73,7 +78,7 @@
           (append nvp-go-ts-font-lock-settings rules))))
 
 (nvp:run-once go-ts-mode (:after (&rest _))
-  (dolist (v '(builtin namespace))
+  (dolist (v '(builtin namespace operator))
     (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
   (treesit-font-lock-recompute-features))
 

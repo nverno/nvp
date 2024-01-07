@@ -4,32 +4,20 @@
 ;; TODO:
 ;; - merge all the compile stuff and remove compile macros
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-compile))
+(eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'nvp-parse)
 (nvp:req 'nvp-c 'subrs)
 (nvp:decls :f (forward-ifdef clang-complete-load-args asdf-where nvp-env-add nvp-yas-var
                              s-join objdump-mode)
            :v (c/R-abbrev-table company-clang-arguments gud-comint-buffer))
 (nvp:auto "nvp-tag" 'nvp-tag-list-decls)
 
+
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
 
-;; newline-dwim
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
   :modes (c-mode c-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
-
-;; #<marker at 78109 in cc-cmds.el.gz>
-(cl-defmethod nvp-parse-current-function (&context (major-mode c-mode) &rest _args)
-  (add-log-current-defun))
-
-;;; Font-lock
-(dolist (mode '(c-mode c++-mode))
-  (nvp:font-lock-add-defaults mode
-    ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
 
 ;;; Macroexpansion
 ;; can set in .dir-locals
@@ -79,11 +67,11 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;;; GDB
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(c-mode c-ts-mode c++-mode c++-ts-mode)
-    :name 'gdb
-    :modes '(gud-mode)
-    :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
-    :init #'gdb
-    :init-use-hook t))
+                :name 'gdb
+                :modes '(gud-mode)
+                :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
+                :init #'gdb
+                :init-use-hook t))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
@@ -170,6 +158,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 
 ;; -------------------------------------------------------------------
 ;;; Compile
+(eval-when-compile (require 'nvp-compile))
 
 (defvar nvp-c-address-error-regexp
   '(address-sanitizer
@@ -338,6 +327,11 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
     (align-regexp beg end "\\(\\s-*\\)/\\*\\*")
     (align-regexp beg end "\\(\\s-*\\)\\*/")))
 
+;;; Font-lock
+(dolist (mode '(c-mode c++-mode))
+  (nvp:font-lock-add-defaults mode
+    ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
+
 ;; -------------------------------------------------------------------
 ;;; Tree-sitter
 
@@ -375,40 +369,50 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;; Add font-locking for SOME_IDENT constants, doc comments, and namespaces in
 ;; c++.
 (defun nvp-c-ts-font-lock-settings (language)
-  (let ((rules (list
-                :language language
-                :feature 'comment
-                :override t
-                '((comment) @nvp-c-ts--fontify-comment)
-
-                :language language
-                :feature 'constant
-                :override t
-                '([(true) (false) (null)] @font-lock-constant-face
-                  ((identifier) @font-lock-constant-face
-                   (:match "\\`[_A-Z][_A-Za-z0-9]*\\'"
-                           @font-lock-constant-face)))
-                :language language
-                :feature 'function
-                :override t
-                `((call_expression
-                   function: (_) @nvp-c-ts--fontify-call-expression)))))
+  (let* ((delims (append ["," ":" ";" "."] (and (eq 'cpp language) '("::"))))
+         (ops (append c-ts-mode--operators (and (eq 'cpp language) '("<=>"))))
+         (rules (list
+                 :language language
+                 :feature 'delimiter
+                 `([,@delims] @font-lock-delimiter-face)
+                 :language language
+                 :feature 'operator
+                 `([,@ops] @font-lock-operator-face
+                   "!" @font-lock-negation-char-face)
+                 :language language
+                 :feature 'comment
+                 :override t
+                 '((comment) @nvp-c-ts--fontify-comment)
+                 :language language
+                 :feature 'constant
+                 '([(true) (false) (null)] @font-lock-constant-face
+                   ((identifier) @font-lock-constant-face
+                    (:match "\\`[_A-Z][_A-Za-z0-9]*\\'"
+                            @font-lock-constant-face)))
+                 :language language
+                 :feature 'function
+                 `((call_expression
+                    function: (_) @nvp-c-ts--fontify-call-expression)))))
     (apply #'treesit-font-lock-rules
            (if (eq language 'cpp)
                (append
-                rules
                 (list
                  :language language
+                 :feature 'bracket
+                 '((["(" ")" "[" "]" "{" "}"]) @font-lock-bracket-face
+                   (template_argument_list ["<" ">"] @font-lock-bracket-face)
+                   (template_parameter_list ["<" ">"] @font-lock-bracket-face))
+
+                 :language language
                  :feature 'namespace
-                 :override t
                  '((using_declaration
                     "namespace" (identifier) @nvp-namespace-face)
-                   (namespace_identifier) @nvp-namespace-use-face)
-                 ))
+                   (namespace_identifier) @nvp-namespace-use-face))
+                rules)
              rules))))
 
 (define-advice c-ts-mode--font-lock-settings (:around (orig-fn language) "nvp")
-  (append (funcall orig-fn language) (nvp-c-ts-font-lock-settings language)))
+  (append (nvp-c-ts-font-lock-settings language) (funcall orig-fn language)))
 
 (nvp:run-once c++-ts-mode (:after (&rest _))
   (dolist (v '(namespace))

@@ -50,7 +50,7 @@ When part of `before-save-hook', won't add condition on initial save."
   "Add FIELD with VALUE unless FIELD is already defined."
   (save-mark-and-excursion
     (goto-char (point-min))
-    (let ((end (nvp-snippet-header-end)))
+    (when-let ((end (nvp-snippet-header-end)))
       (if (re-search-forward (concat "^#\\s-*" field ":") end t)
           (message "%s already defined: %S" field
                    (buffer-substring (point) (line-end-position)))
@@ -70,16 +70,16 @@ When part of `before-save-hook', won't add condition on initial save."
 If TEXT is non-nil use as `yas-selected-text'.
 DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (interactive
-   (let* ((mode-name (nvp:prefix 16 (nvp-read-mode) (symbol-name major-mode)))
-          (snippet-dir
-           (if (not nvp-mode-snippet-dir)
-               (expand-file-name mode-name nvp/snippet)
-             (let ((dir (nvp-read-mode-var
-                         "snippets"
-                         (file-name-base nvp-mode-snippet-dir))))
-               (if nvp-mode-name
-                   (expand-file-name (nvp:as-string nvp-mode-name) (f-parent dir))
-                 dir)))))
+   (let* ((mode-name (nvp:prefix 16 (nvp-read-mode)
+                       (symbol-name (or nvp-mode-name major-mode))))
+          (snippet-dir (or nvp-mode-snippet-dir (expand-file-name mode-name nvp/snippet))))
+     ;; (if (not nvp-mode-snippet-dir)
+     ;;     (expand-file-name mode-name nvp/snippet)
+     ;;   (let ((dir (nvp-read-mode-var "snippets" mode-name)))
+     ;;     (if nvp-mode-name
+     ;;         (expand-file-name (nvp:as-string nvp-mode-name) (f-parent dir))
+     ;;       dir))
+     ;;   )
      (list mode-name
            snippet-dir
            (nvp:prefix 4 'do-dired)
@@ -183,12 +183,13 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   :cache nvp-snippet-header-end--cache
   (save-excursion
     (goto-char (point-min))
-    (when (search-forward "# --")
+    (when (search-forward "# --" nil t)
       (point-marker))))
 
 ;; non-nil if point is in header portion of snippet
 (defsubst nvp-snippet-header-p (&optional pnt)
-  (< (or pnt (point)) (marker-position (nvp-snippet-header-end))))
+  (and-let* ((pos (nvp-snippet-header-end)))
+    (< (or pnt (point)) (marker-position pos))))
 
 ;; non-nil if point is in an elisp code segment
 ;; (defsubst nvp-snippet-code-p (&optional pnt)

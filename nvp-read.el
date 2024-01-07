@@ -158,7 +158,7 @@ Filter by PREDICATE if non-nil."
   "Lookup MODE's VARIABLE."
   (require 'nvp-setup)
   (cl-assert (member variable '("dir" "snippets" "abbr-file" "abbr-table")))
-  (nvp:defq mode major-mode)
+  (or mode (setq mode (or nvp-mode-name major-mode)))
   (setq mode (nvp:as-symbol mode))
   (-if-let (data (gethash mode nvp-mode-cache))
       (funcall (intern (concat "nvp-mode-vars-" variable)) data)

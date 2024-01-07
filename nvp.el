@@ -9,6 +9,9 @@
 (require 'company)
 (nvp:decls :p (projectile winner isearch consult lsp)
            :f (lsp-format-buffer projectile-regenerate-tags))
+(nvp:auto "projectile" 'projectile-project-root)
+(nvp:auto "pos-tip" 'pos-tip-show-no-propertize 'pos-tip-tooltip-width)
+(nvp:package-define-root)
            
 ;;; Aliases
 (defalias 'nvp-completing-read 'completing-read)
@@ -16,17 +19,8 @@
 (defalias 'nvp-find-file-in-dir 'projectile-find-file-in-directory)
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
 
-;; autoloads
-(nvp:auto "projectile" 'projectile-project-root)
-(nvp:auto "pos-tip" 'pos-tip-show-no-propertize 'pos-tip-tooltip-width)
-
-;; root directory
-(nvp:package-define-root)
-
-;; -------------------------------------------------------------------
-;;; My variables
-
-;;-- Global -- most machine specific are compiled in init
+;;; Global vars
+;; Note: most machine specific are compiled in init
 (nvp:defvar nvp-program-search-paths
             (nvp:with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
               `(,nvp/bin ,nvp/binw))
@@ -63,6 +57,8 @@ The first argument is the result of `nvp-fallback-minibuffer-default' if
 called from minibuffer, or nil.")
 
 (defvar nvp-exit nil "Exit flag.")
+
+(defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
 
 (defvar nvp-display-actions
   '( :buffer ((4 display-buffer-same-window

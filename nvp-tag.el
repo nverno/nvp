@@ -4,26 +4,9 @@
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
+(require 'nvp)                          ; `nvp-tags-ctags-program'
 (require 'transient)
-(nvp:decls :p (ggtags tags projectile xref)
-           :f (xref--read-identifier projectile-tags-exclude-patterns)
-           :v (projectile-tags-file-name projectile-tags-command xref-backend-functions))
-
-(defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
-
-;; workaround ggtags.el/global not accepting regex chars
-;; - ggtags.el: tags starting with regex characters cause errors, eg.
-;;   ggtags-process-string("global" "-c" "$0") =>
-;;   global error: "only name char is allowed with -c option"
-;;   Maintainer of ggtags.el says this should be fixed in global, see issue:
-;;   https://github.com/leoliu/ggtags/issues/191
-;;   Workaround `nvp-ggtags-bounds-of-tag-function' for now.
-(defun nvp-ggtags-bounds-of-tag-function ()
-  (-when-let ((beg . end) (find-tag-default-bounds))
-    (save-excursion
-      (goto-char beg)
-      (skip-chars-forward "?$*+^\\." end) ; so no idents prefixed with '$' or '.'
-      (cons (point) end))))
+(nvp:decls :p (ggtags tags projectile) :v (nvp-tags-ctags-program))
 
 ;;;###autoload
 (defun nvp-tag-list-decls (&optional lang kinds file force)
@@ -44,7 +27,7 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
        (delq nil)))
 
 (defun nvp-tag-show-language-config (lang)
-  "List ctags language configuration for LANG."
+  "Show Ctags configuration for LANG."
   (interactive
    (list (completing-read
           "Language: "
@@ -111,6 +94,6 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
     ("hl" "Show ctags language config" nvp-tag-show-language-config)]])
 ;; settings
 ;; `tags-apropos-verbose' list filenames
-  
+
 (provide 'nvp-tag)
 ;;; nvp-tag.el ends here

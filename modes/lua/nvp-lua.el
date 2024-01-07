@@ -7,6 +7,8 @@
   (require 'nvp-lua-ts))
 (nvp:decls :p (lua))
 
+(defvar nvp-lua--dir (file-name-directory (nvp:load-file-name)))
+
 ;;; REPL
 (with-eval-after-load 'nvp-repl
   (require 'nvp-lua-repl))
@@ -61,6 +63,31 @@
                 (_ nil))
               (delete-region (match-beginning 0) (match-end 0))
             (insert "local ")))))))
+
+;;; Manual
+(defvar nvp-lua--manual-sections nil)
+
+(defun nvp-lua-manual-sections ()
+  "Populate the Lua manual section cache."
+  (or nvp-lua--manual-sections
+      (nvp:with-process "python"
+        :proc-name "lua-manual"
+        :proc-args ((expand-file-name "bin/manual-links.py" nvp-lua--dir))
+        :on-success (progn (goto-char (point-min))
+                           (setq nvp-lua--manual-sections (json-read-object))
+                           (kill-buffer)))))
+
+;; better version of `lua-search-documentation' for lua-mode
+(defun lua-search-documentation (section)
+  "Search Lua documentation for the word at the point."
+  (interactive
+   (let ((func (lua-funcname-at-point)))
+     (if (and func (not current-prefix-arg)) (list func)
+       (list (--if-let (nvp-lua-manual-sections)
+                 (completing-read "Lua manual section: " it nil nil func)
+               (read-string "Lua manual section(building...): " func))))))
+  (funcall lua-documentation-function
+           (concat lua-documentation-url "#pdf-" section)))
 
 (provide 'nvp-lua)
 ;; Local Variables:

@@ -54,9 +54,12 @@
     "float64" "int" "int16" "int32" "int64" "int8" "rune" "string" "uint"
     "uint16" "uint32" "uint64" "uint8" "uintptr"))
 
+;; FIXME: remove when ops added
+(eval-when-compile (require 'go-ts-mode)) ; `go-ts-mode--operators'
+
 (defvar nvp-go-ts-font-lock-settings
   (treesit-font-lock-rules
-   ;; Fixme: operators not added to `go-ts-mode--font-lock-settings'
+   ;; FIXME: operators not added to `go-ts-mode--font-lock-settings'
    :language 'go
    :feature 'operator
    `([,@go-ts-mode--operators] @font-lock-operator-face)

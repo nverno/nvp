@@ -63,7 +63,8 @@
     (shell-mode                  . nvp-link-shell)
     (lsp-help-mode               . nvp-link-lsp-help)
     (markdown-mode               . nvp-link-markdown)
-    (dired-mode                  . nvp-link-dired))
+    (dired-mode                  . nvp-link-dired)
+    (completion-list-mode        . nvp-link-completion-list))
   "Mapping of `major-mode' to ace-link actions.")
 
 (defvar nvp-ace-link-minor-mode-actions
@@ -180,8 +181,7 @@ With \\[universal-argument] call in next visible window."
 
 (nvp:define-link nvp-link-mark
   :collector (--map (cdr it) (nvp-link--mark-collect)) nil
-  (when it
-    (funcall #'nvp-mark-goto-marker-at-point)))
+  (and it (funcall #'nvp-mark-goto-marker-at-point)))
 
 ;;; Dired
 (nvp:decl dired-next-dirline dired-get-filename dired-find-file)
@@ -271,7 +271,25 @@ With \\[universal-argument] call in next visible window."
 
 (nvp:define-link nvp-link-imenu
   :collector (nvp-link--imenu-collect)
-  (when (numberp it) (goto-char it)))
+  (and (numberp it) (goto-char it)))
+
+;;; Completion List
+(defun nvp-link--completion-collect ()
+  (save-excursion
+    (let ((end (window-end nil t))
+          (pos (window-start))
+          cands)
+      (while (and pos
+                  (setq pos (next-single-property-change pos 'mouse-face))
+                  (< pos end))
+        (let ((beg pos))
+          (setq pos (next-single-property-change pos 'mouse-face))
+          (and pos (push (cons (posn-at-point beg) beg) cands))))
+      cands)))
+
+(nvp:define-link nvp-link-completion-list
+  :collector (--map (cdr it) (nvp-link--completion-collect))
+  (and it (choose-completion it)))
 
 ;; use actual links in agenda buffer - the default is just the same
 ;; as `avy-goto-line'

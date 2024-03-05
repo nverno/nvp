@@ -6,9 +6,10 @@
   (require 'nvp-macro)
   (require 'nvp-parse))
 (require 'pp)
+;; (3/5/24) `company-elisp' removed from `company-mode'
 (require 'company-elisp)
 (nvp:decls :p (company-elisp))
-           
+
 (with-eval-after-load 'nvp-repl
   (require 'nvp-ielm))
 
@@ -27,8 +28,8 @@
          (eval-when-compile
            (apply #'company-elisp--fns-regexp (append el-defs el-vdefs))))
         (defs-re
-          (eval-when-compile
-            (concat "([ \t\n]*" (apply #'company-elisp--fns-regexp el-defs)))))
+         (eval-when-compile
+           (concat "([ \t\n]*" (apply #'company-elisp--fns-regexp el-defs)))))
     ;; include generics
     (defvar nvp-elisp-defuns-regexp defs-re)
     ;; additional let macros, pcase, cond, etc.
@@ -246,7 +247,7 @@ ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
 (put 'lisp-indent-function 'safe-local-variable 'symbolp)
 
 ;; -------------------------------------------------------------------
-;;; Insert / Toggle 
+;;; Insert / Toggle
 
 ;; indent region with common-lisp-indent function
 ;; with prefix toggle b/w lisp-indent and common-lisp-indent
@@ -327,7 +328,7 @@ If in `declare-function', convert to autoload."
 ;; (defun nvp-elisp-compile ()
 ;;   (interactive)
 ;;   (nvp-compile-with-bindings
-;;    `([remap recompile] . 
+;;    `([remap recompile] .
 ;;      (lambda ()
 ;;        (interactive)
 ;;        (with-current-buffer ,(current-buffer)
@@ -353,7 +354,7 @@ If in `declare-function', convert to autoload."
                            (unless (looking-at-p pkg-hdrs)
                              (cl-return t)))))
                      1))))
-  
+
   (nvp:setq
     nvp-elisp-imenu-headers-1
     `(("Headers" ,(cadar nvp-elisp-imenu-headers) 1)

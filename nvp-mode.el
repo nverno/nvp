@@ -123,7 +123,7 @@
         (remhash nvp-mode-name nvp-mode-cache)
       (user-error "`nvp-mode-name' isnt defined"))))
 
-;;;###autoload(autoload 'nvp-mode-menu "nvp-mode")
+;;;###autoload(autoload 'nvp-mode-menu "nvp-mode" nil t)
 (transient-define-prefix nvp-mode-menu ()
   ;; TODO: with some prefix, prompt to choose mode
   "Mode"

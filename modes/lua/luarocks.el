@@ -233,7 +233,7 @@ the rock at point."
            (kill-buffer it))
          (buffer-list)))
 
-;;;###autoload(autoload 'luarocks-menu "luarocks")
+;;;###autoload(autoload 'luarocks-menu "luarocks" nil t)
 (transient-define-prefix luarocks-menu ()
   "Luarocks menu."
   :value luarocks--menu-defaults

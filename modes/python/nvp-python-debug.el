@@ -5,7 +5,7 @@
 (require 'transient)
 (nvp:decls :p (gud) :v (nvp-python-breakpoint-string))
 
-;;;###autoload(autoload 'nvp-python-debug-menu "nvp-python-debug")
+;;;###autoload(autoload 'nvp-python-debug-menu "nvp-python-debug" nil t)
 (transient-define-prefix nvp-python-debug-menu ()
   "Python debug"
   ;; toggle `gud-pdb-command-name'
@@ -32,7 +32,7 @@
 ;;             (funcall orig cmd t)
 ;;           (funcall orig cmd comint))))))
 
-;;; GDB REPL 
+;;; GDB REPL
 
 ;; FIXME: use something like `nvp-gdb-init'. Need to add option to choose
 ;; from multiple repls associated with modes

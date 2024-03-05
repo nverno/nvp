@@ -21,7 +21,7 @@
   :reader (lambda (prompt &rest _)
             (completing-read prompt '("off" "messages" "verbose") nil t)))
 
-;;;###autoload(autoload 'nvp-lsp-menu "nvp-lsp")
+;;;###autoload(autoload 'nvp-lsp-menu "nvp-lsp" nil t)
 (transient-define-prefix nvp-lsp-menu () "Lsp"
   ["Debug"
    ("i" "I/O logging" nvp-lsp-menu--toggle-lsp-log-io)

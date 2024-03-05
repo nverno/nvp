@@ -128,7 +128,7 @@
            ;;   (user-error "GUD not loaded"))
            )))))
 
-;;;###autoload(autoload 'nvp-gud-menu "nvp-debug")
+;;;###autoload(autoload 'nvp-gud-menu "nvp-debug" nil t)
 (nvp:def-gud-menu)
 
 (provide 'nvp-debug)

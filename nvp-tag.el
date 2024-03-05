@@ -76,7 +76,7 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
            res))))
     (setq tabulated-list-sort-key '("Language" . nil))))
 
-;;;###autoload(autoload 'nvp-tag-menu "nvp-tag")
+;;;###autoload(autoload 'nvp-tag-menu "nvp-tag" nil t)
 (transient-define-prefix nvp-tag-menu ()
   [ :if-non-nil tags-file-name
     "Tags"

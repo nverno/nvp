@@ -16,7 +16,7 @@
 # --
 `aya-current`")
 
-;;;###autoload(autoload 'nvp-aya-menu "nvp-snippet-aya")
+;;;###autoload(autoload 'nvp-aya-menu "nvp-snippet-aya" nil t)
 (transient-define-prefix nvp-aya-menu ()
   ["Auto-Snippet"
    ("c" "Create(~)" aya-create)

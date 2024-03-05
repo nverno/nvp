@@ -114,7 +114,7 @@
 (nvp:decl-prefixes devdocs dash hyperpolyglot cheatsheet lookup cheat)
 (nvp:auto "powerthesaurus"'powerthesaurus-transient)
 
-;;;###autoload(autoload 'nvp-devdocs-menu "nvp-help")
+;;;###autoload(autoload 'nvp-devdocs-menu "nvp-help" nil t)
 (transient-define-prefix nvp-devdocs-menu ()
   [["Search"
     ("s" "Search in active docs" devdocs-lookup)
@@ -134,7 +134,7 @@
     (user-error "Install devdocs."))
   (transient-setup 'nvp-devdocs-menu))
 
-;;;###autoload(autoload 'nvp-dash-menu "nvp-help")
+;;;###autoload(autoload 'nvp-dash-menu "nvp-help" nil t)
 (transient-define-prefix nvp-dash-menu ()
   [["Search"
     ("s" "Search dash" consult-dash)]
@@ -147,7 +147,7 @@
     (user-error "Install dash-docs."))
   (transient-setup 'nvp-dash-menu))
 
-;;;###autoload(autoload 'nvp-help-menu "nvp-help")
+;;;###autoload(autoload 'nvp-help-menu "nvp-help" nil t)
 (transient-define-prefix nvp-help-menu ()
   "Help"
   [["Goto Definition"

@@ -12,7 +12,7 @@
 (nvp:auto "projectile" 'projectile-project-root)
 (nvp:auto "pos-tip" 'pos-tip-show-no-propertize 'pos-tip-tooltip-width)
 (nvp:package-define-root)
-           
+
 ;;; Aliases
 (defalias 'nvp-completing-read 'completing-read)
 (put 'nvp-completing-read 'lisp-indent-function 'defun)
@@ -133,7 +133,7 @@ called from minibuffer, or nil.")
 (nvp:define-function-hooks)
 (setq-default nvp-compile-default-function         #'nvp-compile-default)
 (with-eval-after-load 'lsp
-  (setq-default nvp-format-buffer-default-function #'lsp-format-buffer)) 
+  (setq-default nvp-format-buffer-default-function #'lsp-format-buffer))
 (setq-default nvp-tag-default-function             #'projectile-regenerate-tags)
 (setq-default nvp-install-default-function         #'projectile-install-project)
 (setq-default nvp-check-buffer-default-function    #'flycheck-list-errors)

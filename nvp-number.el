@@ -7,7 +7,7 @@
 (nvp:decls)
 (nvp:auto "hexl" hexl-hex-string-to-integer hexl-octal-string-to-integer)
 
-;;;###autoload(autoload 'nvp-number-menu "nvp-number")
+;;;###autoload(autoload 'nvp-number-menu "nvp-number" nil t)
 (transient-define-prefix nvp-number-menu ()
   "Numbers"
   [["Toggle"

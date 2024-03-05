@@ -21,7 +21,7 @@
   'help-function (lambda (m) (pop-to-buffer (marker-buffer m)) (goto-char m))
   'help-echo (purecopy "mouse-2, RET: go to this marker"))
 
-;;;###autoload(autoload 'nvp-dev-menu "nvp-dev")
+;;;###autoload(autoload 'nvp-dev-menu "nvp-dev" nil t)
 (transient-define-prefix nvp-dev-menu ()
   "Dev menu"
   [["At point"

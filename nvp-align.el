@@ -34,7 +34,7 @@
    (define-key nvp-align-keymap `[,key] #'nvp-align-by-last-char))
  (string-to-list "#=.,|\\:"))
 
-;;;###autoload(autoload 'nvp-align-menu "nvp-align")
+;;;###autoload(autoload 'nvp-align-menu "nvp-align" nil t)
 (transient-define-prefix nvp-align-menu ()
   [["Align"
     ("a" "Align" nvp-align)

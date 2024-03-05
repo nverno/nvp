@@ -13,7 +13,7 @@
     rustic-cargo-test-disable-warnings
     rustic-cargo-use-last-stored-arguments)
 
-;;;###autoload(autoload 'nvp-cargo-menu "nvp-rust-cargo")
+;;;###autoload(autoload 'nvp-cargo-menu "nvp-rust-cargo" nil t)
   (transient-define-prefix nvp-cargo-menu ()
     [["Run"
       ("r" "Run" rustic-cargo-run)

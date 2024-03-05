@@ -120,7 +120,7 @@
         (treesit-inspect-mode))
     ;; (remove-hook 'window-buffer-change-functions #'nvp-treesit--change-window-hook t)
     ;; (nvp-theme-switch)
-    (ignore-errors 
+    (ignore-errors
       (treesit-inspect-mode -1)
       (treesit-explore-mode -1))))
 
@@ -152,7 +152,7 @@
   treesit--font-lock-verbose
   treesit--indent-verbose)
 
-;;;###autoload(autoload 'nvp-treesit-menu "nvp-treesit")
+;;;###autoload(autoload 'nvp-treesit-menu "nvp-treesit" nil t)
 (transient-define-prefix nvp-treesit-menu ()
   "Treesit"
   :refresh-suffixes t
@@ -183,7 +183,7 @@
     (":f" "Font debug"
      nvp-treesit-menu--toggle-treesit--font-lock-verbose)]]
   (interactive)
-  (require 'ts-util)
+  (require 'ts-util nil t)
   (transient-setup 'nvp-treesit-menu))
 
 (provide 'nvp-treesit)

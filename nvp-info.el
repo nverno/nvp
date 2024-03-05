@@ -140,7 +140,7 @@ or prompt for manual with ARG."
 
 (require 'transient)
 
-;;;###autoload(autoload 'nvp-info-menu "nvp-info")
+;;;###autoload(autoload 'nvp-info-menu "nvp-info" nil t)
 (transient-define-prefix nvp-info-menu () "Info"
   [["Info"
     ("s" "Symbol" info-lookup-symbol)

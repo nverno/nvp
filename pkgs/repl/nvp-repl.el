@@ -5,7 +5,7 @@
 ;; Unified REPL interface:
 ;;  - `nvp-repl-jump' pops b/w source buffers and repls, starting them when
 ;;    necessary.
-;; 
+;;
 ;; TODO:
 ;; - redirect output
 ;;
@@ -261,7 +261,7 @@ well."
   "p" #'nvp-repl-pwd
   "s" #'nvp-repl-set-source)
 ;; "l" #'nvp-repl-load-file
-  
+
 (defvar-keymap nvp-repl-minor-mode-map
   "C-c C-k" #'nvp-repl-clear
   "C-c C-h" #'nvp-repl-keymap)
@@ -460,7 +460,7 @@ If INSERT, STR is inserted into REPL."
   (defmacro nvp:region (thing)
     `(--when-let (bounds-of-thing-at-point ',thing)
        (list (car it) (cdr it))))
-  
+
   (cl-defmacro nvp:repl-send ( sender sender-args and-go
                                &rest fallback &key region &allow-other-keys)
     (declare (indent defun))
@@ -639,7 +639,7 @@ If INSERT, STR is inserted into REPL."
                   (_ (user-error
                       ,(concat "unhandled " (symbol-name cmd) " type: '%S'") ,cmd)))
                 ,@body))))
-  
+
   (defmacro nvp:with-repl-src-buffer (&rest body)
     (declare (indent defun) (debug t))
     (nvp:with-syms (buf)
@@ -683,7 +683,7 @@ Prompt with \\[universal-argument]."
   (nvp-repl--check-source-buffer nil))
 
 ;; -------------------------------------------------------------------
-;;; Transient 
+;;; Transient
 
 (require 'transient)
 
@@ -692,7 +692,7 @@ Prompt with \\[universal-argument]."
 (nvp:transient-toggle nvp-repl-config-menu
   nvp-repl-load-startup-file)
 
-;;;###autoload(autoload 'nvp-repl-menu "nvp-repl")
+;;;###autoload(autoload 'nvp-repl-menu "nvp-repl" nil t)
 (transient-define-prefix nvp-repl-menu ()
   "REPL menu"
   [[ :if-non-nil nvp-repl-current

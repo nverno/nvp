@@ -28,7 +28,7 @@ Append to `outline-regexp' with prefix."
   (outline-minor-mode -1)
   (remove-hook 'transient-exit-hook #'nvp-outline--exit-hook))
 
-;;;###autoload(autoload 'nvp-outline-menu "nvp-outline")
+;;;###autoload(autoload 'nvp-outline-menu "nvp-outline" nil t)
 (transient-define-prefix nvp-outline-menu ()
   [["Toggle"
     ("SPC" "Children" outline-toggle-children :transient t)

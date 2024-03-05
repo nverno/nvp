@@ -117,7 +117,7 @@ With prefix sort in REVERSE."
   (nvp-sort:defaults start end
     (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
 
-;;;###autoload(autoload 'nvp-sort-menu "nvp-edit")
+;;;###autoload(autoload 'nvp-sort-menu "nvp-edit" nil t)
 (transient-define-prefix nvp-sort-menu ()
   [["Lines"
     ("f" "First word" nvp-sort-lines-first-word)

@@ -120,7 +120,7 @@
   (interactive)
   (ace-window 16))
 
-;;;###autoload(autoload 'nvp-window-menu "nvp-window")
+;;;###autoload(autoload 'nvp-window-menu "nvp-window" nil t)
 (transient-define-prefix nvp-window-menu ()
   [["Movement"
     ("j" "←" windmove-left :transient t)

@@ -21,7 +21,6 @@
 (nvp:decls :p (nvp-treesit smie treesit lsp tramp)
            :f (treesit-buffer-root-node smie-config-show-indent)
            :v (tramp-debug-on-error tramp-verbose))
-(nvp:auto "nvp-trace" nvp-trace-menu)
 (nvp:auto "nvp-help" nvp-help-describe-keymap)
 (nvp:auto "dash" -map)
 
@@ -219,7 +218,7 @@
     (":a" "Always compile"
      nvp-native-comp-menu--toggle-native-comp-always-compile)]])
 
-;;;###autoload(autoload 'nvp-edebug-menu "nvp-edebug")
+;;;###autoload(autoload 'nvp-edebug-menu "nvp-edebug" nil t)
 (transient-define-prefix nvp-edebug-menu ()
   "Toggle or run elisp debugging."
   :value '("--quick" "--debug-init" "--dummy-current")

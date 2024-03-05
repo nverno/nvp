@@ -3,6 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (require 'trace)
 (require 'trace-tree nil t)
 (nvp:auto "find-func" 'read-library-name 'find-library-name)
@@ -12,7 +13,7 @@
 (nvp:decl flatten-tree)
 
 
-;;;###autoload(autoload 'nvp-trace-menu "nvp-trace")
+;;;###autoload(autoload 'nvp-trace-menu "nvp-trace" nil t)
 (transient-define-prefix nvp-trace-menu ()
   "Trace"
   [["Trace"

@@ -25,7 +25,7 @@
       (rectangle-mark-mode 1)
       (goto-char mk))))
 
-;;;###autoload(autoload 'nvp-rect-menu "nvp-rect")
+;;;###autoload(autoload 'nvp-rect-menu "nvp-rect" nil t)
 (transient-define-prefix nvp-rect-menu ()
   [["Move"
     ("h" "←" rectangle-backward-char :transient t)

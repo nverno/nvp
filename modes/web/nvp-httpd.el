@@ -54,7 +54,7 @@ If OPEN, browse on localhost."
 ;; -------------------------------------------------------------------
 ;;; Menu
 
-;;;###autoload(autoload 'nvp-httpd-menu "nvp-httpd")
+;;;###autoload(autoload 'nvp-httpd-menu "nvp-httpd" nil t)
 (transient-define-prefix nvp-httpd-menu ()
   "Serve buffer/directory"
   ["Httpd"

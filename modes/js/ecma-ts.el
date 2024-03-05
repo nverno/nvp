@@ -168,10 +168,10 @@
        left: [(identifier) @font-lock-function-name-face
               (member_expression
                property: (property_identifier) @font-lock-function-name-face)]
-       right: [(function) (arrow_function)])
+       right: [(function_expression) (arrow_function)])
       (variable_declarator
        name: (identifier) @font-lock-function-name-face
-       value: [(function) (arrow_function)])))
+       value: [(function_expression) (arrow_function)])))
 
    ;; Appended after rest of rules
    (treesit-font-lock-rules

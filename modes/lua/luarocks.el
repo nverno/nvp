@@ -5,7 +5,7 @@
 
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
-(nvp:decls)
+(nvp:decls :f (xterm-color-colorize-buffer))
 (autoload 'f-read-text "f")
 
 

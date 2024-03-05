@@ -7,7 +7,7 @@
   (require 'nvp-parse))
 (require 'pp)
 (require 'company-elisp)
-;; (nvp:decls :p (company-elisp))
+(nvp:decls :p (company-elisp))
            
 (with-eval-after-load 'nvp-repl
   (require 'nvp-ielm))

@@ -55,23 +55,24 @@
     "uint16" "uint32" "uint64" "uint8" "uintptr"))
 
 ;; FIXME: remove when ops added
-(eval-when-compile (require 'go-ts-mode)) ; `go-ts-mode--operators'
+(eval-when-compile (require 'go-ts-mode nil t)) ; `go-ts-mode--operators'
 
 (defvar nvp-go-ts-font-lock-settings
-  (treesit-font-lock-rules
-   ;; FIXME: operators not added to `go-ts-mode--font-lock-settings'
-   :language 'go
-   :feature 'operator
-   `([,@go-ts-mode--operators] @font-lock-operator-face)
+  (when (require 'go-ts-mode nil t)
+    (treesit-font-lock-rules
+     ;; FIXME: operators not added to `go-ts-mode--font-lock-settings'
+     :language 'go
+     :feature 'operator
+     `([,@go-ts-mode--operators] @font-lock-operator-face)
 
-   :language 'go
-   :feature 'builtin
-   ;; :override t
-   `((call_expression
-      function: ((identifier) @font-lock-builtin-face
-                 (:match ,(rx-to-string
-                           `(seq bos (or ,@nvp-go-ts--builtin-functions) eos))
-                         @font-lock-builtin-face))))))
+     :language 'go
+     :feature 'builtin
+     ;; :override t
+     `((call_expression
+        function: ((identifier) @font-lock-builtin-face
+                   (:match ,(rx-to-string
+                             `(seq bos (or ,@nvp-go-ts--builtin-functions) eos))
+                           @font-lock-builtin-face)))))))
 
 (with-eval-after-load 'go-ts-mode
   (let* ((features (--map (nth 2 it) nvp-go-ts-font-lock-settings))

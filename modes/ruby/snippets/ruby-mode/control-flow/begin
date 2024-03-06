@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: begin
-# key: beg
+# name: begin ... rescue
+# key: try
 # --
 begin
   $0

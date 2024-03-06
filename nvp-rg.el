@@ -76,7 +76,7 @@
   :menu ("Custom" "L" "src/emacs"))
 
 (rg-define-search nvp-rg-todos
-  :query "(TODO|FIXME|XXX)"
+  :query "(TODO|FIXME|XXX|BUG|HACK|FIX|WIP)"
   :format regexp
   :dir (nvp-rg-get-project)
   :files "everything"

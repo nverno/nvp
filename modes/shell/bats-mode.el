@@ -1,103 +1,65 @@
-;;; bats-mode.el --- bats major mode -*- lexical-binding: t; -*-
-
-;; This is free and unencumbered software released into the public domain.
-
-;; Author: Noah Peart <noah.v.peart@gmail.com>
-;; URL: https://github.com/nverno/shell-tools
-;; Last modified: <2019-05-01.00>
-;; Created:  1 January 2017
-
-;; This file is not part of GNU Emacs.
+;;; bats-mode.el --- Major mode for Bats buffers -*- lexical-binding: t; -*-
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
-
 ;;; Commentary:
 ;;
-;; Emacs major-mode for bats source.
+;; Major-mode for bats buffers.
 ;;
-;; See
+;; References
 ;; - https://github.com/sstephenson/bats
-;; - modified from https://github.com/dougm/bats-mode
+;; - some commands from https://github.com/dougm/bats-mode
 ;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'compile))
+(eval-when-compile (require 'compile))
+(require 'treesit)
 (require 'sh-script)
-(require 'nvp)
-(require 'nvp-sh)
 
-(defvar bats-exe (nvp:program "bats") "Bats executable.")
+(defgroup bats nil
+  "Bats programming utilities."
+  :group 'languages)
 
-(defvar bats-indent-offset sh-basic-offset "Bats indentation offset.")
+(defcustom bats-command "bats"
+  "Command to run bats files."
+  :type 'string)
 
-(defvar bats-check-program
-  (nvp:program "batscheck.sh" :path (expand-file-name "sh" nvp/bin)))
+(defcustom bats-indent-offset sh-basic-offset
+  "Bats indentation offset."
+  :type 'integer
+  :safe 'integerp)
 
-(defvar bats-function-re
-  (nvp:concat
-   "^\\s-*\\(?:"
-   ;; function FOO()
-   "function\\s-+\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*\\(?:()\\)?"
-   "\\|"
-   ;; FOO()
-   "\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*()"
-   "\\|"
-   ;; bats tests
-   "@test"
-   "\\)"))
+(defcustom bats-check-command "batscheck.sh"
+  "Command to run batscheck.sh."
+  :type 'string)
 
-(defun bats-current-test ()
-  "Find current bats test."
-  (let (test-name)
-    (save-excursion
-      (end-of-line)
-      (unless (search-backward-regexp "^@test \"\\(.*?\\)\" {" nil t)
-        (error "Unable to find a @test"))
-      (setq test-name (match-string 1)))
-    test-name))
+;;; XXX: used anywhere? for imenu?
+(defvar bats-mode-function-re
+  (concat "^\\s-*\\(?:"
+          ;; function FOO()
+          "function\\s-+\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*\\(?:()\\)?"
+          ;; FOO()
+          "\\|\\([[:alpha:]_][[:alnum:]_]*\\)\\s-*()"
+          ;; bats tests
+          "\\|@test" "\\)"))
 
-;; -------------------------------------------------------------------
-;;; Commands
 
-;; mark current test, keep marking successive tests when called
-;; repeatedly
-;; (defun bats-mark-test ()
-;;   (interactive)
-;;   (if (or (and (eq last-command this-command) (mark t))
-;;           (and transient-mark-mode mark-active))
-;;       (set-mark
-;;        (save-excursion
-;;          (goto-char (mark))
-;;          (bats-next-test)
-;;          (bats--end-of-test)))
-;;     (let ((start (bats--beginning-of-test)))
-;;       (when start
-;;         (bats--end-of-test)
-;;         (push-mark nil t t)
-;;         (goto-char start)))))
+;;; Font-locking
 
-;; Compilation
+(defvar bats-mode--builtins
+  '("load" "run" "skip"
+    "bats_load_safe" "bats_load_library" "bats_require_minimum_version"))
 
+(defvar bats-mode--font-lock-keywords
+  `(("@test" . font-lock-builtin-face)
+    (,(rx-to-string `(group symbol-start (or ,@bats-mode--builtins) symbol-end))
+     1 font-lock-builtin-face)))
+
+
+;;; Compilation
 (with-eval-after-load 'compile
   (add-to-list 'compilation-error-regexp-alist 'bats t)
   (add-to-list 'compilation-error-regexp-alist-alist
                '(bats . ("file \\([^ \t\r\n(]+\\), line \\([0-9]+\\)" 1 2)) t))
 
-;; just highlight checkmarks
+;; Just highlight checkmarks
 (defun bats-compilation-filter ()
   (save-excursion
     (forward-line 0)
@@ -116,23 +78,52 @@
   (let ((inhibit-read-only t))
    (align-regexp (point-min) (point-max) "\\(\\s-+\\)✓" 1)))
 
+;; mark current test, keep marking successive tests when called
+;; repeatedly
+;; (defun bats-mark-test ()
+;;   (interactive)
+;;   (if (or (and (eq last-command this-command) (mark t))
+;;           (and transient-mark-mode mark-active))
+;;       (set-mark
+;;        (save-excursion
+;;          (goto-char (mark))
+;;          (bats-next-test)
+;;          (bats--end-of-test)))
+;;     (let ((start (bats--beginning-of-test)))
+;;       (when start
+;;         (bats--end-of-test)
+;;         (push-mark nil t t)
+;;         (goto-char start)))))
+
+;;; from https://github.com/dougm/bats-mode
+(defun bats-mode--current-test ()
+  "Find current bats test."
+  (let (test-name)
+    (save-excursion
+      (end-of-line)
+      (unless (search-backward-regexp "^@test \"\\(.*?\\)\" {" nil t)
+        (error "Unable to find a @test"))
+      (setq test-name (match-string 1)))
+    test-name))
+
 ;; FIXME: Doesn't look like there is a BATS_TEST_PATTERN anymore
 (defun bats-run (file &optional name)
-  (let ((cmd (concat bats-exe " -p " file)))
-    (with-current-buffer 
-        (compile (if name
-                     (concat (format "BATS_TEST_PATTERN='^%s$' " name) cmd)
-                   cmd))
+  (let ((cmd (concat bats-command " -p " file)))
+    (with-current-buffer
+        (compile
+         (if name
+             (concat (format "BATS_TEST_PATTERN='^%s$' " name) cmd)
+           cmd))
       (add-hook 'compilation-filter-hook #'bats-compilation-filter nil t)
       (add-hook 'compilation-finish-functions #'bats-compilation-finish nil t))))
 
 (defun bats-run-current-test ()
   (interactive)
-  (bats-run-current-file (bats-current-test)))
+  (bats-run-current-file (bats-mode--current-test)))
 
 (defun bats-run-current-file (&optional name)
   (interactive)
-  (if buffer-file-name 
+  (if buffer-file-name
       (bats-run buffer-file-name name)
     (user-error "Buffer not associated with a file")))
 
@@ -140,39 +131,66 @@
   (interactive)
   (bats-run "."))
 
-;; -------------------------------------------------------------------
-;;; Major-mode
+(defvar-keymap bats-mode-map
+  :doc "Keymap for Bats mode."
+  "C-c C-b" #'bats-run-current-file
+  "C-c C-a" #'bats-run-all
+  "C-c C-c" #'bats-run-current-test)
 
-;; Font-lock
-
-(defvar bats-font-lock-keywords
-  `(("\\(@test\\)" 1 font-lock-keyword-face)
-    (,(nvp:re-opt '("load" "run" "skip")) 1 font-lock-function-name-face)
-    (,(nvp:re-opt '("setup" "teardown")) 1 'nvp-special-type-face)))
-
-(defvar bats-mode-map
-  (let ((km (make-sparse-keymap)))
-    (define-key km (kbd "C-c C-b") 'bats-run-current-file)
-    (define-key km (kbd "C-c C-a") 'bats-run-all)
-    (define-key km (kbd "C-c C-c") 'bats-run-current-test)
-    km))
-
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.bats\\'" . bats-mode))
 
 ;;;###autoload
 (define-derived-mode bats-mode sh-mode "Bats"
-  "Major mode for Bats source files.
+  "Major mode for Bats buffers.
 
-Commands: 
+Commands:
 \\{bats-mode-map}"
   (setq-local sh-shell "bash")
   (setq-local sh-basic-offset bats-indent-offset)
-  (font-lock-add-keywords 'bats-mode bats-font-lock-keywords)
-  (setq-local nvp-sh-function-re bats-function-re)
-  (setq-local beginning-of-defun-function #'nvp-sh-beginning-of-defun)
-  (setq-local end-of-defun-function #'nvp-sh-end-of-defun)
-  (setq-local compile-command '(concat bats-check-program " " (buffer-file-name))))
+  (font-lock-add-keywords 'bats-mode bats-mode--font-lock-keywords)
+  (setq-local compile-command '(concat bats-check-command " " (buffer-file-name))))
+
+
+;;; Tree-sitter
+
+(defvar bats-mode--treesit-settings
+  (append
+   sh-mode--treesit-settings
+   (treesit-font-lock-rules
+    :feature 'bats
+    :language 'bash
+    :override t
+    `((command
+       name: (command_name
+              ((word) @font-lock-preprocessor-face)
+              (:match "\\`@test'" @font-lock-preprocessor-face)))
+      (command
+       name: (command_name
+              (word) @font-lock-builtin-face
+              (:match ,(rx-to-string `(seq bos (or ,@bats-mode--builtins) eos))
+                      @font-lock-builtin-face)))))))
+
+(defvar-keymap bats-ts-mode-map
+  :doc "Keymap for Bats ts mode."
+  :parent (make-composed-keymap bats-mode-map bash-ts-mode-map))
+
+
+;;;###autoload
+(define-derived-mode bats-ts-mode bash-ts-mode "Bats"
+  "Major mode for Bats buffers using tree-sitter.
+
+Commands:
+\\{bats-ts-mode-map}"
+  :syntax-table sh-mode-syntax-table
+  (when (treesit-ready-p 'bash)
+    (sh-set-shell "bash")
+    (setq-local sh-basic-offset bats-indent-offset)
+    ;; FIXME: added features not being added properly
+    (setq-local treesit-font-lock-settings bats-mode--treesit-settings)
+    (treesit-font-lock-recompute-features '(bats) nil 'bash)))
+
+
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.bats\\'" . bats-mode))
 
 (provide 'bats-mode)
 ;;; bats-mode.el ends here

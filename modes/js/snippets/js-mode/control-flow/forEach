@@ -1,5 +1,9 @@
 # -*- mode: snippet -*-
 # name: forEach
 # key: fe
+# type: command
 # --
-${1:arr}.forEach((${2:elem}) => $0)
+(yas-expand-snippet
+  (if (looking-back "\\." (line-beginning-position))
+    "forEach((${1:elem}) => $0)"
+  "${1:arr}.forEach((${2:elem}) => $0)"))

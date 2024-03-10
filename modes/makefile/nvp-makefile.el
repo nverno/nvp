@@ -27,6 +27,16 @@
 
 (nvp:package-define-root :name "nvp-makefile")
 
+(defun nvp-makefile-target-name ()
+  (save-excursion
+    ;; forward one line so if point on target line
+    ;; the target in the current line is toggled
+    (forward-line 1)
+    (makefile-previous-dependency)
+    ;; `makefile-previous-dependency' modifies match-data
+    ;; with `looking-at'
+    (string-trim (match-string-no-properties 1))))
+
 ;;; Navigation
 
 (eval-and-compile
@@ -163,6 +173,14 @@ using `compilation-read-command'."
        (compilation-start (if current-prefix-arg
                               (compilation-read-command command)
                             command))))))
+
+(defun nvp-makefile-run-target ()
+  "Run target at point."
+  (interactive)
+  (when-let ((target (nvp-makefile-target-name)))
+    (nvp-makefile-save-and-compile target)))
+
+;;; Formatting
 
 (defun nvp-makefile-format-buffer (&optional beg end)
   (interactive (if (region-active-p) (list (region-beginning) (region-end))

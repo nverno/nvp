@@ -34,16 +34,6 @@
 ;; - functions => buffer targets
 ;; - current function / target
 
-(defun nvp-makefile-target-name ()
-  (save-excursion
-    ;; forward one line so if point on target line
-    ;; the target in the current line is toggled
-    (forward-line 1)
-    (makefile-previous-dependency)
-    ;; `makefile-previous-dependency' modifies match-data
-    ;; with `looking-at'
-    (string-trim (match-string-no-properties 1))))
-
 ;; list dependencies for TARGET
 (defun nvp-makefile-list-deps (target)
   (save-excursion
@@ -99,7 +89,7 @@
                              (nconc deps (cons dep nil)) " ")))))))
 
 ;; -------------------------------------------------------------------
-;;; Toggle / Insert 
+;;; Toggle / Insert
 
 ;; toggle this dependency to be an intermediate
 ;;;###autoload

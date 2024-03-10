@@ -48,7 +48,7 @@
 (defun nvp-makefile--beginning-of-defun (arg)
   (let ((search-fn (if (> arg 0) #'re-search-backward #'re-search-forward))
         (pos (point-marker)))
-    (and (< arg 0)                   ;searching forward -- skip initial beg . 
+    (and (< arg 0)                   ;searching forward -- skip initial beg .
          (nvp:makefile--defun-line-p)
          (end-of-line))
     (while (and (funcall search-fn nvp-makefile-defun-regexp nil 'move)
@@ -98,8 +98,8 @@
 ;; -------------------------------------------------------------------
 ;;; Compile
 
-;; modified `helm--make-target-list-qp' in helm-make
-;; read targets from 'make -prqnR' output
+;; modified `helm--make-target-list-qp' in helm-make read targets from 'make
+;; -prqnR' output
 (defun nvp-makefile-targets--make (makefile)
   (let (target targets)
     (with-temp-buffer
@@ -150,17 +150,19 @@ MAKEFILE should be a Makefile buffer or filename."
 
 (defun nvp-makefile-save-and-compile (targets &optional arg)
   "Save and compile.
-With prefix ARG, run `helm-make'."
+With prefix ARG, run `helm-make' if bound or allow editing command to run
+using `compilation-read-command'."
   (interactive
-   (progn
-     (save-buffer)
-     (list (and (not (and current-prefix-arg (fboundp 'helm-make)))
-                (nvp:makefile-read-targets))
-           current-prefix-arg)))
+   (progn (save-buffer)
+          (list (and (not (and current-prefix-arg (fboundp 'helm-make)))
+                     (nvp:makefile-read-targets))
+                current-prefix-arg)))
   (if (and arg (fboundp 'helm-make)) (call-interactively #'helm-make)
-    (nvp:makefile-with-compilation-vars
-     (compilation-start
-      (concat "make -f " (buffer-file-name) " " targets)))))
+    (let ((command (concat "make -f " (buffer-file-name) " " targets)))
+      (nvp:makefile-with-compilation-vars
+       (compilation-start (if current-prefix-arg
+                              (compilation-read-command command)
+                            command))))))
 
 (defun nvp-makefile-format-buffer (&optional beg end)
   (interactive (if (region-active-p) (list (region-beginning) (region-end))

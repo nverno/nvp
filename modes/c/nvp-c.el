@@ -380,7 +380,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 (defvar c-ts-mode--operators)
 (defun nvp-c-ts-font-lock-settings (language)
   (let* ((delims (append ["," ":" ";" "."] (and (eq 'cpp language) '("::"))))
-         (ops (append c-ts-mode--operators (and (eq 'cpp language) '("<=>"))))
+         (ops (append c-ts-mode--operators (and (eq 'cpp language) '("<=>" "..."))))
          (rules (list
                  :language language
                  :feature 'delimiter

@@ -241,14 +241,16 @@
         (print-circle t)
         (inhibit-read-only t))
     (nvp:with-results-buffer :title (format "c-lang-constants for %s" mode)
-      (dolist (v (append c-lang-constants ()))
-        (when (symbolp v)
-          (princ v)
-          (princ ": ")
-          (condition-case nil
-              (eval `(prin1 (c-lang-const ,v ,mode)))
-            (error (princ "<failed>")))
-          (terpri))))))
+      (obarray-map
+       (lambda (v)
+         (when (symbolp v)
+           (princ v)
+           (princ ": ")
+           (condition-case nil
+               (eval `(prin1 (c-lang-const ,v ,mode)))
+             (error (princ "<failed>")))
+           (terpri)))
+       c-lang-constants))))
 
 ;; -------------------------------------------------------------------
 ;;; Overlays

@@ -84,7 +84,7 @@
 (nvp:run-once go-ts-mode (:after (&rest _))
   (dolist (v '(builtin namespace operator))
     (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-  (treesit-font-lock-recompute-features))
+  (treesit-font-lock-recompute-features nil '(error)))
 
 (provide 'nvp-go)
 ;;; nvp-go.el ends here

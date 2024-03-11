@@ -19,6 +19,15 @@
   :modes (c-mode c-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
+(defun nvp-c-show-syntactic-information ()
+  (interactive)
+  ;; TODO: remove comments added by `c-syntactic-information-on-region' with
+  ;; prefix
+  (call-interactively
+   (if (region-active-p)
+       #'c-syntactic-information-on-region
+     #'c-show-syntactic-information)))
+
 ;;; Macroexpansion
 ;; can set in .dir-locals
 ;; (put 'c-macro-cppflags 'safe-local-variable #'stringp)

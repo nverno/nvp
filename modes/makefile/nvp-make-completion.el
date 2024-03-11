@@ -164,7 +164,8 @@ TYPE is one of \\='all, \\='variables or \\='rules."
         (save-excursion
           (or (progn
                 (ignore-errors (up-list -1 t t))
-                (when (>= (point) lim)
+                (when (and (not (eobp))
+                           (>= (point) lim))
                   (forward-char 1)
                   (and (setq bnds (bounds-of-thing-at-point 'symbol))
                        (nvp:makefile-variable-or-function-p (car bnds))
@@ -190,8 +191,8 @@ TYPE is one of \\='all, \\='variables or \\='rules."
                     (buffer-substring-no-properties
                      (point) (cdr (bounds-of-thing-at-point 'sentence))))
                    ('target
-                    (replace-regexp-in-string
-                     "[\n\r\t ]+" " " (thing-at-point 'sentence)))
+                    (and-let* ((target (thing-at-point 'sentence t)))
+                      (replace-regexp-in-string "[\n\r\t ]+" " " target)))
                    (_
                     (goto-char (point-min))
                     (when (re-search-forward (concat "\\([$](" thing ".*)\\)") nil t)

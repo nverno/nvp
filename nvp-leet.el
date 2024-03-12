@@ -77,7 +77,7 @@
           (while (and (not (eobp))
                       (looking-at skip-re))
             (goto-char (match-end 0))
-            (when (or (not (bolp)) (nvp-line-empty-p))
+            (when (or (not (bolp)) (looking-at-p "[ \t]*$"))
               (forward-line 1))))
         (narrow-to-region (point) (point-max)))))
   (when nvp-leet-window-configuration

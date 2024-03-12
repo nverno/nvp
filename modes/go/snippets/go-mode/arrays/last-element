@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: last element in array
+# key: last
+# --
+${1:arr}[len($1)-1]

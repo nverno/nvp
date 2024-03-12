@@ -97,6 +97,9 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
     (let ((sym (thing-at-point (or type 'symbol) t)))
       (if (or force-prompt-p (not sym))
           (let* ((prompt (or prompt "Describe: "))
+                 (completions (if (functionp completions)
+                                  (funcall completions)
+                                completions))
                  (sym (string-trim
                        (if completions
                            (completing-read prompt completions nil t)

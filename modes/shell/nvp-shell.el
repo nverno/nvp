@@ -72,12 +72,17 @@
 
 (defun nvp-shell-compile (&optional arg)
   "Run current input in compilation buffer.
-With prefix ARG, prompt for command and don't force display in current buffer."
+With prefix ARG, display in current buffer.
+With `C-u'`C-u' read command."
   (interactive "P")
-  (let ((display-buffer-overriding-action (unless arg '((display-buffer-same-window)))))
-   (nvp:with-buffer-proc proc
-     (-when-let (compile-command (nvp-shell--get-input 'add))
-       (call-interactively #'nvp-compile)))))
+  (let ((display-buffer-overriding-action (and arg '((display-buffer-same-window)))))
+    (-when-let (compile-command (nvp-shell--get-input 'add))
+      (nvp:with-global-vars
+          ((compilation-read-command (>= (prefix-numeric-value arg) 16))
+           (compilation-scroll-output nil))
+        (setq current-prefix-arg compilation-read-command)
+        (with-current-buffer (call-interactively #'nvp-compile)
+          (goto-char (point)))))))
 
 (defun nvp-shell-nautilus ()
   "Open nautilus in current directory."

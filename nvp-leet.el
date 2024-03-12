@@ -134,7 +134,7 @@
               ("golang" (nvp-leet--insert-preamble "package leetcode"))
               ("racket" (nvp-leet--insert-preamble "#lang racket"))
               ("cpp" (nvp-leet--insert-preamble
-                      "#include <bits/stdc++.h>\nusing namespace std;"))
+                      "#include <bits/stdc++.h>\n#include \"./ds/leet.hpp\"\nusing namespace std;"))
               ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max)))
               ("python3" (nvp-leet--insert-preamble
                           "from typing import List, Optional"))

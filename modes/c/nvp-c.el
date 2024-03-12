@@ -7,9 +7,11 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp:req 'nvp-c 'subrs)
-(nvp:decls :f (forward-ifdef clang-complete-load-args asdf-where nvp-env-add nvp-yas-var
-                             s-join objdump-mode)
-           :v (c/R-abbrev-table company-clang-arguments gud-comint-buffer))
+(nvp:decls
+ :f ( forward-ifdef clang-complete-load-args asdf-where nvp-env-add nvp-yas-var
+      s-join objdump-mode
+      c-syntactic-information-on-region c-show-syntactic-information)
+ :v (c/R-abbrev-table company-clang-arguments gud-comint-buffer))
 (nvp:auto "nvp-tag" 'nvp-tag-list-decls)
 
 

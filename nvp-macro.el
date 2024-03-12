@@ -1140,6 +1140,26 @@ VARS should be either a symbol or list or symbols."
      (unwind-protect
          ,@body)))
 
+(defmacro nvp:with-global-vars (var-vals &rest body)
+  "Evaluate BODY with global variables temporarily set to bindinds in
+VAR-VALS."
+  (declare (indent 1) (debug (form body)))
+  (nvp:with-syms (saved)
+    (let (binds vars)
+      (dolist (vv var-vals)
+        (push (car vv) vars)
+        (push (list (make-symbol (symbol-name (car vv))) (car vv)) binds))
+      `(let ((,saved ',binds))
+         (cl-progv
+             (mapcar #'car ,saved)
+             (mapcar (lambda (vv) (eval (cadr vv))) ,saved)
+           (let (,@var-vals)
+             (unwind-protect
+                 (progn
+                   (dolist (vv ',vars) (set vv (eval vv)))
+                   ,@body)
+               (dolist (vv ,saved) (set (cadr vv) (eval (car vv)))))))))))
+
 ;; from yasnippet #<marker at 126339 in yasnippet.el>
 (defmacro nvp:letenv (env &rest body)
   "Evaluate BODY with bindings from ENV.

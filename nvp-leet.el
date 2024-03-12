@@ -70,13 +70,16 @@
 
 (defun nvp-leet-pre-submit-hook ()
   (when nvp-leet--line-skip-re
-    (save-excursion
-      (goto-char (point-min))
-      (save-match-data
-        (when (looking-at nvp-leet--line-skip-re)
-          (goto-char (match-end 0))
-          (unless (bolp) (forward-line 1))))
-      (narrow-to-region (point) (point-max))))
+    (let ((skip-re (concat "^[ \t]*$\\|" nvp-leet--line-skip-re)))
+      (save-excursion
+        (goto-char (point-min))
+        (save-match-data
+          (while (and (not (eobp))
+                      (looking-at skip-re))
+            (goto-char (match-end 0))
+            (when (or (not (bolp)) (nvp-line-empty-p))
+              (forward-line 1))))
+        (narrow-to-region (point) (point-max)))))
   (when nvp-leet-window-configuration
     (set-window-configuration nvp-leet-window-configuration))
   (save-current-buffer
@@ -99,8 +102,8 @@
     (setq leetcode-directory dir)))
 (advice-add 'leetcode-set-prefer-language :after #'nvp@leet-set-language)
 
-(defun nvp-leet--insert-preamble (preamble)
-  (setq-local nvp-leet--line-skip-re (regexp-quote preamble))
+(defun nvp-leet--insert-preamble (preamble &optional skip-prefix)
+  (setq-local nvp-leet--line-skip-re (or skip-prefix (regexp-quote preamble)))
   (save-excursion
     (goto-char (point-min))
     (unless (looking-at-p nvp-leet--line-skip-re)
@@ -135,9 +138,11 @@
               ("racket" (nvp-leet--insert-preamble "#lang racket"))
               ("cpp" (nvp-leet--insert-preamble
                       "#include <bits/stdc++.h>\n#include \"./ds/leet.hpp\"\nusing namespace std;"))
-              ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max)))
+              ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max))
+               (setq-local nvp-leet--line-skip-re "require_relative"))
               ("python3" (nvp-leet--insert-preamble
-                          "from typing import List, Optional"))
+                          "from typing import List, Optional"
+                          "from \\(typing\\|\\.leet\\)"))
               (_ nil)))
           (nvp-leet--setup-buffer))))))
 
@@ -185,7 +190,7 @@
             nvp-leet-problem-id problem-id)
       (and (eq (point-min) (point-max))
            (insert contents))
-      (nvp-leet--insert-preamble "use crate::Solution;")
+      (nvp-leet--insert-preamble "use crate::Solution;" "use crate")
       (nvp-leet--setup-buffer)
       (if and-go (pop-to-buffer (current-buffer))
         (current-buffer)))))

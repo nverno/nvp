@@ -19,12 +19,13 @@
     ("pry"  . "show-source -d %s")
     (nil    .  "")))
 
+(defvar-local nvp-ruby-inf-command "ruby")
+
 ;; translate '?' in STR
 (defun nvp-ruby--repl-input-filter (str)
   (-if-let (help-str (and (string-match "^ *\\? *\\(.+\\)" str)
                           (match-string 1 str)))
-      (format (assoc-default inf-ruby-buffer-command nvp-ruby-inf-help)
-              help-str)
+      (format (assoc-default nvp-ruby-inf-command nvp-ruby-inf-help) help-str)
     str))
 
 ;; For `comint-input-sender', to handle special repl commands
@@ -38,7 +39,11 @@
     (or (ignore-errors (inf-ruby-console-auto))
         (inf-ruby inf-ruby-default-implementation)))
   (and (fboundp 'robe-start) (robe-start))
-  (get-buffer-process inf-ruby-buffer))
+  (with-current-buffer inf-ruby-buffer
+    (setq-local nvp-ruby-inf-command (string-trim
+                                      (string-remove-prefix
+                                       "bundle exec" inf-ruby-buffer-command)))
+    (get-buffer-process (current-buffer))))
 
 (defun nvp-ruby-repl-help-cmd (&optional thing)
   (with-current-buffer (nvp-repl-buffer)

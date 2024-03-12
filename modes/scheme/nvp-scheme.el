@@ -8,7 +8,7 @@
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
-(require 'geiser nil t)
+;; (require 'geiser nil t)
 (nvp:decls :p "geiser" :f (abbrev-table-put abbrev-table-get))
 
 ;; determine available scheme implementations

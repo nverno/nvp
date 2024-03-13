@@ -234,6 +234,12 @@ ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
     (error (message "invalid expression")
 	   (insert (current-kill 0)))))
 
+(defun nvp-elisp-eval-print-last-sexp (arg)
+  "Wrap `eval-print-last-sexp' so `C-u' ARG prints without truncation."
+  (interactive
+   (list (if (equal '(4) current-prefix-arg) 0 current-prefix-arg)))
+  (funcall-interactively #'eval-print-last-sexp arg))
+
 ;; -------------------------------------------------------------------
 ;;; Indentation
 

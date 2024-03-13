@@ -10,7 +10,14 @@
 (cl-defstruct (nvp--hap-ts (:constructor nvp-hap-ts-make))
   "Hap tree-sitter backend"
   parsers                             ; parsers where it should always be active
-  context                             ; parser->query contexts to be active
+  ;; parser->query contexts to determine when backend should be active depending
+  ;; on the local context, eg. shell region in a makefile.
+  ;;
+  ;; Context is an alist of (MAJOR-MODE PARSER QUERY)
+  ;;
+  ;; The backend will be active in MAJOR-MODE buffers when the QUERY to
+  ;; tree-sitter PARSER is non-nil
+  context
   ts-modes                            ; supported treesit modes
   backend                             ; hap backend
   )
@@ -106,7 +113,7 @@
 ;;     (when (or (eq t treesit)
 ;;               (and (listp treesit) (memq major-mode treesit)))
 ;;       (treesit-node-match-p (treesit-node-at (point)) context)
-      
+
 ;;       (condition-case nil
 ;;           (prog1 t
 ;;             )

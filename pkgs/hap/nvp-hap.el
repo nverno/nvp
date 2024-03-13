@@ -97,9 +97,6 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
     (let ((sym (thing-at-point (or type 'symbol) t)))
       (if (or force-prompt-p (not sym))
           (let* ((prompt (or prompt "Describe: "))
-                 (completions (if (functionp completions)
-                                  (funcall completions)
-                                completions))
                  (sym (string-trim
                        (if completions
                            (completing-read prompt completions nil t)
@@ -299,9 +296,8 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
   (cond
    ((symbolp backend)
     (condition-case err
-        (progn
-          (funcall backend 'init)
-          (put backend 'hap-init t))
+        (progn (funcall backend 'init)
+               (put backend 'hap-init t))
       (error
        (put backend 'hap-init 'failed)
        (nvp-hap-message 1 "Hap backend '%s' failed to initialize:\n%s"

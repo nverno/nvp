@@ -59,9 +59,6 @@
                       (unless (bolp) (insert "\n"))
                       (insert (mapconcat 'identity input "\n"))))))))
 
-;; -------------------------------------------------------------------
-;;; Window Configuration
-
 (defun nvp-leet-reset-layout ()
   "Reset window layout to initial solving layout."
   (interactive)
@@ -80,8 +77,7 @@
             (when (or (not (bolp)) (looking-at-p "[ \t]*$"))
               (forward-line 1))))
         (narrow-to-region (point) (point-max)))))
-  (when nvp-leet-window-configuration
-    (set-window-configuration nvp-leet-window-configuration))
+  (nvp-leet-reset-layout)
   (save-current-buffer
     (with-selected-window
         (display-buffer (leetcode--result-buffer-name nvp-leet-problem-id))
@@ -109,7 +105,11 @@
     (unless (looking-at-p nvp-leet--line-skip-re)
       (insert (concat preamble "\n")))))
 
-(defun nvp-leet--setup-buffer ()
+(cl-defun nvp-leet-setup-lang (&key preamble skip)
+  (cond (preamble (nvp-leet--insert-preamble preamble skip))
+        (skip (setq-local nvp-leet--line-skip-re skip))))
+
+(defun nvp-leet--setup-format-buffer ()
   (indent-region (point-min) (point-max))
   (goto-char (point-max))
   (forward-line -1)
@@ -134,17 +134,25 @@
               ("rust" (let ((buffer buf))
                         (run-with-timer
                          0.2 nil (lambda () (nvp-leet-setup-rust buffer 'and-go)))))
-              ("golang" (nvp-leet--insert-preamble "package leetcode"))
-              ("racket" (nvp-leet--insert-preamble "#lang racket"))
-              ("cpp" (nvp-leet--insert-preamble
-                      "#include <bits/stdc++.h>\n#include \"./ds/leet.hpp\"\nusing namespace std;"))
+              ("golang" (nvp-leet-setup-lang
+                         :preamble "package leetcode"
+                         :skip "package"))
+              ("racket" (nvp-leet-setup-lang
+                         :preamble "#lang racket"
+                         :skip "#lang"))
+              ("cpp" (nvp-leet-setup-lang
+                      :preamble "#include \"./ds/leet.hpp\"\nusing namespace std;"
+                      :skip "^\\(?:#include\\|using namespace std\\)"))
+              ("c" (nvp-leet-setup-lang
+                    :preamble "#include \"./ds/leet.h\""
+                    :skip "#include"))
               ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max))
-               (setq-local nvp-leet--line-skip-re "require_relative"))
-              ("python3" (nvp-leet--insert-preamble
-                          "from typing import List, Optional"
-                          "from \\(typing\\|\\.leet\\)"))
+               (nvp-leet-setup-lang :skip "require_relative"))
+              ("python3" (nvp-leet-setup-lang
+                          :preamble "from typing import List, Optional"
+                          :skip "from \\(typing\\|\\.leet\\)"))
               (_ nil)))
-          (nvp-leet--setup-buffer))))))
+          (nvp-leet--setup-format-buffer))))))
 
 (advice-add #'leetcode--start-coding :around #'nvp@leet-setup)
 
@@ -190,8 +198,8 @@
             nvp-leet-problem-id problem-id)
       (and (eq (point-min) (point-max))
            (insert contents))
-      (nvp-leet--insert-preamble "use crate::Solution;" "use crate")
-      (nvp-leet--setup-buffer)
+      (nvp-leet-setup-lang :preamble "use crate::Solution;" :skip "use crate")
+      (nvp-leet--setup-format-buffer)
       (if and-go (pop-to-buffer (current-buffer))
         (current-buffer)))))
 

@@ -6,12 +6,12 @@
 (require 'transient)
 (require 'trace)
 (require 'trace-tree nil t)
-(nvp:auto "find-func" 'read-library-name 'find-library-name)
-(nvp:auto "nvp-elisp" 'nvp-elisp-matching-forms)
-(nvp:auto "s" 's-split)
+
+(nvp:auto "find-func" read-library-name find-library-name)
+(nvp:auto "nvp-elisp" nvp-elisp-matching-forms)
+(nvp:auto "s" s-split)
 (nvp:auto "trace-tree" trace-tree-enable trace-tree-disable)
 (nvp:decl flatten-tree)
-
 
 ;;;###autoload(autoload 'nvp-trace-menu "nvp-trace" nil t)
 (transient-define-prefix nvp-trace-menu ()
@@ -37,6 +37,81 @@
     :if (lambda () (featurep 'trace-tree)))
    ("tq" "Disable trace-tree" trace-tree-disable
     :if (lambda () (featurep 'trace-tree)))])
+
+;; -------------------------------------------------------------------
+;;; Trace output mode
+
+;; Skip over oen trace level. ARG is +1 or -1 for direction
+(defun trace-output--forward-sexp-1 (arg)
+  (let* ((cur-arrow "->")
+         (level
+          (progn (beginning-of-line)
+                 (and (looking-at "\\(\\(?:| \\)*[0-9]+\\) \\([<>-]+\\)")
+                      (prog1 (match-string 1)
+                        (setq cur-arrow (match-string 2))))))
+         (end-re (format "^%s %s" level (if (string= cur-arrow "<-") "->" "<-"))))
+    (when level
+      (if (or (and (string= "->" cur-arrow) (< arg 0))
+              (and (string= "<-" cur-arrow) (> arg 0)))
+          (zerop (forward-line arg))
+       (catch 'term
+         (progn (while (not (looking-at-p end-re))
+                  (unless (zerop (forward-line arg))
+                    (throw 'term nil)))
+                t))))))
+
+;; Necessary for hideshow to hide levels properly
+(defun trace-output-forward-sexp (&optional arg)
+  "Function for `forward-sexp-function'.
+ARG comes from `forward-sexp', which see."
+  (or arg (setq arg 1))
+  (let ((cnt (abs arg))
+        (sign (if (> arg 0) 1 -1)))
+    (catch 'term
+      (while (> cnt 0)
+        (beginning-of-line)
+        (when (looking-at-p (regexp-quote trace-separator))
+          (or (zerop (forward-line sign))
+              (throw 'term nil)))
+        (trace-output--forward-sexp-1 sign)
+        (throw 'term nil)
+        (cl-decf cnt)))
+    cnt))
+
+(defvar hs-special-modes-alist)
+(with-eval-after-load 'hideshow
+  (unless (assoc 'trace-output-mode hs-special-modes-alist)
+    (push '(trace-output-mode
+            "^\\(?:| \\)*[0-9]+ ->"
+            "^\\(?:| \\)*[0-9]+ <-")
+          hs-special-modes-alist)))
+
+(defvar trace-output-mode-keywords
+  `((,(concat "^" (string-chop-newline trace-separator))
+     . font-lock-comment-face)))
+
+(defvar-keymap trace-output-mode-map
+  :parent special-mode-map
+  "n" #'forward-paragraph
+  "p" #'backward-paragraph)
+
+(define-derived-mode trace-output-mode special-mode "Trace"
+  "Major mode for displaying trace results.
+
+\\{trace-output-mode-map}"
+  :abbrev-table nil
+  :syntax-table emacs-lisp-mode-syntax-table
+  (let ((sep (regexp-quote (string-chop-newline trace-separator))))
+    (setq-local paragraph-separate sep)
+    ;; variables to set for hideshow to work
+    (setq-local comment-start sep)
+    (setq-local comment-end "")
+    (setq-local hs-hide-comments-when-hiding-all nil)
+    (setq-local forward-sexp-function #'trace-output-forward-sexp)
+    (setq-local font-lock-defaults (list trace-output-mode-keywords))))
+
+;; -------------------------------------------------------------------
+;;; Tracing minor mode
 
 (defvar-local nvp-trace--mode-line " Trace")
 (defvar nvp-trace--active nil "Non-nil when tracing")
@@ -162,8 +237,13 @@
 
 ;;;###autoload
 (defun nvp-trace-display-results ()
+  "Show the trace results and maybe enable `trace-output-mode'."
   (interactive)
-  (display-buffer trace-buffer))
+  (or (get-buffer trace-buffer) (user-error "No trace-buffer"))
+  (with-current-buffer trace-buffer
+    (when (eq major-mode 'fundamental-mode)
+      (trace-output-mode))
+    (display-buffer (current-buffer))))
 
 ;;;###autoload
 (defun nvp-trace-library (library &optional macros filter)

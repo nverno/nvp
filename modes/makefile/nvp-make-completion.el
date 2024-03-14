@@ -30,7 +30,12 @@
 (nvp:auto "s" 's-lowercase-p)
 (nvp:decls :f (xref-make xref-location) :v (info-lookup-other-window-flag))
 
-(defvar nvp-makefile--dir (file-name-directory (nvp:load-file-name)))
+(defconst nvp-makefile--dir
+  (file-name-directory
+   (cond (load-in-progress load-file-name)
+         ((and (boundp 'byte-compile-current-file)
+               byte-compile-current-file))
+         (t (buffer-file-name)))))
 
 (defconst nvp-makecomp-program
   (expand-file-name "bin/makevars.awk" nvp-makefile--dir))

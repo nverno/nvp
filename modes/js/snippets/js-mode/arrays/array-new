@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Array.new
+# key: an
+# --
+Array(${1:n})${2:.fill(${3:0})}

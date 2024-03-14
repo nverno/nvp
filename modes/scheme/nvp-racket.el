@@ -10,15 +10,24 @@
 (with-eval-after-load 'nvp-repl
   (require 'nvp-racket-repl))
 
-(defun nvp-racket-expand ()
-  (interactive)
-  (call-interactively
-   (if (region-active-p)
-       #'racket-expand-region
-     (nvp:read-char-case "Expand: " 'verbose
-       (?s "[s]sexp" #'racket-expand-last-sexp)
-       (?d "[d]ef" #'racket-expand-definition)
-       (?f "[f]ile" #'racket-expand-file)))))
+(defun nvp-racket-expand (&optional choose)
+  "Expand dwim without macro hiding.
+If region is active, expand the region.
+Else if prefix CHOOSE, select thing to expand.
+Else if point is at the end of a list expand the previous sexp.
+Otherwise expand the list containing point."
+  (interactive "P")
+  (let ((fn (cond
+             ((region-active-p) #'racket-expand-region)
+             (choose (nvp:read-char-case "Expand: " 'verbose
+                       (?s "[s]sexp" #'racket-expand-last-sexp)
+                       (?d "[d]ef" #'racket-expand-definition)
+                       (?f "[f]ile" #'racket-expand-file)))
+             ((eq ?\) (char-before)) #'racket-expand-last-sexp)
+             (t nil))))
+    (if fn (funcall fn 'no-hiding)
+      (racket-stepper--expand-text
+       t (lambda () (bounds-of-thing-at-point 'list))))))
 
 ;; -------------------------------------------------------------------
 ;;; Help

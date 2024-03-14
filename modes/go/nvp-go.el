@@ -76,7 +76,7 @@
 
 (with-eval-after-load 'go-ts-mode
   (let* ((features (--map (nth 2 it) nvp-go-ts-font-lock-settings))
-         (rules (--filter (not (memq (nth 2 it) features))
+         (rules (--filter (not (memq (nth 2 it) (cons 'error features)))
                           go-ts-mode--font-lock-settings)))
     (setq go-ts-mode--font-lock-settings
           (append nvp-go-ts-font-lock-settings rules))))
@@ -84,6 +84,7 @@
 (nvp:run-once go-ts-mode (:after (&rest _))
   (dolist (v '(builtin namespace operator))
     (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+  ;; FIXME: doesnt seem to disable 'error feature
   (treesit-font-lock-recompute-features nil '(error)))
 
 (provide 'nvp-go)

@@ -198,11 +198,6 @@
   (prog1 man-buffer
     (and display (display-buffer man-buffer 'not-this-window))))
 
-;; Too much trouble trying to figure out how to make Man
-;; run synchronously or redefine Man notify command
-(defsubst nvp-sh--Man-notify (man-buffer cmd)
-  (run-with-timer 0.2 nil 'nvp-sh--Man-after-notify man-buffer cmd 'display))
-
 ;; -------------------------------------------------------------------
 ;;; Help at point
 ;;
@@ -213,13 +208,15 @@
 ;; - For other commands, just call Man on command.
 
 (defvar Man-notify-method)
+;; Returns '(<help buffer> <pos>) where POS can be ':set to indicate that
+;; the point has been set at the desired help location
 (defun nvp-sh-help-more-help (cmd)
   (interactive)
   (let ((Man-notify-method 'quiet)
         (Man-prefer-synchronous-call t))
     (nvp-sh:with-bash/man cmd
-        (nvp-sh--Man-after-notify (man "bash-builtins") cmd)
-      (man cmd))))
+        (list (nvp-sh--Man-after-notify (man "bash-builtins") cmd) :set)
+      (list (man cmd) nil))))
 
 ;; return docstring for conditional, builtin, or function
 ;; if PROMPT is non-nil, offer completing read for switches or man section,
@@ -249,7 +246,7 @@ command.."
                  (nvp-sh-current-command)))
     (doc-buffer (save-window-excursion
                   (--when-let (nvp-sh-help-more-help arg)
-                    (and (buffer-live-p it) (list it :set nil)))))
+                    (and (buffer-live-p (car it)) it))))
     ;; - if cmd is '[[' or '[' return help for current switch or all if not found
     ;; - with C-u C-u prompt for 'man' section and recache
     (doc-string (nvp-sh--command-docstring

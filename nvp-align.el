@@ -50,8 +50,8 @@
 
 ;;;###autoload
 (defun nvp-align (&optional arg beg end)
-  "Align buffer region b/w BEG and END, or call `nvp-mark-defun' if nil. 
-(4) prefix, align entire active region or buffer. 
+  "Align buffer region b/w BEG and END, or call `nvp-mark-defun' if nil.
+(4) prefix, align entire active region or buffer.
 (16) prefix, highlight changes that would occur."
   (interactive
    (cons (prefix-numeric-value current-prefix-arg)
@@ -61,7 +61,7 @@
     (indent-region beg end)
     (align beg end)))
 
-;; Align single end-of-line comments within marked regions. 
+;; Align single end-of-line comments within marked regions.
 ;; Doesn't align if double-quote is found before end-of-line. Not robust,
 ;; better to use `align-mode-rules-list' to account for comments/strings
 ;;;###autoload
@@ -111,7 +111,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;;
 ;; `align-exclude-rules-list'
 ;; `align-rules-list'
-;; 
+;;
 ;; #<marker at 13440 in align.el>
 ;; Buggy rules:
 ;; - exc-dq-string
@@ -139,7 +139,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 
 (unless (assq 'basic-eol-comments align-rules-list)
   (push
-   (list 'basic-eol-comments 
+   (list 'basic-eol-comments
          (cons 'regexp
                ;; not whitespace, escape char, or comment begin
                (concat (nvp:regex-complement (?- ?\\ ?<))
@@ -164,7 +164,7 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 (setf (cdr (assq 'regexp (assq 'make-assignment align-rules-list)))
       ;; careful not to mess with assignments in shell scripts
       ;; ie. ignores aligning any assignments prefixed with tabs
-      (concat "^[ ]*[[:alpha:]_][[:alnum:]_]*\\(\\s-*\\)[?:+-]?="
+      (concat "^[ ]*[[:alpha:]_][[:alnum:]_]*\\(\\s-*?\\)[ ?:+-]?="
               "\\(\\s-*\\)\\([^	\n \\]\\|$\\)"))
 
 ;; -------------------------------------------------------------------

@@ -116,6 +116,7 @@
 (defun nvp-makefile-toggle-phony ()
   "Toggle current dependency as PHONY."
   (interactive)
+  (save-buffer)
   (let ((target (nvp-makefile-target-name)))
     (when target
       (nvp-makefile-add-dep ".PHONY" target 'toggle))))

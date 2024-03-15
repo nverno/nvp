@@ -48,11 +48,11 @@
 
   (defmacro nvp-makecomp:annotation (symbol)
     `(eval-when-compile (cadr (assoc ',symbol nvp-makecomp--annotation))))
-  
+
   (defsubst nvp-makecomp--getter (type)
     (if (eq type 'all)
         (lambda (db) (append (nvp-makecomp-file-variables db)
-                        (nvp-makecomp-file-rules db)))
+                             (nvp-makecomp-file-rules db)))
       (intern (concat "nvp-makecomp-file-" (symbol-name type))))))
 
 (cl-defstruct (nvp-makecomp-file
@@ -95,11 +95,11 @@ TYPE is one of \\='all, \\='variables or \\='rules."
 (defvar nvp-makecomp-info-completion-table
   (let ((syms (info-lookup->completions 'symbol 'makefile-mode)))
     (cl-loop for (sym . _) in syms
-       when (s-lowercase-p sym)
-       ;; assume lowercase symbols are functions
-       do (put-text-property
-           0 1 'annotation (nvp-makecomp:annotation function) sym)
-       collect sym)))
+             when (s-lowercase-p sym)
+             ;; assume lowercase symbols are functions
+             do (put-text-property
+                 0 1 'annotation (nvp-makecomp:annotation function) sym)
+             collect sym)))
 
 (defun nvp-makecomp--location (type str)
   (-when-let (data (assoc str (nvp-makecomp-candidates type)))
@@ -131,7 +131,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
                (lambda (_string) (nvp-makecomp-candidates 'variables)))
               nvp-makecomp-info-completion-table)
              :annotation-function (lambda (s) (or (get-text-property 0 'annotation s)
-                                             (nvp-makecomp:annotation variable)))
+                                                  (nvp-makecomp:annotation variable)))
              :company-location (apply-partially #'nvp-makecomp--location 'variables)
              :company-doc-buffer #'nvp-makecomp--doc-buffer))
            ;; $(call <varname>
@@ -142,7 +142,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
              (completion-table-with-cache
               (lambda (_string) (nvp-makecomp-candidates 'variables)))
              :annotation-function (lambda (s) (or (get-text-property 0 'annotation s)
-                                             (nvp-makecomp:annotation variable)))
+                                                  (nvp-makecomp:annotation variable)))
              :company-location (apply-partially #'nvp-makecomp--location 'variables)
              :company-doc-buffer #'nvp-makecomp--doc-buffer))
            ;; rules => after <rulename>: ...
@@ -151,7 +151,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
              (completion-table-with-cache
               (lambda (_string) (nvp-makecomp-candidates 'rules)))
              :annotation-function (lambda (s) (or (get-text-property 0 'annotation s)
-                                             (nvp-makecomp:annotation rule)))
+                                                  (nvp-makecomp:annotation rule)))
              :company-location (apply-partially #'nvp-makecomp--location 'rules)))
            (t nil))))
       (when table
@@ -193,8 +193,8 @@ TYPE is one of \\='all, \\='variables or \\='rules."
                    ('autovar
                     (forward-line 1)
                     (skip-syntax-forward " ")
-                    (buffer-substring-no-properties
-                     (point) (cdr (bounds-of-thing-at-point 'sentence))))
+                    (--when-let (bounds-of-thing-at-point 'sentence)
+                      (buffer-substring-no-properties (point) (cdr it))))
                    ('target
                     (and-let* ((target (thing-at-point 'sentence t)))
                       (replace-regexp-in-string "[\n\r\t ]+" " " target)))

@@ -32,8 +32,8 @@
 (defun nvp-debug-toggle-breakpoint (&optional conditional)
   (interactive "P")
   (unless nvp-debug-breakpoint-string (user-error "unimplemented"))
-  (let ((line (thing-at-point 'line)))
-    (if (and line (string-match-p
+  (let ((line (--when-let (thing-at-point 'line t) (string-trim it))))
+    (if (and line (string-prefix-p
                    (car (split-string nvp-debug-breakpoint-string "%s")) line))
         (delete-line)
       (let ((dbg-str (format nvp-debug-breakpoint-string
@@ -46,9 +46,11 @@
            (insert dbg-str)))))))
 
 (defun nvp-debug-remove-breakpoints (&optional breakpoint-prefix)
-  (interactive (list (if current-prefix-arg (read-string "Breakpoint prefix: ")
-                       (and nvp-debug-breakpoint-string
-                            (car (split-string nvp-debug-breakpoint-string "%s"))))))
+  (interactive
+   (list (if current-prefix-arg (read-string "Breakpoint prefix: ")
+           (and nvp-debug-breakpoint-string
+                (regexp-quote
+                 (car (split-string nvp-debug-breakpoint-string "%s")))))))
   (unless breakpoint-prefix (user-error "unimplemented"))
   (let ((count 0))
     (save-excursion

@@ -130,6 +130,7 @@ Output is in `shellcheck-mode' compilation buffer, which see."
   (interactive)
   (nvp:with-process "shellcheck"
     :proc-args ((buffer-file-name))
+    :on-success (nvp-indicate-modeline "All good" 'success)
     :on-failure (progn
                   (pop-to-buffer "*shellcheck*")
                   (xterm-color-colorize-buffer)

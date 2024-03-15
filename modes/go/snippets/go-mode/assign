@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: assign
-# key: =
+# key: l
 # --
-:=
+${1:x} := $0

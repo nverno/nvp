@@ -3,8 +3,8 @@
 # key: test
 # --
 function test${1:Func}()
-  assert($1(${2:args...}) == ${3:0})
-  print("[Success] Ez")
+  assert(${1:$(s-lower-camel-case (or yas-text ""))}(${2:args...}) == ${3:0})
+  print("Ok")
 end${4:
 
 test$1()}

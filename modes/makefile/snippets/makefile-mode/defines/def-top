@@ -2,4 +2,4 @@
 # name: define top directory
 # key: d_top
 # --
-TOP := $(dir $(lastword $(MAKEFILE_LIST)))
+TOP := \$(patsubst %/,%,\$(abspath \$(dir \$(lastword \$(MAKEFILE_LIST)))))

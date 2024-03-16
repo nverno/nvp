@@ -13,7 +13,7 @@
 (require 'macroexp)
 (require 'inline)
 (require 'dash)
-(require 'hydra)
+;; (require 'hydra)
 (require 'cc-defs)
 (require 'seq)
 (require 'nvp-macs-common "macs/nvp-macs-common")
@@ -194,8 +194,9 @@ Add TITLE to results buffer."
                  (nvp-buffer-local-set-minor-mode-key 'view-mode "G" #'revert-buffer))))))))
 
 
-(cl-defmacro nvp:with-tabulated-list (&rest body &key name format entries action
-                                            &allow-other-keys)
+(cl-defmacro nvp:with-tabulated-list ( &rest body
+                                       &key (name "nvp-list") format entries action
+                                       &allow-other-keys)
   "View results in buffer NAME in `tabulated-list-mode'.
 FORMAT and ENTRIES define `tabulated-list-format' and `tabulated-list-entries'
 to use.

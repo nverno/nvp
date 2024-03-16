@@ -112,7 +112,8 @@
 ;;; Transient
 
 (nvp:decl-prefixes devdocs dash hyperpolyglot cheatsheet lookup cheat)
-(nvp:auto "powerthesaurus"'powerthesaurus-transient)
+(nvp:auto "nvp-devdocs-config" nvp-devdocs-list-docsets)
+(nvp:auto "powerthesaurus"powerthesaurus-transient)
 
 ;;;###autoload(autoload 'nvp-devdocs-menu "nvp-help" nil t)
 (transient-define-prefix nvp-devdocs-menu ()
@@ -126,6 +127,7 @@
     ("i" "Install" devdocs-install)
     ("r" "Uninstall" devdocs-delete)
     ("u" "Upgrade all" devdocs-update-all)
+    ("l" "List installed/active" nvp-devdocs-list-docsets)
     ;; ("U" "Upgrade all docs" devdocs-browser-upgrade-all-docs)
     ;; ("m" "Update metadata" devdocs-browser-update-docs)
     ]]

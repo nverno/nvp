@@ -41,7 +41,8 @@
                 leetcode--problem-detail-mode
                 shellcheck-mode
                 process-menu-mode
-                shortdoc-mode))
+                shortdoc-mode
+                devdocs-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-compilation))
               '(compilation-mode
                 grep-mode

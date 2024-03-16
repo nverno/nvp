@@ -69,11 +69,15 @@ Otherwise expand the list containing point."
 ;; parse online documentation
 (defun nvp-hap-racket (command &optional arg &rest args)
   (cl-case command
+    (init (require 'racket-mode nil t))
     (thingatpt (nvp-hap-thing-at-point arg nil nil #'racket--describe-terms))
     (doc-buffer                         ; args has prefix
      (or (--when-let (funcall (racket--xp-make-company-doc-buffer-proc) arg)
            (list it (point-min)))
-         (nvp-hap--racket-describe arg args)))))
+         (nvp-hap--racket-describe arg args)))
+    (search-remote (format "https://docs.racket-lang.org/search/index.html?q=%s"
+                           (url-hexify-string arg)))
+    (search-local (racket--search-doc-locally arg))))
 
 (provide 'nvp-racket)
 ;; Local Variables:

@@ -3,7 +3,7 @@
 ;; help-at-point for go source
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-go)
+(require 'go-mode nil t)
 (nvp:decls :p (godoc godef) :f (godoc))
 
 ;; temporarily capture `package.function' as symbol

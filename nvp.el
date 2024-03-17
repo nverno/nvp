@@ -389,7 +389,8 @@ Otherwise just call `vertico-insert'. If this was previous command, call
       (apply orig-fn args)
     (error (xref-go-back))))
 (nvp:advise-commands #'nvp@push-marker :around
-  '(find-function find-variable find-function-on-key semantic-ia-fast-jump))
+  '( find-function find-variable find-function-on-key semantic-ia-fast-jump
+     flycheck-next-error flycheck-previous-error))
 
 ;; -------------------------------------------------------------------
 ;;; Windows / Buffers

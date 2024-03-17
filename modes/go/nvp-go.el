@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'go-mode nil t)
 (require 'xref)
 (nvp:decls :p (go))
 (nvp:auto "f" f-base)

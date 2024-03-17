@@ -7,21 +7,16 @@
 (require 'nvp-repl)
 (nvp:decls :p (gorepl))
 
-(defun nvp-go-repl-init (&optional _prefix)
-  (interactive "P")
-  (save-window-excursion
-    (gorepl--run-gore '("-autoimport"))
-    (get-buffer-process (current-buffer))))
-
-(when (fboundp #'gorepl-run-load-current-file)
+(when (featurep 'gorepl-mode)
   (nvp-repl-add '(go-mode go-ts-mode)
     :name 'go
     :modes '(gorepl-mode)
-    :bufname gorepl-buffer-name
-    :send-buffer #'gorepl-run-load-current-file
+    :find-fn #'gorepl-buffer
+    :procname gorepl-buffer-name
+    :send-file #'gorepl-load-file
     :history-file ".gore_history"
     :help-cmd '(:no-arg ":help" :with-arg ":doc %s")
-    :init #'nvp-go-repl-init))
+    :init #'gorepl-run))
 
 (provide 'nvp-go-repl)
 ;; Local Variables:

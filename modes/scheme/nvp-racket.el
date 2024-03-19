@@ -70,7 +70,7 @@ Otherwise expand the list containing point."
 (defun nvp-hap-racket (command &optional arg &rest args)
   (cl-case command
     (init (require 'racket-mode nil t))
-    (thingatpt (nvp-hap-thing-at-point arg nil nil #'racket--describe-terms))
+    (thingatpt (nvp-hap-thing-at-point arg nil "Racket: " (racket--describe-terms)))
     (doc-buffer                         ; args has prefix
      (or (--when-let (funcall (racket--xp-make-company-doc-buffer-proc) arg)
            (list it (point-min)))

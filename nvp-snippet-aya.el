@@ -21,17 +21,17 @@
   ["Auto-Snippet"
    ("c" "Create(~)" aya-create)
    ("e" "Expand" aya-expand)
-   ("j" "Jump/persist" nvp-jump-to-aya-snippet)
+   ("j" "Jump/persist" nvp-jump-to-aya-snippet :if-non-nil aya-current)
    ("o" "One-liner($)" aya-create-one-line)])
 
 ;;;###autoload
-(defun nvp-jump-to-aya-snippet ()
+(defun nvp-jump-to-aya-snippet (snippet)
   "Save previously created auto-yasnippet."
   (interactive
    (if (string-empty-p aya-current)
        (user-error "No current auto-snippet.")
      (list aya-current)))
-  (nvp-jump-to-new-snippet major-mode nvp-mode-snippet-dir nil aya-current
+  (nvp-jump-to-new-snippet major-mode nvp-mode-snippet-dir nil snippet
                            nvp-aya-new-template))
 
 (provide 'nvp-snippet-aya)

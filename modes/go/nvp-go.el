@@ -5,7 +5,9 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'xref)
 (nvp:decls :p (go))
-(nvp:auto "f" f-base)
+
+(with-eval-after-load 'go-ts-mode (require 'nvp-go-ts))
+(with-eval-after-load 'nvp-repl (require 'nvp-go-repl))
 
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))
@@ -14,10 +16,6 @@
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
   :modes (go-mode go-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
-
-;;; REPL
-(with-eval-after-load 'nvp-repl
-  (require 'nvp-go-repl))
 
 ;;; Yas
 (nvp:decl yas-text nvp-yas-split-args)
@@ -36,55 +34,18 @@
 ;;; Disassembly
 (defun nvp-go-lensm (exe filter)
   (interactive
-   (list (read-file-name "Executable: " nil nil nil (f-base (buffer-file-name)))
+   (list (read-file-name
+          "Executable: " nil nil nil
+          (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))
          (read-string "Filter: " (go--function-name))))
   (unless (executable-find "lensm")
     (user-error "Need to install lensm: nvp build lensm"))
   (start-process-shell-command
    "lensm" nil (format "lensm -watch -filter %s %s" filter exe)))
 
-;;; Tree-sitter
-(defvar nvp-go-ts--builtin-functions
-  '("append" "cap" "clear" "close" "complex" "copy" "delete" "imag" "len" "make"
-    "max" "min" "new" "panic" "print" "println" "real" "recover"))
-
-(defvar nvp-go-ts--builtin-types
-  '("any" "bool" "byte" "comparable" "complex128" "complex64" "error" "float32"
-    "float64" "int" "int16" "int32" "int64" "int8" "rune" "string" "uint"
-    "uint16" "uint32" "uint64" "uint8" "uintptr"))
-
-;; FIXME: remove when ops added
-(eval-when-compile (require 'go-ts-mode nil t)) ; `go-ts-mode--operators'
-
-(defvar nvp-go-ts-font-lock-settings
-  (when (require 'go-ts-mode nil t)
-    (treesit-font-lock-rules
-     ;; FIXME: operators not added to `go-ts-mode--font-lock-settings'
-     :language 'go
-     :feature 'operator
-     `([,@go-ts-mode--operators] @font-lock-operator-face)
-
-     :language 'go
-     :feature 'builtin
-     ;; :override t
-     `((call_expression
-        function: ((identifier) @font-lock-builtin-face
-                   (:match ,(rx-to-string
-                             `(seq bos (or ,@nvp-go-ts--builtin-functions) eos))
-                           @font-lock-builtin-face)))))))
-
-(with-eval-after-load 'go-ts-mode
-  (let* ((features (--map (nth 2 it) nvp-go-ts-font-lock-settings))
-         (rules (--filter (not (memq (nth 2 it) (cons 'error features)))
-                          go-ts-mode--font-lock-settings)))
-    (setq go-ts-mode--font-lock-settings
-          (append nvp-go-ts-font-lock-settings rules))))
-
-(nvp:run-once go-ts-mode (:after (&rest _))
-  (dolist (v '(builtin namespace operator))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-  ;; FIXME: doesnt seem to disable 'error feature
-  (treesit-font-lock-recompute-features nil '(error)))
-
 (provide 'nvp-go)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-go.el ends here

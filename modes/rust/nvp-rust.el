@@ -57,14 +57,18 @@ prefix DUMB."
 ;; -------------------------------------------------------------------
 ;;; Tests
 
-(defun nvp-rust-current-test-dwim ()
+(defun nvp-rust-current-test-dwim (&optional read)
   "Run related test.
 Choose test to run by
 (1) point is currently in a test, run that.
 (2) choose test from known tests related to the symbol at point
 (3) try known test related to function containing point
 (4) run cargo test" 
-  (interactive)
+  (interactive "P")
+  (when read
+    (setq rustic-test-arguments
+          (read-from-minibuffer
+           "Cargo test arguments: " rustic-default-test-arguments)))
   (cond
    ((rustic-cargo--get-test-target)
     (rustic-cargo-current-test))

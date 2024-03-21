@@ -2,4 +2,4 @@
 # name: import
 # key: imp
 # --
-import $1 from '${2:${1:$(s-snake-case yas-text)}}';
+import ${2:${1:$(s-upper-camel-case yas-text)}} from "$1";

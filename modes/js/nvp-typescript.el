@@ -49,7 +49,8 @@
     (typescript-ts-convert-to-template)))
 
 ;; -------------------------------------------------------------------
-;;; `typescript-ts-mode' patches
+;;; `typescript-ts-mode'
+(require 'typescript-ts-mode nil t)
 
 (defun typescript-ts-mode--compile-assignment-query (lang)
   "Compile query that captures object, index, and property identifiers."

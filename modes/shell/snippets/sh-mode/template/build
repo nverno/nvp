@@ -18,7 +18,11 @@ ${1:`$tmp`}_current() {
 $1_latest() {
     github_latest_release "\$${1:$(upcase yas-text)}_GIT_REPO" "\$${1:$(upcase yas-text)}_GLOB"
 }
-$0
+
+$1_install() {
+  $0
+}
+
 $1_main() {
     local action="\$1" && shift
     _info "==> running $action \$*"
@@ -28,13 +32,13 @@ $1_main() {
     fi
     case "\$action" in
         --install)
-            ! "\$($1_current \"\$@\")" 2>/dev/null && $1_install_latest "\$@" || _info "already installed"
+            ! $1_current "\$@" &>/dev/null || $1_install "\$@" || _info "already installed"
         ;;
         --update)
             local current latest
             latest="\$($1_latest \"\$@\")" || _error "failed to find latest version"
             if ! current="\$($1_current \"\$@\")" || [[ "$current" != "$latest" ]]; then
-                $1_install_latest "\$@"
+                $1_install "\$@"
             else
                 _info "already have latest version: \$latest"
             fi

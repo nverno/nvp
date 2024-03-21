@@ -65,7 +65,8 @@
   (when nvp-leet-window-configuration
     (set-window-configuration nvp-leet-window-configuration)))
 
-(defun nvp-leet-pre-submit-hook ()
+;; narrow buffer to region that should be sent
+(defun nvp-leet--narrow-buffer ()
   (when nvp-leet--line-skip-re
     (let ((skip-re (concat "^[ \t]*$\\|" nvp-leet--line-skip-re)))
       (save-excursion
@@ -76,7 +77,10 @@
             (goto-char (match-end 0))
             (when (or (not (bolp)) (looking-at-p "[ \t]*$"))
               (forward-line 1))))
-        (narrow-to-region (point) (point-max)))))
+        (narrow-to-region (point) (point-max))))))
+
+(defun nvp-leet-pre-submit-hook ()
+  (nvp-leet--narrow-buffer)
   (nvp-leet-reset-layout)
   (save-current-buffer
     (with-selected-window
@@ -139,18 +143,19 @@
                          :skip "package"))
               ("racket" (nvp-leet-setup-lang
                          :preamble "#lang racket"
-                         :skip "#lang"))
+                         :skip (rx (or "#lang" "(require"))))
               ("cpp" (nvp-leet-setup-lang
                       :preamble "#include \"./ds/leet.hpp\"\nusing namespace std;"
                       :skip "^\\(?:#include\\|using namespace std\\)"))
               ("c" (nvp-leet-setup-lang
                     :preamble "#include \"./ds/leet.h\""
                     :skip "#include"))
+              ("typescript" (nvp-leet-setup-lang :skip "import"))
               ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max))
                (nvp-leet-setup-lang :skip "require_relative"))
               ("python3" (nvp-leet-setup-lang
                           :preamble "from typing import List, Optional"
-                          :skip "from \\(typing\\|\\.leet\\)"))
+                          :skip (rx "from " (or "typing" ".leet" "leet"))))
               (_ nil)))
           (nvp-leet--setup-format-buffer))))))
 
@@ -238,31 +243,27 @@
 
 ;;; Indirect minor mode
 
-(eval-when-compile
-  (defmacro nvp:leet-indirect-call (fn)
-    `(progn
-       (cl-assert (buffer-live-p nvp-leet--indirect-buffer))
-       (let ((content (save-excursion
-                        (goto-char (point-min))
-                        (when nvp-leet--line-skip-re
-                          (while (looking-at-p nvp-leet--line-skip-re)
-                            (forward-line)))
-                        (buffer-substring-no-properties (point) (point-max))))
-             (window-conf nvp-leet-window-configuration))
-         (with-current-buffer nvp-leet--indirect-buffer
-           (erase-buffer)
-           (insert content)
-           (let ((nvp-leet-window-configuration nil))
-             (,fn))
-           (when window-conf (set-window-configuration window-conf)))))))
+(defun nvp-leet--indirect-call (fn)
+  (cl-assert (buffer-live-p nvp-leet--indirect-buffer))
+  (let ((content (save-restriction
+                   (nvp-leet--narrow-buffer)
+                   (buffer-substring-no-properties (point-min) (point-max)))))
+    (nvp-leet-reset-layout)
+    (with-current-buffer nvp-leet--indirect-buffer
+      (with-silent-modifications
+        (erase-buffer)
+        (insert content)
+        (save-buffer))
+       (let ((nvp-leet-window-configuration nil))
+        (funcall fn)))))
 
 (defun nvp-leet-indirect-try ()
   (interactive)
-  (nvp:leet-indirect-call leetcode-try))
+  (nvp-leet--indirect-call #'leetcode-try))
 
 (defun nvp-leet-indirect-submit ()
   (interactive)
-  (nvp:leet-indirect-call leetcode-submit))
+  (nvp-leet--indirect-call #'leetcode-submit))
 
 (nvp:bindings nvp-leet-indirect-minor-mode nil :create t
   :prefix-key "<f2>L"

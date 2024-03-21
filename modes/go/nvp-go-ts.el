@@ -12,8 +12,7 @@
 (defvar nvp-go-ts--indent-rules
   `(((and (parent-is "comment") c-ts-common-looking-at-star)
      c-ts-common-comment-start-after-first-star -1)
-    ((parent-is "comment") prev-adaptive-prefix 0)
-    (no-node no-indent 0))
+    ((parent-is "comment") prev-adaptive-prefix 0))
   "Additional indent rules to handle comments.")
 
 ;; FIXME: remove when ops added

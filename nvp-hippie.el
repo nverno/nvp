@@ -399,7 +399,7 @@ matching."
     (if he-expand-list (he-substitute-string (pop he-expand-list))
       (and old (he-reset-string)))))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Tags
 

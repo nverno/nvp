@@ -61,9 +61,10 @@
   (let ((lim (point)) start end)
     (backward-word 1)
     (setq start (point))
-    (forward-word 1)
-    (setq end (min (point) lim))
-    (list (buffer-substring start end) start end)))
+    (unless (< start (line-beginning-position))
+      (forward-word 1)
+      (setq end (min (point) lim))
+      (list (buffer-substring start end) start end))))
 
 ;; Return first prefix from tables that satisfies its `:enable-function'
 ;; and matches its table's `:regexp'
@@ -111,12 +112,12 @@ candidates."
   (require 'hippie-exp)
   (cl-block nil
     (unless old
-      (let ((beg (nvp-abbrev-completion-prefix-beg)))
+      (let ((beg (save-excursion (nvp-abbrev-completion-prefix-beg))))
         (and (not beg) (cl-return))
         (he-init-string beg (point))
         (unless (he-string-member he-search-string he-tried-table)
           (setq he-tried-table (cons he-search-string he-tried-table)))
-        (setq he-expand-list                    ;expansion candidates
+        (setq he-expand-list            ; expansion candidates
               (and (not (equal he-search-string ""))
                    (delq nil
                          (mapcan
@@ -126,11 +127,11 @@ candidates."
                                (let ((exp
                                       (abbrev-expansion prefix (symbol-value table))))
                                  (if (vectorp exp)
-                                     (aref exp 0)  ;expand hooks
+                                     (aref exp 0) ; expand hooks
                                    exp)))
                              (all-completions he-search-string (symbol-value table))))
                           (nvp-abbrev-completion--active-tables)))))))
-    (while (and he-expand-list                  ;clean expansion list
+    (while (and he-expand-list          ; clean expansion list
                 (he-string-member (car he-expand-list) he-tried-table t))
       (setq he-expand-list (cdr he-expand-list)))
     (prog1 (not (null he-expand-list))

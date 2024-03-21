@@ -49,7 +49,8 @@
                 ;; added
                 emacs-lisp-compilation-mode
                 ag-mode
-                rg-mode))
+                rg-mode
+                rustic-compilation-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-gnus))
               '(gnus-article-mode
                 gnus-summary-mode))

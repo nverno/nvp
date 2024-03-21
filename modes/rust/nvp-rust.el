@@ -21,7 +21,7 @@
           "^\s*\\(?:async\s+\\)?\s-*\\(?:pub\s+\\)?\s*fn\s+\\([^(]+\\)\s*(")
          (fn (rustic-cargo--get-current-line-fn-name))
          pos)
-    (save-excursion 
+    (save-excursion
       (while (and (not fn) (setq pos (nvp:point 'bul)))
         (goto-char pos)
         (setq fn (rustic-cargo--get-current-line-fn-name))))
@@ -57,21 +57,36 @@ prefix DUMB."
 ;; -------------------------------------------------------------------
 ;;; Tests
 
-(defun nvp-rust-current-test-dwim (&optional read)
+(defvar-local nvp-rust-cargo-test-args "")
+
+(defun nvp-rust--cargo-arguments (&optional prompt arguments)
+  (let ((args (or arguments nvp-rust-cargo-test-args)))
+    (if prompt
+        (setq nvp-rust-cargo-test-args
+              (read-from-minibuffer "Cargo test arguments: " args))
+      args)))
+
+(defun nvp-rustic-cargo-current-test (&optional prompt arguments)
+  "Run \"cargo test\" for the test near point."
+  (interactive (list current-prefix-arg))
+  (rustic-compilation-process-live)
+  (let ((args (nvp-rust--cargo-arguments prompt arguments)))
+    (-if-let (test-to-run (concat (rustic-cargo--get-test-target) " " args))
+        (with-current-buffer (process-buffer (rustic-cargo-run-test test-to-run))
+          (setq-local rustic-test-arguments test-to-run))
+      (user-error "Could not find test at point."))))
+
+(defun nvp-rust-current-test-dwim (&optional prompt)
   "Run related test.
 Choose test to run by
 (1) point is currently in a test, run that.
 (2) choose test from known tests related to the symbol at point
 (3) try known test related to function containing point
-(4) run cargo test" 
+(4) run cargo test"
   (interactive "P")
-  (when read
-    (setq rustic-test-arguments
-          (read-from-minibuffer
-           "Cargo test arguments: " rustic-default-test-arguments)))
   (cond
    ((rustic-cargo--get-test-target)
-    (rustic-cargo-current-test))
+    (nvp-rustic-cargo-current-test prompt))
    ((and (fboundp 'lsp-rust-analyzer--related-tests)
          (or
           (and (lsp-rust-analyzer--related-tests)
@@ -80,7 +95,7 @@ Choose test to run by
             (and (nvp-rust-move-to-current-fn)
                  (and (lsp-rust-analyzer--related-tests)
                       (call-interactively #'lsp-rust-analyzer-related-tests)))))))
-   (t (rustic-cargo-test))))
+   (t (rustic-cargo-test prompt))))
 
 (provide 'nvp-rust)
 ;;; nvp-rust.el ends here

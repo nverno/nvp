@@ -2,6 +2,6 @@
 # name: while let PATTERN = EXPR { ... }
 # key: whil
 # --
-while let ${1:pattern} = ${2:expression} {
-      $0
+while let ${1:Some(${2:x})} = ${3:expression} {
+  $0
 }

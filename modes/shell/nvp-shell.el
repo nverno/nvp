@@ -70,6 +70,8 @@
                 "%s; bash'\n")
         cmd)))))
 
+(defvar compilation-scroll-output)
+
 (defun nvp-shell-compile (&optional arg)
   "Run current input in compilation buffer.
 With prefix ARG, display in current buffer.

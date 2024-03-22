@@ -7,7 +7,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'rustic nil t)
-(nvp:decls :p (rustic lsp-rust toml) :f (lsp-rust-analyzer--related-tests))
+(nvp:decls :p (rustic lsp-rust toml lsp)
+           :f ( lsp-rust-analyzer--related-tests lsp-rust-analyzer-related-tests
+                lsp--render-element))
 (nvp:auto "rustic-cargo" rustic-cargo--get-test-target)
 
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
@@ -31,6 +33,16 @@
       (forward-word -1)
       (point))))
 
+;;; Type signature
+
+;; Fix eldoc documentation begin just '// size =... align =...
+(cl-defmethod lsp-clients-extract-signature-on-hover
+  (contents (_server-id (eql rust-analyzer)))
+  (let ((lines (string-lines (string-trim-left (lsp--render-element contents)))))
+    (while (and lines (string-match-p "^\\s-*/" (car lines)))
+      (setq lines (cdr lines)))
+    (car lines)))
+
 ;;; Compilation
 
 ;; FIXME: https://github.com/brotzeit/rustic/pull/531
@@ -44,9 +56,9 @@
 ;;; rustic-doc
 ;; Set RUSTUP_HOME correctly so convert script finds std location
 (nvp:run-once rustic-doc-setup (:before (&rest _))
-  (setenv "RUSTUP_HOME"
-          (string-trim
-           (shell-command-to-string "rustup show | awk 'NR==2 {print $3}'"))))
+  (setenv "RUSTUP_HOME" (-> "rustup show | awk 'NR==2 {print $3}'"
+                            (shell-command-to-string)
+                            (string-trim))))
 
 (defun nvp-rustic-doc-search (&optional dumb)
   "Wrapper for `rustic-doc-search' to call `rustic-doc-dumb-search' with
@@ -84,18 +96,14 @@ Choose test to run by
 (3) try known test related to function containing point
 (4) run cargo test"
   (interactive "P")
-  (cond
-   ((rustic-cargo--get-test-target)
-    (nvp-rustic-cargo-current-test prompt))
-   ((and (fboundp 'lsp-rust-analyzer--related-tests)
-         (or
-          (and (lsp-rust-analyzer--related-tests)
-               (call-interactively #'lsp-rust-analyzer-related-tests))
-          (save-excursion
-            (and (nvp-rust-move-to-current-fn)
-                 (and (lsp-rust-analyzer--related-tests)
-                      (call-interactively #'lsp-rust-analyzer-related-tests)))))))
-   (t (rustic-cargo-test prompt))))
+  (cond ((rustic-cargo--get-test-target)
+         (nvp-rustic-cargo-current-test prompt))
+        ((and (fboundp 'lsp-rust-analyzer--related-tests)
+              (or (lsp-rust-analyzer--related-tests)
+                  (save-excursion (and (nvp-rust-move-to-current-fn)
+                                       (lsp-rust-analyzer--related-tests)))))
+         (call-interactively #'lsp-rust-analyzer-related-tests))
+        (t (rustic-cargo-test prompt))))
 
 (provide 'nvp-rust)
 ;;; nvp-rust.el ends here

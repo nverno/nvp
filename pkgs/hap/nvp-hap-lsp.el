@@ -31,7 +31,9 @@
            (not (or (hash-table-empty-p contents)
                     (equal "" (gethash "value" contents)))))
           ((vectorp contents)
-           (> (length contents) 0))
+           (and (> (length contents) 0)
+                ;; json-ls returns [""]
+                (not (equal "" (aref contents 0)))))
           (t t))
          contents)))
 

@@ -28,7 +28,8 @@
    :language 'python
    :feature 'nvp
    :override t
-   '((import_from_statement
+   '(;; Namespaces
+     (import_from_statement
       module_name: [(dotted_name (identifier)) (identifier)]
       @nvp-namespace-face)
      (import_statement
@@ -39,8 +40,20 @@
       name: (dotted_name (identifier)) @nvp-namespace-use-face)
      (aliased_import
       alias: (_) @nvp-namespace-face)
+
+     ;; method calls
      (attribute
-      object: (identifier) @nvp-namespace-use-face))))
+      object: (identifier) @nvp-receiver-face)
+     (call
+      function: (attribute attribute: (identifier) @nvp-method-use-face))
+
+     ;; Variables
+     (typed_parameter (identifier) @font-lock-variable-name-face)
+
+     (keyword_argument
+      name: (identifier) @font-lock-variable-name-face)
+
+     (for_statement left: (identifier) @font-lock-variable-name-face))))
 
 (with-eval-after-load 'python
   (unless (--find (eq 'nvp (nth 2 it)) python--treesit-settings)

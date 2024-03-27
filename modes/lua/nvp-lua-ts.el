@@ -4,6 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'treesit nil t)
+(require 'nvp)
 (nvp:decls :p (lua) :v (lua-ts--builtins lua-ts-mode-hook))
 
 (defvar lua-ts-align-arguments nil
@@ -37,12 +38,13 @@
     (treesit-query-compile 'lua '((identifier) @id))))
 
 (defun lua-ts-mode--fontify-table (node override start end &rest _)
-  (when-let* ((face 'font-lock-type-face)
+  (when-let* ((face 'nvp-receiver-face;; 'font-lock-type-face
+                    )
               (node (pcase (treesit-node-type node)
                       ("method_index_expression"
                        (treesit-node-child-by-field-name node "table"))
                       ("dot_index_expression"
-                       (setq face 'font-lock-constant-face)
+                       (setq face 'nvp-namespace-use-face)
                        (treesit-node-child-by-field-name node "table"))
                       ("identifier" nil))))
     (dolist (node (treesit-query-capture

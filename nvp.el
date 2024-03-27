@@ -161,14 +161,24 @@ called from minibuffer, or nil.")
   :group 'nvp)
 
 (defface nvp-namespace-face
-  '((t ( :inherit font-lock-type-face :slant normal
-         :underline (:color "#845" :style line :position t))))
+  '((t ( :inherit font-lock-type-face :slant normal)))
+  ;; :underline (:color "#845" :style line :position t)
   "Face for namespaces."
   :group 'nvp)
 
 (defface nvp-namespace-use-face
   '((t (:inherit 'nvp-namespace-face :slant italic :underline nil)))
   "Face for namespace uses."
+  :group 'nvp)
+
+(defface nvp-receiver-face
+  '((t (:inherit font-lock-variable-use-face)))
+  "Face for receiver of method call."
+  :group 'nvp)
+
+(defface nvp-method-use-face
+  '((t (:inherit font-lock-function-call-face)))
+  "Face for method call."
   :group 'nvp)
 
 (defface nvp-special-variable-face

@@ -9,7 +9,7 @@
 (require 'rustic nil t)
 (nvp:decls :p (rustic lsp-rust toml lsp)
            :f ( lsp-rust-analyzer--related-tests lsp-rust-analyzer-related-tests
-                lsp--render-element))
+                lsp--render-element lsp-rust-analyzer-open-external-docs))
 (nvp:auto "rustic-cargo" rustic-cargo--get-test-target)
 
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
@@ -32,6 +32,11 @@
       (backward-up-list)
       (forward-word -1)
       (point))))
+
+;;; Help-at-point
+(cl-defmethod nvp-hap-lsp-search-remote
+  ((_server_id (eql rust-analyzer)) &optional _arg)
+  (lsp-rust-analyzer-open-external-docs))
 
 ;;; Type signature
 

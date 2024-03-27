@@ -5,12 +5,10 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-hap)
-(nvp:decls
- :v (lsp-help-buf-name)
- :f (lsp--text-document-position-params
-     lsp-describe-thing-at-point lsp-help-mode
-     lsp--make-request lsp--send-request lsp:hover-contents
-     lsp--render-on-hover-content))
+(nvp:decls :p (lsp) :f (lsp-help-mode))
+
+(defsubst nvp-hap-lsp-server-id ()
+  (lsp--workspace-server-id (car-safe (lsp-workspaces))))
 
 (defmacro nvp-with-hap-lsp-buffer (&optional bufname &rest body)
   (declare (indent 1))
@@ -37,6 +35,10 @@
           (t t))
          contents)))
 
+(cl-defgeneric nvp-hap-lsp-search-remote (_server-id &optional _arg)
+  "Search remote docs for ARG or thing-at-point according to SERVER-ID."
+  (user-error "unimplemented"))
+
 ;;;###autoload
 (defun nvp-hap-lsp (command &optional arg &rest _args)
   (cl-case command
@@ -47,7 +49,8 @@
             '(nil . ((inhibit-switch-frame . t)))))
        (nvp-with-hap-lsp-buffer nil
          (insert (string-trim-right (lsp--render-on-hover-content arg t)))
-         (list (current-buffer) (point-min) nil))))))
+         (list (current-buffer) (point-min) nil))))
+    (search-remote (nvp-hap-lsp-search-remote (nvp-hap-lsp-server-id) arg))))
 
 (provide 'nvp-hap-lsp)
 ;; Local Variables:

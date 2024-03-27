@@ -96,7 +96,7 @@
                  (nvp-hap-man-buffer topic)
                  (nvp-hap-man-buffer (nvp-c--man-next-section topic)))))
              (_ (apply cmd (format fmt tag-name) args)))))))
-    (doc-url
+    (search-remote
      (pcase-let ((`(,tag-name ,file ,_args) (nvp-c--parse-tag arg)))
        (--when-let (and (stringp file)
                         (cdr (nvp-c--find-source-online file)))

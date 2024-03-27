@@ -128,6 +128,8 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
     (define-key map "h"           #'nvp-hap-pop-to-buffer)
     (define-key map (kbd "C-h")   #'nvp-hap-show-doc-buffer)
     (define-key map (kbd "C-o")   #'nvp-hap-next-backend)
+    (define-key map (kbd "C-r")   #'nvp-hap-search-remote)
+    (define-key map (kbd "C-l")   #'nvp-hap-search-local)
     map))
 
 ;; Manage the transient map. On exit, restore prior window configuration.
@@ -196,6 +198,23 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
          (or (cdr (member nvp-hap-backend nvp-help-at-point-functions))
              nvp-help-at-point-functions)))
     (funcall-interactively #'nvp-help-at-point)))
+
+;; -------------------------------------------------------------------
+;;; Search external
+
+(defun nvp-hap-search-remote ()
+  (interactive)
+  (--if-let (nvp-hap-call-backend 'search-remote nvp-hap--thingatpt)
+    (pcase it
+      ((pred stringp) (browse-url it))
+      ((pred processp) nil)
+      (_ (user-error "unhandled '%S'" it)))
+    (user-error "unimplemented")))
+
+(defun nvp-hap-search-local ()
+  (interactive)
+  (or (nvp-hap-call-backend 'search-local nvp-hap--thingatpt)
+      (user-error "unimplemented")))
 
 ;; -------------------------------------------------------------------
 ;;; Popup 

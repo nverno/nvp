@@ -19,27 +19,33 @@
 (nvp:auto "nvp-sh" 'nvp-sh-get-process)
 (nvp:decls :p (sh) :f (nvp-repl--init))
 
-;; `display-buffer' action for popping between REPL/source buffers
-(defvar nvp-repl--display-action
+(defgroup nvp-repl nil
+  "Unified repl."
+  :prefix "nvp-repl-"
+  :group 'languages)
+
+(defcustom nvp-repl-display-action
   '((display-buffer-reuse-window
      display-buffer-use-some-window
      display-buffer-pop-up-window)
     (reusable-frames      . visible)
     (inhibit-switch-frame . t)
-    (inhibit-same-window  . t)))
+    (inhibit-same-window  . t))
+  "Behaviour of `display-buffer' when popping between REPL/source buffers."
+  :type '(repeat sexp))
 
 (defcustom nvp-repl-default 'shell
   "Default REPL when buffer has no repl associations."
-  :type 'symbol
-  :group 'nvp-repl)
+  :type 'symbol)
 
-(defvar nvp-repl-find-functions
+(defcustom nvp-repl-find-functions
   '(nvp-repl-find-custom
     nvp-repl-find-bufname
     nvp-repl-find-procname
     nvp-repl-find-modes)
   "Hook run to find the first applicable REPL process.
-Each function takes a process as an argument to test against.")
+Each function takes a process as an argument to test against."
+  :type '(repeat symbol))
 
 (cl-defstruct (nvp--repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"
@@ -99,6 +105,13 @@ Each function takes a process as an argument to test against.")
 
 (defsubst nvp-repl--set-source (repl-buf src-buf)
   (puthash repl-buf src-buf nvp-repl--process-buffers))
+
+(defun nvp-repl--cleanup-process-buffers ()
+  (maphash (lambda (k v)
+             (unless (and (buffer-live-p k)
+                          (buffer-live-p v))
+               (remhash k nvp-repl--process-buffers)))
+           nvp-repl--process-buffers))
 
 ;; Get `nvp-repl-current' from either source or REPL buffer
 (defun nvp-repl-current ()
@@ -318,7 +331,7 @@ well."
       (with-current-buffer (nvp-repl-update repl-proc src-buf repl-buf)
         (nvp-repl--setup-repl-buffer history-file)
         (prog1 (current-buffer)
-          (and and-go (pop-to-buffer (current-buffer) nvp-repl--display-action)))))))
+          (and and-go (pop-to-buffer (current-buffer) nvp-repl-display-action)))))))
 
 (defun nvp-repl--make-async-callback (src-buf &optional and-go)
   "create callback for src-buf that is passed to async repl init.
@@ -406,7 +419,9 @@ When call from source buffer, with PREFIX arguments:
 When called from a repl buffer with PREFIX:
  \\[universal-argument] Prompt for a buffer to set as source."
   (interactive "P")
-  (when (equal '(16) prefix) (setq nvp-repl-current nil))
+  (when (equal '(16) prefix)
+    (nvp-repl--cleanup-process-buffers)
+    (setq nvp-repl-current nil))
   (let ((repl-buff (--if-let (nvp-repl--get-source)
                        (nvp-repl--check-source-buffer it prefix)
                      (if (memq major-mode nvp-repl-modes)
@@ -415,7 +430,7 @@ When called from a repl buffer with PREFIX:
                        (--when-let (nvp-repl-get-buffer prefix)
                          (prog1 it (nvp-repl--source-minor-mode-on)))))))
     (unless (eq 'async repl-buff)
-      (pop-to-buffer repl-buff nvp-repl--display-action))))
+      (pop-to-buffer repl-buff nvp-repl-display-action))))
 
 (defun nvp-repl-remove (mode)
   "Remove any repl associations with MODE."

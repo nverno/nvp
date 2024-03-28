@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: if error
-# key: iferr
+# key: ifer
 # --
 if err := $1; err != ${2:nil} {
   $0

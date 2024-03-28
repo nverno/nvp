@@ -3,5 +3,5 @@
 # key: fun
 # --
 ${1:fun} <- function($2) {
-    $0
+  $0
 }

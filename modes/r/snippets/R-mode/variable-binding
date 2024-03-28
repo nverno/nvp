@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: x <- ...
+# key: l
+# --
+${1:x} <- $0

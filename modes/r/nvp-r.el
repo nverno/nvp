@@ -7,13 +7,9 @@
 (nvp:decls :p (ess) :v (inferior-R-program))
 (nvp:auto "s" 's-matched-positions-all)
 
-(defvar nvp-r-source-dir (expand-file-name "R/r-source" (getenv "DEVEL")))
-(defvar nvp-r-package-src (expand-file-name "R/src" (getenv "DEVEL")))
-(defvar nvp-r-source-repo "http://www.github.com/wch/r-source")
-
 ;; add comment continuation when in roxy block
-(cl-defmethod nvp-newline-dwim-comment
-  (_syntax arg &context (major-mode ess-r-mode))
+(nvp:defmethod nvp-newline-dwim-comment (_syntax arg)
+  :modes (ess-r-mode r-ts-mode)
   (save-match-data
     (--if-let (and nvp-newline-comment-continue
                    (save-excursion
@@ -24,62 +20,24 @@
           (insert ?\n it))
       (newline-and-indent arg))))
 
+;;; TODO: REPL
+;; (with-eval-after-load 'nvp-repl
+;;   (nvp-repl-add '(inferior-ess-r-mode)
+;;     :name 'R
+;;     :modes '(ess-r-mode r-ts-mode)
+;;     :init
+;;     ;; :help-cmd
+;;     ;; :pwd-cmd
+;;     ;; :cd-cmd
+;;     ))
+
+;;; Abbrev
 ;; dont expand in comments/strings or in symbols with '.', eg. is.null
 (defun nvp-r-abbrev-expand-p ()
-  (and (not (string-match-p "\\." (symbol-name (ess-symbol-at-point))))
+  (and (not (string-match-p "\\." (thing-at-point 'symbol t)))
        (not (nvp:ppss 'soc))))
 
-;; Guess where the column breaks are located (assumes right-justified).
-(defun nvp-r-guess-column-breaks (str)
-  (-->
-   (--map
-    (--map (cdr it) (s-matched-positions-all "\'.*?\'\\|[-0-9.A-Za-z]+" it))
-    (split-string str "\n"))
-   (cl-remove-if-not (lambda (x) (> (length x) 0)) it)
-   (nreverse (nvp:list-intersection it))))
-
-;; ------------------------------------------------------------
-;;; Commands
-
-(defun nvp-r-dev-off ()
-  (interactive)
-  (let ((proc (ess-get-process)))
-    (ess-send-string proc "dev.off()")))
-
-;; Align single hashtags for end-of-line R comments. Must be a single
-;; '#' preceded by space, ignores the '##' so they align with code.
-(defun nvp-r-comment-align (beg end)
-  "Align single hashtag comments as end-of-line."
-  (interactive "*r")
-  (let (indent-tabs-mode)
-    (align-regexp beg end "\\(\\s-*\\)[^#]#" -1 1)))
-
-;;; REPL
-
-(defun nvp-r-redirect-output (command &optional buffer process)
-  "Redirect REPL output to temp buffer."
-  (interactive (list (read-from-minibuffer "Command: ")))
-  (let ((buff (get-buffer-create
-               (or buffer
-                   (and current-prefix-arg
-                        (concat "*"
-                                (read-from-minibuffer "Output buffer: ")
-                                "*"))
-                   "*r-output*")))
-        ;; `ess-get-process' defaults to process local to current
-        ;; buffer, so to call from anywhere default to "R"
-        (proc (ess-get-process (or process "R"))))
-    ;; send a trailing newline to process
-    (unless (string-match-p "\n$" command)
-      (setq command (concat command "\n")))
-    (ess-command command buff 'sleep nil nil proc)
-    (with-current-buffer buff
-      ;; process stuff
-      (pop-to-buffer buff))))
-
-
-;;; Roxy 
-
+;;; Roxy
 (defun nvp-r-roxy ()
   "Convert regular comments to roxygen."
   (interactive)
@@ -96,6 +54,14 @@
   (funcall-interactively (intern (concat "ess-roxy-preview-" type))))
 
 ;;; Tables
+;; Guess where the column breaks are located (assumes right-justified).
+(defun nvp-r-guess-column-breaks (str)
+  (-->
+   (--map
+    (--map (cdr it) (s-matched-positions-all "\'.*?\'\\|[-0-9.A-Za-z]+" it))
+    (split-string str "\n"))
+   (cl-remove-if-not (lambda (x) (> (length x) 0)) it)
+   (nreverse (nvp:list-intersection it))))
 
 (defun nvp-r-table-insert-commas (str &optional beg end)
   "Insert commas into space separated table (assume right-justified)."
@@ -135,10 +101,14 @@
 
 ;; ------------------------------------------------------------
 ;;; Tags
-;;; FIXME: remove / fix tag stuff
 
-;; Create tags file [default c tags] for directory. Return process object.
+(defvar nvp-r-source-dir (expand-file-name "R/r-source" (getenv "DEVEL")))
+(defvar nvp-r-package-src (expand-file-name "R/src" (getenv "DEVEL")))
+(defvar nvp-r-source-repo "http://www.github.com/wch/r-source")
+
 (defun nvp-r-tag-dir (&optional directory pattern)
+  "Create tags file [default c tags] for directory.
+Return process object."
   (interactive)
   (let ((dir (or directory (read-directory-name "Tag directory: ")))
 	(patt (or pattern ".*\\\\.[RchCH][xx|pp]?$")))
@@ -148,48 +118,39 @@
                      " | etags - -o \"%s\"")
              (or find-program "find") dir patt (expand-file-name "TAGS" dir)))))
 
-;; Loads tags table for r-source when it exists, otherwise tag or try to
-;; download source windows: find . -name ".*[chCH]" -print | etags -
-;; storing in ~/R/r-source/TAGS
+;; find . -name ".*[chCH]" -print | etags -
 (defun nvp-r-tag-source (&optional noretry)
+  "Load tags table for R source.
+Create tags if they dont exist."
   (interactive)
   (let* ((tags (expand-file-name "TAGS" nvp-r-source-dir))
 	 (no-src (not (file-exists-p nvp-r-source-dir)))
 	 (no-tags (not (file-exists-p tags))))
     (unless noretry
       (cond
-       (no-src
-        (message "Cloning R source repo")
-        (nvp-r-tag-sentinel
-         (start-process "r-tags" "*R-tags*" "git" "clone" nvp-r-source-repo
-                        "--depth=1" nvp-r-source-dir)
-         nil))
-       (no-tags
-        (message "Creating R source TAGS")
-        ;; (tag-utils-tag-dir nvp-r-source-dir :language "r"
-        ;;                    :program (nvp:program ctags))
-        ;; (nvp-r-tag-sentinel
-        ;;  (nvp-r-tag-dir nvp-r-source-dir)
-        ;;  t)
-        )
+       (no-src (message "Cloning R source repo")
+               (nvp-r--tag-sentinel
+                (start-process "r-tags" "*R-tags*" "git" "clone" nvp-r-source-repo
+                               "--depth=1" nvp-r-source-dir)
+                nil))
+       (no-tags (message "Creating R source TAGS"))
        (t (visit-tags-table tags))))))
 
-(defun nvp-r-tag-sentinel (proc &optional noretry)
+(defun nvp-r--tag-sentinel (proc &optional noretry)
   (set-process-sentinel
-   proc #'(lambda (p m)
-            (message "%s: %s" (process-name p)
-                     (replace-regexp-in-string "\n" "" m))
-            (when (eq 0 (process-exit-status p))
-              (nvp-r-tag-source noretry)))))
+   proc (lambda (p m)
+          (message "%s: %s" (process-name p) (replace-regexp-in-string "\n" "" m))
+          (when (eq 0 (process-exit-status p))
+            (nvp-r-tag-source noretry)))))
 
-;; Load/make R tags for package PKG.
 (defun nvp-r-rtags (pkg &optional noretry)
+  "Load/make R tags for package PKG."
   (interactive)
   (let ((pkg (or pkg
                  (and current-prefix-arg
                       (read-directory-name "Package directory: "))
-                 (expand-file-name (read-from-minibuffer "Package name: ")
-                                   nvp-r-package-src)))
+                 (expand-file-name
+                  (read-from-minibuffer "Package name: ") nvp-r-package-src)))
         (tags (expand-file-name "RTAGS" pkg)))
     (cond
      ((not (file-exists-p pkg))
@@ -205,9 +166,6 @@
                (nvp-r-rtags pkg t))))))
      (t (visit-tags-table tags)))))
 
-;; -------------------------------------------------------------------
-;;; Setup
-
 ;; list libraries ahead of other options when in "require|library"
 (defun nvp-r-company-setup (&optional backends)
   (let ((comps (cl-remove-if
@@ -221,14 +179,6 @@
     (setq-local company-backends comps)
     (delq 'company-capf company-backends)))
 
-(defun nvp-r-locals ()
-  ;; code blocks in spin docs
-  (setq-local nvp-mode-header-regex "\\s-*##\\(?:-\\|+\\)+")
-  ;; comment headers in rmd/spin
-  (nvp-imenu-setup
-   :headers '((nil "\\s-*##'\\s-+#\\s-*\\(.*\\)\\s-*$" 1))
-   :headers-1 '(("Headers" "\\s-*##'\\s-+#\\s-*\\(.*\\)\\s-*$" 1))
-   :headers-2 '(("Sub-headers" "\\s-*##'\\s-+##\\s-*\\(.*\\)\\s-*$" 1))))
 
 (provide 'nvp-r)
 

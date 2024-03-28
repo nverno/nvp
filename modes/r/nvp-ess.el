@@ -23,8 +23,32 @@
      (error (forward-paragraph)))
    (point)))
 
-;; -------------------------------------------------------------------
-;;; Inferior
+(defun nvp-r-dev-off ()
+  (interactive)
+  (let ((proc (ess-get-process)))
+    (ess-send-string proc "dev.off()")))
+
+;;;###autoload
+(defun nvp-r-redirect-output (command &optional buffer process)
+  "Redirect REPL output to temp buffer."
+  (interactive (list (read-from-minibuffer "Command: ")))
+  (let ((buff (get-buffer-create
+               (or buffer
+                   (and current-prefix-arg
+                        (concat "*"
+                                (read-from-minibuffer "Output buffer: ")
+                                "*"))
+                   "*r-output*")))
+        ;; `ess-get-process' defaults to process local to current
+        ;; buffer, so to call from anywhere default to "R"
+        (proc (ess-get-process (or process "R"))))
+    ;; send a trailing newline to process
+    (unless (string-match-p "\n$" command)
+      (setq command (concat command "\n")))
+    (ess-command command buff 'sleep nil nil proc)
+    (with-current-buffer buff
+      ;; process stuff
+      (pop-to-buffer buff))))
 
 ;;;###autoload
 (defun nvp-ess-process-abort (arg)

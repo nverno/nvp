@@ -6,26 +6,9 @@
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
-(require 'ts-comint nil t)
+(require 'ts-repl nil t)
 (require 'nvp-repl)
-(nvp:decls :p (ts add-node) :v (ts-comint-buffer nvp-typescript-modes) :f (run-ts))
-
-(defun nvp-typescript-repl-program ()
-  (when (require 'add-node-modules-path nil t)
-    ;; npm v >= 9 no longer has 'npm bin' command
-    (when (version< (string-trim-right (shell-command-to-string "npm -v")) "9")
-      (nvp:setq add-node-modules-path-command '("npm bin")))
-    (add-node-modules-path))
-  (cl-some (lambda (program) (executable-find program)) '("ts-node" "tsun")))
-
-;; Note: install `npm i ts-node typescript' in project and this
-;; should find the local REPL binary
-;;;###autoload
-(defun nvp-typescript-repl-setup (&optional force)
-  (if (null force) ts-comint-program-command
-    (or (and ts-comint-program-command
-             (executable-find ts-comint-program-command))
-        (setq ts-comint-program-command (nvp-typescript-repl-program)))))
+(nvp:decls :p (ts add-node) :v (ts-repl-buffer nvp-typescript-modes) :f (ts-repl-run))
 
 ;; (defvar ts-comint-drop-regexp
 ;;   "\\(\x1b\\[[0-9]+[GJK]\\|^[ \t]*undefined[\r\n]+\\)"
@@ -48,29 +31,20 @@
 ;;   ;;       (replace-match ""))))
 ;;   )
 
-(defun nvp-typescript-repl-init (&optional _prefix)
-  (interactive "P")
-  (or (nvp-typescript-repl-setup 'force)
-      (user-error "No ts repl found (need to npm i ts-node?)"))
-  ;; let ((process-environment (append (list "NODE_NO_READLINE=1")
-  ;;                                   (copy-sequence process-environment))))
-  (run-ts nil 'no-switch)
-  (get-buffer-process ts-comint-buffer))
-
 (defvar nvp-typescript--repl-commands
   '("break" "clear" "exit" "help" "save" "load" "editor" "type"))
 
-(when (fboundp 'run-ts)
+(when (fboundp 'ts-repl-run)
   (nvp-repl-add nvp-typescript-modes
     :name 'typescript
-    :modes '(ts-comint-mode)
-    :init #'nvp-typescript-repl-init
-    :find-fn (lambda () (get-buffer-process ts-comint-buffer))
+    :modes '(ts-repl-mode)
+    :init #'ts-repl-run
+    :find-fn #'ts-repl-process
     ;; :send-string #'ts-send-string
-    :send-region #'ts-send-region
-    :send-sexp #'ts-send-last-sexp
-    :send-buffer #'ts-send-buffer
-    :send-file #'ts-load-file
+    ;; :send-region #'ts-send-region
+    ;; :send-sexp #'ts-send-last-sexp
+    ;; :send-buffer #'ts-send-buffer
+    ;; :send-file #'ts-load-file
     :commands nvp-typescript--repl-commands
     :cmd-prefix ?.
     :help-cmd '(:no-arg ".help" :with-arg ".type %s")
@@ -87,6 +61,7 @@
           (file-name-base filename)
           "\"\n"))
 
+;;; FIXME: remove
 (advice-add 'ts-comint--get-load-file-cmd :override #'nvp-typescript-repl-get-file-mod)
 
 (provide 'nvp-typescript-repl)

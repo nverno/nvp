@@ -57,6 +57,9 @@
   (run-ts nil 'no-switch)
   (get-buffer-process ts-comint-buffer))
 
+(defvar nvp-typescript--repl-commands
+  '("break" "clear" "exit" "help" "save" "load" "editor" "type"))
+
 (when (fboundp 'run-ts)
   (nvp-repl-add nvp-typescript-modes
     :name 'typescript
@@ -68,6 +71,8 @@
     :send-sexp #'ts-send-last-sexp
     :send-buffer #'ts-send-buffer
     :send-file #'ts-load-file
+    :commands nvp-typescript--repl-commands
+    :cmd-prefix ?.
     :help-cmd '(:no-arg ".help" :with-arg ".type %s")
     :pwd-cmd "process.cwd()"
     :cd-cmd "process.chdir(\"%s\")"

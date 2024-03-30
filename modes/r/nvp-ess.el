@@ -3,7 +3,7 @@
 ;; stuff applicable across ESS dialects
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls :p (ess) :f (ess-get-process))
+(nvp:decls :p (ess) :f (ess-get-process ess-symbol-at-point))
 (require 'ess nil t)
 (require 'ess-inf nil t)
 (require 'ess-utils nil t)

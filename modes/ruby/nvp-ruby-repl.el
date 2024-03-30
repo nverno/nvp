@@ -6,7 +6,7 @@
 (require 'nvp-repl)
 (require 'comint)
 (require 'inf-ruby nil t)
-(nvp:decls :p (inf-ruby robe) :f (robe-mode))
+(nvp:decls :p (ruby inf-ruby robe) :f (robe-mode inf-ruby))
 
 
 ;; add compilation jumps in traceback output from REPL

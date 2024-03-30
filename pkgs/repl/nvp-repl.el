@@ -17,7 +17,7 @@
 (require 'comint)
 (require 'nvp)
 (nvp:auto "nvp-sh" 'nvp-sh-get-process)
-(nvp:decls :p (sh) :f (nvp-repl--init))
+(nvp:decls :p (sh) :f (nvp-repl--init nvp-repl--make-completion-at-point))
 
 (defgroup nvp-repl nil
   "Unified repl."
@@ -79,6 +79,9 @@ Each function takes a process as an argument to test against."
   eval-string
   eval-sexp
   ;; REPL commands
+  commands                        ; repl commands
+  (pos-bol #'comint-line-beginning-position)
+  cmd-prefix                      ; prefix char for repl commands
   help-cmd                        ; command to display REPL help
   cd-cmd                          ; command to change REPL working dir
   pwd-cmd                         ; command to get REPL working directory/buffer
@@ -276,10 +279,12 @@ well."
 ;; "l" #'nvp-repl-load-file
 
 (defvar-keymap nvp-repl-minor-mode-map
+  :doc "Keymap in repl buffer."
   "C-c C-k" #'nvp-repl-clear
   "C-c C-h" #'nvp-repl-keymap)
 
 (defvar-keymap nvp-repl-source-minor-mode-map
+  :doc "Keymap in repl source buffers."
   "C-c C-c"   #'nvp-repl-send-dwim
   "C-c C-e"   #'nvp-repl-send-sexp
   "C-c C-b"   #'nvp-repl-send-buffer
@@ -297,7 +302,14 @@ well."
   :lighter " Ɍepl"
   (when (derived-mode-p 'comint-mode)
     (add-hook 'comint-output-filter-functions
-              #'comint-postoutput-scroll-to-bottom nil t)))
+              #'comint-postoutput-scroll-to-bottom nil t))
+  (when-let ((nvp-repl-current (nvp-repl-current)))
+    (nvp-with-repl (name commands cmd-prefix pos-bol)
+      (when commands
+        (add-hook
+         'completion-at-point-functions
+         (nvp-repl--make-completion-at-point name commands cmd-prefix pos-bol)
+         nil t)))))
 
 ;;;###autoload
 (define-minor-mode nvp-repl-source-minor-mode

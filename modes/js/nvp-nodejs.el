@@ -26,6 +26,9 @@
   (comint-send-string process "\n\x04"))
 ;; (defun nodejs-repl-send-string-no-output (string &optional ))
 
+(defvar nvp-nodejs--repl-commands
+  '("break" "clear" "exit" "help" "save" "load" "editor"))
+
 (when (fboundp 'nodejs-repl-switch-to-repl)
   (nvp-repl-add '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode)
     :name 'nodejs
@@ -40,6 +43,8 @@
     :send-buffer #'nodejs-repl-send-buffer
     :send-file #'nodejs-repl-load-file
     :send-sexp #'nodejs-repl-send-last-expression
+    :commands nvp-nodejs--repl-commands
+    :cmd-prefix ?.
     :help-cmd ".help"
     :pwd-cmd "process.cwd()"
     :cd-cmd "process.chdir(\"%s\")"))

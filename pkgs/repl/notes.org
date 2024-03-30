@@ -1,0 +1,6 @@
+#+TITLE: Repl
+
+* TODOs
+** Multiple repl instances
+Separate repl instance variables (=repl-proc=, =repl-buff=) from =nvp--repl=
+struct to allow for multiple repl instances.

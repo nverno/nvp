@@ -643,14 +643,15 @@ If INSERT, STR is inserted into REPL."
          (progn (pcase ,cmd
                   ((pred stringp)
                    (nvp-repl-send-string
-                    ,(if args `(format ,cmd ,@args) `,cmd) 'insert))
+                    ,(if args `(format ,cmd ,@args) `,cmd) 'insert 'no-newline))
                   ((pred functionp) (funcall ,cmd ,@args))
                   ((pred symbolp) (eval ,cmd))
                   ,@(when args
                       `((`(:no-arg ,no-arg :with-arg ,with-arg)
                          (cl-assert (and (stringp no-arg) (stringp with-arg)))
                          (nvp-repl-send-string
-                          (if ,@args (format with-arg ,@args) no-arg) 'insert))))
+                          (if ,@args (format with-arg ,@args) no-arg)
+                          'insert 'no-newline))))
                   (_ (user-error
                       ,(concat "unhandled " (symbol-name cmd) " type: '%S'") ,cmd)))
                 ,@body))))
@@ -687,8 +688,8 @@ Prompt with \\[universal-argument]."
 
 (defun nvp-repl-help (&optional thing and-go)
   "Print repl help for THING or repl."
-  (interactive
-   (if current-prefix-arg (list (read-string "Help: " (thing-at-point 'symbol)) t)))
+  (interactive (if current-prefix-arg
+                   (list (read-string "Help: " (thing-at-point 'symbol)) t)))
   (nvp:call-repl-cmd help-cmd (thing)
     (and and-go (pop-to-buffer (nvp-repl-buffer)))))
 

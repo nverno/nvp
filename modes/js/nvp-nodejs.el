@@ -40,7 +40,9 @@
     :send-buffer #'nodejs-repl-send-buffer
     :send-file #'nodejs-repl-load-file
     :send-sexp #'nodejs-repl-send-last-expression
-    :help-cmd ".help"))
+    :help-cmd ".help"
+    :pwd-cmd "process.cwd()"
+    :cd-cmd "process.chdir(\"%s\")"))
 
 (defun nvp-nodejs-region-or-sexp ()
   "Send region or last sexp and step."

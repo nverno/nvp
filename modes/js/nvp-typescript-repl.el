@@ -6,7 +6,6 @@
 ;;; Code:
 
 (eval-when-compile (require 'nvp-macro))
-(require 'ts-repl nil t)
 (require 'nvp-repl)
 (nvp:decls :p (ts add-node) :v (ts-repl-buffer nvp-typescript-modes) :f (ts-repl-run))
 
@@ -35,6 +34,7 @@
   '("break" "clear" "exit" "help" "save" "load" "editor" "type"))
 
 (when (fboundp 'ts-repl-run)
+  (require 'ts-repl)
   (nvp-repl-add nvp-typescript-modes
     :name 'typescript
     :modes '(ts-repl-mode)

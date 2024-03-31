@@ -11,8 +11,14 @@
 (defun nvp-yas-reload-all ()
   "Reload modes' snippet tables, removing any that no longer exist."
   (interactive)
-  (when (and nvp-mode-snippet-dir (not (member nvp-mode-snippet-dir yas-snippet-dirs)))
-    (push nvp-mode-snippet-dir yas-snippet-dirs))
+  (let ((snip-dir (or (and nvp-mode-snippet-dir
+                           (not (string= "snippets" (file-name-nondirectory
+                                                     nvp-mode-snippet-dir)))
+                           (directory-file-name
+                            (file-name-parent-directory nvp-mode-snippet-dir)))
+                      nvp-mode-snippet-dir)))
+    (when (and snip-dir (not (member snip-dir yas-snippet-dirs)))
+      (push snip-dir yas-snippet-dirs)))
   (setq yas-snippet-dirs (cl-remove-if-not #'file-exists-p yas-snippet-dirs))
   (mapc #'yas-load-directory yas-snippet-dirs))
 

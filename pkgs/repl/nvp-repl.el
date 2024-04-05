@@ -300,9 +300,9 @@ well."
 (define-minor-mode nvp-repl-minor-mode
   "REPL buffer minor mode."
   :lighter " Ɍepl"
-  (when (derived-mode-p 'comint-mode)
-    (add-hook 'comint-output-filter-functions
-              #'comint-postoutput-scroll-to-bottom nil t))
+  ;; (when (derived-mode-p 'comint-mode)
+  ;;   (add-hook 'comint-output-filter-functions
+  ;;             #'comint-postoutput-scroll-to-bottom nil t))
   (when-let ((nvp-repl-current (nvp-repl-current)))
     (nvp-with-repl (name commands cmd-prefix pos-bol)
       (when commands
@@ -549,7 +549,7 @@ If INSERT, STR is inserted into REPL."
     (save-excursion
       (goto-char start)
       (if (and (eq start (point-min))
-               (looking-at-p "#!\\s*/"))
+               (looking-at-p "#!\\s-*/"))
           (line-beginning-position 2)
         start))))
 

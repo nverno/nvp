@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: shebang
+# name: #!/usr/bin/env node
 # key: !
 # --
 #!/usr/bin/env node${1:

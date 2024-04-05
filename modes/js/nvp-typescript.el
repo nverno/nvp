@@ -143,73 +143,11 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
               (old-rules (funcall rules-fn language)))
           (set v (ecma-ts-merge-rules language (append old-rules new-rules)))))))
 
+;; -------------------------------------------------------------------
+;;; Add changes
+
 (advice-add 'typescript-ts-mode--font-lock-settings
             :around #'nvp-typescript-ts-font-lock-rules)
-
-;; -------------------------------------------------------------------
-;;; Indentation
-
-;;; FIXME(3/26/24): remove after fixes are merged
-(defun nvp-typescript-ts-mode--indent-rules (language)
-  "Rules used for indentation.
-Argument LANGUAGE is either `typescript' or `tsx'."
-  `((,language
-     ((parent-is "program") column-0 0)
-     ((node-is "}") parent-bol 0)
-     ((node-is ")") parent-bol 0)
-     ((node-is "]") parent-bol 0)
-     ((node-is ">") parent-bol 0)
-     ((and (parent-is "comment") c-ts-common-looking-at-star)
-      c-ts-common-comment-start-after-first-star -1)
-     ((parent-is "comment") prev-adaptive-prefix 0)
-     ((parent-is "ternary_expression") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "member_expression") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "named_imports") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "statement_block") parent-bol typescript-ts-mode-indent-offset)
-     ((or (node-is "case")
-          (node-is "default"))
-      parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "switch_case") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "switch_default") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "type_arguments") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "variable_declarator") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "arguments") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "array") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "formal_parameters") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "template_string") no-indent) ; Don't indent the string contents.
-     ((parent-is "template_substitution") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "object_pattern") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "object") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "object_type") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "enum_body") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "class_body") parent-bol typescript-ts-mode-indent-offset)
-     ;; (3/26/24) Added
-     ((parent-is "interface_body") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "arrow_function") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "parenthesized_expression") parent-bol typescript-ts-mode-indent-offset)
-     ((parent-is "binary_expression") parent-bol typescript-ts-mode-indent-offset)
-     ((match "while" "do_statement") parent-bol 0)
-     ((match "else" "if_statement") parent-bol 0)
-     ((parent-is ,(rx (or (seq (or "if" "for" "for_in" "while" "do") "_statement")
-                          "else_clause")))
-      parent-bol typescript-ts-mode-indent-offset)
-
-     ,@(when (eq language 'tsx)
-	 (append (tsx-ts-mode--indent-compatibility-b893426)
-		 `(((node-is "jsx_closing_element") parent 0)
-		   ((match "jsx_element" "statement") parent typescript-ts-mode-indent-offset)
-		   ((parent-is "jsx_element") parent typescript-ts-mode-indent-offset)
-		   ((parent-is "jsx_text") parent-bol typescript-ts-mode-indent-offset)
-		   ((parent-is "jsx_opening_element") parent typescript-ts-mode-indent-offset)
-		   ((parent-is "jsx_expression") parent-bol typescript-ts-mode-indent-offset)
-		   ((match "/" "jsx_self_closing_element") parent 0)
-		   ((parent-is "jsx_self_closing_element") parent typescript-ts-mode-indent-offset))))
-     ;; FIXME(Theo): This no-node catch-all should be removed.  When is it needed?
-     (no-node parent-bol 0))))
-
-;;; FIXME: remove after fixes
-(advice-add 'typescript-ts-mode--indent-rules :override
-            #'nvp-typescript-ts-mode--indent-rules)
 
 ;;; Add missing features once
 (nvp:run-once typescript-ts-mode (:after (&rest _))

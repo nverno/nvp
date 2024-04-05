@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: sitFor
+# key: f_sitFor
+# --
+const sitFor = async (ms: number): Promise<void> => {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(), ms);
+  });
+};

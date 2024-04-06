@@ -6,7 +6,7 @@
 (require 'transient)
 (require 'rustic nil t)
 
-(nvp:decls :p (rustic) :v (rustic-cargo-test-disable-warnings))
+(nvp:decls :p (rustic) :v (rustic-cargo-test-disable-warnings) :f (cratesio-menu))
 
 (with-eval-after-load 'rustic
   (nvp:transient-toggle nvp-cargo-menu
@@ -35,7 +35,8 @@
       ("u" "Update" rustic-cargo-update)
       ("U" "Upgrade" rustic-cargo-upgrade)]
      ["Documentation"
-      ("s" "Search crates" cargo-search-crates)
+      ("s" "Cratesio" cratesio-menu)
+      ("S" "Cargo search" cargo-search-crates)
       ("d" "Open docs" rustic-cargo-doc)
       ("D" "Build docs" rustic-cargo-build-doc)]
      ["Project"

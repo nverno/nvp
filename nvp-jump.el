@@ -116,7 +116,7 @@ Optionally, search LISP-ONLY files (no C sources)."
       (nvp-display-location src :file action)
     (user-error "No source found for %s" library)))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Modes
 
@@ -162,7 +162,7 @@ Optionally, search LISP-ONLY files (no C sources)."
   (interactive "p")
   (nvp-jump-to-dir nvp/modes action))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Install / build files
 
@@ -184,7 +184,7 @@ Optionally, search LISP-ONLY files (no C sources)."
          current-prefix-arg))
   (nvp-display-location file :file action))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Files/Directories
 
@@ -202,7 +202,8 @@ Optionally, search LISP-ONLY files (no C sources)."
              (setq current-prefix-arg '(1))))
          current-prefix-arg))
   (--if-let (nvp:find-notes-file name) (nvp-display-location it :file action)
-    (user-error (format "%S not found up the directory tree." name))))
+    (user-error (format "%S not found up the directory tree."
+                        (or name "No notes")))))
 
 ;;;###autoload
 (defun nvp-jump-to-dotfile (dir action)
@@ -239,8 +240,8 @@ Optionally, search LISP-ONLY files (no C sources)."
 
 ;;;###autoload
 (defun nvp-jump-to-org (org-file action)
-  "Jump to org file. 
-If `nvp-local-notes-file' is bound use that unless there is a prefix of 16. 
+  "Jump to org file.
+If `nvp-local-notes-file' is bound use that unless there is a prefix of 16.
 Otherwise prompt, with default `nvp-default-org-file'."
   (interactive
    (list (nvp-read--org-file nil nil (nvp:prefix 16))
@@ -253,7 +254,7 @@ Otherwise prompt, with default `nvp-default-org-file'."
 
 ;;;###autoload
 (defun nvp-jump-to-info (file action)
-  "Jump to info file (in org mode). 
+  "Jump to info file (in org mode).
 With prefix jump this window, otherwise `find-file-other-window'."
   (interactive (list (nvp-read--info-files) current-prefix-arg))
   (nvp-display-location
@@ -267,7 +268,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
   (nvp-display-location
    (nvp-read-relative-recursively nvp/template) :file action))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Other: keymaps, register, scratch
 
@@ -296,7 +297,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
 
 ;;;###autoload
 (defun nvp-jump-to-scratch (mode action)
-  "Jump to scratch buffer in MODE (default current `major-mode'). 
+  "Jump to scratch buffer in MODE (default current `major-mode').
 With prefix, pop other window, with double prefix, prompt for MODE."
   (interactive
    (list (nvp:prefix 16 (intern (nvp-read-mode)) major-mode) current-prefix-arg))

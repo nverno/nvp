@@ -132,11 +132,13 @@
   :class 'transient-lisp-variable
   :variable 'url-debug
   :reader
-  (lambda (prompt)
+  (lambda (prompt initial-input history)
     (if (null current-prefix-arg) (not url-debug)
       (seq-uniq
        (mapcar #'intern-soft
-               (completing-read-multiple prompt '(http dav retrieval handlers)))))))
+               (completing-read-multiple
+                prompt '(http dav retrieval handlers)
+                nil t initial-input history))))))
 
 ;;; Emacs
 (transient-define-suffix nvp-edebug-menu--launch (args)

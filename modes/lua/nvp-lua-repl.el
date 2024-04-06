@@ -31,7 +31,7 @@ With two \\[universal-argument] prompt for lua command."
     :history-file ".lua_history"
     :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
     :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
-    :help-cmd "_G"                      ; TODO
+    :help-cmd "_G"                      ; TODO: any useful help?
     :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))))
 
 (provide 'nvp-lua-repl)

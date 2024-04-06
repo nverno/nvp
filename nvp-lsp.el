@@ -18,8 +18,9 @@
   "Toggle lsp server tracing."
   :class 'transient-lisp-variable
   :variable 'lsp-server-trace
-  :reader (lambda (prompt &rest _)
-            (completing-read prompt '("off" "messages" "verbose") nil t)))
+  :reader (lambda (prompt initial-input history)
+            (completing-read prompt '("off" "messages" "verbose") nil t
+                             initial-input history)))
 
 ;;;###autoload(autoload 'nvp-lsp-menu "nvp-lsp" nil t)
 (transient-define-prefix nvp-lsp-menu () "Lsp"

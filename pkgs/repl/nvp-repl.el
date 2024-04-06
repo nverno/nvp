@@ -24,16 +24,6 @@
   :prefix "nvp-repl-"
   :group 'languages)
 
-(defcustom nvp-repl-display-action
-  '((display-buffer-reuse-window
-     display-buffer-use-some-window
-     display-buffer-pop-up-window)
-    (reusable-frames      . visible)
-    (inhibit-switch-frame . t)
-    (inhibit-same-window  . t))
-  "Behaviour of `display-buffer' when popping between REPL/source buffers."
-  :type '(repeat sexp))
-
 (defcustom nvp-repl-default 'shell
   "Default REPL when buffer has no repl associations."
   :type 'symbol)
@@ -46,6 +36,9 @@
   "Hook run to find the first applicable REPL process.
 Each function takes a process as an argument to test against."
   :type '(repeat symbol))
+
+(defvar-local nvp-repl-load-startup-file t
+  "Some repls check this variable before loading a startfile.")
 
 (cl-defstruct (nvp--repl (:constructor nvp-repl-make))
   "Mode specific REPL variables"
@@ -92,6 +85,40 @@ Each function takes a process as an argument to test against."
   repl-buff)                     ; REPL output buffer (may not have a repl-proc)
 (put 'nvp-repl-make 'lisp-indent-function 'defun)
 
+
+;;; Display
+
+(defcustom nvp-repl-display-action 'other-window
+  "Default behaviour of `display-buffer' when popping between REPL/source
+buffers."
+  :type 'symbol)
+
+(defvar nvp-repl--display-actions
+  '((other-window . ((display-buffer-reuse-window
+                      display-buffer-use-some-window
+                      display-buffer-pop-up-window)
+                     (reusable-frames      . visible)
+                     (inhibit-switch-frame . t)
+                     (inhibit-same-window  . t)))
+    (split-below . ((display-buffer-reuse-window
+                     nvp-repl--split-below)
+                    (window-height . 0.4)
+                    (inhibit-same-window . t)))))
+
+;;; FIXME: if there is already a window below, should try to use that instead of
+;;; splitting
+(defun nvp-repl--split-below (buf alist)
+  "Split window and display repl below."
+  (when-let ((height (cdr (assq 'window-height alist))))
+    (when (floatp height)
+      (setq height (round (* height (frame-height)))))
+    (setq height (- (max height window-min-height)))
+    (window--display-buffer buf (split-window-below height) 'window alist)))
+
+(defun nvp-repl--display-action (&optional action)
+  (assoc-default (or action nvp-repl-display-action) nvp-repl--display-actions))
+
+;;; Caches
 ;; Cache defined repls
 (defvar nvp-repl--repl-cache (make-hash-table))
 (defvar nvp-repl-modes '())
@@ -343,7 +370,8 @@ well."
       (with-current-buffer (nvp-repl-update repl-proc src-buf repl-buf)
         (nvp-repl--setup-repl-buffer history-file)
         (prog1 (current-buffer)
-          (and and-go (pop-to-buffer (current-buffer) nvp-repl-display-action)))))))
+          (when and-go
+            (pop-to-buffer (current-buffer) (nvp-repl--display-action))))))))
 
 (defun nvp-repl--make-async-callback (src-buf &optional and-go)
   "create callback for src-buf that is passed to async repl init.
@@ -442,7 +470,7 @@ When called from a repl buffer with PREFIX:
                        (--when-let (nvp-repl-get-buffer prefix)
                          (prog1 it (nvp-repl--source-minor-mode-on)))))))
     (unless (eq 'async repl-buff)
-      (pop-to-buffer repl-buff nvp-repl-display-action))))
+      (pop-to-buffer repl-buff (nvp-repl--display-action)))))
 
 (defun nvp-repl-remove (mode)
   "Remove any repl associations with MODE."
@@ -709,47 +737,6 @@ Prompt with \\[universal-argument]."
   "Set source buffer for repl."
   (interactive)
   (nvp-repl--check-source-buffer nil))
-
-;; -------------------------------------------------------------------
-;;; Transient
-
-(require 'transient)
-
-(defvar-local nvp-repl-load-startup-file t)
-
-(nvp:transient-toggle nvp-repl-config-menu
-  nvp-repl-load-startup-file)
-
-;;;###autoload(autoload 'nvp-repl-menu "nvp-repl" nil t)
-(transient-define-prefix nvp-repl-menu ()
-  "REPL menu"
-  [[ :if-non-nil nvp-repl-current
-     "Send"
-     ("s" "Last sexp" nvp-repl-send-sexp)
-     ("S" "Statement or sentence" nvp-repl-send-stmt-or-sentence)
-     ("l" "Line or region" nvp-repl-send-line)
-     ("r" "Region" nvp-repl-send-region)
-     ("f" "Defun" nvp-repl-send-defun)
-     ("d" "Defun or region" nvp-repl-send-defun-or-region)
-     ("b" "Buffer" nvp-repl-send-buffer)
-     ("F" "Load File" nvp-repl-send-file)]
-   [ :if-non-nil nvp-repl-current
-     "Eval"
-     ("E" "String" nvp-repl-eval-string)
-     ("e" "Last sexp" nvp-repl-eval-sexp)]
-   [ :if nvp-repl-current
-     "Commands"
-     ("k" "Clear" nvp-repl-clear :transient t)
-     ("h" "Help" nvp-repl-help)
-     ("w" "Show working directory/buffer" nvp-repl-pwd :transient t)
-     ("W" "Change Working directory/buffer" nvp-repl-cd)]]
-  [["Repl"
-    ("j" "Jump" nvp-repl-jump)]
-   ["Manage Repls"
-    (":r" "Remove" nvp-repl-remove)]
-   ["Settings"
-    (":l" "Load startup file"
-     nvp-repl-config-menu--toggle-nvp-repl-load-startup-file)]])
 
 (provide 'nvp-repl)
 ;; Local Variables:

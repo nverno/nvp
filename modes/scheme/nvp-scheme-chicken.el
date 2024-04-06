@@ -37,14 +37,14 @@
           (put-text-property new-beg new-end 'font-lock-multiline t))
         (cons new-beg new-end)))))
 
-(defun nvp-scheme-syntax-propertize-foreign (_ end)
+(defun nvp-scheme-syntax-propertize-foreign (end)
   (save-match-data
     (when (search-forward "<#" end t)
       (with-silent-modifications
         (put-text-property (1- (point)) (point)
                            'syntax-table (string-to-syntax "> cn"))))))
 
-(defun nvp-scheme-syntax-propertize-heredoc (_ _end)
+(defun nvp-scheme-syntax-propertize-heredoc (_end)
   (save-match-data
     (let ((tag (match-string 2)))
       (when (and tag (re-search-forward (concat "^" (regexp-quote tag) "$") nil t))
@@ -55,15 +55,15 @@
 ;; overwrites function from scheme.el
 (defun scheme-syntax-propertize (beg end)
   (goto-char beg)
-  (scheme-syntax-propertize-sexp-comment (point) end)
+  (scheme-syntax-propertize-sexp-comment end)
   (funcall
    (syntax-propertize-rules
     ("\\(#\\);"
-     (1 (prog1 "< cn" (scheme-syntax-propertize-sexp-comment (point) end))))
+     (1 (prog1 "< cn" (scheme-syntax-propertize-sexp-comment end))))
     ("\\(#\\)>"
-     (1 (prog1 "< cn" (nvp-scheme-syntax-propertize-foreign (point) end))))
+     (1 (prog1 "< cn" (nvp-scheme-syntax-propertize-foreign end))))
     ("\\(#\\)<[<#]\\(.*\\)$"
-     (1 (prog1 "< cn" (nvp-scheme-syntax-propertize-heredoc (point) end)))))
+     (1 (prog1 "< cn" (nvp-scheme-syntax-propertize-heredoc end)))))
    (point) end))
 
 (defun nvp-scheme-chicken-setup ()

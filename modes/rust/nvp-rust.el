@@ -16,30 +16,12 @@
   :modes (rust-mode rust-ts-mode rustic-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
-(defun nvp-rust-move-to-current-fn ()
-  "Move point to current function decl if point is function decl."
-  (let* ((rustic-cargo-fn-regexp
-          ;; redefine to allow "pub" in function decls
-          "^\s*\\(?:async\s+\\)?\s-*\\(?:pub\s+\\)?\s*fn\s+\\([^(]+\\)\s*(")
-         (fn (rustic-cargo--get-current-line-fn-name))
-         pos)
-    (save-excursion
-      (while (and (not fn) (setq pos (nvp:point 'bul)))
-        (goto-char pos)
-        (setq fn (rustic-cargo--get-current-line-fn-name))))
-    (when fn
-      (goto-char (car fn))
-      (backward-up-list)
-      (forward-word -1)
-      (point))))
-
 ;;; Help-at-point
 (cl-defmethod nvp-hap-lsp-search-remote
   ((_server_id (eql rust-analyzer)) &optional _arg)
   (lsp-rust-analyzer-open-external-docs))
 
 ;;; Type signature
-
 ;; Fix eldoc documentation begin just '// size =... align =...
 (cl-defmethod lsp-clients-extract-signature-on-hover
   (contents (_server-id (eql rust-analyzer)))
@@ -48,8 +30,20 @@
       (setq lines (cdr lines)))
     (car lines)))
 
-;;; Compilation
+;;; Tree-sitter
+(declare-function treesit-font-lock-recompute-features "treesit")
+(defvar rust-ts-mode--font-lock-settings)
+;; remove 'error feature
+(with-eval-after-load 'rust-ts-mode
+  (let* ((features '())
+         (rules (--filter (not (memq (nth 2 it) (cons 'error features)))
+                          rust-ts-mode--font-lock-settings)))
+    (setq rust-ts-mode--font-lock-settings rules)))
 
+(nvp:run-once rust-ts-mode (:after (&rest _))
+  (treesit-font-lock-recompute-features))
+
+;;; Compilation
 ;; FIXME: https://github.com/brotzeit/rustic/pull/531
 ;; fix error when `compilation--start-time' isn't set in compilation buffer
 (define-advice rustic-compilation-setup-buffer
@@ -92,6 +86,23 @@ prefix DUMB."
         (with-current-buffer (process-buffer (rustic-cargo-run-test test-to-run))
           (setq-local rustic-test-arguments test-to-run))
       (user-error "Could not find test at point."))))
+
+(defun nvp-rust-move-to-current-fn ()
+  "Move point to current function decl if point is function decl."
+  (let* ((rustic-cargo-fn-regexp
+          ;; redefine to allow "pub" in function decls
+          "^\s*\\(?:async\s+\\)?\s-*\\(?:pub\s+\\)?\s*fn\s+\\([^(]+\\)\s*(")
+         (fn (rustic-cargo--get-current-line-fn-name))
+         pos)
+    (save-excursion
+      (while (and (not fn) (setq pos (nvp:point 'bul)))
+        (goto-char pos)
+        (setq fn (rustic-cargo--get-current-line-fn-name))))
+    (when fn
+      (goto-char (car fn))
+      (backward-up-list)
+      (forward-word -1)
+      (point))))
 
 (defun nvp-rust-current-test-dwim (&optional prompt)
   "Run related test.

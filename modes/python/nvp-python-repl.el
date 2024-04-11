@@ -37,10 +37,12 @@
   :pwd-cmd "import os; os.getcwd()"
   :help-cmd '(:no-arg "help()" :with-arg "help(%s)"))
 
+;;; FIXME: remove and/or convert to use treesit
 ;; bounds of current python statement
 (defsubst nvp-python-statement-bounds ()
   (cons (python-nav-beginning-of-statement) (python-nav-end-of-statement)))
 
+;;;###autoload
 (defun nvp-python-send-line-dwim (&optional arg)
   "Send current statement and step -- current statement is that containing the
 point or the statement directly preceding the point if the point isn't at 
@@ -68,6 +70,7 @@ the console."
         (newline-and-indent)
       (forward-line))))
 
+;;;###autoload
 (defun nvp-python-eval-last-sexp (&optional arg)
   (interactive "P")
   (let* ((bnds (nvp-python-statement-bounds))
@@ -78,14 +81,6 @@ the console."
           (let ((standard-output (current-buffer)))
             (princ res))
         (message "%s" res)))))
-
-(defun nvp-python-interrupt-or-kill-process (arg)
-  (interactive "P")
-  (let ((proc (ignore-errors (python-shell-get-process-or-error))))
-    (when proc
-      (if arg
-          (kill-process proc)
-        (interrupt-process proc)))))
 
 (provide 'nvp-python-repl)
 ;; Local Variables:

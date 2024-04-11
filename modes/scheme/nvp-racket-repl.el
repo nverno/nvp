@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(nvp:decls :p (racket))
+(nvp:decls :p (racket) :f (nvp-repl-show-result))
 
 (defun nvp-racket-send-buffer (&optional _and-go)
   (interactive "P")

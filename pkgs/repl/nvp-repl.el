@@ -88,22 +88,25 @@ Each function takes a process as an argument to test against."
 
 ;;; Display
 
-(defcustom nvp-repl-display-action 'other-window
+(defcustom nvp-repl-display-action 'split-below
   "Default behaviour of `display-buffer' when popping between REPL/source
 buffers."
   :type 'symbol)
 
 (defvar nvp-repl--display-actions
-  '((other-window . ((display-buffer-reuse-window
-                      display-buffer-use-some-window
-                      display-buffer-pop-up-window)
-                     (reusable-frames      . visible)
-                     (inhibit-switch-frame . t)
-                     (inhibit-same-window  . t)))
-    (split-below . ((display-buffer-reuse-window
-                     nvp-repl--split-below)
-                    (window-height . 0.4)
-                    (inhibit-same-window . t)))))
+  '((other-window
+     . ((display-buffer-reuse-window
+         display-buffer-use-some-window
+         display-buffer-pop-up-window)
+        (reusable-frames      . visible)
+        (inhibit-switch-frame . t)
+        (inhibit-same-window  . t)))
+    (split-below
+     . ((display-buffer-reuse-window
+         nvp-repl--split-below)
+        (window-height        . 0.4)
+        (inhibit-same-window  . t))))
+  "Options for `nvp-repl-display-action'.")
 
 ;;; FIXME: if there is already a window below, should try to use that instead of
 ;;; splitting
@@ -296,13 +299,17 @@ well."
   :type '(repeat symbol)
   :group 'nvp-repl)
 
+(nvp:decl nvp-repl-eval-sexp nvp-repl-eval-string
+  nvp-repl-pwd nvp-repl-cd nvp-repl-help)
+
 (declare-function nvp-repl-keymap "")
 (defvar-keymap nvp-repl-keymap
   :prefix 'nvp-repl-keymap
   "h" #'nvp-repl-help
   "d" #'nvp-repl-cd
   "p" #'nvp-repl-pwd
-  "s" #'nvp-repl-set-source)
+  "s" #'nvp-repl-set-source
+  "q" #'nvp-repl-interrupt-or-kill-process)
 ;; "l" #'nvp-repl-load-file
 
 (defvar-keymap nvp-repl-minor-mode-map
@@ -321,7 +328,8 @@ well."
   "C-M-x"     #'nvp-repl-send-defun-or-region
   "C-c C-x e" #'nvp-repl-eval-sexp
   "C-c C-x s" #'nvp-repl-eval-string
-  "C-c C-k"   #'nvp-repl-clear)
+  "C-c C-k"   #'nvp-repl-clear
+  "C-c C-q"   #'nvp-repl-interrupt-or-kill-process)
 
 ;;;###autoload
 (define-minor-mode nvp-repl-minor-mode
@@ -626,117 +634,18 @@ If INSERT, STR is inserted into REPL."
           (user-error "unimplemented")))
     (user-error "No current repl")))
 
-;; -------------------------------------------------------------------
-;;; Eval
-
-(nvp:decl nvp-repl-eval-show-result nvp-repl-eval-result-value)
-
-(defun nvp-repl-eval-insert (res)
-  (let ((standard-output (current-buffer)))
-    (princ res)))
-
-(defun nvp-repl-show-result (&optional res insert)
-  "Print the result of the last evaluation in the current buffer."
-  (message "nvp-repl-show-result: %S %S" res insert)
-  (unless res (setq res (nvp-repl-eval-result-value)))
-  (if insert
-      (nvp-repl-eval-insert res)
-    (nvp-repl-eval-show-result res)))
-
-(defun nvp-repl-eval-string (str &optional insert)
-  (interactive "sEval: \nP")
-  (nvp-with-repl (eval-string)
-    (if eval-string (funcall eval-string str insert)
-      (nvp-repl-send-string str)
-      (nvp-repl-show-result nil insert))))
-
-(defun nvp-repl-eval-sexp (&optional insert)
-  (interactive "P")
-  (nvp-with-repl (eval-sexp)
-    (if eval-sexp (funcall-interactively eval-sexp insert)
-      (save-excursion
-        (skip-syntax-backward " ")
-        (nvp-repl-send-sexp))
-      (nvp-repl-show-result nil insert))))
-
-;; -------------------------------------------------------------------
-;;; REPL commands - run in REPL
-
-(eval-when-compile
-  (defmacro nvp:with-current-repl (&rest body)
-    `(if-let ((nvp-repl-current (nvp-repl-current)))
-         (progn ,@body)
-       (user-error "No current repl.")))
-
-  (defmacro nvp:with-repl-vals (vals &rest body)
-    (declare (indent 1))
-    `(nvp:with-current-repl
-      (pcase-let (((cl-struct nvp--repl ,@vals) nvp-repl-current))
-        ,@body)))
-
-  ;; Call `nvp-repl-send-string' with 'insert so input goes through
-  ;; `comint-input-sender' in order to handle repl commands
-  (defmacro nvp:call-repl-cmd (cmd &optional args &rest body)
-    (declare (indent 2))
-    `(nvp:with-repl-vals (,cmd)
-       (if (null ,cmd) (user-error "not implemented")
-         (progn (pcase ,cmd
-                  ((pred stringp)
-                   (nvp-repl-send-string
-                    ,(if args `(format ,cmd ,@args) `,cmd) 'insert 'no-newline))
-                  ((pred functionp) (funcall ,cmd ,@args))
-                  ((pred symbolp) (eval ,cmd))
-                  ,@(when args
-                      `((`(:no-arg ,no-arg :with-arg ,with-arg)
-                         (cl-assert (and (stringp no-arg) (stringp with-arg)))
-                         (nvp-repl-send-string
-                          (if ,@args (format with-arg ,@args) no-arg)
-                          'insert 'no-newline))))
-                  (_ (user-error
-                      ,(concat "unhandled " (symbol-name cmd) " type: '%S'") ,cmd)))
-                ,@body))))
-
-  (defmacro nvp:with-repl-src-buffer (&rest body)
-    (declare (indent defun) (debug t))
-    (nvp:with-syms (buf)
-      `(let ((,buf (nvp-repl-current-source-buffer)))
-         (unless (and ,buf (buffer-live-p ,buf))
-           (user-error "No source buffer associated with current buffer."))
-         (with-current-buffer ,buf
-           ,@body)))))
-
-(defun nvp-repl-cd (&optional dir)
-  "Set repl working directory to DIR (default `default-directory').
-Prompt with \\[universal-argument]."
-  (interactive
-   (list (if current-prefix-arg
-             (expand-file-name (read-directory-name "Directory: " default-directory))
-           default-directory)))
-  (unless dir (setq dir default-directory))
-  (nvp:with-repl-src-buffer
-    (let ((default-directory dir))
-      (nvp:call-repl-cmd cd-cmd (default-directory)
-        (nvp-repl-update (repl:val "repl-proc") (current-buffer))
-        (with-current-buffer (nvp-repl-buffer)
-          (setq default-directory dir))))))
-
-(defun nvp-repl-pwd (&optional and-go)
-  "Print repl current working directory/buffer."
-  (interactive "P")
-  (nvp:call-repl-cmd pwd-cmd nil
-    (and and-go (pop-to-buffer (nvp-repl-buffer)))))
-
-(defun nvp-repl-help (&optional thing and-go)
-  "Print repl help for THING or repl."
-  (interactive (if current-prefix-arg
-                   (list (read-string "Help: " (thing-at-point 'symbol)) t)))
-  (nvp:call-repl-cmd help-cmd (thing)
-    (and and-go (pop-to-buffer (nvp-repl-buffer)))))
-
 (defun nvp-repl-set-source ()
   "Set source buffer for repl."
   (interactive)
   (nvp-repl--check-source-buffer nil))
+
+(defun nvp-repl-interrupt-or-kill-process (kill)
+  "Interrupt repl process or KILL with prefix."
+  (interactive "P")
+  (when-let ((proc (ignore-errors (nvp-repl-process))))
+    (if kill
+        (kill-process proc)
+      (interrupt-process proc))))
 
 (provide 'nvp-repl)
 ;; Local Variables:

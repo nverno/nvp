@@ -46,7 +46,9 @@
      ("w" "Show working directory/buffer" nvp-repl-pwd :transient t)
      ("W" "Change Working directory/buffer" nvp-repl-cd)]]
   [["Repl"
-    ("j" "Jump" nvp-repl-jump)]
+    ("j" "Jump" nvp-repl-jump)
+    ("q" "Interrupt/kill process" nvp-repl-interrupt-or-kill-process
+     :if nvp-repl-current)]
    ["Manage Repls"
     (":r" "Remove" nvp-repl-remove)]
    ["Settings"

@@ -1,4 +1,4 @@
-;;; nvp-repl-eval.el --- REPL eval results -*- lexical-binding: t; -*-
+;;; nvp-repl-eval.el --- Eval code in Repl -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;
@@ -27,6 +27,40 @@
      :background "grey10" :box (:line-width -1 :color "black")))
   "Face used to display evaluation results at the end of line."
   :group 'nvp-repl)
+
+
+(defun nvp-repl-eval-insert (res)
+  (let ((standard-output (current-buffer)))
+    (princ res)))
+
+(defun nvp-repl-show-result (&optional res insert)
+  "Print the result of the last evaluation in the current buffer."
+  (message "nvp-repl-show-result: %S %S" res insert)
+  (unless res (setq res (nvp-repl-eval-result-value)))
+  (if insert
+      (nvp-repl-eval-insert res)
+    (nvp-repl-eval-show-result res)))
+
+;;;###autoload
+(defun nvp-repl-eval-string (str &optional insert)
+  "Eval STR, displaying result in overlay or INSERTing with prefix."
+  (interactive "sEval: \nP")
+  (nvp-with-repl (eval-string)
+    (if eval-string (funcall eval-string str insert)
+      (nvp-repl-send-string str)
+      (nvp-repl-show-result nil insert))))
+
+;;;###autoload
+(defun nvp-repl-eval-sexp (&optional insert)
+  "Eval sexp before before.
+INSERT with prefix."
+  (interactive "P")
+  (nvp-with-repl (eval-sexp)
+    (if eval-sexp (funcall-interactively eval-sexp insert)
+      (save-excursion
+        (skip-syntax-backward " ")
+        (nvp-repl-send-sexp))
+      (nvp-repl-show-result nil insert))))
 
 ;;;###autoload
 (defun nvp-repl-eval-result-value ()

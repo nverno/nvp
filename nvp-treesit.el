@@ -174,9 +174,10 @@
     ("i" "Install parser" nvp-treesit-install)
     ("U" "Update parser(s)" nvp-treesit-update)]
    ["Dev"
-    ("g" "Go to query directories" ts-util-jump-to-queries)
     ("m" "Global mode" nvp-treesit-mode)
-    ("M" "Local mode" nvp-treesit-minor-mode)]
+    ("M" "Local mode" nvp-treesit-minor-mode)
+    ("g" "Go to query directories" ts-util-jump-to-queries)
+    ("x" "Extract corpus tests" ts-util-extract-corpus-tests)]
    ["Debug"
     (":i" "Indent verbose"
      nvp-treesit-menu--toggle-treesit--indent-verbose)

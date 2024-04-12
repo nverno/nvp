@@ -308,6 +308,9 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; nvp-auto
        nvp-install-mode nvp-install-modes
        nvp-lookup-password
+       ;; Tags
+       nvp-tag-list-decls nvp-tag-repo
+       nvp-tag-find nvp-tag-find-etag
        ;; override
        nvp-buffer-local-set-key
        nvp-buffer-local-set-minor-mode-key)

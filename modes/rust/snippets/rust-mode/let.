@@ -3,4 +3,4 @@
 # key: l.
 # condition: (nvp-yas-inactive-p)
 # --
-let ($1) = ($2);
+let ($1) = ${2:($3)};

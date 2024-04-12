@@ -7,7 +7,10 @@
 (nvp:decls :p (ess) :v (inferior-R-program))
 (nvp:auto "s" 's-matched-positions-all)
 
-;; add comment continuation when in roxy block
+
+(with-eval-after-load 'nvp-repl (require 'nvp-r-repl))
+
+;; Add comment continuation when in roxy block
 (nvp:defmethod nvp-newline-dwim-comment (_syntax arg)
   :modes (ess-r-mode r-ts-mode)
   (save-match-data
@@ -19,41 +22,6 @@
         (dotimes (_ (or arg 1))
           (insert ?\n it))
       (newline-and-indent arg))))
-
-;;; REPL
-(defun nvp-r--repl-init (&optional _prefix)
-  (interactive "P")
-  (save-window-excursion
-    (let ((ess-dialect "R"))
-      (ess-force-buffer-current nil 'force))))
-
-;; Dont error if `add-log-current-defun-header-regexp' isnt defined,
-;; eg. in `r-ts-mode'
-(defvar add-log-current-defun-header-regexp)
-(define-advice ess-eval-function (:around (orig &rest args) "add-log-regex")
-  (let ((add-log-current-defun-header-regexp "^\\(.+\\)\\s-+<-[ \t\n]*function"))
-    (apply orig args)))
-
-(with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(ess-r-mode r-ts-mode)
-    :name 'R
-    :modes '(inferior-ess-r-mode)
-    :init #'nvp-r--repl-init
-    :find-fn (lambda () (-some-> ess-local-process-name get-process))
-    :send-string #'ess-send-string
-    :send-region (lambda (start end) (ess-send-region (nvp-repl-process) start end))
-    :send-file #'ess-load-file
-    :send-defun #'ess-eval-function
-    :send-buffer #'ess-eval-buffer
-    :send-line #'ess-eval-line
-    ;; :send-sexp
-    ;; :send-statement
-    ;; :eval-sexp #'ess-eval-paragraph
-    ;; :eval-region #'ess-eval-region
-    :history-file ".Rhistory"
-    :help-cmd '(:no-arg "" :with-arg "help(\"%s\")")
-    :pwd-cmd "getwd()"
-    :cd-cmd "setwd(\"%s\")"))
 
 ;;; Abbrev
 ;; dont expand in comments/strings or in symbols with '.', eg. is.null
@@ -123,73 +91,7 @@
       (while (re-search-forward nvp-r-datetime-regex end t)
         (replace-match "\'\\1\'")))))
 
-;; ------------------------------------------------------------
-;;; Tags
-
-(defvar nvp-r-source-dir (expand-file-name "R/r-source" (getenv "DEVEL")))
-(defvar nvp-r-package-src (expand-file-name "R/src" (getenv "DEVEL")))
-(defvar nvp-r-source-repo "http://www.github.com/wch/r-source")
-
-(defun nvp-r-tag-dir (&optional directory pattern)
-  "Create tags file [default c tags] for directory.
-Return process object."
-  (interactive)
-  (let ((dir (or directory (read-directory-name "Tag directory: ")))
-	(patt (or pattern ".*\\\\.[RchCH][xx|pp]?$")))
-    (start-process-shell-command
-     "r-tags" "*R-tags*"
-     (format (concat "\"%s\" \"%s\" -type f -regextype posix-extended -regex \"%s\""
-                     " | etags - -o \"%s\"")
-             (or find-program "find") dir patt (expand-file-name "TAGS" dir)))))
-
-;; find . -name ".*[chCH]" -print | etags -
-(defun nvp-r-tag-source (&optional noretry)
-  "Load tags table for R source.
-Create tags if they dont exist."
-  (interactive)
-  (let* ((tags (expand-file-name "TAGS" nvp-r-source-dir))
-	 (no-src (not (file-exists-p nvp-r-source-dir)))
-	 (no-tags (not (file-exists-p tags))))
-    (unless noretry
-      (cond
-       (no-src (message "Cloning R source repo")
-               (nvp-r--tag-sentinel
-                (start-process "r-tags" "*R-tags*" "git" "clone" nvp-r-source-repo
-                               "--depth=1" nvp-r-source-dir)
-                nil))
-       (no-tags (message "Creating R source TAGS"))
-       (t (visit-tags-table tags))))))
-
-(defun nvp-r--tag-sentinel (proc &optional noretry)
-  (set-process-sentinel
-   proc (lambda (p m)
-          (message "%s: %s" (process-name p) (replace-regexp-in-string "\n" "" m))
-          (when (eq 0 (process-exit-status p))
-            (nvp-r-tag-source noretry)))))
-
-(defun nvp-r-rtags (pkg &optional noretry)
-  "Load/make R tags for package PKG."
-  (interactive)
-  (let ((pkg (or pkg
-                 (and current-prefix-arg
-                      (read-directory-name "Package directory: "))
-                 (expand-file-name
-                  (read-from-minibuffer "Package name: ") nvp-r-package-src)))
-        (tags (expand-file-name "RTAGS" pkg)))
-    (cond
-     ((not (file-exists-p pkg))
-      (user-error "Directory %s doesn't exist" pkg))
-     ((not (file-exists-p tags))
-      (unless noretry
-        (let ((rtags (format "rtags(path=\"%s\", ofile=\"%s\", recursive=TRUE)"
-                             pkg tags)))
-          (set-process-sentinel
-           (start-process "r-tags" "*R-tags*" inferior-R-program "-e" rtags)
-           #'(lambda (_p m)
-               (message "%s: %s" "r-tags" m)
-               (nvp-r-rtags pkg t))))))
-     (t (visit-tags-table tags)))))
-
+;;; Completion
 ;; list libraries ahead of other options when in "require|library"
 (defun nvp-r-company-setup (&optional backends)
   (let ((comps (cl-remove-if

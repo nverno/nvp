@@ -50,15 +50,6 @@
       ;; process stuff
       (pop-to-buffer buff))))
 
-;;;###autoload
-(defun nvp-ess-process-abort (arg)
-  (interactive "P")
-  (let ((proc (ess-get-process)))
-    (when proc
-      (if arg
-          (kill-process proc)
-        (interrupt-process proc)))))
-
 ;; Evaluate active region or line.
 ;;;###autoload
 (defun nvp-ess-eval ()
@@ -80,7 +71,9 @@
            (ess-display-help-on-object (symbol-name arg))
            (list (current-buffer) nil))
        (error (message "%s" (error-message-string err))
-              nil)))))
+              nil)))
+    ;; TODO: search-remote - call RSiteSearch("%s") in repl?
+    ))
 
 (provide 'nvp-ess)
 ;;; nvp-ess.el ends here

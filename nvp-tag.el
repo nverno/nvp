@@ -9,6 +9,23 @@
 (nvp:decls :p (ggtags tags projectile) :v (nvp-tags-ctags-program))
 
 ;;;###autoload
+(defun nvp-tag-find (&optional etags)
+  "Call `projectile-find-tag' or `nvp-tag-find-etag' with prefix ETAGS."
+  (interactive "P")
+  (call-interactively (if etags #'nvp-tag-find-etag #'projectile-find-tag)))
+
+;;;###autoload
+(defun nvp-tag-find-etag ()
+  "Call `xref-find-definitions' using etags backend."
+  (interactive)
+  (let ((xref-backend-functions '(etags--xref-backend))
+        (xref-prompt-for-identifier nil))
+    (call-interactively #'xref-find-definitions)))
+
+;; -------------------------------------------------------------------
+;;; Ctags
+
+;;;###autoload
 (defun nvp-tag-list-decls (&optional lang kinds file force)
   "List decls defined by language LANG of type KINDS from current buffer or
 FILE if non-nil. If FORCE, force interpretation as LANG."
@@ -76,6 +93,60 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
            res))))
     (setq tabulated-list-sort-key '("Language" . nil))))
 
+
+;; -------------------------------------------------------------------
+;;; Tag repos
+
+(defun nvp-tag--repo-sentinel (proc source-dir &optional tag-file no-continue next)
+  (set-process-sentinel
+   proc (let ((source-dir source-dir)
+              (tag-file tag-file)
+              (no-continue no-continue)
+              (next next))
+          (lambda (p m)
+            (unwind-protect
+                (let ((msg (replace-regexp-in-string "\n" "" m)))
+                  (if (eq 0 (process-exit-status p))
+                      (funcall (or next #'nvp-tag-repo)
+                               source-dir tag-file no-continue)
+                    (error "%s: %s" (process-name p) msg)))
+              (kill-buffer (process-buffer p)))))))
+
+;;;###autoload
+(defun nvp-tag-repo (source-repo source-dir &optional tag-file no-continue)
+  "Clone SOURCE-REPO to SOURCE-DIR if it doesn't exist.
+Create tags in TAGS-FILE unless it exists and load tags."
+  (interactive
+   (let ((default-directory nvp/devel))
+     (list (read-string "Repo: ")
+           (read-directory-name "Source direcory: "))))
+  (unless no-continue
+    (unless tag-file (setq tag-file "TAGS"))
+    (let ((tags (expand-file-name tag-file source-dir)))
+      (cond ((not (file-exists-p source-dir))
+             (message "Cloning %s to %s..." source-repo source-dir)
+             (nvp-tag--repo-sentinel
+              (start-process
+               "nvp-tags" "*nvp-tags*"
+               "git" "clone" "--depth=1" source-repo source-dir)
+              source-dir tag-file no-continue))
+            ((not (file-exists-p tags))
+             (message "Creating TAGS for %s" source-dir)
+             ;; Dont let `projectile-regenerate-tags' load tags
+             ;; so tags can be loaded locally with `etags--xref-backend' added
+             (nvp:with-letf #'visit-tags-table #'ignore
+               (let ((default-directory source-dir)
+                     (projectile-tags-file-name tag-file))
+                 (projectile-regenerate-tags)))
+             (nvp-tag-repo source-repo source-dir tag-file))
+            (t
+             (add-to-list 'xref-backend-functions #'etags--xref-backend t)
+             (visit-tags-table tags 'local))))))
+
+
+;; -------------------------------------------------------------------
+;;; Menu
+
 ;;;###autoload(autoload 'nvp-tag-menu "nvp-tag" nil t)
 (transient-define-prefix nvp-tag-menu ()
   [ :if-non-nil tags-file-name
@@ -83,7 +154,8 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
     ("a" "Apropos" tags-apropos)
     ("s" "Search" tags-search)
     ("f" "List file tags" list-tags)
-    ("q" "Query replace regexp" tags-query-replace)]
+    ("q" "Query replace regexp" tags-query-replace)
+    ("e" "Find using etags" nvp-tag-find-etag)]
   [["Tables"
     ("l" "Load table" visit-tags-table)
     ("c" "Choose table" select-tags-table)

@@ -140,13 +140,14 @@
 
 ;; push process onto active process list, log it, and delete if
 ;; when finished. When all active process are done, compile
-(defun nvp-install-execute-process (process file)
+(defun nvp-install-execute-process (process file &optional callback)
   ;; (declare (indent 1) (debug t))
   (cl-incf nvp-install--total-proc)
   (nvp:with-process-log process
     :on-error (pop-to-buffer (current-buffer))
     :on-success (progn
                   (cl-decf nvp-install--total-proc)
+                  (and callback (ignore-errors (funcall callback)))
                   (when (zerop nvp-install--total-proc)
                     ;; build site-lisp packages
                     (nvp-install-pending-dirs)
@@ -190,6 +191,34 @@
 
 (defun nvp-install--mode (mode)
   (load (nvp:mode-config-path mode)))
+
+;; Get package name from FILE path
+(defun nvp-install--file-package (file)
+  (intern
+   (replace-regexp-in-string
+    "-[[:digit:].]+$" ""
+    (file-name-base (directory-file-name (file-name-directory file))))))
+
+;; Apply PATCH to package FILE and recompile patched FILE
+;; If RECOMPILE-PACKAGE, recompile the package containing FILE
+(defun nvp-install-patch (file patch &optional recompile-package)
+  (let* ((default-directory user-emacs-directory)
+         (pkg (when-let ((f (locate-library
+                             (if (string-suffix-p ".el" file)
+                                 file
+                               (concat file ".el")))))
+                (if recompile-package
+                    (nvp-install--file-package f)
+                  f)))
+         (compile-fn (if recompile-package #'package-recompile #'byte-recompile-file))
+         (proc (start-process-shell-command
+                "patch"
+                nvp-install-buffer-name
+                (format (concat
+                         "patch -s -N -u $(find elpa -type f -name '%s') "
+                         "-i patches/%s || true")
+                        file patch))))
+    (list proc (and pkg (lambda () (apply compile-fn pkg))))))
 
 ;;; Install dependencies on demand - when mode is first autoloaded
 (cl-defmacro nvp-install-on-demand
@@ -260,18 +289,10 @@
                           (nvp-install-execute-process proc ,file)))
                ;;--- Patch
                (cl-loop for (file patch) in ',patch
-                        do
-                        (let ((default-directory user-emacs-directory))
-                          (nvp-install-execute-process
-                           (start-process-shell-command
-                            "patch"
-                            nvp-install-buffer-name
-                            (format
-                             (concat
-                              "patch -s -N -u $(find elpa -type f -name '%s') "
-                              "-i patches/%s || true")
-                             file patch))
-                           ,file)))
+                        do (let ((proc-and-cb (nvp-install-patch file patch)))
+                             (apply #'nvp-install-execute-process
+                                    (append (list (car proc-and-cb) ,file)
+                                            (cdr proc-and-cb)))))
                ;;--- Compile ---------------------------------------------
                ;; If not processes were spawned, then do the compile
                ;; here since no sentinels will get called

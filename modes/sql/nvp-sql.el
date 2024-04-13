@@ -69,7 +69,6 @@
     (sql-product-font-lock nil nil))
   ;; Suppress indentation in sqli.
   (set (make-local-variable 'indent-line-function) (lambda () 'noindent))
-  (nvp-sql-psql-set-zeal)
   ;; hippie-expansion from sqli history
   (nvp-he-history-setup))
 
@@ -79,23 +78,17 @@
     (get-buffer-process (current-buffer))))
 
 (with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(sql-mode)
+  (nvp-repl-add '(sql-mode sql-ts-mode)
     :name 'sql
     :modes '(sql-interactive-mode)
-    :wait 0.1
     :find-fn (lambda () (-some->> sql-buffer
                      (get-buffer)
                      (get-buffer-process)))
-    :init #'nvp-sql-sqli-buffer))
-
-;; Zeal
-;; Default the zeal lookup to postgres when product changes.
-(defun nvp-sql-psql-set-zeal ()
-  (when (eq sql-product 'postgres)
-    (set (make-local-variable 'zeal-at-point-docset) "psql")))
-
-(define-advice sql-set-product (:after (&rest _) "set-zeal-docset")
-  (nvp-sql-psql-set-zeal))
+    :init #'nvp-sql-sqli-buffer
+    :wait 0.1
+    :help-cmd '(:no-arg ".help" :with-arg ".help %s")
+    :cd-cmd ".cd \"%s\""
+    :pwd-cmd ".shell pwd"))
 
 ;;; SQLup
 ;; modified `sqlup-maybe-capitalize-symbol' to not upcase words after '.'

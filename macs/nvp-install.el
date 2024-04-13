@@ -90,7 +90,7 @@
                  and collect (cons pattern (nvp-install-parse-line)))))))
 
 ;; -------------------------------------------------------------------
-;;; Git Installs 
+;;; Git Installs
 
 (defsubst nvp-install-normalize-pkgnames (pkgs)
   (setq pkgs (nvp:as-list pkgs))
@@ -133,7 +133,7 @@
   (kill-buffer nvp-install-buffer-name))
 
 ;; -------------------------------------------------------------------
-;;; On Demand 
+;;; On Demand
 
 ;; number of processes to wait for before compiling
 (defvar nvp-install--total-proc 0)
@@ -275,7 +275,7 @@
                                  (if clobber " (clobbering)"))
                         (nvp-env-setenv! var val exec clobber))
                ;; FIXME: handle more than just PATH
-               ;; Just adds to PATH currently 
+               ;; Just adds to PATH currently
                (cl-loop for dir in ',env
                         do
                         (nvp-log "Adding %s to PATH\n" dir)

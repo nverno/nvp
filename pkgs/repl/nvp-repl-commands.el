@@ -68,7 +68,7 @@ Prompt with \\[universal-argument]."
   (nvp:with-repl-src-buffer
     (let ((default-directory dir))
       (nvp:call-repl-cmd cd-cmd (default-directory)
-        (nvp-repl-update (repl:val "repl-proc") (current-buffer))
+        (nvp-repl-update (nvp--repl-repl-proc nvp-repl-current) (current-buffer))
         (with-current-buffer (nvp-repl-buffer)
           (setq default-directory dir))))))
 

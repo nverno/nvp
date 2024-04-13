@@ -31,12 +31,22 @@
 
 (defvar nvp-go-ts-font-lock-settings
   (when (require 'go-ts-mode nil t)
+    (cl-pushnew ":" go-ts-mode--operators :test #'equal)
+
     (treesit-font-lock-rules
-     ;; FIXME: operators not added to `go-ts-mode--font-lock-settings'
+     ;; :language 'go
+     ;; :feature 'namespace
+     ;; '((call_expression
+     ;;    function: (selector_expression
+     ;;               operand: (identifier) @nvp-namespace-use-face)))
+     
+     ;; FIXME(4/12/24): remove when patch is merged
+     ;; operators not added to `go-ts-mode--font-lock-settings'
      :language 'go
      :feature 'operator
      `([,@go-ts-mode--operators] @font-lock-operator-face)
 
+     ;; FIXME(4/12/24): remove if patch is merged
      :language 'go
      :feature 'builtin
      ;; :override t

@@ -38,7 +38,7 @@ Prompt unless SILENT or `noninteractive'."
     (unless (and (processp proc)
                  (derived-mode-p 'comint-mode)
                  (not (null comint-input-ring-file-name)))
-      (user-error "No comint history in this buffer."))
+      (user-error "Unknown history file (`comint-input-ring-file-name' is nil)."))
     (when (or silent (y-or-n-p "Remove history duplicates?"))
       (let* ((history-buf (get-buffer-create " *Temp Input History*"))
              (ring comint-input-ring)

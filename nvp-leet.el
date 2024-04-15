@@ -151,6 +151,7 @@
                     :preamble "#include \"./ds/leet.h\""
                     :skip "#include"))
               ("typescript" (nvp-leet-setup-lang :skip "import"))
+              ("javascript" (nvp-leet-setup-lang :skip "import"))
               ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max))
                (nvp-leet-setup-lang :skip "require_relative"))
               ("python3" (nvp-leet-setup-lang

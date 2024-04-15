@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: case
-# key: case
+# key: m
 # --
 case ${1:object}
 when ${2:matcher}

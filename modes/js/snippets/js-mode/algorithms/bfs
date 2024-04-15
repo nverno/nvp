@@ -3,12 +3,11 @@
 # key: bfs
 # --
 let q = [${1:0}];${2:
-let l = 0}
+let ${3:l} = ${4:0};}
 while (q.length) {
   let sz = q.length;
   while (sz--) {
-    let ${3:x} = q.shift();
+    let ${5:x} = q.shift();
     $0
-  }${2:$(and (yas-text) "
-  l++;")}
+  }${2:$($s? (concat "\n" (yas-field-value 3) "++;"))}
 }

@@ -191,6 +191,7 @@ Like `sh-current-defun-name' but ignore variables."
 (defun nvp-sh-tidy-buffer ()
   (interactive)
   (unless (or buffer-read-only (null (buffer-file-name)) (not (buffer-modified-p)))
+    (delete-trailing-whitespace)
     (ignore-errors (align (point-min) (point-max)))
     (and (buffer-modified-p)
          (save-buffer))))

@@ -38,7 +38,7 @@
     (treesit-query-compile 'lua '((identifier) @id))))
 
 (defun lua-ts-mode--fontify-table (node override start end &rest _)
-  (when-let* ((face 'nvp-receiver-face;; 'font-lock-type-face
+  (when-let* ((face 'nvp-namespace-face;; 'nvp-receiver-face
                     )
               (node (pcase (treesit-node-type node)
                       ("method_index_expression"
@@ -63,10 +63,6 @@
          :language 'lua
          :feature 'definition
          '((function_declaration
-            name: (identifier) @font-lock-function-name-face)
-           (function_declaration
-            name: (dot_index_expression (identifier) @font-lock-function-name-face))
-           (function_declaration
             name: (method_index_expression
                    table: (_) @lua-ts-mode--fontify-table
                    method: (identifier) @font-lock-function-name-face))
@@ -75,6 +71,12 @@
              (dot_index_expression
               table: (_) @lua-ts-mode--fontify-table
               field: (identifier) @font-lock-property-name-face)))
+           (function_declaration
+            name: (identifier) @font-lock-function-name-face)
+           (function_declaration
+            name: (dot_index_expression
+                   table: (_) @lua-ts-mode--fontify-table
+                   field: (identifier) @font-lock-function-name-face))
            (assignment_statement
             (variable_list name: [(identifier)]) @font-lock-function-name-face
             (expression_list value: (function_definition)))

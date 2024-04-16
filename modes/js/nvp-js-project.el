@@ -20,7 +20,7 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp:decls)
 
-(nvp:defvar nvp-js-test-re (regexp-opt '("jest" "mocha" "jasmine") t))
+(defvar nvp-js-test-re (nvp:rx-syms "jest" "mocha" "jasmine"))
 
 ;; Get scripts from project package.json
 (defun nvp-js--project-scripts ()

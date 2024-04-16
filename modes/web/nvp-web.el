@@ -4,12 +4,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'web-mode nil t)
-(nvp:decls :p (web lsp) :v (lsp-mode))
+(nvp:decls :p (web lsp) :v (lsp-mode web-mode-engine))
 (nvp:auto "nvp-jinja" 'nvp-jinja-url-for)
 (nvp:auto "projectile" 'projectile-project-root)
 
-(with-eval-after-load 'nvp-repl
-  (require 'nvp-skewer))
+(with-eval-after-load 'nvp-repl (require 'nvp-skewer))
 
 ;; -------------------------------------------------------------------
 ;;; Navigation

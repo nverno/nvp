@@ -78,9 +78,27 @@
    :language 'bash
    :override t
    '((command_substitution) @sh-quoted-exec
-     (string (expansion (variable_name) @font-lock-variable-use-face))
+     (string (expansion operator: _ @font-lock-operator-face))
+
+     ;; TODO: fontify nested expansions
+     (string (expansion (subscript name: (variable_name) @nvp-special-variable-face)))
+     ;; (string (expansion ["${" "}"] @font-lock-bracket-face))
+
+     (string (expansion (variable_name) @font-lock-variable-name-face))
+     ;; (string
+     ;;  (expansion
+     ;;   _;"${" @font-lock-escape-face
+     ;;   operator: "!" @font-lock-escape-face :?
+     ;;   (subscript
+     ;;    name: (variable_name) @nvp-special-variable-face
+     ;;    index: (word) @nvp-special-variable-face :?)
+     ;;   ;; name: (variable_name) 
+     ;;   ;; index: (word) @nvp-special-variable-face
+     ;;   ;"}" @font-lock-escape-face
+     ;;   ))
+     
      ;; Added
-     (string (simple_expansion (variable_name)) @font-lock-variable-use-face))
+     (string (simple_expansion (variable_name) @font-lock-variable-use-face)))
 
    :feature 'heredoc
    :language 'bash

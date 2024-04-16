@@ -42,6 +42,27 @@
 (put 'sh-comp-additional-sources 'safe-local-variable 'listp)
 
 (eval-when-compile
+  (defsubst sh-comp--expand-file-names (stubs)
+   (cl-loop for stub in stubs
+      as file = (expand-file-name (substitute-in-file-name stub))
+      when (file-exists-p file)
+      collect file)))
+
+(defun sh-comp-add-source (file &optional global)
+  "Add FILE to `sh-comp-additional-sources'.
+With prefix, add to GLOBAL sources."
+  (interactive "f\nP")
+  (unless global (make-local-variable 'sh-comp-additional-sources))
+  (cl-pushnew file sh-comp-additional-sources :test #'string=))
+
+(defun sh-comp-remove-source (file)
+  "Remove FILE from `sh-comp-additional-sources'."
+  (interactive
+   (list (completing-read "Remove: " sh-comp-additional-sources nil t)))
+  (setq sh-comp-additional-sources
+        (--filter (not (string= it file)) sh-comp-additional-sources)))
+
+(eval-when-compile
  ;; mapping for symbols to annotations
  (defvar sh-comp-symbol-annotation
    '((function " <f>") (local " <v>") (global " <V>") (envvar " <E>")))
@@ -79,13 +100,6 @@
   variables
   sources
   modtime)
-
-(eval-when-compile
-  (defsubst sh-comp--expand-file-names (stubs)
-   (cl-loop for stub in stubs
-      as file = (expand-file-name (substitute-in-file-name stub))
-      when (file-exists-p file)
-      collect file)))
 
 ;; gather sourced files from buffer
 (defun sh-comp--buffer-sources ()

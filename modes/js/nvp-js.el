@@ -32,7 +32,7 @@
 
 ;;; REPLs
 (with-eval-after-load 'nvp-repl
-  ;; FIXME: indium
+  ;; TODO: indium
   ;; (require 'nvp-indium)
   (require 'nvp-nodejs)
   (require 'nvp-skewer))

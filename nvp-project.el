@@ -53,13 +53,14 @@ Otherwise, look for version control directories, returing the longest path."
 (defun nvp-project-invalidate-cmds ()
   "Reset cached projectile project commands."
   (interactive)
-  (--when-let (projectile-acquire-root)
-    (remhash it projectile-compilation-cmd-map)
-    (remhash it projectile-configure-cmd-map)
-    (remhash it projectile-install-cmd-map)
-    (remhash it projectile-package-cmd-map)
-    (remhash it projectile-test-cmd-map)
-    (remhash it projectile-run-cmd-map)))
+  (-when-let (project (projectile-acquire-root))
+    (--each '(projectile-compilation-cmd-map
+              projectile-configure-cmd-map
+              projectile-install-cmd-map
+              projectile-package-cmd-map
+              projectile-test-cmd-map
+              projectile-run-cmd-map)
+      (remhash project it))))
 
 (defun nvp-project-locate-root (&optional local roots)
   (if local (projectile-root-top-down

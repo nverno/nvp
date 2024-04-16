@@ -13,8 +13,9 @@
 (with-eval-after-load 'hideshow
   (unless (assoc 'octave-mode hs-special-modes-alist)
     (push (list 'octave-mode
-                (nvp:re-opt '("function" "for" "while" "if"))
-                (nvp:re-opt '("end" "endfunction" "endfor" "endwhile" "endif"))
+                (rx symbol-start (or "function" "for" "while" "if") symbol-end)
+                (rx symbol-start (or "end" "endfunction" "endfor" "endwhile" "endif")
+                    symbol-end)
                 "[%#]")
           hs-special-modes-alist)))
 

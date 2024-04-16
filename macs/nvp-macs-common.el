@@ -413,10 +413,8 @@ are aliases to symbols prefixed by \"nvp-\"."
 (defmacro nvp:concat (&rest body)
   `(eval-when-compile (concat ,@body)))
 
-(defmacro nvp:re-opt (opts &optional no-symbol)
-  `(eval-when-compile
-     ,(if no-symbol `(regexp-opt ,opts t)
-        `(nvp:wrap-with "\\_<" "\\_>" (regexp-opt ,opts t)))))
+(defmacro nvp:rx-syms (&rest strs)
+  `(rx symbol-start (group (or ,@strs)) symbol-end))
 
 (defmacro nvp:regex-complement (syntax &optional capture)
   "Create regex complement for SYNTAX classes.

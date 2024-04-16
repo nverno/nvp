@@ -470,15 +470,23 @@ When called from a repl buffer with PREFIX:
   (when (equal '(16) prefix)
     (nvp-repl--cleanup-process-buffers)
     (setq nvp-repl-current nil))
-  (let ((repl-buff (--if-let (nvp-repl--get-source)
-                       (nvp-repl--check-source-buffer it prefix)
-                     (if (memq major-mode nvp-repl-modes)
-                         (prog1 (nvp-repl--check-source-buffer nil prefix)
-                           (nvp-repl-minor-mode 1))
-                       (--when-let (nvp-repl-get-buffer prefix)
-                         (prog1 it (nvp-repl--source-minor-mode-on)))))))
+  (let* ((repl-p)
+         (repl-buff
+          (cond ((--when-let (nvp-repl--get-source)
+                   (setq repl-p t)
+                   (nvp-repl--check-source-buffer it prefix)))
+                ((memq major-mode nvp-repl-modes)
+                 (setq repl-p t)
+                 (nvp-repl-minor-mode 1)
+                 (nvp-repl--check-source-buffer nil prefix))
+                ((--when-let (nvp-repl-get-buffer prefix)
+                   (prog1 it (nvp-repl--source-minor-mode-on))))
+                (t nil))))
     (unless (eq 'async repl-buff)
-      (pop-to-buffer repl-buff (nvp-repl--display-action)))))
+      (pop-to-buffer
+       ;; FIXME: when repl is split below, try to pop to source above when it's
+       ;; buried somewhere
+       repl-buff (nvp-repl--display-action (and repl-p 'other-window))))))
 
 (defun nvp-repl-remove (mode)
   "Remove any repl associations with MODE."
@@ -562,7 +570,7 @@ If INSERT, STR is inserted into REPL."
 (defun nvp-repl-send-line (&optional and-go)
   (interactive "P")
   (nvp:repl-send send-line () and-go
-    :region (list (nvp:point 'bol) (nvp:point 'eoll))))
+                 :region (list (nvp:point 'bol) (nvp:point 'eoll))))
 
 (defun nvp-repl-send-sexp (&optional and-go)
   (interactive "P")
@@ -592,7 +600,7 @@ If INSERT, STR is inserted into REPL."
 (defun nvp-repl-send-buffer (&optional and-go)
   (interactive "P")
   (nvp:repl-send send-buffer () and-go
-    :region (list (nvp-repl--skip-shebang (point-min)) (point-max))))
+                 :region (list (nvp-repl--skip-shebang (point-min)) (point-max))))
 
 (defun nvp-repl-send-defun (&optional and-go)
   (interactive "P")
@@ -607,9 +615,9 @@ If INSERT, STR is inserted into REPL."
 (defun nvp-repl-send-stmt-or-sentence (&optional and-go)
   (interactive "P")
   (nvp:repl-send send-statement () and-go
-    :region (let ((bnds (or (bounds-of-thing-at-point 'statement)
-                            (bounds-of-thing-at-point 'sentence))))
-              (list (car bnds) (cdr bnds)))))
+                 :region (let ((bnds (or (bounds-of-thing-at-point 'statement)
+                                         (bounds-of-thing-at-point 'sentence))))
+                           (list (car bnds) (cdr bnds)))))
 
 (defun nvp-repl-send-file (file &optional and-go)
   "Send FILE to repl and pop to repl buffer when AND-GO."
@@ -618,11 +626,11 @@ If INSERT, STR is inserted into REPL."
           (fname (ignore-errors (file-name-nondirectory file))))
      (list (read-file-name "File: " nil file t fname) current-prefix-arg)))
   (nvp:repl-send send-file (file) and-go
-    (let ((repl-current nvp-repl-current))
-      (with-temp-buffer
-        (setq nvp-repl-current repl-current)
-        (insert-file-contents-literally file)
-        (nvp-repl-send-buffer)))))
+                 (let ((repl-current nvp-repl-current))
+                   (with-temp-buffer
+                     (setq nvp-repl-current repl-current)
+                     (insert-file-contents-literally file)
+                     (nvp-repl-send-buffer)))))
 
 (defun nvp-repl-clear ()
   "Clear repl output buffer."

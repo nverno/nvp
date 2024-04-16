@@ -20,12 +20,12 @@
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-(defsubst nvp-erlang-forward-defun ()
+(defun nvp-erlang-forward-defun ()
   (interactive)
   (forward-sentence 2)
   (backward-sentence))
 
-(defsubst nvp-erlang-mark-dwim ()
+(defun nvp-erlang-mark-dwim ()
   (interactive)
   (if (not (eq last-command this-command))
       (erlang-mark-clause)

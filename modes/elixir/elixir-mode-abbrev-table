@@ -1,0 +1,7 @@
+;; -*- coding: utf-8; -*-
+
+(define-abbrev-table 'elixir-mode-abbrev-table
+  '()
+  "Elixir-Mode Abbrevs."
+  :enable-function #'nvp-abbrev-expand-p
+  :parents (list prog-mode-abbrev-table))

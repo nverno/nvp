@@ -15,15 +15,7 @@
     ((parent-is "comment") prev-adaptive-prefix 0))
   "Additional indent rules to handle comments.")
 
-;; FIXME: remove when ops added
-(eval-when-compile (require 'go-ts-mode nil t)) ; `go-ts-mode--operators'
-
 ;;; Font-locking
-;; Add font-lock for operators and builtins
-(defvar nvp-go-ts--builtin-functions
-  '("append" "cap" "clear" "close" "complex" "copy" "delete" "imag" "len" "make"
-    "max" "min" "new" "panic" "print" "println" "real" "recover"))
-
 (defvar nvp-go-ts--builtin-types
   '("any" "bool" "byte" "comparable" "complex128" "complex64" "error" "float32"
     "float64" "int" "int16" "int32" "int64" "int8" "rune" "string" "uint"
@@ -33,30 +25,26 @@
   (when (require 'go-ts-mode nil t)
     (cl-pushnew ":" go-ts-mode--operators :test #'equal)
 
-    (treesit-font-lock-rules
-     ;; :language 'go
-     ;; :feature 'namespace
-     ;; '((call_expression
-     ;;    function: (selector_expression
-     ;;               operand: (identifier) @nvp-namespace-use-face)))
-     
-     ;; FIXME(4/12/24): remove when patch is merged
-     ;; operators not added to `go-ts-mode--font-lock-settings'
-     :language 'go
-     :feature 'operator
-     `([,@go-ts-mode--operators] @font-lock-operator-face)
+    (let ((go-ts--builtin-functions
+           '("append" "cap" "clear" "close" "complex" "copy" "delete" "imag"
+             "len" "make" "max" "min" "new" "panic" "print" "println" "real"
+             "recover")))
+      (treesit-font-lock-rules
+       ;; :language 'go
+       ;; :feature 'namespace
+       ;; '((call_expression
+       ;;    function: (selector_expression
+       ;;               operand: (identifier) @nvp-namespace-use-face)))
+       ;; FIXME(4/12/24): remove after patch
+       :language 'go
+       :feature 'builtin
+       `((call_expression
+          function: ((identifier) @font-lock-builtin-face
+                     (:match ,(rx-to-string
+                               `(seq bos (or ,@go-ts--builtin-functions) eos))
+                             @font-lock-builtin-face))))))))
 
-     ;; FIXME(4/12/24): remove if patch is merged
-     :language 'go
-     :feature 'builtin
-     ;; :override t
-     `((call_expression
-        function: ((identifier) @font-lock-builtin-face
-                   (:match ,(rx-to-string
-                             `(seq bos (or ,@nvp-go-ts--builtin-functions) eos))
-                           @font-lock-builtin-face)))))))
-
-;; Add additional font-locking, remove 'error feature font-locking
+;; Add additional font-locking, indentation, and remove 'error feature
 (with-eval-after-load 'go-ts-mode
   (let* ((features (--map (nth 2 it) nvp-go-ts-font-lock-settings))
          (rules (--filter (not (memq (nth 2 it) (cons 'error features)))
@@ -68,10 +56,8 @@
                           (assoc-default 'go go-ts-mode--indent-rules)))))))
 
 (nvp:run-once go-ts-mode (:after (&rest _))
-  (dolist (v '(builtin namespace operator))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-  ;; FIXME: doesnt seem to disable 'error feature
-  (treesit-font-lock-recompute-features nil '(error)))
+  (dolist (v '(builtin namespace))
+    (cl-pushnew v (cadddr treesit-font-lock-feature-list))))
 
 (provide 'nvp-go-ts)
 ;; Local Variables:

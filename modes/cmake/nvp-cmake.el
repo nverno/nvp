@@ -4,7 +4,14 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp:decls :p (cmake-mode cmake-ts) :f (nvp-cmake-completing-read))
 
-(nvp:package-define-root :name nvp-cmake)
+(defvar nvp-cmake--dir
+  (file-name-as-directory
+     (directory-file-name
+      (file-name-directory
+       (cond (load-in-progress load-file-name)
+             ((and (boundp 'byte-compile-current-file) byte-compile-current-file)
+              byte-compile-current-file)
+             (t (buffer-file-name)))))))
 
 ;; prefer over miniconda's cmake
 (defvar nvp-cmake-executable (nvp:program "cmake" :path "/usr/bin"))

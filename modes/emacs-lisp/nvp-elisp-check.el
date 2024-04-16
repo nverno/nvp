@@ -19,8 +19,11 @@
 (defun nvp-elisp-check-buffer ()
   "Check buffer with `checkdoc' and `package-lint', when available."
   (interactive)
-  (and (not (or (nvp-elisp-checkdoc)
-                (nvp-elisp-package-lint)))
+  (and (not (or
+             ;; XXX(4/16/24): checkdoc started throwing a fit in
+             ;; checkdoc-in-sample-code-p: !non-local\ exit!
+             (save-excursion (ignore-errors (nvp-elisp-checkdoc)))
+             (nvp-elisp-package-lint)))
        (nvp-indicate-modeline "All good" 'success)))
 
 (defun nvp-elisp-checkdoc (&optional indicate)

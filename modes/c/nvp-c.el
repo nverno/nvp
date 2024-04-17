@@ -386,7 +386,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
          (rules (list
                  :language language
                  :feature 'delimiter
-                 `([,@delims] @font-lock-delimiter-face)
+                 `([,@delims] @font-lock-delimiter-face
+                   (conditional_expression ["?" ":"] @font-lock-delimiter-face))
                  :language language
                  :feature 'operator
                  `([,@ops] @font-lock-operator-face

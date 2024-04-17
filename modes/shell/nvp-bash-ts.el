@@ -42,210 +42,225 @@
 ;; '("break" "compopt" "continue" "exec" "exit" "logout" "return" "time" "trap")
 
 (setq sh-mode--treesit-keywords
-  '("case" "do" "done" "elif" "else" "esac" "export" "fi" "for"
-    "function" "if" "in" "unset" "while" "then"
-    ;; Added
-    "select" "until"
-    "declare" "typeset" "readonly" "local" "unsetenv"))
+      '("case" "do" "done" "elif" "else" "esac" "export" "fi" "for"
+        "function" "if" "in" "unset" "while" "then"
+        ;; Added
+        "select" "until"
+        "declare" "typeset" "readonly" "local" "unsetenv"))
 
 
 (setq sh-mode--treesit-settings
-  (treesit-font-lock-rules
-   :feature 'comment
-   :language 'bash
-   '((comment) @font-lock-comment-face)
+      (treesit-font-lock-rules
+       :feature 'comment
+       :language 'bash
+       '((comment) @font-lock-comment-face)
 
-   :feature 'function
-   :language 'bash
-   '((function_definition name: (word)
-                          ;; Changed to name-face
-                          @font-lock-function-name-face))
+       :feature 'function
+       :language 'bash
+       '((function_definition name: (word)
+                              ;; Changed to name-face
+                              @font-lock-function-name-face))
 
-   :feature 'string
-   :language 'bash
-   '([(string) (raw_string)
-      ;; Added
-      (ansi_c_string)]
-     @font-lock-string-face
-     ;; Added
-     (concatenation
-      (word) @font-lock-string-face)
-     [(regex) ;; (extglob_pattern)
-      ]
-     @font-lock-regexp-face)
+       :feature 'string
+       :language 'bash
+       '([(string) (raw_string)
+          ;; Added
+          (ansi_c_string)]
+         @font-lock-string-face
+         ;; Added
+         ;; (concatenation
+         ;;  (word) @font-lock-string-face)
+         [(regex) ;; (extglob_pattern)
+          ]
+         @font-lock-regexp-face)
 
-   :feature 'string-interpolation
-   :language 'bash
-   :override t
-   '((command_substitution) @sh-quoted-exec
-     (string (expansion operator: _ @font-lock-operator-face))
+       :feature 'string-interpolation
+       :language 'bash
+       :override t
+       '(;; FIXME: should fontify variables in substitution
+         (command_substitution) @sh-quoted-exec
 
-     ;; TODO: fontify nested expansions
-     (string (expansion (subscript name: (variable_name) @nvp-special-variable-face)))
-     ;; (string (expansion ["${" "}"] @font-lock-bracket-face))
+         (string
+          (simple_expansion
+           [(variable_name) (special_variable_name)] @font-lock-variable-name-face))
 
-     (string (expansion (variable_name) @font-lock-variable-name-face))
-     ;; (string
-     ;;  (expansion
-     ;;   _;"${" @font-lock-escape-face
-     ;;   operator: "!" @font-lock-escape-face :?
-     ;;   (subscript
-     ;;    name: (variable_name) @nvp-special-variable-face
-     ;;    index: (word) @nvp-special-variable-face :?)
-     ;;   ;; name: (variable_name) 
-     ;;   ;; index: (word) @nvp-special-variable-face
-     ;;   ;"}" @font-lock-escape-face
-     ;;   ))
-     
-     ;; Added
-     (string (simple_expansion (variable_name) @font-lock-variable-use-face)))
+         ;; FIXME: fontify nested expansions recursively
+         (string
+          (expansion
+           (subscript (word) @font-lock-variable-name-face)))
 
-   :feature 'heredoc
-   :language 'bash
-   '([(heredoc_start) (heredoc_body)
-      ;; Added
-      (heredoc_end)]
-     @sh-heredoc)
+         (string
+          (expansion
+           (subscript
+            index: (simple_expansion [(variable_name)] @font-lock-variable-name-face))))
 
-   :feature 'variable
-   :language 'bash
-   '((variable_name) @font-lock-variable-name-face)
+         (string (expansion operator: _ @font-lock-operator-face))
 
-   :feature 'keyword
-   :language 'bash
-   `(;; keywords
-     [ ,@sh-mode--treesit-keywords ] @font-lock-keyword-face
-     ;; reserved words
-     (command_name
-      ((word) @font-lock-keyword-face
-       (:match
-        ,(rx-to-string
-          `(seq bol
-                (or ,@(sh-mode--treesit-other-keywords))
-                eol))
-        @font-lock-keyword-face))))
+         (string (expansion (subscript name: (variable_name) @nvp-special-variable-face)))
+         ;; (string (expansion ["${" "}"] @font-lock-bracket-face))
 
-   ;; Added
-   :feature 'builtin
-   :language 'bash
-   `((command_name
-      ((word) @font-lock-builtin-face
-       (:match ,(let ((builtins
-                       (sh-feature sh-builtins)))
-                  (rx-to-string
-                   `(seq bol
-                         (or ,@builtins)
-                         eol)))
-               @font-lock-builtin-face))))
-   
-   :feature 'command
-   :language 'bash
-   `(;; function/non-builtin command calls
-     (command_name (word)
-                   ;; Changed to call-face
-                   @font-lock-function-call-face)
-     ;; builtin commands
-     ;; (command_name
-     ;;  ((word) @font-lock-builtin-face
-     ;;   (:match ,(let ((builtins
-     ;;                   (sh-feature sh-builtins)))
-     ;;              (rx-to-string
-     ;;               `(seq bol
-     ;;                     (or ,@builtins)
-     ;;                     eol)))
-     ;;           @font-lock-builtin-face)))
-     )
+         (string (expansion (variable_name) @font-lock-variable-name-face)))
+       ;; (string
+       ;;  (expansion
+       ;;   _;"${" @font-lock-escape-face
+       ;;   operator: "!" @font-lock-escape-face :?
+       ;;   (subscript
+       ;;    name: (variable_name) @nvp-special-variable-face
+       ;;    index: (word) @nvp-special-variable-face :?)
+       ;;   ;; name: (variable_name)
+       ;;   ;; index: (word) @nvp-special-variable-face
+       ;;   ;"}" @font-lock-escape-face
+       ;;   ))
 
-   :feature 'declaration-command
-   :language 'bash
-   `([,@sh-mode--treesit-declaration-commands] @font-lock-keyword-face)
+       :feature 'heredoc
+       :language 'bash
+       '([(heredoc_start) (heredoc_body)
+          ;; Added
+          (heredoc_end)]
+         @sh-heredoc)
 
-   :feature 'constant
-   :language 'bash
-   `((case_item value: [(word)
-                        ;; Added
-                        (extglob_pattern)]
-                @font-lock-constant-face)
-     (file_descriptor) @font-lock-constant-face
+       :feature 'variable
+       :language 'bash
+       '((variable_name) @font-lock-variable-name-face)
 
-     ;; Added
-     (file_redirect
-      destination: ((word) @font-lock-constant-face
-                    (:match "/dev/null" @font-lock-constant-face)))
-     
-     ((word) @font-lock-constant-face
-      (:match ,(rx bol (or "true" "false") eol)
-              @font-lock-constant-face)))
+       :feature 'keyword
+       :language 'bash
+       `(;; keywords
+         [ ,@sh-mode--treesit-keywords ] @font-lock-keyword-face
+         ;; reserved words
+         (command_name
+          ((word) @font-lock-keyword-face
+           (:match
+            ,(rx-to-string
+              `(seq bol
+                    (or ,@(sh-mode--treesit-other-keywords))
+                    eol))
+            @font-lock-keyword-face))))
 
-   :feature 'operator
-   :language 'bash
-   `(;; Added
-     (case_item "|" @font-lock-delimiter-face)
-
-     [,@sh-mode--treesit-operators
-      ;; Added
-      (test_operator)]
-     @font-lock-operator-face
-     
-     ;; Added
-     (ternary_expression ["?" ":"] @font-lock-operator-face)
-     (binary_expression
-      operator: _ @font-lock-operator-face)
-     (postfix_expression
-      operator: _ @font-lock-operator-face))
-
-   :feature 'builtin-variable
-   :language 'bash
-   `(((special_variable_name) @font-lock-builtin-face
-      (:match ,(let ((builtin-vars (sh-feature sh-variables)))
-                 (rx-to-string
-                  `(seq bol
-                        (or ,@builtin-vars)
-                        eol)))
-              @font-lock-builtin-face))
-     ;; Added
-     (special_variable_name) @font-lock-builtin-face
-     ((word) @font-lock-builtin-face
-      (:match ,(rx-to-string
-                `(seq bol (or ,@sh-mode--treesit-builtin-constants) eol))
-              @font-lock-builtin-face)))
-
-   :feature 'number
-   :language 'bash
-   `(((word) @font-lock-number-face
-      (:match "\\`[0-9]+\\'" @font-lock-number-face))
-     ;; Added: previous rule isnt relevant
-     (number) @font-lock-number-face)
-
-   :feature 'bracket
-   :language 'bash
-   '((["(" ")" "((" "))" "[" "]" "[[" "]]" "{" "}"
        ;; Added
-       "$((" "<(" "$("])
-     @font-lock-bracket-face)
+       :feature 'builtin
+       :language 'bash
+       `((command_name
+          ((word) @font-lock-builtin-face
+           (:match ,(let ((builtins
+                           (sh-feature sh-builtins)))
+                      (rx-to-string
+                       `(seq bol
+                             (or ,@builtins)
+                             eol)))
+                   @font-lock-builtin-face))))
 
-   :feature 'delimiter
-   :language 'bash
-   '(([";" ";;"
-       ;; Added
-       "," ";&" ";;&" "&"])
-     @font-lock-delimiter-face)
+       :feature 'command
+       :language 'bash
+       `(;; function/non-builtin command calls
+         (command_name (word)
+                       ;; Changed to call-face
+                       @font-lock-function-call-face)
+         ;; builtin commands
+         ;; (command_name
+         ;;  ((word) @font-lock-builtin-face
+         ;;   (:match ,(let ((builtins
+         ;;                   (sh-feature sh-builtins)))
+         ;;              (rx-to-string
+         ;;               `(seq bol
+         ;;                     (or ,@builtins)
+         ;;                     eol)))
+         ;;           @font-lock-builtin-face)))
+         )
 
-   :feature 'misc-punctuation
-   :language 'bash
-   `((["$"]) @font-lock-misc-punctuation-face
+       :feature 'declaration-command
+       :language 'bash
+       `([,@sh-mode--treesit-declaration-commands] @font-lock-keyword-face)
 
-     ;; Added
-     ["``"] @font-lock-misc-punctuation-face
-     (expansion
-      operator: _ @font-lock-misc-punctuation-face)
-     (expansion
-      "@" :anchor
-      operator: _ @font-lock-misc-punctuation-face)
-     ((expansion
-       (subscript
-        index: (word) @font-lock-misc-punctuation-face))
-      (:match ,(rx (or "@" "*")) @font-lock-misc-punctuation-face)))))
+       :feature 'constant
+       :language 'bash
+       `((case_item value: [(word)
+                            ;; Added
+                            (extglob_pattern)]
+                    @font-lock-constant-face)
+         (file_descriptor) @font-lock-constant-face
+
+         ;; Added
+         (file_redirect
+          destination: ((word) @font-lock-constant-face
+                        (:match "/dev/null" @font-lock-constant-face)))
+
+         ((word) @font-lock-constant-face
+          (:match ,(rx bol (or "true" "false") eol)
+                  @font-lock-constant-face)))
+
+       :feature 'operator
+       :language 'bash
+       `(;; Added
+         (case_item "|" @font-lock-delimiter-face)
+
+         [,@sh-mode--treesit-operators
+          ;; Added
+          (test_operator)]
+         @font-lock-operator-face
+
+         ;; Added
+         (ternary_expression ["?" ":"] @font-lock-operator-face)
+
+         (expansion operator: _ @font-lock-operator-face)
+
+         (binary_expression
+          operator: _ @font-lock-operator-face)
+
+         (postfix_expression
+          operator: _ @font-lock-operator-face))
+
+       :feature 'builtin-variable
+       :language 'bash
+       `(((special_variable_name) @font-lock-builtin-face
+          (:match ,(let ((builtin-vars (sh-feature sh-variables)))
+                     (rx-to-string
+                      `(seq bol
+                            (or ,@builtin-vars)
+                            eol)))
+                  @font-lock-builtin-face))
+
+         ;; Added
+         (special_variable_name) @font-lock-variable-name-face
+
+         (expansion
+          (subscript
+           index: ((word) @font-lock-variable-name-face
+                   (:match ,(rx bol (or "@" "*") eol)
+                           @font-lock-variable-name-face))))
+
+         ((word) @font-lock-builtin-face
+          (:match ,(rx-to-string
+                    `(seq bol (or ,@sh-mode--treesit-builtin-constants) eol))
+                  @font-lock-builtin-face)))
+
+       :feature 'number
+       :language 'bash
+       `(((word) @font-lock-number-face
+          (:match "\\`[0-9]+\\'" @font-lock-number-face))
+         ;; Added: previous rule isnt relevant
+         (number) @font-lock-number-face)
+
+       :feature 'bracket
+       :language 'bash
+       '((["(" ")" "((" "))" "[" "]" "[[" "]]" "{" "}"
+           ;; Added
+           "$((" "<(" "$("])
+         @font-lock-bracket-face)
+
+       :feature 'delimiter
+       :language 'bash
+       '(([";" ";;"
+           ;; Added
+           "," ";&" ";;&" "&"])
+         @font-lock-delimiter-face)
+
+       :feature 'misc-punctuation
+       :language 'bash
+       `((["$"]) @font-lock-misc-punctuation-face
+
+         ;; Added
+         ["``"] @font-lock-misc-punctuation-face)))
 
 (provide 'nvp-bash-ts)
 ;; Local Variables:

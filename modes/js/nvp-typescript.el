@@ -151,9 +151,9 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
 
 ;;; Add missing features once
 (nvp:run-once typescript-ts-mode (:after (&rest _))
-              (dolist (v '(variable builtin namespace assignment preproc))
-                (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-              (treesit-font-lock-recompute-features))
+  (dolist (v '(variable builtin namespace assignment preproc))
+    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+  (treesit-font-lock-recompute-features))
 
 (nvp:run-once tsx-ts-mode (:after (&rest _))
   (dolist (v '(operator variable builtin namespace assignment preproc))

@@ -3,8 +3,24 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'nvp)                          ; faces
 (require 'sh-script)
 (nvp:decls)
+
+(defface bash-file-descriptor-number-face
+  '((t (:inherit font-lock-number-face :weight bold)))
+  "Face for bash numeric file descriptors."
+  :group 'bash)
+
+(defface bash-special-variable-face
+  '((t (:inherit font-lock-escape-face)))
+  "Face for bash special variables."
+  :group 'bash)
+
+(defface bash-expansion-variable-face
+  '((t (:inherit font-lock-variable-name-face :slant italic)))
+  "Face for bash expansion variable."
+  :group 'bash)
 
 (nvp:run-once bash-ts-mode (:after (&rest _))
   (dolist (v '(builtin))
@@ -57,9 +73,10 @@
 
        :feature 'function
        :language 'bash
-       '((function_definition name: (word)
-                              ;; Changed to name-face
-                              @font-lock-function-name-face))
+       '((function_definition
+          name: (word)
+          ;; Changed to name-face
+          @font-lock-function-name-face))
 
        :feature 'string
        :language 'bash
@@ -77,14 +94,25 @@
        :feature 'string-interpolation
        :language 'bash
        :override t
-       '(;; FIXME: should fontify variables in substitution
-         (command_substitution) @sh-quoted-exec
+       ;; FIXME: remove redundant rules
+       `((command_substitution) @sh-quoted-exec
 
+         (special_variable_name) @bash-special-variable-face
+
+         (subscript
+          index: (word) @font-lock-variable-use-face)
+
+         (subscript
+          index: ((word) @bash-special-variable-face
+                  (:match ,(rx bol (or "*" "@") eol)
+                          @bash-special-variable-face)))
+         (subscript
+          index: (number) @font-lock-number-face)
+         
          (string
           (simple_expansion
-           [(variable_name) (special_variable_name)] @font-lock-variable-name-face))
+           (variable_name) @font-lock-variable-name-face))
 
-         ;; FIXME: fontify nested expansions recursively
          (string
           (expansion
            (subscript (word) @font-lock-variable-name-face)))
@@ -96,7 +124,9 @@
 
          (string (expansion operator: _ @font-lock-operator-face))
 
-         (string (expansion (subscript name: (variable_name) @nvp-special-variable-face)))
+         (expansion
+          (subscript
+           name: (variable_name) @bash-expansion-variable-face))
          ;; (string (expansion ["${" "}"] @font-lock-bracket-face))
 
          (string (expansion (variable_name) @font-lock-variable-name-face)))
@@ -141,32 +171,17 @@
        :feature 'builtin
        :language 'bash
        `((command_name
-          ((word) @font-lock-builtin-face
-           (:match ,(let ((builtins
-                           (sh-feature sh-builtins)))
-                      (rx-to-string
-                       `(seq bol
-                             (or ,@builtins)
-                             eol)))
-                   @font-lock-builtin-face))))
+          ((word) @font-lock-preprocessor-face
+           (:match ,(rx bol (or "source" "alias" "shopt" "set" "eval") eol)
+                   @font-lock-preprocessor-face)))
 
-       :feature 'command
-       :language 'bash
-       `(;; function/non-builtin command calls
-         (command_name (word)
-                       ;; Changed to call-face
-                       @font-lock-function-call-face)
-         ;; builtin commands
-         ;; (command_name
-         ;;  ((word) @font-lock-builtin-face
-         ;;   (:match ,(let ((builtins
-         ;;                   (sh-feature sh-builtins)))
-         ;;              (rx-to-string
-         ;;               `(seq bol
-         ;;                     (or ,@builtins)
-         ;;                     eol)))
-         ;;           @font-lock-builtin-face)))
-         )
+         (command_name
+          ((word) @font-lock-builtin-face
+           (:match ,(rx-to-string
+                     `(seq bol
+                           (or ,@(sh-feature sh-builtins))
+                           eol))
+                   @font-lock-builtin-face))))
 
        :feature 'declaration-command
        :language 'bash
@@ -174,20 +189,29 @@
 
        :feature 'constant
        :language 'bash
-       `((case_item value: [(word)
-                            ;; Added
-                            (extglob_pattern)]
-                    @font-lock-constant-face)
-         (file_descriptor) @font-lock-constant-face
+       `((case_item
+          value: [(word) (extglob_pattern)]
+          @font-lock-constant-face)
 
          ;; Added
          (file_redirect
-          destination: ((word) @font-lock-constant-face
-                        (:match "/dev/null" @font-lock-constant-face)))
+          destination: ((word) @nvp-special-type-face
+                        (:match "/dev/null" @nvp-special-type-face)))
+
+         (file_descriptor) @bash-file-descriptor-number-face
+
+         (file_redirect
+          destination: (number) @bash-file-descriptor-number-face)
 
          ((word) @font-lock-constant-face
           (:match ,(rx bol (or "true" "false") eol)
                   @font-lock-constant-face)))
+
+       :feature 'command
+       :language 'bash
+       `(;; function/non-builtin command calls
+         ;; Changed to call-face
+         (command_name (word) @font-lock-function-call-face))
 
        :feature 'operator
        :language 'bash
@@ -212,22 +236,21 @@
 
        :feature 'builtin-variable
        :language 'bash
-       `(((special_variable_name) @font-lock-builtin-face
-          (:match ,(let ((builtin-vars (sh-feature sh-variables)))
-                     (rx-to-string
-                      `(seq bol
-                            (or ,@builtin-vars)
-                            eol)))
-                  @font-lock-builtin-face))
+       `(;; ((special_variable_name) @bash-special-variable-face
+         ;;  (:match ,(rx-to-string
+         ;;            `(seq bol
+         ;;                  (or ,@(sh-feature sh-variables))
+         ;;                  eol))
+         ;;          @bash-special-variable-face))
 
          ;; Added
-         (special_variable_name) @font-lock-variable-name-face
+         ;; (special_variable_name) @bash-special-variable-face
 
-         (expansion
-          (subscript
-           index: ((word) @font-lock-variable-name-face
-                   (:match ,(rx bol (or "@" "*") eol)
-                           @font-lock-variable-name-face))))
+         ;; (expansion
+         ;;  (subscript
+         ;;   index: ((word) @bash-special-variable-face
+         ;;           (:match ,(rx bol (or "@" "*") eol)
+         ;;                   @bash-special-variable-face))))
 
          ((word) @font-lock-builtin-face
           (:match ,(rx-to-string
@@ -236,8 +259,8 @@
 
        :feature 'number
        :language 'bash
-       `(((word) @font-lock-number-face
-          (:match "\\`[0-9]+\\'" @font-lock-number-face))
+       `(;; ((word) @font-lock-number-face
+         ;;  (:match "\\`[0-9]+\\'" @font-lock-number-face))
          ;; Added: previous rule isnt relevant
          (number) @font-lock-number-face)
 

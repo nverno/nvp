@@ -13,6 +13,17 @@
 (declare-function dired-dwim-target-directory "dired-aux")
 (declare-function comint-mode "comint")
 
+;;; Add dired directory to z.sh database
+(defun nvp-dired-z-add-directory ()
+  (let ((z-sh (expand-file-name "include/bash.d/z.sh" nvp/bin)))
+    (when (file-exists-p z-sh)
+      (start-process-shell-command
+       "bash" nil
+       (concat
+        "env _Z_DATA=$HOME/.cache/.z "
+        (format "bash -c '. %s; cd %s && _z --add \"$(pwd)\"'"
+                z-sh (expand-file-name default-directory)))))))
+
 ;; -------------------------------------------------------------------
 ;;; Imenu
 

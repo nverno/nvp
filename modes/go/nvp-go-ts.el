@@ -22,30 +22,17 @@
     "uint16" "uint32" "uint64" "uint8" "uintptr"))
 
 (defvar nvp-go-ts-font-lock-settings
-  (when (require 'go-ts-mode nil t)
-    (cl-pushnew ":" go-ts-mode--operators :test #'equal)
-
-    (let ((go-ts--builtin-functions
-           '("append" "cap" "clear" "close" "complex" "copy" "delete" "imag"
-             "len" "make" "max" "min" "new" "panic" "print" "println" "real"
-             "recover")))
-      (treesit-font-lock-rules
-       ;; :language 'go
-       ;; :feature 'namespace
-       ;; '((call_expression
-       ;;    function: (selector_expression
-       ;;               operand: (identifier) @nvp-namespace-use-face)))
-       ;; FIXME(4/12/24): remove after patch
-       :language 'go
-       :feature 'builtin
-       `((call_expression
-          function: ((identifier) @font-lock-builtin-face
-                     (:match ,(rx-to-string
-                               `(seq bos (or ,@go-ts--builtin-functions) eos))
-                             @font-lock-builtin-face))))))))
+  ;; (treesit-font-lock-rules
+  ;;  :language 'go
+  ;;  :feature 'namespace
+  ;;  '((call_expression
+  ;;     function: (selector_expression
+  ;;                operand: (identifier) @nvp-namespace-use-face))))
+  nil)
 
 ;; Add additional font-locking, indentation, and remove 'error feature
 (with-eval-after-load 'go-ts-mode
+  (cl-pushnew ":" go-ts-mode--operators :test #'equal)
   (let* ((features (--map (nth 2 it) nvp-go-ts-font-lock-settings))
          (rules (--filter (not (memq (nth 2 it) (cons 'error features)))
                           go-ts-mode--font-lock-settings)))
@@ -56,7 +43,7 @@
                           (assoc-default 'go go-ts-mode--indent-rules)))))))
 
 (nvp:run-once go-ts-mode (:after (&rest _))
-  (dolist (v '(builtin namespace))
+  (dolist (v (--map (nth 2 it) nvp-go-ts-font-lock-settings))
     (cl-pushnew v (cadddr treesit-font-lock-feature-list))))
 
 (provide 'nvp-go-ts)

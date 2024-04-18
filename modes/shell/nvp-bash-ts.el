@@ -26,6 +26,27 @@
   (dolist (v '(builtin))
     (cl-pushnew v (cadddr treesit-font-lock-feature-list))))
 
+(defun bash-ts--fontify-shebang (node override start end &rest _)
+  (save-excursion
+    (goto-char (treesit-node-start node))
+    (save-match-data
+      (when (looking-at
+             "\\`\\(#!\\).*/\\([^ \t\n]+\\)\\(?:[ \t]+\\([^ \t\n]+\\)\\)?")
+        (let ((m (if (and (string= "env" (buffer-substring-no-properties
+                                          (match-beginning 2) (match-end 2)))
+                          (match-beginning 3))
+                     3
+                   2)))
+          (treesit-fontify-with-override
+           (match-beginning 1) (match-end 1)
+           'font-lock-comment-delimiter-face override start end)
+          (treesit-fontify-with-override
+           (match-end 1) (match-beginning m)
+           'font-lock-comment-face override start end)
+          (treesit-fontify-with-override
+           (match-beginning m) (match-end m)
+           'font-lock-keyword-face override start end))))))
+
 (setq sh-mode--treesit-operators
       '("|" "|&" "||" "&&" ">" ">>" "<" "<<" "<<-" "<<<" "==" "!=" ";&" ";;&"
         ;; Added
@@ -69,7 +90,11 @@
       (treesit-font-lock-rules
        :feature 'comment
        :language 'bash
-       '((comment) @font-lock-comment-face)
+       `((comment) @font-lock-comment-face
+
+         (program
+          :anchor ((comment) @bash-ts--fontify-shebang
+                   (:match ,(rx bol "#!") @bash-ts--fontify-shebang))))
 
        :feature 'function
        :language 'bash

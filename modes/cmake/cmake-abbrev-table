@@ -1,7 +1,6 @@
 ;; -*- coding: utf-8; -*-
 
 (define-abbrev-table 'cmake-mode-abbrev-table
-  '(("compile_flags" "COMPILE_FLAGS" nil :system t)
-    )
+  '(("compile_flags" "COMPILE_FLAGS" nil :system t))
   "Cmake-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

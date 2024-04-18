@@ -3,15 +3,19 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'treesit)
+
 (when (require 'lua-ts-mode nil t)
   (require 'nvp-lua-ts))
-(nvp:decls :p (lua))
+
+(nvp:decls
+ :p (lua) :f (lua-funcname-at-point json-read-object)
+ :v (lua-documentation-function lua-documentation-url))
+
 
 (defvar nvp-lua--dir (file-name-directory (nvp:load-file-name)))
 
-;;; REPL
-(with-eval-after-load 'nvp-repl
-  (require 'nvp-lua-repl))
+(with-eval-after-load 'nvp-repl (require 'nvp-lua-repl))
 
 ;;; Fold
 (defvar hs-special-modes-alist)

@@ -13,10 +13,15 @@
     (modify-syntax-entry ?$ "'" tab)
     tab))
 
+;; Used during `abbrev--before-point' so `forward-word' will move
+;; by syntax instead of any entries in `find-word-boundary-function-table',
+;; eg. those during `subword-mode'
+(defconst nvp-cmake--abbrev-char-table (make-char-table nil))
+
 ;;;###autoload
 (defun nvp-cmake-expand-abbrev ()
-  (nvp:with-letf 'forward-word 'forward-word-strictly
-    (c-with-syntax-table nvp-cmake-abbrev-syntax-table
+  (let ((find-word-boundary-function-table nvp-cmake--abbrev-char-table))
+    (with-syntax-table nvp-cmake-abbrev-syntax-table
       (abbrev--default-expand))))
 
 (defvar nvp-cmake-builtin-variables

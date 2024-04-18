@@ -53,9 +53,11 @@
        (treesit-node-start node) (treesit-node-end node)
        face override start end))))
 
+(defvar lua-ts--font-lock-settings)
+(defvar lua-ts--simple-indent-rules)
 (with-eval-after-load 'lua-ts-mode
   (setq lua-ts--font-lock-settings-orig lua-ts--font-lock-settings
-        lua-ts--simple-indent-rules-orig lua-ts--simple-indent-rules
+        lua-ts--simple-indent-rules lua-ts--simple-indent-rules
         lua-ts--builtins (--filter (not (string= it "self")) lua-ts--builtins))
 
   (setq nvp-lua-ts-font-lock-before

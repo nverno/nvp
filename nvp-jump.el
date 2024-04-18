@@ -211,15 +211,27 @@ Optionally, search LISP-ONLY files (no C sources)."
   (interactive (list (nvp-read-relative-recursively nvp/dots "") current-prefix-arg))
   (nvp-display-location dir :file action))
 
+;;; TODO(4/18/24): optional sort by frecency/recent
+(defun nvp-jump--z-directories (&optional frecency)
+  "Read directories from z.sh database with score of at least FRECENCY."
+  (let ((data (or (getenv "_Z_DATA") (expand-file-name "~/.cache/.z")))
+        (bin (expand-file-name "bin/frecent.awk" nvp/nvp)))
+    (when (file-exists-p data)
+      (process-lines
+       shell-file-name
+       shell-command-switch
+       (concat "gawk -F'|'"
+               (if frecency (format " -v frecency=\"%s\"" frecency) "")
+               " -f " bin " " data)))))
+
 ;;;###autoload
 (defun nvp-jump-to-dir (dir action)
-  "Jump to some common directories."
+  "Jump to directory from z.sh database."
   (interactive
-   (list
-    (nvp:prefix 16 (nvp-read-relative-recursively nvp/scratch)
-      (nvp-completing-read "Directory: " nvp-default-directories
-        nil nil nil 'nvp-read-config-history))
-    current-prefix-arg))
+   (list (--when-let (nvp-jump--z-directories)
+           (completing-read
+            "Frecent Directory: " (mapcar #'abbreviate-file-name it)))
+         current-prefix-arg))
   (nvp-display-location dir :file action))
 
 ;;;###autoload

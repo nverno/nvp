@@ -472,6 +472,40 @@ Do BODY when treesit mode is available."
          (progn
            ,@body)))))
 
+(cl-defmacro nvp:treesit-add-rules
+    (mode
+     &rest body
+     &key new-fonts mode-fonts new-indents mode-indents parser-name
+     mode-lib
+     &allow-other-keys)
+  "Add treesit font-locking NEW-FONTS to MODE-FONTS for MODE.
+
+Conflicting features are overriden by those in NEW-FONTS."
+  (declare (indent defun) (debug t))
+  (nvp:skip-keywords body)
+  (nvp:with-syms (new-features rules)
+    `(progn
+       (defvar ,mode-fonts)
+       (with-eval-after-load ',(or mode-lib mode)
+         ,(when (and new-fonts mode-fonts)
+            `(let* ((,new-features (--map (nth 2 it) ,new-fonts))
+                    (,rules (--filter (not (memq (nth 2 it) (cons 'error ,new-features)))
+                                      ,mode-fonts)))
+               (setq ,mode-fonts (append ,new-fonts ,rules))))
+         ,(when (and new-indents mode-indents)
+            (let ((parser
+                   (or parser-name
+                       (intern (car (split-string (symbol-name mode) "-"))))))
+              `(let ((indents (append ,new-indents
+                                      (assoc-default ',parser ,mode-indents))))
+                 (setq ,mode-indents (list (cons ',parser indents))))))
+         ,@body)
+
+       (nvp:run-once ,mode (:after (&rest _))
+         (dolist (v (--map (nth 2 it) ,new-fonts))
+           (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+         (treesit-font-lock-recompute-features)))))
+
 (provide 'nvp-macs-setup)
 ;; Local Variables:
 ;; coding: utf-8

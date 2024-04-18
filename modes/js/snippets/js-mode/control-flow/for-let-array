@@ -3,5 +3,5 @@
 # key: forl
 # --
 for (let ${1:val} of ${2:arr}) {
-    $0
+  $0
 }

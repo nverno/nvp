@@ -27,7 +27,7 @@
   (treesit-font-lock-rules
    :language 'python
    :feature 'nvp
-   :override t
+   ;; :override t
    '(;; Namespaces
      (import_from_statement
       module_name: [(dotted_name (identifier)) (identifier)]
@@ -55,14 +55,10 @@
 
      (for_statement left: (identifier) @font-lock-variable-name-face))))
 
-(with-eval-after-load 'python
-  (unless (--find (eq 'nvp (nth 2 it)) python--treesit-settings)
-    (nvp:push-list
-     nvp-python-ts-font-lock-settings python--treesit-settings :back t)))
-
-(nvp:run-once python-ts-mode (:after (&rest _))
-  (cl-pushnew 'nvp (cadddr treesit-font-lock-feature-list))
-  (treesit-font-lock-recompute-features))
+(nvp:treesit-add-rules python-ts-mode
+  :mode-lib python
+  :new-fonts nvp-python-ts-font-lock-settings
+  :mode-fonts python--treesit-settings)
 
 ;; -------------------------------------------------------------------
 ;;; Info

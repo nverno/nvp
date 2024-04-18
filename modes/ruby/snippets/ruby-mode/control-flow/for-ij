@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: for i .. for j
+# key: forij
+# --
+(${1:0}...${2:m}).each do |i|
+  (${3:0}...${4:n}).each do |j|
+    $0
+  end
+end

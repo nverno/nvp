@@ -22,29 +22,24 @@
     "uint16" "uint32" "uint64" "uint8" "uintptr"))
 
 (defvar nvp-go-ts-font-lock-settings
-  ;; (treesit-font-lock-rules
-  ;;  :language 'go
-  ;;  :feature 'namespace
-  ;;  '((call_expression
-  ;;     function: (selector_expression
-  ;;                operand: (identifier) @nvp-namespace-use-face))))
-  nil)
+  (when (require 'go-ts-mode nil t)
+    (cl-pushnew ":" go-ts-mode--operators :test #'equal)
+    (treesit-font-lock-rules
+     :language 'go
+     :feature 'operator
+     `([,@go-ts-mode--operators] @font-lock-operator-face)
+     ;; :language 'go
+     ;; :feature 'namespace
+     ;; '((call_expression
+     ;;    function: (selector_expression
+     ;;               operand: (identifier) @nvp-namespace-use-face)))
+     )))
 
-;; Add additional font-locking, indentation, and remove 'error feature
-(with-eval-after-load 'go-ts-mode
-  (cl-pushnew ":" go-ts-mode--operators :test #'equal)
-  (let* ((features (--map (nth 2 it) nvp-go-ts-font-lock-settings))
-         (rules (--filter (not (memq (nth 2 it) (cons 'error features)))
-                          go-ts-mode--font-lock-settings)))
-    (setq go-ts-mode--font-lock-settings
-          (append nvp-go-ts-font-lock-settings rules))
-    (setq go-ts-mode--indent-rules
-          `((go ,@(append nvp-go-ts--indent-rules
-                          (assoc-default 'go go-ts-mode--indent-rules)))))))
-
-(nvp:run-once go-ts-mode (:after (&rest _))
-  (dolist (v (--map (nth 2 it) nvp-go-ts-font-lock-settings))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list))))
+(nvp:treesit-add-rules go-ts-mode
+  :new-fonts nvp-go-ts-font-lock-settings
+  :mode-fonts go-ts-mode--font-lock-settings
+  :new-indents nvp-go-ts--indent-rules
+  :mode-indents go-ts-mode--indent-rules)
 
 (provide 'nvp-go-ts)
 ;; Local Variables:

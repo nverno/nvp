@@ -16,8 +16,13 @@
          (setq mode 'sh-mode))
         (t (and activate                ; default when jumping to new scratch
                 (setq mode 'lisp-interaction-mode))))
-  ;; TODO: don't clobber used scratch buffer - cache by modified tick?
-  (or (eq mode major-mode) (funcall mode))
+  (let ((start comment-start))
+    (or (eq mode major-mode) (funcall mode))
+    (unless (equal start comment-start)
+      (replace-regexp-in-region
+       (format "^\\s-*\\(?:%s\\)+\\s-*" (regexp-quote (string-trim-right start)))
+       (concat (string-trim comment-start) " ")
+       (point-min) (point-max))))
   (or (bound-and-true-p nvp-scratch-minor-mode) (nvp-scratch-minor-mode)))
 
 (defun nvp-scratch-kill-buffer ()
@@ -28,11 +33,9 @@
     (kill-buffer (current-buffer))))
 
 (eval-and-compile
-  (defvar nvp-scratch-minor-mode-map
-   (let ((km (make-sparse-keymap)))
-     (define-key km (kbd "C-c C-k") #'nvp-scratch-kill-buffer)
-     (define-key km (kbd "C-c C-s") #'nvp-scratch-switch-modes)
-     km)))
+  (defvar-keymap nvp-scratch-minor-mode-map
+    "C-c C-k" #'nvp-scratch-kill-buffer
+    "C-c C-s" #'nvp-scratch-switch-modes))
 
 ;;;###autoload
 (define-minor-mode nvp-scratch-minor-mode
@@ -40,9 +43,9 @@
   :lighter " 𝓢"
   (when nvp-scratch-minor-mode
     (setq-local kill-buffer-hook '(nvp-window-configuration-restore))
-    (erase-buffer)
-    (unless comment-start (setq comment-start "#"))
-    (insert (nvp-comment-string "Jah lives chilren\n" 2))
+    (when (eq (point-min) (point-max))
+      (let ((comment-start (or comment-start "#")))
+        (insert (nvp-comment-string "Jah lives chilren\n" 2))))
     (nvp:msg "Press \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-kill-buffer] to kill \
 this buffer or \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-switch-modes] \
 to switch major modes.")))

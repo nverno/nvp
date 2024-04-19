@@ -16,6 +16,31 @@
   :modes (rust-mode rust-ts-mode rustic-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
+;;; Tree-sitter
+(defvar nvp-rust--ts-fonts
+  (treesit-font-lock-rules
+   ;; XXX(4/18/24): remove after patch
+   :language 'rust
+   :feature 'macro-definition
+   `((token_binding_pattern
+      name: (metavariable) @font-lock-variable-name-face)
+     
+     (function_signature_item name: (identifier) @font-lock-function-name-face))
+   
+   ;; XXX(4/18/24): remove after patch
+   :language 'rust
+   :feature 'macro
+   `((token_repetition_pattern ["$" "*" "+"] @font-lock-operator-face)
+     (token_repetition ["$" "*" "+"] @font-lock-operator-face)
+
+     (metavariable) @font-lock-variable-use-face
+
+     (fragment_specifier) @font-lock-type-face)))
+
+(nvp:treesit-add-rules rust-ts-mode
+  :mode-fonts rust-ts-mode--font-lock-settings
+  :new-fonts nvp-rust--ts-fonts)
+
 ;;; Help-at-point
 (cl-defmethod nvp-hap-lsp-search-remote
   ((_server_id (eql rust-analyzer)) &optional _arg)
@@ -29,19 +54,6 @@
     (while (and lines (string-match-p "^\\s-*/" (car lines)))
       (setq lines (cdr lines)))
     (car lines)))
-
-;;; Tree-sitter
-(declare-function treesit-font-lock-recompute-features "treesit")
-(defvar rust-ts-mode--font-lock-settings)
-;; remove 'error feature
-(with-eval-after-load 'rust-ts-mode
-  (let* ((features '())
-         (rules (--filter (not (memq (nth 2 it) (cons 'error features)))
-                          rust-ts-mode--font-lock-settings)))
-    (setq rust-ts-mode--font-lock-settings rules)))
-
-(nvp:run-once rust-ts-mode (:after (&rest _))
-  (treesit-font-lock-recompute-features))
 
 ;;; Compilation
 ;; FIXME: https://github.com/brotzeit/rustic/pull/531

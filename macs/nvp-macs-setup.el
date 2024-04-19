@@ -485,13 +485,16 @@ Conflicting features are overriden by those in NEW-FONTS."
   (nvp:skip-keywords body)
   (nvp:with-syms (new-features rules)
     `(progn
-       (defvar ,mode-fonts)
+       (declare-function treesit-font-lock-recompute-features "treesit")
+       ,@(when mode-fonts `((defvar ,mode-fonts)))
+       ,@(when mode-indents `((defvar ,mode-indents)))
        (with-eval-after-load ',(or mode-lib mode)
-         ,(when (and new-fonts mode-fonts)
+         ;; Without any new-fonts, still remove 'error feature
+         ,(when mode-fonts
             `(let* ((,new-features (--map (nth 2 it) ,new-fonts))
                     (,rules (--filter (not (memq (nth 2 it) (cons 'error ,new-features)))
                                       ,mode-fonts)))
-               (setq ,mode-fonts (append ,new-fonts ,rules))))
+               (setq ,mode-fonts (delq nil (append ,new-fonts ,rules)))))
          ,(when (and new-indents mode-indents)
             (let ((parser
                    (or parser-name

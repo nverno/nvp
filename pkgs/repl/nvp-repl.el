@@ -88,7 +88,7 @@ Each function takes a process as an argument to test against."
 
 ;;; Display
 
-(defcustom nvp-repl-display-action 'split-below
+(defcustom nvp-repl-display-action 'other-window
   "Default behaviour of `display-buffer' when popping between REPL/source
 buffers."
   :type 'symbol)

@@ -484,30 +484,38 @@ Conflicting features are overriden by those in NEW-FONTS."
   (declare (indent defun) (debug t))
   (nvp:skip-keywords body)
   (nvp:with-syms (new-features rules)
-    `(progn
-       (declare-function treesit-font-lock-recompute-features "treesit")
-       ,@(when mode-fonts `((defvar ,mode-fonts)))
-       ,@(when mode-indents `((defvar ,mode-indents)))
-       (with-eval-after-load ',(or mode-lib mode)
-         ;; Without any new-fonts, still remove 'error feature
-         ,(when mode-fonts
-            `(let* ((,new-features (--map (nth 2 it) ,new-fonts))
-                    (,rules (--filter (not (memq (nth 2 it) (cons 'error ,new-features)))
-                                      ,mode-fonts)))
-               (setq ,mode-fonts (delq nil (append ,new-fonts ,rules)))))
-         ,(when (and new-indents mode-indents)
-            (let ((parser
-                   (or parser-name
-                       (intern (car (split-string (symbol-name mode) "-"))))))
-              `(let ((indents (append ,new-indents
-                                      (assoc-default ',parser ,mode-indents))))
-                 (setq ,mode-indents (list (cons ',parser indents))))))
-         ,@body)
+    (let ((parser
+           (or parser-name
+               (intern (car (split-string (symbol-name mode) "-"))))))
+      `(progn
+         (declare-function treesit-font-lock-recompute-features "treesit")
+         (defvar treesit-font-lock-feature-list)
+         ,@(when mode-fonts `((defvar ,mode-fonts)))
+         ,@(when mode-indents `((defvar ,mode-indents)))
+         (with-eval-after-load ',(or mode-lib mode)
+           ;; Without any new-fonts, still remove 'error font-locking
+           ,(when mode-fonts
+              `(let* ((,new-features (--map (nth 2 it) ,new-fonts))
+                      (,rules (--filter (not (memq (nth 2 it) (cons 'error ,new-features)))
+                                        ,mode-fonts)))
+                 (setq ,mode-fonts (delq nil (append ,new-fonts ,rules)))))
+           ;; XXX: Adds new-indents to front
+           ,(when (and new-indents mode-indents)
+              `(let ((indents
+                      (append ,new-indents (assoc-default ',parser ,mode-indents))))
+                 (setq ,mode-indents (list (cons ',parser indents)))))
+           ,@body)
 
-       (nvp:run-once ,mode (:after (&rest _))
-         (dolist (v (--map (nth 2 it) ,new-fonts))
-           (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-         (treesit-font-lock-recompute-features)))))
+         ;; Update mode local `treesit-font-lock-feature-list'
+         (nvp:run-once ,mode (:after (&rest _))
+           ;; Add any new features to level 4
+           (dolist (v (--map (nth 2 it) ,new-fonts))
+             (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+           ;; Remove 'error feature
+           (setf (cadddr treesit-font-lock-feature-list)
+                 (delq 'error (cadddr treesit-font-lock-feature-list)))
+           (treesit-font-lock-recompute-features nil nil ',parser)
+           (,mode))))))
 
 (provide 'nvp-macs-setup)
 ;; Local Variables:

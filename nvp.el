@@ -115,7 +115,7 @@ called from minibuffer, or nil.")
 (eval-and-compile
   (defconst nvp-mode-hooks
     '( check-buffer format-buffer tag test compile debug install
-       disassemble abbrev toggle run profile configure docs jump))
+       disassemble abbrev toggle run profile configure docs jump edit insert))
 
   (defconst nvp-mode-function-hooks
     (mapcar (lambda (type) (intern (concat "nvp-" (symbol-name type) "-functions")))

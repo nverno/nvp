@@ -100,6 +100,12 @@
 ;;;###autoload(autoload 'nvp-jump "nvp-mode")
 (nvp:define-mode-function jump)
 
+;;;###autoload(autoload 'nvp-edit "nvp-mode"
+(nvp:define-mode-function edit)
+
+;;;###autoload(autoload 'nvp-insert "nvp-mode"
+(nvp:define-mode-function insert)
+
 ;;;###autoload
 (defun nvp-install ()
   (interactive)
@@ -133,6 +139,8 @@
     ("c" "Compile" nvp-mode-compile)
     ("t" "Test" nvp-test)]
    ["Editing"
+    ("e" "Edit" nvp-edit :if-non-nil nvp-edit-functions)
+    ("i" "Insert" nvp-insert :if-non-nil nvp-insert-functions)
     ("a" "Abbrev" nvp-abbrev :if-non-nil nvp-abbrev-functions)
     ("q" "Toggle" nvp-toggle :if-non-nil nvp-toggle-functions)
     ("f" "Format buffer" nvp-format-buffer)]
@@ -145,7 +153,7 @@
     ("j" "Jump" nvp-jump :if-non-nil nvp-jump-functions)
     ("T" "Tag" nvp-tag)
     ("C" "Configure" nvp-configure)
-    ("i" "Install" nvp-install)]
+    ("I" "Install" nvp-install)]
    ["Help"
     ("s" "Search docs" nvp-docs :if-non-nil nvp-docs-functions)
     ("M-?" "Describe mode" nvp-dev-describe-mode :transient nil)]

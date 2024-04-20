@@ -131,6 +131,8 @@
               ((equal (car cmd) 'function) cmd)
               ((equal (car cmd) 'quote) `#',(cadr cmd))
               (t cmd)))
+            ((plist-get kwargs :keymap)
+             cmd)
             (t `#',cmd)))
         (m (if (keymapp map) `',map map))
         (enable (or (plist-get kwargs :when)
@@ -138,19 +140,20 @@
         (filter (plist-get kwargs :filter)))
     `(progn
        (declare-function ,cmd "")
-       ,(if (or enable filter)
-            `(define-key ,m (nvp:kbd ,key)
-                         '(menu-item
-                           ,(format "maybe-%s" (or (car (cdr-safe c)) c))
-                           nil :filter
-                           ,(if filter `,filter
-                              `(lambda (&optional _)
-                                 (when ,(cond
-                                         ((functionp enable) `(funcall ',enable))
-                                         ((symbolp enable) `,enable)
-                                         (t (macroexp-progn enable)))
-                                   ,c)))))
-          `(define-key ,m (nvp:kbd ,key) ,c)))))
+       ,(cond
+         ((or enable filter)
+          `(define-key ,m (nvp:kbd ,key)
+                       '(menu-item
+                         ,(format "maybe-%s" (or (car (cdr-safe c)) c))
+                         nil :filter
+                         ,(if filter `,filter
+                            `(lambda (&optional _)
+                               (when ,(cond
+                                       ((functionp enable) `(funcall ',enable))
+                                       ((symbolp enable) `,enable)
+                                       (t (macroexp-progn enable)))
+                                 ,c))))))
+         (t `(define-key ,m (nvp:kbd ,key) ,c))))))
 
 
 (defmacro nvp:rebind-this-command (command &optional keymap)

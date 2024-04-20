@@ -140,6 +140,8 @@ called from minibuffer, or nil.")
 (setq-default nvp-test-default-function            #'projectile-test-project)
 (setq-default nvp-configure-default-function       #'projectile-configure-project)
 (setq-default nvp-run-default-function             #'projectile-run-project)
+(and (fboundp 'edit-indirect-region)
+     (setq-default nvp-edit-default-function       #'edit-indirect-region))
 (and (fboundp 'devdocs-lookup)
      (setq-default nvp-docs-default-function       #'devdocs-lookup))
 

@@ -328,6 +328,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        imenu--make-index-alist imenu-default-create-index-function)
 
      (nvp:decl                          ; external packages
+       edit-indirect
        pos-tip-show pos-tip-tooltip-width pos-tip-show-no-propertize
        do-smooth-scroll
        diminish

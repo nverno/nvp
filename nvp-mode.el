@@ -139,7 +139,7 @@
     ("c" "Compile" nvp-mode-compile)
     ("t" "Test" nvp-test)]
    ["Editing"
-    ("e" "Edit" nvp-edit :if-non-nil nvp-edit-functions)
+    ("e" "Edit" nvp-edit)
     ("i" "Insert" nvp-insert :if-non-nil nvp-insert-functions)
     ("a" "Abbrev" nvp-abbrev :if-non-nil nvp-abbrev-functions)
     ("q" "Toggle" nvp-toggle :if-non-nil nvp-toggle-functions)

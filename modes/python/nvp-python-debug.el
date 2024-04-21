@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
-(nvp:decls :p (gud) :v (nvp-python-breakpoint-string))
+(nvp:decls :p (gud))
 
 ;;;###autoload(autoload 'nvp-python-debug-menu "nvp-python-debug" nil t)
 (transient-define-prefix nvp-python-debug-menu ()
@@ -11,10 +11,6 @@
   ;; toggle `gud-pdb-command-name'
   ["Debugger"
    ("d" "Pdb" pdb)]
-  ["Breakpoint"
-   ("b" "Toggle" nvp-python-toggle-breakpoint)
-   ("h" "Highlight" nvp-python-annotate-breakpoints)
-   ("K" "Remove all" nvp-python-remove-breakpoints)]
   ["Profile"
    ("p" "Profile" nvp-python-profile)
    ("c" "Callgraph" nvp-python-callgraph)])
@@ -46,17 +42,6 @@
   ;; FIXME: buffer returned from interactive call and source
   ;; buffer property after PDB starts?
   (call-interactively 'pdb))
-
-;;; Breakpoints
-
-;;;###autoload
-(defun nvp-python-annotate-breakpoints (&optional arg)
-  "Highlight break point lines."
-  (interactive "P")
-  (if arg
-      (hi-lock-unface-buffer t)
-    (highlight-lines-matching-regexp "import i?pu?db")
-    (highlight-lines-matching-regexp "i?pu?db.set_trace()")))
 
 (provide 'nvp-python-debug)
 ;;; nvp-python-debug.el ends here

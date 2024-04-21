@@ -31,7 +31,8 @@
 ;;;###autoload
 (defun nvp-debug-toggle-breakpoint (&optional conditional)
   (interactive "P")
-  (unless nvp-debug-breakpoint-string (user-error "unimplemented"))
+  (unless nvp-debug-breakpoint-string
+    (user-error "No `nvp-debug-breakpoint-string'"))
   (let ((line (--when-let (thing-at-point 'line t) (string-trim it))))
     (if (and line (string-prefix-p
                    (car (split-string nvp-debug-breakpoint-string "%s")) line))
@@ -42,23 +43,35 @@
          (goto-char (line-beginning-position))
          (open-line 1)
          (indent-according-to-mode)
-         (if conditional (yas-expand-snippet dbg-str)
+         (if conditional
+             (yas-expand-snippet dbg-str)
            (insert dbg-str)))))))
 
+;;;###autoload
 (defun nvp-debug-remove-breakpoints (&optional breakpoint-prefix)
   (interactive
    (list (if current-prefix-arg (read-string "Breakpoint prefix: ")
            (and nvp-debug-breakpoint-string
                 (regexp-quote
                  (car (split-string nvp-debug-breakpoint-string "%s")))))))
-  (unless breakpoint-prefix (user-error "unimplemented"))
+  (unless breakpoint-prefix
+    (user-error "No `nvp-debug-breakpoint-string'"))
   (let ((count 0))
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward (concat "^\\s-*" breakpoint-prefix) nil t)
         (cl-incf count)
         (delete-line)))
-    (message "Remove %d breakpoints" count)))
+    (message "Removed %d breakpoints" count)))
+
+(nvp:decl hi-lock-unface-buffer highlight-lines-matching-regexp)
+(defun nvp-debug-highlight-breakpoints (&optional remove)
+  (interactive "P")
+  (unless nvp-debug-breakpoint-string
+    (user-error "No `nvp-debug-breakpoint-string'"))
+  (if remove
+      (hi-lock-unface-buffer t)
+    (highlight-lines-matching-regexp nvp-debug-breakpoint-string)))
 
 ;; -------------------------------------------------------------------
 ;;; Transient

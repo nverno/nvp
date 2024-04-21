@@ -17,6 +17,29 @@
   :modes (go-mode go-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
+(defun nvp-go-:-dwim (marker)
+  "Insert dwim for \":\" at MARKER in Go."
+  (interactive (list (point-marker)))
+  ;; On repeated ":", alternate ":=", ":"
+  (if (eq last-command this-command)
+      (pcase (char-before)
+        ('nil nil)                       ; bob
+        (?: (insert "= "))
+        (?  (delete-char -1)
+            (call-interactively #'nvp-go-:-dwim))
+        (?= (delete-char -1))
+        (_ (insert " := ")))
+    ;; Inside [ .. ] insert ":", otherwise ":="
+    (let* ((ppss (syntax-ppss marker))
+           (pos (nth 1 ppss)))
+      (if (or (nth 3 ppss)
+              (nth 4 ppss)
+              (and pos (eq ?\[ (char-after pos))))
+          (insert ":")
+        (if (memq (char-before) '(? ?	))
+            (insert ":= ")
+          (insert " := "))))))
+
 ;;; Yas
 (nvp:decl yas-text nvp-yas-split-args)
 (defun nvp-go-params (&optional str types join)
@@ -26,10 +49,6 @@
                  (nvp-yas-split-args str))))
       (if join (mapconcat #'identity vals (if (stringp join) join ", "))
         vals))))
-
-(defun nvp-go-fmt-jump ()
-  (interactive)
-  (compile "go build -v && go test -v && go vet"))
 
 ;;; Disassembly
 (defun nvp-go-lensm (exe filter)
@@ -42,6 +61,10 @@
     (user-error "Need to install lensm: nvp build lensm"))
   (start-process-shell-command
    "lensm" nil (format "lensm -watch -filter %s %s" filter exe)))
+
+(defun nvp-go-fmt-jump ()
+  (interactive)
+  (compile "go build -v && go test -v && go vet"))
 
 (provide 'nvp-go)
 ;; Local Variables:

@@ -420,7 +420,10 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                  :feature 'namespace
                  '((using_declaration
                     "namespace" (identifier) @nvp-namespace-face)
-                   (namespace_identifier) @nvp-namespace-use-face))
+                   (namespace_identifier) @nvp-namespace-use-face
+
+                   (reference_declarator
+                    (identifier) @font-lock-variable-name-face)))
                 rules)
              rules))))
 

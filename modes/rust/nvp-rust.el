@@ -35,7 +35,26 @@
 
      (metavariable) @font-lock-variable-use-face
 
-     (fragment_specifier) @font-lock-type-face)))
+     (fragment_specifier) @font-lock-type-face
+
+     ;; XXX(4/20/24): not in patch - rust-ts-mode gives builtin face
+     (macro_invocation
+      ["!"] @font-lock-preprocessor-face)
+     (macro_invocation
+      macro: ((identifier) @font-lock-preprocessor-face
+              (:match ,(rx-to-string
+                        `(seq bol
+                              (or ,@rust-ts-mode--builtin-macros)
+                              eol))
+                      @font-lock-preprocessor-face)))
+     (token_tree ["!"] @font-lock-preprocessor-face)
+     (token_tree
+      ((identifier) @font-lock-preprocessor-face
+       (:match ,(rx-to-string
+                 `(seq bol
+                       (or ,@rust-ts-mode--builtin-macros)
+                       eol))
+               @font-lock-preprocessor-face))))))
 
 (nvp:treesit-add-rules rust-ts-mode
   :mode-fonts rust-ts-mode--font-lock-settings

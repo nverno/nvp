@@ -222,6 +222,40 @@
                (rules (--filter (not (memq (nth 2 it) features)) rules)))
     (append hd rules tl)))
 
+;;; Auto-convert strings to templates
+;; Tree-sitter version of `typescript-autoconvert-to-template'
+(defun ecma-ts-convert-to-template (&optional interactive)
+  "Automatically convert a plain string to a teplate string."
+  (interactive (list t))
+  (when-let* ((node (treesit-node-at (point)))
+              (str-node (pcase (treesit-node-type node)
+                          ((or "\"" "'" "string_fragment")
+                           (treesit-node-parent node))
+                          ("string" node)
+                          (_ nil)))
+              (beg (treesit-node-start str-node))
+              (end (treesit-node-end str-node)))
+    (save-excursion
+      (when (or (not interactive)
+                (progn (goto-char beg)
+                       (re-search-forward "\\${.*?}" end t))
+                (user-error "Dont think it's a string"))
+        (goto-char beg)
+        (delete-char 1)
+        (insert "`")
+        (goto-char end)
+        (delete-char -1)
+        (insert "`")))))
+
+;;;###autoload
+(defun ecma-ts--post-self-insert-function ()
+  "Auto convert strings to templates."
+  (cl-assert (memq major-mode '(js-ts-mode typescript-ts-mode)))
+  (when (and (eq ?\{ last-command-event)
+             (eq ?$ (char-before (1- (point))))
+             (memq (nth 3 (syntax-ppss)) '(?\' ?\")))
+    (ecma-ts-convert-to-template)))
+
 (provide 'ecma-ts)
 ;; Local Variables:
 ;; coding: utf-8

@@ -89,11 +89,8 @@
 (setq js--treesit-font-lock-settings
       (ecma-ts-merge-rules 'javascript js--treesit-font-lock-settings))
 
-;;; Add missing features once
-(nvp:run-once js-ts-mode (:after (&rest _))
-  (dolist (v '(variable builtin namespace preproc expression))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-  (treesit-font-lock-recompute-features))
+(nvp:treesit-add-rules js-ts-mode
+  :extra-features '(variable builtin namespace preproc expression))
 
 (provide 'nvp-js)
 ;; Local Variables:

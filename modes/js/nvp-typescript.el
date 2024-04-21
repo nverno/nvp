@@ -16,38 +16,6 @@
 (with-eval-after-load 'nvp-repl
   (require 'nvp-typescript-repl))
 
-;; Tree-sitter version of `typescript-autoconvert-to-template'
-(defun typescript-ts-convert-to-template (&optional interactive)
-  "Automatically convert a plain string to a teplate string."
-  (interactive (list t))
-  (when-let* ((node (treesit-node-at (point)))
-              (str-node (pcase (treesit-node-type node)
-                          ((or "\"" "'" "string_fragment")
-                           (treesit-node-parent node))
-                          ("string" node)
-                          (_ nil)))
-              (beg (treesit-node-start str-node))
-              (end (treesit-node-end str-node)))
-    (save-excursion
-      (when (or (not interactive)
-                (progn (goto-char beg)
-                       (re-search-forward "\\${.*?}" end t))
-                (user-error "Dont think it's a string"))
-        (goto-char beg)
-        (delete-char 1)
-        (insert "`")
-        (goto-char end)
-        (delete-char -1)
-        (insert "`")))))
-
-(defun typescript-ts--post-self-insert-function ()
-  "Auto convert strings to templates."
-  (cl-assert (eq major-mode 'typescript-ts-mode))
-  (when (and (eq ?\{ last-command-event)
-             (eq ?$ (char-before (1- (point))))
-             (memq (nth 3 (syntax-ppss)) '(?\' ?\")))
-    (typescript-ts-convert-to-template)))
-
 ;; -------------------------------------------------------------------
 ;;; `typescript-ts-mode'
 (require 'typescript-ts-mode nil t)
@@ -103,6 +71,7 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
     (setq-local typescript-ts-mode--assignment-query
                 tsx-ts-mode--assignment-lhs-query))
   (let ((v (intern (format "nvp-%s-ts-font-lock-rules" language))))
+    ;; XXX: disabled
     (or (and nil nvp-typescript-ts-font-lock-rules)
         (let ((new-rules
                (treesit-font-lock-rules
@@ -150,15 +119,11 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
             :around #'nvp-typescript-ts-font-lock-rules)
 
 ;;; Add missing features once
-(nvp:run-once typescript-ts-mode (:after (&rest _))
-  (dolist (v '(variable builtin namespace assignment preproc))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-  (treesit-font-lock-recompute-features))
+(nvp:treesit-add-rules typescript-ts-mode
+  :extra-features '(variable builtin namespace assignment preproc))
 
-(nvp:run-once tsx-ts-mode (:after (&rest _))
-  (dolist (v '(operator variable builtin namespace assignment preproc))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-  (treesit-font-lock-recompute-features))
+(nvp:treesit-add-rules tsx-ts-mode
+  :extra-features '(operator variable builtin namespace assignment preproc))
 
 (provide 'nvp-typescript)
 ;; Local Variables:

@@ -76,6 +76,7 @@
 ;; -------------------------------------------------------------------
 ;;; Transient
 
+(defvar gud-highlight-current-line)
 (nvp:transient-toggle nvp-gud-menu
   gud-highlight-current-line)
 

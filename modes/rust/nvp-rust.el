@@ -12,53 +12,11 @@
                 lsp--render-element lsp-rust-analyzer-open-external-docs))
 (nvp:auto "rustic-cargo" rustic-cargo--get-test-target)
 
+(with-eval-after-load 'rust-ts-mode (require 'nvp-rust-ts))
+
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
   :modes (rust-mode rust-ts-mode rustic-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
-
-;;; Tree-sitter
-(defvar nvp-rust--ts-fonts
-  (treesit-font-lock-rules
-   ;; XXX(4/18/24): remove after patch
-   :language 'rust
-   :feature 'macro-definition
-   `((token_binding_pattern
-      name: (metavariable) @font-lock-variable-name-face)
-     
-     (function_signature_item name: (identifier) @font-lock-function-name-face))
-   
-   ;; XXX(4/18/24): remove after patch
-   :language 'rust
-   :feature 'macro
-   `((token_repetition_pattern ["$" "*" "+"] @font-lock-operator-face)
-     (token_repetition ["$" "*" "+"] @font-lock-operator-face)
-
-     (metavariable) @font-lock-variable-use-face
-
-     (fragment_specifier) @font-lock-type-face
-
-     ;; XXX(4/20/24): not in patch - rust-ts-mode gives builtin face
-     (macro_invocation
-      ["!"] @font-lock-preprocessor-face)
-     (macro_invocation
-      macro: ((identifier) @font-lock-preprocessor-face
-              (:match ,(rx-to-string
-                        `(seq bol
-                              (or ,@rust-ts-mode--builtin-macros)
-                              eol))
-                      @font-lock-preprocessor-face)))
-     (token_tree ["!"] @font-lock-preprocessor-face)
-     (token_tree
-      ((identifier) @font-lock-preprocessor-face
-       (:match ,(rx-to-string
-                 `(seq bol
-                       (or ,@rust-ts-mode--builtin-macros)
-                       eol))
-               @font-lock-preprocessor-face))))))
-
-(nvp:treesit-add-rules rust-ts-mode
-  :mode-fonts rust-ts-mode--font-lock-settings
-  :new-fonts nvp-rust--ts-fonts)
 
 ;;; Help-at-point
 (cl-defmethod nvp-hap-lsp-search-remote

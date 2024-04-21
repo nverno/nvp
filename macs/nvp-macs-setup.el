@@ -475,7 +475,9 @@ Do BODY when treesit mode is available."
 (cl-defmacro nvp:treesit-add-rules
     (mode
      &rest body
-     &key new-fonts mode-fonts new-indents mode-indents parser-name
+     &key new-fonts mode-fonts extra-features
+     new-indents mode-indents
+     parser-name 
      mode-lib
      &allow-other-keys)
   "Add treesit font-locking NEW-FONTS to MODE-FONTS for MODE.
@@ -483,7 +485,7 @@ Do BODY when treesit mode is available."
 Conflicting features are overriden by those in NEW-FONTS."
   (declare (indent defun) (debug t))
   (nvp:skip-keywords body)
-  (nvp:with-syms (new-features rules)
+  (nvp:with-syms (rules new-features)
     (let ((parser
            (or parser-name
                (intern (car (split-string (symbol-name mode) "-"))))))
@@ -496,8 +498,9 @@ Conflicting features are overriden by those in NEW-FONTS."
            ;; Without any new-fonts, still remove 'error font-locking
            ,(when mode-fonts
               `(let* ((,new-features (--map (nth 2 it) ,new-fonts))
-                      (,rules (--filter (not (memq (nth 2 it) (cons 'error ,new-features)))
-                                        ,mode-fonts)))
+                      (,rules (--filter
+                               (not (memq (nth 2 it) (cons 'error ,new-features)))
+                               ,mode-fonts)))
                  (setq ,mode-fonts (delq nil (append ,new-fonts ,rules)))))
            ;; XXX: Adds new-indents to front
            ,(when (and new-indents mode-indents)
@@ -509,8 +512,9 @@ Conflicting features are overriden by those in NEW-FONTS."
          ;; Update mode local `treesit-font-lock-feature-list'
          (nvp:run-once ,mode (:after (&rest _))
            ;; Add any new features to level 4
-           (dolist (v (--map (nth 2 it) ,new-fonts))
-             (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
+           ,@(when (or extra-features new-fonts)
+               `((dolist (v (append ,extra-features (--map (nth 2 it) ,new-fonts)))
+                   (cl-pushnew v (cadddr treesit-font-lock-feature-list)))))
            ;; Remove 'error feature
            (setf (cadddr treesit-font-lock-feature-list)
                  (delq 'error (cadddr treesit-font-lock-feature-list)))

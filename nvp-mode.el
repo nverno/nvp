@@ -100,10 +100,10 @@
 ;;;###autoload(autoload 'nvp-jump "nvp-mode")
 (nvp:define-mode-function jump)
 
-;;;###autoload(autoload 'nvp-edit "nvp-mode"
+;;;###autoload(autoload 'nvp-edit "nvp-mode")
 (nvp:define-mode-function edit)
 
-;;;###autoload(autoload 'nvp-insert "nvp-mode"
+;;;###autoload(autoload 'nvp-insert "nvp-mode")
 (nvp:define-mode-function insert)
 
 ;;;###autoload

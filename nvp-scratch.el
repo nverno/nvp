@@ -18,7 +18,8 @@
                 (setq mode 'lisp-interaction-mode))))
   (let ((start comment-start))
     (or (eq mode major-mode) (funcall mode))
-    (unless (equal start comment-start)
+    (unless (or (null start)
+                (equal start comment-start))
       (replace-regexp-in-region
        (format "^\\s-*\\(?:%s\\)+\\s-*" (regexp-quote (string-trim-right start)))
        (concat (string-trim comment-start) " ")

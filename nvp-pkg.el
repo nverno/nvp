@@ -69,15 +69,13 @@ associated .elc files."
   (cl-loop for (defs . dirs) in
            `(,(cons nvp/auto (list nvp/config))
              ,(cons nvp/auto-site
-                    (cl-remove-if-not
-                     #'file-directory-p 
-                     (append (directory-files nvp/site t "^[^.]")
-                             (directory-files nvp/pkgs t "^[^.]")
-                             (directory-files nvp/modes t "^[^.]"))
-                     ;; (directory-files "./nvp/pkgs" t "^[^.]")
-                     )
-                    ;; (list nvp/site nvp/modes)
-                    ))
+                    (cons
+                     nvp/thirdparty
+                     (cl-remove-if-not
+                      #'file-directory-p 
+                      (append (directory-files nvp/site t "^[^.]")
+                              (directory-files nvp/pkgs t "^[^.]")
+                              (directory-files nvp/modes t "^[^.]"))))))
            for autoload-file = defs
            do
            ;; (package-autoload-ensure-default-file defs)
@@ -116,7 +114,11 @@ R=recompile; F=force; P=if prefix;
   (let* ((autoload-file
           (pcase dir
             ((pred (string-prefix-p nvp/config dir)) nvp/auto)
-            ((pred (string-prefix-p nvp/site dir)) nvp/auto-site)
+            ((pred (string-prefix-p
+                    (rx-to-string
+                     `(or ,nvp/site ,nvp/thirdparty))
+                    dir))
+             nvp/auto-site)
             (_ (or (car-safe (directory-files dir t "autoloads?.el"))
                    (car-safe (directory-files dir t "loaddefs?.el"))
                    'none))))

@@ -3,8 +3,20 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (nvp:decls :p (tiny) :v (tiny-beg) :f (tiny-expand))
 (nvp:auto "nvp-edit-aux" 'nvp-list-wrap)
+
+;;;###autoload(autoload 'nvp-expand-menu "nvp-expand" nil t)
+(transient-define-prefix nvp-expand-menu ()
+  "Expand"
+  ["Expand region"
+   ("a" "Awk it" awk-it)]
+  ["Previous"
+   ("." "Tiny" nvp-expand-tiny)
+   ("r" "Range" nvp-expand-range)]
+  ["Pattern"
+   ("o" "Or" nvp-expand-or-pattern)])
 
 ;;;###autoload
 (defun nvp-expand-range (&optional sep)

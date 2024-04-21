@@ -427,10 +427,10 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 (define-advice c-ts-mode--font-lock-settings (:around (orig-fn language) "nvp")
   (append (nvp-c-ts-font-lock-settings language) (funcall orig-fn language)))
 
-(nvp:run-once c++-ts-mode (:after (&rest _))
-  (dolist (v '(namespace))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-  (treesit-font-lock-recompute-features))
+(nvp:treesit-add-rules c++-ts-mode
+  :extra-features '(namespace))
+
+(nvp:treesit-add-rules c-ts-mode)
 
 (provide 'nvp-c)
 ;;; nvp-c.el ends here

@@ -108,6 +108,8 @@ If TRIM is non-nil, whitespace is removed from selected text.
 (defun nvp-yas-semi () (if (eolp) ";"))
 (defun nvp-yas-string= (exp then &optional else)
   (if (string= exp (yas-text)) then (or else "")))
+(defun nvp-yas-string-match-p (regexp then &optional else)
+  (if (string-match-p regexp (or (yas-text) "")) then (or else "")))
 (defun nvp-yas-string!= (exp then &optional else)
   (if (string= exp (yas-text)) (or else "") then))
 (defun nvp-yas-string? (res &optional default) (if (yas-text) res default))
@@ -120,6 +122,7 @@ If TRIM is non-nil, whitespace is removed from selected text.
 (defalias '$s= 'nvp-yas-string=)
 (defalias '$s!= 'nvp-yas-string!=)
 (defalias '$s? 'nvp-yas-string?)
+(defalias '$s~ 'nvp-yas-string-match-p)
 
 ;;; -------------------------------------------------------------------
 ;; Comments

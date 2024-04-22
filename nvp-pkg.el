@@ -114,10 +114,11 @@ R=recompile; F=force; P=if prefix;
   (let* ((autoload-file
           (pcase dir
             ((pred (string-prefix-p nvp/config dir)) nvp/auto)
-            ((pred (string-prefix-p
-                    (rx-to-string
-                     `(or ,nvp/site ,nvp/thirdparty))
-                    dir))
+            ((pred (and (string-match-p
+                         (rx-to-string
+                          `(seq bol (or (regexp ,nvp/site) (regexp ,nvp/thirdparty))))
+                         dir)
+                        t))
              nvp/auto-site)
             (_ (or (car-safe (directory-files dir t "autoloads?.el"))
                    (car-safe (directory-files dir t "loaddefs?.el"))

@@ -8,23 +8,9 @@
 
 (defvar nvp-rust--ts-fonts
   (treesit-font-lock-rules
-   ;; XXX(4/18/24): remove after patch
-   :language 'rust
-   :feature 'macro-definition
-   `((token_binding_pattern
-      name: (metavariable) @font-lock-variable-name-face))
-
-   ;; XXX(4/18/24): remove after patch
    :language 'rust
    :feature 'macro
-   `((token_repetition_pattern ["$" "*" "+"] @font-lock-operator-face)
-     (token_repetition ["$" "*" "+"] @font-lock-operator-face)
-
-     (metavariable) @font-lock-variable-use-face
-
-     (fragment_specifier) @font-lock-type-face
-
-     ;; XXX(4/20/24): not in patch - rust-ts-mode gives builtin face
+   `(;; XXX(4/20/24): rust-ts-mode gives builtin face
      (macro_invocation
       ["!"] @font-lock-preprocessor-face)
      (macro_invocation

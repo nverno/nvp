@@ -2,9 +2,12 @@
 # name: edge list to adjacency list
 # key: etog
 # --
-g := make([][]int, ${1:n})
-for _, e := range ${2:edges} {
+g := make([][]int, ${1:n})${2:
+indegree := make([]int, $1)}
+for _, e := range ${3:edges} {
     u, v := e[0], e[1]
     g[u] = append(g[u], v)
-    g[v] = append(g[v], u)
+    g[v] = append(g[v], u)${2:$($s? "
+    indegree[u]++
+    indegree[v]++")}
 }

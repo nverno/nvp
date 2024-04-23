@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: array of empty arrays
+# key: aa
+# --
+let ${1:arr} = Array.from({ length: ${2:n} }, () => []);

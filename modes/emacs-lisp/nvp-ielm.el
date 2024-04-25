@@ -30,7 +30,7 @@
        (funcall orig-fn))
      (prog1 (current-buffer)
        (setq-local ielm-working-buffer orig-buff)
-       (and current-prefix-arg (pop-to-buffer (current-buffer)))))))
+       (pop-to-buffer (current-buffer))))))
 
 ;; ielm-return always wants to eval when smartparens close sexps
 (defun nvp-ielm-nl (&optional arg)
@@ -62,7 +62,7 @@
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add
-    '( emacs-lisp-mode lisp-data-mode lisp-interaction-mode command-history-mode)
+    '(emacs-lisp-mode lisp-data-mode lisp-interaction-mode command-history-mode)
     :name 'ielm
     :modes '(inferior-emacs-lisp-mode)
     :init #'ielm

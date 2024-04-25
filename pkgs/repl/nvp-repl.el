@@ -374,12 +374,12 @@ well."
   (cl-assert (buffer-live-p src-buf))
   (with-current-buffer src-buf
     (nvp-repl--source-minor-mode-on)
-    (nvp-with-repl (history-file)
-      (with-current-buffer (nvp-repl-update repl-proc src-buf repl-buf)
-        (nvp-repl--setup-repl-buffer history-file)
-        (prog1 (current-buffer)
-          (when and-go
-            (pop-to-buffer (current-buffer) (nvp-repl--display-action))))))))
+    (let ((buf (nvp-with-repl (history-file)
+                 (with-current-buffer (nvp-repl-update repl-proc src-buf repl-buf)
+                   (nvp-repl--setup-repl-buffer history-file)
+                   (current-buffer)))))
+      (when and-go
+        (pop-to-buffer buf (nvp-repl--display-action))))))
 
 (defun nvp-repl--make-async-callback (src-buf &optional and-go)
   "create callback for src-buf that is passed to async repl init.

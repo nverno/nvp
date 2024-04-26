@@ -506,8 +506,7 @@ Conflicting features are overriden by those in NEW-FONTS."
            ,(when (and new-indents mode-indents)
               `(let ((indents
                       (append ,new-indents (assoc-default ',parser ,mode-indents))))
-                 (setq ,mode-indents (list (cons ',parser indents)))))
-           ,@body)
+                 (setq ,mode-indents (list (cons ',parser indents))))))
 
          ;; Update mode local `treesit-font-lock-feature-list'
          (nvp:run-once ,mode (:after (&rest _))
@@ -518,6 +517,7 @@ Conflicting features are overriden by those in NEW-FONTS."
            ;; Remove 'error feature
            (setf (cadddr treesit-font-lock-feature-list)
                  (delq 'error (cadddr treesit-font-lock-feature-list)))
+           ,@body
            (treesit-font-lock-recompute-features nil nil ',parser)
            (,mode))))))
 

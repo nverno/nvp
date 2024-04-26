@@ -164,6 +164,9 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     compilation-error-face compilation-warning-face compilation-info-face
     explicit-shell-file-name
     imenu-generic-expression imenu--index-alist imenu-auto-rescan
+    ;; Tree-sitter, treesit
+    treesit-font-lock-feature-list
+    treesit-font-lock-settings
     ;; align
     align-to-tab-stop
     ;; ido
@@ -325,7 +328,10 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        org-comment-dwim
        he-substitute-string he-reset-string he-string-member he-init-string
        find-function-other-window
-       imenu--make-index-alist imenu-default-create-index-function)
+       imenu--make-index-alist imenu-default-create-index-function
+       ;; treesit
+       treesit-font-lock-rules
+       treesit-font-lock-recompute-features)
 
      (nvp:decl                          ; external packages
        edit-indirect

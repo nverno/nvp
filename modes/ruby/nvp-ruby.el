@@ -8,6 +8,26 @@
 (with-eval-after-load 'nvp-repl
   (require 'nvp-ruby-repl))
 
+;;; Tree-sitter
+(defvar nvp-ruby-ts-font-settings
+  (when (treesit-available-p)
+    (treesit-font-lock-rules
+     :language 'ruby
+     :feature 'nvp
+     '((assignment
+        left: (element_reference
+               object: (identifier) @font-lock-variable-name-face))
+       (identifier) @font-lock-variable-use-face))))
+
+(define-advice ruby-ts--font-lock-settings
+    (:around (orig-fn lang &rest args) "add-fonts")
+  (if (eq 'ruby lang)
+      (append (apply orig-fn lang args) nvp-ruby-ts-font-settings)
+    (apply orig-fn lang args)))
+
+(nvp:treesit-add-rules ruby-ts-mode
+  :extra-features '(nvp))
+
 ;;; Snippets
 ;; create arg initializtion from yas-text
 ;; (i,j) => @i = i\n@j = j or (io=$stdin, ...) => @io = io\n...

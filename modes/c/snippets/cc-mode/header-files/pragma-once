@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: pragma-once
 # key: once
-# condition: (nvp-header-file-p)
+# condition: (nvp-c-header-file-p)
 # --
 #pragma once

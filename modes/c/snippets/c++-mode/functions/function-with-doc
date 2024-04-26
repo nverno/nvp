@@ -3,7 +3,7 @@
 # key: fundoc
 # --
 /** $2
- * ${4:Description}${3:$(c-yas-args-docstring yas-text)}
+ * ${4:Description}${3:$(nvp-c-yas-args-docstring yas-text)}
  *${1:$(if (not (string= "void" yas-text)) (concat " @return " yas-text "\n */") "/")}
 ${1:void} ${2:name}($3) {
     $0

@@ -475,7 +475,7 @@ Do BODY when treesit mode is available."
 (cl-defmacro nvp:treesit-add-rules
     (mode
      &rest body
-     &key new-fonts mode-fonts extra-features
+     &key new-fonts mode-fonts extra-features post-fonts
      new-indents mode-indents
      parser-name 
      mode-lib
@@ -497,11 +497,11 @@ Conflicting features are overriden by those in NEW-FONTS."
          (with-eval-after-load ',(or mode-lib mode)
            ;; Without any new-fonts, still remove 'error font-locking
            ,(when mode-fonts
-              `(let* ((,new-features (--map (nth 2 it) ,new-fonts))
+              `(let* ((,new-features (--map (nth 2 it) (append ,new-fonts ,post-fonts)))
                       (,rules (--filter
                                (not (memq (nth 2 it) (cons 'error ,new-features)))
                                ,mode-fonts)))
-                 (setq ,mode-fonts (delq nil (append ,new-fonts ,rules)))))
+                 (setq ,mode-fonts (delq nil (append ,new-fonts ,rules ,post-fonts)))))
            ;; XXX: Adds new-indents to front
            ,(when (and new-indents mode-indents)
               `(let ((indents
@@ -511,8 +511,10 @@ Conflicting features are overriden by those in NEW-FONTS."
          ;; Update mode local `treesit-font-lock-feature-list'
          (nvp:run-once ,mode (:after (&rest _))
            ;; Add any new features to level 4
-           ,@(when (or extra-features new-fonts)
-               `((dolist (v (append ,extra-features (--map (nth 2 it) ,new-fonts)))
+           ,@(when (or extra-features new-fonts post-fonts)
+               `((dolist (v (append
+                             ,extra-features
+                             (--map (nth 2 it) (append ,new-fonts ,post-fonts))))
                    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))))
            ;; Remove 'error feature
            (setf (cadddr treesit-font-lock-feature-list)

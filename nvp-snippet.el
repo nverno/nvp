@@ -151,11 +151,6 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (setq this-command 'nvp-snippet-increment-count)
   (nvp-snippet-increment-count beg end -1))
 
-;;; FIXME:
-(defun nvp-snippet-help-at-point ()
-  (interactive)
-  (browse-url "https://joaotavora.github.io/yasnippet/snippet-expansion.html"))
-
 ;; -------------------------------------------------------------------
 ;;; Snippet mode
 ;; #<marker at 172452 in yasnippet.el>

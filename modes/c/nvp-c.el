@@ -78,16 +78,16 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;;; GDB
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(c-mode c-ts-mode c++-mode c++-ts-mode)
-                :name 'gdb
-                :modes '(gud-mode)
-                :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
-                :init #'gdb
-                :init-use-hook t))
+    :name 'gdb
+    :modes '(gud-mode)
+    :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
+    :init #'gdb
+    :init-use-hook t))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
 
-(defun nvp-header-file-p ()
+(defun nvp-c-header-file-p ()
   (string-match-p "h[xp]*" (nvp:ext)))
 
 ;; split string STR on commas, but only when not between <..>
@@ -137,21 +137,9 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
       it)))
 
 ;; convert functions args to doxygen params
-(defun c-yas-args-docstring (text)
-  (let ((args (nvp-c-split-string text)))
-    (and args
-         (mapconcat 'identity
-                    (mapcar (lambda (s) (concat "\n * @param " s)) args) ""))))
-
-;;; Company
-(defun nvp-c-load-company-backend (backend)
-  (interactive
-   (list (eval (cadr (read-multiple-choice "Load: "
-                                           '((?c 'company-clang)
-                                             (?i 'company-irony)))))))
-  (nvp-company-local backend)
-  (setq company-clang-arguments (clang-complete-load-args)))
-
+(defun nvp-c-yas-args-docstring (text)
+  (--when-let (nvp-c-split-string text)
+    (mapconcat 'identity (--map (concat "\n * @param " it) it) "")))
 
 ;; `forward-sexp-function' https://github.com/abo-abo/oremacs/
 (defun nvp-c-forward-sexp-function (arg)
@@ -166,9 +154,10 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
       (forward-char)
       (skip-chars-forward "0-9"))))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Compile
+
 (eval-when-compile (require 'nvp-compile))
 
 (defvar nvp-c-address-error-regexp
@@ -429,8 +418,24 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                 rules)
              rules))))
 
+
+;;; Indent
+
+(defun nvp-c-ts--indent-rules (_mode)
+  `(((node-is ")") parent-bol 0)
+    ((parent-is
+      ,(rx (or "argument_list" "parameter_list" "parenthesized_expression")))
+     parent-bol c-ts-mode-indent-offset)))
+
+
 (define-advice c-ts-mode--font-lock-settings (:around (orig-fn language) "nvp")
   (append (nvp-c-ts-font-lock-settings language) (funcall orig-fn language)))
+
+(define-advice c-ts-mode--indent-styles (:around (orig-fn mode &rest args) "nvp")
+  (let ((indents
+         (assoc-default c-ts-mode-indent-style (apply orig-fn mode args))))
+    (list (cons c-ts-mode-indent-style
+                (append (nvp-c-ts--indent-rules mode) indents)))))
 
 (nvp:treesit-add-rules c++-ts-mode
   :extra-features '(namespace))

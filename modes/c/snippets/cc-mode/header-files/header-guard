@@ -1,7 +1,7 @@
 # -*- mode: snippet; -*-
 # name : header guard
 # key: guard
-# condition: (nvp-header-file-p)
+# condition: (nvp-c-header-file-p)
 # --
 #ifndef ${1:`(upcase (nvp-yas-bfn))`_H}
 #define $1

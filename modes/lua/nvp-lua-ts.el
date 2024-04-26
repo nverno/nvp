@@ -219,7 +219,8 @@
                   (parent-is "elseif_statement"))
               standalone-parent lua-ts-indent-offset)
              ((parent-is "chunk") column-0 0)
-             ((parent-is "ERROR") no-indent 0))))))
+             ;; ((parent-is "ERROR") no-indent 0)
+             )))))
 
 ;;;###autoload
 (defun nvp-lua-ts-load-mods (&optional orig interactive)
@@ -231,11 +232,9 @@
       (lua-ts-mode))))
 
 ;;; Add missing features once
-(nvp:run-once lua-ts-mode (:after (&rest _))
-  (dolist (v '(namespace))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))
-  (nvp-lua-ts-load-mods nil t)
-  (treesit-font-lock-recompute-features))
+(nvp:treesit-add-rules lua-ts-mode
+  :extra-features '(namespace)
+  (nvp-lua-ts-load-mods nil t))
 
 (provide 'nvp-lua-ts)
 ;; Local Variables:

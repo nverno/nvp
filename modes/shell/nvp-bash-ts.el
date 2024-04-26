@@ -3,9 +3,13 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)                          ; faces
 (require 'sh-script)
 (nvp:decls)
+
+(defface bash-file-redirect-face
+  '((t (:inherit font-lock-type-face :weight bold :slant italic)))
+  "Face for bash special file redirects."
+  :group 'bash)
 
 (defface bash-file-descriptor-number-face
   '((t (:inherit font-lock-number-face :weight bold)))
@@ -22,9 +26,11 @@
   "Face for bash expansion variable."
   :group 'bash)
 
-(nvp:run-once bash-ts-mode (:after (&rest _))
-  (dolist (v '(builtin))
-    (cl-pushnew v (cadddr treesit-font-lock-feature-list))))
+(nvp:treesit-add-rules bash-ts-mode
+  :extra-features '(builtin))
+
+
+;;; Font-locking
 
 (defun bash-ts--fontify-shebang (node override start end &rest _)
   (save-excursion
@@ -46,6 +52,14 @@
           (treesit-fontify-with-override
            (match-beginning m) (match-end m)
            'font-lock-keyword-face override start end))))))
+
+(defun bash-ts--fontify-bracket-operator (node override start end &rest _)
+  (let ((node-start (treesit-node-start node))
+        (node-end (treesit-node-end node)))
+   (treesit-fontify-with-override
+    node-start (1+ node-start) 'font-lock-operator-face override start end)
+   (treesit-fontify-with-override
+    (1+ node-start) node-end 'font-lock-bracket-face override start end)))
 
 (setq sh-mode--treesit-operators
       '("|" "|&" "||" "&&" ">" ">>" "<" "<<" "<<-" "<<<" "==" "!=" ";&" ";;&"
@@ -220,8 +234,8 @@
 
          ;; Added
          (file_redirect
-          destination: ((word) @nvp-special-type-face
-                        (:match "/dev/null" @nvp-special-type-face)))
+          destination: ((word) @bash-file-redirect-face
+                        (:match "/dev/null" @bash-file-redirect-face)))
 
          (file_descriptor) @bash-file-descriptor-number-face
 
@@ -242,6 +256,8 @@
        :language 'bash
        `(;; Added
          (case_item "|" @font-lock-delimiter-face)
+
+         ["$((" "<(" "$("] @bash-ts--fontify-bracket-operator
 
          [,@sh-mode--treesit-operators
           ;; Added
@@ -293,7 +309,8 @@
        :language 'bash
        '((["(" ")" "((" "))" "[" "]" "[[" "]]" "{" "}"
            ;; Added
-           "$((" "<(" "$("])
+           ;; "$((" "<(" "$("
+           ])
          @font-lock-bracket-face)
 
        :feature 'delimiter

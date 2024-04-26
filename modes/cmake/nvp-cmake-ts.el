@@ -185,6 +185,10 @@
       (argument_list :anchor (argument) @nvp-cmake-function-face
                      [(argument)] :* @font-lock-variable-name-face))
 
+     (foreach_command
+      (argument_list :anchor
+       (argument (unquoted_argument) @font-lock-variable-name-face)))
+
      (block_command
       (block)
       (argument_list
@@ -195,7 +199,10 @@
    
    :language 'cmake
    :feature 'builtin
-   `(((foreach_command
+   `(((env_var
+       ["$" "ENV" "{" "}"] @font-lock-preprocessor-face))
+
+     ((foreach_command
        ((argument_list (argument) @font-lock-operator-face)
         (:match ,(rx-to-string
                   `(seq bol (or ,@cmake-ts-mode--foreach-options) eol))
@@ -210,7 +217,11 @@
        (:match ,(rx-to-string
                  `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
                @font-lock-operator-face)))
-
+     (while_command
+      ((argument_list (argument) @font-lock-operator-face)
+       (:match ,(rx-to-string
+                 `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
+               @font-lock-operator-face)))
      ((unquoted_argument) @font-lock-type-face
       ;; Message <mode>
       (:match ,(rx (or "STATUS" "WARNING" "ERROR" "DEBUG" "TRACE"

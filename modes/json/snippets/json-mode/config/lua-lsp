@@ -21,6 +21,14 @@
     "libraryFiles": "Opened",
     "globals": [${3:"lfs"}],
     "unusedLocalExclude": ["_*"],
+    "groupFileStatus": {
+      "strict": "Opened",
+      "strong": "Opened"
+    },
+    "groupSeverity": {
+      "strong": "Warning",
+      "strict": "Warning"
+    },
     "disable": []
   }
 }

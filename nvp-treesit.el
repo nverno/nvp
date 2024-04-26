@@ -6,7 +6,29 @@
 (require 'transient)
 (require 'treesit nil t)
 (nvp:decls :p (ts) :f (ts-error-toggle))
-(declare-function treesit-auto--build-treesit-source-alist "treesit-auto")
+
+;;;###autoload
+(defun nvp-treesit-fontify-hash-bang (node override start end &rest _)
+  (save-excursion
+    (goto-char (treesit-node-start node))
+    (save-match-data
+      (when (looking-at
+             "\\`\\(#!\\).*/\\([^ \t\n]+\\)\\(?:[ \t]+\\(?:-\\w+[ \t]+\\)*\\([^ \t\n]+\\)\\)?")
+        (let ((m (if (and (string= "env" (buffer-substring-no-properties
+                                          (match-beginning 2) (match-end 2)))
+                          (match-beginning 3))
+                     3
+                   2)))
+          (treesit-fontify-with-override
+           (match-beginning 1) (match-end 1)
+           'font-lock-comment-delimiter-face override start end)
+          (treesit-fontify-with-override
+           (match-end 1) (match-beginning m)
+           'font-lock-comment-face override start end)
+          (treesit-fontify-with-override
+           (match-beginning m) (match-end m)
+           'nvp-interpreter-face override start end))))))
+
 
 ;;;###autoload
 (defun nvp-treesit-add-font-lock (new-fonts &optional prepend feature-list)
@@ -22,37 +44,21 @@
                                     nil nil nil))))
   (treesit-font-lock-recompute-features))
 
-(defun nvp-treesit-ready-p ()
-  (ignore-errors (treesit-buffer-root-node)))
-
-;; Setup treesitter sources
-(defun nvp-treesit--setup-sources ()
-  (when (require 'treesit-auto nil t)
-    (unless treesit-language-source-alist
-      (setq treesit-language-source-alist (treesit-auto--build-treesit-source-alist)))))
-
-;; maybe load sources
-(cl-eval-when (load)
-  (nvp-treesit--setup-sources))
-
 ;;;###autoload
-(defun nvp-treesit-install ()
+(defun nvp-treesit-install (&optional add-sources)
   "Install tree-sitter grammar."
-  (interactive)
-  (nvp-treesit--setup-sources)
+  (interactive "P")
+  (when (and add-sources (fboundp 'ts-util-add-treesit-sources))
+    (ignore-errors (ts-util-add-treesit-sources)))
   (call-interactively #'treesit-install-language-grammar))
 
-(defun nvp-treesit-update (&optional parser)
-  "Update PARSER grammar or all grammars."
+(defun nvp-treesit-update (parsers)
+  "Update grammars for PARSERS."
   (interactive
-   (list (if current-prefix-arg
-             (intern
-              (completing-read "Language: "
-                               (mapcar #'car treesit-language-source-alist))))))
-  (let ((langs (if parser (list parser)
-                 (mapcar #'car treesit-language-source-alist))))
-    (dolist (lang langs)
-      (treesit-install-language-grammar lang))))
+   (list (mapcar #'intern (completing-read-multiple
+                           "Language(s): " treesit-language-source-alist))))
+  (dolist (lang parsers)
+    (treesit-install-language-grammar lang)))
 
 ;; -------------------------------------------------------------------
 ;;; Dev Minor Mode
@@ -148,6 +154,9 @@
 ;; -------------------------------------------------------------------
 ;;; Transient
 
+(defun nvp-treesit-ready-p ()
+  (ignore-errors (treesit-buffer-root-node)))
+
 (nvp:transient-toggle nvp-treesit-menu
   treesit--font-lock-verbose
   treesit--indent-verbose)
@@ -171,6 +180,7 @@
     ("L" "List sources" ts-util-list-sources)
     ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t
      :if nvp-treesit-ready-p)
+    ("a" "Add sources" ts-util-add-treesit-sources)
     ("i" "Install parser" nvp-treesit-install)
     ("U" "Update parser(s)" nvp-treesit-update)]
    ["Dev"

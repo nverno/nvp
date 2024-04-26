@@ -53,6 +53,9 @@
      (keyword_argument
       name: (identifier) @font-lock-variable-name-face)
 
+     (slice ":" @font-lock-operator-face)
+
+     ;; TODO: patch & remove
      (for_statement left: (identifier) @font-lock-variable-name-face))))
 
 (nvp:treesit-add-rules python-ts-mode

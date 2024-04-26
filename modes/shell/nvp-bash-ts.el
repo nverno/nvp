@@ -32,27 +32,6 @@
 
 ;;; Font-locking
 
-(defun bash-ts--fontify-shebang (node override start end &rest _)
-  (save-excursion
-    (goto-char (treesit-node-start node))
-    (save-match-data
-      (when (looking-at
-             "\\`\\(#!\\).*/\\([^ \t\n]+\\)\\(?:[ \t]+\\([^ \t\n]+\\)\\)?")
-        (let ((m (if (and (string= "env" (buffer-substring-no-properties
-                                          (match-beginning 2) (match-end 2)))
-                          (match-beginning 3))
-                     3
-                   2)))
-          (treesit-fontify-with-override
-           (match-beginning 1) (match-end 1)
-           'font-lock-comment-delimiter-face override start end)
-          (treesit-fontify-with-override
-           (match-end 1) (match-beginning m)
-           'font-lock-comment-face override start end)
-          (treesit-fontify-with-override
-           (match-beginning m) (match-end m)
-           'font-lock-keyword-face override start end))))))
-
 (defun bash-ts--fontify-bracket-operator (node override start end &rest _)
   (let ((node-start (treesit-node-start node))
         (node-end (treesit-node-end node)))
@@ -107,8 +86,8 @@
        `((comment) @font-lock-comment-face
 
          (program
-          :anchor ((comment) @bash-ts--fontify-shebang
-                   (:match ,(rx bol "#!") @bash-ts--fontify-shebang))))
+          :anchor ((comment) @nvp-treesit-fontify-hash-bang
+                   (:match ,(rx bol "#!") @nvp-treesit-fontify-hash-bang))))
 
        :feature 'function
        :language 'bash
@@ -147,7 +126,7 @@
                           @bash-special-variable-face)))
          (subscript
           index: (number) @font-lock-number-face)
-         
+
          (string
           (simple_expansion
            (variable_name) @font-lock-variable-name-face))

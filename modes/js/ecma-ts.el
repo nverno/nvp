@@ -6,10 +6,6 @@
 (eval-when-compile (require 'nvp-macro))
 (nvp:decls)
 
-(defface ecma-ts-interpreter-face
-  '((t (:inherit font-lock-keyword-face :italic t)))
-  "Face for shebang interpreter.")
-
 (defvar ecma-ts-builtin-variables
   '("arguments" "module" "console" "window" "document" "self"))
 
@@ -68,27 +64,6 @@
     "/" "%" "|" "^" "??" "*=" ">>=" ">>>=" "^=" "|=" "&&=" "||=" "??=" "..."
     "?" "!" "~"))
 
-(defun ecma-ts--fontify-hash-bang (node override start end &rest _)
-  (save-excursion
-    (goto-char (treesit-node-start node))
-    (save-match-data
-      (when (looking-at
-             "\\`\\(#!\\).*/\\([^ \t\n]+\\)\\(?:[ \t]+\\([^ \t\n]+\\)\\)?")
-        (let ((m (if (and (string= "env" (buffer-substring-no-properties
-                                          (match-beginning 2) (match-end 2)))
-                          (match-beginning 3))
-                     3
-                   2)))
-          (treesit-fontify-with-override
-           (match-beginning 1) (match-end 1)
-           'font-lock-comment-delimiter-face override start end)
-          (treesit-fontify-with-override
-           (match-end 1) (match-beginning m)
-           'font-lock-comment-face override start end)
-          (treesit-fontify-with-override
-           (match-beginning m) (match-end m)
-           'ecma-ts-interpreter-face override start end))))))
-
 (defun ecma-ts--fontify-comment (node override start end &rest _)
   (let* ((txt (treesit-node-text node))
          (b (treesit-node-start node))
@@ -123,7 +98,7 @@
 
     :language lang
     :feature 'comment
-    `((hash_bang_line) @ecma-ts--fontify-hash-bang
+    `((hash_bang_line) @nvp-treesit-fontify-hash-bang
       ((comment) @ecma-ts--fontify-comment))
 
     :feature 'number
@@ -144,7 +119,7 @@
     :feature 'operator
     `([,@ecma-ts-operators] @font-lock-operator-face
       (ternary_expression ["?" ":"] @font-lock-operator-face))
-    
+
     :language lang
     :feature 'delimiter
     '((["," "." ";" ":"]) @font-lock-delimiter-face)
@@ -192,7 +167,7 @@
     :language lang
     :feature 'preproc
     :override t
-    '((hash_bang_line) @ecma-ts--fontify-hash-bang
+    '(;; (hash_bang_line) @nvp-treesit-fontify-hash-bang
       ((string_fragment) @font-lock-preprocessor-face
        (:match "\\`use strict\\'" @font-lock-preprocessor-face))
       (decorator "@" @font-lock-preprocessor-face

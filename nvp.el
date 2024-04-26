@@ -155,6 +155,10 @@ called from minibuffer, or nil.")
   "Line escape face."
   :group 'nvp)
 
+(defface nvp-interpreter-face
+  '((t (:inherit font-lock-keyword-face :italic t)))
+  "Face for shebang interpreter.")
+
 (defface nvp-block-face
   '((((class color) (background light))
      (:background "#f2e5bc" "#ffffd7" :inherit shadow :extend t))

@@ -103,7 +103,7 @@
          '(((comment) @font-lock-doc-face
             (:match "\\`---" @font-lock-doc-face))
            (comment) @lua-ts--comment-font-lock
-           (hash_bang_line) @font-lock-comment-face)
+           (hash_bang_line) @nvp-treesit-fontify-hash-bang)
 
          :language 'lua
          :feature 'namespace

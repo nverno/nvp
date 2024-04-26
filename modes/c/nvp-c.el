@@ -372,10 +372,12 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
     ("field_expression"
      (nvp-c-ts--fontify-call-expression
       (treesit-node-child-by-field-name node "field") override start end))
-    (_ (treesit-fontify-with-override
-        (treesit-node-start node) (treesit-node-end node)
-        'font-lock-function-call-face
-        override start end))))
+    ("identifier"
+     (treesit-fontify-with-override
+      (treesit-node-start node) (treesit-node-end node)
+      'font-lock-function-call-face
+      override start end))
+    (_ nil)))
 
 ;; Add font-locking for SOME_IDENT constants, doc comments, and namespaces in
 ;; c++.

@@ -35,10 +35,18 @@
 (defun bash-ts--fontify-bracket-operator (node override start end &rest _)
   (let ((node-start (treesit-node-start node))
         (node-end (treesit-node-end node)))
-   (treesit-fontify-with-override
-    node-start (1+ node-start) 'font-lock-operator-face override start end)
-   (treesit-fontify-with-override
-    (1+ node-start) node-end 'font-lock-bracket-face override start end)))
+    (treesit-fontify-with-override
+     node-start (1+ node-start) 'font-lock-operator-face override start end)
+    (treesit-fontify-with-override
+     (1+ node-start) node-end 'font-lock-bracket-face override start end)))
+
+(defun bash-ts--fontify-alias (node override start end &rest _)
+  (let ((node-start (treesit-node-start node))
+        (node-end (treesit-node-end node)))
+    (treesit-fontify-with-override
+     node-start (1- node-end) 'font-lock-variable-name-face override start end)
+    (treesit-fontify-with-override
+     (1- node-end) node-end 'font-lock-operator-face override start end)))
 
 (setq sh-mode--treesit-operators
       '("|" "|&" "||" "&&" ">" ">>" "<" "<<" "<<-" "<<<" "==" "!=" ";&" ";;&"
@@ -91,10 +99,18 @@
 
        :feature 'function
        :language 'bash
-       '((function_definition
+       `((function_definition
           name: (word)
           ;; Changed to name-face
-          @font-lock-function-name-face))
+          @font-lock-function-name-face)
+
+         ;; Fontify alias assignments
+         (command
+          name: ((command_name) @_name
+                 (:match ,(rx bol "alias" eol) @_name))
+          argument: (concatenation
+                     ((word) @bash-ts--fontify-alias
+                      (:match ,(rx "=" eol) @bash-ts--fontify-alias)))))
 
        :feature 'string
        :language 'bash

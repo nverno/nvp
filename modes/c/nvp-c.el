@@ -355,7 +355,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 
 (defun nvp-c-ts--fontify-call-expression (node override start end &rest _args)
   (pcase (treesit-node-type node)
-    ("qualified_identifier"
+    ((or "template_function" "qualified_identifier")
      (nvp-c-ts--fontify-call-expression
       (treesit-node-child-by-field-name node "name") override start end))
     ("field_expression"
@@ -396,7 +396,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                  :language language
                  :feature 'function
                  `((call_expression
-                    function: (_) @nvp-c-ts--fontify-call-expression)))))
+                    function: (_) @nvp-c-ts--fontify-call-expression)
+                   ))))
     (apply #'treesit-font-lock-rules
            (if (eq language 'cpp)
                (append

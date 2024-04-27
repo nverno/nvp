@@ -182,7 +182,8 @@
      :if nvp-treesit-ready-p)
     ("a" "Add sources" ts-util-add-treesit-sources)
     ("i" "Install parser" nvp-treesit-install)
-    ("U" "Update parser(s)" nvp-treesit-update)]
+    ("U" "Update parser(s)" nvp-treesit-update)
+    ("b" "Browse repo" ts-util-browse-repo)]
    ["Dev"
     ("m" "Global mode" nvp-treesit-mode)
     ("M" "Local mode" nvp-treesit-minor-mode)

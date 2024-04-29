@@ -35,9 +35,9 @@ When part of `before-save-hook', won't add condition on initial save."
     (let ((before-save-hook ()))
       (save-buffer)))
   (cl-flet ((add-condition
-             (pred)
-             (remove-hook 'before-save-hook #'nvp-snippet-save-hook t)
-             (nvp-snippet-add-field "condition" pred)))
+              (pred)
+              (remove-hook 'before-save-hook #'nvp-snippet-save-hook t)
+              (nvp-snippet-add-field "condition" pred)))
     (let ((dir (ignore-errors (or (nvp:path 'ds) (nvp:path 'dn)))))
       (hack-local-variables)
       (when-let*
@@ -98,7 +98,9 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
           (yas-indent-line 'fixed)
           (default-directory snippet-dir))
       (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
-      (snippet-mode)
+      (if (fboundp 'snippet-ts-mode)
+          (snippet-ts-mode)
+        (snippet-mode))
       (yas-minor-mode)
       (yas-expand-snippet default-new-snippet))))
 
@@ -142,7 +144,7 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (or inc (setq inc 1))
   (nvp-regex-map-across-matches
    (lambda (ms) (replace-match (number-to-string (+ inc (string-to-number ms)))
-                          nil nil nil 1))
+                               nil nil nil 1))
    "\$\{?\\([[:digit:]]\\)" (cons beg end) 1))
 
 (defun nvp-snippet-decrement-count (beg end)

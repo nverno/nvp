@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: count-bits
+# key: count-bits
+# --
+(define (count-bits x)
+    (if (zero? x) 0
+        (add1 (count-bits (bitwise-and x (sub1 x))))))

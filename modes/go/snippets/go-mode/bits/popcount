@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: popcount
+# key: popcount
+# --
+var popcount func(int) int
+popcount = func(x int) int {
+  res := 0
+  for x != 0 {
+    x &= x - 1
+    res++
+  }
+  return res
+}

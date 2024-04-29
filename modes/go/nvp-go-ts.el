@@ -28,6 +28,13 @@
      :language 'go
      :feature 'operator
      `([,@go-ts-mode--operators] @font-lock-operator-face)
+     :language 'go
+     :feature 'nvp
+     ;; Functions declared with var specs
+     ;; XXX(4/29/24): remove after patch
+     `((var_spec name: (identifier) @font-lock-function-name-face
+                 ("," name: (identifier) @font-lock-function-name-face)*
+                 type: (function_type)))
      ;; :language 'go
      ;; :feature 'namespace
      ;; '((call_expression

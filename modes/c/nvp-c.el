@@ -415,7 +415,14 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                    (namespace_identifier) @nvp-namespace-use-face
 
                    (reference_declarator
-                    (identifier) @font-lock-variable-name-face)))
+                    (identifier) @font-lock-variable-name-face))
+
+                 :language language
+                 :feature 'builtin
+                 `((call_expression
+                    function: ((identifier) @font-lock-builtin-face
+                               (:match ,(rx bol "__builtin_")
+                                       @font-lock-builtin-face)))))
                 rules)
              rules))))
 
@@ -439,7 +446,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                 (append (nvp-c-ts--indent-rules mode) indents)))))
 
 (nvp:treesit-add-rules c++-ts-mode
-  :extra-features '(namespace))
+  :extra-features '(namespace builtin))
 
 (nvp:treesit-add-rules c-ts-mode)
 

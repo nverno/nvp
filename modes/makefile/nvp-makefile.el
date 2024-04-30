@@ -41,9 +41,9 @@
 
 (eval-and-compile
   (defconst nvp-makefile-open/close
-    (let ((openers (concat "^" (regexp-opt '("ifeq" "ifneq" "define"))))
-          (closers (concat "^" (regexp-opt '("endif" "endef")))))
-      `(,openers ,closers))))
+    (let ((openers (rx bol (or "ifeq" "ifneq" "ifdef" "ifndef" "define")))
+          (closers (rx bol (or "endif" "endef"))))
+      (list openers closers))))
 
 (defconst nvp-makefile-defun-regexp
   (nvp:concat (car nvp-makefile-open/close) "\\|" "^[^# \t\n]+:"))

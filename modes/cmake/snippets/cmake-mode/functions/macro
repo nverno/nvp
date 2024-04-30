@@ -3,5 +3,5 @@
 # key: macro
 # --
 macro(${1:name}${2: args})
-        $3
+  $0
 endmacro($1)

@@ -124,7 +124,7 @@
 ;; -------------------------------------------------------------------
 ;;; Snippets
 
-;; FIXME: this is fucking shitty
+;; FIXME: this is shitty
 ;; variables to set in snippet expansion environments
 (defvar-local nvp-makefile-current-target nil)
 (defvar-local nvp-makefile-yas-text nil)

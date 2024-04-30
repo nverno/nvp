@@ -26,7 +26,8 @@
               `(,nvp/bin ,nvp/binw))
             "Preferred search locations for executables.")
 
-(defvar nvp-default-notes-files '("notes.org" "todo.org")
+(defvar nvp-default-notes-files
+  '("[Nn]otes.org" "[Tt][Oo][Dd][Oo].org" "[Rr][Ee][Aa][Dd][Mm][Ee].org")
   "Default notes files.")
 
 (defvar nvp-default-org-file "gtd.org"
@@ -178,7 +179,7 @@ called from minibuffer, or nil.")
   :group 'nvp)
 
 (defface nvp-receiver-face
-  '((t (:inherit font-lock-variable-use-face)))
+  '((t (:inherit font-lock-variable-use-face :slant italic)))
   "Face for receiver of method call."
   :group 'nvp)
 

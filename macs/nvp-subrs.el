@@ -129,7 +129,7 @@ If INC, shift bits by INC instead of 1."
 (defsubst nvp:list-split-into-sublists (lst n)
   (declare (pure t) (side-effect-free t))
   (cl-loop for i from 0 to (1- (length lst)) by n
-     collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
+           collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
 
 (defsubst nvp:flatten-to-alist (tree)
   "Flatten tree, but leave cons cells. 
@@ -185,9 +185,9 @@ or (\\='a #\\='b) => \\='(a b)."
     (setq args (cadr args)))
   (delq nil (if (listp args)
                 (cl-loop for arg in args
-                   do (while (memq (car-safe arg) '(function quote))
-                        (setq arg (cadr arg)))
-                   collect arg)
+                         do (while (memq (car-safe arg) '(function quote))
+                              (setq arg (cadr arg)))
+                         collect arg)
               (cons args nil))))
 
 (defsubst nvp:list-split-at (pred xs)
@@ -213,13 +213,13 @@ or (\\='a #\\='b) => \\='(a b)."
 (defsubst nvp:plist-delete (plist prop)
   (declare (pure t) (side-effect-free t))
   (cl-loop for (k v) on plist by #'cddr
-     unless (eq prop k)
-     nconc (list k v)))
+           unless (eq prop k)
+           nconc (list k v)))
 
 (defsubst nvp:plist-merge (a b)
   (nconc a (cl-loop for (k v) on b by #'cddr
-              if (not (plist-member a k))
-              nconc (list k v))))
+                    if (not (plist-member a k))
+                    nconc (list k v))))
 
 (defsubst nvp:separate-keywords (lst)
   (let (kws res)
@@ -282,9 +282,13 @@ or (\\='a #\\='b) => \\='(a b)."
 (defsubst nvp:locate-first-dominating (file names)
   (setq names (nvp:as-list names))
   (cl-loop for name in names
-     as res = (locate-dominating-file file name)
-     when res
-     return (expand-file-name name res)))
+           as res = (locate-dominating-file
+                     file (lambda (d)
+                            (let ((default-directory d))
+                              (file-expand-wildcards name nil t))))
+           when res
+           return (let ((default-directory res))
+                    (car (file-expand-wildcards name t t)))))
 
 ;; this must exist somewhere I'm forgetting...
 (defsubst nvp:directories (&optional root fullname pattern)
@@ -401,8 +405,8 @@ or (\\='a #\\='b) => \\='(a b)."
 ;; find all processes matching PRED
 (defsubst nvp:proc-find-all (pred)
   (cl-loop for proc in (process-list)
-     when (funcall pred proc)
-     collect proc))
+           when (funcall pred proc)
+           collect proc))
 
 ;; find process by matching NAME
 (defsubst nvp:proc-find-by-name (name)

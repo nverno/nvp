@@ -37,18 +37,26 @@
   (when (treesit-available-p)
     (treesit-query-compile 'lua '((identifier) @id))))
 
+;;; FIXME(4/30/24): method_index/do_index being fontified the same
 (defun lua-ts-mode--fontify-table (node override start end &rest _)
-  (when-let* ((face 'nvp-namespace-face;; 'nvp-receiver-face
-                    )
+  (when-let* ((face 'nvp-receiver-face) ;; 'nvp-namespace-face
               (node (pcase (treesit-node-type node)
                       ("method_index_expression"
-                       (treesit-node-child-by-field-name node "table"))
+                       (prog1 nil
+                         (lua-ts-mode--fontify-table
+                          (treesit-node-child-by-field-name node "table")
+                          override start end)))
                       ("dot_index_expression"
                        (setq face 'nvp-namespace-use-face)
                        (treesit-node-child-by-field-name node "table"))
-                      ("identifier" nil))))
+                      ("function_call"
+                       (prog1 nil
+                         (lua-ts-mode--fontify-table
+                          (treesit-node-child-by-field-name node "name")
+                          override start end)))
+                      ("identifier" node))))
     (dolist (node (treesit-query-capture
-                   node lua-ts-mode--identifier-query nil nil t))
+                   node lua-ts-mode--identifier-query start end t))
       (treesit-fontify-with-override
        (treesit-node-start node) (treesit-node-end node)
        face override start end))))

@@ -2,4 +2,4 @@
 # name: local
 # key: l
 # --
-local $1 = $2
+local $1 = $0

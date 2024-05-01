@@ -27,10 +27,15 @@
 (defsubst nvp-yas-in-soc () (nvp:ppss 'soc))
 
 ;; inside doc strings
-(defsubst nvp-yas-in-doc ()
-  (or (memq 'font-lock-doc-face (nvp:as-list (get-text-property (point) 'face)))
-      (and (eq major-mode 'typescript-mode)
-           (typescript--in-documentation-comment-p))))
+(defun nvp-yas-in-doc ()
+  (or (memq 'font-lock-doc-face
+            (nvp:as-list (get-text-property (1- (point)) 'face)))
+      (pcase major-mode
+        ('typescript-mode
+         (typescript--in-documentation-comment-p))
+        ('lua-ts-mode
+         (nth 4 (syntax-ppss)))
+        (_ nil))))
 
 ;; Or patterns
 (defsubst nvp-yas-or-values (str &optional seps)

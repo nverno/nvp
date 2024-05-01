@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: @param
+# key: p
+# condition: (nvp-yas-in-doc)
+# --
+@param ${1:x} ${2:number}

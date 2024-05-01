@@ -4,7 +4,6 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'treesit)
-
 (when (require 'lua-ts-mode nil t)
   (require 'nvp-lua-ts))
 
@@ -16,6 +15,16 @@
 (defvar nvp-lua--dir (file-name-directory (nvp:load-file-name)))
 
 (with-eval-after-load 'nvp-repl (require 'nvp-lua-repl))
+
+;; Syntax table used when looking identifier at point
+(defvar nvp-lua-help-syntax-table
+  (let ((tab (copy-syntax-table lua-ts--syntax-table)))
+    (modify-syntax-entry ?. "_" tab)
+    tab))
+
+(defun nvp-lua-thing-at-point (&rest _)
+  (with-syntax-table nvp-lua-help-syntax-table
+    (thing-at-point 'symbol t)))
 
 ;;; Fold
 (defvar hs-special-modes-alist)

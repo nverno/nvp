@@ -429,6 +429,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 
 ;;; Indent
 
+(defvar c-ts-mode-indent-style)
+
 (defun nvp-c-ts--indent-rules (_mode)
   `(((node-is ")") parent-bol 0)
     ((parent-is

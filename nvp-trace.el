@@ -101,6 +101,7 @@ ARG comes from `forward-sexp', which see."
 \\{trace-output-mode-map}"
   :abbrev-table nil
   :syntax-table emacs-lisp-mode-syntax-table
+  (setq buffer-read-only nil)
   (let ((sep (regexp-quote (string-chop-newline trace-separator))))
     (setq-local paragraph-separate sep)
     ;; variables to set for hideshow to work
@@ -196,11 +197,11 @@ ARG comes from `forward-sexp', which see."
   (nvp-trace-update-mode-line))
 
 (defvar nvp-trace-group-alist
-  '((popups display-buffer
-            pop-to-buffer
-            pop-to-buffer-same-window
-            switch-to-buffer-other-window
-            switch-to-buffer-other-frame)))
+  '((display-buffer display-buffer
+                    pop-to-buffer
+                    pop-to-buffer-same-window
+                    switch-to-buffer-other-window
+                    switch-to-buffer-other-frame)))
 
 (defvar nvp-trace-defun-forms
   '((defun cl-defun declare-function autoload cl-defmethod t)

@@ -22,6 +22,7 @@ With two \\[universal-argument] prompt for lua command."
                   (or (null prefix) (>= (prefix-numeric-value prefix) 16))
                   inf-lua-startfile))))
 
+
 (with-eval-after-load 'inf-lua
   (nvp-repl-add '(lua-mode lua-ts-mode)
     :name 'lua

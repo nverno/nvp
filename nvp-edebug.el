@@ -95,8 +95,8 @@
   (message "Edebug all defs %s locally"
            (if nvp-edebug--all-defs "enabled" "disabled")))
 
-;;; Toggle: projectile, filenotify, edebug settings
 
+;;; Menu Toggles: projectile, filenotify, hap, edebug settings
 (defvar projectile-verbose)
 (defvar file-notify-debug)
 (defvar nvp-hap-verbose)
@@ -104,7 +104,6 @@
 (nvp:transient-toggle nvp-edebug-menu
   edebug-on-error edebug-on-quit edebug-unwrap-results edebug-trace
   edebug-sit-on-break
-  byte-compile-generate-call-tree
   projectile-verbose
   file-notify-debug
   nvp-hap-verbose)
@@ -112,6 +111,22 @@
 (transient-define-infix nvp-edebug-menu--global-break-condition ()
   :class 'transient-lisp-variable
   :variable 'edebug-global-break-condition)
+
+
+;;; Byte-compile
+(nvp:transient-toggle nvp-edebug-menu
+  byte-compile-generate-call-tree)
+
+(transient-define-infix nvp-edebug-menu--call-tree-sort ()
+  :class 'transient-lisp-variable
+  :variable 'byte-compile-call-tree-sort
+  :reader
+  (lambda (prompt initial-input history)
+    (intern-soft
+     (completing-read
+      prompt '("name" "callers" "calls" "calls+callers")
+      nil t initial-input history))))
+
 
 ;;; Tramp
 (defun nvp-edebug-menu--toggle-tramp ()
@@ -124,6 +139,7 @@
         (setq tramp-debug-on-error (not action))
         (setq tramp-verbose (if action 0 10))
         (message "Tramp debug on error %s" (if action "disabled" "enabled"))))))
+
 
 ;;; Url
 (transient-define-infix nvp-edebug-menu--toggle-url-debug ()
@@ -139,6 +155,7 @@
                (completing-read-multiple
                 prompt '(http dav retrieval handlers)
                 nil t initial-input history))))))
+
 
 ;;; Emacs
 (transient-define-suffix nvp-edebug-menu--launch (args)
@@ -166,6 +183,8 @@
       (completing-read prompt '("bare" "site" "funcs") nil t initial-input history))
      user-emacs-directory)))
 
+
+;;; Smie
 (defun nvp-edebug-smie--toggle-verbose ()
   "Toggle smie indent verbose."
   (interactive)
@@ -185,6 +204,7 @@
     ("g" "Guess config" smie-config-guess :transient t)
     ("S" "Set indent" smie-config-set-indent :transient t)
     ("s" "Save config" smie-config-save)]])
+
 
 ;;; Native compile
 (defun nvp-native-comp--read-level (prompt &rest _)
@@ -220,6 +240,7 @@
     (":a" "Always compile"
      nvp-native-comp-menu--toggle-native-comp-always-compile)]])
 
+
 ;;;###autoload(autoload 'nvp-edebug-menu "nvp-edebug" nil t)
 (transient-define-prefix nvp-edebug-menu ()
   "Toggle or run elisp debugging."
@@ -248,7 +269,13 @@
     (":b" "Break condition" nvp-edebug-menu--global-break-condition)]
    ["Trace"
     ("t" "Trace" nvp-trace-menu :transient transient--do-replace)
-    (":c" "Generate callgraph"
+    ""
+    "Call Tree"
+    ("C" "Display call tree" display-call-tree
+     :if-non-nil byte-compile-generate-call-tree)
+    (":s" "Sort call tree" nvp-edebug-menu--call-tree-sort
+     :if-non-nil byte-compile-generate-call-tree)
+    (":c" "Generate call tree"
      nvp-edebug-menu--toggle-byte-compile-generate-call-tree)]]
   [["Other"
     ("/tran" "Transient" nvp-transient-menu :transient transient--do-replace)

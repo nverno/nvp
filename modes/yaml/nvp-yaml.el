@@ -27,9 +27,34 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(require 'nvp-yaml-indent)
+(require 'yaml-ts-mode nil t)
 (nvp:decls)
+
+
+(defvar nvp-yaml--ts-font-rules
+  (when (treesit-available-p)
+    (cons
+     (treesit-font-lock-rules
+      :language 'yaml
+      :feature 'nvp
+      `((["*" "&" "|" "?" ">"] @font-lock-operator-face)))
+
+     (treesit-font-lock-rules
+      :language 'yaml
+      :feature 'overrides
+      :override t
+      `((block_mapping_pair
+         key: ((flow_node) @font-lock-escape-face
+               (:match "<<" @font-lock-escape-face)))
+        ["..." "---"] @font-lock-delimiter-face
+        (anchor_name) @font-lock-function-name-face)))))
+
+(nvp:treesit-add-rules yaml-ts-mode
+  :mode-fonts yaml-ts-mode--font-lock-settings
+  :new-fonts (car nvp-yaml--ts-font-rules)
+  :post-fonts (cdr nvp-yaml--ts-font-rules)
+  :extra-features '(nvp overrides))
+
 
 ;; recognized CI types -- for jumping to info/linting
 ;; forms: (type prompt-key prompt-message linter &rest linter-args)
@@ -85,9 +110,9 @@
 
 ;; full path to git repo
 (defun nvp-yaml-project-url ()
-    (condition-case nil
-        (car (process-lines "git" "config" "--get" "remote.origin.url"))
-      (error nil)))
+  (condition-case nil
+      (car (process-lines "git" "config" "--get" "remote.origin.url"))
+    (error nil)))
 
 ;; return the git repo name of current project
 (defun nvp-yaml-project-repo ()

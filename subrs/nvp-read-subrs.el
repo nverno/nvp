@@ -10,7 +10,16 @@
 (defsubst nvp:read-relative-files (&optional root regexp)
   (let ((default-directory (or root default-directory)))
     (mapcar (lambda (f) (file-relative-name f))
-            (directory-files-recursively root (or regexp "")))))
+            (directory-files-recursively
+             root (or regexp "") nil
+             (lambda (dir)
+               (not (string-match-p
+                     (rx "/"
+                         (or ".git" ".hg" ".svn"
+                             "node_modules" "target" "build"
+                             ".ccls-cache" ".clangd"
+                             ".mypy" ".vscode"  ".cache"))
+                     dir)))))))
 
 ;; just MODE's name minus the "-mode"
 (defsubst nvp:read-mode-name (&optional mode)

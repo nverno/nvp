@@ -161,7 +161,7 @@ Replacement for `sh-shell-process', which see."
 (eval-when-compile
   (defmacro nvp-sh:candidates (type args)
     `(nvp-parse:buffer-file nil nil ,args
-       (sh-comp-candidates ',type file))))
+                            (sh-comp-candidates ',type file))))
 
 (cl-defmethod nvp-parse-current-function (&context (major-mode sh-mode) &rest _args)
   "Find name of function containing point.

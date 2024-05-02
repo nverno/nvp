@@ -1,5 +1,5 @@
 ;;; nvp-sh-eldoc.el --- eldoc for bash/sh  -*- lexical-binding: t; -*-
-
+;;
 ;;; Commentary:
 ;;
 ;; Notes:
@@ -9,7 +9,6 @@
 ;;   in region more than once
 ;;
 ;;; Code:
-
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
 (nvp:req 'nvp-shell 'subrs)

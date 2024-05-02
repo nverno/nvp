@@ -16,11 +16,6 @@
   "Additional indent rules to handle comments.")
 
 ;;; Font-locking
-;; (defvar nvp-go-ts--builtin-types
-;;   '("any" "bool" "byte" "comparable" "complex128" "complex64" "error" "float32"
-;;     "float64" "int" "int16" "int32" "int64" "int8" "rune" "string" "uint"
-;;     "uint16" "uint32" "uint64" "uint8" "uintptr"))
-
 (defvar nvp-go-ts-font-lock-settings
   (when (require 'go-ts-mode nil t)
     (cl-pushnew ":" go-ts-mode--operators :test #'equal)
@@ -31,16 +26,15 @@
      :language 'go
      :feature 'nvp
      ;; Functions declared with var specs
-     ;; XXX(4/29/24): remove after patch
+     ;; Note: patch not wanted
      `((var_spec name: (identifier) @font-lock-function-name-face
                  ("," name: (identifier) @font-lock-function-name-face)*
-                 type: (function_type)))
-     ;; :language 'go
-     ;; :feature 'namespace
-     ;; '((call_expression
-     ;;    function: (selector_expression
-     ;;               operand: (identifier) @nvp-namespace-use-face)))
-     )))
+                 type: (function_type))))))
+;; :language 'go
+;; :feature 'namespace
+;; '((call_expression
+;;    function: (selector_expression
+;;               operand: (identifier) @nvp-namespace-use-face)))
 
 (nvp:treesit-add-rules go-ts-mode
   :new-fonts nvp-go-ts-font-lock-settings

@@ -1,10 +1,9 @@
-;;; nvp-shell-completion.el --- shell function completion  -*- lexical-binding: t; -*-
+;;; nvp-shell-pcomplete.el --- shell pcomplete  -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;; Completion for commands in shells
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'pcomplete)
 (nvp:decls)
 
@@ -42,9 +41,9 @@
   (let ((completion-at-point-functions '(pcomplete-completions-at-point t)))
     (completion-at-point)))
 
-(provide 'nvp-shell-completion)
+(provide 'nvp-shell-pcomplete)
 ;; Local Variables:
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
-;;; nvp-shell-completion.el ends here
+;;; nvp-shell-pcomplete.el ends here

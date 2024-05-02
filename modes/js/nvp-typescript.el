@@ -76,6 +76,24 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
         (let ((new-rules
                (treesit-font-lock-rules
                 :language language
+                :feature 'nvp
+                ;; TODO(5/2/24): patch
+                '((property_signature
+                   name: (property_identifier) @font-lock-property-name-face)
+                  (public_field_definition
+                   name: (property_identifier) @font-lock-property-name-face)
+                  (index_signature
+                   name: (identifier) @font-lock-property-name-face)
+                  
+                  ;; declare class C {
+                  ;;   combine(...those: Psbt[]): this;
+                  ;; }
+                  (this_type) @font-lock-type-face
+                  (required_parameter
+                   (rest_pattern (identifier) @font-lock-variable-name-face)))
+                
+
+                :language language
                 :feature 'assignment
                 '((assignment_expression
                    left: (identifier) @font-lock-variable-name-face)
@@ -120,7 +138,7 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
 
 ;;; Add missing features once
 (nvp:treesit-add-rules typescript-ts-mode
-  :extra-features '(variable builtin namespace assignment preproc))
+  :extra-features '(variable builtin namespace assignment preproc nvp))
 
 (nvp:treesit-add-rules tsx-ts-mode
   :extra-features '(operator variable builtin namespace assignment preproc))

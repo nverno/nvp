@@ -4,15 +4,17 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
-(require 'nvp-shell-common)
-(require 'nvp)
-(nvp:req 'nvp-shell 'subrs)
+
 (nvp:decls :f (tramp-dissect-file-name
                nvp-comint-redirect-to-string shell-directory-tracker))
 (nvp:auto "f" f-same-p)
 
+;; dont expand when prefixed by [-/_.]
+(defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
+
 ;; update default-directory on remote login
 (defvar nvp-shell-ssh-regexp (nvp:rx-syms "ssh" "hssh"))
+
 
 ;;; Processes
 
@@ -21,10 +23,10 @@
   "List of possible shells."
   (nvp:with-gnu/w32 '("sh" "bash" "fish" "zsh" "csh")
     (cl-loop
-       for var in `(,(expand-file-name "usr/bin" (getenv "MSYS_HOME"))
-                    ,(expand-file-name "bin" (getenv "CYGWIN_HOME")))
-       nconc (mapcar (lambda (x) (expand-file-name x var))
-                     '("sh.exe" "bash.exe" "fish.exe" "zsh.exe")))))
+     for var in `(,(expand-file-name "usr/bin" (getenv "MSYS_HOME"))
+                  ,(expand-file-name "bin" (getenv "CYGWIN_HOME")))
+     nconc (mapcar (lambda (x) (expand-file-name x var))
+                   '("sh.exe" "bash.exe" "fish.exe" "zsh.exe")))))
 
 (defun nvp-shell--get-input (&optional add-history)
   (let ((cmd (funcall comint-get-old-input)))
@@ -109,7 +111,7 @@ Add to `comint-input-filter-functions'."
 
 (eval-when-compile
   (defsubst nvp-shell-tramp-name (&optional directory)
-   (or directory (setq directory default-directory))))
+    (or directory (setq directory default-directory))))
 
 
 ;; -------------------------------------------------------------------
@@ -125,12 +127,12 @@ If none found, return list of all terminal buffers."
   (setq proc-name (or proc-name "shell"))
   (setq directory (file-name-directory (or directory default-directory)))
   (cl-loop for proc in (process-list)
-     as pbuff = (process-buffer proc)
-     when (and (string-prefix-p proc-name (process-name proc))
-               (process-live-p proc))
-     if (f-same-p directory (buffer-local-value 'default-directory pbuff))
-     return pbuff
-     else collect pbuff))
+           as pbuff = (process-buffer proc)
+           when (and (string-prefix-p proc-name (process-name proc))
+                     (process-live-p proc))
+           if (f-same-p directory (buffer-local-value 'default-directory pbuff))
+           return pbuff
+           else collect pbuff))
 
 (defun nvp-shell-in-project-maybe (buffers)
   "Return buffer in current project if there is one in BUFFERS."
@@ -177,18 +179,17 @@ If none found, return list of all terminal buffers."
 ;; 4. use current window
 (defun nvp-shell--display-action (buffer)
   (let ((win (selected-window)))
-    (cond
-     ((eq (current-buffer) buffer)
-      '(display-buffer-reuse-window))
-     ((and (> (window-height win)
-              split-height-threshold)
-           (window-splittable-p (selected-window)))
-      nvp-shell-display-buffer-default-action)
-     (t `((display-buffer-reuse-window
-           nvp-display-buffer-below
-           display-buffer-same-window)
-          (reusable-frames   . visible)
-          (window-min-height . ,(round (* 0.3 (frame-height)))))))))
+    (cond ((eq (current-buffer) buffer)
+           '(display-buffer-reuse-window))
+          ((and (> (window-height win)
+                   split-height-threshold)
+                (window-splittable-p (selected-window)))
+           nvp-shell-display-buffer-default-action)
+          (t `((display-buffer-reuse-window
+                nvp-display-buffer-below
+                display-buffer-same-window)
+               (reusable-frames   . visible)
+               (window-min-height . ,(round (* 0.3 (frame-height)))))))))
 
 (defun nvp-shell-display-buffer (buffer)
   (let ((display-buffer-overriding-action

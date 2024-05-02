@@ -2,12 +2,12 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decl-prefix fish)
 (require 'company)
 (require 'fish-mode nil t)
+(nvp:decls :p (fish))
 
 ;; default erases file if fish isn't installed!!
-(defsubst nvp-fish-ensure-indent ()
+(defun nvp-fish-ensure-indent ()
   (executable-find "fish_indent"))
 
 (defun nvp-fish-indent ()
@@ -18,6 +18,7 @@
 (defun nvp-fish-before-save ()
   (when (executable-find "fish_indent")
     (add-hook 'before-save-hook #'fish_indent-before-save nil t)))
+
 (when (executable-find "fish_indent")
  (add-hook 'fish-mode-hook #'nvp-fish-before-save))
 

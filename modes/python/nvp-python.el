@@ -48,9 +48,6 @@
       function: (attribute attribute: (identifier) @nvp-method-use-face))
 
      ;; Variables
-     ;; XXX(4/30/24): remove after patch
-     (parameters (typed_parameter (identifier) @font-lock-variable-name-face))
-
      (keyword_argument
       name: (identifier) @font-lock-variable-name-face)
 

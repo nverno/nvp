@@ -3,7 +3,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'sh-script)
-(require 'nvp)
+
 
 ;;; Toggle
 

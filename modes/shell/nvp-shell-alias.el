@@ -1,9 +1,27 @@
-;;; nvp-hippie-shell.el --- expand shell aliases -*- lexical-binding: t; -*-
+;;; nvp-hippie-shell.el --- Read/expand/complete shell aliases -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-hippie)
-(require 'nvp-shell)
+
+
+(defvar-local nvp-local-shell-aliases nil "Directory/file local aliases.")
+(put 'nvp-local-shell-aliases 'safe-local-variable 'listp)
+
+;;;###autoload
+(defun nvp-shell-load-local-aliases (&optional interactive)
+  "Load any local aliases from `nvp-local-shell-aliases'."
+  (interactive (list t))
+  (cl-assert (derived-mode-p 'comint-mode))
+  (hack-local-variables)
+  (let ((proc (get-buffer-process (current-buffer))) defs aliases)
+    (when (and proc (bound-and-true-p nvp-local-shell-aliases))
+      (pcase-dolist (`(,alias . ,exp) nvp-local-shell-aliases)
+        (push alias aliases)
+        (setq defs (cons (concat "alias " alias "='" exp "';") defs)))
+      (comint-send-string proc (mapconcat 'identity defs))
+      (when interactive
+        (message "Loaded: %s" (mapconcat 'identity aliases ", "))))))
 
 (defun nvp-shell-read-aliases (shell-cmd regex key val)
   "SHELL-CMD is a string passed to `call-process-shell-command' to print
@@ -17,6 +35,47 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
           (puthash (match-string-no-properties key)
                    (match-string-no-properties val) ht))
         ht))))
+
+;; Read aliases from bash_aliases to alist ((alias . expansion) ... )
+(defun nvp-shell-read-file-aliases (file &optional merge os)
+  "Read aliases from FILE."
+  (with-current-buffer (find-file-noselect file)
+    (goto-char (point-min))
+    (let (res sys win)
+      (while (not (eobp))
+        ;; basic check: assume it is if [[ $OS == ".+" ]]
+        ;; only dealing with "Windows_NT", and doesn't
+        ;; try to deal with nested ifs
+        (if (looking-at
+             ;; eval-when-compile
+             (nvp:concat "if[^!]*\\(!\\)? *\$OS.*=="
+                         "\\s-*[\"']?\\([A-Za-z_0-9]+\\)"))
+            (pcase (match-string-no-properties 2)
+              (`"Windows_NT"
+               (setq sys (if (match-string 1) 'other 'windows)))
+              (_
+               (setq sys (if (match-string 1) 'windows 'other))))
+          (when (search-forward "alias" (line-end-position) t)
+            (and (looking-at "[ \t]*\\([^=]+\\)='\\([^']+\\)'")
+                 (push (list (match-string-no-properties 1)
+                             (match-string-no-properties 2))
+                       (if (eq sys 'windows) win res)))))
+        ;; reset OS
+        (when (looking-at-p "fi")
+          (setq sys nil))
+        ;; next line
+        (forward-line 1))
+      (if merge
+          ;; use all aliases regardless of system type
+          (nconc res win)
+        (if os
+            (pcase os
+              ('windows win)
+              (_ res))
+          res)))))
+
+
+;;; Completion
 
 (nvp:lazy-defvar nvp-shell--alias-completion-table
   (lambda ()
@@ -76,12 +135,12 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
 (defun nvp-shell-expand-alias ()
   "Expand shell alias at/before point."
   (interactive)
-  (let ((completion-at-point-functions
-         'nvp-shell-alias-completion-at-point))
+  (let ((completion-at-point-functions '(nvp-shell-alias-completion-at-point)))
     (call-interactively #'completion-at-point)))
 
+
 ;; -------------------------------------------------------------------
-;;; Expand shell aliases, eg. bash shell-expand-alias C-M-e 
+;;; Hippie Expand shell aliases, eg. bash shell-expand-alias C-M-e 
 
 (defvar-local nvp-he-shell-alias-beg ()
   "Returns beginning position of previous shell alias.")
@@ -117,5 +176,5 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
           (and old (he-reset-string))
         (he-substitute-string (pop he-expand-list) t)))))
 
-(provide 'nvp-hippie-exp-shell)
+(provide 'nvp-hippie-shell)
 ;;; nvp-hippie-shell.el ends here

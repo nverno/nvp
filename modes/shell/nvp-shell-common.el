@@ -6,9 +6,6 @@
 (nvp:req 'nvp-shell 'subrs)
 (nvp:decls :f (comint-line-beginning-position))
 
-;; dont expand when prefixed by [-/_.]
-(defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
-
 ;;; Interop variables for eshell, and other non-comint-based shells
 ;; used for determining the shell statement and active command around point
 (defvar nvp-shell-bol-function #'comint-line-beginning-position)

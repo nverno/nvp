@@ -124,12 +124,12 @@ or expansion."
 
 ;;;###autoload
 (defun nvp-abbrev-jump-to-file (arg)
-  "Jump to abbrev file, `nvp-abbrev-local-table', and search for insertion
+  "Jump to abbrev file, `nvp-local-abbrev-table', and search for insertion
 location. Prefix ARG specifies the length of the preceding text to use as
 abbrev. When abbrev text is selected, searching is done first by length
 then lexically."
   (interactive "P")
-  (let* ((local-abbrevs (bound-and-true-p nvp-abbrev-local-table))
+  (let* ((local-abbrevs (bound-and-true-p nvp-local-abbrev-table))
          (prefix (cond ((use-region-p)
                         (nvp-abbrev-grab-region (region-beginning) (region-end)))
                        (arg (nvp-abbrev--grab-prev arg))
@@ -139,7 +139,7 @@ then lexically."
          (table (nvp-abbrev-table-name local-abbrevs prefix expansion)))
     (save-restriction
       (with-current-buffer (nvp-abbrev--get-table
-                            table (or (bound-and-true-p nvp-abbrev-local-file)
+                            table (or (bound-and-true-p nvp-local-abbrev-file)
                                       (expand-file-name table nvp/abbrevs)))
         (if (not prefix)                ; blank start: no prefix or expansion
             (progn (ignore-errors (down-list))

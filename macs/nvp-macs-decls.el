@@ -121,7 +121,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-default-org-file
     nvp-window-configuration-stack
     nvp-program-search-paths
-    nvp-abbrev-dynamic-table nvp-abbrev-local-file nvp-abbrev-local-table
+    nvp-abbrev-dynamic-table nvp-local-abbrev-file nvp-local-abbrev-table
     nvp-abbrev-prefix-chars
     nvp-repl-alist
     nvp-repl-current

@@ -75,7 +75,7 @@
         (yas-deactivate-extra-mode
          (intern-soft (concat (symbol-name scm) "-mode"))))
       (yas-activate-extra-mode (intern-soft mode)))
-    (setq nvp-abbrev-local-table mode
+    (setq nvp-local-abbrev-table mode
           nvp-mode-name (intern mode))
     (setq local-abbrev-table (and table (symbol-value table)))))
 

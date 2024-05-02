@@ -5,7 +5,7 @@
 (defvar check-abbrev-table)
 (defvar cunit-abbrev-table)
 (defvar unity-abbrev-table)
-(defvar nvp-abbrev-local-table)
+(defvar nvp-local-abbrev-table)
 (defvar boost-test-abbrev-table)
 
 (defsubst nvp:c-check-semantic ()
@@ -38,7 +38,7 @@
   `(progn
      (setq-local local-abbrev-table
                  (symbol-value (intern (concat ,type "-abbrev-table"))))
-     (setq-local nvp-abbrev-local-table ,type)
+     (setq-local nvp-local-abbrev-table ,type)
      (nvp:set-local-keymap :use t
        ("C-c C-c" . nvp-c-test-run-unit-test))))
 

@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+SHELL  = /bin/bash
 -include config.mk
 include default.mk
 
@@ -10,10 +10,10 @@ PKG_EL  := $(shell find modes/ pkgs/ -type f -name \*.el                    \
 		-o -path \*/ext/\* -o -path \*/build/\* -o -path \*/scratch/\* \))
 PKG_ELC := ${PKG_EL:.el=.elc}
 
-FILTER_MODE =  $(filter $(addprefix modes/,$(1))/%,$(2))
-CLEAN_MODE  =  $(info cleaning $(1))    \
+FILTER_MODE  = $(filter $(addprefix modes/,$(1))/%,$(2))
+CLEAN_MODE   = $(info cleaning $(1))    \
 	@$(RM) $(call FILTER_MODE,$(1),${PKG_ELC})
-BUILD_PKG   =  $(info building $(mode)) \
+BUILD_PKG    = $(info building $(mode)) \
 	@$(call COMPILE,$(call FILTER_MODE,$(1),${PKG_EL}))
 TESTS       := $(wildcard test/*-tests.el)
 
@@ -28,7 +28,7 @@ pre-commit: $(TOP)/.git/hooks/pre-commit
 $(TOP)/.git/hooks/pre-commit: $(BINDIR)/pre-commit
 	@cp $^ $@
 
-rebuild: clean-all  ## Recompile macs/subrs/and all base configs
+rebuild: clean-all ## Recompile macs/subrs/and all base configs
 	$(MAKE)
 
 .PHONY: clean-pkgs build-pkgs clean-all
@@ -42,24 +42,24 @@ build-pkgs: ## Build all pkgs -- FIXME: does weird loopy shit
 	$(foreach mode,${PKGS},$(BUILD_PKG))
 
 .PHONY: ${PKGS}
-clean-%: %   ## Clean mode
+clean-%: % ## Clean mode
 	$(call CLEAN_MODE,$^)
 
-build-%: %   ## Build mode
+build-%: % ## Build mode
 	$(call CLEAN_MODE,$^)
 	$(call BUILD_PKG,$^)
 
-dep-%: %  ## print depends for package
+dep-%: % ## print depends for package
 	@grep "$^" .depend
 
 test: ## Run tests
 	$(BATCH) -l ert $(addprefix  -l ,$(TESTS)) -f ert-run-tests-batch-and-exit
 
-check-compiled:  ## Check compiled files for subrs/macros
+check-compiled: ## Check compiled files for subrs/macros
 	@$(CURDIR)/bin/check compiled && exit 1 || echo "check-compiled: all good"
 
 .PHONY: unicode
-unicode:  ## Generate latex/unicode abbrevs
+unicode: ## Generate latex/unicode abbrevs
 	@julia ${BIN}/latex_abbrevs.jl abbrev nil ${LATEX_ABBREVS}
 
 # .PHONY: .depend
@@ -107,7 +107,7 @@ TAGS: ${EL} ${PKG_EL}
 	ls $^ | xargs $(ETAGS) -a -o $@
 
 .PHONY: clean distclean
-clean:  ## clean temp files
+clean: ## clean temp files
 	$(RM) *~ \#.*\#
 
 distclean: clean-pkgs clean ## clean all generated files inc. compiled/auto
@@ -115,7 +115,7 @@ distclean: clean-pkgs clean ## clean all generated files inc. compiled/auto
 		*.elc macs/*.elc subrs/*.elc
 
 .PHONY: help
-help:  ## Display this help message
+help: ## Display this help message
 	@for mfile in $(MAKEFILE_LIST); do                  \
 	  grep -E '^[a-zA-Z_%-]+:.*?## .*$$' $$mfile |      \
 	  sort | ${AWK}                                     \

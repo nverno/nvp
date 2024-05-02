@@ -296,7 +296,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
     (pcase kind
       (`"R"
        (setq-local local-abbrev-table c/R-abbrev-table)
-       (setq-local nvp-abbrev-local-table "c/R"))
+       (setq-local nvp-local-abbrev-table "c/R"))
       (_ nil))
     (nvp-env-add "C_INCLUDE_PATH" (eval loc) regex)))
 

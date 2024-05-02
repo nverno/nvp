@@ -183,8 +183,8 @@
                         nvp-help-at-point-functions
                         ,@nvp-mode-default-functions)))
         (vars (--map (cons (symbol-name it) (symbol-value it))
-                     '(nvp-abbrev-local-file
-                       nvp-abbrev-local-table
+                     '(nvp-local-abbrev-file
+                       nvp-local-abbrev-table
                        nvp-mode-header-regex
                        completion-at-point-functions
                        company-backends

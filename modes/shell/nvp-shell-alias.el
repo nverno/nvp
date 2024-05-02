@@ -1,4 +1,4 @@
-;;; nvp-hippie-shell.el --- Read/expand/complete shell aliases -*- lexical-binding: t; -*-
+;;; nvp-shell-alias.el --- Read/expand/complete shell aliases -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -176,5 +176,5 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
           (and old (he-reset-string))
         (he-substitute-string (pop he-expand-list) t)))))
 
-(provide 'nvp-hippie-shell)
-;;; nvp-hippie-shell.el ends here
+(provide 'nvp-shell-alias)
+;;; nvp-shell-alias.el ends here

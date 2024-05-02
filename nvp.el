@@ -76,11 +76,11 @@ called from minibuffer, or nil.")
 
 ;;-- Local
 ;; Abbrevs
-(defvar-local nvp-abbrev-local-table nil "Abbrev table to use for mode.")
+(defvar-local nvp-local-abbrev-table nil "Abbrev table to use for mode.")
 (defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
 (nvp:defvar
   :local t :permanent t
-  nvp-abbrev-local-file () "File containing local abbrev tables."
+  nvp-local-abbrev-file () "File containing local abbrev tables."
   nvp-abbrev-prefix-chars ":<>=/#._[:alnum:]"
   "Default chars to include in abbrev prefixes."
   ;; jumping variables -- might be set in dir-locals

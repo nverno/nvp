@@ -16,7 +16,7 @@
          (new-abbr-table (format "%s-abbrev-table" new-mode-name)))
     (setq nvp-mode-name new-mode)
     (--when-let (intern-soft new-abbr-table)
-      (setq nvp-abbrev-local-table new-mode-name
+      (setq nvp-local-abbrev-table new-mode-name
             local-abbrev-table (symbol-value it)))
     (--when-let (intern-soft prev-mode)
       (yas-deactivate-extra-mode it))

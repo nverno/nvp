@@ -144,8 +144,8 @@
     ;; initialization that happens every time
     (pcase-let (((cl-struct nvp-mode-vars snippets abbr-file abbr-table) mvars))
       (setq nvp-mode-snippet-dir snippets
-            nvp-abbrev-local-file abbr-file
-            nvp-abbrev-local-table abbr-table
+            nvp-local-abbrev-file abbr-file
+            nvp-local-abbrev-table abbr-table
             local-abbrev-table
             (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))))
     (nvp:setup-local-hooks mvars))

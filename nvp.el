@@ -77,7 +77,7 @@ called from minibuffer, or nil.")
 ;;-- Local
 ;; Abbrevs
 (defvar-local nvp-local-abbrev-table nil "Abbrev table to use for mode.")
-(defvar-local nvp-abbrev-dynamic-table nil "On-the-fly abbrev table.")
+(defvar-local nvp-abbrevd-table nil "On-the-fly abbrev table.")
 (nvp:defvar
   :local t :permanent t
   nvp-local-abbrev-file () "File containing local abbrev tables."
@@ -141,6 +141,7 @@ called from minibuffer, or nil.")
 (setq-default nvp-test-default-function            #'projectile-test-project)
 (setq-default nvp-configure-default-function       #'projectile-configure-project)
 (setq-default nvp-run-default-function             #'projectile-run-project)
+(setq-default nvp-abbrev-default-function          #'nvp-abbrevd)
 (and (fboundp 'edit-indirect-region)
      (setq-default nvp-edit-default-function       #'edit-indirect-region))
 (and (fboundp 'devdocs-lookup)

@@ -9,6 +9,14 @@
 (require 'abbrev)
 (require 'nvp)
 
+;; Note: The dynamic table doesnt have an indirect evaled symbol like normal
+;; abbrev tables
+(defsubst nvp:table-value (table)
+  (if (symbolp table) (symbol-value table) table))
+
+(defsubst nvp:table-name (table)
+  (if (symbolp table) (symbol-name table) "Dynamic"))
+
 ;; get the value of the local abbrev table
 (defsubst nvp-abbrev--local-table ()
   (or local-abbrev-table
@@ -17,32 +25,21 @@
 ;; return list of currently loaded and non-empty abbrev tables
 (defsubst nvp-abbrev--nonempty (&optional tables)
   (cl-remove-if
-   (lambda (table)
-     (abbrev-table-empty-p (symbol-value table)))
-   (or tables abbrev-table-name-list)))
+   (lambda (table) (abbrev-table-empty-p (nvp:table-value table)))
+   (or tables (if (bound-and-true-p nvp-abbrevd-table)
+                  abbrev-table-name-list
+                (delq 'nvp-abbrevd--table abbrev-table-name-list)))))
 
+;;; XXX(5/2/24): check for dependency loop? hasnt ever happened, but maybe...
 ;; list of all table parents, recursively
 (defsubst nvp-abbrev--all-parents (table &optional names)
   (unless (abbrev-table-p table) (setq table (symbol-value table)))
-  (let ((parents (abbrev-table-get table :parents))
-        res)
+  (let ((parents (abbrev-table-get table :parents)) res)
     (while parents
       (setq res (append res parents))
       (setq parents (car (mapcar (lambda (tab) (abbrev-table-get tab :parents)) parents))))
     (if names (mapcar #'abbrev-table-name res)
       res)))
-
-;; transform by splitting on '-', eg.
-;; 'nvp-abbrev--lisp-transformer' => 'na:lt' abbrev
-(defsubst nvp-abbrev--lisp-transformer (str &optional joiner splitter)
-  (nvp:defq splitter "-" joiner ":")
-  (mapconcat (lambda (s)
-               (if (string-empty-p s) joiner
-                 (substring s 0 1)))
-             (split-string str "-") ""))
-
-(defsubst nvp-abbrev--read-table (prompt choices)
-  (nvp-completing-read prompt choices nil t nil 'nvp-abbrev--read-history))
 
 ;; Grab preceding NCHARS to match against in abbrev table.
 (defsubst nvp-abbrev--grab-prev (nchars)

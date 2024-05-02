@@ -46,20 +46,7 @@
 (defun nvp-shell-abbrev-write (file)
   "Write shell abbrevs table to FILE."
   (interactive (list (read-file-name "Write abbrevs to: ")))
-  (let ((abbrev-table-name-list '(nvp-shell-abbrev-table)))
-    ;; temporarily rebind `abbrev--write' so we can write out
-    ;; :system abbrevs as well
-    (cl-letf (((symbol-function 'abbrev--write)
-               (lambda (sym)
-                 (unless (null (symbol-value sym))
-                   (insert "    (")
-                   (prin1 (symbol-name sym))
-                   (insert " ")
-                   (prin1 (symbol-value sym))
-                   (insert " ")
-                   (prin1 (symbol-function sym))
-                   (insert " :system t)\n")))))
-      (write-abbrev-file file ))))
+  (funcall #'nvp-abbrev-write-abbrev-table 'nvp-shell-abbrev-table file))
 
 (provide 'nvp-shell-abbrev)
 ;;; nvp-shell-abbrev.el ends here

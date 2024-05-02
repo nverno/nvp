@@ -23,15 +23,10 @@
 ;; list all active, nonempty tables:
 ;; - dynamic table, local table, all parents, global table
 (defun nvp-abbrev--active-tables (&optional allow-empty)
-  (let ((tabs
-         (append (if (null local-abbrev-table) ()
-                   (cons local-abbrev-table
-                         (nvp-abbrev--all-parents local-abbrev-table)))
-                 (list global-abbrev-table))))
-    (when (and nvp-abbrev-dynamic-table
-               (abbrev-table-p nvp-abbrev-dynamic-table))
-      (setq tabs (cons nvp-abbrev-dynamic-table tabs)))
-    (setq tabs (delete-dups (mapcar #'abbrev-table-name tabs)))
+  (let* ((local-table (or nvp-abbrevd-table local-abbrev-table))
+         (tabs (append (when local-table
+                         (cons local-table (nvp-abbrev--all-parents local-table)))
+                       (list global-abbrev-table))))
     (if allow-empty tabs
       (nvp-abbrev--nonempty tabs))))
 
@@ -45,19 +40,19 @@
 
 ;; add completion annotations
 (defun nvp-abbrev-completion--apply-annotation (table)
-  (let ((tab-name (symbol-name table)))
+  (let ((tab-name (nvp:table-name table)))
     (mapatoms (lambda (sym) (add-text-properties 0 1 (list 'annotation tab-name) sym)))))
 
 ;; active tables in current context, determined by :enable-function
 (defun nvp-abbrev-completion--active-tables ()
-  (cl-remove-if-not (lambda (tab)
-                      (let ((pred (abbrev-table-get
-                                   (symbol-value tab) :enable-function)))
-                        (if pred (funcall pred) t)))
-                    (nvp-abbrev-completion--tables)))
+  (cl-remove-if-not
+   (lambda (tab)
+     (let ((pred (abbrev-table-get (nvp:table-value tab) :enable-function)))
+       (if pred (funcall pred) t)))
+   (nvp-abbrev-completion--tables)))
 
 ;; default grab previous abbrev when no regexp -- see `abbrev--before-point'
-(defsubst nvp-abbrev-completion--grab ()
+(defun nvp-abbrev-completion--grab ()
   (let ((lim (point)) start end)
     (backward-word 1)
     (setq start (point))
@@ -69,8 +64,8 @@
 ;; Return first prefix from tables that satisfies its `:enable-function'
 ;; and matches its table's `:regexp'
 (defun nvp-abbrev-completion--prefix ()
-  (cl-loop for tab in (nvp-abbrev-completion--active-tables)
-           as re = (abbrev-table-get (symbol-value tab) :regexp)
+  (cl-loop for table in (nvp-abbrev-completion--active-tables)
+           as re = (abbrev-table-get (nvp:table-value table) :regexp)
            if (not re)
            return (nvp-abbrev-completion--grab)
            when (looking-back re (line-beginning-position))
@@ -89,16 +84,16 @@
 
 ;; Return completion candidates, taking into account per-table :regexp
 (defun nvp-abbrev-completion-candidates (arg &optional annotate expansion)
-  (cl-loop for tab in (nvp-abbrev-completion--active-tables)
-           as comps = (delete "" (all-completions arg (symbol-value tab)))
+  (cl-loop for table in (nvp-abbrev-completion--active-tables)
+           as tab = (nvp:table-value table)
+           as comps = (delete "" (all-completions arg tab))
            when annotate
-           do (mapc (lambda (comp)
-                      (put-text-property 0 1 'annotation  (if expansion
-                                                              (abbrev-expansion comp)
-                                                            (symbol-name tab))
-                                         comp))
-                    comps)
-           nconc comps))
+           nconc (mapcar (lambda (comp)
+                           (propertize
+                            comp 'annotation
+                            (if expansion (abbrev-expansion comp) tab)))
+                         comps)
+           else nconc comps))
 
 ;; -------------------------------------------------------------------
 ;;; Abbrevs
@@ -122,14 +117,14 @@ candidates."
                    (delq nil
                          (mapcan
                           (lambda (table)
+                            (setq table (nvp:table-value table))
                             (mapcar
                              (lambda (prefix)
-                               (let ((exp
-                                      (abbrev-expansion prefix (symbol-value table))))
+                               (let ((exp (abbrev-expansion prefix table)))
                                  (if (vectorp exp)
                                      (aref exp 0) ; expand hooks
                                    exp)))
-                             (all-completions he-search-string (symbol-value table))))
+                             (all-completions he-search-string table)))
                           (nvp-abbrev-completion--active-tables)))))))
     (while (and he-expand-list          ; clean expansion list
                 (he-string-member (car he-expand-list) he-tried-table t))

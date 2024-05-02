@@ -7,9 +7,8 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'abbrev)
-(require 'company)
 (require 'nvp-abbrev-completion)
+(require 'company)
 
 ;;;###autoload
 (defun nvp-company-abbrev (command &optional arg &rest _ignored)
@@ -21,7 +20,8 @@ Respects abbrev table :regexp and :enable-function properties."
     (prefix (nvp-abbrev-completion-prefix))
     (candidates (nvp-abbrev-completion-candidates arg 'annotate 'expansion))
     (meta (abbrev-expansion arg))
-    (annotation (or (get-text-property 0 'annotation arg) "<abbrev>"))))
+    (annotation (or (get-text-property 0 'annotation arg) "<abbrev>"))
+    (post-completion (expand-abbrev))))
 
 (provide 'nvp-company-abbrev)
 ;;; nvp-company-abbrev.el ends here

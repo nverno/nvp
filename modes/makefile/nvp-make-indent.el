@@ -1,11 +1,19 @@
 ;;; nvp-make-indent.el --- extra indentation in makefiles -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
-;; XXX: not used currently -- needs some work
+;;
+;; Indents regions between `nvp-makefile-open/close'. In a sequence like
+;;
+;;    ifeq <region> else <region> <endif>
+;;
+;; Code in <region>s is indented `nvp-makefile-indent-offset' unless the line
+;; starts with a TAB, in which nothing is done.
+;;
+;; Note(5/2/24): Currently, define .. endef regions are ignored.
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-makefile)
-(require 'nvp)
 (nvp:decls)
 
 ;; indentation in blocks, eg.  #if, #define
@@ -15,6 +23,7 @@
   (goto-char beg)
   (while (and (nvp:goto 'bonll)
               (< (point) end)
+              (not (eq ?	(char-after)))
               (not (looking-at makefile-dependency-regex)))
     (delete-horizontal-space)
     (indent-to-column nvp-makefile-indent-offset)))

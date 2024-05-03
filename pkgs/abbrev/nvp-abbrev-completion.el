@@ -12,25 +12,36 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'abbrev)
-(require 'nvp)
-(nvp:req 'nvp-abbrev 'subrs)
+(eval-and-compile (require 'nvp-abbrev))
 (nvp:decls :p (he))
 
-;; if non-nil, update active table cache
+
+;; If non-nil, update active table cache
+;; This gets set `nvp-abbrev-jump-to-file' after saving abbrev file
 (defvar-local nvp-abbrev-completion-need-refresh nil)
 
-;; list all active, nonempty tables:
-;; - dynamic table, local table, all parents, global table
-(defun nvp-abbrev--active-tables (&optional allow-empty)
-  (let* ((local-table (or nvp-abbrevd-table local-abbrev-table))
-         (tabs (append (when local-table
-                         (cons local-table (nvp-abbrev--all-parents local-table)))
-                       (list global-abbrev-table))))
-    (if allow-empty tabs
-      (nvp-abbrev--nonempty tabs))))
+(defsubst nvp-abbrev--nonempty (&optional tables)
+  "Filter out empty tables from TABLES or `abbrev-table-name-list'."
+  (--filter (--when-let (nvp-abbrev--table-value it)
+              (not (abbrev-table-empty-p it)))
+            (or tables abbrev-table-name-list)))
 
-;; use local table along with its parents + global table
+;; Local tables, all their parents, and global table
+;; XXX(5/3/24): Could also add minor-mode tables?
+(defun nvp-abbrev--active-tables (&optional allow-empty)
+  "List active, non-empty tables unless ALLOW-EMPTY."
+  (let* ((local-tables (and local-abbrev-table
+                            (if (listp local-abbrev-table)
+                                local-abbrev-table
+                              (list local-abbrev-table))))
+         (tables (append local-tables
+                         (nvp-abbrev--all-parents local-tables)
+                         (list global-abbrev-table))))
+    (if allow-empty
+        tables
+      (nvp-abbrev--nonempty tables))))
+
+;; Use local table along with its parents + global table
 (nvp:define-cache nvp-abbrev-completion--tables ()
   :cache nvp-abbrev-completion--tables-cache
   :local t
@@ -38,16 +49,20 @@
   (prog1 (nvp-abbrev--active-tables)
     (setq nvp-abbrev-completion-need-refresh nil)))
 
+
 ;; add completion annotations
 (defun nvp-abbrev-completion--apply-annotation (table)
-  (let ((tab-name (nvp:table-name table)))
-    (mapatoms (lambda (sym) (add-text-properties 0 1 (list 'annotation tab-name) sym)))))
+  (let ((tab-name (nvp-abbrev--table-name table)))
+    (mapatoms
+     (lambda (sym)
+       (add-text-properties
+        0 1 (list 'annotation tab-name) sym)))))
 
 ;; active tables in current context, determined by :enable-function
 (defun nvp-abbrev-completion--active-tables ()
   (cl-remove-if-not
    (lambda (tab)
-     (let ((pred (abbrev-table-get (nvp:table-value tab) :enable-function)))
+     (let ((pred (abbrev-table-get (nvp-abbrev--table-value tab) :enable-function)))
        (if pred (funcall pred) t)))
    (nvp-abbrev-completion--tables)))
 
@@ -65,27 +80,27 @@
 ;; and matches its table's `:regexp'
 (defun nvp-abbrev-completion--prefix ()
   (cl-loop for table in (nvp-abbrev-completion--active-tables)
-           as re = (abbrev-table-get (nvp:table-value table) :regexp)
+           as re = (abbrev-table-get (nvp-abbrev--table-value table) :regexp)
            if (not re)
            return (nvp-abbrev-completion--grab)
            when (looking-back re (line-beginning-position))
            return (list (match-string-no-properties 1) (match-beginning 0) (point))))
 
 ;; return beginning position of prefix for hippie
-(defun nvp-abbrev-completion-prefix-beg ()
+(defsubst nvp-abbrev-completion-prefix-beg ()
   (when-let ((abbrev (nvp-abbrev-completion--prefix)))
     (cadr abbrev)))
 
 ;; return prefix, either matching a table's predicates or defaulting to the
 ;; previous symbol
-(defun nvp-abbrev-completion-prefix ()
+(defsubst nvp-abbrev-completion-prefix ()
   (or (car-safe (nvp-abbrev-completion--prefix))
       (nvp-grab-symbol)))
 
 ;; Return completion candidates, taking into account per-table :regexp
 (defun nvp-abbrev-completion-candidates (arg &optional annotate expansion)
   (cl-loop for table in (nvp-abbrev-completion--active-tables)
-           as tab = (nvp:table-value table)
+           as tab = (nvp-abbrev--table-value table)
            as comps = (delete "" (all-completions arg tab))
            when annotate
            nconc (mapcar (lambda (comp)
@@ -95,10 +110,7 @@
                          comps)
            else nconc comps))
 
-;; -------------------------------------------------------------------
-;;; Abbrevs
 
-;; #<marker at 30147 in hippie-exp.el.gz>
 ;;;###autoload
 (defun nvp-try-expand-local-abbrevs (old)
   "Try to expand word from locally active abbrev tables.
@@ -117,7 +129,7 @@ candidates."
                    (delq nil
                          (mapcan
                           (lambda (table)
-                            (setq table (nvp:table-value table))
+                            (setq table (nvp-abbrev--table-value table))
                             (mapcar
                              (lambda (prefix)
                                (let ((exp (abbrev-expansion prefix table)))

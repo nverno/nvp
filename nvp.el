@@ -75,9 +75,8 @@ called from minibuffer, or nil.")
                  (1 find-function-other-window))))
 
 ;;-- Local
-;; Abbrevs
+
 (defvar-local nvp-local-abbrev-table nil "Abbrev table to use for mode.")
-(defvar-local nvp-abbrevd-table nil "On-the-fly abbrev table.")
 (nvp:defvar
   :local t :permanent t
   nvp-local-abbrev-file () "File containing local abbrev tables."

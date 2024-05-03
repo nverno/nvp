@@ -21,6 +21,7 @@
                expand-do-expansion expand-build-marks expand-list-to-markers)
            :v (expand-point expand-list expand-index expand-pos))
 
+
 ;;;###autoload
 (defun nvp-abbrev-grab ()
   "Grabs previous symbol if point is at the end of a symbol or if the

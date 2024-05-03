@@ -3,17 +3,22 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'treesit nil t)
-(require 'nvp)
+(require 'lua-ts-mode nil t)
+(require 'nvp)                          ; faces
 (nvp:decls :p (lua) :v (lua-ts--builtins lua-ts-mode-hook))
+
 
 (defvar lua-ts-align-arguments nil
   "Non-nil to align arguments with parent")
 
-(defvar lua-ts--simple-indent-rules-orig)
-(defvar lua-ts--font-lock-settings-orig)
+;;; FIX(5/3/24): remove all this stuff
 (defvar nvp-lua-ts-font-lock-before)
 (defvar nvp-lua-ts-font-lock-after)
+
+(with-eval-after-load 'lua-ts-mode
+  (defvar lua-ts--simple-indent-rules-orig lua-ts--simple-indent-rules)
+  (defvar lua-ts--font-lock-settings-orig lua-ts--font-lock-settings)
+  (setq lua-ts--builtins (--filter (not (string= it "self")) lua-ts--builtins)))
 
 ;; (defun lua-ts-mode--assignment-identifier (node)
 ;;   (pcase (treesit-node-type node)
@@ -33,11 +38,17 @@
 ;;        'font-lock-variable-name-face
 ;;        override start end))))
 
+
 (defvar lua-ts-mode--identifier-query
   (when (treesit-available-p)
     (treesit-query-compile 'lua '((identifier) @id))))
 
+;;; TODO(5/3/24):
+;; (defun lua-ts-mode--fontify-function (node override start end &rest _)
+;;   (pcase (treesit-navigate-thing )))
+
 ;;; FIXME(4/30/24): method_index/do_index being fontified the same
+
 (defun lua-ts-mode--fontify-table (node override start end &rest _)
   (when-let* ((face 'nvp-receiver-face) ;; 'nvp-namespace-face
               (node (pcase (treesit-node-type node)
@@ -61,78 +72,75 @@
        (treesit-node-start node) (treesit-node-end node)
        face override start end))))
 
-(defvar lua-ts--font-lock-settings)
-(defvar lua-ts--simple-indent-rules)
-(with-eval-after-load 'lua-ts-mode
-  (setq lua-ts--font-lock-settings-orig lua-ts--font-lock-settings
-        lua-ts--simple-indent-rules lua-ts--simple-indent-rules
-        lua-ts--builtins (--filter (not (string= it "self")) lua-ts--builtins))
+(setq nvp-lua-ts-font-lock-before
+      (treesit-font-lock-rules
+       :language 'lua
+       :feature 'definition
+       '((function_declaration
+          name: (method_index_expression
+                 table: (_) @lua-ts-mode--fontify-table
+                 method: (identifier) @font-lock-function-name-face))
+         (function_declaration
+          (method_index_expression
+           (dot_index_expression
+            table: (_) @lua-ts-mode--fontify-table
+            field: (identifier) @font-lock-property-name-face)))
+         (function_declaration
+          name: (identifier) @font-lock-function-name-face)
+         (function_declaration
+          name: (dot_index_expression
+                 table: (identifier) @nvp-namespace-face
+                 field: (identifier) @font-lock-function-name-face))
+         (function_declaration
+          name: (dot_index_expression
+                 table: (_) @lua-ts-mode--fontify-table
+                 field: (identifier) @font-lock-function-name-face))
+         (assignment_statement
+          (variable_list name: [(identifier)]) @font-lock-function-name-face
+          (expression_list value: (function_definition)))
+         (field
+          name: (identifier) @font-lock-function-name-face
+          value: (function_definition))
+         (parameters
+          name: (identifier) @font-lock-variable-name-face))
 
-  (setq nvp-lua-ts-font-lock-before
-        (treesit-font-lock-rules
-         :language 'lua
-         :feature 'definition
-         '((function_declaration
-            name: (method_index_expression
-                   table: (_) @lua-ts-mode--fontify-table
-                   method: (identifier) @font-lock-function-name-face))
-           (function_declaration
-            (method_index_expression
-             (dot_index_expression
-              table: (_) @lua-ts-mode--fontify-table
-              field: (identifier) @font-lock-property-name-face)))
-           (function_declaration
-            name: (identifier) @font-lock-function-name-face)
-           (function_declaration
-            name: (dot_index_expression
-                   table: (_) @lua-ts-mode--fontify-table
-                   field: (identifier) @font-lock-function-name-face))
-           (assignment_statement
-            (variable_list name: [(identifier)]) @font-lock-function-name-face
-            (expression_list value: (function_definition)))
-           (field
-            name: (identifier) @font-lock-function-name-face
-            value: (function_definition))
-           (parameters
-            name: (identifier) @font-lock-variable-name-face))
+       :language 'lua
+       :feature 'builtin
+       `(((identifier) @font-lock-keyword-face
+          (:match ,(rx bos "self" eos) @font-lock-keyword-face))
+         ((identifier) @font-lock-builtin-face
+          (:match ,(rx-to-string `(seq bos (or ,@lua-ts--builtins) eos))
+                  @font-lock-builtin-face)))))
 
-         :language 'lua
-         :feature 'builtin
-         `(((identifier) @font-lock-keyword-face
-            (:match ,(rx bos "self" eos) @font-lock-keyword-face))
-           ((identifier) @font-lock-builtin-face
-            (:match ,(rx-to-string `(seq bos (or ,@lua-ts--builtins) eos))
-                    @font-lock-builtin-face)))))
+(setq nvp-lua-ts-font-lock-after
+      (treesit-font-lock-rules
+       :language 'lua
+       :feature 'comment
+       '(((comment) @font-lock-doc-face
+          (:match "\\`---" @font-lock-doc-face))
+         (comment) @lua-ts--comment-font-lock
+         (hash_bang_line) @nvp-treesit-fontify-hash-bang)
 
-  (setq nvp-lua-ts-font-lock-after
-        (treesit-font-lock-rules
-         :language 'lua
-         :feature 'comment
-         '(((comment) @font-lock-doc-face
-            (:match "\\`---" @font-lock-doc-face))
-           (comment) @lua-ts--comment-font-lock
-           (hash_bang_line) @nvp-treesit-fontify-hash-bang)
+       :language 'lua
+       :feature 'namespace
+       ;; :override t
+       '((function_declaration
+          name: [(method_index_expression) (dot_index_expression)]
+          @lua-ts-mode--fontify-table)
+         (function_call
+          name: [(method_index_expression) (dot_index_expression)]
+          @lua-ts-mode--fontify-table))
 
-         :language 'lua
-         :feature 'namespace
-         ;; :override t
-         '((function_declaration
-            name: [(method_index_expression) (dot_index_expression)]
-            @lua-ts-mode--fontify-table)
-           (function_call
-            name: [(method_index_expression) (dot_index_expression)]
-            @lua-ts-mode--fontify-table))
+       ;; :language 'lua
+       ;; :feature 'assignment
+       ;; '((for_numeric_clause name: (identifier) @font-lock-variable-name-face)
+       ;;   (variable_list (_) @lua-ts-mode--fontify-assignment-lhs))
 
-         ;; :language 'lua
-         ;; :feature 'assignment
-         ;; '((for_numeric_clause name: (identifier) @font-lock-variable-name-face)
-         ;;   (variable_list (_) @lua-ts-mode--fontify-assignment-lhs))
-
-         :language 'lua
-         :feature 'variable
-         '((function_call
-            arguments: (arguments (identifier) @font-lock-variable-use-face))
-           [(identifier)] @font-lock-variable-use-face))))
+       :language 'lua
+       :feature 'variable
+       '((function_call
+          arguments: (arguments (identifier) @font-lock-variable-use-face))
+         [(identifier)] @font-lock-variable-use-face)))
 
 ;;;###autoload
 (defun nvp-lua-ts-load-font-lock (&optional orig)

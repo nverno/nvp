@@ -6,18 +6,14 @@
 ;;
 ;; TODO(5/2/24):
 ;; - Edit dynamic abbrevs
+;; -
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-abbrev)
+(eval-and-compile (require 'nvp-abbrev))
 (require 'nvp-parse)
-(nvp:req 'nvp-abbrev 'subrs)
-(nvp:auto "nvp-abbrev" nvp-abbrev--lisp-transformer)
 (nvp:decls)
 
-
-(define-abbrev-table 'nvp-abbrevd--table '()
-  "Dynamic abbrev table.")
 
 (defcustom nvp-abbrevd-always-prompt nil
   "Non-nil to always ask whether to append new abbrevs."
@@ -25,21 +21,58 @@
   :safe 'booleanp
   :group 'abbrev)
 
-(defvar nvp-abbrevd-verbose t
-  "Non-nil to say stuff.")
+
+(defun nvp-abbrevd-make-table (prefix &optional hook &rest props)
+  "Make new abbrevd table.
+Its symbol is created from PREFIX and its function value is HOOK.
+PROPS are passed to `make-abbrev-table'."
+  (let ((sym (obarray-put nvp-abbrevd-obarray (symbol-name (cl-gensym prefix))))
+        (table (make-abbrev-table props)))
+    (set sym table)
+    (fset sym hook)
+    (while (consp props)
+      (unless (cdr props) (error "Missing value for property %S" (car props)))
+      (abbrev-table-put table (pop props) (pop props)))
+    sym))
+
+(defsubst nvp-abbrevd-p (table)
+  "Check if TABLE is abbrevd."
+  (intern-soft (symbol-name table) nvp-abbrevd-obarray))
+
+(defsubst nvp-abbrevd--local-table ()
+  "Return value of local table or nil."
+  (or local-abbrev-table
+      (let ((name (or nvp-local-abbrev-table (symbol-name major-mode))))
+        (symbol-value (intern-soft (format "%s-abbrev-table" name))))))
+
+(defun nvp-abbrevd--active-tables (&optional table-list)
+  "Return list of active abbrevd tables.
+Search in `abbrev-table-name-list' or TABLE-LIST if non-nil."
+  (let ((tables (or table-list abbrev-table-name-list))
+        (res nil) cur)
+    (while (setq cur (pop tables))
+      (and (nvp-abbrevd-p cur)
+           (push res cur)))
+    res))
 
 
 (cl-defgeneric nvp-abbrevd-read (&optional arg)
   "Default method to read arguments for dynamic abbrev tables."
+  ;; No prefix => new abbrev table from current buffer
+  ;; C-u => new abbrev table from file
+  ;; C-u C-u => add abbrevs from current buffer to another table
+  ;; C-u C-u C-u... => prompt for both options
   (let ((arg (or (car arg) 0)))
-    (list (if (>= arg 16)
+    (list (if (or (= arg 4)
+                  (and (> arg 16)
+                       (y-or-n-p "From file? ")))
               (read-file-name "File to abbrev: ")
             (current-buffer))
-          (when nvp-abbrevd-table
-            (if (or nvp-abbrevd-always-prompt
-                    (>= arg 16))
-                (y-or-n-p "Append to current dynamic table? ")
-              (= arg 4))))))
+          (if (or (= arg 16)
+                  (and (or nvp-abbrevd-always-prompt
+                           (> arg 16))
+                       (y-or-n-p "Add abbrevs to current table? ")))
+              (nvp-abbrev--read-table nil nil 'local)))))
 
 
 (cl-defgeneric nvp-abbrevd-make-args ()
@@ -49,35 +82,36 @@ Called from buffer generated abbrevs."
         :transformer #'nvp-abbrev--lisp-transformer))
 
 
-(cl-defgeneric nvp-abbrevd-table-props (&optional parent-table)
+(cl-defgeneric nvp-abbrevd-table-props (&optional parent-tables)
   "Function to produce abbrev table properties.
-The default tries to use those defined in PARENT-TABLE."
+The default tries to use those defined in PARENT-TABLES."
   (let ((props (list :enable-function #'nvp-abbrev-expand-p)))
-    (when parent-table
+    (when parent-tables
+      (setq parent-tables (--map (if (symbolp it) (symbol-value it) it)
+                                 (if (listp parent-tables)
+                                     parent-tables
+                                   (list parent-tables))))
       (dolist (prop '(:regexp :enable-function))
-        (and-let* ((val (abbrev-table-get parent-table prop)))
-          (plist-put props prop val))))
+        (--when-let (--some (abbrev-table-get it prop) parent-tables)
+          (plist-put props prop it))))
     props))
 
 
-(cl-defun nvp-abbrevd--populate-table
-    (defs &optional append
-          &key (parents (nvp-abbrev--local-table)) regexp enable-function)
-  "Function to create and add dynamic abbrevs from current buffer.
-If APPEND is non-nil, add abbrevs to current buffer-local dynamic table."
-  (unless (consp parents) (setq parents (cons parents nil)))
-  (when (and (not append)
-             (bound-and-true-p nvp-abbrevd-table))
-    (clear-abbrev-table nvp-abbrevd-table))
-  (unless (abbrev-table-p nvp-abbrevd-table)
-    (let ((table (make-abbrev-table)))
-      (abbrev-table-put table :parents parents)
-      (setq nvp-abbrevd-table table)))
-  (abbrev-table-put nvp-abbrevd-table :regexp regexp)
-  (abbrev-table-put nvp-abbrevd-table :enable-function enable-function)
+(defun nvp-abbrevd--populate-table (defs &optional table prefix &rest props)
+  "Add abbrev DEFS to TABLE or create a new abbrevd table."
+  (cl-assert (or table prefix) t "One is required")
+  (and table (setq table (nvp-abbrev--table-value table)))
+  (unless table
+    (let ((sym (apply #'nvp-abbrevd-make-table prefix nil props)))
+      (setq table (symbol-value sym))
+      (unless (memq sym abbrev-table-name-list)
+        (push sym abbrev-table-name-list))
+      (when nvp-abbrev-verbose
+        (message "New abbrevd table: '%S'" sym)))
+    (nvp-abbrev--add-local table))
   (dolist (def defs)
-    (apply #'define-abbrev nvp-abbrevd-table def))
-  (setq-local local-abbrev-table nvp-abbrevd-table))
+    (apply #'define-abbrev table def))
+  table)
 
 
 ;; Create abbrevs from obarray/list/symbol/string
@@ -94,10 +128,11 @@ If APPEND is non-nil, add abbrevs to current buffer-local dynamic table."
   "Function to convert objects into their abbreviated forms."
   (let (res)
     (cl-flet ((make-abbrev (name)
-                (let ((name (cond
-                             ((stringp name) name)
-                             ((symbolp name) (symbol-name name))
-                             (t nil))))
+                (let ((name
+                       (cond
+                        ((stringp name) name)
+                        ((symbolp name) (symbol-name name))
+                        (t nil))))
                   (when (and name
                              (< min-length (length name))
                              (if predicate (funcall predicate name) t))
@@ -117,54 +152,32 @@ If APPEND is non-nil, add abbrevs to current buffer-local dynamic table."
 
 
 ;;;###autoload
-(defun nvp-abbrevd (&optional buffer-or-file append)
+(defun nvp-abbrevd (&optional buffer-or-file table)
   "Create dynamic abbrevs from BUFFER-OR-FILE.
-If APPEND is non-nil, add abbrevs to current buffer-local dynamic table."
+Add abbrevs to TABLE if non-nil."
   (interactive (nvp-abbrevd-read current-prefix-arg))
   (let ((defs (with-current-buffer (if (buffer-live-p buffer-or-file)
                                        buffer-or-file
                                      (find-file-noselect buffer-or-file))
-                (apply #'nvp-abbrevd--make-abbrevs (nvp-abbrevd-make-args)))))
+                (apply #'nvp-abbrevd--make-abbrevs
+                       (nvp-abbrevd-make-args)))))
     (if (not defs)
-        (and nvp-abbrevd-verbose (message "No abbrevs found"))
-      (let ((parent (nvp-abbrev--local-table)))
-        (apply #'nvp-abbrevd--populate-table defs append
-               :parents (list parent)
-               (nvp-abbrevd-table-props parent))
-        (when nvp-abbrevd-verbose
+        (when nvp-abbrev-verbose
+          (message "No abbrevs found"))
+      (let* ((parents (nvp-abbrevd--local-table))
+             (props (nvp-abbrevd-table-props parents))
+             (prefix (symbol-name (or nvp-mode-name major-mode))))
+
+        (apply #'nvp-abbrevd--populate-table
+               defs table prefix props)
+
+        (when nvp-abbrev-verbose
           (message "Created %s abbrevs(%s)"
-                   (length defs) (if append "+" "-")))))))
+                   (length defs)
+                   (if table
+                       (format "in %S" (if (symbolp table) table "<abbrevd>"))
+                     "++")))))))
 
-;; -------------------------------------------------------------------
-;;; Menu
-
-(require 'transient)
-
-(transient-define-infix nvp-abbrev-menu--splitters ()
-  :class 'transient-lisp-variable
-  :variable 'nvp-abbrev-splitters)
-
-(transient-define-infix nvp-abbrev-menu--joiner ()
-  :class 'transient-lisp-variable
-  :variable 'nvp-abbrev-joiner)
-
-(nvp:transient-toggle nvp-abbrev-menu nvp-abbrevd-verbose)
-
-;;;###autoload(autoload 'nvp-abbrev-menu "nvp-abbrev-dynamic" nil t)
-(transient-define-prefix nvp-abbrev-menu ()
-  [["Dynamic"
-    ("m" "Make from buffer/file" nvp-abbrevd)
-    (":j" "Joiner" nvp-abbrev-menu--joiner)
-    (":s" "Splitters" nvp-abbrev-menu--splitters)
-    (":v" "Verbose" nvp-abbrev-menu--toggle-nvp-abbrevd-verbose)]
-   ["Tables"
-    ("s" "Save table" nvp-abbrev-write-abbrev-table)
-    ("u" "Load unicode" nvp-abbrev-load-unicode)
-    ("R" "Remove parent" nvp-abbrev-remove-parent)
-    ("P" "Add parent" nvp-abbrev-add-parent)]
-   ["Info"
-    ("l" "List active" nvp-abbrev-list-abbrevs)
-    ("p" "Table Props" nvp-abbrev-properties)]])
 
 (provide 'nvp-abbrev-dynamic)
 ;; Local Variables:

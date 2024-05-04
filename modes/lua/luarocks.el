@@ -216,7 +216,7 @@ the rock at point."
                       '("--append" "--export")
                       (transient-args transient-current-command))))
   (let ((export (when (member "--export" args)
-                  (setq args (--filter (equal it "--export") args))
+                  (setq args (--filter (not (equal it "--export")) args))
                   t)))
     (if export
         (pcase-dolist (`(,var . ,cmd) '(("LUA_PATH" . "--lr-path")

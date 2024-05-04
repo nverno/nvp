@@ -195,7 +195,7 @@ Accounts for multi-character comments by recycling the second character."
             yas-text
             (make-string (floor extra 2) char))))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Functions, args, variables
 
@@ -227,6 +227,26 @@ Accounts for multi-character comments by recycling the second character."
   (or (nvp-parse-current-function)
       (nvp:path 'bfse nil :or-name t)))
 
+
+;;; Dynamic Fields
+
+(defun nvp-yas-gen-fields (&optional sep out-sep idx)
+  "Generate yas fields for each SEP in `yas-text' or field IDX.
+Separate ouput fields with OUT-SEP."
+  (--when-let (or (and idx (yas-field-value idx)) (yas-text))
+    (let ((n (s-count-matches (or sep ",") it)))
+      (--mapcc (format "$%d" it)
+               (number-sequence 1 (1+ n))
+               (or out-sep ", ")))))
+
+;;; XXX(5/3/24): optionally find end position?
+(defun nvp-yas-expand-on-exit ()
+  "Expand snippet at point after exiting previous snippet."
+  (yas-expand-snippet
+   (buffer-substring-no-properties (point) (line-end-position))
+   (point) (line-end-position)))
+
+;;; XXX: remove
 ;; build param strings: params range from BEG length LEN
 ;; each param is prepended by JOIN string
 (defsubst nvp-yas-param-str (beg len join &optional fmt)
@@ -236,7 +256,7 @@ Accounts for multi-character comments by recycling the second character."
             (mapconcat (lambda (n) (format fmt n))
                        (number-sequence beg (+ beg (1- len))) join))))
 
-
+
 ;;; Input
 
 ;; yas read input wrapper

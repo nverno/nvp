@@ -1,13 +1,13 @@
 ;; -*- coding: utf-8; -*-
 
 (define-abbrev-table 'lua-mode-abbrev-table
-  '(;; ("t" "table" nil :system t)
-    ("pr" "print" nil :system t)
+  '(("pr" "print" nil :system t)
     ("cor" "coroutine" nil :system t)
     ("gm" "getmetatable" nil :system t)
     ("ret" "return" nil :system t)
     ("req" "require" nil :system t)
     ("sm" "setmetatable" nil :system t)
+    ("end" "end" indent-for-tab-command :system t)
 
     ("!" "not" nil :system t)
     ("||" "or" nil :system t)

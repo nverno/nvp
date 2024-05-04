@@ -3,4 +3,4 @@
 # key: t
 # condition: (nvp-yas-in-doc)
 # --
-@type ${1:{[number]: boolean}}
+@type ${1:\{[number]: boolean\}}

@@ -3,9 +3,9 @@
 # key: aa
 # --
 ${1:arr} = {}
-for i=0,${2:m} do
+for i = 0, ${2:m} do
   $1[i] = {}
-  for j=0,${3:n} do
+  for j = 0, ${3:n} do
     $1[i][j] = ${4:0}
   end
 end

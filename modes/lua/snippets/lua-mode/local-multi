@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: local x, y
+# key: ll
+# expand-env: ((yas-after-exit-snippet-hook '(nvp-yas-expand-on-exit)))
+# --
+local ${1:x} = $0${1:$(nvp-yas-gen-fields "," ", ")}

@@ -3,27 +3,14 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(when (treesit-ready-p 'dockerfile)
-  (require 'dockerfile-ts-mode))
+(require 'nvp)                          ; `nvp-block-face'
+(require 'dockerfile-ts-mode nil t)
 (nvp:decls :p (dockerfile-ts treesit))
+
 
 (defface nvp-dockerfile-shell-face
   `((t (:inherit (nvp-block-face) :extend t)))
   "Face for \\='RUN shell commands.")
-
-(defun dockerfile-ts--treesit-language-at-point (point)
-  (let ((node (treesit-node-at point 'dockerfile)))
-    (if (equal (treesit-node-type node) "shell_command")
-        'bash
-      'dockerfile)))
-
-(defvar dockerfile-ts--treesit-range-rules
-  (treesit-range-rules
-   :embed 'bash
-   :host 'dockerfile
-   :local t
-   '((shell_command) @bash)))
 
 ;;; Font-locking
 ;; XXX(9/25/23): Update when/if builtin mode is updated to account for grammar
@@ -46,7 +33,7 @@
    :feature 'image-spec
    '((image_spec) @font-lock-type-face
      (image_alias) @font-lock-variable-name-face)
-   
+
    :language 'dockerfile
    :feature 'variable          ; feature not defined, need to add in hook
    '((env_pair
@@ -68,40 +55,60 @@
    '((escape_sequence) @font-lock-escape-face
      (line_continuation) @nvp-line-escape-face)))
 
-(defvar nvp-dockerfile-ts--features
-  (cons 'shell (mapcar (lambda (e) (nth 2 e)) nvp-dockerfile-ts--font-settings)))
 
-;; override `dockerfile-ts-mode--font-lock-settings'
+;;; Bash Embedded Parser
+
+(defun dockerfile-ts--treesit-language-at-point (point)
+  (let ((node (treesit-node-at point 'dockerfile)))
+    (if (equal (treesit-node-type node) "shell_command")
+        'bash
+      'dockerfile)))
+
+(defvar dockerfile-ts--treesit-range-rules
+  (treesit-range-rules
+   :embed 'bash
+   :host 'dockerfile
+   :local t
+   '((shell_command) @bash)))
+
+;; From `bash-ts-mode' - not defined as variable
+(defvar bash-ts-mode-feature-list
+  '(( comment function)
+    ( command declaration-command keyword string)
+    ( builtin-variable constant heredoc number
+      string-interpolation variable)
+    ( bracket delimiter misc-punctuation operator)))
 (defvar sh-mode--treesit-settings)
-(with-eval-after-load 'dockerfile-ts-mode
-  (setq nvp-dockerfile-ts--font-settings
-        (seq-uniq
-         (append nvp-dockerfile-ts--font-settings
-                 (seq-filter
-                  (lambda (e) (not (memq (nth 2 e) nvp-dockerfile-ts--features)))
-                  dockerfile-ts-mode--font-lock-settings))))
 
+(defun nvp-dockerfile-ts-maybe-enable-bash ()
   (when (treesit-ready-p 'bash)
-    (require 'sh-script)
-    (setq nvp-dockerfile-ts--font-settings
-          (append nvp-dockerfile-ts--font-settings sh-mode--treesit-settings))))
+    (setq-local treesit-language-at-point-function
+                #'dockerfile-ts--treesit-language-at-point)
+    (setq-local treesit-range-settings dockerfile-ts--treesit-range-rules)))
 
-(defun nvp-dockerfile-ts-enable ()
-  (when (treesit-ready-p 'dockerfile)
+
+(nvp:treesit-add-rules dockerfile-ts-mode
+  :mode-fonts dockerfile-ts-mode--font-lock-settings
+  :new-fonts nvp-dockerfile-ts--font-settings
+  :extra-features '(shell)
+
+  ;; Add bash parser stuff - runs once after first `dockerfile-ts-mode'
+  ;; Note: `nvp-dockerfile-ts--embedded' should come last
+  (let ((new-fonts nvp-dockerfile-ts--embedded))
     (when (treesit-ready-p 'bash)
-      (setq-local treesit-language-at-point-function
-                  #'dockerfile-ts--treesit-language-at-point)
-      (setq-local treesit-range-settings dockerfile-ts--treesit-range-rules))
+      (require 'sh-script)
+      (setq new-fonts (append sh-mode--treesit-settings new-fonts))
 
-    (setq-local treesit-font-lock-feature-list
-                `(( function string comment ,@nvp-dockerfile-ts--features)
-                  ( keyword command declaration-command string-interpolation)
-                  ( builtin-variable constant heredoc variable assignment function)
-                  ( number bracket delimiter operator misc-punctuation)))
-    (setq-local treesit-font-lock-settings
-                (append nvp-dockerfile-ts--font-settings nvp-dockerfile-ts--embedded))
-    ;; update enabled features
-    (treesit-font-lock-recompute-features)))
+      ;; Merge in all bash features
+      (cl-loop for x in bash-ts-mode-feature-list
+               for y in treesit-font-lock-feature-list
+               for i upto 4
+               do (setf (nth i treesit-font-lock-feature-list)
+                        (seq-uniq (append x y)))))
+
+    (setq dockerfile-ts-mode--font-lock-settings
+          (append dockerfile-ts-mode--font-lock-settings new-fonts))))
+
 
 (provide 'nvp-dockerfile)
 ;; Local Variables:

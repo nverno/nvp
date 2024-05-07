@@ -230,14 +230,19 @@ Accounts for multi-character comments by recycling the second character."
 
 ;;; Dynamic Fields
 
-(defun nvp-yas-gen-fields (&optional sep out-sep idx)
+(defun nvp-yas-gen-fields (&optional sep out-sep nextra prefix suffix fmt idx)
   "Generate yas fields for each SEP in `yas-text' or field IDX.
 Separate ouput fields with OUT-SEP."
+  (or fmt (setq fmt "$%d"))
+  (or nextra (setq nextra 0))
   (--when-let (or (and idx (yas-field-value idx)) (yas-text))
     (let ((n (s-count-matches (or sep ",") it)))
-      (--mapcc (format "$%d" it)
-               (number-sequence 1 (1+ n))
-               (or out-sep ", ")))))
+      (if (zerop n) ""
+        (concat (or prefix "")
+                (--mapcc (format fmt it)
+                         (number-sequence 1 (+ nextra n))
+                         (or out-sep ", "))
+                (or suffix ""))))))
 
 ;;; XXX(5/3/24): optionally find end position?
 (defun nvp-yas-expand-on-exit ()
@@ -246,15 +251,14 @@ Separate ouput fields with OUT-SEP."
    (buffer-substring-no-properties (point) (line-end-position))
    (point) (line-end-position)))
 
-;;; XXX: remove
 ;; build param strings: params range from BEG length LEN
 ;; each param is prepended by JOIN string
-(defsubst nvp-yas-param-str (beg len join &optional fmt)
+(defun nvp-yas-param-str (beg len join &optional fmt)
   (or fmt (setq fmt "$%d"))
-  (if (or (not len) (= len 0)) ""
-    (concat join
-            (mapconcat (lambda (n) (format fmt n))
-                       (number-sequence beg (+ beg (1- len))) join))))
+  (or len (setq len 0))
+  (if (zerop len) ""
+    (concat join (--mapcc (format fmt it) (number-sequence beg (+ beg (1- len)))
+                          join))))
 
 
 ;;; Input

@@ -1,10 +1,6 @@
 # -*- mode: snippet -*-
 # name: prf
 # key: prf
-# type: command
+# expand-env: ((yas-after-exit-snippet-hook '(nvp-yas-expand-on-exit)))
 # --
-(let* ((yas-good-grace nil)
-       (fmt (read-string "Printf format: "))
-       (npars (s-count-matches "%" fmt)))
-  (yas-expand-snippet
-   (concat (format "printf \"%s\"%s" fmt (nvp-yas-param-str 3 npars ", ")) ";")))
+printf "${1:%s}"$0${1:$(nvp-yas-gen-fields "%" ", " 0 ", ")}

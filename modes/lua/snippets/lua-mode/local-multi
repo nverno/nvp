@@ -3,4 +3,4 @@
 # key: ll
 # expand-env: ((yas-after-exit-snippet-hook '(nvp-yas-expand-on-exit)))
 # --
-local ${1:x} = $0${1:$(nvp-yas-gen-fields "," ", ")}
+local ${1:x} = $0${1:$(nvp-yas-gen-fields "," ", " 1)}

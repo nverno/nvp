@@ -61,23 +61,16 @@
 
 (defsubst nvp-abbrev--add-local (table)
   "Add TABLE to `local-abbrev-table'."
-  (unless (or (eq table local-abbrev-table)
-              (and (listp local-abbrev-table)
-                   (memq table local-abbrev-table)))
-    (setq-local local-abbrev-table
-                (cond ((null local-abbrev-table) table)
-                      ((listp local-abbrev-table)
-                       (cons table local-abbrev-table))
-                      (t (list table local-abbrev-table))))))
+  (unless (listp local-abbrev-table)
+    (setq local-abbrev-table (list local-abbrev-table)))
+  (unless (memq table local-abbrev-table)
+    (setq-local local-abbrev-table (cons table local-abbrev-table))))
 
 (defsubst nvp-abbrev--remove-local (table)
   "Remove TABLE from `local-abbrev-table'."
-  (setq-local local-abbrev-table
-              (cond ((null local-abbrev-table) nil)
-                    ((eq table local-abbrev-table) nil)
-                    ((listp local-abbrev-table)
-                     (remq table local-abbrev-table))
-                    (t local-abbrev-table))))
+  (unless (listp local-abbrev-table)
+    (setq local-abbrev-table (list local-abbrev-table)))
+  (setq-local local-abbrev-table (remq table local-abbrev-table)))
 
 
 ;; get list of all table properties, converting parent tables into symbols
@@ -389,11 +382,12 @@ If ALL is non-nil, list all abbrev tables."
 (transient-define-prefix nvp-abbrev-menu ()
   [["Create Abbrevs"
     ("x" "From buffer/file" nvp-abbrevd)
+    ("k" "Kill abbrevd tables" nvp-abbrevd-kill-tables)
     ""
     "Settings"
     (":j" "Joiner" nvp-abbrev-menu--joiner)
     (":s" "Splitters" nvp-abbrev-menu--splitters)
-    (":v" "Verbose" nvp-abbrev-menu--toggle-nvp-abbrevd-verbose)]
+    (":v" "Verbose" nvp-abbrev-menu--toggle-nvp-abbrev-verbose)]
    ["Tables"
     ("s" "Save table" nvp-abbrev-write-abbrev-table)
     ("R" "Remove parent" nvp-abbrev-remove-parent)

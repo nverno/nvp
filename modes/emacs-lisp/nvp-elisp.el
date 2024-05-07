@@ -8,7 +8,7 @@
 (require 'pp)
 ;; (3/5/24) `company-elisp' removed from `company-mode'
 (require 'company-elisp)
-(nvp:decls :p (company-elisp))
+(nvp:decls)
 
 (with-eval-after-load 'nvp-repl
   (require 'nvp-ielm))
@@ -115,7 +115,7 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Where-Defined.html
 (defvar nvp-elisp--defun-forms
   '( defun defmacro defsubst
-     autoload declare-function
+     autoload declare-function t
      cl-defun cl-defsubst cl-defmacro cl-defmethod cl-defgeneric)
   "Forms to recognize for function names.")
 

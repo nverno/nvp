@@ -28,22 +28,20 @@
     :find-fn (lambda () (get-buffer perl-reply-buffer))
     :init (lambda (&optional _prefix) (funcall #'perl-reply-process))))
 
-;;; Things at point
 
+;;; Things at point
 (defun nvp-perl--module ()
   (nvp-back-chars-then-look "_[:alpha:]:\\->" "[_[:alpha:]:]+"))
+(put 'perl-module 'bounds-of-thing-at-point 'nvp-perl--module)
 
 (defun nvp-perl--variable ()
   (nvp-back-chars-then-look "[:alnum:]_$@#%*&=" "[[:alnum:]_$@#%*&]+"))
-
-(put 'perl-module 'bounds-of-thing-at-point 'nvp-perl--module)
 (put 'perl-variable 'bounds-of-thing-at-point 'nvp-perl--variable)
 
-;;; Generics
 
-;; list modules used and imports
 ;; (("module" import1 import2 ...) ("module2" ... ))
-(cl-defmethod nvp-parse-includes (&context (major-mode cperl-mode) &rest args)
+(defun nvp-perl--parse-includes (&rest args)
+  "List imports and used modules."
   (nvp-parse:buffer-file 'buffer nil args
     (save-excursion
       (goto-char (point-min))
@@ -61,10 +59,14 @@
                 res))
         res))))
 
-;;; Cpanm
+(nvp:defmethod nvp-parse-includes (&rest args)
+  :modes (cperl-mode perl-mode perl-ts-mode)
+  (nvp-perl--parse-includes args))
 
-;; Install module using cpanm
+
+;;; Cpanm
 (defun nvp-perl-cpanm-install ()
+  "Install module using cpanm."
   (interactive)
   (let ((module (read-from-minibuffer "Module: " (thing-at-point 'perl-module t))))
     (nvp:with-process "cpanm"
@@ -77,6 +79,7 @@
     (nvp:unless-ppss 'soc
       (car (let ((cperl-message-electric-keyword nil))
              (cperl-get-help))))))
+
 
 ;; ------------------------------------------------------------
 ;;; Insert / Toggle
@@ -120,6 +123,7 @@
         (forward-line 1)
         (insert (format "use %s%s\n" module
                         (if (string-match-p ";" module) "" ";"))))))
+
 
 ;; ------------------------------------------------------------
 ;;; Debug

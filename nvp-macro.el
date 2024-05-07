@@ -1429,11 +1429,14 @@ and set `this-command' to nil so opposite happens next time."
   (declare (indent defun) (debug t))
   (nvp:skip-keywords body)
   (when (symbolp modes) (setq modes (eval modes)))
-  (macroexp-progn
-   (cl-loop for mode in modes
-            collect `(cl-defmethod ,method
-                       ,(append args (list '&context `(major-mode ,mode)))
-                       ,@body))))
+  (let* ((args (nvp:list-split-at (lambda (e) (eq '&rest e)) args))
+         (rest (cdr args))
+         (args (car args)))
+    (macroexp-progn
+     (cl-loop for mode in modes
+              collect `(cl-defmethod ,method
+                         ,(append args (list '&context `(major-mode ,mode)) rest)
+                         ,@body)))))
 
 ;; -------------------------------------------------------------------
 ;;; *Obsolete* Function generators

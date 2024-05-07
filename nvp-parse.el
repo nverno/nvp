@@ -75,6 +75,7 @@ found file.  File is determined by:
 ;;; Generics
 
 ;; default just tries to use imenu
+;;;###autoload
 (cl-defgeneric nvp-parse-functions (&rest args)
   "Default method to gather function names from current buffer.
 Recognized arguments:

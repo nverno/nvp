@@ -34,7 +34,7 @@
            (pos (nth 1 ppss)))
       (if (or (nth 3 ppss)
               (nth 4 ppss)
-              (and pos (eq ?\[ (char-after pos))))
+              (and pos (memq (char-after pos) '(?\{ ?\[))))
           (insert ":")
         (if (memq (char-before) '(? ?	))
             (insert ":= ")

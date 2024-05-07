@@ -10,8 +10,8 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(eval-and-compile (require 'nvp-abbrev))
-(require 'nvp-parse)
+(eval-and-compile
+  (require 'nvp-abbrev))
 (nvp:decls)
 
 
@@ -106,13 +106,13 @@ Search in `abbrev-table-name-list' or TABLE-LIST if non-nil."
            (push cur res)))
     res))
 
-(defun nvp-abbrevd--mode-tables (&optional mode)
-  "Return list of globally defined abbrevd tables for MODE."
-  (or mode (setq mode (or nvp-mode-name major-mode)))
+(defun nvp-abbrevd--mode-tables (&optional modes)
+  "Return list of globally defined abbrevd tables for MODES."
+  (or modes (setq modes (list (or nvp-mode-name major-mode))))
   (let (res)
     (obarray-map
      (lambda (table)
-       (when (eq mode (abbrev-table-get (symbol-value table) :mode))
+       (when (memq (abbrev-table-get (symbol-value table) :mode) modes)
          (push table res)))
      nvp-abbrevd-obarray)
     res))
@@ -284,6 +284,42 @@ Commands:
   :abbrev-table nil)
 
 
+;;; Minor Mode
+
+(defvar-local nvp-abbrevd-friendly-modes nil)
+
+(define-minor-mode nvp-abbrevd-minor-mode
+  "Local abbrevds."
+  :lighter nil
+  :abbrev-table nil
+  (if nvp-abbrevd-minor-mode
+      (let (nvp-abbrev-verbose)
+        (nvp-abbrevd-add-mode-tables
+         (cons (or nvp-mode-name major-mode) nvp-abbrevd-friendly-modes)
+         t))))
+
+;; FIXME(5/7/24): make more efficient - track modes abbrevds somewhere?
+(defun nvp-abbrevd--should-enable-p (modes)
+  "Return non-nil if there are interesting abbrevd tables for any of MODES."
+  (catch 'done
+    (obarray-map
+     (lambda (table)
+       (and (memq (abbrev-table-get (symbol-value table) :mode) modes)
+            (throw 'done t)))
+     nvp-abbrevd-obarray)))
+
+(defun nvp-abbrevd-minor-mode-on ()
+  (interactive)
+  (when (and (not (or noninteractive (eq (aref (buffer-name) 0) ?\s)))
+             (nvp-abbrevd--should-enable-p
+              (cons (or nvp-mode-name major-mode) nvp-abbrevd-friendly-modes)))
+    (nvp-abbrevd-minor-mode 1)))
+
+(define-globalized-minor-mode nvp-abbrevd-mode
+  nvp-abbrevd-minor-mode nvp-abbrevd-minor-mode-on
+  :group 'abbrev)
+
+
 ;; -------------------------------------------------------------------
 ;;; Commands
 
@@ -314,20 +350,21 @@ With \\[universal-argument] \\[universal-argument], use all abbrevd tables."
 
 
 ;;;###autoload
-(defun nvp-abbrevd-add-mode-tables (mode &optional tables)
-  "Add abbrevd TABLES for MODE to local tables.
-TABLES defaults to all abbrevd tables defined for MODE.
+(defun nvp-abbrevd-add-mode-tables (modes &optional tables)
+  "Add abbrevd TABLES for MODES to local tables.
+TABLES defaults to all abbrevd tables defined for MODES.
 With \\[universal-argument] prompt for tables to add.
 With \\[universal-argument] \\[universal-argument], prompt for mode."
   (interactive
-   (let* ((mode (if (> (prefix-numeric-value current-prefix-arg) 4)
-                    (intern (nvp-read-mode))
-                  (or nvp-mode-name major-mode)))
-          (tables (nvp-abbrevd--mode-tables mode)))
-     (list mode (and tables current-prefix-arg
-                     (nvp:abbrevd-read-tables "Add: " tables)))))
+   (let* ((modes (list (if (> (prefix-numeric-value current-prefix-arg) 4)
+                           (intern (nvp-read-mode))
+                         (or nvp-mode-name major-mode))))
+          (tables (nvp-abbrevd--mode-tables modes)))
+     (list modes (and tables current-prefix-arg
+                      (nvp:abbrevd-read-tables "Add: " tables)))))
+  (or (listp modes) (setq modes (list modes)))
   (when (eq t tables)
-    (setq tables (nvp-abbrevd--mode-tables mode)))
+    (setq tables (nvp-abbrevd--mode-tables modes)))
   (if (null tables)
       (nvp-abbrev-msg "No abbrevd tables")
     (let* ((local-tables (nvp:local-abbrev-table))

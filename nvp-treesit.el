@@ -132,7 +132,8 @@
 
 (defun nvp-treesit-minor-mode-on ()
   (interactive)
-  (when (treesit-language-at (point))
+  (when (and (not (or noninteractive (eq (aref (buffer-name) 0) ?\s)))
+             (treesit-language-at (point)))
     (nvp-treesit-minor-mode 1)))
 
 ;; (defun nvp-treesit--change-window-hook (win)

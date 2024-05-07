@@ -60,7 +60,8 @@
 
 (defsubst nvp-abbrev-msg (msg &rest args)
   (when nvp-abbrev-verbose
-    (apply #'message msg args)))
+    (or (minibufferp)
+        (apply #'message msg args))))
 
 (defsubst nvp-abbrev--add-local (table)
   "Add TABLE to `local-abbrev-table'."
@@ -371,6 +372,8 @@ If ALL is non-nil, list all abbrev tables."
 
 (require 'transient)
 
+(nvp:auto "nvp-abbrev-dynamic" 'nvp-abbrevd-mode)
+
 (transient-define-infix nvp-abbrev-menu--splitters ()
   :class 'transient-lisp-variable
   :variable 'nvp-abbrev-splitters)
@@ -385,15 +388,18 @@ If ALL is non-nil, list all abbrev tables."
 (transient-define-prefix nvp-abbrev-menu ()
   [["Create Abbrevs"
     ("c" "From buffer/file" nvp-abbrevd)
-    ""
+    " "
     "Settings"
     (":j" "Joiner" nvp-abbrev-menu--joiner)
     (":s" "Splitters" nvp-abbrev-menu--splitters)
     (":v" "Verbose" nvp-abbrev-menu--toggle-nvp-abbrev-verbose)]
    ["Local AbbrevD"
-    ("m" "Add mode tables" nvp-abbrevd-add-mode-tables)
+    ("a" "Add mode tables" nvp-abbrevd-add-mode-tables)
     ("e" "Edit tables" nvp-abbrevd-edit-abbrevs)
-    ("k" "Remove/clear tables" nvp-abbrevd-remove-tables)]
+    ("k" "Remove/clear tables" nvp-abbrevd-remove-tables)
+    "Auto-share"
+    ("m" "Toggle global mode" nvp-abbrevd-mode)
+    ("M" "Toggle minor mode" nvp-abbrevd-minor-mode)]
    ["Tables"
     ("s" "Save table" nvp-abbrev-write-abbrev-table)
     ("r" "Remove parent" nvp-abbrev-remove-parent)

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (define-abbrev-table 'agda2-mode-abbrev-table
   '(
     ("a"  "abstract" nil :system t)

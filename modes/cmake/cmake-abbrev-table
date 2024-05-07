@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; -*-
+;; -*- coding: utf-8; lexical-binding: t; -*-
 
 (define-abbrev-table 'cmake-mode-abbrev-table
   '(("compile_flags" "COMPILE_FLAGS" nil :system t))

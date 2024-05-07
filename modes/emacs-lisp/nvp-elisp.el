@@ -114,8 +114,9 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
 
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Where-Defined.html
 (defvar nvp-elisp--defun-forms
-  '(defun defmacro defsubst cl-defun cl-defsubst cl-defmacro declare-function t
-    autoload cl-defmethod)
+  '( defun defmacro defsubst
+     autoload declare-function
+     cl-defun cl-defsubst cl-defmacro cl-defmethod cl-defgeneric)
   "Forms to recognize for function names.")
 
 ;; return forms defined in FILENAME

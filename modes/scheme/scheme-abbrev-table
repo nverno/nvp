@@ -1,26 +1,22 @@
-
+;; -*- lexical-binding: t; -*-
 (define-abbrev-table 'scheme-mode-abbrev-table
-  '(
-    ("d" "define" nil :system t)
+  '(("d" "define" nil :system t)
     ("l" "lambda" nil :system t)
     ("w" "when" nil :system t)
-    ("z" "zero?" nil :system t)
-    )
+    ("z" "zero?" nil :system t))
   "Scheme-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table)
   :enable-function 'nvp-scheme-abbrev-fun-expand-p)
 
 (define-abbrev-table 'guile-mode-abbrev-table
   '(;;("i" "ice-9" nil :system t)
-
     ("di" "display" nil :system t)
     ("ds" "define-syntax" nil :system t)
     ("sr" "syntax-rules" nil :system t)
     ("um" "use-modules" nil :system t)
     ("rl" "read-line" nil :system t)
     ("def" "define" nil :system t)
-    ("defm" "define-module" nil :systemt t)
-    )
+    ("defm" "define-module" nil :systemt t))
   "Guile-Mode Abbrevs."
   :parents (list scheme-mode-abbrev-table))
 
@@ -29,8 +25,7 @@
     ("#l" "#lang racket" nil :system t)
 
     ("true" "#t" nil :system t)
-    ("false" "#f" nil :system t)
-    )
+    ("false" "#f" nil :system t))
   :regexp "\\(?:^\\|[^A-Za-z0-9_.#/-]\\)\\([A-Za-z0-9_.#/-]+\\)"
   :enable-function #'nvp-scheme-abbrev-var-expand-p)
 

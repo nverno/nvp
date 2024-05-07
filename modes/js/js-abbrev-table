@@ -1,4 +1,4 @@
-;; -*- coding: utf-8;-*-
+;; -*- coding: utf-8; lexical-binding: t; -*-
 (define-abbrev-table 'js-mode-abbrev-table
   '(("cl" ["console.log()" 1 nil nil] expand-abbrev-hook :system t)
     ("imp" "import" nil :system t)

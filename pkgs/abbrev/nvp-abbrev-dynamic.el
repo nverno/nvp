@@ -85,7 +85,8 @@ Called from buffer generated abbrevs."
 (cl-defgeneric nvp-abbrevd-table-props (&optional parent-tables)
   "Function to produce abbrev table properties.
 The default tries to use those defined in PARENT-TABLES."
-  (let ((props (list :enable-function #'nvp-abbrev-expand-p)))
+  (let ((props (list :enable-function #'nvp-abbrev-expand-p
+                     :priority 1)))
     (when parent-tables
       (setq parent-tables (--map (if (symbolp it) (symbol-value it) it)
                                  (if (listp parent-tables)

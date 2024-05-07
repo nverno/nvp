@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; -*-
+;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; lexical-binding: t; -*-
 
 (define-abbrev-table 'rust-attributes-abbrev-table
   '(("#a" ["#[allow()]" 2 nil nil] expand-abbrev-hook :system t)

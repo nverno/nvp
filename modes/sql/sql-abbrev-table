@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; no-byte-compile: t; -*-
+;; -*- coding: utf-8; no-byte-compile: t; lexical-binding: t; -*-
 
 (define-abbrev-table 'sql-mode-abbrev-table
   '(("gb" "GROUP BY" nil :system t)

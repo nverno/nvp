@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 (define-abbrev-table 'go-mode-abbrev-table
   '(("imp" "import" nil :system t)

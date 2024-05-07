@@ -1,4 +1,4 @@
-;; -*- coding: utf-8 -*-
+;; -*- coding: utf-8; lexical-binding: t; -*-
 (define-abbrev-table 'octave-abbrev-table
   '(
     ("mm" "" nvp-octave-matrix :system t)

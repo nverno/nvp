@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (define-abbrev-table 'coffee-mode-abbrev-table
   '()
   "Coffee-Mode Abbrevs."

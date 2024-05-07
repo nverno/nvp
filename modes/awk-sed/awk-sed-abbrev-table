@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; -*-
+;; -*- coding: utf-8; lexical-binding: t; -*-
 (define-abbrev-table 'awk-mode-abbrev-table
   '(("cont" "continue" nil :system t)
     ("begf" "BEGINFILE" nil :system t) 

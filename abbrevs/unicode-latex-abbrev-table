@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; mode: emacs-lisp; -*-
+;; -*- coding: utf-8; mode: emacs-lisp; lexical-binding: t; -*-
 (define-abbrev-table 'unicode-latex-abbrev-table
   '(
     ("\\exclamdown" "¡" nil :system t)

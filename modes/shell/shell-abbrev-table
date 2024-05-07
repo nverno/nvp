@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; -*-
+;; -*- coding: utf-8; lexical-binding: t; -*-
 
 (define-abbrev-table 'shells-abbrev-table
   '(("aa" "2>&1" nil :system t)

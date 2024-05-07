@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; -*-
+;; -*- coding: utf-8; lexical-binding: t; -*-
 
 (define-abbrev-table 'c-macros-includes-abbrev-table
   '(("#i" "#include" nil :system t)

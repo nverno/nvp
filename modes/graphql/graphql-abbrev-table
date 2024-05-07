@@ -1,4 +1,4 @@
-;; -*- coding: utf-8; -*-
+;; -*- coding: utf-8; lexical-binding: t; -*-
 
 (define-abbrev-table 'graphql-mode-abbrev-table
   '()

@@ -184,7 +184,8 @@ or expansion."
                               '(fundamental-mode))))
   (let ((parents
          (concat "(list " (--mapcc (format "%s-abbrev-table" it) parents) ")")))
-    (insert (concat (and (zerop (buffer-size)) ";; -*- coding: utf-8; -*-\n")
+    (insert (concat (and (zerop (buffer-size))
+                         ";; -*- coding: utf-8; lexical-binding: t; -*-\n")
                     "\n(define-abbrev-table '" table "\n"
                     "  '()\n"
                     (format "  \"%s Abbrevs.\"\n"

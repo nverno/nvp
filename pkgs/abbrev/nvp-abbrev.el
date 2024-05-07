@@ -58,6 +58,9 @@
 (defsubst nvp-abbrev--table-name (table)
   (if (symbolp table) (symbol-name table) "Dynamic"))
 
+(defsubst nvp-abbrev-msg (msg &rest args)
+  (when nvp-abbrev-verbose
+    (apply #'message msg args)))
 
 (defsubst nvp-abbrev--add-local (table)
   "Add TABLE to `local-abbrev-table'."
@@ -281,8 +284,7 @@ If FILE is non-nil, read abbrevs from FILE."
   (let ((parents (abbrev-table-get table :parents)))
     (unless (memq parent parents)
       (abbrev-table-put table :parents (cons parent parents))
-      (when nvp-abbrev-verbose
-        (message "Added %s" (abbrev-table-name parent))))))
+      (nvp-abbrev-msg "Added %s" (abbrev-table-name parent)))))
 
 
 ;;;###autoload
@@ -310,8 +312,7 @@ PARENTS can provide current parents."
            parents)))
   (let ((new-p (mapcar #'symbol-value (remq to-remove parents))))
     (abbrev-table-put (nvp-abbrev--table-value table) :parents new-p))
-  (when nvp-abbrev-verbose
-    (message "Removed %S" to-remove)))
+  (nvp-abbrev-msg "Removed %S" to-remove))
 
 
 ;;;###autoload
@@ -360,7 +361,9 @@ If ALL is non-nil, list all abbrev tables."
                             (list local-abbrev-table))))
            (abbrev-table-name-list
             (append locals (nvp-abbrev--all-parents local-abbrev-table 'names))))
-      (display-buffer (prepare-abbrev-list-buffer nil)))))
+      (with-current-buffer (prepare-abbrev-list-buffer nil)
+        (view-mode)
+        (pop-to-buffer (current-buffer))))))
 
 
 ;; -------------------------------------------------------------------
@@ -381,21 +384,24 @@ If ALL is non-nil, list all abbrev tables."
 ;;;###autoload(autoload 'nvp-abbrev-menu "nvp-abbrev-dynamic" nil t)
 (transient-define-prefix nvp-abbrev-menu ()
   [["Create Abbrevs"
-    ("x" "From buffer/file" nvp-abbrevd)
-    ("k" "Kill abbrevd tables" nvp-abbrevd-kill-tables)
+    ("c" "From buffer/file" nvp-abbrevd)
     ""
     "Settings"
     (":j" "Joiner" nvp-abbrev-menu--joiner)
     (":s" "Splitters" nvp-abbrev-menu--splitters)
     (":v" "Verbose" nvp-abbrev-menu--toggle-nvp-abbrev-verbose)]
+   ["Local AbbrevD"
+    ("m" "Add mode tables" nvp-abbrevd-add-mode-tables)
+    ("e" "Edit tables" nvp-abbrevd-edit-abbrevs)
+    ("k" "Remove/clear tables" nvp-abbrevd-remove-tables)]
    ["Tables"
     ("s" "Save table" nvp-abbrev-write-abbrev-table)
-    ("R" "Remove parent" nvp-abbrev-remove-parent)
-    ("P" "Add parent" nvp-abbrev-add-parent)
+    ("r" "Remove parent" nvp-abbrev-remove-parent)
+    ("p" "Add parent" nvp-abbrev-add-parent)
     ("u" "Load unicode" nvp-abbrev-load-unicode)]
    ["Info"
     ("l" "List active" nvp-abbrev-list-abbrevs)
-    ("p" "Table Props" nvp-abbrev-properties)]])
+    ("P" "Table Props" nvp-abbrev-properties)]])
 
 
 (provide 'nvp-abbrev)

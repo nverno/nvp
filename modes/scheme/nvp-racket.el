@@ -88,15 +88,10 @@ Otherwise expand the list containing point."
 (defvar nvp-abbrev-joiner)
 (defvar nvp-abbrev-splitters)
 
-(defun nvp-racket--to-abbrev (str &optional joiner splitters)
+(defun nvp-racket-abbrev-string (str &rest args)
   "Convert STR to abbrev."
-  (--mapcc (if (string-empty-p it)
-               (or joiner nvp-abbrev-joiner)
-             (substring it 0 1))
-           ;; "->" => "t" in abbrevs
-           (split-string (replace-regexp-in-string "->" "-t-" str)
-                         (or splitters nvp-abbrev-splitters))
-           ""))
+  ;; "->" => "t" in abbrevs
+  (apply #'nvp-abbrev-from-splitters (replace-regexp-in-string "->" "-t-" str) args))
 
 (cl-defmethod nvp-parse-functions
   (&context (major-mode racket-mode) &rest args)
@@ -115,9 +110,9 @@ Otherwise expand the list containing point."
 (cl-defmethod nvp-abbrevd-make-args (&context (major-mode racket-mode) &rest _)
   "Arguments for `nvp-abbrevd--make-abbrevs'."
   ;; (when-let ((args (cl-call-next-method)))
-  ;;   (plist-put args :transformer #'nvp-racket--to-abbrev))
+  ;;   (plist-put args :transformer #'nvp-racket-abbrev-string))
   (list :objects (seq-uniq (nvp-parse-functions))
-        :transformer #'nvp-racket--to-abbrev))
+        :transformer #'nvp-racket-abbrev-string))
 
 (cl-defmethod nvp-abbrevd-table-props
   (&context (major-mode racket-mode) &key type _tables)

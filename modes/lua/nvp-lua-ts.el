@@ -129,7 +129,10 @@
           @lua-ts-mode--fontify-table)
          (function_call
           name: [(method_index_expression) (dot_index_expression)]
-          @lua-ts-mode--fontify-table))
+          @lua-ts-mode--fontify-table)
+
+         (dot_index_expression
+          table: (identifier) @nvp-namespace-face))
 
        ;; :language 'lua
        ;; :feature 'assignment

@@ -26,8 +26,8 @@
 ;;; Abbrev
 ;; dont expand in comments/strings or in symbols with '.', eg. is.null
 (defun nvp-r-abbrev-expand-p ()
-  (and (not (string-match-p "\\." (thing-at-point 'symbol t)))
-       (not (nvp:ppss 'soc))))
+  (not (or (nvp:ppss 'soc)
+           (string-match-p "\\." (thing-at-point 'symbol t)))))
 
 ;;; Roxy
 (defun nvp-r-roxy ()
@@ -48,12 +48,11 @@
 ;;; Tables
 ;; Guess where the column breaks are located (assumes right-justified).
 (defun nvp-r-guess-column-breaks (str)
-  (-->
-   (--map
-    (--map (cdr it) (s-matched-positions-all "\'.*?\'\\|[-0-9.A-Za-z]+" it))
-    (split-string str "\n"))
-   (cl-remove-if-not (lambda (x) (> (length x) 0)) it)
-   (nreverse (nvp:list-intersection it))))
+  (--> (--map
+        (--map (cdr it) (s-matched-positions-all "\'.*?\'\\|[-0-9.A-Za-z]+" it))
+        (split-string str "\n"))
+       (cl-remove-if-not (lambda (x) (> (length x) 0)) it)
+       (nreverse (nvp:list-intersection it))))
 
 (defun nvp-r-table-insert-commas (str &optional beg end)
   "Insert commas into space separated table (assume right-justified)."
@@ -91,21 +90,37 @@
       (while (re-search-forward nvp-r-datetime-regex end t)
         (replace-match "\'\\1\'")))))
 
-;;; Completion
-;; list libraries ahead of other options when in "require|library"
-(defun nvp-r-company-setup (&optional backends)
-  (let ((comps (cl-remove-if
-                   (lambda (x)
-                     (memq (or (and (listp x) (car x)) x)
-                           '(company-R-args company-R-objects company-R-library)))
-                   company-backends)))
-    (push (or backends
-              '(company-R-args :with company-R-library company-R-objects :separate))
-          comps)
-    (setq-local company-backends comps)
-    (delq 'company-capf company-backends)))
 
+;;;###autoload
+(defun nvp-r-spin-file (file)
+  "Spin yarn from FILE and show result in browser or open if it is a pdf.
+Use ess-process when available, otherwise try rscript."
+  (interactive
+   (list (or (and (eq major-mode 'ess-r-mode) buffer-file-name)
+             (read-file-name "File to spin: "))))
+  (let ((proc (and (fboundp 'ess-get-process)
+                   (ignore-errors (ess-get-process nil t))))
+        (cmd (concat "local({ "
+                     "out <- rmarkdown::render(\"%s\", \"all\");"
+                     "if (tools::file_ext(out) == \"html\") {"
+                     "    browseURL(out);"
+                     "} else {"
+                     "    out;"
+                     "}"
+                     "})\n")))
+    (if proc
+        (let ((res (ess-get-words-from-vector (format cmd file))))
+          (pcase (file-name-extension (car res))
+            (`"pdf" (find-file-other-window (car res)))
+            (_ (browse-url-file-url (car res)))))
+      ;; FIXME: not tested, doesn't open or return pdf
+      (start-process-shell-command
+       "rscript" nil
+       (concat "Rscript -e \"" (format cmd file) "\"")))))
 
 (provide 'nvp-r)
-
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-r.el ends here

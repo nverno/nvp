@@ -25,6 +25,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
+(autoload 's-split-words "s")
 (nvp:decls :v (nvp-abbrev-completion-need-refresh unicode-latex-abbrev-table))
 
 
@@ -43,13 +44,18 @@
 ;; Dont ever call this! - it's too easy to wipeout abbrevs
 (advice-add 'abbrev-edit-save-buffer :override #'ignore)
 
-
-(defun nvp-abbrev--lisp-transformer (str &optional joiner splitters)
-  "Transform STR to abbrev by splitting on SPLITTERS and join with JOINER."
+;;;###autoload
+(defun nvp-abbrev-from-splitters (str &optional joiner splitters)
+  "Create abbrev from STR by splitting on SPLITTERS and join with JOINER."
   (--mapcc (if (string-empty-p it)
                (or joiner nvp-abbrev-joiner)
              (substring it 0 1))
            (split-string str (or splitters nvp-abbrev-splitters)) ""))
+
+;;;###autoload
+(defun nvp-abbrev-from-words (str)
+  "Create abbrev from STR by splitting on words."
+  (downcase (--mapcc (substring it 0 1) (s-split-words str) "")))
 
 (defsubst nvp-abbrev--table-value (table)
   (if (symbolp table) (symbol-value table) table))
@@ -150,7 +156,7 @@ With prefix, don't split region by whitespace."
                 (car (split-string
                       (buffer-substring-no-properties beg end) nil 'omit))))
          (exp (string-trim str "[ \t\n\(]" "[ \t\n\)]"))
-         (trans (nvp-abbrev--lisp-transformer exp)))
+         (trans (nvp-abbrev-from-splitters exp)))
     (if (string-prefix-p "cl-" exp)
         (setq trans (concat "cl" (substring trans 1))))
     (cons trans exp)))

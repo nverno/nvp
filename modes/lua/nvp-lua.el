@@ -102,6 +102,53 @@
   (funcall lua-documentation-function
            (concat lua-documentation-url "#pdf-" section)))
 
+
+;;; Abbrevs
+(defvar nvp-lua--top-level-funcs-query
+  (when (treesit-available-p)
+    (treesit-query-compile
+     'lua
+     '((chunk (function_declaration name: (_) @function))
+       ;; (field name: (_) @function
+       ;;        value: (function_definition))
+       (chunk
+        (variable_declaration
+         (assignment_statement
+          (variable_list
+           name: (_) @named-closure)
+          (expression_list
+           value: (function_definition)))))))))
+
+;;; XXX(5/8/24): handle `:local' arg?
+(cl-defmethod nvp-parse-functions
+  (&context (major-mode lua-ts-mode) &rest _args)
+  (--map (treesit-node-text it t)
+         (treesit-query-capture
+          (treesit-buffer-root-node 'lua) nvp-lua--top-level-funcs-query
+          nil nil t)))
+
+(cl-defmethod nvp-abbrevd-make-args
+  (&context (major-mode lua-ts-mode) &rest args)
+  "Return functions to abbrev.
+
+If non-nil, \\=':replace-table is a cons of a table name and a string to
+replace it with in abbrevs. For example, \\='(cons \"M\" \"filetype\")
+means replace \"M.some_fun\" \"filetype.some_fun\" in abbrevs.
+
+By default, methods and functions prefixed with \"_\" are ignored."
+  (when-let ((funcs (nvp-parse-functions)))
+    (pcase-let ((`(,table . ,rep) (plist-get args :replace-table)))
+      (when table
+        (setq table (concat table ".")
+              rep (concat rep ".")))
+      (list :transformer #'nvp-abbrev-from-words
+            :objects
+            (cl-loop for def in funcs
+                     unless (string-match-p (rx (or ":" (seq bos "_"))) def)
+                     collect (if (and table (string-prefix-p table def))
+                                 (concat rep (substring def (length table)))
+                               def))))))
+
 (provide 'nvp-lua)
 ;; Local Variables:
 ;; coding: utf-8

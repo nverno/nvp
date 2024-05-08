@@ -11,8 +11,7 @@
     ("datf" ["data.frame()" 1 nil nil] expand-abbrev-hook :system t)
     ("null" "NULL" nil :system t)
     ("true" "TRUE" nil :system t)
-    ("false" "FALSE" nil :system t)
-    )
+    ("false" "FALSE" nil :system t))
   "R-Mode Abbrevs."
   :enable-function 'nvp-r-abbrev-expand-p
   :parents (list prog-mode-abbrev-table))

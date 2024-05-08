@@ -63,11 +63,12 @@ Return list of symbols interned from `nvp-abbrevd-obarray'."
           )))
 
 
-(cl-defgeneric nvp-abbrevd-make-args ()
+(cl-defgeneric nvp-abbrevd-make-args (&rest _args)
   "Default method to produce arguments for `nvp-abbrevd--make-abbrevs'.
 Called from buffer generated abbrevs."
+  (require 'nvp-parse)
   (list :objects (seq-uniq (nvp-parse-functions))
-        :transformer #'nvp-abbrev--lisp-transformer))
+        :transformer #'nvp-abbrev-from-splitters))
 
 
 (cl-defgeneric nvp-abbrevd-table-props (&key tables type)
@@ -158,8 +159,9 @@ Search in `abbrev-table-name-list' or TABLE-LIST if non-nil."
 (cl-defun nvp-abbrevd--make-abbrevs
     (&key (objects obarray)
           (min-length 4)
+          (min-abbrev-len 2)
           predicate
-          (transformer #'nvp-abbrev--lisp-transformer))
+          (transformer #'nvp-abbrev-from-splitters))
   "Function to convert objects into their abbreviated forms."
   (let (res)
     (cl-flet ((make-abbrev (name)
@@ -172,9 +174,9 @@ Search in `abbrev-table-name-list' or TABLE-LIST if non-nil."
                              (< min-length (length name))
                              (if predicate (funcall predicate name) t))
                     (condition-case nil
-                        (push (cons (funcall transformer name)
-                                    (cons name nil))
-                              res)
+                        (let ((abbr (funcall transformer name)))
+                          (and (>= (length abbr) min-abbrev-len)
+                               (push (list abbr name) res)))
                       (error nil))))))
       (cond ((or (symbolp objects)
                  (stringp objects))
@@ -268,7 +270,7 @@ If ARG is non-nil, clear abbrev defs and replace with current."
   "Redefine current abbrevs and write them to FILE."
   (interactive "fWrite abbrevs to: " nvp-abbrevd-edit-mode)
   (nvp-abbrevd-edit-redefine)
-  (nvp-abbrevd-edit-save-to-file file t))
+  (nvp-abbrevd-write-abbrev-file file t))
 
 (defvar-keymap nvp-abbrevd-edit-mode-map
   :doc "Keymap active in `nvp-abbrevd-edit-mode'."
@@ -360,8 +362,9 @@ With \\[universal-argument] \\[universal-argument], prompt for mode."
                            (intern (nvp-read-mode))
                          (or nvp-mode-name major-mode))))
           (tables (nvp-abbrevd--mode-tables modes)))
-     (list modes (and tables current-prefix-arg
-                      (nvp:abbrevd-read-tables "Add: " tables)))))
+     (list modes (if (and tables current-prefix-arg)
+                     (nvp:abbrevd-read-tables "Add: " tables)
+                   tables))))
   (or (listp modes) (setq modes (list modes)))
   (when (eq t tables)
     (setq tables (nvp-abbrevd--mode-tables modes)))

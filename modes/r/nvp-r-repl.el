@@ -43,7 +43,6 @@
     :pwd-cmd "getwd()"
     :cd-cmd "setwd(\"%s\")"))
 
-
 (provide 'nvp-r-repl)
 ;; Local Variables:
 ;; coding: utf-8

@@ -1,6 +1,10 @@
 ;;; nvp-racket-repl.el --- Racket repl -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
+;;
+;; - sending REPL regions from different modules:
+;;   https://stackoverflow.com/questions/55546058/racket-mode-can-i-evaluate-a-single-form-within-a-given-namespace-at-the-repl
+;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)

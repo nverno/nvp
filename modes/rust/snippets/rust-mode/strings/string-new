@@ -1,5 +1,8 @@
 # -*- mode: snippet -*-
 # name: string
 # key: sn
+# type: command
 # --
-let ${1:mut }$2 = String::new();
+(if (nvp-yas-bolp)
+    (yas-expand-snippet "let mut ${1:s} = String::new();")
+  (insert "String::new()"))

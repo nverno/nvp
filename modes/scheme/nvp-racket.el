@@ -4,11 +4,13 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'racket-mode nil t)
+(require 'nvp-scheme)
 (nvp:decls :p ("racket"))
 (nvp:auto "nvp-hap" nvp-hap-thing-at-point)
 
 (with-eval-after-load 'nvp-repl
   (require 'nvp-racket-repl))
+
 
 (defun nvp-racket-expand (&optional choose)
   "Expand dwim without macro hiding.
@@ -78,6 +80,51 @@ Otherwise expand the list containing point."
     (search-remote (format "https://docs.racket-lang.org/search/index.html?q=%s"
                            (url-hexify-string arg)))
     (search-local (racket--search-doc-locally arg))))
+
+
+;; -------------------------------------------------------------------
+;;; Abbrevs
+
+(defvar nvp-abbrev-joiner)
+(defvar nvp-abbrev-splitters)
+
+(defun nvp-racket--to-abbrev (str &optional joiner splitters)
+  "Convert STR to abbrev."
+  (--mapcc (if (string-empty-p it)
+               (or joiner nvp-abbrev-joiner)
+             (substring it 0 1))
+           ;; "->" => "t" in abbrevs
+           (split-string (replace-regexp-in-string "->" "-t-" str)
+                         (or splitters nvp-abbrev-splitters))
+           ""))
+
+(cl-defmethod nvp-parse-functions
+  (&context (major-mode racket-mode) &rest args)
+  "Return list of functions defined in buffer."
+  (require 'nvp-parse)
+  (when-let ((defs (cl-call-next-method args)))
+    (--filter
+     (not (string-match-p
+           (rx (or
+                (seq "." (+ digit) eos) ; some-fun some-fun.1 some-fun.2 etc.
+                ":"                     ; XXX: do anything with struct:a-struct?
+                ))
+           it))
+     defs)))
+
+(cl-defmethod nvp-abbrevd-make-args (&context (major-mode racket-mode) &rest _)
+  "Arguments for `nvp-abbrevd--make-abbrevs'."
+  ;; (when-let ((args (cl-call-next-method)))
+  ;;   (plist-put args :transformer #'nvp-racket--to-abbrev))
+  (list :objects (seq-uniq (nvp-parse-functions))
+        :transformer #'nvp-racket--to-abbrev))
+
+(cl-defmethod nvp-abbrevd-table-props
+  (&context (major-mode racket-mode) &key type _tables)
+  "Abbrev table props."
+  (list :type type :enable-function (if (eq 'variables type)
+                                        #'nvp-scheme-abbrev-var-expand-p
+                                      #'nvp-scheme-abbrev-fun-expand-p)))
 
 (provide 'nvp-racket)
 ;; Local Variables:

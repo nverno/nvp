@@ -1,5 +1,8 @@
 # -*- mode: snippet -*-
 # name: new hash
 # key: hn
+# type: command
 # --
-let mut ${1:h}: HashMap<${2:_, _}> = HashMap::new();
+(if (nvp-yas-bolp)
+    (yas-expand-snippet "let mut ${1:h}: HashMap<${2:_, _}> = HashMap::new();")
+  (insert "HashMap::new()"))

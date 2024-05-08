@@ -62,6 +62,7 @@
     ("vl" "vector-length" nil :system t)
     ("vr" "vector-ref" nil :system t)
     ("vs" "vector-set!" nil :system t)
+    ("vtl" "vector->list" nil :system t)
     
     ("app" "append" nil :system t)
     ("cip" "close-input-port" nil :system t)

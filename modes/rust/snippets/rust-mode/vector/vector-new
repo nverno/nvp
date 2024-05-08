@@ -1,5 +1,8 @@
 # -*- mode: snippet -*-
 # name: new vector
 # key: vn
+# type: command
 # --
-let mut ${1:v}: Vec<${2:i32}> = Vec::new();
+(if (nvp-yas-bolp)
+    (yas-expand-snippet "let mut ${1:v}: Vec<${2:i32}> = Vec::new();")
+  (insert "Vec::new()"))

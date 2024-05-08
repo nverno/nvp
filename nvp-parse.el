@@ -85,7 +85,7 @@ Recognized arguments:
   ;; just loops through alist and gathers names
   (nvp-parse:buffer-file t nil args
     (nvp-parse:ensure-imenu)
-    (nvp-imenu-cleaned-alist)))
+    (mapcar #'car (nvp-imenu-cleaned-alist))))
 
 ;; like which-func - attempt with imenu and add-log
 ;;;###autoload

@@ -28,7 +28,7 @@
    :language 'python
    :feature 'nvp
    ;; :override t
-   '(;; Namespaces
+   `(;; Namespaces
      (import_from_statement
       module_name: [(dotted_name (identifier)) (identifier)]
       @nvp-namespace-face)
@@ -52,6 +52,12 @@
       name: (identifier) @font-lock-variable-name-face)
 
      (slice ":" @font-lock-operator-face)
+
+     ;; Builtins
+     ["__future__"] @font-lock-preprocessor-face
+
+     ((identifier) @font-lock-builtin-face
+      (:match ,(rx bos "__" (* (not white)) "__" eos) @font-lock-builtin-face))
 
      ;; TODO: patch & remove
      (for_statement left: (identifier) @font-lock-variable-name-face))))
@@ -84,7 +90,8 @@
                 (format "%s.%s" (match-string 2 item)
                         (match-string 1 item)))
                ;; builtins
-               ((string-match "\\(built-in function; [A-Za-z][A-Za-z0-9]+\\)()" item)
+               ((string-match
+                 "built-in function; \\([A-Za-z][A-Za-z0-9]+\\)\\(?:()\\)?" item)
                 (match-string 1 item))
                ;; class methods
                ((string-match

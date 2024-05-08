@@ -94,26 +94,27 @@ With `C-u'`C-u' read command."
   (nvp:with-buffer-proc proc
     (comint-send-string proc "nautilus . 2>/dev/null\n")))
 
+
 ;; -------------------------------------------------------------------
 ;;; Remote
 ;; TODO:
 ;; - use tramp in remote directory
 ;; - filter to update default-directory when ssh in shell
 
-(defun nvp-shell-remote-filter (string)
-  "Update `default-directory' on remote login.
-Add to `comint-input-filter-functions'."
-  (when (string-match-p nvp-shell-ssh-regexp string)
-    (when-let* ((loc (comint-arguments string 1 1))
-                (fullname (expand-file-name (concat "/ssh:" loc ":~/"))))
-      (setq default-directory fullname
-            list-buffers-directory fullname))))
+;; (defun nvp-shell-remote-filter (string)
+;;   "Update `default-directory' on remote login.
+;; Add to `comint-input-filter-functions'."
+;;   (when (string-match-p nvp-shell-ssh-regexp string)
+;;     (when-let* ((loc (comint-arguments string 1 1))
+;;                 (fullname (expand-file-name (concat "/ssh:" loc ":~/"))))
+;;       (setq default-directory fullname
+;;             list-buffers-directory fullname))))
 
-(eval-when-compile
-  (defsubst nvp-shell-tramp-name (&optional directory)
-    (or directory (setq directory default-directory))))
+;; (eval-when-compile
+;;   (defsubst nvp-shell-tramp-name (&optional directory)
+;;     (or directory (setq directory default-directory))))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Launch shells
 ;;

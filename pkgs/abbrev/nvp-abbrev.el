@@ -361,16 +361,17 @@ PARENTS can provide current parents."
   "List all major-mode and local tables active in buffer.
 If ALL is non-nil, list all abbrev tables."
   (interactive "P")
-  (if all (display-buffer (prepare-abbrev-list-buffer))
-    (let* ((locals (--map (abbrev-table-name it)
-                          (if (listp local-abbrev-table)
-                              local-abbrev-table
-                            (list local-abbrev-table))))
-           (abbrev-table-name-list
-            (append locals (nvp-abbrev--all-parents local-abbrev-table 'names))))
-      (with-current-buffer (prepare-abbrev-list-buffer nil)
-        (view-mode)
-        (pop-to-buffer (current-buffer))))))
+  (let ((inhibit-read-only t))
+    (if all (display-buffer (prepare-abbrev-list-buffer))
+      (let* ((locals (--map (abbrev-table-name it)
+                            (if (listp local-abbrev-table)
+                                local-abbrev-table
+                              (list local-abbrev-table))))
+             (abbrev-table-name-list
+              (append locals (nvp-abbrev--all-parents local-abbrev-table 'names))))
+        (with-current-buffer (prepare-abbrev-list-buffer nil)
+          (view-mode)
+          (pop-to-buffer (current-buffer)))))))
 
 
 ;; -------------------------------------------------------------------

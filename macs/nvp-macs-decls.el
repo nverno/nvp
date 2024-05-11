@@ -223,7 +223,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        ;; install / package
        nvp-pkg-directory-dwim
        ;; project
-       nvp-project-root nvp-project-parent
+       nvp-project-root nvp-project-parent nvp-project-locate-root
        ;; nvp-cycle.el
        nvp-cycle
        ;; reading

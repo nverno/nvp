@@ -163,6 +163,10 @@ The result may also contain atoms that where head of subalists."
   (declare (pure t) (side-effect-free t))
   (cl-reduce (lambda (a b) (if (> (length a) (length b)) a b)) items))
 
+(defsubst nvp:shortest-item (&rest items)
+  (declare (pure t) (side-effect-free t))
+  (cl-reduce (lambda (a b) (if (< (length a) (length b)) a b)) items))
+
 (defsubst nvp:listify (&rest args)
   "Ensure all items in ARGS are lists."
   (declare (pure t) (side-effect-free t))

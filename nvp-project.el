@@ -15,17 +15,27 @@
 (nvp:auto "vc-hg" 'vc-hg-root)
 (nvp:auto "vc-svn" 'vc-svn-root)
 
+
 ;;;###autoload
-(defun nvp-project-root (&optional path)
+(defun nvp-project-locate-root (&optional dir local roots)
+  (if local (projectile-root-top-down
+             (or dir buffer-file-name default-directory)
+             (and roots (nvp:listify roots)))
+    (projectile-project-root dir)))
+
+;;;###autoload
+(defun nvp-project-root (&optional path local)
   "Try `nvp-project-root-function' if it is defined.
 Otherwise, look for version control directories, returing the longest path."
-  (or path (setq path (buffer-file-name)))
+  (or path (setq path (or (buffer-file-name) default-directory)))
   (if nvp-project-root-function
-      (funcall nvp-project-root-function)
-    (or (nvp:longest-item
-         (vc-git-root path)
-         (vc-svn-root path)
-         (vc-hg-root path)))))
+      (funcall nvp-project-root-function path local)
+    (let ((fn (if local
+                  (lambda (a b) (if (< (length a) (length b)) a b))
+                (lambda (a b) (if (> (length a) (length b)) a b)))))
+      (cl-reduce fn (list (vc-git-root path)
+                          (vc-svn-root path)
+                          (vc-hg-root path))))))
 
 ;;;###autoload
 (defun nvp-project-parent (&optional maxdepth directory)
@@ -60,13 +70,7 @@ Otherwise, look for version control directories, returing the longest path."
               projectile-package-cmd-map
               projectile-test-cmd-map
               projectile-run-cmd-map)
-      (remhash project it))))
-
-(defun nvp-project-locate-root (&optional local roots)
-  (if local (projectile-root-top-down
-             (or buffer-file-name default-directory)
-             (nvp:listify roots))
-    (projectile-project-root)))
+      (ignore-errors (remhash project it)))))
 
 (defun nvp-project-name (&optional arg)
   (let* ((project (or arg (nvp-project-locate-root)))

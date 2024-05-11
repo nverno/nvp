@@ -414,8 +414,15 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                     "namespace" (identifier) @nvp-namespace-face)
                    (namespace_identifier) @nvp-namespace-use-face
 
+                   ;; for (auto x: ...)
+                   (for_range_loop
+                    declarator: (identifier) @font-lock-variable-name-face)
+                   ;; auto& x
                    (reference_declarator
-                    (identifier) @font-lock-variable-name-face))
+                    (identifier) @font-lock-variable-name-face)
+                   ;; auto[&] [x, y]
+                   (structured_binding_declarator
+                    _ [(identifier)] @font-lock-variable-name-face))
 
                  :language language
                  :feature 'builtin

@@ -102,7 +102,7 @@ called from minibuffer, or nil.")
 (nvp:auto "flycheck" 'flycheck-list-errors)
 (nvp:decl projectile-test-project)
 
-(defvar-local nvp-project-root-function #'projectile-project-root)
+(defvar-local nvp-project-root-function #'nvp-project-locate-root)
 (defvar-local nvp-mark-defun-function #'mark-defun)
 (defvar-local nvp-fill-paragraph-function nil)
 (defvar-local nvp-test-framework nil)

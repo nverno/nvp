@@ -50,6 +50,9 @@ to build directory from project root.")
 
 ;;;###autoload
 (defun nvp-cmake-compile (&optional prefix)
+  "Compile using CMake.
+Target is read with `completing-read'.
+With PREFIX, prompt for CMake arguments."
   (interactive "P")
   (--if-let (nvp-cmake-project-p)
       (let* ((build-dir (nvp-cmake--build-directory it))

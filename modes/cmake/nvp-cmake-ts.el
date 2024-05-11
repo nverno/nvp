@@ -20,6 +20,13 @@
   '((t (:inherit font-lock-function-name-face :weight bold)))
   "Face for function definition.")
 
+(defcustom cmake-ts-mode-align-arguments nil
+  "When non-nil, align all arguments in argument list with first argument."
+  :type 'boolean
+  :safe 'booleanp
+  :group 'cmake)
+
+
 (defvar nvp-cmake-builtin
   '("cmake_host_system_information"
     "cmake_language"
@@ -117,10 +124,36 @@
     "ctest_upload"))
 
 
-;;; Indentation
+;;; Imenu
 
-(defvar cmake-ts-mode-align-arguments nil
-  "When non-nil, align all arguments in argument list with first argument.")
+(defun cmake-ts-mode--imenu-p (type node)
+  (pcase (treesit-node-type node)
+    (`"normal_command"
+     (string-match-p (rx-to-string `(seq bos ,type eos))
+                     (treesit-node-text
+                      (treesit-node-child node 0))))
+    (_ nil)))
+
+(defun cmake-ts-mode--defun-name (node)
+  (treesit-node-text
+   (treesit-node-child
+    (treesit-search-subtree node "argument_list" nil t 1)
+    0 'named)))
+
+(defvar cmake-ts-mode--imenu-settings
+  `(("Function" "\\`function_command\\'")
+    ("Macro" "\\`macro_command\\'")
+    ("Project" "\\`normal_command\\'"
+     ,(apply-partially #'cmake-ts-mode--imenu-p "project"))
+    ("Executable" "\\`normal_command\\'"
+     ,(apply-partially #'cmake-ts-mode--imenu-p "add_executable"))
+    ("Target" "\\`normal_command\\'"
+     ,(apply-partially #'cmake-ts-mode--imenu-p "add_custom_target"))
+    ("Option" "\\`normal_command\\'"
+     ,(apply-partially #'cmake-ts-mode--imenu-p "option"))))
+
+
+;;; Indentation
 
 (defun cmake-ts-mode--arg-anchor (&rest args)
   (apply (alist-get (if cmake-ts-mode-align-arguments
@@ -174,6 +207,12 @@
    :feature 'definition
    ;; :override t
    `((normal_command
+      ((identifier) @_project
+       (:match ,(rx bol "project" eol) @_project)
+       (argument_list
+        (argument (unquoted_argument) @font-lock-function-name-face))))
+     
+     (normal_command
       ((identifier) @font-lock-keyword-face
        (:match ,(rx bol (or "return" "break" "continue") eol) @font-lock-keyword-face)))
      
@@ -187,7 +226,7 @@
 
      (foreach_command
       (argument_list :anchor
-       (argument (unquoted_argument) @font-lock-variable-name-face)))
+                     (argument (unquoted_argument) @font-lock-variable-name-face)))
 
      (block_command
       (block)
@@ -263,66 +302,16 @@
    :feature 'keyword
    `([(block) (endblock) ,@cmake-ts-mode--keywords] @font-lock-keyword-face)))
 
-(defvar nvp-cmake-ts-mode-features
-  (mapcar (lambda (e) (nth 2 e)) nvp-cmake-ts-extra-fonts))
 
-;;; Imenu
+(nvp:treesit-add-rules cmake-ts-mode
+  :mode-fonts cmake-ts-mode--font-lock-settings
+  :new-fonts nvp-cmake-ts-extra-fonts)
 
-(defun cmake-ts-mode--imenu-p (type node)
-  (pcase (treesit-node-type node)
-    (`"normal_command"
-     (string-match-p (rx-to-string `(seq bos ,type eos))
-                     (treesit-node-text
-                      (treesit-node-child node 0))))
-    (_ nil)))
-
-(defun cmake-ts-mode--defun-name (node)
-  (treesit-node-text
-   (treesit-node-child
-    (treesit-search-subtree node "argument_list" nil t 1)
-    0 'named)))
-
-(defvar cmake-ts-mode--imenu-settings
-  `(("Function" "\\`function_command\\'")
-    ("Macro" "\\`macro_command\\'")
-    ("Target" "\\`normal_command\\'"
-     ,(apply-partially #'cmake-ts-mode--imenu-p "add_custom_target"))
-    ("Option" "\\`normal_command\\'"
-     ,(apply-partially #'cmake-ts-mode--imenu-p "option"))))
-
-;; Update `cmake-ts-mode'
-(setq cmake-ts-mode--font-lock-settings
-      (append nvp-cmake-ts-extra-fonts
-              (--filter
-               (not (memq (nth 2 it) (cons 'error nvp-cmake-ts-mode-features)))
-               cmake-ts-mode--font-lock-settings)))
-
-;; local settings in `cmake-ts-mode'
 ;;;###autoload
 (defun nvp-cmake-ts-enable ()
-  ;; Add font-lock features
-  (setf (car treesit-font-lock-feature-list)
-        (seq-uniq (append nvp-cmake-ts-mode-features
-                          (car treesit-font-lock-feature-list))))
-
-  ;; Navigation
+  "Enable tree-sitter imenu and navigation in `cmake-ts-mode'."
   (setq-local treesit-defun-tactic 'top-level)
-  (setq-local treesit-defun-name-function #'cmake-ts-mode--defun-name)
-  (setq-local treesit-defun-type-regexp
-              (rx bos (or "macro_def" "function_def") eos))
-  ;; config for beg/end-of-defun from `treesit-major-mode-setup'
-  (keymap-set (current-local-map) "<remap> <beginning-of-defun>"
-              #'treesit-beginning-of-defun)
-  (keymap-set (current-local-map) "<remap> <end-of-defun>"
-              #'treesit-end-of-defun)
-  (setq-local beginning-of-defun-function #'treesit-beginning-of-defun)
-  (setq-local end-of-defun-function #'treesit-end-of-defun)
-
-  ;; Imenu
-  (setq-local imenu-create-index-function #'treesit-simple-imenu)
-  (setq-local treesit-simple-imenu-settings cmake-ts-mode--imenu-settings)
-
-  (treesit-font-lock-recompute-features))
+  (setq-local treesit-simple-imenu-settings cmake-ts-mode--imenu-settings))
 
 (provide 'nvp-cmake-ts)
 ;; Local Variables:

@@ -71,20 +71,41 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
     (setq-local typescript-ts-mode--assignment-query
                 tsx-ts-mode--assignment-lhs-query))
   (let ((v (intern (format "nvp-%s-ts-font-lock-rules" language))))
-    ;; XXX: disabled
     (or (and nil nvp-typescript-ts-font-lock-rules)
         (let ((new-rules
                (treesit-font-lock-rules
                 :language language
                 :feature 'nvp
                 ;; TODO(5/2/24): patch
-                '((property_signature
-                   name: (property_identifier) @font-lock-property-name-face)
-                  (public_field_definition
+                '(;; Type signatures
+                  (property_signature
                    name: (property_identifier) @font-lock-property-name-face)
                   (index_signature
                    name: (identifier) @font-lock-property-name-face)
-                  
+
+                  ;; Missing class field definitions:
+                  ;; class ... {
+                  ;;   func = (...) => { ... }
+                  ;; }
+                  (public_field_definition
+                   name: [(private_property_identifier) (property_identifier)]
+                   @font-lock-function-name-face
+                   value: (arrow_function))
+                  (public_field_definition
+                   name: [(private_property_identifier) (property_identifier)]
+                   @font-lock-property-name-face
+                   value: (_))
+
+                  ;; Missing call: this.#_func()
+                  (call_expression
+                   function:
+                   (member_expression
+                    property: [(private_property_identifier) (property_identifier)]
+                    @font-lock-function-call-face))
+
+                  ;; Missing operators: "?."
+                  [(optional_chain)] @font-lock-operator-face
+
                   ;; declare class C {
                   ;;   combine(...those: Psbt[]): this;
                   ;; }
@@ -92,7 +113,6 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
                   (required_parameter
                    (rest_pattern (identifier) @font-lock-variable-name-face)))
                 
-
                 :language language
                 :feature 'assignment
                 '((assignment_expression

@@ -8,8 +8,8 @@ import (
 
 type Item struct {
 	Value    ${1:int} // The value of the item; arbitrary.
-	Priority int // The priority of the item in the queue.${2: "
-	Index int"}
+	Priority int // The priority of the item in the queue.${2: 
+	Index int}
 }
 
 type PriorityQueue []*Item

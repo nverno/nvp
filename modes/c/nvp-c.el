@@ -5,7 +5,7 @@
 ;; - merge all the compile stuff and remove compile macros
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
+(require 'nvp)                          ; `nvp-receiver-face'
 (nvp:req 'nvp-c 'subrs)
 (nvp:decls
  :f ( forward-ifdef clang-complete-load-args asdf-where nvp-env-add nvp-yas-var
@@ -422,7 +422,12 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                     (identifier) @font-lock-variable-name-face)
                    ;; auto[&] [x, y]
                    (structured_binding_declarator
-                    _ [(identifier)] @font-lock-variable-name-face))
+                    _ [(identifier)] @font-lock-variable-name-face)
+
+                   ;; <receiver>.func()
+                   (call_expression
+                    function: (field_expression
+                               argument: (identifier) @nvp-receiver-face)))
 
                  :language language
                  :feature 'builtin

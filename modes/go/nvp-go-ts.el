@@ -6,6 +6,16 @@
 (require 'go-ts-mode nil t)
 (nvp:decls)
 
+
+(cl-defmethod nvp-go-in-literal-p
+  (&context (major-mode go-ts-mode) &optional marker &rest _)
+  (string-match-p
+   "literal"                            ; literal_value / composite_literal
+   (treesit-node-type
+    (treesit-node-parent
+     (treesit-node-at
+      (if marker (marker-position marker) (point)))))))
+
 ;;; Indentation:
 ;; Modify to indent /* ... */
 (require 'c-ts-common)                  ; comment indentation + filling

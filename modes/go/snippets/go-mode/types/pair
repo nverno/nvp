@@ -2,4 +2,4 @@
 # name: pair struct
 # key: pair
 # --
-type pair struct{ ${1:x}, ${2:y} ${3:int} }
+type Pair struct{ ${1:X}, ${2:Y} ${3:int} }

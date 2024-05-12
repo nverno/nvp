@@ -12,11 +12,17 @@
 (define-advice godef-jump (:after (&rest _args) "pulse")
   (run-hooks 'xref-after-jump-hook))
 
-;;; Newline dwim
+;;; Dwim
+;; Newline
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
   :modes (go-mode go-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
+(cl-defgeneric nvp-go-in-literal-p (&optional _marker _ppss)
+  "Return non-nil if in literal."
+  (go--in-composite-literal-p))
+
+;; Insert ':' dwim
 (defun nvp-go-:-dwim (marker)
   "Insert dwim for \":\" at MARKER in Go."
   (interactive (list (point-marker)))
@@ -29,12 +35,13 @@
             (call-interactively #'nvp-go-:-dwim))
         (?= (delete-char -1))
         (_ (insert " := ")))
-    ;; Inside [ .. ] insert ":", otherwise ":="
+    ;; Inside [ .. ] or literal (eg. Foo{ .. }) insert ":", otherwise ":="
     (let* ((ppss (syntax-ppss marker))
            (pos (nth 1 ppss)))
       (if (or (nth 3 ppss)
               (nth 4 ppss)
-              (and pos (memq (char-after pos) '(?\{ ?\[))))
+              (memq (char-after pos) '(?\[))
+              (nvp-go-in-literal-p marker ppss))
           (insert ":")
         (if (memq (char-before) '(? ?	))
             (insert ":= ")

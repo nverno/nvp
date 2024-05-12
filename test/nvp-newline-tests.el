@@ -2,20 +2,20 @@
 (require 'nvp-test-helpers)
 (require 'nvp-c)
 (require 'nvp-c++)
+(require 'ecma-ts nil t)
 (require 'nvp-js)
 
 (defun c-mode-buffer-setup ()
-  (setq c-basic-offset 4))
+  (setq c-basic-offset 4
+        c-ts-mode-indent-offset 4))
 
 (defun c++-mode-buffer-setup ()
-  (setq c-basic-offset 4))
+  (setq c-basic-offset 4
+        c-ts-mode-indent-offset 4))
 
 (defun js-mode-buffer-setup ()
   (setq js-indent-level 2
         js-jsx-indent-level 2))
-
-(defun js2-mode-buffer-setup ()
-  (setq js2-basic-offset 2))
 
 ;; -------------------------------------------------------------------
 ;;; Lisp neline dwim => doesn't do anything special
@@ -167,7 +167,7 @@ int main() {
 /*
  * 
  * |
- */" 'js2-mode (call-interactively 'nvp-newline-dwim)))
+ */" 'js-mode (call-interactively 'nvp-newline-dwim)))
 
 (ert-deftest js-newline-dwim-comment-continue-2 ()
   "Newline dwim in JS multiline comments."
@@ -181,6 +181,6 @@ int main() {
 /*
  *
  * |
- */" 'js2-mode (call-interactively 'nvp-newline-dwim)))
+ */" 'js-mode (call-interactively 'nvp-newline-dwim)))
 
 (provide 'nvp-newline-tests)

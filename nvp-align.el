@@ -24,6 +24,7 @@
   ("Dh"   . align-highlight-rule)
   ("Du"   . align-unhighlight-rule)
   ("e"    . align-entire)
+  ("h"    . nvp-align-show-rules)
   ("M-?"  . nvp-align-show-rules)
   (";"    . nvp-align-comments)
   ("r"    . align-regexp)
@@ -123,19 +124,22 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;; - store modes in variable so it can be extended easily
 ;; - not align in string/comments
 (defvar nvp-align-basic-lc-modes
-  '(python-mode sh-mode makefile-mode dockerfile-mode))
+  '(python-mode sh-mode bash-ts-mode makefile-mode dockerfile-mode))
 
 ;; EOL comments
 (defvar nvp-align-eol-comment-modes
-  '(sh-mode makefile-mode))
+  '(sh-mode bash-ts-mode makefile-mode))
 
 ;; -------------------------------------------------------------------
 ;;; Add / modify default rules
 
+(defun nvp-align--line-continuation-p ()
+  (not (save-excursion (nvp:ppss 'soc nil (match-beginning 1)))))
+
 (setcdr (assq 'basic-line-continuation align-rules-list)
         `((regexp . "\\(\\s-*\\)\\\\$")
           (modes  . nvp-align-basic-lc-modes)
-          (valid  . ,(function (lambda () (not (nvp:ppss 'soc)))))))
+          ,(cons 'valid #'nvp-align--line-continuation-p)))
 
 (unless (assq 'basic-eol-comments align-rules-list)
   (push

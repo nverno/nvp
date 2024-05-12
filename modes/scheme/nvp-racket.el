@@ -8,9 +8,9 @@
 (nvp:decls :p ("racket"))
 (nvp:auto "nvp-hap" nvp-hap-thing-at-point)
 
+
 (with-eval-after-load 'nvp-repl
   (require 'nvp-racket-repl))
-
 
 (defun nvp-racket-expand (&optional choose)
   "Expand dwim without macro hiding.
@@ -30,6 +30,31 @@ Otherwise expand the list containing point."
     (if fn (funcall fn 'no-hiding)
       (racket-stepper--expand-text
        t (lambda () (bounds-of-thing-at-point 'list))))))
+
+
+;; -------------------------------------------------------------------
+;;; Tests
+
+(eval-when-compile (require 'compile))
+(define-compilation-mode raco-test-mode "Raco"
+  "Compilation mode for raco test."
+  :abbrev-table nil
+  (setq-local compilation-error-regexp-alist '(raco))
+  (setq-local compilation-error-regexp-alist-alist
+              '((raco "location:[ \t]+\\([^ \n:]+\\):\\([0-9]+\\):\\([0-9]+\\)"
+                      1 2 3))))
+
+(defun nvp-racket-test (&optional read-command)
+  "Run raco test on associated test files."
+  (interactive "P")
+  (--when-let (nvp-project-locate-root nil 'local "info.rkt")
+    (let* ((default-directory it)
+           (file (f-base (buffer-file-name)))
+           (compile-command (concat "racket -l raco test **/" file "*")))
+      (when read-command
+        (setq compile-command (compilation-read-command compile-command)))
+      (compilation-start compile-command #'raco-test-mode))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Help
@@ -85,9 +110,6 @@ Otherwise expand the list containing point."
 ;; -------------------------------------------------------------------
 ;;; Abbrevs
 
-(defvar nvp-abbrev-joiner)
-(defvar nvp-abbrev-splitters)
-
 (defun nvp-racket-abbrev-string (str &rest args)
   "Convert STR to abbrev."
   ;; "->" => "t" in abbrevs
@@ -97,7 +119,7 @@ Otherwise expand the list containing point."
   (&context (major-mode racket-mode) &rest args)
   "Return list of functions defined in buffer."
   (require 'nvp-parse)
-  (when-let ((defs (cl-call-next-method args)))
+  (when-let ((defs (ignore-errors (cl-call-next-method args))))
     (--filter
      (not (string-match-p
            (rx (or

@@ -170,10 +170,7 @@ The result may also contain atoms that where head of subalists."
 (defsubst nvp:listify (&rest args)
   "Ensure all items in ARGS are lists."
   (declare (pure t) (side-effect-free t))
-  (mapcar (lambda (arg)
-            (and (stringp arg) (setq arg (intern-soft arg)))
-            (setq arg (nvp:as-list arg)))
-          args))
+  (mapcan (lambda (arg) (nvp:as-list arg)) args))
 
 (defsubst nvp:list-concat (&rest elems)
   "Remove empty lists from ELEMS and append."

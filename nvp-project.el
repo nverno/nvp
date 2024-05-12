@@ -24,12 +24,12 @@
     (projectile-project-root dir)))
 
 ;;;###autoload
-(defun nvp-project-root (&optional path local)
+(defun nvp-project-root (&optional path local roots)
   "Try `nvp-project-root-function' if it is defined.
 Otherwise, look for version control directories, returing the longest path."
   (or path (setq path (or (buffer-file-name) default-directory)))
   (if nvp-project-root-function
-      (funcall nvp-project-root-function path local)
+      (funcall nvp-project-root-function path local roots)
     (let ((fn (if local
                   (lambda (a b) (if (< (length a) (length b)) a b))
                 (lambda (a b) (if (> (length a) (length b)) a b)))))

@@ -3,9 +3,9 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'vhdl-ts-mode nil t)
-(nvp:decls :v (vhdl-ts--treesit-settings))
+(nvp:decls :p (vhdl) :v (vhdl-ts--treesit-settings) :f (vhdl-ts-mode))
+
 
 (defface nvp-vhdl-package-face
   '((t ( :inherit font-lock-function-name-face
@@ -38,14 +38,9 @@
        (architecture_body
         name: (identifier) @nvp-vhdl-package-face)))))
 
-(with-eval-after-load 'vhdl-ts-mode
-  (setq vhdl-ts--treesit-settings
-        (seq-uniq
-         (append
-          nvp-vhdl-ts-font-lock
-          (seq-remove (lambda (el)
-                        (memq (caddr el) (mapcar #'caddr nvp-vhdl-ts-font-lock)))
-                      vhdl-ts--treesit-settings)))))
+(nvp:treesit-add-rules vhdl-ts-mode
+  :mode-fonts vhdl-ts--treesit-settings
+  :new-fonts nvp-vhdl-ts-font-lock)
 
 (provide 'nvp-vhdl)
 ;; Local Variables:

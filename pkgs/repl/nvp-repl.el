@@ -207,15 +207,16 @@ buffers."
         (intern (completing-read "repl: " repls nil t))
       (car repls))))
 
-(cl-defmacro nvp-with-repl (fields &rest body &key allow-repl &allow-other-keys)
-  "in a source buffer, do body with bound repl fields.
+(cl-defmacro nvp-with-repl (fields &rest body &key repl allow-repl &allow-other-keys)
+  "In a source buffer, do body with bound repl fields.
 if allow-repl is non-nil, bind fields from current repl in repl buffers as
 well."
   (declare (indent defun)
            (debug (&define cl-macro-list def-form cl-declarations def-body)))
   (nvp:skip-keywords body)
   `(pcase-let (((cl-struct nvp--repl ,@fields)
-                ,(if allow-repl '(nvp-repl-current) 'nvp-repl-current)))
+                (,@(if repl `(or ,repl) '(progn))
+                 ,@(if allow-repl '((nvp-repl-current)) '(nvp-repl-current)))))
      ,@body))
 
 ;; return repl for mode, or default
@@ -285,7 +286,7 @@ well."
 ;; update repls proc/buff and link process-buffer (which may not be an
 ;; actual process, eg. slime repl) with source buffer
 (defun nvp-repl-update (repl-proc src-buff &optional p-buff)
-  (nvp:defq p-buff (funcall (repl:val "proc->buff") repl-proc))
+  (or p-buff (setq p-buff (funcall (repl:val "proc->buff") repl-proc)))
   (setf (repl:val "repl-proc") repl-proc
         (repl:val "repl-buff") p-buff)
   (prog1 p-buff (nvp-repl--set-source p-buff src-buff)))
@@ -338,13 +339,15 @@ well."
   ;; (when (derived-mode-p 'comint-mode)
   ;;   (add-hook 'comint-output-filter-functions
   ;;             #'comint-postoutput-scroll-to-bottom nil t))
-  (when-let ((nvp-repl-current (nvp-repl-current)))
-    (nvp-with-repl (name commands cmd-prefix pos-bol)
-      (when commands
-        (add-hook
-         'completion-at-point-functions
-         (nvp-repl--make-completion-at-point name commands cmd-prefix pos-bol)
-         nil t)))))
+  (when nvp-repl-minor-mode
+    (when-let ((nvp-repl-current (nvp-repl-current)))
+      (nvp-with-repl (name commands cmd-prefix pos-bol)
+        (when commands
+          (add-hook
+           'completion-at-point-functions
+           (nvp-repl--make-completion-at-point name commands cmd-prefix pos-bol)
+           nil t))))
+    (add-hook 'kill-buffer-hook #'nvp-repl--cleanup-process-buffers nil t)))
 
 ;;;###autoload
 (define-minor-mode nvp-repl-source-minor-mode
@@ -420,9 +423,10 @@ repl with source buffer."
              :message (if prefix "Current buffer %S" "Source buffer %S dead") buf)))
       (nvp-repl--set-source (current-buffer) (get-buffer src-buf)))))
 
-(defun nvp-repl-start (&optional prefix)
+(defun nvp-repl-start (&optional prefix repl)
   "Return a REPL buffer associated with current buffer."
   (nvp-with-repl (init init-async init-use-hook wait process-p buff->proc)
+    :repl repl
     (cond (init-async (prog1 'async
                         (nvp-repl--make-async-callback (current-buffer) t)))
           (init-use-hook (prog1 'async
@@ -435,7 +439,7 @@ repl with source buffer."
                (cl-assert (funcall process-p repl-proc))
                (nvp-repl--init-setup (current-buffer) repl-proc repl-buf))))))
 
-(defun nvp-repl-get-buffer (&optional prefix)
+(defun nvp-repl-get-buffer (&optional prefix _repl)
   "Return a REPL buffer if one exists, otherwise attempt to start one."
   (nvp-repl-ensure)
   (or (--when-let (nvp-repl-buffer)
@@ -456,7 +460,7 @@ repl with source buffer."
 ;;; Commands
 
 ;;;###autoload
-(defun nvp-repl-jump (&optional prefix)
+(defun nvp-repl-jump (&optional prefix _repl)
   "Jump between source and REPL buffers, staring if necessary.
 If the associated source buffer no longer exists, pop to next visible
 window.
@@ -493,6 +497,17 @@ When called from a repl buffer with PREFIX:
   "Remove any repl associations with MODE."
   (interactive (list (intern (nvp-read-mode))))
   (remhash mode nvp-repl-cache))
+
+;;; TODO(5/12/24): Allow starting unassociated REPLs for a buffer?
+;;                 Should send commands be disabled?
+(defun nvp-repl (repl &optional prefix)
+  "Start a REPL for current buffer.
+PREFIX is passed to `nvp-repl-jump'."
+  (interactive
+   (let ((repl (completing-read "Repl: " nvp-repl--repl-cache nil t)))
+     (list (gethash repl nvp-repl--repl-cache) current-prefix-arg)))
+  (let ((nvp-repl-current repl))
+    (funcall-interactively #'nvp-repl-jump prefix repl)))
 
 ;; -------------------------------------------------------------------
 ;;; Basic REPL interaction

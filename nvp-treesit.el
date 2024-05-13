@@ -155,6 +155,7 @@ With prefix, add neovim sources first."
   :refresh-suffixes t
   [ :if nvp-treesit-ready-p
     ["Queries"
+     ("i" "Query" ts-query)
      ("q" "Highlight query" ts-query-highlight-query :transient t)
      ("Q" "Remove highlights" ts-query-remove-highlights :transient t
       :if-non-nil ts-query--langs)
@@ -169,7 +170,7 @@ With prefix, add neovim sources first."
     ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t
      :if nvp-treesit-ready-p)
     ("a" "Add sources" ts-util-add-treesit-sources)
-    ("i" "Install/update parsers" nvp-treesit-install)
+    ("I" "Install/update parsers" nvp-treesit-install)
     ("b" "Browse repo" ts-util-browse-repo)]
    ["Dev"
     ("m" "Global mode" nvp-treesit-mode)

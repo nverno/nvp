@@ -57,10 +57,7 @@
      ["__future__"] @font-lock-preprocessor-face
 
      ((identifier) @font-lock-builtin-face
-      (:match ,(rx bos "__" (* (not white)) "__" eos) @font-lock-builtin-face))
-
-     ;; TODO: patch & remove
-     (for_statement left: (identifier) @font-lock-variable-name-face))))
+      (:match ,(rx bos "__" (* (not white)) "__" eos) @font-lock-builtin-face)))))
 
 (nvp:treesit-add-rules python-ts-mode
   :mode-lib python

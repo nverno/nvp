@@ -148,13 +148,40 @@ Create tags in TAGS-FILE unless it exists and load tags."
 ;; -------------------------------------------------------------------
 ;;; Menu
 
+(nvp:decl dired-file-name-at-point)
+
+;;;###autoload
+(defun nvp-tag-list-tags (file)
+  "Display list of tags in FILE.
+Wrapper around `list-tags' that:
+ - Prompts for filename with prefix arg or when FILE isnt found in tags files.
+ - In `dired-mode' uses `dired-file-name-at-point'"
+  (interactive
+   (if current-prefix-arg
+       (list (completing-read
+              "List file tags: " 'tags-complete-tags-table-file nil t))
+     (let* ((src-file (cond ((eq 'dired-mode major-mode)
+                             (dired-file-name-at-point))
+                            (t (buffer-file-name))))
+            (tag-dir (save-excursion
+                       (visit-tags-table-buffer)
+                       (file-name-directory (buffer-file-name)))))
+       (list (and src-file tag-dir
+                  (file-relative-name src-file tag-dir))))))
+  (save-excursion
+    (visit-tags-table-buffer)
+    (unless (and file (try-completion file (tags-table-files)))
+      (setq file (completing-read "List file tags: "
+                                  'tags-complete-tags-table-file nil t))))
+  (funcall #'list-tags file))
+
 ;;;###autoload(autoload 'nvp-tag-menu "nvp-tag" nil t)
 (transient-define-prefix nvp-tag-menu ()
   [ :if-non-nil tags-file-name
     "Tags"
     ("a" "Apropos" tags-apropos)
     ("s" "Search" tags-search)
-    ("f" "List file tags" list-tags)
+    ("f" "List file tags" nvp-tag-list-tags)
     ("q" "Query replace regexp" tags-query-replace)
     ("e" "Find using etags" nvp-tag-find-etag)]
   [["Tables"

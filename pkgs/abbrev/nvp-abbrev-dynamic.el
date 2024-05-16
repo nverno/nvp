@@ -268,7 +268,9 @@ If ARG is non-nil, clear abbrev defs and replace with current."
 
 (defun nvp-abbrevd-edit-save-to-file (file)
   "Redefine current abbrevs and write them to FILE."
-  (interactive "fWrite abbrevs to: " nvp-abbrevd-edit-mode)
+  (interactive
+   (list (read-file-name "Write abbrevs to: " nvp/abbrevs))
+   nvp-abbrevd-edit-mode)
   (nvp-abbrevd-edit-redefine)
   (nvp-abbrevd-write-abbrev-file file t))
 

@@ -29,20 +29,6 @@
            (match-beginning m) (match-end m)
            'nvp-interpreter-face override start end))))))
 
-
-;; (defun nvp-treesit-add-font-lock (new-fonts &optional prepend feature-list)
-;;   ;; Add additional font-lock settings + features they define in hooks
-;;   (setq-local treesit-font-lock-settings
-;;               (if prepend (append new-fonts treesit-font-lock-settings)
-;;                 (append treesit-font-lock-settings new-fonts)))
-;;   (setq-local treesit-font-lock-feature-list
-;;               (--zip-with (seq-uniq (append it other))
-;;                           treesit-font-lock-feature-list
-;;                           (or feature-list
-;;                               (list (mapcar (lambda (e) (nth 2 e)) new-fonts)
-;;                                     nil nil nil))))
-;;   (treesit-font-lock-recompute-features))
-
 (eval-when-compile
   (defsubst nvp-treesit:add-sources ()
     (when (fboundp 'ts-util-add-treesit-sources)

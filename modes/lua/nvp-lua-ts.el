@@ -8,252 +8,218 @@
 (nvp:decls :p (lua) :v (lua-ts--builtins lua-ts-mode-hook))
 
 
-(defvar lua-ts-align-arguments nil
-  "Non-nil to align arguments with parent")
-
-;;; FIX(5/3/24): remove all this stuff
-(defvar nvp-lua-ts-font-lock-before)
-(defvar nvp-lua-ts-font-lock-after)
-
-(with-eval-after-load 'lua-ts-mode
-  (defvar lua-ts--simple-indent-rules-orig lua-ts--simple-indent-rules)
-  (defvar lua-ts--font-lock-settings-orig lua-ts--font-lock-settings)
-  (setq lua-ts--builtins (--filter (not (string= it "self")) lua-ts--builtins)))
-
-;; (defun lua-ts-mode--assignment-identifier (node)
-;;   (pcase (treesit-node-type node)
-;;     ("identifier" node)
-;;     ((or "bracket_index_expression" "dot_index_expression")
-;;      (lua-ts-mode--assignment-identifier
-;;       (treesit-node-child-by-field-name node "table")))
-;;     (_ (error "shouldnt happen: %S" node))))
-
-;; (defun lua-ts-mode--fontify-assignment-lhs (node override start end &rest _)
-;;   "Fontify the lhs NODE of an assignment_exp.
-;; For OVERRIDE, START, END, see `treesit-font-lock-rules'."
-;;   (let ((identifier (lua-ts-mode--assignment-identifier node)))
-;;     (when identifier
-;;       (treesit-fontify-with-override
-;;        (treesit-node-start identifier) (treesit-node-end identifier)
-;;        'font-lock-variable-name-face
-;;        override start end))))
+(defcustom lua-ts-align-arguments nil
+  "Non-nil to align arguments with parent"
+  :type 'boolean
+  :safe 'booleanp
+  :group 'lua)
 
 
-(defvar lua-ts-mode--identifier-query
+;;; Font-locking
+
+(setq lua-ts--builtins
+      (seq-uniq
+       (append '("jit"
+                 "__add" "__band" "__bnot" "__bor" "__bxor" "__call" "__concat"
+                 "__div" "__eq" "__gc" "__idiv" "__index" "__le" "__len" "__lt"
+                 "__metatable" "__mod" "__mul" "__name" "__newindex" "__pairs"
+                 "__pow" "__shl" "__shr" "__sub" "__tostring" "__unm")
+               lua-ts--builtins)
+       #'string=))
+
+(defvar nvp-lua-ts--identifier-query
   (when (treesit-available-p)
     (treesit-query-compile 'lua '((identifier) @id))))
 
-;;; TODO(5/3/24):
-;; (defun lua-ts-mode--fontify-function (node override start end &rest _)
-;;   (pcase (treesit-navigate-thing )))
+(defun nvp-lua-ts--fontify-function-decl (node override start end &rest _)
+  (let ((type (treesit-node-type node))
+        face table)
+    (pcase type
+      ("identifier" nil)
+      ("method_index_expression"
+       (setq face 'nvp-namespace-use-face
+             table (treesit-node-child-by-field-name node "table")
+             node (treesit-node-child-by-field-name node "method")))
+      ("dot_index_expression"
+       (setq face 'nvp-namespace-face
+             table (treesit-node-child-by-field-name node "table")
+             node (treesit-node-child-by-field-name node "field"))))
+    (treesit-fontify-with-override
+     (treesit-node-start node) (treesit-node-end node)
+     'font-lock-function-name-face override start end)
+    (when table
+      (dolist (node (treesit-query-capture
+                     table nvp-lua-ts--identifier-query start end t))
+        (treesit-fontify-with-override
+         (treesit-node-start node) (treesit-node-end node)
+         face override start end)))))
 
-;;; FIXME(4/30/24): method_index/do_index being fontified the same
+(defun nvp-lua-ts--fontify-table (node override start end &rest _)
+  (let ((face 'nvp-receiver-face))
+    (when-let* ((node (pcase (treesit-node-type node)
+                        ("method_index_expression"
+                         (prog1 nil
+                           (nvp-lua-ts--fontify-table
+                            (treesit-node-child-by-field-name node "table")
+                            override start end)))
+                        ("dot_index_expression"
+                         (setq face 'nvp-namespace-use-face)
+                         (treesit-node-child-by-field-name node "table"))
+                        ("identifier" node))))
+      (dolist (node (treesit-query-capture
+                     node nvp-lua-ts--identifier-query start end t))
+        (treesit-fontify-with-override
+         (treesit-node-start node) (treesit-node-end node)
+         face override start end)))))
 
-(defun lua-ts-mode--fontify-table (node override start end &rest _)
-  (when-let* ((face 'nvp-receiver-face) ;; 'nvp-namespace-face
-              (node (pcase (treesit-node-type node)
-                      ("method_index_expression"
-                       (prog1 nil
-                         (lua-ts-mode--fontify-table
-                          (treesit-node-child-by-field-name node "table")
-                          override start end)))
-                      ("dot_index_expression"
-                       (setq face 'nvp-namespace-use-face)
-                       (treesit-node-child-by-field-name node "table"))
-                      ("function_call"
-                       (prog1 nil
-                         (lua-ts-mode--fontify-table
-                          (treesit-node-child-by-field-name node "name")
-                          override start end)))
-                      ("identifier" node))))
-    (dolist (node (treesit-query-capture
-                   node lua-ts-mode--identifier-query start end t))
-      (treesit-fontify-with-override
-       (treesit-node-start node) (treesit-node-end node)
-       face override start end))))
+(defun nvp-lua-ts--fontify-doc-comment (node override start end &rest _)
+  (let ((node-start (treesit-node-start node)))
+    (save-excursion
+      (goto-char node-start)
+      (skip-chars-forward " \t-" (line-end-position))
+      (when (and (< (point) end)
+                 (looking-at "[ \t]*\\(@[[:alpha:]]*\\)"))
+        (treesit-fontify-with-override
+         (match-beginning 1) (match-end 1) 'font-lock-doc-markup-face
+         override start end)))))
 
-(setq nvp-lua-ts-font-lock-before
-      (treesit-font-lock-rules
-       :language 'lua
-       :feature 'definition
-       '((function_declaration
-          name: (method_index_expression
-                 table: (_) @lua-ts-mode--fontify-table
-                 method: (identifier) @font-lock-function-name-face))
-         (function_declaration
-          (method_index_expression
-           (dot_index_expression
-            table: (_) @lua-ts-mode--fontify-table
-            field: (identifier) @font-lock-property-name-face)))
-         (function_declaration
-          name: (identifier) @font-lock-function-name-face)
-         (function_declaration
-          name: (dot_index_expression
-                 table: (identifier) @nvp-namespace-face
-                 field: (identifier) @font-lock-function-name-face))
-         (function_declaration
-          name: (dot_index_expression
-                 table: (_) @lua-ts-mode--fontify-table
-                 field: (identifier) @font-lock-function-name-face))
-         (assignment_statement
-          (variable_list name: [(identifier)]) @font-lock-function-name-face
-          (expression_list value: (function_definition)))
-         (field
-          name: (identifier) @font-lock-function-name-face
-          value: (function_definition))
-         (parameters
-          name: (identifier) @font-lock-variable-name-face))
+(defvar nvp-lua-ts--font-lock-rules
+  (when (treesit-available-p)
+    (cons
+     ;; Before other rules
+     (treesit-font-lock-rules
+      :language 'lua
+      :feature 'definition
+      '((function_declaration
+         name: (identifier) @font-lock-function-name-face)
+        (function_declaration
+         name: [(dot_index_expression) (method_index_expression)]
+         @nvp-lua-ts--fontify-function-decl)
+        (field name: (identifier) @font-lock-function-name-face
+               value: (function_definition))
+        (parameters name: (identifier) @font-lock-variable-name-face))
 
-       :language 'lua
-       :feature 'builtin
-       `(((identifier) @font-lock-keyword-face
-          (:match ,(rx bos "self" eos) @font-lock-keyword-face))
-         ((identifier) @font-lock-builtin-face
-          (:match ,(rx-to-string `(seq bos (or ,@lua-ts--builtins) eos))
-                  @font-lock-builtin-face)))))
+      :language 'lua
+      :feature 'builtin
+      `(((identifier) @font-lock-keyword-face
+         (:match ,(rx bos "self" eos) @font-lock-keyword-face))
+        ((identifier) @font-lock-builtin-face
+         (:match ,(rx-to-string `(seq bos (or ,@lua-ts--builtins) eos))
+                 @font-lock-builtin-face))))
 
-(setq nvp-lua-ts-font-lock-after
-      (treesit-font-lock-rules
-       :language 'lua
-       :feature 'comment
-       '(((comment) @font-lock-doc-face
-          (:match "\\`---" @font-lock-doc-face))
-         (comment) @lua-ts--comment-font-lock
-         (hash_bang_line) @nvp-treesit-fontify-hash-bang)
+     ;; After other rules
+     (treesit-font-lock-rules
+      :language 'lua
+      :feature 'comment
+      `(((comment) @font-lock-doc-face
+         (:match ,(rx bos "--" (or "-" (seq (* (any "-" " " "\t")) "@")))
+                 @font-lock-doc-face))
+        (comment) @lua-ts--comment-font-lock
+        (hash_bang_line) @nvp-treesit-fontify-hash-bang)
 
-       :language 'lua
-       :feature 'namespace
-       ;; :override t
-       '((function_declaration
-          name: [(method_index_expression) (dot_index_expression)]
-          @lua-ts-mode--fontify-table)
-         (function_call
-          name: [(method_index_expression) (dot_index_expression)]
-          @lua-ts-mode--fontify-table)
+      :language 'lua
+      :feature 'doc
+      :override t
+      '(((comment) @nvp-lua-ts--fontify-doc-comment
+         (:match "\\`--[- \t]*@" @nvp-lua-ts--fontify-doc-comment)))
 
-         (dot_index_expression
-          table: (identifier) @nvp-namespace-face))
+      :language 'lua
+      :feature 'namespace
+      '((function_call
+         name: [(method_index_expression) (dot_index_expression)]
+         @nvp-lua-ts--fontify-table)
+        (dot_index_expression
+         table: (_) @nvp-lua-ts--fontify-table))
 
-       ;; :language 'lua
-       ;; :feature 'assignment
-       ;; '((for_numeric_clause name: (identifier) @font-lock-variable-name-face)
-       ;;   (variable_list (_) @lua-ts-mode--fontify-assignment-lhs))
+      :language 'lua
+      :feature 'variable
+      '((identifier) @font-lock-variable-use-face)))))
 
-       :language 'lua
-       :feature 'variable
-       '((function_call
-          arguments: (arguments (identifier) @font-lock-variable-use-face))
-         [(identifier)] @font-lock-variable-use-face)))
 
-;;;###autoload
-(defun nvp-lua-ts-load-font-lock (&optional orig)
-  (interactive "P")
-  (setq lua-ts--font-lock-settings
-        (if orig
-            lua-ts--font-lock-settings-orig
-          (let ((nvp-features (--map (nth 2 it)
-                                     (append nvp-lua-ts-font-lock-before
-                                             nvp-lua-ts-font-lock-after))))
-            (append nvp-lua-ts-font-lock-before
-                    (--filter (not (memq (nth 2 it) nvp-features))
-                              lua-ts--font-lock-settings-orig)
-                    nvp-lua-ts-font-lock-after)))))
+;;; Indentation
 
-;;;###autoload
-(defun nvp-lua-ts-load-indent (&optional orig)
-  (interactive "P")
-  (setq lua-ts--simple-indent-rules
-        (if orig
-            lua-ts--simple-indent-rules-orig
-          ;; Modify to not indent arguments weird
-          `((lua
-             ((or (node-is "comment")
-                  (parent-is "comment_content")
-                  (parent-is "string_content")
-                  (node-is "]]"))
-              no-indent 0)
-             ((and (n-p-gp "field" "table_constructor" "arguments")
-                   lua-ts--multi-arg-function-call-matcher)
-              parent-bol lua-ts-indent-offset)
-             ((and (n-p-gp "}" "table_constructor" "arguments")
-                   lua-ts--multi-arg-function-call-matcher)
-              parent-bol 0)
-             ((or (node-is "do")
-                  (node-is "then")
-                  (node-is "elseif_statement")
-                  (node-is "else_statement")
-                  (node-is "until")
-                  (node-is ")")
-                  (node-is "}"))
-              standalone-parent 0)
-             ;; Added
-             ,@(if lua-ts-align-arguments
-                   '(((or (and (parent-is "arguments") lua-ts--first-child-matcher)
-                          (and (parent-is "parameters") lua-ts--first-child-matcher)
-                          (and (parent-is "table_constructor") lua-ts--first-child-matcher))
-                      standalone-parent lua-ts-indent-offset)
-                     ((or (parent-is "arguments")
-                          (parent-is "parameters")
-                          (parent-is "table_constructor"))
-                      (nth-sibling 1) 0)
-                     ((and (n-p-gp "block" "function_definition" "arguments")
-                           lua-ts--nested-function-argument-matcher)
-                      parent lua-ts-indent-offset)
-                     ((n-p-gp "end" "function_definition" "arguments") parent 0))
-                 `(((parent-is ,(rx (or "arguments" "parameters" "table_constructor")))
-                    standalone-parent lua-ts-indent-offset)
-                   ((n-p-gp "block" "function_definition" "arguments")
-                    standalone-parent lua-ts-indent-offset)
-                   ((n-p-gp "end" "function_definition" "arguments") standalone-parent 0)))
-             ((and (n-p-gp "block" "function_definition" "parenthesized_expression")
-                   lua-ts--nested-function-block-matcher
-                   lua-ts--nested-function-block-include-matcher)
+(defvar nvp-lua-ts--indent-rules
+  `((lua
+     ((or (node-is "comment")
+          (parent-is "comment_content")
+          (parent-is "string_content")
+          (node-is "]]"))
+      no-indent 0)
+     ((and (n-p-gp "field" "table_constructor" "arguments")
+           lua-ts--multi-arg-function-call-matcher)
+      parent-bol lua-ts-indent-offset)
+     ((and (n-p-gp "}" "table_constructor" "arguments")
+           lua-ts--multi-arg-function-call-matcher)
+      parent-bol 0)
+     ((or (node-is "do")
+          (node-is "then")
+          (node-is "elseif_statement")
+          (node-is "else_statement")
+          (node-is "until")
+          (node-is ")")
+          (node-is "}"))
+      standalone-parent 0)
+     ;; Added
+     ,@(if lua-ts-align-arguments
+           '(((or (and (parent-is "arguments") lua-ts--first-child-matcher)
+                  (and (parent-is "parameters") lua-ts--first-child-matcher)
+                  (and (parent-is "table_constructor") lua-ts--first-child-matcher))
+              standalone-parent lua-ts-indent-offset)
+             ((or (parent-is "arguments")
+                  (parent-is "parameters")
+                  (parent-is "table_constructor"))
+              (nth-sibling 1) 0)
+             ((and (n-p-gp "block" "function_definition" "arguments")
+                   lua-ts--nested-function-argument-matcher)
               parent lua-ts-indent-offset)
-             ((match "function_definition" "parenthesized_expression")
-              standalone-parent lua-ts-indent-offset)
-             ((node-is "block") standalone-parent lua-ts-indent-offset)
-             ((parent-is "block") parent 0)
-             ((and (node-is "end") lua-ts--end-line-matcher)
-              standalone-parent lua-ts--end-indent-offset)
-             ((match "end" "function_declaration") parent 0)
-             ((and (n-p-gp "end" "function_definition" "parenthesized_expression")
-                   lua-ts--nested-function-end-argument-matcher)
-              parent 0)
-             ((and (n-p-gp "end" "function_definition" "parenthesized_expression")
-                   lua-ts--nested-function-block-matcher
-                   lua-ts--nested-function-end-matcher
-                   lua-ts--nested-function-last-function-matcher)
-              parent 0)
-             ((or (match "end" "function_definition")
-                  (node-is "end"))
-              standalone-parent 0)
-             ((or (parent-is "function_declaration")
-                  (parent-is "function_definition")
-                  (parent-is "do_statement")
-                  (parent-is "for_statement")
-                  (parent-is "repeat_statement")
-                  (parent-is "while_statement")
-                  (parent-is "if_statement")
-                  (parent-is "else_statement")
-                  (parent-is "elseif_statement"))
-              standalone-parent lua-ts-indent-offset)
-             ((parent-is "chunk") column-0 0)
-             ;; ((parent-is "ERROR") no-indent 0)
-             )))))
+             ((n-p-gp "end" "function_definition" "arguments") parent 0))
+         `(((parent-is ,(rx (or "arguments" "parameters" "table_constructor")))
+            standalone-parent lua-ts-indent-offset)
+           ((n-p-gp "block" "function_definition" "arguments")
+            standalone-parent lua-ts-indent-offset)
+           ((n-p-gp "end" "function_definition" "arguments") standalone-parent 0)))
+     ((and (n-p-gp "block" "function_definition" "parenthesized_expression")
+           lua-ts--nested-function-block-matcher
+           lua-ts--nested-function-block-include-matcher)
+      parent lua-ts-indent-offset)
+     ((match "function_definition" "parenthesized_expression")
+      standalone-parent lua-ts-indent-offset)
+     ((node-is "block") standalone-parent lua-ts-indent-offset)
+     ((parent-is "block") parent 0)
+     ((and (node-is "end") lua-ts--end-line-matcher)
+      standalone-parent lua-ts--end-indent-offset)
+     ((match "end" "function_declaration") parent 0)
+     ((and (n-p-gp "end" "function_definition" "parenthesized_expression")
+           lua-ts--nested-function-end-argument-matcher)
+      parent 0)
+     ((and (n-p-gp "end" "function_definition" "parenthesized_expression")
+           lua-ts--nested-function-block-matcher
+           lua-ts--nested-function-end-matcher
+           lua-ts--nested-function-last-function-matcher)
+      parent 0)
+     ((or (match "end" "function_definition")
+          (node-is "end"))
+      standalone-parent 0)
+     ((or (parent-is "function_declaration")
+          (parent-is "function_definition")
+          (parent-is "do_statement")
+          (parent-is "for_statement")
+          (parent-is "repeat_statement")
+          (parent-is "while_statement")
+          (parent-is "if_statement")
+          (parent-is "else_statement")
+          (parent-is "elseif_statement"))
+      standalone-parent lua-ts-indent-offset)
+     ((parent-is "chunk") column-0 0))))
 
-;;;###autoload
-(defun nvp-lua-ts-load-mods (&optional orig interactive)
-  (interactive "P")
-  (nvp-lua-ts-load-font-lock orig)
-  (nvp-lua-ts-load-indent orig)
-  (when interactive
-    (let (lua-ts-mode-hook)
-      (lua-ts-mode))))
 
-;;; Add missing features once
 (nvp:treesit-add-rules lua-ts-mode
-  :extra-features '(namespace)
-  (nvp-lua-ts-load-mods nil t))
+  :mode-fonts lua-ts--font-lock-settings
+  :new-fonts (car nvp-lua-ts--font-lock-rules)
+  :post-fonts (cdr nvp-lua-ts--font-lock-rules)
+  (setq lua-ts--simple-indent-rules
+        nvp-lua-ts--indent-rules))
+
 
 (provide 'nvp-lua-ts)
 ;; Local Variables:

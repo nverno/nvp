@@ -280,12 +280,15 @@ then lexically."
 (defun nvp-abbrev-add-parent (table parent &optional file)
   "Add abbrev PARENT as parent of TABLE.
 Table defaults to `local-abbrev-table'.
-If FILE is non-nil, read abbrevs from FILE."
+If FILE is non-nil, or with prefix arg, read abbrevs from FILE."
   (interactive
-   (list (nvp-abbrev--read-table "Table: " nil 'local nil 'table)
-         (nvp-abbrev--read-table
-          "Parent: " (mapcar #'symbol-name abbrev-table-name-list)
-          nil nil 'table)))
+   (progn
+     (and current-prefix-arg
+          (quietly-read-abbrev-file (read-file-name "Load abbrevs: " nvp/abbrevs)))
+     (list (nvp-abbrev--read-table "Add parent to: " nil 'local nil 'table)
+           (nvp-abbrev--read-table
+            "Parent: " (mapcar #'symbol-name abbrev-table-name-list)
+            nil nil 'table))))
   (when file
     (quietly-read-abbrev-file file))
   (let ((parents (abbrev-table-get table :parents)))

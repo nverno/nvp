@@ -8,6 +8,7 @@
 (nvp:decls)
 (nvp:auto "f" f-parent)
 
+
 (defvar nvp-snippet-default-conditions
   '(("comment" (nvp-yas-in-comment))
     ("cookie"  (bound-and-true-p cookie))
@@ -19,7 +20,7 @@
   "Directory local variable to set condition in snippet subdirectories.")
 (put 'nvp-local-snippet-conditions 'safe-local-variable 'listp)
 
-;; -------------------------------------------------------------------
+
 ;;; Hooks
 (nvp:decl nvp-yas-in-string nvp-yas-in-comment)
 
@@ -27,6 +28,20 @@
     (:around (orig-fn &rest args) "save-excursion")
   (save-excursion
     (apply orig-fn args)))
+
+;; Return marker at end of snippet header.
+(nvp:define-cache nvp-snippet-header-end ()
+  :local t
+  :cache nvp-snippet-header-end--cache
+  (save-excursion
+    (goto-char (point-min))
+    (when (search-forward "# --" nil t)
+      (point-marker))))
+
+;; non-nil if point is in header portion of snippet
+;; (defsubst nvp-snippet-header-p (&optional pnt)
+;;   (and-let* ((pos (nvp-snippet-header-end)))
+;;     (< (or pnt (point)) (marker-position pos))))
 
 (defun nvp-snippet-save-hook ()
   "Add conditions based on directory names.
@@ -129,105 +144,91 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
            #'indent-to-left-margin)))
     (funcall-interactively #'indent-for-tab-command)))
 
-(defvar-keymap nvp-repeat-snippet-inc-map
-  :repeat t
-  "=" #'nvp-snippet-increment-count
-  "+" #'nvp-snippet-increment-count
-  "-" #'nvp-snippet-decrement-count)
-(put 'nvp-snippet-increment-count 'repeat-check-key 'no)
 
-(defun nvp-snippet-increment-count (beg end &optional inc)
-  "De/increment snippet expansion numbers in region BEG to END."
-  (interactive (nvp:repeat-args (beg end inc)
-                 (append (nvp:tap-or-region 'bdwim 'sexp :pulse t)
-                         (list (if current-prefix-arg -1 1)))))
-  (or inc (setq inc 1))
-  (nvp-regex-map-across-matches
-   (lambda (ms) (replace-match (number-to-string (+ inc (string-to-number ms)))
-                               nil nil nil 1))
-   "\$\{?\\([[:digit:]]\\)" (cons beg end) 1))
+;;; XXX(5/16/24): rest is obsolete in `snippet-ts-mode'
+;; (defvar-keymap nvp-repeat-snippet-inc-map
+;;   :repeat t
+;;   "=" #'nvp-snippet-increment-count
+;;   "+" #'nvp-snippet-increment-count
+;;   "-" #'nvp-snippet-decrement-count)
+;; (put 'nvp-snippet-increment-count 'repeat-check-key 'no)
 
-(defun nvp-snippet-decrement-count (beg end)
-  (interactive (nvp:repeat-args (beg end)
-                 (nvp:tap-or-region 'bdwim 'sexp :pulse t)))
-  (setq this-command 'nvp-snippet-increment-count)
-  (nvp-snippet-increment-count beg end -1))
+;; (defun nvp-snippet-increment-count (beg end &optional inc)
+;;   "De/increment snippet expansion numbers in region BEG to END."
+;;   (interactive (nvp:repeat-args (beg end inc)
+;;                  (append (nvp:tap-or-region 'bdwim 'sexp :pulse t)
+;;                          (list (if current-prefix-arg -1 1)))))
+;;   (or inc (setq inc 1))
+;;   (nvp-regex-map-across-matches
+;;    (lambda (ms) (replace-match (number-to-string (+ inc (string-to-number ms)))
+;;                                nil nil nil 1))
+;;    "\$\{?\\([[:digit:]]\\)" (cons beg end) 1))
 
-;; -------------------------------------------------------------------
+;; (defun nvp-snippet-decrement-count (beg end)
+;;   (interactive (nvp:repeat-args (beg end)
+;;                  (nvp:tap-or-region 'bdwim 'sexp :pulse t)))
+;;   (setq this-command 'nvp-snippet-increment-count)
+;;   (nvp-snippet-increment-count beg end -1))
+
 ;;; Snippet mode
-;; #<marker at 172452 in yasnippet.el>
 
 ;; stuff to be evaluated once when file is loaded
 ;; "'" should be prefix to enable quote wrapping etc.
-(modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
+;; (modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
 ;; (modify-syntax-entry ?\" "_" snippet-mode-syntax-table)
 ;; (modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
 ;; (modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
-(defvar nvp-snippet--xref-syntax-table
-  (let ((table (copy-syntax-table snippet-mode-syntax-table)))
-    (modify-syntax-entry ?$ "_" table)
-    (modify-syntax-entry ?\? "_" table)
-    (modify-syntax-entry ?~ "_" table)
-    (modify-syntax-entry ?! "_" table)
-    (modify-syntax-entry ?= "_" table)
-    table))
+;; (defvar nvp-snippet--xref-syntax-table
+;;   (let ((table (copy-syntax-table snippet-mode-syntax-table)))
+;;     (modify-syntax-entry ?$ "_" table)
+;;     (modify-syntax-entry ?\? "_" table)
+;;     (modify-syntax-entry ?~ "_" table)
+;;     (modify-syntax-entry ?! "_" table)
+;;     (modify-syntax-entry ?= "_" table)
+;;     table))
 
-(defun nvp-snippet-xref-find-definitions ()
-  (interactive)
-  (with-syntax-table nvp-snippet--xref-syntax-table
-    (let* ((xref-backend-functions '(elisp--xref-backend t))
-           (thing (xref-backend-identifier-at-point 'elisp)))
-      (xref-find-definitions thing))))
-
-;; Return marker at end of snippet header.
-(nvp:define-cache nvp-snippet-header-end ()
-  :local t
-  :cache nvp-snippet-header-end--cache
-  (save-excursion
-    (goto-char (point-min))
-    (when (search-forward "# --" nil t)
-      (point-marker))))
-
-;; non-nil if point is in header portion of snippet
-(defsubst nvp-snippet-header-p (&optional pnt)
-  (and-let* ((pos (nvp-snippet-header-end)))
-    (< (or pnt (point)) (marker-position pos))))
+;; (defun nvp-snippet-xref-find-definitions ()
+;;   (interactive)
+;;   (with-syntax-table nvp-snippet--xref-syntax-table
+;;     (let* ((xref-backend-functions '(elisp--xref-backend t))
+;;            (thing (xref-backend-identifier-at-point 'elisp)))
+;;       (xref-find-definitions thing))))
 
 ;; non-nil if point is in an elisp code segment
 ;; (defsubst nvp-snippet-code-p (&optional pnt)
 ;;   ())
 
-(defconst nvp-snippet--field-vars
-  (cons
-   "-*- mode: snippet -*-"
-   (--map (concat it ": ")
-          '("key" "name" "condition" "expand-env" "uuid" "group" "type"))))
+;; (defconst nvp-snippet--field-vars
+;;   (cons
+;;    "-*- mode: snippet -*-"
+;;    (--map (concat it ": ")
+;;           '("key" "name" "condition" "expand-env" "uuid" "group" "type"))))
 
-(defvar nvp-snippet--env-vars
-  '("((yas-indent-line 'fixed))" "((yas-wrap-around-region 'nil))"))
+;; (defvar nvp-snippet--env-vars
+;;   '("((yas-indent-line 'fixed))" "((yas-wrap-around-region 'nil))"))
 
 ;; completion at point, use yas headers in header section, elisp capf otherwise
-(defun nvp-snippet-completion-at-point ()
-  (if (nvp-snippet-header-p)
-      (save-excursion
-        (let* ((end (point))
-               (beg (progn (skip-syntax-backward "w_") (point)))
-               (field (progn
-                        (forward-line 0)
-                        (and (looking-at "^#\\s-*\\([^: \n]+\\)\\s-*:?")
-                             (match-string-no-properties 1))))
-               (colon-p (and field (eq ?: (char-before (match-end 0))))))
-          (goto-char beg)
-          (skip-chars-backward " ")
-          (cond
-           ((eq (char-before) ?#)
-            (list beg end nvp-snippet--field-vars))
-           (colon-p ;(not (eq end beg))
-            (pcase field
-              (`"expand-env" (list beg end nvp-snippet--env-vars))
-              (`"type" (list beg end '("snippet" "command")))))
-           ((not colon-p) (list beg end nvp-snippet--field-vars)))))
-    (elisp-completion-at-point)))
+;; (defun nvp-snippet-completion-at-point ()
+;;   (if (nvp-snippet-header-p)
+;;       (save-excursion
+;;         (let* ((end (point))
+;;                (beg (progn (skip-syntax-backward "w_") (point)))
+;;                (field (progn
+;;                         (forward-line 0)
+;;                         (and (looking-at "^#\\s-*\\([^: \n]+\\)\\s-*:?")
+;;                              (match-string-no-properties 1))))
+;;                (colon-p (and field (eq ?: (char-before (match-end 0))))))
+;;           (goto-char beg)
+;;           (skip-chars-backward " ")
+;;           (cond
+;;            ((eq (char-before) ?#)
+;;             (list beg end nvp-snippet--field-vars))
+;;            (colon-p ;(not (eq end beg))
+;;             (pcase field
+;;               (`"expand-env" (list beg end nvp-snippet--env-vars))
+;;               (`"type" (list beg end '("snippet" "command")))))
+;;            ((not colon-p) (list beg end nvp-snippet--field-vars)))))
+;;     (elisp-completion-at-point)))
 
 (provide 'nvp-snippet)
 ;;; nvp-snippet.el ends here

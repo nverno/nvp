@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: for dx, dy in dirs
+# key: fordirs
+# --
+dx := uint(0)
+for _, dy := range []uint{1, 0, ^uint(0), 0} {
+	${1:bt}(${2:i}+dx, ${3:j}+dy${4:, args})
+	dx = dy
+}

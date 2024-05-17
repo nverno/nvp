@@ -144,7 +144,7 @@
 ;;; Url
 (transient-define-infix nvp-edebug-menu--toggle-url-debug ()
   "Toggle `url-debug' on/off."
-  :description "Toggle URL debug"
+  :description "Url debug"
   :class 'transient-lisp-variable
   :variable 'url-debug
   :reader
@@ -161,12 +161,12 @@
 (transient-define-suffix nvp-edebug-menu--launch (args)
   "Launch emacs with ARGS."
   (interactive (list (transient-args 'nvp-edebug-menu)))
-  (let* ((grps (--group-by (string-prefix-p "--dummy" it) args))
+  (let* ((grps (--group-by (string-prefix-p "--nvp" it) args))
          (args (concat
                 (mapconcat #'shell-quote-argument (cdr (assq nil grps)) " ")
                 " --eval \"(setq debug-on-error t)\""))
          (dummy (cdr (assq t grps))))
-    (when (member "--dummy-current" dummy)
+    (when (member "--nvp-current" dummy)
       (setq args (concat args " " (buffer-file-name))))
     (call-process-shell-command (concat "emacs " args) nil 0 nil)))
 
@@ -244,7 +244,7 @@
 ;;;###autoload(autoload 'nvp-edebug-menu "nvp-edebug" nil t)
 (transient-define-prefix nvp-edebug-menu ()
   "Toggle or run elisp debugging."
-  :value '("--quick" "--debug-init" "--dummy-current")
+  :value '("--quick" "--debug-init" "--nvp-current")
   [["Debug"
     ("e" "On error" toggle-debug-on-error)
     ("q" "On quit" toggle-debug-on-quit)
@@ -277,29 +277,33 @@
      :if-non-nil byte-compile-generate-call-tree)
     (":c" "Generate call tree"
      nvp-edebug-menu--toggle-byte-compile-generate-call-tree)]]
-  [["Other"
-    ("/tran" "Transient" nvp-transient-menu :transient transient--do-replace)
-    ("/lsp" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode))
-     :transient transient--do-replace)
-    ("/tree" "Tree-sitter" nvp-treesit-menu :transient transient--do-replace
+  [["Menus"
+    ("/t" "Tree-sitter" nvp-treesit-menu :transient transient--do-replace
      :if (lambda () (ignore-errors (treesit-buffer-root-node))))
-    ("/hap" "Hap" nvp-edebug-menu--toggle-nvp-hap-verbose
+    ("/r" "Transient" nvp-transient-menu :transient transient--do-replace)
+    ("/l" "Lsp" nvp-lsp-menu :if (lambda () (featurep 'lsp-mode))
+     :transient transient--do-replace)
+    ("/c" "Native comp" nvp-native-comp-menu :transient transient--do-replace)
+    ("/s" "Smie" nvp-edebug-smie :transient transient--do-replace
+     :if (lambda () (eq 'smie-indent-line indent-line-function)))]
+   ["Toggle Verbosity"
+    (",h" "Hap" nvp-edebug-menu--toggle-nvp-hap-verbose
      :if (lambda () (boundp 'nvp-hap-verbose)))
-    ("/file" "Filenotify debug" nvp-edebug-menu--toggle-file-notify-debug)
-    ("/proj" "Projectile verbose" nvp-edebug-menu--toggle-projectile-verbose
+    (",p" "Projectile" nvp-edebug-menu--toggle-projectile-verbose
      :if-non-nil projectile-mode)
-    ("/comp" "Native comp" nvp-native-comp-menu :transient transient--do-replace)
-    ("/smie" "Smie" nvp-edebug-smie :transient transient--do-replace
-     :if (lambda () (eq 'smie-indent-line indent-line-function)))
-    ("/url" nvp-edebug-menu--toggle-url-debug :if (lambda () (boundp 'url-debug)))
-    ("/tramp" "Toggle tramp debug" nvp-edebug-menu--toggle-tramp
+    (",f" "Filenotify" nvp-edebug-menu--toggle-file-notify-debug)
+    (",u" nvp-edebug-menu--toggle-url-debug :if (lambda () (boundp 'url-debug)))
+    (",t" "Tramp" nvp-edebug-menu--toggle-tramp
      :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))]
+   ["History"
+    (";c" "Minibuf cmds" list-command-history)
+    (";l" "Lossage" view-lossage)]
    ["Emacs"
-    ("-d" "Enable debugger during init" "--debug-init")
+    ("L" "Launch" nvp-edebug-menu--launch)
+    ("-d" "Debug init" "--debug-init")
     ("-Q" "No init" "--quick")
-    ("-c" "Open current file" "--dummy-current")
-    ("-l" nvp-edebug-menu--load)
-    ("L" "Launch" nvp-edebug-menu--launch)]])
+    ("-c" "Open current" "--nvp-current")
+    ("-l" nvp-edebug-menu--load)]])
 
 (provide 'nvp-edebug)
 ;; Local Variables:

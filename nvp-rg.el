@@ -58,7 +58,7 @@
     (`(4) (nvp-project-parent))
     (_ (nvp-completing-read "Project: " (projectile-relevant-known-projects)))))
 
-;;;###autoload(autoload 'nvp-projectile-rg "nvp-project")
+;;;###autoload(autoload 'nvp-projectile-rg "nvp-project" nil t)
 (rg-define-search nvp-projectile-rg
   :query (read-from-minibuffer "Search: " (nvp:tap 'dwim))
   :format (not current-prefix-arg)

@@ -252,11 +252,10 @@
                    (buffer-substring-no-properties (point-min) (point-max)))))
     (nvp-leet-reset-layout)
     (with-current-buffer nvp-leet--indirect-buffer
-      (with-silent-modifications
-        (erase-buffer)
-        (insert content)
-        (save-buffer))
-       (let ((nvp-leet-window-configuration nil))
+      (erase-buffer)
+      (insert content)
+      (set-buffer-modified-p nil)
+      (let ((nvp-leet-window-configuration nil))
         (funcall fn)))))
 
 (defun nvp-leet-indirect-try ()
@@ -281,12 +280,22 @@
   ("t" . nvp-leet-indirect-try)
   ("s" . nvp-leet-indirect-submit))
 
+(defun nvp-leet--indirect-cleanup ()
+  (when (buffer-live-p nvp-leet--indirect-buffer)
+    (--when-let (buffer-file-name nvp-leet--indirect-buffer)
+      (and (file-exists-p it)
+           (delete-file it delete-by-moving-to-trash)))
+    (with-current-buffer nvp-leet--indirect-buffer
+      (set-buffer-modified-p nil)
+      (kill-buffer nvp-leet--indirect-buffer))))
+
 (define-minor-mode nvp-leet-indirect-minor-mode
   "Leetcode indirect minor mode."
   :lighter " LCi"
   :keymap nvp-leet-indirect-minor-mode-map
-  (if nvp-leet-indirect-minor-mode
-      (setq nvp-leet-window-configuration (current-window-configuration))))
+  (when nvp-leet-indirect-minor-mode
+    (setq nvp-leet-window-configuration (current-window-configuration))
+    (add-hook 'kill-buffer-hook #'nvp-leet--indirect-cleanup nil t)))
 
 ;;; Results
 (define-minor-mode nvp-leet-result-mode "Leetcode results."

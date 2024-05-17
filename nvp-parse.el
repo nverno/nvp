@@ -16,20 +16,19 @@
 (put 'nvp-parse-bad-location 'error-conditions '(nvp-parse-bad-location error))
 (put 'nvp-parse-bad-location 'error-message "Location not available: ")
 
-;;; Util
-
-(eval-when-compile
-  ;; imenu alists can be nested under headers:
-  ;; ("Header" ("name" . marker)) or ("name" . marker)
- (defmacro nvp-parse:ensure-imenu ()
-   "Create imenu index alist if possible."
-   `(ignore-errors
-      (when (and (fboundp 'imenu--make-index-alist) (null imenu--index-alist))
+;; imenu alists can be nested under headers:
+;; ("Header" ("name" . marker)) or ("name" . marker)
+(defsubst nvp-parse--ensure-imenu ()
+  "Create imenu index alist if possible."
+  (when (and (fboundp 'imenu--make-index-alist)
+             (boundp 'imenu--index-alist))
+    (or imenu--index-alist
         (setq imenu--index-alist
-              (save-excursion (funcall imenu-create-index-function)))))))
+              (save-excursion
+                (ignore-errors (funcall imenu-create-index-function)))))))
 
 (defmacro nvp-parse:buffer-file (want-buff error pargs &rest body)
-  "Parse :buffer and :file arguments. 
+  "Parse :buffer and :file arguments.
 If WANT-BUFF, do BODY inside the found buffer. If the buffer was opened,
 it is killed after BODY. The buffer is found by:
   (1) :buffer is non-nil and active
@@ -84,7 +83,7 @@ Recognized arguments:
   :local t                 - find functions local to location"
   ;; just loops through alist and gathers names
   (nvp-parse:buffer-file t nil args
-    (nvp-parse:ensure-imenu)
+    (nvp-parse--ensure-imenu)
     (mapcar #'car (nvp-imenu-cleaned-alist))))
 
 ;; like which-func - attempt with imenu and add-log
@@ -92,7 +91,7 @@ Recognized arguments:
 (cl-defgeneric nvp-parse-current-function (&rest _args)
   "Default method to get name of function containing point.
 First tries closest imenu entry, then `add-log-current-defun'."
-  (nvp-parse:ensure-imenu)
+  (nvp-parse--ensure-imenu)
   (let ((func (nvp-imenu-sort-relative-positions (point) (nvp-imenu-cleaned-alist))))
     (if func (caar func)
       (add-log-current-defun))))

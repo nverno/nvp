@@ -24,7 +24,8 @@
   (lsp-rust-analyzer-open-external-docs))
 
 ;;; Type signature
-;; Fix eldoc documentation begin just '// size =... align =...
+;; Fixes eldoc documentation showing only '// size =... align =...
+;; instead of any useful type information
 (cl-defmethod lsp-clients-extract-signature-on-hover
   (contents (_server-id (eql rust-analyzer)))
   (let ((lines (string-lines (string-trim-left (lsp--render-element contents)))))
@@ -33,15 +34,15 @@
     (car lines)))
 
 ;;; Compilation
-;; FIXME: https://github.com/brotzeit/rustic/pull/531
-;; fix error when `compilation--start-time' isn't set in compilation buffer
+;; XXX(5/16/24): https://github.com/brotzeit/rustic/pull/531 still open
+;; Fixes error when `compilation--start-time' isn't set in compilation buffer
 (define-advice rustic-compilation-setup-buffer
     (:around (orig-fn buf &rest args) "start-time")
   (apply orig-fn buf args)
   (with-current-buffer buf
     (setq compilation--start-time (float-time))))
 
-;;; rustic-doc
+;;; Rustic Doc
 ;; Set RUSTUP_HOME correctly so convert script finds std location
 (nvp:run-once rustic-doc-setup (:before (&rest _))
   (setenv "RUSTUP_HOME" (-> "rustup show | awk 'NR==2 {print $3}'"
@@ -53,6 +54,7 @@
 prefix DUMB."
   (interactive "P")
   (call-interactively (if dumb #'rustic-doc-dumb-search #'rustic-doc-search)))
+
 
 ;; -------------------------------------------------------------------
 ;;; Tests

@@ -32,4 +32,8 @@
        (dired-view-file))))
 
 (provide 'nvp-image)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-image.el ends here

@@ -45,4 +45,8 @@
 ;;; Code:
 
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; sml-eldoc.el ends here

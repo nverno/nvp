@@ -150,4 +150,8 @@
         (Man-getpage-in-background sym))))
 
 (provide 'nvp-perl-help)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-perl-help.el ends here

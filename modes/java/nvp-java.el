@@ -145,4 +145,8 @@ that doesn't skip class body."
     nvp-fill-paragraph-function #'nvp-java-fill-paragraph))
 
 (provide 'nvp-java)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-java.el ends here

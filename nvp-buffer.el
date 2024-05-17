@@ -151,4 +151,8 @@ With prefix ARG, prompt for file to visit."
           (replace-match ""))))))
 
 (provide 'nvp-buffer)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-buffer.el ends here

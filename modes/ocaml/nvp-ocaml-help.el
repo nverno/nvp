@@ -78,4 +78,8 @@
    (concat "https://caml.inria.fr/pub/docs/manual-ocaml/libref/" module ".html")))
 
 (provide 'nvp-ocaml-help)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-ocaml-help.el ends here

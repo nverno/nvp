@@ -76,4 +76,8 @@
 ;;   )
 
 (provide 'nvp-c-test)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-c-test.el ends here

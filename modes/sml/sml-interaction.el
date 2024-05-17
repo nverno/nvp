@@ -153,4 +153,8 @@ or region if currently active."
 
 (provide 'sml-interaction)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; sml-interaction.el ends here

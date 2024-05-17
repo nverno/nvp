@@ -110,4 +110,8 @@
                           :expand-fn #'nvp-he-history-remove-trailing-paren)))
 
 (provide 'nvp-lisp)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-lisp.el ends here

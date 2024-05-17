@@ -70,4 +70,8 @@
 
 (provide 'dotmerlin)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; dotmerlin.el ends here

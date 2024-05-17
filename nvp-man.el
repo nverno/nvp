@@ -129,4 +129,8 @@ Returns list of \\='(flag . line-number)."
       (funcall-interactively #'goto-line line))))
 
 (provide 'nvp-man)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-man.el ends here

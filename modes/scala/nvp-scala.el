@@ -97,4 +97,8 @@
 (advice-add #'sbt:switch-submode :before #'nvp-sbt-switch-submode-hook)
 
 (provide 'nvp-scala)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-scala.el ends here

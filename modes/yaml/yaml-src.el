@@ -120,4 +120,8 @@
       (forward-line 1))))
 
 (provide 'yaml-src)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; yaml-src.el ends here

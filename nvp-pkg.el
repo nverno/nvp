@@ -134,4 +134,8 @@ R=recompile; F=force; P=if prefix;
          (nvp-pkg-subdir-compile dir do-compile nil)))))
 
 (provide 'nvp-pkg)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-pkg.el ends here

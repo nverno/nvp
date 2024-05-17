@@ -163,4 +163,8 @@ or prompt for manual with ARG."
     ("E" "Emacs Command Node" Info-goto-emacs-command-node)]])
 
 (provide 'nvp-info)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-info.el ends here

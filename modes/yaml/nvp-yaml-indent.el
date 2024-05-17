@@ -120,4 +120,8 @@
       (move-marker end nil))))
 
 (provide 'nvp-yaml-indent)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-yaml-indent.el ends here

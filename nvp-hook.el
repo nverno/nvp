@@ -65,4 +65,8 @@ interactively."
     (funcall func hook-var hook-fn append local)))
 
 (provide 'nvp-hook)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-hook.el ends here

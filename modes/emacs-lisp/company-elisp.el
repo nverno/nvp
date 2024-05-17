@@ -224,4 +224,8 @@ first in the candidates list."
                  ((facep sym) (find-definition-noselect sym 'defface)))))))
 
 (provide 'company-elisp)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; company-elisp.el ends here

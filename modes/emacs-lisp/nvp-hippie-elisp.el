@@ -127,4 +127,8 @@ onto the next one."
            nvp-try-elisp-symbol-sans-namespace))))
 
 (provide 'nvp-hippie-elisp)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-hippie-elisp.el ends here

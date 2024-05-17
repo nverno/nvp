@@ -118,4 +118,8 @@
       (message "function %s is static" (car func)))))
 
 (provide 'nvp-c-semantic)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-c-semantic.el ends here

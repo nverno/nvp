@@ -165,4 +165,8 @@
     (insert "DEBUG")))
 
 (provide 'nvp-perl)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-perl.el ends here

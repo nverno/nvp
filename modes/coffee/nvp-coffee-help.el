@@ -34,4 +34,8 @@
                         (cdr (assoc section data))))))
 
 (provide 'nvp-coffee-help)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-coffee-help.el ends here

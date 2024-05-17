@@ -379,4 +379,8 @@ With prefix, display in same frame using `display-buffer' ACTION."
 ;;           (hl-line-mode))))))
 
 (provide 'nvp-dev)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-dev.el ends here

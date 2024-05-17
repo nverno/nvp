@@ -37,4 +37,8 @@
         (nreverse nvp-rfc-imenu-table))))
 
 (provide 'nvp-rfc)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-rfc.el ends here

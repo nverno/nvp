@@ -1,5 +1,4 @@
 ;;; nvp-comint.el --- Comint helpers -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;
 ;; - sentinels
@@ -12,11 +11,11 @@
 ;;
 ;; TODO:
 ;; - default `comint-input-filter-functions' to ignore blanks, compress newlines
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
 (nvp:decls :p (ring) :f (ring-ref ring-length))
+
 
 ;; kill process before killing buffer -- ensure comint writes history
 (defun nvp-comint-kill-proc-before-buffer ()
@@ -26,7 +25,6 @@
            (comint-write-input-ring))
       (delete-process proc))))
 
-;;; History
 
 ;;;###autoload
 (defun nvp-comint-history-remove-duplicates (&optional silent)
@@ -155,4 +153,8 @@ Prompt unless SILENT or `noninteractive'."
 
 
 (provide 'nvp-comint)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-comint.el ends here

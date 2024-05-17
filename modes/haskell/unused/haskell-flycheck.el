@@ -58,4 +58,8 @@
   :next-checkers ((warning . haskell-hlint)))
 
 (provide 'haskell-flycheck)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; haskell-flycheck.el ends here

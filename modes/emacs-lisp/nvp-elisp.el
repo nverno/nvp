@@ -1,58 +1,50 @@
-;;; nvp-elisp.el --- elisp helpers  -*- lexical-binding: t; -*-
-
+;;; nvp-elisp.el --- Elisp -*- lexical-binding: t; -*-
+;;
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'nvp-parse))
 (require 'pp)
-;; (3/5/24) `company-elisp' removed from `company-mode'
-(require 'company-elisp)
+(require 'company-elisp) ; XXX(3/5/24): `company-elisp' removed from `company-mode'
 (nvp:decls)
 
 (with-eval-after-load 'nvp-repl
   (require 'nvp-ielm))
 
-;; modified from company-elisp to incorporate more things
+
+;; Modified from company-elisp to incorporate more things
 ;; used to determine abbrev expansion / toggling
 (let-when-compile
     ((el-defs '("defun" "defmacro" "defsubst" "defmethod" "defclass" "defgeneric"
-                "define-advice" "defadvice" "add-advice" "add-function"
-                ))
+                "define-advice" "defadvice" "add-advice" "add-function"))
      (el-vdefs '("let" "cond" "lexical-let" "if-let" "when-let" "lambda"
                  "labels" "flet"
-                 ;; "pcase"
-                 "pcase-dolist" "pcase-lambda"
-                 "pcase-exhaustive" "pcase-let")))
-  (let ((vars-re
-         (eval-when-compile
-           (apply #'company-elisp--fns-regexp (append el-defs el-vdefs))))
-        (defs-re
-         (eval-when-compile
-           (concat "([ \t\n]*" (apply #'company-elisp--fns-regexp el-defs)))))
-    ;; include generics
+                 "pcase-dolist" "pcase-lambda" "pcase-exhaustive" "pcase-let")))
+  (let ((vars-re (eval-when-compile
+                   (apply #'company-elisp--fns-regexp (append el-defs el-vdefs))))
+        (defs-re (eval-when-compile
+                   (concat "([ \t\n]*" (apply #'company-elisp--fns-regexp el-defs)))))
+    ;; Include generics
     (defvar nvp-elisp-defuns-regexp defs-re)
-    ;; additional let macros, pcase, cond, etc.
+    ;; Additional let macros, pcase, cond, etc.
     (defvar nvp-elisp-var-binding-regexp vars-re)))
 
-;; -------------------------------------------------------------------
-;;; `lisp-data-mode'
-
-;; wrapper for company-complete in lisp-data-mode
 ;; Note: lisp-data-mode is parent of emacs-lisp-mode so
 ;; (put 'derived-parent-mode ...) results in infinite loop
-;; XXX: how to add-advice on local copy of function?
 (defun nvp-company-lisp-data (&rest args)
-  (interactive (list 'interactive))
+  "Wrapper for `company-complete' in `lisp-data-mode'."
+  (interactive (list 'interactive) lisp-data-mode)
   (let* ((orig-fn (symbol-function 'company-elisp))
          (major-mode 'emacs-lisp-mode))
     (apply orig-fn args)))
 
+
 ;; -------------------------------------------------------------------
 ;;; Things at point
 
-;; skip over prefix '@'
 (defun nvp-elisp-bounds-of-symbol-at-point ()
+  "Skip over prefix '@'."
   (when-let ((bnds (bounds-of-thing-at-point 'symbol)))
     (while (and (< (car bnds) (cdr bnds))
                 (memq (char-after (car bnds)) '(?@)))
@@ -60,8 +52,9 @@
     bnds))
 (put 'elisp-symbol 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-symbol-at-point)
 
-;; for emacs-lisp `thing-at-point-provider-alist'
-(defun nvp-elisp-symbol-at-point () (thing-at-point 'elisp-symbol))
+(defun nvp-elisp-symbol-at-point ()
+  "For emacs-lisp `thing-at-point-provider-alist'."
+  (thing-at-point 'elisp-symbol))
 
 (cl-defmethod xref-backend-identifier-at-point ((_backend (eql 'elisp)))
   (--when-let (bounds-of-thing-at-point 'elisp-symbol)
@@ -109,6 +102,7 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
           (bounds-of-thing-at-point 'list))))))
 (put 'alist 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-alist)
 
+
 ;; -------------------------------------------------------------------
 ;;; Generics
 
@@ -119,12 +113,16 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
      cl-defun cl-defsubst cl-defmacro cl-defmethod cl-defgeneric)
   "Forms to recognize for function names.")
 
-;; return forms defined in FILENAME
 (defsubst nvp-elisp--file-forms (filename)
-  (cl-assoc (regexp-quote filename) load-history :test #'string-match-p))
+  "Return forms defined in FILENAME from `load-history'."
+  (cl-assoc (regexp-quote filename) load-history
+            ;; Note: can be entry '(nil ...) in `load-history' from `eval-defun'
+            ;; in unloaded file, eg. in scratch buffer.
+            :key (lambda (elem) (or elem regexp-unmatchable))
+            :test #'string-match-p))
 
-;; collect forms whose car is a member of ELEMS
 (defsubst nvp-elisp--filter-forms (elems filename)
+  "Collect forms loaded from FILENAME whose car is a member of ELEMS."
   (cl-loop for elt in (nvp-elisp--file-forms filename)
            when (and (consp elt) (memq (car elt) elems))
            collect (if (consp (cdr elt)) (cadr elt) (cdr elt))))
@@ -132,11 +130,9 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
 (defun nvp-elisp--get-forms (elems &optional args)
   "Filter matching ELEMS from file's forms (possibly loading file).
 Forms are read from :file if present in ARGS, otherwise current buffer file."
-  (-let* ((pargs args)
-          ((&plist :file fname :buffer buff :library lib) pargs))
-    (if buff
-        (with-current-buffer buff
-          (nvp-elisp--filter-forms elems (buffer-file-name)))
+  (-let* ((pargs args) ((&plist :file fname :buffer buff :library lib) pargs))
+    (if buff (with-current-buffer buff
+               (nvp-elisp--filter-forms elems (buffer-file-name)))
       (when (plist-get pargs :do-load)
         (and fname (load-file fname))
         (and lib (require lib fname t)))
@@ -144,9 +140,8 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
       (nvp-elisp--filter-forms
        elems (or fname (file-name-sans-extension (buffer-file-name)))))))
 
-;; try(not very hard) to gather buffer functions/macros at top level
-;; from current buffer, optionally in region specified by BEG END
 (defun nvp-elisp-matching-forms (match-forms &optional beg end)
+  "Gather (most of) current buffer's MATCH-FORMS at top-level from BEG to END."
   (or end (setq end (point-max)))
   (save-excursion
     (let (forms form)
@@ -164,30 +159,38 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
                (push (if (eq 'quote (car-safe sym)) (cadr sym) sym) forms))))))
       (delq nil forms))))
 
-(cl-defmethod nvp-parse-functions
-  (&context (major-mode emacs-lisp-mode) &rest args)
+(cl-defmethod nvp-parse-functions ((_mode (eql emacs-lisp-mode)) &rest args)
   "Accepts additional ARGS, :do-load to `load-file' prior to parsing."
   (or (nvp-elisp--get-forms nvp-elisp--defun-forms args)
-      ;; gather functions from unloaded buffer / file
+      ;; Gather functions from unloaded buffer / file
       (nvp-parse:buffer-file t nil args
         (nvp-elisp-matching-forms nvp-elisp--defun-forms))))
+
+(cl-defmethod nvp-parse-variables
+  ((_mode (eql emacs-lisp-mode)) &rest args)
+  "Return variables defined in buffer or file."
+  (nvp-parse:buffer-file t nil args
+    (nvp-elisp-matching-forms '(defvar defcustom))))
 
 (cl-defmethod nvp-parse-current-function
   (&context (major-mode emacs-lisp-mode) &rest _args)
   (require 'nvp-parse)
-  (or (add-log-current-defun) (cl-call-next-method)))
+  (or (add-log-current-defun)
+      (cl-call-next-method)))
 
-;; file could have multiple provides
-(cl-defmethod nvp-parse-library
-  (&context (major-mode emacs-lisp-mode) &rest args)
-  (-when-let (libs (or (nvp-elisp--get-forms '(provide) args)
-                       (nvp-parse:buffer-file t nil args
-                         (nvp-elisp-matching-forms '(provide)))))
-    (if (= 1 (length libs)) (car libs) libs)))
+;; File could have multiple provides
+(cl-defmethod nvp-parse-library ((_mode (eql emacs-lisp-mode)) &rest args)
+  "Find provides from buffer or file."
+  (or (nvp-elisp--get-forms '(provide) args)
+      (nvp-parse:buffer-file t nil args
+        (nvp-elisp-matching-forms '(provide)))))
 
-(cl-defmethod nvp-parse-includes
-  (&context (major-mode emacs-lisp-mode) &rest args)
-  (nvp-elisp--get-forms '(require) args))
+(cl-defmethod nvp-parse-includes ((_mode (eql emacs-lisp-mode)) &rest args)
+  "Find requires in buffer or file."
+  (or (nvp-elisp--get-forms '(require) args)
+      (nvp-parse:buffer-file t nil args
+        (nvp-elisp-matching-forms '(require)))))
+
 
 ;; ------------------------------------------------------------
 ;;; Eval
@@ -196,14 +199,13 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
   "Eval region if active, otherwise last sexp.
 If in `lisp-interaction-mode' or with prefix ARG, pretty-print the results."
   (interactive "P")
-  (let ((expr
-         (if (and (mark) (use-region-p))
-             (let ((beg (min (point) (mark)))
-                   (end (max (point) (mark))))
-               (save-restriction
-                 (narrow-to-region beg end)
-                 (read (current-buffer))))
-           (pp-last-sexp)))
+  (let ((expr (if (and (mark) (use-region-p))
+                  (let ((beg (min (point) (mark)))
+                        (end (max (point) (mark))))
+                    (save-restriction
+                      (narrow-to-region beg end)
+                      (read (current-buffer))))
+                (pp-last-sexp)))
         (print-length)                  ; (window-total-height)
         (print-level)
         (print-circle t)
@@ -239,8 +241,9 @@ ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
    (list (if (equal '(4) current-prefix-arg) 0 current-prefix-arg)))
   (funcall-interactively #'eval-print-last-sexp arg))
 
+
 ;; -------------------------------------------------------------------
-;;; Indentation
+;;; Insert / Toggle
 
 ;; cl-flet etc. indentation
 (with-eval-after-load 'cl-indent
@@ -251,11 +254,6 @@ ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
 ;; (put 'cl-labels 'lisp-indent-function 'common-lisp-indent-function)
 (put 'lisp-indent-function 'safe-local-variable 'symbolp)
 
-;; -------------------------------------------------------------------
-;;; Insert / Toggle
-
-;; indent region with common-lisp-indent function
-;; with prefix toggle b/w lisp-indent and common-lisp-indent
 (defun nvp-elisp-toggle-cl-indent (&optional start end switch)
   "Indent region with `common-lisp-indent-function'.
 With \\[universal-argument] toggle buffer-local `common-lisp-indent-function'."
@@ -299,45 +297,33 @@ If in `declare-function', convert to autoload."
           (insert "\n;;;###autoload")))
        (t (message "Location not autoloadable"))))))
 
-;; ------------------------------------------------------------
-;;; Abbrevs: expansion predicates
 
-;; don't expand when prefixed by '-'
+;; -------------------------------------------------------------------
+;;; Abbrevs
+
+;; Don't expand when prefixed by '-'
 (defvar nvp-lisp-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/=<>]+\\)")
 
 ;; Don't expand in strings, comments, function args, let bindings or after '-/'
 ;; Note: Could also account for dolist/dotimes/etc
-(eval-when-compile
-  (defvar company-elisp-var-binding-regexp)
-  (defmacro nvp-elisp:abbrev-expand-p (type)
-    (declare (debug t))
-    `(and (or (memq this-command '(expand-abbrev nvp-abbrev-expand-after-symbols))
-              (not (memq last-input-event '(?/ ?- ?= ?> ?<))))
-          (not (or (nvp:ppss 'soc)      ; in string or comment
-                   (let ((company-elisp-var-binding-regexp
-                          nvp-elisp-var-binding-regexp))
-                     (eq (company-elisp--candidates-predicate (nvp-abbrev-grab))
-                         ,type)))))))
+(defvar company-elisp-var-binding-regexp)
+(defun nvp-elisp--abbrev-expand-p (type)
+  (and (or (memq this-command '(expand-abbrev nvp-abbrev-expand-after-symbols))
+           (not (memq last-input-event '(?/ ?- ?= ?> ?<))))
+       (not (or (nvp:ppss 'soc)
+                (let ((company-elisp-var-binding-regexp
+                       nvp-elisp-var-binding-regexp))
+                  (eq (company-elisp--candidates-predicate (nvp-abbrev-grab))
+                      type))))))
 
-;; function expansion
 (defun nvp-elisp-abbrev-expand-fn-p ()
-  (nvp-elisp:abbrev-expand-p 'boundp))
+  "Return t if function should expand."
+  (nvp-elisp--abbrev-expand-p 'boundp))
 
-;; variable expansion
 (defun nvp-elisp-abbrev-expand-var-p ()
-  (nvp-elisp:abbrev-expand-p 'fboundp))
+  "Return t if variable should expand."
+  (nvp-elisp--abbrev-expand-p 'fboundp))
 
-;; -------------------------------------------------------------------
-;;; Compile
-
-;; (defun nvp-elisp-compile ()
-;;   (interactive)
-;;   (nvp-compile-with-bindings
-;;    `([remap recompile] .
-;;      (lambda ()
-;;        (interactive)
-;;        (with-current-buffer ,(current-buffer)
-;;          (emacs-lisp-byte-compile))))))
 
 ;; ------------------------------------------------------------
 ;;; Imenu
@@ -369,4 +355,8 @@ If in `declare-function', convert to autoload."
     '(("Sub-Headers" "^;;---*\\s-*\\([^-\n]+\\)\\s-*-*$" 1))))
 
 (provide 'nvp-elisp)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-elisp.el ends here

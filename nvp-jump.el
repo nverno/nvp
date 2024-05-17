@@ -321,4 +321,8 @@ With prefix, pop other window, with double prefix, prompt for MODE."
       (nvp-display-location buff :buffer action))))
 
 (provide 'nvp-jump)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-jump.el ends here

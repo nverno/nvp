@@ -38,4 +38,8 @@
      proc (format "module type S = module type of %s;;\n" module))))
 
 (provide 'nvp-ocaml-abbrev)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-ocaml-abbrev.el ends here

@@ -72,4 +72,8 @@ With PREFIX, prompt for CMake arguments."
     (user-error "Not a cmake project")))
 
 (provide 'nvp-cmake)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-cmake.el ends here

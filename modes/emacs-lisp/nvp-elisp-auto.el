@@ -16,4 +16,8 @@
       (find-file-other-window (expand-file-name "Cask" dir)))))
 
 (provide 'nvp-elisp-auto)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-elisp-auto.el ends here

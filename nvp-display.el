@@ -67,4 +67,8 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
     (funcall init-fn)))
 
 (provide 'nvp-display)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-display.el ends here

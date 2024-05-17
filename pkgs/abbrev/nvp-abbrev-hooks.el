@@ -121,4 +121,8 @@
 ;;;###autoload(add-hook 'edit-abbrevs-mode-hook #'nvp-abbrev-edit-hook)
 
 (provide 'nvp-abbrev-hooks)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-abbrev-hooks.el ends here

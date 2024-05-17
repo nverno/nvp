@@ -231,4 +231,8 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
 ;;     (elisp-completion-at-point)))
 
 (provide 'nvp-snippet)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-snippet.el ends here

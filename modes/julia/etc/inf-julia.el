@@ -124,4 +124,8 @@ Bindings:
 (declare-function with-ess-process-buffer "ess")
 
 (provide 'inf-julia)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; inf-julia.el ends here

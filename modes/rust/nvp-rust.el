@@ -113,4 +113,8 @@ Choose test to run by
         (t (rustic-cargo-test prompt))))
 
 (provide 'nvp-rust)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-rust.el ends here

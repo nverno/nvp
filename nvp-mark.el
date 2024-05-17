@@ -203,4 +203,8 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
   (font-lock-ensure))
 
 (provide 'nvp-mark)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-mark.el ends here

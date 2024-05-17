@@ -111,4 +111,8 @@
               :override #'nvp-sqlup-maybe-capitalize-symbol))
 
 (provide 'nvp-sql)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-sql.el ends here

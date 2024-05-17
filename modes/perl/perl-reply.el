@@ -52,4 +52,8 @@
   (setq-local font-lock-defaults '(perl-reply-font-lock-keywords t)))
 
 (provide 'perl-reply)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; perl-reply.el ends here

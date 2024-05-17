@@ -390,4 +390,8 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
     (other-window 1)))
 
 (provide 'nvp-dired)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-dired.el ends here

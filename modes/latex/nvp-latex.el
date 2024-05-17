@@ -42,4 +42,8 @@
                ("(latex2e)Command Index"))))
 
 (provide 'nvp-latex)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-latex.el ends here

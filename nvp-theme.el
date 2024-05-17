@@ -38,4 +38,8 @@
       (nvp-theme-light))))
 
 (provide 'nvp-theme)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-theme.el ends here

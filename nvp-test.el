@@ -174,4 +174,8 @@ Do NO-TEST if no tests are found, default to user-error."
            (nvp-test-jump-to-test 'create)))))
 
 (provide 'nvp-test)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-test.el ends here

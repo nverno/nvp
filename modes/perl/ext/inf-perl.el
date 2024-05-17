@@ -254,4 +254,8 @@ With prefix argument, just display it."
                                   dir dir)))))
 
 (provide 'inf-perl)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; inf-perl-mode.el ends here

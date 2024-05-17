@@ -69,4 +69,8 @@ If SET-P is non-nil, set buffer-local values for `nvp-switch-cmd' and
                               'nvp-switch-read-history)))))
 
 (provide 'nvp-switch-capf)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-switch-capf.el ends here

@@ -693,4 +693,8 @@ Turning on pod mode calls the hooks in `pod-mode-hook'."
 
 (provide 'pod-mode)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; pod-mode.el ends here

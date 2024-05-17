@@ -56,4 +56,8 @@
   (cl-pushnew 'company-mips company-backends))
 
 (provide 'nvp-mips)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-mips.el ends here

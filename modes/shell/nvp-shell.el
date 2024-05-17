@@ -238,4 +238,8 @@ specified, prefer shell in current directory if available."
   (nvp:with-gnu (call-process "gnome-terminal" nil nil nil)))
 
 (provide 'nvp-shell)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-shell.el ends here

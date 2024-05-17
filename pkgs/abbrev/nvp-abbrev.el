@@ -25,8 +25,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'abbrev)
-(autoload 's-split-words "s")
 (nvp:decls :v (nvp-abbrev-completion-need-refresh unicode-latex-abbrev-table))
+(autoload 's-split-words "s")
 
 
 (defvar nvp-abbrev-verbose t
@@ -282,17 +282,16 @@ then lexically."
 Table defaults to `local-abbrev-table'.
 If FILE is non-nil, or with prefix arg, read abbrevs from FILE."
   (interactive
-   (progn
-     (and current-prefix-arg
-          (quietly-read-abbrev-file (read-file-name "Load abbrevs: " nvp/abbrevs)))
-     (list (nvp-abbrev--read-table "Add parent to: " nil 'local nil 'table)
-           (nvp-abbrev--read-table
-            "Parent: " (mapcar #'symbol-name abbrev-table-name-list)
-            nil nil 'table))))
-  (when file
-    (quietly-read-abbrev-file file))
+   (progn (and current-prefix-arg
+               (quietly-read-abbrev-file
+                (read-file-name "Load abbrevs: " nvp/abbrevs)))
+          (list (nvp-abbrev--read-table "Add parent to: " nil 'local nil 'table)
+                (nvp-abbrev--read-table "Parent: " abbrev-table-name-list
+                                        nil nil 'table))))
+  (and file (quietly-read-abbrev-file file))
   (let ((parents (abbrev-table-get table :parents)))
-    (unless (memq parent parents)
+    (if (memq parent parents)
+        (nvp-abbrev-msg "%s already a parent of %s" parent table)
       (abbrev-table-put table :parents (cons parent parents))
       (nvp-abbrev-msg "Added %s" (abbrev-table-name parent)))))
 

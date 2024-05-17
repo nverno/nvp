@@ -177,4 +177,8 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
         (he-substitute-string (pop he-expand-list) t)))))
 
 (provide 'nvp-shell-alias)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-shell-alias.el ends here

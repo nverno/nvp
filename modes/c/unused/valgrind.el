@@ -36,4 +36,8 @@
   (require 'cl-lib))
 
 (provide 'valgrind)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; valgrind.el ends here

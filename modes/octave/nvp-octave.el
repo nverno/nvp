@@ -161,4 +161,8 @@
                             (number-sequence 1 m) ";\n") "]"))))
 
 (provide 'nvp-octave)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-octave.el ends here

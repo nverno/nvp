@@ -116,4 +116,8 @@
   (font-lock-ensure))
 
 (provide 'nvp-fixme)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-fixme.el ends here

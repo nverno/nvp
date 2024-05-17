@@ -193,4 +193,8 @@ Commands:
 (add-to-list 'auto-mode-alist '("\\.bats\\'" . bats-mode))
 
 (provide 'bats-mode)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; bats-mode.el ends here

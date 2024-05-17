@@ -138,4 +138,8 @@ Move point to the beginning of the line, and run the normal hook
 (add-hook 'hs-minor-mode-hook #'nvp-hs-mode-hook)
 
 (provide 'nvp-fold)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-fold.el ends here

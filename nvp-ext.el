@@ -79,4 +79,8 @@ in buffer *vagrant-status*."
     (kill-new (md5 (current-buffer)))))
 
 (provide 'nvp-ext)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-ext.el ends here

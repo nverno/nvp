@@ -72,4 +72,8 @@
          "cmake" "*nvp-install*" (format "cmake %s && %s" args build-cmd))))))
 
 (provide 'nvp-c-install)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-c-install.el ends here

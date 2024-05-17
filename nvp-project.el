@@ -83,4 +83,8 @@ Otherwise, look for version control directories, returing the longest path."
     (or name (nvp-project-name t))))
 
 (provide 'nvp-project)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-project.el ends here

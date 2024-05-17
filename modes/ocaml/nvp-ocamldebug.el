@@ -47,4 +47,8 @@
   (ocamldebug "a.out"))
 
 (provide  'nvp-ocamldebug)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-ocamldebug.el ends here

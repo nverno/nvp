@@ -32,52 +32,76 @@ Return list of symbols interned from `nvp-abbrevd-obarray'."
   "Check if TABLE is abbrevd."
   (intern-soft (symbol-name table) nvp-abbrevd-obarray))
 
-(defsubst nvp-abbrevd--local-table (&optional mode-table)
+(defsubst nvp-abbrevd--local-table (&optional mode use-default)
   "Return value of local table or nil."
-  (if (or mode-table (null (nvp:local-abbrev-table)))
-      (let ((name (or nvp-local-abbrev-table (symbol-name major-mode))))
+  (if (or mode use-default (null (nvp:local-abbrev-table)))
+      (let ((name (or (and mode (symbol-name mode))
+                      nvp-local-abbrev-table
+                      (symbol-name major-mode))))
         (list (symbol-value (intern-soft (format "%s-abbrev-table" name)))))
     local-abbrev-table))
 
 
-;;; Generics
-
-(cl-defgeneric nvp-abbrevd-read (&optional arg)
-  "Default method to read arguments for dynamic abbrev tables."
-  ;; No prefix => new abbrev table from current buffer
-  ;; C-u => new abbrev table from file
-  ;; C-u C-u => new abbrevs from buffer
+(defun nvp-abbrevd-read (&optional arg)
+  "Interactively read abbrevd args depending on ARG.
+With more than two prefixes, prompt for mode to use for abbrevds."
   (setq arg (or (if (consp arg) (car arg) arg) 0))
-  (let ((file-p (= arg 4))
+  (let* ((default-mode (or nvp-mode-name major-mode))
+         (mode (if (> arg 16)
+                   (intern (nvp-read-mode default-mode))
+                 default-mode)))
+    (cons mode (nvp-abbrevd-read-args mode arg))))
+
+(defun nvp-abbrevd-read-defaults (&optional arg reader-fn)
+  "Interactively read default abbrevd args depending on ARG.
+If ARG is nil create new abbrevd table from current buffer.
+With \\[universal-argument] prompt for file or package to abbrev.
+With \\[universal-argument] \\[universal-argument] prompt for buffer to abbrev.
+If READER-FN is non-nil, it is called instead of `read-file-name'.
+READER-FN should return a plist that gets passed on to `nvp-abbrevd-make-args'."
+  (let ((file-or-package-p (= arg 4))
         (buffer-p (= arg 16)))
-    (list (and file-p (read-file-name "File to abbrev: "))
-          (unless file-p
-            (if buffer-p
-                (read-buffer "Buffer to abbrev: ")
-              (current-buffer)))
-          ;; (if (or (= arg 16)
-          ;;         (and (or nvp-abbrevd-always-prompt
-          ;;                  (> arg 16))
-          ;;              (y-or-n-p "Add abbrevs to current table? ")))
-          ;;     (nvp-abbrev--read-table nil nil 'local))
-          )))
+    (nconc (and file-or-package-p
+                (if reader-fn
+                    (funcall reader-fn)
+                  (list :file (read-file-name "File to abbrev: "))))
+           (unless file-or-package-p
+             (list :buffer (if buffer-p
+                               (get-buffer (read-buffer "Buffer to abbrev: "))
+                             (current-buffer))))
+           (list :type 'functions))))
 
 
-(cl-defgeneric nvp-abbrevd-make-args (&rest _args)
+(cl-defgeneric nvp-abbrevd-read-args (&optional _mode arg &rest _args)
+  "Read arguments for abbrevd tables."
+  (nvp-abbrevd-read-defaults arg))
+
+(cl-defmethod nvp-abbrevd-read-args
+  ((_mode (eql emacs-lisp-mode)) &optional arg &rest _args)
+  "Read library with single prefix in elisp."
+  (nvp-abbrevd-read-defaults
+   arg (lambda () (list :library (concat (read-library-name) ".el")))))
+
+
+(cl-defgeneric nvp-abbrevd-make-args (&optional mode &rest args)
   "Default method to produce arguments for `nvp-abbrevd--make-abbrevs'.
 Called from buffer generated abbrevs."
   (require 'nvp-parse)
-  (list :objects (seq-uniq (nvp-parse-functions))
+  (list :objects (seq-uniq (apply #'nvp-parse-functions mode args))
         :transformer #'nvp-abbrev-from-splitters))
 
 
-(cl-defgeneric nvp-abbrevd-table-props (&key tables type)
+(cl-defgeneric nvp-abbrevd-table-props
+    (&optional _mode &key tables type file buffer priority &allow-other-keys)
   "Function to produce abbrev table properties.
 TYPE is type of abbrevs (eg. \\='functions, \\='variables).
 TABLES local abbrev table(s) for current mode.
 The default uses props defined in TABLES."
-  (let ((props (list :enable-function #'nvp-abbrev-expand-p
-                     :type type)))
+  (let* ((file (or file (and buffer (buffer-file-name buffer))))
+         (props (nconc (list :enable-function #'nvp-abbrev-expand-p
+                             :type (or type 'functions)
+                             :priority (or priority 1))
+                       (and file (list :file (abbreviate-file-name file))))))
     (when tables
       (dolist (prop '(:regexp :enable-function :case-fixed))
         (--when-let (--some (abbrev-table-get it prop) tables)
@@ -85,11 +109,10 @@ The default uses props defined in TABLES."
     props))
 
 
-(defun nvp-abbrevd-make-table (prefix &optional hook &rest props)
+(defun nvp-abbrevd--make-table (prefix &optional hook &rest props)
   "Make new abbrevd table.
 Its symbol is created from PREFIX and its function value is HOOK.
 PROPS are passed to `make-abbrev-table'."
-  (or (plist-get props :priority) (plist-put props :priority 1))
   (plist-put props :nvp-abbrevd t)
   (let ((sym (obarray-put nvp-abbrevd-obarray (symbol-name (cl-gensym prefix))))
         (table (make-abbrev-table props)))
@@ -118,28 +141,13 @@ Search in `abbrev-table-name-list' or TABLE-LIST if non-nil."
      nvp-abbrevd-obarray)
     res))
 
-(defun nvp-abbrevd--make-table-props (&optional mode file type)
-  "Return properties for abbrevd table."
-  (or type (setq type 'functions))
-  (or mode (setq mode (or nvp-mode-name major-mode)))
-  (and file (setq file (abbreviate-file-name file)))
-  (let ((props (nvp-abbrevd-table-props
-                :tables (nvp-abbrevd--local-table 'mode-table)
-                :type type)))
-    (pcase-dolist (`(,prop . ,val) `((:mode . ,mode)
-                                     (:file . ,file)
-                                     (:type . ,type)))
-      (when (and val (null (plist-get props prop)))
-        (plist-put props prop val)))
-    props))
-
 
 (defun nvp-abbrevd--populate-table (defs &optional table prefix &rest props)
   "Add abbrev DEFS to TABLE or create a new abbrevd table."
   (cl-assert (or table prefix) t "One is required")
   (and table (setq table (nvp-abbrev--table-value table)))
   (unless table
-    (let ((sym (apply #'nvp-abbrevd-make-table prefix nil props)))
+    (let ((sym (apply #'nvp-abbrevd--make-table prefix nil props)))
       (setq table (symbol-value sym))
       (unless (memq sym abbrev-table-name-list)
         (push sym abbrev-table-name-list))
@@ -160,8 +168,9 @@ Search in `abbrev-table-name-list' or TABLE-LIST if non-nil."
     (&key (objects obarray)
           (min-length 4)
           (min-abbrev-len 2)
+          (transformer #'nvp-abbrev-from-splitters)
           predicate
-          (transformer #'nvp-abbrev-from-splitters))
+          &allow-other-keys)
   "Function to convert objects into their abbreviated forms."
   (let (res)
     (cl-flet ((make-abbrev (name)
@@ -192,13 +201,24 @@ Search in `abbrev-table-name-list' or TABLE-LIST if non-nil."
 ;;; Edit
 
 ;;;###autoload
-(defun nvp-abbrevd-edit-abbrevs ()
-  "Edit local abbrevd tables."
-  (interactive)
-  (let* ((local-abbrev-table
-          (--filter (abbrev-table-get it :nvp-abbrevd) (nvp:local-abbrev-table)))
-         (abbrev-table-name-list (mapcar #'abbrev-table-name local-abbrev-table)))
-    (if (null local-abbrev-table)
+(defun nvp-abbrevd-edit-abbrevs (&optional modes all table-list)
+  "Edit abbrevd tables.
+Tables default to those in `local-abbrev-table'.
+With \\[universal-argument], edit abbrevd tables related to MODE.
+With \\[universal-argument] \\[universal-argument], edit all abbrevd tables.
+If TABLE-LIST is non-nil, restrict to abbrevd tables in that list."
+  (interactive
+   (let ((arg (prefix-numeric-value current-prefix-arg)))
+     (list (and (eq 4 arg) (list (intern (nvp-read-mode))))
+           (eq 16 arg))))
+  (let ((abbrev-table-name-list
+         (cond (modes (nvp-abbrevd--mode-tables modes))
+               (t (nvp-abbrevd--active-tables
+                   (or table-list
+                       (and all abbrev-table-name-list)
+                       (mapcar #'abbrev-table-name
+                               (nvp:local-abbrev-table))))))))
+    (if (null abbrev-table-name-list)
         (nvp-abbrev-msg "No abbrevd tables")
       (let* ((inhibit-read-only t)
              (buf (cl-letf (((symbol-function #'edit-abbrevs-mode) #'ignore))
@@ -236,6 +256,7 @@ If ARG is non-nil, clear abbrev defs and replace with current."
   (interactive "P" nvp-abbrevd-edit-mode)
   (cl-letf (((symbol-function 'define-abbrev-table) #'nvp-abbrevd--update-table))
     (funcall-interactively #'define-abbrevs arg)))
+
 
 (defun nvp-abbrevd--write-table-props (table)
   "Write TABLE properties."
@@ -384,25 +405,22 @@ With \\[universal-argument] \\[universal-argument], prompt for mode."
 
 
 ;;;###autoload
-(defun nvp-abbrevd (&optional file buffer table)
-  "Create dynamic abbrevs from FILE or BUFFER.
-Add abbrevs to TABLE if non-nil."
+(defun nvp-abbrevd (mode &rest args)
+  "Create dynamic abbrevs for MODE.
+ARGS should be a plist with keys BUFFER or FILE, see `nvp-abbrevd-read'."
   (interactive (nvp-abbrevd-read current-prefix-arg))
-  (cl-assert (or file buffer))
-  (let ((defs (with-current-buffer (or buffer (find-file-noselect file))
-                (setq file (buffer-file-name))
-                (apply #'nvp-abbrevd--make-abbrevs (nvp-abbrevd-make-args)))))
+  (let ((defs (apply #'nvp-abbrevd--make-abbrevs
+                     (apply #'nvp-abbrevd-make-args mode args))))
     (if (not defs)
         (nvp-abbrev-msg "No abbrevs found")
-      (let* ((mode (or nvp-mode-name major-mode))
-             (props (nvp-abbrevd--make-table-props mode file)))
-        (prog1 (apply #'nvp-abbrevd--populate-table
-                      defs table (symbol-name mode) props)
-          (nvp-abbrev-msg
-           "Created %s abbrevs(%s)" (length defs)
-           (if table
-               (format "in %S" (if (symbolp table) table "<abbrevd>"))
-             "++")))))))
+      (let* ((mode-table (nvp-abbrevd--local-table mode 'use-default))
+             (props (apply #'nvp-abbrevd-table-props mode
+                           :tables mode-table args))
+             (table (apply #'nvp-abbrevd--populate-table
+                           defs nil (symbol-name mode) props)))
+        (prog1 table
+          (nvp-abbrev-msg "Created %s abbrevs (in %s)"
+                          (length defs) (abbrev-table-name table)))))))
 
 
 (provide 'nvp-abbrev-dynamic)

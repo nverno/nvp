@@ -27,4 +27,8 @@
     (yas-deactivate-extra-mode 'jinja-mode)))
 
 (provide 'nvp-jinja)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-jinja.el ends here

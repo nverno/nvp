@@ -68,4 +68,8 @@
     (company-d-execute (company-d--args (company-d--cursor)))))
 
 (provide 'company-d)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; company-d.el ends here

@@ -170,4 +170,8 @@ It makes underscores and dots word constituent chars.")
 ;; (add-to-list 'auto-mode-alist '("\\.jl\\'" . julia-ext-mode) t)
 
 (provide 'julia-ext)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; julia-ext.el ends here

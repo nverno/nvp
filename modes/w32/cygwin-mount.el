@@ -561,4 +561,8 @@ NOTE: \"/cygdrive/\" is only an example for the cygdrive-prefix \(see
 
 (provide 'cygwin-mount)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; cygwin-mount.el ends here

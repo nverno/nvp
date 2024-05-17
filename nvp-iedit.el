@@ -113,4 +113,8 @@ If INCREMENT is non-nil, increment restriction before update."
       (nvp-iedit-report))))
 
 (provide 'nvp-iedit)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-iedit.el ends here

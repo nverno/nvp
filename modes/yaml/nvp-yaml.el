@@ -228,4 +228,8 @@ Otherwise, goto help reference if available."
     (browse-url it)))
 
 (provide 'nvp-yaml)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-yaml.el ends here

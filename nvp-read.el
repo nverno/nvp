@@ -189,4 +189,8 @@ Filter by PREDICATE if non-nil."
         files nil nil nil 'nvp-read-config-history default))))
 
 (provide 'nvp-read)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-read.el ends here

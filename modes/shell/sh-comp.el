@@ -470,4 +470,8 @@ sourced files."
           (point-marker))))))
 
 (provide 'sh-comp)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; sh-comp.el ends here

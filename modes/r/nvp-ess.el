@@ -76,4 +76,8 @@
     ))
 
 (provide 'nvp-ess)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-ess.el ends here

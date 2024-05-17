@@ -341,4 +341,8 @@ Calls `imenu' to jump to location with selection."
           (nvp-imenu-complete 0 'headers))))))
 
 (provide 'nvp-imenu)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-imenu.el ends here

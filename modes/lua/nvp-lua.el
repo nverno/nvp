@@ -2,7 +2,9 @@
 ;;
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-parse))
 (require 'treesit)
 (when (require 'lua-ts-mode nil t)
   (require 'nvp-lua-ts))
@@ -14,7 +16,8 @@
 
 (defvar nvp-lua--dir (file-name-directory (nvp:load-file-name)))
 
-(with-eval-after-load 'nvp-repl (require 'nvp-lua-repl))
+(with-eval-after-load 'nvp-repl
+  (require 'nvp-lua-repl))
 
 ;; Syntax table used when looking identifier at point
 (defvar nvp-lua-help-syntax-table
@@ -119,16 +122,21 @@
           (expression_list
            value: (function_definition)))))))))
 
-;;; XXX(5/8/24): handle `:local' arg?
-(cl-defmethod nvp-parse-functions
-  (&context (major-mode lua-ts-mode) &rest _args)
-  (--map (treesit-node-text it t)
-         (treesit-query-capture
-          (treesit-buffer-root-node 'lua) nvp-lua--top-level-funcs-query
-          nil nil t)))
+(cl-defmethod nvp-parse-functions ((_mode (eql lua-mode)) &rest args)
+  (nvp-parse:buffer-file t nil args
+    (--map (treesit-node-text it t)
+           (treesit-query-capture
+            (treesit-buffer-root-node 'lua) nvp-lua--top-level-funcs-query
+            nil nil t))))
+
+(cl-defmethod nvp-abbrevd-read-args ((_mode (eql lua-mode)) &optional arg)
+  (nconc (cl-call-next-method nil arg)
+         (when (y-or-n-p "Replace tables? ")
+           (list :replace-table (cons (read-string "Replace: ")
+                                      (read-string "With: "))))))
 
 (cl-defmethod nvp-abbrevd-make-args
-  (&context (major-mode lua-ts-mode) &rest args)
+  ((mode (eql lua-mode)) &rest args &key replace-table &allow-other-keys)
   "Return functions to abbrev.
 
 If non-nil, \\=':replace-table is a cons of a table name and a string to
@@ -136,14 +144,14 @@ replace it with in abbrevs. For example, \\='(cons \"M\" \"filetype\")
 means replace \"M.some_fun\" \"filetype.some_fun\" in abbrevs.
 
 By default, methods and functions prefixed with \"_\" are ignored."
-  (when-let ((funcs (nvp-parse-functions)))
-    (pcase-let ((`(,table . ,rep) (plist-get args :replace-table)))
-      (when table
-        (setq table (concat table ".")
-              rep (concat rep ".")))
+  (when-let ((cands (nvp-parse-functions mode args)))
+    (let (table rep)
+      (when replace-table
+        (setq table (concat (car replace-table) ".")
+              rep (concat (cdr replace-table) ".")))
       (list :transformer #'nvp-abbrev-from-words
             :objects
-            (cl-loop for def in funcs
+            (cl-loop for def in cands
                      unless (string-match-p (rx (or ":" (seq bos "_"))) def)
                      collect (if (and table (string-prefix-p table def))
                                  (concat rep (substring def (length table)))

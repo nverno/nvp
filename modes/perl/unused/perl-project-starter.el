@@ -71,4 +71,8 @@
 
 (provide 'perl-project-starter)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; perl-project-starter.el ends here

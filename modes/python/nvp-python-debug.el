@@ -44,4 +44,8 @@
   (call-interactively 'pdb))
 
 (provide 'nvp-python-debug)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-python-debug.el ends here

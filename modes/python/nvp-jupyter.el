@@ -78,4 +78,8 @@
     ))
 
 (provide 'nvp-jupyter)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-jupyter.el ends here

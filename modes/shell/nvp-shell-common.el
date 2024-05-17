@@ -2,17 +2,17 @@
 
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile(require 'nvp-macro))                 
-(nvp:req 'nvp-shell 'subrs)
+(eval-when-compile (require 'nvp-macro))                 
 (nvp:decls :f (comint-line-beginning-position))
+
 
 ;;; Interop variables for eshell, and other non-comint-based shells
 ;; used for determining the shell statement and active command around point
 (defvar nvp-shell-bol-function #'comint-line-beginning-position)
 (defvar nvp-shell-command-delimiters "^)(|&\`;\[")
 
-;; name of current command in sh scripts
 (defun nvp-sh-current-command ()
+  "Name of current command in sh scripts."
   (let ((ppss (parse-partial-sexp (point-min) (point)))
         (start (or (cdr (bounds-of-thing-at-point 'symbol)) (point))))
     (when (not (nth 4 ppss)) ;; ignore comments
@@ -46,11 +46,36 @@
          (t (and (looking-at "[:+_\[\.[:alnum:]-]+")
                  (match-string 0))))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Things-at-point
 
-;; guess bounds from beginning of current command to end of symbol/word at point
+(defun nvp-shell-goto-command-start (start &optional limit delims)
+  "Move point to beginning of current command.
+START is the initial point, LIMIT is an optional search bound.
+DELIMS are chars that will delimit commands and won't be skipped outside of
+strings."
+  (or delims (setq delims "^)(|&`;["))
+  (let (ppss done)
+    (while (and (not done)
+                (if limit (> (point) limit) t))
+      (skip-chars-backward delims (or limit (line-beginning-position)))
+      (if (eq (char-before) ?\))
+          (forward-sexp -1)         ; jump back over a possible subshell
+        (setq ppss (parse-partial-sexp (or limit (point-min)) (point)))
+        (cond ;; presumably reached the beginning of a command
+         ((or (not (nth 3 ppss))
+              (eq (char-before) ?\`)
+              (and (eq (char-before) ?\()
+                   (eq (char-before (1- (point))) ?$)))
+          (setq done t))
+         ;; move backward out of enclosing string that shouldn't be a quoted
+         ;; command
+         (t (up-list -1 t t)))))
+    (skip-syntax-forward " " start)))
+
 (defun nvp-shell-bounds-of-statement ()
+  "Guess bounds from beginning of current command to end of symbol/word at point."
   (save-excursion
     (let* ((bol (funcall nvp-shell-bol-function))
            (end (progn (skip-syntax-backward " ")
@@ -63,8 +88,8 @@
       (and (> end beg) (cons beg end)))))
 (put 'shell-stmt 'bounds-of-thing-at-point #'nvp-shell-bounds-of-statement)
 
-;; bounds for current active shell command
 (defun nvp-shell-bounds-of-command ()
+  "Bounds for current active shell command."
   (--when-let (nvp-shell-bounds-of-statement)
     (save-excursion
       (goto-char (car it))

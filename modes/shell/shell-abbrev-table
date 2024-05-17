@@ -143,4 +143,4 @@
 
 (define-abbrev-table 'vterm-mode-abbrev-table
   '()
-  "Vterm-Mode Abbrevs.")
+  "Abbrevs dont work in `vterm-mode'.")

@@ -11,8 +11,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-shell-common)
-(nvp:req 'nvp-shell 'subrs)
 (require 'nvp-sh-help)
+
 
 (defvar nvp-sh-eldoc-cache (make-hash-table :test 'equal))
 
@@ -53,4 +53,8 @@
     (funcall callback sig :thing func :face 'font-lock-function-name-face)))
 
 (provide 'nvp-sh-eldoc)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-sh-eldoc.el ends here

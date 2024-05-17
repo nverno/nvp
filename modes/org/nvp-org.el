@@ -250,4 +250,8 @@ Return cons of \\='(name                           . raw-link)."
 
 
 (provide 'nvp-org)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-org.el ends here

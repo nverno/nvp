@@ -468,4 +468,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 (nvp:treesit-add-rules c-ts-mode)
 
 (provide 'nvp-c)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-c.el ends here

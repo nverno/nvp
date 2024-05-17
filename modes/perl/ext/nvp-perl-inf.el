@@ -68,4 +68,8 @@
      (nvp-perl-inf-install))))
 
 (provide 'nvp-perl-inf)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-perl-inf.el ends here

@@ -58,4 +58,8 @@
         (t (message "TODO"))))
 
 (provide 'nvp-web)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-web.el ends here

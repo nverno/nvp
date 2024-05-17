@@ -137,4 +137,8 @@ Output is in `shellcheck-mode' compilation buffer, which see."
                   (view-mode))))
 
 (provide 'shellcheck)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; shellcheck.el ends here

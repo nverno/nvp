@@ -163,4 +163,8 @@ With prefix ARG, prompt with macros from manual."
     :bindings (("." . (lambda () (interactive) (company-autoconf-location macro))))))
 
 (provide 'nvp-autoconf)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-autoconf.el ends here

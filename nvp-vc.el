@@ -107,4 +107,8 @@
       (user-error "Failed to configure repo for sparse checkout"))))
 
 (provide 'nvp-vc)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-vc.el ends here

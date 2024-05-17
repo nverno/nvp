@@ -53,4 +53,8 @@
   (add-to-list 'hippie-expand-try-functions-list 'try-expand-nrepl-history))
 
 (provide 'hippie-expand-nrepl)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; hippie-expand-nrepl.el ends here

@@ -456,4 +456,8 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
              (list (current-buffer) (point-min) nil))))))))
 
 (provide 'nvp-hap)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-hap.el ends here

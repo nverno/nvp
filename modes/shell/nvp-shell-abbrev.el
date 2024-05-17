@@ -49,4 +49,8 @@
   (funcall #'nvp-abbrev-write-abbrev-table 'nvp-shell-abbrev-table file))
 
 (provide 'nvp-shell-abbrev)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-shell-abbrev.el ends here

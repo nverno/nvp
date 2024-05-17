@@ -184,4 +184,8 @@
     (":sp" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])
 
 (provide 'nvp-help)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-help.el ends here

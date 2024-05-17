@@ -33,4 +33,8 @@
              " --tag-relative -R app lib vender test"))))
 
 (provide 'nvp-rails)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-rails.el ends here

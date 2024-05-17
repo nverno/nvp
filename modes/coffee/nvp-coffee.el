@@ -55,4 +55,8 @@ If '_' is hit again, insert '_' instead (like in `ess-mode')."
         (insert "_")))))
 
 (provide 'nvp-coffee)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-coffee.el ends here

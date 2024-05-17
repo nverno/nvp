@@ -73,9 +73,8 @@ found file.  File is determined by:
 
 ;;; Generics
 
-;; default just tries to use imenu
 ;;;###autoload
-(cl-defgeneric nvp-parse-functions (&rest args)
+(cl-defgeneric nvp-parse-functions (&optional _mode &rest args)
   "Default method to gather function names from current buffer.
 Recognized arguments:
   :buffer <buffer-or-name> - location to search
@@ -86,7 +85,26 @@ Recognized arguments:
     (nvp-parse--ensure-imenu)
     (mapcar #'car (nvp-imenu-cleaned-alist))))
 
-;; like which-func - attempt with imenu and add-log
+(cl-defgeneric nvp-parse-variables (&optional _mode &rest _args)
+  "Gather variables from buffer or file.
+Recognized arguments:
+ :buffer <buffername> to search
+ :file <filename> to search
+ :local <point> - find local variables at POINT"
+  nil)
+;; (cl-defmethod nvp-parse-variables ((_mode (eql nil)) &rest args)
+;;   (apply #'cl-call-next-method (or nvp-mode-name major-mode) args))
+
+(cl-defgeneric nvp-parse-library (&optional _mode &rest _args)
+  "Generic function to return the name of the current library, module, ..."
+  nil)
+;; (cl-defmethod nvp-parse-library ((_mode (eql nil)) &rest args)
+;;   (apply #'nvp-parse-library (or nvp-mode-name major-mode) args))
+
+(cl-defgeneric nvp-parse-includes (&optional _mode &rest _args)
+  "Generic function to return the names of required libraries."
+  nil)
+
 ;;;###autoload
 (cl-defgeneric nvp-parse-current-function (&rest _args)
   "Default method to get name of function containing point.
@@ -96,21 +114,6 @@ First tries closest imenu entry, then `add-log-current-defun'."
     (if func (caar func)
       (add-log-current-defun))))
 
-(cl-defgeneric nvp-parse-variables (&rest _args)
-  "Gather variables from buffer or file.
-Recognized arguments:
- :buffer <buffername> to search
- :file <filename> to search
- :local <point> - find local variables at POINT"
-  nil)
-
-(cl-defgeneric nvp-parse-library (&rest _args)
-  "Generic function to return the name of the current library, module, ..."
-  nil)
-
-(cl-defgeneric nvp-parse-includes (&rest _args)
-  "Generic function to return the names of required libraries."
-  nil)
 
 ;; -------------------------------------------------------------------
 ;;; Commands
@@ -123,4 +126,8 @@ Recognized arguments:
     (message "No current function found.")))
 
 (provide 'nvp-parse)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-parse.el ends here

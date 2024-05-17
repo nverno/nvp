@@ -59,4 +59,8 @@
     ""))
 
 (provide 'nvp-julia)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-julia.el ends here

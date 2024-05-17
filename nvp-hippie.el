@@ -642,8 +642,9 @@ string).  It returns t if a new completion is found, nil otherwise."
       (call-interactively #'hippie-expand arg))))
 
 (provide 'nvp-hippie)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-hippie.el ends here
 
-;; Local Variables:
-;; byte-compile-warnings: (not redefine)
-;; End:

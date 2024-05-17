@@ -46,4 +46,8 @@
     (and power-p (set-face-background 'powerline-active0 pcolor))))
 
 (provide 'nvp-indicate)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-indicate.el ends here

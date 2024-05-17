@@ -52,4 +52,8 @@
   (tabulated-list-init-header))
 
 (provide 'exenv)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; exenv.el ends here

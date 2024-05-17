@@ -114,4 +114,8 @@ replacing with NEW-VERSION."
   (perlbrew--sys/version version "switch-off" (list "switch" version)))
 
 (provide 'perlbrew)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; perlbrew.el ends here

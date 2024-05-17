@@ -191,4 +191,8 @@ using `compilation-read-command'."
     (align-region beg end "^\\s-*$" align-rules-list align-exclude-rules-list)))
 
 (provide 'nvp-makefile)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-makefile.el ends here

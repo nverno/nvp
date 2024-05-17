@@ -132,4 +132,8 @@
 (company-perl-recache nil)
 
 (provide 'company-perl)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; company-perl.el ends here

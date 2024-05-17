@@ -22,4 +22,8 @@
     (term-char-mode)))
 
 (provide 'nvp-term)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-term.el ends here

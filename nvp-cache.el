@@ -1,5 +1,4 @@
 ;;; nvp-cache.el --- caches -*- lexical-binding: t; -*-
-;;
 ;;; Commentary:
 ;; Creates cache with expiring entries.
 ;;; Code:
@@ -114,4 +113,8 @@ non-nil."
       (nvp-cache-table ,cache))))
 
 (provide 'nvp-cache)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-cache.el ends here

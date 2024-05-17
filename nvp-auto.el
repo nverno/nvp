@@ -1,5 +1,4 @@
 ;;; nvp-auto.el --- some autoloads -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;
 ;; Random autoloads

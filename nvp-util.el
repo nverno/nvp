@@ -90,4 +90,8 @@ If non-nil use SUBEXP regexp group."
 ;;     (nreverse positions)))
 
 (provide 'nvp-util)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-util.el ends here

@@ -210,4 +210,8 @@
    (expand-file-name "help" (getenv "rvm_path"))))
 
 (provide 'ruby-rvm)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-rvm.el ends here

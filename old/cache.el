@@ -289,4 +289,8 @@ Grows ring when necessary."
     (car (read-from-string (buffer-string)))))
 
 (provide 'nvp-cache)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-cache.el ends here

@@ -43,4 +43,8 @@
   (nvp-fish-add-company-keywords))
 
 (provide 'nvp-fish)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-fish.el ends here

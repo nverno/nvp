@@ -40,4 +40,8 @@
   (call-interactively 'erlang-compile))
 
 (provide 'nvp-erlang)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-erlang.el ends here

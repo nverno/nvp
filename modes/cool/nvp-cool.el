@@ -73,4 +73,8 @@
   )
 
 (provide 'nvp-cool)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-cool.el ends here

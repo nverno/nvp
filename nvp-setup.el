@@ -153,4 +153,8 @@
 (put 'nvp-setup-local 'lisp-indent-function 'defun)
 
 (provide 'nvp-setup)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-setup.el ends here

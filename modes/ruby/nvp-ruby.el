@@ -132,4 +132,8 @@ See the variable `align-rules-list' for more details.")
 ;;       (insert (concat "\nrequire \"" lib "\"")))))
 
 (provide 'nvp-ruby)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-ruby.el ends here

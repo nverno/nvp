@@ -76,4 +76,8 @@
        (list (window-buffer (godoc-gogetdoc (point))) nil)))))
 
 (provide 'nvp-go-help)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-go-help.el ends here

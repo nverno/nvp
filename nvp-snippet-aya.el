@@ -35,4 +35,8 @@
                            nvp-aya-new-template))
 
 (provide 'nvp-snippet-aya)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-snippet-aya.el ends here

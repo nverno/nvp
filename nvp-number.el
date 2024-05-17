@@ -153,4 +153,8 @@ decimal => hex, hex => decimal, octal => decimal."
     (insert string)))
 
 (provide 'nvp-number)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-number.el ends here

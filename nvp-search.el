@@ -34,4 +34,8 @@ With prefix ARG multi-occur in buffers of the same mode."
    (nvp-buffer-matching-mode major-mode) (car (occur-read-primary-args))))
 
 (provide 'nvp-search)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-search.el ends here

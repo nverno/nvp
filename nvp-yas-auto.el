@@ -56,4 +56,8 @@ Optionally, compile ALL snippets including subdirs in site-lisp packages."
       (goto-char position))))
 
 (provide 'nvp-yas-auto)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-yas-auto.el ends here

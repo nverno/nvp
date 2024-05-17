@@ -1,5 +1,4 @@
 ;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
-;;
 ;;; Commentary:
 ;;
 ;; TODO:
@@ -38,7 +37,7 @@
 (defvar nvp-bookmark-search-files
   '(nvp-local-bookmark-file "bookmarks.el" bookmark-default-file)
   "The first existing file is found by the order in this list.
-If an entry isn't an existing path, it will be expanded against 
+If an entry isn't an existing path, it will be expanded against
 `nvp-bookmark-search-roots', returning the first existing file.")
 
 (defvar nvp-bookmark-search-roots
@@ -47,7 +46,7 @@ If an entry isn't an existing path, it will be expanded against
     nvp-bookmark-directory)
   "Order of locations from which to search for the bookmark file.
 Entries can be functions, called with a single file argument.  The first file
-found is returned. Default order (1) `locate-dominating-file', 
+found is returned. Default order (1) `locate-dominating-file',
 (2) `nvp-project-root', (3) in `nvp-bookmark-directory'.")
 
 (defun nvp-bookmark-locate-file-1 (file)
@@ -69,7 +68,7 @@ in `nvp-bookmark-search-roots' when an entry doesn't exist."
 ;;;###autoload
 (defun nvp-bookmark-load (&optional no-default)
   "Load bookmarks using `nvp-bookmark-locate-file' to determine default.
-With prefix NO-DEFAULT, doesn't set new bookmarks as defaults (opposite 
+With prefix NO-DEFAULT, doesn't set new bookmarks as defaults (opposite
 behaviour of default)."
   (interactive "P")
   (-if-let (file (nvp-bookmark-locate-file))
@@ -216,8 +215,8 @@ NO-INSERT."
     (bookmark-store str alist t)))
 
 ;; (defun nvp-bmk-create (filename &optional make-current link)
-;;   "Create new bookmark file, prompting for FILENAME. 
-;; (4) prefix or MAKE-CURRENT is non-nil, set new bookmark file as current 
+;;   "Create new bookmark file, prompting for FILENAME.
+;; (4) prefix or MAKE-CURRENT is non-nil, set new bookmark file as current
 ;;     default bookmark file.
 ;; (16) prefix or LINK is non-nil, create link to new bookmark file from
 ;; current bookmark menu list."
@@ -277,7 +276,7 @@ NO-INSERT."
 (define-minor-mode nvp-bmk-to-bmk-mode
   "Toggle `nvp-bmk-to-bmk' mode.
 Interactively with no arguments, this command toggles the mode.
-A positive prefix argument enables the mode, any other prefix 
+A positive prefix argument enables the mode, any other prefix
 argument disables it.  From lisp, argument omitted or nil enables
 the mode, `toggle' toggles the state.
 
@@ -298,4 +297,8 @@ and jumped between.
     (nvp-bmk-remove-overlays)))
 
 (provide 'nvp-bookmark)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-bookmark.el ends here

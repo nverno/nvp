@@ -63,4 +63,8 @@
   (setq-local font-lock-defaults '(nvp-log-font-lock nil t nil nil)))
 
 (provide 'nvp-log)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-log.el ends here

@@ -31,4 +31,8 @@
     (insert str)))
 
 (provide 'nvp-flex)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-flex.el ends here

@@ -172,4 +172,8 @@ Return `process-environment' with new value tacked on front (first is used)."
       (nvp-log "DB Update completed"))))
 
 (provide 'nvp-env)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-env.el ends here

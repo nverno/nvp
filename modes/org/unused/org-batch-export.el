@@ -64,4 +64,8 @@ don't recompile a file that seems to be already up-to-date."
 
 (provide 'org-batch-export)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; org-batch-export.el ends here

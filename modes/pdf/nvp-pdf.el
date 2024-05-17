@@ -32,4 +32,8 @@
     (call-interactively #'pdf-annot-add-text-annotation)))
 
 (provide 'nvp-pdf)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-pdf.el ends here

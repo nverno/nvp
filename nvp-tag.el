@@ -196,4 +196,8 @@ Wrapper around `list-tags' that:
 ;; `tags-apropos-verbose' list filenames
 
 (provide 'nvp-tag)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-tag.el ends here

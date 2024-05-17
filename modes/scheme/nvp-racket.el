@@ -115,11 +115,10 @@ Otherwise expand the list containing point."
   ;; "->" => "t" in abbrevs
   (apply #'nvp-abbrev-from-splitters (replace-regexp-in-string "->" "-t-" str) args))
 
-(cl-defmethod nvp-parse-functions
-  (&context (major-mode racket-mode) &rest args)
+(cl-defmethod nvp-parse-functions ((_mode (eql racket-mode)) &rest args)
   "Return list of functions defined in buffer."
   (require 'nvp-parse)
-  (when-let ((defs (ignore-errors (cl-call-next-method args))))
+  (when-let ((defs (ignore-errors (cl-call-next-method nil args))))
     (--filter
      (not (string-match-p
            (rx (or
@@ -129,19 +128,18 @@ Otherwise expand the list containing point."
            it))
      defs)))
 
-(cl-defmethod nvp-abbrevd-make-args (&context (major-mode racket-mode) &rest _)
+(cl-defmethod nvp-abbrevd-make-args ((mode (eql racket-mode)) &rest _)
   "Arguments for `nvp-abbrevd--make-abbrevs'."
-  ;; (when-let ((args (cl-call-next-method)))
-  ;;   (plist-put args :transformer #'nvp-racket-abbrev-string))
-  (list :objects (seq-uniq (nvp-parse-functions))
+  (list :objects (seq-uniq (nvp-parse-functions mode))
         :transformer #'nvp-racket-abbrev-string))
 
 (cl-defmethod nvp-abbrevd-table-props
-  (&context (major-mode racket-mode) &key type _tables)
+  ((_mode (eql racket-mode)) &rest args &key type &allow-other-keys)
   "Abbrev table props."
-  (list :type type :enable-function (if (eq 'variables type)
-                                        #'nvp-scheme-abbrev-var-expand-p
-                                      #'nvp-scheme-abbrev-fun-expand-p)))
+  (let ((props (apply #'cl-call-next-method nil :type type args)))
+    (plist-put props :enable-function (if (eq 'variables type)
+                                          #'nvp-scheme-abbrev-var-expand-p
+                                        #'nvp-scheme-abbrev-fun-expand-p))))
 
 (provide 'nvp-racket)
 ;; Local Variables:

@@ -147,4 +147,8 @@ candidates."
         (he-substitute-string (pop he-expand-list) t)))))
 
 (provide 'nvp-abbrev-completion)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-abbrev-completion.el ends here

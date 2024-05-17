@@ -210,4 +210,8 @@ the current paragraph."
       (translate-region beg end tbl))))
 
 (provide 'nvp-toggle)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-toggle.el ends here

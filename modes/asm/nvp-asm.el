@@ -82,4 +82,8 @@
   (browse-url manual))
 
 (provide 'nvp-asm)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-asm.el ends here

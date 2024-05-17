@@ -158,4 +158,8 @@
     (call-interactively 'run-python)))
 
 (provide 'conda-env)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; conda-env.el ends here

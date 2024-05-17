@@ -35,4 +35,8 @@ send regions above point."
        (if arg (point) (point-max))))))
 
 (provide 'nvp-rmd)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-rmd.el ends here

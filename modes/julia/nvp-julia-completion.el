@@ -74,8 +74,9 @@
   (company-complete))
 
 (provide 'nvp-julia-completion)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-julia-completion.el ends here
 
-;; Local Variables:
-;; byte-compile-warnings: (not cl-functions)
-;; End:

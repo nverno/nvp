@@ -31,4 +31,8 @@
 (add-to-list 'auto-mode-alist '("parser\\.output" . bison-output-mode))
 
 (provide 'nvp-bison)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-bison.el ends here

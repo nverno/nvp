@@ -198,4 +198,8 @@ If DEBUG is non-nil, run with debugging enabled."
   (nosetests-one t))
 
 (provide 'nose)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nose.el ends here

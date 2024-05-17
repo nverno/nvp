@@ -123,4 +123,8 @@
         (message "%s not a cypher clause" sym)))))
 
 (provide 'nvp-neo)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-neo.el ends here

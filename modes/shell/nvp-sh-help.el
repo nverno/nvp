@@ -312,4 +312,8 @@ command.."
     (company-show-doc-buffer)))
 
 (provide 'nvp-sh-help)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-sh-help.el ends here

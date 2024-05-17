@@ -39,4 +39,8 @@
     (call-interactively 'compile)))
 
 (provide 'nvp-powershell)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-powershell.el ends here

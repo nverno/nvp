@@ -411,4 +411,8 @@ to julia, put them in the variable `inferior-julia-args'."
 ;; (add-to-list 'auto-mode-alist '("\\.jl\\'" . ess-julia-mode) t)
 
 (provide 'ess-julia)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; ess-julia.el ends here

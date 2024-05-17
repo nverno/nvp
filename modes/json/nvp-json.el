@@ -88,4 +88,8 @@ With the :node executor, \"it\" is bound to the BODY json."
               (format "jq: %s\npython: %s" py-path jq-path)))))))
 
 (provide 'nvp-json)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-json.el ends here

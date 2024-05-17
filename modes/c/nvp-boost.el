@@ -45,4 +45,8 @@
   (browse-url (concat "www.boost.org/doc/libs/" (nvp-boost--version-string arg))))
 
 (provide 'nvp-boost)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-boost.el ends here

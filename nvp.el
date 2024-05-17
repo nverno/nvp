@@ -430,4 +430,8 @@ Otherwise just call `vertico-insert'. If this was previous command, call
   (kill-buffer (current-buffer)))
 
 (provide 'nvp)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp.el ends here

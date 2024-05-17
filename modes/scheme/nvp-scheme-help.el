@@ -26,4 +26,8 @@
        (list (current-buffer) (point-min))))))
 
 (provide 'nvp-scheme-help)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-scheme-help.el ends here

@@ -190,4 +190,8 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
     (nvp-compilation-next n)))
 
 (provide 'nvp-compile)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-compile.el ends here

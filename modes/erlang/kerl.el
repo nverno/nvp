@@ -65,4 +65,8 @@
   (kerl-activate nil))
 
 (provide 'kerl)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; kerl.el ends here

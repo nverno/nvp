@@ -115,4 +115,8 @@
   (ignore arg))
 
 (provide 'nvp-d)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-d.el ends here

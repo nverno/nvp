@@ -291,4 +291,8 @@ With \\[universal-argument] \\[universal-argument] prompt for filter."
   (nvp-trace-add "hooks"))
 
 (provide 'nvp-trace)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-trace.el ends here

@@ -80,4 +80,8 @@ Example: m,25+x?a%c => \"a\", \"b\", ..., \"z\"
      nil nil nil 0)))
 
 (provide 'nvp-expand)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-expand.el ends here

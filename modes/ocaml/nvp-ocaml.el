@@ -140,4 +140,8 @@
       (insert " rec "))))
 
 (provide 'nvp-ocaml)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-ocaml.el ends here

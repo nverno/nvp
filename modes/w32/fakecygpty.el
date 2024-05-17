@@ -315,4 +315,8 @@ The window size information is caluclated by lines * 65536 + columns."
 
 (provide 'fakecygpty)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; fakecygpty.el ends here

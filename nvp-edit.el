@@ -1,21 +1,15 @@
-;;; nvp-edit.el --- editing / text manipulation -*- lexical-binding: t; -*-
-
+;;; nvp-edit.el --- Editing -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;
-;; - Indent
-;; - Sorting
-;; - Wrap text
-;; - Duplicate lines / regions
-;;
+;; Some random editing things: indent, sort, wrap, duplicate lines/regions
 ;;; Code:
 (eval-when-compile
   (require 'nvp-macro)
   (require 'smartparens))
 (require 'transient)
 (nvp:decls :p (sp paredit sort) :v (sort-fold-case) :f (paredit-kill))
+
 (autoload 'sp-wrap-with-pair "smartparens")
 
-;;; Indent
 
 ;;;###autoload
 (defun nvp-indent-dwim (&optional beg end)
@@ -30,8 +24,8 @@ Defaults to `defun' at point."
      :pulse t (list beg end)))
   (indent-region beg end))
 
-;; -------------------------------------------------------------------
-;;; Sort
+
+;;; Sorting
 
 (eval-when-compile
   (defmacro nvp-sort:defaults (start end &rest body)
@@ -129,6 +123,7 @@ With prefix sort in REVERSE."
     ("S" "Symbols" nvp-sort-symbols)
     ("w" "Words" nvp-sort-words)]])
 
+
 ;; -------------------------------------------------------------------
 ;;; Duplicate
 
@@ -206,7 +201,7 @@ With prefix sort in REVERSE."
     (newline-and-indent)
     (yank)))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Wrap text
 
@@ -235,4 +230,8 @@ Prefix arg is passed to SP, wrapping the next _ARG elements."
       (sp-wrap-with-pair char))))
 
 (provide 'nvp-edit)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-edit.el ends here

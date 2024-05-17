@@ -1,5 +1,4 @@
 ;;; nvp-batch.el --- running in batch -*- lexical-binding: t; -*-
-;;
 ;;; Commentary:
 ;; Run target in batch mode with load-path setup.
 ;;; Code:

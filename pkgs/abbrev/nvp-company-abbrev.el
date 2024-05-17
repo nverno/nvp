@@ -24,4 +24,8 @@ Respects abbrev table :regexp and :enable-function properties."
     (post-completion (expand-abbrev))))
 
 (provide 'nvp-company-abbrev)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-company-abbrev.el ends here

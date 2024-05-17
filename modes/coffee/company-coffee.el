@@ -100,4 +100,8 @@
 
 (provide 'company-coffee)
 
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; company-coffee.el ends here

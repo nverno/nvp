@@ -127,4 +127,8 @@
       (add-to-list 'hippie-expand-try-functions-list 'nvp-he-try-expand-history))))
 
 (provide 'nvp-hippie-history)
+;; Local Variables:
+;; coding: utf-8
+;; indent-tabs-mode: nil
+;; End:
 ;;; nvp-hippie-history.el ends here

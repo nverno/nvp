@@ -39,18 +39,24 @@ Otherwise expand the list containing point."
 (define-compilation-mode raco-test-mode "Raco"
   "Compilation mode for raco test."
   :abbrev-table nil
+  (setq-local font-lock-defaults
+              `(,(append '(("tests passed" . 'success)
+                           ("FAILURE"      . 'error))
+                         compilation-mode-font-lock-keywords)))
   (setq-local compilation-error-regexp-alist '(raco))
   (setq-local compilation-error-regexp-alist-alist
               '((raco "location:[ \t]+\\([^ \n:]+\\):\\([0-9]+\\):\\([0-9]+\\)"
                       1 2 3))))
 
 (defun nvp-racket-test (&optional read-command)
-  "Run raco test on associated test files."
+  "Run raco test on buffer and associated test files."
   (interactive "P")
   (--when-let (nvp-project-locate-root nil 'local "info.rkt")
     (let* ((default-directory it)
            (file (f-base (buffer-file-name)))
-           (compile-command (concat "racket -l raco test **/" file "*")))
+           (compile-command
+            (concat "find . -type f -iregex '.*" file "\\\([_-]tests?\\\)?.*' "
+                    "-exec racket -l raco test \\{\\} \\;")))
       (when read-command
         (setq compile-command (compilation-read-command compile-command)))
       (compilation-start compile-command #'raco-test-mode))))

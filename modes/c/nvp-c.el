@@ -1,15 +1,10 @@
 ;;; nvp-c.el --- c helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;
-;; TODO:
-;; - merge all the compile stuff and remove compile macros
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)                          ; `nvp-receiver-face'
-(nvp:req 'nvp-c 'subrs)
 (nvp:decls
- :f ( forward-ifdef clang-complete-load-args asdf-where nvp-env-add nvp-yas-var
-      s-join objdump-mode
+ :f ( forward-ifdef nvp-yas-var s-join
       c-syntactic-information-on-region c-show-syntactic-information)
  :v (c/R-abbrev-table company-clang-arguments gud-comint-buffer))
 (nvp:auto "nvp-tag" 'nvp-tag-list-decls)
@@ -124,8 +119,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                        (nvp-c-split-string (or str (yas-text))))))
     (if sep (s-join sep types) types)))
 
-;; pull out functions signatures from current buffer using ctags
 (defun nvp-c-function-signatures (&optional file ignore-main ignore-static)
+  "Pull out functions signatures from current buffer using ctags."
   (--when-let (nvp-tag-list-decls "c" "fp" file)
     (if (or ignore-main ignore-static)
         (let ((ignore (format "\\_<%s\\_>"
@@ -136,8 +131,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
           (cl-remove-if (lambda (s) (string-match-p ignore s)) it))
       it)))
 
-;; convert functions args to doxygen params
 (defun nvp-c-yas-args-docstring (text)
+  "Convert functions args to doxygen params."
   (--when-let (nvp-c-split-string text)
     (mapconcat 'identity (--map (concat "\n * @param " it) it) "")))
 
@@ -154,156 +149,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
       (forward-char)
       (skip-chars-forward "0-9"))))
 
-
-;; -------------------------------------------------------------------
-;;; Compile
-
-(eval-when-compile (require 'nvp-compile))
-
-(defvar nvp-c-address-error-regexp
-  '(address-sanitizer
-    "^\\s-*#[0-9]+ [x[:xdigit:]]+ in [^\n]* \\([^\n:]+\\):\\([0-9]+\\)" 1 2)
-  "Compilation error regexp entry to match address sanitizer stack traces.")
-
-(with-eval-after-load 'compile
-  (add-to-list 'compilation-error-regexp-alist 'address-sanitizer t)
-  (add-to-list 'compilation-error-regexp-alist-alist nvp-c-address-error-regexp t))
-
-(defsubst nvp-c--compiler ()
-  (if (memq major-mode '(c++-mode c++-ts-mode))
-      (nvp:program "g++")
-    (nvp:program "gcc")))
-
-;; run make / cmake if there are corresponding makefiles,
-;; otherwise prompt / use default
-(nvp-make-or-compile-fn nvp-c-compile
-  (:default-prompt (read-from-minibuffer "Compiler flags: "))
-  (let* ((flags (or args "-Wall -Werror -O2 -ggdb -std=c11"))
-         (file (file-name-nondirectory buffer-file-name))
-         (out (file-name-sans-extension file))
-         (command
-          (format "%s %s -o %s%s %s" (nvp-c--compiler)
-                  flags out (nvp:with-gnu/w32 ".out" ".exe") file)))
-    (unless (or args (assoc 'compile-command (buffer-local-variables)))
-      (setq-local compile-command command))
-    (funcall-interactively 'nvp-compile current-prefix-arg)))
-
-;; compile current file and run it with output to compilation buffer
-(defun nvp-c-compile-and-run (keep &optional compiler flags post-action)
-  (interactive "P")
-  (let* ((out (concat (file-name-sans-extension
-                       (file-name-nondirectory buffer-file-name))
-                      (nvp:with-gnu/w32 ".out" ".exe")))
-         (command
-          (concat (or compiler (nvp-c--compiler)) " "
-                  (or flags "-s -O3") " "
-                  buffer-file-name " -o " out "; "
-                  (or (and (eq post-action 'no-run) "")
-                      post-action (concat "./" out))
-                  (unless keep (concat "; rm " out)))))
-    (setq-local compile-command command)
-    (funcall-interactively 'nvp-compile current-prefix-arg)))
-
-;; watch error output with TEST
-(defun nvp-c-compile-watch (arg)
-  (interactive "P")
-  (let ((file (if arg (read-from-minibuffer "Output file: " "out.txt")
-                "out.txt"))
-        (out (file-name-nondirectory (nvp:c-out-file))))
-    (nvp-c-compile-and-run
-     nil nil "-O3 -DTEST -std=c11"
-     (concat "./" out " 2> " file
-             "& gnome-terminal -x watch tail -n10 " file))))
-
-(defun nvp-c-compile-debug ()
-  (interactive)
-  (nvp-c-compile-and-run 'keep nil "-Wall -Werror -ggdb3 -DDEBUG" 'no-run)
-  (call-interactively 'gdb))
-
-;; show assembly in other window, delete assembly output
-(defun nvp-c-compile-asm ()
-  (interactive)
-  (let ((compile-command (format "%s -Og -S %s" (nvp-c--compiler) buffer-file-name))
-        (asm-file
-         (concat (file-name-sans-extension buffer-file-name) ".s")))
-    (with-current-buffer (call-interactively 'nvp-compile)
-      (pop-to-buffer (current-buffer))
-      (add-hook 'compilation-finish-functions
-                (lambda (_b _s)
-                  (find-file-other-window asm-file)
-                  (add-hook 'kill-buffer-hook
-                            (lambda () (delete-file buffer-file-name))
-                            nil 'local))
-                nil 'local))))
-
-;; dump objects in compilation buffer, setup imenu for function jumps
-;; FIXME: add tab/backtab movement
-;; (autoload 'gdb-disassembly-mode "gdb-mi")
-(defun nvp-c-compile-objdump ()
-  (interactive)
-  (let ((compile-command (format "%s -Og -c %s; objdump -d %s.o; rm %s.o"
-                                 (nvp-c--compiler)
-                                 buffer-file-name
-                                 (file-name-sans-extension buffer-file-name)
-                                 (file-name-sans-extension buffer-file-name)))
-        compilation-scroll-output)
-    (with-current-buffer (call-interactively 'nvp-compile)
-      (pop-to-buffer (current-buffer))
-      ;; (gdb-disassembly-mode)
-      (objdump-mode)
-      (setq-local imenu-generic-expression '((nil "^[0-9]+ <\\([^>]+\\)>:" 1)))
-      (add-hook 'compilation-finish-functions
-                (lambda (_b _s)
-                  (search-forward "Disassembly" nil 'move 1))
-                nil 'local))))
-
-(defun nvp-c-compile-strace (&optional arg)
-  (interactive "P")
-  (let* ((prog (file-name-sans-extension buffer-file-name))
-         (strace-file (concat prog ".strace"))
-         (compile-command
-          (format "%s -Og %s -o %s; strace -o %s %s %s"
-                  (nvp-c--compiler) buffer-file-name prog strace-file prog
-                  (if arg (read-from-minibuffer
-                           "Additional arguments to function: ")
-                    "")))
-         compilation-scroll-output)
-    (with-current-buffer (call-interactively 'nvp-compile)
-      (pop-to-buffer (current-buffer))
-      (add-hook 'compilation-finish-functions
-                (lambda (_b _s)
-                  (find-file-other-window strace-file)
-                  (add-hook 'kill-buffer-hook
-                            (lambda () (delete-file buffer-file-name))
-                            nil 'local))
-                nil 'local))))
-
-;;; Environment
-(defvar nvp-c-ext-includes
-  '(("unity" (expand-file-name ".local/include/unity/src" (getenv "HOME"))
-     "/unity/src")
-    ("R"     (expand-file-name "lib/R/include" (asdf-where "R")) "/R/include")
-    ("emacs" emacs-src-dir "/emacs/src"))
-  "Paths to external includes.")
-
-;; set environment stuff for macro expanding
-;; could also set local `c-macro-preprocessor'?
-(defun nvp-c-setenv (type)
-  "Add include path of TYPE to macroexpand stuff."
-  (interactive
-   (list (ido-completing-read "Add include path for: " nvp-c-ext-includes)))
-  (cl-destructuring-bind (kind loc regex) (assoc-string type nvp-c-ext-includes)
-    (pcase kind
-      (`"R"
-       (setq-local local-abbrev-table c/R-abbrev-table)
-       (setq-local nvp-local-abbrev-table "c/R"))
-      (_ nil))
-    (nvp-env-add "C_INCLUDE_PATH" (eval loc) regex)))
-
-;; -------------------------------------------------------------------
-;;; Doxygen
-
 (defun nvp-c-toggle-doxygen ()
+  "Toggle doxygen comment."
   (interactive)
   (save-excursion
     (when (re-search-forward "\\(?://\\|/\\*+\\)" nil 'move)
@@ -317,11 +164,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
           (delete-horizontal-space)
           (insert " */"))))))
 
-;; -------------------------------------------------------------------
-;;; Align/tidy
-
-;; align comment start / end for doxygen region
 (defun nvp-c-align-doxygen (beg end)
+  "Align comment from BEG to END for doxygen region."
   (interactive "*r")
   (let (indent-tabs-mode align-to-tab-stop)
     (align-regexp beg end "\\(\\s-*\\)/\\*\\*")
@@ -331,6 +175,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 (dolist (mode '(c-mode c++-mode))
   (nvp:font-lock-add-defaults mode
     ("\\<\\(assert\\|DEBUG\\)\\s-*(" (1 font-lock-warning-face prepend))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Tree-sitter

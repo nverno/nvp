@@ -14,13 +14,18 @@
 ;;
 ;;; Code:
 
-(eval-when-compile (require 'nvp-macro))
-(nvp:req 'nvp-c 'subrs)
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'semantic/bovine/c))
 (nvp:decls :p (semantic nvp-hap) :f (semantic-tag-name semantic-tag-p))
 
-;; -------------------------------------------------------------------
-;;; Sources
 
+(defsubst nvp-c--check-semantic ()
+  (unless (and (fboundp 'semantic-active-p)
+               (semantic-active-p))
+    (user-error "Semantic not active.")))
+
+;;; Sources
 ;; sources determined by source file paths
 (defvar nvp-c-semantic-online-sources
   (let ((uri
@@ -102,14 +107,18 @@
                         (cdr (nvp-c--find-source-online file)))
          (format it tag-name))))))
 
-;; jump to function in header file
+;; associated header file name
+(defsubst nvp-c--header-file-name (&optional buffer ext)
+  (concat (nvp:no-ext buffer) (or ext ".h")))
+
 ;;;###autoload
 (defun nvp-c-semantic-jump-to-function-header ()
+  "Jump to function in header file."
   (interactive)
-  (nvp:c-check-semantic)
+  (nvp-c--check-semantic)
   (let ((func (nvp-c-semantic-function-at-point))
         ;; FIXME: use semanticdb to get include
-        (header (nvp:c--header-file-name)))
+        (header (nvp-c--header-file-name)))
     ;; don't try for static functions
     (if (and func (not (cdr func)) header)
         (progn (find-file-other-window header)

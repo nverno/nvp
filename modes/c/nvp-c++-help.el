@@ -10,9 +10,10 @@
 ;; - help determined by filepath
 ;;
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-c-semantic))
 (require 'semantic/analyze nil t)
-(nvp:req 'nvp-c 'subrs)
 (nvp:decls :f (semantic-analyze-current-context
                semantic-tag-p semantic-tag-with-position-p
                semantic-go-to-tag semantic-tag-name
@@ -54,7 +55,7 @@ POINT."
 (defun nvp-c++-semantic-browse-docs (point)
   "Browse the documentation for the C++ symbol at POINT."
   (interactive "d")
-  (nvp:c-check-semantic)
+  (nvp-c--check-semantic)
   (let* ((cpptype (nvp-c++-semantic-tag point))
          (ref (when (stringp cpptype)
 	        (car (cl-member-if (lambda (S) (string-prefix-p (car S) cpptype))
@@ -67,10 +68,7 @@ POINT."
 ;;;###autoload
 (defun nvp-c++-man (point)
   (interactive "d")
-  (nvp:c-check-semantic)
-  (unless (and (fboundp 'semantic-active-p)
-               (semantic-active-p))
-    (user-error "Semantic not active."))
+  (nvp-c--check-semantic)
   (let ((cpptype (nvp-c++-semantic-tag point)))
     (when cpptype
       (funcall-interactively 'manual-entry cpptype))))

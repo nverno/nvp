@@ -1,21 +1,13 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
-
 ;;; Commentary:
-;;
 ;; XXX: integrate with projectile
-;;
-;; packages:
-;; - https://github.com/ReanGD/emacs-multi-compile
-;; - https://github.com/defunkt/emacs/blob/master/vendor/mode-compile.el
-;; - smart-compile
-;; - https://github.com/syohex/emacs-quickrun
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)
 (nvp:decls :p (comint xterm) :f (nvp-read-switch nvp-buffer-local-set-key))
 (nvp:auto "ansi-color" 'ansi-color-apply-on-region)
 (nvp:auto "projectile" 'projectile-project-root)
+
 
 (defmacro nvp-with-compile-command (cmd &optional arg &rest body)
   "Bind `compile-command' to CMD unless ARG, if non-nil, or `compile-command'
@@ -27,66 +19,63 @@ has a file or directory local binding."
               ,cmd)))
      ,@body))
 
-;; Create compile function, check for makefiles/cmake first, otherwise
-;; execute BODY. Prefix argument executes PROMPT-ACTION, and its
-;; result is bound to ARGS, which can be used in the body.
-(cl-defmacro nvp-make-or-compile-fn
-    (name
-     (&key
-      (doc "Compile using make or cmake if found, otherwise execute body.")
-      (make-action
-       '(let ((compile-command
-               (or args
-                   (cdr (assoc 'compile-command file-local-variables-alist))
-                   "make -k")))
-          (nvp-compile)))
-      (cmake-action '(funcall-interactively #'nvp-cmake-compile))
-      (default-prompt '(read-from-minibuffer "Compile args: "))
-      (prompt-action
-       `((cond
-          ,@(and cmake-action '((have-cmake)))
-          ,@(and make-action
-                 '((have-make
-                    (format "make %s" (read-from-minibuffer "Make args: ")))))
-          (t ,default-prompt)))))
-     &rest body)
-  "Create compile function that prefers make or cmake.
+(defun nvp-compile--make-available (&optional no-make no-cmake)
+  "Return make type of current project or nil."
+  (when-let ((default-directory (nvp-project-root nil 'local)))
+    (list :make (unless no-make
+                  (memq t (mapcar #'file-exists-p
+                                  '("Makefile" "makefile" "GNUMakefile"))))
+          :cmake (unless no-cmake (file-exists-p "CMakeLists.txt")))))
 
-\(fn NAME ...)"
-  (declare (indent defun))
-  (let ((fn (if (symbolp name) name (intern name))))
-    `(progn
-       (defun ,fn (&optional arg)
-         ,doc
-         (interactive "P")
-         (let* (,@(and make-action
-                       '((have-make
-                          (memq t (mapcar #'file-exists-p
-                                          '("Makefile" "makefile" "GNUMakefile"))))))
-                ,@(and cmake-action
-                       '((have-cmake (file-exists-p "CMakeLists.txt"))))
-                (args (and arg ,@(or prompt-action
-                                     '((read-from-minibuffer "Compile args: "))))))
-           (cond
-            ,@(and cmake-action `((have-cmake ,cmake-action)))
-            ,@(and make-action `((have-make ,make-action)))
-            (t ,@body)))))))
+;;;###autoload
+(defun nvp-compile-maybe-make (&optional _prefix no-make no-cmake)
+  "Possibly compile with Make or CMake.
+Return make type when found or nil."
+  (cl-destructuring-bind (&key make cmake)
+      (nvp-compile--make-available no-make no-cmake)
+    (when-let ((type (if (and make cmake)
+                         (nvp:read-char-case "Run Make/CMake: " nil
+                           (?m "[m]ake" 'make)
+                           (?c "[c]make" 'cmake))
+                       (or make cmake))))
+      (prog1 type
+        (if (eq 'make type)
+            (let ((compile-command "make -k "))
+              (call-interactively #'nvp-compile))
+          (call-interactively #'nvp-cmake-compile))))))
+
+;;;###autoload
+(defun nvp-compile-maybe-local (&optional _prefix)
+  "Compile using file-local `compile-command' when non-nil and return t.
+Otherwise return nil."
+  (when-let ((compile-command
+              (assoc-default 'compile-command file-local-variables-alist)))
+    (prog1 t (call-interactively #'nvp-compile))))
+
+;;;###autoload
+(cl-defun nvp-compile-maybe-default (&optional prefix &key no-make no-cmake)
+  "Try to compile using file-local variables, make, or cmake.
+When successful, return non-nil."
+  (or (nvp-compile-maybe-local prefix)
+      (and (not (and no-make no-cmake))
+           (nvp-compile-maybe-make prefix no-make no-cmake))))
 
 ;;;###autoload
 (defun nvp-compile (&optional arg compile-fn)
   "Compile using COMPILE-FN with prefix ARG.
-If ARG is 3 or more \\[universal-argument] or COMPILE-FN is \\='default use
-`compile'. Otherwise, if COMPILE-FN is nil, use the first non-nil of
+If ARG is 3 or more \\[universal-argument] use `compile'.
+Otherwise, if COMPILE-FN is nil, use the first non-nil of
 `nvp-local-compile-function', `nvp-compile-default-function' or
 `nvp-compile-default'."
-  (interactive "P")
-  (setq compile-fn (or (and (eq compile-fn 'default) #'nvp-compile-default)
-                       compile-fn
-                       (pcase (prefix-numeric-value arg)
-                         ((guard (> 16)) #'compile)
-                         (_ (or (bound-and-true-p nvp-local-compile-function)
-                                (bound-and-true-p nvp-compile-default-function)
-                                #'nvp-compile-default)))))
+  (interactive "p")
+  (setq compile-fn
+        (cond (compile-fn (if (eq 'default compile-fn)
+                              #'nvp-compile-default
+                            compile-fn))
+              ((> (prefix-numeric-value arg) 16) #'compile)
+              (t (or (bound-and-true-p nvp-local-compile-function)
+                     (bound-and-true-p nvp-compile-default-function)
+                     #'nvp-compile-default))))
   (setq current-prefix-arg arg)
   (call-interactively compile-fn))
 
@@ -180,7 +169,6 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
   (interactive "p")
   (nvp-next-error-no-select (- n)))
 
-;;; Compilation-shell-minor-mode
 
 (defun nvp-compilation-next-or-complete (n)
   "Unless after comint prompt, move to Nth next error, otherwise complete."

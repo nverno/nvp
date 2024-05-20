@@ -188,6 +188,7 @@
     ("sp" "syntax-ppss" nil :system t)
     ("sr" "save-restriction" nil :system t)
     ("ss" "split-string" nil :system t)
+    ("su" "seq-uniq" nil :system t)
     ("tf" "thread-first" nil :system t)
     ("tl" "thread-last" nil :system t)
     ("to" "type-of" nil :system t)

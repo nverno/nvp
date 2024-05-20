@@ -8,31 +8,6 @@
 (defvar nvp-local-abbrev-table)
 (defvar boost-test-abbrev-table)
 
-(defsubst nvp:c-check-semantic ()
-  (unless (and (fboundp 'semantic-active-p)
-               (semantic-active-p))
-    (user-error "Semantic not active.")))
-
-;; -------------------------------------------------------------------
-;;; Basic utils
-
-(defsubst nvp:c-out-file (&optional file)
-  (concat (nvp:no-ext file) (nvp:with-gnu/w32 ".out" ".exe")))
-
-;; associated header file name
-(defsubst nvp:c--header-file-name (&optional buffer ext)
-  (concat (nvp:no-ext buffer) (or ext ".h")))
-
-;; assume first path will be root, eg ~/.local/include:etc
-(defsubst nvp:c-local-include-path (path)
-  (expand-file-name
-   path
-   (car (split-string (or (getenv "C_INCLUDE_PATH")
-                          (getenv "CPATH")) path-separator t " "))))
-
-;; -------------------------------------------------------------------
-;;; Tests
-
 ;; locally set keys in test buffers to run tests
 (defmacro nvp:c-test--buffer (type)
   `(progn
@@ -41,6 +16,8 @@
      (setq-local nvp-local-abbrev-table ,type)
      (nvp:set-local-keymap :use t
        ("C-c C-c" . nvp-c-test-run-unit-test))))
+
+(eval-when-compile (require 'nvp-c-compile))
 
 ;; generate function to run unit tests
 ;; Runs tests in current buffer or FILE if non-nil
@@ -55,21 +32,17 @@ is non-nil."
          (interactive "P")
          (let* ((default-directory (if file (file-name-directory file)
                                      default-directory))
-                (out (nvp:c-out-file file))
+                (out (nvp-c--out-file file))
                 (compile-command
                  (concat
-                  (nvp:concat
-                   (nvp:program ,(if c++ "g++" "gcc")) " " ,flags " ")
+                  (nvp:program ,(if c++ "g++" "gcc")) " " ,flags " "
                   " -o " out " " (or file buffer-file-name)
-                  (nvp:concat " " ,libs ";")
+                  (concat " " ,libs ";")
                   (or save post-compile
                       (concat "./" (file-name-nondirectory out)
                               "; rm " out))))
                 (compilation-read-command nil))
            (call-interactively 'compile))))))
-
-;; -------------------------------------------------------------------
-;;; C++
 
 (defmacro nvp:c++-test--setup-buffer ()
   `(progn

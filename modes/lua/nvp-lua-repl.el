@@ -8,6 +8,20 @@
 (nvp:decls :p (inf-lua lua) :f (inf-lua-run))
 
 
+(with-eval-after-load 'inf-lua
+  (nvp-repl-add '(lua-mode lua-ts-mode)
+    :name 'lua
+    :modes '(inf-lua-mode)
+    :init #'nvp-lua-repl-init
+    :find-fn #'inf-lua-process
+    :history-file ".lua_history"
+    :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
+    :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
+    :help-cmd #'nvp-lua-repl-help
+    :send-region #'nvp-lua-send-region
+    :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))))
+
+
 (defun nvp-lua-repl-init (&optional prefix)
   "Launch lua repl.
 With single PREFIX arg setup for debugger:
@@ -24,6 +38,7 @@ With two \\[universal-argument] prompt for lua command."
                              inf-lua-startfile))))
     (process-send-string proc (concat lua-process-init-code "\n"))
     proc))
+
 
 (defun nvp-lua-repl--sender (proc str)
   "Function for `comint-input-sender'."
@@ -42,7 +57,7 @@ With two \\[universal-argument] prompt for lua command."
   (when (fboundp 'devdocs-lookup)
     (prog1 t (funcall-interactively #'devdocs-lookup nil thing))))
 
-;; region sending from `lua-mode'
+
 (defvar lua-process-init-code
   (mapconcat
    'identity
@@ -58,46 +73,18 @@ With two \\[universal-argument] prompt for lua command."
      "  end"
      "  return x()"
      "end")
-   " "))
+   " ")
+  "Code from `lua-mode' to add source location info to strings.")
 
-(defun lua-make-lua-string (str)
-  "Convert string to Lua literal."
-  (save-match-data
-    (with-temp-buffer
-      (insert str)
-      (goto-char (point-min))
-      (while (re-search-forward "[\"'\\\t\\\n]" nil t)
-        (cond ((string= (match-string 0) "\n")
-               (replace-match "\\\\n"))
-              ((string= (match-string 0) "\t")
-               (replace-match "\\\\t"))
-              (t
-               (replace-match "\\\\\\&" t))))
-      (concat "'" (buffer-string) "'"))))
-
-;;; FIXME(5/12/24): implement `nvp-repl-send-string' function to add debug
-;;; properties
 (defun nvp-lua-send-region (beg end)
+  "Send region from BEG to END to Lua repl."
   (interactive "r")
-  (setq beg (nvp-repl--skip-shebang beg))
   (nvp-repl-send-string
    (format "__REPL_loadstring(%s, %s, %s);\n"
-           (lua-make-lua-string (buffer-substring-no-properties beg end))
-           (lua-make-lua-string (or (buffer-file-name) (buffer-name)))
+           (inf-lua-string-to-literal (buffer-substring-no-properties beg end))
+           (inf-lua-string-to-literal (or (buffer-file-name) (buffer-name)))
            (line-number-at-pos beg))))
 
-(with-eval-after-load 'inf-lua
-  (nvp-repl-add '(lua-mode lua-ts-mode)
-    :name 'lua
-    :modes '(inf-lua-mode)
-    :init #'nvp-lua-repl-init
-    :find-fn #'inf-lua-process
-    :history-file ".lua_history"
-    :cd-cmd "lfs=require 'lfs'; lfs.chdir(\"%s\")"
-    :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
-    :help-cmd #'nvp-lua-repl-help
-    :send-region #'nvp-lua-send-region
-    :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))))
 
 (provide 'nvp-lua-repl)
 ;; Local Variables:

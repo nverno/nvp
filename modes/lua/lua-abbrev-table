@@ -7,7 +7,7 @@
     ("!=" "~=" nil :system t)
 
     ("pr" "print" nil :system t)
-    ("end" "end" indent-for-tab-command :system t)
+    ("end" "end" indent-according-to-mode :system t)
     ("ret" "return" nil :system t)
     ("req" "require" nil :system t)
     ("gm" "getmetatable" nil :system t)

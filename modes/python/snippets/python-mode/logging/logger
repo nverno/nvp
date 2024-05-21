@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: logger
+# key: logger
+# --
+${1:import logging
+}${2:logger} = logging.getLogger(${3:__name__})

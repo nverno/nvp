@@ -37,9 +37,8 @@
   :pwd-cmd "import os; os.getcwd()"
   :help-cmd '(:no-arg "help()" :with-arg "help(%s)"))
 
-;;; FIXME: remove and/or convert to use treesit
-;; bounds of current python statement
-(defsubst nvp-python-statement-bounds ()
+
+(defsubst nvp-python--statement-bounds ()
   (cons (python-nav-beginning-of-statement) (python-nav-end-of-statement)))
 
 ;;;###autoload
@@ -51,11 +50,11 @@ the console."
   (interactive "P")
   (and (python-info-current-line-comment-p)
        (forward-comment (point-max)))
-  (let ((bnds (nvp-python-statement-bounds)))
+  (let ((bnds (nvp-python--statement-bounds)))
     (when (and (not (bolp))                   ; maybe directly after statement
                (equal (car bnds) (cdr bnds))) ; and not in a statement
       (setq bnds (progn (beginning-of-line)   ; so, try from beginning of line
-                        (nvp-python-statement-bounds))))
+                        (nvp-python--statement-bounds))))
     (if (and (not arg) (not (equal (car bnds) (cdr bnds))))
         (python-shell-send-region (car bnds) (cdr bnds))
       (save-excursion
@@ -73,7 +72,7 @@ the console."
 ;;;###autoload
 (defun nvp-python-eval-last-sexp (&optional arg)
   (interactive "P")
-  (let* ((bnds (nvp-python-statement-bounds))
+  (let* ((bnds (nvp-python--statement-bounds))
          (res (python-shell-send-string-no-output
                (buffer-substring-no-properties (car bnds) (cdr bnds)))))
     (when res

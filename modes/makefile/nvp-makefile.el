@@ -17,9 +17,9 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'nvp)                          ; `nvp-block-face'
 (require 'make-mode)
 (nvp:req 'nvp-makefile 'subrs)
-(require 'nvp)
 (nvp:auto "align" align-region)
 
 (nvp:decls :p (helm crm compilation) :f (nvp-makefile-indent)
@@ -90,11 +90,10 @@
 
 ;; -------------------------------------------------------------------
 ;;; Font-lock
-;; TODO:
-;; - remove string fontification in #define blocks where it is incorrect.
 
-(defface makefile-shell '((t (:inherit (org-block)))) "Shell face")
+(defface makefile-shell '((t (:inherit (nvp-block-face) :extend t))) "Shell face")
 
+;; TODO: remove string fontification in #define blocks where it is incorrect.
 ;; better to fontify using `forward-sexp' to allow for closing parens in command
 (nvp:font-lock-add-defaults 'makefile-gmake-mode
   ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
@@ -129,8 +128,8 @@
           (push target targets))))
     targets))
 
-;; read targets from source
 (defun nvp-makefile-targets--source (makefile)
+  "Return targets defined in MAKEFILE."
   (let (targets)
     (with-temp-buffer
       (insert-file-contents makefile)
@@ -180,10 +179,11 @@ using `compilation-read-command'."
   (when-let ((target (nvp-makefile-target-name)))
     (nvp-makefile-save-and-compile target)))
 
-;;; Formatting
 
 (defun nvp-makefile-format-buffer (&optional beg end)
-  (interactive (if (region-active-p) (list (region-beginning) (region-end))
+  "Indent and align things in buffer."
+  (interactive (if (region-active-p)
+                   (list (region-beginning) (region-end))
                  (list (point-min) (point-max))))
   (require 'align)
   (nvp-makefile-indent beg end)

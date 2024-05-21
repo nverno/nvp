@@ -182,14 +182,15 @@ prefix, justify as well."
    (list (and (eq 4 (prefix-numeric-value current-prefix-arg))
               (read-number "Fill column: " fill-column))
          (eq 16 (prefix-numeric-value current-prefix-arg))))
-  (let ((fill-column (or column (nvp:toggled-if fill-column most-positive-fixnum)))
-        (fill-fn (or nvp-fill-paragraph-function
-                     fill-paragraph-function
-                     #'prog-fill-reindent-defun)))
-    ;; #'fill-paragraph
-    (deactivate-mark t)
-    (funcall (if (commandp fill-fn) 'funcall-interactively 'funcall)
-             fill-fn (and justify 'fill-paragraph))))
+  (let ((fill-column (or column (nvp:toggled-if fill-column most-positive-fixnum))))
+    (if (region-active-p)
+        (call-interactively #'fill-region)
+      (let ((fill-fn (or nvp-fill-paragraph-function
+                         fill-paragraph-function
+                         #'prog-fill-reindent-defun)))
+        (deactivate-mark t)
+        (funcall (if (commandp fill-fn) 'funcall-interactively 'funcall)
+                 fill-fn (and justify 'fill-paragraph))))))
 
 (provide 'nvp-edit-aux)
 ;; Local Variables:

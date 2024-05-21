@@ -17,6 +17,7 @@
     ("ti" "table.insert" nil :system t)
     ("tm" "table.move" nil :system t)
     ("tp" "table.pack" nil :system t)
+    ("tr" "table.remove" nil :system t)
     ("ts" "table.sort" nil :system t)
     ("tu" "table.unpack" nil :system t)
 

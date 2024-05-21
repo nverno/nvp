@@ -92,7 +92,7 @@ Called from buffer generated abbrevs."
 
 
 (cl-defgeneric nvp-abbrevd-table-props
-    (&optional _mode &key tables type file buffer priority &allow-other-keys)
+    (&optional mode &key tables type file buffer priority &allow-other-keys)
   "Function to produce abbrev table properties.
 TYPE is type of abbrevs (eg. \\='functions, \\='variables).
 TABLES local abbrev table(s) for current mode.
@@ -100,7 +100,8 @@ The default uses props defined in TABLES."
   (let* ((file (or file (and buffer (buffer-file-name buffer))))
          (props (nconc (list :enable-function #'nvp-abbrev-expand-p
                              :type (or type 'functions)
-                             :priority (or priority 1))
+                             :priority (or priority 1)
+                             :mode mode)
                        (and file (list :file (abbreviate-file-name file))))))
     (when tables
       (dolist (prop '(:regexp :enable-function :case-fixed))

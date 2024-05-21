@@ -140,9 +140,9 @@ Otherwise expand the list containing point."
         :transformer #'nvp-racket-abbrev-string))
 
 (cl-defmethod nvp-abbrevd-table-props
-  ((_mode (eql racket-mode)) &rest args &key type &allow-other-keys)
+  ((mode (eql racket-mode)) &rest args &key type &allow-other-keys)
   "Abbrev table props."
-  (let ((props (apply #'cl-call-next-method nil :type type args)))
+  (let ((props (apply #'cl-call-next-method mode :type type args)))
     (plist-put props :enable-function (if (eq 'variables type)
                                           #'nvp-scheme-abbrev-var-expand-p
                                         #'nvp-scheme-abbrev-fun-expand-p))))

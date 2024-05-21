@@ -14,6 +14,7 @@
 (defvar nvp-leet-directory (expand-file-name "leetcode" (getenv "CLASSDIR")))
 (defvar-local nvp-leet--indirect-buffer nil)
 (defvar-local nvp-leet--line-skip-re nil)
+(defvar-local nvp-leet--skip-sexp nil "Non-nil if mode should skip sexps.")
 
 (defsubst nvp-leet-problem-buffer ()
   (get-buffer (leetcode--detail-buffer-name nvp-leet-problem-id)))
@@ -65,8 +66,8 @@
   (when nvp-leet-window-configuration
     (set-window-configuration nvp-leet-window-configuration)))
 
-;; narrow buffer to region that should be sent
 (defun nvp-leet--narrow-buffer ()
+  "Narrow buffer to region that should be sent."
   (when nvp-leet--line-skip-re
     (let ((skip-re (concat "^[ \t]*$\\|" nvp-leet--line-skip-re)))
       (save-excursion
@@ -74,7 +75,11 @@
         (save-match-data
           (while (and (not (eobp))
                       (looking-at skip-re))
-            (goto-char (match-end 0))
+            (if (and nvp-leet--skip-sexp (not (nvp:line-empty-p))
+                     (or (eq t nvp-leet--skip-sexp)
+                         (looking-at nvp-leet--skip-sexp)))
+                (forward-sexp 1)
+              (goto-char (match-end 0)))
             (when (or (not (bolp)) (looking-at-p "[ \t]*$"))
               (forward-line 1))))
         (narrow-to-region (point) (point-max))))))
@@ -109,7 +114,8 @@
     (unless (looking-at-p nvp-leet--line-skip-re)
       (insert (concat preamble "\n")))))
 
-(cl-defun nvp-leet-setup-lang (&key preamble skip)
+(cl-defun nvp-leet-setup-lang (&key preamble skip skip-sexp)
+  (setq-local nvp-leet--skip-sexp skip-sexp)
   (cond (preamble (nvp-leet--insert-preamble preamble skip))
         (skip (setq-local nvp-leet--line-skip-re skip))))
 
@@ -143,7 +149,8 @@
                          :skip "package"))
               ("racket" (nvp-leet-setup-lang
                          :preamble "#lang racket"
-                         :skip (rx (or "#lang" "(require"))))
+                         :skip (rx (or "#lang" "(require" "(module"))
+                         :skip-sexp t))
               ("cpp" (nvp-leet-setup-lang
                       :preamble "#include \"./ds/leet.hpp\"\nusing namespace std;"
                       :skip "^\\(?:#include\\|using namespace std\\)"))

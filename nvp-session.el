@@ -25,8 +25,9 @@
 
   (defmacro with-desktop-vars (dirname filename &rest body)
     (declare (indent defun))
-    `(let ((desktop-base-file-name (or ,filename ".emacs.desktop"))
-           (desktop-dirname ,dirname))
+    `(cl-letf (((symbol-function #'desktop-owner) #'ignore)
+               (desktop-base-file-name (or ,filename ".emacs.desktop"))
+               (desktop-dirname ,dirname))
        ,@body)))
 
 ;;;###autoload

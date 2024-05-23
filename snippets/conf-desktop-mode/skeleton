@@ -1,13 +1,15 @@
 # -*- mode: snippet -*-
-# name: init
+# name: desktop skeleton
 # key: init
 # --
+# https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
+# Exec args:
+# %f a single filename, %F list filenames, %u A single URL, %U A list of URLs
 [Desktop Entry]
+Type=${1:Application}
+Name=$2${3:
 Version=0.1
-Name=$1
-Comment=$2
-Exec=$3
-Icon=$0
 Terminal=false
-Type=Application
-Categories=Utility;Application;
+Categories=Application
+MimeType=${4:x-scheme-handler/http;x-scheme-handler/https;}}${1:$($s= "Application"
+(format "\nExec=%s" (expand-file-name "~/bin/desktop/")))}$0

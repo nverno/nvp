@@ -116,12 +116,18 @@
                  nvp-he-flex-prefix-from-re nvp-he-flex-prefix-to-re str)
           "[+:A-Za-z0-9-]*\\b"))
 
-;; Create matching function that splits prefixes by case
-;; any PRE-RE are considered part of the following char, eg. if
-;; PRE-RE is (default) "[._]?" and JOIN-RE is (default) "[[:alnum:]]*" then:
-;; t.sS => \\bt[[:alnum:]]*\\.s[[:alnum:]]*.S[[:alnum:]]*[[:alnum:]._]*\\b
-;; so it would match "this.setState"
+(defun nvp-he-flex-first-chars (str)
+  (concat "\\b"
+          (mapconcat 'identity (split-string str "" t)
+                     (concat "[[:alnum:]]*" nvp-he-flex-prefix-from-re))
+          "[[:alnum:]-:./_]*\\b"))
+
 (defun nvp-he-make-flex-camel-matcher (&optional pre-re join-re after-re)
+  "Create matching function that splits prefixes by case.
+Any PRE-RE are considered part of the following char. For example, if
+PRE-RE is \"[._]?\" and JOIN-RE is \"[[:alnum:]]*\" then:
+t.sS => \\bt[[:alnum:]]*\\.s[[:alnum:]]*.S[[:alnum:]]*[[:alnum:]._]*\\b
+So, it would match \"this.setState\"."
   (nvp:defq pre-re "[-/_.]" join-re "[[:alnum:]]*" after-re "[[:alnum:]._]*\\b")
   `(lambda (s)
      (let ((case-fold-search))
@@ -246,8 +252,8 @@ doesn't exceed LIMIT."
 (defun nvp-he-buffer-matches (regexp &optional ignore-weights ignore-comments)
   (let* ((case-fold-search nvp-he-case-fold)
          (res (nvp-he--search-buffer
-              regexp nil (point) ignore-weights (current-time)
-              nvp-he-time-limit ignore-comments)))
+               regexp nil (point) ignore-weights (current-time)
+               nvp-he-time-limit ignore-comments)))
     ;; XXX: optimization => this is sorting prior to removing all duplicates
     ;; very inefficient, but don't want to remove highest weighted candidates
     ;; prior to sort -- should modify the regexp searching to expand away from
@@ -322,31 +328,33 @@ Fuzzy matches are created by applying `nvp-he-flex-matcher' to prefix."
 (defvar-local nvp-he--current-expander #'nvp-try-expand-flex)
 
 (eval-when-compile
-  (defmacro nvp:flex-or-dabbrev (flex-fn dabbrev-fn)
+  (defmacro nvp:flex-or-dabbrev (old flex-fn dabbrev-fn)
     (declare (debug t))
     `(progn
-       (unless old
+       (unless ,old
          (setq nvp-he--current-expander
-               (if (save-excursion
-                     (search-backward-regexp
-                      nvp-he-flex-prefix-from-re (funcall nvp-he-flex-symbol-beg) t 1))
+               (if (or (eq nvp-he-flex-matcher 'nvp-he-flex-first-chars)
+                       (save-excursion
+                         (search-backward-regexp
+                          nvp-he-flex-prefix-from-re
+                          (funcall nvp-he-flex-symbol-beg) t 1)))
                    #',flex-fn
                  #',dabbrev-fn)))
        ;; (message "Using %s" nvp-he--current-expander)
-       (funcall nvp-he--current-expander old))))
+       (funcall nvp-he--current-expander ,old))))
 
 ;;;###autoload
 (defun nvp-try-expand-flex-or-dabbrev (old)
   "Try to complete symbol from current buffer using flex if prefix looks
 flexible, and dabbrev closest otherwise."
-  (nvp:flex-or-dabbrev nvp-try-expand-flex nvp-try-expand-dabbrev-closest-first))
+  (nvp:flex-or-dabbrev old nvp-try-expand-flex nvp-try-expand-dabbrev-closest-first))
 
 ;;;###autoload
 (defun nvp-try-expand-flex-or-dabbrev-other-buffers (old)
   "Try to complete symbol from other buffers using flex if prefix looks
 flexible, and dabbrev closest otherwise."
   (nvp:flex-or-dabbrev
-   nvp-try-expand-flex-other-buffers try-expand-dabbrev-all-buffers))
+   old nvp-try-expand-flex-other-buffers try-expand-dabbrev-all-buffers))
 
 (eval-when-compile
   (defmacro nvp:with-flex-vars (&rest forms)
@@ -427,9 +435,9 @@ removes itself."
 
 ;; `tags-completion-table' caches a local table
 (defvar-local nvp-he-etags-completion-table
-  (nvp-he-completion-table
-   (lambda (arg)
-     (all-completions arg (tags-completion-table (current-buffer))))))
+    (nvp-he-completion-table
+     (lambda (arg)
+       (all-completions arg (tags-completion-table (current-buffer))))))
 
 (defun nvp-try-expand-etags (old)
   "Try expansions from TAGS file."

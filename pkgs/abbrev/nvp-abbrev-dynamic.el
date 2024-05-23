@@ -13,6 +13,7 @@
 (eval-and-compile
   (require 'nvp-abbrev))
 (nvp:decls)
+(defvar nvp-abbrev-completion-need-refresh)
 
 
 (eval-when-compile
@@ -420,6 +421,7 @@ ARGS should be a plist with keys BUFFER or FILE, see `nvp-abbrevd-read'."
              (table (apply #'nvp-abbrevd--populate-table
                            defs nil (symbol-name mode) props)))
         (prog1 table
+          (setq nvp-abbrev-completion-need-refresh t)
           (nvp-abbrev-msg "Created %s abbrevs (in %s)"
                           (length defs) (abbrev-table-name table)))))))
 

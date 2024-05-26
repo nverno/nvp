@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: leet
+# key: leet
+# --
+local leet = require "leet"
+
+${2:$(nvp-yas-join-args "---@param %s" "\n")}local function $1($2)
+  $0
+end
+
+local function ${1:$(concat "test" (s-upper-camel-case (or (yas-text) "")))}()
+  local res = $1(${3:testcase})
+  local v, msg = leet.compare(res, ${4:expected})
+  assert(v, msg)
+  print("Ok")
+end
+
+${1:$(concat "test" (s-upper-camel-case (or (yas-text) "")))}()

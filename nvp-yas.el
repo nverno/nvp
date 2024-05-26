@@ -213,6 +213,16 @@ Accounts for multi-character comments by recycling the second character."
                 args)
       args)))
 
+(defun nvp-yas-join-args (fmt &optional join str seps defaults)
+  (or join (setq join "\n"))
+  (or str (setq str (yas-text)))
+  (or seps (setq seps "[ \t]*,[ \t]*"))
+  (when str
+    (concat (mapconcat (lambda (arg) (format fmt arg))
+                       (nvp-yas-split-args str seps defaults)
+                       join)
+            join)))
+
 ;; Variable that may/may not have a type, eg in a for loop
 ;; Gets variable name from string of form "i = 1" or "int i = 1"
 (defun nvp-yas-var (str)

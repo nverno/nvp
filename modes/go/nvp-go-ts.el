@@ -4,6 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'go-ts-mode nil t)
+(require 'nvp)                          ; `nvp-receiver-face'
 (nvp:decls)
 
 
@@ -34,17 +35,20 @@
      :feature 'operator
      `([,@go-ts-mode--operators] @font-lock-operator-face)
      :language 'go
+     :feature 'namespace
+     '((selector_expression
+        operand: (identifier) @nvp-receiver-face))
+     :language 'go
      :feature 'nvp
-     ;; Functions declared with var specs
-     ;; Note: patch not wanted
-     `((var_spec name: (identifier) @font-lock-function-name-face
+     `(;; XXX(5/26/24): remove after patch
+       (range_clause
+        left: (expression_list
+               (identifier) @font-lock-variable-name-face))
+       ;; Functions declared with var specs
+       ;; Note: patch not wanted
+       (var_spec name: (identifier) @font-lock-function-name-face
                  ("," name: (identifier) @font-lock-function-name-face)*
                  type: (function_type))))))
-;; :language 'go
-;; :feature 'namespace
-;; '((call_expression
-;;    function: (selector_expression
-;;               operand: (identifier) @nvp-namespace-use-face)))
 
 (nvp:treesit-add-rules go-ts-mode
   :new-fonts nvp-go-ts-font-lock-settings

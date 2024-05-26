@@ -4,6 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'rust-ts-mode nil t)
+(require 'nvp)                          ; `nvp-receiver-face'
 (nvp:decls)
 
 (defvar nvp-rust--ts-fonts
@@ -58,13 +59,14 @@
        :anchor "!" @font-lock-preprocessor-face)
       (token_repetition
        (identifier) @font-lock-preprocessor-face
-       :anchor "!" @font-lock-preprocessor-face)))
+       :anchor "!" @font-lock-preprocessor-face))
+    :language 'rust
+    :feature 'nvp
+    '((field_expression
+       value: (identifier) @nvp-receiver-face)))
 
    ;; FIXME(4/26/24): messes up attributes
    (treesit-font-lock-rules
-    ;; :language 'rust
-    ;; :feature 'nvp
-    ;; '((identifier) @font-lock-variable-use-face
     :language 'rust
     :feature 'escape-sequence
     :override t

@@ -5,9 +5,21 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 
-;; -------------------------------------------------------------------
-;;; Utils
 
+(with-eval-after-load 'nvp-repl
+  (require 'coffee-repl))
+
+;;; Lint
+(defun nvp-coffee-lint ()
+  (interactive)
+  (if (executable-find "coffeelint")
+      (let ((compile-command
+             (concat "coffeelint --color=always " buffer-file-name))
+            (compilation-read-command nil))
+        (call-interactively 'compile))
+    (user-error "coffeelint not fount, need to install")))
+
+;;; Arrow
 ;; FIXME: replace
 (defun nvp-coffee-temporary-keybinding (key cmd &optional func)
   "Temporarily bind KEY to CMD to alternate back to '_'."
@@ -17,23 +29,6 @@
      tmap)
    (or func nil)))
 
-;; -------------------------------------------------------------------
-;;; Interactive
-
-;;; Lint
-
-(defun nvp-coffee-lint ()
-  (interactive)
-  (if (executable-find "coffeelint")
-      (let ((compile-command
-             (concat "coffeelint --color=never " buffer-file-name))
-            (compilation-read-command nil))
-        (call-interactively 'compile))
-    (user-error "coffeelint not fount, need to install")
-    ;; (nvp-coffee-install)
-    ))
-
-;;; Arrow
 
 ;; alternate between '_' and ' -> '
 (defun nvp-coffee-arrow-undo ()

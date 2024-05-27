@@ -18,6 +18,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; `typescript-ts-mode'
+
 (require 'typescript-ts-mode nil t)
 
 (defun typescript-ts-mode--compile-assignment-query (lang)
@@ -150,11 +151,19 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
               (old-rules (funcall rules-fn language)))
           (set v (ecma-ts-merge-rules language (append old-rules new-rules)))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Add changes
 
 (advice-add 'typescript-ts-mode--font-lock-settings
             :around #'nvp-typescript-ts-font-lock-rules)
+
+(define-advice typescript-ts-mode--indent-rules
+    (:filter-return (rules) "no-indent-strings")
+  ;; XXX(5/27/24): send patch - '((parent-is "template_string") no-indent) isnt
+  ;; enough, eg. const tst = ` abc\ def`
+  (push '((parent-is "string_fragment") no-indent) (cdar rules))
+  rules)
 
 ;;; Add missing features once
 (nvp:treesit-add-rules typescript-ts-mode

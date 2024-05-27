@@ -75,6 +75,7 @@ Each function takes a process as an argument to test against."
   commands                        ; repl commands
   (pos-bol #'comint-line-beginning-position)
   cmd-prefix                      ; prefix char for repl commands
+  cmd-handlers                    ; handlers for added repl input commands
   help-cmd                        ; command to display REPL help
   cd-cmd                          ; command to change REPL working dir
   pwd-cmd                         ; command to get REPL working directory/buffer
@@ -362,8 +363,10 @@ well."
 ;; -------------------------------------------------------------------
 ;;; Initialize new repls
 
-(defun nvp-repl--setup-repl-buffer (&optional history-file)
+(defun nvp-repl--setup-repl-buffer (&optional history-file cmd-handlers)
   (nvp-repl-minor-mode)
+  (when cmd-handlers
+    (nvp-repl-setup-input-filter cmd-handlers))
   (when (and history-file
              (derived-mode-p 'comint-mode) ; xxx: handle for non comint modes?
              (not (and comint-input-ring-file-name
@@ -377,9 +380,9 @@ well."
   (cl-assert (buffer-live-p src-buf))
   (with-current-buffer src-buf
     (nvp-repl--source-minor-mode-on)
-    (let ((buf (nvp-with-repl (history-file)
+    (let ((buf (nvp-with-repl (history-file cmd-handlers)
                  (with-current-buffer (nvp-repl-update repl-proc src-buf repl-buf)
-                   (nvp-repl--setup-repl-buffer history-file)
+                   (nvp-repl--setup-repl-buffer history-file cmd-handlers)
                    (current-buffer)))))
       (prog1 buf
         (when and-go

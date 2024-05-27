@@ -50,6 +50,7 @@
     :help-cmd '(:no-arg ".help" :with-arg ".type %s")
     :pwd-cmd "process.cwd()"
     :cd-cmd "process.chdir(\"%s\")"
+    :cmd-handlers '(("?" . ".type %s"))
     :history-file ".ts_history"))
 
 (defun nvp-typescript-repl-get-file-mod (filename)

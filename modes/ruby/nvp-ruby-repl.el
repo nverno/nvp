@@ -21,16 +21,8 @@
 
 (defvar-local nvp-ruby-inf-command "ruby")
 
-;; translate '?' in STR
-(defun nvp-ruby--repl-input-filter (str)
-  (-if-let (help-str (and (string-match "^ *\\? *\\(.+\\)" str)
-                          (match-string 1 str)))
-      (format (assoc-default nvp-ruby-inf-command nvp-ruby-inf-help) help-str)
-    str))
-
-;; For `comint-input-sender', to handle special repl commands
-(defun nvp-ruby-inf-sender (proc str)
-  (comint-simple-send proc (nvp-ruby--repl-input-filter str)))
+(defun nvp-ruby-repl--cmd-handlers ()
+  (list (cons "?" (assoc-default nvp-ruby-inf-command nvp-ruby-inf-help))))
 
 (defun nvp-ruby-repl-init (&optional _prefix)
   (when (fboundp 'robe-mode)
@@ -44,15 +36,6 @@
                                       (string-remove-prefix
                                        "bundle exec" inf-ruby-buffer-command)))
     (get-buffer-process (current-buffer))))
-
-(defun nvp-ruby-repl-help-cmd (&optional thing)
-  (with-current-buffer (nvp-repl-buffer)
-    (--when-let (get-buffer-process (current-buffer))
-      (comint-send-string
-       it (nvp-ruby--repl-input-filter
-           (if thing (format "? %s" thing) "help")))
-      ;; Fix prompt after 'help', and dont leave as last command to repeat
-      (comint-send-string it "\nnil\n"))))
 
 (when (fboundp 'inf-ruby-mode)
   (nvp-repl-add '(ruby-mode ruby-ts-mode rspec-mode)
@@ -69,9 +52,10 @@
     :send-line #'ruby-send-line
     :eval-sexp #'ruby-send-last-sexp
     :history-file ".irb_history"
-    :help-cmd #'nvp-ruby-repl-help-cmd
+    :help-cmd '(:no-arg "help\nnil\n" :with-arg "? %s")
     :cd-cmd ".cd %s"
-    :pwd-cmd ".pwd"))
+    :pwd-cmd ".pwd"
+    :cmd-handlers #'nvp-ruby-repl--cmd-handlers))
 
 (provide 'nvp-ruby-repl)
 ;; Local Variables:

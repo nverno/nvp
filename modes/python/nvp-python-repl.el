@@ -33,6 +33,7 @@
   :send-statement #'python-shell-send-statement
   :send-file #'python-shell-send-file
   ;:eval-sexp #'nvp-python-eval-last-sexp
+  :cmd-handlers '(("?" . "help(%s)"))
   :cd-cmd "import os; os.chdir(\"%s\")"
   :pwd-cmd "import os; os.getcwd()"
   :help-cmd '(:no-arg "help()" :with-arg "help(%s)"))

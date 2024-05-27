@@ -19,8 +19,15 @@
     :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
     :help-cmd #'nvp-lua-repl-help
     :send-region #'nvp-lua-send-region
-    :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))))
+    :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))
+    :cmd-handlers '(("?" . nvp-lua-repl-help))))
 
+
+(defun nvp-lua-repl-help (&optional thing _proc)
+  "Lookup docs for THING."
+  (if (fboundp 'devdocs-lookup)
+      (prog1 t (funcall-interactively #'devdocs-lookup nil thing))
+    thing))
 
 (defun nvp-lua-repl-init (&optional prefix)
   "Launch lua repl.
@@ -38,25 +45,6 @@ With two \\[universal-argument] prompt for lua command."
                              inf-lua-startfile))))
     (process-send-string proc (concat lua-process-init-code "\n"))
     proc))
-
-
-(defun nvp-lua-repl--sender (proc str)
-  "Function for `comint-input-sender'."
-  (--if-let (string-match "^\\s-*\\?\\s-*\\(.+\\)?" str)
-      (progn (comint-delete-input)
-             (comint-simple-send proc "\n")
-             (nvp-lua-repl-help (match-string 1 str)))
-    (comint-simple-send proc str)))
-
-(defun nvp-lua-repl-add-sender ()
-  (setq-local comint-input-sender #'nvp-lua-repl--sender
-              comint-input-history-ignore (rx bol (* white) (or "#" "?"))))
-(add-hook 'inf-lua-mode-hook #'nvp-lua-repl-add-sender)
-
-(defun nvp-lua-repl-help (&optional thing)
-  (when (fboundp 'devdocs-lookup)
-    (prog1 t (funcall-interactively #'devdocs-lookup nil thing))))
-
 
 (defvar lua-process-init-code
   (mapconcat

@@ -46,3 +46,10 @@
   '()
   "Skewer-Repl Abbrevs."
   :parents (list js-mode-abbrev-table))
+
+(define-abbrev-table 'ts-repl-mode-abbrev-table
+  '(("cd" "process.chdir" nil :system t)
+    ("pwd" "process.cwd" nil :system t)
+    ("ls" "fs.readdirSync" nil :system t))
+  "Ts-Repl-Mode Abbrevs."
+  :parents (list typescript-mode-abbrev-table))

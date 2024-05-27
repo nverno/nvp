@@ -94,7 +94,7 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
                   (public_field_definition
                    name: [(private_property_identifier) (property_identifier)]
                    @font-lock-property-name-face
-                   value: (_))
+                   value: (_) :?)
 
                   ;; Missing call: this.#_func()
                   (call_expression

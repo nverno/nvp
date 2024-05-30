@@ -66,7 +66,8 @@
     (lsp-help-mode               . nvp-link-lsp-help)
     (markdown-mode               . nvp-link-markdown)
     (dired-mode                  . nvp-link-dired)
-    (completion-list-mode        . nvp-link-completion-list))
+    (completion-list-mode        . nvp-link-completion-list)
+    (noman-mode                  . nvp-link-noman))
   "Mapping of `major-mode' to ace-link actions.")
 
 (defvar nvp-ace-link-minor-mode-actions
@@ -95,11 +96,13 @@
                    finally return (< a b)))))
 
 ;; collect overlays in window that have PROP
-(defun nvp-link--overlay-collect (prop)
+(defun nvp-link--overlay-collect (prop &optional value)
   (let (res)
     (dolist (overlay (overlays-in (window-start) (window-end)))
-      (if (overlay-get overlay prop)
-          (push (overlay-start overlay) res)))
+      (--when-let (overlay-get overlay prop)
+        (when (or (null value)
+                  (eq value it))
+          (push (overlay-start overlay) res))))
     (nreverse res)))
 
 (defun nvp-link-maybe-imenu ()
@@ -292,6 +295,13 @@ With \\[universal-argument] call in next visible window."
 (nvp:define-link nvp-link-completion-list
   :collector (--map (cdr it) (nvp-link--completion-collect))
   (and it (choose-completion it)))
+
+;;; Noman
+(nvp:define-link nvp-link-noman
+  :collector (nvp-link--overlay-collect 'action 'noman--follow-link)
+  (when (numberp it)
+    (goto-char (1+ it))
+    (call-interactively #'push-button)))
 
 ;; use actual links in agenda buffer - the default is just the same
 ;; as `avy-goto-line'

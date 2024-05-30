@@ -159,6 +159,7 @@
    ["Documentation"
     ("m" "Man" man)
     ("M" "Consult man" consult-man)
+    ("N" "Noman" noman :if (lambda () (fboundp 'noman)))
     ("i" "Info" nvp-info-menu)
     ("d" "Devdocs" nvp-devdocs-menu :transient transient--do-replace
      :if (lambda () (fboundp 'devdocs-lookup)))

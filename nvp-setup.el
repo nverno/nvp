@@ -30,10 +30,10 @@
   (and path (setq path (substitute-env-in-file-name path)))
   (or (nvp:with-gnu/w32
           (cl-loop for p in (delq nil (cons path nvp-program-search-paths))
-             do (let ((f (expand-file-name name p)))
-                  (and (file-exists-p f)
-                       (file-executable-p f)
-                       (cl-return f))))
+                   do (let ((f (expand-file-name name p)))
+                        (and (file-exists-p f)
+                             (file-executable-p f)
+                             (cl-return f))))
         (bound-and-true-p (intern (nvp:w32-program name))))
       (executable-find name)))
 
@@ -73,11 +73,20 @@
            (t nil))))
     ;; return directory
     (if path
-      (if (file-directory-p path) path
-        (directory-file-name (file-name-directory path))))))
+        (if (file-directory-p path) path
+          (directory-file-name (file-name-directory path))))))
 
 (eval-when-compile
+  (defsubst nvp:setup-normalize-mode (mode &optional major)
+    (setq mode (if mode (nvp:as-symbol mode) major))
+    ;; use the standard mode when remapped,
+    ;; eg. use python-mode instead of python-ts-mode
+    (if-let ((remap (and mode (rassq mode major-mode-remap-alist))))
+        (car remap)
+      mode))
+
   (defmacro nvp:setup-local-hooks (mode-vars)
+    "Setq-local mode hook variables."
     (macroexp-progn
      `(,@(cl-loop for hook in nvp-mode-function-hooks
                   for slot = (replace-regexp-in-string
@@ -86,7 +95,7 @@
                   collect `(setq ,hook (,getter ,mode-vars)))))))
 
 ;;;###autoload
-(cl-defun nvp-setup-local
+(cl-defun nvp-setup-mode
     (name          ; package root dir name
      &rest kwargs  ; rest of KWARGS passed to `nvp-mode-vars-make'
      &key
@@ -95,53 +104,60 @@
      snippets-dir  ; snippet dir to use instead of mode name
      dir           ; mode root directory
      abbr-table    ; abbrev table to use for mode
+     &allow-other-keys
+     &aux args)
+  "Register mode vars."
+  (setq args (nvp:arglist-remove-kwargs '(:mode :snippets-dir) kwargs))
+  (setq mode (nvp:setup-normalize-mode mode))
+  (or dir (setq dir (nvp-setup-package-root name)))
+  (unless (and dir (file-exists-p dir))
+    (user-error "Setup for '%s' failed to find package root" (nvp:as-string name)))
+  (unless abbr-file
+    (setq abbr-file (ignore-errors (car (directory-files dir t "abbrev-table")))))
+  (or abbr-table (setq abbr-table (symbol-name mode)))
+  (let* ((yas-dir (or (ignore-errors (car (directory-files dir t "snippets")))
+                      nvp/snippet))
+         (mode-snips
+          (expand-file-name (or snippets-dir (symbol-name mode)) yas-dir)))
+    ;; Initialize/load mode stuff
+    ;; - ensure load-path
+    ;; - load snippets
+    ;; - load abbrevs
+    (when (file-exists-p yas-dir)
+      (unless (member yas-dir yas-snippet-dirs)
+        (push yas-dir yas-snippet-dirs)
+        (yas-load-directory yas-dir)))
+    (cl-pushnew dir load-path :test #'string=)
+    (ignore-errors (quietly-read-abbrev-file abbr-file))
+    (puthash mode (apply #'nvp-mode-vars-make
+                         `( :dir ,dir
+                            :snippets ,mode-snips
+                            :abbr-file ,abbr-file
+                            :abbr-table ,abbr-table
+                            ,@args))
+             nvp-mode-cache)))
+(put 'nvp-setup-mode 'lisp-indent-function 'defun)
+
+;;;###autoload
+(cl-defun nvp-setup-local
+    (name          ; package root dir name
+     &rest kwargs  ; rest of KWARGS passed to `nvp-mode-setup'
+     &key
+     mode          ; major-mode or key for hash
      override      ; override previous entries
      post-fn       ; function called after setup
      &allow-other-keys
      &aux args)
   "Setup local variables for helper package - abbrevs, snippets, root dir."
-  (setq args (nvp:arglist-remove-kwargs
-              '(:mode :snippets-dir :override :post-fn) kwargs))
-  (setq mode (if mode (nvp:as-symbol mode) major-mode))
-  ;; use the standard mode when remapped,
-  ;; eg. use python-mode instead of python-ts-mode
-  (when-let ((remap (rassq mode major-mode-remap-alist)))
-    (setq mode (car remap))
-          ;; `info-lookup' checks this before tring `major-mode'
-    (setq-local info-lookup-mode mode))
-  (setq nvp-mode-name mode)
-  (let ((mvars (gethash mode nvp-mode-cache nil)) yas-dir mode-snips)
-    ;; initialization that happens once
-    (unless (and (not override) mvars)
-      (or dir (setq dir (nvp-setup-package-root name)))
-      (if (not (and dir (file-exists-p dir)))
-          (user-error
-           "Setup for '%s' failed to find package root" (nvp:as-string name))
-        (unless abbr-file
-          (setq abbr-file (ignore-errors (car (directory-files dir t "abbrev-table")))))
-        ;; top-level snippets dir to load
-        (setq yas-dir (or (ignore-errors (car (directory-files dir t "snippets")))
-                          nvp/snippet))
-        (setq mode-snips
-              (expand-file-name (or snippets-dir (symbol-name mode)) yas-dir))
-        (or abbr-table (setq abbr-table (symbol-name mode)))
-        (setq mvars (apply #'nvp-mode-vars-make `( :dir ,dir
-                                                   :snippets ,mode-snips
-                                                   :abbr-file ,abbr-file
-                                                   :abbr-table ,abbr-table
-                                                   ,@args)))
-        ;; Initialize/load mode stuff
-        ;; - ensure load-path
-        ;; - load snippets
-        ;; - load abbrevs
-        (when (file-exists-p yas-dir)
-          (unless (member yas-dir yas-snippet-dirs)
-            (push yas-dir yas-snippet-dirs)
-            (yas-load-directory yas-dir)))
-        (cl-pushnew dir load-path :test #'string=)
-        (ignore-errors (quietly-read-abbrev-file abbr-file))
-        (puthash mode mvars nvp-mode-cache)))
-    ;; initialization that happens every time
+  (setq args (nvp:arglist-remove-kwargs '(:override :post-fn) kwargs))
+  (setq mode (nvp:setup-normalize-mode mode major-mode)
+        nvp-mode-name mode)
+  ;; `info-lookup' checks this before tring `major-mode'
+  (setq-local info-lookup-mode mode)
+  (let ((mvars (gethash mode nvp-mode-cache nil)))
+    (when (or override (not mvars))
+      (setq mvars (apply #'nvp-setup-mode name `(:mode ,mode ,@args))))
+    ;; set local vars
     (pcase-let (((cl-struct nvp-mode-vars snippets abbr-file abbr-table) mvars))
       (setq nvp-mode-snippet-dir snippets
             nvp-local-abbrev-file abbr-file

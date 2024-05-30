@@ -6,7 +6,7 @@
 (require 'xref)
 (nvp:decls :p (go))
 
-(with-eval-after-load 'go-ts-mode (require 'nvp-go-ts))
+
 (with-eval-after-load 'nvp-repl (require 'nvp-go-repl))
 
 (define-advice godef-jump (:after (&rest _args) "pulse")

@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: randomNumberInRange
-# key: f_randomNumberInRange
-# contributor: 30-seconds
-# --
-const randomNumberInRange = (min, max) => Math.random() * (max - min) + min;

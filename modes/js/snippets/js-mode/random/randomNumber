@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: random number
+# key: randomNumber
+# --
+const randomNumber = (min, max) => ${1:Math.random()} * (max - min) + min;

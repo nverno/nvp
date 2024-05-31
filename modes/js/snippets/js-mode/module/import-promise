@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: import
+# name: import promise
 # key: impp
 # --
 import('$1')

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: select random key from object
+# key: randomSample
+# --
+const randomSample = (arr: any[], n = Infinity) => {
+  return randomIntArray(0, arr.length - 1,
+    randomInt(0, Math.min(arr.length - 1, n))).map(i => arr[i]);
+};

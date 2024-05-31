@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: truthCheckCollection
-# key: f_truthCheckCollection
-# contributor: 30-seconds
-# --
-const truthCheckCollection = (collection, pre) => collection.every(obj => obj[pre]);

@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: select random key from object
+# key: randomKey
+# --
+const randomKey = obj => {
+  const keys = Object.keys(obj);
+  return keys[randomInt(0, keys.length - 1)];
+};

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Convert piece of HTML text to valid id name
+# key: f_toValidId
+# contributor: 30-seconds
+# --
+export const convertToValidId = str => toKebabCase(stripHTMLTags(str));

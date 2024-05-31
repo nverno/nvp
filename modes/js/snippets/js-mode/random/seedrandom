@@ -1,0 +1,19 @@
+# -*- mode: snippet -*-
+# name: setup reproducible randoms with seedrandom
+# key: seedrandom
+# --
+import seedrandom from 'seedrandom';
+import { faker } from '@faker-js/faker';
+
+// Reproducible randoms - replace Math.random() with rng() in generators
+const SEED = 1647142082296;
+const useSeededRNG = true;
+const seedDate = new Date(SEED);
+const randomTimestampSeed = seedDate.toISOString();
+
+let rng = seedrandom();
+if (useSeededRNG) {
+  rng = seedrandom(randomTimestampSeed);
+  // setRandom(rng);
+  faker.seed(seedDate.getTime());
+}

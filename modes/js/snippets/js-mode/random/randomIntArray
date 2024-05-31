@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: make array of random ints
+# key: randomIntArray
+# --
+const randomIntArray = (min, max, n = 1) => Array
+  .from({ length: n }, () => Math.floor(Math.random() * (max - min + 1)) + min);

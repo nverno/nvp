@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: escapeHTML
+# key: f_escapeHTML
+# contributor: 30-seconds
+# --
+const escapeHTML = str => str
+  .replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag] || tag));${1:
+export const escapeHTML = str =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/>/g, '&gt;')
+    .replace(/</g, '&lt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');}

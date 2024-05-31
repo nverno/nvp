@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: number is odd
-# key: odd
-# --
-${x} % 2 != 0

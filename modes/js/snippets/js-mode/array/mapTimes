@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: map function over range
+# key: maptimes
+# --
+const mapTimes = (n, fn) => Array.from({ length: n }, (x, i) => i).map(i => fn(i));

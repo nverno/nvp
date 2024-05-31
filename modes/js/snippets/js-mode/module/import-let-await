@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: import
+# name: import await
 # key: impa
 # --
 let ${1:module} = await import('$2');

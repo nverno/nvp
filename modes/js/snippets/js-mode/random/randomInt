@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: random int
+# key: randomInt
+# --
+const randomInt = (min, max) => Math.floor(${1:Math.random()} * (max - min + 1)) + min;

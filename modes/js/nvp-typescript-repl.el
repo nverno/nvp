@@ -40,8 +40,8 @@
     :modes '(ts-repl-mode)
     :init #'ts-repl-run
     :find-fn #'ts-repl-process
+    :send-region #'ts-repl-send-region
     ;; :send-string #'ts-send-string
-    ;; :send-region #'ts-send-region
     ;; :send-sexp #'ts-send-last-sexp
     ;; :send-buffer #'ts-send-buffer
     ;; :send-file #'ts-load-file

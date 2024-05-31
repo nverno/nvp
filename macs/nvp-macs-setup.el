@@ -141,7 +141,7 @@ If program is not found at compile time, fallback to runtime search."
                     (symbol-name sym))
                    (_ name)))
                 ((stringp name) name)
-                (t (user-error "%S unmatched")))))
+                (t (user-error "%S unmatched" name)))))
     (when path
       (setq path (eval path)))
     (let ((ct `(eval-when-compile

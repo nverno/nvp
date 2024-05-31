@@ -79,6 +79,7 @@ Each function takes a process as an argument to test against."
   help-cmd                        ; command to display REPL help
   cd-cmd                          ; command to change REPL working dir
   pwd-cmd                         ; command to get REPL working directory/buffer
+  config-cmd                      ; show/set repl config
   ;; History
   history-file
   ;; set internally

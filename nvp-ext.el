@@ -15,7 +15,7 @@
   "Halt all running vagrant boxes in `vms'.  With prefix, show output
 in buffer *vagrant-status*."
   (interactive "P")
-  (unless nvp/vms (user-error "'nvp/vms' is nil" nvp/vms))
+  (or nvp/vms (user-error "'nvp/vms' is nil"))
   (nvp:with-process "bash"
     :proc-bufname (and arg "*vagrant-status*")
     :proc-args ((expand-file-name "vms/vagrant-shizzle" nvp/bin) "-l" nvp/vms "-K"))

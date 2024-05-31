@@ -52,6 +52,7 @@
    ["Manage Repls"
     (":r" "Remove" nvp-repl-remove)]
    ["Settings"
+    ("c" "Config" nvp-repl-config)
     (":d" nvp-repl--set-display)
     (":l" "Load startup file"
      nvp-repl-config-menu--toggle-nvp-repl-load-startup-file)]])

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: if one-liner
-# key: iif
+# key: if-
 # --
 if ${1:cond} then ${2:body} end

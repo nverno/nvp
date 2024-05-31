@@ -87,6 +87,12 @@ Prompt with \\[universal-argument]."
   (nvp:call-repl-cmd help-cmd (thing)
     (and and-go (pop-to-buffer (nvp-repl-buffer)))))
 
+;;;###autoload
+(defun nvp-repl-config (&optional alternative and-go)
+  "Show repl config."
+  (interactive (list current-prefix-arg))
+  (nvp:call-repl-cmd config-cmd (alternative)
+    (and and-go (pop-to-buffer (nvp-repl-buffer)))))
 
 (provide 'nvp-repl-commands)
 ;; Local Variables:

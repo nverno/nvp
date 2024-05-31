@@ -48,22 +48,30 @@
     :commands nvp-typescript--repl-commands
     :cmd-prefix ?.
     :help-cmd '(:no-arg ".help" :with-arg ".type %s")
+    :config-cmd #'nvp-typescript-repl-config
     :pwd-cmd "process.cwd()"
     :cd-cmd "process.chdir(\"%s\")"
     :cmd-handlers '(("?" . ".type %s"))
     :history-file ".ts_history"))
 
-(defun nvp-typescript-repl-get-file-mod (filename)
-  (concat "import * as "
-          (replace-regexp-in-string
-           "^[0-9_]+" ""
-           (replace-regexp-in-string "-" "_" (file-name-base filename)))
-          " from \""
-          (file-name-base filename)
-          "\"\n"))
+(defun nvp-typescript-repl-config (&optional external &rest _)
+  (if (and (null external)
+           (eq major-mode 'ts-repl-mode))
+      (nvp-repl-send-string
+       (concat "console.table(util.inspect.styles);"
+               "console.table(util.inspect.defaultOptions)"))
+    (shell-command "npx ts-node --showConfig")))
 
-;;; FIXME: remove
-(advice-add 'ts-comint--get-load-file-cmd :override #'nvp-typescript-repl-get-file-mod)
+;; (defun nvp-typescript-repl-get-file-mod (filename)
+;;   (concat "import * as "
+;;           (replace-regexp-in-string
+;;            "^[0-9_]+" ""
+;;            (replace-regexp-in-string "-" "_" (file-name-base filename)))
+;;           " from \""
+;;           (file-name-base filename)
+;;           "\"\n"))
+;; ;;; FIXME: remove
+;; (advice-add 'ts-comint--get-load-file-cmd :override #'nvp-typescript-repl-get-file-mod)
 
 (provide 'nvp-typescript-repl)
 ;; Local Variables:

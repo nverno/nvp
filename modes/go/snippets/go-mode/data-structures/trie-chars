@@ -1,0 +1,44 @@
+# -*- mode: snippet -*-
+# name: Trie - lowercase chars
+# key: d_trie
+# --
+type Trie struct {
+	isLeaf bool
+	ch     []*Trie${1:
+	word   string}
+}
+func makeTrie() *Trie {
+	trie := new(Trie)
+	trie.ch = make([]*Trie, 26)
+	return trie
+}
+func (trie *Trie) insert(s string) {
+	ptr := trie
+	for _, c := range s {
+		idx := c - 'a'
+		if ptr.ch[idx] == nil {
+			ptr.ch[idx] = makeTrie()
+		}
+		ptr = ptr.ch[idx]
+	}
+	ptr.isLeaf = true${1:$($s? "
+	ptr.word = s")}
+}
+func (trie *Trie) getNode(s string) (*Trie, bool) {
+	ptr := trie
+	for _, c := range s {
+		idx := c - 'a'
+		if ptr.ch[idx] == nil {
+			return nil, false
+		}
+		ptr = ptr.ch[idx]
+	}
+	if ptr.isLeaf {
+		return ptr, true
+	}
+	return nil, false
+}
+func (trie *Trie) contains(s string) bool {
+	_, ok := trie.getNode(s)
+	return ok
+}

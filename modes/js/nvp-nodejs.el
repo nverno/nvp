@@ -45,6 +45,8 @@
     :send-sexp #'nodejs-repl-send-last-expression
     :commands nvp-nodejs--repl-commands
     :cmd-prefix ?.
+    ;; TODO: reuse but use different command for external config
+    ;; :config-cmd #'nvp-typescript-repl-config
     :help-cmd ".help"
     :pwd-cmd "process.cwd()"
     :cd-cmd "process.chdir(\"%s\")"))

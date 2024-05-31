@@ -24,7 +24,7 @@ class Trie {
     node.leaf = true;
   }
 
-  search(word: string): boolean {
+  contains(word: string): boolean {
     let node: Trie = this;
     for (let c of word) {
       let idx = c.charCodeAt(0) - 'a'.charCodeAt(0);

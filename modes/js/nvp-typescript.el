@@ -114,20 +114,20 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
                   (required_parameter
                    (rest_pattern (identifier) @font-lock-variable-name-face)))
                 
-                :language language
-                :feature 'assignment
-                '((assignment_expression
-                   left: (identifier) @font-lock-variable-name-face)
-                  (assignment_expression
-                   left: (_) @typescript-ts-mode--fontify-assignment-lhs)
-                  (augmented_assignment_expression
-                   left: (identifier) @font-lock-variable-name-face)
-                  (augmented_assignment_expression
-                   left: (_) @typescript-ts-mode--fontify-assignment-lhs)
-                  (update_expression
-                   argument: (identifier) @font-lock-variable-name-face)
-                  (update_expression
-                   argument: (_) @typescript-ts-mode--fontify-assignment-lhs))
+                ;; :language language
+                ;; :feature 'assignment
+                ;; '((assignment_expression
+                ;;    left: (identifier) @font-lock-variable-name-face)
+                ;;   (assignment_expression
+                ;;    left: (_) @typescript-ts-mode--fontify-assignment-lhs)
+                ;;   (augmented_assignment_expression
+                ;;    left: (identifier) @font-lock-variable-name-face)
+                ;;   (augmented_assignment_expression
+                ;;    left: (_) @typescript-ts-mode--fontify-assignment-lhs)
+                ;;   (update_expression
+                ;;    argument: (identifier) @font-lock-variable-name-face)
+                ;;   (update_expression
+                ;;    argument: (_) @typescript-ts-mode--fontify-assignment-lhs))
 
                 :language language
                 :feature 'ts-extension

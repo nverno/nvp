@@ -1,0 +1,35 @@
+# -*- mode: snippet -*-
+# name: trie chars
+# key: d_trie
+# --
+class Trie
+  attr_accessor :ch, :is_leaf${1:, :word}
+
+  def initialize
+    @ch = Array.new(26)
+    @is_leaf = false${1:$($s? "
+    @word = nil")}
+  end
+
+  def insert(s)
+    p = self
+    s.each_char do |c|
+      idx = c.ord - 'a'.ord
+      p.ch[idx] = Trie.new unless p.ch[idx]
+      p = p.ch[idx]
+    end
+    p.is_leaf = true${1:$($s? "
+    p.word = s")}
+  end
+
+  def contains(s)
+    p = self
+    s.each_char do |c|
+      idx = c.ord - 'a'.ord
+      return false unless p.ch[idx]
+
+      p = p.ch[idx]
+    end
+    p.is_leaf
+  end
+end

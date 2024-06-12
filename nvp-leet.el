@@ -2,29 +2,23 @@
 ;;
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'let-alist))
-(require 'leetcode nil t)
+(eval-when-compile (require 'nvp-macro))
 (require 'f)
+(require 'leetcode nil t)
 (nvp:decls :f (nvp-leetcode-hook) :p (leetcode))
 
+
+(defvar nvp-leet-root-directory (expand-file-name "leetcode" (getenv "CLASSDIR")))
 (defvar-local nvp-leet-problem-id nil)
-(defvar-local nvp-leet-window-configuration nil)
-(defvar nvp-leet-directory (expand-file-name "leetcode" (getenv "CLASSDIR")))
-(defvar-local nvp-leet--indirect-buffer nil)
 (defvar-local nvp-leet--line-skip-re nil)
 (defvar-local nvp-leet--skip-sexp nil "Non-nil if mode should skip sexps.")
-
-(defsubst nvp-leet-problem-buffer ()
-  (get-buffer (leetcode--detail-buffer-name nvp-leet-problem-id)))
 
 ;; -------------------------------------------------------------------
 ;;; Test cases
 
 (defun nvp-leet--collect-examples ()
   "Collect example inputs from problem description."
-  (-when-let (buf (nvp-leet-problem-buffer))
+  (-when-let (buf (leetcode-detail-buffer nvp-leet-problem-id))
     (let (inputs)
       (with-current-buffer buf
         (save-excursion
@@ -50,8 +44,7 @@
   "Add all examples from description to tests."
   (interactive)
   (-when-let (inputs (nvp-leet--collect-examples))
-    (with-current-buffer
-        (get-buffer-create (leetcode--testcase-buffer-name nvp-leet-problem-id))
+    (with-current-buffer (leetcode-test-buffer nvp-leet-problem-id t)
       (save-excursion
         (goto-char (point-max))
         (cl-loop for input in inputs
@@ -60,15 +53,10 @@
                       (unless (bolp) (insert "\n"))
                       (insert (mapconcat 'identity input "\n"))))))))
 
-(defun nvp-leet-reset-layout ()
-  "Reset window layout to initial solving layout."
-  (interactive)
-  (when nvp-leet-window-configuration
-    (set-window-configuration nvp-leet-window-configuration)))
-
-(defun nvp-leet--narrow-buffer ()
-  "Narrow buffer to region that should be sent."
-  (when nvp-leet--line-skip-re
+(defun nvp-leet-buffer-code ()
+  "Return buffer's code that should be sent."
+  (if (null nvp-leet--line-skip-re)
+      (buffer-substring-no-properties (point-min) (point-max))
     (let ((skip-re (concat "^[ \t]*$\\|" nvp-leet--line-skip-re)))
       (save-excursion
         (goto-char (point-min))
@@ -82,30 +70,41 @@
               (goto-char (match-end 0)))
             (when (or (not (bolp)) (looking-at-p "[ \t]*$"))
               (forward-line 1))))
-        (narrow-to-region (point) (point-max))))))
+        (buffer-substring-no-properties (point) (point-max))))))
+
+(setq leetcode-buffer-code-function #'nvp-leet-buffer-code)
 
 (defun nvp-leet-pre-submit-hook ()
-  (nvp-leet--narrow-buffer)
-  (nvp-leet-reset-layout)
-  (save-current-buffer
-    (with-selected-window
-        (display-buffer (leetcode--result-buffer-name nvp-leet-problem-id))
+  (leetcode-restore-layout)
+  (--when-let (leetcode-result-buffer nvp-leet-problem-id)
+    (with-selected-window (get-buffer-window it)
       (enlarge-window 25))))
+(add-hook 'leetcode-before-submit-hook #'nvp-leet-pre-submit-hook)
 
-(nvp:advise-commands #'nvp-leet-pre-submit-hook :before (leetcode-try leetcode-submit))
 
 ;; -------------------------------------------------------------------
 ;;; Language setups
 
-(defun nvp@leet-set-language ()
+(defun nvp-leet-rust-filename (problem-id title-slug suffix)
+  (format "p%04d_%s%s" problem-id
+          (replace-regexp-in-string "-" "_" title-slug)
+          suffix))
+
+(defun nvp-leet-set-language-hook (lang)
   (let ((dir (expand-file-name
-              (pcase leetcode-prefer-language
+              (pcase lang
                 ("java" "java/src")
                 ("golang" "golang/src")
+                ("python" "python3")
+                ("rust" "rust/src/problem")
                 (_ leetcode-prefer-language))
-              nvp-leet-directory)))
-    (setq leetcode-directory dir)))
-(advice-add 'leetcode-set-prefer-language :after #'nvp@leet-set-language)
+              nvp-leet-root-directory)))
+    (setq leetcode-directory dir))
+  (setq leetcode-filename-function
+        (if (string= lang "rust")
+            #'nvp-leet-rust-filename
+          #'leetcode--filename-default)))
+(add-hook 'leetcode-after-set-language-hook #'nvp-leet-set-language-hook)
 
 (defun nvp-leet--insert-preamble (preamble &optional skip-prefix)
   (setq-local nvp-leet--line-skip-re (or skip-prefix (regexp-quote preamble)))
@@ -119,7 +118,7 @@
   (cond (preamble (nvp-leet--insert-preamble preamble skip))
         (skip (setq-local nvp-leet--line-skip-re skip))))
 
-(defun nvp-leet--setup-format-buffer ()
+(defun nvp-leet--format-buffer ()
   (indent-region (point-min) (point-max))
   (goto-char (point-max))
   (forward-line -1)
@@ -129,190 +128,108 @@
 
 (declare-function nvp-ruby-yardocify-types "nvp-ruby")
 
+;;; TODO(6/14/24): convert to use hook
 (defun nvp@leet-setup (orig-fn problem problem-info)
-  (let ((title (leetcode-problem-title problem-info)))
+  (let ((problem-id (leetcode-problem-id problem-info)))
     (funcall orig-fn problem problem-info)
-    (let* ((buf-name (leetcode--get-code-buffer-name title))
-           (buf (and buf-name (get-buffer buf-name))))
-      (when buf
-        (with-current-buffer buf
-          (save-restriction
-            (widen)
-            (nvp-leet-minor-mode 1)
-            (setq nvp-leet-problem-id (leetcode-problem-id problem-info))
-            (pcase leetcode-prefer-language
-              ("rust" (let ((buffer buf))
-                        (run-with-timer
-                         0.2 nil (lambda () (nvp-leet-setup-rust buffer 'and-go)))))
-              ("golang" (nvp-leet-setup-lang
-                         :preamble "package leetcode"
-                         :skip "package"))
-              ("racket" (nvp-leet-setup-lang
-                         :preamble "#lang racket"
-                         :skip (rx (or "#lang" "(require" "(module"))
-                         :skip-sexp t))
-              ("cpp" (nvp-leet-setup-lang
-                      :preamble "#include \"./ds/leet.hpp\"\nusing namespace std;"
-                      :skip "^\\(?:#include\\|using namespace std\\)"))
-              ("c" (nvp-leet-setup-lang
-                    :preamble "#include \"./ds/leet.h\""
-                    :skip "#include"))
-              ("typescript" (nvp-leet-setup-lang :skip "import"))
-              ("javascript" (nvp-leet-setup-lang :skip "import"))
-              ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max))
-               (nvp-leet-setup-lang :skip "require_relative"))
-              ("python3" (nvp-leet-setup-lang
-                          :preamble "from typing import List, Optional"
-                          :skip (rx "from " (or "typing" ".leet" "leet"))))
-              (_ nil)))
-          (nvp-leet--setup-format-buffer))))))
+    (when-let ((buf (leetcode-code-buffer problem-id)))
+      (with-current-buffer buf
+        (save-restriction
+          (widen)
+          (nvp-leet-minor-mode 1)
+          (setq nvp-leet-problem-id problem-id)
+          (pcase leetcode-prefer-language
+            ("rust"
+             (nvp-leet--rust-add-mod buf)
+             (nvp-leet-setup-lang
+              :preamble "use crate::Solution;"
+              :skip "use crate"))
+            ("golang" (nvp-leet-setup-lang
+                       :preamble "package leetcode"
+                       :skip "package"))
+            ("racket" (nvp-leet-setup-lang
+                       :preamble "#lang racket"
+                       :skip (rx (or "#lang" "(require" "(module"))
+                       :skip-sexp t))
+            ("cpp" (nvp-leet-setup-lang
+                    :preamble "#include \"./ds/leet.hpp\"\nusing namespace std;"
+                    :skip "^\\(?:#include\\|using namespace std\\)"))
+            ("c" (nvp-leet-setup-lang
+                  :preamble "#include \"./ds/leet.h\""
+                  :skip "#include"))
+            ("typescript" (nvp-leet-setup-lang :skip "import"))
+            ("javascript" (nvp-leet-setup-lang :skip "import"))
+            ("ruby" (nvp-ruby-yardocify-types (point-min) (point-max))
+             (nvp-leet-setup-lang :skip "require_relative"))
+            ("python3" (nvp-leet-setup-lang
+                        :preamble "from typing import List, Optional"
+                        :skip (rx "from " (or "typing" ".leet" "leet"))))
+            (_ nil)))
+        (nvp-leet--format-buffer)))))
 
-(advice-add #'leetcode--start-coding :around #'nvp@leet-setup)
+;; (add-hook 'leetcode-solution-minor-mode-hook #'nvp@leet-setup)
+(advice-add 'leetcode--start-coding :around #'nvp@leet-setup)
 
 ;;; Sql
 (defun nvp-leet-start-coding-database ()
   (interactive)
-  (if (eq major-mode 'leetcode--problem-detail-mode)
-      (let ((leetcode-directory (expand-file-name "sql" nvp-leet-directory)))
-        (save-excursion
-          (goto-char (next-button (point-min)))
-          (call-interactively #'push-button)))
-    (user-error "Call from leetcode detail buffer.")))
+  (unless (derived-mode-p 'leetcode-detail-mode)
+    (user-error "Call from leetcode detail buffer"))
+  (let ((leetcode-directory (expand-file-name "sql" nvp-leet-root-directory)))
+    (save-excursion
+      (goto-char (next-button (point-min)))
+      (call-interactively #'push-button))))
 
 ;;; Rust
-(eval-when-compile
-  (defsubst nvp:leet--rust-mod-name (buf)
-    (format "p%s" (replace-regexp-in-string "-" "_" (f-base (buffer-name buf))))))
+(defun nvp-leet--rust-add-mod (&optional buffer)
+  (or buffer (setq buffer (current-buffer)))
+  (run-with-timer
+   0.2 nil
+   (lambda ()
+     (let* ((modname (string-remove-suffix ".rs" (buffer-name buffer)))
+            (modfile (expand-file-name "mod.rs" leetcode-directory)))
+       (with-current-buffer (find-file-noselect modfile)
+         (goto-char (point-min))
+         (let ((line (format "mod %s;" modname)))
+           (unless (save-excursion (re-search-forward line nil t 1))
+             (insert (concat line "\n"))
+             (save-buffer)))
+         (kill-buffer))))))
 
-(defun nvp-leet--rust-add-mod (modname modfile)
-  (with-current-buffer (find-file-noselect modfile)
-    (goto-char (point-min))
-    (unless (save-excursion (search-forward modname nil t))
-      (let ((line (format "mod %s;" modname)))
-        (unless (save-excursion (re-search-forward line nil t 1))
-          (insert (concat line "\n"))
-          (save-buffer))))
-    (kill-buffer)))
-
-(defun nvp-leet-setup-rust (buffer &optional and-go)
-  (interactive (list (current-buffer) t))
-  (let* ((file (buffer-file-name buffer))
-         (dir (if file (f-dirname file)
-                (expand-file-name "rust" nvp-leet-directory)))
-         (srcdir (expand-file-name "src/problem" dir))
-         (modname (nvp:leet--rust-mod-name buffer))
-         (modfile (expand-file-name "mod.rs" srcdir))
-         (fname (expand-file-name (concat modname ".rs") srcdir))
-         (contents (with-current-buffer buffer (buffer-string)))
-         (problem-id nvp-leet-problem-id))
-    (nvp-leet--rust-add-mod modname modfile)
-    (with-current-buffer (find-file fname)
-      (nvp-leet-indirect-minor-mode 1)
-      (setq nvp-leet--indirect-buffer buffer
-            nvp-leet-problem-id problem-id)
-      (and (eq (point-min) (point-max))
-           (insert contents))
-      (nvp-leet-setup-lang :preamble "use crate::Solution;" :skip "use crate")
-      (nvp-leet--setup-format-buffer)
-      (if and-go (pop-to-buffer (current-buffer))
-        (current-buffer)))))
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode
 
 (defun nvp-leet-browse ()
   (interactive)
-  (with-current-buffer (nvp-leet-problem-buffer)
-    (save-excursion
-      (goto-char (point-min))
-      (forward-button 2)
-      (push-button))))
+  (if-let ((buf (leetcode-detail-buffer nvp-leet-problem-id)))
+      (with-current-buffer buf
+        (save-excursion
+          (goto-char (point-min))
+          (forward-button 2)
+          (push-button)))
+    (user-error
+     "No leetcode detail buffer found for problem '%S'" nvp-leet-problem-id)))
 
-(eval-and-compile
+(eval-when-compile
   (defconst nvp--bindings-leet
     '(("a" . nvp-leet-add-examples)
       ("d" . leetcode-daily)
       ("e" . nvp-leet-add-examples)
       ("q" . leetcode-quit)
-      ("r" . nvp-leet-reset-layout)
+      ("r" . leetcode-restore-layout)
       ("w" . nvp-leet-browse))))
 
 (nvp:bindings nvp-leet-minor-mode nil :create t
   :prefix-key "<f2>L"
-  :with (leet)
+  :with leet
   ("s" . leetcode-submit)
   ("t" . leetcode-try))
 (define-key nvp-leet-minor-mode-map (kbd "C-c C-c") #'leetcode-try)
 
 (define-minor-mode nvp-leet-minor-mode "Leetcode minor mode."
   :lighter " LC"
-  :keymap nvp-leet-minor-mode-map
-  (unless nvp-leet-window-configuration
-    (setq nvp-leet-window-configuration (current-window-configuration))))
-
-;;; Indirect minor mode
-
-(defun nvp-leet--indirect-call (fn)
-  (cl-assert (buffer-live-p nvp-leet--indirect-buffer))
-  (let ((content (save-restriction
-                   (nvp-leet--narrow-buffer)
-                   (buffer-substring-no-properties (point-min) (point-max)))))
-    (nvp-leet-reset-layout)
-    (with-current-buffer nvp-leet--indirect-buffer
-      (erase-buffer)
-      (insert content)
-      (set-buffer-modified-p nil)
-      (let ((nvp-leet-window-configuration nil))
-        (funcall fn)))))
-
-(defun nvp-leet-indirect-try ()
-  (interactive)
-  (nvp-leet--indirect-call #'leetcode-try))
-
-(defun nvp-leet-indirect-submit ()
-  (interactive)
-  (nvp-leet--indirect-call #'leetcode-submit))
-
-(nvp:bindings nvp-leet-indirect-minor-mode nil :create t
-  :prefix-key "<f2>L"
-  :with (leet)
-  ("s" . nvp-leet-indirect-submit)
-  ("t" . nvp-leet-indirect-try))
-(define-key nvp-leet-indirect-minor-mode-map
-            (kbd "C-c C-c") #'nvp-leet-indirect-try)
-
-(nvp:bindings nvp-leet-indirect-minor-mode-map nil
-  :create t
-  :prefix-key "<f2> L"
-  ("t" . nvp-leet-indirect-try)
-  ("s" . nvp-leet-indirect-submit))
-
-(defun nvp-leet--indirect-cleanup ()
-  (when (buffer-live-p nvp-leet--indirect-buffer)
-    (--when-let (buffer-file-name nvp-leet--indirect-buffer)
-      (and (file-exists-p it)
-           (delete-file it delete-by-moving-to-trash)))
-    (with-current-buffer nvp-leet--indirect-buffer
-      (set-buffer-modified-p nil)
-      (kill-buffer nvp-leet--indirect-buffer))))
-
-(define-minor-mode nvp-leet-indirect-minor-mode
-  "Leetcode indirect minor mode."
-  :lighter " LCi"
-  :keymap nvp-leet-indirect-minor-mode-map
-  (when nvp-leet-indirect-minor-mode
-    (setq nvp-leet-window-configuration (current-window-configuration))
-    (add-hook 'kill-buffer-hook #'nvp-leet--indirect-cleanup nil t)))
-
-;;; Results
-(define-minor-mode nvp-leet-result-mode "Leetcode results."
-  :lighter " LR")
-
-(defun nvp@leet-show-results (_result problem-id)
-  (with-current-buffer (get-buffer-create (leetcode--result-buffer-name problem-id))
-    (nvp-leet-result-mode 1)))
-
-(advice-add #'leetcode--show-submission-result :after #'nvp@leet-show-results)
+  :keymap nvp-leet-minor-mode-map)
 
 (provide 'nvp-leet)
 ;; Local Variables:

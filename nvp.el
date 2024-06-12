@@ -169,7 +169,7 @@ called from minibuffer, or nil.")
   :group 'nvp)
 
 (defface nvp-namespace-face
-  '((t ( :inherit font-lock-type-face :slant normal)))
+  '((t (:inherit font-lock-type-face :slant normal)))
   ;; :underline (:color "#845" :style line :position t)
   "Face for namespaces."
   :group 'nvp)

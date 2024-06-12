@@ -38,7 +38,7 @@
                 slime-trace-dialog-mode
                 helpful-mode
                 ;; added
-                leetcode--problem-detail-mode
+                leetcode-detail-mode
                 shellcheck-mode
                 process-menu-mode
                 shortdoc-mode

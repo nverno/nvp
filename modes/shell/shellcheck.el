@@ -78,13 +78,12 @@ This interactively adds a shellcheck comment directive in the source."
   (interactive)
   (kill-buffer (current-buffer)))
 
-(defvar shellcheck-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map "q"           #'shellcheck-kill-buffer)
-    (define-key map "d"           #'shellcheck-disable-this-error)
-    (define-key map (kbd "M-s-n") #'forward-button)
-    (define-key map (kbd "M-s-p") #'backward-button)
-    map))
+(defvar-keymap shellcheck-mode-map
+  :doc "Keymap active in `shellcheck-mode'."
+  "q" #'shellcheck-kill-buffer
+  "d" #'shellcheck-disable-this-error
+  "M-s-n" #'forward-button
+  "M-s-p" #'backward-button)
 
 (defun shellcheck-filter ()
   "Link shellcheck codes to wiki pages in compilation output."
@@ -106,11 +105,10 @@ From `shellcheck-mode' buffers, warning/error messages are linked to both the
 source code location and the associated documentation for each code on the wiki.
 Calling `shellcheck-disable-this-error' will add the appropriate directive to
 the source buffer, save it, and recompile."
-  (make-local-variable 'compilation-error-regexp-alist)
-  (make-local-variable 'compilation-error-regexp-alist-alist)
-  (setq compilation-error-regexp-alist-alist (list shellcheck-compilation-regexp)
-        compilation-error-regexp-alist (list (car shellcheck-compilation-regexp)))
-  (setq-local compilation-skip-threshold 0)
+  (setq-local
+   compilation-error-regexp-alist-alist (list shellcheck-compilation-regexp)
+   compilation-error-regexp-alist (list (car shellcheck-compilation-regexp))
+   compilation-skip-threshold 0)
   (add-hook 'compilation-filter-hook #'shellcheck-filter nil t)
   (add-hook 'compilation-finish-functions #'shellcheck-compilation-finish nil t))
 

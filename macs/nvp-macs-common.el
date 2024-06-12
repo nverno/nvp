@@ -311,7 +311,7 @@ are aliases to symbols prefixed by \"nvp-\"."
           (rec fns)))))
 
 ;; -------------------------------------------------------------------
-;;; Anamorphs
+;;; Anaphoric macros
 ;; See ch. 14 of On Lisp
 
 (defmacro --mapcc (form list &optional sep)
@@ -319,7 +319,7 @@ are aliases to symbols prefixed by \"nvp-\"."
   `(mapconcat (lambda (it) (ignore it) ,form) ,list ,(or sep " ")))
 
 (defmacro nvp:awhile (expr &rest body)
-  "Anamorphic `while'."
+  "Anaphoric `while'."
   (declare (indent 1) (debug t))
   (nvp:with-gensyms (flag)
     `(let ((,flag t))
@@ -330,7 +330,7 @@ are aliases to symbols prefixed by \"nvp-\"."
              (setq ,flag nil)))))))
 
 (defmacro nvp:acond (&rest clauses)
-  "Anamorphic `cond'."
+  "Anaphoric `cond'."
   (declare (debug cond))
   (unless (null clauses)
     (let ((cl1 (car clauses))
@@ -341,7 +341,7 @@ are aliases to symbols prefixed by \"nvp-\"."
            (nvp:acond ,@(cdr clauses)))))))
 
 (defmacro nvp:alambda (params &rest body)
-  "Anamorphic `lambda', binding the function to `self'"
+  "Anaphoric `lambda', binding the function to `self'"
   (declare (indent defun) (debug t))
   `(cl-labels ((self ,params ,@body))
      #'self))

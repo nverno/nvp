@@ -308,7 +308,7 @@
 (define-minor-mode nvp-leet-result-mode "Leetcode results."
   :lighter " LR")
 
-(defun nvp@leet-show-results (problem-id _submission-detail)
+(defun nvp@leet-show-results (_result problem-id)
   (with-current-buffer (get-buffer-create (leetcode--result-buffer-name problem-id))
     (nvp-leet-result-mode 1)))
 

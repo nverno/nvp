@@ -100,10 +100,9 @@
                 (_ leetcode-prefer-language))
               nvp-leet-root-directory)))
     (setq leetcode-directory dir))
-  (setq leetcode-filename-function
-        (if (string= lang "rust")
-            #'nvp-leet-rust-filename
-          #'leetcode--filename-default)))
+  (setq leetcode-filename-function (if (string= lang "rust")
+                                       #'nvp-leet-rust-filename
+                                     #'leetcode--filename-default)))
 (add-hook 'leetcode-after-set-language-hook #'nvp-leet-set-language-hook)
 
 (defun nvp-leet--insert-preamble (preamble &optional skip-prefix)
@@ -126,6 +125,21 @@
     (forward-line -1))
   (indent-according-to-mode))
 
+(defun nvp-leet--rust-add-mod (&optional buffer)
+  (or buffer (setq buffer (current-buffer)))
+  (run-with-timer
+   0.2 nil
+   (lambda ()
+     (let* ((modname (string-remove-suffix ".rs" (buffer-name buffer)))
+            (modfile (expand-file-name "mod.rs" leetcode-directory)))
+       (with-current-buffer (find-file-noselect modfile)
+         (goto-char (point-min))
+         (let ((line (format "mod %s;" modname)))
+           (unless (save-excursion (re-search-forward line nil t 1))
+             (insert (concat line "\n"))
+             (save-buffer)))
+         (kill-buffer))))))
+
 (declare-function nvp-ruby-yardocify-types "nvp-ruby")
 
 ;;; TODO(6/14/24): convert to use hook
@@ -136,7 +150,7 @@
       (with-current-buffer buf
         (save-restriction
           (widen)
-          (nvp-leet-minor-mode 1)
+          ;; (nvp-leet-minor-mode 1)
           (setq nvp-leet-problem-id problem-id)
           (pcase leetcode-prefer-language
             ("rust"
@@ -179,57 +193,6 @@
     (save-excursion
       (goto-char (next-button (point-min)))
       (call-interactively #'push-button))))
-
-;;; Rust
-(defun nvp-leet--rust-add-mod (&optional buffer)
-  (or buffer (setq buffer (current-buffer)))
-  (run-with-timer
-   0.2 nil
-   (lambda ()
-     (let* ((modname (string-remove-suffix ".rs" (buffer-name buffer)))
-            (modfile (expand-file-name "mod.rs" leetcode-directory)))
-       (with-current-buffer (find-file-noselect modfile)
-         (goto-char (point-min))
-         (let ((line (format "mod %s;" modname)))
-           (unless (save-excursion (re-search-forward line nil t 1))
-             (insert (concat line "\n"))
-             (save-buffer)))
-         (kill-buffer))))))
-
-
-;; -------------------------------------------------------------------
-;;; Minor mode
-
-(defun nvp-leet-browse ()
-  (interactive)
-  (if-let ((buf (leetcode-detail-buffer nvp-leet-problem-id)))
-      (with-current-buffer buf
-        (save-excursion
-          (goto-char (point-min))
-          (forward-button 2)
-          (push-button)))
-    (user-error
-     "No leetcode detail buffer found for problem '%S'" nvp-leet-problem-id)))
-
-(eval-when-compile
-  (defconst nvp--bindings-leet
-    '(("a" . nvp-leet-add-examples)
-      ("d" . leetcode-daily)
-      ("e" . nvp-leet-add-examples)
-      ("q" . leetcode-quit)
-      ("r" . leetcode-restore-layout)
-      ("w" . nvp-leet-browse))))
-
-(nvp:bindings nvp-leet-minor-mode nil :create t
-  :prefix-key "<f2>L"
-  :with leet
-  ("s" . leetcode-submit)
-  ("t" . leetcode-try))
-(define-key nvp-leet-minor-mode-map (kbd "C-c C-c") #'leetcode-try)
-
-(define-minor-mode nvp-leet-minor-mode "Leetcode minor mode."
-  :lighter " LC"
-  :keymap nvp-leet-minor-mode-map)
 
 (provide 'nvp-leet)
 ;; Local Variables:

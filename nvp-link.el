@@ -73,7 +73,8 @@
 (defvar nvp-ace-link-minor-mode-actions
   '((compilation-shell-minor-mode . ace-link-compilation)
     (nvp-mark-minor-mode          . nvp-link-mark)
-    (lsp-mode                     . nvp-link-lsp))
+    (lsp-mode                     . nvp-link-lsp)
+    (goto-address-mode            . ace-link-addr))
   "Mapping of minor modes to ace-link actions.")
 
 (defun nvp-ace-link-action (&optional buffer)
@@ -86,8 +87,8 @@
                       (cdr action)))
                nvp-ace-link-minor-mode-actions)))
 
-;; sort windows left-to-right: see `winner-sorted-window-list'
 (defun nvp-sort-window-list (windows)
+  "Sort windows left-to-right, see `winner-sorted-window-list'."
   (sort windows
         (lambda (x y)
           (cl-loop for a in (window-edges x)
@@ -95,15 +96,27 @@
                    while (= a b)
                    finally return (< a b)))))
 
-;; collect overlays in window that have PROP
 (defun nvp-link--overlay-collect (prop &optional value)
+  "Collect overlay positions in the visbile window that have PROP with VALUE."
   (let (res)
-    (dolist (overlay (overlays-in (window-start) (window-end)))
+    (dolist (overlay (overlays-in (window-start) (window-end nil t)))
       (--when-let (overlay-get overlay prop)
         (when (or (null value)
                   (eq value it))
           (push (overlay-start overlay) res))))
     (nreverse res)))
+
+(nvp:decl widget-forward)
+(defun nvp-link--widget-collect ()
+  "Collect widget positions in the visible window."
+  (save-excursion
+    (nvp:with-restriction 'visible
+      (goto-char (point-min))
+      (let ((pos (point)) res)
+        (while (setq pos (progn (widget-forward 1)
+                                (and (> (point) pos) (point))))
+          (push pos res))
+        (nreverse res)))))
 
 (defun nvp-link-maybe-imenu ()
   (and nvp-link-default-imenu
@@ -170,22 +183,11 @@ With \\[universal-argument] call in next visible window."
          ,@action))))
 
 ;;; Mark
-(nvp:decl nvp-mark-goto-marker-at-point)
+(nvp:decl nvp-mark-goto-marker-at-point nvp-mark--collect-marks)
 (defvar nvp-mark--regex)
 
-(defun nvp-link--mark-collect ()
-  (let (res)
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward nvp-mark--regex nil 'move)
-        (push (cons (buffer-substring-no-properties
-                     (match-beginning 0) (match-end 0))
-                    (match-beginning 0))
-              res)))
-    (nreverse res)))
-
 (nvp:define-link nvp-link-mark
-  :collector (--map (cdr it) (nvp-link--mark-collect)) nil
+  :collector (nvp-mark--collect-marks)
   (and it (funcall #'nvp-mark-goto-marker-at-point)))
 
 ;;; Dired
@@ -269,7 +271,7 @@ With \\[universal-argument] call in next visible window."
 (defun nvp-link--imenu-collect ()
   (when (bound-and-true-p imenu--index-alist)
     (let ((beg (window-start))
-          (end (window-end)))
+          (end (window-end nil t)))
       (--keep (let ((pos (marker-position (cdr it))))
                 (and (>= pos beg) (<= pos end) pos))
               (nvp-imenu-cleaned-alist)))))
@@ -302,6 +304,15 @@ With \\[universal-argument] call in next visible window."
   (when (numberp it)
     (goto-char (1+ it))
     (call-interactively #'push-button)))
+
+;;; Widgets
+(nvp:decl widget-apply-action)
+(nvp:define-link nvp-link-widget
+  :collector (nvp-link--widget-collect)
+  (when (number-or-marker-p it)
+    (goto-char it)
+    (--when-let (get-char-property it 'button)
+      (widget-apply-action it))))
 
 ;; use actual links in agenda buffer - the default is just the same
 ;; as `avy-goto-line'

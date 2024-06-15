@@ -28,7 +28,7 @@ Defaults to `defun' at point."
 ;;; Sorting
 
 (eval-when-compile
-  (defmacro nvp-sort:defaults (start end &rest body)
+  (defmacro nvp:sort-region (start end &rest body)
     "Sort region between START and END by BODY, using defaults and indent
 region afterward."
     (declare (indent defun) (debug (sexp sexp &rest form)))
@@ -45,7 +45,7 @@ region afterward."
   "Sort lines b/w START and END by first alphanumeric characters.
 With prefix sort in REVERSE."
   (interactive `(,@(nvp:tap-or-region 'bdwim 'buffer :pulse t) ,current-prefix-arg))
-  (nvp-sort:defaults start end
+  (nvp:sort-region start end
     (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
 
 ;;;###autoload
@@ -78,7 +78,7 @@ then using `compare-buffer-substrings'."
 With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
-  (nvp-sort:defaults start end
+  (nvp:sort-region start end
     (sort-regexp-fields reverse (nvp:concat "\\(?:"
                                             "\\s\"\\S\"*\\s\"" ;quoted
                                             "\\|\\sw+\\|\\s_+" ;word/symbol
@@ -91,7 +91,7 @@ With prefix sort in REVERSE."
   "Sort alist by car of each element in list at point or b/w START and END."
   (interactive (nvp:with-region start end 'alist :pulse t :widen t
                  (list start end current-prefix-arg)))
-  (nvp-sort:defaults start end
+  (nvp:sort-region start end
     (sort-regexp-fields
      reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)"
      (if (looking-at-p "'") (+ 2 start) (1+ start)) ;skip over outer '('
@@ -99,26 +99,34 @@ With prefix sort in REVERSE."
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)
+  "Sort words (non-whitespace considered a word) in region."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
-  (nvp-sort:defaults start end
+  (nvp:sort-region start end
     (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
 
 ;;;###autoload
 (defun nvp-sort-symbols (start end &optional reverse)
+  "Sort symbols in region."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
-  (nvp-sort:defaults start end
+  (nvp:sort-region start end
     (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
 
 ;;;###autoload(autoload 'nvp-sort-menu "nvp-edit" nil t)
 (transient-define-prefix nvp-sort-menu ()
   [["Lines"
-    ("f" "First word" nvp-sort-lines-first-word)
-    ("s" "First symbol" nvp-sort-lines-first-symbol)]
+    ("l" "Alphabetically" sort-lines)
+    ("f" "By field" sort-fields)
+    ("r" "By regex field" sort-regexp-fields)
+    ("n" "By numeric field" sort-numeric-fields)
+    ("F" "By first word" nvp-sort-lines-first-word)
+    ("s" "By first symbol" nvp-sort-lines-first-symbol)
+    ("c" "Columns" sort-columns)
+    ("R" "Reverse lines" reverse-region)]
    ["List"
     ("a" "Alist" nvp-sort-alist)
-    ("l" "List" nvp-sort-list)]
+    ("L" "List" nvp-sort-list)]
    ["Region"
     ("S" "Symbols" nvp-sort-symbols)
     ("w" "Words" nvp-sort-words)]])

@@ -5,9 +5,7 @@
 (require 'org)
 (require 'nvp)
 (nvp:req 'nvp-org 'subrs)
-(nvp:decls :f (outline-show-subtree
-               org-element-parse-buffer org-element-map org-element-property
-               org-tempo-setup))
+(nvp:decls :p (outline org))
 (nvp:auto "nvp-parse" 'nvp-parse-current-function)
 
 ;;;###autoload
@@ -49,7 +47,7 @@ See `org-element-all-elements' for possible item types."
               (when (< level (org-element-property :level el))
                 (or (and items
                          (cl-loop for sym in items
-                            nconc (list sym (org-element-property sym el))))
+                                  nconc (list sym (org-element-property sym el))))
                     (list
                      :raw-value (org-element-property :raw-value el)  ;text
                      :begin (org-element-property :begin el)          ;start
@@ -85,9 +83,10 @@ Return cons of \\='(name                           . raw-link)."
 ;; Link format:
 ;; nvp:library ( '?' section-or-def ( '&' 'type=' (v|f|s) )? )?
 (org-link-set-parameters "nvp"
-                         :store #'nvp-org-nvp-store-link
-                         :follow #'nvp-org-nvp-open
-                         :export #'nvp-org-nvp-export)
+  :store #'nvp-org-nvp-store-link
+  :follow #'nvp-org-nvp-open
+  :export #'nvp-org-nvp-export)
+(put 'org-link-set-parameters 'lisp-indent-function 1)
 
 (defvar nvp-org-nvp-re
   "\\([^?]+\\)\\(?:[?]\\([^&]+\\)\\)?\\(?:&type=\\([vfs]\\)\\)?"
@@ -224,8 +223,8 @@ Return cons of \\='(name                           . raw-link)."
   "Create clock tasks for headers."
   (let ((buf (plist-get headers :buffer)))
     (cl-loop for h in (plist-get headers :headers)
-       when (string= "TODO" (plist-get h :todo-keyword))
-       do (org-clock-history-push (plist-get h :begin) buf))))
+             when (string= "TODO" (plist-get h :todo-keyword))
+             do (org-clock-history-push (plist-get h :begin) buf))))
 
 ;; generate a list of TODO tasks nested under Tasks heading from file
 ;;;###autoload

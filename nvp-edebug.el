@@ -249,6 +249,7 @@
     ("e" "On error" toggle-debug-on-error)
     ("q" "On quit" toggle-debug-on-quit)
     ("y" "On entry" debug-on-entry)
+    ("Y" "Off entry" cancel-debug-on-entry)
     ("v" "Var. watch" debug-on-variable-change)
     ("V" "Cancel var." cancel-debug-on-variable-change)
     ("D" "Debugger" debug)]

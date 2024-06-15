@@ -27,8 +27,8 @@
       (web-mode-element-next)
     (web-mode-element-end)))
 
-;; jump to link when in an <a> or <link> tag
 (defun nvp-web-href-at-point ()
+  "Jump to link when in an <a> or <link> tag."
   (save-excursion
     (pcase (bound-and-true-p web-mode-engine)
       (`jinja2 (nvp-jinja-url-for))
@@ -41,11 +41,13 @@
            (and (re-search-forward "href=\"\\(\[^\"\]+\\)" (line-end-position) 'move)
                 (match-string 1)))))))
 
-(defun nvp-web-find-href (&optional href)
+(defun nvp-web-follow-href (&optional href)
+  "Find file of HREF in current block."
   (interactive (list (nvp-web-href-at-point)))
-  (when href
-    (xref-push-marker-stack)
-    (find-file (expand-file-name href (projectile-project-root)))))
+  (unless href
+    (user-error "No href found here"))
+  (xref-push-marker-stack)
+  (find-file (expand-file-name href (projectile-project-root))))
 
 ;; -------------------------------------------------------------------
 ;;; Help 

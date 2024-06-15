@@ -307,19 +307,6 @@ With prefix jump this window, otherwise `find-file-other-window'."
     (setq prefix-arg current-prefix-arg)
     (call-interactively #'jump-to-register)))
 
-;;;###autoload
-(defun nvp-jump-to-scratch (mode action)
-  "Jump to scratch buffer in MODE (default current `major-mode').
-With prefix, pop other window, with double prefix, prompt for MODE."
-  (interactive
-   (list (nvp:prefix 16 (intern (nvp-read-mode)) major-mode) current-prefix-arg))
-  (nvp-window-configuration-save)
-  (let ((buff (get-buffer-create "*scratch*")))
-    (with-current-buffer buff
-      (setq default-directory nvp/scratch)
-      (nvp-scratch-switch-modes mode 'activate)
-      (nvp-display-location buff :buffer action))))
-
 (provide 'nvp-jump)
 ;; Local Variables:
 ;; coding: utf-8

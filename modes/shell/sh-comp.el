@@ -406,6 +406,7 @@ sourced files."
 
 ;;;###autoload
 (defun nvp-sh-find-definitions ()
+  "Find definitions using `sh-comp' backend explicitly."
   (interactive)
   (let* ((xref-backend-functions '(sh-comp--xref-backend t))
          (thing (xref-backend-identifier-at-point 'sh-comp)))

@@ -146,18 +146,8 @@ Replacement for `sh-shell-process', which see."
                      (save-window-excursion
                        (shell bufname))))))))))
 
-;; overwrite the default function value
+;; Overwrite the default function value
 (setf (symbol-function 'sh-shell-process) 'nvp-sh-get-process)
-
-;; FIXME: remove, this is covered by generic REPL interface
-;; send selected region and step
-(defun nvp-sh-send-region (beg end)
-  "Send selected region from BEG to END to associated shell process."
-  (interactive "r")
-  (comint-send-string
-   (nvp-sh-get-process) (concat (buffer-substring beg end) "\n"))
-  (goto-char end))
-
 
 ;;; Generic Implementations
 

@@ -472,6 +472,10 @@ Do BODY when treesit mode is available."
          (progn
            ,@body)))))
 
+(defsubst nvp:treesit-remove-feature (feature)
+  (cl-loop for level in treesit-font-lock-feature-list
+           collect (delq feature level)))
+
 (cl-defmacro nvp:treesit-add-rules
     (mode
      &rest body
@@ -522,8 +526,10 @@ Conflicting features are overriden by those in NEW-FONTS."
                                     (append ,new-fonts ,post-fonts))))
                    (cl-pushnew v (cadddr treesit-font-lock-feature-list)))))
            ;; Remove 'error feature
-           (setf (cadddr treesit-font-lock-feature-list)
-                 (delq 'error (cadddr treesit-font-lock-feature-list)))
+           (setf treesit-font-lock-feature-list
+                 (nvp:treesit-remove-feature 'error))
+           ;; (setf (cadddr treesit-font-lock-feature-list)
+           ;;       (delq 'error (cadddr treesit-font-lock-feature-list)))
            ,@body
            (treesit-font-lock-recompute-features nil nil ',parser)
            (,mode))))))

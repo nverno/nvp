@@ -275,7 +275,8 @@ multiple repeat maps."
             ((eq ':wrap-pref (car defs)) (setq wrap-pref (cadr defs)))
             (t (push (car defs) kwargs)
                (push (cadr defs) kwargs)))
-      (setq defs (cddr defs)))
+      (setq defs (cddr defs))
+      (setq kwargs (nreverse kwargs)))
     (let (wrapped)
       (when wrap
         (let ((prefix (or wrap-pref (nvp:wrap--prefix (symbol-name name)))))
@@ -288,7 +289,7 @@ multiple repeat maps."
           (dolist (fn wrap)
             (push `(nvp:wrap-command ,fn ,prefix 'no-this-command) wrapped))))
       `(progn ,@wrapped
-              (defvar-keymap ,name ,@(append (nreverse kwargs) defs))))))
+              (defvar-keymap ,name ,@(append kwargs defs))))))
 
 ;; option to check for override?
 ;; do (when-let ((curr (lookup-key (current-global-map) `(nvp:kbd ,k)))))

@@ -1403,7 +1403,7 @@ and set `this-command' to nil so opposite happens next time."
   `(or (not (eq this-command ,cmd))
        (eq last-command ,cmd)
        (and transient-mark-mode mark-active)
-       (push-mark)))
+       (push-mark nil t)))
 
 (defmacro nvp:@push-mark (sym)
   `(define-advice ,sym (:before (&rest _) "push-mark")

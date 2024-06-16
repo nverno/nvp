@@ -255,7 +255,7 @@ menu entry."
 (defmacro nvp:wrap-command (def &optional prefix no-this-command no-interactive)
   "Creates wrapper for command DEF. Useful when advising a command for
 repetition that may get called by other unwanted routines."
-  (let ((name (nvp:wrap--make-name def prefix)))
+  (let ((name (nvp:wrap--make-name (nvp:unquote def) prefix)))
     `(defun ,name ()
        (interactive)
        ,@(unless no-this-command
@@ -269,17 +269,26 @@ repetition that may get called by other unwanted routines."
 These specify commands to be wrapped to allow for commands to be part of
 multiple repeat maps."
   (declare (indent defun) (debug t))
-  (let (wrap wrap-pref)
-    (nvp:skip-keywords defs (wrap wrap-pref) (:wrap :wrap-pref))
+  (let (wrap wrap-pref kwargs)
+    (while (keywordp (car defs))
+      (cond ((eq ':wrap (car defs)) (setq wrap (cadr defs)))
+            ((eq ':wrap-pref (car defs)) (setq wrap-pref (cadr defs)))
+            (t (push (car defs) kwargs)
+               (push (cadr defs) kwargs)))
+      (setq defs (cddr defs)))
     (let (wrapped)
       (when wrap
         (let ((prefix (or wrap-pref (nvp:wrap--prefix (symbol-name name)))))
+          (when (eq t wrap)
+            (setq wrap
+                  (cl-loop for (_k b) on defs by #'cddr
+                           for name = (symbol-name (nvp:unquote b))
+                           collect (intern (string-remove-prefix
+                                            (concat prefix "/") name)))))
           (dolist (fn wrap)
-            (push
-             `(nvp:wrap-command ,fn ,prefix 'no-this-command)
-             wrapped))))
+            (push `(nvp:wrap-command ,fn ,prefix 'no-this-command) wrapped))))
       `(progn ,@wrapped
-              (defvar-keymap ,name ,@defs)))))
+              (defvar-keymap ,name ,@(append (nreverse kwargs) defs))))))
 
 ;; option to check for override?
 ;; do (when-let ((curr (lookup-key (current-global-map) `(nvp:kbd ,k)))))

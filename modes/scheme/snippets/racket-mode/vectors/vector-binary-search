@@ -1,8 +1,8 @@
 # -*- mode: snippet -*-
-# name: upper-bound
-# key: ub
+# name: vector binary search
+# key: bsearch
 # --
-${1:(define (binary-search vec value compare-fn)
+(define (binary-search vec value compare-fn)
   (let loop ([low 0]
              [high (- (vector-length vec) 1)])
     (if (> low high) low
@@ -10,5 +10,3 @@ ${1:(define (binary-search vec value compare-fn)
           (if (compare-fn (vector-ref vec mid) value)
               (loop (add1 mid) high)
               (loop low (sub1 mid)))))))
-}(define (upper-bound vec value)
-  (binary-search vec value <=))

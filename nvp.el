@@ -133,8 +133,11 @@ called from minibuffer, or nil.")
        ,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-default-functions)))))
 (nvp:define-function-hooks)
 (setq-default nvp-compile-default-function         #'nvp-compile-default)
-(with-eval-after-load 'lsp
-  (setq-default nvp-format-buffer-default-function #'lsp-format-buffer))
+(setq-default nvp-format-buffer-default-function
+              (nvp:def nvp-format-buffer-default ()
+                (interactive)
+                (funcall (if lsp-mode #'lsp-format-buffer
+                           #'delete-trailing-whitespace))))
 (setq-default nvp-tag-default-function             #'projectile-regenerate-tags)
 (setq-default nvp-install-default-function         #'projectile-install-project)
 (setq-default nvp-check-buffer-default-function    #'flycheck-list-errors)

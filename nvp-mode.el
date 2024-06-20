@@ -16,6 +16,7 @@
 
 (defun nvp-mode--choose (var &optional default)
   (let ((val (eval var)))
+    (and (functionp val) (setq val (funcall val)))
     (if (null val)
         (if (null default)
             (user-error "No '%S' registered" (symbol-name var))
@@ -24,7 +25,7 @@
       (let* ((val (cl-remove-duplicates (delq nil (cons default val))))
              (fn (if (length= val 1) (car val)
                    (intern (completing-read
-                            (concat (symbol-name var) ": ") val nil t)))))
+                             (concat (symbol-name var) ": ") val nil t)))))
         (nvp-mode-message "%S using: %S" var fn)
         fn))))
 

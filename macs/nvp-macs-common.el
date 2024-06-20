@@ -28,7 +28,7 @@ enclosed in a `progn' form.  ELSE-FORMS may be empty."
     (cons 'progn else-forms)))
 
 ;; -------------------------------------------------------------------
-;;; OS 
+;;; OS
 
 (defmacro nvp:with-w32 (&rest body)
   (declare (indent 0) (debug t))
@@ -161,7 +161,7 @@ be used. Modification of `use-package-normalize-plist'."
       (while (and args (not (keywordp (car args))))
         (push (car args) body)
         (setq args (cdr args)))
-      (nvp:plist-merge 
+      (nvp:plist-merge
        (nvp:-normalize-plist
         name-sym args `(:body ,(nreverse body)) defaults merge-function)
        defaults))))
@@ -169,7 +169,7 @@ be used. Modification of `use-package-normalize-plist'."
 
 
 ;; -------------------------------------------------------------------
-;;; General 
+;;; General
 
 (defmacro nvp:unless-bound (sym &rest body)
   "Execute BODY unless SYM is `fboundp' or `boundp'."
@@ -502,7 +502,7 @@ Syntax should be list of syntax class symbols or syntax codes."
 ;; - semantic-read-event : #<marker at 3072 in fw.el.gz>
 (defmacro nvp:input (type)
   "Return user input by TYPE.
-Trailing `s' indicates a string is returned. 
+Trailing `s' indicates a string is returned.
 See Info node `(elisp) Input Events'.
 
 * ~~~ Last command/input keys
@@ -513,13 +513,13 @@ See Info node `(elisp) Input Events'.
 
 * ~~~ Basic chars (no caps)
 `lbi'  -- Last basic input char: `event-basic-type', `last-input-event'
-`lbis' 
+`lbis'
 `lbc'  -- Last basic command char
-`lbcs' 
+`lbcs'
 
 * ~~~ Events
 `lem'   -- `last-command-event' modifiers
-`lec'   -- `last-command-event' click count 
+`lec'   -- `last-command-event' click count
 
 * ~~~ Last command names
 `lrcn' -- For now, just `last-repeatable-command' - probably should filter out
@@ -539,11 +539,11 @@ See Info node `(elisp) Input Events'.
      ((eq type 'lbis) '(single-key-description (event-basic-type last-input-event)))
      ((eq type 'lbc) '(event-basic-type last-command-event))
      ((eq type 'lbcs) '(single-key-description (event-basic-type last-command-event)))
-     
+
      ;; === Events ===
      ((eq type 'lem) (event-modifiers last-command-event))
      ((eq type 'lec) (event-click-count last-command-event))
-     
+
      ;; === Last command (symbol) ===
      ((eq type 'lrcn) 'last-repeatable-command)
      ((eq type 'lcn)

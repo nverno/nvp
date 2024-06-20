@@ -34,7 +34,8 @@
            (scan-error nil)))))
 
 
-(defvar nvp-racket--eldoc-cache (make-hash-table :test #'equal))
+(defvar nvp-racket--eldoc-cache (make-hash-table :test #'equal)
+  "Cache racket eldoc signatures.")
 
 (defun nvp-racket--format-param-type (par-info)
   "Format param for eldoc with type info and/or defaults from PAR-INFO."

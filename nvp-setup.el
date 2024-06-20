@@ -11,7 +11,7 @@
 (cl-defstruct (nvp-mode-vars (:constructor nvp-mode-vars-make)
                              (:copier nil))
   "Store the local variables setup when a mode hook first runs."
-  dir snippets abbr-file abbr-table
+  dir snippets abbr-file abbr-table docsets
   ;; functions
   check-buffer format-buffer tag test compile debug disassemble abbrev
   install toggle run profile configure docs jump edit insert)
@@ -138,6 +138,17 @@
              nvp-mode-cache)))
 (put 'nvp-setup-mode 'lisp-indent-function 'defun)
 
+(defun nvp-setup--merge (slot elems)
+  "Merge ELEMS with inherited values from SLOT."
+  (let (res cur)
+    (while (setq cur (pop elems))
+      (if (symbolp cur)
+          (--when-let (gethash cur nvp-mode-cache)
+            (setq elems
+                  (append elems (cl-struct-slot-value 'nvp-mode-vars slot it))))
+        (push cur res)))
+    (seq-uniq res #'equal)))
+  
 ;;;###autoload
 (cl-defun nvp-setup-local
     (name          ; package root dir name
@@ -164,7 +175,9 @@
             nvp-local-abbrev-table abbr-table
             local-abbrev-table
             (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))))
-    (nvp:setup-local-hooks mvars))
+    (nvp:setup-local-hooks mvars)
+    (setq-local devdocs-current-docs
+                (nvp-setup--merge 'docsets (nvp-mode-vars-docsets mvars))))
   (when post-fn (funcall post-fn)))
 (put 'nvp-setup-local 'lisp-indent-function 'defun)
 

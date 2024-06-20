@@ -29,14 +29,11 @@
 (defvar nvp-nodejs--repl-commands
   '("break" "clear" "exit" "help" "save" "load" "editor"))
 
-(when (fboundp 'nodejs-repl-switch-to-repl)
+(when (fboundp 'nodejs-repl--get-or-create-process)
   (nvp-repl-add '(js-mode js-ts-mode js2-mode js2-jsx-mode js-jsx-mode rjsx-mode)
     :name 'nodejs
     :modes '(nodejs-repl-mode)
-    :init (lambda (&optional _prefix)
-            (save-window-excursion
-              (ignore-errors
-                (call-interactively #'nodejs-repl-switch-to-repl))))
+    :init (lambda (&optional _) (nodejs-repl--get-or-create-process))
     :find-fn (lambda () (get-process nodejs-repl-process-name))
     :history-file ".node_history"
     :send-region #'nodejs-repl-send-region

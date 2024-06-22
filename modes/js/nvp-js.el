@@ -5,20 +5,12 @@
 ;; Help refs:
 ;; - React: https://reactjs.org/docs/{react-component.html}
 ;; - npm docs <library> name launches site in browser
-;;
 ;; - REPLs => nodejs, skewer, indium
 ;; TODO:
 ;;   - Need to be able to reevaluate consts (indium solved this)
 ;;   - [ ] debugging w/ indium supposed to work with both Chrome and node
 ;;     Fix configuration to solve failing connections
-;; - help-at-point for React
-;; - The default npm config with projectile is bare
-;; - Package.json parser:
-;;   - get list script targets for projectile-run/test/compile commands
-;;   - Create basic projectile npm/react project runners
-;; - Add react 31s snippets?  Problem is they may contain CSS as well
 ;;; Code:
-
 (eval-when-compile (require 'nvp-macro))
 (require 'js)
 (nvp:req 'nvp-js 'subrs)

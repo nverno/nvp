@@ -37,23 +37,23 @@
               (nvp-project-root
                (or dir buffer-file-name default-directory))))
     (nvp-async-shell-command-to-string
-      "npm list --depth=0 --only=dev --parseable | awk -F/ '{print $NF}'"
-      (lambda (p _res)
-        (let ((default-directory default-directory))
-          (when (zerop (process-exit-status p))
-            (unwind-protect
-                (with-current-buffer (process-buffer p)
-                  (goto-char (point-min))
-                  (when (re-search-forward nvp-js-test-re nil t)
-                    (let ((test (match-string 1)))
-                      (save-window-excursion
-                        (add-dir-local-variable nil 'nvp-test-framework test)
-                        (save-buffer))
-                      (message "Project: %s\nTest framework: %s"
-                               (abbreviate-file-name default-directory)
-                               test))))
-              (kill-buffer (process-buffer p))))))
-      "*js-config*")))
+     "npm list --depth=0 --only=dev --parseable | awk -F/ '{print $NF}'"
+     (lambda (p _res)
+       (let ((default-directory default-directory))
+         (when (zerop (process-exit-status p))
+           (unwind-protect
+               (with-current-buffer (process-buffer p)
+                 (goto-char (point-min))
+                 (when (re-search-forward nvp-js-test-re nil t)
+                   (let ((test (match-string 1)))
+                     (save-window-excursion
+                       (add-dir-local-variable nil 'nvp-test-framework test)
+                       (save-buffer))
+                     (message "Project: %s\nTest framework: %s"
+                              (abbreviate-file-name default-directory)
+                              test))))
+             (kill-buffer (process-buffer p))))))
+     "*js-config*")))
 
 (provide 'nvp-js-project)
 ;; Local Variables:

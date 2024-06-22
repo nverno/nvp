@@ -1,10 +1,6 @@
 ;;; nvp-nodejs.el --- Node REPL -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
-;;
-;;; FIXME:
-;; - doesn't support imports AFAICT => (11/23/20) node doesn't
-;; - doesn't seem to find libraries by default, probably need some config
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)

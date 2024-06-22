@@ -169,15 +169,14 @@
     (when (or override (not mvars))
       (setq mvars (apply #'nvp-setup-mode name `(:mode ,mode ,@args))))
     ;; set local vars
-    (pcase-let (((cl-struct nvp-mode-vars snippets abbr-file abbr-table) mvars))
+    (pcase-let (((cl-struct nvp-mode-vars snippets abbr-file abbr-table docsets) mvars))
       (setq nvp-mode-snippet-dir snippets
             nvp-local-abbrev-file abbr-file
             nvp-local-abbrev-table abbr-table
             local-abbrev-table
-            (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))))
-    (nvp:setup-local-hooks mvars)
-    (setq-local devdocs-current-docs
-                (nvp-setup--merge 'docsets (nvp-mode-vars-docsets mvars))))
+            (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))
+            devdocs-current-docs (nvp-setup--merge 'docsets docsets)))
+    (nvp:setup-local-hooks mvars))
   (when post-fn (funcall post-fn)))
 (put 'nvp-setup-local 'lisp-indent-function 'defun)
 

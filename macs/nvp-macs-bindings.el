@@ -273,10 +273,9 @@ multiple repeat maps."
     (while (keywordp (car defs))
       (cond ((eq ':wrap (car defs)) (setq wrap (cadr defs)))
             ((eq ':wrap-pref (car defs)) (setq wrap-pref (cadr defs)))
-            (t (push (car defs) kwargs)
-               (push (cadr defs) kwargs)))
-      (setq defs (cddr defs))
-      (setq kwargs (nreverse kwargs)))
+            (t (push (cadr defs) kwargs)
+               (push (car defs) kwargs)))
+      (setq defs (cddr defs)))
     (let (wrapped)
       (when wrap
         (let ((prefix (or wrap-pref (nvp:wrap--prefix (symbol-name name)))))

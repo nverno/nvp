@@ -94,6 +94,22 @@
                   for getter = (intern (concat "nvp-mode-vars-" slot))
                   collect `(setq ,hook (,getter ,mode-vars)))))))
 
+(defun nvp-setup--extend (mvars args)
+  "Extend MVARS with other mode configs from ARGS when available."
+  (or (listp args) (setq args (list args)))
+  (when-let* ((other-mode (pop args))
+              (ovars (gethash other-mode nvp-mode-cache nil))
+              (slots (cond ((or (null args) (eq t (car args))) nvp-mode-hooks)
+                           ((eq ':not (car-safe args))
+                            (--filter (not (memq it (cdr args)))
+                                      nvp-mode-hooks))
+                           (t args))))
+    (dolist (slot slots)
+      (let ((getter (intern (format "nvp-mode-vars-%s" slot))))
+        (--when-let (funcall getter ovars)
+          (setf (cl-struct-slot-value 'nvp-mode-vars slot mvars)
+                (seq-uniq (append (funcall getter mvars) it) #'equal)))))))
+
 ;;;###autoload
 (cl-defun nvp-setup-mode
     (name          ; package root dir name
@@ -104,10 +120,11 @@
      snippets-dir  ; snippet dir to use instead of mode name
      dir           ; mode root directory
      abbr-table    ; abbrev table to use for mode
+     inherit       ; other modes to inherit from
      &allow-other-keys
      &aux args)
   "Register mode vars."
-  (setq args (nvp:arglist-remove-kwargs '(:mode :snippets-dir) kwargs))
+  (setq args (nvp:arglist-remove-kwargs '(:mode :snippets-dir :inherit) kwargs))
   (setq mode (nvp:setup-normalize-mode mode))
   (or dir (setq dir (nvp-setup-package-root name)))
   (unless (and dir (file-exists-p dir))
@@ -129,16 +146,18 @@
         (yas-load-directory yas-dir)))
     (cl-pushnew dir load-path :test #'string=)
     (ignore-errors (quietly-read-abbrev-file abbr-file))
-    (puthash mode (apply #'nvp-mode-vars-make
-                         `( :dir ,dir
-                            :snippets ,mode-snips
-                            :abbr-file ,abbr-file
-                            :abbr-table ,abbr-table
-                            ,@args))
-             nvp-mode-cache)))
+    (let ((mvars (apply #'nvp-mode-vars-make
+                        `( :dir ,dir
+                           :snippets ,mode-snips
+                           :abbr-file ,abbr-file
+                           :abbr-table ,abbr-table
+                           ,@args))))
+      (dolist (args inherit)
+        (nvp-setup--extend mvars args))
+      (puthash mode mvars nvp-mode-cache))))
 (put 'nvp-setup-mode 'lisp-indent-function 'defun)
 
-(defun nvp-setup--merge (slot elems)
+(defun nvp-setup--inherit (slot elems)
   "Merge ELEMS with inherited values from SLOT."
   (let (res cur)
     (while (setq cur (pop elems))
@@ -148,7 +167,7 @@
                   (append elems (cl-struct-slot-value 'nvp-mode-vars slot it))))
         (push cur res)))
     (seq-uniq res #'equal)))
-  
+
 ;;;###autoload
 (cl-defun nvp-setup-local
     (name          ; package root dir name
@@ -175,7 +194,7 @@
             nvp-local-abbrev-table abbr-table
             local-abbrev-table
             (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))
-            devdocs-current-docs (nvp-setup--merge 'docsets docsets)))
+            devdocs-current-docs (nvp-setup--inherit 'docsets docsets)))
     (nvp:setup-local-hooks mvars))
   (when post-fn (funcall post-fn)))
 (put 'nvp-setup-local 'lisp-indent-function 'defun)

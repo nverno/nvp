@@ -168,7 +168,7 @@
   (let ((mvars (gethash mode nvp-mode-cache nil)))
     (when (or override (not mvars))
       (setq mvars (apply #'nvp-setup-mode name `(:mode ,mode ,@args))))
-    ;; set local vars
+    ;; Set local vars
     (pcase-let (((cl-struct nvp-mode-vars snippets abbr-file abbr-table docsets) mvars))
       (setq nvp-mode-snippet-dir snippets
             nvp-local-abbrev-file abbr-file

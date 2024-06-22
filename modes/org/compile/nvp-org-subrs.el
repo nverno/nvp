@@ -5,12 +5,6 @@
 (require 'nvp-macro)
 (require 'org-element)
 
-;; see `org-element-link-parser' for link structure:
-;; links are list where car is a `link' and cdr is plist
-(defsubst nvp:org-link-name (link)
-  (-let (((&plist :contents-begin beg :contents-end end) (nth 1 link)))
-    (and beg end (buffer-substring-no-properties beg end))))
-
 (defmacro nvp:with-org-sections (headline-re &rest body)
   "Execute BODY in narrowed regions under headlines matching HEADLINE-RE.
 \\='it is bound to parse tree in BODY, \\='it-type is bound the element

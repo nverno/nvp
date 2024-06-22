@@ -172,6 +172,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     ;; ido
     ido-default-buffer-method ido-default-file-method
     ;;=== external pkg ===
+    devdocs-current-docs
     zeal-at-point-docset
     dash-docs-docsets
     company-candidates company-selection

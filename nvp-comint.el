@@ -102,11 +102,10 @@ Prompt unless SILENT or `noninteractive'."
       (goto-char (point-max))
       (forward-line -1)
       (end-of-line)
-      (prog1
-          (string-chop-newline
-           (buffer-substring-no-properties
-            (point-min)
-            (max 1 (1- (line-beginning-position)))))
+      (prog1 (string-chop-newline
+              (buffer-substring-no-properties
+               (point-min)
+               (max 1 (1- (line-beginning-position)))))
         (and (buffer-name buf)
              (kill-buffer buf))))))
 

@@ -73,10 +73,13 @@ Return cons of \\='(name                           . raw-link)."
         :types (link)
         (when (or (null type)
                   (string-match-p type (org-element-property :type it)))
-          (push (list (concat
-                       (if (/= 0 (length prefix)) (concat prefix "/"))
-                       (nvp:org-link-name it))
-                      'org-link it)
+          (push (list
+                 (concat
+                  (and (length> prefix 0) (concat prefix "/"))
+                  (when-let* ((beg (org-element-property :contents-begin it))
+                              (end (org-element-property :contents-end it)))
+                    (and beg end (buffer-substring-no-properties beg end))))
+                 'org-link it)
                 res))))
     (nreverse res)))
 

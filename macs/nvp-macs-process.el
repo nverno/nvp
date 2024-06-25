@@ -133,7 +133,8 @@ In this case, the return value is the exit status of the shell command.
                `(funcall ',proc-cmd
                          ,(or proc-name process)
                          ,pbuf ,process ,@proc-args))))
-       ,(if (and sync shell)
+       ;; FIXME(6/25/24): sync with `call-process' not right
+       ,(if sync ;(and sync shell)
             (if on-success
                 `(if (zerop ,proc)
                      (with-current-buffer ,pbuf

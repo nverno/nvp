@@ -213,6 +213,33 @@
      ((parent-is "chunk") column-0 0))))
 
 
+;;; Add luadoc support
+
+;; (defvar lua-ts--treesit-luadoc-beginning-regexp "\\`--[- \t]*@"
+;;   "Regular expression matching the beginning of a luadoc block comment.")
+
+;; (defun lua-ts-language-at-point (point)
+;;   "Return the language at POINT."
+;;   (let ((node (treesit-node-at point 'lua)))
+;;     (if (and (treesit-ready-p 'luadoc)
+;;              (equal (treesit-node-type node) "comment")
+;;              (string-match-p
+;;               lua-ts--treesit-luadoc-beginning-regexp
+;;               (treesit-node-text node)))
+;;         'luadoc
+;;       'lua)))
+
+;; (defun lua-ts--enable-luadoc ()
+;;   (when (treesit-ready-p 'luadoc t)
+;;     (setq-local treesit-range-settings
+;;                 (treesit-range-rules
+;;                  :embed 'luadoc
+;;                  :host 'lua
+;;                  `(((comment) @capture
+;;                     (:match ,lua-ts--treesit-luadoc-beginning-regexp
+;;                             @capture)))))))
+;; (add-hook 'lua-ts-mode-hook #'lua-ts--enable-luadoc)
+
 (nvp:treesit-add-rules lua-ts-mode
   :mode-fonts lua-ts--font-lock-settings
   :new-fonts (car nvp-lua-ts--font-lock-rules)

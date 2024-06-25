@@ -5,7 +5,7 @@
 (require 'org)
 (require 'nvp)
 (nvp:req 'nvp-org 'subrs)
-(nvp:decls :p (outline org))
+(nvp:decls :p (outline org) :f (org-element-type org-element--property))
 (nvp:auto "nvp-parse" 'nvp-parse-current-function)
 
 ;;;###autoload

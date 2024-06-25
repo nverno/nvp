@@ -12,7 +12,8 @@
                 lsp--render-element lsp-rust-analyzer-open-external-docs))
 (nvp:auto "rustic-cargo" rustic-cargo--get-test-target)
 
-(with-eval-after-load 'rust-ts-mode (require 'nvp-rust-ts))
+(with-eval-after-load 'rust-ts-mode
+  (require 'nvp-rust-ts))
 
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
   :modes (rust-mode rust-ts-mode rustic-mode)

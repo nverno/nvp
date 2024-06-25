@@ -1,10 +1,5 @@
 ;;; nvp-makefile-auto.el ---  -*- lexical-binding: t; -*-
-
 ;;; Commentary:
-
-;; FIXME: gotta be a better way
-;; - yas expansions that add deps => commands
-
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'make-mode)
@@ -14,18 +9,24 @@
 ;; -------------------------------------------------------------------
 ;;; Used in snippets
 
-(eval-when-compile
-  (defsubst nvp:makefile-special-targets ()
-    (process-lines (expand-file-name "bin/special-targets.py" nvp-makefile--dir))))
-
+(defun nvp-makefile--special-targets ()
+  "Return list of makefile special targets."
+  (let* ((buf (get-buffer-create " *special-targets*"))
+         (bin (expand-file-name "bin/special-targets.py" nvp-makefile--dir))
+         (stat (call-process bin nil (list buf nil) nil))
+         (res (when (zerop stat)
+                (with-current-buffer buf
+                  (split-string (buffer-substring-no-properties (point-min) (point-max)))))))
+    (prog1 res (kill-buffer buf))))
+  
 (defvar nvp-makefile-special-targets
-  (eval-when-compile (ignore-errors (nvp:makefile-special-targets)))
+  (eval-when-compile (ignore-errors (nvp-makefile--special-targets)))
   "List of special make targets.")
 
 ;;;###autoload(autoload 'nvp-makefile-special-targets "nvp-makefile-auto")
 (nvp:define-cache-runonce nvp-makefile-special-targets ()
   "List of special make targets."
-  (nvp:makefile-special-targets))
+  (nvp-makefile--special-targets))
 
 ;; ------------------------------------------------------------
 ;;; Parse / Snippet helpers
@@ -50,6 +51,7 @@
 ;;; Auto add defines/targets/deps
 ;; used in snippets and toggles
 
+;;; FIXME(6/25/24): find better way
 ;; add program ?= program to top if not already declared
 (defun nvp-makefile-add-define (program &optional ifdef value)
   (save-excursion

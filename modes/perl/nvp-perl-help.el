@@ -32,18 +32,12 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-perl)
-(nvp:req 'nvp-perl 'subrs)
 (require 'cperl-mode)
-(require 'man)
-(require 'pos-tip)
+(nvp:decl nvp-hap-man-buffer)
+(autoload 'find-lisp-find-files "find-lisp")
 
-;; ------------------------------------------------------------
-;;; Find Stuff
-;; `perl-find-library' stuff
-;; XXXX: probably just build module cache using external perl script
-;; although this takes barely a second anyway
-
-;; build perl modules paths
+;; Build perl modules paths
+;; XXX: just build module cache using external perl script?
 (nvp:define-cache-runonce nvp-perl--module-paths ()
   (cl-remove-if-not
    #'(lambda (dir)
@@ -52,9 +46,8 @@
    (car
     (read-from-string
      (shell-command-to-string
-      (eval-when-compile
-        (concat "perl -e '$\"=\"\\\" \\\"\";"
-                "print \"(\\\"@INC\\\")\"'")))))))
+      (concat "perl -e '$\"=\"\\\" \\\"\";"
+              "print \"(\\\"@INC\\\")\"'"))))))
 
 ;; Find all perl modules in directories on @INC, and cache
 ;; searches for files ending in .pod or .pm and translates
@@ -64,31 +57,32 @@
    (lambda (dir)
      (mapcar
       (lambda (file)
-        (nvp-perl-replace-all
+        (replace-regexp-in-string
          ;; chop suffixes
          (rx (seq "." (| "pod" "pm") string-end))
          ""
          ;; convert file path separators to '::'
-         (nvp-perl-replace-all
-          "/" "::" (substring file (1+ (length dir))))))
+         (replace-regexp-in-string
+          "/" "::" (substring file (1+ (length dir))) t t)
+         t t))
       (find-lisp-find-files
        dir (rx (seq "." (| "pod" "pm") string-end)))))
    (nvp-perl--module-paths)))
 
-;; return path to perl module
 (defun nvp-perl-module-path (module)
-  (let ((path
-         (shell-command-to-string (concat "perldoc -l " module))))
+  "Return path to perl MODULE."
+  (let ((path (shell-command-to-string (concat "perldoc -l " module))))
     (and (not (string-match-p "No documentation" path))
          (substring path 0 (1- (length path))))))
 
-;; completing read for installed modules
 (defun nvp-perl-read-module (&optional prompt default path)
-  (nvp:defq default (thing-at-point 'perl-module t))
+  "Completing read for installed perl modules."
+  (or default (setq default (thing-at-point 'perl-module t)))
   (setq prompt (nvp:prompt-default (or prompt "Module: ") default))
-  (let ((module (nvp-completing-read prompt (nvp-perl-modules))))
-    (if path (nvp-perl-module-path module)
-      path)))
+  (let ((module (completing-read prompt (nvp-perl-modules))))
+    (if path
+        (nvp-perl-module-path module)
+      module)))
 
 ;;;###autoload
 (defun nvp-perl-jump-to-module (module)
@@ -97,11 +91,8 @@
   (with-demoted-errors "Error in nvp-perl-jump-to-module: %S"
     (find-file-other-window module)))
 
-;; -------------------------------------------------------------------
-;;; Perldoc
-
 ;;;###autoload
-(defun nvp-perl-help-perldoc (thing &optional online)
+(defun nvp-perldoc (thing &optional online)
   "Lookup perldoc for THING at point, trying variable, module, symbol.
 (4)  With single prefix or ONLINE, lookup docs on CPAN.
 (16) With double prefix, prompt for module first and look for local docs.
@@ -121,33 +112,25 @@
       (browse-url (format "https://search.cpan.org/perldoc?%s" thing))
     (cperl-perldoc thing)))
 
-;;; Cpan / Cpanm
 
-;; Search cpan online for query.
+;;; Help-at-point backend
+
+(defsubst nvp-perl--function-p (sym)
+  "Return non-nil if SYM looks like a function."
+  (let ((case-fold-search t))
+    (and (string-match-p "^[a-z]+$" sym)
+         (string-match-p
+          (concat "^" sym "\\>")
+          (documentation-property 'cperl-short-docs 'variable-documentation)))))
+
 ;;;###autoload
-(defun nvp-perl-help-cpan-online (query)
-  (interactive "sQuery: ")
-  (browse-url (format "https://search.cpan.org/search?query=%s&mode=all" query)))
-
-;; -------------------------------------------------------------------
-;;; TODO: help-at-point
-
-;;;###autoload
-(defun nvp-perl-help-at-point (_obj)
-  (interactive "P")
-  (or (x-hide-tip)
-      (let* ((sym (cperl-word-at-point))
-             (case-fold-search nil)
-             ;; `cperl-perldoc'
-             (is-func (and (string-match-p "^[a-z]+$" sym)
-                           (string-match-p (concat "^" sym "\\>")
-                                           (documentation-property
-                                            'cperl-short-docs
-                                            'variable-documentation))))
-             (Man-switches "")
-             (Man-notify-method 'quiet)
-             (manual-program (if is-func "perldoc -f" "perldoc")))
-        (Man-getpage-in-background sym))))
+(defun nvp-hap-perldoc (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (cperl-word-at-point))
+    (doc-buffer
+     (let ((manual-program
+            (concat "perldoc" (and (nvp-perl--function-p arg) " -f"))))
+       (nvp-hap-man-buffer arg)))))
 
 (provide 'nvp-perl-help)
 ;; Local Variables:

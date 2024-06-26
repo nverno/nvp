@@ -1,41 +1,31 @@
-;;; nvp-perl.el --- perl helpers  -*- lexical-binding: t; -*-
-
+;;; nvp-perl.el --- Perl -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;
-;; Other:
-;; - perlcritic.el, Perl::Critic
-;; - Sepia, looks like old REPL
-;; - Emacs::PDE - tried it before
-;;
-;; TODO:
-;; - update compile: warnings / diagnostics, input in compilation comint buffer
-;; - update support for jumping to modules / tags
-;;
 ;;; Code:
-(eval-when-compile
-  (require 'nvp-macro)
-  (require 'nvp-parse))
+(eval-when-compile (require 'nvp-macro))
 (require 'cperl-mode)
-(nvp:req 'nvp-perl 'subrs)
-(nvp:auto "find-lisp" 'find-lisp-find-files)
-(nvp:decls :p (perl-reply))
+(nvp:decls)
+
 
 (with-eval-after-load 'nvp-repl
-  (require 'perl-reply)
-  (nvp-repl-add '(cperl-mode perl-mode)
-    :name 'perl
-    :modes '(perl-reply-mode)
-    :find-fn (lambda () (get-buffer perl-reply-buffer))
-    :init (lambda (&optional _prefix) (funcall #'perl-reply-process))))
-
+  (require 'nvp-perl-repl))
 
 ;;; Things at point
+;; Skip back across `backchars' chars, then look for `forward-regexp',
+;; returning cons of start and end of match.
+(defsubst nvp-perl--looking-at (backchars &optional forward-regexp)
+  (or forward-regexp (setq forward-regexp (format "[%s]+" backchars)))
+  (save-excursion
+    (skip-chars-backward backchars)
+    (if (looking-at forward-regexp)
+        (cons (point) (match-end 0))
+      nil)))
+
 (defun nvp-perl--module ()
-  (nvp-back-chars-then-look "_[:alpha:]:\\->" "[_[:alpha:]:]+"))
+  (nvp-perl--looking-at "_[:alpha:]:\\->" "[_[:alpha:]:]+"))
 (put 'perl-module 'bounds-of-thing-at-point 'nvp-perl--module)
 
 (defun nvp-perl--variable ()
-  (nvp-back-chars-then-look "[:alnum:]_$@#%*&=" "[[:alnum:]_$@#%*&]+"))
+  (nvp-perl--looking-at "[:alnum:]_$@#%*&=" "[[:alnum:]_$@#%*&]+"))
 (put 'perl-variable 'bounds-of-thing-at-point 'nvp-perl--variable)
 
 
@@ -63,16 +53,6 @@
   :modes (cperl-mode perl-mode perl-ts-mode)
   (nvp-perl--parse-includes args))
 
-
-;;; Cpanm
-(defun nvp-perl-cpanm-install ()
-  "Install module using cpanm."
-  (interactive)
-  (let ((module (read-from-minibuffer "Module: " (thing-at-point 'perl-module t))))
-    (nvp:with-process "cpanm"
-      :buffer-fn get-buffer-create
-      :proc-args (module))))
-
 ;;; Eldoc
 (defun nvp-perl-eldoc-function ()
   (ignore-errors
@@ -80,10 +60,7 @@
       (car (let ((cperl-message-electric-keyword nil))
              (cperl-get-help))))))
 
-
-;; ------------------------------------------------------------
 ;;; Insert / Toggle
-
 ;; non-nil if point is in hash definition
 (defsubst nvp-perl-hash-p ()
   (save-excursion

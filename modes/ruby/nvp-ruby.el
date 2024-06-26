@@ -3,30 +3,56 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp:decls :p (yari nvp-hap inf-ruby))
+(require 'ruby-ts-mode nil t)
+
 
 ;;; REPL
 (with-eval-after-load 'nvp-repl
   (require 'nvp-ruby-repl))
 
 ;;; Tree-sitter
+(defvar nvp-ruby-ts--preprocs '("require" "require_relative"))
+(setq ruby-ts--delimiters (seq-uniq (append '(":" "::") ruby-ts--delimiters)))
+;;; FIXME(6/26/24): patch for missing operator =~
+(setq ruby-ts--operators
+      (seq-uniq
+       (cons "=~" (--filter (not (member it '(":" "::"))) ruby-ts--operators))))
+;;; FIXME(6/26/24): patch
+(setq ruby-builtin-methods-no-reqs
+      (seq-uniq (append '("instance_variables") ruby-builtin-methods-no-reqs)))
+(setq ruby-ts--builtin-methods
+      (format "\\`%s\\'" (regexp-opt (append ruby-builtin-methods-no-reqs
+                                             ruby-builtin-methods-with-reqs))))
+
 (defvar nvp-ruby-ts-font-settings
   (when (treesit-available-p)
-    (treesit-font-lock-rules
-     :language 'ruby
-     :feature 'nvp
-     '((assignment
-        left: (element_reference
-               object: (identifier) @font-lock-variable-name-face))
-       (identifier) @font-lock-variable-use-face))))
+    (cons
+     (treesit-font-lock-rules
+      :language 'ruby
+      :feature 'nvp-pre
+      `((interpolation ["#{" "}"] @font-lock-operator-face)
+        ((identifier) @font-lock-preprocessor-face
+         (:match ,(rx-to-string `(or ,@nvp-ruby-ts--preprocs))
+                 @font-lock-preprocessor-face))))
+
+     (treesit-font-lock-rules
+      :language 'ruby
+      :feature 'nvp
+      '((assignment
+         left: (element_reference
+                object: (identifier) @font-lock-variable-name-face))
+        (identifier) @font-lock-variable-use-face)))))
 
 (define-advice ruby-ts--font-lock-settings
     (:around (orig-fn lang &rest args) "add-fonts")
   (if (eq 'ruby lang)
-      (append (apply orig-fn lang args) nvp-ruby-ts-font-settings)
+      (append (car nvp-ruby-ts-font-settings)
+              (apply orig-fn lang args)
+              (cdr nvp-ruby-ts-font-settings))
     (apply orig-fn lang args)))
 
 (nvp:treesit-add-rules ruby-ts-mode
-  :extra-features '(nvp))
+  :extra-features '(nvp nvp-pre))
 
 ;;; Snippets
 ;; create arg initializtion from yas-text
@@ -40,12 +66,14 @@
 ;;; Movement
 (declare-function ruby-end-of-block "ruby-mode")
 (defun nvp-ruby-beginning-of-block ()
+  "Move to beginning of current block."
   (interactive)
   (ruby-end-of-block -1))
 
 ;;; Compile
 (declare-function ruby-compilation-this-buffer "ruby-compilation")
 (defun nvp-ruby-compile ()
+  "Compile buffer with `inf-ruby-auto-enter' temporarily enabled."
   (interactive)
   (add-hook 'compilation-filter-hook #'inf-ruby-auto-enter)
   (ruby-compilation-this-buffer)

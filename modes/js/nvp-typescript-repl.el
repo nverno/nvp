@@ -39,6 +39,17 @@
                "console.table(util.inspect.defaultOptions)"))
     (shell-command "npx ts-node --showConfig")))
 
+(defun nvp-typescript-repl-inspect ()
+  "Attach chrome debugger to repl."
+  (interactive)
+  (let ((proc (ts-repl-process))
+        (cmd "inspector.url() || inspector.open()\n")
+        (browse-url-browser-function #'browse-url-chrome))
+    (and proc (comint-send-string proc cmd))
+    (message "goto chrome://inspect")
+    ;; xxx: doesnt go there
+    (browse-url "chrome://inspect")))
+
 (provide 'nvp-typescript-repl)
 ;; Local Variables:
 ;; coding: utf-8

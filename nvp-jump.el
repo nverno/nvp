@@ -238,7 +238,7 @@ With multiple prefix, restrict jumps to subdirectories of current directory."
            (completing-read "Frecent Directory: "
              (mapcar #'abbreviate-file-name it)))
          current-prefix-arg))
-  (dired-jump (not this-window) dir))
+  (dired-jump (not this-window) (file-name-as-directory dir)))
 
 ;;;###autoload
 (defun nvp-jump-to-source (dir action)

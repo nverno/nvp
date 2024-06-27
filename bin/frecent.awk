@@ -8,11 +8,13 @@ function frecent(rank, time, current) {
 }
 
 BEGIN {
+  # printf("q=%s, typ=%s, frecency=%d", q, typ, frecency)
   "date +%s" | getline current
   if (frecency == "") frecency = 9000
+  if (typ == "") typ = "frecency"
 }
 
-$2 > 1 {
+(q == "" || index($1, q) == 1) && $2 > 1 {
   if (frecent($2, $3, current) > frecency)
     print $1
 }

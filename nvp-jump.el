@@ -212,7 +212,7 @@ Optionally, search LISP-ONLY files (no C sources)."
   (nvp-display-location dir :file action))
 
 ;;; TODO(4/18/24): optional sort by frecency/recent
-(defun nvp-jump--z-directories (&optional frecency)
+(defun nvp-jump--z-directories (&optional frecency type directory)
   "Read directories from z.sh database with score of at least FRECENCY."
   (let ((data (or (getenv "_Z_DATA") (expand-file-name "~/.cache/.z")))
         (bin (expand-file-name "bin/frecent.awk" nvp/nvp)))
@@ -220,19 +220,25 @@ Optionally, search LISP-ONLY files (no C sources)."
       (process-lines
        shell-file-name
        shell-command-switch
-       (concat "gawk -F'|'"
-               (if frecency (format " -v frecency=\"%s\"" frecency) "")
-               " -f " bin " " data)))))
+       (concat
+        (format "gawk -F'|' -v frecency=\"%s\" -v typ=\"%s\" -v q=\"%s\""
+                (or frecency 15000) (or type "frecency") (or directory ""))
+        " -f " bin " " data)))))
 
 ;;;###autoload
-(defun nvp-jump-to-dir (dir action)
-  "Jump to directory from z.sh database."
+(defun nvp-jump-to-dir (dir this-window)
+  "Jump to directory from z.sh database.
+With prefix, do dired in THIS-WINDOW.
+With multiple prefix, restrict jumps to subdirectories of current directory."
   (interactive
-   (list (--when-let (nvp-jump--z-directories)
-           (completing-read
-            "Frecent Directory: " (mapcar #'abbreviate-file-name it)))
+   (list (--when-let
+             (nvp-jump--z-directories
+              nil nil (and (>= (prefix-numeric-value current-prefix-arg) 16)
+                           (expand-file-name default-directory)))
+           (completing-read "Frecent Directory: "
+             (mapcar #'abbreviate-file-name it)))
          current-prefix-arg))
-  (nvp-display-location dir :file action))
+  (dired-jump (not this-window) dir))
 
 ;;;###autoload
 (defun nvp-jump-to-source (dir action)

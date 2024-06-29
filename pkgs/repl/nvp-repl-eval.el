@@ -33,6 +33,7 @@
   (let ((standard-output (current-buffer)))
     (princ res)))
 
+;;;###autoload
 (defun nvp-repl-show-result (&optional res insert)
   "Print the result of the last evaluation in the current buffer."
   (message "nvp-repl-show-result: %S %S" res insert)

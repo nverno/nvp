@@ -20,6 +20,7 @@
     :help-cmd #'nvp-lua-repl-help
     :send-region #'nvp-lua-send-region
     :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))
+    :eval-sexp #'nvp-lua-repl-eval-sexp
     :cmd-handlers '(("?" . nvp-lua-repl-help)
                     ("p" . "pp(%s)"))))
 
@@ -29,6 +30,23 @@
   (if (fboundp 'devdocs-lookup)
       (prog1 t (funcall-interactively #'devdocs-lookup nil thing))
     thing))
+
+(defun nvp-lua-repl-eval-sexp (&optional insert)
+  "Eval sexp-like thing near point."
+  (interactive "P")
+  (let ((bnds (if (region-active-p)
+                  (car (region-bounds))
+                (bounds-of-thing-at-point 'sentence)))
+        str)
+    (unless bnds
+      (user-error "cant find sexp"))
+    (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))
+    (setq str (buffer-substring-no-properties (car bnds) (cdr bnds)))
+    ;; XXX(6/29/24): choose better when to add 'return'
+    (unless (string-match-p "\\`\\s-*return" str)
+      (setq str (concat "return " str)))
+    (nvp-repl-send-string str insert)
+    (nvp-repl-show-result nil insert)))
 
 (defun nvp-lua-repl-init (&optional prefix)
   "Launch lua repl.

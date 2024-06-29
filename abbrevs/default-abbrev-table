@@ -60,8 +60,7 @@
     ("bitn" "https://bitbucket.org/nverno" nil :system t)
     ("bitu" "https://bitbucket.org" nil :system t)
     ("imax" "2147483647" nil :system t)
-    ("lmax" "9223372036854775807" nil :system t)
-    )
+    ("lmax" "9223372036854775807" nil :system t))
   ;; not prefixed by "-"
   :regexp "\\(\\_<[_:\\.A-Za-z0-9/=<>]+\\)")
 
@@ -126,8 +125,7 @@
   '(
     ("yt" "yas-text" nil :system t)
     ("yil" "yas-indent-line" nil :system t)
-    ("ywar" "yas-wrap-around-region" nil :system t)
-    )
+    ("ywar" "yas-wrap-around-region" nil :system t))
   "Snippet-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table emacs-lisp-mode-abbrev-table))
 

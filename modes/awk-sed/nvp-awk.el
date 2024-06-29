@@ -78,7 +78,8 @@
    (concat
     "(" (mapconcat
          'identity (--map-indexed (format "${%d:%s}" (1+ it-index) it) params)
-         ", ") ")")))
+         ", ")
+    ")")))
 
 ;; -------------------------------------------------------------------
 ;;; Eldoc

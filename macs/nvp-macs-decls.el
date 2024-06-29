@@ -269,6 +269,11 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-repl-cd-here
        nvp-repl-menu
        nvp-repl-setup-input-filter
+       nvp-repl-eval-show-result
+       nvp-repl-eval-string
+       nvp-repl-eval-sexp
+       nvp-repl-eval-result-value
+       nvp-repl-eval-show-result
        nvp-shell
        nvp-shell-launch-terminal
        ;; indication

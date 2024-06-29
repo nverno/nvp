@@ -37,6 +37,23 @@
          (browse-url it))))
 
 
+(defun nvp-npm-search (query &rest args)
+  "Search npm packages for QUERY."
+  (interactive
+   (let ((args (transient-args transient-current-command)))
+     (list (read-string "Query: ") args)))
+  (ignore args)
+  (with-current-buffer (get-buffer-create "*npm-search*")
+    (erase-buffer)
+    (call-process-shell-command
+     (concat "npm search --parseable --searchlimit=5 --json " query "|"
+             "jq -r '.[] as{$name,$description,links:{$npm,$homepage}} | "
+             "\"\\($name)\\n\\t\\($description)\\n\\t\\($homepage)\"'")
+     nil (current-buffer) t)
+    (goto-char (point-min))
+    (pop-to-buffer (current-buffer))
+    (goto-address-mode)))
+
 (defvar nvp-npm--defaults '("recache" "homepage"))
 
 ;;;###autoload(autoload 'nvp-npm-menu "nvp-npm" nil t)
@@ -46,7 +63,8 @@
   :incompatible '(("homepage" "repository" "docs"))
   [["Actions"
     ("o" "Open" nvp-npm-jump)
-    ("j" "Open" nvp-npm-jump)]
+    ("j" "Open" nvp-npm-jump)
+    ("s" "Search" nvp-npm-search)]
    ["Open"
     ("h" "Homepage" ("-h" "homepage"))
     ("r" "Repository" ("-r" "repository"))]]

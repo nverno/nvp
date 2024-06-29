@@ -1,0 +1,48 @@
+# -*- mode: snippet -*-
+# name: bitset
+# key: d_bitset
+# --
+const (
+	// Set to #bits / uint
+	bitsPerUint = ${1:32}
+)
+
+type BitSet struct {
+	bits []uint
+	size int
+}
+
+func makeBitSet(size int) *BitSet {
+	nUint := (size + bitsPerUint - 1) / bitsPerUint
+	return &BitSet{
+		bits: make([]uint, nUint),
+		size: size,
+	}
+}
+
+func (bs *BitSet) Set(idx int) {
+	if idx < 0 || idx >= bs.size {
+		return
+	}
+	bs.bits[idx / bitsPerUint] |= 1 << uint(idx % bitsPerUint)
+}
+
+func (bs *BitSet) SetAll(o *BitSet) {
+	for i := range bs.bits {
+		bs.bits[i] |= o.bits[i]
+	}
+}
+
+func (bs *BitSet) Clear(idx int) {
+	if idx < 0 || idx >= bs.size {
+		return
+	}
+	bs.bits[idx / bitsPerUint] &^= 1 << uint(idx % bitsPerUint)
+}
+
+func (bs *BitSet) Test(idx int) bool {
+	if idx < 0 || idx >= bs.size {
+		return false
+	}
+	return bs.bits[idx / bitsPerUint] & (1 << uint(idx % bitsPerUint)) != 0
+}

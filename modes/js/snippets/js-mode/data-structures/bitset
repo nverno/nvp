@@ -1,0 +1,41 @@
+# -*- mode: snippet -*-
+# name: bitset
+# key: d_bitset
+# --
+class BitSet {
+  /** @type {number[]} bits */
+  bits;
+
+  /** @type {number} size */
+  constructor(size) {
+    const arraySize = Math.ceil(size / 32); // Each number in array represents 32 bits
+    this.bits = new Array(arraySize).fill(0);
+  }
+
+  /** @type {number} bit */
+  set(bit) {
+    const idx = Math.floor(bit / 32);
+    const offset = bit % 32;
+    this.bits[idx] |= (1 << offset);
+  }
+
+  /** @type {BitSet} bs */
+  setAll(bs) {
+    for (let i = 0; i < this.bits.length; i++)
+      this.bits[i] |= bs.bits[i];
+  }
+
+  /** @type {number} bit */
+  clear(bit) {
+    const idx = Math.floor(bit / 32);
+    const offset = bit % 32;
+    this.bits[idx] &= ~(1 << offset);
+  }
+
+  /** @type {number} bit */
+  test(bit) {
+    const idx = Math.floor(bit / 32);
+    const offset = bit % 32;
+    return (this.bits[idx] & (1 << offset)) !== 0;
+  }
+};

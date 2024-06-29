@@ -20,7 +20,8 @@
     :help-cmd #'nvp-lua-repl-help
     :send-region #'nvp-lua-send-region
     :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))
-    :cmd-handlers '(("?" . nvp-lua-repl-help))))
+    :cmd-handlers '(("?" . nvp-lua-repl-help)
+                    ("p" . "pp(%s)"))))
 
 
 (defun nvp-lua-repl-help (&optional thing _proc)

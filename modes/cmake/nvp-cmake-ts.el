@@ -202,110 +202,146 @@
 ;;; Font-lock
 
 (defvar nvp-cmake-ts-extra-fonts
-  (treesit-font-lock-rules
-   :language 'cmake
-   :feature 'definition
-   ;; :override t
-   `((normal_command
-      ((identifier) @_project
-       (:match ,(rx bol "project" eol) @_project)
+  (cons
+   (treesit-font-lock-rules
+    :language 'cmake
+    :feature 'definition
+    ;; :override t
+    `((normal_command
+       ((identifier) @_project
+        (:match ,(rx bol "project" eol) @_project)
+        (argument_list :anchor (argument) @font-lock-function-name-face)))
+      
+      (normal_command
+       ((identifier) @font-lock-keyword-face
+        (:match ,(rx bol (or "return" "break" "continue") eol) @font-lock-keyword-face)))
+      
+      (function_command
+       (argument_list :anchor (argument) @nvp-cmake-function-face
+                      [(argument)] :* @font-lock-variable-name-face))
+
+      (macro_command
+       (argument_list :anchor (argument) @nvp-cmake-function-face
+                      [(argument)] :* @font-lock-variable-name-face))
+
+      (foreach_command
+       (argument_list :anchor
+                      (argument (unquoted_argument) @font-lock-variable-name-face)))
+
+      (block_command
+       (block)
        (argument_list
-        (argument (unquoted_argument) @font-lock-function-name-face))))
-     
-     (normal_command
-      ((identifier) @font-lock-keyword-face
-       (:match ,(rx bol (or "return" "break" "continue") eol) @font-lock-keyword-face)))
-     
-     (function_command
-      (argument_list :anchor (argument) @nvp-cmake-function-face
-                     [(argument)] :* @font-lock-variable-name-face))
+        (argument
+         ((unquoted_argument) @font-lock-constant-face
+          (:match ,(rx bol (or "SCOPE_FOR" "POLICIES" "VARIABLES" "PROPAGATE") eol)
+                  @font-lock-constant-face))))))
+    
+    :language 'cmake
+    :feature 'assignment
+    `(((normal_command
+        ((identifier) @_name
+         (:match ,(rx bol (or "add_executable"
+                              "add_custom_target"
+                              "add_custom_command")
+                      eol)
+                 @_name))
+        (argument_list :anchor (argument) @nvp-cmake-function-face)))
+      
+      ((normal_command
+        ((identifier) @_name
+         (:match ,(rx bol (or "add_test"
+                              "add_subdirectory"
+                              "add_library"
+                              "add_dependencies"
+                              "add_definitions"
+                              "set"
+                              "set_directory_properties"
+                              "set_target_properties"
+                              "set_property")
+                      eol)
+                 @_name))
+        (argument_list :anchor (argument) @nvp-cmake-assignment-face))))
+    
+    :language 'cmake
+    :feature 'builtin
+    ;; Note: Overwrites feature
+    `(((env_var
+        ["$" "ENV" "{" "}"] @font-lock-preprocessor-face))
 
-     (macro_command
-      (argument_list :anchor (argument) @nvp-cmake-function-face
-                     [(argument)] :* @font-lock-variable-name-face))
-
-     (foreach_command
-      (argument_list :anchor
-                     (argument (unquoted_argument) @font-lock-variable-name-face)))
-
-     (block_command
-      (block)
-      (argument_list
-       (argument
-        ((unquoted_argument) @font-lock-constant-face
-         (:match ,(rx bol (or "SCOPE_FOR" "POLICIES" "VARIABLES" "PROPAGATE") eol)
-                 @font-lock-constant-face))))))
-   
-   :language 'cmake
-   :feature 'builtin
-   `(((env_var
-       ["$" "ENV" "{" "}"] @font-lock-preprocessor-face))
-
-     ((foreach_command
-       ((argument_list (argument) @font-lock-operator-face)
-        (:match ,(rx-to-string
-                  `(seq bol (or ,@cmake-ts-mode--foreach-options) eol))
-                @font-lock-operator-face))))
-     ((if_command
+      ((foreach_command
+        ((argument_list (argument) @font-lock-operator-face)
+         (:match ,(rx-to-string
+                   `(seq bol (or ,@cmake-ts-mode--foreach-options) eol))
+                 @font-lock-operator-face))))
+      ((if_command
+        ((argument_list (argument) @font-lock-operator-face)
+         (:match ,(rx-to-string
+                   `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
+                 @font-lock-operator-face))))
+      (elseif_command
        ((argument_list (argument) @font-lock-operator-face)
         (:match ,(rx-to-string
                   `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
-                @font-lock-operator-face))))
-     (elseif_command
-      ((argument_list (argument) @font-lock-operator-face)
-       (:match ,(rx-to-string
-                 `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
-               @font-lock-operator-face)))
-     (while_command
-      ((argument_list (argument) @font-lock-operator-face)
-       (:match ,(rx-to-string
-                 `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
-               @font-lock-operator-face)))
-     ((unquoted_argument) @font-lock-type-face
-      ;; Message <mode>
-      (:match ,(rx (or "STATUS" "WARNING" "ERROR" "DEBUG" "TRACE"
-                       "DEPRECATION" "NOTICE" "VERBOSE" "CONFIGURE_LOG"
-                       (seq "CHECK" (or "START" "PASS" "FAIL"))))
-              @font-lock-type-face))
+                @font-lock-operator-face)))
+      (while_command
+       ((argument_list (argument) @font-lock-operator-face)
+        (:match ,(rx-to-string
+                  `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
+                @font-lock-operator-face)))
+      ((unquoted_argument) @font-lock-type-face
+       ;; Message <mode>
+       (:match ,(rx (or "STATUS" "WARNING" "ERROR" "DEBUG" "TRACE"
+                        "DEPRECATION" "NOTICE" "VERBOSE" "CONFIGURE_LOG"
+                        (seq "CHECK" (or "START" "PASS" "FAIL"))
+                        ;; set_target_properties
+                        "PROPERTIES"
+                        ;; add_custom_target
+                        "DEPENDS"))
+               @font-lock-type-face))
 
-     ((normal_command
-       (identifier) @font-lock-builtin-face
-       (:match ,(rx-to-string
-                 `(seq bol
-                       (or ,@nvp-cmake-builtin)
-                       eol))
-               @font-lock-builtin-face))))
+      ((normal_command
+        (identifier) @font-lock-preprocessor-face
+        (:match ,(rx bol "set") @font-lock-preprocessor-face)))
 
-   :language 'cmake
-   :feature 'assignment
-   `(((normal_command
-       ((identifier) @_name
-        (:match ,(rx bol (or "add_executable" "add_custom_target") eol) @_name))
-       (argument_list :anchor (argument) @nvp-cmake-function-face)))
-     
-     ((normal_command
-       ((identifier) @_name
-        (:match ,(rx bos (or "set" "add")) @_name))
-       (argument_list :anchor (argument) @nvp-cmake-assignment-face))))
-   
-   :language 'cmake
-   :feature 'property
-   '((normal_command
-      (identifier)
-      (argument_list
-       (argument
-        ((unquoted_argument) @font-lock-constant-face
-         (:match "\\`[A-Z@][A-Z0-9_]+\\'" @font-lock-constant-face))))))
+      ((normal_command
+        (identifier) @font-lock-builtin-face
+        (:match ,(rx-to-string
+                  `(seq bol
+                        (or ,@nvp-cmake-builtin)
+                        eol))
+                @font-lock-builtin-face))))
 
-   ;; Missing keywords
-   :language 'cmake
-   :feature 'keyword
-   `([(block) (endblock) ,@cmake-ts-mode--keywords] @font-lock-keyword-face)))
+    :language 'cmake
+    :feature 'property
+    '((argument_list
+        (argument
+         ((unquoted_argument) @font-lock-constant-face
+          (:match "\\`[A-Z@][A-Z0-9_]+\\'" @font-lock-constant-face))))
+      ;; (normal_command
+      ;;  (identifier)
+      ;;  (argument_list
+      ;;   (argument
+      ;;    ((unquoted_argument) @font-lock-constant-face
+      ;;     (:match "\\`[A-Z@][A-Z0-9_]+\\'" @font-lock-constant-face)))))
+      )
+
+    ;; Missing keywords
+    :language 'cmake
+    :feature 'keyword
+    ;; Note: overwrites feature
+    `([(block) (endblock) ,@cmake-ts-mode--keywords] @font-lock-keyword-face))
+
+   (treesit-font-lock-rules
+    :language 'cmake
+    :feature 'argument
+    `((argument ((unquoted_argument) @font-lock-property-use-face
+                 (:match ,(rx bol (+ letter) eol) @font-lock-property-use-face)))))))
 
 
 (nvp:treesit-add-rules cmake-ts-mode
   :mode-fonts cmake-ts-mode--font-lock-settings
-  :new-fonts nvp-cmake-ts-extra-fonts)
+  :new-fonts (car nvp-cmake-ts-extra-fonts)
+  :post-fonts (cdr nvp-cmake-ts-extra-fonts))
 
 ;;;###autoload
 (defun nvp-cmake-ts-enable ()

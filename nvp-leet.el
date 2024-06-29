@@ -150,13 +150,12 @@
       (with-current-buffer buf
         (save-restriction
           (widen)
-          ;; (nvp-leet-minor-mode 1)
           (setq nvp-leet-problem-id problem-id)
           (pcase leetcode-prefer-language
             ("rust"
              (nvp-leet--rust-add-mod buf)
              (nvp-leet-setup-lang
-              :preamble "use crate::Solution;"
+              :preamble "use crate::Solution;\nuse std::collections::*;"
               :skip "use crate"))
             ("golang" (nvp-leet-setup-lang
                        :preamble "package leetcode"

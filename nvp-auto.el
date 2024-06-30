@@ -149,7 +149,8 @@ With prefix, prompts for DATE."
 ;;;###autoload
 (defun nvp-count-lines-or-region (arg)
   (interactive "P")
-  (if arg (funcall-interactively #'count-words-region (region-beginning) (region-end))
+  (if (or arg (region-active-p))
+      (funcall-interactively #'count-words-region (region-beginning) (region-end))
     (call-interactively #'count-lines-page)))
 
 ;;;###autoload

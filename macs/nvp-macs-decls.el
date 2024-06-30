@@ -266,8 +266,11 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-repl-send-line
        nvp-repl-send-buffer
        nvp-repl-send-defun
-       nvp-repl-cd-here
+       nvp-repl-cd
+       nvp-repl-pwd
+       nvp-repl-help
        nvp-repl-menu
+       nvp-repl-config
        nvp-repl-setup-input-filter
        nvp-repl-eval-show-result
        nvp-repl-eval-string

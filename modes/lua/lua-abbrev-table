@@ -68,3 +68,10 @@
   :parents (list prog-mode-abbrev-table)
   :regexp "\\(\\_<[!&|_:\\.A-Za-z0-9=]+\\)\\W*"
   :enable-function #'nvp-abbrev-expand-p)
+
+(define-abbrev-table 'inf-lua-mode-abbrev-table
+  '()
+  "Inf-Lua-Mode Abbrevs."
+  :enable-function #'nvp-abbrev-expand-p
+  :regexp "\\(\\_<[!&|_:\\.A-Za-z0-9=]+\\)\\W*"
+  :parents (list lua-mode-abbrev-table))

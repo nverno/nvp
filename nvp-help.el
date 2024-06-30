@@ -23,29 +23,35 @@
 
 ;;;###autoload
 (defun nvp-push-button-and-go (&optional n)
-  "Push the Nth button and stay in same frame."
+  "Push the Nth button and stay in same frame.
+Ignore buttons like `native-comp-function',`primitive-function'."
   (interactive "p")
-  (if n (setq n (abs n))
-    (setq n 1))
-  (when (button-at (point))
-    (cl-decf n))
-  (let ((pos (point))
-        (lim (point-max)))
-    (while (and (> n 0) (< pos lim))
-      (setq pos (next-button pos))
-      (if pos (cl-decf n)
-        (if (> pos (point))
+  (setq n (if n (abs n) 1))
+  (cl-flet ((good-p (pos)
+              (and-let* ((btn (button-at pos)))
+                (not (member (button-get pos 'help-args)
+                             '((native-comp-function)
+                               (primitive-function)))))))
+    (and (good-p (point))
+         (cl-decf n))
+    (let ((pos (point))
+          (lim (point-max)))
+      (while (and (> n 0)
+                  (< pos lim))
+        (setq pos (next-button pos))
+        (if (null pos)
             (setq pos (point-min)
                   lim (point))
-          (user-error "Not enough buttons"))))
-    (cl-assert (get-text-property pos 'button) t)
-    (goto-char pos)
-    (nvp-push-button 'same-window)))
+          (and (good-p pos)
+               (cl-decf n))))
+      (cl-assert (get-text-property pos 'button) t)
+      (goto-char pos)
+      (nvp-push-button 'same-window))))
 
 ;; -------------------------------------------------------------------
 ;;; Words
 
-;; Define word at point, with single prefix prompt for word, 
+;; Define word at point, with single prefix prompt for word,
 ;; with two prefix use lookup-word.
 ;;;###autoload
 (defun nvp-help-word-dwim (arg)

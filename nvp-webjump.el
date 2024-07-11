@@ -25,10 +25,10 @@
 
 (defun nvp-webjump-options (base options &optional prompt sep)
   (concat (string-trim-right base "/*") (or sep "/")
-          (nvp-completing-read (or prompt "ext: ") options)))
+          (completing-read (or prompt "ext: ") options)))
 
 (defun nvp-webjump-multiple (prompt alist)
-  (let* ((choice (nvp-completing-read prompt alist nil t))
+  (let* ((choice (completing-read prompt alist nil t))
          (urls (assoc-string choice alist 'case-fold)))
     (cons (cadr urls) (mapconcat 'identity (cddr urls) " "))))
 
@@ -43,19 +43,20 @@ try to find links there."
           (nvp-org-links nvp-webjump-org-links-re it)))))
 
 ;;;###autoload
-(defun nvp-browse-webjump (&optional prompt use-defaults)
+(defun nvp-browse-webjump (&optional prompt use-defaults choices no-browse)
   "Jump to website."
   (interactive (list (nvp:prefix 4) (nvp:prefix 16)))
-  (-let* (extra-args type
+  (-let* ((extra-args nil)
+          (type nil)
           (completion-ignore-case t)
-          (locals (and (not use-defaults)
+          (locals (and (not (or choices use-defaults))
                        (or (and prompt (read-from-minibuffer "URI: "))
                            (nvp-get-local-uris))))
-          (sites (or locals (append nvp-webjump-sites webjump-sites)))
+          (sites (or choices locals (append nvp-webjump-sites webjump-sites)))
           ((name . expr)
            (or (and prompt (cons nil locals))
                (assoc-string
-                (nvp-completing-read "WebJump to site: " sites nil t)
+                (completing-read "WebJump to site: " sites nil t)
                 sites 'case-fold)))
           (url
            (cond ((not expr) "")
@@ -63,6 +64,9 @@ try to find links there."
                  ((vectorp expr) (webjump-builtin expr name))
                  ((listp expr)
                   (pcase (car expr)
+                    ('choice
+                     (funcall #'nvp-browse-webjump nil nil
+                              (cdr expr) 'no-browse))
                     ('multiple
                      (-let (((url . args)
                              (funcall #'nvp-webjump-multiple
@@ -78,11 +82,15 @@ try to find links there."
                   (if (fboundp expr) (funcall expr name)
                     (error "WebJump URL function \"%s\" undefined" expr)))
                  (t (error "WebJump URL expression for \"%s\" invalid" name)))))
-    (pcase type
-      ('multiple (let ((browse-url-chrome-arguments extra-args))
-                   (browse-url (webjump-url-fix url))))
-      ('org-link (apply #'org-link-open url))
-      (_ (browse-url (webjump-url-fix url))))))
+    (if no-browse
+        (webjump-url-fix url)
+      (pcase type
+        ;; TODO(7/11/24): check args to open multiple in firefox
+        ('multiple (let ((browse-url-chrome-arguments extra-args)
+                         (browse-url-browser-function #'browse-url-chrome))
+                     (browse-url (webjump-url-fix url))))
+        ('org-link (apply #'org-link-open url))
+        (_ (browse-url (webjump-url-fix url)))))))
 
 (provide 'nvp-webjump)
 ;; Local Variables:

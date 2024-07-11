@@ -22,7 +22,8 @@
 (nvp:req 'nvp-makefile 'subrs)
 (nvp:auto "align" align-region)
 
-(nvp:decls :p (helm crm compilation) :f (nvp-makefile-indent)
+(nvp:decls :p (helm crm compilation)
+           :f (nvp-makefile-indent compilation-read-command)
            :v (align-rules-list align-exclude-rules-list))
 
 (nvp:package-define-root :name "nvp-makefile")

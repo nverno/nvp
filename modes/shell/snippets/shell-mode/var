@@ -2,4 +2,4 @@
 # name: var
 # key: _
 # --
-`($set (if (nvp-yas-in-soc) "" "\""))``$tmp`\${$1}`$tmp`$0
+`($set (if (nvp-yas-in-soc) "" "\""))``$tmp`\${$1}`$tmp`

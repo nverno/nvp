@@ -277,6 +277,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-repl-eval-sexp
        nvp-repl-eval-result-value
        nvp-repl-eval-show-result
+       nvp-repl-show-result
        nvp-shell
        nvp-shell-launch-terminal
        ;; indication

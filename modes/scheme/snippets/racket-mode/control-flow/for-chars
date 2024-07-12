@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: for char in string
+# key: forc
+# --
+(for ([${1:c} (in-string ${2:s})])$0)

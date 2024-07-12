@@ -30,8 +30,7 @@
   :enable-function #'nvp-scheme-abbrev-var-expand-p)
 
 (define-abbrev-table 'racket-mode-abbrev-table
-  '(
-    ("r" "require" nil :system t)
+  '(("r" "require" nil :system t)
     ("q" "quotient" nil :system t)
 
     ("n?" "number?" nil :system t)
@@ -63,7 +62,7 @@
     ("vr" "vector-ref" nil :system t)
     ("vs" "vector-set!" nil :system t)
     ("vtl" "vector->list" nil :system t)
-    
+
     ("app" "append" nil :system t)
     ("cip" "close-input-port" nil :system t)
     ("cop" "close-output-port" nil :system t)
@@ -72,6 +71,14 @@
     ("oif" "open-input-file" nil :system t)
     ("oof" "open-output-file" nil :system t)
     ("req" "require" nil :system t)
+
+    ("ist" "in-stream" nil :system t)
+    ("sttl" "stream->list" nil :system t)
+    ("stm" "stream-map" nil :system t)
+    ("stf" "stream-fold" nil :system t)
+
+    ("isq" "in-sequences" nil :system t)
+    ("sqtl" "sequence->list" nil :system t)
 
     ("wiff" "with-input-from-file" nil :system t)
     ("wotf" "with-output-to-file" nil :system t))

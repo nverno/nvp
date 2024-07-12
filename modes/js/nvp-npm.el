@@ -11,11 +11,17 @@
   "Return list of local npm packages, optionally RECACHING results."
   (or (and (null recache) nvp-npm--packages)
       ;; "npm list --depth=0 --only=dev --parseable | awk -F/ '{print $NF}'"
-      (--> (-> "npm list --parseable --json 2>/dev/null|jq -r '.dependencies|keys[]'"
-               (shell-command-to-string)
-               (string-trim)
-               (string-split))
-           (setq nvp-npm--packages it))))
+      (let ((buf (generate-new-buffer "npm")))
+        (unwind-protect
+            (when (zerop
+                   (call-process-shell-command
+                    (concat "npm list --parseable --json 2>/dev/null |"
+                            "jq -r '.dependencies|keys[]'")
+                    nil buf nil))
+              (setq nvp-npm--packages
+                    (with-current-buffer buf
+                      (string-split (string-trim (buffer-string))))))
+          (kill-buffer buf)))))
 
 (defun nvp-npm-jump (pkg loc)
   "Jump to PKG location LOC."

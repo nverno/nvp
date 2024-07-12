@@ -45,7 +45,7 @@
 
 
 ;; -------------------------------------------------------------------
-;;; Movement 
+;;; Movement
 
 (defun nvp-dired-start-of-files ()
   (interactive)
@@ -201,42 +201,44 @@ With prefix SILENT, save files without prompting."
     (when ext
       (dired-mark-if (looking-at-p (concat ".*." ext)) "file extension"))))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; External actions
 
-;;-- Open external files
-
-;; Open current or marked dired files in external app.
 (nvp:auto "conda-env" 'conda-env-read-env)
-(defun nvp-dired-external-open (&optional _arg)
+(defvar nvp-dired-vlc-files)
+
+(defun nvp-dired-external-open (&optional arg)
+  "Open current or marked dired files in external app."
   (interactive "p")
   (let ((files (or (dired-get-marked-files)
-                   (dired-file-name-at-point))))
-    (nvp:with-gnu/w32
-        (mapc (lambda (path)
-                (let ((process-connection-type nil)
-                      (ext (file-name-extension path)))
-                  (pcase ext
-                    ("ipynb"
-                     (let ((env (conda-env-read-env)))
-                       (start-process-shell-command
-                        "jupyter-notebook"
-                        (nvp:comint-buffer :name "*jupyter-notebook*")
-                        (format "cd %s && source activate %s && jupyter-notebook &"
-                                (read-directory-name "Jupyter root: ") env))))
-                    ("mp4"
+                   (dired-file-name-at-point)))
+        (grouped nil))
+    (mapc (lambda (path)
+            (let ((process-connection-type nil)
+                  (ext (file-name-extension path)))
+              (pcase ext
+                ("ipynb"
+                 (let ((env (conda-env-read-env)))
+                   (start-process-shell-command
+                    "jupyter-notebook"
+                    (nvp:comint-buffer :name "*jupyter-notebook*")
+                    (format "cd %s && source activate %s && jupyter-notebook &"
+                            (read-directory-name "Jupyter root: ") env))))
+                ((pred (string-match-p nvp-dired-vlc-files))
+                 (if arg
                      (start-process-shell-command
                       "vlc" nil
-                      (format "vlc -L %s &" (shell-quote-argument path))))
-                    (_ (start-process "" nil "xdg-open" path)))))
-              files)  
-      (mapc (lambda (path)
-              (w32-shell-execute "open" (w32-long-file-name path)))
-            files))))
+                      (format "vlc -L %s &" (shell-quote-argument path)))
+                   (push (shell-quote-argument path) grouped)))
+                (_ (start-process "" nil "xdg-open" path)))))
+          files)
+    (when grouped
+      (start-process-shell-command
+       "vlc" nil (format "vlc -L %s &" (mapconcat 'identity grouped))))))
 
-;; Open directory in gui
 (defun nvp-dired-external-explorer ()
+  "Open directory in gui."
   (interactive)
   (nvp:with-gnu/w32
       (let ((process-connection-type nil)
@@ -246,8 +248,8 @@ With prefix SILENT, save files without prompting."
         (start-process "" nil prog "."))
     (w32-shell-execute "open" default-directory)))
 
-;; Open file[s] in external program 
 (defun nvp-dired-external ()
+  "Open file[s] in external program."
   (interactive)
   (let ((files (dired-get-marked-files)))
     (dolist (file files)
@@ -258,7 +260,8 @@ With prefix SILENT, save files without prompting."
               (start-process cmd nil cmd file)
             (w32-shell-execute (cdr (assoc 'cmd prog)) file)))))))
 
-;;-- Install info
+
+;;; Install info
 
 (defun nvp-dired-convert-and-install-info (info-dir &optional keep-info)
   "Convert marked .org files to .info and install.
@@ -283,7 +286,7 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
               (copy-file info dest t)
               ;; delete .info file if .org exists and moving to different
               ;; info directory
-              (and (not keep-info) 
+              (and (not keep-info)
                    (file-exists-p (concat base ".org"))
                    (delete-file info))
               (nvp:with-process "install-info"
@@ -358,7 +361,7 @@ to `nvp/info' if INFO-DIR is nil, but can be prompted with \\[universal-argument
   (interactive)
   (let ((files (dired-get-marked-files)))
     (mapc (lambda (f) (with-current-buffer (find-file-noselect f)
-                   (org-latex-export-to-pdf)))
+                        (org-latex-export-to-pdf)))
           files)))
 
 ;; from abo-abo config

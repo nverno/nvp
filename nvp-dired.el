@@ -209,27 +209,31 @@ With prefix SILENT, save files without prompting."
 
 ;; Open current or marked dired files in external app.
 (nvp:auto "conda-env" 'conda-env-read-env)
-(defun nvp-dired-external-open ()
-  (interactive)
+(defun nvp-dired-external-open (&optional _arg)
+  (interactive "p")
   (let ((files (or (dired-get-marked-files)
                    (dired-file-name-at-point))))
     (nvp:with-gnu/w32
-     (mapc (lambda (path)
-             (let ((process-connection-type nil)
-                   (ext (file-name-extension path)))
-               (pcase ext
-                 ("ipynb"
-                  (let ((env (conda-env-read-env)))
-                    (start-process-shell-command
-                     "jupyter-notebook"
-                     (nvp:comint-buffer :name "*jupyter-notebook*")
-                     (format "cd %s && source activate %s && jupyter-notebook &"
-                             (read-directory-name "Jupyter root: ") env))))
-                 (_ (start-process "" nil "xdg-open" path)))))
-           files)  
-     (mapc (lambda (path)
-             (w32-shell-execute "open" (w32-long-file-name path)))
-           files))))
+        (mapc (lambda (path)
+                (let ((process-connection-type nil)
+                      (ext (file-name-extension path)))
+                  (pcase ext
+                    ("ipynb"
+                     (let ((env (conda-env-read-env)))
+                       (start-process-shell-command
+                        "jupyter-notebook"
+                        (nvp:comint-buffer :name "*jupyter-notebook*")
+                        (format "cd %s && source activate %s && jupyter-notebook &"
+                                (read-directory-name "Jupyter root: ") env))))
+                    ("mp4"
+                     (start-process-shell-command
+                      "vlc" nil
+                      (format "vlc -L %s &" (shell-quote-argument path))))
+                    (_ (start-process "" nil "xdg-open" path)))))
+              files)  
+      (mapc (lambda (path)
+              (w32-shell-execute "open" (w32-long-file-name path)))
+            files))))
 
 ;; Open directory in gui
 (defun nvp-dired-external-explorer ()

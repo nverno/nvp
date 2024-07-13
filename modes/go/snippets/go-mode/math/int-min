@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: INT_MIN
+# key: imin
+# --
+math.MinInt32

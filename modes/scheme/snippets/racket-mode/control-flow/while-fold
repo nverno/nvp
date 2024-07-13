@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: while
+# name: fold while
 # key: whi
 # --
 (for/fold ([${1:acc} ${2:init}]

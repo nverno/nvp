@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: match-let
+# key: ml
+# --
+(match-let ([${1:(cons x y)} ${2:lst}]$3)$0)

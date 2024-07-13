@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: printf
+# key: prf
+# expand-env: ((yas-after-exit-snippet-hook '(nvp-yas-expand-on-exit)))
+# --
+(printf "${1:~a\n}"$0${1:$(nvp-yas-gen-fields "~" " " nil " ")})

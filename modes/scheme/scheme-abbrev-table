@@ -45,6 +45,7 @@
     ("lts" "list->string" nil :system t)
     ("ltv" "list->vector" nil :system t)
     ("lr" "list-ref" nil :system t)
+    ("ml" "match-let" nil :system t)
     ("mh" "make-hash" nil :system t)
     ("mp" "make-pipe" nil :system t)
     ("mv" "make-vector" nil :system t)

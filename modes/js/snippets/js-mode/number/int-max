@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: INT_MAX
+# key: imax
+# --
+Number.MAX_SAFE_INTEGER

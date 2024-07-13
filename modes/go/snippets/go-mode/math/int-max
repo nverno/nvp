@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: INT_MAX
+# key: imax
+# --
+math.MaxInt32

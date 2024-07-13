@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: while-loop
+# key: whi
+# --
+(let loop ($1)
+  (when ${2:cond}
+    $0
+    (loop)))

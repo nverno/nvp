@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: mxn
+# key: mxn
+# --
+int m = ${1:matrix}.length, n = ${2:$1[0]}.length;

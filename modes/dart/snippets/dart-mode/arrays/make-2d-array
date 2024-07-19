@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: make 2d array
+# key: aa
+# --
+List<List<${1:int}>> ${2:arr} = List.generate(${3:m}, (_) => List.filled(${4:n}${5:, 0}));

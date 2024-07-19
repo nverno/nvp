@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: on
+# key: on
+# --
+${1:$(if (> (length yas-text) 0) "on " "")}${1:SomeException}${1:$($s? " ")}${2:$($s? "catch (")}${2:error}${2:$($s? ") ")}{
+  $0
+}

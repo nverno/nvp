@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: inline if else
+# key: if-
+# --
+if (${1:condition}) $2 else $3;

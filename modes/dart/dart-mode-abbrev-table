@@ -1,0 +1,8 @@
+;; -*- coding: utf-8; lexical-binding: t; -*-
+
+(define-abbrev-table 'dart-mode-abbrev-table
+  '(("ret" "return" nil :system t)
+    ("cont" "continue" nil :system t))
+  "Dart-Mode Abbrevs."
+  :enable-function #'nvp-abbrev-expand-p
+  :parents (list prog-mode-abbrev-table))

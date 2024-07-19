@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: if_return
+# key: ifr
+# --
+if (${1:condition}) return${2:$($s? " ")}${2:result};

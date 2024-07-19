@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: try_on_finally
+# key: tryof
+# --
+try {
+  $0
+} ${1:$($s? "on ")}${1:SomeException}${1:$($s? " ")}${2:$($s? "catch (")}${2:error}${2:$($s? ") ")}{
+  
+} finally {
+  
+}

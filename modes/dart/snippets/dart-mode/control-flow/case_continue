@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: case_continue
+# key: casc
+# --
+case ${1:match}:
+  continue${2:$($s? " ")}${2:label};

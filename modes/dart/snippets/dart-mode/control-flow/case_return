@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: case_return
+# key: casr
+# --
+case ${1:match}:
+  return${2:$($s? " ")}${2:result};

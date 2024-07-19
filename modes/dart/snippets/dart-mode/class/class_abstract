@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: class_abstract
+# key: ca
+# --
+abstract class ${1:`(s-upper-camel-case (nvp:bfn))`}${2:$($s? " extends ")}${2:ParentClass}${3:$($s? " with ")}${3:Mixin}${4:$($s? " implements ")}${4:Interface} {
+  $0
+}

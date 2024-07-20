@@ -5,8 +5,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'avy)
-(nvp:decls :p (ace) :v (org-link-any-re) :f (ace-link-org))
-(nvp:auto "ace-link" ace-link--help-collect)
+(nvp:decls :p (ace) :v (org-link-any-re goto-address-mode) :f (ace-link-org))
+
 
 (defvar nvp-link-default-imenu t
   "Jump to imenu in visibile window when no other handlers.")
@@ -71,7 +71,7 @@
   "Mapping of `major-mode' to ace-link actions.")
 
 (defvar nvp-ace-link-minor-mode-actions
-  '((compilation-shell-minor-mode . ace-link-compilation)
+  '((compilation-shell-minor-mode . nvp-link-compilation)
     (nvp-mark-minor-mode          . nvp-link-mark)
     (lsp-mode                     . nvp-link-lsp)
     (goto-address-mode            . ace-link-addr))
@@ -167,9 +167,21 @@ With \\[universal-argument] call in next visible window."
 ;; -------------------------------------------------------------------
 ;;; Link Extensions
 
+(nvp:auto "ace-link" ace-link--addr-collect)
 (eval-when-compile
+  (defmacro nvp:link--action (pos &rest body)
+    "If POS is an address go there, otherwise handle with BODY."
+    (declare (indent 1) (debug t))
+    `(if (and goto-address-mode
+              (number-or-marker-p ,pos)
+              (cl-some (lambda (ov) (overlay-get ov 'goto-address))
+                       (overlays-at ,pos)))
+         (progn (goto-char (1+ ,pos))
+                (goto-address-at-point))
+       ,@body))
+
   (cl-defmacro nvp:define-link (name &rest action
-                                     &key collector style
+                                     &key collector style address
                                      &allow-other-keys)
     "Wrap `avy-with', bind \\='it to return of COLLECTOR in ACTION."
     (declare (indent 1) (debug t))
@@ -178,9 +190,27 @@ With \\[universal-argument] call in next visible window."
        (interactive)
        (let ((it (avy-with ,name
                    (avy-process
-                    ,collector
+                    ,(if (null address)
+                         collector
+                       (macroexp-let2 nil collector collector
+                         `(if goto-address-mode
+                              (sort (append (ace-link--addr-collect) ,collector))
+                            ,collector)))
                     (avy--style-fn ,(or style 'avy-style))))))
-         ,@action))))
+         ,(if address
+              `(nvp:link--action it ,@action)
+            `(progn ,@action))))))
+
+;;; Compilation
+(nvp:auto "ace-link" ace-link--eww-collect)
+(nvp:decl compile-goto-error)
+
+(nvp:define-link nvp-link-compilation
+  :address t
+  :collector (--map (cdr it) (ace-link--eww-collect 'help-echo))
+  (when (number-or-marker-p it)
+    (goto-char (1+ it))
+    (compile-goto-error)))
 
 ;;; Mark
 (nvp:decl nvp-mark-goto-marker-at-point nvp-mark--collect-marks)
@@ -249,10 +279,12 @@ With \\[universal-argument] call in next visible window."
     (nreverse res)))
 
 (nvp:define-link nvp-link-shell
+  :address t
   :collector (--map (cdr it) (nvp-link--shell-collect))
   (when (numberp it) (avy-action-yank-line it)))
 
 ;;; Lsp
+(nvp:auto "ace-link" ace-link--help-collect)
 (nvp:define-link nvp-link-lsp
   :collector (nvp-link--overlay-collect 'lsp-link)
   (when (numberp it)
@@ -300,6 +332,7 @@ With \\[universal-argument] call in next visible window."
 
 ;;; Noman
 (nvp:define-link nvp-link-noman
+  :address t
   :collector (nvp-link--overlay-collect 'action 'noman--follow-link)
   (when (numberp it)
     (goto-char (1+ it))

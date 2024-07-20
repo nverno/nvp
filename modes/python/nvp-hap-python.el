@@ -20,10 +20,11 @@
     (thingatpt (thing-at-point 'symbol))
     (doc-buffer
      (save-window-excursion
-       (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t)))))
-         ;; (with-current-buffer nvp-anaconda-doc-buffer
-         ;;   (erase-buffer))
+       (let ((display-buffer-overriding-action
+              '(nil . ((inhibit-switch-frame . t)))))
          (anaconda-mode-call "show_doc" 'nvp-anaconda-mode-show-doc-callback)
+         ;; TODO(7/20/24): handle async
+         (sit-for 0.2)
          (--when-let (get-buffer nvp-anaconda-doc-buffer)
            (when (buffer-live-p it)
              (with-current-buffer it

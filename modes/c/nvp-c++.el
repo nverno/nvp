@@ -11,14 +11,14 @@
   (nvp-newline-dwim--comment syntax arg " * "))
 
 (defface font-lock-doxygen-face
-  '((nil (:foreground "SaddleBrown" :background "#f7f7f7")))
+  '((t (:foreground "#dd8920")))
   "Special face to highlight doxygen tags such as <tt>...</tt>
 and <code>...</code>."
   :group 'font-lock-highlighting-faces)
 
 (defvar-local nvp-c++--add-font t)
 (defun nvp-c++-doxygen ()
-  "Toggle font-locking for doxygen"
+  "Toggle font-locking for doxygen."
   (interactive)
   (if (setq nvp-c++--add-font (not nvp-c++--add-font))
       (font-lock-refresh-defaults)

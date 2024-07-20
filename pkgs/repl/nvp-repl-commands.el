@@ -35,7 +35,10 @@
                   ((pred stringp)
                    (nvp-repl-send-string
                     ,(if args `(format ,cmd ,@args) `,cmd) 'insert 'no-newline))
-                  ((pred functionp) (funcall ,cmd ,@args))
+                  ((pred functionp)
+                   (--when-let (funcall ,cmd ,@args)
+                     (and (stringp it)
+                          (nvp-repl-send-string it 'insert 'no-newline))))
                   ((pred symbolp) (eval ,cmd))
                   ,@(when args
                       `((`(:no-arg ,no-arg :with-arg ,with-arg)

@@ -1,0 +1,25 @@
+# -*- mode: snippet -*-
+# name: toposort with dfs
+# key: g_topo
+# --
+bool dfs_topo(int u, int& cur, vector<int>& order${1:, ${2:vector<vector<int>>}& g}) {
+  order[u] = -1;
+  for (auto& v : g[u]) {
+      if (order[v] >= 0) continue;
+      if (order[v] == -1 || !dfs_topo(v, cur, order${1:$($s? ", g")}))
+          return false;
+  }
+  order[u] = cur++;
+  return true;
+}
+
+// nodes 1..n, returns false if cycle detected
+bool toposort(int n, vector<int>& order$1) {
+  order.resize(n, -2);
+  int cur = 0;
+  for (int i = 0; i < n; ++i)
+      if (order[i] == -2)
+          if (!dfs_topo(i, cur, order${1:$($s? ", g")}))
+              return false;
+  return true;
+}

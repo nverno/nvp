@@ -33,10 +33,50 @@
   :send-statement #'python-shell-send-statement
   :send-file #'python-shell-send-file
   ;:eval-sexp #'nvp-python-eval-last-sexp
-  :cmd-handlers '(("?" . "help(%s)"))
+  :cmd-handlers '(("?" . nvp-python-repl-help))
   :cd-cmd "import os; os.chdir(\"%s\")"
   :pwd-cmd "import os; os.getcwd()"
-  :help-cmd '(:no-arg "help()" :with-arg "help(%s)"))
+  :help-cmd #'nvp-python-repl-help)
+  
+;;; TODO(7/20/24): in IPython send '?' instead of 'help'
+(defun nvp-python-repl-help (&optional thing _proc)
+  "Enable help minor mode."
+  (cond (nvp-python-repl-help-mode (or thing "help"))
+        (thing (format "help(\"%s\")" thing))
+        (t (with-current-buffer (nvp-repl-current-buffer)
+             (nvp-python-repl-help-mode 1)
+             "help()"))))
+
+(defvar nvp-python--output-buffer nil)
+
+(defun nvp-python-repl-help-output-filter (output)
+  "Disable help mode when prompt changes back to recognized prompt."
+  (when nvp-python-repl-help-mode
+    (setq-local nvp-python--output-buffer
+                (concat nvp-python--output-buffer
+                        (ansi-color-filter-apply output)))
+    (when (python-shell-comint-end-of-output-p
+           nvp-python--output-buffer)
+      (nvp-python-repl-help-mode -1)
+      (setq-local nvp-python--output-buffer "")))
+  output)
+
+(defvar-local nvp-python--capf-cached '())
+
+(define-minor-mode nvp-python-repl-help-mode
+  "Minor mode active in repl when interpreter is in help mode.
+Fixes problems with `python-shell-completion-get-completions' when prompt
+changes."
+  :lighter " <help>"
+  (if nvp-python-repl-help-mode
+      (progn
+        (setq-local nvp-python--capf-cached completion-at-point-functions
+                    completion-at-point-functions nil)
+        (add-hook 'comint-output-filter-functions
+                  #'nvp-python-repl-help-output-filter nil t))
+    (setq-local completion-at-point-functions nvp-python--capf-cached)
+    (remove-hook 'comint-output-filter-functions
+                 #'nvp-python-repl-help-output-filter t)))
 
 
 (defsubst nvp-python--statement-bounds ()

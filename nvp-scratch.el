@@ -46,11 +46,13 @@ With prefix, dont run modes hook."
                (not nvp-scratch--hookless))
           (funcall mode)))
     (setq-local nvp-scratch--hookless hookless)
-    (unless (or (null start)
-                (equal start comment-start))
+    (when (and comment-start
+               (not (or (null start)
+                        (equal start comment-start))))
       (replace-regexp-in-region
-       (format "^\\s-*\\(?:%s\\)+\\s-*" (regexp-quote (string-trim-right start)))
-       (concat (string-trim comment-start) " ")
+       (format "^\\s-*\\(?:%s+\\)+\\s-*"
+               (regexp-quote (string-trim-right start)))
+       (comment-padright comment-start (comment-add nil))
        (point-min) (point-max)))
     (setq header-line-format
           (concat (if hookless "[hookless] " "") (symbol-name mode))))
@@ -75,9 +77,6 @@ With prefix, dont run modes hook."
   :lighter " 𝓢"
   (when nvp-scratch-minor-mode
     (setq-local kill-buffer-hook '(nvp-window-configuration-restore))
-    (when (eq (point-min) (point-max))
-      (let ((comment-start (or comment-start "#")))
-        (insert (nvp-comment-string "Jah lives chilren\n" 2))))
     (nvp:msg "Press \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-kill-buffer] to kill \
 this buffer or \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-switch-modes] \
 to switch major modes.")))

@@ -1,8 +1,6 @@
 ;;; nvp-yas.el --- snippet helpers -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
-;; XXX: should the base snippets be compiled? They rarely change
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'yasnippet))
@@ -134,6 +132,7 @@ If TRIM is non-nil, whitespace is removed from selected text.
 
 (defalias 'yas-comment-string 'nvp-yas-comment)
 
+;;; XXX(7/22/24): can replace with newcomment.el stuff?
 (defun nvp-comment-string (str &optional padlen)
   "Wrap STR with modes starting and ending comment delimiters.
 If PADLEN is non-nil, start with PADLEN comment starters."

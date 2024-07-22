@@ -41,6 +41,7 @@
     (let (ielm-dynamic-return)
       (newline-and-indent))))
 
+;; Works as both command for `nvp-repl-help' and handler for "," in repl
 (defun nvp-ielm-help (&optional arg _proc)
   (interactive "P")
   (and arg (setq arg (nvp:as-symbol arg)))
@@ -64,8 +65,8 @@
         (user-error "no source buffer for '%S'" (current-buffer)))
     (ielm-change-working-buffer (current-buffer))))
 
-;; Send STR to ielm without inserting into repl
 (defun nvp-ielm-send-string (_proc str &optional for-effect)
+  "Send STR to ielm without inserting into repl."
   (with-current-buffer (nvp-repl-current-buffer)
     (ielm-eval-input str for-effect)))
 
@@ -81,6 +82,7 @@
     :eval-filter (lambda (s) (replace-regexp-in-string "[ \n\t]+" " " s))
     :send-input #'ielm-send-input
     :send-string #'nvp-ielm-send-string
+    :cmd-handlers '(("," . nvp-ielm-help)) ; leave "?" for characters
     :help-cmd #'nvp-ielm-help
     :pwd-cmd #'ielm-print-working-buffer
     :cd-cmd #'nvp-ielm-cd))

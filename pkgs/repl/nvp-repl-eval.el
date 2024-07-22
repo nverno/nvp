@@ -53,8 +53,8 @@
 
 ;;;###autoload
 (defun nvp-repl-eval-sexp (&optional insert)
-  "Eval sexp before before.
-INSERT with prefix."
+  "Eval sexp before point.
+With prefix, INSERT result at point."
   (interactive "P")
   (nvp-with-repl (eval-sexp)
     (if eval-sexp (funcall-interactively eval-sexp insert)

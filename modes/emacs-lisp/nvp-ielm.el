@@ -25,12 +25,12 @@
 ;; use `pop-to-buffer' and set local `ielm-working-buffer'
 (define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
   (let ((orig-buff (current-buffer)))
-   (with-current-buffer (get-buffer-create "*ielm*")
-     (nvp:with-letf #'pop-to-buffer-same-window #'ignore
-       (funcall orig-fn))
-     (prog1 (current-buffer)
-       (setq-local ielm-working-buffer orig-buff)
-       (pop-to-buffer (current-buffer))))))
+    (with-current-buffer (get-buffer-create "*ielm*")
+      (nvp:with-letf #'pop-to-buffer-same-window #'ignore
+        (funcall orig-fn))
+      (prog1 (current-buffer)
+        (setq-local ielm-working-buffer orig-buff)
+        (pop-to-buffer (current-buffer))))))
 
 ;; ielm-return always wants to eval when smartparens close sexps
 (defun nvp-ielm-nl (&optional arg)
@@ -41,18 +41,27 @@
     (let (ielm-dynamic-return)
       (newline-and-indent))))
 
-(defun nvp-ielm-help (&rest _)
+(defun nvp-ielm-help (&optional arg _proc)
   (interactive "P")
-  (save-window-excursion (describe-mode ielm-working-buffer))
-  (display-buffer (help-buffer)))
+  (and arg (setq arg (nvp:as-symbol arg)))
+  (save-window-excursion
+    (funcall-interactively
+     (cond ((null arg)
+            (setq arg ielm-working-buffer)
+            #'describe-mode)
+           ((fboundp arg) #'describe-function)
+           ((boundp arg) #'describe-variable)
+           (t (user-error "unbound symbol: '%S'" arg)))
+     arg))
+  (prog1 t (display-buffer (help-buffer))))
 
 (defun nvp-ielm-cd (&optional _arg)
   (interactive "P")
-  (if (eq major-mode 'inferior-emacs-lisp-mode)
+  (if (derived-mode-p 'inferior-emacs-lisp-mode)
       (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
           (and (buffer-live-p it)
                (ielm-change-working-buffer it))
-        (message "%s not asociated with a source buffer" (current-buffer)))
+        (user-error "no source buffer for '%S'" (current-buffer)))
     (ielm-change-working-buffer (current-buffer))))
 
 ;; Send STR to ielm without inserting into repl

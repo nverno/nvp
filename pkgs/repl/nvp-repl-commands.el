@@ -83,12 +83,12 @@ Prompt with \\[universal-argument]."
     (and and-go (pop-to-buffer (nvp-repl-buffer)))))
 
 ;;;###autoload
-(defun nvp-repl-help (&optional thing and-go)
+(defun nvp-repl-help (&optional thing)
   "Print repl help for THING or repl."
-  (interactive (if current-prefix-arg
-                   (list (read-string "Help: " (thing-at-point 'symbol)) t)))
-  (nvp:call-repl-cmd help-cmd (thing)
-    (and and-go (pop-to-buffer (nvp-repl-buffer)))))
+  (interactive
+   (when current-prefix-arg
+     (list (read-string "Help: " (thing-at-point 'symbol)))))
+  (nvp:call-repl-cmd help-cmd (thing)))
 
 ;;;###autoload
 (defun nvp-repl-config (&optional alternative and-go)

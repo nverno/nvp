@@ -9,7 +9,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp:decls :f (auth-source-search))
-(nvp:auto "calendar" calendar-read-date calendar-current-date calendar-date-string)
+(nvp:auto "calendar" calendar-read-date calendar-date-string)
 (nvp:auto "nvp-read" nvp-read-mode-config)
 
 ;; -------------------------------------------------------------------
@@ -112,25 +112,28 @@
   (kill-emacs))
 
 ;;;###autoload
-(defun nvp-insert-date (date)
-  "Insert DATE string, defaulting to current date.
-With prefix, prompts for DATE."
-  (interactive
-   (list (nvp:prefix '>1 (calendar-read-date) (calendar-current-date))))
-  (insert (calendar-date-string date)))
+(defun nvp-insert-date ()
+  "Insert date string, defaulting to current date."
+  (interactive)
+  (insert
+   (if current-prefix-arg
+       (calendar-date-string (calendar-read-date))
+     (nvp-today))))
 
 ;;;###autoload
 (defun nvp-comment-timestamped (date)
   "Insert comment with date. Prompt for date with prefix."
-  (interactive (if current-prefix-arg
-                   (calendar-read-date)
-                 (calendar-current-date)))
+  (interactive (list (if current-prefix-arg
+                         (calendar-date-string (calendar-read-date))
+                       (nvp-today))))
   (call-interactively (pcase major-mode
                         (`org-mode #'org-comment-dwim)
                         (_ (if (bound-and-true-p paredit-mode)
                                #'paredit-comment-dwim
                              #'comment-dwim))))
-  (insert "(" (calendar-date-string date) ")"))
+  (if yas-minor-mode
+      (yas-expand-snippet (concat "${1:XXX}(" date "): "))
+    (insert "XXX(" date "): ")))
 
 ;;;###autoload
 (defun nvp-lookup-password (host user port)

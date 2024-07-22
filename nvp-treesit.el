@@ -86,8 +86,8 @@ With prefix, add neovim sources first."
 
 (defvar-keymap nvp-treesit-minor-mode-map
   :doc "T/S keymap"
+  ;; "C-c C-s"  #'ts-error-toggle
   "C-c C-v"  #'nvp-treesit-validate
-  "C-c C-s"  #'ts-error-toggle
   "<f2> z j" #'nvp-treesit-explorer-jump
   "C-M-?"    #'treesit-inspect-node-at-point)
 

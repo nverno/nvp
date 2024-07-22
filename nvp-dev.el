@@ -1,11 +1,10 @@
-;;; nvp-dev.el --- elisp devel helpers -*- lexical-binding: t; -*-
+;;; nvp-dev.el --- Elisp dev util -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;
 ;; TODO:
 ;; - function to remove all methods from generic
 ;; - how to remove all notifications (filenotify) without storing them?
-;; - useful smie debugging output: #<marker at 7444 in tuareg-opam.el>
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
@@ -62,17 +61,14 @@
   ("S"    . smie-config-show-indent)
   ("v"    . nvp-dev-describe-variable))
 
-;; -------------------------------------------------------------------
-;;; Advice
-
 ;;;###autoload
 (defun nvp-dev-advice-remove-all (sym)
   "Remove all advice from SYM."
   (interactive "aFunction: ")
   (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
 
-;; -------------------------------------------------------------------
-;;; Pretty print data
+
+;;; Pretty Printing datastructures
 
 (defun nvp-pp-struct (struct &optional level)
   "Pretty print STRUCT entry."
@@ -220,20 +216,19 @@
         (nvp-dev--fontify-syntax)
         (pop-to-buffer (current-buffer))))))
 
-(defun nvp-dev-features (prefix)
-  "List my loaded `features', or prompt for PREFIX."
-  (interactive (list (nvp:prefix 4 (read-string "Prefix: ") "nvp")))
-  (let* ((fs (sort
-              (--filter (string-prefix-p prefix (symbol-name it)) features)
-              #'string-lessp))
-         (title (format "Loaded '%s' features (%d)" prefix (length fs))))
+(defun nvp-dev-features (filter)
+  "List loaded `features' matching \"^nvp\\b\" or FILTER."
+  (interactive (list (nvp:prefix 4 (read-string "Regexp filter: ") "^nvp\\b")))
+  (let* ((fs (sort (--filter (string-match-p filter (symbol-name it)) features)
+                   #'string-lessp))
+         (title (format "Features filtered by /%s/ (count = %d)"
+                        filter (length fs))))
     (nvp:with-results-buffer :title title
       (cl-prettyprint fs))))
 
-;; dump lang's `c-lang-constants'
-
 ;;;###autoload
 (defun nvp-dev-c-lang-constants (&optional mode)
+  "Dump `c-lang-constants' for MODE."
   (interactive (list (nvp-read-mode)))
   (require 'cc-mode)
   (setq mode (intern (string-remove-suffix "-mode" (or mode major-mode))))
@@ -251,9 +246,6 @@
              (error (princ "<failed>")))
            (terpri)))
        c-lang-constants))))
-
-;; -------------------------------------------------------------------
-;;; Overlays
 
 ;; https://www.emacswiki.org/emacs/EmacsOverlays
 (defun nvp-dev-list-overlays (&optional pos)
@@ -288,8 +280,7 @@
         (font-lock-flush)
         (font-lock-ensure)))))
 
-
-;; -------------------------------------------------------------------
+
 ;;; Syntax
 
 (nvp:lazy-defvar nvp-syntax-at-point-help
@@ -354,8 +345,7 @@ With prefix, display in same frame using `display-buffer' ACTION."
               (forward-line 1)))
           (hl-line-mode))))))
 
-
-;; -------------------------------------------------------------------
+
 ;;; Keys
 
 ;; (defun nvp-describe-key-events (&optional arg)

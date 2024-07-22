@@ -194,6 +194,7 @@
     (advice-add 'smie-indent-line :after #'smie-config-show-indent)
     (message "Enabled verbose indent")))
 
+;; Useful smie debugging output: #<marker at 7444 in tuareg-opam.el>
 (transient-define-prefix nvp-edebug-smie ()
   "Smie debug"
   [["Smie"

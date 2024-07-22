@@ -24,6 +24,22 @@ Defaults to `defun' at point."
      :pulse t (list beg end)))
   (indent-region beg end))
 
+;;;###autoload
+(defun nvp-duplicate-dwim (&optional arg)
+  "Duplicate last (including this) nonempty line ARG times.
+If a region or rectangle is active, dupe that instead."
+  (interactive "p")
+  (if (or (use-region-p)
+          (bound-and-true-p rectangle-mark-mode)
+          (not (nvp:line-empty-p)))
+      (duplicate-dwim arg)
+    (let ((col (current-column)))
+      (while (and (not (bobp))
+                  (nvp:line-empty-p))
+        (forward-line -1))
+      (move-to-column col)
+      (duplicate-dwim arg))))
+
 
 ;;; Sorting
 
@@ -132,86 +148,7 @@ With prefix sort in REVERSE."
     ("w" "Words" nvp-sort-words)]])
 
 
-;; -------------------------------------------------------------------
-;;; Duplicate
-
-(defvar-keymap nvp-repeat-duplicate-line-map
-  :repeat t
-  "l" #'nvp-duplicate-line-or-region)
-
-;; Duplicates the current line or region arg times.
-;; if there's no region, the current line will be duplicated
-;; (or last non-empty).
-;;;###autoload
-(defun nvp-duplicate-line-or-region (arg)
-  (interactive "p")
-  (if (use-region-p)
-      (let ((beg (region-beginning))
-            (end (region-end)))
-        (nvp--duplicate-region arg beg end))
-    (nvp--duplicate-last-nonempty-line arg)))
-
-;; duplicate the current line num times.
-(defun nvp-duplicate-current-line (&optional num)
-  (interactive "p")
-  (if (bound-and-true-p paredit-mode)
-      (nvp--paredit-duplicate-current-line)
-    (save-excursion
-      (when (eq (nvp:point 'eol) (point-max))
-        (goto-char (point-max))
-        (newline)
-        (forward-char -1))
-      (nvp--duplicate-region num (nvp:point 'bol) (1+ (nvp:point 'eol))))))
-
-(defun nvp--duplicate-back-and-dupe ()
-  (interactive)
-  (forward-line -1)
-  (nvp-duplicate-current-line))
-
-;; duplicates the region bounded by start and end num times.
-;; if no start and end is provided, the current region-beginning and
-;; region-end is used.
-(defun nvp--duplicate-region (&optional num start end)
-  (interactive "p")
-  (save-excursion
-    (let* ((start (or start (region-beginning)))
-	   (end (or end (region-end)))
-	   (region (buffer-substring start end)))
-      (goto-char end)
-      (dotimes (_i num)
-	(insert region)))))
-
-;; Duplicate the current of previous line that isn't blank.
-(defun nvp--duplicate-last-nonempty-line (&optional num)
-  (interactive "p")
-  (let ((back 0))
-    (while (and (save-excursion
-                  (beginning-of-line)
-                  (looking-at-p "[[:space:]]*$"))
-                (> (line-number-at-pos) 1))
-      (forward-line -1)
-      (setq back (1+ back)))
-    (when (eq (nvp:point 'eol) (point-max))
-      (goto-char (point-max))
-      (newline)
-      (forward-char -1))
-    (let ((region (buffer-substring (nvp:point 'bol) (1+ (nvp:point 'eol)))))
-      (forward-line back)
-      (dotimes (_i num)
-        (insert region))))
-  (goto-char (nvp:point 'eol)))
-
-(defun nvp--paredit-duplicate-current-line ()
-  (back-to-indentation)
-  (let (kill-ring kill-ring-yank-pointer)
-    (paredit-kill)
-    (yank)
-    (newline-and-indent)
-    (yank)))
-
-
-;; -------------------------------------------------------------------
-;;; Wrap text
+;;; Wrapping
 
 ;;;###autoload
 (defun nvp-wrap-with-squiggles (&optional _arg)

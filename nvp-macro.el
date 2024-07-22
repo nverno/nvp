@@ -1400,7 +1400,8 @@ and set `this-command' to nil so opposite happens next time."
 ;;; Mark
 (defmacro nvp:push-mark (cmd)
   "Push mark on first invocation of CMD."
-  `(or (not (eq this-command ,cmd))
+  `(or repeat-in-progress
+       (not (eq this-command ,cmd))
        (eq last-command ,cmd)
        (and transient-mark-mode mark-active)
        (push-mark nil t)))

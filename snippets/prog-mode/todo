@@ -2,4 +2,4 @@
 # name: todo
 # key: todo
 # --
-`(nvp-comment-string "TODO: " 2)`
+(insert (nvp-comment-string (format "TODO(%s): " (nvp-today)) 2))

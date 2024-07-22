@@ -1,5 +1,6 @@
 # -*- mode: snippet; -*-
 # name: date
 # key: date
+# type: command
 # --
-`(format-time-string "%Y-%m-%d")`
+(insert (nvp-today))

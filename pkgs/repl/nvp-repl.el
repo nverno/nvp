@@ -323,12 +323,13 @@ well."
 (defvar-keymap nvp-repl-source-minor-mode-map
   :doc "Keymap in repl source buffers."
   "C-c C-c"   #'nvp-repl-send-dwim
-  "C-c C-e"   #'nvp-repl-send-sexp
+  "C-c C-s"   #'nvp-repl-send-sexp
   "C-c C-b"   #'nvp-repl-send-buffer
   "C-c C-l"   #'nvp-repl-send-line
   "C-c C-r"   #'nvp-repl-send-region
   "C-c C-f"   #'nvp-repl-send-file
   "C-M-x"     #'nvp-repl-send-defun-or-region
+  "C-c C-e"   #'nvp-repl-send-sexp
   "C-c C-x e" #'nvp-repl-eval-sexp
   "C-c C-x s" #'nvp-repl-eval-string
   "C-c C-k"   #'nvp-repl-clear

@@ -150,6 +150,8 @@ called from minibuffer, or nil.")
 (and (fboundp 'devdocs-lookup)
      (setq-default nvp-docs-default-function       #'devdocs-lookup))
 
+(defsubst nvp-today () (format-time-string "%-m/%e/%y"))
+
 
 ;; -------------------------------------------------------------------
 ;;; Faces

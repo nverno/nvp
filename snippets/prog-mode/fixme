@@ -1,5 +1,6 @@
 # -*- mode: snippet -*-
 # name: fixme
 # key: fix
+# type: command
 # --
-`(nvp-comment-string "FIXME: " 2)`
+(insert (nvp-comment-string (format "FIXME(%s): " (nvp-today)) 2))

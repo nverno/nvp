@@ -291,7 +291,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 (defun nvp-c-ts--indent-rules (_mode)
   `(((node-is ")") parent-bol 0)
     ((parent-is
-      ,(rx (or "argument_list" "parameter_list" "parenthesized_expression")))
+      ,(rx (or "argument_list" "parameter_list" "parenthesized_expression"
+               "for_range_loop")))
      parent-bol c-ts-mode-indent-offset)
     ;; Note(5/2/24): in `c-ts-mode--indent-styles' (parent-is "declaration")
     ;; is given indent offset of 0?

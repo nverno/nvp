@@ -178,6 +178,7 @@
 
        :feature 'heredoc
        :language 'bash
+       :override 'keep
        '([(heredoc_start) (heredoc_body)
           ;; Added
           (heredoc_end)]

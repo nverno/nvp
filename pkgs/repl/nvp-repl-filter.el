@@ -81,12 +81,20 @@
     (setq-local nvp-repl--input-handlers (if (functionp handlers)
                                              (funcall handlers)
                                            handlers))
-    (setq-local nvp-repl--filter-re (nvp-repl--make-filter-re handlers)))
+    (setq-local nvp-repl--filter-re (nvp-repl--make-filter-re
+                                     nvp-repl--input-handlers)))
   (when (derived-mode-p 'comint-mode)
     (or sender-fn (setq sender-fn 'comint-input-sender))
-    (or comint-input-history-ignore
-        (null nvp-repl--filter-re)
-        (setq comint-input-history-ignore nvp-repl--filter-re)))
+    (or (null nvp-repl--filter-re)
+        (let ((ignore-re (substring nvp-repl--filter-re 2)))
+          (and comint-input-history-ignore
+               (not (string-empty-p comint-input-history-ignore))
+               (setq ignore-re
+                     (concat "\\(?:" ignore-re "\\)\\|\\(?:"
+                             (replace-regexp-in-string
+                              "^\\^" "" comint-input-history-ignore)
+                             "\\)")))
+          (setq-local comint-input-history-ignore (concat "^" ignore-re)))))
   (when sender-fn
     (add-function :around (local sender-fn) #'nvp-repl@input-sender)))
 

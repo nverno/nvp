@@ -63,7 +63,7 @@
           (and (buffer-live-p it)
                (ielm-change-working-buffer it))
         (user-error "no source buffer for '%S'" (current-buffer)))
-    (ielm-change-working-buffer (current-buffer))))
+    (prog1 nil (ielm-change-working-buffer (current-buffer)))))
 
 (defun nvp-ielm-send-string (_proc str &optional for-effect)
   "Send STR to ielm without inserting into repl."

@@ -133,7 +133,7 @@ Used to set `end-of-defun-function'."
   "Return a shell process specific to THIS-BUFFER if non-nil.
 Replacement for `sh-shell-process', which see."
   (let ((bufname (and this-buffer
-                      (concat "*shell: " (buffer-name (current-buffer)) "*"))))
+                      (concat "*shell:" (buffer-name (current-buffer)) "*"))))
     (if (and (process-live-p sh-shell-process)
              (or (null bufname)
                  (string= bufname (buffer-name (process-buffer sh-shell-process)))))

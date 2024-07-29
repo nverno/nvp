@@ -448,7 +448,11 @@ repl with source buffer."
   "Return a REPL buffer if one exists, otherwise attempt to start one."
   (nvp-repl-ensure)
   (or (--when-let (nvp-repl-buffer)
-        (prog1 it (and prefix (nvp-repl--set-source it (current-buffer)))))
+        (prog1 it (when prefix
+                    (nvp-repl--set-source it (current-buffer))
+                    ;; Set working directory to source directory
+                    (and (equal '(16) prefix)
+                         (nvp-repl-cd)))))
       (nvp-with-repl (process-p proc->buff buff->proc)
         (when-let ((repl-proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
                    (p-buff (if (funcall process-p repl-proc)

@@ -29,13 +29,14 @@
 
 ;;;###autoload
 (defun nvp-sqlite-completion-at-point ()
+  "Completion for sqlite shell commands."
   (let* ((pos (point))
          (beg (condition-case nil
                   (save-excursion
                     (skip-syntax-backward "_w'.")
                     (point))
                 (error nil))))
-    ;; completion for sqlite shell .<commands>
+    ;; Only complete for .<commands>
     (when (and pos beg (eq (char-after beg) ?.))
       (list beg pos
             (completion-table-dynamic

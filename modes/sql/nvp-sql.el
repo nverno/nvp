@@ -81,9 +81,10 @@
   (nvp-repl-add '(sql-mode sql-ts-mode)
     :name 'sql
     :modes '(sql-interactive-mode)
-    :find-fn (lambda () (-some->> sql-buffer
-                     (get-buffer)
-                     (get-buffer-process)))
+    :find-fn (lambda ()
+               (-some->> sql-buffer
+                 (get-buffer)
+                 (get-buffer-process)))
     :init #'nvp-sql-sqli-buffer
     :wait 0.1
     :help-cmd '(:no-arg ".help" :with-arg ".help %s")

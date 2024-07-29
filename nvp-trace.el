@@ -13,6 +13,11 @@
 (nvp:auto "trace-tree" trace-tree-enable trace-tree-disable)
 (nvp:decl flatten-tree)
 
+
+(defun nvp-trace-active-p ()
+  (and (boundp 'trace-buffer)
+       (buffer-live-p (get-buffer trace-buffer))))
+
 ;;;###autoload(autoload 'nvp-trace-menu "nvp-trace" nil t)
 (transient-define-prefix nvp-trace-menu ()
   "Trace"
@@ -21,22 +26,18 @@
     ("b" "Defun background" trace-function-background)
     ("u" "Untrace defun" untrace-function)
     ("q" "Untrace all" nvp-untrace-all)
-    ("Q" "Quit" nvp-trace-kill
-     :if (lambda () (bound-and-true-p nvp-trace-minor-mode)))]
+    ("Q" "Quit" nvp-trace-kill :if-non-nil nvp-trace-minor-mode)]
    ["Groups"
     ("g" "Group" nvp-trace-group)
-    ("G" "Untrace group" nvp-untrace-group
-     :if (lambda () (bound-and-true-p nvp-trace--current)))
+    ("G" "Untrace group" nvp-untrace-group :if-non-nil nvp-trace-minor-mode)
     ("l" "Library" nvp-trace-library)
-    ("h" "Hooks" nvp-trace-hooks)]]
-  ["Results"
-   ("j" "Jump to results" nvp-trace-display-results
-    :if (lambda () (and (boundp 'trace-buffer)
-                   (buffer-live-p (get-buffer trace-buffer)))))
-   ("tt" "Enable trace-tree" trace-tree-enable
-    :if (lambda () (featurep 'trace-tree)))
-   ("tq" "Disable trace-tree" trace-tree-disable
-    :if (lambda () (featurep 'trace-tree)))])
+    ("h" "Hooks" nvp-trace-hooks)]
+   ["Results" :if nvp-trace-active-p
+    ("j" "Display" nvp-trace-display-results)
+    ("k" "Clear" nvp-trace-clear)]
+   ["Tree mode" :if (lambda () (featurep 'trace-tree))
+    ("tt" "Enable" trace-tree-enable)
+    ("tq" "Disable" trace-tree-disable)]])
 
 ;; -------------------------------------------------------------------
 ;;; Trace output mode
@@ -54,11 +55,11 @@
       (if (or (and (string= "->" cur-arrow) (< arg 0))
               (and (string= "<-" cur-arrow) (> arg 0)))
           (zerop (forward-line arg))
-       (catch 'term
-         (progn (while (not (looking-at-p end-re))
-                  (unless (zerop (forward-line arg))
-                    (throw 'term nil)))
-                t))))))
+        (catch 'term
+          (progn (while (not (looking-at-p end-re))
+                   (unless (zerop (forward-line arg))
+                     (throw 'term nil)))
+                 t))))))
 
 ;; Necessary for hideshow to hide levels properly
 (defun trace-output-forward-sexp (&optional arg)
@@ -120,16 +121,16 @@ ARG comes from `forward-sexp', which see."
 (defvar nvp-trace--type nil "Active trace type")
 
 (defun nvp-trace--abbreviate (names)
-  (cond
-   ((stringp names) names)
-   (t (concat (nvp:as-string (car names)) "..."))
-   ;; ((<= (length names) 1) (car names))
-   ;; (t (mapconcat
-   ;;     (lambda (name)
-   ;;       (mapconcat
-   ;;        (lambda (ss) (substring ss 0 1)) (s-split "-" (symbol-name name) t) "-"))
-   ;;     names "|"))
-   ))
+  (cond ((stringp names) names)
+        (t (concat (nvp:as-string (car names)) "..."))))
+;; ((<= (length names) 1) (car names))
+;; (t (mapconcat
+;;     (lambda (name)
+;;       (mapconcat
+;;        (lambda (ss) (substring ss 0 1))
+;;        (s-split "-" (symbol-name name) t)
+;;        "-"))
+;;     names "|"))
 
 (defun nvp-trace-mode-line ()
   "Report current trace in the modeline."
@@ -163,17 +164,10 @@ ARG comes from `forward-sexp', which see."
   (setq nvp-trace--active t)
   (nvp-trace-update-mode-line))
 
-(defvar nvp-trace-minor-mode-map
-  (let ((km (make-sparse-keymap)))
-    (define-key km (kbd "<f2> D j") #'nvp-trace-display-results)
-    (define-key km (kbd "<f2> D q") #'nvp-untrace-all)
-    (define-key km (kbd "<f2> D k") #'nvp-trace-kill)
-    (easy-menu-define nil km nil
-      '("Trace"
-        ["Show output" nvp-trace-display-results t]
-        ["Stop trace" nvp-untrace-all t]
-        ["Quit" nvp-trace-kill t]))
-    km))
+(defvar-keymap nvp-trace-minor-mode-map
+  "<f2> D j"   #'nvp-trace-display-results
+  "<f2> D q"   #'nvp-untrace-all
+  "<f2> D Q"   #'nvp-trace-kill)
 
 (define-minor-mode nvp-trace-minor-mode "Tracing minor mode."
   :lighter nvp-trace--mode-line
@@ -183,6 +177,13 @@ ARG comes from `forward-sexp', which see."
     (setq nvp-trace--current nil
           nvp-trace--active nil
           nvp-trace--type nil)))
+
+(defun nvp-trace-clear ()
+  (interactive)
+  (when-let ((buf (get-buffer trace-buffer)))
+    (and (buffer-live-p buf)
+         (with-current-buffer buf
+           (erase-buffer)))))
 
 (defun nvp-trace-kill ()
   (interactive)
@@ -240,7 +241,8 @@ ARG comes from `forward-sexp', which see."
 (defun nvp-trace-display-results ()
   "Show the trace results and maybe enable `trace-output-mode'."
   (interactive)
-  (or (get-buffer trace-buffer) (user-error "No trace-buffer"))
+  (or (get-buffer trace-buffer)
+      (user-error "No trace-buffer"))
   (with-current-buffer trace-buffer
     (when (eq major-mode 'fundamental-mode)
       (trace-output-mode))
@@ -277,9 +279,9 @@ With \\[universal-argument] \\[universal-argument] prompt for filter."
   (require 'nvp-elisp)
   (unless library (setq library "nvp-mode-hooks"))
   (cl-flet ((hook-p
-             (form)
-             (and (eq (car form) 'add-hook)
-                  (eval (nth 2 form)))))
+              (form)
+              (and (eq (car form) 'add-hook)
+                   (eval (nth 2 form)))))
     (let ((forms (with-temp-buffer
                    (insert-file-contents (find-library-name library))
                    (with-syntax-table emacs-lisp-mode-syntax-table

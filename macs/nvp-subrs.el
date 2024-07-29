@@ -340,6 +340,12 @@ or (\\='a #\\='b) => \\='(a b)."
               (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
     prompt))
 
+(defsubst nvp:say (fmt &rest args)
+  "Message FMT with ARGS without logging it."
+  (or (minibufferp)
+      (let ((message-log-max nil))
+        (apply #'message fmt args))))
+
 ;; push input back onto command stack
 (defsubst nvp:unread (input)
   (cl-loop for c across (reverse input)

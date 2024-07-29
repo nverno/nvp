@@ -12,6 +12,9 @@
 ;; dont expand when prefixed by [-/_.]
 (defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
 
+(defun nvp-shell-abbrev-expand-p ()
+  (not (or (memq last-input-event '(?- ?. ?_)) (nvp:ppss 'soc))))
+
 ;; update default-directory on remote login
 (defvar nvp-shell-ssh-regexp (nvp:rx-syms "ssh" "hssh"))
 

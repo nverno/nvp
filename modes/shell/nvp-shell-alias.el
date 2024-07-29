@@ -91,10 +91,9 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
       "git"
       (nvp-shell-read-aliases "git alias" "^\\([^=]+\\)=\\(.+\\)$" 1 2)))))
 
-(eval-when-compile
-  ;; get expansion of ALIAS with optional prefix CMD from alias TABLE
-  (defsubst nvp:shell--get-alias (alias table &optional cmd)
-    (gethash alias (or (and cmd (cdr (assoc cmd table))) (car table)))))
+;; Get expansion of ALIAS with optional prefix CMD from alias TABLE
+(defsubst nvp-shell--get-alias (alias table &optional cmd)
+  (gethash alias (or (and cmd (cdr (assoc cmd table))) (car table))))
 
 (defvar nvp-shell-alias-completion-table
   (lambda (args)
@@ -108,7 +107,7 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
                    (or (caddr cmd) "")
                    (or (cdr (assoc (cadr cmd) ht)) (car ht))))
                  ('value
-                  (nvp:shell--get-alias (caddr cmd) ht (cadr cmd)))))
+                  (nvp-shell--get-alias (caddr cmd) ht (cadr cmd)))))
              #'equal))
       (funcall nvp-shell-alias-completion-table args))))
 
@@ -124,20 +123,32 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
                    (list 'complete cmd (buffer-substring beg end)))
           :exit-function
           (lambda (_ status)
-            (and (memq status '(sole finished))
+            ;; (message "status: %S" status)
+            (and (or
+                  ;; TODO(7/29/24): second TAB when current completion is an
+                  ;; exact match should exit completion optionally expanding
+                  ;; abbrev - maybe add new setting to control
+                  ;; (and (eq status 'exact)
+                  ;;      (eq last-command this-command)
+                  ;;      (equal "	" (this-command-keys)))
+                  (memq status '(sole finished)))
                  (looking-back "\\_<[^ ]+" (line-beginning-position))
-                 (let ((val
-                        (funcall nvp-shell-alias-completion-table
-                                 (list 'value cmd (match-string 0)))))
-                   (replace-match val)))))))
+                 (let ((val (funcall nvp-shell-alias-completion-table
+                                     (list 'value cmd (match-string 0)))))
+                   (replace-match val)
+                   (when (bound-and-true-p nvp-abbrev-verbose)
+                     (nvp:say "expanded alias: '%s'" cmd))))))))
 
 ;;;###autoload
 (defun nvp-shell-expand-alias ()
   "Expand shell alias at/before point."
   (interactive)
-  (let ((completion-at-point-functions '(nvp-shell-alias-completion-at-point)))
+  (let ((completion-at-point-functions '(nvp-shell-alias-completion-at-point))
+        (completion-cycle-threshold t)
+        (completion-auto-select nil)
+        (completion-auto-help 'always))
+    ;; (completion-help-at-point)
     (call-interactively #'completion-at-point)))
-
 
 ;; -------------------------------------------------------------------
 ;;; Hippie Expand shell aliases, eg. bash shell-expand-alias C-M-e 
@@ -165,7 +176,7 @@ aliases. REGEX is used to match KEY VAL pairs that are added to a hash table."
                      (delq nil
                            (mapcar
                             (lambda (abbr)
-                              (nvp:shell--get-alias abbr ht cmd))
+                              (nvp-shell--get-alias abbr ht cmd))
                             (funcall nvp-shell-alias-completion-table
                                      (list 'complete cmd he-search-string)))))))))
     (while (and he-expand-list         ;remove seen strings from table

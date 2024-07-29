@@ -96,7 +96,7 @@
            (if nvp-edebug--all-defs "enabled" "disabled")))
 
 
-;;; Menu Toggles: projectile, filenotify, hap, edebug settings
+;;; Menu Toggles: projectile, filenotify, hap, debug, edebug settings
 (defvar projectile-verbose)
 (defvar file-notify-debug)
 (defvar nvp-hap-verbose)
@@ -112,6 +112,9 @@
   :class 'transient-lisp-variable
   :variable 'edebug-global-break-condition)
 
+(transient-define-infix nvp-edebug-menu--debug-on-message ()
+  :class 'transient-lisp-variable
+  :variable 'debug-on-message)
 
 ;;; Byte-compile
 (nvp:transient-toggle nvp-edebug-menu
@@ -250,9 +253,10 @@
     ("e" "On error" toggle-debug-on-error)
     ("q" "On quit" toggle-debug-on-quit)
     ("y" "On entry" debug-on-entry)
+    ("v" "On variable" debug-on-variable-change)
+    ("M" "On message" nvp-edebug-menu--debug-on-message)
     ("Y" "Off entry" cancel-debug-on-entry)
-    ("v" "Var. watch" debug-on-variable-change)
-    ("V" "Cancel var." cancel-debug-on-variable-change)
+    ("V" "Off variable" cancel-debug-on-variable-change)
     ("D" "Debugger" debug)]
    ["Edebug"
     ("m" "Active menu" nvp-edebug-active-menu :transient transient--do-replace)

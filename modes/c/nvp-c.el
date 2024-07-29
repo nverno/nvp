@@ -67,7 +67,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 
 ;;; Abbrevs
 ;; don't expand after '_' or in strings/comments
-(defun nvp-c-abbrev-expand-p ()
+(defsubst nvp-c-abbrev-expand-p ()
   (nvp-abbrev-expand-not-after-punct-p '(_)))
 
 ;;; GDB
@@ -82,8 +82,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
 
-(defun nvp-c-header-file-p ()
-  (string-match-p "h[xp]*" (nvp:ext)))
+(defsubst nvp-c-header-file-p () (string-match-p "h[xp]*" (nvp:ext)))
 
 ;; split string STR on commas, but only when not between <..>
 ;; eg., "std::vector<std::pair<int,int>> i, int j" =>

@@ -156,7 +156,7 @@ BODY should return a list as normally done in an interactive spec."
                       collect `(put this-command ',a (nth ,idx ,res))))))))
 
 ;; -------------------------------------------------------------------
-;;; Output / Messages
+;;; Output
 
 (nvp:decls :f (nvp-window-configuration-restore nvp-window-configuration-save))
 
@@ -223,6 +223,9 @@ is activated, but before items are printed."
            (setq mode-name ,name)
            ,(when action `(setq nvp-tabulated-list-select-action ,action)))
          (pop-to-buffer buf)))))
+
+;; -------------------------------------------------------------------
+;;; Messages
 
 (cl-defmacro nvp:msg-repeated (fmt &rest args &key clobber &allow-other-keys)
   "Construct minibuffer message by applying `message' to FMT with ARGS.

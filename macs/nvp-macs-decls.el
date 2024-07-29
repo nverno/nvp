@@ -164,6 +164,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     compilation-error-face compilation-warning-face compilation-info-face
     explicit-shell-file-name
     imenu-generic-expression imenu--index-alist imenu-auto-rescan
+    repeat-in-progress
     ;; Tree-sitter, treesit
     treesit-font-lock-feature-list
     treesit-font-lock-settings

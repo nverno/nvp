@@ -5,7 +5,7 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'transient)
 (require 'treesit nil t)
-(nvp:decls :p (ts) :f (ts-error-toggle))
+(nvp:decls :p (ts) :f (ts-error-toggle ts-debug-show-missing-indent))
 
 ;;;###autoload
 (defun nvp-treesit-fontify-hash-bang (node override start end &rest _)
@@ -164,6 +164,8 @@ With prefix, add neovim sources first."
     ("g" "Go to query directories" ts-util-jump-to-queries)
     ("x" "Extract corpus tests" ts-util-extract-corpus-tests)]
    ["Debug"
+    ("si" "Toggle missing indent hl" ts-debug-show-missing-indent
+     :if nvp-treesit-ready-p)
     (":i" "Indent verbose"
      nvp-treesit-menu--toggle-treesit--indent-verbose)
     (":f" "Font debug"

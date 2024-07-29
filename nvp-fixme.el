@@ -12,7 +12,7 @@
 
 (defvar nvp-fixme-danger-keywords '("FIXME" "BUG" "ERROR"))
 (defvar nvp-fixme-warning-keywords '("HACK" "WARNING" "WARN" "FIX"))
-(defvar nvp-fixme-todo-keywords '("TODO" "WIP"))
+(defvar nvp-fixme-todo-keywords '("TODO" "WIP" "HOLD"))
 (defvar nvp-fixme-note-keywords '("NOTE" "XXX" "INFO" "DOCS" "PERF" "TEST"))
 
 (defconst nvp-fixme-font-lock-keywords

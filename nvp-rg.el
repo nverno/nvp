@@ -54,7 +54,8 @@
 
 (defun nvp-rg-get-project ()
   (pcase current-prefix-arg
-    ('nil (projectile-acquire-root))
+    ('nil (nvp-project-locate-root nil 'local))
+    ;; (projectile-acquire-root)
     (`(4) (nvp-project-parent))
     (_ (nvp-completing-read "Project: " (projectile-relevant-known-projects)))))
 
@@ -76,7 +77,7 @@
   :menu ("Custom" "L" "src/emacs"))
 
 (rg-define-search nvp-rg-todos
-  :query "(TODO|FIXME|XXX|BUG|HACK|FIX|WIP)"
+  :query "\\b(TODO|FIXME|XXX|BUG|HACK|FIX|WIP)\\b"
   :format regexp
   :dir (nvp-rg-get-project)
   :files "everything"

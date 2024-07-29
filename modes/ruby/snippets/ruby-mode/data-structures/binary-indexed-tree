@@ -3,14 +3,14 @@
 # key: d_bit
 # --
 class Bit
-  # @param {Integer} size
-  def initialize size
+  # @param [Integer] size
+  def initialize(size)
     @n = size + 1
     @bit = Array.new(@n).fill(0)
   end
 
-  # @param {Integer} idx
-  # @param {Integer} val
+  # @param [Integer] idx
+  # @param [Integer] val
   def update(idx, val)
     i = idx + 1
     while i < @n
@@ -19,8 +19,8 @@ class Bit
     end
   end
 
-  # @param {Integer} idx
-  # @return {Integer}
+  # @param [Integer] idx
+  # @return [Integer]
   def query(idx)
     res, i = 0, idx + 1
     while i > 0
@@ -30,9 +30,9 @@ class Bit
     res
   end
 
-  # @param {Integer} left
-  # @param {Integer} right
-  # @return {Integer}
+  # @param [Integer] left
+  # @param [Integer] right
+  # @return [Integer]
   def rquery(left, right)
     self.query(right) - self.query(left - 1)
   end

@@ -32,14 +32,12 @@
   (while (and (pcomplete-match "clone" 'first 2))
     (pcomplete-here (nvp:lazy-val nvp-shell--gh-repo-list))))
 
-;;; TODO: persist pcompletion until complete
-;; run minor mode with pcomplete as main completion function until completion is
-;; over or keyboard quit
 ;;;###autoload
 (defun nvp-pcomplete ()
+  "Complete with pcomplete temporarily."
   (interactive)
   (let ((completion-at-point-functions '(pcomplete-completions-at-point t)))
-    (completion-at-point)))
+    (call-interactively #'completion-at-point)))
 
 (provide 'nvp-shell-pcomplete)
 ;; Local Variables:

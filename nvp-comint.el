@@ -47,6 +47,7 @@ Also, removes duplicates from merged histories."
            ;; Merge comint history with history file, removing duplicates.
            (call-process-shell-command
             (format
+             ;; FIXME(08/02/24): don't dedupe history separator lines
              (concat "cat \"%s\" >> \"%s\";"
                      "awk '!seen[$0]++' \"%s\" > \"%s\"; rm \"%s\"")
              comint-input-ring-file-name temp-file
@@ -54,11 +55,15 @@ Also, removes duplicates from merged histories."
 
 (advice-add 'comint-write-input-ring :override #'nvp-comint-write-input-ring)
 
+(defvar-local nvp-comint-history-save t
+  "When non-nil, save history when buffer is killed before killing process.")
+
 (defun nvp-comint-kill-proc-before-buffer ()
   "Kill process before killing buffer to ensure comint writes history."
   (let ((proc (nvp:buffer-process)))
     (when (processp proc)
       (and (derived-mode-p 'comint-mode)
+           nvp-comint-history-save
            (comint-write-input-ring))
       (delete-process proc))))
 
@@ -84,7 +89,7 @@ If RELOAD, reload merged history."
 ;;;###autoload
 (defun nvp-comint-setup-history (filename &rest args)
   "Setup history file and hippie expansion."
-  (setq comint-input-ring-file-name (expand-file-name filename nvp/cache))
+  (setq comint-input-ring-file-name (expand-file-name filename nvp/history))
   (comint-read-input-ring 'silent)
   (apply #'nvp-he-history-setup args))
 (put 'nvp-comint-setup-history 'lisp-indent-function 1)

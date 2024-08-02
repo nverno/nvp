@@ -70,6 +70,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp/auto
     nvp/auto-site
     nvp/devel
+    nvp/history
     nvp/site
     nvp/modes
     nvp/emacs

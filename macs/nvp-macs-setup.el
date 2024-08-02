@@ -405,9 +405,9 @@ If TS, also set ts version of MODE's to hook to regular mode's hook."
      (cl-loop for d in dirs
               collect `(add-to-list 'load-path ,d)))))
 
-(defmacro nvp:setup-cache (var filename)
+(defmacro nvp:setup-cache (var filename &optional history)
   "Set cache FILENAME location."
-  `(nvp:setq ,var (expand-file-name ,filename nvp/cache)))
+  `(nvp:setq ,var (expand-file-name ,filename ,(if history 'nvp/history 'nvp/cache))))
 
 ;;; Tree-sitter, treesit
 

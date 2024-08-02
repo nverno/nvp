@@ -75,7 +75,7 @@ With prefix INSERT, insert results in buffer at point instead."
     :proc->buff #'nvp-racket--repl-buffer
     :wait 0.1
     :init #'nvp-racket--repl-init
-    :clear-buffer nil
+    :clear-buffer #'racket-repl-clear-leaving-last-prompt
     :send-input nil
     :send-string #'ignore
     :eval-sexp #'nvp-racket-eval-last-sexp

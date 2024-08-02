@@ -27,7 +27,7 @@
   :group 'bash)
 
 (nvp:treesit-add-rules bash-ts-mode
-  :extra-features '(builtin))
+  :extra-features '(builtin property escape-sequence))
 
 
 ;;; Font-locking
@@ -187,7 +187,7 @@
        :feature 'variable
        :language 'bash
        '((variable_name) @font-lock-variable-name-face)
-
+       
        :feature 'keyword
        :language 'bash
        `(;; keywords
@@ -260,6 +260,9 @@
           (test_operator)]
          @font-lock-operator-face
 
+         ;; Added(08/02/24)
+         ["&"] @font-lock-preprocessor-face
+
          ;; Added
          (ternary_expression ["?" ":"] @font-lock-operator-face)
 
@@ -319,9 +322,21 @@
        :feature 'misc-punctuation
        :language 'bash
        `((["$"]) @font-lock-misc-punctuation-face
-
          ;; Added
-         ["``"] @font-lock-misc-punctuation-face)))
+         ["``"] @font-lock-misc-punctuation-face)
+
+       ;; Added(08/02/24)
+       :language 'bash
+       :feature 'property
+       `(((word) @font-lock-property-use-face
+          (:match "\\`-[[:alnum:]_-]+" @font-lock-property-use-face)))
+
+       ;; Added(08/02/24)
+       :language 'bash
+       :feature 'escape-sequence
+       `(((word) @font-lock-escape-face
+          (:match ,(rx bos "\\" (? (or "!" "(" ")" "[" "]" "\\" ";")))
+                  @font-lock-escape-face)))))
 
 (provide 'nvp-bash-ts)
 ;; Local Variables:

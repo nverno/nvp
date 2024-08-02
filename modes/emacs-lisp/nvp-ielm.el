@@ -56,14 +56,20 @@
      arg))
   (prog1 t (display-buffer (help-buffer))))
 
-(defun nvp-ielm-cd (&optional _arg)
+(defun nvp-ielm-cd (&optional arg)
   (interactive "P")
   (if (derived-mode-p 'inferior-emacs-lisp-mode)
       (--if-let (gethash (current-buffer) nvp-repl--process-buffers)
           (and (buffer-live-p it)
                (ielm-change-working-buffer it))
         (user-error "no source buffer for '%S'" (current-buffer)))
-    (prog1 nil (ielm-change-working-buffer (current-buffer)))))
+    (ielm-change-working-buffer (current-buffer)))
+  (format "(setq default-directory \"%s\")" arg))
+
+(defun nvp-ielm-pwd ()
+  (interactive)
+  (ielm-print-working-buffer)
+  "ielm-working-buffer")
 
 (defun nvp-ielm-send-string (_proc str &optional for-effect)
   "Send STR to ielm without inserting into repl."
@@ -84,7 +90,7 @@
     :send-string #'nvp-ielm-send-string
     :cmd-handlers '(("," . nvp-ielm-help)) ; leave "?" for characters
     :help-cmd #'nvp-ielm-help
-    :pwd-cmd #'ielm-print-working-buffer
+    :pwd-cmd #'nvp-ielm-pwd
     :cd-cmd #'nvp-ielm-cd))
 
 ;;; Fonts

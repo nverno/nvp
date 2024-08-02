@@ -17,14 +17,77 @@
 (nvp:decls :p (ring) :f (ring-ref ring-length))
 
 
-;; kill process before killing buffer -- ensure comint writes history
+;;; History
+
+(defun nvp-comint-write-input-ring ()
+  "Override for `comint-write-input-ring'.
+Merges history from `comint-input-ring' with contents of history file instead of
+overwriting its contents like `comint-write-input-ring'.
+Also, removes duplicates from merged histories."
+  (cond ((or (null comint-input-ring-file-name)
+	     (equal comint-input-ring-file-name "")
+	     (null comint-input-ring) (ring-empty-p comint-input-ring))
+	 nil)
+	((not (file-writable-p comint-input-ring-file-name))
+	 (message "Cannot write history file %s" comint-input-ring-file-name))
+	(t
+	 (let* ((history-buf (get-buffer-create " *Temp Input History*"))
+		(ring comint-input-ring)
+		(temp-file (make-temp-file comint-input-ring-file-name))
+		(index (ring-length ring)))
+	   ;; Write it all out into a buffer first.  Much faster, but messier,
+	   ;; than writing it one line at a time.
+	   (with-current-buffer history-buf
+	     (erase-buffer)
+	     (while (> index 0)
+	       (setq index (1- index))
+	       (insert (ring-ref ring index) comint-input-ring-separator))
+	     (write-region (buffer-string) nil temp-file nil 'no-message)
+             (kill-buffer nil))
+           ;; Merge comint history with history file, removing duplicates.
+           (call-process-shell-command
+            (format
+             (concat "cat \"%s\" >> \"%s\";"
+                     "awk '!seen[$0]++' \"%s\" > \"%s\"; rm \"%s\"")
+             comint-input-ring-file-name temp-file
+             temp-file comint-input-ring-file-name temp-file))))))
+
+(advice-add 'comint-write-input-ring :override #'nvp-comint-write-input-ring)
+
 (defun nvp-comint-kill-proc-before-buffer ()
+  "Kill process before killing buffer to ensure comint writes history."
   (let ((proc (nvp:buffer-process)))
     (when (processp proc)
       (and (derived-mode-p 'comint-mode)
            (comint-write-input-ring))
       (delete-process proc))))
 
+;; write comint-input-ring when buffer is killed: in kill-buffer-hook
+(defun nvp-comint-write-history-on-kill ()
+  "Write `comint-input-ring' when buffer is killed."
+  ;; Make sure the buffer exists before calling the process sentinel
+  (add-hook 'kill-buffer-hook 'nvp-comint-kill-proc-before-buffer nil 'local))
+
+(defun nvp-comint-save-history (&optional reload silent)
+  "Save history in `comint-input-ring-file-name'.
+If RELOAD, reload merged history."
+  (interactive (list t))
+  (let ((proc (get-buffer-process (current-buffer))))
+    (unless (and (processp proc)
+                 (derived-mode-p 'comint-mode)
+                 (not (null comint-input-ring-file-name)))
+      (user-error "Unknown history file (`comint-input-ring-file-name' is nil)."))
+    (comint-write-input-ring)
+    (when reload
+      (comint-read-input-ring silent))))
+
+;;;###autoload
+(defun nvp-comint-setup-history (filename &rest args)
+  "Setup history file and hippie expansion."
+  (setq comint-input-ring-file-name (expand-file-name filename nvp/cache))
+  (comint-read-input-ring 'silent)
+  (apply #'nvp-he-history-setup args))
+(put 'nvp-comint-setup-history 'lisp-indent-function 1)
 
 ;;;###autoload
 (defun nvp-comint-history-remove-duplicates (&optional silent)
@@ -74,19 +137,6 @@ Prompt unless SILENT or `noninteractive'."
 ;;        (tramp-dissect-file-name default-directory) filename)
 ;;     filename))
 
-;; write comint-input-ring when buffer is killed: in kill-buffer-hook
-(defun nvp-comint-write-history-on-kill ()
-  ;; make sure the buffer exists before calling the process sentinel
-  (add-hook 'kill-buffer-hook 'nvp-comint-kill-proc-before-buffer nil 'local))
-
-;; Setup history file and hippie expansion
-;;;###autoload
-(defun nvp-comint-setup-history (filename &rest args)
-  (setq comint-input-ring-file-name (expand-file-name filename nvp/cache))
-  (comint-read-input-ring 'silent)
-  (apply #'nvp-he-history-setup args))
-(put 'nvp-comint-setup-history 'lisp-indent-function 1)
-
 ;;; I/O
 (defun nvp-comint-redirect-to-string (command)
   (let* ((proc (nvp:buffer-process))
@@ -109,10 +159,10 @@ Prompt unless SILENT or `noninteractive'."
         (and (buffer-name buf)
              (kill-buffer buf))))))
 
-;; evaluate STRING in PROC, but discard output silently
 ;; TODO: check if this would work better
 ;; https://github.com/hylang/hy-mode/blob/8699b744c03e0399c049757b7819d69768cac3bc/hy-shell.el#L156
 (defun nvp-comint-redirect-silently (proc string &optional prompt)
+  "Evaluate STRING in PROC, but discard output silently."
   (let ((comint-redirect-perform-sanity-check))
     (with-temp-buffer 
       (comint-redirect-send-command-to-process

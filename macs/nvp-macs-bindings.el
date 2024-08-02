@@ -72,8 +72,7 @@
       ("M-s-p"   . comint-previous-matching-input-from-input)
       ("M-s-n"   . comint-next-matching-input-from-input)
       ("C-c C-s" . comint-stop-subjob)
-      ("C-c C-d" . comint-send-eof)
-      ("<f2>z D" . nvp-comint-history-remove-duplicates))))
+      ("C-c C-d" . comint-send-eof))))
 
 ;;; Helpers
 

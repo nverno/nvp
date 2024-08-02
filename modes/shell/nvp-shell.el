@@ -41,20 +41,32 @@
       (setq comint-input-ring-index nil)
       cmd)))
 
-;;; z directory tracking
-(defun nvp-shell-z-resync ()
-  (advice-remove #'shell-directory-tracker #'ignore)
+;;; Z directory tracking
+(defun nvp-shell-resync-dirs (&optional dirtrack)
+  "Replacement for `shell-resync-dirs' to handle multiline prompt."
+  (interactive (list t))
   (let ((dir (nvp-comint-redirect-to-string "command dirs")))
     (when (file-exists-p dir)
-      (shell-directory-tracker dir)
-      (setq default-directory (file-name-as-directory dir)))))
+      (setq default-directory (file-name-as-directory dir))
+      (setq list-buffers-directory default-directory)
+      (when dirtrack
+        (with-demoted-errors "Couldn't cd: %s"
+          (shell-cd default-directory)
+          (setq shell-dirstack nil
+                shell-last-dir default-directory)
+          (shell-dirstack-message)))
+      dir)))
+
+(defun nvp-shell-z-resync ()
+  (advice-remove #'shell-directory-tracker #'ignore)
+  (nvp-shell-resync-dirs))
 
 (defun nvp-shell-z-tracker (str)
   (when (string-match-p "^\\s-*z\\b" str)
     (advice-add #'shell-directory-tracker :override #'ignore)
     (run-with-timer 0.2 nil #'nvp-shell-z-resync)))
 
-
+
 ;; -------------------------------------------------------------------
 ;;; Commands 
 (defun nvp-shell-run-external ()

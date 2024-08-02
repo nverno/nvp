@@ -32,6 +32,7 @@ Ignore buttons like `native-comp-function',`primitive-function'."
                 (not (member (button-get btn 'help-args)
                              '((native-comp-function)
                                (primitive-function)
+                               (interpreted-function)
                                (byte-code-function)))))))
     (let* ((pos (point))
            (beg pos)

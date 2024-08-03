@@ -19,41 +19,28 @@
 
 ;;; History
 
-(defun nvp-comint-write-input-ring ()
+(defun nvp-comint-write-input-ring (orig-fn &rest _)
   "Override for `comint-write-input-ring'.
 Merges history from `comint-input-ring' with contents of history file instead of
 overwriting its contents like `comint-write-input-ring'.
 Also, removes duplicates from merged histories."
-  (cond ((or (null comint-input-ring-file-name)
-	     (equal comint-input-ring-file-name "")
-	     (null comint-input-ring) (ring-empty-p comint-input-ring))
-	 nil)
-	((not (file-writable-p comint-input-ring-file-name))
-	 (message "Cannot write history file %s" comint-input-ring-file-name))
-	(t
-	 (let* ((history-buf (get-buffer-create " *Temp Input History*"))
-		(ring comint-input-ring)
-		(temp-file (make-temp-file comint-input-ring-file-name))
-		(index (ring-length ring)))
-	   ;; Write it all out into a buffer first.  Much faster, but messier,
-	   ;; than writing it one line at a time.
-	   (with-current-buffer history-buf
-	     (erase-buffer)
-	     (while (> index 0)
-	       (setq index (1- index))
-	       (insert (ring-ref ring index) comint-input-ring-separator))
-	     (write-region (buffer-string) nil temp-file nil 'no-message)
-             (kill-buffer nil))
-           ;; Merge comint history with history file, removing duplicates.
-           (call-process-shell-command
-            (format
-             ;; FIXME(08/02/24): don't dedupe history separator lines
-             (concat "cat \"%s\" >> \"%s\";"
-                     "awk '!seen[$0]++' \"%s\" > \"%s\"; rm \"%s\"")
-             comint-input-ring-file-name temp-file
-             temp-file comint-input-ring-file-name temp-file))))))
+  (if (not (equal "\n" comint-input-ring-separator))
+      (funcall orig-fn)
+    (let ((histfile comint-input-ring-file-name)
+          (comint-input-ring-file-name
+           (make-temp-file comint-input-ring-file-name)))
+      (funcall orig-fn)
+      ;; Merge comint history with history file, removing duplicates.
+      (call-process-shell-command
+       (format
+        ;; FIXME(08/02/24): don't dedupe history separator lines
+        ;; eg. dont clobber separators in `sql-stop'
+        (concat "cat \"%s\" >> \"%s\";"
+                "awk '!seen[$0]++' \"%s\" > \"%s\"; rm \"%s\"")
+        histfile comint-input-ring-file-name
+        comint-input-ring-file-name histfile comint-input-ring-file-name)))))
 
-(advice-add 'comint-write-input-ring :override #'nvp-comint-write-input-ring)
+(advice-add 'comint-write-input-ring :around #'nvp-comint-write-input-ring)
 
 (defvar-local nvp-comint-history-save t
   "When non-nil, save history when buffer is killed before killing process.")
@@ -89,8 +76,12 @@ If RELOAD, reload merged history."
 ;;;###autoload
 (defun nvp-comint-setup-history (filename &rest args)
   "Setup history file and hippie expansion."
-  (setq comint-input-ring-file-name (expand-file-name filename nvp/history))
-  (comint-read-input-ring 'silent)
+  (setq comint-input-ring-file-name
+        (if (file-name-absolute-p filename) filename
+          (expand-file-name filename nvp/history)))
+  (when (and comint-input-ring
+             (ring-empty-p comint-input-ring))
+    (comint-read-input-ring 'silent))
   (apply #'nvp-he-history-setup args))
 (put 'nvp-comint-setup-history 'lisp-indent-function 1)
 

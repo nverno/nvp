@@ -3,11 +3,13 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'sql)
-(nvp:decls :p (yas) :v (nvp-mode-name zeal-at-point-docset))
+(nvp:decls :p (yas) :v (nvp-mode-name))
 
-;; -------------------------------------------------------------------
+
+(with-eval-after-load 'nvp-repl
+  (require 'nvp-sql-repl))
+
 ;;; Sql Products
-
 ;; Sync abbrevs/snippets/etc. when changing b/w different sql products
 (defun nvp-sql-change-product (old-product new-product)
   (let* ((prev-mode (intern-soft (format "sql-%s-mode" old-product)))
@@ -58,38 +60,6 @@
 (cl-eval-when (load)
   (dolist (product '("sqlite" "mysql"))
     (nvp-sql--add-keywords product)))
-
-;; ------------------------------------------------------------
-;;; SQLi
-
-;; setup repl
-(defun nvp-sql-sqli-setup ()
-  ;; font-lock everything in sql interactive mode
-  (unless (eq 'oracle sql-product)
-    (sql-product-font-lock nil nil))
-  ;; Suppress indentation in sqli.
-  (set (make-local-variable 'indent-line-function) (lambda () 'noindent))
-  ;; hippie-expansion from sqli history
-  (nvp-he-history-setup))
-
-(defun nvp-sql-sqli-buffer (&optional _prefix)
-  (save-window-excursion
-    (sql-show-sqli-buffer)
-    (get-buffer-process (current-buffer))))
-
-(with-eval-after-load 'nvp-repl
-  (nvp-repl-add '(sql-mode sql-ts-mode)
-    :name 'sql
-    :modes '(sql-interactive-mode)
-    :find-fn (lambda ()
-               (-some->> sql-buffer
-                 (get-buffer)
-                 (get-buffer-process)))
-    :init #'nvp-sql-sqli-buffer
-    :wait 0.1
-    :help-cmd '(:no-arg ".help" :with-arg ".help %s")
-    :cd-cmd ".cd \"%s\""
-    :pwd-cmd ".shell pwd"))
 
 ;;; SQLup
 ;; modified `sqlup-maybe-capitalize-symbol' to not upcase words after '.'

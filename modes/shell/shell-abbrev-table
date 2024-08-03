@@ -18,11 +18,11 @@
     ("sa" "sudo apt" nil :system t)
     ("sar" ["sudo add-apt-repository ppa:" 0 nil nil] expand-abbrev-hook :system t)
     ("lnsf" ["ln -sfn \"$(realpath )\"" 1 nil nil] expand-abbrev-hook :system t)
-    ("findf" ["find . -type -f -name '*.'" 1 nil nil] expand-abbrev-hook :system t)
-    ("findd" ["find . -type -d -name '*.'" 1 nil nil] expand-abbrev-hook :system t)
-    ("findrm" ["find . -type f -name '*.' -delete" 9 nil nil]
+    ("findf" ["find . -type f -iname '*.'" 1 nil nil] expand-abbrev-hook :system t)
+    ("findd" ["find . -type d -iname '*.'" 1 nil nil] expand-abbrev-hook :system t)
+    ("findrm" ["find . -type f -iname '*.' -delete" 9 nil nil]
      expand-abbrev-hook :system t)
-    ("findrmd" ["find . -type d -name '' -exec rm -rf {} \\;" 20 nil nil]
+    ("findrmd" ["find . -type d -iname '' -exec rm -rf {} \\;" 20 nil nil]
      expand-abbrev-hook :system t)
 
     ("bitn" "https://bitbucket.org/nverno " nil :system t)

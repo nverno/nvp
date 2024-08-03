@@ -16,9 +16,8 @@
         (call-interactively #'sqlite-mode-list-data))
       (forward-line 1))))
 
-;; -------------------------------------------------------------------
-;;; Simple SQLi completion for Sqlite commands
 
+;;; Completion
 (nvp:define-cache-runonce nvp-sqlite-interactive-commands ()
   "List of sqlite interactive commands."
   (split-string

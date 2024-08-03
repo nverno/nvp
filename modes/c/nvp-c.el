@@ -293,8 +293,10 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
       ,(rx (or "argument_list" "parameter_list" "parenthesized_expression"
                "for_range_loop")))
      parent-bol c-ts-mode-indent-offset)
+    ;; TODO(08/02/24): patch to align decls
     ;; Note(5/2/24): in `c-ts-mode--indent-styles' (parent-is "declaration")
     ;; is given indent offset of 0?
+    ((node-is "init_declarator") prev-sibling 0)
     ((parent-is ,(rx bos "declaration")) parent-bol c-ts-mode-indent-offset)))
 
 

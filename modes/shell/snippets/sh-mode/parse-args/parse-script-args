@@ -6,7 +6,8 @@
 while (( "\$#" )); do
     case "\$1" in
         $1) $2;;$0
-        *) ${3:echo -e "\e[40m\e[1;32mUsage: \$0 [$1]\e[0m";}${3:$(if (yas-text) "usage && " "\n")}exit 1;;
+        *) ${3:echo -e "\e[40m\e[1;32mUsage: \$0 [$1]\e[0m";}${3:$($s?
+           "\nusage && return 1" "break")};;
     esac
     shift || true
 done

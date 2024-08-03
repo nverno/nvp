@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: max
+# key: d_max
+# --
+${1:#define MAX(a, b) ((a) > (b) ? (a) : (b))}${1:$($s? ""
+"int max(int a, int b) {
+    return (a > b) ? a : b;
+}")}

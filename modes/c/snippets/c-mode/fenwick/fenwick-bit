@@ -1,0 +1,34 @@
+# -*- mode: snippet -*-
+# name: binary-indexed/fenwick tree
+# key: d_bit
+# --
+#define MAXN ${1:100000}
+
+// 1-indexed
+struct Bit {
+  int n;
+  int v[MAXN + 1];
+};
+typedef struct Bit bit_t;
+
+void bit_init(bit_t *b, int sz) {
+  b->n = sz + 1;
+  memset(b->v, 0, b->n * sizeof(int));
+}
+
+void bit_update(bit_t *b, int i, int val) {
+  for (; i < b->n; i += i & -i) {
+    b->v[i] += val;
+  }
+}
+
+int bit_query(bit_t *b, int i) {
+  int res = 0;
+  for (++i; i > 0; i -= i & -i)
+    res += b->v[i];
+  return res;
+}
+
+int bit_rquery(bit_t *b, int l, int r) {
+  return bit_query(b, r) - bit_query(b, l - 1);
+}

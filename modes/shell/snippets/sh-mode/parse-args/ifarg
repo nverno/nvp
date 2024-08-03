@@ -3,5 +3,5 @@
 # key: ifarg
 # --
 if [ -n "\$1" ]; then
-    $0
+  $0
 fi

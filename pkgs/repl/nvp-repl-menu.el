@@ -22,6 +22,18 @@
      (completing-read
       prompt (mapcar #'car nvp-repl--display-actions) nil t initial-input history))))
 
+(autoload 'nvp-dev-describe-variable "nvp-dev")
+
+(defun nvp-repl-describe-repl ()
+  "Pretty print current repl struct."
+  (interactive)
+  (let ((repl (nvp-repl-current)))
+    (unless repl
+      (user-error "No current repl"))
+    (with-current-buffer (nvp-dev-describe-variable 'nvp-repl--repl-cache)
+      (re-search-forward (format "^\\s-*%S" (nvp--repl-name repl)) nil t)
+      (scroll-other-window (line-number-at-pos)))))
+
 ;;;###autoload(autoload 'nvp-repl-menu "nvp-repl-menu" nil t)
 (transient-define-prefix nvp-repl-menu ()
   "REPL menu"
@@ -43,6 +55,7 @@
      "Commands"
      ("k" "Clear" nvp-repl-clear :transient t)
      ("h" "Help" nvp-repl-help)
+     ("c" "Config" nvp-repl-config)
      ("w" "Show working directory/buffer" nvp-repl-pwd :transient t)
      ("W" "Change Working directory/buffer" nvp-repl-cd)]]
   [["Repl"
@@ -50,9 +63,9 @@
     ("q" "Interrupt/kill process" nvp-repl-interrupt-or-kill-process
      :if nvp-repl-current)]
    ["Manage Repls"
+    ("M-?" "Describe repl" nvp-repl-describe-repl :if nvp-repl-current)
     (":r" "Remove" nvp-repl-remove)]
    ["Settings"
-    ("c" "Config" nvp-repl-config)
     (":d" nvp-repl--set-display)
     (":l" "Load startup file"
      nvp-repl-config-menu--toggle-nvp-repl-load-startup-file)]])

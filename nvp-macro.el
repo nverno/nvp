@@ -171,27 +171,31 @@ Make the temp buffer scrollable, in `view-mode' and kill when finished.
 Add TITLE to results buffer."
   (declare (indent defun) (debug (sexp &rest form)))
   (nvp:skip-keywords body)
-  (macroexp-let2 nil hdr (if title `(nvp:centered-header ,title))
+  (macroexp-let2* nil ((hdr (if title `(nvp:centered-header ,title)))
+                       (buf (or buffer '(help-buffer))))
     `(let (other-window-scroll-buffer)
        ,(when save-windows '(nvp-window-configuration-save))
        (with-temp-buffer-window
-           ,(or buffer '(help-buffer))
+           ,buf
            ,(if (eq ':none action) nil action)
            nil
-         (with-current-buffer standard-output
-           (setq other-window-scroll-buffer (current-buffer))
-           ,(if title `(princ ,hdr))
-           ,@body
-           (hl-line-mode)
-           (view-mode-enter
-            nil ,(and restore-windows '#'nvp-window-configuration-restore))
-           ,@(when revert-fn
-               `((setq-local revert-buffer-function
-                             (lambda (&rest args)
-                               ,(and save-windows '(nvp-window-configuration-restore))
-                               (funcall ,revert-fn args)
-                               (pop-to-buffer ,(or buffer '(help-buffer)))))
-                 (nvp-buffer-local-set-minor-mode-key 'view-mode "G" #'revert-buffer))))))))
+         (prog1 (get-buffer ,buf)
+           (with-current-buffer standard-output
+             (setq other-window-scroll-buffer (current-buffer))
+             ,(if title `(princ ,hdr))
+             ,@body
+             (hl-line-mode)
+             (view-mode-enter
+              nil ,(and restore-windows '#'nvp-window-configuration-restore))
+             ,@(when revert-fn
+                 `((setq-local revert-buffer-function
+                               (lambda (&rest args)
+                                 ,(and save-windows
+                                       '(nvp-window-configuration-restore))
+                                 (funcall ,revert-fn args)
+                                 (pop-to-buffer ,(or buffer '(help-buffer)))))
+                   (nvp-buffer-local-set-minor-mode-key
+                    'view-mode "G" #'revert-buffer)))))))))
 
 
 (cl-defmacro nvp:with-tabulated-list ( &rest body
@@ -523,7 +527,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
           (if (directory-name-p ,b-o-p)
               (file-truename ,b-o-p)
             (file-name-directory (file-truename ,b-o-p))))))
-     
+
      ;; === Paths ===
      ((eq type 'fa) `(abbreviate-file-name ,b-o-p))
      ((eq type 'fs) `(file-name-nondirectory ,b-o-p))
@@ -560,7 +564,7 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
         `(or (car (setq ,syn (nthcdr 3 ,syn)))
              (car (setq ,syn (cdr ,syn)))
              (nth 3 ,syn))))
-     
+
      ((eq type 'partial)
       (if ppss ppss
         `(parse-partial-sexp ,(or beg '(point-min)) ,(or point '(point)))))
@@ -810,7 +814,7 @@ to it is returned.  This function does not modify the point or the mark."
      ;;=== Comments ====
      ((eq position 'cs)                 ;start of current comment
       `(nvp:point--cse ,point (comment-beginning)))
-     
+
      ((eq position 'ce)                 ;end of next comment
       `(nvp:point--cse ,point
          (skip-syntax-forward " ")
@@ -819,7 +823,7 @@ to it is returned.  This function does not modify the point or the mark."
            (when-let ((beg (comment-beginning)))
              (goto-char beg)
              (and (comment-forward) (point))))))
-     
+
      ((eq position 'cel)                ;end of comment on line
       `(nvp:point--cse ,point
          (beginning-of-line)
@@ -831,7 +835,7 @@ to it is returned.  This function does not modify the point or the mark."
                        (eolp)
                        (looking-at-p comment-end-skip))
                (point))))))
-     
+
      ((eq position 'csl)                ;start of comment on line
       `(nvp:point--cse ,point
          (beginning-of-line)
@@ -910,7 +914,7 @@ to it is returned.  This function does not modify the point or the mark."
       `(nvp:point--se ,point
          (back-to-indentation)
          (current-column)))
-     
+
      ((eq position 'boi)                ;beginning of indentation
       `(nvp:point--se ,point
 	 (back-to-indentation)
@@ -931,7 +935,7 @@ to it is returned.  This function does not modify the point or the mark."
      ;;=== Sexps ===
      ((memq position '(fl bl ful bul fdl bdl)) ;scan lists
       `(nvp:scan ',position ,point ,limit))
-     
+
      ((eq position 'bod)                ;beginning of defun
       `(nvp:point--se ,point
          (beginning-of-defun)
@@ -965,7 +969,7 @@ to it is returned.  This function does not modify the point or the mark."
       `(nvp:point--se ,point
          (nvp:skip-sws 'backward ,escape)
          (point)))
-     
+
      ((eq position 'eows)               ;end of WS across lines
       `(nvp:point--se ,point
          (nvp:skip-ws 'forward ,escape)

@@ -303,7 +303,7 @@ Calls `imenu' to jump to location with selection."
         (minibuffer-with-setup-hook (lambda () (nvp-imenu-completion-mode))
           (let* ((nvp-imenu--completion-table)
                  (nvp-imenu--active-buffer-re
-                  (concat (buffer-name (nvp-imenu--active-buffer))
+                  (concat (regexp-quote (buffer-name (nvp-imenu--active-buffer)))
                           nvp-imenu-buffer-delimiter))
                  (name (nvp-completing-read (nvp-imenu--prompt)
                          index-alist nil t nil 'imenu--history-list default))

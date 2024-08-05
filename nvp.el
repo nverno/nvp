@@ -110,8 +110,9 @@ called from minibuffer, or nil.")
 
 ;;; Mode local hooks
 ;; use add-function, any reason to run hooks?
-(nvp:defvar :local t :permanent t
-            nvp-help-at-point-functions '(nvp-hap-company nvp-hap-info))
+(nvp:defvar
+  :local t :permanent t
+  nvp-help-at-point-functions '(nvp-hap-local nvp-hap-company nvp-hap-info))
 
 (eval-and-compile
   (defconst nvp-mode-hooks

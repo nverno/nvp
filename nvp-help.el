@@ -175,9 +175,9 @@ Ignore buttons like `native-comp-function',`primitive-function'."
     ("v" "Variable" find-variable)
     ("K" "Function on key" find-function-on-key)]
    ["Documentation"
+    ("n" "Noman" noman :if (lambda () (fboundp 'noman)))
     ("m" "Man" man)
     ("M" "Consult man" consult-man)
-    ("N" "Noman" noman :if (lambda () (fboundp 'noman)))
     ("i" "Info" nvp-info-menu)
     ("d" "Devdocs" nvp-devdocs-menu :transient transient--do-replace
      :if (lambda () (fboundp 'devdocs-lookup)))
@@ -191,7 +191,7 @@ Ignore buttons like `native-comp-function',`primitive-function'."
     ("l" "Lookup-help links" lookup-help)
     ("p" "Hyperpolyglot" hyperpolyglot)]]
   [["Words/Numbers"
-    ("n" "Number" nvp-number-menu :transient transient--do-replace)
+    ("N" "Number" nvp-number-menu :transient transient--do-replace)
     ("w" "Word dwim" nvp-help-word-dwim)
     ("W" "Powerthesaurus" powerthesaurus-transient :transient transient--do-replace
      :if (lambda () (featurep 'powerthesaurus)))

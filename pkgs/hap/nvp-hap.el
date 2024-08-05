@@ -455,6 +455,13 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
                  (describe-variable arg)))
              (list (current-buffer) (point-min) nil))))))))
 
+;;;###autoload
+(defun nvp-hap-local (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (help-at-pt-kbd-string))
+    (doc-string arg)
+    (doc-buffer)))
+
 (provide 'nvp-hap)
 ;; Local Variables:
 ;; coding: utf-8

@@ -42,7 +42,8 @@
                 shellcheck-mode
                 process-menu-mode
                 shortdoc-mode
-                devdocs-mode))
+                devdocs-mode
+                ess-r-help-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-compilation))
               '(compilation-mode
                 grep-mode

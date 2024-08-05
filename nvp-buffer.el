@@ -98,48 +98,42 @@ With prefix, prompt for MODE buffers to kill."
   "Diff buffer with its file."
   ())
 
-
 ;;; Sudo
-
-(eval-when-compile
- (defmacro nvp-sudo:wrap (func &optional filename)
-   "Wrap file finding FUNC to open FILENAME as root."
-   `(let ((remote-method (file-remote-p default-directory 'method))
-          (remote-host (file-remote-p default-directory 'host))
-          (remote-localname (file-remote-p default-directory 'localname)))
-      (,func (format "/%s:root@%s:%s"
-                     (or remote-method "sudo")
-                     (or remote-host "localhost")
-                     (or remote-localname
-                         ,(or filename '(read-file-name "Find file (root): "))))))))
-
+;; https://github.com/bbatsov/crux/blob/master/crux.el
 (defun nvp-sudo-already-root-p ()
   (let ((remote-method (file-remote-p default-directory 'method))
         (remote-user (file-remote-p default-directory 'user)))
     (and remote-method
          (or (member remote-method '("sudo" "su" "ksu" "doas"))
-             (string= remote-user "root")))))
+             (and remote-user (string= remote-user "root"))))))
 
-;; https://github.com/bbatsov/crux/blob/master/crux.el
 ;;;###autoload
-(defun nvp-sudo-edit (&optional arg)
-  "Edit current file as root.
-With prefix ARG, prompt for file to visit."
-  (interactive "P")
-  (if (or arg (not buffer-file-name))
-      (nvp-sudo:wrap find-file)
-    (if (nvp-sudo-already-root-p)
-        (message "Already editing file as root.")
-      (let ((place (point)))
-        (nvp-sudo:wrap find-alternate-file (buffer-file-name))
-        (goto-char place)))))
+(defun nvp-sudo-edit (filename)
+  "Edit current file or FILENAME as root.
+With prefix ARG, prompt for FILENAME to visit."
+  (interactive
+   (list (if (or current-prefix-arg (null buffer-file-name))
+             (read-file-name "Find file (root): ")
+           buffer-file-name)))
+  (let* ((remote-method (or (file-remote-p default-directory 'method) "sudo"))
+         (remote-host (or (file-remote-p default-directory 'host) "localhost"))
+         (func (if (or current-prefix-arg
+                       (not (equal buffer-file-name filename)))
+                   #'find-file
+                 #'find-alternate-file))
+         (pos (and (eq func 'find-alternate-file) (point))))
+    (when (and (eq func 'find-alternate-file)
+               (nvp-sudo-already-root-p))
+      (user-error "already sudoing %s" filename))
+    (funcall func (format "/%s:root@%s:%s"
+                          (or remote-method "sudo")
+                          (or remote-host "localhost")
+                          (or (file-remote-p filename 'localname) filename)))
+    (and pos (goto-char pos))))
 
-;; -------------------------------------------------------------------
-;;; Encoding 
-
-;; convert buffer coding to utf-8 and removing all trailing '\r'
 ;;;###autoload
 (defun nvp-buffer-convert-to-utf-8 ()
+  "Convert buffer coding to utf-8 and removing all trailing \"\\r\"."
   (interactive)
   (if (not (buffer-file-name))
       (message "Buffer not associated with file")

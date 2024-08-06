@@ -6,7 +6,7 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp-shell)                    ; nvp-shell-abbrev-re
+(require 'nvp-shell-common)             ; nvp-shell-abbrev-re
 (require 'abbrev)
 (nvp:decls :f (nvp-abbrev-expand-not-after-punct-p)
            :v (nvp-shell-abbrev-table shells-abbrev-table))

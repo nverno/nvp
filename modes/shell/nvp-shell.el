@@ -9,15 +9,6 @@
                nvp-comint-redirect-to-string shell-directory-tracker))
 (nvp:auto "f" f-same-p)
 
-;; dont expand when prefixed by [-/_.]
-(defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
-
-(defun nvp-shell-abbrev-expand-p ()
-  (not (or (memq last-input-event '(?- ?. ?_)) (nvp:ppss 'soc))))
-
-;; update default-directory on remote login
-(defvar nvp-shell-ssh-regexp (nvp:rx-syms "ssh" "hssh"))
-
 
 ;;; Processes
 
@@ -69,6 +60,7 @@
 
 ;; -------------------------------------------------------------------
 ;;; Commands 
+
 (defun nvp-shell-run-external ()
   "Run input on current line in external shell (gnome)"
   (interactive)
@@ -112,9 +104,13 @@ With `C-u'`C-u' read command."
 
 ;; -------------------------------------------------------------------
 ;;; Remote
+
 ;; TODO:
 ;; - use tramp in remote directory
 ;; - filter to update default-directory when ssh in shell
+
+;; update default-directory on remote login
+(defvar nvp-shell-ssh-regexp (nvp:rx-syms "ssh" "hssh"))
 
 ;; (defun nvp-shell-remote-filter (string)
 ;;   "Update `default-directory' on remote login.

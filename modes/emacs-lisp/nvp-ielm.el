@@ -84,8 +84,7 @@
     :init #'ielm
     :init-use-hook t
     :procname "ielm"
-    :history-file ".ielm_history"
-    :eval-filter (lambda (s) (replace-regexp-in-string "[ \n\t]+" " " s))
+    :eval-output-filter (lambda (s) (replace-regexp-in-string "[ \n\t]+" " " s))
     :send-input #'ielm-send-input
     :send-string #'nvp-ielm-send-string
     :cmd-handlers '(("," . nvp-ielm-help)) ; leave "?" for characters

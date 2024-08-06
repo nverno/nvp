@@ -128,6 +128,9 @@ Used to set `end-of-defun-function'."
 ;; -------------------------------------------------------------------
 ;;; REPL
 
+;;; TODO(08/05/24): fix `shell-eval-command' to handle multiline prompt
+;;  for eval support
+
 ;; Drop-in replacement for `sh-shell-process'
 (defun nvp-sh-get-process (&optional this-buffer)
   "Return a shell process specific to THIS-BUFFER if non-nil.

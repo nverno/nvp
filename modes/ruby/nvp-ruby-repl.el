@@ -51,7 +51,6 @@
     :send-buffer #'ruby-send-buffer
     :send-line #'ruby-send-line
     :eval-sexp #'ruby-send-last-sexp
-    :history-file ".irb_history"
     :help-cmd '(:no-arg "help\nnil\n" :with-arg "? %s")
     :cd-cmd ".cd %s"
     :pwd-cmd ".pwd"

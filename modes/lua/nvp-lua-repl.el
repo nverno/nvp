@@ -19,8 +19,9 @@
     :pwd-cmd "lfs=require 'lfs'; print(lfs.currentdir())"
     :help-cmd #'nvp-lua-repl-help
     :send-region #'nvp-lua-send-region
-    :eval-filter (lambda (s) (replace-regexp-in-string inf-lua-prompt-continue "" s))
-    :eval-sexp #'nvp-lua-repl-eval-sexp
+    :eval-output-filter #'nvp-lua-repl--eval-output-filter
+    :eval-input-filter #'nvp-lua-repl--eval-input-filter
+    ;; :eval-sexp #'nvp-lua-repl-eval-sexp
     :cmd-handlers '(("?"  . nvp-lua-repl-help)
                     ("pp" . "pp(%s)"))))
 
@@ -31,7 +32,16 @@
       (prog1 t (funcall-interactively #'devdocs-lookup nil thing))
     thing))
 
-(defun nvp-lua-repl-eval-sexp (&optional insert)
+;;; Eval
+(defun nvp-lua-repl--eval-output-filter (str)
+  (replace-regexp-in-string inf-lua-prompt-continue "" str))
+
+(defun nvp-lua-repl--eval-input-filter (str)
+  (if (string-match-p "\\`\\s-*return" str)
+      str
+    (concat "return " str)))
+
+(defun nvp-lua-repl-eval-sexp (&optional _insert)
   "Eval sexp-like thing near point."
   (interactive "P")
   (let ((bnds (if (region-active-p)
@@ -45,8 +55,10 @@
     ;; XXX(6/29/24): choose better when to add 'return'
     (unless (string-match-p "\\`\\s-*return" str)
       (setq str (concat "return " str)))
-    (nvp-repl-send-string str insert)
-    (nvp-repl-show-result nil insert)))
+    str
+    ;; (nvp-repl-send-string str _insert)
+    ;; (nvp-repl-show-result nil _insert)
+    ))
 
 (defun nvp-lua-repl-init (&optional prefix)
   "Launch lua repl.
@@ -86,11 +98,15 @@ With two \\[universal-argument] prompt for lua command."
 (defun nvp-lua-send-region (beg end)
   "Send region from BEG to END to Lua repl."
   (interactive "r")
-  (nvp-repl-send-string
-   (format "__REPL_loadstring(%s, %s, %s);\n"
-           (inf-lua-string-to-literal (buffer-substring-no-properties beg end))
-           (inf-lua-string-to-literal (or (buffer-file-name) (buffer-name)))
-           (line-number-at-pos beg))))
+  (let ((text (buffer-substring-no-properties beg end)))
+    (funcall #'nvp-repl-send-string
+             (if (bound-and-true-p nvp-repl-eval-input-filter)
+                 text
+               (format "__REPL_loadstring(%s, %s, %s);\n"
+                       (inf-lua-string-to-literal text)
+                       (inf-lua-string-to-literal (or (buffer-file-name)
+                                                      (buffer-name)))
+                       (line-number-at-pos beg))))))
 
 
 (provide 'nvp-lua-repl)

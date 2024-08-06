@@ -9,8 +9,6 @@
 ;; - xterm-color-debug
 ;; - comint-redirect-verbose
 ;;
-;; TODO:
-;; - default `comint-input-filter-functions' to ignore blanks, compress newlines
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
@@ -19,18 +17,60 @@
 
 ;;; History
 
-(defun nvp-comint-write-input-ring (orig-fn &rest _)
+(defvar-local nvp-comint-history-save-on-kill t
+  "When non-nil, save history when buffer is killed before killing process.")
+
+(defvar nvp-comint-history-append t
+  "When non-nil, writing `comint-input-ring' adds new entries to
+`comint-input-ring-file-name' instead of clobbering it.")
+
+(defvar nvp-comint-history-output-filter nil
+  "Hook run when writing history entries to file.
+Called with history element as argument.")
+
+(defun nvp-comint--write-input-ring ()
+  "Modified version of `comint-write-input-ring'.
+Applies `nvp-comint-history-output-filter' to history entries.
+Binds `comint-input-ring-separator' so local values have effect."
+  (cond ((or (null comint-input-ring-file-name)
+	     (equal comint-input-ring-file-name "")
+	     (null comint-input-ring) (ring-empty-p comint-input-ring))
+	 nil)
+	((not (file-writable-p comint-input-ring-file-name))
+	 (message "Cannot write history file %s" comint-input-ring-file-name))
+	(t
+	 (let* ((history-buf (get-buffer-create " *Temp Input History*"))
+		(ring comint-input-ring)
+		(ring-file comint-input-ring-file-name)
+                ;; Note(08/05/24): comint should bind this for use in history-buf
+                (ring-separator comint-input-ring-separator)
+                (filter nvp-comint-history-output-filter)
+		(index (ring-length ring)))
+	   ;; Write it all out into a buffer first.  Much faster, but messier,
+	   ;; than writing it one line at a time.
+	   (with-current-buffer history-buf
+	     (erase-buffer)
+	     (while (> index 0)
+	       (setq index (1- index))
+	       (insert (funcall (or filter #'identity) (ring-ref ring index))
+                       ring-separator))
+	     (write-region (buffer-string) nil ring-file nil 'no-message)
+	     (kill-buffer nil))))))
+
+(defun nvp-comint-write-input-ring ()
   "Override for `comint-write-input-ring'.
-Merges history from `comint-input-ring' with contents of history file instead of
-overwriting its contents like `comint-write-input-ring'.
-Also, removes duplicates from merged histories."
-  (if (not (equal "\n" comint-input-ring-separator))
-      (funcall orig-fn)
+Adds new entries to `comint-input-ring-file-name' instead of clobbering it
+when `nvp-comint-history-append' in non-nil.
+When add entries, duplicate entries are also removed."
+  (if (or (null nvp-comint-history-append)
+          ;; TODO(08/05/24): remove when separators handled in merge
+          (not (equal "\n" comint-input-ring-separator)))
+      (nvp-comint--write-input-ring)
+    ;; Write history file and ring elements to temp file, then merge
     (let ((histfile comint-input-ring-file-name)
           (comint-input-ring-file-name
            (make-temp-file comint-input-ring-file-name)))
-      (funcall orig-fn)
-      ;; Merge comint history with history file, removing duplicates.
+      (nvp-comint--write-input-ring)
       (call-process-shell-command
        (format
         ;; FIXME(08/02/24): don't dedupe history separator lines
@@ -40,17 +80,14 @@ Also, removes duplicates from merged histories."
         histfile comint-input-ring-file-name
         comint-input-ring-file-name histfile comint-input-ring-file-name)))))
 
-(advice-add 'comint-write-input-ring :around #'nvp-comint-write-input-ring)
-
-(defvar-local nvp-comint-history-save t
-  "When non-nil, save history when buffer is killed before killing process.")
+(advice-add 'comint-write-input-ring :override #'nvp-comint-write-input-ring)
 
 (defun nvp-comint-kill-proc-before-buffer ()
   "Kill process before killing buffer to ensure comint writes history."
   (let ((proc (nvp:buffer-process)))
     (when (processp proc)
       (and (derived-mode-p 'comint-mode)
-           nvp-comint-history-save
+           nvp-comint-history-save-on-kill
            (comint-write-input-ring))
       (delete-process proc))))
 
@@ -157,44 +194,44 @@ Prompt unless SILENT or `noninteractive'."
 
 ;; TODO: check if this would work better
 ;; https://github.com/hylang/hy-mode/blob/8699b744c03e0399c049757b7819d69768cac3bc/hy-shell.el#L156
-(defun nvp-comint-redirect-silently (proc string &optional prompt)
-  "Evaluate STRING in PROC, but discard output silently."
-  (let ((comint-redirect-perform-sanity-check))
-    (with-temp-buffer 
-      (comint-redirect-send-command-to-process
-       string (current-buffer) proc nil 'no-display)
-      ;; wait for process to complete
-      (with-current-buffer (process-buffer proc)
-        (while (and (null comint-redirect-completed) ;ignore output
-                    (accept-process-output proc 1)))))
-    (with-current-buffer (process-buffer proc)
-      (comint-redirect-cleanup)
-      (while (and (null comint-redirect-completed)   ;wait for cleanup to finish
-                  (accept-process-output proc 1)))
-      (and prompt (comint-send-string proc "\n"))))) ;optionally print a new prompt
+;; (defun nvp-comint-redirect-silently (proc string &optional prompt)
+;;   "Evaluate STRING in PROC, but discard output silently."
+;;   (let ((comint-redirect-perform-sanity-check))
+;;     (with-temp-buffer 
+;;       (comint-redirect-send-command-to-process
+;;        string (current-buffer) proc nil 'no-display)
+;;       ;; wait for process to complete
+;;       (with-current-buffer (process-buffer proc)
+;;         (while (and (null comint-redirect-completed) ;ignore output
+;;                     (accept-process-output proc 1)))))
+;;     (with-current-buffer (process-buffer proc)
+;;       (comint-redirect-cleanup)
+;;       (while (and (null comint-redirect-completed)   ;wait for cleanup to finish
+;;                   (accept-process-output proc 1)))
+;;       (and prompt (comint-send-string proc "\n"))))) ;optionally print a new prompt
 
 ;;; Font-locking
 ;; http://www.modernemacs.com/post/comint-highlighting/
 ;; https://github.com/hylang/hy-mode/blob/master/hy-font-lock.el
-(defun nvp-comint-font-lock-keywords (kwd)
-  (-let (((matcher . match-highlights) kwd))
-    ;; matcher can be function or regexp
-    (macroexpand-all
-     `((lambda (limit)
-         (when ,(if (symbolp matcher)
-                    `(,matcher limit)
-                  `(re-search-forward ,matcher limit t))
-           ;; while SUBEXP can be anything, this search always can use zero
-           (-let ((start (match-beginning 0))
-                  ((comint-last-start . comint-last-end) comint-last-prompt)
-                  (state (syntax-ppss)))
-             (and (> start comint-last-start)
-                  ;; make sure not in comment/string
-                  ;; have to manually do this in custom MATCHERs
-                  (not (or (nth 3 state) (nth 4 state)))))))
-       ,(if (listp match-highlights)
-            `,@match-highlights
-          `,match-highlights)))))
+;; (defun nvp-comint-font-lock-keywords (kwd)
+;;   (-let (((matcher . match-highlights) kwd))
+;;     ;; matcher can be function or regexp
+;;     (macroexpand-all
+;;      `((lambda (limit)
+;;          (when ,(if (symbolp matcher)
+;;                     `(,matcher limit)
+;;                   `(re-search-forward ,matcher limit t))
+;;            ;; while SUBEXP can be anything, this search always can use zero
+;;            (-let ((start (match-beginning 0))
+;;                   ((comint-last-start . comint-last-end) comint-last-prompt)
+;;                   (state (syntax-ppss)))
+;;              (and (> start comint-last-start)
+;;                   ;; make sure not in comment/string
+;;                   ;; have to manually do this in custom MATCHERs
+;;                   (not (or (nth 3 state) (nth 4 state)))))))
+;;        ,(if (listp match-highlights)
+;;             `,@match-highlights
+;;           `,match-highlights)))))
 
 
 (provide 'nvp-comint)

@@ -28,7 +28,6 @@
   "Face used to display evaluation results at the end of line."
   :group 'nvp-repl)
 
-
 (defun nvp-repl-eval-insert (res)
   (let ((standard-output (current-buffer)))
     (princ res)))
@@ -36,20 +35,23 @@
 ;;;###autoload
 (defun nvp-repl-show-result (&optional res insert)
   "Print the result of the last evaluation in the current buffer."
-  (message "nvp-repl-show-result: %S %S" res insert)
+  ;; (message "nvp-repl-show-result: %S %S" res insert)
   (unless res (setq res (nvp-repl-eval-result-value)))
   (if insert
       (nvp-repl-eval-insert res)
     (nvp-repl-eval-show-result res)))
 
+;;; TODO(08/05/24): `nvp-repl-eval-string' and `nvp-repl-eval-sexp' no longer
+;;  necessary
 ;;;###autoload
 (defun nvp-repl-eval-string (str &optional insert)
   "Eval STR, displaying result in overlay or INSERTing with prefix."
   (interactive "sEval: \nP")
   (nvp-with-repl (eval-string)
-    (if eval-string (funcall eval-string str insert)
-      (nvp-repl-send-string str)
-      (nvp-repl-show-result nil insert))))
+    (let ((res (if eval-string
+                   (funcall eval-string str insert)
+                 (prog1 nil (nvp-repl-send-string str)))))
+      (nvp-repl-show-result res insert))))
 
 ;;;###autoload
 (defun nvp-repl-eval-sexp (&optional insert)
@@ -57,16 +59,18 @@
 With prefix, INSERT result at point."
   (interactive "P")
   (nvp-with-repl (eval-sexp)
-    (if eval-sexp (funcall-interactively eval-sexp insert)
-      (save-excursion
-        (skip-syntax-backward " ")
-        (nvp-repl-send-sexp))
-      (nvp-repl-show-result nil insert))))
+    (let (res)
+      (if eval-sexp
+          (setq res (funcall-interactively eval-sexp insert))
+       (save-excursion
+         (skip-syntax-backward " ")
+         (nvp-repl-send-sexp))
+       (nvp-repl-show-result res insert)))))
 
 ;;;###autoload
 (defun nvp-repl-eval-result-value ()
   "Get result of last eval from repl."
-  (nvp-with-repl (repl-buff repl-proc eval-filter)
+  (nvp-with-repl (repl-buff repl-proc eval-output-filter)
     (with-current-buffer repl-buff
       (while (not (and comint-last-prompt
                        (goto-char (car comint-last-prompt))
@@ -78,8 +82,9 @@ With prefix, INSERT result at point."
              (res (string-trim (buffer-substring-no-properties beg end))))
         (while (string-match comint-prompt-regexp res)
           (setq res (replace-match "" t t res)))
-        (if eval-filter
-            (funcall eval-filter res)
+        (comint-goto-process-mark)
+        (if eval-output-filter
+            (funcall eval-output-filter res)
           res)
         ;; (or (re-search-forward "[ \n]=> " (car comint-last-prompt) t)
         ;;     ;; Evaluation seems to have failed.

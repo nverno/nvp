@@ -66,8 +66,19 @@
 ;; -------------------------------------------------------------------
 ;;; Expand Hooks
 
-;; allow abbrevs to expand inside parens
-;; (2/14/20) for some reason, can no longer wrap `eolp' around
+;; Used during `abbrev--before-point' so `forward-word' will move
+;; by syntax instead of any entries in `find-word-boundary-function-table',
+;; eg. those during `subword-mode'
+;;;###autoload
+(defun nvp-abbrev-expand-strictly ()
+  (let ((find-word-boundary-function-table
+         (if (char-table-p word-move-empty-char-table)
+             word-move-empty-char-table
+           (setq word-move-empty-char-table (make-char-table nil)))))
+    (abbrev--default-expand)))
+
+;; Allow abbrevs to expand inside parens
+;; Note(2/14/20): for some reason, can no longer wrap `eolp' around
 ;; `expand-abbrev-hook' with `cl-letf' without needing to reevaluate
 ;; `expand-abbrev-hook' in order for it to work...
 ;;;###autoload
@@ -76,7 +87,7 @@
   ;; this used to work fine:
   ;; (nvp:with-letf #'eolp #'(lambda () (not (eq (char-syntax (char-after)) ?w)))
   ;;   (expand-abbrev-hook))
-  (if (not (eq (char-syntax (char-after)) ?w))
+  (if (or (eobp) (not (eq (char-syntax (char-after)) ?w)))
       (let ((p (point)))
         (setq expand-point nil)
         (if (and (eq (char-syntax (preceding-char)) ?w)

@@ -298,9 +298,11 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-toggle-local-variable
        ;; abbrev
        nvp-abbrevd
-       nvp-abbrev-from-splitters nvp-abbrev-from-words
+       nvp-abbrev-from-splitters
+       nvp-abbrev-from-words
        nvp-abbrev-write-abbrev-table
        nvp-abbrev-grab
+       nvp-abbrev-expand-strictly
        nvp-abbrev-expand-p
        nvp-abbrev-expand-not-after-punct-p
        nvp-abbrev-expand-after-symbols-hook

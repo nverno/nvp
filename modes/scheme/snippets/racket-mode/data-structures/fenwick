@@ -1,0 +1,33 @@
+# -*- mode: snippet -*-
+# name: fenwick/binary indexed tree
+# key: d_bit
+# --
+;; Note: 1-indexed
+(struct bit (n vec) #:mutable #:transparent)
+
+(define (make-bit sz)
+  (let ([n (+ sz 1)])
+    (bit n (make-vector n 0))))
+
+(define (bit-update b idx val)
+  (define n (bit-n b))
+  (define vec (bit-vec b))
+  (let loop ([i (add1 idx)])
+    (when (< i n)
+      (vector-set! vec i (+ val (vector-ref vec i)))
+      (loop (+ i (bitwise-and i (- i)))))))
+
+(define (bit-query b idx)
+  (define vec (bit-vec b))
+  (for/fold ([res 0]
+             [i (add1 idx)]
+             #:result res)
+            ([_ (in-naturals)])
+    #:break (<= i 0)
+    (values
+     (+ res (vector-ref vec i))
+     (- i (bitwise-and i (- i))))))
+
+(define (bit-rquery b lo hi)
+  (- (bit-query b hi)
+     (bit-query b (- lo 1))))

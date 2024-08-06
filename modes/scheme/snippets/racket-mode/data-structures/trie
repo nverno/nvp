@@ -1,0 +1,30 @@
+# -*- mode: snippet -*-
+# name: trie
+# key: d_trie
+# --
+(struct trie-node (leaf? data children) #:mutable #:transparent)
+
+(define (make-trie-node)
+  (trie-node #f #f (make-hash)))
+
+(define (trie-insert trie word)
+  (define (helper node chars)
+    (if (null? chars)
+        (begin (set-trie-node-leaf?! node #t)
+               (set-trie-node-data! node word))
+        (let* ((char (car chars))
+               (ch (trie-node-children node))
+               (next-node (hash-ref ch char (lambda () (make-trie-node)))))
+          (hash-set! ch char next-node)
+          (helper next-node (cdr chars)))))
+  (helper trie (string->list word)))
+
+(define (trie-contains? trie word)
+  (define (helper node chars)
+    (if (null? chars)
+        (trie-node-leaf? node)
+        (let* ((char (car chars))
+               (ch (trie-node-children node))
+               (next-node (hash-ref ch char #f)))
+          (and next-node (helper next-node (cdr chars))))))
+  (helper trie (string->list word)))

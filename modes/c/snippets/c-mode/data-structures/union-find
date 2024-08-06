@@ -1,0 +1,55 @@
+# -*- mode: snippet -*-
+# name: discrete set/union find
+# key: d_uf
+# --
+#include <stdlib.h>
+#include <stdbool.h>
+struct UF {
+  int *_dat, *parent, *sz;
+  int count;
+};
+typedef struct UF uf_t;
+
+void uf_init(uf_t *uf, int n) {
+  uf->count = n;
+  uf->_dat = malloc(2 * n * sizeof(int));
+  uf->sz = uf->_dat + n;
+  memset(uf->sz, 1, n * sizeof(int));
+  uf->parent = uf->_dat;
+  for (int i = 0; i < n; ++i)
+    uf->parent[i] = i;
+}
+
+int uf_find(uf_t *uf, int x) {
+  int root = x;
+  while (root != uf->parent[root])
+    root = uf->parent[root];
+  while (x != uf->parent[x]) {
+    int tmp = uf->parent[x];
+    uf->parent[x] = root;
+    x = tmp;
+  }
+  return root;
+}
+
+bool uf_merge(uf_t *uf, int x, int y) {
+  if (x < 0 || y < 0)
+    return false;
+  int xx = uf_find(uf, x), yy = uf_find(uf, y);
+  if (xx != yy) {
+    if (uf->sz[xx] > uf->sz[yy]) {
+      int tmp = yy;
+      yy = xx;
+      xx = tmp;
+    }
+    uf->parent[xx] = yy;
+    uf->sz[yy] += uf->sz[xx];
+    uf->count--;
+    return true;
+  }
+  return false;
+}
+
+bool uf_connected(uf_t *uf, int x, int y) {
+  return uf_find(uf, x) == uf_find(uf, y);
+}

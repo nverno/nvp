@@ -536,6 +536,16 @@ PREFIX is passed to `nvp-repl-jump'."
 (defvar-local nvp-repl-eval-input-filter nil
   "When non-nil, apply to input before sending to repl.")
 
+;; Default filter for `eval-output-filter'
+(defun nvp-repl--eval-output-filter (str)
+  (string-trim
+   (cl-reduce
+    (lambda (s rep)
+      (replace-regexp-in-string (car rep) (cdr rep) s))
+    '(("[ \t][ \t]+" . " ")
+      ("[\n\r][\n\r]+" . "\n"))
+    :initial-value str)))
+
 (defun nvp-repl-send-string (str &optional insert no-newline)
   "Send STR to current REPL, appending a final newline unless NO-NEWLINE.
 If INSERT, STR is inserted into REPL."
@@ -633,13 +643,13 @@ If INSERT, STR is inserted into REPL."
 (defun nvp-repl-send-line (&optional and-go eval)
   (interactive (nvp-repl--send-parse-prefix current-prefix-arg))
   (nvp--repl-send send-line () and-go eval
-                  :region (list (nvp:point 'bol) (nvp:point 'eoll))))
+    :region (list (nvp:point 'bol) (nvp:point 'eoll))))
 
 (defun nvp-repl-send-sexp (&optional and-go eval)
   (interactive (nvp-repl--send-parse-prefix current-prefix-arg))
   (nvp--repl-send send-sexp () and-go eval
-                  :eval-fn eval-sexp
-                  :region sexp))
+    :eval-fn eval-sexp
+    :region sexp))
 
 (defun nvp-repl-send-dwim (&optional and-go eval)
   "Send region, statement, sexp, or line."
@@ -665,13 +675,13 @@ If INSERT, STR is inserted into REPL."
 (defun nvp-repl-send-buffer (&optional and-go)
   (interactive "P")
   (nvp--repl-send send-buffer () and-go nil
-                  :region (list (nvp-repl--skip-shebang (point-min)) (point-max))))
+    :region (list (nvp-repl--skip-shebang (point-min)) (point-max))))
 
 (defun nvp-repl-send-defun (&optional and-go eval)
   (interactive "P")
   (nvp--repl-send send-defun () and-go eval
-                  :eval-fn eval-defun
-                  :region defun))
+    :eval-fn eval-defun
+    :region defun))
 
 (defun nvp-repl-send-defun-or-region (&optional and-go eval)
   (interactive (nvp-repl--send-parse-prefix current-prefix-arg))
@@ -682,9 +692,9 @@ If INSERT, STR is inserted into REPL."
 (defun nvp-repl-send-stmt-or-sentence (&optional and-go eval)
   (interactive (nvp-repl--send-parse-prefix current-prefix-arg))
   (nvp--repl-send send-statement () and-go eval
-                  :region (let ((bnds (or (bounds-of-thing-at-point 'statement)
-                                          (bounds-of-thing-at-point 'sentence))))
-                            (list (car bnds) (cdr bnds)))))
+    :region (let ((bnds (or (bounds-of-thing-at-point 'statement)
+                            (bounds-of-thing-at-point 'sentence))))
+              (list (car bnds) (cdr bnds)))))
 
 (defun nvp-repl-send-file (file &optional and-go)
   "Send FILE to repl and pop to repl buffer when AND-GO."
@@ -693,11 +703,11 @@ If INSERT, STR is inserted into REPL."
           (fname (ignore-errors (file-name-nondirectory file))))
      (list (read-file-name "File: " nil file t fname) current-prefix-arg)))
   (nvp--repl-send send-file (file) and-go nil
-                  (let ((repl-current nvp-repl-current))
-                    (with-temp-buffer
-                      (setq nvp-repl-current repl-current)
-                      (insert-file-contents-literally file)
-                      (nvp-repl-send-buffer)))))
+    (let ((repl-current nvp-repl-current))
+      (with-temp-buffer
+        (setq nvp-repl-current repl-current)
+        (insert-file-contents-literally file)
+        (nvp-repl-send-buffer)))))
 
 (defun nvp-repl-clear ()
   "Clear repl output buffer."
@@ -721,18 +731,6 @@ If INSERT, STR is inserted into REPL."
     (if kill
         (kill-process proc)
       (interrupt-process proc))))
-
-
-;;; Default filters
-
-(defun nvp-repl--eval-output-filter (str)
-  (string-trim
-   (cl-reduce
-    (lambda (s rep)
-      (replace-regexp-in-string (car rep) (cdr rep) s))
-    '(("[ \t][ \t]+" . " ")
-      ("[\n\r][\n\r]+" . "\n"))
-    :initial-value str)))
 
 (provide 'nvp-repl)
 ;; Local Variables:

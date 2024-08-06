@@ -6,6 +6,12 @@
 (nvp:decls :f (comint-line-beginning-position))
 
 
+;; dont expand when prefixed by [-/_.]
+(defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
+
+(defun nvp-shell-abbrev-expand-p ()
+  (not (or (memq last-input-event '(?- ?. ?_)) (nvp:ppss 'soc))))
+
 ;;; Interop variables for eshell, and other non-comint-based shells
 ;; used for determining the shell statement and active command around point
 (defvar nvp-shell-bol-function #'comint-line-beginning-position)

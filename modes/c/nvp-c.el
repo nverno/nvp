@@ -212,6 +212,9 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
       override start end))
     (_ nil)))
 
+(defvar nvp-c-ts--builtins
+  '("memset" "malloc" "calloc" "realloc" "memcpy"))
+
 ;; Add font-locking for SOME_IDENT constants, doc comments, and namespaces in
 ;; c++.
 (defvar c-ts-mode--operators)
@@ -240,11 +243,11 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                  :language language
                  :feature 'function
                  `((call_expression
-                    function: (_) @nvp-c-ts--fontify-call-expression)
-                   ))))
+                    function: (_) @nvp-c-ts--fontify-call-expression)))))
+    
     (apply #'treesit-font-lock-rules
-           (if (eq language 'cpp)
-               (append
+           (append
+            (if (eq language 'cpp)
                 (list
                  :language language
                  :feature 'bracket
@@ -279,8 +282,18 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                     function: ((identifier) @font-lock-builtin-face
                                (:match ,(rx bol "__builtin_")
                                        @font-lock-builtin-face)))))
-                rules)
-             rules))))
+              (list
+               :language language
+               :feature 'builtin
+               `((call_expression
+                  function: ((identifier) @font-lock-builtin-face
+                             (:match
+                              ,(rx-to-string
+                                `(seq bol (or ,@nvp-c-ts--builtins
+                                              (regexp "__builtin_")
+                                              (regexp "str[a-z]+"))))
+                              @font-lock-builtin-face))))))
+            rules))))
 
 
 ;;; Indent
@@ -312,7 +325,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 (nvp:treesit-add-rules c++-ts-mode
   :extra-features '(namespace builtin))
 
-(nvp:treesit-add-rules c-ts-mode)
+(nvp:treesit-add-rules c-ts-mode
+  :extra-features '(builtin))
 
 (provide 'nvp-c)
 ;; Local Variables:

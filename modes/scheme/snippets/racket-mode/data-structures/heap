@@ -1,0 +1,77 @@
+# -*- mode: snippet -*-
+# name: heap
+# key: d_heap
+# --
+(struct heap (vec size cmp) #:mutable #:transparent)
+
+;; Create a new heap, default cmp creates a max-heap
+(define (make-heap [initial-size 10] [cmp (lambda (a b) (- a b))])
+  (heap (make-vector initial-size) 0 cmp))
+
+;; Check if heap is empty
+(define (heap-empty? heap)
+  (zero? (heap-size heap)))
+
+;; Resize heap vector when needed (doubling)
+(define (ensure-capacity heap)
+  (let ([sz (heap-size heap)])
+    (when (= sz (vector-length (heap-vec heap)))
+      (let ([new-vec (make-vector (* 2 sz))])
+        (vector-copy! new-vec 0 (heap-vec heap))
+        (set-heap-vec! heap new-vec)))))
+
+;; Swap heap elements
+(define (vector-swap vec i j)
+  (let ([temp (vector-ref vec i)])
+    (vector-set! vec i (vector-ref vec j))
+    (vector-set! vec j temp)))
+
+(define (parent-index idx)
+  (floor (/ (- idx 1) 2)))
+
+;; Maintain heap ordering after insertion
+(define (heapify-up vec index cmp)
+  (when (> index 0)
+    (let ([parent-idx (parent-index index)])
+      (when (< (cmp (vector-ref vec parent-idx) (vector-ref vec index)) 0)
+        (vector-swap vec parent-idx index)
+        (heapify-up vec parent-idx cmp)))))
+
+;; Maintain heap ordering after removal
+(define (heapify-down vec index size cmp)
+  (let ([left (+ (* 2 index) 1)]
+        [right (+ (* 2 index) 2)]
+        [smallest index])
+    (when (and (< left size)
+               (< (cmp (vector-ref vec smallest) (vector-ref vec left)) 0))
+      (set! smallest left))
+    (when (and (< right size)
+               (< (cmp (vector-ref vec smallest) (vector-ref vec right)) 0))
+      (set! smallest right))
+    (when (not (= smallest index))
+      (vector-swap vec smallest index)
+      (heapify-down vec smallest size cmp))))
+
+;; Push elem onto heap
+(define (heap-push heap elem)
+  (ensure-capacity heap)
+  (let ([sz (heap-size heap)])
+    (vector-set! (heap-vec heap) sz elem)
+    (set-heap-size! heap (add1 sz))
+    (heapify-up (heap-vec heap) sz (heap-cmp heap))))
+
+; Get top of heap
+(define (heap-top heap)
+  (if (heap-empty? heap) #f
+      (vector-ref (heap-vec heap) 0)))
+
+;; Remove the top of the heap
+(define (heap-pop heap)
+  (if (heap-empty? heap) #f
+      (let* ([last-idx (sub1 (heap-size heap))]
+             [vec (heap-vec heap)]
+             [res (vector-ref vec 0)])
+        (vector-swap vec 0 last-idx)
+        (set-heap-size! heap last-idx)
+        (heapify-down vec 0 last-idx (heap-cmp heap))
+        res)))

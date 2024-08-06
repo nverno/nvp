@@ -1,0 +1,41 @@
+# -*- mode: snippet -*-
+# name: discrete sets/union find
+# key: d_uf
+# --
+(struct discrete-set (parent sz count) #:mutable #:transparent)
+
+(define (make-discrete-set n)
+  (discrete-set (list->vector (range n)) (make-vector n 1) n))
+
+(define (discrete-set-find uf x)
+  (let ([root (let loop ([root x])
+                (let ([p (vector-ref (discrete-set-parent uf) root)])
+                  (if (eq? p root) root (loop p))))])
+    (let loop ([x x])
+      (let ([p (vector-ref (discrete-set-parent uf) x)])
+       (unless (eq? x p)
+         (vector-set! (discrete-set-parent uf) x root)
+         (loop p))))
+    root))
+
+(define (discrete-set-merge uf x y)
+  (if (or (negative? x) (negative? y)) #f
+      (let ([xx (discrete-set-find uf x)]
+            [yy (discrete-set-find uf y)])
+        (if (eq? xx yy) #f
+            (let ([sz (discrete-set-sz uf)]
+                  [par (discrete-set-parent uf)])
+              (when (< (vector-ref sz x)
+                       (vector-ref sz y))
+                (let ([tmp xx])
+                  (set! xx yy)
+                  (set! yy tmp)))
+              (vector-set! sz yy (+ (vector-ref sz yy)
+                                    (vector-ref sz xx)))
+              (vector-set! par xx yy)
+              (set-discrete-set-count! uf (sub1 (discrete-set-count uf)))
+              #t)))))
+
+(define (discrete-set-connected uf x y)
+  (eq? (discrete-set-find uf x)
+       (discrete-set-find uf y)))

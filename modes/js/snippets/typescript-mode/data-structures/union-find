@@ -12,11 +12,19 @@ class UF {
     this._count = n;
   }
   public find(x: number): number {
-    if (this.par[x] != x) this.par[x] = this.find(this.par[x]);
-    return this.par[x];
+    let root = x;
+    while (root !== this.par[root])
+      root = this.par[root];
+    while (x !== this.par[x]) {
+      let tmp = this.par[x];
+      this.par[x] = root;
+      x = tmp;
+    }
+    return root;
   }
   public connected(x: number, y: number): boolean { return this.find(x) == this.find(y); }
   public merge(x: number, y: number): boolean {
+    if (x < 0 || y < 0) return false;
     let xx = this.find(x), yy = this.find(y);
     if (xx == yy) return false;
     if (this.sz[xx] > this.sz[yy]) xx = [yy, yy = xx][0];

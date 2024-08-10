@@ -40,7 +40,10 @@
 
 (defsubst nvp:as-list (x)
   (declare (pure t) (side-effect-free t))
-  (if (and (listp x) (not (functionp x))) x
+  (if (and (listp x) (not (functionp x)))
+      (if (nvp:dotted-pair-p x)
+          (list (car x) (cdr x))
+        x)
     (list x)))
 
 (defsubst nvp:unquote (sym)

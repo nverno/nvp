@@ -61,6 +61,27 @@
   (dolist (product '("sqlite" "mysql"))
     (nvp-sql--add-keywords product)))
 
+;;; Format
+(nvp:decl sqlformat-region sqlformat-buffer)
+(defun nvp-sql-format-dwim (&optional arg)
+  "Format buffer using sqlformat.
+The region to format is determined by 1) active region, 2) buffer with single
+prefix ARG, or 3) paragraph at point."
+  (interactive (let ((arg current-prefix-arg))
+                 (nvp:prefix-shift -1)
+                 (list arg)))
+  (if (region-active-p)
+      (call-interactively #'sqlformat-region)
+    (let ((args (list current-prefix-arg)))
+      (apply (cond ((equal '(4) arg) #'sqlformat-buffer)
+                   (t (let ((bnds (bounds-of-thing-at-point 'paragraph)))
+                        (nvp-indicate-pulse-region-or-line
+                         (car bnds) (1+ (cdr bnds)))
+                        (push (cdr bnds) args)
+                        (push (car bnds) args))
+                      #'sqlformat-region))
+             args))))
+
 ;;; SQLup
 ;; modified `sqlup-maybe-capitalize-symbol' to not upcase words after '.'
 (nvp:decl sqlup-work-on-symbol)

@@ -202,7 +202,30 @@ ARG comes from `forward-sexp', which see."
                     pop-to-buffer
                     pop-to-buffer-same-window
                     switch-to-buffer-other-window
-                    switch-to-buffer-other-frame)))
+                    switch-to-buffer-other-frame
+                    window--display-buffer
+                    ;; Actions
+                    nvp-display-buffer-below
+                    nvp-display-buffer-split-below
+                    display-buffer-no-window
+                    display-buffer-same-window
+                    display-buffer-reuse-window
+                    display-buffer-reuse-mode-window
+                    display-buffer-use-some-window
+                    display-buffer-pop-up-window
+                    display-buffer-in-previous-window
+                    display-buffer-in-direction
+                    display-buffer-at-bottom
+                    display-buffer-below-selected
+                    display-buffer-use-least-recent-window
+                    display-buffer-in-side-window
+                    display-buffer-in-atom-window
+                    display-buffer-in-tab
+                    display-buffer-in-new-tab
+                    display-buffer-full-frame
+                    display-buffer-in-pop-up-frame
+                    display-buffer-in-child-frame
+                    display-buffer-use-some-frame)))
 
 (defvar nvp-trace-defun-forms
   '((defun cl-defun declare-function autoload cl-defmethod t)

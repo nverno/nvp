@@ -3,4 +3,4 @@
 # key: _r
 # condition: (nvp-yas-in-string)
 # --
-\e[01;31m${1:error}${2:\e[0m}
+\e[01;31m${1:`$%`}${2:\e[0m}

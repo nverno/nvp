@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: purple
-# key: _p
+# name: brown
+# key: _br
 # condition: (nvp-yas-in-string)
 # --
-\e[35;1m${1:`$%`}${2:\e[0m}
+\e[38;5;94m${1:`$%`}${2:\e[0m}

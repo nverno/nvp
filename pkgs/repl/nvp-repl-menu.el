@@ -9,7 +9,8 @@
 (require 'transient)
 
 (nvp:transient-toggle nvp-repl-config-menu
-  nvp-repl-load-startup-file)
+  nvp-repl-load-startup-file
+  nvp-repl-dedicated-window)
 
 (transient-define-infix nvp-repl--set-display ()
   "Set display action."
@@ -66,7 +67,8 @@
     ("M-?" "Describe repl" nvp-repl-describe-repl :if nvp-repl-current)
     (":r" "Remove" nvp-repl-remove)]
    ["Settings"
-    (":d" nvp-repl--set-display)
+    (":s" nvp-repl--set-display)
+    (":d" nvp-repl-config-menu--toggle-nvp-repl-dedicated-window)
     (":l" "Load startup file"
      nvp-repl-config-menu--toggle-nvp-repl-load-startup-file)]])
 

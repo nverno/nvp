@@ -3,4 +3,4 @@
 # key: _i
 # condition: (nvp-yas-in-string)
 # --
-\e[3m$1${2:\e[0m}
+\e[3m${1:`$%`}${2:\e[0m}

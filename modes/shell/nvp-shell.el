@@ -183,12 +183,13 @@ If none found, return list of all terminal buffers."
   '((display-buffer-reuse-window nvp-display-buffer-split-below)
     (inhibit-same-window         . t)
     (window-height               . 0.5)
-    (display-buffer-in-direction . left)))
+    (display-buffer-in-direction . left)
+    (category                    . repl)))
 
-;; 1. reuse window already displaying buffer
-;; 2. split horizontally below if window large enough
-;; 3. try to use window below, if one is large enough
-;; 4. use current window
+;; 1. Reuse window already displaying buffer
+;; 2. Split horizontally below if window large enough
+;; 3. Try to use window below, if one is large enough
+;; 4. Use current window
 (defun nvp-shell--display-action (buffer)
   (let ((win (selected-window)))
     (cond ((eq (current-buffer) buffer)
@@ -201,7 +202,8 @@ If none found, return list of all terminal buffers."
                 nvp-display-buffer-below
                 display-buffer-same-window)
                (reusable-frames   . visible)
-               (window-min-height . ,(round (* 0.3 (frame-height)))))))))
+               (window-min-height . ,(round (* 0.3 (frame-height))))
+               (category          . repl))))))
 
 (defun nvp-shell-display-buffer (buffer)
   (let ((display-buffer-overriding-action
@@ -227,18 +229,18 @@ specified, prefer shell in current directory if available."
       (if remote
           (shell (format "*shell:%s*"
                          (nth 2 (tramp-dissect-file-name default-directory))))
-        ;; want a terminal in the current directory or project
+        ;; Want a terminal in the current directory or project
         (let ((terms (nvp-shell-in-dir-maybe nil proc-name)))
           (if arg
               (let ((buffname (or (and terms (not (listp terms)) (buffer-name terms))
                                   ;; didn't find one -- create unique name
                                   (generate-new-buffer-name default-name))))
-                ;; with double prefix, force new shell in current directory
+                ;; With double prefix, force new shell in current directory
                 (nvp:prefix 16 (if (buffer-live-p (get-buffer buffname))
                                    (shell (generate-new-buffer-name default-name))
                                  (nvp-shell-display-buffer buffname))
                   (nvp-shell-display-buffer buffname)))
-            ;; otherwise, any terminal will do, but prefer current directory
+            ;; Otherwise, any terminal will do, but prefer current directory
             ;; or project
             (nvp-shell-display-buffer (nvp-shell-in-project-maybe terms))))))))
 

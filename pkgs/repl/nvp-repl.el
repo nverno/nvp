@@ -97,19 +97,17 @@ Each function takes a process as an argument to test against."
 buffers."
   :type 'symbol)
 
+(defcustom nvp-repl-dedicated-window nil
+  "When non-nil, set repl buffer windows as dedicated."
+  :type 'boolean)
+
 (defvar nvp-repl--display-actions
-  '((other-window
-     . ((display-buffer-reuse-window
-         display-buffer-use-some-window
-         display-buffer-pop-up-window)
-        (reusable-frames      . visible)
-        (inhibit-switch-frame . t)
-        (inhibit-same-window  . t)))
-    (split-below
-     . ((display-buffer-reuse-window
-         nvp-repl--split-below)
-        (window-height        . 0.4)
-        (inhibit-same-window  . t))))
+  '((other-window . ((display-buffer-reuse-window
+                      display-buffer-use-some-window
+                      display-buffer-pop-up-window)
+                     (some-window          . mru)))
+    (split-below . ((display-buffer-reuse-window
+                     nvp-repl--split-below))))
   "Options for `nvp-repl-display-action'.")
 
 ;;; FIXME: if there is already a window below, should try to use that instead of
@@ -123,7 +121,16 @@ buffers."
     (window--display-buffer buf (split-window-below height) 'window alist)))
 
 (defun nvp-repl--display-action (&optional action)
-  (assoc-default (or action nvp-repl-display-action) nvp-repl--display-actions))
+  (append (assoc-default (or action nvp-repl-display-action)
+                         nvp-repl--display-actions)
+          `((category             . repl)
+            (reusable-frames      . visible)
+            (window-height        . 0.4)
+            (window-min-height    . 20)
+            (inhibit-same-window  . t)
+            (inhibit-switch-frame . t)
+            (window-parameters
+             (dedicated . ,nvp-repl-dedicated-window)))))
 
 ;;; Caches
 ;; Cache defined repls

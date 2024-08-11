@@ -244,7 +244,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                  :feature 'function
                  `((call_expression
                     function: (_) @nvp-c-ts--fontify-call-expression)))))
-    
+
     (apply #'treesit-font-lock-rules
            (append
             (if (eq language 'cpp)
@@ -259,8 +259,13 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                  :feature 'namespace
                  '((using_declaration
                     "namespace" (identifier) @nvp-namespace-face)
-                   (namespace_identifier) @nvp-namespace-use-face
+                   (namespace_identifier) @nvp-namespace-use-face)
 
+                 :language language
+                 :feature 'nvp
+                 '(;; Note(08/11/24): missing declarations from 'definition
+                   (optional_parameter_declaration
+                    declarator: (identifier) @font-lock-variable-name-face)
                    ;; for (auto x: ...)
                    (for_range_loop
                     declarator: (identifier) @font-lock-variable-name-face)
@@ -323,7 +328,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                 (append (nvp-c-ts--indent-rules mode) indents)))))
 
 (nvp:treesit-add-rules c++-ts-mode
-  :extra-features '(namespace builtin))
+  :extra-features '(builtin namespace nvp))
 
 (nvp:treesit-add-rules c-ts-mode
   :extra-features '(builtin))

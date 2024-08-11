@@ -6,35 +6,41 @@ vector<bool> vis;
 vector<int> tin, low;
 int timer;
 
-void process_articulation(int u${1:$(if (yas-text) ", vector<vector<int>>& g")}) {
-    $0
+void process_articulation(int u${1:$($s? ", vector<vector<int>>& g")}) {
+  $0
 }
 
 void dfs_articulation(int u,${1: vector<vector<int>>& g,} int p = -1) {
-    vis[u] = true;
-    tin[u] = low[u] = timer++;
-    int nchild = 0;
-    for (auto& v : g[u]) {
-        if (v == p) continue;
-        if (vis[v]) {
-            low[u] = min(low[u], tin[v]);
-        } else {
-            dfs_articulation(v${1:$(if (yas-text) ", g")}, u);
-            low[u] = min(low[u], low[v]);
-            if (low[v] >= tin[u] && p != -1)
-                process_articulation(u${1:$(if (yas-text) ", g")});
-            ++nchild;
-        }
+  vis[u] = true;
+  tin[u] = low[u] = timer++;
+  int nchild = 0;
+  for (auto& v : g[u]) {
+    if (v == p) continue;
+    if (vis[v]) {
+      low[u] = min(low[u], tin[v]);
+    } else {
+      dfs_articulation(v${1:$($s? ", g")}, u);
+      low[u] = min(low[u], low[v]);
+      if (low[v] >= tin[u] && p != -1)
+        process_articulation(u${1:$($s? ", g")});
+      ++nchild;
     }
-    if (p == -1 && nchild > 1) process_articulation(u${1:$(if (yas-text) ", g")});
+  }
+  if (p == -1 && nchild > 1)
+    process_articulation(u${1:$($s? ", g")});
 }
 
-void articulation_points(${1:$(if (yas-text) "vector<vector<int>>& g")}) {
-    timer = 0;
-    const int n = g.size();
-    vis.assign(n, false);
-    tin.assign(n, -1);
-    low.assign(n, -1);
-    for (int i = 0; i < n; ++i) 
-        if (!vis[i]) dfs_articulation(i${1:$(if (yas-text) ", g")});
+void init_articulation(int n) {
+  timer = 0;
+  vis.assign(n, false);
+  tin.assign(n, -1);
+  low.assign(n, -1);
+}
+
+void articulation_points(${1:$($s? "vector<vector<int>>& g")}) {
+  const int n = g.size();
+  init_articulation(n);
+  for (int i = 0; i < n; ++i)
+    if (!vis[i])
+      dfs_articulation(i${1:$($s? ", g")});
 }

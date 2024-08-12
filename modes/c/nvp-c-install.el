@@ -4,14 +4,14 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-c)
-(nvp:decls :p (irony))
+(nvp:decls :p (irony) :f (irony-install-server))
 
 (nvp:package-define-root :name nvp-c)
 
 (defconst nvp-c-gen-vars-script
   (nvp:program "gen-c-vars.sh" :path (expand-file-name "emacs" nvp/bin)))
 
-;; Generate site-specific include paths, flags, etc.
+;; Generate include paths, flags, etc. for C/C++
 (defun nvp-c-gen-site-vars (&optional arg)
   (let ((includes (expand-file-name "nvp-c-vars.el" nvp-c--dir))
         (prog nvp-c-gen-vars-script))
@@ -27,10 +27,10 @@
                       (message "loaded %s" includes))
                     (kill-buffer (process-buffer p)))))))
 
-;; Make includes.el and install dependencies or dont with NODEPS
-;; Force includes.el refresh with ARG
 ;;;###autoload
 (defun nvp-c-install (command &optional force)
+  "Make includes.el or install dependencies depending on COMMAND.
+FORCE forces regenerating nvp-c-vars.el."
   (interactive (list 'vars current-prefix-arg))
   (cl-case command
     (vars (nvp-c-gen-site-vars force))

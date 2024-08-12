@@ -129,8 +129,7 @@ buffers."
             (window-min-height    . 20)
             (inhibit-same-window  . t)
             (inhibit-switch-frame . t)
-            (window-parameters
-             (dedicated . ,nvp-repl-dedicated-window)))))
+            (dedicated            . ,nvp-repl-dedicated-window))))
 
 ;;; Caches
 ;; Cache defined repls

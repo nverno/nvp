@@ -49,10 +49,10 @@
     (set-window-dedicated-p window (not dedicated-p))
     (message "window dedicated: %s" (if dedicated-p "off" "on"))))
 
-;; Transpose the buffers shown in two windows.
-;; from https://github.com/re5et/.emacs.d/blob/master/my/my-functions.el
+;; From https://github.com/re5et/.emacs.d/blob/master/my/my-functions.el
 ;;;###autoload
 (defun nvp-window-transpose (arg)
+  "Transpose the buffers shown in two windows."
   (interactive "p")
   (let ((selector (if (>= arg 0) 'next-window 'previous-window)))
     (while (/= arg 0)
@@ -99,6 +99,7 @@
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Transient menu
 
@@ -122,10 +123,10 @@
 
 ;;;###autoload(autoload 'nvp-window-menu "nvp-window" nil t)
 (transient-define-prefix nvp-window-menu ()
-  [["Movement"
-    ("j" "←" windmove-left :transient t)
-    ("k" "↓" windmove-down :transient t)
-    ("i" "↑" windmove-up :transient t)
+  [["Select"
+    ("h" "←" windmove-left :transient t)
+    ("j" "↓" windmove-down :transient t)
+    ("k" "↑" windmove-up :transient t)
     ("l" "→" windmove-right :transient t)]
    ["Split"
     ("v" "Vertical" nvp-window-menu--split-vertical :transient t)
@@ -142,43 +143,45 @@
    ["Resize"
     ("r" "Resize" nvp-window-resize-menu :transient transient--do-replace)]])
 
-;; -------------------------------------------------------------------
-;;; Resizing windows
 
+;;; Resizing Windows
+
+;;;###autoload(autoload 'nvp-window-resize-menu "nvp-window" nil t)
 (transient-define-prefix nvp-window-resize-menu ()
-  ["Resize"
-   ("j" "←" nvp-window-move-splitter-left :transient t)
-   ("k" "↓" nvp-window-move-splitter-down :transient t)
-   ("i" "↑" nvp-window-move-splitter-up :transient t)
-   ("l" "→" nvp-window-move-splitter-right :transient t)
-   ("b" "Back" nvp-window-menu :transient transient--do-replace)])
+  ["Resize Window"
+   ("h" "←" nvp-window-move-splitter-left :transient t)
+   ("j" "↓" nvp-window-move-splitter-down :transient t)
+   ("k" "↑" nvp-window-move-splitter-up :transient t)
+   ("l" "→" nvp-window-move-splitter-right :transient t)]
+  ["Actions"
+   ("b" "Back to window menu" nvp-window-menu :transient transient--do-replace)])
 
-;; Move window splitter left.
 (defun nvp-window-move-splitter-left (arg)
+  "Move window splitter left."
   (interactive "p")
   (if (let ((windmove-wrap-around))
         (windmove-find-other-window 'right))
       (shrink-window-horizontally arg)
     (enlarge-window-horizontally arg)))
 
-;; Move window splitter right.
 (defun nvp-window-move-splitter-right (arg)
+  "Move window splitter right."
   (interactive "p")
   (if (let ((windmove-wrap-around))
         (windmove-find-other-window 'right))
       (enlarge-window-horizontally arg)
     (shrink-window-horizontally arg)))
 
-;; Move window splitter up.
 (defun nvp-window-move-splitter-up (arg)
+  "Move window splitter up."
   (interactive "p")
   (if (let ((windmove-wrap-around))
         (windmove-find-other-window 'up))
       (enlarge-window arg)
     (shrink-window arg)))
 
-;; Move window splitter down.
 (defun nvp-window-move-splitter-down (arg)
+  "Move window splitter down."
   (interactive "p")
   (if (let ((windmove-wrap-around))
         (windmove-find-other-window 'up))

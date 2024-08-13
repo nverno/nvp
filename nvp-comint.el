@@ -63,6 +63,7 @@ Adds new entries to `comint-input-ring-file-name' instead of clobbering it
 when `nvp-comint-history-append' in non-nil.
 When add entries, duplicate entries are also removed."
   (if (or (null nvp-comint-history-append)
+          (not (file-exists-p comint-input-ring-file-name))
           ;; TODO(08/05/24): remove when separators handled in merge
           (not (equal "\n" comint-input-ring-separator)))
       (nvp-comint--write-input-ring)
@@ -91,21 +92,44 @@ When add entries, duplicate entries are also removed."
            (comint-write-input-ring))
       (delete-process proc))))
 
-;; write comint-input-ring when buffer is killed: in kill-buffer-hook
-(defun nvp-comint-write-history-on-kill ()
-  "Write `comint-input-ring' when buffer is killed."
-  ;; Make sure the buffer exists before calling the process sentinel
-  (add-hook 'kill-buffer-hook 'nvp-comint-kill-proc-before-buffer nil 'local))
+(defun nvp-comint--read-history-filename ()
+  (let* ((default (bound-and-true-p comint-input-ring-file-name))
+         (initial (and default (file-name-nondirectory default))))
+    (read-file-name
+     "History file: "
+     (file-name-as-directory nvp/history) default nil initial)))
 
-(defun nvp-comint-save-history (&optional reload silent)
-  "Save history in `comint-input-ring-file-name'.
-If RELOAD, reload merged history."
-  (interactive (list t))
-  (let ((proc (get-buffer-process (current-buffer))))
+(defun nvp-comint-read-history (filename &optional save-current silent)
+  "Read history from FILENAME and set as `comint-input-ring-file-name'."
+  (interactive (list (nvp-comint--read-history-filename)
+                     (and comint-input-ring
+                          (not (ring-empty-p comint-input-ring))
+                          (y-or-n-p "Save current? "))))
+  (unless (derived-mode-p 'comint-mode)
+    (user-error "Not a comint"))
+  (when save-current
+    (nvp-comint-save-history))
+  (unless (equal filename comint-input-ring-file-name)
+    (setq-local comint-input-ring-file-name filename)
+    (comint-read-input-ring silent)))
+
+(defun nvp-comint-write-history (&optional reload silent filename)
+  "Save history in `comint-input-ring'.
+With prefix, prompt for FILENAME.
+When RELOAD is non-nil, reload merged history."
+  (interactive
+   (list (null current-prefix-arg) nil
+         (and current-prefix-arg
+              (derived-mode-p 'comint-mode)
+              (nvp-comint--read-history-filename))))
+  (let ((proc (get-buffer-process (current-buffer)))
+        (comint-input-ring-file-name
+         (or filename comint-input-ring-file-name)))
     (unless (and (processp proc)
                  (derived-mode-p 'comint-mode)
                  (not (null comint-input-ring-file-name)))
-      (user-error "Unknown history file (`comint-input-ring-file-name' is nil)."))
+      (user-error
+       "Unknown history file (`comint-input-ring-file-name' is nil)."))
     (comint-write-input-ring)
     (when reload
       (comint-read-input-ring silent))))
@@ -122,7 +146,6 @@ If RELOAD, reload merged history."
   (apply #'nvp-he-history-setup args))
 (put 'nvp-comint-setup-history 'lisp-indent-function 1)
 
-;;;###autoload
 (defun nvp-comint-history-remove-duplicates (&optional silent)
   "Remove duplicates from history and write history file.
 Prompt unless SILENT or `noninteractive'."
@@ -197,7 +220,7 @@ Prompt unless SILENT or `noninteractive'."
 ;; (defun nvp-comint-redirect-silently (proc string &optional prompt)
 ;;   "Evaluate STRING in PROC, but discard output silently."
 ;;   (let ((comint-redirect-perform-sanity-check))
-;;     (with-temp-buffer 
+;;     (with-temp-buffer
 ;;       (comint-redirect-send-command-to-process
 ;;        string (current-buffer) proc nil 'no-display)
 ;;       ;; wait for process to complete

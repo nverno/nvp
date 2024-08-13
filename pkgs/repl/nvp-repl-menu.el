@@ -3,7 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:decls)
+(nvp:decls :f (nvp-comint-menu))
 
 (require 'nvp-repl)
 (require 'transient)
@@ -62,10 +62,11 @@
   [["Repl"
     ("j" "Jump" nvp-repl-jump)
     ("q" "Interrupt/kill process" nvp-repl-interrupt-or-kill-process
-     :if nvp-repl-current)]
+     :if nvp-repl-current)
+    ("C" "Comint menu" nvp-comint-menu :if-derived comint-mode)]
    ["Manage Repls"
     ("M-?" "Describe repl" nvp-repl-describe-repl :if nvp-repl-current)
-    (":r" "Remove" nvp-repl-remove)]
+    (":r" "Remove repl" nvp-repl-remove)]
    ["Settings"
     (":s" nvp-repl--set-display)
     (":d" nvp-repl-config-menu--toggle-nvp-repl-dedicated-window)

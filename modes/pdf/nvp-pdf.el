@@ -2,27 +2,11 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'pdf-tools)
-(nvp:decls :v (pdf-info-epdfinfo-program
-               pdf-tools-auto-mode-alist-entry
-               pdf-annot-default-annotation-properties)
-           :f (pdf-annot-add-text-annotation
-               pdf-history-forward pdf-history-backward))
+(require 'pdf-tools nil t)
+(nvp:decls :p (pdf))
 
-;; build if necessary
-(defun nvp-pdf-setup ()
-  (unless (file-exists-p pdf-info-epdfinfo-program)
-    (pdf-tools-install t t t)
-    ;; (call-interactively 'nvp-pdf-install-epdfinfo))
-    ;; add enty that `pdf-tools-install' would add
-    (add-to-list 'auto-mode-alist pdf-tools-auto-mode-alist-entry)
-    t))
-
-;; -------------------------------------------------------------------
-;;; Annotations
-
-;; Read an annotation label when attaching
 (defun nvp-pdf-add-text-annotation (label)
+  "Read an annotation LABEL when attaching."
   (interactive 
    (list
     (read-string (format "Label (%s): " user-full-name) nil nil user-full-name)))

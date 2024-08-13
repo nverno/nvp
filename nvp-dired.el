@@ -24,6 +24,16 @@
         (format "bash -c '. %s; cd %s && _z --add \"$(pwd)\"'"
                 z-sh (expand-file-name default-directory)))))))
 
+;;; Hap
+;;;###autoload
+(defun nvp-hap-dired (command &optional arg &rest _args)
+  (cl-case command
+    (thingatpt (dired-get-filename t t))
+    (doc-string
+     (cl-letf (((symbol-function #'message) (symbol-function #'format-message)))
+       (concat (dired-show-file-type arg) "\n")))
+    (doc-buffer)))
+
 ;; -------------------------------------------------------------------
 ;;; Imenu
 

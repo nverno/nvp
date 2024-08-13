@@ -108,7 +108,7 @@ When add entries, duplicate entries are also removed."
   (unless (derived-mode-p 'comint-mode)
     (user-error "Not a comint"))
   (when save-current
-    (nvp-comint-save-history))
+    (nvp-comint-write-history))
   (unless (equal filename comint-input-ring-file-name)
     (setq-local comint-input-ring-file-name filename)
     (comint-read-input-ring silent)))

@@ -183,7 +183,8 @@ Filter by PREDICATE if non-nil."
           (cons "target" completion-ignored-extensions))
          (files (nvp:read-relative-files nvp/test "^[^.][^.]")))
     (nvp:defq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files)))
-    (nvp:read-file-with-fallback nvp/test
+    (nvp:read-file-with-fallback nil
+      :handler (lambda (f) (expand-file-name f nvp/test))
       (nvp-completing-read
         (nvp:prompt-default (or prompt "Test: ") default)
         files nil nil nil 'nvp-read-config-history default))))

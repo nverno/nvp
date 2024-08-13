@@ -48,9 +48,10 @@ debugging."
   "Evaluate last sexp and show results in overlay.
 With prefix INSERT, insert results in buffer at point instead."
   (interactive "P")
-  (nvp-racket-eval-string (buffer-substring-no-properties
-                           (racket--start-of-previous-expression) (point))
-                          insert))
+  (nvp-racket-eval-string
+   (buffer-substring-no-properties
+    (racket--start-of-previous-expression) (point))
+   insert))
 
 (defun nvp-racket-eval-string (str &optional insert)
   "Evaluate STR in racket REPL and show the result."

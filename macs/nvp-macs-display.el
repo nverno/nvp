@@ -6,7 +6,6 @@
 
 (eval-and-compile
   (defmacro nvp:display-get-action (action type)
-    (and (consp action) (setq action (prefix-numeric-value action)))
     `(or (,(if (eq type :buffer) 'cdr 'cadr)
           (assq ,action (plist-get nvp-display-actions ,type)))
          nvp-display-fallback-function)))
@@ -20,7 +19,7 @@
             (file-fn (nvp:display-get-action ,action :file))
             (ido-default-file-method (nvp:display-get-action ,action :ido))
             (ido-default-buffer-method ido-default-file-method))
-       (nvp:with-letf 'find-file file-fn ,@body))))
+       (nvp:with-letf 'find-file (symbol-function file-fn) ,@body))))
 
 ; (defmacro nvp:display-file-with-action (action &rest body)
 ;   "Execute BODY with jump ACTION file defaults."

@@ -63,11 +63,12 @@ called from minibuffer, or nil.")
 (defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
 
 (defvar nvp-display-actions
-  '( :buffer ((4 display-buffer-same-window
-                 ((inhibit-switch-frame . nil))
-                 ((inhibit-same-window  . nil)))
-              (1 display-buffer-pop-up-window
-                 ((inhibit-same-window  . t))))
+  '( :buffer ((4 (display-buffer-reuse-window
+                  display-buffer-same-window)
+                 (inhibit-switch-frame . nil)
+                 (inhibit-same-window  . nil))
+              (1 (display-buffer-pop-up-window)
+                 (inhibit-same-window  . t)))
      :file ((4 find-file)
             (1 find-file-other-window))
      :ido ((4 raise-frame)

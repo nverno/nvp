@@ -105,7 +105,7 @@ buffers."
   '((other-window . ((display-buffer-reuse-window
                       display-buffer-use-some-window
                       display-buffer-pop-up-window)
-                     (some-window          . mru)))
+                     (some-window          . t)))
     (split-below . ((display-buffer-reuse-window
                      nvp-repl--split-below))))
   "Options for `nvp-repl-display-action'.")

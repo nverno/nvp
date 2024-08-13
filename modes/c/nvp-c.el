@@ -212,8 +212,17 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
       override start end))
     (_ nil)))
 
+;; Most of stdlib.h functions
 (defvar nvp-c-ts--builtins
-  '("memset" "malloc" "calloc" "realloc" "memcpy"))
+  '("abort" "aligned_alloc" "at_quick_exit" "atof" "atoi" "atol" "bsearch"
+    "calloc" "clearenv" "ecvt" "ecvt_r" "exit" "fcvt" "fcvt_r" "free" "gcvt"
+    "getenv" "getloadavg" "getsubopt" "malloc" "mblen" "mbstowcs" "mbtowc"
+    "memcpy" "memset" "mkdtemp" "mkstemp" "mkstemps" "mktemp" "on_exit"
+    "posix_memalign" "putenv" "qecvt" "qecvt_r" "qfcvt" "qfcvt_r" "qgct" "qsort"
+    "qsort_r" "quick_exit" "rand" "random" "realloc" "reallocarray" "realpath"
+    "rpmatch" "setenv" "srand" "srandom" "system" "unsetenv" "valloc" "wcstombs"
+    "wctomb")
+  "Builtins to highlight in C.")
 
 ;; Add font-locking for SOME_IDENT constants, doc comments, and namespaces in
 ;; c++.

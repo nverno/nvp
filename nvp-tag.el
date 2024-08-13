@@ -26,6 +26,11 @@
 ;; -------------------------------------------------------------------
 ;;; Ctags
 
+(defsubst nvp-tag--read-ctag-language ()
+  (completing-read
+    "Language: "
+    (process-lines nvp-tags-ctags-program "--list-languages") nil t))
+
 ;;;###autoload
 (defun nvp-tag-list-decls (&optional lang kinds file force)
   "List decls defined by language LANG of type KINDS from current buffer or
@@ -44,12 +49,31 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
                     (replace-regexp-in-string "[ \t;{]*$" "" it)))))
        (delq nil)))
 
-(defun nvp-tag-show-language-config (lang)
-  "Show Ctags configuration for LANG."
+;;;###autoload
+(defun nvp-tag-show-ctags (lang kinds file &optional force)
+  "Show Ctags for LANG KINDS in FILE.
+FORCE language to be LANG when non-nil."
   (interactive
-   (list (completing-read
-          "Language: "
-          (process-lines nvp-tags-ctags-program "--list-languages") nil t)))
+   (if current-prefix-arg
+       (list (nvp-tag--read-ctag-language)
+             (read-string "Kinds: " "*" nil "*")
+             (let ((file (buffer-file-name)))
+               (read-file-name
+                "File: " nil file nil
+                (and file (file-name-nondirectory file)))))
+     (list nil "*" (buffer-file-name))))
+  (let ((decls (--filter (not (string-empty-p it))
+                         (nvp-tag-list-decls lang kinds file force))))
+    (nvp:with-results-buffer :buffer (concat "*Help[ctags-" lang "]::decls*")
+      :title (format "Ctags for language=%s kinds=%s" lang kinds)
+      :action :none
+      (dolist (dec decls)
+        (insert dec "\n"))
+      (pop-to-buffer (current-buffer)))))
+
+(defun nvp-tag-show-ctags-language-config (lang)
+  "Show Ctags configuration for LANG."
+  (interactive (list (nvp-tag--read-ctag-language)))
   (nvp:with-results-buffer :buffer (concat "*Help[ctags-" lang "]*")
     :action :none
     (dolist (cmd '("maps" "kinds-full" "fields" "features" "extras"
@@ -70,7 +94,7 @@ FILE if non-nil. If FORCE, force interpretation as LANG."
         (project-tags-file (expand-file-name projectile-tags-file-name)))
     (funcall fn project-tags-file tags-exclude)))
 
-(defun nvp-tag-show-file-languages ()
+(defun nvp-tag-show-ctags-languages ()
   "Show ctags guessed language for all files in project."
   (interactive)
   (nvp:with-tabulated-list
@@ -186,12 +210,13 @@ Wrapper around `list-tags' that:
     ("e" "Find using etags" nvp-tag-find-etag)]
   [["Tables"
     ("l" "Load table" visit-tags-table)
-    ("c" "Choose table" select-tags-table)
+    ("t" "Choose table" select-tags-table)
     ("R" "Re/gen project tags" projectile-regenerate-tags)
     ("K" "Reset tables" tags-reset-tags-tables :if-non-nil tags-file-name)]
-   ["Help"
-    ("hg" "Show ctags language for files" nvp-tag-show-file-languages)
-    ("hl" "Show ctags language config" nvp-tag-show-language-config)]])
+   ["CTags"
+    ("cc" "Show tags" nvp-tag-show-ctags)
+    ("cf" "Show languages for files" nvp-tag-show-ctags-languages)
+    ("cl" "Show language config" nvp-tag-show-ctags-language-config)]])
 ;; settings
 ;; `tags-apropos-verbose' list filenames
 

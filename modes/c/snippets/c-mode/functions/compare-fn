@@ -2,8 +2,8 @@
 # name: comparator
 # key: cmp
 # --
-int comparator(const void *a, const void *b) {
-    const $1 *x = (const $1 *)a;
-    const $1 *y = (const $1 *)b;
+int ${1:comparator}(const void *a, const void *b) {
+    const ${2:int} *x = (const $2 *)a;
+    const $2 *y = (const $2 *)b;
     return *x - *y;
 }

@@ -28,13 +28,14 @@
 (defmacro nvp-with-log-buffer (&optional buffname &rest body)
   `(with-current-buffer (nvp-log-get-buffer ,buffname)
      (goto-char (point-max))
-     ,@body))
+     (let ((inhibit-read-only t))
+       ,@body)))
 
 ;;;###autoload
 (defun nvp-log-default (text &optional buffer-name &rest args)
   (let (deactivate-mark)
     (nvp-with-log-buffer buffer-name
-     (insert-before-markers
+     (insert
       (apply #'format (replace-regexp-in-string "[\r\n]+" "\n" text) args)))))
 
 ;; ------------------------------------------------------------
@@ -42,25 +43,26 @@
 
 (require 'compile)
 
-(let-when-compile
-    ((gstat (nvp:rx-syms "finished" "deleted" "open" "success"))
-     (wstat (nvp:rx-syms "warning"))
-     (rstat (nvp:rx-syms "exited abnormally" "failed" "error"
-                         "signal-description" "connection broken"))
-     (gproc (nvp:rx-syms "run" "open" "listen" "connect"))
-     (rproc (nvp:rx-syms "stop" "exit" "signal" "closed" "failed")))
-  (defvar nvp-log-font-lock
-    (eval-when-compile
-      `(("`\\([^\n']+\\)'" (1 font-lock-constant-face))
-        (,gstat (1 'compilation-info))
-        (,wstat (1 'compilation-warning))
-        (,rstat (1 'compilation-line-number))
-        (,gproc (1 'compilation-info))
-        (,rproc (1 'compilation-line-number))))))
+(defvar nvp-log--font-lock-keywords
+  `(("`\\([^\n']+\\)'" (1 font-lock-constant-face))
+    (,(rx symbol-start (or "finished" "deleted" "open" "success") symbol-end)
+     . compilation-info-face)
+    (,(rx symbol-start "warning" symbol-end) . compilation-warning-face)
+    (,(rx symbol-start (or "exited abnormally" "failed" "error"
+                  "signal-description" "connection broken")
+          symbol-end)
+     . compilation-line-number)
+    (,(rx symbol-start (or "run" "open" "listen" "connect") symbol-end)
+     . compilation-info-face)
+    (,(rx symbol-start (or "stop" "exit" "signal" "closed" "failed") symbol-end)
+     . compilation-line-number)))
 
 ;;;###autoload
-(define-derived-mode nvp-log-mode fundamental-mode "Log"
-  (setq-local font-lock-defaults '(nvp-log-font-lock nil t nil nil)))
+(define-derived-mode nvp-log-mode special-mode "Log"
+  "Logging mode."
+  :abbrev-table nil
+  (setq-local read-only-mode nil)
+  (setq-local font-lock-defaults (list nvp-log--font-lock-keywords nil t)))
 
 (provide 'nvp-log)
 ;; Local Variables:

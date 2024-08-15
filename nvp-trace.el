@@ -3,23 +3,24 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'transient)
 (require 'trace)
-(require 'trace-tree nil t)
+(require 'transient)
 
-(nvp:auto "find-func" read-library-name find-library-name)
-(nvp:auto "nvp-elisp" nvp-elisp-matching-forms)
-(nvp:auto "s" s-split)
-(nvp:auto "trace-tree" trace-tree-enable trace-tree-disable)
-(nvp:decl flatten-tree)
+(nvp:decls :f (flatten-tree))
 
+(autoload 'find-library-name "find-func")
+(autoload 'nvp-elisp-matching-forms "nvp-elisp" )
+(autoload 's-split "s")
+(autoload 'trace-tree-disable "trace-tree")
+
+
+;;; Menu
 
 (defun nvp-trace-active-p ()
   (and (boundp 'trace-buffer)
        (buffer-live-p (get-buffer trace-buffer))))
 
-(nvp:transient-toggle nvp-trace-menu
-  inhibit-trace)
+(nvp:transient-toggle nvp-trace-menu inhibit-trace)
 
 ;;;###autoload(autoload 'nvp-trace-menu "nvp-trace" nil t)
 (transient-define-prefix nvp-trace-menu ()

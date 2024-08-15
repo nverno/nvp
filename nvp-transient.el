@@ -29,14 +29,25 @@
   "Show object."
   (interactive)
   (nvp:pp-results transient-current-prefix
-                 (format "%S" transient-current-command)))
+                  (format "%S" transient-current-command)))
+
+(transient-define-suffix nvp-transient--get-suffix (prefix loc)
+  "Read a LOC and print corresponding suffix."
+  (interactive
+   (list transient-current-command
+         (read--expression "Loc: " "(0)")))
+  (condition-case err
+      (message "%S" (transient-get-suffix prefix loc))
+    (error (message "transient-get-suffix error: %s"
+                    (error-message-string err)))))
 
 (defvar nvp-transient--dev-suffixes
   '(("a" "Infix args" nvp-transient--args :transient t)
     ("l" "Layout" nvp-transient--layout :transient t)
-    ("o" "Object" nvp-transient--object :transient t)))
+    ("o" "Object" nvp-transient--object :transient t)
+    ("g" "Get suffix" nvp-transient--get-suffix :transient t)))
 
-(defconst nvp-transient--dev-description "[NVP] Dev")
+(defconst nvp-transient--dev-description "::Dev::")
 (defvar nvp-transient--done-deved nil)
 
 (nvp:transient-toggle nvp-transient-menu transient--debug)

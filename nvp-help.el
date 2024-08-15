@@ -150,22 +150,7 @@ Ignore buttons like `native-comp-function',`primitive-function'."
     ;; ("m" "Update metadata" devdocs-browser-update-docs)
     ]]
   (interactive)
-  (unless (fboundp 'devdocs-lookup)
-    (user-error "Install devdocs."))
   (transient-setup 'nvp-devdocs-menu))
-
-;;;###autoload(autoload 'nvp-dash-menu "nvp-help" nil t)
-(transient-define-prefix nvp-dash-menu ()
-  [["Search"
-    ("s" "Search dash" consult-dash)]
-   ["Docsets"
-    ("i" "Install" nvp-dash-docs-install)
-    ("a" "Activate" dash-docs-activate-docset)
-    ("d" "Deactivate" dash-docs-deactivate-docset)]]
-  (interactive)
-  (unless (fboundp 'dash-docs-activate-docset)
-    (user-error "Install dash-docs."))
-  (transient-setup 'nvp-dash-menu))
 
 ;;;###autoload(autoload 'nvp-help-menu "nvp-help" nil t)
 (transient-define-prefix nvp-help-menu ()
@@ -180,9 +165,7 @@ Ignore buttons like `native-comp-function',`primitive-function'."
     ("M" "Consult man" consult-man)
     ("i" "Info" nvp-info-menu)
     ("d" "Devdocs" nvp-devdocs-menu :transient transient--do-replace
-     :if (lambda () (fboundp 'devdocs-lookup)))
-    ("D" "Dash" nvp-dash-menu :transient transient--do-replace
-     :if (lambda () (fboundp 'dash-docs-activate-docset)))]
+     :if (lambda () (fboundp 'devdocs-lookup)))]
    ["Cheat.sh"
     ("cc" "Search" cheat-sh)
     ("cl" "List" cheat-sh-list)]
@@ -193,14 +176,22 @@ Ignore buttons like `native-comp-function',`primitive-function'."
   [["Words/Numbers"
     ("N" "Number" nvp-number-menu :transient transient--do-replace)
     ("w" "Word dwim" nvp-help-word-dwim)
-    ("W" "Powerthesaurus" powerthesaurus-transient :transient transient--do-replace
-     :if (lambda () (featurep 'powerthesaurus)))
+    
     ("S" "Spellcheck" ispell)]
    ["Fonts/Faces/Charsets"
     ("F" "Font menu" nvp-font-menu :transient transient--do-replace)]
    ["Libs"
-    ;; (":sos" "Sos Keybindings" nvp-sos)
     (":sp" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])
+
+;;; Optional Menus
+(when (fboundp 'dash-docs-activate-docset)
+  (transient-append-suffix 'nvp-help-menu '(0 1 4)
+    '("D" "Dash" nvp-dash-menu :transient transient--do-replace)))
+
+(when (fboundp 'powerthesaurus-transient)
+  (transient-append-suffix 'nvp-help-menu '(1 0 1)
+    '("W" "Powerthesaurus" powerthesaurus-transient
+      :transient transient--do-replace)))
 
 (provide 'nvp-help)
 ;; Local Variables:

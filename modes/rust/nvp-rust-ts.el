@@ -60,11 +60,16 @@
       (token_repetition
        (identifier) @font-lock-preprocessor-face
        :anchor "!" @font-lock-preprocessor-face))
+
     :language 'rust
     :feature 'nvp
     '((field_expression
-       value: (identifier) @nvp-receiver-face)))
+       value: (identifier) @nvp-receiver-face)
 
+      ;; XXX(08/14/24): patch for missing labels
+      (label "'" @font-lock-operator-face
+             (identifier) @font-lock-constant-face)))
+   
    ;; FIXME(4/26/24): messes up attributes
    (treesit-font-lock-rules
     :language 'rust

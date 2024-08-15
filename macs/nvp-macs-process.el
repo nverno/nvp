@@ -64,22 +64,26 @@ Return process object."
   "Log output in log buffer, if on-error is :pop-on-error, pop to log
 if process exit status isn't 0."
   (declare (indent defun))
-  (macroexp-let2* nil ((proc `(nvp:with-process-filter ,process ,proc-filter))
-                       (on-err (if (keywordp on-error)
-                                   ;; (equal on-error :pop-on-error)
-                                   `(pop-to-buffer (process-buffer ,proc)
-                                                   ,display-action)
-                                 on-error)))
+  (macroexp-let2* nil
+      ((proc `(nvp:with-process-filter ,process ,proc-filter))
+       (on-err (if (keywordp on-error)
+                   ;; (equal on-error :pop-on-error)
+                   `(pop-to-buffer (process-buffer ,proc) ,display-action)
+                 on-error)))
     `(progn
-       (set-process-sentinel ,proc
-                             #'(lambda (p m)
-                                 (nvp-log "%s: %s" nil (process-name p) m)
-                                 (let ((exit (process-exit-status p)))
-                                   (if (or (and (numberp exit) (zerop exit))
-                                           (and (stringp exit)
-                                                (string-match-p "finished" exit)))
-                                      ,on-success
-                                    ,on-err))))
+       (set-process-sentinel
+        ,proc #'(lambda (p m)
+                  (let ((exit (process-exit-status p)))
+                    (nvp-log "%s%s: %s" nil (process-name p)
+                             (if (numberp exit)
+                                 (format "(%d)" exit)
+                               )
+                             m)
+                    (if (or (and (numberp exit) (zerop exit))
+                            (and (stringp exit)
+                                 (string-match-p "finished" exit)))
+                        ,on-success
+                      ,on-err))))
        ,@(unless (null display-action)
            `((display-buffer (process-buffer ,proc) ,display-action))))))
 

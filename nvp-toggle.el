@@ -129,16 +129,21 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
   "t"     #'nvp-toggle-tabify
   "<tab>" #'nvp-toggle-tab-width)
 
+;;;###autoload
 (defun nvp-toggle-tabify (&optional beg end)
   "Tab/Untabify buffer regions - full visible buffer with prefix, otherwise
 the current paragraph."
   (interactive
-   (nvp:tap-or-region 'bdwim (nvp:prefix '>1 'buffer 'paragraph) :pulse t))
-  (nvp:toggled-if (untabify beg end)
+   (nvp:tap-or-region 'bdwim
+     (nvp:prefix '>1 'buffer 'paragraph) :pulse t))
+  (nvp:toggled-if
+      (untabify beg end)
     (tabify beg end)))
 
 ;; from https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el
+;;;###autoload
 (defun nvp-toggle-tab-width ()
+  "Cycle `tab-width'."
   (interactive)
   (let* ((widths [8 4 2])
          (m (or (cl-position tab-width widths) -1)))

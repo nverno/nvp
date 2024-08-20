@@ -155,6 +155,7 @@ Return cons of \\='(name                           . raw-link)."
 
 (defun nvp-org-forward-element ()
   (interactive)
+  (nvp:push-mark 'nvp-org-forward-element)
   (cond ((org-at-item-p)
          (condition-case nil
              (org-next-item)

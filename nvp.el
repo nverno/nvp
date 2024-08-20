@@ -409,13 +409,26 @@ Otherwise just call `vertico-insert'. If this was previous command, call
 
 (defun nvp@push-marker (orig-fn &rest args)
   "Push marker onto stack before calling ORIG-FN with ARGS."
-  (xref-push-marker-stack)
+  (or repeat-in-progress
+      (let ((sym (intern (subr-name orig-fn))))
+        (and (eq this-command sym)
+             (not (eq last-command sym))
+             (xref-push-marker-stack))))
   (condition-case nil
       (apply orig-fn args)
     (error (xref-go-back))))
 (nvp:advise-commands #'nvp@push-marker :around
   '( find-function find-variable find-function-on-key semantic-ia-fast-jump
+     next-error previous-error
      flycheck-next-error flycheck-previous-error))
+
+(defun nvp@push-mark (orig-fn &rest args)
+  "Maybe push mark before call ORIG-FN with ARGS."
+  (let* ((sym (intern (subr-name orig-fn)))
+         (pushed (nvp:push-mark sym)))
+    (condition-case nil
+        (apply orig-fn args)
+      (error (and pushed (pop-mark))))))
 
 ;; -------------------------------------------------------------------
 ;;; Windows / Buffers

@@ -101,7 +101,7 @@
 
 
 ;; -------------------------------------------------------------------
-;;; Transient menu
+;;; Menu
 
 (defun nvp-window-menu--split-vertical ()
   (interactive)
@@ -121,27 +121,54 @@
   (interactive)
   (ace-window 16))
 
+(defun nvp-window-tst ()
+  (interactive)
+  (message "frame root: %S" (frame-root-window (selected-window)))
+  (with-selected-window (selected-window)
+    (call-interactively #'split-root-window-right)))
+
 ;;;###autoload(autoload 'nvp-window-menu "nvp-window" nil t)
 (transient-define-prefix nvp-window-menu ()
+  ;; :refresh-suffixes t
   [["Select"
     ("h" "←" windmove-left :transient t)
     ("j" "↓" windmove-down :transient t)
     ("k" "↑" windmove-up :transient t)
-    ("l" "→" windmove-right :transient t)]
+    ("l" "→" windmove-right :transient t)
+    " -----"
+    ("m" "Swap" nvp-window-menu--ace-swap :transient t)
+    ("M" "Swap states" window-swap-states :transient t)]
+   ["Toggle"
+    ("i" "Side windows" window-toggle-side-windows :transient t)
+    ("D" "Dedicated" toggle-window-dedicated :transient t)]
    ["Split"
     ("v" "Vertical" nvp-window-menu--split-vertical :transient t)
-    ("x" "Horizontal" nvp-window-menu--split-horiz :transient t)
-    ("z" "Undo" winner-undo :transient t)
-    ("Z" "Reset" winner-redo :transient t)]
-   ["Switch"
-    ("a" "Ace" ace-window)
-    ("s" "Swap" nvp-window-menu--ace-swap :transient t)]
+    ("c" "Horizontal" nvp-window-menu--split-horiz :transient t)
+    ("sb" "Root below" split-root-window-below :transient t)
+    ("sr" "Root right" nvp-window-tst;; split-root-window-right
+     :transient t)
+    " -----"
+    ("u" "Undo" winner-undo :transient t)
+    ("y" "Redo" winner-redo :transient t)]
    ["Delete"
-    ("d" "Delete" delete-window :transient t)
-    ("D" "Ace delete" nvp-window-menu--ace-delete :transient t)
-    ("o" "Delete all other" delete-other-windows :transient t)]
+    ("dd" "Delete" delete-window :transient t)
+    ("da" "Ace delete" nvp-window-menu--ace-delete :transient t)
+    ("dv" "Delete vertically" delete-other-windows-vertically :transient t)
+    ("do" "Delete all other" delete-other-windows :transient t)]
    ["Resize"
-    ("r" "Resize" nvp-window-resize-menu :transient transient--do-replace)]])
+    ("f" "Fit buffer" fit-window-to-buffer :transient t)
+    ("b" "Balance" balance-windows :transient t)
+    ("B" "Balance areas" balance-windows-area :transient t)
+    ("/" "Minimize" minimize-window :transient t)
+    ("!" "Maximize" maximize-window :transient t)
+    ("r" "Resize" nvp-window-resize-menu :transient transient--do-replace)]]
+  ;; TODO(08/20/24): remove
+  (interactive)
+  (transient-setup 'nvp-window-menu)
+  (message "transient window: %S, selected: %S, root on selected: %S"
+           (frame-root-window)
+           (selected-window)
+           (frame-root-window (selected-window))))
 
 
 ;;; Resizing Windows
@@ -154,12 +181,12 @@
    ("k" "↑" nvp-window-move-splitter-up :transient t)
    ("l" "→" nvp-window-move-splitter-right :transient t)]
   ["Actions"
-   ("b" "Back to window menu" nvp-window-menu :transient transient--do-replace)])
+   ("q" "Back to window menu" nvp-window-menu :transient transient--do-replace)])
 
 (defun nvp-window-move-splitter-left (arg)
   "Move window splitter left."
   (interactive "p")
-  (if (let ((windmove-wrap-around))
+  (if (let (windmove-wrap-around)
         (windmove-find-other-window 'right))
       (shrink-window-horizontally arg)
     (enlarge-window-horizontally arg)))
@@ -167,7 +194,7 @@
 (defun nvp-window-move-splitter-right (arg)
   "Move window splitter right."
   (interactive "p")
-  (if (let ((windmove-wrap-around))
+  (if (let (windmove-wrap-around)
         (windmove-find-other-window 'right))
       (enlarge-window-horizontally arg)
     (shrink-window-horizontally arg)))
@@ -175,7 +202,7 @@
 (defun nvp-window-move-splitter-up (arg)
   "Move window splitter up."
   (interactive "p")
-  (if (let ((windmove-wrap-around))
+  (if (let (windmove-wrap-around)
         (windmove-find-other-window 'up))
       (enlarge-window arg)
     (shrink-window arg)))
@@ -183,7 +210,7 @@
 (defun nvp-window-move-splitter-down (arg)
   "Move window splitter down."
   (interactive "p")
-  (if (let ((windmove-wrap-around))
+  (if (let (windmove-wrap-around)
         (windmove-find-other-window 'up))
       (shrink-window arg)
     (enlarge-window arg)))

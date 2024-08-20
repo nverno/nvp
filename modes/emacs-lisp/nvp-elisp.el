@@ -349,7 +349,13 @@ If in `declare-function', convert to autoload."
   (nvp:setq
     nvp-elisp-imenu-headers-1
     `(("Headers" ,(cadar nvp-elisp-imenu-headers) 1)
-      ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)))
+      ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)
+      ("Variables" ,(rx bol (* white) "("
+                        (or "defvar-keymap"
+                            (seq (regexp "nvp[:]") (or "bindings" "defvar")))
+                        (+ white) (group (+ (or (syntax word) (syntax symbol)
+                                                (regexp "\\\\.")))))
+       1)))
 
   (defvar nvp-elisp-imenu-headers-2
     '(("Sub-Headers" "^;;---*\\s-*\\([^-\n]+\\)\\s-*-*$" 1))))

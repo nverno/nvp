@@ -56,11 +56,15 @@
 ;; ignore hidden lines
 (defun nvp-move-visual-next5 ()
   (interactive)
-  (line-move-visual 5 'noerror))
+  (line-move-visual 5 'noerror)
+  (and (fboundp 'do-smooth-scroll)
+       (do-smooth-scroll)))
 
 (defun nvp-move-visual-prev5 ()
   (interactive)
-  (line-move-visual -5 'noerror))
+  (line-move-visual -5 'noerror)
+  (and (fboundp 'do-smooth-scroll)
+       (do-smooth-scroll)))
 
 ;;; TODO: refactor
 (nvp:bindings nvp-hs-fast-map nil

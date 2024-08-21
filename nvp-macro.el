@@ -193,7 +193,8 @@ Add TITLE to results buffer."
                                  ,(and save-windows
                                        '(nvp-window-configuration-restore))
                                  (funcall ,revert-fn args)
-                                 (pop-to-buffer ,(or buffer '(help-buffer)))))
+                                 (pop-to-buffer ,(or buffer '(help-buffer))
+                                                '((category . results)))))
                    (nvp-buffer-local-set-minor-mode-key
                     'view-mode "G" #'revert-buffer)))))))))
 

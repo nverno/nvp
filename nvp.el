@@ -376,7 +376,8 @@ Otherwise just call `vertico-insert'. If this was previous command, call
 ;;; Advices
 
 ;; add smooth-scrolling
-(nvp:advise-commands #'do-smooth-scroll :after '(nvp-move-next5 nvp-move-prev5))
+(nvp:advise-commands #'do-smooth-scroll
+  :after '(nvp-move-next5 nvp-move-prev5))
 
 ;; don't run my `shell-mode-hook' during `shell-command' calls
 (defvar shell-mode-hook)
@@ -407,16 +408,21 @@ Otherwise just call `vertico-insert'. If this was previous command, call
                            (current-buffer)))
     (apply old-fn args)))
 
+(declare-function xref--push-markers "xref")
+
 (defun nvp@push-marker (orig-fn &rest args)
   "Push marker onto stack before calling ORIG-FN with ARGS."
   (or repeat-in-progress
-      (let ((sym (intern (subr-name orig-fn))))
-        (and (eq this-command sym)
-             (not (eq last-command sym))
-             (xref-push-marker-stack))))
+      (eq last-command this-command)
+      (and (subrp orig-fn)
+           (let ((sym (intern (subr-name orig-fn))))
+             (and (eq this-command sym)
+                  (not (eq last-command sym)))))
+      (xref--push-markers (current-buffer) (point)))
   (condition-case nil
       (apply orig-fn args)
     (error (xref-go-back))))
+
 (nvp:advise-commands #'nvp@push-marker :around
   '( find-function find-variable find-function-on-key semantic-ia-fast-jump
      next-error previous-error

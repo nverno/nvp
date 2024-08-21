@@ -352,7 +352,9 @@ If in `declare-function', convert to autoload."
       ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)
       ("Variables" ,(rx bol (* white) "("
                         (or "defvar-keymap"
-                            (seq (regexp "nvp[:]") (or "bindings" "defvar")))
+                            (seq (regexp "nvp[:]")
+                                 (or "bindings" "defvar" "define")
+                                 (regexp "[^ \t\n]*")))
                         (+ white) (group (+ (or (syntax word) (syntax symbol)
                                                 (regexp "\\\\.")))))
        1)))

@@ -32,15 +32,19 @@ Append to `outline-regexp' with prefix."
 (transient-define-prefix nvp-outline-menu ()
   [["Toggle"
     ("SPC" "Children" outline-toggle-children :transient t)
-    ("<tab>" "Cycle" outline-cycle :transient t)]
+    ("<tab>" "Cycle" outline-cycle :transient t)
+    ("<backtab>" "Cycle buffer" outline-cycle-buffer :transient t)]
    ["Hide"
-    ("B" "All/Body" outline-hide-body :transient t)
-    ("S" "Subtree" outline-hide-subtree :transient t)
-    ("o" "Other" outline-hide-other :transient t)]
+    ("a" "All/Body" outline-hide-body :transient t)
+    ("o" "Other" outline-hide-other :transient t)
+    ("f" "Subtree" outline-hide-subtree :transient t)
+    ("l" "Leaves" outline-hide-leaves :transient t)]
    ["Show"
-    ("b" "All" outline-show-all :transient t)
-    ("s" "Subtree" outline-show-subtree :transient t)
-    ("h" "Headings" outline-show-only-headings :transient t)]]
+    ("s" "All" outline-show-all :transient t)
+    ("h" "Headings" outline-show-only-headings :transient t)
+    ("F" "Subtree" outline-show-subtree :transient t)
+    ("c" "Children" outline-show-children :transient t)
+    ("B" "Branches" outline-show-branches :transient t)]]
   [["Move"
     ("u" "Up heading" outline-up-heading :transient t)
     ("j" "Next visible" outline-next-visible-heading :transient t)

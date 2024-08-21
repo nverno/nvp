@@ -200,7 +200,8 @@ the current paragraph."
 
 (defvar-keymap nvp-repeat-toggle-quotes-map
   :repeat t
-  "q" #'nvp-toggle-quotes)
+  "'"  #'nvp-toggle-quotes
+  "\"" #'nvp-toggle-quotes)
 
 ;;; XXX: escape / unescape toggle quotes
 ;;;###autoload

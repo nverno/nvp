@@ -14,7 +14,6 @@
 (define-minor-mode js-spec-mode
   "Minor mode for js specs."
   :lighter " JSpec"
-  :keymap nil
   (if js-spec-mode
       (progn
         (yas-activate-extra-mode 'js-spec-mode)

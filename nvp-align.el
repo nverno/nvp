@@ -15,7 +15,7 @@
 (nvp:decls :f (nvp-read-mode cl-prettyprint))
 
 (nvp:bindings nvp-align-keymap nil
-  :create t
+  :prefix "Align"
   ("<f2>" . nvp-align-menu)
   ("A"    . align)
   ("a"    . nvp-align)

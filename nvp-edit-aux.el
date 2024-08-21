@@ -13,8 +13,8 @@
 (require 'transient)
 (nvp:decls :f (paredit-delete-indentation))
 
-(nvp:bindings nvp-list-keymap :now
-  :create t
+(nvp:bindings nvp-list-keymap nil
+  :prefix "List"
   ("<f2>" . nvp-list-menu)
   (","    . nvp-list-insert-commas))
 

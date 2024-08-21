@@ -43,7 +43,7 @@
     ("ls" "Load-path shadows" list-load-path-shadows)]])
 
 (nvp:bindings nvp-dev-keymap nil
-  :create t
+  :prefix "Dev"
   ("<f2>" . nvp-dev-menu)
   ("a"    . nvp-dev-advice-remove-all)
   ("D"    . describe-current-display-table) ; #<marker at 3963 in disp-table.el.gz>

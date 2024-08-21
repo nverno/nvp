@@ -42,8 +42,9 @@
   "l"     #'hs-hide-level
   "f"     #'nvp-hs-toggle)
 
-;; autoloaded
-(nvp:bindings nvp-fold-keymap nil :create t
+;; Autoloaded
+(nvp:bindings nvp-fold-keymap nil
+  :prefix "Fold"
   ("<f2>"  . nvp-hideshow-menu)
   ("<tab>" . hs-toggle-hiding)
   ("a"     . hs-hide-all)

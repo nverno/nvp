@@ -153,14 +153,17 @@
          (print-length nil)
          ;; (print-gensym t)
          (inhibit-read-only t))
+    ;; FIXME(08/21/24): with-help-buffer
     (nvp:with-results-buffer
-      :title (format "Variable ('%s'): %S" (type-of val) variable)
-      :buffer (format "*describe[%s]*" variable)
+      :title (format "Variable (%s): `%S'" (type-of val) variable)
+      :buffer (help-buffer) ;; (format "*describe[%s]*" variable)
       :revert-fn (lambda (&rest _) (funcall #'nvp-dev-describe-variable variable))
-      :action :none
       (insert (nvp-pp-variable-to-string val 0))
       (and (= (char-before) ?\n) (delete-char -1))
-      (nvp-dev--fontify-syntax))))
+      (nvp-dev--fontify-syntax)
+      ;; (help-setup-xref
+      ;;  (list #'nvp-dev-describe-variable variable))
+      )))
 
 ;;;###autoload
 (defun nvp-dev-describe-mode (&optional mode)
@@ -202,8 +205,8 @@
                     (macroexp-let2 nil str str
                       `(insert (propertize ,str 'face 'bold) "\n"
                                (make-string (length ,str) ?-) "\n"))))
-      (nvp:with-results-buffer :title (format "%S variables" mode)
-        :action :none
+      (nvp:with-results-buffer
+        :title (format "%S variables" mode)
         (header (symbol-name mode))
         (--when-let (gethash mode nvp-mode-cache) (nvp-pp-struct it))
         (funcall print-fn vars "Variables")
@@ -320,30 +323,35 @@ delimiter or an Escaped or Char-quoted character."
   "Display info about syntax at point.
 With prefix, display in same frame using `display-buffer' ACTION."
   (interactive (list (point-marker) (prefix-numeric-value current-prefix-arg)))
-  (let ((ppss (syntax-ppss marker))
-        (help-str (nvp:lazy-val nvp-syntax-at-point-help)))
+  (unless (and (markerp marker)
+               (buffer-live-p (marker-buffer marker)))
+    (user-error "Bad marker: %S" marker))
+  (let ((help-buffer-under-preparation t))
     (help-setup-xref (list #'nvp-syntax-at-point marker)
                      (called-interactively-p 'interactive))
-    (nvp:display-buffer-with-action action
-      (with-help-window (help-buffer)
-        (princ (nvp:centered-header "Syntax at <marker>"))
-        (princ (apply #'format help-str ppss))
-        (with-current-buffer standard-output
-          (let ((inhibit-read-only t)
-                (comment-start "; ")
-                (fill-column 85)
-                (comment-column 30))
-            (goto-char (point-min))
-            (search-forward "<marker>")
-            (replace-match "")
-            (help-insert-xref-button (format "%S" marker) 'help-marker marker)
-            (forward-line 2)
-            (while (not (eobp))
-              (when (looking-at-p comment-start)
-                (insert "|"))
-              (comment-indent)
-              (forward-line 1)))
-          (hl-line-mode))))))
+    (with-current-buffer (marker-buffer marker)
+      (let ((ppss (syntax-ppss marker))
+            (help-str (nvp:lazy-val nvp-syntax-at-point-help)))
+        (nvp:display-buffer-with-action action
+          (with-help-window (help-buffer)
+            (princ (nvp:centered-header "Syntax at <marker>"))
+            (princ (apply #'format help-str ppss))
+            (with-current-buffer standard-output
+              (let ((inhibit-read-only t)
+                    (comment-start "; ")
+                    (fill-column 85)
+                    (comment-column 30))
+                (goto-char (point-min))
+                (search-forward "<marker>")
+                (replace-match "")
+                (help-insert-xref-button (format "%S" marker) 'help-marker marker)
+                (forward-line 2)
+                (while (not (eobp))
+                  (when (looking-at-p comment-start)
+                    (insert "|"))
+                  (comment-indent)
+                  (forward-line 1)))
+              (hl-line-mode))))))))
 
 
 ;;; Keys

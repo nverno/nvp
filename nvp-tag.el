@@ -64,7 +64,7 @@ FORCE language to be LANG when non-nil."
      (list nil "*" (buffer-file-name))))
   (let ((decls (--filter (not (string-empty-p it))
                          (nvp-tag-list-decls lang kinds file force))))
-    (nvp:with-results-buffer :buffer (concat "*Help[ctags-" lang "]::decls*")
+    (nvp:with-results-buffer :buffer (concat "*ctags[" (or lang "-") "]*")
       :title (format "Ctags for language=%s kinds=%s" lang kinds)
       :action :none
       (dolist (dec decls)
@@ -74,7 +74,7 @@ FORCE language to be LANG when non-nil."
 (defun nvp-tag-show-ctags-language-config (lang)
   "Show Ctags configuration for LANG."
   (interactive (list (nvp-tag--read-ctag-language)))
-  (nvp:with-results-buffer :buffer (concat "*Help[ctags-" lang "]*")
+  (nvp:with-results-buffer :buffer (concat "*ctags-config[" lang "]*")
     :action :none
     (dolist (cmd '("maps" "kinds-full" "fields" "features" "extras"
                    "roles" "params" "aliases" "subparsers"))

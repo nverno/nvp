@@ -162,9 +162,9 @@ BODY should return a list as normally done in an interactive spec."
 
 (cl-defmacro nvp:with-results-buffer ( &rest body
                                        &key buffer title revert-fn
-                                       (save-windows t)
-                                       (restore-windows t)
-                                       (action t)
+                                       (save-windows nil)
+                                       (restore-windows nil)
+                                       (action '(nil . ((category . results))))
                                        &allow-other-keys)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished.
@@ -177,7 +177,7 @@ Add TITLE to results buffer."
        ,(when save-windows '(nvp-window-configuration-save))
        (with-temp-buffer-window
            ,buf
-           ,(if (eq ':none action) nil action)
+           ',(if (eq ':none action) nil action)
            nil
          (prog1 (get-buffer ,buf)
            (with-current-buffer standard-output
@@ -188,13 +188,14 @@ Add TITLE to results buffer."
              (view-mode-enter
               nil ,(and restore-windows '#'nvp-window-configuration-restore))
              ,@(when revert-fn
-                 `((setq-local revert-buffer-function
-                               (lambda (&rest args)
-                                 ,(and save-windows
-                                       '(nvp-window-configuration-restore))
-                                 (funcall ,revert-fn args)
-                                 (pop-to-buffer ,(or buffer '(help-buffer))
-                                                '((category . results)))))
+                 `((let ((buffer ,buf))
+                     (setq-local revert-buffer-function
+                                 (lambda (&rest args)
+                                   ,(and save-windows
+                                         '(nvp-window-configuration-restore))
+                                   (funcall ,revert-fn args)
+                                   (pop-to-buffer buffer ;,(or buffer '(help-buffer))
+                                                  '(nil (category . results))))))
                    (nvp-buffer-local-set-minor-mode-key
                     'view-mode "G" #'revert-buffer)))))))))
 

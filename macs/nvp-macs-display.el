@@ -5,19 +5,20 @@
 (require 'nvp-macs-common)
 
 (eval-and-compile
-  (defmacro nvp:display-get-action (action type)
-    `(or (,(if (eq type :buffer) 'cdr 'cadr)
-          (assq ,action (plist-get nvp-display-actions ,type)))
-         nvp-display-fallback-function)))
+  (defsubst nvp-display--action (action type)
+    (or (cdr (assq action (plist-get nvp-display-actions type)))
+        (if (equal ':buffer type)
+            (list nvp-display-fallback-function)
+          nvp-display-fallback-function))))
 
 (defmacro nvp:display-with-action (action &rest body)
   "Execute BODY with jump ACTION defaults."
   (declare (indent defun) (debug (sexp &rest form)))
   (macroexp-let2 nil action action
     `(let* ((display-buffer-overriding-action
-             (nvp:display-get-action ,action :buffer))
-            (file-fn (nvp:display-get-action ,action :file))
-            (ido-default-file-method (nvp:display-get-action ,action :ido))
+             (nvp-display--action ,action :buffer))
+            (file-fn (nvp-display--action ,action :file))
+            (ido-default-file-method (nvp-display--action ,action :ido))
             (ido-default-buffer-method ido-default-file-method))
        (nvp:with-letf 'find-file (symbol-function file-fn) ,@body))))
 
@@ -25,8 +26,8 @@
 ;   "Execute BODY with jump ACTION file defaults."
 ;   (declare (indent defun) (debug (sexp &rest form)))
 ;   (macroexp-let2 nil action action
-;     `(let* ((file-fn (nvp:display-get-action ,action :file))
-;             (ido-default-file-method (nvp:display-get-action ,action :ido)))
+;     `(let* ((file-fn (nvp-display--action ,action :file))
+;             (ido-default-file-method (nvp-display--action ,action :ido)))
 ;        (cl-letf (((symbol-function 'find-file)
 ;                   (symbol-function file-fn)))
 ;          ,@body))))
@@ -35,8 +36,8 @@
   (declare (indent defun) (debug (sexp &rest form)))
   (macroexp-let2 nil action action
     `(let* ((display-buffer-overriding-action
-             (nvp:display-get-action ,action :buffer))
-            (ido-default-buffer-method (nvp:display-get-action ,action :ido))
+             (nvp-display--action ,action :buffer))
+            (ido-default-buffer-method (nvp-display--action ,action :ido))
             (help-window-select 'other))
        ,@body)))
 

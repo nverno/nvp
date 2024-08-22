@@ -117,7 +117,9 @@ Ignore buttons like `native-comp-function',`primitive-function'."
         (doc (documentation-property keymap 'variable-documentation)))
     (and (equal "" doc) (setq doc nil))
     (with-help-window (help-buffer)
-      (princ name) (terpri) (princ (make-string (length name) ?-)) (terpri) (terpri)
+      (princ name) (terpri)
+      (princ (make-string (length name) ?-))
+      (terpri) (terpri)
       (with-current-buffer standard-output
         (when doc
           (princ doc) (terpri) (terpri))

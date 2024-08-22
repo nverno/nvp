@@ -63,18 +63,18 @@ called from minibuffer, or nil.")
 (defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
 
 (defvar nvp-display-actions
-  '( :buffer ((4 (display-buffer-reuse-window
-                  display-buffer-same-window)
-                 (inhibit-switch-frame . nil)
-                 (inhibit-same-window  . nil))
-              (1 (display-buffer-pop-up-window)
-                 (inhibit-same-window  . t)))
-     :file ((4 find-file)
-            (1 find-file-other-window))
-     :ido ((4 raise-frame)
-           (1 other-window))
-     :find-func ((4 find-function)
-                 (1 find-function-other-window))))
+  '( :buffer ((4 . ((display-buffer-reuse-window
+                     display-buffer-same-window)
+                    (inhibit-switch-frame . nil)
+                    (inhibit-same-window  . nil)))
+              (1 . ((display-buffer-pop-up-window)
+                    (inhibit-same-window  . t))))
+     :file ((4 . find-file)
+            (1 . find-file-other-window))
+     :ido ((4 . raise-frame)
+           (1 . other-window))
+     :find-func ((4 . find-function)
+                 (1 . find-function-other-window))))
 
 ;;-- Local
 
@@ -430,7 +430,11 @@ Otherwise just call `vertico-insert'. If this was previous command, call
 
 (defun nvp@push-mark (orig-fn &rest args)
   "Maybe push mark before call ORIG-FN with ARGS."
-  (let* ((sym (intern (subr-name orig-fn)))
+  (let* ((sym (cond ((subrp orig-fn)
+                     (intern (subr-name orig-fn)))
+                    ((symbolp orig-fn) orig-fn)
+                    ((byte-code-function-p orig-fn) nil)
+                    (t nil)))
          (pushed (nvp:push-mark sym)))
     (condition-case nil
         (apply orig-fn args)

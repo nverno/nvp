@@ -344,7 +344,7 @@ ARG comes from `forward-sexp', which see."
   "n" #'forward-paragraph
   "p" #'backward-paragraph)
 
-
+;;;###autoload
 (define-derived-mode trace-output-mode special-mode "Trace"
   "Major mode for displaying trace results.
 

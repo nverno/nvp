@@ -15,7 +15,7 @@
   :wrap (ace-swap-window ace-window)
   :repeat (:enter (nvp-window-configuration-pop))
   "," #'nvp-window-configuration-pop
-  "d" #'nvp-window-toggle-dedicated
+  "d" #'toggle-window-dedicated
   "s" #'nvp-repeat-window-conf/ace-swap-window
   "j" #'nvp-repeat-window-conf/ace-window)
 
@@ -40,14 +40,6 @@
   (if-let* ((conf (pop nvp-window--interactive-stack)))
       (set-window-configuration conf)
     (message "window configuration stack empty")))
-
-;;;###autoload
-(defun nvp-window-toggle-dedicated (window)
-  "Toggle WINDOW strongly dedicated."
-  (interactive (list (selected-window)))
-  (let ((dedicated-p (window-dedicated-p window)))
-    (set-window-dedicated-p window (not dedicated-p))
-    (message "window dedicated: %s" (if dedicated-p "off" "on"))))
 
 ;; From https://github.com/re5et/.emacs.d/blob/master/my/my-functions.el
 ;;;###autoload

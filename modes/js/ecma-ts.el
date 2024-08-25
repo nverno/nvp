@@ -194,11 +194,18 @@
       (property_identifier) @font-lock-property-use-face))))
 
 ;;;###autoload
-(defun ecma-ts-merge-rules (language rules)
+(defun ecma-ts-merge-rules (language rules &optional jsdoc)
   (pcase-let* ((`(,hd . ,tl) (ecma-ts-font-lock-rules language))
                (features (--map (nth 2 it) (append hd tl)))
                (rules (--filter (not (memq (nth 2 it) features)) rules)))
-    (append hd rules tl)))
+    (append hd rules tl
+            ;; `jsdoc' settings that have same feature name as added rules get
+            ;; ignored in merge above -- `language' isn't available to match
+            ;; against in compiled queries
+            (when jsdoc
+              (copy-sequence
+               (seq-drop js--treesit-font-lock-settings
+                         (- (length js--treesit-font-lock-settings) 6)))))))
 
 ;;; Auto-convert strings to templates
 ;; Tree-sitter version of `typescript-autoconvert-to-template'

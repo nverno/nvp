@@ -113,7 +113,7 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
                   (this_type) @font-lock-type-face
                   (required_parameter
                    (rest_pattern (identifier) @font-lock-variable-name-face)))
-                
+
                 ;; :language language
                 ;; :feature 'assignment
                 ;; '((assignment_expression
@@ -132,7 +132,7 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
                 :language language
                 :feature 'ts-extension
                 '(["?:"] @font-lock-delimiter-face)
-                
+
                 :language language
                 :feature 'namespace
                 '(["module" "global"] @font-lock-keyword-face
@@ -149,7 +149,10 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
                           [(identifier) (property_identifier)]
                           @font-lock-function-name-face)))))
               (old-rules (funcall rules-fn language)))
-          (set v (ecma-ts-merge-rules language (append old-rules new-rules)))))))
+          (set v (ecma-ts-merge-rules
+                  language (append old-rules new-rules)
+                  ;; XXX(08/25/24): enable jsdoc parser in typescript?
+                  (eq 'typescript language)))))))
 
 
 ;; -------------------------------------------------------------------

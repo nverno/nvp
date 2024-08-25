@@ -48,6 +48,49 @@
     (treesit-fontify-with-override
      (1- node-end) node-end 'font-lock-operator-face override start end)))
 
+(defconst bash-ts--doc-comment-re
+  (rx bol
+      (group (+ "#")) (* white)
+      (group "@" (* alnum)) (* white)
+      (or (seq "[" (group-n 3 (* (not "]"))) "]")
+          (seq "<" (group-n 3 (* (not ">"))) ">")
+          (group-n 3 (+ (not space))))
+      (* white)
+      (group (* nonl)))
+  "Regex to match bash doc comments.")
+
+(defun bash-ts--fontify-doc-comment (node override start end &rest _)
+  (save-excursion
+    (goto-char (treesit-node-start node))
+    (save-match-data
+      (when (looking-at bash-ts--doc-comment-re)
+        (treesit-fontify-with-override
+         (match-beginning 1) (match-end 1)
+         'font-lock-comment-delimiter-face override start end)
+        (treesit-fontify-with-override
+         (match-beginning 2) (match-end 2)
+         'font-lock-constant-face override start end)
+        (treesit-fontify-with-override
+         (match-beginning 3) (match-end 3)
+         (if (equal "@see" (match-string 2))
+             'link
+           'font-lock-variable-name-face)
+         override start end)
+        (treesit-fontify-with-override
+         (match-beginning 4) (match-end 4)
+         'font-lock-comment-face override start end)))))
+
+(defun bash-ts--fontify-shellcheck-comment (node override start end &rest _)
+  (save-excursion
+    (goto-char (treesit-node-start node))
+    (when (looking-at "\\(#+\\)[ \t]*\\(shellcheck .*\\)")
+      (treesit-fontify-with-override
+         (match-beginning 1) (match-end 1)
+         'font-lock-comment-delimiter-face override start end)
+        (treesit-fontify-with-override
+         (match-beginning 2) (match-end 2)
+         'font-lock-preprocessor-face override start end))))
+
 (setq sh-mode--treesit-operators
       '("|" "|&" "||" "&&" ">" ">>" "<" "<<" "<<-" "<<<" "==" "!=" ";&" ";;&"
         ;; Added
@@ -70,12 +113,18 @@
 
 ;;; Added
 (defvar sh-mode--treesit-builtin-functions
-  '("alias" "bg" "bind" "break" "builtin" "caller" "cd" "command" "compgen"
-    "complete" "compopt" "continue" "coproc" "dirs" "disown" "echo" "enable" "eval"
-    "exec" "exit" "fc" "fg" "getopts" "hash" "help" "history" "jobs" "kill" "let"
-    "logout" "mapfile" "popd" "printf" "pushd" "pwd" "read" "readarray" "return"
-    "set" "shift" "shopt" "source" "suspend" "test" "time" "times" "trap" "type"
-    "typeset" "ulimit" "umask" "unalias" "wait"))
+  (seq-uniq
+   (append
+    '("alias" "bg" "bind" "break" "builtin" "caller" "cd" "command" "compgen"
+      "complete" "compopt" "continue" "coproc" "dirs" "disown" "echo" "enable" "eval"
+      "exec" "exit" "fc" "fg" "getopts" "hash" "help" "history" "jobs" "kill" "let"
+      "logout" "mapfile" "popd" "printf" "pushd" "pwd" "read" "readarray" "return"
+      "set" "shift" "shopt" "source" "suspend" "test" "time" "times" "trap" "type"
+      "typeset" "ulimit" "umask" "unalias" "wait"
+      ;; Not actually builtins
+      "sudo")
+    (sh-feature sh-builtins))))
+
 ;;; Note: the following are missing from (sh-feature sh-builtins)
 ;; '("break" "compopt" "continue" "exec" "exit" "logout" "return" "time" "trap")
 
@@ -91,7 +140,12 @@
       (treesit-font-lock-rules
        :feature 'comment
        :language 'bash
-       `((comment) @font-lock-comment-face
+       `(((comment) @bash-ts--fontify-doc-comment
+          (:match ,bash-ts--doc-comment-re @bash-ts--fontify-doc-comment))
+         ((comment) @bash-ts--fontify-shellcheck-comment
+          (:match ,(rx bol (+ "#") (* white) "shellcheck")
+                  @bash-ts--fontify-shellcheck-comment))
+         (comment) @font-lock-comment-face
 
          (program
           :anchor ((comment) @nvp-treesit-fontify-hash-bang
@@ -214,7 +268,7 @@
           ((word) @font-lock-builtin-face
            (:match ,(rx-to-string
                      `(seq bol
-                           (or ,@(sh-feature sh-builtins))
+                           (or ,@sh-mode--treesit-builtin-functions)
                            eol))
                    @font-lock-builtin-face))))
 

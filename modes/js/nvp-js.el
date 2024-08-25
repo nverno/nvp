@@ -79,7 +79,8 @@
 
 (nvp:decl ecma-ts-merge-rules)
 (setq js--treesit-font-lock-settings
-      (ecma-ts-merge-rules 'javascript js--treesit-font-lock-settings))
+      (ecma-ts-merge-rules
+       'javascript js--treesit-font-lock-settings 'jsdoc))
 
 (nvp:treesit-add-rules js-ts-mode
   :extra-features '(variable builtin namespace preproc expression))

@@ -13,12 +13,11 @@
 ;;;###autoload
 (defun nvp-push-button (&optional same-window)
   (interactive "P")
-  (if same-window
-      (let ((display-buffer-overriding-action
-             '(display-buffer-same-window
-               ((inhibit-switch-frame . t)
-                (inhibit-same-window  . nil)))))
-        (call-interactively #'push-button))
+  (let ((display-buffer-overriding-action
+         (when same-window
+           '(display-buffer-same-window
+             ((inhibit-switch-frame . t)
+              (inhibit-same-window  . nil))))))
     (call-interactively #'push-button)))
 
 ;;;###autoload

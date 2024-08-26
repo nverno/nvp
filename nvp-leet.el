@@ -159,7 +159,7 @@
               :skip "use crate"))
             ("golang" (nvp-leet-setup-lang
                        :preamble "package leetcode"
-                       :skip "package"))
+                       :skip (rx (or "package" "import \"leetcode/ds\""))))
             ("racket" (nvp-leet-setup-lang
                        :preamble "#lang racket"
                        :skip (rx (or "#lang" "(require" "(module"))

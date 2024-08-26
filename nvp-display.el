@@ -20,19 +20,20 @@ MODE and BINDINGS are passed to `yas-expand-snippet'."
     (yas-expand-snippet
      (yas-lookup-snippet template mode) start end)))
 
-;; fallback to dired
 ;;;###autoload
 (defun nvp-display-fallback-dired (location &rest _args)
-  (let ((dir (pcase location
-               ((pred file-exists-p)
-                (file-name-directory location))
-               ((pred bufferp)
-                (file-name-directory (buffer-file-name location)))
-               (_ (-if-let (buff (get-buffer location))
-                      (file-name-directory
-                       (buffer-file-name location))
-                    default-directory)))))
-    (dired dir)))
+  (if (bufferp location)
+      nil
+    (let ((dir (pcase location
+                 ((pred file-exists-p)
+                  (file-name-directory location))
+                 ;; ((pred bufferp)
+                 ;;  (file-name-directory (buffer-file-name location)))
+                 (_ (-if-let (buff (get-buffer location))
+                        (file-name-directory
+                         (buffer-file-name location))
+                      default-directory)))))
+      (dired dir))))
 
 ;;;###autoload
 (cl-defun nvp-display-location (location type action &key find-fn init-fn)

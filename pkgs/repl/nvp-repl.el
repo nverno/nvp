@@ -186,11 +186,12 @@ buffers."
       (cl-pushnew name (gethash mode nvp-repl-cache)))))
 (put 'nvp-repl-add 'lisp-indent-function 'defun)
 
-;; default repl to use - shell
+;; Default repl to use - shell
 (nvp:decl sh-cd-here)
 (defvar nvp-repl--shell-repl
   (apply #'nvp-repl-make
          (list :name 'shell
+               ;; TODO(08/26/24): (comint-terminfo-terminal "xterm-256color")
                :init #'nvp-sh-get-process
                :modes '(shell-mode)
                :procname "shell"

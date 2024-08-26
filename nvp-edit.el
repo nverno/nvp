@@ -48,13 +48,14 @@ If a region or rectangle is active, dupe that instead."
     "Sort region between START and END by BODY, using defaults and indent
 region afterward."
     (declare (indent defun) (debug (sexp sexp &rest form)))
-    `(save-excursion
-       (unwind-protect
+    (nvp:with-syms (pos)
+      `(let ((,pos (point)))
+         (save-excursion
            (save-restriction
-             (save-match-data
-               (let ((sort-fold-case t))
-                 ,@body)))
-         (indent-region ,start ,end)))))
+             (let ((sort-fold-case t))
+               (save-match-data ,@body))))
+         (indent-region ,start ,end)
+         (goto-char ,pos)))))
 
 ;;;###autoload
 (defun nvp-sort-lines-first-word (start end &optional reverse)
@@ -111,8 +112,8 @@ With prefix sort in REVERSE."
   (nvp:sort-region start end
     (sort-regexp-fields
      reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)"
-     (if (looking-at-p "'") (+ 2 start) (1+ start)) ;skip over outer '('
-     (1- end))))                                    ;stop before final ')'
+     (if (looking-at-p "'") (+ 2 start) (1+ start)) ; skip over outer '('
+     (1- end))))                                    ; stop before final ')'
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)

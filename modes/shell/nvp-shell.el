@@ -205,7 +205,7 @@ If none found, return list of all terminal buffers."
                (window-min-height . ,(round (* 0.3 (frame-height))))
                (category          . repl))))))
 
-(defun nvp-shell-display-buffer (buffer)
+(defsubst nvp-shell--display-buffer (buffer)
   (let ((display-buffer-overriding-action
          (nvp-shell--display-action buffer)))
     (shell buffer)))
@@ -238,17 +238,17 @@ specified, prefer shell in current directory if available."
                 ;; With double prefix, force new shell in current directory
                 (nvp:prefix 16 (if (buffer-live-p (get-buffer buffname))
                                    (shell (generate-new-buffer-name default-name))
-                                 (nvp-shell-display-buffer buffname))
-                  (nvp-shell-display-buffer buffname)))
+                                 (nvp-shell--display-buffer buffname))
+                  (nvp-shell--display-buffer buffname)))
             ;; Otherwise, any terminal will do, but prefer current directory
             ;; or project
-            (nvp-shell-display-buffer (nvp-shell-in-project-maybe terms))))))))
+            (nvp-shell--display-buffer (nvp-shell-in-project-maybe terms))))))))
 
 ;;;###autoload
 (defun nvp-shell-launch-terminal ()
   "Launch external terminal."
   (interactive)
-  (nvp:with-gnu (call-process "gnome-terminal" nil nil nil)))
+  (call-process "gnome-terminal" nil nil nil))
 
 (provide 'nvp-shell)
 ;; Local Variables:

@@ -43,6 +43,7 @@
                 process-menu-mode
                 shortdoc-mode
                 devdocs-mode
+                debugger-mode
                 ess-r-help-mode))
     ,@(mapcar (lambda (m) (cons m 'ace-link-compilation))
               '(compilation-mode

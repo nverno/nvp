@@ -95,13 +95,14 @@ With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
-    (sort-regexp-fields reverse (nvp:concat "\\(?:"
-                                            "\\s\"\\S\"*\\s\"" ;quoted
-                                            "\\|\\sw+\\|\\s_+" ;word/symbol
-                                            "\\)")
-                        "\\(\\sw\\|\\s_\\)+" start end)))
+    (sort-regexp-fields
+     reverse (concat "\\(?:"
+                     "\\s\"\\S\"*\\s\"" ; quoted
+                     "\\|\\sw+\\|\\s_+" ; word/symbol
+                     "\\)")
+     "\\(\\sw\\|\\s_\\)+" start end)))
 
-;; note uses 'cons/'alist at point defined in nvp-elisp
+;; Note: uses 'cons/'alist at point defined in nvp-elisp
 ;;;###autoload
 (defun nvp-sort-alist (&optional start end reverse)
   "Sort alist by car of each element in list at point or b/w START and END."

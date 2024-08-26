@@ -15,61 +15,24 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'elisp-mode)
-(require 'backtrace)
 (require 'edebug)
 (require 'transient)
 (nvp:decls :p (nvp-treesit smie treesit lsp tramp)
            :f (treesit-buffer-root-node smie-config-show-indent)
            :v (tramp-debug-on-error tramp-verbose))
-(nvp:auto "nvp-help" nvp-help-describe-keymap)
-(nvp:auto "dash" -map)
 
-;; -------------------------------------------------------------------
-;;; Debugger
+(autoload 'nvp-help-describe-keymap "nvp-help")
+(autoload '-map "dash")
 
-;; Completion for frame locals in *Backtrace*
-;; gather locals relevant to frame at point:
-;; this is locals in the frames at higher indices (not including index at point)
-(defun nvp-backtrace--local-variables (_string)
-  (when backtrace-frames
-    (--mapcat
-     (-some->> (backtrace-frame-locals it) (--map (car it)))
-     (nthcdr (1+ (backtrace-get-index)) backtrace-frames))))
-
-(defvar nvp-backtrace-locals-completion-table
-  (completion-table-dynamic #'nvp-backtrace--local-variables 'do-switch-buffer))
-
-;; override interactive spec of `debugger-eval-expression' to use
-;; `nvp@backtrace-eval' instead
-(defun nvp@backtrace-eval (orig-fn exp &optional nframes)
-  (interactive
-   (let ((elisp--local-variables-completion-table
-          nvp-backtrace-locals-completion-table))
-     (list (read--expression "[nvp] Eval in stack frame: "))))
-  (apply orig-fn (list exp nframes)))
-
-(advice-add 'debugger-eval-expression :around #'nvp@backtrace-eval)
-
-;; starts off as single-line
-(defvar-local nvp-backtrace--multi t)
-(defun nvp-backtrace-toggle-multi ()
-  (interactive)
-  (if (nvp:toggle-variable nvp-backtrace--multi)
-      (backtrace-single-line)
-    (backtrace-multi-line)))
-
-
-;; -------------------------------------------------------------------
 ;;; Edebug
-
 ;; Completion for frame-locals in edebug buffer
-;; needs to switch buffer before completing in minibuffer
 (defun nvp@edebug-locals (orig-fn expr)
   (interactive
    (let ((hookfun
           (lambda ()
             (add-function
              :around (local 'elisp--local-variables-completion-table)
+             ;; Needs to switch buffer before completing in minibuffer
              #'nvp@do-switch-buffer))))
      (unwind-protect
          (progn (add-hook 'eval-expression-minibuffer-setup-hook hookfun)
@@ -84,6 +47,7 @@
   (nvp-help-describe-keymap 'edebug-mode-map))
 
 (defvar-local nvp-edebug--all-defs nil)
+
 (defun nvp-edebug-toggle-all-local ()
   "Toggle debugging of all defuns."
   (interactive)

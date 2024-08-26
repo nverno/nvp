@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: function
+# name: scoped function definition
 # key: func
 # --
 ${1:void} ${2:Class}::${3:name}(${4:args})${5: const} {

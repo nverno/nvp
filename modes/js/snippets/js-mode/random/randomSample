@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: select random key from object
+# name: select random sample from object
 # key: randomSample
 # --
 const randomSample = (arr: any[], n = Infinity) => {

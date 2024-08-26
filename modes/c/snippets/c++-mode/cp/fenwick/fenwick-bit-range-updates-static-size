@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: bit range updates/sums
+# name: bit range updates/sums (static size)
 # key: ds_bit_ru
 # --
 template<typename T, int SZ> struct BIT {

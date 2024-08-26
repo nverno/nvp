@@ -265,19 +265,19 @@
     :language 'cmake
     :feature 'builtin
     ;; Note: Overwrites feature
-    `(((env_var
-        ["$" "ENV" "{" "}"] @font-lock-preprocessor-face))
+    `((env_var
+       ["$" "ENV" "{" "}"] @font-lock-preprocessor-face)
 
-      ((foreach_command
-        ((argument_list (argument) @font-lock-operator-face)
-         (:match ,(rx-to-string
-                   `(seq bol (or ,@cmake-ts-mode--foreach-options) eol))
-                 @font-lock-operator-face))))
-      ((if_command
-        ((argument_list (argument) @font-lock-operator-face)
-         (:match ,(rx-to-string
-                   `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
-                 @font-lock-operator-face))))
+      (foreach_command
+       ((argument_list (argument) @font-lock-operator-face)
+        (:match ,(rx-to-string
+                  `(seq bol (or ,@cmake-ts-mode--foreach-options) eol))
+                @font-lock-operator-face)))
+      (if_command
+       ((argument_list (argument) @font-lock-operator-face)
+        (:match ,(rx-to-string
+                  `(seq bol (or ,@cmake-ts-mode--if-conditions) eol))
+                @font-lock-operator-face)))
       (elseif_command
        ((argument_list (argument) @font-lock-operator-face)
         (:match ,(rx-to-string
@@ -299,12 +299,12 @@
                         "DEPENDS"))
                @font-lock-type-face))
 
-      ((normal_command
-        (identifier) @font-lock-preprocessor-face
+      (normal_command
+       ((identifier) @font-lock-preprocessor-face
         (:match ,(rx bol "set") @font-lock-preprocessor-face)))
 
-      ((normal_command
-        (identifier) @font-lock-builtin-face
+      (normal_command
+       ((identifier) @font-lock-builtin-face
         (:match ,(rx-to-string
                   `(seq bol
                         (or ,@nvp-cmake-builtin)

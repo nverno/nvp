@@ -6,17 +6,13 @@
 (require 'trace)
 (require 'transient)
 
-(nvp:decls :f (flatten-tree))
+(nvp:decls :f (flatten-tree) :v (nvp-tracing-minor-mode))
 
 (autoload 'find-library-name "find-func")
 (autoload 'nvp-elisp-matching-forms "nvp-elisp" )
 (autoload 's-split "s")
 (autoload 'trace-tree-disable "trace-tree")
 
-
-(defun nvp-trace-active-p ()
-  (and (boundp 'trace-buffer)
-       (buffer-live-p (get-buffer trace-buffer))))
 
 (defun nvp-trace-buffer (&optional and-go create)
   (let ((buf (if create
@@ -30,10 +26,20 @@
           (pop-to-buffer (current-buffer))
         (display-buffer (current-buffer))))))
 
+(defun nvp-trace-active-p ()
+  (and (boundp 'trace-buffer)
+       (buffer-live-p (get-buffer trace-buffer))))
+
 
 ;;; Menu
 
-(nvp:transient-toggle nvp-trace-menu inhibit-trace)
+(transient-define-infix nvp-trace--toggle-inhibit nil
+  :class 'transient-lisp-variable
+  :variable 'inhibit-trace
+  :reader (lambda (&rest _) (not inhibit-trace))
+  :set-value (lambda (sym val)
+               (set sym val)
+               (nvp-tracing-update-mode-line)))
 
 ;;;###autoload(autoload 'nvp-trace-menu "nvp-trace" nil t)
 (transient-define-prefix nvp-trace-menu ()
@@ -42,10 +48,9 @@
     ("f" "Defun" trace-function)
     ("b" "Defun background" trace-function-background)
     ("u" "Untrace defun" untrace-function)
-    ("q" "Untrace all" nvp-untrace-all)
-    ("Q" "Quit" nvp-trace-kill :if-non-nil nvp-tracing-minor-mode)
+    ("q" "Untrace all" untrace-all)
     "--"
-    ("i" "Inhibit trace" nvp-trace-menu--toggle-inhibit-trace)]
+    ("i" "Inhibit trace" nvp-trace--toggle-inhibit)]
    ["Groups"
     ("g" "Group" nvp-trace-group)
     ("G" "Untrace group" nvp-untrace-group :if-non-nil nvp-tracing-minor-mode)
@@ -63,62 +68,39 @@
 ;;; Tracing Minor Mode
 
 (defvar nvp-tracing--mode-line " Trace")
-(defvar nvp-trace--active nil "Non-nil when tracing")
-(defvar nvp-trace--current nil "Active trace names")
-(defvar nvp-trace--type nil "Active trace type")
-
-(defun nvp-trace--abbreviate (names)
-  (cond ((stringp names) names)
-        (t (concat (nvp:as-string (car names)) "..."))))
-;; ((<= (length names) 1) (car names))
-;; (t (mapconcat
-;;     (lambda (name)
-;;       (mapconcat
-;;        (lambda (ss) (substring ss 0 1))
-;;        (s-split "-" (symbol-name name) t)
-;;        "-"))
-;;     names "|"))
+(defvar nvp-tracing--current nil "Active trace names")
+(defvar nvp-tracing--batch nil "Non-nil when doing batch action.")
 
 (defun nvp-tracing-mode-line ()
   "Report current trace in the modeline."
-  (if (null nvp-trace--current) " Trace"
-    (format " Trace:%s:%d"
-            (cond (inhibit-trace
-                   (propertize "inhibited" 'face 'font-lock-warning-face))
-                  ((length> nvp-trace--current 0) "run")
-                  (t "inactive"))
-            (if nvp-trace--current
-                (length nvp-trace--current)
-              0))))
-;; (if (eq nvp-trace--type 'group)
-;;     (nvp-trace--abbreviate nvp-trace--current)
-;;   nvp-trace--current)
+  (concat " Tr:"
+          (cond (inhibit-trace
+                 (propertize "off" 'face 'compilation-error))
+                ((length> nvp-tracing--current 0)
+                 (propertize "run" 'face 'compilation-mode-line-exit))
+                (t "inactive"))
+          ":"
+          (propertize (number-to-string (length nvp-tracing--current))
+                      'face '(bold font-lock-warning-face))))
 
-(defun nvp-trace-update-mode-line ()
+(defun nvp-tracing-update-mode-line ()
   "Update tracing mode-line."
   (setq nvp-tracing--mode-line (nvp-tracing-mode-line))
-  (force-mode-line-update))
-
-(defun nvp-trace-add (funcs &optional type)
-  (setq nvp-trace--current (seq-uniq (append funcs nvp-trace--current)))
-  (setq nvp-trace--type type)           ; huh?
-  (force-mode-line-update))
-
-(defvar-keymap nvp-tracing-minor-mode-map
-  "<f2> D j"   #'nvp-trace-display-results
-  "<f2> D q"   #'nvp-untrace-all
-  "<f2> D Q"   #'nvp-trace-kill)
-
-(define-minor-mode nvp-tracing-minor-mode
-  "Tracing minor mode."
-  :lighter nvp-tracing--mode-line
-  :keymap nvp-tracing-minor-mode-map
-  :global t
-  :group 'trace
   (when nvp-tracing-minor-mode
-    (setq nvp-trace--current nil
-          nvp-trace--type nil)
-    (nvp-trace-update-mode-line)))
+    (force-mode-line-update t)))
+
+(defun nvp-tracing-add (funcs &optional _type remove)
+  "Track FUNCS and maybe enable/disable tracing minor mode.
+If REMOVE is non-nil, remove FUNCS from tracking."
+  (setq nvp-tracing--current
+        (if remove
+            (seq-remove (lambda (e) (memq e funcs)) nvp-tracing--current)
+          (seq-uniq (append funcs nvp-tracing--current))))
+  (cond ((zerop (length nvp-tracing--current))
+         (nvp-tracing-minor-mode -1))
+        (nvp-tracing-minor-mode
+         (nvp-tracing-update-mode-line))
+        (t (nvp-tracing-minor-mode 1))))
 
 (defun nvp-trace-clear ()
   "Clear tracing buffer."
@@ -129,18 +111,41 @@
            (let ((inhibit-read-only t))
              (erase-buffer))))))
 
-(defun nvp-trace-kill ()
-  "Untrace everything and quit `nvp-tracing-minor-mode'."
-  (interactive)
-  (call-interactively #'untrace-all)
-  (nvp-tracing-minor-mode -1))
+(defvar-keymap nvp-tracing-minor-mode-map
+  "<f2> D j" #'nvp-trace-display-results
+  "<f2> D q" #'untrace-all)
 
-(defun nvp-untrace-all ()
-  "Untrace all functions and turn off minor mode."
-  (interactive)
-  (call-interactively #'untrace-all)
-  (setq nvp-trace--current nil)
-  (nvp-trace-update-mode-line))
+;;;###autoload
+(define-minor-mode nvp-tracing-minor-mode
+  "Tracing minor mode."
+  :lighter (:eval nvp-tracing--mode-line)
+  :keymap nvp-tracing-minor-mode-map
+  :global t
+  :interactive nil
+  :group 'trace
+  (if nvp-tracing-minor-mode
+      (nvp-tracing-update-mode-line)
+    (setq nvp-tracing--current nil)))
+
+
+;;; Advices
+
+;;;###autoload
+(defun trace-function-internal@tracing-add (func &rest _)
+  (or nvp-tracing--batch (nvp-tracing-add (list func))))
+
+;;;###autoload(advice-add 'trace-function-internal :after #'trace-function-internal@tracing-add '((name . "tracing-add")))
+
+(define-advice untrace-function (:after (func) "tracing-remove")
+  (or nvp-tracing--batch (nvp-tracing-add (list func) nil t)))
+
+(define-advice untrace-all (:around (orig) "tracing-remove-all")
+  (let ((nvp-tracing--batch t))
+    (funcall orig)
+    (nvp-tracing-minor-mode -1)))
+
+
+;;; Groups
 
 (defvar nvp-trace-defun-forms
   '((defun cl-defun declare-function autoload cl-defmethod t)
@@ -169,15 +174,16 @@
   "Trace GROUPS of functions defined in `nvp-trace-group-alist'."
   (interactive (list (nvp-trace--read-groups "Trace: " current-prefix-arg)
                      current-prefix-arg))
-  (or (listp (car groups)) (setq groups (list groups)))
-  (--each groups
-    (nvp-trace-add (cdr it) 'group)
-    (--each it
-      (funcall (if foreground
-                   #'trace-function-foreground
-                 #'trace-function-background)
-               it)))
-  (nvp-tracing-minor-mode 1))
+  (let ((funcs (if (listp (car groups))
+                   (apply #'append (--map (cdr it) groups))
+                 (cdr groups)))
+        (trace-fn (if foreground
+                      #'trace-function-foreground
+                    #'trace-function-background))
+        (nvp-tracing--batch t))
+    (dolist (fn funcs)
+      (funcall trace-fn fn))
+    (nvp-tracing-add funcs)))
 
 (defun nvp-untrace-group (funcs)
   "Untrace functions in GROUP."
@@ -186,10 +192,10 @@
                 (--map
                  (cdr it)
                  (nvp-trace--read-groups "Untrace: " current-prefix-arg t)))))
-  (dolist (fn funcs)
-    (untrace-function fn)
-    (setq nvp-trace--current (delq fn nvp-trace--current)))
-  (nvp-trace-update-mode-line))
+  (let ((nvp-tracing--batch t))
+    (dolist (fn funcs)
+      (untrace-function fn))
+    (nvp-tracing-add funcs nil t)))
 
 ;;;###autoload
 (defun nvp-trace-display-results (&optional and-go)
@@ -211,14 +217,14 @@ With \\[universal-argument] \\[universal-argument] prompt for filter."
           (with-temp-buffer
             (insert-file-contents (find-library-name library))
             (with-syntax-table emacs-lisp-mode-syntax-table
-              (nvp-elisp-matching-forms def-forms)))))
+              (nvp-elisp-matching-forms def-forms))))
+         (nvp-tracing--batch t))
     (when filter
       (setq forms (--filter (string-match-p filter (symbol-name it)) forms)))
     (dolist (fn forms)
       (trace-function-background fn))
-    (nvp-trace-add forms 'library)
-    (message "tracing %d funs from %s: %S" (length forms) library forms))
-  (nvp-tracing-minor-mode 1))
+    (nvp-tracing-add forms 'library)
+    (message "tracing %d funs from %s: %S" (length forms) library forms)))
 
 ;;;###autoload
 (defun nvp-trace-hooks (&optional library)
@@ -234,12 +240,12 @@ With \\[universal-argument] \\[universal-argument] prompt for filter."
     (let ((forms (with-temp-buffer
                    (insert-file-contents (find-library-name library))
                    (with-syntax-table emacs-lisp-mode-syntax-table
-                     (nvp-elisp-matching-forms #'hook-p)))))
+                     (nvp-elisp-matching-forms #'hook-p))))
+          (nvp-tracing--batch t))
       (dolist (fn forms)
         (trace-function-background fn))
-      (nvp-trace-add forms 'hooks)
-      (message "tracing hooks: %S" forms)))
-  (nvp-tracing-minor-mode 1))
+      (nvp-tracing-add forms 'hooks)
+      (message "tracing hooks: %S" forms))))
 
 
 ;; -------------------------------------------------------------------
@@ -312,7 +318,7 @@ ARG comes from `forward-sexp', which see."
         (when (and fn (y-or-n-p (format "Untrace %S? " fn)))
           (message "untracing %S" fn)
           (untrace-function fn)
-          (setq nvp-trace--current (delq fn nvp-trace--current)))))))
+          (setq nvp-tracing--current (delq fn nvp-tracing--current)))))))
 
 (defvar trace-output-mode-keywords
   `((,(concat "^" (string-chop-newline trace-separator))

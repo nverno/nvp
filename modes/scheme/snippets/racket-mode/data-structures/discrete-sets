@@ -23,15 +23,15 @@
       (let ([xx (discrete-set-find uf x)]
             [yy (discrete-set-find uf y)])
         (if (eq? xx yy) #f
-            (let ([sz (discrete-set-sz uf)]
-                  [par (discrete-set-parent uf)])
-              (when (< (vector-ref sz x)
-                       (vector-ref sz y))
+            (let* ([sz (discrete-set-sz uf)]
+                   [sx (vector-ref sz xx)]
+                   [sy (vector-ref sz yy)]
+                   [par (discrete-set-parent uf)])
+              (when (< sx sy)
                 (let ([tmp xx])
                   (set! xx yy)
                   (set! yy tmp)))
-              (vector-set! sz yy (+ (vector-ref sz yy)
-                                    (vector-ref sz xx)))
+              (vector-set! sz yy (+ sx sy))
               (vector-set! par xx yy)
               (set-discrete-set-count! uf (sub1 (discrete-set-count uf)))
               #t)))))

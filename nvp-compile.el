@@ -148,7 +148,6 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
         (xterm-color-colorize-buffer)
       (ansi-color-apply-on-region compilation-filter-start (point-max)))))
 
-;; move to next warning/error
 (defun nvp-compilation-next (n)
   "Move to next warning, error, or info message."
   (interactive "p")
@@ -168,7 +167,6 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
 (defun nvp-previous-error-no-select (n)
   (interactive "p")
   (nvp-next-error-no-select (- n)))
-
 
 (defun nvp-compilation-next-or-complete (n)
   "Unless after comint prompt, move to Nth next error, otherwise complete."

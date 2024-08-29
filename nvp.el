@@ -412,16 +412,20 @@ Otherwise just call `vertico-insert'. If this was previous command, call
 
 (defun nvp@push-marker (orig-fn &rest args)
   "Push marker onto stack before calling ORIG-FN with ARGS."
-  (or repeat-in-progress
-      (eq last-command this-command)
-      (and (subrp orig-fn)
-           (let ((sym (intern (subr-name orig-fn))))
-             (and (eq this-command sym)
-                  (not (eq last-command sym)))))
-      (xref--push-markers (current-buffer) (point)))
-  (condition-case nil
-      (apply orig-fn args)
-    (error (xref-go-back))))
+  (let ((pushed
+         (not (eq t (or ;; repeat-in-progress
+                     (eq last-command this-command)
+                     (let ((sym (and (subrp orig-fn)
+                                     (intern (subr-name orig-fn)))))
+                       (or (not (eq this-command sym))
+                           (eq last-command sym)))
+                     (xref--push-markers (current-buffer) (point)))))))
+    (condition-case err
+        (apply orig-fn args)
+      (user-error (and pushed (xref-go-back))
+                  (user-error (error-message-string err)))
+      (error (and pushed (xref-go-back))
+             (error (error-message-string err))))))
 
 (nvp:advise-commands #'nvp@push-marker :around
   '( find-function find-variable find-function-on-key semantic-ia-fast-jump
@@ -435,10 +439,13 @@ Otherwise just call `vertico-insert'. If this was previous command, call
                     ((symbolp orig-fn) orig-fn)
                     ((byte-code-function-p orig-fn) nil)
                     (t nil)))
-         (pushed (nvp:push-mark sym)))
-    (condition-case nil
+         (pushed (not (eq t (nvp:push-mark sym)))))
+    (condition-case err
         (apply orig-fn args)
-      (error (and pushed (pop-mark))))))
+      (user-error (and pushed (pop-mark))
+                  (user-error (error-message-string err)))
+      (error (and pushed (pop-mark))
+             (error (error-message-string err))))))
 
 ;; -------------------------------------------------------------------
 ;;; Windows / Buffers

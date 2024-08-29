@@ -14,7 +14,8 @@
 (defun nvp-push-button (&optional same-window)
   (interactive "P")
   (let ((display-buffer-overriding-action
-         (when same-window
+         (when (and same-window
+                    (not (window-dedicated-p (selected-window))))
            '(display-buffer-same-window
              ((inhibit-switch-frame . t)
               (inhibit-same-window  . nil))))))

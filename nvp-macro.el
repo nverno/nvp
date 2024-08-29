@@ -165,6 +165,8 @@ BODY should return a list as normally done in an interactive spec."
                                        (save-windows nil)
                                        (restore-windows nil)
                                        (action '(nil . ((category . results))))
+                                       ;; (help-xref nil)
+                                       (quit-function nil)
                                        &allow-other-keys)
   "Do BODY in temp BUFFER-OR-NAME as with `with-temp-buffer-window'.
 Make the temp buffer scrollable, in `view-mode' and kill when finished.
@@ -173,15 +175,22 @@ Add TITLE to results buffer."
   (nvp:skip-keywords body)
   (macroexp-let2* nil ((hdr (if title `(nvp:centered-header ,title)))
                        (buf (or buffer '(help-buffer))))
-    `(let (other-window-scroll-buffer)
-       ,(when save-windows '(nvp-window-configuration-save))
+    ;; nvp:with-syms (scroll-buffer)
+    `(let (;; (,scroll-buffer other-window-scroll-buffer)
+           ,@(unless buffer '((help-buffer-under-preparation t))))
+       ,@(when save-windows '((nvp-window-configuration-save)))
        (with-temp-buffer-window
            ,buf
            ',(if (eq ':none action) nil action)
-           nil
+           ,quit-function
          (prog1 (get-buffer ,buf)
            (with-current-buffer standard-output
-             (setq other-window-scroll-buffer (current-buffer))
+             ;; (setq other-window-scroll-buffer (current-buffer))
+             ;; (add-hook 'quit-window-hook
+             ;;           (lambda ()
+             ;;             (setq other-window-scroll-buffer
+             ;;                   (and (buffer-live-p (get-buffer ,scroll-buffer))
+             ;;                        ,scroll-buffer))))
              ,(if title `(princ ,hdr))
              ,@body
              (hl-line-mode)
@@ -403,7 +412,7 @@ as STRING."
 (cl-defmacro nvp:visible-windows (&key mode derived test-fn)
   "List buffers visible in current frame.
 If MODE is non-nil, only return buffers with matching (or DERIVED)
-\\='major-mode. Otherwise if TEST-FN, is non-nil only list buffers where
+\\='major-mode. Otherwise, if TEST-FN is non-nil only list buffers where
 \\='(TEST-FN buffer) is non-nil."
   (declare (indent defun) (debug t))
   (when (and mode test-fn) (error "nvp:visible-windows: %S is ignored" test-fn))

@@ -265,7 +265,8 @@
                           field))
         start end text)
     (if (not overlays) (message "Nothing here :(")
-      (nvp:with-results-buffer :title (format "Overlays at %d in %S" pos obuf)
+      (nvp:with-results-buffer
+        :title (format "Overlays at %d in %S" pos obuf)
         (dolist (o overlays)
           (setq start (overlay-start o)
                 end (overlay-end o)

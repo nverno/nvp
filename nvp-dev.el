@@ -320,10 +320,9 @@ delimiter or an Escaped or Char-quoted character."
                  "\n"))))
 
 ;;;###autoload
-(defun nvp-syntax-at-point (marker &optional action)
-  "Display info about syntax at point.
-With prefix, display in same frame using `display-buffer' ACTION."
-  (interactive (list (point-marker) (prefix-numeric-value current-prefix-arg)))
+(defun nvp-syntax-at-point (marker)
+  "Display info about syntax at point."
+  (interactive (list (point-marker)))
   (unless (and (markerp marker)
                (buffer-live-p (marker-buffer marker)))
     (user-error "Bad marker: %S" marker))
@@ -333,26 +332,25 @@ With prefix, display in same frame using `display-buffer' ACTION."
     (with-current-buffer (marker-buffer marker)
       (let ((ppss (syntax-ppss marker))
             (help-str (nvp:lazy-val nvp-syntax-at-point-help)))
-        (nvp:display-buffer-with-action action
-          (with-help-window (help-buffer)
-            (princ (nvp:centered-header "Syntax at <marker>"))
-            (princ (apply #'format help-str ppss))
-            (with-current-buffer standard-output
-              (let ((inhibit-read-only t)
-                    (comment-start "; ")
-                    (fill-column 85)
-                    (comment-column 30))
-                (goto-char (point-min))
-                (search-forward "<marker>")
-                (replace-match "")
-                (help-insert-xref-button (format "%S" marker) 'help-marker marker)
-                (forward-line 2)
-                (while (not (eobp))
-                  (when (looking-at-p comment-start)
-                    (insert "|"))
-                  (comment-indent)
-                  (forward-line 1)))
-              (hl-line-mode))))))))
+        (with-help-window (help-buffer)
+          (princ (nvp:centered-header "Syntax at <marker>"))
+          (princ (apply #'format help-str ppss))
+          (with-current-buffer standard-output
+            (let ((inhibit-read-only t)
+                  (comment-start "; ")
+                  (fill-column 85)
+                  (comment-column 30))
+              (goto-char (point-min))
+              (search-forward "<marker>")
+              (replace-match "")
+              (help-insert-xref-button (format "%S" marker) 'help-marker marker)
+              (forward-line 2)
+              (while (not (eobp))
+                (when (looking-at-p comment-start)
+                  (insert "|"))
+                (comment-indent)
+                (forward-line 1)))
+            (hl-line-mode)))))))
 
 
 ;;; Keys

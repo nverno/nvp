@@ -149,6 +149,7 @@
     ("do" "Delete all other" delete-other-windows :transient t)]
    ["Resize"
     ("f" "Fit buffer" fit-window-to-buffer :transient t)
+    ("S" "Shrink if larger" shrink-window-if-larger-than-buffer :transient t)
     ("b" "Balance" balance-windows :transient t)
     ("B" "Balance areas" balance-windows-area :transient t)
     ("/" "Minimize" minimize-window :transient t)

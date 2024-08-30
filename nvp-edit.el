@@ -155,20 +155,22 @@ With prefix sort in REVERSE."
 ;;;###autoload
 (defun nvp-wrap-with-squiggles (&optional _arg)
   (interactive "P")
-  ;; don't want it in the normal pair list
+  ;; Don't want it in the normal pair list
   (let ((st (make-syntax-table))
         (sp-pair-list '(("~" . "~"))))
-    ;; wrap files with suffixes
+    ;; Wrap files with suffixes
     (modify-syntax-entry ?. "w" st)
     (with-syntax-table st
       (sp-wrap-with-pair "~"))))
 
 ;;;###autoload
-(defun nvp-wrap-with-last-char (char &optional _arg)
+(defun nvp-wrap-with-last-char (char)
   "Wrap next sexp with CHAR (last key pressed in calling command).
 Override default `sp-pair-list' if CHAR isn't a leading member.
-Prefix arg is passed to SP, wrapping the next _ARG elements."
-  (interactive (list (nvp:input 'lcs) current-prefix-arg))
+With prefix, read CHAR to wrap with."
+  (interactive (list (if current-prefix-arg
+                         (char-to-string (read-char "Wrap with: "))
+                       (nvp:input 'lcs))))
   (let ((sp-pair-list
          (if (not (cl-member char sp-pair-list :test #'string= :key #'car))
              `((,char . ,char))

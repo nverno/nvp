@@ -153,7 +153,7 @@
 (defun nvp-count-lines-or-region (arg)
   (interactive "P")
   (if (or arg (region-active-p))
-      (funcall-interactively #'count-words-region (region-beginning) (region-end))
+      (call-interactively #'count-words-region)
     (call-interactively #'count-lines-page)))
 
 ;;;###autoload

@@ -16,7 +16,8 @@
   (defmacro nvp:pp-results (obj &optional title)
     `(nvp:with-results-buffer
        :title ,title
-       (nvp:pp-object ,obj (current-buffer)))))
+       (nvp:pp-object ,obj (current-buffer))
+       (pp-buffer))))
 
 (transient-define-suffix nvp-transient--layout ()
   "Show layout."

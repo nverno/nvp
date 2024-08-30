@@ -208,6 +208,37 @@ or expansion."
     (nvp-abbrev--insert-template table))
   (current-buffer))
 
+(defun nvp-abbrev--sort (a b)
+  (let ((la (length (car a)))
+        (lb (length (car b))))
+    (if (= la lb)
+        (not (string-greaterp (car a) (car b)))
+      (< la lb))))
+
+(defun nvp-abbrev-sort-table (&optional start end)
+  "Sort abbrev table between START and END or the table at point."
+  (interactive (nvp:with-region start end 'alist :pulse t :widen t
+                 (list start end)))
+  (save-excursion
+    (goto-char start)
+    (skip-chars-forward "'")
+    (replace-region-contents
+     (point) end
+     (lambda ()
+       (let ((abbrevs
+              (sort (read (current-buffer)) :lessp #'nvp-abbrev--sort)))
+         (with-temp-buffer
+           (let ((cl-print-readably t)
+                 (print-quoted t)
+                 (print-circle nil)
+                 (print-escape-newlines nil)
+                 (pp-max-width 80)
+                 (fill-column 80)
+                 (pp-default-function 'pp-29))
+             (cl-prin1 abbrevs (current-buffer))
+             (pp-buffer))
+           (buffer-string)))))
+    (indent-region start end)))
 
 ;;;###autoload
 (define-derived-mode abbrev-table-mode emacs-lisp-mode "Abbrev-Table"

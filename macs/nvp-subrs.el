@@ -444,8 +444,11 @@ or (\\='a #\\='b) => \\='(a b)."
 (defsubst nvp:pp-object (obj &optional stream)
   (let ((print-level nil)
         (print-length nil)
-        (pp-default-function 'pp-28)
-        (fill-column 999))
+        (print-quoted t)
+        (print-circle nil)
+        (print-escape-newlines nil)
+        (pp-default-function 'pp-29)
+        (fill-column 80))
     (pp obj stream)))
 
 (provide 'nvp-subrs)

@@ -1129,7 +1129,7 @@ Trailing \"i\" indicates to prompt for input if nothing is found.
   "Bind BEG END to dwim region bounds.
 Uses region bounds if active, otherwise bounds of THING.
 In WIDEN is non-nil, save restriction and widen before finding bounds."
-  (declare (indent defun) (debug body))
+  (declare (indent defun) (debug t))
   (nvp:skip-keywords body)
   (let ((bnds (make-symbol "bounds")))
     `(,@(if widen '(save-restriction (widen)) '(progn))

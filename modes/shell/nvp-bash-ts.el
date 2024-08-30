@@ -89,7 +89,7 @@
          'font-lock-comment-delimiter-face override start end)
         (treesit-fontify-with-override
          (match-beginning 2) (match-end 2)
-         'font-lock-preprocessor-face override start end))))
+         '(:inherit font-lock-comment-face :slant italic) override start end))))
 
 (setq sh-mode--treesit-operators
       '("|" "|&" "||" "&&" ">" ">>" "<" "<<" "<<-" "<<<" "==" "!=" ";&" ";;&"

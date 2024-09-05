@@ -44,7 +44,10 @@
        ;; Note: patch not wanted
        (var_spec name: (identifier) @font-lock-function-name-face
                  ("," name: (identifier) @font-lock-function-name-face)*
-                 type: (function_type))))))
+                 type: (function_type))
+       ;; XXX(09/05/24): remove after patch
+       (type_parameter_declaration
+        name: (identifier) @font-lock-type-face)))))
 
 (nvp:treesit-add-rules go-ts-mode
   :new-fonts nvp-go-ts-font-lock-settings

@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: Sum generic array
+# key: f_sum
+# --
+func SumArray[T ${1:Number}](arr []T) (sum T) {
+	for _, x := range arr {
+		sum += x
+	}
+	return sum
+}

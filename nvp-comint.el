@@ -62,24 +62,25 @@ Binds `comint-input-ring-separator' so local values have effect."
 Adds new entries to `comint-input-ring-file-name' instead of clobbering it
 when `nvp-comint-history-append' in non-nil.
 When add entries, duplicate entries are also removed."
-  (if (or (null nvp-comint-history-append)
-          (not (file-exists-p comint-input-ring-file-name))
-          ;; TODO(08/05/24): remove when separators handled in merge
-          (not (equal "\n" comint-input-ring-separator)))
-      (nvp-comint--write-input-ring)
-    ;; Write history file and ring elements to temp file, then merge
-    (let ((histfile comint-input-ring-file-name)
-          (comint-input-ring-file-name
-           (make-temp-file comint-input-ring-file-name)))
-      (nvp-comint--write-input-ring)
-      (call-process-shell-command
-       (format
-        ;; FIXME(08/02/24): don't dedupe history separator lines
-        ;; eg. dont clobber separators in `sql-stop'
-        (concat "cat \"%s\" >> \"%s\";"
-                "awk '!seen[$0]++' \"%s\" > \"%s\"; rm \"%s\"")
-        histfile comint-input-ring-file-name
-        comint-input-ring-file-name histfile comint-input-ring-file-name)))))
+  (when comint-input-ring-file-name
+    (if (or (null nvp-comint-history-append)
+            (not (file-exists-p comint-input-ring-file-name))
+            ;; TODO(08/05/24): remove when separators handled in merge
+            (not (equal "\n" comint-input-ring-separator)))
+        (nvp-comint--write-input-ring)
+      ;; Write history file and ring elements to temp file, then merge
+      (let ((histfile comint-input-ring-file-name)
+            (comint-input-ring-file-name
+             (make-temp-file comint-input-ring-file-name)))
+        (nvp-comint--write-input-ring)
+        (call-process-shell-command
+         (format
+          ;; FIXME(08/02/24): don't dedupe history separator lines
+          ;; eg. dont clobber separators in `sql-stop'
+          (concat "cat \"%s\" >> \"%s\";"
+                  "awk '!seen[$0]++' \"%s\" > \"%s\"; rm \"%s\"")
+          histfile comint-input-ring-file-name
+          comint-input-ring-file-name histfile comint-input-ring-file-name))))))
 
 (advice-add 'comint-write-input-ring :override #'nvp-comint-write-input-ring)
 

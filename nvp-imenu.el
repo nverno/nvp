@@ -125,25 +125,26 @@ Assumes the list is flattened and only elements with markers remain."
         (setq headers-2
               `(("Sub-Headers"
                  ,(concat
-                   "^" (nvp-comment-start 2) "-\\{1,2\\}\\s-+\\(.*\\)[ -]*$")
+                   "^" (nvp-comment-start 2)
+                   "[-*]\\{1,2\\}\\s-+\\(.*\\)[ *-]*$")
                  1))))
     (list headers headers-1 headers-2)))
 
 ;;;###autoload
-(cl-defun nvp-imenu-setup (&key headers headers-1 headers-2 extra default)
-  "Sets up imenu regexps including those to recognize HEADERS and any
-EXTRA regexps to add to `imenu-generic-expression'.
-Any extra regexps should be an alist formatted as `imenu-generic-expression'."
-  (when default
-    (setq imenu-generic-expression default))
-  (when (or headers comment-start)
-    (cl-destructuring-bind (h h1 h2)
-        (nvp-imenu--create-header-regex headers headers-1 headers-2)
-      (setq nvp-imenu-comment-headers-re h
-            nvp-imenu-comment-headers-re-1 h1
-            nvp-imenu-comment-headers-re-2 h2)))
-  (setq imenu-generic-expression
-        (append imenu-generic-expression extra nvp-imenu-comment-headers-re-1)))
+(defun nvp-imenu-setup (&optional config default)
+  "Set imenu regexps to recognize headers from CONFIG.
+Extra regexps in CONFIG are added to `imenu-generic-expression' and should
+should formatted as an alist like `imenu-generic-expression'."
+  (and default (setq imenu-generic-expression default))
+  (cl-destructuring-bind (&key headers headers-1 headers-2 extra) config
+    (when (or headers comment-start)
+      (cl-destructuring-bind (h h1 h2)
+          (nvp-imenu--create-header-regex headers headers-1 headers-2)
+        (setq nvp-imenu-comment-headers-re h
+              nvp-imenu-comment-headers-re-1 h1
+              nvp-imenu-comment-headers-re-2 h2)))
+    (setq imenu-generic-expression
+          (append imenu-generic-expression extra nvp-imenu-comment-headers-re-1))))
 
 (put 'nvp-imenu-setup 'lisp-indent-function 'defun)
 
@@ -248,26 +249,45 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
         (funcall orig-fn s))
     (funcall orig-fn str)))
 
+;;; Mode Line
+(defvar-local nvp-imenu--active-mode nil "Non-nil during completion.")
+
+(defvar nvp-imenu-mode-line
+  `(" Imenu:"
+    (:eval (format ,(propertize "%s" 'face 'font-lock-warning-face)
+                   (substring (symbol-name (nvp-imenu--visibility)) 0 3)))))
+
+(or (assq 'nvp-imenu--active-mode minor-mode-alist)
+    (nconc minor-mode-alist
+           (list `(nvp-imenu--active-mode ,nvp-imenu-mode-line))))
+
+(defun nvp-imenu--active-mode (&optional arg idx)
+  (or idx (setq idx nvp-imenu--idx))
+  (with-current-buffer (window-buffer (minibuffer-selected-window))
+    (setq nvp-imenu--active-mode (or arg (not nvp-imenu--active-mode)))
+    (setq nvp-imenu--idx idx)
+    (force-mode-line-update)))
+
 (defun nvp-imenu-cycle-restriction ()
   "Cycle current buffer restriction during completion."
   (interactive)
-  (let ((visibility (nvp-imenu--next)))
-    (nvp:vertico-update-candidates nil
+  (nvp:vertico-update-candidates nil
+    ;; Call in original buffer so
+    ;; `imenu-anywhere-buffer-filter-functions' use mode/project, etc.
+    (with-minibuffer-selected-window
       (let ((imenu-anywhere-buffer-list-function
-             (apply-partially #'nvp-imenu-buffer-list visibility)))
-        ;; Call in original buffer so
-        ;; `imenu-anywhere-buffer-filter-functions' use mode/project, etc.
-        (with-minibuffer-selected-window
-          (nvp-imenu--candidates)))))
+             (apply-partially #'nvp-imenu-buffer-list (nvp-imenu--next))))
+        (nvp-imenu--active-mode t)
+        (nvp-imenu--candidates))))
   ;; Let-bind around completing-read - minibuffer-completion-table
   ;; will be nil after completing-read calls `exit-minibuffer'
   (setq nvp-imenu--completion-table minibuffer-completion-table))
 
-
 (defun nvp-imenu-completion-exit ()
   "Cleanup on exit from minibuffer."
   (advice-remove 'vertico--display-string #'nvp@imenu-hide-active)
-  (remove-hook 'minibuffer-exit-hook #'nvp-imenu-completion-exit))
+  (remove-hook 'minibuffer-exit-hook #'nvp-imenu-completion-exit)
+  (nvp-imenu--active-mode nil))
 
 ;; XXX: Add binding to move backward up imenu-alist (DEL)
 ;; TODO: ':' should restrict to buffer, '/' restrict to sublist
@@ -278,10 +298,13 @@ Any extra regexps should be an alist formatted as `imenu-generic-expression'."
 (define-minor-mode nvp-imenu-completion-mode
   "Minor mode active in minibuffer during imenu completion."
   :keymap nvp-imenu-completion-mode-map
+  :lighter nil
+  :interactive nil
   (if (null nvp-imenu-completion-mode)
       (advice-remove 'vertico--display-string #'nvp@imenu-hide-active)
     (advice-add 'vertico--display-string :around #'nvp@imenu-hide-active)
-    (add-hook 'minibuffer-exit-hook #'nvp-imenu-completion-exit)))
+    (add-hook 'minibuffer-exit-hook #'nvp-imenu-completion-exit)
+    (nvp-imenu--active-mode t)))
 
 ;; TODO: display restriction as overlay after prompt
 (defun nvp-imenu--prompt ()

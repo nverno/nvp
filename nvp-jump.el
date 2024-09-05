@@ -143,15 +143,16 @@ Optionally, search LISP-ONLY files (no C sources)."
 ;;;###autoload
 (defun nvp-jump-to-mode-hook (mode action)
   "Jump to location defining MODEs hook."
-  (interactive
-   (list (nvp:prefix 16 (nvp-read-mode) (nvp:major-mode nil t)) current-prefix-arg))
-  (and (stringp mode) (setq mode (intern mode)))
+  (interactive (list (if (eq 0 current-prefix-arg)
+                         (intern (nvp-read-mode "Jump to mode hook: "))
+                       (nvp:mode t))
+                     current-prefix-arg))
   (let* ((str-mode-hook (format "%s-hook" mode))
          (hook-fn-name (format "nvp-%s-hook" (nvp:read-mode-name mode)))
          (hook-fn (intern-soft hook-fn-name)))
     (if hook-fn                         ; probably in its own config file
         (nvp-display-location hook-fn :find-func action)
-      ;; otherwise goto default hook file and search for it
+      ;; Otherwise goto default hook file and search for it
       (nvp-display-location nvp/hooks :file action)
       (goto-char (point-min))
       (search-forward str-mode-hook nil 'move 1))))

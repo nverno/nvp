@@ -5,7 +5,8 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'nvp-read)
-(nvp:auto "nvp-yas" nvp-comment-string)
+(nvp:decls)
+(autoload 'nvp-comment-string "nvp-yas")
 
 ;;;###autoload
 (defun nvp-jump-to-scratch (mode action &optional hookless)

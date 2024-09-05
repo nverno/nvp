@@ -1,28 +1,22 @@
-;;; nvp-buffer.el --- buffer/file functions -*- lexical-binding: t; -*-
+;;; nvp-buffer.el --- buffer functions -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
-;; buffer/buffer-file commands
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-
-;; ------------------------------------------------------------
-;;; Utils
+(nvp:decls)
 
 (defun nvp-buffer-major-modes ()
-  "Return aList of (buffer . `major-mode') for active buffers."
+  "Return alist of \\='(buffer . major-mode) for active buffers."
   (cl-loop for buff in (buffer-list)
-     collect (cons (buffer-local-value 'major-mode buff) buff)))
+           collect (cons (buffer-local-value 'major-mode buff) buff)))
 
 ;;;###autoload
-(defun nvp-buffer-matching-mode (mode)
+(defun nvp-buffer-matching-mode (mode &optional include-hidden)
   "Retun list of buffer with `major-mode' matching MODE."
-  (cl-loop for buff in (buffer-list)
-     when (eq mode (buffer-local-value 'major-mode (get-buffer buff)))
-     collect buff))
-
-;; ------------------------------------------------------------
-;;; Kill buffers
+  (cl-loop for buf in (buffer-list)
+           when (and (or include-hidden (nvp:buffer-visible-p buf))
+                     (eq mode (buffer-local-value 'major-mode buf)))
+           collect buf))
 
 ;;;###autoload
 (defun nvp-buffer-kill-all-buffers ()
@@ -40,66 +34,58 @@
   (mapc #'kill-buffer (cdr (buffer-list (current-buffer)))))
 
 ;;;###autoload
-(defun nvp-buffer-kill-mode-buffers (mode &optional buffs)
-  "Kill all buffers of current MODE by default.
-With prefix, prompt for MODE buffers to kill."
-  (interactive
-   (let* ((bufs (nvp-buffer-major-modes))
-          (mode (if current-prefix-arg
-                    (intern
-                     (completing-read
-                      "Mode to kill: " (cl-delete-duplicates bufs :key #'car)))
-                  major-mode))
-          (mbufs (cl-loop for (m . b) in bufs
-                          when (eq m mode)
-                          collect b)))
-     (list mode mbufs)))
-  (and (stringp mode) (setq mode (intern mode)))
-  (or buffs (setq buffs (nvp-buffer-matching-mode mode)))
-  (when (nvp:prompt-with-message "Kill all mode buffers?"
-          :read-fn 'y-or-n-p
-          :message "%S" (--map (buffer-name it) buffs))
-    (message "Killing all %S buffers..." mode)
-    (mapc (lambda (buf) (kill-buffer buf)) buffs)))
+(defun nvp-buffer-kill-mode-buffers (mode &optional include-hidden)
+  "Kill all buffers whose `major-mode' is MODE, defaulting to current.
+If INCLUDE-HIDDEN is non-nil (>= 2 prefix), also kill hidden buffers
+matching MODE. Prompt for MODE with prefix."
+  (interactive (list (if current-prefix-arg
+                         (nvp-read-mode "Kill buffers of mode: ")
+                       major-mode)
+                     (> (prefix-numeric-value current-prefix-arg) 4)))
+  (if-let* ((buffs (nvp-buffer-matching-mode (if (stringp mode)
+                                                 (intern mode)
+                                               mode)
+                                             include-hidden))
+            (names (mapconcat #'buffer-name buffs ", ")))
+      (when (nvp:prompt-with-message
+                (format "Kill mode buffers (%d)? " (length buffs))
+              :read-fn 'y-or-n-p
+              :message (let ((w (- (window-width) 10)))
+                         (if (length> names w)
+                             (concat (substring names 0 w) "...")
+                           names)))
+        (mapc (lambda (buf) (kill-buffer buf)) buffs)
+        (message "Killed %S buffers: %s" mode names))
+    (user-error "No buffers of %s" mode)))
 
-;; -------------------------------------------------------------------
-;;; Buffer files 
-
-;; Delete the current file, and kill the buffer.
 ;;;###autoload
 (defun nvp-buffer-delete-file ()
+  "Delete the current file, and kill the buffer."
   (interactive)
   (if-let ((file (buffer-file-name)))
-      (when (y-or-n-p (format "Really delete '%s'? " (nvp:path 'bfs)))
-        ;; if (vc-backend file)
-        ;; (vc-delete-file file)
+      (when (y-or-n-p (format "Really delete %s? " (nvp:path 'bfs)))
         (delete-file file delete-by-moving-to-trash)
         (kill-this-buffer))
     (user-error "No file is currently being edited")))
 
-;; Renames both the current buffer and file it's visiting to
-;; `NEW-NAME'.
 ;;;###autoload
 (defun nvp-buffer-rename-file (new-name)
+  "Renames both the current buffer and file it's visiting to `NEW-NAME'."
   (interactive (list (read-from-minibuffer "New name: " (nvp:path 'bfs))))
   (let ((name (buffer-name))
 	(filename (buffer-file-name)))
     (if (not (and filename (file-exists-p filename)))
         (prog1 (rename-buffer new-name t)
-          (message "Buffer '%s' not visiting a file" name))
+          (message "No file for buffer %s" name))
       (when (file-exists-p filename)
 	(rename-file filename new-name t))
       (rename-buffer new-name t)
       (set-visited-file-name new-name t t))))
 
-;; TODO: https://github.com/emacs-helm/helm/blob/master/helm-buffers.el
-;; `helm-buffer-toggle-diff'
-(defun nvp-buffer-toggle-diff ()
-  "Diff buffer with its file."
-  ())
+;; XXX(09/06/24): something like `helm-buffer-toggle-diff'
+;; https://github.com/emacs-helm/helm/blob/master/helm-buffers.el
+;; (defun nvp-buffer-toggle-diff () "Diff buffer with its file.")
 
-;;; Sudo
-;; https://github.com/bbatsov/crux/blob/master/crux.el
 (defun nvp-sudo-already-root-p ()
   (let ((remote-method (file-remote-p default-directory 'method))
         (remote-user (file-remote-p default-directory 'user)))
@@ -107,10 +93,11 @@ With prefix, prompt for MODE buffers to kill."
          (or (member remote-method '("sudo" "su" "ksu" "doas"))
              (and remote-user (string= remote-user "root"))))))
 
+;; From https://github.com/bbatsov/crux/blob/master/crux.el
 ;;;###autoload
 (defun nvp-sudo-edit (filename)
   "Edit current file or FILENAME as root.
-With prefix ARG, prompt for FILENAME to visit."
+Prompt for FILENAME to with prefix."
   (interactive
    (list (if (or current-prefix-arg (null buffer-file-name))
              (read-file-name "Find file (root): ")
@@ -136,7 +123,7 @@ With prefix ARG, prompt for FILENAME to visit."
   "Convert buffer coding to utf-8 and removing all trailing \"\\r\"."
   (interactive)
   (if (not (buffer-file-name))
-      (message "Buffer not associated with file")
+      (user-error "Buffer not associated with file")
     (revert-buffer-with-coding-system 'utf-8-unix)
     (save-excursion
       (goto-char (point-min))

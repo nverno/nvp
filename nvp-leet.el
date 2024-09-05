@@ -166,7 +166,8 @@
                        :skip-sexp t))
             ("cpp" (nvp-leet-setup-lang
                     :preamble "#include \"./ds/leet.hpp\"\nusing namespace std;"
-                    :skip "^\\(?:#include\\|using namespace std\\)"))
+                    :skip (rx bol (or "#include" "using namespace std"
+                                      (seq "typedef" (* nonl) "NaryNode")))))
             ("c" (nvp-leet-setup-lang
                   :preamble "#include \"./ds/leet.h\""
                   :skip "#include"))

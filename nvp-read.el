@@ -147,10 +147,15 @@ Filter by PREDICATE if non-nil."
 (defvar nvp-mode-cache)
 
 ;;;###autoload
-(defun nvp-read-mode (&optional default)
+(defun nvp-read-mode (&optional prompt default-or-no-default)
   "Lookup name of mode using PROMPT and optional DEFAULT."
-  (nvp:defq default major-mode)
-  (let ((prompt (if default (format "Mode (default \"%s\"): " default) "Mode: ")))
+  (let* ((default (unless (eq t default-or-no-default)
+                    (or default-or-no-default major-mode)))
+         (prompt (concat (if prompt
+                             (s-chop-suffixes '(" " ":" "?") prompt)
+                           "Mode")
+                         (and default (format " (\"%s\")" default))
+                         ": ")))
     (nvp-read-obarray-regex prompt "-mode\\'" default)))
 
 ;;;###autoload

@@ -377,6 +377,7 @@
     ("symp" "symbolp" nil :system t)
     ("symv" "symbol-value" nil :system t)
     ("tckv" "this-command-keys-vector" nil :system t)
+    ("wcbw" "with-current-buffer-window" nil :system t)
     ("weal" "with-eval-after-load" nil :system t)
     ("winp" "windowp" nil :system t)
     ("wotb" "with-output-to-temp-buffer" nil :system t)

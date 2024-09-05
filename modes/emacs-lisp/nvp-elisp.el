@@ -241,7 +241,6 @@ ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
    (list (if (equal '(4) current-prefix-arg) 0 current-prefix-arg)))
   (funcall-interactively #'eval-print-last-sexp arg))
 
-
 ;; -------------------------------------------------------------------
 ;;; Insert / Toggle
 
@@ -328,39 +327,44 @@ If in `declare-function', convert to autoload."
 ;; ------------------------------------------------------------
 ;;; Imenu
 
-(eval-and-compile
-  (nvp:setq nvp-elisp-imenu-headers
-            (let* ((prefix "^;;\\(?:;\\{1,2\\}\\|[*]\\{1,2\\}\\| |\\)\\s-+")
-                   (hdr-regex (concat prefix "\\([^#;].*\\)\\s-*$"))
-                   (pkg-hdrs
-                    (concat prefix "\\("
-                            (regexp-opt '("Commentary:" "Code:" "Documentation:"
-                                          "History:" "ChangeLog:" "Change Log:"))
-                            "\\|.*\\.el\\)")))
-              ;; don't include default package headers, beginning/end of file
-              `((nil ,(macroexpand-all
-                       (lambda ()
-                         (nvp:awhile (and (not (bobp))
-                                          (re-search-backward hdr-regex nil t))
-                           (unless (looking-at-p pkg-hdrs)
-                             (cl-return t)))))
-                     1))))
+(let-when-compile
+    ((prefix "^;;\\(?:;\\{1,2\\}\\|[*]\\{1,2\\}\\| |\\)\\s-+")
+     (hdr-regex (concat prefix "\\([^#;].*\\)\\s-*$"))
+     (pkg-hdrs (rx-to-string
+                `(seq ,prefix
+                      (group (or "Commentary:" "Code:" "Documentation:"
+                                 "History:" "ChangeLog:" "Change Log:"
+                                 (regexp ".*\\.el")))))))
+  (let* ((fn (eval-when-compile
+               (macroexpand-all
+                ;; Don't include default package headers, beginning/end of file
+                `(lambda ()
+                   (nvp:awhile (and (not (bobp))
+                                    (re-search-backward ,hdr-regex nil t))
+                     (unless (looking-at-p ,pkg-hdrs)
+                       (cl-return t)))))))
+         (var-re (eval-when-compile
+                   (rx bol (* white) "("
+                       (or "defvar-keymap"
+                           (seq (regexp "nvp[:]")
+                                (or "bindings" "defvar" "define")
+                                (regexp "[^ \t\n]*")))
+                       (+ white)
+                       (group (+ (or (syntax word) (syntax symbol)
+                                     (regexp "\\\\.")))))))
+         (sub-hdr-re (eval-when-compile
+                       (rx bol ";;" (+ (or "-" "*")) (* space)
+                           (group (+ (not (or "-" "\n"))))
+                           (* (or space "-" "*"))
+                           eol)))
+         (lib-re "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)"))
 
-  (nvp:setq
-    nvp-elisp-imenu-headers-1
-    `(("Headers" ,(cadar nvp-elisp-imenu-headers) 1)
-      ("Libs" "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)" 1)
-      ("Variables" ,(rx bol (* white) "("
-                        (or "defvar-keymap"
-                            (seq (regexp "nvp[:]")
-                                 (or "bindings" "defvar" "define")
-                                 (regexp "[^ \t\n]*")))
-                        (+ white) (group (+ (or (syntax word) (syntax symbol)
-                                                (regexp "\\\\.")))))
-       1)))
-
-  (defvar nvp-elisp-imenu-headers-2
-    '(("Sub-Headers" "^;;---*\\s-*\\([^-\n]+\\)\\s-*-*$" 1))))
+    (defconst nvp-elisp-imenu-headers
+      `( :headers ((nil ,fn 1))
+         :headers-1 (("Headers" ,fn 1)
+                     ("Libs" ,lib-re 1)
+                     ("Variables" ,var-re 1))
+         :headers-2 (("Sub-Headers" ,sub-hdr-re 1))))))
 
 (provide 'nvp-elisp)
 ;; Local Variables:

@@ -52,6 +52,22 @@
     (setq sym (cadr sym)))
   sym)
 
+(defsubst nvp:line-empty-p (&optional n)
+  (unless (not (bobp))
+    (save-excursion
+      (beginning-of-line (or n 1))
+      (looking-at-p "[ \t]*$"))))
+
+(defsubst nvp:mode (&optional original mode)
+  "If ORIGINAL is non-nil, and MODE was remapped, return remapped the mode."
+  (or mode (setq mode major-mode))
+  (or (and original (car (rassq mode major-mode-remap-alist))) mode))
+
+(defsubst nvp:buffer-visible-p (buf)
+  "Return non-nil if BUF is visible buffer."
+  (not (and (eq (aref (buffer-name buf) 0) ?\s)
+            (null (buffer-file-name buf)))))
+
 ;; -------------------------------------------------------------------
 ;;; Hash
 
@@ -247,15 +263,6 @@ or (\\='a #\\='b) => \\='(a b)."
         (format "^\\s-*%s%s\\(?:—\\|---\\|\*\\| |\\|%s\\)\\s-" beg beg beg)
       (format "^\\s-*%s\\(?:—\\|---\\|%s\\)\\s-" beg
               (regexp-quote (substring comment 1 2))))))
-
-;; -------------------------------------------------------------------
-;;; Buffers
-
-(defsubst nvp:line-empty-p (&optional n)
-  (and (not (bobp))
-       (save-excursion
-	 (beginning-of-line (or n 1))
-	 (looking-at-p "[ \t]*$"))))
 
 ;; -------------------------------------------------------------------
 ;;; Files

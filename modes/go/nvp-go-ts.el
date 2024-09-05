@@ -40,11 +40,7 @@
         operand: (identifier) @nvp-receiver-face))
      :language 'go
      :feature 'nvp
-     `(;; XXX(5/26/24): remove after patch
-       (range_clause
-        left: (expression_list
-               (identifier) @font-lock-variable-name-face))
-       ;; Functions declared with var specs
+     `(;; Functions declared with var specs
        ;; Note: patch not wanted
        (var_spec name: (identifier) @font-lock-function-name-face
                  ("," name: (identifier) @font-lock-function-name-face)*

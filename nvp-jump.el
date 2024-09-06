@@ -1,35 +1,30 @@
 ;;; nvp-jump.el --- jumping places -*- lexical-binding: t; -*-
-
 ;;; Commentary:
-;;
-;; Functions to jump to locations
-;;
-;; Prefix args should do the following:
+;; Jump to locations prefix args:
 ;; 0) Default jump to other window
 ;; 1) With single prefix, jump same window
 ;; 2) With double prefix, prompt or something else
 ;; 3) Default action => dired location
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp:req 'nvp-read 'subrs)
 (require 'nvp)
 (require 'nvp-display)
 (require 'nvp-read)
-(nvp:auto "lisp-mnt" 'lm-header)
-(nvp:auto "find-func" 'find-function-library 'find-library-name)
-(nvp:auto "nvp-scratch" 'nvp-scratch-switch-modes)
 (nvp:decls :v (ido-default-buffer-method))
 
-;; provides ido-completion for things like `locate-library', although it
+(autoload 'lm-header "lisp-mnt")
+(autoload 'find-function-library "find-func")
+(autoload 'find-library-name "find-func")
+(autoload 'nvp-scratch-switch-modes "nvp-scratch")
+
+;; Provides ido-completion for things like `locate-library', although it
 ;; is just noticeably slower for some functions -- especially those related
 ;; to reading libraries/obarray
 ;; Might consider blacklisting `locate-library' -- although having the
 ;; ido-vertical support there is dope
 (nvp:maybe-enable 'ido-ubiquitous-mode 'ido-completing-read+)
 
-;; -------------------------------------------------------------------
-;;; Emacs Libraries
 
 ;;;###autoload
 (defun nvp-jump-to-library (library &optional action)
@@ -58,11 +53,11 @@ Optionally, search LISP-ONLY files (no C sources)."
 (defun nvp-jump--git-url ()
   (let ((str (shell-command-to-string "git remote get-url origin")))
     (--when-let (and (string-match
-                      "\\(?:git@github.com:\\|https://github.com/\\)\\([^ ]+\\)" str)
+                      "\\(?:git@github.com:\\|https://github.com/\\)\\([^ ]+\\)"
+                      str)
                      (string-trim-right (match-string 1 str)))
       (concat "https://github.com/" it))))
 
-;;; TODO: make more generic
 ;;;###autoload
 (defun nvp-jump-to-library-url (&optional choose)
   "Browse URL of either file defining symbol at point or prompt for library.
@@ -76,9 +71,11 @@ Optionally, search LISP-ONLY files (no C sources)."
         (user-error "No git repo here")))
      ((and (not choose)
            (eq major-mode 'emacs-lisp-mode)
-           (setq url (save-excursion (or (lm-header "URL")
-                                         (lm-header "Homepage")))))
-      (browse-url url))                ; found URL in current buffer!!
+           (setq url (save-excursion
+                       (or (lm-header "URL")
+                           (lm-header "Homepage")))))
+      (browse-url url))
+                                        ; found URL in current buffer!!
      (t ;; no URL in emacs sources
       (--if-let (and (not choose) (nvp-jump--git-url))
           (browse-url it)
@@ -116,14 +113,11 @@ Optionally, search LISP-ONLY files (no C sources)."
       (nvp-display-location src :file action)
     (user-error "No source found for %s" library)))
 
-
-;; -------------------------------------------------------------------
-;;; Modes
-
 ;;;###autoload
 (defun nvp-jump-to-mode-config (mode action)
   "Jump to MODE configuration, inserting skeleton snippet if non-existent."
-  (interactive (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
+  (interactive
+   (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
   (if (eq t mode) (dired-other-window nvp/config)
     (let ((file (nvp:mode-config-path mode)))
       (nvp-display-location
@@ -209,7 +203,8 @@ Optionally, search LISP-ONLY files (no C sources)."
 ;;;###autoload
 (defun nvp-jump-to-dotfile (dir action)
   "Jump to dotfile in other window."
-  (interactive (list (nvp-read-relative-recursively nvp/dots "") current-prefix-arg))
+  (interactive
+   (list (nvp-read-relative-recursively nvp/dots "") current-prefix-arg))
   (nvp-display-location dir :file action))
 
 ;;; TODO(4/18/24): optional sort by frecency/recent
@@ -249,8 +244,9 @@ With multiple prefix, restrict jumps to subdirectories of current directory."
           ((nvp:prefix 16) "~")
           ((bound-and-true-p nvp-local-src-directories)
            (if (> 1 (length nvp-local-src-directories))
-               (nvp-completing-read "Source directory: " nvp-local-src-directories
-                                    nil t nil 'nvp-read-config-history)
+               (nvp-completing-read "Source directory: "
+                 nvp-local-src-directories
+                 nil t nil 'nvp-read-config-history)
              nvp-local-src-directories))
           (t nvp/devel))
          current-prefix-arg))
@@ -299,13 +295,13 @@ With prefix jump this window, otherwise `find-file-other-window'."
   (let ((buff (find-file-noselect
                (expand-file-name "base/nvp-bindings.el" nvp/build))))
     (with-current-buffer buff
-      (goto-char (point-min))           ;might already be open
-     (condition-case nil
-         (when (re-search-forward
-                (concat "^(nvp[:]bindings[ ]+" (regexp-quote keymap)))
-           (set-marker (mark-marker) (match-end 0)))
-       (error (goto-char (point-min)))))
-   (nvp-display-location buff :buffer action)))
+      (goto-char (point-min))           ; might already be open
+      (condition-case nil
+          (when (re-search-forward
+                 (concat "^(nvp[:]bindings[ ]+" (regexp-quote keymap)))
+            (set-marker (mark-marker) (match-end 0)))
+        (error (goto-char (point-min)))))
+    (nvp-display-location buff :buffer action)))
 
 ;;;###autoload
 (defun nvp-jump-to-register (action)

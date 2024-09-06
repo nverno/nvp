@@ -229,16 +229,15 @@ ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
   "Replace preceding sexp with its evaluated value."
   (interactive)
   (backward-kill-sexp)
-  (condition-case nil
-      (prin1 (eval (read (current-kill 0)))
-	     (current-buffer))
-    (error (message "invalid expression")
-	   (insert (current-kill 0)))))
+  (condition-case err
+      (pp (eval (read (current-kill 0))) (current-buffer))
+    (error (insert (current-kill 0))
+           (user-error (error-message-string err)))))
 
 (defun nvp-elisp-eval-print-last-sexp (arg)
   "Wrap `eval-print-last-sexp' so `C-u' ARG prints without truncation."
   (interactive
-   (list (if (equal '(4) current-prefix-arg) 0 current-prefix-arg)))
+   (list (or (and (equal '(4) current-prefix-arg) 0) current-prefix-arg)))
   (funcall-interactively #'eval-print-last-sexp arg))
 
 ;; -------------------------------------------------------------------

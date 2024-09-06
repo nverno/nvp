@@ -12,6 +12,7 @@
 (nvp:decls :f (help--symbol-completion-table function-called-at-point)
            :v (ido-exit ido-fallback ido-text))
 (nvp:auto "eldoc" 'eldoc-minibuffer-message)
+(nvp:auto "s" 's-chop-suffixes)
 
 ;; minibuffer histories
 (defvar nvp-read-config-history ())

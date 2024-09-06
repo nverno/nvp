@@ -3,6 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'nvp-macs-common)
+(defvar treesit-font-lock-feature-list)
 
 ;; default suffix appended when defining package location variables
 (defvar nvp-package-root-suffix "--dir")

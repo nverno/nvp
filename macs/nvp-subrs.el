@@ -53,10 +53,10 @@
   sym)
 
 (defsubst nvp:line-empty-p (&optional n)
-  (unless (not (bobp))
-    (save-excursion
-      (beginning-of-line (or n 1))
-      (looking-at-p "[ \t]*$"))))
+  (and (not (bobp))
+       (save-excursion
+         (beginning-of-line (or n 1))
+         (looking-at-p "[ \t]*$"))))
 
 (defsubst nvp:mode (&optional original mode)
   "If ORIGINAL is non-nil, and MODE was remapped, return remapped the mode."

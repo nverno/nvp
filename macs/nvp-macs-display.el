@@ -5,6 +5,7 @@
 (require 'nvp-macs-common)
 
 (eval-and-compile
+  (defvar nvp-display-actions)
   (defsubst nvp-display--action (action type)
     (or (cdr (assq action (plist-get nvp-display-actions type)))
         (if (equal ':buffer type)

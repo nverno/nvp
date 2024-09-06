@@ -162,7 +162,7 @@
                        :skip (rx (or "package" "import \"leetcode/ds\""))))
             ("racket" (nvp-leet-setup-lang
                        :preamble "#lang racket"
-                       :skip (rx (or "#lang" "(require" "(module"))
+                       :skip (rx bol (or "#lang" "(require" "(module"))
                        :skip-sexp t))
             ("cpp" (nvp-leet-setup-lang
                     :preamble "#include \"./ds/leet.hpp\"\nusing namespace std;"

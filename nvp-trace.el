@@ -124,11 +124,14 @@ If REMOVE is non-nil, remove FUNCS from tracking."
 
 (defun nvp-trace-list ()
   "List functions currently traced."
-  (interactive)
+  (interactive nil trace-active-minor-mode)
+  (unless trace-active-minor-mode
+    (user-error "No active trace"))
   (help-setup-xref (list #'nvp-trace-list)
 		   (called-interactively-p 'interactive))
-  (with-help-window (help-buffer)
-    (terpri)
+  (with-help-window (get-buffer-create "*Traced Functions*")
+    (insert (propertize (format "%s" "Traced functions") 'face 'outline-1))
+    (insert "\n\n")
     (dolist (fn trace-active--current)
       (insert-text-button
        (symbol-name fn)

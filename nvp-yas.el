@@ -4,8 +4,10 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (eval-and-compile (require 'yasnippet))
-(nvp:auto "nvp-parse" 'nvp-parse-current-function)
-(nvp:auto "s" 's-upper-camel-case 's-snake-case 's-match 's-chop-prefix)
+(nvp:auto "s"
+  's-upper-camel-case
+  's-snake-case 's-match 's-chop-prefix 's-count-matches)
+(autoload 'nvp-parse-current-function "nvp-parse")
 
 (defvaralias '$% 'yas-selected-text)
 (nvp:decls :v (yas-moving-away-p yas-modified-p)
@@ -106,7 +108,8 @@ If TRIM is non-nil, whitespace is removed from selected text.
 (defun nvp-yas-set-tmp (expr) (progn (setq nvp--yas-tmp (eval expr)) ""))
 (defun nvp-yas-newline-selected-newline (&optional default)
   (nvp-yas-format "%n%s%n" default t))
-(defun nvp-yas-newline-selected (&optional default) (nvp-yas-format "%n%s" default t))
+(defun nvp-yas-newline-selected (&optional default)
+  (nvp-yas-format "%n%s" default t))
 (defun nvp-yas-newline-or-eol () (nvp-yas-format "%e"))
 (defun nvp-yas-semi () (if (eolp) ";"))
 (defun nvp-yas-string= (exp then &optional else)

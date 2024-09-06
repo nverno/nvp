@@ -147,6 +147,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-exit
     nvp-fallback-function
     nvp-fallback-minibuffer-function
+    nvp-display-fallback-function
     ;; hippie expansion variables
     nvp-he-flex-matcher nvp-he-flex-prefix-to-re nvp-he-flex-prefix-from-re
     nvp-he-flex-symbol-beg nvp-he-case-fold-search
@@ -218,6 +219,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-xref-go nvp-etags-find-definitions
        nvp-repeat-set-cursor nvp-repeat-abort
        nvp-indicate-abort nvp-indicate-cursor-pre nvp-indicate-cursor-post
+       nvp-eval-expression nvp-eval--display-expression
        ;; hap
        nvp-help-at-point nvp-hap-elisp nvp-hap-info nvp-hap-man nvp-hap-lsp
        nvp-hap-company nvp-hap-semantic nvp-hap-treesit nvp-hap-local nvp-hap-word

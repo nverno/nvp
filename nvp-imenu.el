@@ -341,6 +341,8 @@ Calls `imenu' to jump to location with selection."
 ;; -------------------------------------------------------------------
 ;;; Commands
 
+;;; FIXME(09/06/24): index not always updating after different prefixes
+;;                   rewrite to use consult with narrowing keys
 ;;;###autoload
 (defun nvp-imenu (&optional arg)
   "Call `imenu-anywhere' with fallback restricting to visible buffers only.

@@ -195,50 +195,75 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
 ;; ------------------------------------------------------------
 ;;; Eval
 
-(defun nvp-elisp-eval-last-sexp-or-region (arg)
+(defun nvp-elisp-eval-last-sexp-or-region (&optional arg newline)
   "Eval region if active, otherwise last sexp.
-If in `lisp-interaction-mode' or with prefix ARG, pretty-print the results."
+With prefix ARG, pretty-print the results. In `lisp-interaction-mode',
+pretty print by default and when NEWLINE is non-nil, insert newline before
+inserting results in buffer."
   (interactive "P")
   (let ((expr (if (and (mark) (use-region-p))
                   (let ((beg (min (point) (mark)))
                         (end (max (point) (mark))))
-                    (save-restriction
-                      (narrow-to-region beg end)
-                      (read (current-buffer))))
+                    (save-excursion
+                      (save-restriction
+                        (narrow-to-region beg end)
+                        (goto-char beg)
+                        (read (current-buffer)))))
                 (pp-last-sexp)))
-        (print-length)                  ; (window-total-height)
-        (print-level)
-        (print-circle t)
-        (debug-on-error t))
-    (if arg (pp-eval-expression expr)
-      (if (eq 'lisp-interaction-mode major-mode)
-          (insert (pp-to-string (eval expr lexical-binding)))
-        (eval-expression expr)))))
+        (debug-on-error eval-expression-debug-on-error)
+        (print-length nil)
+        (print-level eval-expression-print-level))
+    (cond (arg (nvp-eval--display-expression (eval expr lexical-binding)))
+          ((eq major-mode 'lisp-interaction-mode)
+           (and newline (insert "\n"))
+           (insert (pp-to-string (eval expr lexical-binding))))
+          (t (eval-expression expr)))))
 
-(defun nvp-elisp-eval-last-sexp-dwim (arg)
-  "Eval from outermost sexp, moving point there.
-ARG is passed to `nvp-elisp-eval-last-sexp-or-region'."
-  (interactive "P")
-  (let ((ppss (parse-partial-sexp (point-min) (point))))
-    (when (nth 9 ppss)
-      (goto-char (car (nth 9 ppss)))    ;end of outermost sexp
-      (forward-sexp)))
-  (nvp-elisp-eval-last-sexp-or-region arg))
-
-(defun nvp-elisp-eval-and-replace ()
+(defun nvp-elisp-eval-and-replace (&rest _)
   "Replace preceding sexp with its evaluated value."
   (interactive)
-  (backward-kill-sexp)
+  (if (region-active-p)
+      (kill-region (region-beginning) (region-end))
+    (backward-kill-sexp))
   (condition-case err
-      (pp (eval (read (current-kill 0))) (current-buffer))
+      (pp (eval (read (current-kill 0)) lexical-binding) (current-buffer))
     (error (insert (current-kill 0))
            (user-error (error-message-string err)))))
 
 (defun nvp-elisp-eval-print-last-sexp (arg)
   "Wrap `eval-print-last-sexp' so `C-u' ARG prints without truncation."
-  (interactive
-   (list (or (and (equal '(4) current-prefix-arg) 0) current-prefix-arg)))
+  (interactive (list (or (and (equal '(4) current-prefix-arg) 0)
+                         current-prefix-arg)))
   (funcall-interactively #'eval-print-last-sexp arg))
+
+(defun nvp-elisp-eval-sexp-dwim (&optional and-go replace)
+  "Eval from end of outermost sexp at point or previous sexp if not in sexp.
+In `lisp-interaction-mode', interactively with \\[universal-argument], or
+if AND-GO is non-nil, move point to end of that sexp.
+With prefix -1, or when REPLACE is non-nil, replace sexp with result."
+  (interactive (list (or (eq major-mode 'lisp-interaction-mode)
+                         (equal current-prefix-arg '(4)))
+                     (equal current-prefix-arg -1)))
+  (unless (or (eq major-mode 'lisp-interaction-mode)
+              (< (prefix-numeric-value current-prefix-arg) 4))
+    (nvp:prefix-shift -1))
+  (let* ((region-p (use-region-p))
+         (ppss (unless region-p
+                 (parse-partial-sexp (point-min) (point))))
+         (beg (car (nth 9 ppss)))       ; end of outermost sexp
+         end)
+    (save-excursion
+      (when beg
+        (goto-char beg)
+        (forward-sexp)
+        (setq end (point))
+        (nvp-indicate-pulse-region-or-line beg end))
+      (if replace
+          (call-interactively #'nvp-elisp-eval-and-replace)
+        (funcall-interactively #'nvp-elisp-eval-last-sexp-or-region
+                               current-prefix-arg end)))
+    (and and-go end (not replace)
+         (goto-char end))))
 
 ;; -------------------------------------------------------------------
 ;;; Insert / Toggle
@@ -335,13 +360,14 @@ If in `declare-function', convert to autoload."
                                  "History:" "ChangeLog:" "Change Log:"
                                  (regexp ".*\\.el")))))))
   (let* ((fn (eval-when-compile
-               (macroexpand-all
-                ;; Don't include default package headers, beginning/end of file
-                `(lambda ()
-                   (nvp:awhile (and (not (bobp))
-                                    (re-search-backward ,hdr-regex nil t))
-                     (unless (looking-at-p ,pkg-hdrs)
-                       (cl-return t)))))))
+               (byte-compile
+                (macroexpand-all
+                 ;; Don't include default package headers, beginning/end of file
+                 `(lambda ()
+                    (nvp:awhile (and (not (bobp))
+                                     (re-search-backward ,hdr-regex nil t))
+                      (unless (looking-at-p ,pkg-hdrs)
+                        (cl-return t))))))))
          (var-re (eval-when-compile
                    (rx bol (* white) "("
                        (or "defvar-keymap"
@@ -352,7 +378,7 @@ If in `declare-function', convert to autoload."
                        (group (+ (or (syntax word) (syntax symbol)
                                      (regexp "\\\\.")))))))
          (sub-hdr-re (eval-when-compile
-                       (rx bol ";;" (+ (or "-" "*")) (* space)
+                       (rx bol (* white)  ";;" (+ (or "-" "*")) (* space)
                            (group (+ (not (or "-" "\n"))))
                            (* (or space "-" "*"))
                            eol)))

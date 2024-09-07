@@ -126,8 +126,6 @@ Optionally, search LISP-ONLY files (no C sources)."
                        'mode-config 'emacs-lisp-mode nil nil
                        `(modename ,(nvp:read-mode-name mode))))))))
 
-;; Jump to test with extension `STR'.  If it doesn't exist make a new
-;; file, and if there are multiple matches offer ido choice.
 ;;;###autoload
 (defun nvp-jump-to-mode-test (test action)
   "Jump to TEST file for mode, creating one if necessary."

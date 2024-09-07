@@ -232,8 +232,9 @@ or expansion."
                  (print-quoted t)
                  (print-circle nil)
                  (print-escape-newlines nil)
-                 (pp-max-width 80)
-                 (fill-column 80)
+                 ;; try to get one sexp per line
+                 (pp-max-width 65)
+                 (fill-column 65)
                  (pp-default-function 'pp-29))
              (cl-prin1 abbrevs (current-buffer))
              (pp-buffer))

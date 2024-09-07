@@ -50,7 +50,10 @@ In INIT-FN is non-nil and LOCATION is a new-file, call INIT-FN."
     (`(:buffer . ,_) (pop-to-buffer
                       location (nvp-display--action action :buffer)))
     (`(,:find-func . ,_) (funcall (nvp-display--action action type) location))
-    (`(,:file . ,_) (funcall (nvp-display--action action type) location))
+    (`(,:file . ,_)
+     (if-let ((buf (get-file-buffer location)))
+         (pop-to-buffer buf (nvp-display--action action :buffer))
+       (funcall (nvp-display--action action type) location)))
     (`(:ido . ,_) (let* ((ido-default-file-method
                           (nvp-display--action action :ido))
                          (ido-default-buffer-method ido-default-file-method))

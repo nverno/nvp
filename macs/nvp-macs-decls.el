@@ -220,33 +220,44 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-repeat-set-cursor nvp-repeat-abort
        nvp-indicate-abort nvp-indicate-cursor-pre nvp-indicate-cursor-post
        nvp-eval-expression nvp-eval--display-expression
-       ;; hap
+       ;;* Display (mostly compiled init)
+       nvp-display-fallback-function
+       nvp-display-fallback-dired
+       nvp-display-location
+       nvp-display-buffer-other-window
+       nvp-display-buffer-in-direction-or-same
+       nvp-display-buffer-in-side-window
+       nvp-display-buffer-in-top-side-window
+       nvp-display-buffer-in-bottom-side-window
+       nvp-display-buffer-in-left-side-window
+       nvp-display--scroll-output
+       nvp-display--set-scroll-buffer
+       nvp-display--set-and-scroll
+       nvp-display--set-scroll-maybe-view
+       ;;* hap
        nvp-help-at-point nvp-hap-elisp nvp-hap-info nvp-hap-man nvp-hap-lsp
        nvp-hap-company nvp-hap-semantic nvp-hap-treesit nvp-hap-local nvp-hap-word
        ;; util
        nvp-regex-map-across-matches
        ;; install / package
        nvp-pkg-directory-dwim
-       ;; project
+       ;;* Project
        nvp-project-root nvp-project-parent nvp-project-locate-root
        ;; nvp-cycle.el
        nvp-cycle
-       ;; reading
+       ;;* Reading
        nvp-read-elisp-symbol
        nvp-read-elisp-function
        nvp-read-elisp-variable
        nvp-read-mode
        ;; modes
        nvp-scratch-minor-mode
-       ;; logging
+       ;;* Logging
        nvp-results-title
        nvp-log-mode
        nvp-log
        nvp-log-default
-       nvp-display-fallback-function
-       nvp-display-fallback-dired
-       nvp-display-location
-       ;; windows
+       ;;* Windows
        nvp-window-configuration-restore
        nvp-window-configuration-save
        ;; hippie

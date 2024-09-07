@@ -1,8 +1,7 @@
 ;; -*- coding: utf-8; lexical-binding: t; -*-
 
 (define-abbrev-table 'emacs-lisp-vars-abbrev-table
-  '(
-    ("cc" "compile-command" nil :system t)
+  '(("cc" "compile-command" nil :system t)
     ("ce" "comment-end" nil :system t)
     ("cs" "comment-start" nil :system t)
     ("dd" "default-directory" nil :system t)
@@ -15,7 +14,6 @@
     ("so" "standard-output" nil :system t)
     ("st" "system-type" nil :system t)
     ("tc" "this-command" nil :system t)
-
     ("ama" "auto-mode-alist" nil :system t)
     ("bdt" "buffer-display-table" nil :system t)
     ("bfn" "buffer-file-name" nil :system t)
@@ -24,9 +22,9 @@
     ("cpa" "current-prefix-arg" nil :system t)
     ("eah" "expand-abbrev-hook" nil :system t)
     ("erm" "enable-recursive-minibuffers" nil :system t)
-    ("lce" "last-command-event" nil :system t)
     ("iro" "inhibit-read-only" nil :system t)
     ("lat" "local-abbrev-table" nil :system t)
+    ("lce" "last-command-event" nil :system t)
     ("lfn" "load-file-name" nil :system t)
     ("lie" "last-input-event" nil :system t)
     ("ncf" "no-case-fold" nil :system t)
@@ -34,35 +32,33 @@
     ("tmm" "transient-mark-mode" nil :system t)
     ("bfcs" "buffer-file-coding-system" nil :system t)
     ("csfw" "coding-system-for-write" nil :system t)
-    ("esfn" "explicit-shell-file-name" nil :system t)
-    )
-  "Expand in variable context: `nvp-elisp-abbrev-expand-var-p'."
+    ("esfn" "explicit-shell-file-name" nil :system t))
+  "Emacs lisp variable abbrev table."
   :parents (list prog-mode-abbrev-table)
   :regexp nvp-lisp-abbrev-re
   :enable-function 'nvp-elisp-abbrev-expand-var-p)
 
 (define-abbrev-table 'emacs-lisp-cl-abbrev-table
   '(("cld" "cl-defun" nil :system t)
-    ("cll" "cl-loop" nil :system t)
     ("clg" "cl-gensym" nil :system t)
+    ("cll" "cl-loop" nil :system t)
     ("clp" "cl-pushnew" nil :system t)
     ("clr" "cl-return" nil :system t)
-    
     ("cldb" "cl-destructuring-bind" nil :system t)
     ("cldi" "cl-delete-if" nil :system t)
     ("cldm" "cl-defmacro" nil :system t)
     ("clfi" "cl-find-if" nil :system t)
     ("clrd" "cl-remove-duplicates" nil :system t)
     ("clri" "cl-remove-if" nil :system t)
-    ("clcnm" "cl-call-next-method" nil :system t)
-    ("dbind" "cl-destructuring-bind" nil :system t)
-    ("defcl" "cl-defclass" nil :system t)
     ("defg" "cl-defgeneric" nil :system t)
     ("defm" "cl-defmethod" nil :system t)
     ("flet" "cl-flet" nil :system t)
     ("letf" "cl-letf" nil :system t)
-    ("loop" "cl-loop" nil :system t))
-  "Emacs cl- functions."
+    ("loop" "cl-loop" nil :system t)
+    ("clcnm" "cl-call-next-method" nil :system t)
+    ("dbind" "cl-destructuring-bind" nil :system t)
+    ("defcl" "cl-defclass" nil :system t))
+  "Emacs cl-lib functions."
   :regexp nvp-lisp-abbrev-re
   :enable-function 'nvp-elisp-abbrev-expand-fn-p)
 
@@ -71,11 +67,11 @@
     ("nd" "nvp:decls" nil :system t)
     ("np" "nvp:point" nil :system t)
     ("nr" "nvp:req" nil :system t)
-    ("nds" "nvp:decls" nil :system t)
     ("ncr" "nvp-completing-read" nil :system t)
     ("ndl" "nvp-display-location" nil :system t)
+    ("nds" "nvp:decls" nil :system t)
     ("niod" "nvp-install-on-demand" nil :system t))
-  "Emacs nvp- functions."
+  "Emacs nvp-* functions."
   :regexp nvp-lisp-abbrev-re
   :enable-function 'nvp-elisp-abbrev-expand-fn-p)
 
@@ -367,6 +363,7 @@
     ("meol" "move-end-of-line" nil :system t)
     ("msnp" "match-string-no-properties" nil :system t)
     ("mvbl" "make-variable-buffer-local" nil :system t)
+    ("nump" "numberp" nil :system t)
     ("rris" "replace-regexp-in-string" nil :system t)
     ("scts" "shell-command-to-string" nil :system t)
     ("sifn" "substitute-in-file-name" nil :system t)
@@ -401,7 +398,8 @@
   "Emacs lisp function abbrevs."
   :enable-function #'nvp-elisp-abbrev-expand-fn-p
   :regexp nvp-lisp-abbrev-re
-  :parents (list emacs-lisp-cl-abbrev-table emacs-lisp-vars-abbrev-table
+  :parents (list emacs-lisp-cl-abbrev-table
+                 emacs-lisp-vars-abbrev-table
                  emacs-lisp-nvp-abbrev-table))
 
 (define-abbrev-table 'inferior-emacs-lisp-mode-abbrev-table '()
@@ -420,8 +418,8 @@
 (define-abbrev-table 'cask-mode-abbrev-table
   '(("do" "depends-on" nil :system t)
     ("pf" "package-file" nil :system t)
-    ("sm" "source melpa" nil :system t)
     ("sg" "source gnu" nil :system t)
+    ("sm" "source melpa" nil :system t)
     ("dev" "development" nil :system t))
   "Cask-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

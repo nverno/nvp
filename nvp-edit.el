@@ -111,8 +111,9 @@ With prefix sort in REVERSE."
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
     (sort-regexp-fields
-     reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "\\([[:alnum:]]\\)"
-     (if (looking-at-p "'") (+ 2 start) (1+ start)) ; skip over outer '('
+     ;; Note(09/07/24): keep trailing⬎ comments
+     reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "[^\( \t\n]+"
+     (+ start (if (eq ?\' (char-after start)) 2 1)) ; skip over outer '('
      (1- end))))                                    ; stop before final ')'
 
 ;;;###autoload

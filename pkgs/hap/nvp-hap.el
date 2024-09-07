@@ -410,7 +410,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
     (cl-case command
       (thingatpt (nvp-hap-thing-at-point arg nil "Company: "))
       (doc-buffer
-       (when (company-call-backend 'candidates arg)
+       (when (company-call-backend 'candidates arg "")
          (when-let (buf (company-call-backend 'doc-buffer arg))
            (sit-for 0.1)
            (list buf))

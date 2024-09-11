@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: pocount, count bits
+# key: f_popcount
+# --
+${1:--- @param x number
+--- @return number
+}local function popcount(x)
+  local res = 0
+  while x ~= 0 do
+    x = x & (x - 1)${1:$($s? "" " ---@type number")}
+    res = res + 1
+  end
+  return res
+end

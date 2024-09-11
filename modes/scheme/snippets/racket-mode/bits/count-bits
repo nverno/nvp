@@ -1,7 +1,10 @@
 # -*- mode: snippet -*-
-# name: count-bits
+# name: popcount (bits)
 # key: count-bits
 # --
-(define (count-bits x)
-    (if (zero? x) 0
-        (add1 (count-bits (bitwise-and x (sub1 x))))))
+(define (popcount x)
+    (define (count-bits n acc)
+      (if (zero? n) acc
+          (count-bits (arithmetic-shift n -1)
+                      (+ acc (bitwise-and n 1)))))
+    (count-bits x 0))

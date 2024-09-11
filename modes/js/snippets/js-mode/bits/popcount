@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: popcount (bits)
+# key: f_popcount
+# --
+const popcount = (x) => {
+  let res = 0;
+  while (x) {
+    res += x & 1;
+    x >>= 1;
+  }
+  return res;
+};

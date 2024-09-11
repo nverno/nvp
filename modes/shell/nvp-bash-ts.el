@@ -1,6 +1,10 @@
 ;;; nvp-bash-ts.el --- Bash tree-sitter -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
+;; TODO(09/11/24): treesit-thing-settings
+;; - sentences :: forward-sentence
+;; - sexp :: in "$PATH:$DART_|" with point at |, backward sexp should go
+;;   to "$PATH:$|DART"
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'sh-script)
@@ -89,7 +93,8 @@
          'font-lock-comment-delimiter-face override start end)
         (treesit-fontify-with-override
          (match-beginning 2) (match-end 2)
-         '(:inherit font-lock-comment-face :slant italic) override start end))))
+         '(:inherit font-lock-comment-face :foreground "#8f7a6a" :slant italic)
+         override start end))))
 
 (setq sh-mode--treesit-operators
       '("|" "|&" "||" "&&" ">" ">>" "<" "<<" "<<-" "<<<" "==" "!=" ";&" ";;&"
@@ -241,7 +246,7 @@
        :feature 'variable
        :language 'bash
        '((variable_name) @font-lock-variable-name-face)
-       
+
        :feature 'keyword
        :language 'bash
        `(;; keywords

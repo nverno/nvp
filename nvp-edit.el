@@ -164,6 +164,8 @@ With prefix sort in REVERSE."
     (with-syntax-table st
       (sp-wrap-with-pair "~"))))
 
+;;; TODO(09/11/24): 1. Sp errors when no expression recognized.
+;;                  2. Should also work when sp isnt enabled
 ;;;###autoload
 (defun nvp-wrap-with-last-char (char)
   "Wrap next sexp with CHAR (last key pressed in calling command).

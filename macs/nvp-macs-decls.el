@@ -85,6 +85,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp/git
     nvp/test
     nvp/lisp
+    nvp/lisp/src
     nvp/config
     nvp/custom
     nvp/data

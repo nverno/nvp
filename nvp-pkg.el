@@ -67,7 +67,7 @@
 associated .elc files."
   (interactive "P")
   (cl-loop for (defs . dirs) in
-           `(,(cons nvp/auto (list nvp/config))
+           `(,(cons nvp/auto (list nvp/config nvp/lisp/src))
              ,(cons nvp/auto-site
                     (cons
                      nvp/thirdparty
@@ -113,7 +113,11 @@ R=recompile; F=force; P=if prefix;
   (setq dir (expand-file-name dir))
   (let* ((autoload-file
           (pcase dir
-            ((pred (string-prefix-p nvp/config dir)) nvp/auto)
+            ((pred
+              (string-prefix-p
+               (rx-to-string `(or ,nvp/config ,nvp/lisp/src))
+               dir))
+             nvp/auto)
             ((pred (and (string-match-p
                          (rx-to-string
                           `(seq bol (or (regexp ,nvp/site) (regexp ,nvp/thirdparty))))

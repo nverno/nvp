@@ -12,7 +12,7 @@
   (require 'nvp-macro))
 (require 'eshell)
 (nvp:decls :f (eshell-send-input eshell-kill-input))
-(nvp:auto "pcomplete" 'pcomplete--here pcomplete-entries)
+(nvp:auto "pcomplete" pcomplete--here pcomplete-entries)
 
 
 ;;;###autoload
@@ -48,20 +48,16 @@
       ;; (esh-get-git-branches t)
       ))))
 
-;; hg config
-
 (defun pcomplete/eshell-mode/hg ()
   (pcomplete-here
    '("add" "annotate" "clone" "commit" "diff" "export" "forget" "init"
      "log" "merge" "pull" "push" "remove" "serve" "status" "summary"
      "update")))
 
-;;; eshell functions
-
-;; Searches in the current directory for files that match the
-;; given pattern. A simple wrapper around the standard 'find'
-;; function.
+;;; Eshell functions
 (defun eshell/f (filename &optional dir)
+  "Searches in the current directory for files that match the given
+ pattern. A simple wrapper around the standard \"find\" function."
   (let ((cmd (concat
               "find " (or dir ".")
               "      -not -path '*/.git*'"
@@ -73,15 +69,15 @@
     (message cmd)
     (shell-command-to-string cmd)))
 
-;; Searches for the first matching filename and loads it into a
-;; file to edit.
 (defun eshell/ef (filename &optional dir)
+  "Searches for the first matching filename and loads it into a file to
+ edit."
   (let* ((files (eshell/f filename dir))
          (file (car (split-string files "\n"))))
     (find-file file)))
 
-;; Closes the EShell session and gets rid of the EShell window.
 (defun eshell/x ()
+  "Closes the EShell session and gets rid of the EShell window."
   (kill-buffer)
   (delete-window))
 

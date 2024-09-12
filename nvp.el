@@ -6,6 +6,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-local)
+(require 'nvp-faces)
 (require 'company)
 (nvp:decls :p (projectile winner isearch consult lsp)
            :f (lsp-format-buffer projectile-regenerate-tags))
@@ -153,87 +154,7 @@ called from minibuffer, or nil.")
 
 (defsubst nvp-today () (format-time-string "%0m/%0e/%y"))
 
-
-;; -------------------------------------------------------------------
-;;; Faces
 
-(defface nvp-line-escape-face
-  '((t ( :inherit font-lock-misc-punctuation-face
-         :weight bold :foreground "hot pink" :override t)))
-  "Line escape face."
-  :group 'nvp)
-
-(defface nvp-interpreter-face
-  '((t (:inherit font-lock-keyword-face :italic t)))
-  "Face for shebang interpreter.")
-
-(defface nvp-block-face
-  '((((class color) (background light))
-     (:background "#f2e5bc" "#ffffd7" :inherit shadow :extend t))
-    (t (:background "#32302f" "#303030" :inherit shadow :extend t)))
-  "Face for special blocks."
-  :group 'nvp)
-
-(defface nvp-namespace-face
-  '((t (:inherit font-lock-type-face :slant normal)))
-  ;; :underline (:color "#845" :style line :position t)
-  "Face for namespaces."
-  :group 'nvp)
-
-(defface nvp-namespace-use-face
-  '((t (:inherit 'nvp-namespace-face :slant italic :underline nil)))
-  "Face for namespace uses."
-  :group 'nvp)
-
-(defface nvp-receiver-face
-  '((t (:inherit font-lock-variable-use-face :slant italic)))
-  "Face for receiver of method call."
-  :group 'nvp)
-
-(defface nvp-method-use-face
-  '((t (:inherit font-lock-function-call-face)))
-  "Face for method call."
-  :group 'nvp)
-
-(defface nvp-special-variable-face
-  `((((class grayscale) (background light))
-     (:background "Gray90" :weight bold :slant italic))
-    (((class grayscale) (background dark))
-     (:foreground "Gray80" :weight bold :slant italic))
-    (((class color) (background light))
-     (:inherit font-lock-variable-name-face :weight bold :slant italic))
-    (((class color) (background dark))
-     (:inherit font-lock-variable-name-face :weight bold :slant italic))
-    (t (:weight bold)))
-  "Special variable face."
-  :group 'nvp)
-
-(defface nvp-special-type-face
-  `((((class grayscale) (background light))
-     (:background "Gray90" :weight bold :slant italic))
-    (((class grayscale) (background dark))
-     (:foreground "Gray80" :weight bold :slant italic))
-    (((class color) (background light))
-     (:inherit font-lock-type-face :weight bold :slant italic))
-    (((class color) (background dark))
-     (:inherit font-lock-type-face :weight bold :slant italic))
-    (t (:weight bold :slant italic)))
-  "Special type face."
-  :group 'nvp)
-
-(defface nvp-info-face `((t (:inherit font-lock-variable-name-face :slant italic)))
-  "Slanted info face."
-  :group 'nvp)
-
-(defface nvp-warning-face `((t (:inherit font-lock-keyword-face :slant italic)))
-  "Warning face."
-  :group 'nvp)
-
-(defface nvp-error-face `((t (:inherit font-lock-warning-face :slant italic)))
-  "Error face."
-  :group 'nvp)
-
-
 ;; -------------------------------------------------------------------
 ;;; Newline DWIM
 
@@ -308,6 +229,7 @@ Dispatches to generic handlers with ARG."
 
 ;; -------------------------------------------------------------------
 ;;; Completion
+
 (nvp:decl vertico-directory-tidy vertico-insert vertico-exit vertico--metadata-get)
 
 (defsubst nvp-vertico-completing-file-p ()

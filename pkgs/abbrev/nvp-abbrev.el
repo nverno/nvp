@@ -246,7 +246,7 @@ or expansion."
   "Simple abbrev table extension mode."
   :abbrev-table nil
   (setq-local imenu-generic-expression
-              '((nil "^(define-abbrev-table '\\([^ \n]+\\)" 1))))
+              '((nil "^\\s-*(\\s-*define-abbrev-table '\\([^ \n]+\\)" 1))))
 
 
 ;; -------------------------------------------------------------------

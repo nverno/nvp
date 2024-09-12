@@ -77,6 +77,8 @@ With prefix, dont run modes hook."
   "Minor mode in scratch buffers."
   :lighter " 𝓢"
   (when nvp-scratch-minor-mode
+    ;; Fix(09/12/24): do like `quit-restore-window' - when stuff has changed the
+    ;; restore is annoying
     (setq-local kill-buffer-hook '(nvp-window-configuration-restore))
     (nvp:msg "Press \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-kill-buffer] to kill \
 this buffer or \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-switch-modes] \

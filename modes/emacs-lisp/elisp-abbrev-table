@@ -256,6 +256,7 @@
     ("lap" "looking-at-p" nil :system t)
     ("lbp" "line-beginning-position" nil :system t)
     ("ldf" "locate-dominating-file" nil :system t)
+    ("len" "length" nil :system t)
     ("lep" "line-end-position" nil :system t)
     ("lsk" "local-set-key" nil :system t)
     ("mem" "member" nil :system t)

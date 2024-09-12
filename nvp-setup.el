@@ -194,7 +194,8 @@
             nvp-local-abbrev-file abbr-file
             nvp-local-abbrev-table abbr-table
             local-abbrev-table
-            (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))
+            (ignore-errors
+              (symbol-value (intern-soft (concat abbr-table "-abbrev-table"))))
             devdocs-current-docs (nvp-setup--inherit 'docsets docsets)))
     (nvp:setup-local-hooks mvars))
   (when post-fn (funcall post-fn)))

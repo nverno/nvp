@@ -54,27 +54,30 @@
 ;;;###autoload
 (defun nvp-setup-package-root (pkg)
   "Return a guess for the package root directory."
-  (let* ((sym (and pkg (if (stringp pkg) (intern-soft pkg) pkg)))
-         (str (and pkg (if (stringp pkg) pkg (symbol-name pkg))))
-         (path                          ;path to package
-          (cond
-           ((and (stringp str)
-                 (let ((dir (expand-file-name str nvp/modes)))
-                   (cond
-                    ((file-exists-p dir) dir) ;should just be here
-                    ((file-exists-p str) str)
-                    (t ;; look for package directory
-                     (locate-file str load-path nil
-                                  (lambda (f) (if (file-directory-p f) 'dir-ok))))))))
-           ;; should be able to find features and autoloads
-           ((and sym (featurep sym) (locate-library str)))
-           ;; autoload / already loaded
-           ((and sym (ignore-errors (locate-library (symbol-file sym)))))
-           (t nil))))
-    ;; return directory
-    (if path
+  (if (equal :none pkg)
+      :none
+    (let* ((sym (and pkg (if (stringp pkg) (intern-soft pkg) pkg)))
+           (str (and pkg (if (stringp pkg) pkg (symbol-name pkg))))
+           (path                        ; path to package
+            (cond
+             ((and (stringp str)
+                   (let ((dir (expand-file-name str nvp/modes)))
+                     (cond
+                      ((file-exists-p dir) dir) ; should just be here
+                      ((file-exists-p str) str)
+                      (t ;; look for package directory
+                       (locate-file str load-path nil
+                                    (lambda (f)
+                                      (if (file-directory-p f) 'dir-ok))))))))
+             ;; should be able to find features and autoloads
+             ((and sym (featurep sym) (locate-library str)))
+             ;; autoload / already loaded
+             ((and sym (ignore-errors (locate-library (symbol-file sym)))))
+             (t nil))))
+      ;; Return directory
+      (when path
         (if (file-directory-p path) path
-          (directory-file-name (file-name-directory path))))))
+          (directory-file-name (file-name-directory path)))))))
 
 (eval-when-compile
   (defsubst nvp:setup-normalize-mode (mode &optional major)
@@ -128,25 +131,35 @@
   (setq args (nvp:arglist-remove-kwargs '(:mode :snippets-dir :inherit) kwargs))
   (setq mode (nvp:setup-normalize-mode mode))
   (or dir (setq dir (nvp-setup-package-root name)))
-  (unless (and dir (file-exists-p dir))
-    (user-error "Setup for '%s' failed to find package root" (nvp:as-string name)))
-  (unless abbr-file
-    (setq abbr-file (ignore-errors (car (directory-files dir t "abbrev-table")))))
-  (or abbr-table (setq abbr-table (symbol-name mode)))
-  (let* ((yas-dir (or (ignore-errors (car (directory-files dir t "snippets")))
+  (let* ((dir-p (not (eq :none dir)))
+         (yas-dir (or (and dir-p (ignore-errors
+                                   (car (directory-files dir t "snippets"))))
                       nvp/snippet))
-         (mode-snips
-          (expand-file-name (or snippets-dir (symbol-name mode)) yas-dir)))
+         (mode-snips (expand-file-name
+                      (or snippets-dir (symbol-name mode)) yas-dir)))
+    (when dir-p
+      (unless (and dir (file-exists-p dir))
+        (user-error "Setup for '%s' failed to find package root"
+                    (nvp:as-string name)))
+      (or abbr-file (setq abbr-file
+                          (ignore-errors
+                            (car (directory-files dir t "abbrev-table")))))
+      (or abbr-table (setq abbr-table (symbol-name mode)))
+      (cl-pushnew dir load-path :test #'string=))
+
     ;; Initialize/load mode stuff
     ;; - ensure load-path
     ;; - load snippets
     ;; - load abbrevs
-    (when (file-exists-p yas-dir)
+    (when (and yas-dir (file-exists-p yas-dir))
       (unless (member yas-dir yas-snippet-dirs)
         (push yas-dir yas-snippet-dirs)
         (yas-load-directory yas-dir)))
-    (cl-pushnew dir load-path :test #'string=)
-    (ignore-errors (quietly-read-abbrev-file abbr-file))
+
+    (when (and abbr-file (not (eq :none abbr-file)))
+      (ignore-errors
+        (quietly-read-abbrev-file abbr-file)))
+
     (let ((mvars (apply #'nvp-mode-vars-make
                         `( :dir ,dir
                            :snippets ,mode-snips

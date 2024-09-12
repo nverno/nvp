@@ -7,28 +7,11 @@
 ;;   to "$PATH:$|DART"
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'sh-script)
+(require 'nvp-sh)                       ; faces
 (nvp:decls)
 
-(defface bash-file-redirect-face
-  '((t (:inherit font-lock-type-face :weight bold :slant italic)))
-  "Face for bash special file redirects."
-  :group 'bash)
 
-(defface bash-file-descriptor-number-face
-  '((t (:inherit font-lock-number-face :weight bold)))
-  "Face for bash numeric file descriptors."
-  :group 'bash)
-
-(defface bash-special-variable-face
-  '((t (:inherit font-lock-escape-face)))
-  "Face for bash special variables."
-  :group 'bash)
-
-(defface bash-expansion-variable-face
-  '((t (:inherit font-lock-variable-name-face :slant italic)))
-  "Face for bash expansion variable."
-  :group 'bash)
+;;; Add rules / features
 
 (nvp:treesit-add-rules bash-ts-mode
   :extra-features '(builtin property escape-sequence))

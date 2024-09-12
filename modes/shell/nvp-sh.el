@@ -106,22 +106,41 @@ Used to set `end-of-defun-function'."
 
 ;;; Font-locks
 
+(defface bash-file-redirect-face
+  '((t (:inherit font-lock-type-face :weight bold :slant italic)))
+  "Face for bash special file redirects."
+  :group 'bash)
+
+(defface bash-file-descriptor-number-face
+  '((t (:inherit font-lock-number-face :weight bold)))
+  "Face for bash numeric file descriptors."
+  :group 'bash)
+
+(defface bash-special-variable-face
+  '((t (:inherit font-lock-escape-face)))
+  "Face for bash special variables."
+  :group 'bash)
+
+(defface bash-expansion-variable-face
+  '((t (:inherit font-lock-variable-name-face :slant italic)))
+  "Face for bash expansion variable."
+  :group 'bash)
+
 ;; Add font-locking & register additions
 (nvp:font-lock-add-defaults 'sh-mode
-  ;; gaudy array faces
+  ;; Gaudy array faces
   ("\\${\\([!#?]?[[:alpha:]_][[:alnum:]_]*\\[[@*]\\]\\)}"
-   (1 'nvp-special-variable-face prepend))
-  ;; redirections
-  ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'nvp-special-type-face prepend))
-  ;; doxy params
+   (1 'bash-expansion-variable-face prepend))
+  ;; Redirections
+  ("\\([0-9&<>]*[ ]*/dev/null\\)" (1 'bash-file-redirect-face prepend))
+  ;; Doxy params
   ("^# *\\(@[[:alpha:]]+\\)\\s-*\\(\$[[:digit:]]\\)\\(.*\\)$"
-   (1 font-lock-doc-face prepend)
-   (2 'nvp-special-variable-face prepend)
-   (3 font-lock-doc-face prepend))
-  ;; quoted vars, special vars, function arguments
+   (1 font-lock-constant-face prepend)
+   (2 font-lock-variable-name-face prepend))
+  ;; Quoted vars, special vars, function arguments
   (:quoted ?\" "\\${?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!*]\\|[0-9]\\)"
            (1 font-lock-variable-name-face prepend))
-  ;; first function in quoted backquote expressions, "`cmd ...`"
+  ;; First function in quoted backquote expressions, "`cmd ...`"
   (:quoted ?\" "`\\s-*\\([[:alnum:]_\\-]+\\)" (1 'sh-quoted-exec prepend)))
 
 

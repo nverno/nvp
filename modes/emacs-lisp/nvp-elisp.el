@@ -280,7 +280,7 @@ With prefix -1, or when REPLACE is non-nil, replace sexp with result."
 ;; cl-flet etc. indentation
 (with-eval-after-load 'cl-indent
   (let ((indent (get 'flet 'common-lisp-indent-function)))
-    (mapc #'(lambda (f) (put f 'common-lisp-indent-function indent))
+    (mapc (lambda (f) (put f 'common-lisp-indent-function indent))
           '(cl-flet cl-flet* labels cl-labels cl-macrolet))))
 ;; (put 'cl-loop 'lisp-indent-function 'common-lisp-indent-function)
 ;; (put 'cl-labels 'lisp-indent-function 'common-lisp-indent-function)
@@ -313,21 +313,21 @@ If in `declare-function', convert to autoload."
   (interactive)
   (save-match-data
     (save-excursion
-      (ignore-errors (goto-char (car (nth 9 (syntax-ppss)))))
-      (cond
-       ((looking-at "(declare-function\\s-+")
-        (replace-match "(autoload '"))
-       ((looking-at "(autoload\\s-+'")
-        (replace-match "(declare-function "))
-       ((looking-at nvp-elisp-defuns-regexp)
-        (and (bobp) (insert "\n"))
-        (forward-line -1)
-        (if (looking-at ";;;###autoload[ \t]*\n")
-            (replace-match "")
-          (unless (looking-at-p "^\\s-*$")
-            (end-of-line))
-          (insert "\n;;;###autoload")))
-       (t (message "Location not autoloadable"))))))
+      (ignore-errors
+        (goto-char (car (nth 9 (syntax-ppss)))))
+      (cond ((looking-at "(declare-function\\s-+")
+             (replace-match "(autoload '"))
+            ((looking-at "(autoload\\s-+'")
+             (replace-match "(declare-function "))
+            ((looking-at nvp-elisp-defuns-regexp)
+             (and (bobp) (insert "\n"))
+             (forward-line -1)
+             (if (looking-at ";;;###autoload[ \t]*\n")
+                 (replace-match "")
+               (unless (looking-at-p "^\\s-*$")
+                 (end-of-line))
+               (insert "\n;;;###autoload")))
+            (t (message "Location not autoloadable"))))))
 
 
 ;; -------------------------------------------------------------------
@@ -363,21 +363,12 @@ If in `declare-function', convert to autoload."
 (let-when-compile
     ((prefix "^;;\\(?:;\\{1,2\\}\\|[*]\\{1,2\\}\\| |\\)\\s-+")
      (hdr-regex (concat prefix "\\([^#;].*\\)\\s-*$"))
-     (pkg-hdrs (rx-to-string
-                `(seq ,prefix
-                      (group (or "Commentary:" "Code:" "Documentation:"
-                                 "History:" "ChangeLog:" "Change Log:"
-                                 (regexp ".*\\.el")))))))
-  (let* ((fn (eval-when-compile
-               (byte-compile
-                (macroexpand-all
-                 ;; Don't include default package headers, beginning/end of file
-                 `(lambda ()
-                    (nvp:awhile (and (not (bobp))
-                                     (re-search-backward ,hdr-regex nil t))
-                      (unless (looking-at-p ,pkg-hdrs)
-                        (cl-return t))))))))
-         (var-re (eval-when-compile
+     (pkg-hdrs
+      (concat prefix (rx (group (or "Commentary:" "Code:" "Documentation:"
+                                    "History:" "ChangeLog:" "Change Log:"
+                                    (seq (* nonl) ".el" eow (* white)
+                                         (or "ends here" "---"))))))))
+  (let* ((var-re (eval-when-compile
                    (rx bol (* white) "("
                        (or "defvar-keymap"
                            (seq (regexp "nvp[:]")
@@ -387,15 +378,27 @@ If in `declare-function', convert to autoload."
                        (group (+ (or (syntax word) (syntax symbol)
                                      (regexp "\\\\.")))))))
          (sub-hdr-re (eval-when-compile
-                       (rx bol (* white)  ";;" (+ (or "-" "*")) (* space)
+                       (rx bol (* white) ";;" (+ (or "-" "*")) (* space)
                            (group (+ (not (or "-" "\n"))))
                            (* (or space "-" "*"))
                            eol)))
-         (lib-re "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)"))
+         (lib-re "^;;\\s-*[*]\\s-*\\(?:[Ll]ibs?\\):\\s-*\\([[:alnum:]- /]+\\)")
+         (header-p
+          (eval-when-compile
+            (macroexpand-1
+             ;; Don't include default package headers, beginning/end of file
+             `(lambda ()
+                (let (done)
+                  (while (and (not (or done (bobp)))
+                              (re-search-backward ,hdr-regex nil t))
+                    (setq done (not (looking-at-p ,pkg-hdrs))))
+                  done))))))
+
+    (defalias 'nvp-elisp--imenu-header (byte-compile header-p))
 
     (defconst nvp-elisp-imenu-headers
-      `( :headers ((nil ,fn 1))
-         :headers-1 (("Headers" ,fn 1)
+      `( :headers ((nil nvp-elisp--imenu-header 1))
+         :headers-1 (("Headers" nvp-elisp--imenu-header 1)
                      ("Libs" ,lib-re 1)
                      ("Variables" ,var-re 1))
          :headers-2 (("Sub-Headers" ,sub-hdr-re 1))))))

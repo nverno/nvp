@@ -245,7 +245,8 @@ should formatted as an alist like `imenu-generic-expression'."
   (if (and nvp-imenu--active-buffer-re
            (string-match nvp-imenu--active-buffer-re str))
       (let ((s (copy-sequence str)))
-        (add-text-properties (match-beginning 0) (match-end 0) '(invisible t) s)
+        (add-text-properties
+         (match-beginning 0) (match-end 0) '(invisible t) s)
         (funcall orig-fn s))
     (funcall orig-fn str)))
 
@@ -254,7 +255,7 @@ should formatted as an alist like `imenu-generic-expression'."
 
 (defvar nvp-imenu-mode-line
   `(" Imenu:"
-    (:eval (format ,(propertize "%s" 'face 'font-lock-warning-face)
+    (:eval (format (:propertize "%s" 'face 'font-lock-warning-face)
                    (substring (symbol-name (nvp-imenu--visibility)) 0 3)))))
 
 (or (assq 'nvp-imenu--active-mode minor-mode-alist)

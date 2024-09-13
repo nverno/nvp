@@ -201,23 +201,32 @@ With prefix ARG, pretty-print the results. In `lisp-interaction-mode',
 pretty print by default and when NEWLINE is non-nil, insert newline before
 inserting results in buffer."
   (interactive "P")
-  (let ((expr (if (and (mark) (use-region-p))
-                  (let ((beg (min (point) (mark)))
-                        (end (max (point) (mark))))
-                    (save-excursion
-                      (save-restriction
-                        (narrow-to-region beg end)
-                        (goto-char beg)
-                        (read (current-buffer)))))
-                (pp-last-sexp)))
+  (let ((expr (cond ((and (mark) (use-region-p))
+                     (let ((beg (min (point) (mark)))
+                           (end (max (point) (mark))))
+                       (save-excursion
+                         (save-restriction
+                           (narrow-to-region beg end)
+                           (goto-char beg)
+                           (read (current-buffer))))))
+                    ((or arg (derived-mode-p 'lisp-interaction-mode))
+                     (pp-last-sexp))
+                    (t nil)))
         (debug-on-error eval-expression-debug-on-error)
         (print-length nil)
         (print-level eval-expression-print-level))
-    (cond (arg (nvp-eval--display-expression (eval expr lexical-binding)))
-          ((eq major-mode 'lisp-interaction-mode)
-           (and newline (insert "\n"))
-           (insert (pp-to-string (eval expr lexical-binding))))
-          (t (eval-expression expr)))))
+    (cond
+     ((null expr)
+      (call-interactively #'eval-last-sexp))
+     (arg
+      (nvp-eval--display-expression
+       (eval expr lexical-binding)))
+     ((derived-mode-p 'lisp-interaction-mode)
+      (and newline (insert "\n"))
+      (insert
+       (pp-to-string
+        (eval expr lexical-binding))))
+     (t (eval-expression expr)))))
 
 (defun nvp-elisp-eval-and-replace (&rest _)
   "Replace preceding sexp with its evaluated value."

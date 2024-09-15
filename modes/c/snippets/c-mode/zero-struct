@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: zero
+# name: memset array/struct
 # key: zero
 # --
-memset($1, 0, sizeof($1));
+memset($1, ${2:0}, sizeof($1));

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: Fill array
+# key: fill
+# --
+for (size_t i = ${1:0}; i < ${2:n}; ++i) {
+  ${3:arr}[i] = ${4:INT_MAX};
+}

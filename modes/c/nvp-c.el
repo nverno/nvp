@@ -73,11 +73,11 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;;; GDB
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add '(c-mode c-ts-mode c++-mode c++-ts-mode)
-    :name 'gdb
-    :modes '(gud-mode)
-    :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
-    :init #'gdb
-    :init-use-hook t))
+                :name 'gdb
+                :modes '(gud-mode)
+                :find-fn (lambda () (ignore-errors (get-buffer gud-comint-buffer)))
+                :init #'gdb
+                :init-use-hook t))
 
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
@@ -254,60 +254,72 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                  `((call_expression
                     function: (_) @nvp-c-ts--fontify-call-expression)))))
 
-    (apply #'treesit-font-lock-rules
-           (append
-            (if (eq language 'cpp)
-                (list
-                 :language language
-                 :feature 'bracket
-                 '((["(" ")" "[" "]" "{" "}"]) @font-lock-bracket-face
-                   (template_argument_list ["<" ">"] @font-lock-bracket-face)
-                   (template_parameter_list ["<" ">"] @font-lock-bracket-face))
+    (apply
+     #'treesit-font-lock-rules
+     (append
+      (list
+        :language language
+        :feature 'macro
+        `((preproc_function_def
+           name: (identifier) @font-lock-function-name-face)
+          (call_expression
+           function: ((identifier) @font-lock-preprocessor-face
+                      (:match "[A-Z_][A-Z0-9_]*$"
+                              @font-lock-preprocessor-face)))
+          (null) @nvp-nil-face))
+       
+      (if (eq language 'cpp)
+          (list
+           :language language
+           :feature 'bracket
+           '((["(" ")" "[" "]" "{" "}"]) @font-lock-bracket-face
+             (template_argument_list ["<" ">"] @font-lock-bracket-face)
+             (template_parameter_list ["<" ">"] @font-lock-bracket-face))
 
-                 :language language
-                 :feature 'namespace
-                 '((using_declaration
-                    "namespace" (identifier) @nvp-namespace-face)
-                   (namespace_identifier) @nvp-namespace-use-face)
+           :language language
+           :feature 'namespace
+           '((using_declaration
+              "namespace" (identifier) @nvp-namespace-face)
+             (namespace_identifier) @nvp-namespace-use-face)
 
-                 :language language
-                 :feature 'nvp
-                 '(;; Note(08/11/24): missing declarations from 'definition
-                   (optional_parameter_declaration
-                    declarator: (identifier) @font-lock-variable-name-face)
-                   ;; for (auto x: ...)
-                   (for_range_loop
-                    declarator: (identifier) @font-lock-variable-name-face)
-                   ;; auto& x
-                   (reference_declarator
-                    (identifier) @font-lock-variable-name-face)
-                   ;; auto[&] [x, y]
-                   (structured_binding_declarator
-                    _ [(identifier)] @font-lock-variable-name-face)
+           :language language
+           :feature 'nvp
+           '(;; Note(08/11/24): missing declarations from 'definition
+             (optional_parameter_declaration
+              declarator: (identifier) @font-lock-variable-name-face)
+             ;; for (auto x: ...)
+             (for_range_loop
+              declarator: (identifier) @font-lock-variable-name-face)
+             ;; auto& x
+             (reference_declarator
+              (identifier) @font-lock-variable-name-face)
+             ;; auto[&] [x, y]
+             (structured_binding_declarator
+              _ [(identifier)] @font-lock-variable-name-face)
 
-                   ;; <receiver>.func()
-                   (call_expression
-                    function: (field_expression
-                               argument: (identifier) @nvp-receiver-face)))
+             ;; <receiver>.func()
+             (call_expression
+              function: (field_expression
+                         argument: (identifier) @nvp-receiver-face)))
 
-                 :language language
-                 :feature 'builtin
-                 `((call_expression
-                    function: ((identifier) @font-lock-builtin-face
-                               (:match ,(rx bol "__builtin_")
-                                       @font-lock-builtin-face)))))
-              (list
-               :language language
-               :feature 'builtin
-               `((call_expression
-                  function: ((identifier) @font-lock-builtin-face
-                             (:match
-                              ,(rx-to-string
-                                `(seq bol (or ,@nvp-c-ts--builtins
-                                              (regexp "__builtin_")
-                                              (regexp "str[a-z]+"))))
-                              @font-lock-builtin-face))))))
-            rules))))
+           :language language
+           :feature 'builtin
+           `((call_expression
+              function: ((identifier) @font-lock-builtin-face
+                         (:match ,(rx bol "__builtin_")
+                                 @font-lock-builtin-face)))))
+        (list
+         :language language
+         :feature 'builtin
+         `((call_expression
+            function: ((identifier) @font-lock-builtin-face
+                       (:match
+                        ,(rx-to-string
+                          `(seq bol (or ,@nvp-c-ts--builtins
+                                        (regexp "__builtin_")
+                                        (regexp "str[a-z]+"))))
+                        @font-lock-builtin-face))))))
+      rules))))
 
 
 ;;; Indent
@@ -337,10 +349,10 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                 (append (nvp-c-ts--indent-rules mode) indents)))))
 
 (nvp:treesit-add-rules c++-ts-mode
-  :extra-features '(builtin namespace nvp))
+  :extra-features '(builtin namespace nvp macro))
 
 (nvp:treesit-add-rules c-ts-mode
-  :extra-features '(builtin))
+  :extra-features '(builtin nvp macro))
 
 (provide 'nvp-c)
 ;; Local Variables:

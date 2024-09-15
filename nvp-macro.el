@@ -1572,7 +1572,8 @@ See `nvp:advise-commands'."
   (declare (indent 0))
   `(progn
      ,@(cl-loop for fn in funcs
-                collect `(advice-mapc (lambda (advice _props) (advice-remove ',fn advice))
+                collect `(advice-mapc (lambda (advice _props)
+                                        (advice-remove ',fn advice))
                                       ',fn))))
 
 (defmacro nvp:eldoc-function (func &optional init)

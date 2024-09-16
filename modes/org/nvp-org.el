@@ -5,23 +5,28 @@
 (require 'org)
 (require 'nvp)
 (nvp:req 'nvp-org 'subrs)
-(nvp:decls :p (outline org) :f (org-element-type org-element--property))
-(nvp:auto "nvp-parse" 'nvp-parse-current-function)
+
+(nvp:decls
+ :p (outline org)
+ :f ( org-element-type org-element--property org-tempo-setup org-element-map
+      org-element-parse-buffer))
+
+(autoload 'nvp-parse-current-function "nvp-parse")
 
 ;;;###autoload
 (defun nvp-org-tags-view (&optional directory)
   "Call `org-tags-view'. With prefix prompt for DIRECTORY to search tags."
   (interactive
-   (list (nvp:prefix '>=4
-           (completing-read-multiple "Directory: " #'completion-file-name-table))))
-  (let ((org-agenda-files (if directory (nvp:as-list directory) org-agenda-files)))
+   (list (when (>= (prefix-numeric-value current-prefix-arg) 4)
+           (completing-read-multiple
+            "Directory: " #'completion-file-name-table))))
+  (let ((org-agenda-files (if directory
+                              (nvp:as-list directory)
+                            org-agenda-files)))
     (nvp:prefix-shift -1)
     (call-interactively #'org-tags-view)))
 
-;; -------------------------------------------------------------------
-;;; Utils
-
-;; walk org-tree
+;; Walk org-tree
 ;; Modified https://gist.github.com/theodorewiles/cce2c170f8d4dfc60f06073cb73dfe10
 (defun nvp-org-header-list (&optional header-re level buffer items)
   "Get the headers of an org buffer (default current buffer). Optionally,
@@ -55,6 +60,7 @@ See `org-element-all-elements' for possible item types."
                      :level (org-element-property :level el)          ;depth
                      :todo-keyword (org-element-property :todo-keyword el))))))))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Links
 
@@ -86,7 +92,7 @@ Return cons of \\='(name                           . raw-link)."
 ;; Link format:
 ;; nvp:library ( '?' section-or-def ( '&' 'type=' (v|f|s) )? )?
 (org-link-set-parameters "nvp"
-  :store #'nvp-org-nvp-store-link
+  :store  #'nvp-org-nvp-store-link
   :follow #'nvp-org-nvp-open
   :export #'nvp-org-nvp-export)
 (put 'org-link-set-parameters 'lisp-indent-function 1)

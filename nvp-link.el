@@ -39,6 +39,7 @@
                 helpful-mode
                 ;; added
                 leetcode-detail-mode
+                apropos-mode
                 shellcheck-mode
                 process-menu-mode
                 shortdoc-mode

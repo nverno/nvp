@@ -110,8 +110,7 @@ buffers."
                      nvp-repl--split-below))))
   "Options for `nvp-repl-display-action'.")
 
-;;; FIXME: if there is already a window below, should try to use that instead of
-;;; splitting
+;; FIXME(09/16/24): maybe reuse a window below before splitting
 (defun nvp-repl--split-below (buf alist)
   "Split window and display repl below."
   (when-let ((height (cdr (assq 'window-height alist))))

@@ -460,6 +460,7 @@ Do BODY when treesit mode is available."
              `((setq major-mode-remap-alist
                      (cl-delete-duplicates
                       (append ',remap-list major-mode-remap-alist) :test #'equal))
+               (defvar warning-suppress-log-types nil)
                ,@(cl-loop for remap-name in remap-modenames
                           for remap-table = (intern (concat remap-name "-abbrev-table"))
                           for ts-table = (intern (concat ts-modename "-abbrev-table"))

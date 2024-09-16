@@ -195,84 +195,96 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
 ;; ------------------------------------------------------------
 ;;; Eval
 
-(defun nvp-elisp-eval-last-sexp-or-region (&optional arg newline)
-  "Eval region if active, otherwise last sexp.
-With prefix ARG, pretty-print the results. In `lisp-interaction-mode',
-pretty print by default and when NEWLINE is non-nil, insert newline before
-inserting results in buffer."
-  (interactive "P")
-  (let ((expr (cond ((and (mark) (use-region-p))
-                     (let ((beg (min (point) (mark)))
-                           (end (max (point) (mark))))
-                       (save-excursion
-                         (save-restriction
-                           (narrow-to-region beg end)
-                           (goto-char beg)
-                           (read (current-buffer))))))
-                    ((or arg (derived-mode-p 'lisp-interaction-mode))
-                     (pp-last-sexp))
-                    (t nil)))
-        (debug-on-error eval-expression-debug-on-error)
-        (print-length nil)
-        (print-level eval-expression-print-level))
-    (cond
-     ((null expr)
-      (call-interactively #'eval-last-sexp))
-     (arg
-      (nvp-eval--display-expression
-       (eval expr lexical-binding)))
-     ((derived-mode-p 'lisp-interaction-mode)
-      (and newline (insert "\n"))
-      (insert
-       (pp-to-string
-        (eval expr lexical-binding))))
-     (t (eval-expression expr)))))
-
-(defun nvp-elisp-eval-and-replace (&rest _)
-  "Replace preceding sexp with its evaluated value."
-  (interactive)
-  (if (region-active-p)
-      (kill-region (region-beginning) (region-end))
+(defun nvp-elisp-eval-and-replace (&optional beg end)
+  "Evaluate region from BEG to END or preceding sexp and replace with reaults."
+  (interactive (and (region-active-p)
+                    (list (region-beginning) (region-end))))
+  (if (and beg end)
+      (kill-region beg end)
     (backward-kill-sexp))
   (condition-case err
-      (pp (eval (read (current-kill 0)) lexical-binding) (current-buffer))
+      (pp (eval (read (current-kill 0)) lexical-binding)
+          (current-buffer))
     (error (insert (current-kill 0))
            (user-error (error-message-string err)))))
 
 (defun nvp-elisp-eval-print-last-sexp (arg)
   "Wrap `eval-print-last-sexp' so `C-u' ARG prints without truncation."
-  (interactive (list (or (and (equal '(4) current-prefix-arg) 0)
-                         current-prefix-arg)))
+  (interactive
+   (list (if (equal '(4) current-prefix-arg) 0 current-prefix-arg)))
   (funcall-interactively #'eval-print-last-sexp arg))
 
-(defun nvp-elisp-eval-sexp-dwim (&optional and-go replace)
-  "Eval from end of outermost sexp at point or previous sexp if not in sexp.
-In `lisp-interaction-mode', interactively with \\[universal-argument], or
-if AND-GO is non-nil, move point to end of that sexp.
-With prefix -1, or when REPLACE is non-nil, replace sexp with result."
-  (interactive (list (or (eq major-mode 'lisp-interaction-mode)
-                         (equal current-prefix-arg '(4)))
-                     (equal current-prefix-arg -1)))
-  (unless (or (eq major-mode 'lisp-interaction-mode)
-              (< (prefix-numeric-value current-prefix-arg) 4))
-    (nvp:prefix-shift -1))
-  (let* ((region-p (use-region-p))
-         (ppss (unless region-p
-                 (parse-partial-sexp (point-min) (point))))
-         (beg (car (nth 9 ppss)))       ; end of outermost sexp
-         end)
+(defun nvp-elisp-eval-sexp-dwim (&optional no-truncate action newline and-go)
+  "Eval active region, top-level sexp containing point, or the previous sexp.
+
+ACTION is determined from prefix:
+   `nil'              => Eval and echo result with `eval-last-sexp'.
+   `-' or any arg<=0  => Do opposite of default truncation for printed objects.
+  -1                  => Replace evaluated region with its result.
+   `-' or \\[universal-argument]         => Insert result at point or after\
+ containing sexp.
+   arg<-1 or \\[universal-argument] \\[universal-argument]  => Pretty print\
+ result in temp buffer.
+
+When NEWLINE is non-nil and ACTION is `insert', insert newline before
+results. When AND-GO is non-nil and a top-level sexp is evaluated, move point
+to end of sexp."
+  (interactive
+   (let* ((raw (prefix-numeric-value current-prefix-arg))
+          (arg (abs raw))
+          (interact-p (derived-mode-p 'lisp-interaction-mode))
+          (action (cond ((eq -1 raw) 'replace)
+                        ((>= arg 16) 'pp)
+                        (t (if (or interact-p
+                                   (memq raw '(- -4 4)))
+                               'insert
+                             'eval)))))
+     (list (if interact-p (memq arg '(0 4))
+             (or (eq '- raw) (<= raw 0)))
+           action interact-p (or interact-p (eq 'insert action)))))
+  (let* ((print-level (unless no-truncate eval-expression-print-level))
+         (print-length (unless no-truncate eval-expression-print-length))
+         (debug-on-error eval-expression-debug-on-error)
+         (region-p (region-active-p))
+         (beg (if region-p (region-beginning)
+                ;; Beginning of outermost sexp
+                (car-safe (nth 9 (parse-partial-sexp (point-min) (point))))))
+         (end (and region-p (region-end))))
     (save-excursion
-      (when beg
+      (when (and beg (null region-p))
         (goto-char beg)
         (forward-sexp)
         (setq end (point))
         (nvp-indicate-pulse-region-or-line beg end))
-      (if replace
-          (call-interactively #'nvp-elisp-eval-and-replace)
-        (funcall-interactively #'nvp-elisp-eval-last-sexp-or-region
-                               current-prefix-arg end)))
-    (and and-go end (not replace)
-         (goto-char end))))
+      (pcase-exhaustive action
+        ('replace (funcall-interactively
+                   #'nvp-elisp-eval-and-replace beg end))
+        ((or 'eval 'insert)
+         (let* ((insert-p (or (eq 'insert action)
+                              (derived-mode-p 'lisp-interaction-mode)))
+                (standard-output (if insert-p (current-buffer) t)))
+           (and insert-p newline (terpri))
+           (if region-p
+               (eval-region beg end (and insert-p (current-buffer)))
+             ;; Note(09/16/24): in lisp interaction, could use
+             ;; (pp-to-string (eval expr lexical-binding)) to pretty print in scratch
+             (eval-last-sexp (or (and (null insert-p) '-)
+                                 (and no-truncate 0) t)))
+           (and insert-p newline (terpri))))
+        ('pp (let ((exp (if (null beg)
+                            (pp-last-sexp)
+                          (save-mark-and-excursion
+                            (save-restriction
+                              (narrow-to-region beg end)
+                              (goto-char beg)
+                              (read (current-buffer)))))))
+               (unless exp
+                 (user-error "didnt read a sexxp"))
+               (nvp-eval--display-expression (eval exp lexical-binding)))))
+      (setq end (point)))
+    (when (and and-go end (not (eq 'replace action)))
+      (goto-char end))))
+
 
 ;; -------------------------------------------------------------------
 ;;; Insert / Toggle

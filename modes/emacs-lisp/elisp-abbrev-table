@@ -32,6 +32,7 @@
     ("tmm" "transient-mark-mode" nil :system t)
     ("bfcs" "buffer-file-coding-system" nil :system t)
     ("csfw" "coding-system-for-write" nil :system t)
+    ("dboa" "display-buffer-overriding-action" nil :system t)
     ("esfn" "explicit-shell-file-name" nil :system t))
   "Emacs lisp variable abbrev table."
   :parents (list prog-mode-abbrev-table)

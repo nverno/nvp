@@ -255,8 +255,9 @@ should formatted as an alist like `imenu-generic-expression'."
 
 (defvar nvp-imenu-mode-line
   `(" Imenu:"
-    (:eval (format (:propertize "%s" 'face 'font-lock-warning-face)
-                   (substring (symbol-name (nvp-imenu--visibility)) 0 3)))))
+    (:eval (format
+            (propertize "%s" 'face 'font-lock-warning-face)
+            (substring (symbol-name (nvp-imenu--visibility)) 0 3)))))
 
 (or (assq 'nvp-imenu--active-mode minor-mode-alist)
     (nconc minor-mode-alist

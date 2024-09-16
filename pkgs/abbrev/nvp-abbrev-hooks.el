@@ -126,9 +126,28 @@
 ;; -------------------------------------------------------------------
 ;;; Abbrev table modes
 
+;; (defun abbrev-edit-forward-sexp (&optional arg)
+;;   (or arg (setq arg 1))
+;;   (let ((cnt (abs arg))
+;;         (sign (if (> arg 0) 1 -1)))
+;;     (catch 'done
+;;       (while (> cnt 0)
+;;         (beginning-of-line)
+;;         (when (looking-at-p paragraph-start)
+;;           (or (zerop (forward-line sign))
+;;               (throw 'done nil)))
+;;         (trace-output--forward-sexp-1 sign)
+;;         (throw 'done nil)
+;;         (cl-decf cnt)))
+;;     cnt))
+
 ;;;###autoload
 (defun nvp-abbrev-edit-hook ()
-  (setq-local imenu-generic-expression '((nil "^(\\(.*\\))" 1))))
+  (setq-local imenu-generic-expression '((nil "^(\\(.*\\))" 1)))
+  (setq-local paragraph-start (rx "(" (* nonl) ")" eol)
+              paragraph-separate paragraph-start)
+  (setq-local comment-start ";"
+              comment-end ""))
 ;;;###autoload(add-hook 'edit-abbrevs-mode-hook #'nvp-abbrev-edit-hook)
 
 (provide 'nvp-abbrev-hooks)

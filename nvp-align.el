@@ -33,7 +33,7 @@
 (mapc
  (lambda (key)
    (define-key nvp-align-keymap `[,key] #'nvp-align-by-last-char))
- (string-to-list "#=.,|\\:"))
+ (string-to-list "#=.,|\\:'"))
 
 ;;;###autoload(autoload 'nvp-align-menu "nvp-align" nil t)
 (transient-define-prefix nvp-align-menu ()

@@ -24,21 +24,42 @@ Defaults to `defun' at point."
      :pulse t (list beg end)))
   (indent-region beg end))
 
+(defvar duplicate-line-final-position)
+
 ;;;###autoload
 (defun nvp-duplicate-dwim (&optional arg)
   "Duplicate last (including this) nonempty line ARG times.
-If a region or rectangle is active, dupe that instead."
+If a region or rectangle is active, dupe that instead.
+If ARG is <= 0, duplicate ARG'th previous line.
+ARG of 0 is treated the same as -1, duplicating the previous line."
   (interactive "p")
-  (if (or (use-region-p)
-          (bound-and-true-p rectangle-mark-mode)
-          (not (nvp:line-empty-p)))
-      (duplicate-dwim arg)
-    (let ((col (current-column)))
-      (while (and (not (bobp))
-                  (nvp:line-empty-p))
-        (forward-line -1))
-      (move-to-column col)
-      (duplicate-dwim arg))))
+  (cl-flet ((goto-nonempty-line (&optional n)
+              (let ((col (current-column)))
+                (and n (forward-line n))
+                (while (and (not (bobp))
+                            (nvp:line-empty-p))
+                  (forward-line -1))
+                (move-to-column col))))
+   (cond ((<= (prefix-numeric-value arg) 0)
+          (let ((insert-pos (line-beginning-position))
+                (start (progn (goto-nonempty-line (if (zerop arg) -1 arg))
+                              (line-beginning-position 2)))
+                (duplicate-line-final-position -1))
+            (duplicate-dwim nil)
+            (let* ((col (current-column))
+                   (end (line-beginning-position 2))
+                   (text (buffer-substring start end)))
+              (delete-region start end)
+              (goto-char insert-pos)
+              (insert text)
+              (forward-line -1)
+              (move-to-column col))))
+         ((or (use-region-p)
+              (bound-and-true-p rectangle-mark-mode)
+              (not (nvp:line-empty-p)))
+          (duplicate-dwim arg))
+         (t (goto-nonempty-line)
+            (duplicate-dwim arg)))))
 
 
 ;;; Sorting

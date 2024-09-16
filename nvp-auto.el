@@ -51,6 +51,7 @@
 ;;;###autoload
 (defun nvp-move-forward-paragraph (&optional arg)
   (interactive "^p")
+  (nvp:push-mark 'nvp-move-forward-paragraph)
   (or arg (setq arg 1))
   (if (bolp)
       (progn
@@ -62,8 +63,14 @@
 ;;;###autoload
 (defun nvp-move-backward-paragraph (&optional arg)
   (interactive "^p")
+  (nvp:push-mark 'nvp-move-backward-paragraph)
   (or arg (setq arg 1))
   (nvp-move-forward-paragraph (- arg)))
+
+(defvar-keymap nvp-repeat-move-paragraph-map
+  :repeat t
+  "n" #'nvp-move-forward-paragraph
+  "p" #'nvp-move-backward-paragraph)
 
 
 ;; -------------------------------------------------------------------

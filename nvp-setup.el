@@ -131,7 +131,7 @@
   (setq args (nvp:arglist-remove-kwargs '(:mode :snippets-dir :inherit) kwargs))
   (setq mode (nvp:setup-normalize-mode mode))
   (or dir (setq dir (nvp-setup-package-root name)))
-  (let* ((dir-p (not (eq :none dir)))
+  (let* ((dir-p (not (memq dir '(nil :none))))
          (yas-dir (or (and dir-p (ignore-errors
                                    (car (directory-files dir t "snippets"))))
                       nvp/snippet))
@@ -207,8 +207,9 @@
             nvp-local-abbrev-file abbr-file
             nvp-local-abbrev-table abbr-table
             local-abbrev-table
-            (ignore-errors
-              (symbol-value (intern-soft (concat abbr-table "-abbrev-table"))))
+            (and abbr-table
+                 (ignore-errors
+               (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))))
             devdocs-current-docs (nvp-setup--inherit 'docsets docsets)))
     (nvp:setup-local-hooks mvars))
   (when post-fn (funcall post-fn)))

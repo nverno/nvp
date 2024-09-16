@@ -6,7 +6,7 @@
 (require 'trace)
 (require 'transient)
 
-(nvp:decls :f (flatten-tree) :v (trace-active-minor-mode))
+(nvp:decls :f (flatten-tree) :v (tracing-minor-mode))
 
 (autoload 'find-library-name "find-func")
 (autoload 'nvp-elisp-matching-forms "nvp-elisp" )
@@ -39,7 +39,7 @@
   :reader (lambda (&rest _) (not inhibit-trace))
   :set-value (lambda (sym val)
                (set sym val)
-               (trace-active-update-mode-line)))
+               (tracing-update-mode-line)))
 
 ;;;###autoload(autoload 'nvp-trace-menu "nvp-trace" nil t)
 (transient-define-prefix nvp-trace-menu ()
@@ -53,7 +53,7 @@
     ("i" "Inhibit trace" nvp-trace--toggle-inhibit)]
    ["Groups"
     ("g" "Group" nvp-trace-group)
-    ("G" "Untrace group" nvp-untrace-group :if-non-nil trace-active-minor-mode)
+    ("G" "Untrace group" nvp-untrace-group :if-non-nil tracing-minor-mode)
     ("l" "Library" nvp-trace-library)
     ("h" "Hooks" nvp-trace-hooks)]
    ["Results" :if nvp-trace-active-p
@@ -65,41 +65,60 @@
 
 
 ;; -------------------------------------------------------------------
-;;; Trace Active Minor Mode
+;;; Tracing Minor Mode
 
-(defvar trace-active--mode-line " Trace")
-(defvar trace-active--current nil "Active trace names")
-(defvar trace-active--batch nil "Non-nil when doing batch action.")
+(defvar tracing-mode-line-prefix " Tr")
+(defvar tracing--mode-line-string tracing-mode-line-prefix)
+(defvar tracing--current nil "Active trace names")
+(defvar tracing--batch nil "Non-nil when doing batch action.")
 
-(defun trace-active-mode-line ()
+(defun tracing-mode-line-toggle-inhibit (event)
+  "Toggle `inhibit-trace' from the mode-line."
+  (interactive "e")
+  (with-selected-window (posn-window (event-start event))
+    (setq inhibit-trace (not inhibit-trace))
+    (force-mode-line-update t)))
+
+(defun tracing--mode-line ()
   "Report current trace in the modeline."
-  (concat " Tr:"
-          (if inhibit-trace
-              (propertize "off" 'face 'compilation-error)
-            (let ((cnt (length trace-active--current)))
-              (if (> cnt 0)
-                  (propertize (number-to-string cnt)
-                              'face '(bold compilation-mode-line-exit))
-                (number-to-string cnt))))))
+  (let* ((face)
+         (suffix (if inhibit-trace
+                     (progn (setq face 'compilation-error) "off")
+                   (let ((cnt (length tracing--current)))
+                     (when (> cnt 0)
+                       (setq face '(bold compilation-mode-line-exit)))
+                     (number-to-string cnt)))))
+    (concat
+     tracing-mode-line-prefix ":"
+     (apply #'propertize suffix
+            ;; Fix(09/16/24): minor mode help-echo/local-map make this
+            ;; impossible to click, at least when using powerline
+            'help-echo (apply #'format "%s\nmouse-1: %s tracing"
+                              (if inhibit-trace
+                                  (list "Tracing is inhibited" "Enable")
+                                (list "Tracing is active" "Inhibit")))
+            'local-map (make-mode-line-mouse-map
+                        'mouse-1 #'tracing-mode-line-toggle-inhibit)
+            (and face (list 'face face))))))
 
-(defun trace-active-update-mode-line ()
+(defun tracing-update-mode-line ()
   "Update active trace mode-line."
-  (setq trace-active--mode-line (trace-active-mode-line))
-  (when trace-active-minor-mode
+  (setq tracing--mode-line-string (tracing--mode-line))
+  (when tracing-minor-mode
     (force-mode-line-update t)))
 
 (defun nvp-trace-add (funcs &optional _type remove)
-  "Track FUNCS and maybe enable/disable `trace-active-minor-mode'.
+  "Track FUNCS and maybe enable/disable `tracing-minor-mode'.
 If REMOVE is non-nil, remove FUNCS from tracking."
-  (setq trace-active--current
+  (setq tracing--current
         (if remove
-            (seq-remove (lambda (e) (memq e funcs)) trace-active--current)
-          (seq-uniq (append funcs trace-active--current))))
-  (cond ((zerop (length trace-active--current))
-         (trace-active-minor-mode -1))
-        (trace-active-minor-mode
-         (trace-active-update-mode-line))
-        (t (trace-active-minor-mode 1))))
+            (seq-remove (lambda (e) (memq e funcs)) tracing--current)
+          (seq-uniq (append funcs tracing--current))))
+  (cond ((zerop (length tracing--current))
+         (tracing-minor-mode -1))
+        (tracing-minor-mode
+         (tracing-update-mode-line))
+        (t (tracing-minor-mode 1))))
 
 (defun nvp-trace-clear ()
   "Clear trace results buffer."
@@ -110,7 +129,7 @@ If REMOVE is non-nil, remove FUNCS from tracking."
            (let ((inhibit-read-only t))
              (erase-buffer))))))
 
-(defun trace-active-list-untrace ()
+(defun tracing-list-untrace ()
   "Untrace function in list."
   (interactive)
   (when-let ((args (get-text-property (point) 'trace-args)))
@@ -120,19 +139,19 @@ If REMOVE is non-nil, remove FUNCS from tracking."
 (defvar-keymap trace-active-list-keymap
   :doc "Keymap on links in list of traced functions."
   :parent button-map
-  "u" #'trace-active-list-untrace)
+  "u" #'tracing-list-untrace)
 
 (defun nvp-trace-list ()
   "List functions currently traced."
-  (interactive nil trace-active-minor-mode)
-  (unless trace-active-minor-mode
+  (interactive nil tracing-minor-mode)
+  (unless tracing-minor-mode
     (user-error "No active trace"))
   (help-setup-xref (list #'nvp-trace-list)
 		   (called-interactively-p 'interactive))
   (with-help-window (get-buffer-create "*Traced Functions*")
     (insert (propertize (format "%s" "Traced functions") 'face 'outline-1))
     (insert "\n\n")
-    (dolist (fn trace-active--current)
+    (dolist (fn tracing--current)
       (insert-text-button
        (symbol-name fn)
        'face 'button
@@ -143,39 +162,39 @@ If REMOVE is non-nil, remove FUNCS from tracking."
        'help-echo "mouse-1, RET: describe function")
       (insert "\n"))))
 
-(defvar-keymap trace-active-minor-mode-map
+(defvar-keymap tracing-minor-mode-map
   "<f2> D j" #'nvp-trace-display-results
   "<f2> D q" #'untrace-all
   "<f2> D l" #'nvp-trace-list)
 
 ;;;###autoload
-(define-minor-mode trace-active-minor-mode
+(define-minor-mode tracing-minor-mode
   "Minor mode active during tracing."
-  :lighter (:eval trace-active--mode-line)
-  :keymap trace-active-minor-mode-map
+  :lighter (:eval tracing--mode-line-string)
+  :keymap tracing-minor-mode-map
   :global t
   :interactive nil
   :group 'trace
-  (if trace-active-minor-mode
-      (trace-active-update-mode-line)
-    (setq trace-active--current nil)))
+  (if tracing-minor-mode
+      (tracing-update-mode-line)
+    (setq tracing--current nil)))
 
 
 ;;; Advices
 
 ;;;###autoload
-(defun trace-function-internal@trace-add (func &rest _)
-  (or trace-active--batch (nvp-trace-add (list func))))
+(defun trace-function-internal@tracing-add (func &rest _)
+  (or tracing--batch (nvp-trace-add (list func))))
 
-;;;###autoload(advice-add 'trace-function-internal :after #'trace-function-internal@trace-add '((name . "trace-add")))
+;;;###autoload(advice-add 'trace-function-internal :after #'trace-function-internal@tracing-add '((name . "tracing-add")))
 
-(define-advice untrace-function (:after (func) "trace-remove")
-  (or trace-active--batch (nvp-trace-add (list func) nil t)))
+(define-advice untrace-function (:after (func) "tracing-remove")
+  (or tracing--batch (nvp-trace-add (list func) nil t)))
 
-(define-advice untrace-all (:around (orig) "trace-remove-all")
-  (let ((trace-active--batch t))
+(define-advice untrace-all (:around (orig) "tracing-remove-all")
+  (let ((tracing--batch t))
     (funcall orig)
-    (trace-active-minor-mode -1)))
+    (tracing-minor-mode -1)))
 
 
 ;;; Groups
@@ -213,7 +232,7 @@ If REMOVE is non-nil, remove FUNCS from tracking."
         (trace-fn (if foreground
                       #'trace-function-foreground
                     #'trace-function-background))
-        (trace-active--batch t))
+        (tracing--batch t))
     (dolist (fn funcs)
       (funcall trace-fn fn))
     (nvp-trace-add funcs)))
@@ -225,7 +244,7 @@ If REMOVE is non-nil, remove FUNCS from tracking."
                 (--map
                  (cdr it)
                  (nvp-trace--read-groups "Untrace: " current-prefix-arg t)))))
-  (let ((trace-active--batch t))
+  (let ((tracing--batch t))
     (dolist (fn funcs)
       (untrace-function fn))
     (nvp-trace-add funcs nil t)))
@@ -251,7 +270,7 @@ With \\[universal-argument] \\[universal-argument] prompt for filter."
             (insert-file-contents (find-library-name library))
             (with-syntax-table emacs-lisp-mode-syntax-table
               (nvp-elisp-matching-forms def-forms))))
-         (trace-active--batch t))
+         (tracing--batch t))
     (when filter
       (setq forms (--filter (string-match-p filter (symbol-name it)) forms)))
     (dolist (fn forms)
@@ -274,7 +293,7 @@ With \\[universal-argument] \\[universal-argument] prompt for filter."
                    (insert-file-contents (find-library-name library))
                    (with-syntax-table emacs-lisp-mode-syntax-table
                      (nvp-elisp-matching-forms #'hook-p))))
-          (trace-active--batch t))
+          (tracing--batch t))
       (dolist (fn forms)
         (trace-function-background fn))
       (nvp-trace-add forms 'hooks)
@@ -351,7 +370,7 @@ ARG comes from `forward-sexp', which see."
         (when (and fn (y-or-n-p (format "Untrace %S? " fn)))
           (message "untracing %S" fn)
           (untrace-function fn)
-          (setq trace-active--current (delq fn trace-active--current)))))))
+          (setq tracing--current (delq fn tracing--current)))))))
 
 (defvar trace-output-mode-keywords
   `((,(concat "^" (string-chop-newline trace-separator))

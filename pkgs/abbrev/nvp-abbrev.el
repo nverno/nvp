@@ -215,6 +215,7 @@ or expansion."
         (not (string-greaterp (car a) (car b)))
       (< la lb))))
 
+;;;###autoload
 (defun nvp-abbrev-sort-table (&optional start end)
   "Sort abbrev table between START and END or the table at point."
   (interactive (nvp:with-region start end 'alist :pulse t :widen t

@@ -164,9 +164,8 @@ Create tags in TAGS-FILE unless it exists and load tags."
                      (projectile-tags-file-name tag-file))
                  (projectile-regenerate-tags)))
              (nvp-tag-repo source-repo source-dir tag-file))
-            (t
-             (add-to-list 'xref-backend-functions #'etags--xref-backend t)
-             (visit-tags-table tags 'local))))))
+            (t (add-to-list 'xref-backend-functions #'etags--xref-backend t)
+               (visit-tags-table tags 'local))))))
 
 
 ;; -------------------------------------------------------------------

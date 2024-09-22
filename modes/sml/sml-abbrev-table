@@ -1,18 +1,14 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; lexical-binding: t; -*-
 
 (define-abbrev-table 'sml-mode-abbrev-table
-  '(
-    ;; ("c"    "case"     nil :system t)
-    ("aa"   "andalso"  nil :system t) 
-    ("at"   "abstype"  nil :system t) 
-    ("dt"   "datatype" nil :system t) 
-    ("oe"   "orelse"   nil :system t) 
-    ("ol"   "overload" nil :system t) 
-    ("wt"   "withtype" nil :system t)
-    
+  '(("aa" "andalso" nil :system t)
+    ("at" "abstype" nil :system t)
+    ("dt" "datatype" nil :system t)
+    ("oe" "orelse" nil :system t)
+    ("ol" "overload" nil :system t)
+    ("wt" "withtype" nil :system t)
     ("exc" "exception" nil :system t)
-    ("inc"  "include"  nil :system t) 
-    ("func" "functor"  nil :system t) 
-    )
+    ("inc" "include" nil :system t)
+    ("func" "functor" nil :system t))
   "Sml-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))

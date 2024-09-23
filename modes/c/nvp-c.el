@@ -234,7 +234,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                  :language language
                  :feature 'delimiter
                  `([,@delims] @font-lock-delimiter-face
-                   (conditional_expression ["?" ":"] @font-lock-delimiter-face))
+                   (conditional_expression ["?" ":"] @nvp-ternary-operator-face))
                  :language language
                  :feature 'operator
                  `([,@ops] @font-lock-operator-face

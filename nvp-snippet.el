@@ -15,19 +15,18 @@
     ("doc"     (nvp-yas-in-doc)))
   "Directory names to default conditions (eg. :condition key functions).")
 
-;; local variables to update fields in snippet subdirs
 (defvar-local nvp-local-snippet-conditions ()
   "Directory local variable to set condition in snippet subdirectories.")
 (put 'nvp-local-snippet-conditions 'safe-local-variable 'listp)
 
 
 ;;; Hooks
+
 (nvp:decl nvp-yas-in-string nvp-yas-in-comment)
 
 (define-advice yas-maybe-load-snippet-buffer
     (:around (orig-fn &rest args) "save-excursion")
-  (save-excursion
-    (apply orig-fn args)))
+  (save-excursion (apply orig-fn args)))
 
 ;; Return marker at end of snippet header.
 (nvp:define-cache nvp-snippet-header-end ()
@@ -37,11 +36,6 @@
     (goto-char (point-min))
     (when (search-forward "# --" nil t)
       (point-marker))))
-
-;; non-nil if point is in header portion of snippet
-;; (defsubst nvp-snippet-header-p (&optional pnt)
-;;   (and-let* ((pos (nvp-snippet-header-end)))
-;;     (< (or pnt (point)) (marker-position pos))))
 
 (defun nvp-snippet-save-hook ()
   "Add conditions based on directory names.
@@ -73,10 +67,6 @@ When part of `before-save-hook', won't add condition on initial save."
         (beginning-of-line)
         (insert (format "# %s: %S\n" field value))))))
 
-;; ------------------------------------------------------------
-;;; Jump to new snippet
-
-;; #<marker at 95724 in yasnippet.el>
 ;;;###autoload
 (defun nvp-jump-to-new-snippet (mode snippet-dir &optional do-dired text
                                      default-new-snippet)
@@ -88,13 +78,6 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
    (let* ((mode-name (nvp:prefix 16 (nvp-read-mode)
                        (symbol-name (or nvp-mode-name major-mode))))
           (snippet-dir (or nvp-mode-snippet-dir (expand-file-name mode-name nvp/snippet))))
-     ;; (if (not nvp-mode-snippet-dir)
-     ;;     (expand-file-name mode-name nvp/snippet)
-     ;;   (let ((dir (nvp-read-mode-var "snippets" mode-name)))
-     ;;     (if nvp-mode-name
-     ;;         (expand-file-name (nvp:as-string nvp-mode-name) (f-parent dir))
-     ;;       dir))
-     ;;   )
      (list mode-name
            snippet-dir
            (nvp:prefix 4 'do-dired)
@@ -106,9 +89,9 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (nvp:defq default-new-snippet yas-new-snippet-default)
   (unless (file-exists-p snippet-dir)
     (make-directory snippet-dir))
-  ;; with prefix dired the snippet directory
+  ;; With prefix dired the snippet directory
   (if do-dired (dired snippet-dir)
-    (let ((yas-wrap-around-region nil)  ;don't insert selected twice
+    (let ((yas-wrap-around-region nil)  ; don't insert selected twice
           (yas-selected-text text)
           (yas-indent-line 'fixed)
           (default-directory snippet-dir))
@@ -119,8 +102,8 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
       (yas-minor-mode)
       (yas-expand-snippet default-new-snippet))))
 
-;; -------------------------------------------------------------------
-;;; Commands
+
+;;; Indentation
 
 (defun nvp-snippet-toggle-indent (&optional beg end)
   "Switch b/w lisp indentation and relative indentation."
@@ -143,92 +126,6 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
          (if (eq last-command this-command) #'indent-relative
            #'indent-to-left-margin)))
     (funcall-interactively #'indent-for-tab-command)))
-
-
-;;; XXX(5/16/24): rest is obsolete in `snippet-ts-mode'
-;; (defvar-keymap nvp-repeat-snippet-inc-map
-;;   :repeat t
-;;   "=" #'nvp-snippet-increment-count
-;;   "+" #'nvp-snippet-increment-count
-;;   "-" #'nvp-snippet-decrement-count)
-;; (put 'nvp-snippet-increment-count 'repeat-check-key 'no)
-
-;; (defun nvp-snippet-increment-count (beg end &optional inc)
-;;   "De/increment snippet expansion numbers in region BEG to END."
-;;   (interactive (nvp:repeat-args (beg end inc)
-;;                  (append (nvp:tap-or-region 'bdwim 'sexp :pulse t)
-;;                          (list (if current-prefix-arg -1 1)))))
-;;   (or inc (setq inc 1))
-;;   (nvp-regex-map-across-matches
-;;    (lambda (ms) (replace-match (number-to-string (+ inc (string-to-number ms)))
-;;                                nil nil nil 1))
-;;    "\$\{?\\([[:digit:]]\\)" (cons beg end) 1))
-
-;; (defun nvp-snippet-decrement-count (beg end)
-;;   (interactive (nvp:repeat-args (beg end)
-;;                  (nvp:tap-or-region 'bdwim 'sexp :pulse t)))
-;;   (setq this-command 'nvp-snippet-increment-count)
-;;   (nvp-snippet-increment-count beg end -1))
-
-;;; Snippet mode
-
-;; stuff to be evaluated once when file is loaded
-;; "'" should be prefix to enable quote wrapping etc.
-;; (modify-syntax-entry ?$ "'" snippet-mode-syntax-table)
-;; (modify-syntax-entry ?\" "_" snippet-mode-syntax-table)
-;; (modify-syntax-entry ?` ")`" snippet-mode-syntax-table)
-;; (modify-syntax-entry ?` "(`" snippet-mode-syntax-table)
-;; (defvar nvp-snippet--xref-syntax-table
-;;   (let ((table (copy-syntax-table snippet-mode-syntax-table)))
-;;     (modify-syntax-entry ?$ "_" table)
-;;     (modify-syntax-entry ?\? "_" table)
-;;     (modify-syntax-entry ?~ "_" table)
-;;     (modify-syntax-entry ?! "_" table)
-;;     (modify-syntax-entry ?= "_" table)
-;;     table))
-
-;; (defun nvp-snippet-xref-find-definitions ()
-;;   (interactive)
-;;   (with-syntax-table nvp-snippet--xref-syntax-table
-;;     (let* ((xref-backend-functions '(elisp--xref-backend t))
-;;            (thing (xref-backend-identifier-at-point 'elisp)))
-;;       (xref-find-definitions thing))))
-
-;; non-nil if point is in an elisp code segment
-;; (defsubst nvp-snippet-code-p (&optional pnt)
-;;   ())
-
-;; (defconst nvp-snippet--field-vars
-;;   (cons
-;;    "-*- mode: snippet -*-"
-;;    (--map (concat it ": ")
-;;           '("key" "name" "condition" "expand-env" "uuid" "group" "type"))))
-
-;; (defvar nvp-snippet--env-vars
-;;   '("((yas-indent-line 'fixed))" "((yas-wrap-around-region 'nil))"))
-
-;; completion at point, use yas headers in header section, elisp capf otherwise
-;; (defun nvp-snippet-completion-at-point ()
-;;   (if (nvp-snippet-header-p)
-;;       (save-excursion
-;;         (let* ((end (point))
-;;                (beg (progn (skip-syntax-backward "w_") (point)))
-;;                (field (progn
-;;                         (forward-line 0)
-;;                         (and (looking-at "^#\\s-*\\([^: \n]+\\)\\s-*:?")
-;;                              (match-string-no-properties 1))))
-;;                (colon-p (and field (eq ?: (char-before (match-end 0))))))
-;;           (goto-char beg)
-;;           (skip-chars-backward " ")
-;;           (cond
-;;            ((eq (char-before) ?#)
-;;             (list beg end nvp-snippet--field-vars))
-;;            (colon-p ;(not (eq end beg))
-;;             (pcase field
-;;               (`"expand-env" (list beg end nvp-snippet--env-vars))
-;;               (`"type" (list beg end '("snippet" "command")))))
-;;            ((not colon-p) (list beg end nvp-snippet--field-vars)))))
-;;     (elisp-completion-at-point)))
 
 (provide 'nvp-snippet)
 ;; Local Variables:

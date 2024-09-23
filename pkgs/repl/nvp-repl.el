@@ -505,8 +505,8 @@ When called from a repl buffer with PREFIX:
                 (t nil))))
     (unless (eq 'async repl-buff)
       (pop-to-buffer
-       ;; FIXME: when repl is split below, try to pop to source above when it's
-       ;; buried somewhere
+       ;; FIXME(09/23/24): when repl is split below, try to pop to source above
+       ;; when it's buried somewhere
        repl-buff (nvp-repl--display-action (and repl-p 'other-window))))))
 
 (defun nvp-repl-remove (mode)

@@ -35,8 +35,7 @@
 ;;;###autoload
 (defun nvp-move-next-matching-char (&optional char)
   "Jump to next matching CHAR."
-  (interactive (nvp:repeat-args (char)
-                 (list (char-to-string (read-char "Char: " t)))))
+  (interactive (nvp:repeat-args (list (char-to-string (read-char "Char: " t)))))
   (nvp:push-mark 'nvp-move-next-matching-char)
   (let ((case-fold-search t))
     (condition-case nil
@@ -54,10 +53,9 @@
   (nvp:push-mark 'nvp-move-forward-paragraph)
   (or arg (setq arg 1))
   (if (bolp)
-      (progn
-        (and (< arg 1) (forward-line -1))
-        (forward-paragraph arg)
-        (forward-line 1))
+      (progn (and (< arg 1) (forward-line -1))
+             (forward-paragraph arg)
+             (forward-line 1))
     (line-move arg)))
 
 ;;;###autoload

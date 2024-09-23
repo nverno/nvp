@@ -135,9 +135,9 @@ If FOOTER is non-nil, use Local Variable list, otherwise -*- line."
 the current paragraph."
   (interactive
    (nvp:tap-or-region 'bdwim
-     (nvp:prefix '>1 'buffer 'paragraph) :pulse t))
-  (nvp:toggled-if
-      (untabify beg end)
+     (if (> (prefix-numeric-value current-prefix-arg) 1) 'buffer 'paragraph)
+     :pulse t))
+  (nvp:toggled-if (untabify beg end)
     (tabify beg end)))
 
 ;; from https://github.com/skeeto/.emacs.d/blob/master/lisp/extras.el
@@ -167,8 +167,7 @@ the current paragraph."
 ;;;###autoload
 (defun nvp-toggle-brackets (&optional beg end)
   "Toggle b/w open/close braces, eg. ( => [ => {."
-  (interactive (nvp:repeat-args (beg end)
-                   (nvp:tap-or-region 'bdwim 'list :pulse t)))
+  (interactive (nvp:repeat-args (nvp:tap-or-region 'bdwim 'list :pulse t)))
   (let ((bs '(?\[ ?\{ ?\())
         (tbl (nvp-toggle-brackets-table)))
     (-when-let (b (car (memq (char-after beg) bs)))
@@ -203,7 +202,7 @@ the current paragraph."
   "'"  #'nvp-toggle-quotes
   "\"" #'nvp-toggle-quotes)
 
-;;; XXX: escape / unescape toggle quotes
+;;; TODO(09/23/24): escape / unescape toggle quotes
 ;;;###autoload
 (defun nvp-toggle-quotes (&optional beg end)
   "Toggle b/w quote styles."

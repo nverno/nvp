@@ -27,6 +27,7 @@
 
 ;;; Sources
 ;; sources determined by source file paths
+(defvar semantic-c-dependency-system-include-path)
 (defvar nvp-c-semantic-online-sources
   (let ((uri
          "https://pubs.opengroup.org/onlinepubs/9699919799/functions/%s.html"

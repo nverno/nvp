@@ -140,20 +140,27 @@ Don't change cursor when NO-INDICATE."
         t
         ,@(unless no-indicate '((lambda () (nvp-indicate-cursor-post))))))))
 
-(defmacro nvp:repeat-args (args &rest body)
+(cl-defmacro nvp:repeat-args (&rest body &key args &allow-other-keys)
   "Setup ARGS to be saved for command during repeats.
 ARGS are the arguments for the current command, in order.
+If ARGS is nil, save all arguments across repeats.
 BODY should return a list as normally done in an interactive spec."
-  (declare (indent 1))
+  (declare (indent defun))
+  (nvp:skip-keywords body)
   (nvp:with-syms (res)
-    `(if (eq this-command last-command)
-         (list ,@(cl-loop for a in args
-                          collect `(get this-command ',a)))
-       (let ((,res (progn ,@body)))
-         (prog1 ,res
-           ,@(cl-loop for a in args
-                      for idx from 0
-                      collect `(put this-command ',a (nth ,idx ,res))))))))
+    (if args
+        `(if (eq this-command last-command)
+             (list ,@(cl-loop for a in args
+                              collect `(get this-command ',a)))
+           (let ((,res (progn ,@body)))
+             (prog1 ,res
+               ,@(cl-loop for a in args
+                          for idx from 0
+                          collect `(put this-command ',a (nth ,idx ,res))))))
+      `(if (eq this-command last-command)
+           (get this-command 'repeat-args)
+         (let ((,res (progn ,@body)))
+           (prog1 ,res (put this-command 'repeat-args ,res)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Output

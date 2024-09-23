@@ -185,8 +185,8 @@ With prefix sort in REVERSE."
     (with-syntax-table st
       (sp-wrap-with-pair "~"))))
 
-;;; TODO(09/11/24): 1. Sp errors when no expression recognized.
-;;                  2. Should also work when sp isnt enabled
+;; TODO(09/11/24): 1. Sp errors when no expression recognized.
+;;                 2. Should also work when sp isnt enabled
 ;;;###autoload
 (defun nvp-wrap-with-last-char (char)
   "Wrap next sexp with CHAR (last key pressed in calling command).
@@ -201,6 +201,25 @@ With prefix, read CHAR to wrap with."
            sp-pair-list)))
     (with-demoted-errors "Error in nvp-wrap-with-last-char: %S"
       (sp-wrap-with-pair char))))
+
+
+;;; Edit Lines
+
+;;;###autoload(autoload 'nvp-edit-lines-menu "nvp-edit" nil t)
+(transient-define-prefix nvp-edit-lines-menu ()
+  [["Delete"
+    ("r" "Matching lines" flush-lines)
+    ("R" "Non-matching lines" keep-lines)
+    ""
+    " Whitespace"
+    ("b" "Blank lines" delete-blank-lines :transient t)
+    ("w" "Trailing whitespace" delete-trailing-whitespace :transient t)]
+   ["Kill"
+    ("m" "Matching lines" kill-matching-lines)]
+   ["Copy"
+    ("c" "Matching lines" copy-matching-lines)]
+   ["Other"
+    ("#" "Count matches (>point)" how-many :transient t)]])
 
 (provide 'nvp-edit)
 ;; Local Variables:

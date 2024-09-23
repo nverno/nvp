@@ -17,11 +17,13 @@
 (defun nvp-org-tags-view (&optional directory)
   "Call `org-tags-view'. With prefix prompt for DIRECTORY to search tags."
   (interactive
-   (list (when (>= (prefix-numeric-value current-prefix-arg) 4)
-           (completing-read-multiple
-            "Directory: " #'completion-file-name-table))))
-  (let ((org-agenda-files (if directory
-                              (nvp:as-list directory)
+   (list (let ((raw (prefix-numeric-value current-prefix-arg)))
+           (cond ((and (eq 4 raw) (derived-mode-p 'org-mode))
+                  (buffer-file-name))
+                 ((>= raw 4) (completing-read-multiple
+                              "Directory: " #'completion-file-name-table))
+                 (t nil)))))
+  (let ((org-agenda-files (if directory (nvp:as-list directory)
                             org-agenda-files)))
     (nvp:prefix-shift -1)
     (call-interactively #'org-tags-view)))

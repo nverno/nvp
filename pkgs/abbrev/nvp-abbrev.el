@@ -390,7 +390,7 @@ PARENTS can provide current parents."
         (princ (format "%S: %S\n" k v))))))
 
 
-;; unlike default, list all parent tables and dynamic tables as well
+;; Unlike default, list all parent tables and dynamic tables as well
 ;;;###autoload
 (defun nvp-abbrev-list-abbrevs (&optional all)
   "List all major-mode and local tables active in buffer.

@@ -4,7 +4,7 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(nvp:decls)
+(nvp:decls :p (sml))
 
 (defun nvp-sml-inf-newline ()
   (interactive)
@@ -12,15 +12,25 @@
   (insert ";")
   (comint-send-input))
 
-;; FIXME(09/22/24): replace with REPL interface
-(defvar nvp-sml--last-buffer nil)
-(defun nvp-sml-switch-buffers ()
-  (interactive)
-  (if (and (eq major-mode 'inferior-sml-mode)
-           nvp-sml--last-buffer)
-      (switch-to-buffer-other-window nvp-sml--last-buffer)
-    (setq nvp-sml--last-buffer (current-buffer))
-    (sml-prog-proc-switch-to)))
+(defun nvp-sml-repl-init (&optional arg)
+  (interactive "P")
+  (-> (save-window-excursion
+        (if arg (call-interactively #'sml-run)
+          (funcall #'sml-run sml-program-name sml-default-arg sml-host-name)))
+      (get-buffer-process)))
+
+(nvp-repl-add '(sml-mode sml-ts-mode)
+  :name 'sml
+  :modes '(inferior-sml-mode sml-prog-proc-comint-mode)
+  :init #'nvp-sml-repl-init
+  :find-fn (lambda () (ignore-errors (sml-prog-proc-buffer)))
+  :send-string #'sml-prog-proc-send-string
+  :send-region #'sml-prog-proc-send-region
+  :send-buffer #'sml-prog-proc-send-buffer
+  :send-file #'sml-prog-proc-load-file
+  :cd-cmd "OS.FileSys.chDir \"%s\""     ; #'sml-prog-proc-chdir
+  :load-cmd "use \"%s\""
+  :pwd-cmd nil)
 
 (provide 'nvp-sml-repl)
 ;; Local Variables:

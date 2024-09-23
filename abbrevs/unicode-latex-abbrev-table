@@ -1,7 +1,6 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; lexical-binding: t; -*-
 (define-abbrev-table 'unicode-latex-abbrev-table
-  '(
-    ("\\exclamdown" "¡" nil :system t)
+  '(("\\exclamdown" "¡" nil :system t)
     ("\\sterling" "£" nil :system t)
     ("\\yen" "¥" nil :system t)
     ("\\brokenbar" "¦" nil :system t)
@@ -2509,7 +2508,7 @@
     ("\\ttsix" "𝟼" nil :system t)
     ("\\ttseven" "𝟽" nil :system t)
     ("\\tteight" "𝟾" nil :system t)
-    ("\\ttnine" "𝟿" nil :system t)
-    )
+    ("\\ttnine" "𝟿" nil :system t))
+
   "Unicode latex abbrevs (julia generated)."
   :regexp "\\(\\\\[\\A-Za-z0-9^]+\\)")

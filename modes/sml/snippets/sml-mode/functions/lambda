@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: fn
+# name: lambda expression
 # key: fn
 # --
-fn $1 => $0
+fn ($1) => $0

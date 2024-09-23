@@ -105,7 +105,11 @@
          (:match ,(rx bos "self" eos) @font-lock-keyword-face))
         ((identifier) @font-lock-builtin-face
          (:match ,(rx-to-string `(seq bos (or ,@lua-ts--builtins) eos))
-                 @font-lock-builtin-face))))
+                 @font-lock-builtin-face)))
+
+      :language 'lua
+      :feature 'nvp
+      '((nil) @nvp-nil-face))
 
      ;; After other rules
      (treesit-font-lock-rules

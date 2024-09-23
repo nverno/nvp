@@ -81,6 +81,7 @@ Each function takes a process as an argument to test against."
   help-cmd                        ; command to display REPL help
   cd-cmd                          ; command to change REPL working dir
   pwd-cmd                         ; command to get REPL working directory/buffer
+  load-cmd                        ; command to load file/module into repl
   config-cmd                      ; show/set repl config
   ;; History
   history-file
@@ -493,16 +494,16 @@ When called from a repl buffer with PREFIX:
     (setq nvp-repl-current nil))
   (let* ((repl-p)
          (repl-buff
-          (cond ((--when-let (nvp-repl--get-source)
+          (let ((src (nvp-repl--get-source)))
+            (cond (src (setq repl-p t)
+                       (nvp-repl--check-source-buffer src prefix))
+                  ((memq major-mode nvp-repl-modes)
                    (setq repl-p t)
-                   (nvp-repl--check-source-buffer it prefix)))
-                ((memq major-mode nvp-repl-modes)
-                 (setq repl-p t)
-                 (nvp-repl-minor-mode 1)
-                 (nvp-repl--check-source-buffer nil prefix))
-                ((--when-let (nvp-repl-get-buffer prefix)
-                   (prog1 it (nvp-repl--source-minor-mode-on))))
-                (t nil))))
+                   (nvp-repl-minor-mode 1)
+                   (nvp-repl--check-source-buffer nil prefix))
+                  ((--when-let (nvp-repl-get-buffer prefix)
+                     (prog1 it (nvp-repl--source-minor-mode-on))))
+                  (t nil)))))
     (unless (eq 'async repl-buff)
       (pop-to-buffer
        ;; FIXME(09/23/24): when repl is split below, try to pop to source above

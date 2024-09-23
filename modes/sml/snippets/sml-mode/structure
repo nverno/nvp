@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: structure
+# key: struct
+# --
+structure ${1:Thing} = struct
+  $0
+end

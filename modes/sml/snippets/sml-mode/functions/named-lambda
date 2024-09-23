@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: named lambda
+# key: fnn
+# --
+val ${1:func} = fn ($2) => $0

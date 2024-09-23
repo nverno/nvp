@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: signature
+# key: sig
+# --
+signature ${1:SIG} = sig
+  $0
+end

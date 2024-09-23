@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: func
+# name: function declaration with case
 # key: func
 # --
 fun ${1:name} ${2:exp} =

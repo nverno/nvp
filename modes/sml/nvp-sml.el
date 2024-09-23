@@ -4,9 +4,7 @@
 
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'sml-mode nil t)
-
-(nvp:decls :p sml :f (smie-forward-sexp))
+(nvp:decls :p sml)
 
 
 (with-eval-after-load 'nvp-repl

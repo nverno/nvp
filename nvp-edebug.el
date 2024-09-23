@@ -36,9 +36,9 @@
              #'nvp@do-switch-buffer))))
      (unwind-protect
          (progn (add-hook 'eval-expression-minibuffer-setup-hook hookfun)
-                (list (read--expression "[nvp] Eval in stack: ")))
+                (list (read--expression "Eval (in stack): ")))
        (remove-hook 'eval-expression-minibuffer-setup-hook hookfun))))
-  (funcall orig-fn expr))
+  (funcall orig-fn expr current-prefix-arg))
 
 (advice-add 'edebug-eval-expression :around #'nvp@edebug-locals)
 

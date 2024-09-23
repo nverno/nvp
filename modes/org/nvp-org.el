@@ -170,13 +170,21 @@ Return cons of \\='(name                           . raw-link)."
            (error (org-forward-element))))
         (t (org-forward-element))))
 
+(defun nvp-org-backward-element ()
+  (interactive)
+  (let ((pushed (not (eq t (nvp:push-mark 'nvp-org-backward-element)))))
+    (condition-case err
+        (org-backward-element)
+      (error (and pushed (pop-mark))
+             (error (error-message-string err))))))
+
 (nvp:def-keymap nvp-repeat-org-move
   :repeat (:enter (nvp-org-forward-element org-backward-element))
   "TAB" #'org-cycle
   "n"   #'nvp-org-forward-element
   "j"   #'nvp-org-forward-element
-  "p"   #'org-backward-element
-  "k"   #'org-backward-element
+  "p"   #'nvp-org-backward-element
+  "k"   #'nvp-org-backward-element
   "l"   #'org-down-element
   "h"   #'org-up-element)
 

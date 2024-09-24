@@ -22,17 +22,17 @@
     try-complete-lisp-symbol
     try-complete-lisp-symbol-partially))
 
-;; use `pop-to-buffer' and set local `ielm-working-buffer'
 (define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
   (let ((orig-buff (current-buffer)))
     (with-current-buffer (get-buffer-create "*ielm*")
-      (nvp:with-letf #'pop-to-buffer-same-window #'ignore
+      (let ((display-buffer-overriding-action
+             '(display-buffer-no-window
+               ((allow-no-window . t)))))
         (funcall orig-fn))
-      (prog1 (current-buffer)
-        (setq-local ielm-working-buffer orig-buff)
-        (pop-to-buffer (current-buffer))))))
+      (setq-local ielm-working-buffer orig-buff)
+      (pop-to-buffer (current-buffer)))))
 
-;; ielm-return always wants to eval when smartparens close sexps
+;; `ielm-return' always wants to eval when smartparens close sexps
 (defun nvp-ielm-nl (&optional arg)
   "Insert nl and indent unless point is at end-of-line."
   (interactive "P")

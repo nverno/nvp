@@ -1,8 +1,8 @@
-;;; nvp-repl.el --- Generic REPL functions -*- lexical-binding: t; -*-
+;;; nvp-repl.el --- Generic Repl functions -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;;
-;; Unified REPL interface:
+;; Unified Repl interface:
 ;;  - `nvp-repl-jump' pops b/w source buffers and repls, starting them when
 ;;    necessary.
 ;;
@@ -25,7 +25,7 @@
   :group 'languages)
 
 (defcustom nvp-repl-default 'shell
-  "Default REPL when buffer has no repl associations."
+  "Default Repl when buffer has no repl associations."
   :type 'symbol)
 
 (defcustom nvp-repl-find-functions
@@ -33,7 +33,7 @@
     nvp-repl-find-bufname
     nvp-repl-find-procname
     nvp-repl-find-modes)
-  "Hook run to find the first applicable REPL process.
+  "Hook run to find the first applicable Repl process.
 Each function takes a process as an argument to test against."
   :type '(repeat symbol))
 
@@ -41,7 +41,7 @@ Each function takes a process as an argument to test against."
   "Some repls check this variable before loading a startfile.")
 
 (cl-defstruct (nvp--repl (:constructor nvp-repl-make))
-  "Mode specific REPL variables"
+  "Mode specific Repl variables"
   name                               ; repl name
   modes                              ; repl major-modes to consider
   init                               ; init repl => return process
@@ -53,8 +53,8 @@ Each function takes a process as an argument to test against."
   wait                               ; time to wait for repl
   (live       #'process-live-p)      ; check if repl process is alive
   (process-p  #'processp)            ; check if object is a repl process
-  (buff->proc #'get-buffer-process)  ; get buffer associated with process
-  (proc->buff #'process-buffer)      ; process associated w/ buffer
+  (buf->proc #'get-buffer-process)  ; get buffer associated with process
+  (proc->buf #'process-buffer)      ; process associated w/ buffer
   ;; the rest are related to interaction
   filters                                ; filters applied to text sent to repl
   (send-string    #'comint-send-string)  ; function to send string to repl
@@ -67,27 +67,27 @@ Each function takes a process as an argument to test against."
   send-statement
   send-buffer
   send-file
-  ;; Eval: execute silently in REPL, display results in overlay/message
+  ;; Eval: execute silently in Repl, display results in overlay/message
   (eval-output-filter #'nvp-repl--eval-output-filter)
   eval-input-filter
   eval-string
   eval-sexp
   eval-defun
-  ;; REPL commands
+  ;; Repl commands
   commands                        ; repl commands
   (pos-bol #'comint-line-beginning-position)
   cmd-prefix                      ; prefix char for repl commands
   cmd-handlers                    ; handlers for added repl input commands
-  help-cmd                        ; command to display REPL help
-  cd-cmd                          ; command to change REPL working dir
-  pwd-cmd                         ; command to get REPL working directory/buffer
+  help-cmd                        ; command to display Repl help
+  cd-cmd                          ; command to change Repl working dir
+  pwd-cmd                         ; command to get Repl working directory/buffer
   load-cmd                        ; command to load file/module into repl
   config-cmd                      ; show/set repl config
   ;; History
   history-file
   ;; set internally
-  repl-proc                      ; REPL process
-  repl-buff)                     ; REPL output buffer (may not have a repl-proc)
+  repl-proc                      ; Repl process
+  repl-buf)                      ; Repl output buffer (may not have a repl-proc)
 (put 'nvp-repl-make 'lisp-indent-function 'defun)
 
 
@@ -106,6 +106,7 @@ buffers."
   '((other-window . ((display-buffer-reuse-window
                       display-buffer-use-some-window
                       display-buffer-pop-up-window)
+                     ;; Prefer the largest other window the most ⬎
                      (some-window          . t)))
     (split-below . ((display-buffer-reuse-window
                      nvp-repl--split-below))))
@@ -129,7 +130,8 @@ buffers."
             (window-min-height    . 20)
             (inhibit-same-window  . t)
             (inhibit-switch-frame . t)
-            (dedicated            . ,nvp-repl-dedicated-window))))
+            ,@(and nvp-repl-dedicated-window
+                   `((dedicated . ,nvp-repl-dedicated-window))))))
 
 ;;; Caches
 ;; Cache defined repls
@@ -140,27 +142,26 @@ buffers."
 ;; Note: repl buffers may not be processes, eg. slime repls
 (defvar nvp-repl--process-buffers (make-hash-table :test #'equal))
 
-(defvar-local nvp-repl-current () "REPL associated with current buffer.")
+(defvar-local nvp-repl-current () "Repl associated with current buffer.")
 
 (defsubst nvp-repl--get-source ()
-  (declare (pure t) (side-effect-free t))
-  (gethash (current-buffer) nvp-repl--process-buffers))
+  (gethash (buffer-name (current-buffer)) nvp-repl--process-buffers))
 
 (defsubst nvp-repl--set-source (repl-buf src-buf)
-  (puthash repl-buf src-buf nvp-repl--process-buffers))
+  (puthash (buffer-name repl-buf) src-buf nvp-repl--process-buffers))
 
 (defun nvp-repl--cleanup-process-buffers ()
   (maphash (lambda (k v)
-             (unless (and (buffer-live-p k)
+             (unless (and (get-buffer k)
                           (buffer-live-p v))
                (remhash k nvp-repl--process-buffers)))
            nvp-repl--process-buffers))
 
-;; Get `nvp-repl-current' from either source or REPL buffer
+;; Get `nvp-repl-current' from either source or Repl buffer
 (defun nvp-repl-current ()
   (or nvp-repl-current
-      (--when-let (nvp-repl--get-source)
-        (buffer-local-value 'nvp-repl-current it))))
+      (and-let* ((src (nvp-repl--get-source)))
+        (buffer-local-value 'nvp-repl-current src))))
 
 (defun nvp-repl-current-source-buffer ()
   (if nvp-repl-current (current-buffer) (nvp-repl--get-source)))
@@ -186,7 +187,9 @@ buffers."
       (cl-pushnew name (gethash mode nvp-repl-cache)))))
 (put 'nvp-repl-add 'lisp-indent-function 'defun)
 
-;; Default repl to use - shell
+
+;;; Default Shell repl
+
 (nvp:decl sh-cd-here)
 (defvar nvp-repl--shell-repl
   (apply #'nvp-repl-make
@@ -198,12 +201,14 @@ buffers."
                :bufname "*shell"
                :pwd-cmd "pwd"
                :help-cmd '(:no-arg "help" :with-arg "help %s")
+               :load-cmd "source \"%s\""
                :cd-cmd (lambda (dir)
                          (let ((default-directory dir))
-                           (funcall-interactively #'sh-cd-here))))))
+                           (funcall-interactively #'sh-cd-here)))))
+  "Default repl.")
 
-;;; initialize some repls
 (nvp-repl-add '(sh-mode bash-ts-mode bats-mode) nvp-repl--shell-repl)
+
 
 (eval-when-compile
   ;; may switch storage of repl vars
@@ -229,8 +234,8 @@ well."
                  ,@(if allow-repl '((nvp-repl-current)) '(nvp-repl-current)))))
      ,@body))
 
-;; return repl for mode, or default
 (defun nvp-repl-for-mode (mode)
+  "Return repl for MODE."
   (--if-let (gethash mode nvp-repl-cache)
       (gethash (nvp:repl--choose it) nvp-repl--repl-cache)
     (prog1 (gethash nvp-repl-default nvp-repl--repl-cache)
@@ -239,67 +244,73 @@ well."
        mode nvp-repl-default))))
 
 (defun nvp-repl-ensure (&optional mode)
-  "ensure buffer has a repl associated with mode or current `major-mode'."
+  "Ensure buffer has a repl associated with MODE."
   (or nvp-repl-current
       (setq nvp-repl-current (nvp-repl-for-mode (or mode major-mode)))))
 
-;; -------------------------------------------------------------------
-;;; functions to find repls
 
-;; find repl using a custom function
+;; -------------------------------------------------------------------
+;;; Find Repls
+
 (defun nvp-repl-find-custom ()
+  "Find repl using a repls `find-fn'."
   (nvp-with-repl (find-fn)
     (and find-fn (funcall find-fn))))
 
-;; match process buffer
 (defun nvp-repl-find-bufname ()
-  (nvp-with-repl (bufname proc->buff)
+  "Match process buffer."
+  (nvp-with-repl (bufname proc->buf)
     (when bufname
       (nvp:proc-find bufname
-        :key (lambda (p) (or (buffer-name (funcall proc->buff p)) regexp-unmatchable))
+        :key (lambda (p) (or (buffer-name (funcall proc->buf p)) regexp-unmatchable))
         :test #'string-match-p))))
 
-;; match process name
 (defun nvp-repl-find-procname ()
+  "Match process name."
   (nvp-with-repl (procname)
     (when procname
       (nvp:proc-find procname :key #'process-name :test #'string-match-p))))
 
-;; match major-mode
 (defun nvp-repl-find-modes ()
-  (nvp-with-repl (modes proc->buff)
+  "Match `major-mode'."
+  (nvp-with-repl (modes proc->buf)
     (when modes
       (nvp:proc-find-if
         (lambda (p-buf) (and p-buf (memq (buffer-local-value 'major-mode p-buf) modes)))
-        :key (lambda (p) (funcall proc->buff p))))))
+        :key (lambda (p) (funcall proc->buf p))))))
+
 
 ;; -------------------------------------------------------------------
-;;; repl processes
+;;; Repl Processes
 
-;; non-nil if repl-proc is alive
-(defsubst nvp-repl-live-p (repl-proc) (funcall (nvp--repl-live nvp-repl-current) repl-proc))
+(defsubst nvp-repl-live-p (repl-proc)
+  "Return non-nil if REPL-PROC is alive."
+  (funcall (nvp--repl-live nvp-repl-current) repl-proc))
 
-;; check repl has an associated process and it is alive
+;; Check repl has an associated process and it is alive
 ;; if it had a repl-proc that died, this updates its repl-proc to nil
 ;; returns the live process when available
 (defun nvp-repl-process ()
+  "Return repl process or nil."
   (--when-let (repl:val "repl-proc")
     (if (ignore-errors (nvp-repl-live-p it)) it
       (setf (repl:val "repl-proc") nil
-            (repl:val "repl-buff") nil))))
+            (repl:val "repl-buf") nil))))
 
-;; get repl buffer if it has a live process
 (defun nvp-repl-buffer ()
+  "Return repl buffer if it has a live process."
   (-some->> (nvp-repl-process)
-    (funcall (repl:val "proc->buff"))))
+    (funcall (repl:val "proc->buf"))))
 
-;; update repls proc/buff and link process-buffer (which may not be an
+;; Update repls proc/buff and link process-buffer (which may not be an
 ;; actual process, eg. slime repl) with source buffer
-(defun nvp-repl-update (repl-proc src-buff &optional p-buff)
-  (or p-buff (setq p-buff (funcall (repl:val "proc->buff") repl-proc)))
+(defun nvp-repl-update (repl-proc src-buf &optional proc-buf)
+  "Update current repl's REPL-PROC and SRC-BUF."
+  (or proc-buf (setq proc-buf (funcall (repl:val "proc->buf") repl-proc)))
   (setf (repl:val "repl-proc") repl-proc
-        (repl:val "repl-buff") p-buff)
-  (prog1 p-buff (nvp-repl--set-source p-buff src-buff)))
+        (repl:val "repl-buf") proc-buf)
+  (prog1 proc-buf (nvp-repl--set-source proc-buf src-buf)))
+
 
 ;; -------------------------------------------------------------------
 ;;; Minor mode
@@ -345,7 +356,7 @@ well."
 
 ;;;###autoload
 (define-minor-mode nvp-repl-minor-mode
-  "REPL buffer minor mode."
+  "Minor mode active in Repl buffers."
   :lighter " Ɍepl"
   ;; (when (derived-mode-p 'comint-mode)
   ;;   (add-hook 'comint-output-filter-functions
@@ -362,23 +373,28 @@ well."
 
 ;;;###autoload
 (define-minor-mode nvp-repl-source-minor-mode
-  "REPL source buffer minor mode."
+  "Minor mode active in source buffers associated with a Repl."
   :lighter " Ɍepl")
 
 (defun nvp-repl--source-minor-mode-on ()
-  (unless (or (memq major-mode (append nvp-repl-no-minor-modes nvp-repl-modes))
+  (unless (or (memq major-mode
+                    (append nvp-repl-no-minor-modes nvp-repl-modes))
               nvp-repl-source-minor-mode)
     (nvp-repl-source-minor-mode 1)))
 
-;; -------------------------------------------------------------------
-;;; Initialize new repls
 
+;; -------------------------------------------------------------------
+;;; Starting Repls
+
+;; Runs in a new repl buffer: enable minor mode, setup command handlers,
+;; history+hippie, etc.
 (defun nvp-repl--setup-repl-buffer (&optional history-file cmd-handlers)
   (nvp-repl-minor-mode)
   (when cmd-handlers
     (nvp-repl-setup-input-filter cmd-handlers))
   (when (and history-file
-             (derived-mode-p 'comint-mode) ; xxx: handle for non comint modes?
+             ;; XXX(09/24/24): handle for non comint modes?
+             (derived-mode-p 'comint-mode) 
              (not (and comint-input-ring-file-name
                        (string= (file-name-base comint-input-ring-file-name)
                                 history-file)
@@ -386,6 +402,8 @@ well."
                              hippie-expand-try-functions-list))))
     (nvp-comint-setup-history history-file)))
 
+;; Enable source minor mode, update source-repl partnership and run repl buffer
+;; setup
 (defun nvp-repl--init-setup (src-buf repl-proc &optional repl-buf and-go)
   (cl-assert (buffer-live-p src-buf))
   (with-current-buffer src-buf
@@ -399,27 +417,26 @@ well."
           (pop-to-buffer buf (nvp-repl--display-action)))))))
 
 (defun nvp-repl--make-async-callback (src-buf &optional and-go)
-  "create callback for src-buf that is passed to async repl init.
+  "Create callback for src-buf that is passed to async repl init.
 async repl init functions should call callback with repl-buf and repl-proc."
   `(lambda (repl-proc &optional repl-buf)
      (nvp-repl--init-setup ,src-buf repl-proc repl-buf ,and-go)))
 
-(defun nvp-repl--init-repl-hook (src-buf buff->proc &optional and-go)
-  "associate repl with source from repl mode hook."
+(defun nvp-repl--init-repl-hook (src-buf buf->proc &optional and-go)
+  "Associate repl with source from repl mode hook."
   `(lambda ()
-     (if-let ((repl-proc (funcall ',buff->proc (current-buffer))))
+     (if-let ((repl-proc (funcall ',buf->proc (current-buffer))))
          (nvp-repl--init-setup ,src-buf repl-proc (current-buffer) ,and-go)
        (user-error "failed to initialize repl for %s" ,src-buf))))
 
 (defun nvp-repl--init-with-repl-hooks (&optional and-go)
-  "run repl initialization with temporary repl mode hooks added to associate
-repl with source buffer."
-  (nvp-with-repl (init modes buff->proc)
+  "Run repl initialization via temporary repl mode hooks."
+  (nvp-with-repl (init modes buf->proc)
     (let ((hooks (mapcar (lambda (m) (intern (concat (symbol-name m) "-hook"))) modes)))
       (fset 'nvp-repl--init
             `(lambda ()
                (dolist (hook ',hooks) (remove-hook hook #'nvp-repl--init))
-               (funcall ,(nvp-repl--init-repl-hook (current-buffer) buff->proc and-go))))
+               (funcall ,(nvp-repl--init-repl-hook (current-buffer) buf->proc and-go))))
       (condition-case-unless-debug err
           (progn (dolist (hook hooks) (add-hook hook #'nvp-repl--init))
                  (setq prefix-arg current-prefix-arg)
@@ -428,17 +445,20 @@ repl with source buffer."
                (dolist (hook hooks) (remove-hook hook #'nvp-repl--init)))))))
 
 (defun nvp-repl--check-source-buffer (buf &optional prefix)
-  (if (and (null prefix) (buffer-live-p buf)) buf
-    (let ((src-buf
-           (nvp:prompt-with-message "Source buffer: "
+  "Return source buffer to use.
+Check BUF is live and possibly change source depending on PREFIX."
+  (or (and buf (null prefix) (buffer-live-p buf) buf)
+      (->> (nvp:prompt-with-message "Source buffer: "
              :read-fn #'read-buffer
              :read-args (nil t)
-             :message (if prefix "Current buffer %S" "Source buffer %S dead") buf)))
-      (nvp-repl--set-source (current-buffer) (get-buffer src-buf)))))
+             :message (if prefix "Current buffer %S" "Source buffer %S dead")
+             buf)
+           (get-buffer)
+           (nvp-repl--set-source (current-buffer)))))
 
 (defun nvp-repl-start (&optional prefix repl)
-  "Return a REPL buffer associated with current buffer."
-  (nvp-with-repl (init init-async init-use-hook wait process-p buff->proc)
+  "Return a Repl buffer associated with current buffer."
+  (nvp-with-repl (init init-async init-use-hook wait process-p buf->proc)
     :repl repl
     (cond (init-async (prog1 'async
                         (nvp-repl--make-async-callback (current-buffer) t)))
@@ -448,29 +468,30 @@ repl with source buffer."
                (and wait (sit-for wait))
                (unless (funcall process-p repl-proc)
                  (setq repl-buf repl-proc
-                       repl-proc (funcall buff->proc repl-buf)))
+                       repl-proc (funcall buf->proc repl-buf)))
                (cl-assert (funcall process-p repl-proc))
                (nvp-repl--init-setup (current-buffer) repl-proc repl-buf))))))
 
 (defun nvp-repl-get-buffer (&optional prefix _repl)
-  "Return a REPL buffer if one exists, otherwise attempt to start one."
+  "Return a Repl buffer, creating one when necessary."
   (nvp-repl-ensure)
-  (or (--when-let (nvp-repl-buffer)
-        (prog1 it (when prefix
-                    (nvp-repl--set-source it (current-buffer))
-                    ;; Set working directory to source directory
-                    (and (equal '(16) prefix)
-                         (nvp-repl-cd)))))
-      (nvp-with-repl (process-p proc->buff buff->proc)
-        (when-let ((repl-proc (run-hook-with-args-until-success 'nvp-repl-find-functions))
-                   (p-buff (if (funcall process-p repl-proc)
-                               (funcall proc->buff repl-proc)
-                             (setq repl-proc (funcall buff->proc repl-proc)))))
+  (or (and-let* ((buf (nvp-repl-buffer)))
+        (prog1 buf (when prefix
+                     (nvp-repl--set-source buf (current-buffer))
+                     ;; Set working directory to source directory
+                     (and (equal '(16) prefix)
+                          (nvp-repl-cd)))))
+      (nvp-with-repl (process-p proc->buf buf->proc)
+        (when-let ((repl-proc (run-hook-with-args-until-success
+                               'nvp-repl-find-functions))
+                   (proc-buf (if (funcall process-p repl-proc)
+                                 (funcall proc->buf repl-proc)
+                               (setq repl-proc (funcall buf->proc repl-proc)))))
           (if (nvp-repl-live-p repl-proc)  ; found unregistered live one
-              (nvp-repl-update repl-proc (current-buffer) p-buff)
-            (remhash p-buff nvp-repl--process-buffers))))
-      (or (nvp-repl-start prefix)     ; initialize new REPL
-          (user-error "Failed to initialize REPL"))))
+              (nvp-repl-update repl-proc (current-buffer) proc-buf)
+            (remhash (buffer-name proc-buf) nvp-repl--process-buffers))))
+      (nvp-repl-start prefix)           ; initialize new Repl
+      (user-error "Failed to initialize Repl")))
 
 
 ;; -------------------------------------------------------------------
@@ -478,7 +499,7 @@ repl with source buffer."
 
 ;;;###autoload
 (defun nvp-repl-jump (&optional prefix _repl)
-  "Jump between source and REPL buffers, staring if necessary.
+  "Jump between source and Repl buffers, staring if necessary.
 If the associated source buffer no longer exists, pop to next visible
 window.
 
@@ -492,33 +513,33 @@ When called from a repl buffer with PREFIX:
   (when (equal '(16) prefix)
     (nvp-repl--cleanup-process-buffers)
     (setq nvp-repl-current nil))
-  (let* ((repl-p)
-         (repl-buff
-          (let ((src (nvp-repl--get-source)))
-            (cond (src (setq repl-p t)
-                       (nvp-repl--check-source-buffer src prefix))
-                  ((memq major-mode nvp-repl-modes)
+  (let* ((repl-p nil)
+         (repl-buf
+          (--if-let (nvp-repl--get-source)
+              (prog1 (nvp-repl--check-source-buffer it prefix)
+                (setq repl-p t))
+            (cond ((memq major-mode nvp-repl-modes)
                    (setq repl-p t)
                    (nvp-repl-minor-mode 1)
                    (nvp-repl--check-source-buffer nil prefix))
                   ((--when-let (nvp-repl-get-buffer prefix)
                      (prog1 it (nvp-repl--source-minor-mode-on))))
                   (t nil)))))
-    (unless (eq 'async repl-buff)
+    (unless (eq 'async repl-buf)
       (pop-to-buffer
        ;; FIXME(09/23/24): when repl is split below, try to pop to source above
        ;; when it's buried somewhere
-       repl-buff (nvp-repl--display-action (and repl-p 'other-window))))))
+       repl-buf (nvp-repl--display-action (and repl-p 'other-window))))))
 
 (defun nvp-repl-remove (mode)
   "Remove any repl associations with MODE."
   (interactive (list (intern (nvp-read-mode))))
   (remhash mode nvp-repl-cache))
 
-;;; TODO(5/12/24): Allow starting unassociated REPLs for a buffer?
+;; TODO(5/12/24): Allow starting unassociated REPLs for a buffer?
 ;;                 Should send commands be disabled?
 (defun nvp-repl (repl &optional prefix)
-  "Start a REPL for current buffer.
+  "Start a Repl for current buffer.
 PREFIX is passed to `nvp-repl-jump'."
   (interactive
    (let ((repl (completing-read "Repl: " nvp-repl--repl-cache nil t)))
@@ -526,25 +547,27 @@ PREFIX is passed to `nvp-repl-jump'."
   (let ((nvp-repl-current repl))
     (funcall-interactively #'nvp-repl-jump prefix repl)))
 
+
 ;; -------------------------------------------------------------------
-;;; Basic REPL interaction
+;;; Repl Interaction
 ;;
 ;; TODO: mode specific commands
 ;; - indirect call for sending region, eg. in perl lines should be joined,
 ;;   racket/guile remove declarations, etc.
-;; - open REPL in project root
+;; - open Repl in project root
 ;; - sending buffer should call indirect hook to clean input
 
 ;; (defun nvp-repl-send-input (&optional no-newline)
 ;;   "Send repl's current input, appending a final newline unless NO-NEWLINE."
 ;;   (unless nvp-repl-current
-;;     (user-error "No current REPL")))
+;;     (user-error "No current Repl")))
 
 (defvar-local nvp-repl-eval-input-filter nil
   "When non-nil, apply to input before sending to repl.")
 
-;; Default filter for `eval-output-filter'
 (defun nvp-repl--eval-output-filter (str)
+  "Fixup whitespace in STR.
+Default output filter for `eval-output-filter'."
   (string-trim
    (cl-reduce
     (lambda (s rep)
@@ -554,10 +577,11 @@ PREFIX is passed to `nvp-repl-jump'."
     :initial-value str)))
 
 (defun nvp-repl-send-string (str &optional insert no-newline)
-  "Send STR to current REPL, appending a final newline unless NO-NEWLINE.
-If INSERT, STR is inserted into REPL."
+  "Send STR to current Repl.
+Unless NO-NEWLINE, append a final newline.
+If INSERT, insert STR into REPL (adds to comint history)."
   (unless nvp-repl-current
-    (user-error "No REPL associated with buffer."))
+    (user-error "No Repl associated with buffer."))
   (and nvp-repl-eval-input-filter
        (setq str (funcall nvp-repl-eval-input-filter str)))
   (nvp-with-repl (send-input send-string repl-proc)

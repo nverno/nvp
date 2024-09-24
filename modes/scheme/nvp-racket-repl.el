@@ -72,8 +72,8 @@ With prefix INSERT, insert results in buffer at point instead."
     :modes '(racket-repl-mode)
     :live #'numberp
     :process-p #'numberp
-    :buff->proc (lambda (buf) (with-current-buffer buf (racket--repl-session-id)))
-    :proc->buff #'nvp-racket--repl-buffer
+    :buf->proc (lambda (buf) (with-current-buffer buf (racket--repl-session-id)))
+    :proc->buf #'nvp-racket--repl-buffer
     :wait 0.1
     :init #'nvp-racket--repl-init
     :clear-buffer #'racket-repl-clear-leaving-last-prompt

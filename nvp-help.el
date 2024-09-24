@@ -15,7 +15,9 @@
   (interactive "P")
   (let ((display-buffer-overriding-action
          (when (and same-window
-                    (not (window-dedicated-p (selected-window))))
+                    (let ((win (selected-window)))
+                      (not (or (window-dedicated-p win)
+                               (window-parameter win 'side)))))
            '(display-buffer-same-window
              ((inhibit-switch-frame . t)
               (inhibit-same-window  . nil))))))

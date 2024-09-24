@@ -125,7 +125,8 @@
     ("fi" "funcall-interactively" nil :system t)
     ("fl" "forward-line" nil :system t)
     ("fm" "format-message" nil :system t)
-    ("fp" ["featurep '" 0 nil nil] nvp-abbrev-expand-in-paren-hook :system t)
+    ("fp" ["featurep '" 0 nil nil]
+     nvp-abbrev-expand-in-paren-hook :system t)
     ("fr" "fill-region" nil :system t)
     ("fs" "forward-sexp" nil :system t)
     ("ft" "file-truename" nil :system t)
@@ -155,6 +156,7 @@
     ("os" "object-slots" nil :system t)
     ("ow" "other-window" nil :system t)
     ("pb" "process-buffer" nil :system t)
+    ("pd" "pcase-dolist" nil :system t)
     ("pf" "process-file" nil :system t)
     ("pg" "plist-get" nil :system t)
     ("pl" "pcase-let" nil :system t)
@@ -368,6 +370,7 @@
     ("nump" "numberp" nil :system t)
     ("rris" "replace-regexp-in-string" nil :system t)
     ("scts" "shell-command-to-string" nil :system t)
+    ("self" "selected-frame" nil :system t)
     ("sifn" "substitute-in-file-name" nil :system t)
     ("smae" "save-mark-and-excursion" nil :system t)
     ("spsc" "start-process-shell-command" nil :system t)
@@ -398,6 +401,7 @@
     ("sympl" "symbol-plist" nil :system t)
     ("wottb" "with-output-to-temp-buffer" nil :system t)
     ("dbulrw" "display-buffer-use-least-recent-window" nil :system t))
+
   "Emacs lisp function abbrevs."
   :enable-function #'nvp-elisp-abbrev-expand-fn-p
   :regexp nvp-lisp-abbrev-re

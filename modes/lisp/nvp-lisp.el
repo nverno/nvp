@@ -57,8 +57,8 @@
                    (let ((buff (slime-connection-output-buffer p)))
                      (buffer-live-p buff))))
     ;; :find-fn #'slime-connection
-    :buff->proc #'slime-connection
-    :proc->buff #'(lambda (_p) (slime-output-buffer t))
+    :buf->proc #'slime-connection
+    :proc->buf #'(lambda (_p) (slime-output-buffer t))
     :init #'(lambda (&optional _prefix)
               (save-window-excursion
                 (with-current-buffer (slime-output-buffer t)

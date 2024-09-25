@@ -70,8 +70,8 @@ With prefix, INSERT result at point."
 ;;;###autoload
 (defun nvp-repl-eval-result-value ()
   "Get result of last eval from repl."
-  (nvp-with-repl (repl-buff repl-proc eval-output-filter)
-    (with-current-buffer repl-buff
+  (nvp-with-repl (repl-buf repl-proc eval-output-filter)
+    (with-current-buffer repl-buf
       (while (not (and comint-last-prompt
                        (goto-char (car comint-last-prompt))
                        (looking-at comint-prompt-regexp)))

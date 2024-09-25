@@ -76,14 +76,15 @@ If PROMPT is non-nil, prompt for OPENER/CLOSER."
                  (list (car bnds) (cdr bnds) nil nil nil current-prefix-arg)))
   (unless (and start end (< start end))
     (user-error "No region"))
-  
-  (cl-labels ((as-string (exp)
-                (cond ((stringp exp) exp)
-                      ((symbolp exp) (symbol-name exp))
-                      ((characterp exp) (char-to-string exp))
-                      ((consp exp) (cons (as-string (car exp))
-                                         (as-string (cdr exp))))
-                      (t (user-error "dont know about \"%S\"" exp)))))
+
+  (cl-labels
+      ((as-string (exp)
+         (cond ((stringp exp) exp)
+               ((symbolp exp) (symbol-name exp))
+               ((characterp exp) (char-to-string exp))
+               ((consp exp) (cons (as-string (car exp))
+                                  (as-string (cdr exp))))
+               (t (user-error "dont know about \"%S\"" exp)))))
     (if prompt
         (let ((pre (as-string (read--expression "Wrap items with (a . b): "))))
           (if (consp pre) (setq opener (car pre)

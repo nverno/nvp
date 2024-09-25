@@ -8,6 +8,7 @@
   (defvar nvp-display-actions)
   (defsubst nvp-display--action (action type)
     (or (cdr (assq action (plist-get nvp-display-actions type)))
+
         (if (equal ':buffer type)
             (list nvp-display-fallback-function)
           nvp-display-fallback-function))))

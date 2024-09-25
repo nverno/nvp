@@ -90,6 +90,7 @@
     ("ad" "assoc-default" nil :system t)
     ("ah" "add-hook" nil :system t)
     ("ap" "apply-partially" nil :system t)
+    ("ba" "button-at" nil :system t)
     ("bc" "backward-char" nil :system t)
     ("bl" "buffer-list" nil :system t)
     ("bn" "buffer-name" nil :system t)

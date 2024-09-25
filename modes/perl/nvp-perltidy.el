@@ -37,21 +37,19 @@ them."
         (save-mark-and-excursion
           (nvp-perltidy-region beg end))
       (let ((src-bnds (cons beg end)))
-        (cl-labels ((apply-changes
-                     ()
-                     (interactive)
-                     (cl-assert (buffer-live-p src-buff))
-                     (with-current-buffer src-buff
-                       (goto-char (car src-bnds))
-                       (save-excursion
-                         (delete-region (car src-bnds) (cdr src-bnds))
-                         (insert-buffer-substring nvp-perltidy-buffer-name))
-                       (pop-to-buffer (current-buffer)))
-                     (kill-buffer nvp-perltidy-buffer-name))
-                    (abort-changes
-                     ()
-                     (interactive)
-                     (kill-buffer nvp-perltidy-buffer-name)))
+        (cl-labels ((apply-changes ()
+                      (interactive)
+                      (cl-assert (buffer-live-p src-buff))
+                      (with-current-buffer src-buff
+                        (goto-char (car src-bnds))
+                        (save-excursion
+                          (delete-region (car src-bnds) (cdr src-bnds))
+                          (insert-buffer-substring nvp-perltidy-buffer-name))
+                        (pop-to-buffer (current-buffer)))
+                      (kill-buffer nvp-perltidy-buffer-name))
+                    (abort-changes ()
+                      (interactive)
+                      (kill-buffer nvp-perltidy-buffer-name)))
           (with-temp-buffer-window
               nvp-perltidy-buffer-name t nil
             (with-current-buffer standard-output

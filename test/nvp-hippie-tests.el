@@ -5,9 +5,8 @@
 (ert-deftest nvp-he-flex-camel/snake ()
   "Test default camel/snake matcher."
   (let (case-fold-search)
-    (cl-labels ((fn
-                 (prefix str)
-                 (string-match-p (nvp-he-flex-camel/snake prefix) str)))
+    (cl-labels ((fn (prefix str)
+                  (string-match-p (nvp-he-flex-camel/snake prefix) str)))
       (should (fn "sS" "setState"))
       (should (fn "setS" "setState"))
       (should (fn "this.sS" "this.setState"))

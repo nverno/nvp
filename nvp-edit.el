@@ -249,7 +249,7 @@ LAST-ACTION is used during repeats."
                        (capitalize 'capitalize)
                        (t (save-mark-and-excursion
                             (and region-p (goto-char beg))
-                            (skip-syntax-forward "\" _'.\(")
+                            (skip-syntax-forward "<\" _'.\(")
                             (let (case-fold-search)
                               (if (looking-at-p "\\s-*[A-Z0-9_:./(){}-]+\\b")
                                   'downcase

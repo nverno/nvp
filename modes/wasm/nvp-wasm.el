@@ -19,11 +19,10 @@ With prefix SAVE, dont cleanup wasm/wat files."
          (wat (concat base ".wat"))
          (bufname (format "*wasm-compile[%s]*" (f-filename base)))
          (save save)
-         (compile-command
-          (cond
-           ((memq major-mode nvp-wasm-js-modes)
-            (format "asc %s -o %s -t %s" src wasm wat))
-           (t (user-error "Unimplemented for %S" major-mode)))))
+         (compile-command (cond ((memq major-mode nvp-wasm-js-modes)
+                                 (format "asc %s -o %s -t %s" src wasm wat))
+                                (t (user-error
+                                    "Unimplemented for %S" major-mode)))))
     (when compile-command
       (cl-labels ((cleanup-wasm (&optional not-buf force)
                     (when (or force (not save))

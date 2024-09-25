@@ -466,7 +466,7 @@ Do BODY when treesit mode is available."
                           for ts-table = (intern (concat ts-modename "-abbrev-table"))
                           nconc
                           ;; Use same abbrev table, suppress warnings about it
-                          `((cl-pushnew '((defvaralias losing-value ,ts-table))
+                          `((cl-pushnew '(defvaralias losing-value ,ts-table)
                                         warning-suppress-log-types
                                         :test #'equal)
                             ,@(unless (length> remap-modenames 1)

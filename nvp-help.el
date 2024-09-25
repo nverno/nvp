@@ -25,7 +25,7 @@
 
 ;;;###autoload
 (defun nvp-push-button-and-go (&optional n)
-  "Push the Nth button and stay in same frame.
+  "Push the Nth button and go in current window when possible..
 Ignore buttons like `native-comp-function',`primitive-function'."
   (interactive "p")
   (setq n (if n (abs n) 1))
@@ -93,17 +93,19 @@ Ignore buttons like `native-comp-function',`primitive-function'."
 ;;; Bindings
 
 ;;;###autoload
-(defun nvp-help-describe-bindings (prefix)
-  "Describe bindings beginning with PREFIX."
-  (interactive (list (read-string "Bindings prefix (enter as for 'kbd'): ")))
-  (describe-bindings (kbd prefix)))
+(defun nvp-help-describe-bindings (prefix-string &optional buffer)
+  "Describe bindings beginning with PREFIX-PREFIX in BUFFER."
+  (interactive (list (read-string "Bindings prefix (kbd-style): ")
+                     (and current-prefix-arg
+                          (get-buffer (read-buffer "In buffer: ")))))
+  (describe-bindings (kbd prefix-string) buffer))
 
 (defsubst nvp-help--sort-keymap (map-name)
   (with-temp-buffer
     (insert (substitute-command-keys (format "\\{%s\}" map-name)))
     (goto-char (point-min))
-    (forward-line 3)                    ;to first key def. line
-    (let ((beg (point))                 ;sort first group of keys
+    (forward-line 3)                    ; to first key def. line
+    (let ((beg (point))                 ; sort first group of keys
           (end (progn (re-search-forward "^\\s-*$" nil t) (point))))
       (nvp-sort-lines-first-symbol beg end))
     (buffer-string)))

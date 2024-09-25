@@ -212,7 +212,7 @@ With prefix, read CHAR to wrap with."
     ("R" "Non-matching lines" keep-lines)
     ""
     " Whitespace"
-    ("b" "Blank lines" delete-blank-lines :TRANSIENT t)
+    ("b" "Blank lines" delete-blank-lines :transient t)
     ("w" "Trailing whitespace" delete-trailing-whitespace :transient t)]
    ["Kill"
     ("m" "Matching lines" kill-matching-lines)]
@@ -249,7 +249,7 @@ LAST-ACTION is used during repeats."
                        (capitalize 'capitalize)
                        (t (save-mark-and-excursion
                             (and region-p (goto-char beg))
-                            (skip-syntax-forward " _'.\(")
+                            (skip-syntax-forward "\" _'.\(")
                             (let (case-fold-search)
                               (if (looking-at-p "\\s-*[A-Z0-9_:./(){}-]+\\b")
                                   'downcase

@@ -64,7 +64,9 @@
 
 (defvar nvp-list-sep-re "[, \t\n]" "Regexp matching list separator.")
 
+;;;###autoload
 (defun nvp-list-wrap (start end &optional opener closer sep prompt)
+
   "Wrap list elements between START and END with OPENER and CLOSER.
 OPENER defaults to last basic input character.
 CLOSER defaults to matching element in `nvp-list-pairs', or OPENER.
@@ -74,28 +76,36 @@ If PROMPT is non-nil, prompt for OPENER/CLOSER."
                  (list (car bnds) (cdr bnds) nil nil nil current-prefix-arg)))
   (unless (and start end (< start end))
     (user-error "No region"))
-  (let* ((closer closer)
-         (opener (if prompt
-                     (let ((pair (read--expression "Wrap items with (a . b): ")))
-                       (cl-assert (or (consp pair) (stringp pair)))
-                       (setq closer (if (consp pair) (cdr pair)
-                                      (or (assoc-default pair nvp-list-pairs) pair)))
-                       (if (consp pair) (car pair) pair))
-                   (let ((opener (or opener (nvp:input 'lcs))))
-                     (setq closer (or (assoc-default opener nvp-list-pairs) opener))
-                     opener)))
-         (elem-re (concat "\\s-*\\(" (or nvp-list-element-re "[^ \t\n,]+")
-                          "\\)" (or sep nvp-list-sep-re "[, \t\n]") "*"))
-         (str (buffer-substring-no-properties start end)))
-    (delete-region start end)
-    (insert (with-temp-buffer
-              (insert str)
-              (goto-char (point-min))
-              (while (re-search-forward elem-re nil t)
-                (replace-match
-                 (concat opener (match-string-no-properties 1) closer)
-                 t nil nil 1))
-              (buffer-substring-no-properties (point-min) (point-max))))))
+  
+  (cl-labels ((as-string (exp)
+                (cond ((stringp exp) exp)
+                      ((symbolp exp) (symbol-name exp))
+                      ((characterp exp) (char-to-string exp))
+                      ((consp exp) (cons (as-string (car exp))
+                                         (as-string (cdr exp))))
+                      (t (user-error "dont know about \"%S\"" exp)))))
+    (if prompt
+        (let ((pre (as-string (read--expression "Wrap items with (a . b): "))))
+          (if (consp pre) (setq opener (car pre)
+                                closer (cdr pre))
+            (setq opener pre
+                  closer (or (assoc-default pre nvp-list-pairs) pre))))
+      (or opener (setq opener (nvp:input 'lcs)))
+      (or closer (setq closer (or (assoc-default opener nvp-list-pairs)
+                                  opener))))
+    (let ((elem-re (concat "\\s-*\\("
+                           (or nvp-list-element-re "[^ \t\n,]+") "\\)"
+                           (or sep nvp-list-sep-re "[, \t\n]") "*"))
+          (str (buffer-substring-no-properties start end)))
+      (delete-region start end)
+      (insert (with-temp-buffer
+                (insert str)
+                (goto-char (point-min))
+                (while (re-search-forward elem-re nil t)
+                  (replace-match
+                   (concat opener (match-string-no-properties 1) closer)
+                   t nil nil 1))
+                (buffer-substring-no-properties (point-min) (point-max)))))))
 
 ;; Adds commas after numbers in list, like matlab -> R.
 (defun nvp-list-insert-commas (str &optional beg end)

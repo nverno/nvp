@@ -120,19 +120,15 @@
 ;; http://endlessparentheses.com/define-context-aware-keys-in-emacs.html
 (defmacro nvp:bind (map key cmd &rest kwargs)
   "Bind KEY, being either a string, vector, or keymap in MAP to CMD."
-  (let ((c (cond
-            ((or (null cmd) (and (consp cmd)
-                                 (or (equal (cdr cmd) '(nil))
-                                     (equal (cddr cmd) '(nil)))))
-             nil)
-            ((consp cmd)
-             (cond
-              ((equal (car cmd) 'function) cmd)
-              ((equal (car cmd) 'quote) `#',(cadr cmd))
-              (t cmd)))
-            ((plist-get kwargs :keymap)
-             cmd)
-            (t `#',cmd)))
+  (let ((c (cond ((or (null cmd)
+                      (and (consp cmd)
+                           (or (equal (cdr cmd) '(nil))
+                               (equal (cddr cmd) '(nil))))))
+                 ((consp cmd) (cond ((equal (car cmd) 'function) cmd)
+                                    ((equal (car cmd) 'quote) `#',(cadr cmd))
+                                    (t cmd)))
+                 ((plist-get kwargs :keymap) cmd)
+                 (t `#',cmd)))
         (m (if (keymapp map) `',map map))
         (enable (or (plist-get kwargs :when)
                     (plist-get kwargs :enable)))

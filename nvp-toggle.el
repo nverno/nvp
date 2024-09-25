@@ -5,22 +5,9 @@
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (require 'files-x)
-(nvp:decls :p (time-stamp) :v (time-stamp-count time-stamp-active time-stamp-pattern))
+(nvp:decls)
 
-;;;###autoload
-(defun nvp-toggle-timestamp (arg)
-  "Insert/update timestamp for current buffer."
-  (interactive "P")
-  (require 'time-stamp)
-  (let ((time-stamp-active t)
-        (time-stamp-count (if arg (read-number "Max time stamps: ") 1))
-        (time-stamp-pattern (or time-stamp-pattern
-                                (pcase major-mode
-                                  (`org-mode "#\\+DATE: <%%>$")
-                                  (_ "15/Last modified: <%%>$")))))
-    (time-stamp)))
 
-;; -------------------------------------------------------------------
 ;;; Toggle file/directory local variables
 
 ;;;###autoload

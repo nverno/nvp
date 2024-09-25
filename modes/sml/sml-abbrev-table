@@ -1,14 +1,26 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; lexical-binding: t; -*-
 
 (define-abbrev-table 'sml-mode-abbrev-table
-  '(("aa" "andalso" nil :system t)
-    ("at" "abstype" nil :system t)
+  '(("!" "not" nil :system t)
+    ("!=" "<>" nil :system t)
+    ("&&" "andalso" nil :system t)
+    ("aa" "andalso" nil :system t)
     ("dt" "datatype" nil :system t)
     ("oe" "orelse" nil :system t)
     ("ol" "overload" nil :system t)
     ("wt" "withtype" nil :system t)
+    ("||" "orelse" nil :system t)
     ("exc" "exception" nil :system t)
     ("inc" "include" nil :system t)
     ("func" "functor" nil :system t))
   "Sml-Mode Abbrevs."
-  :parents (list prog-mode-abbrev-table))
+  :parents (list prog-mode-abbrev-table)
+  :enable-function #'nvp-abbrev-expand-p
+  :regexp "\\(&&\\|||\\|!=?\\|\\<[_:\\.A-Za-z0-9]+\\)\\W*")
+
+(define-abbrev-table 'inferior-sml-mode-abbrev-table
+  '()
+  "Inferior-Sml-Mode Abbrevs."
+  :parents (list sml-mode-abbrev-table)
+  :enable-function #'nvp-abbrev-expand-p
+  :regexp "\\(&&\\|||\\|!=?\\|\\<[_:\\.A-Za-z0-9]+\\)\\W*")

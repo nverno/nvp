@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: operator<
+# key: <
+# --
+bool ${1:${2:Class}::}operator<(const ${3:$2}& o) const {
+  $0
+}

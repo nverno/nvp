@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: const_[]
+# name: const operator[]
 # key: c[
 # --
 const ${1:Type}& operator[](${2:int index}) const {

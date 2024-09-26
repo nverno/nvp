@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: impl FromStr for Type { fn from_str(...) }
-# key: impfromstr
+# key: ii
 # --
 impl FromStr for ${1:Type} {
     type Err = ${2:Error};

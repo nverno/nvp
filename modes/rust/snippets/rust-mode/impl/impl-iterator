@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: impl Iterator for Type
-# key: impiterator
+# key: ii
 # --
 impl Iterator for ${1:Type} {
     type Item = ${2:Type};

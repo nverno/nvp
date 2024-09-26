@@ -3,5 +3,5 @@
 # key: mod
 # --
 class ${1:Class} : public ${2:SimpleModule} {
-    $0
+  $0
 }

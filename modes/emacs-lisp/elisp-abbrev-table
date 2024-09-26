@@ -334,6 +334,7 @@
     ("wns" "window-next-sibling" nil :system t)
     ("wnw" "with-no-warnings" nil :system t)
     ("wsb" "word-search-backward" nil :system t)
+    ("wsf" "with-selected-frame" nil :system t)
     ("wsw" "with-selected-window" nil :system t)
     ("wtb" "with-temp-buffer" nil :system t)
     ("wtf" "with-temp-file" nil :system t)

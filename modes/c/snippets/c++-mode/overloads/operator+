@@ -1,7 +1,6 @@
 # -*- mode: snippet -*-
 # name: operator+
 # key: +
-# group: operator overloading
 # --
 ${1:Type} $1::operator+(const $1& o) {
   $1 res = *this;

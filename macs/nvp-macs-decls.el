@@ -101,98 +101,85 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp/books
     nvp/install
     nvp/private
-    ;; my vars
-    nvp-mode-name
-    nvp-mode-cache
-    nvp-mode-default-functions
-    nvp-mode-function-hooks
-    nvp-mode-hooks
-    nvp-mode-header-regex
-    nvp-mode-snippet-dir
-    nvp-mode-font-additions
-    nvp-tags-ctags-program
+
+    ace-link-fallback-function
+    align-to-tab-stop
+    bug-reference-bug-regexp bug-reference-url-format
+    company-candidates company-selection
+    compilation-error-face compilation-warning-face compilation-info-face
+    compilation-error-regexp-alist compilation-error-regexp-alist-alist
+    crm-separator
+    dash-docs-docsets
+    devdocs-current-docs
+    explicit-shell-file-name
+    he-search-string he-tried-table he-expand-list
+    hippie-expand-try-functions-list hippie-expand-only-buffers
+    ido-default-buffer-method ido-default-file-method
+    ielm-working-buffer ielm-dynamic-return
+    imenu-generic-expression imenu--index-alist imenu-auto-rescan
+    local-abbrev-table
+    nvp-abbrev-default-function
+    nvp-abbrev-prefix-chars
+    nvp-abbrevd-obarray nvp-local-abbrev-file nvp-local-abbrev-table
+    nvp-check-buffer-default-function
+    nvp-compile-default-function
+    nvp-compile-default-function
+    nvp-configure-default-function
     nvp-debug-breakpoint-string
-    nvp-local-compile-function
-    nvp-local-notes-file
-    nvp-local-books-directories
-    nvp-local-uris
-    nvp-local-src-directories
-    nvp-local-bookmark-file
-    nvp-tabulated-list-select-action
+    nvp-debug-default-function
     nvp-default-log-function
     nvp-default-org-file
-    nvp-window-configuration-stack
+    nvp-disassemble-default-function
+    nvp-display-fallback-function
+    nvp-exit
+    nvp-fallback-function
+    nvp-fallback-minibuffer-function
+    nvp-format-buffer-default-function
+    nvp-he-flex-matcher nvp-he-flex-prefix-to-re nvp-he-flex-prefix-from-re
+    nvp-he-flex-symbol-beg nvp-he-case-fold-search
+    nvp-help-at-point-functions
+    nvp-install-default-function
+    nvp-local-bookmark-file
+    nvp-local-books-directories
+    nvp-local-compile-function
+    nvp-local-notes-file
+    nvp-local-src-directories
+    nvp-local-uris
+    nvp-mark-defun-function
+    nvp-mode-cache
+    nvp-mode-default-functions
+    nvp-mode-font-additions
+    nvp-mode-function-hooks
+    nvp-mode-header-regex
+    nvp-mode-hooks
+    nvp-mode-name
+    nvp-mode-snippet-dir
     nvp-program-search-paths
-    nvp-abbrevd-obarray nvp-local-abbrev-file nvp-local-abbrev-table
-    nvp-abbrev-prefix-chars
     nvp-repl-alist
     nvp-repl-current
     nvp-repl-default
     nvp-repl-find-functions
-    nvp-help-at-point-functions
-    nvp-install-default-function
-    nvp-check-buffer-default-function
-    nvp-configure-default-function
-    nvp-disassemble-default-function
-    nvp-debug-default-function
-    nvp-tag-default-function
-    nvp-test-default-function
-    nvp-format-buffer-default-function
-    nvp-abbrev-default-function
-    nvp-toggle-default-function
     nvp-run-default-function
-    nvp-compile-default-function
-    nvp-compile-default-function
-    nvp-mark-defun-function
-    ;; fallbacks
-    nvp-exit
-    nvp-fallback-function
-    nvp-fallback-minibuffer-function
-    nvp-display-fallback-function
-    ;; hippie expansion variables
-    nvp-he-flex-matcher nvp-he-flex-prefix-to-re nvp-he-flex-prefix-from-re
-    nvp-he-flex-symbol-beg nvp-he-case-fold-search
-    ;; builtin hippie
-    hippie-expand-try-functions-list hippie-expand-only-buffers
-    he-search-string he-tried-table he-expand-list
-    ;;=== emacs base ===
-    package-user-dir
-    recentf-list
-    ielm-working-buffer ielm-dynamic-return
+    nvp-tabulated-list-select-action
+    nvp-tag-default-function
+    nvp-tags-ctags-program
+    nvp-test-default-function
+    nvp-toggle-default-function
+    nvp-window-configuration-stack
     org-babel-do-load-languages org-src-lang-modes
-    local-abbrev-table
-    bug-reference-bug-regexp bug-reference-url-format
-    crm-separator
-    compilation-error-regexp-alist compilation-error-regexp-alist-alist
-    compilation-error-face compilation-warning-face compilation-info-face
-    explicit-shell-file-name
-    imenu-generic-expression imenu--index-alist imenu-auto-rescan
+    package-user-dir
+    projectile-tags-command
+    projectile-tags-exclude-patterns
+    projectile-tags-file-name
+    recentf-list
     repeat-in-progress
-    ;; Tree-sitter, treesit
     treesit-font-lock-feature-list
     treesit-font-lock-settings
-    ;; align
-    align-to-tab-stop
-    ;; ido
-    ido-default-buffer-method ido-default-file-method
-    ;;=== external pkg ===
-    devdocs-current-docs
-    zeal-at-point-docset
-    dash-docs-docsets
-    company-candidates company-selection
-    ;; yasnippet
-    yas-text yas-selected-text yas-wrap-around-region
-    ;; ace-link
-    ace-link-fallback-function
-    ;; vertico
-    vertico--input
-    ;; url
     url-http-end-of-headers
     url-request-method url-request-extra-headers url-request-data
-    ;; projectile
-    projectile-tags-file-name
-    projectile-tags-command
-    projectile-tags-exclude-patterns))
+    vertico--input
+    yas-text yas-selected-text yas-wrap-around-region
+    zeal-at-point-docset))
 
 (cl-defmacro nvp:decls (&key v f p)
   (declare (debug t))
@@ -205,182 +192,153 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
      ,(when p
         `(nvp:decl-prefixes ,@(nvp:as-list p)))
      (nvp:decl
-       ;; nvp
-       nvp-newline-dwim--comment
-       nvp-completing-read
-       nvp-find-file-in-dir
-       ;; from compiled init
-       nvp-autoload-keymap
-       nvp-mode-header-regex
-       nvp-mark-defun nvp-mark-expand-to-previous-comments
-       nvp-company-local
-       nvp-narrow-dwim
-       nvp-paredit-close-round
-       nvp-move-previous-heading nvp-move-forward-heading
-       nvp-xref-go nvp-etags-find-definitions
-       nvp-repeat-set-cursor nvp-repeat-abort
-       nvp-indicate-abort nvp-indicate-cursor-pre nvp-indicate-cursor-post
-       nvp-eval-expression nvp-eval--display-expression
-       ;;* Display (mostly compiled init)
-       nvp-display-fallback-function
-       nvp-display-fallback-dired
-       nvp-display-location
-       nvp-display-buffer-other-window
-       nvp-display-buffer-in-direction-or-same
-       nvp-display-buffer-in-side-window
-       nvp-display-buffer-in-top-side-window
-       nvp-display-buffer-in-bottom-side-window
-       nvp-display-buffer-in-left-side-window
-       nvp-display--scroll-output
-       nvp-display--set-scroll-buffer
-       nvp-display--set-and-scroll
-       nvp-display--set-scroll-maybe-view
-       ;;* hap
-       nvp-help-at-point nvp-hap-elisp nvp-hap-info nvp-hap-man nvp-hap-lsp
-       nvp-hap-company nvp-hap-semantic nvp-hap-treesit nvp-hap-local nvp-hap-word
-       ;; util
-       nvp-regex-map-across-matches
-       ;; install / package
-       nvp-pkg-directory-dwim
-       ;;* Project
-       nvp-project-root nvp-project-parent nvp-project-locate-root
-       ;; nvp-cycle.el
-       nvp-cycle
-       ;;* Reading
-       nvp-read-elisp-symbol
-       nvp-read-elisp-function
-       nvp-read-elisp-variable
-       nvp-read-mode
-       ;; modes
-       nvp-scratch-minor-mode
-       ;;* Logging
-       nvp-results-title
-       nvp-log-mode
-       nvp-log
-       nvp-log-default
-       ;;* Windows
-       nvp-window-configuration-restore
-       nvp-window-configuration-save
-       ;; hippie
-       nvp-try-expand-history
-       nvp-he-history-setup
-       nvp-he-history-remove-trailing-paren
-       nvp-try-expand-flex
-       nvp-he-flex-lisp
-       nvp-he-elisp-setup
-       nvp-he-flex-lisp-setup
-       nvp-he-flex-camel/snake
-       nvp-he-chained-symbol-beg
-       nvp-try-expand-dabbrev-closest-first
-       nvp-try-expand-local-abbrevs
-       ;; repls / shell
-       nvp-comint-setup-history
-       nvp-repl-add
-       nvp-repl-jump
-       nvp-repl-send-string
-       nvp-repl-send-region
-       nvp-repl-send-line
-       nvp-repl-send-buffer
-       nvp-repl-send-defun
-       nvp-repl-cd
-       nvp-repl-pwd
-       nvp-repl-help
-       nvp-repl-menu
-       nvp-repl-config
-       nvp-repl-setup-input-filter
-       nvp-repl-eval-show-result
-       nvp-repl-eval-string
-       nvp-repl-eval-sexp
-       nvp-repl-eval-result-value
-       nvp-repl-eval-show-result
-       nvp-repl-show-result
-       nvp-shell
-       nvp-shell-launch-terminal
-       ;; indication
-       nvp-indicate-pulse-region-or-line
-       nvp-indicate-modeline
-       ;; procs / inf
-       nvp-proc-default-filter
-       nvp-proc-default-sentinel
-       nvp-async-shell-command-to-string
-       nvp-inf-read-process
-       ;; imenu
-       nvp-imenu-setup
-       nvp-imenu
-       nvp-imenu-wrapper
-       ;; toggle
-       nvp-toggle-local-variable
-       ;; abbrev
-       nvp-abbrevd
+       nvp-abbrev-expand-after-symbols-hook
+       nvp-abbrev-expand-not-after-punct-p
+       nvp-abbrev-expand-p
+       nvp-abbrev-expand-strictly
        nvp-abbrev-from-splitters
        nvp-abbrev-from-words
-       nvp-abbrev-write-abbrev-table
        nvp-abbrev-grab
-       nvp-abbrev-expand-strictly
-       nvp-abbrev-expand-p
-       nvp-abbrev-expand-not-after-punct-p
-       nvp-abbrev-expand-after-symbols-hook
        nvp-abbrev-make-post-insert-hook
-       nvp-grab-symbol
-       ;; test
-       nvp-ert-run-tests
-       ;; compile
+       nvp-abbrev-write-abbrev-table
+       nvp-abbrevd
+       nvp-async-shell-command-to-string
+       nvp-autoload-keymap
+       nvp-buffer-local-set-key
+       nvp-buffer-local-set-minor-mode-key
+       nvp-cache-create
+       nvp-cache-get
+       nvp-cmake-compile
+       nvp-comint-setup-history
+       nvp-company-local
        nvp-compile
        nvp-compile-default
-       nvp-cmake-compile
-       ;; environment
+       nvp-completing-read
+       nvp-cycle
+       nvp-display--scroll-output
+       nvp-display--set-and-scroll
+       nvp-display--set-scroll-buffer
+       nvp-display--set-scroll-maybe-view
+       nvp-display-buffer-in-bottom-side-window
+       nvp-display-buffer-in-direction-or-same
+       nvp-display-buffer-in-left-side-window
+       nvp-display-buffer-in-side-window
+       nvp-display-buffer-in-top-side-window
+       nvp-display-buffer-other-window
+       nvp-display-fallback-dired
+       nvp-display-fallback-function
+       nvp-display-location
        nvp-env-add
        nvp-env-path-add
-       ;; cache
-       nvp-cache-get
-       nvp-cache-create
-       ;; nvp-org
-       nvp-org-links
-       ;; theme
-       nvp-theme-switch
-       ;; setup
-       nvp-setup-program nvp-setup-local
-       ;; nvp-auto
+       nvp-ert-run-tests
+       nvp-eval-expression nvp-eval--display-expression
+       nvp-find-file-in-dir
+       nvp-grab-symbol
+       nvp-hap-company nvp-hap-semantic nvp-hap-treesit nvp-hap-local nvp-hap-word
+       nvp-he-chained-symbol-beg
+       nvp-he-elisp-setup
+       nvp-he-flex-camel/snake
+       nvp-he-flex-lisp
+       nvp-he-flex-lisp-setup
+       nvp-he-history-remove-trailing-paren
+       nvp-he-history-setup
+       nvp-help-at-point nvp-hap-elisp nvp-hap-info nvp-hap-man nvp-hap-lsp
+       nvp-imenu
+       nvp-imenu-setup
+       nvp-imenu-wrapper
+       nvp-indicate-abort nvp-indicate-cursor-pre nvp-indicate-cursor-post
+       nvp-indicate-modeline
+       nvp-indicate-pulse-region-or-line
+       nvp-inf-read-process
        nvp-install-mode nvp-install-modes
+       nvp-list-wrap
+       nvp-log
+       nvp-log-default
+       nvp-log-mode
        nvp-lookup-password
-       ;; Tags
-       nvp-tag-list-tags nvp-tag-list-decls nvp-tag-repo
+       nvp-mark-defun nvp-mark-expand-to-previous-comments
+       nvp-mode-header-regex
+       nvp-move-previous-heading nvp-move-forward-heading
+       nvp-narrow-dwim
+       nvp-newline-dwim--comment
+       nvp-org-links
+       nvp-paredit-close-round
+       nvp-pkg-directory-dwim
+       nvp-proc-default-filter
+       nvp-proc-default-sentinel
+       nvp-project-root nvp-project-parent nvp-project-locate-root
+       nvp-read-elisp-function
+       nvp-read-elisp-symbol
+       nvp-read-elisp-variable
+       nvp-read-mode
+       nvp-regex-map-across-matches
+       nvp-repeat-set-cursor nvp-repeat-abort
+       nvp-repl-add
+       nvp-repl-cd
+       nvp-repl-config
+       nvp-repl-eval-result-value
+       nvp-repl-eval-sexp
+       nvp-repl-eval-show-result
+       nvp-repl-eval-show-result
+       nvp-repl-eval-string
+       nvp-repl-help
+       nvp-repl-jump
+       nvp-repl-menu
+       nvp-repl-pwd
+       nvp-repl-send-buffer
+       nvp-repl-send-defun
+       nvp-repl-send-line
+       nvp-repl-send-region
+       nvp-repl-send-string
+       nvp-repl-setup-input-filter
+       nvp-repl-show-result
+       nvp-results-title
+       nvp-scratch-minor-mode
+       nvp-setup-program nvp-setup-local
+       nvp-shell
+       nvp-shell-launch-terminal
        nvp-tag-find nvp-tag-find-etag
-       ;; override
-       nvp-buffer-local-set-key
-       nvp-buffer-local-set-minor-mode-key)
+       nvp-tag-list-tags nvp-tag-list-decls nvp-tag-repo
+       nvp-theme-switch
+       nvp-toggle-local-variable
+       nvp-try-expand-dabbrev-closest-first
+       nvp-try-expand-flex
+       nvp-try-expand-history
+       nvp-try-expand-local-abbrevs
+       nvp-window-configuration-restore
+       nvp-window-configuration-save
+       nvp-xref-go nvp-etags-find-definitions)
 
      (nvp:decl                          ; builtins
-       minibuffer-keyboard-quit
-       ielm ielm-return
        ert-run-tests-interactively
-       hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
-       w32-shell-execute
-       xref-pop-marker-stack xref-push-marker-stack
-       org-comment-dwim
-       he-substitute-string he-reset-string he-string-member he-init-string
        find-function-other-window
+       he-substitute-string he-reset-string he-string-member he-init-string
+       hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
+       ielm ielm-return
        imenu--make-index-alist imenu-default-create-index-function
-       ;; treesit
+       minibuffer-keyboard-quit
+       org-comment-dwim
+       treesit-font-lock-recompute-features
        treesit-font-lock-rules
-       treesit-font-lock-recompute-features)
+       w32-shell-execute
+       xref-pop-marker-stack xref-push-marker-stack)
 
      (nvp:decl                          ; external packages
-       edit-indirect
-       pos-tip-show pos-tip-tooltip-width pos-tip-show-no-propertize
-       do-smooth-scroll
+       ace-link ace-link-help ace-link-info
+       consult-yank-replace
        diminish
+       do-smooth-scroll
+       edit-indirect
        lsp lsp-deferred lsp-mode
+       paredit-mode paredit-comment-dwim
+       pos-tip-show pos-tip-tooltip-width pos-tip-show-no-propertize
        projectile-acquire-root projectile-project-name
        projectile-run-project projectile-install-project projectile-configure-project
-       paredit-mode paredit-comment-dwim
        smartparens-mode
-       vertico--exhibit
-       consult-yank-replace
        transient-get-value
-       ace-link ace-link-help ace-link-info
-       yas-minor-mode yas-text yas-activate-extra-mode yas-deactivate-extra-mode
-       yas-expand-snippet yas-lookup-snippet yas-hippie-try-expand)))
+       vertico--exhibit
+       yas-expand-snippet yas-lookup-snippet yas-hippie-try-expand
+       yas-minor-mode yas-text yas-activate-extra-mode yas-deactivate-extra-mode)))
 
 (provide 'nvp-macs-decls)
 ;; Local Variables:

@@ -1,12 +1,25 @@
 ;;; nvp-search.el --- search-map; search/replace -*- lexical-binding: t; -*-
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
+(require 'transient)
 (nvp:decls :f (occur-read-primary-args))
 
 (autoload 'nvp-buffer-matching-mode "nvp-buffer")
 (autoload 'multi-occur "replace")
 (autoload 'multi-occur-in-matching-buffers "replace")
 
+;;;###autoload(autoload 'nvp-search-buffers-menu "nvp-search" nil t)
+(transient-define-prefix nvp-search-buffers-menu ()
+  "Search buffers"
+  [["Goto line"
+    ("l" "Matching" consult-line)
+    ("L" "in Project" consult-line-multi)]
+   ["Imenu"
+    ("i" "Imenu" consult-imenu)
+    ("I" "in Project" consult-imenu-multi)]
+   ["Occur"
+    ("o" "Dwim" nvp-occur-dwim)
+    ("O" "in Mode" nvp-multi-occur-in-this-mode)]])
 
 ;;;###autoload
 (defun nvp-occur-dwim (&optional arg)

@@ -458,6 +458,16 @@ or (\\='a #\\='b) => \\='(a b)."
         (fill-column 80))
     (pp obj stream)))
 
+
+;;; Transient
+
+(defsubst nvp:transient-arg (arg &optional match)
+  "Check transient args for ARG or regex with MATCH."
+  (and-let* ((args (ignore-errors
+                     (transient-args transient-current-command))))
+    (cl-find arg args :test (if match #'string-match-p #'equal))))
+
+
 (provide 'nvp-subrs)
 ;; Local Variables:
 ;; coding: utf-8

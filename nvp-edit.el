@@ -205,21 +205,56 @@ With prefix, read CHAR to wrap with."
 
 ;;; Edit Lines
 
+(declare-function consult-focus-lines "consult")
+(defvar consult--focus-lines-overlays)
+
+(define-minor-mode nvp-consult-focus-minor-mode
+  "Minor mode active when buffer is focused."
+  :lighter (:propertize " Focus" face font-lock-warning-face)
+  :interactive nil
+  (cond (nvp-consult-focus-minor-mode
+         (or consult--focus-lines-overlays
+             (nvp-consult-focus-minor-mode -1)))
+        (t (and consult--focus-lines-overlays
+                (nvp-consult-focus-minor-mode 1))))
+  (remove-hook 'post-command-hook #'nvp-consult-focus-minor-mode))
+
+;;;###autoload
+(defun nvp-consult-focus-lines (&optional keep-focus)
+  "Toggle hiding/showing matching lines.
+With prefix KEEP-FOCUS, keep hiding regardless."
+  (interactive (list (or current-prefix-arg
+                         (nvp:transient-arg "--keep-focus"))))
+  (if (and consult--focus-lines-overlays
+           (not keep-focus))
+      (progn (funcall #'consult-focus-lines nil t)
+             (nvp-consult-focus-minor-mode -1))
+    (add-hook 'post-command-hook #'nvp-consult-focus-minor-mode)
+    (call-interactively #'consult-focus-lines)))
+
 ;;;###autoload(autoload 'nvp-edit-lines-menu "nvp-edit" nil t)
 (transient-define-prefix nvp-edit-lines-menu ()
-  [["Delete"
-    ("r" "Matching lines" flush-lines)
-    ("R" "Non-matching lines" keep-lines)
+  "Edit lines"
+  :refresh-suffixes t
+  [["Hide"
+    ("h" "Toggle('!')" nvp-consult-focus-lines :transient t)
+    ("-k" "Keep hidden" ("--keep-focus" "--keep-focus")
+     :if-non-nil consult--focus-lines-overlays)
     ""
-    " Whitespace"
-    ("b" "Blank lines" delete-blank-lines :transient t)
-    ("w" "Trailing whitespace" delete-trailing-whitespace :transient t)]
-   ["Kill"
-    ("m" "Matching lines" kill-matching-lines)]
-   ["Copy"
-    ("c" "Matching lines" copy-matching-lines)]
+    "Kill/Copy"
+    ("k" "Kill" kill-matching-lines)
+    ("c" "Copy" copy-matching-lines)]
+   ["Keep"
+    ("l" "Matches('!')" consult-keep-lines)
+    ("L" "keep-lines" keep-lines)
+    ""
+    "Delete"
+    ("d" "Matches" flush-lines)]
+   ["Whitespace"
+    ("b" "Empty lines" delete-blank-lines :transient t)
+    ("w" "Trailing" delete-trailing-whitespace :transient t)]
    ["Other"
-    ("#" "Count matches (>point)" how-many :transient t)]])
+    ("#" "Count (>pos)" how-many :transient t)]])
 
 
 ;;; Toggle Case

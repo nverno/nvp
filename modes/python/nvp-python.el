@@ -31,21 +31,21 @@
    `(;; Namespaces
      (import_from_statement
       module_name: [(dotted_name (identifier)) (identifier)]
-      @nvp-namespace-face)
+      @font-lock-namespace-face)
      (import_statement
       name: [(aliased_import name: (dotted_name (identifier)))
              (dotted_name (identifier))]
-      @nvp-namespace-face)
+      @font-lock-namespace-face)
      (aliased_import
-      name: (dotted_name (identifier)) @nvp-namespace-use-face)
+      name: (dotted_name (identifier)) @font-lock-namespace-use-face)
      (aliased_import
-      alias: (_) @nvp-namespace-face)
+      alias: (_) @font-lock-namespace-face)
 
      ;; method calls
      (attribute
-      object: (identifier) @nvp-receiver-face)
+      object: (identifier) @font-lock-receiver-face)
      (call
-      function: (attribute attribute: (identifier) @nvp-method-use-face))
+      function: (attribute attribute: (identifier) @font-lock-method-call-face))
 
      ;; Variables
      (keyword_argument

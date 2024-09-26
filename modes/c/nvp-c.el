@@ -2,12 +2,10 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)                          ; `nvp-receiver-face'
 (nvp:decls
  :f ( forward-ifdef nvp-yas-var s-join
       c-syntactic-information-on-region c-show-syntactic-information)
- :v (c/R-abbrev-table company-clang-arguments gud-comint-buffer))
-(nvp:auto "nvp-tag" 'nvp-tag-list-decls)
+ :v (gud-comint-buffer))
 
 
 (defvar-local nvp-c-local-include-paths '("." ".." "../include"))
@@ -280,8 +278,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
            :language language
            :feature 'namespace
            '((using_declaration
-              "namespace" (identifier) @nvp-namespace-face)
-             (namespace_identifier) @nvp-namespace-use-face)
+              "namespace" (identifier) @font-lock-namespace-face)
+             (namespace_identifier) @font-lock-namespace-use-face)
 
            :language language
            :feature 'nvp
@@ -301,7 +299,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
              ;; <receiver>.func()
              (call_expression
               function: (field_expression
-                         argument: (identifier) @nvp-receiver-face)))
+                         argument: (identifier) @font-lock-receiver-face)))
 
            :language language
            :feature 'builtin

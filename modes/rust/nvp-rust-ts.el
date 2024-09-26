@@ -4,7 +4,6 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'rust-ts-mode nil t)
-(require 'nvp)                          ; `nvp-receiver-face'
 (nvp:decls)
 
 (defvar nvp-rust--ts-fonts
@@ -23,11 +22,9 @@
 
       ;; lifetimes
       (lifetime "'" @font-lock-operator-face)
-      (lifetime
-       ((identifier) @font-lock-keyword-face
-        (:match ,(rx bol "static" eol) @font-lock-keyword-face)))
-      (lifetime
-       (identifier) @font-lock-variable-name-face)
+      (lifetime ((identifier) @font-lock-keyword-face
+                 (:match ,(rx bol "static" eol) @font-lock-keyword-face)))
+      (lifetime (identifier) @font-lock-variable-name-face)
 
       (macro_invocation
        (scoped_identifier
@@ -35,8 +32,7 @@
        :anchor "!" @font-lock-preprocessor-face)
 
       ;; XXX(4/20/24): rust-ts-mode gives builtin face
-      (macro_invocation
-       ["!"] @font-lock-preprocessor-face)
+      (macro_invocation ["!"] @font-lock-preprocessor-face)
       (macro_invocation
        macro: ((identifier) @font-lock-preprocessor-face
                (:match ,(rx-to-string
@@ -54,21 +50,21 @@
       ;;           @font-lock-preprocessor-face)
       ;;   "!" @font-lock-preprocessor-face))
       ;; Nested macros
-      (token_tree
-       (identifier) @font-lock-preprocessor-face
-       :anchor "!" @font-lock-preprocessor-face)
-      (token_repetition
-       (identifier) @font-lock-preprocessor-face
-       :anchor "!" @font-lock-preprocessor-face))
+      (token_tree (identifier) @font-lock-preprocessor-face
+                  :anchor "!" @font-lock-preprocessor-face)
+      (token_repetition (identifier) @font-lock-preprocessor-face
+                        :anchor "!" @font-lock-preprocessor-face))
 
     :language 'rust
     :feature 'nvp
     '((field_expression
-       value: (identifier) @nvp-receiver-face)
-
+       value: (identifier) @font-lock-receiver-face)
       ;; XXX(08/14/24): patch for missing labels
-      (label "'" @font-lock-operator-face
-             (identifier) @font-lock-constant-face)))
+      (label
+       "'" @font-lock-operator-face
+       (identifier) @font-lock-constant-face)
+      ;; Type definitions
+      (struct_item name: (type_identifier) @font-lock-type-def-face)))
    
    ;; FIXME(4/26/24): messes up attributes
    (treesit-font-lock-rules

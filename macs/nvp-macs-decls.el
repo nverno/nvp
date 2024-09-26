@@ -193,6 +193,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
         `(nvp:decl-prefixes ,@(nvp:as-list p)))
      (nvp:decl
        nvp-abbrev-expand-after-symbols-hook
+       nvp-tag-list-decls
        nvp-abbrev-expand-not-after-punct-p
        nvp-abbrev-expand-p
        nvp-abbrev-expand-strictly

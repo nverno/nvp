@@ -4,7 +4,7 @@
 ;; Font-locking shared b/w javascript, jsx, typescript, tsx...
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)                          ; `nvp-receiver-face'
+(require 'js)                           ; `js--treesit-font-lock-settings'
 (nvp:decls)
 
 (defvar ecma-ts-builtin-variables
@@ -190,7 +190,7 @@
     :feature 'variable
     '((identifier) @font-lock-variable-use-face
       (member_expression
-       object: (identifier) @nvp-receiver-face)
+       object: (identifier) @font-lock-receiver-face)
       (property_identifier) @font-lock-property-use-face))))
 
 ;;;###autoload

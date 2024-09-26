@@ -37,11 +37,11 @@
     (pcase type
       ("identifier" nil)
       ("method_index_expression"
-       (setq face 'nvp-namespace-use-face
+       (setq face 'font-lock-namespace-use-face
              table (treesit-node-child-by-field-name node "table")
              node (treesit-node-child-by-field-name node "method")))
       ("dot_index_expression"
-       (setq face 'nvp-namespace-face
+       (setq face 'font-lock-namespace-face
              table (treesit-node-child-by-field-name node "table")
              node (treesit-node-child-by-field-name node "field"))))
     (treesit-fontify-with-override
@@ -55,7 +55,7 @@
          face override start end)))))
 
 (defun nvp-lua-ts--fontify-table (node override start end &rest _)
-  (let ((face 'nvp-receiver-face))
+  (let ((face 'font-lock-receiver-face))
     (when-let* ((node (pcase (treesit-node-type node)
                         ("method_index_expression"
                          (prog1 nil
@@ -63,7 +63,7 @@
                             (treesit-node-child-by-field-name node "table")
                             override start end)))
                         ("dot_index_expression"
-                         (setq face 'nvp-namespace-use-face)
+                         (setq face 'font-lock-namespace-use-face)
                          (treesit-node-child-by-field-name node "table"))
                         ("identifier" node))))
       (dolist (node (treesit-query-capture

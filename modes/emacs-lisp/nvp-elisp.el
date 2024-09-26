@@ -71,7 +71,7 @@
 (defun nvp-elisp-bounds-of-cons ()
   "Return bounds of dotted cons, eg (sexp . sexp)."
   (save-excursion
-    (let* ((syntax (nvp:ppss 'partial))
+    (let* ((syntax (parse-partial-sexp (point-min) (point)))
            (parens (reverse (nth 9 syntax))))
       (cl-block nil
         (dolist (pos parens)

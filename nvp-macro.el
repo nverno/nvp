@@ -566,28 +566,22 @@ If OR-NAME is non-nil, use `buffer-name' if `buffer-file-name' is nil.
 
 (defmacro nvp:ppss (type &optional ppss point beg)
   "Return non-nil if syntax PPSS at POINT is of TYPE, one of the following.
-
 `str'  -- Inside a string
 `cmt'  -- Inside a comment
-`soc'  -- Inside a string or comment
-
-`partial' -- `parse-partial-sexp' from min or BEG to current pos or POINT"
+`soc'  -- Inside a string or comment"
   (let ((type (eval type)))
-    (cond
-     ;; ~~~ In comments/strings
-     ((eq type 'str) `(nth 3 ,(or ppss `(syntax-ppss ,point))))
-     ((eq type 'cmt) `(nth 4 ,(or ppss `(syntax-ppss ,point))))
-     ((eq type 'soc)
-      (macroexp-let2 nil syn (or ppss `(syntax-ppss ,point))
-        `(or (car (setq ,syn (nthcdr 3 ,syn)))
-             (car (setq ,syn (cdr ,syn)))
-             (nth 3 ,syn))))
-
-     ((eq type 'partial)
-      (if ppss ppss
-        `(parse-partial-sexp ,(or beg '(point-min)) ,(or point '(point)))))
-
-     (t (user-error "%S unrecognized by `nvp:ppss'" type)))))
+    (macroexp-let2 nil ppss (or ppss `(parse-partial-sexp
+                                       ,(or beg '(point-min))
+                                       ,(or point '(point))))
+      (cond
+       ;; ~~~ In comments/strings
+       ((eq type 'str) `(nth 3 ,ppss))
+       ((eq type 'cmt) `(nth 4 ,ppss))
+       ((eq type 'soc) `(or (car (setq ,ppss (nthcdr 3 ,ppss)))
+                            (car (setq ,ppss (cdr ,ppss)))
+                            (nth 3 ,ppss)))
+       ((eq type 'partial) `,ppss)
+       (t (user-error "%S unrecognized by `nvp:ppss'" type))))))
 
 (defmacro nvp:if-ppss (type then &rest else)
   "Do THEN if syntax at point is of TYPE, otherwise ELSE."

@@ -212,9 +212,9 @@ called from minibuffer, or nil.")
 (cl-defgeneric nvp-newline-dwim-default (&optional arg)
   "Generic function to handle newline dwim syntactically with prefix ARG."
   (let ((syntax (parse-partial-sexp (point-min) (point))))
-    (cond ((nvp:ppss 'str syntax)
+    (cond ((nth 3 syntax)
            (nvp-newline-dwim-string syntax arg))
-          ((nvp:ppss 'cmt syntax)
+          ((nth 4 syntax)
            (nvp-newline-dwim-comment syntax arg))
           ;; default to adding newline between paren delimiters
           (t (nvp-newline-dwim--parens arg)))))

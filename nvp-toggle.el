@@ -176,7 +176,7 @@ the current paragraph."
     tbl))
 
 (defun nvp-bounds-of-string-at-point (&optional pt)
-  (let ((ppss (nvp:ppss 'partial nil (or pt (point)))))
+  (let ((ppss (parse-partial-sexp (point-min) (or pt (point)))))
     (when (nth 3 ppss)
       (save-excursion
         (goto-char (nth 8 ppss))

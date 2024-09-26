@@ -1,39 +1,42 @@
 ;; -*- coding: utf-8; lexical-binding: t; -*-
 
 (define-abbrev-table 'shells-abbrev-table
-  '(("aa" "2>&1" nil :system t)
+  '(("a2" ">&2" nil :system t)
+    ("aa" "2>&1" nil :system t)
     ("ae" ">&2" nil :system t)
-    ("a2" ">&2" nil :system t)
     ("dn" ">/dev/null" nil :system t)
-    ("adn" "&>/dev/null" nil :system t)
-    ("aadn" ">/dev/null 2>&1" nil :system t)
-    ("21dn" ">/dev/null 2>&1" nil :system t)
-    ("edn" "2>/dev/null" nil :system t)
-    ("2dn" "2>/dev/null" nil :system t)
-
-    ("ddu" "ls | xargs -n 1 du -hs" nil :system t)
-    ("lgrep" ["find . -maxdepth 1 -iregex '.*'" 1 nil nil]
-     expand-abbrev-hook :system t)
-
     ("sa" "sudo apt" nil :system t)
-    ("sar" ["sudo add-apt-repository ppa:" 0 nil nil] expand-abbrev-hook :system t)
-    ("lnsf" ["ln -sfn \"$(realpath )\"" 1 nil nil] expand-abbrev-hook :system t)
-    ("findf" ["find . -type f -iname '*.'" 1 nil nil] expand-abbrev-hook :system t)
-    ("findd" ["find . -type d -iname '*.'" 1 nil nil] expand-abbrev-hook :system t)
-    ("findrm" ["find . -type f -iname '*.' -delete" 9 nil nil]
+    ("2dn" "2>/dev/null" nil :system t)
+    ("adn" "&>/dev/null" nil :system t)
+    ("ddu" "ls | xargs -n 1 du -hs" nil :system t)
+    ("edn" "2>/dev/null" nil :system t)
+    ("gti" "git" nil :system t)
+    ("sar" ["sudo add-apt-repository ppa:" 0 nil nil]
      expand-abbrev-hook :system t)
-    ("findrmd" ["find . -type d -iname '' -exec rm -rf {} \\;" 20 nil nil]
-     expand-abbrev-hook :system t)
-
+    ("21dn" ">/dev/null 2>&1" nil :system t)
+    ("aadn" ">/dev/null 2>&1" nil :system t)
+    ("bitc" "git clone https://bitbucket.org/nverno" nil :system t)
     ("bitn" "https://bitbucket.org/nverno " nil :system t)
+    ("gitc" "git clone git@github.com:nverno" nil :system t)
     ("gitn" "git@github.com:nverno" nil :system t)
     ("gitp" "git push" nil :system t)
     ("gitu" "https://github.com" nil :system t)
-    ("bitc" "git clone https://bitbucket.org/nverno" nil :system t)
-    ("gitc" "git clone git@github.com:nverno" nil :system t)
+    ("lnsf" ["ln -sfn \"$(realpath )\"" 1 nil nil]
+     expand-abbrev-hook :system t)
     ("bitcl" "https://bitbucket.org" nil :system t)
+    ("findd" ["find . -type d -iname '*.'" 1 nil nil]
+     expand-abbrev-hook :system t)
+    ("findf" ["find . -type f -iname '*.'" 1 nil nil]
+     expand-abbrev-hook :system t)
     ("gitcl" "git clone git@github.com" nil :system t)
-    ("gitra" "git remote add origin git@github.com:nverno" nil :system t))
+    ("gitra" "git remote add origin git@github.com:nverno" nil :system t)
+    ("lgrep" ["find . -maxdepth 1 -iregex '.*'" 1 nil nil]
+     expand-abbrev-hook :system t)
+    ("findrm" ["find . -type f -iname '*.' -delete" 9 nil nil]
+     expand-abbrev-hook :system t)
+    ("findrmd" ["find . -type d -iname '' -exec rm -rf {} \\;" 20 nil nil]
+     expand-abbrev-hook :system t))
+
   "Shells abbrevs."
   :enable-function 'nvp-shell-abbrev-expand-p
   :regexp nvp-shell-abbrev-re)

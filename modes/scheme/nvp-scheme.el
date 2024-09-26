@@ -37,8 +37,8 @@
 
 ;; Variable expansion predicate
 (defun nvp-scheme-abbrev-var-expand-p ()
-  (not (or (nvp:ppss 'soc)
-           (memq last-input-event '(?\? ?- ?/)))))
+  (not (or (memq last-input-event '(?\? ?- ?/))
+           (nvp:ppss 'soc))))
 
 
 ;;; Hippie Expand
@@ -46,9 +46,10 @@
   (nvp-he-flex-lisp-setup)
   (setq-local hippie-expand-only-buffers '(scheme-mode racket-mode))
   (when repl
-    (nvp-he-history-setup :history 'comint-input-ring
-                          :bol-fn 'comint-line-beginning-position
-                          :expand-fn 'nvp-he-history-remove-trailing-paren)))
+    (nvp-he-history-setup
+     :history 'comint-input-ring
+     :bol-fn 'comint-line-beginning-position
+     :expand-fn 'nvp-he-history-remove-trailing-paren)))
 
 
 (provide 'nvp-scheme)

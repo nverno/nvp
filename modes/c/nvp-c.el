@@ -66,9 +66,9 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
       (user-error "%s and/or yq not found" prog))))
 
 ;;; Abbrevs
-;; don't expand after '_' or in strings/comments
-(defsubst nvp-c-abbrev-expand-p ()
-  (nvp-abbrev-expand-not-after-punct-p '(_)))
+(defun nvp-c-abbrev-expand-p ()
+  "Don't expand after \"_\" or in strings/comments."
+  (nvp-abbrev-expand-not-after-punct-p '(?_)))
 
 ;;; GDB
 (with-eval-after-load 'nvp-repl
@@ -82,7 +82,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;; -------------------------------------------------------------------
 ;;; Snippet helpers
 
-(defsubst nvp-c-header-file-p () (string-match-p "h[xp]*" (nvp:ext)))
+(defsubst nvp-c-header-file-p ()
+  (string-match-p "h[xp]*" (nvp:ext)))
 
 ;; split string STR on commas, but only when not between <..>
 ;; eg., "std::vector<std::pair<int,int>> i, int j" =>

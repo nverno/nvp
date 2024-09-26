@@ -235,7 +235,8 @@ doesn't exceed LIMIT."
     (nvp-he:timed-while (and (not (input-pending-p))
                              (re-search-forward regexp nil t))
         start-time limit 25
-      (if (and ignore-comments (save-match-data (nvp:ppss 'soc)))
+      (if (and ignore-comments
+               (save-match-data (nvp:ppss 'soc)))
           (re-search-forward "\\s>\\|\\s!\\|\\s\"" nil t)
         (let ((match (match-string-no-properties 0)))
           (when (>= (length match) nvp-he-min-length)

@@ -134,7 +134,8 @@ With prefix or if char is '\\', ensure CHAR is at the end of the line."
 ;;; Add / modify default rules
 
 (defun nvp-align--line-continuation-p ()
-  (not (save-excursion (nvp:ppss 'soc nil (match-beginning 1)))))
+  (save-excursion
+    (not (nvp:ppss 'soc nil (match-beginning 1)))))
 
 (setcdr (assq 'basic-line-continuation align-rules-list)
         `((regexp . "\\(\\s-*\\)\\\\$")

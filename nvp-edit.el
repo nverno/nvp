@@ -249,10 +249,8 @@ With prefix KEEP-FOCUS, keep hiding regardless."
     ("L" "keep-lines" keep-lines)
     ""
     "Delete"
-    ("d" "Matches" flush-lines)]
-   ["Whitespace"
-    ("b" "Empty lines" delete-blank-lines :transient t)
-    ("w" "Trailing" delete-trailing-whitespace :transient t)]
+    ("d" "Matches" flush-lines)
+    ("w" "Trailing ws" delete-trailing-whitespace)]
    ["Other"
     ("#" "Count (>pos)" how-many :transient t)]])
 

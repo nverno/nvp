@@ -10,7 +10,8 @@
 (defvar nvp-shell-abbrev-re "\\(\\_<[_:\\.A-Za-z0-9/-]+\\)")
 
 (defun nvp-shell-abbrev-expand-p ()
-  (not (or (memq last-input-event '(?- ?. ?_)) (nvp:ppss 'soc))))
+  (not (or (memq last-input-event '(?- ?. ?_))
+           (nvp:ppss 'cmt nil nil (comint-line-beginning-position)))))
 
 ;;; Interop variables for eshell, and other non-comint-based shells
 ;; used for determining the shell statement and active command around point

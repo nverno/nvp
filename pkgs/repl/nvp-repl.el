@@ -103,11 +103,13 @@ buffers."
   :type 'boolean)
 
 (defvar nvp-repl--display-actions
-  '((other-window . ((display-buffer-reuse-window
+  '((other-window . ((display-buffer--maybe-same-window
+                      display-buffer-reuse-window
                       display-buffer-use-some-window
                       display-buffer-pop-up-window)
                      ;; Prefer the largest other window the most ⬎
-                     (some-window          . t)))
+                     ;; (some-window          . t)
+                     ))
     (split-below . ((display-buffer-reuse-window
                      nvp-repl--split-below))))
   "Options for `nvp-repl-display-action'.")

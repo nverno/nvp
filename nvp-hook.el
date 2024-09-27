@@ -39,9 +39,6 @@
     (untabify (point-min) (point-max))
     (delete-trailing-whitespace)))
 
-;; -------------------------------------------------------------------
-;;; Commands
-
 ;;;###autoload
 (defun nvp-hook-add-or-remove (func hook-var hook-fn &optional append local)
   "Call FUNC to add or remove HOOK-FN from HOOK-VAR, locally when called

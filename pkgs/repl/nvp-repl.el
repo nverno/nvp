@@ -3,11 +3,8 @@
 ;;; Commentary:
 ;;
 ;; Unified Repl interface:
-;;  - `nvp-repl-jump' pops b/w source buffers and repls, starting them when
-;;    necessary.
-;;
-;; TODO:
-;; - redirect output
+;;  - `nvp-repl-jump' is main entry point, switching b/w source and repls
+;;     buffers, and starting a repl for a source buffer when necessary.
 ;;
 ;; Shortcuts: `defslime-repl-shortcut'
 ;;
@@ -20,7 +17,7 @@
 (nvp:decls :p (sh) :f (nvp-repl--init nvp-repl--make-completion-at-point))
 
 (defgroup nvp-repl nil
-  "Unified repl."
+  "Unified repl interface."
   :prefix "nvp-repl-"
   :group 'languages)
 

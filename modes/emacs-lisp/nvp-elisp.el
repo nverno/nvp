@@ -216,32 +216,30 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
 
 (defun nvp-elisp-eval-sexp-dwim (&optional no-truncate action newline and-go)
   "Eval active region, top-level sexp containing point, or the previous sexp.
+Interactively, the prefix argument means:
 
-ACTION is determined from prefix:
-   `nil'              => Eval and echo result with `eval-last-sexp'.
-   `-' or any arg<=0  => Do opposite of default truncation for printed objects.
-  -1                  => Replace evaluated region with its result.
-   `-' or \\[universal-argument]         => Insert result at point or after\
- containing sexp.
-   arg<-1 or \\[universal-argument] \\[universal-argument]  => Pretty print\
- result in temp buffer.
+   Prefix     ACTION
+   ------     ------
+   `-1'       \\='replace   Replace sexp with untruncated results. 
+   `-', 4     \\='pp        Pretty print result in temp buffer.
+    <-1, >=16 \\='insert    Insert result at point or after evaluated sexp.
+    *         \\='eval      Eval and echo result with `eval-last-sexp'.
 
-When NEWLINE is non-nil and ACTION is `insert', insert newline before
-results. When AND-GO is non-nil and a top-level sexp is evaluated, move point
-to end of sexp."
-  (interactive
-   (let* ((raw (prefix-numeric-value current-prefix-arg))
-          (arg (abs raw))
-          (interact-p (derived-mode-p 'lisp-interaction-mode))
-          (action (cond ((eq -1 raw) 'replace)
-                        ((>= arg 16) 'pp)
-                        (t (if (or interact-p
-                                   (memq raw '(- -4 4)))
-                               'insert
-                             'eval)))))
-     (list (if interact-p (memq arg '(0 4))
-             (or (eq '- raw) (<= raw 0)))
-           action interact-p (or interact-p (eq 'insert action)))))
+   `-', <1               No truncation of results.
+
+When ACTION is \\='insert, when:
+  NEWLINE                 Insert newline before results.
+  Interactive or AND-GO   Move point to end of evaluated sexp."
+  (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))
+                      (arg (abs raw))
+                      (action (cond ((eq -1 raw) 'replace)
+                                    ((>= arg 16) 'pp)
+                                    (t (if (memq raw '(- -4 4))
+                                           'insert
+                                         'eval))))
+                      (no-truncate (or (eq '- raw) (<= raw 0)))
+                      (and-go (eq 'insert action)))
+                 (list no-truncate action nil and-go)))
   (let* ((print-level (unless no-truncate eval-expression-print-level))
          (print-length (unless no-truncate eval-expression-print-length))
          (debug-on-error eval-expression-debug-on-error)
@@ -257,17 +255,15 @@ to end of sexp."
         (setq end (point))
         (nvp-indicate-pulse-region-or-line beg end))
       (pcase-exhaustive action
-        ('replace (funcall-interactively
-                   #'nvp-elisp-eval-and-replace beg end))
+        ('replace (funcall-interactively #'nvp-elisp-eval-and-replace beg end))
         ((or 'eval 'insert)
-         (let* ((insert-p (or (eq 'insert action)
-                              (derived-mode-p 'lisp-interaction-mode)))
+         (let* ((insert-p (eq 'insert action))
                 (standard-output (if insert-p (current-buffer) t)))
            (and insert-p newline (terpri))
            (if region-p
                (eval-region beg end (and insert-p (current-buffer)))
              ;; Note(09/16/24): in lisp interaction, could use
-             ;; (pp-to-string (eval expr lexical-binding)) to pretty print in scratch
+             ;; (pp-to-string (eval expr lexical-binding)) 
              (eval-last-sexp (or (and (null insert-p) '-)
                                  (and no-truncate 0) t)))
            (and insert-p newline (terpri))))
@@ -285,6 +281,22 @@ to end of sexp."
     (when (and and-go end (not (eq 'replace action)))
       (goto-char end))))
 
+(defun nvp-lisp-interaction-eval-dwim (prefix)
+  "Eval sexp dwim in `lisp-interaction-mode'.
+The PREFIX is interpreted as:
+
+   `-1'         Replace
+   `-', 0, 4    No-truncation
+   `-', >=16    Pretty print evaluation in temp buffer
+    *           Insert result in buffer after sexp and move point to end."
+  (interactive "P")
+  (let* ((raw (prefix-numeric-value prefix))
+         (arg (abs raw))
+         (no-truncate (or (eq '- prefix) (memq arg '(0 4))))
+         (action (cond ((or (eq '- prefix) (>= arg 16)) 'pp)
+                       ((eq -1 raw) 'replace)
+                       (t 'insert))))
+    (funcall #'nvp-elisp-eval-sexp-dwim no-truncate action t t)))
 
 ;; -------------------------------------------------------------------
 ;;; Insert / Toggle

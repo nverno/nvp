@@ -265,9 +265,9 @@
     (",u" nvp-edebug-menu--toggle-url-debug :if (lambda () (boundp 'url-debug)))
     (",t" "Tramp" nvp-edebug-menu--toggle-tramp
      :if (lambda () (--when-let (buffer-file-name) (file-remote-p it))))]
-   ["History"
-    (";c" "Minibuf cmds" list-command-history)
-    (";l" "Lossage" view-lossage)]
+   ["Recent Cmds"
+    ("xc" "Used minibuf" list-command-history)
+    ("xl" "Lossage" view-lossage)]
    ["Emacs"
     ("L" "Launch" nvp-edebug-menu--launch)
     ("-d" "Debug init" "--debug-init")

@@ -163,25 +163,25 @@ This is useful, e.g, for use with `visual-line-mode'."
 (defun nvp-fill-paragraph-toggle (&optional column justify)
   "Toggle paragraph filling.
 With prefix, prompt for `fill-column'. With two prefix, justify as well."
-  (interactive
-   (list (and (eq 4 (prefix-numeric-value current-prefix-arg))
-              (read-number "Fill column: " fill-column))
-         (eq 16 (prefix-numeric-value current-prefix-arg))))
-  (let ((fill-column
-         (or column
-             (nvp:toggled-if fill-column most-positive-fixnum)))
-        (paragraph-start
-         ;; TODO(08/26/24): treat notes, fixmes, etc. as paragraph breaks
-         (if (nvp:ppss 'cmt)
-             (nvp-comment-string "" 2)
-           paragraph-start)))
+  (interactive (let ((arg (prefix-numeric-value current-prefix-arg)))
+                 (list (and (eq 4 arg)
+                            (read-number "Fill column: " fill-column))
+                       (eq 16 arg))))
+  (let ((fill-column (or column (nvp:toggled-if fill-column
+                                  most-positive-fixnum)))
+        ;; TODO(08/26/24): treat notes, fixmes, etc. as paragraph breaks
+        (paragraph-start (if (nvp:ppss 'cmt)
+                             (nvp-comment-string "" 2)
+                           paragraph-start)))
     (if (region-active-p)
         (call-interactively #'fill-region)
       (let ((fill-fn (or nvp-fill-paragraph-function
                          fill-paragraph-function
-                         #'prog-fill-reindent-defun)))
+                         'prog-fill-reindent-defun)))
         (deactivate-mark t)
-        (funcall (if (commandp fill-fn) 'funcall-interactively 'funcall)
+        (funcall (if (commandp fill-fn)
+                     'funcall-interactively
+                   'funcall)
                  fill-fn (and justify 'fill-paragraph))))))
 
 (provide 'nvp-edit-aux)

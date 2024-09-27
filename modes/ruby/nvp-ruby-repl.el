@@ -1,17 +1,12 @@
-;;; nvp-ruby-repl.el --- Ruby REPL -*- lexical-binding: t; -*-
+;;; nvp-ruby-repl.el --- Ruby Repl -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(require 'comint)
 (require 'inf-ruby nil t)
 (nvp:decls :p (ruby inf-ruby robe) :f (robe-mode inf-ruby))
 
-
-;; add compilation jumps in traceback output from REPL
-(defvar nvp-ruby-inf-compilation-regexp
-  '("^\\s-+[0-9]+: from \\([^\(][^:]+\\):\\([0-9]+\\)" 1 2))
 
 ;; Interpret '?' in irb similar to octave/ess
 (defconst nvp-ruby-inf-help

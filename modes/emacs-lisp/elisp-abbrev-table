@@ -277,7 +277,7 @@
     ("pae" "point-at-eol" nil :system t)
     ("pes" "process-exit-status" nil :system t)
     ("pmi" "point-min" nil :system t)
-    ("pnv" "prefix-numeric-value" nil :system t)
+    ("pnv" "prefix-numeric-value current-prefix-arg" nil :system t)
     ("pps" "parse-partial-sexp" nil :system t)
     ("pro" "provide" nil :system t)
     ("pss" "process-send-string" nil :system t)

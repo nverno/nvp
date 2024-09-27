@@ -26,10 +26,9 @@
   [["At point"
     ("s" "Syntax" nvp-syntax-at-point)
     ("o" "Overlays" nvp-dev-list-overlays)]
-   ["Display"
+   ["Dump"
     ("v" "Variable" nvp-dev-describe-variable)
-    ("m" "Mode config" nvp-dev-describe-mode)
-    ("h" "Command history" list-command-history)]
+    ("m" "Mode config" nvp-dev-describe-mode)]
    ["Modify"
     ("/t" "Transient" nvp-transient-menu :transient transient--do-replace)
     (":a" "Remove advice" nvp-dev-advice-remove-all)

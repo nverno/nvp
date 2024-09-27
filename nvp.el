@@ -291,10 +291,9 @@ Otherwise just call `vertico-insert'. If this was previous command, call
        (bound-and-true-p nvp-fallback-minibuffer-function)
        (funcall-interactively nvp-fallback-minibuffer-function args)))
 
-;;; FIXME: fix this
-(with-eval-after-load 'vertico-directory
-  (setf (symbol-function 'vertico-directory-up) #'nvp-vertico-directory-up)
-  (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
+;;; FIXME(09/27/24):
+(advice-add 'vertico-directory-up :override #'nvp-vertico-directory-up)
+(add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy)
 
 ;; -------------------------------------------------------------------
 ;;; Advices

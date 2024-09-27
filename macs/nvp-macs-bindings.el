@@ -25,8 +25,8 @@
       ("M-P"   . nvp-move-backward-paragraph)))
 
   (defvar nvp--bindings-fast-move
-    '(("n"     . nvp-move-next5)
-      ("p"     . nvp-move-prev5)
+    '(("n"     . nvp-move-forward-paragraph)
+      ("p"     . nvp-move-backward-paragraph)
       ("C-l"   . recenter-top-bottom)
       ("k"     . scroll-up-command)
       ("i"     . scroll-down-command)
@@ -43,10 +43,9 @@
     (append
      nvp--bindings-hjkl
      nvp--bindings-move
-     '(("e"     . end-of-line)
-       ("a"     . beginning-of-line)
-       ("A"     . beginning-of-buffer)
-       ("E"     . end-of-buffer)
+     '(("e"     . end-of-defun)
+       ("a"     . beginning-of-defun)
+       ("j"     . nvp-avy-goto-char-alt)
        ("/"     . isearch-forward)
        ("?"     . isearch-backward)
        ("SPC"   . scroll-up)

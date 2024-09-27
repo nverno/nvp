@@ -347,11 +347,9 @@ Calls `imenu' to jump to location with selection."
 ;;                   2. rewrite to use consult with narrowing keys
 ;;                   3. add narrowing for headers/sub-headers
 ;;;###autoload
-(defun nvp-imenu (&optional arg)
-  "Call `imenu-anywhere' with fallback restricting to visible buffers only.
-\\[universal-argument] - restrict to only headers
-\\[universal-argument] \\[universal-argument] - only headers+sub-headers."
-  (interactive (list (prefix-numeric-value current-prefix-arg)))
+(defun nvp-imenu (_arg)
+  "Call `imenu-anywhere' with fallback restricting to visible buffers only."
+  (interactive "p")
   (let ((default-p (eq imenu-create-index-function
                        #'imenu-default-create-index-function)))
     (when (and default-p (null nvp-imenu-comment-headers-re) comment-start)

@@ -197,8 +197,8 @@ With prefix SILENT, save files without prompting."
         (kill-new string))
       (message "Copied as kill: %S" string))))
 
-;; create new empty FILENAME in dired directory
 (defun nvp-dired-touch (filename)
+  "Create new empty FILENAME in dired directory."
   (interactive (list (read-string "Filename (.gitkeep): " nil nil ".gitkeep")))
   (with-temp-buffer
     (write-file filename)))

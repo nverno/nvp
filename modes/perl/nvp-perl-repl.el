@@ -4,7 +4,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(nvp:decls :p (inf-perl perl cperl))
+(nvp:decls :p (inf-perl))
+
 
 (when (fboundp 'inf-perl-run)
   (nvp-repl-add '(cperl-mode perl-mode perl-ts-mode)
@@ -12,6 +13,7 @@
     :modes '(inf-perl-mode)
     :init #'inf-perl-run
     :find-fn #'inf-perl-process))
+
 
 (provide 'nvp-perl-repl)
 ;; Local Variables:

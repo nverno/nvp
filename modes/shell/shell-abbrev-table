@@ -11,6 +11,7 @@
     ("ddu" "ls | xargs -n 1 du -hs" nil :system t)
     ("edn" "2>/dev/null" nil :system t)
     ("gti" "git" nil :system t)
+    ("rma" "remote add origin git@github.com:nverno" nil :system t)
     ("sar" ["sudo add-apt-repository ppa:" 0 nil nil]
      expand-abbrev-hook :system t)
     ("21dn" ">/dev/null 2>&1" nil :system t)

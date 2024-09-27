@@ -62,9 +62,11 @@
 ;;;###autoload
 (defun nvp-pkg-update-all-autoloads (&optional arg force)
   "Update loaddefs for configs and extensions.
-(\\[universal-argument]) recompile all extension files.
-(\\[universal-argument]\\[universal-argument]) FORCE compile all .el files with
-associated .elc files."
+With prefix arguments:
+
+  \\[universal-argument]       Recompile all extension files.
+  \\[universal-argument] \\[universal-argument]   FORCE compile all .el files\
+ that have associated .elc files."
   (interactive "P")
   (cl-loop for (defs . dirs) in
            `(,(cons nvp/auto (list nvp/config nvp/lisp/src))

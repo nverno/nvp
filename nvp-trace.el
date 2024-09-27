@@ -13,6 +13,7 @@
 (autoload 'trace-tree-disable "trace-tree")
 (autoload 'tracing-update-mode-line "tracing")
 
+;;; Tracing Mode
 (defvar tracing--batch nil)
 (when (fboundp 'tracing-enable)
   (tracing-enable))
@@ -20,14 +21,11 @@
 
 ;;; Menu
 
-(transient-define-infix nvp-trace--toggle-inhibit nil
-  :class 'transient-lisp-variable
-  :variable 'inhibit-trace
-  :reader (lambda (&rest _) (not inhibit-trace))
-  :set-value (lambda (sym val)
-               (set sym val)
-               (when (fboundp 'tracing-update-mode-line)
-                 (tracing-update-mode-line))))
+(defun nvp-toggle-inhibit-trace ()
+  (interactive)
+  (setq inhibit-trace (not inhibit-trace))
+  (and (fboundp 'tracing-update-mode-line)
+       (tracing-update-mode-line)))
 
 (defun nvp-trace-active-p ()
   (and (boundp 'trace-buffer)
@@ -42,7 +40,7 @@
     ("u" "Untrace defun" untrace-function)
     ("q" "Untrace all" untrace-all)
     "--"
-    ("i" "Inhibit trace" nvp-trace--toggle-inhibit)]
+    ("i" "Inhibit trace" nvp-toggle-inhibit-trace)]
    ["Groups"
     ("g" "Group" nvp-trace-group)
     ("G" "Untrace group" nvp-untrace-group :if-non-nil tracing-minor-mode)

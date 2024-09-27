@@ -3,8 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(nvp:decls :p ("haskell"))
+(nvp:decls :p (haskell))
+
 
 (defun nvp-haskell-arrow ()
   (interactive)
@@ -27,10 +27,10 @@
 (with-eval-after-load 'align
   '(nconc
     align-rules-list
-    (mapcar #'(lambda (x)
-                `(,(car x)
-                  (regexp . ,(cdr x))
-                  (modes quote (haskell-mode literate-haskell-mode))))
+    (mapcar (lambda (x)
+              `(,(car x)
+                (regexp . ,(cdr x))
+                (modes quote (haskell-mode literate-haskell-mode))))
             '((haskell-types       . "\\(\\s-+\\)\\(::\\|∷\\)\\s-+")
               (haskell-assignment  . "\\(\\s-+\\)=\\s-+")
               (haskell-arrows      . "\\(\\s-+\\)\\(->\\|→\\)\\s-+")

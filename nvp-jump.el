@@ -153,7 +153,7 @@ Optionally, search LISP-ONLY files (no C sources)."
 (defun nvp-jump-to-mode-lib (action)
   "Jump to mode LIB addons with ACTION."
   (interactive "p")
-  (nvp-jump-to-dir nvp/modes action))
+  (nvp-jump-to-frecent-directory nvp/modes action))
 
 
 ;; -------------------------------------------------------------------
@@ -220,18 +220,18 @@ Optionally, search LISP-ONLY files (no C sources)."
         " -f " bin " " data)))))
 
 ;;;###autoload
-(defun nvp-jump-to-dir (dir this-window)
-  "Jump to directory from z.sh database.
-With prefix, do dired in THIS-WINDOW.
-With multiple prefix, restrict jumps to subdirectories of current directory."
+(defun nvp-jump-to-frecent-directory (arg &optional directory)
+  "Dired in a frecent directory from z.sh database.
+When DIRECTORY restrict choices to its frecent subdirectories.
+With \\[universal-argument] \\[universal-argument], restrict to current."
   (interactive
-   (list (--when-let
-             (nvp-jump--z-directories
-              nil nil (and (>= (prefix-numeric-value current-prefix-arg) 16)
-                           (expand-file-name default-directory)))
-           (completing-read "Frecent Directory: "
-             (mapcar #'abbreviate-file-name it)))
-         current-prefix-arg))
+   (let ((arg (prefix-numeric-value current-prefix-arg)))
+     (list (--when-let (nvp-jump--z-directories
+                        nil nil (and (>= arg 16)
+                                     (expand-file-name default-directory)))
+            (completing-read "Frecent Directory: "
+              (mapcar #'abbreviate-file-name it)))
+          current-prefix-arg)))
   (dired-jump (not this-window) (file-name-as-directory dir)))
 
 ;;;###autoload

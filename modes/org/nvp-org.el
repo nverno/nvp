@@ -15,10 +15,14 @@
 
 ;;;###autoload
 (defun nvp-org-tags-view (&optional directory)
-  "Call `org-tags-view'. With prefix prompt for DIRECTORY to search tags."
+  "Display org tags with `org-tags-view'.
+When call from an `org-mode' buffer with \\[universal-argument], limit tags
+to those in current buffer.
+Elsewhere, or with prefix >= 4, prompt for DIRECTORY to search within."
   (interactive
    (list (let ((raw (prefix-numeric-value current-prefix-arg)))
-           (cond ((and (eq 4 raw) (derived-mode-p 'org-mode))
+           (cond ((and (= raw 4)
+                       (derived-mode-p 'org-mode))
                   (buffer-file-name))
                  ((>= raw 4) (completing-read-multiple
                               "Directory: " #'completion-file-name-table))
@@ -139,24 +143,26 @@ Return cons of \\='(name                           . raw-link)."
       (`texinfo (format "@uref{%s,%s}" lib desc))
       (_ lib))))
 
-(defun nvp-org-nvp-store-link (&optional prompt)
+(defun nvp-org-nvp-store-link (arg &optional _interactive?)
   "Store org \\='nvp link."
-  (when (eq major-mode 'emacs-lisp-mode)
-    (let ((lib (nvp:path 'bfse))
-          (symt (if (nvp:ppss 'cmt) (cons 's (read-string "Section: "))
-                  (--when-let (nvp-parse-current-function)
-                    (cons 'f it)))))
-      (when (or prompt (null symt))
-        (setq symt (cons
-                    (nvp:read-char-case "Type: " 'verbose
+  (when-let ((lib (and (eq major-mode 'emacs-lisp-mode)
+                       (file-name-base (buffer-file-name)))))
+    (let* ((prompt (> (prefix-numeric-value arg) 1))
+           (symt (cond ((nvp:ppss 'cmt) (cons 's nil))
+                       (t (cons 'f (nvp-parse-current-function))))))
+      (when (or prompt (null (cdr symt)))
+        (let* ((typ (nvp:read-char-case "Type: " 'verbose
                       (?s "[s]ection" 's)
                       (?f "[f]unction" 'f)
-                      (?v "[v]ariable" 'v))
-                    (read-string "Symbol: " nil nil (cdr symt)))))
-      (org-link-store-props
-       :type "nvp"
-       :link (format "nvp:%s?%s&type=%s" lib (cdr symt) (car symt))
-       :description (format "%s" (cdr symt))))))
+                      (?v "[v]ariable" 'v)))
+               (def (and (eq (car symt) typ) (cdr symt)))
+               (sym (read-string "Thing: " def nil def)))
+          (setq symt (cons typ sym))))
+      (and symt
+       (org-link-store-props
+        :type "nvp"
+        :link (format "nvp:%s?%s&type=%s" lib (cdr symt) (car symt))
+        :description (format "%s" (cdr symt)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

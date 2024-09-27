@@ -159,10 +159,10 @@ Return cons of \\='(name                           . raw-link)."
                (sym (read-string "Thing: " def nil def)))
           (setq symt (cons typ sym))))
       (and symt
-       (org-link-store-props
-        :type "nvp"
-        :link (format "nvp:%s?%s&type=%s" lib (cdr symt) (car symt))
-        :description (format "%s" (cdr symt)))))))
+           (org-link-store-props
+            :type "nvp"
+            :link (format "nvp:%s?%s&type=%s" lib (cdr symt) (car symt))
+            :description (format "%s" (cdr symt)))))))
 
 ;; -------------------------------------------------------------------
 ;;; Commands

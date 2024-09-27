@@ -77,28 +77,29 @@ Assumes the list is flattened and only elements with markers remain."
 
 (defun nvp-imenu-filter-code (buffer elem)
   "Filter out probable non code things."
-  (when (and (consp elem) (not (nvp:dotted-pair-p elem)))
+  (when (and (consp elem)
+             (not (nvp:dotted-pair-p elem)))
     (setq elem (car elem)))
   (let (mark)
-    (--when-let
-        (and (consp elem)
-             (setq mark (cdr elem))
-             (cond
-              ((numberp mark) mark)
-              ((markerp mark)
-               (and (or (null buffer) (eq (marker-buffer mark) buffer))
-                    mark))
-              ((overlayp mark)
-               (and (or (null buffer) (eq (overlay-buffer mark) buffer))
-                    (overlay-start mark)))
-              (t nil)))
+    (--when-let (and (consp elem)
+                     (setq mark (cdr elem))
+                     (cond ((numberp mark) mark)
+                           ((markerp mark)
+                            (and (or (null buffer)
+                                     (eq (marker-buffer mark) buffer))
+                                 mark))
+                           ((overlayp mark)
+                            (and (or (null buffer)
+                                     (eq (overlay-buffer mark) buffer))
+                                 (overlay-start mark)))
+                           (t nil)))
       (cons (nvp-imenu--remove-prefix (car elem)) mark))))
 
 (defun nvp-imenu--index-alist ()
   "Substitute spaces for `imenu-space-replacement' in candidate names."
-  (--map (cons
-          (subst-char-in-string ?\s (aref imenu-space-replacement 0) (car it))
-          (cdr it))
+  (--map (cons (subst-char-in-string
+                ?\s (aref imenu-space-replacement 0) (car it))
+               (cdr it))
          (imenu--make-index-alist)))
 
 
@@ -343,11 +344,11 @@ Calls `imenu' to jump to location with selection."
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-;;; FIXME(09/06/24): 1. index not always updating after different prefixes
+;;* FIXME(09/06/24): 1. index not always updating after different prefixes
 ;;                   2. rewrite to use consult with narrowing keys
 ;;                   3. add narrowing for headers/sub-headers
 ;;;###autoload
-(defun nvp-imenu (_arg)
+(defun nvp-imenu (arg)
   "Call `imenu-anywhere' with fallback restricting to visible buffers only."
   (interactive "p")
   (let ((default-p (eq imenu-create-index-function

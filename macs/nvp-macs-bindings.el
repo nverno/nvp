@@ -25,11 +25,9 @@
       ("M-P"   . nvp-move-backward-paragraph)))
 
   (defvar nvp--bindings-fast-move
-    '(("n"     . nvp-move-forward-paragraph)
-      ("p"     . nvp-move-backward-paragraph)
+    '(("n"     . scroll-up-command)
+      ("p"     . scroll-down-command)
       ("C-l"   . recenter-top-bottom)
-      ("k"     . scroll-up-command)
-      ("i"     . scroll-down-command)
       ("SPC"   . forward-page)
       ("M-SPC" . backward-page)))
   

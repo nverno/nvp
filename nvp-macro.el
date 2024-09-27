@@ -72,7 +72,6 @@ If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
 ;; -------------------------------------------------------------------
 ;;; Prefix args
 
-;; parse symbols like '>12 to (> . 12)
 (defsubst nvp--prefix-parse-testsym (sym)
   "Parse symbols, SYM, like \\='>12 to (> . 12)."
   (when (and (not (numberp sym)) (not (listp sym)) (symbolp sym))

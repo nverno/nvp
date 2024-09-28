@@ -220,19 +220,22 @@ Optionally, search LISP-ONLY files (no C sources)."
         " -f " bin " " data)))))
 
 ;;;###autoload
-(defun nvp-jump-to-frecent-directory (arg &optional directory)
+(defun nvp-jump-to-frecent-directory (&optional in-dir _same other frame)
   "Dired in a frecent directory from z.sh database.
-When DIRECTORY restrict choices to its frecent subdirectories.
-With \\[universal-argument] \\[universal-argument], restrict to current."
-  (interactive
-   (let ((arg (prefix-numeric-value current-prefix-arg)))
-     (list (--when-let (nvp-jump--z-directories
-                        nil nil (and (>= arg 16)
-                                     (expand-file-name default-directory)))
-            (completing-read "Frecent Directory: "
-              (mapcar #'abbreviate-file-name it)))
-          current-prefix-arg)))
-  (dired-jump (not this-window) (file-name-as-directory dir)))
+
+When IN-DIR is a file, restrict choices to its frecent sub-directories.
+Otherwise, with extra prefix, or when IN-DIR is non-nil restrict to
+directories under current directory."
+  (interactive (nvp-display-window-get-arguments current-prefix-arg))
+  (and in-dir (not (stringp in-dir))
+       (setq in-dir default-directory))
+  (when-let ((dir (completing-read "Frecent Directory: "
+                    (mapcar #'abbreviate-file-name
+                            (nvp-jump--z-directories nil nil in-dir)))))
+    (funcall (cond (other 'dired-other-window)
+                   (frame 'dired-other-frame)
+                   (t 'dired))
+             (file-name-as-directory dir))))
 
 ;;;###autoload
 (defun nvp-jump-to-source (dir action)

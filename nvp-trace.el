@@ -14,6 +14,7 @@
 (autoload 'tracing-update-mode-line "tracing")
 
 ;;; Tracing Mode
+(declare-function tracing-update-mode-line "tracing")
 (defvar tracing--batch nil)
 (when (fboundp 'tracing-enable)
   (tracing-enable))
@@ -21,10 +22,12 @@
 
 ;;; Menu
 
-(defun nvp-toggle-inhibit-trace ()
-  (interactive)
-  (setq inhibit-trace (not inhibit-trace))
-  (and (fboundp 'tracing-update-mode-line)
+;;;###autoload
+(defun nvp-toggle-inhibit-trace (&optional on)
+  (interactive "P")
+  (setq inhibit-trace (or on (not inhibit-trace)))
+  (message "Tracing %s" (if inhibit-trace "inhibited" "enabled"))
+  (and (bound-and-true-p tracing-minor-mode)
        (tracing-update-mode-line)))
 
 (defun nvp-trace-active-p ()

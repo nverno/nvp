@@ -48,7 +48,7 @@
 (defvar nvp-mode-font-additions ()
   "Alist of mode font-lock additions.")
 
-(defvar nvp-display-fallback-function #'nvp-display-fallback-dired
+(defvar nvp-display-fallback-function #'nvp-fallback-dired
   "Fallback for unhandled prefix.")
 
 (defvar nvp-fallback-minibuffer-function #'nvp-fallback-minibuffer-default
@@ -282,6 +282,19 @@ Otherwise just call `vertico-insert'. If this was previous command, call
   (let ((input (minibuffer-contents-no-properties)))
     ;; (nvp:unread input)
     (throw 'nvp-fallback input)))
+
+(defun nvp-fallback-dired (location &rest _args)
+  (if (bufferp location) nil
+    (let ((dir (pcase location
+                 ((pred file-exists-p)
+                  (file-name-directory location))
+                 ;; ((pred bufferp)
+                 ;;  (file-name-directory (buffer-file-name location)))
+                 (_ (-if-let (buff (get-buffer location))
+                        (file-name-directory
+                         (buffer-file-name location))
+                      default-directory)))))
+      (dired dir))))
 
 (defun nvp-fallback-command (&rest args)
   "Set `nvp-exit' and call fallback functions with ARGS."

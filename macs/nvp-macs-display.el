@@ -4,44 +4,34 @@
 ;;; Code:
 (require 'nvp-macs-common)
 
-(eval-and-compile
-  (defvar nvp-display-actions)
-  (defsubst nvp-display--action (action type)
-    (or (cdr (assq action (plist-get nvp-display-actions type)))
-
-        (if (equal ':buffer type)
-            (list nvp-display-fallback-function)
-          nvp-display-fallback-function))))
-
-(defmacro nvp:display-with-action (action &rest body)
-  "Execute BODY with jump ACTION defaults."
-  (declare (indent defun) (debug (sexp &rest form)))
-  (macroexp-let2 nil action action
-    `(let* ((display-buffer-overriding-action
-             (nvp-display--action ,action :buffer))
-            (file-fn (nvp-display--action ,action :file))
-            (ido-default-file-method (nvp-display--action ,action :ido))
-            (ido-default-buffer-method ido-default-file-method))
-       (nvp:with-letf 'find-file (symbol-function file-fn) ,@body))))
-
-; (defmacro nvp:display-file-with-action (action &rest body)
-;   "Execute BODY with jump ACTION file defaults."
-;   (declare (indent defun) (debug (sexp &rest form)))
-;   (macroexp-let2 nil action action
-;     `(let* ((file-fn (nvp-display--action ,action :file))
-;             (ido-default-file-method (nvp-display--action ,action :ido)))
-;        (cl-letf (((symbol-function 'find-file)
-;                   (symbol-function file-fn)))
-;          ,@body))))
-
-(defmacro nvp:display-buffer-with-action (action &rest body)
-  (declare (indent defun) (debug (sexp &rest form)))
-  (macroexp-let2 nil action action
-    `(let* ((display-buffer-overriding-action
-             (nvp-display--action ,action :buffer))
-            (ido-default-buffer-method (nvp-display--action ,action :ido))
-            (help-window-select 'other))
-       ,@body)))
+(cl-defmacro nvp-with-display-actions
+    (prefix
+     &rest body
+     &key (default '#'ignore) on-frame on-other on-same action-order
+     &allow-other-keys)
+  "Interpret PREFIX according to `nvp-display-window-get-arguments'.
+Bind `display-buffer-overriding-action' and set `current-prefix-arg' for
+the next command according to PREFIX. The symbols \\='other-frame,
+\\='other-window, and \\='same-window are bound to the display action. If
+BODY is non-nil, do BODY. Otherwise, conditionally call interactively do
+ON-SAME, ON-OTHER, ON-FRAME or DEFAULT."
+  (declare (indent 1))
+  (nvp:skip-keywords body)
+  (nvp:with-syms (pre)
+    `(pcase-let ((`(,,pre ,same-window ,other-window ,other-frame)
+                  (nvp-display-window-get-arguments ,prefix ,action-order)))
+       (let ((display-buffer-overriding-action
+              (cond (other-frame nvp-display-buffer-other-frame-action)
+                    (other-window nvp-display-buffer-other-window-action)
+                    (same-window nvp-display-buffer-same-window-action))))
+         (setq current-prefix-arg ,pre)
+         ,(if (null body)
+              `(call-interactively
+                (cond ,@(and on-other `((other-window ,on-other)))
+                      ,@(and on-frame `((other-frame ,on-frame)))
+                      ,@(and on-same `((same-window ,on-same)))
+                      (t ,default)))
+            `(progn ,@body))))))
 
 
 (provide 'nvp-macs-display)

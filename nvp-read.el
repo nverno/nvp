@@ -172,7 +172,7 @@ Filter by PREDICATE if non-nil."
 
 ;; some completing reads for general config files
 (defun nvp-read-mode-config (&optional prompt default)
-  (nvp:defq default (symbol-name major-mode))
+  (or default (setq default (symbol-name major-mode)))
   (nvp:read-file-with-fallback nil
     (nvp-completing-read
       (nvp:prompt-default (or prompt "Mode config: ") default)

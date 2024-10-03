@@ -8,9 +8,10 @@
 
 
 (defface nvp-vhdl-package-face
-  '((t ( :inherit font-lock-function-name-face
-         :underline (:color "#9f6f6f" :style line :position t))))
-  "Package face.")
+  '((t :inherit font-lock-function-name-face
+       :underline (:color "#9f6f6f" :style line :position t)))
+  "Package face."
+  :group 'vhdl)
 
 (defvar nvp-vhdl-ts-font-lock
   (when (treesit-available-p)

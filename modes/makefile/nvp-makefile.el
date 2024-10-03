@@ -92,7 +92,10 @@
 ;; -------------------------------------------------------------------
 ;;; Font-lock
 
-(defface makefile-shell '((t (:inherit (nvp-block-face) :extend t))) "Shell face")
+(defface makefile-shell
+  '((t (:inherit (nvp-block-face) :extend t)))
+  "Shell face."
+  :group 'makefile)
 
 ;; TODO: remove string fontification in #define blocks where it is incorrect.
 ;; better to fontify using `forward-sexp' to allow for closing parens in command

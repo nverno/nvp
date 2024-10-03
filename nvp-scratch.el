@@ -18,11 +18,13 @@ With prefix, pop other window, with double prefix, prompt for MODE."
           (hookless (and prompt-p (y-or-n-p "Hookless!? "))))
      (list mode current-prefix-arg hookless)))
   (nvp-window-configuration-save)
-  (let ((buff (get-buffer-create "*scratch*")))
-    (with-current-buffer buff
+  (let ((buf (get-buffer-create "*scratch*")))
+    (with-current-buffer buf
       (setq default-directory nvp/scratch)
       (nvp-scratch-switch-modes mode (null hookless) hookless)
-      (nvp-display-location buff :buffer action))))
+      (nvp-with-display-actions action
+        :action-order '(other same frame)
+        (pop-to-buffer buf)))))
 
 (defvar-local nvp-scratch--hookless nil
   "Non-nil when previous switch was hookless.")

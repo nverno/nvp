@@ -33,10 +33,15 @@
 ;;
 ;; Adds fontification & code folding (hideshow) to lsp log mode
 
-(defface nvp-lsp-logio-send-face '((t :foreground "#00bfff" :bold t))
-  "Face for sends.")
-(defface nvp-lsp-logio-receive-face '((t :foreground "#7fea01" :bold t))
-  "Face for receives.")
+(defface nvp-lsp-logio-send-face
+  '((t :foreground "#00bfff" :bold t))
+  "Face for sends."
+  :group 'lsp)
+
+(defface nvp-lsp-logio-receive-face
+  '((t :foreground "#7fea01" :bold t))
+  "Face for receives."
+  :group 'lsp)
 
 (defvar nvp-lsp-logio-keywords
   (let ((types (rx (or "request" "response" "notification"))))

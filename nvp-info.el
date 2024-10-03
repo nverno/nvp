@@ -128,12 +128,13 @@ or prompt for manual with ARG."
       :proc-name "install-info"
       :proc-args (target))))
 
-(defun nvp-info-goto-source (file action)
+(defun nvp-info-goto-source (action file)
   "Jump to source of current info FILE."
   (interactive
    (let ((fname (concat "org/" (file-name-nondirectory Info-current-file) ".org")))
-     (list (expand-file-name fname nvp/info) current-prefix-arg)))
-  (nvp-display-location file :file action))
+     (list current-prefix-arg (expand-file-name fname nvp/info))))
+  (nvp-with-display-actions action
+    (pop-to-buffer (find-file-noselect file))))
 
 ;; -------------------------------------------------------------------
 ;;; Transient

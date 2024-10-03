@@ -202,7 +202,8 @@ With triple prefix, offer recursive results."
            (call-process (nvp:program "firefox") nil 0 nil fullname))))
       ;; probably PDF, open in emacs
       ((file-name-extension book)
-       (nvp-display-location fullname :file action))
+       (nvp-with-display-actions action
+         (pop-to-buffer (find-file-noselect fullname))))
       ;; otherwise recurse in subdirs
       (t (nvp-jump-to-book fullname action)))))
 

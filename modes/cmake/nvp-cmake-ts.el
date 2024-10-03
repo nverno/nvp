@@ -14,11 +14,13 @@
 
 (defface nvp-cmake-assignment-face
   '((t (:inherit font-lock-variable-name-face)))
-  "Face for custom targets and assignments.")
+  "Face for custom targets and assignments."
+  :group 'cmake)
 
 (defface nvp-cmake-function-face
   '((t (:inherit font-lock-function-name-face :weight bold)))
-  "Face for function definition.")
+  "Face for function definition."
+  :group 'cmake)
 
 (defcustom cmake-ts-mode-align-arguments nil
   "When non-nil, align all arguments in argument list with first argument."

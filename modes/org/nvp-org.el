@@ -109,7 +109,8 @@ Return cons of \\='(name                           . raw-link)."
 
 (defsubst nvp-org--nvp-parse (query)
   (when (string-match nvp-org-nvp-re query)
-    (list (match-string 1 query) (match-string 2 query)
+    (list (match-string 1 query)
+          (match-string 2 query)
           (pcase (match-string 3 query)
             ("f" 'function)
             ("s" 'section)
@@ -119,22 +120,23 @@ Return cons of \\='(name                           . raw-link)."
 (defun nvp-org-nvp-open (query)
   "Visit nvp FILE-SECTION and goto SECTION if non-nil."
   (-let (((file sec-or-def type) (nvp-org--nvp-parse query)))
-    (--when-let (nvp:locate-library file)
-      (with-current-buffer (find-file-noselect it)
-        (let ((cur (point)) pt)
-          (when sec-or-def
-            (goto-char (point-min))
-            (let* ((prefix-re (if (or (not type) (eq type 'section))
-                                  (concat (nvp:heading-create-re) "*")
-                                "^\\s-*(def.*"))
-                   (case-fold-search t))
-              (when (re-search-forward (concat prefix-re sec-or-def) nil t)
-                (setq pt (nvp:point 'bol)))))
-          (pop-to-buffer (current-buffer))
-          (unless (or (null pt) (eq pt cur))
-            (push-mark))
-          (and pt (goto-char pt))
-          (recenter-top-bottom))))))
+    (--if-let (nvp:locate-library file)
+        (with-current-buffer (find-file-noselect it)
+          (let ((cur (point)) pt)
+            (when sec-or-def
+              (goto-char (point-min))
+              (let* ((prefix-re (if (or (not type) (eq type 'section))
+                                    (concat (nvp:heading-create-re) "*")
+                                  "^\\s-*(def.*"))
+                     (case-fold-search t))
+                (when (re-search-forward (concat prefix-re sec-or-def) nil t)
+                  (setq pt (nvp:point 'bol)))))
+            (pop-to-buffer (current-buffer))
+            (unless (or (null pt) (eq pt cur))
+              (push-mark))
+            (and pt (goto-char pt))
+            (recenter-top-bottom)))
+      (user-error "No library found for \"%s\"" file))))
 
 (defun nvp-org-nvp-export (file-section desc backend _)
   (-let* (((file _section) (split-string file-section "?"))
@@ -170,10 +172,9 @@ Return cons of \\='(name                           . raw-link)."
 (defun nvp-org-forward-element ()
   (interactive)
   (nvp:push-mark 'nvp-org-forward-element)
-  (cond ((org-at-item-p)
-         (condition-case nil
-             (org-next-item)
-           (error (org-forward-element))))
+  (cond ((org-at-item-p) (condition-case nil
+                             (org-next-item)
+                           (error (org-forward-element))))
         (t (org-forward-element))))
 
 (defun nvp-org-backward-element ()
@@ -194,12 +195,10 @@ Return cons of \\='(name                           . raw-link)."
   "l"   #'org-down-element
   "h"   #'org-up-element)
 
-;; FIXME: don't skip over tags
-;; ensure point is at end-of-line so text doesn't get carried to next todo
+;; Ensure point is at end-of-line so text doesn't get carried to next todo
 (define-advice org-insert-todo-heading (:before (&rest _args) "move-eol")
   (end-of-line))
 
-;; capture
 ;;;###autoload
 (defun nvp-org-capture (&optional goto keys)
   (interactive)
@@ -221,7 +220,7 @@ Return cons of \\='(name                           . raw-link)."
         (insert " [/]"))
       (org-update-checkbox-count))))
 
-;;; XXX: it would be nice to get completion like the old hydra
+;; XXX: it would be nice to get completion like the old hydra
 (defun nvp-org-src-maybe ()
   "When '<' is entered at the beginning of a line, load org-tempo.el."
   (interactive)

@@ -318,14 +318,17 @@ or (\\='a #\\='b) => \\='(a b)."
 ;; -------------------------------------------------------------------
 ;;; Find
 
-;; path to local notes file or nil
 (defsubst nvp:find-notes-file (&optional names)
-  (if (and nvp-local-notes-file (file-exists-p nvp-local-notes-file))
+  "Path to local notes file matching NAMES."
+  (if (and (null names) nvp-local-notes-file
+           (file-exists-p nvp-local-notes-file))
       (expand-file-name nvp-local-notes-file)
-    (when (and (not nvp-local-notes-file) (derived-mode-p 'comint-mode))
+    (when (and (not nvp-local-notes-file)
+               (derived-mode-p 'comint-mode))
       (hack-local-variables))
-    (or names (setq names (or (bound-and-true-p nvp-local-notes-file)
-                              nvp-default-notes-files)))
+    (unless names
+      (setq names (or (bound-and-true-p nvp-local-notes-file)
+                      nvp-default-notes-files)))
     (let* ((case-fold-search t))
       (setq nvp-local-notes-file
             (nvp:locate-first-dominating

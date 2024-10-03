@@ -8,14 +8,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp:req 'nvp-read 'subrs)
-(require 'nvp)
-(require 'nvp-display)
 (require 'nvp-read)
 (nvp:decls :v (ido-default-buffer-method))
 
 (autoload 'lm-header "lisp-mnt")
 (autoload 'find-function-library "find-func")
-(autoload 'find-library-name "find-func")
 (autoload 'nvp-scratch-switch-modes "nvp-scratch")
 
 ;; Provides ido-completion for things like `locate-library', although it
@@ -26,14 +23,24 @@
 (nvp:maybe-enable 'ido-ubiquitous-mode 'ido-completing-read+)
 
 
+(defun nvp-display-init-template (template &optional mode start end &rest bindings)
+  "Use TEMPLATE to init a new file.
+MODE and BINDINGS are passed to `yas-expand-snippet'."
+  (cl-progv (mapcar #'car bindings) (mapcar #'cadr bindings)
+    (yas-expand-snippet
+     (yas-lookup-snippet template mode) start end)))
+
 ;;;###autoload
-(defun nvp-jump-to-library (library &optional action)
-  "Jump to LIBRARY file."
+(defun nvp-jump-to-library (library &optional prefix)
+  "Jump to LIBRARY file according to PREFIX."
   (interactive (list (call-interactively 'locate-library) current-prefix-arg))
   (when library
     (let* ((el (concat (file-name-sans-extension library) ".el"))
-           (elgz (concat el ".gz")))
-      (nvp-display-location (if (file-exists-p el) el elgz) :file action))))
+           (elgz (concat el ".gz"))
+           (buf (find-file-noselect (if (file-exists-p el) el elgz))))
+      (nvp-with-display-actions prefix
+        :action-order '(other same frame)
+        (pop-to-buffer buf)))))
 
 (defun nvp--get-library-file (&optional lisp-only prompt)
   "Get defining file for current symbol or prompt for library.
@@ -64,118 +71,120 @@ Optionally, search LISP-ONLY files (no C sources)."
 (1) prefix or CHOOSE, prompt for library."
   (interactive "P")
   (let (url)
-    (cond
-     ((and (not choose) (memq major-mode '(shell-mode eshell-mode)))
-      (--if-let (nvp-jump--git-url)
-          (browse-url it)
-        (user-error "No git repo here")))
-     ((and (not choose)
-           (eq major-mode 'emacs-lisp-mode)
-           (setq url (save-excursion
-                       (or (lm-header "URL")
-                           (lm-header "Homepage")))))
-      (browse-url url))
-                                        ; found URL in current buffer!!
-     (t ;; no URL in emacs sources
-      (--if-let (and (not choose) (nvp-jump--git-url))
-          (browse-url it)
-        (--when-let (nvp--get-library-file 'lisp-only choose)
-          (if (not (string= (file-name-extension it) "el"))
-              (user-error "Library %S isn't elisp." it)
-            (with-temp-buffer
-              (insert-file-contents it)
-              (if (setq url (lm-header "URL"))
-                  (browse-url url)
-                (user-error "Library %S has no URL header" it))))))))))
+    (cond ((and (not choose)
+                (memq major-mode '(shell-mode eshell-mode)))
+           (or (setq url (nvp-jump--git-url))
+               (user-error "No git repo here")))
+          ((and (not choose)
+                (eq major-mode 'emacs-lisp-mode)
+                ;; found URL in current buffer
+                (setq url (save-excursion
+                            (or (lm-header "URL")
+                                (lm-header "Homepage"))))))
+          ((and (not choose) (setq url (nvp-jump--git-url))))
+          (t (--when-let (nvp--get-library-file 'lisp-only choose)
+               (if (not (string= (file-name-extension it) "el"))
+                   (user-error "Library %S isn't elisp." it)
+                 (with-temp-buffer
+                   (insert-file-contents it)
+                   (or (setq url (lm-header "URL"))
+                       (user-error "Library %S has no URL header" it)))))))
+    (browse-url url)))
 
 (defun nvp--locate-library-source (library)
   (let* ((name (file-name-nondirectory library))
-         (locs
-          (split-string
-           (shell-command-to-string
-            (format
-             "find %s -type f -name %s.el"
-             (or source-directory
-                 (expand-file-name "emacs" (getenv "DEVEL")))
-             name))
-           nil t " ")))
+         (locs (split-string
+                (shell-command-to-string
+                 (format "find %s -type f -name %s.el"
+                         (or source-directory
+                             (expand-file-name "emacs" (getenv "DEVEL")))
+                         name))
+                nil t " ")))
     (when locs
       (if (> (length locs) 1)
           (nvp-completing-read "Source file: " locs)
         (car locs)))))
 
 ;;;###autoload
-(defun nvp-jump-to-emacs-source (library &optional action)
+(defun nvp-jump-to-emacs-source (library &optional prefix)
   "Jump to git source for emacs builtin library."
   (interactive (list (call-interactively #'locate-library) current-prefix-arg))
   (setq library (file-name-sans-extension library))
   (-if-let (src (nvp--locate-library-source library))
-      (nvp-display-location src :file action)
+      (nvp-with-display-actions prefix :action-order '(other same frame)
+        (pop-to-buffer (find-file-noselect src)))
     (user-error "No source found for %s" library)))
 
 ;;;###autoload
 (defun nvp-jump-to-mode-config (mode action)
   "Jump to MODE configuration, inserting skeleton snippet if non-existent."
-  (interactive
-   (list (nvp-read-mode-config "Jump to config: ") current-prefix-arg))
-  (if (eq t mode) (dired-other-window nvp/config)
-    (let ((file (nvp:mode-config-path mode)))
-      (nvp-display-location
-       file :file action
-       :init-fn (lambda () (nvp-display-init-template
-                       'mode-config 'emacs-lisp-mode nil nil
-                       `(modename ,(nvp:read-mode-name mode))))))))
+  (interactive (list (let ((mode (nvp-read-mode-config "Jump to config: ")))
+                       (if (equal "" mode) t mode))
+                     current-prefix-arg))
+  (nvp-with-display-actions action :action-order '(other same frame)
+    (if (eq t mode) (dired nvp/config)
+      (let ((buf (find-file-noselect (nvp:mode-config-path mode))))
+        (pop-to-buffer buf)
+        (unless (file-exists-p buffer-file-name)
+          (nvp-display-init-template
+           'mode-config 'emacs-lisp-mode nil nil
+           `(modename ,(nvp:read-mode-name mode))))))))
 
 ;;;###autoload
 (defun nvp-jump-to-mode-test (test action)
   "Jump to TEST file for mode, creating one if necessary."
   (interactive (list (nvp-read--mode-test) current-prefix-arg))
-  (nvp-display-location test :file action))
+  (nvp-with-display-actions action :action-order '(other same frame)
+    (pop-to-buffer (find-file-noselect test))))
 
 ;;;###autoload
-(defun nvp-jump-to-mode-hook (mode action)
-  "Jump to location defining MODEs hook."
-  (interactive (list (if (eq 0 current-prefix-arg)
-                         (intern (nvp-read-mode "Jump to mode hook: "))
-                       (nvp:mode t))
-                     current-prefix-arg))
-  (let* ((str-mode-hook (format "%s-hook" mode))
-         (hook-fn-name (format "nvp-%s-hook" (nvp:read-mode-name mode)))
-         (hook-fn (intern-soft hook-fn-name)))
-    (if hook-fn                         ; probably in its own config file
-        (nvp-display-location hook-fn :find-func action)
-      ;; Otherwise goto default hook file and search for it
-      (nvp-display-location nvp/hooks :file action)
-      (goto-char (point-min))
-      (search-forward str-mode-hook nil 'move 1))))
+(defun nvp-jump-to-mode-hook (action)
+  "Jump to location defining mode hook."
+  (interactive "P")
+  (nvp-with-display-actions action
+    (let* ((mode (if current-prefix-arg
+                     (intern (nvp-read-mode "Jump to mode hook: "))
+                   (nvp:mode t)))
+           (str-mode-hook (format "%s-hook" mode))
+           (hook-fn-name (format "nvp-%s-hook" (nvp:read-mode-name mode)))
+           (hook-fn (intern-soft hook-fn-name)))
+      (if hook-fn                       ; probably in its own config file
+          (find-function-do-it hook-fn nil #'pop-to-buffer)
+        ;; Otherwise goto default hook file and search for it
+        (with-current-buffer (find-file-noselect nvp/hooks)
+          (goto-char (point-min))
+          (search-forward str-mode-hook nil 'move 1)
+          (pop-to-buffer (current-buffer)))))))
 
 ;;;###autoload
 (defun nvp-jump-to-mode-lib (action)
   "Jump to mode LIB addons with ACTION."
-  (interactive "p")
-  (nvp-jump-to-frecent-directory nvp/modes action))
+  (interactive "P")
+  (nvp-jump-to-frecent-directory action nvp/modes))
 
 
 ;; -------------------------------------------------------------------
 ;;; Install / build files
 
 ;;;###autoload
-(defun nvp-jump-to-installer (file action)
+(defun nvp-jump-to-installer (action)
   "Jump to external installation files."
-  (interactive
-   (list
-    (nvp-read-relative-recursively nvp/bin "^[^.]+$" "Install file: ")
-    current-prefix-arg))
-  (nvp-display-location file :file action))
+  (interactive "P")
+  (let* ((file (nvp-read-relative-recursively
+                nvp/bin "^[^.]+$" "Install file: "))
+         (buf (find-file-noselect file)))
+    (nvp-with-display-actions action :action-order '(other same frame)
+      (pop-to-buffer buf))))
 
 ;;;###autoload
-(defun nvp-jump-to-build-file (file action)
+(defun nvp-jump-to-build-file (action)
   "Jump with ACTION to an init FILE in the build directory."
-  (interactive
-   (list (nvp-read-relative-recursively
-          nvp/build "\\(?:.el\\|/\\)$" "Jump to init file: ")
-         current-prefix-arg))
-  (nvp-display-location file :file action))
+  (interactive "P")
+  (let* ((file (nvp-read-relative-recursively
+                nvp/build "\\(?:.el\\|/\\)$" "Jump to init file: "))
+         (buf (find-file-noselect file)))
+    (nvp-with-display-actions action :action-order '(other same frame)
+      (pop-to-buffer buf))))
 
 
 ;; -------------------------------------------------------------------
@@ -187,23 +196,26 @@ Optionally, search LISP-ONLY files (no C sources)."
 ;; 3. Variable `nvp-local-notes-file' (directory-local) if non-nil
 ;; 4. Otherwise, default to 'todo.org' or 'notes.org'.
 ;;;###autoload
-(defun nvp-jump-to-nearest-notes-dwim (&optional name action)
-  "Jump to nearest notes/todo file, prompting with prefix."
-  (interactive
-   (list (nvp:prefix '>4
-           (prog1 (read-file-name "File name: ")
-             (setq current-prefix-arg '(1))))
-         current-prefix-arg))
-  (--if-let (nvp:find-notes-file name) (nvp-display-location it :file action)
-    (user-error (format "%S not found up the directory tree."
-                        (or name "No notes")))))
+(defun nvp-jump-to-nearest-notes-dwim (&optional action names)
+  "Jump to nearest notes/todo file matching NAMES according to ACTION.
+With extra prefix, prompt for file name."
+  (interactive "P")
+  (nvp-with-display-actions action
+    (and current-prefix-arg
+         (setq names (read-file-name "Match notes name: " nil nil nil names)))
+    (let* ((file (nvp:find-notes-file names))
+           (buf (and file (find-file-noselect file))))
+      (if buf (pop-to-buffer buf)
+        (user-error (format "%S not found up the directory tree."
+                            (or names "No notes")))))))
 
 ;;;###autoload
-(defun nvp-jump-to-dotfile (dir action)
+(defun nvp-jump-to-dotfile (action)
   "Jump to dotfile in other window."
-  (interactive
-   (list (nvp-read-relative-recursively nvp/dots "") current-prefix-arg))
-  (nvp-display-location dir :file action))
+  (interactive "P")
+  (nvp-with-display-actions action :action-order '(other same frame)
+    (pop-to-buffer
+     (find-file-noselect (nvp-read-relative-recursively nvp/dots "")))))
 
 ;;; TODO(4/18/24): optional sort by frecency/recent
 (defun nvp-jump--z-directories (&optional frecency type directory)
@@ -220,96 +232,104 @@ Optionally, search LISP-ONLY files (no C sources)."
         " -f " bin " " data)))))
 
 ;;;###autoload
-(defun nvp-jump-to-frecent-directory (&optional in-dir _same other frame)
+(defun nvp-jump-to-frecent-directory (&optional action in-dir interactive)
   "Dired in a frecent directory from z.sh database.
 
 When IN-DIR is a file, restrict choices to its frecent sub-directories.
 Otherwise, with extra prefix, or when IN-DIR is non-nil restrict to
 directories under current directory."
-  (interactive (nvp-display-window-get-arguments current-prefix-arg))
+  (interactive (list current-prefix-arg nil t))
   (and in-dir (not (stringp in-dir))
        (setq in-dir default-directory))
-  (when-let ((dir (completing-read "Frecent Directory: "
-                    (mapcar #'abbreviate-file-name
-                            (nvp-jump--z-directories nil nil in-dir)))))
-    (funcall (cond (other 'dired-other-window)
-                   (frame 'dired-other-frame)
-                   (t 'dired))
-             (file-name-as-directory dir))))
+  (nvp-with-display-actions action
+    (and interactive current-prefix-arg (setq in-dir default-directory))
+    (when-let ((dir (completing-read
+                      (format "Frecent Dir%s:"
+                              (if in-dir (concat "(" (nvp:fn in-dir) ")") ""))
+                      (mapcar #'abbreviate-file-name
+                              (nvp-jump--z-directories nil nil in-dir)))))
+      (funcall (cond (other-window 'dired-other-window)
+                     (other-frame 'dired-other-frame)
+                     (t 'dired))
+               (file-name-as-directory dir)))))
 
 ;;;###autoload
-(defun nvp-jump-to-source (dir action)
-  "Jump to local source or default devel directory."
-  (interactive
-   (list (cond
-          ((nvp:prefix 16) "~")
-          ((bound-and-true-p nvp-local-src-directories)
-           (if (> 1 (length nvp-local-src-directories))
-               (nvp-completing-read "Source directory: "
-                 nvp-local-src-directories
-                 nil t nil 'nvp-read-config-history)
-             nvp-local-src-directories))
-          (t nvp/devel))
-         current-prefix-arg))
-  (let ((file (nvp-read-relative-recursively dir)))
-    (nvp-display-location file :file action)))
+(defun nvp-jump-to-source (&optional action dir)
+  "Jump to source file."
+  (interactive "P")
+  (nvp-with-display-actions action :action-order '(other same frame)
+    (unless dir
+      (setq dir (cond ((bound-and-true-p nvp-local-src-directories)
+                       (if (length> nvp-local-src-directories 1)
+                           (nvp-completing-read "Source directory: "
+                             nvp-local-src-directories
+                             nil t nil 'nvp-read-config-history)
+                         nvp-local-src-directories))
+                      (t (file-name-as-directory (getenv "DEVEL"))))))
+    (let ((file (nvp-read-relative-recursively dir)))
+      (if file (pop-to-buffer (find-file-noselect file))
+        (user-error "Missing file")))))
 
 ;;;###autoload
-(defun nvp-jump-to-org (org-file action)
+(defun nvp-jump-to-org (&optional action org-file)
   "Jump to org file.
-If `nvp-local-notes-file' is bound use that unless there is a prefix of 16.
+Use `nvp-local-notes-file' unless there is an extra prefix.
 Otherwise prompt, with default `nvp-default-org-file'."
-  (interactive
-   (list (nvp-read--org-file nil nil (nvp:prefix 16))
-         (nvp:prefix '>=16 1 current-prefix-arg)))
-  (prog1 (setq org-file (nvp-display-location org-file :file action))
-    (when (bufferp org-file)
-      (with-current-buffer org-file
-        (goto-char (point-min))
-        (ignore-errors (search-forward "* Notes"))))))
+  (interactive "P")
+  (nvp-with-display-actions action
+    (let* ((org-file (nvp-read--org-file nil org-file current-prefix-arg))
+           (open-p (get-file-buffer org-file)))
+      (or org-file (ignore-errors "Missing org file"))
+      (pop-to-buffer (find-file-noselect org-file))
+      (unless open-p
+        (condition-case nil
+            (progn (goto-char (point-min))
+                   (search-forward "* Notes"))
+          (error (goto-char (point-min))))))))
 
 ;;;###autoload
-(defun nvp-jump-to-info (file action)
+(defun nvp-jump-to-info (&optional action file)
   "Jump to info file (in org mode).
 With prefix jump this window, otherwise `find-file-other-window'."
-  (interactive (list (nvp-read--info-files) current-prefix-arg))
-  (nvp-display-location
-   file :file action
-   :init-fn (lambda () (nvp-display-init-template 'texinfo 'org-mode))))
+  (interactive (list current-prefix-arg (nvp-read--info-files)))
+  (nvp-with-display-actions action
+    (let ((buf (find-file-noselect file)))
+      (pop-to-buffer buf)
+      (unless (file-exists-p buffer-file-name)
+        (nvp-display-init-template 'texinfo 'org-mode)))))
 
 ;;;###autoload
 (defun nvp-jump-to-template (action)
   "Jump to a project template."
   (interactive "P")
-  (nvp-display-location
-   (nvp-read-relative-recursively nvp/template) :file action))
-
-
-;; -------------------------------------------------------------------
-;;; Other: keymaps, register, scratch
+  (nvp-with-display-actions action
+    (pop-to-buffer
+     (find-file-noselect (nvp-read-relative-recursively nvp/template)))))
 
 ;;;###autoload
-(defun nvp-jump-to-nvp-keymap (keymap action)
+(defun nvp-jump-to-nvp-keymap (action keymap)
   "Jump to one of my defined keymaps."
-  (interactive (list (nvp-read-nvp-keymap) current-prefix-arg))
-  (and (symbolp keymap) (setq keymap (symbol-name keymap)))
-  (let ((buff (find-file-noselect
-               (expand-file-name "base/nvp-bindings.el" nvp/build))))
-    (with-current-buffer buff
+  (interactive (list current-prefix-arg (nvp-read-nvp-keymap)))
+  (and (symbolp keymap)
+       (setq keymap (symbol-name keymap)))
+  (let ((buf (find-file-noselect
+              (expand-file-name "base/nvp-bindings.el" nvp/build))))
+    (with-current-buffer buf
       (goto-char (point-min))           ; might already be open
       (condition-case nil
           (when (re-search-forward
                  (concat "^(nvp[:]bindings[ ]+" (regexp-quote keymap)))
             (set-marker (mark-marker) (match-end 0)))
         (error (goto-char (point-min)))))
-    (nvp-display-location buff :buffer action)))
+    (nvp-with-display-actions action
+      (pop-to-buffer buf))))
 
 ;;;###autoload
 (defun nvp-jump-to-register (action)
-  (interactive (list (prefix-numeric-value current-prefix-arg)))
-  (nvp:display-with-action action
-    (setq prefix-arg current-prefix-arg)
-    (call-interactively #'jump-to-register)))
+  (interactive "P")
+  (when-let ((reg (register-read-with-preview "Jump to register: ")))
+    (nvp-with-display-actions action
+      (funcall #'jump-to-register reg current-prefix-arg))))
 
 (provide 'nvp-jump)
 ;; Local Variables:

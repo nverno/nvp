@@ -10,7 +10,8 @@
 
 (defface nvp-dockerfile-shell-face
   `((t (:inherit (nvp-block-face) :extend t)))
-  "Face for \\='RUN shell commands.")
+  "Face for \\='RUN shell commands."
+  :group 'nvp)
 
 ;;; Font-locking
 ;; XXX(9/25/23): Update when/if builtin mode is updated to account for grammar

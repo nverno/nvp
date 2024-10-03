@@ -43,7 +43,7 @@
      nvp--bindings-move
      '(("e"     . end-of-defun)
        ("a"     . beginning-of-defun)
-       ("j"     . nvp-avy-goto-char-alt)
+       ("c"     . nvp-avy-goto-char-alt)
        ("/"     . isearch-forward)
        ("?"     . isearch-backward)
        ("SPC"   . scroll-up)

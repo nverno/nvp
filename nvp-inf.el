@@ -3,11 +3,7 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
-(require 'nvp-display)
-
-;; -------------------------------------------------------------------
-;;; Util 
+(nvp:decls)
 
 ;; completing read for processes
 ;;;###autoload
@@ -39,8 +35,9 @@
 (defun nvp-jump-to-process-buffer (action proc)
   "Prompt for process name and display its buffer."
   (interactive (list current-prefix-arg (nvp-inf-read-process)))
-  (if proc (nvp-display-location (process-buffer proc) :buffer action)
-    (message "No processes")))
+  (if proc (nvp-with-display-actions action
+             (pop-to-buffer (process-buffer proc)))
+    (user-error "No processes")))
 
 ;;-- process info
 

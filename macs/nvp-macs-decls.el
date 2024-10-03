@@ -131,6 +131,9 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-default-org-file
     nvp-disassemble-default-function
     nvp-display-fallback-function
+    nvp-display-buffer-other-frame-action
+    nvp-display-buffer-other-window-action
+    nvp-display-buffer-same-window-action
     nvp-exit
     nvp-fallback-function
     nvp-fallback-minibuffer-function
@@ -227,9 +230,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-display-buffer-in-side-window
        nvp-display-buffer-in-top-side-window
        nvp-display-buffer-other-window
-       nvp-display-fallback-dired
+       nvp-fallback-dired
        nvp-display-fallback-function
-       nvp-display-location
        nvp-env-add
        nvp-env-path-add
        nvp-ert-run-tests

@@ -52,7 +52,11 @@
                  type: (function_type))
        ;; XXX(09/05/24): remove after patch
        (type_parameter_declaration
-        name: (identifier) @font-lock-type-face)))))
+        name: (identifier) @font-lock-type-face)
+       ;; Added faces
+       (package_identifier) @font-lock-module-def-face
+       (type_declaration
+        (type_spec name: (type_identifier) @font-lock-type-def-face))))))
 
 
 (nvp:treesit-add-rules go-ts-mode

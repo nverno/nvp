@@ -38,7 +38,7 @@
 ;;;###autoload(autoload 'nvp-repl-menu "nvp-repl-menu" nil t)
 (transient-define-prefix nvp-repl-menu ()
   "REPL menu"
-  [[ :if-non-nil nvp-repl-current
+  [[ :if-non-nil nvp-repl--current
      "Send"
      ("s" "Last sexp" nvp-repl-send-sexp)
      ("S" "Statement or sentence" nvp-repl-send-stmt-or-sentence)
@@ -48,7 +48,7 @@
      ("d" "Defun or region" nvp-repl-send-defun-or-region)
      ("b" "Buffer" nvp-repl-send-buffer)
      ("F" "Load File" nvp-repl-send-file)]
-   [ :if-non-nil nvp-repl-current
+   [ :if-non-nil nvp-repl--current
      "Eval"
      ("E" "String" nvp-repl-eval-string)
      ("e" "Last sexp" nvp-repl-eval-sexp)]

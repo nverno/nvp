@@ -7,12 +7,14 @@
   (require 'nvp-repl))
 
 ;;;###autoload
-(defun nvp-repl--make-completion-at-point (name commands &optional cmd-prefix pos-bol)
+(defun nvp-repl--make-completion-at-point ( name commands
+                                            &optional cmd-prefix pos-bol)
   (when commands
     (let ((pos-bol (or pos-bol
                        (and (derived-mode-p 'comint-mode)
-                            #'comint-line-beginning-position))))
-      (defalias (intern (concat "nvp-repl-" (symbol-name name) "-completion-at-point"))
+                            #'comint-line-beginning-position)))
+          (fname (format "nvp-repl-%s-completion-at-point" (symbol-name name))))
+      (defalias (intern fname)
         (lambda ()
           (let ((end (point))
                 (beg (save-excursion

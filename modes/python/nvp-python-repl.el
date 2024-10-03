@@ -43,7 +43,7 @@
   "Enable help minor mode."
   (cond (nvp-python-repl-help-mode (or thing "help"))
         (thing (format "help(\"%s\")" thing))
-        (t (with-current-buffer (nvp-repl-current-buffer)
+        (t (with-current-buffer (nvp-repl-buffer)
              (nvp-python-repl-help-mode 1)
              "help()"))))
 

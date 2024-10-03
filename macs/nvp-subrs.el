@@ -346,12 +346,9 @@ or (\\='a #\\='b) => \\='(a b)."
 ;; -------------------------------------------------------------------
 ;;; I/O
 
-;; add default to prompt in non-nil
 (defsubst nvp:prompt-default (prompt &optional default)
-  (if default
-      (format "%s (default %s): "
-              (substring prompt 0 (string-match "[ :]+\\'" prompt)) default)
-    prompt))
+  (format-prompt
+   (substring prompt 0 (string-match "[ :]+\\'" prompt)) default))
 
 (defsubst nvp:say (fmt &rest args)
   "Message FMT with ARGS without logging it."

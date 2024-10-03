@@ -10,26 +10,16 @@
 (require 'lisp-mode)
 (require 'ielm)
 (nvp:decls :p (nvp-repl)
-           :f (nvp-repl-current-buffer) :v (nvp-repl--process-buffers))
+           :f (nvp-repl-buffer) :v (nvp-repl--process-buffers))
 
-(defvar nvp-ielm-hippie-expanders
-  '(nvp-he-try-expand-history
-    nvp-try-expand-flex-or-dabbrev
-    nvp-try-expand-flex-or-dabbrev-other-buffers
-    ;; nvp-try-expand-dabbrev-closest-first
-    ;; try-expand-dabbrev-all-buffers
-    try-expand-dabbrev-from-kill
-    try-complete-lisp-symbol
-    try-complete-lisp-symbol-partially))
 
 (define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
-  (let ((orig-buff (current-buffer)))
+  (let ((orig-buf (current-buffer)))
     (with-current-buffer (get-buffer-create "*ielm*")
       (let ((display-buffer-overriding-action
-             '(display-buffer-no-window
-               ((allow-no-window . t)))))
+             nvp-display-buffer-no-window-action))
         (funcall orig-fn))
-      (setq-local ielm-working-buffer orig-buff)
+      (setq-local ielm-working-buffer orig-buf)
       (pop-to-buffer (current-buffer)))))
 
 ;; `ielm-return' always wants to eval when smartparens close sexps
@@ -47,9 +37,7 @@
   (and arg (setq arg (nvp:as-symbol arg)))
   (save-window-excursion
     (funcall-interactively
-     (cond ((null arg)
-            (setq arg ielm-working-buffer)
-            #'describe-mode)
+     (cond ((null arg) (prog1 #'describe-mode (setq arg ielm-working-buffer)))
            ((fboundp arg) #'describe-function)
            ((boundp arg) #'describe-variable)
            (t (user-error "unbound symbol: '%S'" arg)))
@@ -73,13 +61,13 @@
 
 (defun nvp-ielm-send-string (_proc str &optional for-effect)
   "Send STR to ielm without inserting into repl."
-  (with-current-buffer (nvp-repl-current-buffer)
+  (with-current-buffer (nvp-repl-buffer)
     (ielm-eval-input str for-effect)))
 
 (with-eval-after-load 'nvp-repl
   (nvp-repl-add
-    '( emacs-lisp-mode lisp-data-mode lisp-interaction-mode command-history-mode
-       help-mode)
+    '( emacs-lisp-mode lisp-data-mode lisp-interaction-mode
+       apropos-mode command-history-mode help-mode)
     :name 'ielm
     :modes '(inferior-emacs-lisp-mode)
     :init #'ielm

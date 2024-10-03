@@ -134,6 +134,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-display-buffer-other-frame-action
     nvp-display-buffer-other-window-action
     nvp-display-buffer-same-window-action
+    nvp-display-buffer-no-window-action
     nvp-exit
     nvp-fallback-function
     nvp-fallback-minibuffer-function

@@ -23,7 +23,7 @@
     (apply orig args)))
 
 (defun nvp-r-repl-send-region (start end)
-  (ess-send-region (nvp-repl-process) start end))
+  (ess-send-region (nvp-repl--process) start end))
 
 ;;; TODO(08/05/24): 
 ;; (defun nvp-r-repl-eval-string (str &optional insert)

@@ -15,14 +15,14 @@
 
 (eval-when-compile
   (defmacro nvp:with-current-repl (&rest body)
-    `(if-let ((nvp-repl-current (nvp-repl-current)))
+    `(if-let ((nvp-repl--current (nvp-repl-current)))
          (progn ,@body)
        (user-error "No current repl.")))
 
   (defmacro nvp:with-repl-vals (vals &rest body)
     (declare (indent 1))
     `(nvp:with-current-repl
-      (pcase-let (((cl-struct nvp--repl ,@vals) nvp-repl-current))
+      (pcase-let (((cl-struct nvp--repl ,@vals) nvp-repl--current))
         ,@body)))
 
   ;; Call `nvp-repl-send-string' with 'insert so input goes through
@@ -53,7 +53,7 @@
   (defmacro nvp:with-repl-src-buffer (&rest body)
     (declare (indent defun) (debug t))
     (nvp:with-syms (buf)
-      `(let ((,buf (nvp-repl-current-source-buffer)))
+      `(let ((,buf (nvp-repl-source-buffer)))
          (unless (and ,buf (buffer-live-p ,buf))
            (user-error "No source buffer associated with current buffer."))
          (with-current-buffer ,buf
@@ -65,13 +65,15 @@
 Prompt with \\[universal-argument]."
   (interactive
    (list (if current-prefix-arg
-             (expand-file-name (read-directory-name "Directory: " default-directory))
+             (expand-file-name
+              (read-directory-name "Directory: " default-directory))
            default-directory)))
-  (unless dir (setq dir default-directory))
+  (or dir (setq dir default-directory))
   (nvp:with-repl-src-buffer
     (let ((default-directory dir))
       (nvp:call-repl-cmd cd-cmd (default-directory)
-        (nvp-repl-update (nvp--repl-repl-proc nvp-repl-current) (current-buffer))
+        (nvp-repl--update-buffers
+         (nvp--repl-repl-proc nvp-repl--current) (current-buffer))
         (with-current-buffer (nvp-repl-buffer)
           (setq default-directory dir))))))
 

@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: for in range
-# key: forr
+# key: forix
 # --
 for ${1:_}${2:$($s? ", ")}${2:val} := range ${3:collection} {
 	$0

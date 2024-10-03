@@ -63,22 +63,6 @@ called from minibuffer, or nil.")
 
 (defvar nvp-tags-ctags-program (nvp:program "ctags") "Universal ctags.")
 
-(defvar nvp-display-actions
-  `( :buffer ((64 . ((nvp-display-buffer--maybe-in-frame)
-                     (pop-up-frames . t)
-                     (inhibit-switch-frame . nil)))
-              (4 . ((display-buffer-same-window)
-                    (inhibit-same-window  . nil)))
-              (1 . ((nvp-display-buffer-other-window))))
-     :file ((64 . find-file-other-frame)
-            (4 . find-file)
-            (1 . find-file-other-window))
-     :ido ((4 . raise-frame)
-           (1 . other-window))
-     :find-func ((64 . find-function-other-frame)
-                 (4 . find-function)
-                 (1 . find-function-other-window))))
-
 ;;-- Local
 
 (defvar-local nvp-local-abbrev-table nil "Abbrev table to use for mode.")

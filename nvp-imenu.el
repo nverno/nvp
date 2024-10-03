@@ -180,7 +180,7 @@ should formatted as an alist like `imenu-generic-expression'."
               (buffer-local-value 'imenu-generic-expression buff)))))
 
 ;;; Buffer Lists
-;; candidate for `imenu-anywhere-buffer-list-function'
+;; Candidate for `imenu-anywhere-buffer-list-function'
 (defun nvp-imenu-visible-buffer-list ()
   "Buffer list restricted to visible buffers in current frame."
   (seq-uniq
@@ -209,7 +209,7 @@ should formatted as an alist like `imenu-generic-expression'."
                             (car entry))))
     entry))
 
-;; bulk preprocessing - modifies in-place
+;; Bulk preprocessing - modifies in-place
 ;; (defun nvp-imenu-preprocess-candidates (candidates)
 ;;   (let* ((cur (buffer-name (nvp-imenu--active-buffer)))
 ;;          (pre (concat cur nvp-imenu-buffer-delimiter "\\s-*")))
@@ -309,8 +309,8 @@ should formatted as an alist like `imenu-generic-expression'."
     (add-hook 'minibuffer-exit-hook #'nvp-imenu-completion-exit)
     (nvp-imenu--active-mode t)))
 
-;; TODO: display restriction as overlay after prompt
 (defun nvp-imenu--prompt ()
+  ;; XXX(10/03/24): Display restriction as overlay after prompt
   (format "Imenu: ")) ;; (nvp-imenu--visibility)
 
 (defun nvp-imenu-complete (&optional restrict headers-only)

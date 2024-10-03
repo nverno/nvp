@@ -331,6 +331,13 @@ With prefix jump this window, otherwise `find-file-other-window'."
     (nvp-with-display-actions action
       (funcall #'jump-to-register reg current-prefix-arg))))
 
+;;;###autoload
+(defun nvp-recentf (action)
+  (interactive "P")
+  (nvp-with-display-actions action
+    :action-order '(other same frame)
+    (consult-recent-file)))
+
 (provide 'nvp-jump)
 ;; Local Variables:
 ;; coding: utf-8

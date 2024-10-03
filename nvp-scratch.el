@@ -3,10 +3,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'nvp-read)
 (nvp:decls)
-(autoload 'nvp-comment-string "nvp-yas")
 
 ;;;###autoload
 (defun nvp-jump-to-scratch (mode action &optional hookless)
@@ -15,9 +13,9 @@ With prefix, pop other window, with double prefix, prompt for MODE."
   (interactive
    (let* ((prompt-p (>= (prefix-numeric-value current-prefix-arg) 16))
           (mode (if prompt-p (intern (nvp-read-mode)) major-mode))
-          (hookless (and prompt-p (y-or-n-p "Hookless!? "))))
+          (hookless (and prompt-p (y-or-n-p "Hookless? "))))
      (list mode current-prefix-arg hookless)))
-  (nvp-window-configuration-save)
+  ;; (nvp-window-configuration-save)
   (let ((buf (get-buffer-create "*scratch*")))
     (with-current-buffer buf
       (setq default-directory nvp/scratch)
@@ -65,7 +63,7 @@ With prefix, dont run modes hook."
 (defun nvp-scratch-kill-buffer ()
   "Kill buffer ignoring `kill-buffer-query-functions'."
   (interactive)
-  (let ((kill-buffer-hook '(nvp-window-configuration-restore))
+  (let ((kill-buffer-hook)              ; '(nvp-window-configuration-restore)
         kill-buffer-query-functions)
     (kill-buffer (current-buffer))))
 
@@ -79,9 +77,7 @@ With prefix, dont run modes hook."
   "Minor mode in scratch buffers."
   :lighter " 𝓢"
   (when nvp-scratch-minor-mode
-    ;; Fix(09/12/24): do like `quit-restore-window' - when stuff has changed the
-    ;; restore is annoying
-    (setq-local kill-buffer-hook '(nvp-window-configuration-restore))
+    (setq-local kill-buffer-hook nil)   ; '(nvp-window-configuration-restore)
     (nvp:msg "Press \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-kill-buffer] to kill \
 this buffer or \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-switch-modes] \
 to switch major modes.")))

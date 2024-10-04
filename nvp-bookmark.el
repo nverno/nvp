@@ -1,32 +1,13 @@
-;;; nvp-bookmark.el --- jump b/w boomark files -*- lexical-binding: t; -*-
+;;; nvp-bookmark.el --- bookmarks -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;
-;; TODO:
-;; - [✓] load DWIM - check local variable, look locally, then default
-;; - [✓] mode-specific bookmarks by default
-;; - [✓] bookmark-to-bookmark jump handler
-;; - [ ] create new bookmark files -- add prefix option to create on lookup
-;; - [ ] load all bookmark files into ring from default directory
-;;
-;; Bmenu:
-;; - [✓] link bookmark files
-;; - [✓] ez way to jump b/w bookmark stashes
-;; - [✓] create new bookmark w/ linkage
-;; - [ ] unmark all
-;; - [ ] show bookmarks for file -- maybe in annotation or something?
-;; - [ ] display bookmark files as tabs to switch between
-;;
-;; Refs:
-;; `Info-bookmark-make-record' #<marker at 212098 in info.el.gz>
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(require 'ring)
 (require 'bookmark)
 (nvp:decls)
 
-(defconst nvp-bookmark-directory (expand-file-name "bookmarks" nvp/cache))
+(defconst nvp-bookmark-directory
+  (expand-file-name "bookmarks" nvp/cache))
 
 (defvar nvp-bookmark-search-files
   '(nvp-local-bookmark-file "bookmarks.el" bookmark-default-file)
@@ -44,7 +25,8 @@ found is returned. Default order (1) `locate-dominating-file',
 (2) `nvp-project-root', (3) in `nvp-bookmark-directory'.")
 
 (defun nvp-bookmark-locate-file-1 (file)
-  ;; Try expanding FILE against `nvp-bookmark-search-roots' to find existing file
+  ;; Try expanding FILE against `nvp-bookmark-search-roots' to find existing
+  ;; file
   (--some
    (--when-let (expand-file-name file (if (functionp it) (funcall it file) it))
      (and (file-exists-p it) it))
@@ -53,9 +35,11 @@ found is returned. Default order (1) `locate-dominating-file',
 (defun nvp-bookmark-locate-file (&optional file)
   "Locate bookmark file by ordering in `nvp-bookmark-search-files', searching
 in `nvp-bookmark-search-roots' when an entry doesn't exist."
-  (--some (when (or (and (symbolp it) (boundp it) (setq it (symbol-value it)))
+  (--some (when (or (and (symbolp it) (boundp it)
+                         (setq it (symbol-value it)))
                     it)
-            (if (and (stringp it) (file-exists-p it)) it   ; absolute path given
+            (if (and (stringp it) (file-exists-p it))
+                it ; absolute path given
               (nvp-bookmark-locate-file-1 it)))
           (delq nil (cons file nvp-bookmark-search-files))))
 
@@ -77,8 +61,10 @@ behaviour of default)."
     (->> (seq-uniq
           bookmark-alist
           (lambda (a b)
-            (and (eq (assoc-default 'position a) (assoc-default 'position b))
-                 (string= (assoc-default 'filename a) (assoc-default 'filename b)))))
+            (and (eq (assoc-default 'position a)
+                     (assoc-default 'position b))
+                 (string= (assoc-default 'filename a)
+                          (assoc-default 'filename b)))))
          (setq bookmark-alist))
     (let ((new-len (length bookmark-alist)))
       (when (and (< new-len cur-len)

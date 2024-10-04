@@ -128,22 +128,27 @@
      &allow-other-keys
      &aux args)
   "Register mode vars."
-  (setq args (nvp:arglist-remove-kwargs '(:mode :snippets-dir :inherit) kwargs))
+  (setq args (nvp:arglist-remove-kwargs
+              '(:mode :snippets-dir :inherit) kwargs))
   (setq mode (nvp:setup-normalize-mode mode))
   (or dir (setq dir (nvp-setup-package-root name)))
+  ;; XXX(10/04/24): add arg to say mode is non-coding and should skip
+  ;; dir/yas/abbrev setup
   (let* ((dir-p (not (memq dir '(nil :none))))
-         (yas-dir (or (and dir-p (ignore-errors
-                                   (car (directory-files dir t "snippets"))))
-                      nvp/snippet))
-         (mode-snips (expand-file-name
-                      (or snippets-dir (symbol-name mode)) yas-dir)))
+         (yas-dir (unless (eq :none snippets-dir)
+                    (or (and dir-p (ignore-errors
+                                     (car (directory-files dir t "snippets"))))
+                        nvp/snippet)))
+         (mode-snips (when yas-dir
+                       (expand-file-name
+                        (or snippets-dir (symbol-name mode)) yas-dir))))
     (when dir-p
       (unless (and dir (file-exists-p dir))
-        (user-error "Setup for '%s' failed to find package root"
-                    (nvp:as-string name)))
-      (or abbr-file (setq abbr-file
-                          (ignore-errors
-                            (car (directory-files dir t "abbrev-table")))))
+        (user-error
+         "Setup for '%s' failed to find package root" (nvp:as-string name)))
+      (unless abbr-file
+        (setq abbr-file (ignore-errors
+                          (car (directory-files dir t "abbrev-table")))))
       (or abbr-table (setq abbr-table (symbol-name mode)))
       (cl-pushnew dir load-path :test #'string=))
 
@@ -202,14 +207,16 @@
     (when (or override (not mvars))
       (setq mvars (apply #'nvp-setup-mode name `(:mode ,mode ,@args))))
     ;; Set local vars
-    (pcase-let (((cl-struct nvp-mode-vars snippets abbr-file abbr-table docsets) mvars))
+    (pcase-let (((cl-struct nvp-mode-vars snippets abbr-file abbr-table docsets)
+                 mvars))
       (setq nvp-mode-snippet-dir snippets
             nvp-local-abbrev-file abbr-file
             nvp-local-abbrev-table abbr-table
-            local-abbrev-table
-            (and abbr-table
-                 (ignore-errors
-               (symbol-value (intern-soft (concat abbr-table "-abbrev-table")))))
+            local-abbrev-table (and abbr-table
+                                    (ignore-errors
+                                      (symbol-value
+                                       (intern-soft
+                                        (concat abbr-table "-abbrev-table")))))
             devdocs-current-docs (nvp-setup--inherit 'docsets docsets)))
     (nvp:setup-local-hooks mvars))
   (when post-fn (funcall post-fn)))

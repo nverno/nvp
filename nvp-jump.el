@@ -335,7 +335,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
 (defun nvp-recentf (action)
   (interactive "P")
   (nvp-with-display-actions action
-    :action-order '(other same frame)
+    :action-order '(same other frame)
     (consult-recent-file)))
 
 (provide 'nvp-jump)

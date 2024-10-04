@@ -293,6 +293,9 @@ or (\\='a #\\='b) => \\='(a b)."
 (defsubst nvp:locate-first-dominating (file names)
   (setq names (nvp:as-list names))
   (cl-loop for name in names
+           if (and (file-name-absolute-p name)
+                   (file-exists-p name))
+           return name
            as res = (locate-dominating-file
                      file (lambda (d)
                             (let ((default-directory d))

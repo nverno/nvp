@@ -53,7 +53,7 @@
   (defvar nvp--bindings-kill
     '(("q"       . quit-window)
       ("Q"       . nvp-buffer-kill-mode-buffers)
-      ("C-c C-k" . kill-this-buffer)))
+      ("C-c C-k" . kill-current-buffer)))
 
   ;; same as dired-toggle
   (defvar nvp--bindings-wgrep

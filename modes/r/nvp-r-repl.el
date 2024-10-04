@@ -9,34 +9,35 @@
 (nvp:decls :p (ess inferior-ess))
 
 
+;; Dont error if `add-log-current-defun-header-regexp' isnt defined,
+;; eg. in `r-ts-mode'
+(defvar add-log-current-defun-header-regexp)
+(define-advice ess-eval-function (:around (orig &rest args) "add-log-regex")
+  (let ((add-log-current-defun-header-regexp
+         "^\\(.+\\)\\s-+<-[ \t\n]*function"))
+    (apply orig args)))
+
+;;; TODO(08/05/24):
+;; (defun nvp-r-repl-eval-string (str &optional insert)
+;;   (ess-eval-linewise str t nil nil t)
+;;   (nvp-repl-show-result ))
+
+(defun nvp-r--repl-send-region (start end)
+  (ess-send-region (nvp-repl--process) start end))
+
 (defun nvp-r--repl-init (&optional _prefix)
   (interactive "P")
   (save-window-excursion
     (let ((ess-dialect "R"))
       (ess-force-buffer-current nil 'force))))
 
-;; Dont error if `add-log-current-defun-header-regexp' isnt defined,
-;; eg. in `r-ts-mode'
-(defvar add-log-current-defun-header-regexp)
-(define-advice ess-eval-function (:around (orig &rest args) "add-log-regex")
-  (let ((add-log-current-defun-header-regexp "^\\(.+\\)\\s-+<-[ \t\n]*function"))
-    (apply orig args)))
-
-(defun nvp-r-repl-send-region (start end)
-  (ess-send-region (nvp-repl--process) start end))
-
-;;; TODO(08/05/24): 
-;; (defun nvp-r-repl-eval-string (str &optional insert)
-;;   (ess-eval-linewise str t nil nil t)
-;;   (nvp-repl-show-result ))
-
-(nvp-repl-add '(ess-r-mode r-ts-mode)
+(nvp-repl-add '(ess-r-mode r-ts-mode csv-mode)
   :name 'R
   :modes '(inferior-ess-r-mode)
   :init #'nvp-r--repl-init
   :find-fn (lambda () (-some-> ess-local-process-name get-process))
   :send-string #'ess-send-string
-  :send-region #'nvp-r-repl-send-region
+  :send-region #'nvp-r--repl-send-region
   :send-file #'ess-load-file
   :send-defun #'ess-eval-function
   :send-buffer #'ess-eval-buffer

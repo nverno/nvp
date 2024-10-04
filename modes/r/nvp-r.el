@@ -8,7 +8,8 @@
 (nvp:auto "s" 's-matched-positions-all)
 
 
-(with-eval-after-load 'nvp-repl (require 'nvp-r-repl))
+(with-eval-after-load 'nvp-repl
+  (require 'nvp-r-repl))
 
 ;; Add comment continuation when in roxy block
 (nvp:defmethod nvp-newline-dwim-comment (_syntax arg)
@@ -23,13 +24,6 @@
           (insert ?\n it))
       (newline-and-indent arg))))
 
-;;; Abbrev
-;; dont expand in comments/strings or in symbols with '.', eg. is.null
-(defun nvp-r-abbrev-expand-p ()
-  (not (or (nvp:ppss 'soc)
-           (string-match-p "\\." (thing-at-point 'symbol t)))))
-
-;;; Roxy
 (defun nvp-r-roxy ()
   "Convert regular comments to roxygen."
   (interactive)

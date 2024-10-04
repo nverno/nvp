@@ -12,17 +12,14 @@
                              (:copier nil))
   "Store the local variables setup when a mode hook first runs."
   dir snippets abbr-file abbr-table docsets
-  ;; functions
+  ;; Functions
   check-buffer format-buffer tag test compile debug disassemble abbrev
   install toggle run profile configure docs jump edit insert)
 
 (defvar nvp-mode-cache (make-hash-table)
   "Store local variables for modes once they have been loaded.")
 
-;; -------------------------------------------------------------------
-;;; Helpers
-
-;; alternative macro version to find at compile time -- falls back to this
+;; Alternative macro version to find at compile time -- falls back to this
 ;;;###autoload
 (defun nvp-setup-program (name &optional path)
   "Lookup program in preferable locations before falling back to PATH."
@@ -47,9 +44,6 @@
       ("C-M-f"    . smie-forward-sexp-command)
       ("C-M-b"    . smie-backward-sexp-command)
       ("<f2> q c" . smie-close-block))))
-
-;; ------------------------------------------------------------
-;;; Setup
 
 ;;;###autoload
 (defun nvp-setup-package-root (pkg)

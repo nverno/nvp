@@ -22,14 +22,15 @@
 (defalias 'nvp-grab-symbol 'company-grab-symbol)
 
 ;;; Global vars
-;; Note: most machine specific are compiled in init
-(nvp:defvar nvp-program-search-paths
-            (nvp:with-gnu/w32 `(,nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
-              `(,nvp/bin ,nvp/binw))
-            "Preferred search locations for executables.")
+(defvar nvp-program-search-paths
+  (nvp:with-gnu/w32
+      (list nvp/bin "~/.asdf/shims" "~/.local/bin" "/usr/local/bin")
+    (list nvp/bin nvp/binw))
+  "Preferred search locations for executables.")
 
 (defvar nvp-default-notes-files
-  '("[Nn]otes.org" "[Tt][Oo][Dd][Oo].org" "[Rr][Ee][Aa][Dd][Mm][Ee].org")
+  '("[Nn]otes.org" "[Tt][Oo][Dd][Oo].org" "[Rr][Ee][Aa][Dd][Mm][Ee].org"
+    "~/scratch/tmp.org")
   "Default notes files.")
 
 (defvar nvp-default-org-file "gtd.org"

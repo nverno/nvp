@@ -317,7 +317,7 @@ Commands:
 
 (define-minor-mode nvp-abbrevd-minor-mode
   "Local abbrevds."
-  :lighter nil
+  :lighter " AbbrD"
   :abbrev-table nil
   (if nvp-abbrevd-minor-mode
       (let (nvp-abbrev-verbose)

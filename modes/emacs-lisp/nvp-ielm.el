@@ -1,26 +1,25 @@
 ;;; nvp-ielm.el --- ielm/lisp-interaction -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
-;;
-;; FIXME:
-;; - multi-line ielm history ==> how to change and use `comint-input-ring-separator'
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'lisp-mode)
 (require 'ielm)
-(nvp:decls :p (nvp-repl)
-           :f (nvp-repl-buffer) :v (nvp-repl--process-buffers))
+(nvp:decls :p (nvp-repl) :f (nvp-repl-buffer) :v (nvp-repl--process-buffers))
 
 
-(define-advice ielm (:around (orig-fn &rest _args) "pop-to-buffer")
-  (let ((orig-buf (current-buffer)))
-    (with-current-buffer (get-buffer-create "*ielm*")
-      (let ((display-buffer-overriding-action
-             nvp-display-buffer-no-window-action))
-        (funcall orig-fn))
+(define-advice ielm (:around (orig-fn &optional buf-name) "pop-to-buffer")
+  (let* ((orig-buf (current-buffer))
+         (buf-name (or buf-name "*ielm*"))
+         (buf (nvp:with-letf 'pop-to-buffer-same-window #'ignore
+                (funcall orig-fn buf-name)
+                (get-buffer buf-name))))
+    (cl-assert (buffer-live-p buf))
+    (with-current-buffer buf
       (setq-local ielm-working-buffer orig-buf)
-      (pop-to-buffer (current-buffer)))))
+      (prog1 (current-buffer)
+        (or (get-buffer-window buf)
+            (pop-to-buffer (current-buffer)))))))
 
 ;; `ielm-return' always wants to eval when smartparens close sexps
 (defun nvp-ielm-nl (&optional arg)

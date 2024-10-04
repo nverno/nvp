@@ -121,16 +121,16 @@ buffers."
     (window--display-buffer buf (split-window-below height) 'window alist)))
 
 (defun nvp-repl--display-action (&optional action)
-  (append (assoc-default (or action nvp-repl-display-action)
-                         nvp-repl--display-actions)
-          `((category             . repl)
-            (reusable-frames      . visible)
-            (window-height        . 0.4)
-            (window-min-height    . 20)
-            (inhibit-same-window  . t)
-            (inhibit-switch-frame . t)
-            ,@(and nvp-repl-dedicated-window
-                   `((dedicated . ,nvp-repl-dedicated-window))))))
+  `(,@(cdr (assq (or action nvp-repl-display-action)
+                 nvp-repl--display-actions))
+    (category             . repl)
+    (pop-up-windows       . t)
+    (reusable-frames      . visible)
+    (window-height        . 0.4)
+    (window-min-height    . 20)
+    (inhibit-same-window  . t)
+    (inhibit-switch-frame . t)
+    (dedicated            . ,nvp-repl-dedicated-window)))
 
 ;;; Caches
 ;; Cache defined repls

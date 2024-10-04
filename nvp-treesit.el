@@ -78,7 +78,7 @@ With prefix, add neovim sources first."
                        (symbol-name (treesit-language-at (point))))
                    (treesit-explore-mode 1)))
                treesit--explorer-buffer))))
-    (pop-to-buffer buf)))
+    (pop-to-buffer buf '(nil (inhibit-same-window . t)))))
 
 
 ;; -------------------------------------------------------------------

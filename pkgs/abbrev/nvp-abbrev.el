@@ -118,14 +118,14 @@ If SYMBOLS, return table symbols"
 COLLECTION defaults to `abbrev-table-name-list'.
 PROMPT and PREDICATE are passed to `completing-read'.
 If RETURN-TABLE is non-nil, return table instead of its symbol."
-  (let ((tables
-         (cond (local (if (listp local-abbrev-table)
-                          ;; XXX: can all be unnamed?
-                          (--map (abbrev-table-name it) local-abbrev-table)
-                        (or (abbrev-table-name local-abbrev-table)
-                            local-abbrev-table)))
-               (t (or collection
-                      abbrev-table-name-list)))))
+  (let ((tables (cond (local (if (listp local-abbrev-table)
+                                 ;; XXX: can all be unnamed?
+                                 (--map (abbrev-table-name it)
+                                        local-abbrev-table)
+                               (or (abbrev-table-name local-abbrev-table)
+                                   local-abbrev-table)))
+                      (t (or collection
+                             abbrev-table-name-list)))))
     (when (listp tables)
       (let ((str (completing-read
                   (or prompt "Abbrev table: ")
@@ -172,34 +172,36 @@ or expansion."
   (if (not abbrev)
       (cl-call-next-method)
     (let* ((abbr (or exp abbrev))
-           (table-prefix
-            (and abbr (cdr (cl-find-if (lambda (pref) (string-prefix-p pref abbr))
-                                       '(("cl-"  . "emacs-lisp-cl")
-                                         ("nvp-" . "emacs-lisp-nvp"))
-                                       :key #'car)))))
+           (prefix (when abbr
+                     (cdr (cl-find-if
+                           (lambda (pref) (string-prefix-p pref abbr))
+                           '(("cl-"  . "emacs-lisp-cl")
+                             ("nvp-" . "emacs-lisp-nvp"))
+                           :key #'car)))))
       (regexp-quote
-       (format "%s-abbrev-table" (or table-prefix local-table major-mode))))))
+       (format "%s-abbrev-table" (or prefix local-table major-mode))))))
 
-;; insert starter abbrev table template
 (defun nvp-abbrev--insert-template (table &optional parents)
-  (or parents (setq parents (if (derived-mode-p 'prog-mode)
-                                '(prog-mode)
-                              '(fundamental-mode))))
-  (let ((parents
-         (concat "(list " (--mapcc (format "%s-abbrev-table" it) parents) ")")))
-    (insert (concat (and (zerop (buffer-size))
-                         ";; -*- coding: utf-8; lexical-binding: t; -*-\n")
-                    "\n(define-abbrev-table '" table "\n"
-                    "  '()\n"
-                    (format "  \"%s Abbrevs.\"\n"
-                            (capitalize
-                             (replace-regexp-in-string "-abbrev-table" "" table)))
-                    (format "  :enable-function #'nvp-abbrev-expand-p\n")
-                    (format "  :parents %s)" parents)))))
+  "Insert starter abbrev template for TABLE with PARENTS."
+  (let* ((parent-list
+          (--mapcc (format "%s-abbrev-table" it)
+                   (or parents
+                       (if (derived-mode-p 'prog-mode)
+                           '(prog-mode)
+                         '(fundamental-mode)))))
+         (name (capitalize (string-replace "-abbrev-table" "" table))))
+    (insert
+     (when (zerop (buffer-size))
+       ";; -*- coding: utf-8; lexical-binding: t; -*-\n")
+     "\n(define-abbrev-table '" table "\n"
+     "  '()\n"
+     (format "  \"%s Abbrevs.\"\n" name)
+     "  :enable-function #'nvp-abbrev-expand-p\n"
+     (format "  :parents (list %s))" parent-list))))
 
-;; open abbrev file and search for the specified table
-;; if it doesn't exist insert starter template
 (defun nvp-abbrev--get-table (table file)
+  "Open abbrev FILE and search for TABLE.
+If it doesn't exist insert starter template. Return buffer."
   (find-file-other-window file)
   (widen)
   (goto-char (point-min))
@@ -318,9 +320,9 @@ If FILE is non-nil, or with prefix arg, read abbrevs from FILE."
    (progn (and current-prefix-arg
                (quietly-read-abbrev-file
                 (read-file-name "Load abbrevs: " nvp/abbrevs)))
-          (list (nvp-abbrev--read-table "Add parent to: " nil 'local nil 'table)
-                (nvp-abbrev--read-table "Parent: " abbrev-table-name-list
-                                        nil nil 'table))))
+          (list (nvp-abbrev--read-table "Child: " nil 'local nil 'table)
+                (nvp-abbrev--read-table
+                 "Parent: " abbrev-table-name-list nil nil 'table))))
   (and file (quietly-read-abbrev-file file))
   (let ((parents (abbrev-table-get table :parents)))
     (if (memq parent parents)
@@ -347,25 +349,26 @@ With prefix, unload unicode abbrevs."
   "Remove TO-REMOVE from TABLE's parents.
 PARENTS can provide current parents."
   (interactive
-   (let* ((table (nvp-abbrev--read-table "Table: " nil 'local nil 'table))
+   (let* ((table (nvp-abbrev--read-table "Child table: " nil t nil t))
           (parents (--map (abbrev-table-name it)
                           (abbrev-table-get table :parents))))
-     (list (nvp-abbrev--read-table "Remove parent: " parents)
+     (list table
+           (nvp-abbrev--read-table "Parent to remove: " parents)
            parents)))
   (let ((new-p (mapcar #'symbol-value (remq to-remove parents))))
-    (abbrev-table-put (nvp-abbrev--table-value table) :parents new-p))
+    (abbrev-table-put (nvp-abbrev--table-value table)
+                      :parents new-p))
   (nvp-abbrev-msg "Removed %S" to-remove))
 
 
 ;;;###autoload
 (defun nvp-abbrev-write-abbrev-table (table file)
-  "Write abbrev TABLE to FILE as :system abbrevs."
+  "Write abbrev TABLE to FILE as \\=':system abbrevs."
   (interactive
    (list (nvp-abbrev--read-table nil nil current-prefix-arg)
          (read-file-name "Write abbrevs to: ")))
   (let ((abbrev-table-name-list (list table)))
-    ;; write abbrev table
-    ;; temporarily rebind `abbrev--write' to write :system abbrevs
+    ;; Temporarily rebind `abbrev--write' to write :system abbrevs
     (cl-letf (((symbol-function 'abbrev--write)
                (lambda (sym)
                  (unless (null (symbol-value sym))
@@ -381,20 +384,27 @@ PARENTS can provide current parents."
 
 ;;;###autoload
 (defun nvp-abbrev-properties (table)
-  "List all abbrev table properties."
-  (interactive (list (nvp-abbrev--read-table nil nil current-prefix-arg)))
+  "List all abbrev TABLE properties."
+  (interactive
+   (list (nvp-abbrev--read-table "Properties for: " nil current-prefix-arg)))
   (let ((props (nvp-abbrev-get-plist table))
         (name (nvp-abbrev--table-name table)))
-    (nvp:with-results-buffer :title name
-      (pcase-dolist (`(,k ,v) props)
-        (princ (format "%S: %S\n" k v))))))
+    (help-setup-xref (list #'nvp-abbrev-properties table)
+                     (called-interactively-p 'interactive))
+    (with-help-window (get-buffer-create "*Abbrev Properties*")
+      (with-current-buffer standard-output
+        (insert (propertize name 'face 'outline-1) "\n")
+        (terpri)
+        (pcase-dolist (`(,k ,v) props)
+          (insert (propertize (format "%S:" k) 'face 'font-lock-keyword-face))
+          (princ (format " %S\n" v)))
+        (font-lock-default-fontify-syntactically (point-min) (point-max))))))
 
 
-;; Unlike default, list all parent tables and dynamic tables as well
 ;;;###autoload
 (defun nvp-abbrev-list-abbrevs (&optional all)
-  "List all major-mode and local tables active in buffer.
-If ALL is non-nil, list all abbrev tables."
+  "List tables active in buffer including parent or dynamic tables.
+When ALL, list all abbrev tables."
   (interactive "P")
   (let ((inhibit-read-only t))
     (if all (display-buffer (prepare-abbrev-list-buffer))
@@ -435,21 +445,21 @@ If ALL is non-nil, list all abbrev tables."
     (":j" "Joiner" nvp-abbrev-menu--joiner)
     (":s" "Splitters" nvp-abbrev-menu--splitters)
     (":v" "Verbose" nvp-abbrev-menu--toggle-nvp-abbrev-verbose)]
-   ["Local AbbrevD"
-    ("a" "Add mode tables" nvp-abbrevd-add-mode-tables)
-    ("e" "Edit tables" nvp-abbrevd-edit-abbrevs)
-    ("k" "Remove/clear tables" nvp-abbrevd-remove-tables)
-    "Auto-share"
-    ("m" "Toggle global mode" nvp-abbrevd-mode)
-    ("M" "Toggle minor mode" nvp-abbrevd-minor-mode)]
+   ["Local tables"
+    ("a" "Enable more" nvp-abbrevd-add-mode-tables)
+    ("e" "Edit" nvp-abbrevd-edit-abbrevs)
+    ("k" "Remove/Clear" nvp-abbrevd-remove-tables)
+    "Sharing tables"
+    ("m" "Global mode" nvp-abbrevd-mode)
+    ("M" "Minor mode" nvp-abbrevd-minor-mode)]
    ["Tables"
-    ("s" "Save table" nvp-abbrev-write-abbrev-table)
-    ("r" "Remove parent" nvp-abbrev-remove-parent)
     ("p" "Add parent" nvp-abbrev-add-parent)
+    ("r" "Remove parent" nvp-abbrev-remove-parent)
+    ("s" "Save" nvp-abbrev-write-abbrev-table)
     ("u" "Load unicode" nvp-abbrev-load-unicode)]
    ["Info"
-    ("l" "List active" nvp-abbrev-list-abbrevs)
-    ("P" "Table Props" nvp-abbrev-properties)]])
+    ("l" "Active tables" nvp-abbrev-list-abbrevs)
+    ("P" "Table properties" nvp-abbrev-properties)]])
 
 
 (provide 'nvp-abbrev)

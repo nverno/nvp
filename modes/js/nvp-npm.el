@@ -42,23 +42,24 @@
           (rx (or (seq ".git" eos) (seq bos "git+"))) "" it)
          (browse-url it))))
 
-
+;;;###autoload
 (defun nvp-npm-search (query &rest args)
   "Search npm packages for QUERY."
-  (interactive
-   (let ((args (transient-args transient-current-command)))
-     (list (read-string "Query: ") args)))
-  (ignore args)
-  (with-current-buffer (get-buffer-create "*npm-search*")
-    (erase-buffer)
-    (call-process-shell-command
-     (concat "npm search --parseable --searchlimit=5 --json " query "|"
-             "jq -r '.[] as{$name,$description,links:{$npm,$homepage}} | "
-             "\"\\($name)\\n\\t\\($description)\\n\\t\\($homepage)\"'")
-     nil (current-buffer) t)
-    (goto-char (point-min))
-    (pop-to-buffer (current-buffer))
-    (goto-address-mode)))
+  (interactive (let ((args (transient-args transient-current-command)))
+                 (list (read-string "Query: ") args)))
+  (help-setup-xref (list #'nvp-npm-search query args)
+                   (called-interactively-p 'interactive))
+  (with-help-window (help-buffer)
+    (with-current-buffer standard-output
+      (call-process-shell-command
+       (concat "npm search --parseable --searchlimit=5 --json " query "|"
+               "jq -r '.[] as{$name,$description,links:{$npm,$homepage}} | "
+               "\"\\($name)\\n\\t\\($description)\\n\\t\\($homepage)\"'")
+       nil (current-buffer) t)
+      (goto-char (point-min))
+      (goto-address-mode)
+      (setq major-mode 'NpmSearch)
+      (setq mode-name "Npm Search"))))
 
 (defvar nvp-npm--defaults '("recache" "homepage"))
 

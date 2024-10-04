@@ -130,7 +130,6 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-default-log-function
     nvp-default-org-file
     nvp-disassemble-default-function
-    nvp-display-buffer-no-window-action
     nvp-display-buffer-other-frame-action nvp-display-buffer-same-frame-action
     nvp-display-buffer-other-window-action nvp-display-buffer-same-window-action
     nvp-display-fallback-function
@@ -196,8 +195,6 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
         `(nvp:decl-prefixes ,@(nvp:as-list p)))
      (nvp:decl
        nvp-abbrev-expand-after-symbols-hook
-       nvp-display-window-get-arguments
-       nvp-tag-list-decls
        nvp-abbrev-expand-not-after-punct-p
        nvp-abbrev-expand-p
        nvp-abbrev-expand-strictly
@@ -220,22 +217,15 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-compile-default
        nvp-completing-read
        nvp-cycle
-       nvp-display--scroll-output
-       nvp-display--set-and-scroll
-       nvp-display--set-scroll-buffer
-       nvp-display--set-scroll-maybe-view
-       nvp-display-buffer-in-bottom-side-window
-       nvp-display-buffer-in-direction-or-same
-       nvp-display-buffer-in-left-side-window
-       nvp-display-buffer-in-side-window
-       nvp-display-buffer-in-top-side-window
+       nvp-display-buffer-action
        nvp-display-buffer-other-window
-       nvp-fallback-dired
        nvp-display-fallback-function
+       nvp-display-window-get-arguments
        nvp-env-add
        nvp-env-path-add
        nvp-ert-run-tests
        nvp-eval-expression nvp-eval--display-expression
+       nvp-fallback-dired
        nvp-find-file-in-dir
        nvp-grab-symbol
        nvp-hap-company nvp-hap-semantic nvp-hap-treesit nvp-hap-local nvp-hap-word
@@ -302,6 +292,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-shell
        nvp-shell-launch-terminal
        nvp-tag-find nvp-tag-find-etag
+       nvp-tag-list-decls
        nvp-tag-list-tags nvp-tag-list-decls nvp-tag-repo
        nvp-theme-switch
        nvp-toggle-local-variable
@@ -329,7 +320,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
 
      (nvp:decl                          ; external packages
        ace-link ace-link-help ace-link-info
-       consult-yank-replace
+       consult-yank-replace consult-recent-file
        diminish
        do-smooth-scroll
        edit-indirect

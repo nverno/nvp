@@ -64,21 +64,20 @@ With prefix, add neovim sources first."
 (defun nvp-treesit-explorer-jump (&optional reset)
   "Pop b/w source and explorer buffers."
   (interactive "P")
-  (let ((buf (cond
-              ((eq major-mode 'treesit--explorer-tree-mode)
-               (when (buffer-live-p treesit--explorer-source-buffer)
-                 treesit--explorer-source-buffer))
-              (t
-               (when (and reset (buffer-live-p treesit--explorer-buffer))
-                 (kill-buffer treesit--explorer-buffer))
-               (unless (and treesit-explore-mode
-                            (buffer-live-p treesit--explorer-buffer))
-                 (nvp:with-letf #'completing-read
-                     (lambda (&rest _)
-                       (symbol-name (treesit-language-at (point))))
-                   (treesit-explore-mode 1)))
-               treesit--explorer-buffer))))
-    (pop-to-buffer buf '(nil (inhibit-same-window . t)))))
+  (let ((buf (cond ((eq major-mode 'treesit--explorer-tree-mode)
+                    (when (buffer-live-p treesit--explorer-source-buffer)
+                      treesit--explorer-source-buffer))
+                   (t (when (and reset (buffer-live-p treesit--explorer-buffer))
+                        (kill-buffer treesit--explorer-buffer))
+                      (unless (and treesit-explore-mode
+                                   (buffer-live-p treesit--explorer-buffer))
+                        (nvp:with-letf #'completing-read
+                            (lambda (&rest _)
+                              (symbol-name (treesit-language-at (point))))
+                          (save-window-excursion
+                            (treesit-explore-mode 1))))
+                      treesit--explorer-buffer))))
+    (pop-to-buffer buf)))
 
 
 ;; -------------------------------------------------------------------

@@ -164,7 +164,42 @@ BODY should return a list as normally done in an interactive spec."
 ;; -------------------------------------------------------------------
 ;;; Output
 
-(nvp:decls :f (nvp-window-configuration-restore nvp-window-configuration-save))
+(nvp:decls
+ :f (nvp-window-configuration-restore nvp-window-configuration-save))
+
+;;* Help Windows
+(defmacro nvp:with-help-setup (func &rest body)
+  (declare (indent 1) (debug (sexp &rest form)))
+  `(let ((help-buffer-under-preparation t))
+     (help-setup-xref ,(if (listp func)
+                           `(list #',(car func) ,@(cdr func))
+                         `(list #',func))
+                      (called-interactively-p 'interactive))
+     ,@body))
+
+(cl-defmacro nvp:with-help-window ( &rest body
+                                    &key title buffer marker
+                                    &allow-other-keys)
+  (declare (indent defun) (debug t))
+  (nvp:skip-keywords body)
+  (macroexp-let2* nil ((hdr (if title `(nvp:header ,title)))
+                       (title-marker-p
+                        (when (and title (stringp title))
+                          (string-match-p "<marker>" title)))
+                       (buf (or buffer '(help-buffer))))
+    `(prog1 (get-buffer ,buf)
+       (with-help-window (get-buffer ,buf)
+         (with-current-buffer standard-output
+           ,@(when hdr `((insert (propertize ,hdr 'font-lock-face 'bold))))
+           ,@(when (and marker title-marker-p)
+               `((goto-char (point-min))
+                 (while (search-forward "<marker>" nil t)
+                   (replace-match "")
+                   (help-insert-xref-button
+                    (format "%S" ,marker) 'help-marker ,marker))
+                 (goto-char (point-max))))
+           ,@body
+           (font-lock-update))))))
 
 (cl-defmacro nvp:with-results-buffer ( &rest body
                                        &key buffer title revert-fn

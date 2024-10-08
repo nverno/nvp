@@ -104,14 +104,20 @@
             s
             (make-string (floor extra 2) char))))
 
-;; Format a header with TITLE centered
 (defsubst nvp:centered-header (title &optional width char)
+  "Format a header with TITLE centered by WIDTH.
+Underline header with CHAR."
   (or width (setq width 85))
   (or char (setq char "~"))
   (let ((len (length title)))
     (format "\n%s\n%s\n\n"
             (nvp:s-center (- width len) title)
             (nvp:s-repeat width char))))
+
+(defsubst nvp:header (title &optional width char)
+  (or char (setq char "~"))
+  (let ((width (or width (length title))))
+    (format "\n%s\n%s\n\n" title (nvp:s-repeat width char))))
 
 ;; -------------------------------------------------------------------
 ;;; Regexps

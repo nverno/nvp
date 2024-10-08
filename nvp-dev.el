@@ -94,7 +94,7 @@
   (let (entries)
     (maphash
      (lambda (key val)
-       (push (list (propertize (cl-prin1-to-string key) 'face 'bold)
+       (push (list (propertize (cl-prin1-to-string key) 'font-lock-face 'bold)
                    (nvp-pp-variable-to-string val (and level (1+ level))))
              entries))
      hash)
@@ -121,10 +121,11 @@
     (cl-macrolet ((get-string (fn var)
                     `(with-temp-buffer
                        (when (> level 0)
-                         (insert (propertize "⬎\n" 'face 'bold)))
+                         (insert (propertize "⬎\n" 'font-lock-face 'bold)))
                        (,fn ,var level)
                        (when (> level 0)
-                         (remove-text-properties (point-min) (point-max) '(display)))
+                         (remove-text-properties
+                          (point-min) (point-max) '(display)))
                        (buffer-string))))
       (let ((str (pcase var
                    ((pred hash-table-p)
@@ -133,11 +134,12 @@
                     (get-string nvp-pp-struct var))
                    (_ (nvp-pp--format-string (cl-prin1-to-string var))))))
         (if (> level 0)
-            (replace-regexp-in-string "\n" (concat (make-string level ? ) "\n") str)
+            (replace-regexp-in-string
+             "\n" (concat (make-string level ? ) "\n") str)
           str)))))
 
 (defun nvp-dev--fontify-syntax ()
-  ;; Fontify strings/comments w/o clobbering current text properties
+  "Fontify strings/comments w/o clobbering current text properties."
   (set-syntax-table emacs-lisp-mode-syntax-table)
   (setq-local syntax-propertize-function #'elisp-mode-syntax-propertize)
   (font-lock-default-fontify-syntactically (point-min) (point-max)))
@@ -145,28 +147,24 @@
 (defun nvp-dev-describe-variable (variable)
   "Pretty print VARIABLE."
   (interactive (list (nvp:tap 'evari)))
+  (nvp:with-help-setup (nvp-dev-describe-variable variable))
   (let* ((val (if (symbolp variable) (eval variable)
                 variable))
          (print-escape-newlines t)
          (print-circle t)
          (print-length nil)
-         ;; (print-gensym t)
          (inhibit-read-only t))
-    ;; FIXME(08/21/24): with-help-buffer
-    (nvp:with-results-buffer
+    (nvp:with-help-window
       :title (format "Variable (%s): `%S'" (type-of val) variable)
-      :buffer (help-buffer) ;; (format "*describe[%s]*" variable)
-      :revert-fn (lambda (&rest _) (funcall #'nvp-dev-describe-variable variable))
+      :buffer (help-buffer)
       (insert (nvp-pp-variable-to-string val 0))
       (and (= (char-before) ?\n) (delete-char -1))
-      (nvp-dev--fontify-syntax)
-      ;; (help-setup-xref
-      ;;  (list #'nvp-dev-describe-variable variable))
-      )))
+      (nvp-dev--fontify-syntax))))
 
 ;;;###autoload
 (defun nvp-dev-describe-mode (&optional mode)
   (interactive (list (nvp:prefix 4 (nvp-read-mode) (or nvp-mode-name major-mode))))
+  (nvp:with-help-setup (nvp-dev-describe-mode mode))
   (let ((print-escape-newlines t)
         (print-circle t)
         (inhibit-read-only t)
@@ -189,22 +187,22 @@
                        hippie-expand-try-functions-list)))
         (keys (--map (cons it (lookup-key (current-active-maps) (kbd it)))
                      '("RET" "<f5>" "M-?"
-                       "<f2>mzz" "C-c C-z"
-                       "<f2>mc" "<f2>mt" "<f2>mT" "<f2>md" "<f2>mD")))
+                       "<f2>mm" "<f2>mc" "<f2>mt" "<f2>mT" "<f2>md" "<f2>mD")))
         (fonts (assoc mode nvp-mode-font-additions))
         (print-fn
          (lambda (lst &optional column-name)
            (cl--print-table
             (list (or column-name "Symbol") "Value")
-            (mapcar (lambda (el) (list (propertize (car el) 'face 'bold)
-                                  (cl-prin1-to-string (cdr el))))
+            (mapcar (lambda (el)
+                      (list (propertize (car el) 'font-lock-face 'bold)
+                            (cl-prin1-to-string (cdr el))))
                     lst))
            (insert "\n"))))
     (cl-macrolet ((header (str)
                     (macroexp-let2 nil str str
-                      `(insert (propertize ,str 'face 'bold) "\n"
+                      `(insert (propertize ,str 'font-lock-face 'bold) "\n"
                                (make-string (length ,str) ?-) "\n"))))
-      (nvp:with-results-buffer
+      (nvp:with-help-window
         :title (format "%S variables" mode)
         (header (symbol-name mode))
         (--when-let (gethash mode nvp-mode-cache) (nvp-pp-struct it))
@@ -221,67 +219,84 @@
 (defun nvp-dev-features (filter)
   "List loaded `features' matching \"^nvp\\b\" or FILTER."
   (interactive (list (nvp:prefix 4 (read-string "Regexp filter: ") "^nvp\\b")))
-  (let* ((fs (sort (--filter (string-match-p filter (symbol-name it)) features)
-                   #'string-lessp))
-         (title (format "Features filtered by /%s/ (count = %d)"
-                        filter (length fs))))
-    (nvp:with-results-buffer :title title
-      (cl-prettyprint fs))))
+  (nvp:with-help-setup (nvp-dev-features filter)
+    (let* ((fs (sort (--filter (string-match-p filter (symbol-name it))
+                               features)
+                     #'string-lessp))
+           (title (format "Features filtered by /%s/ (count = %d)"
+                          filter (length fs))))
+      (nvp:with-help-window :title title
+        (dolist (feat fs)
+          (princ feat)
+          (terpri))))))
 
 ;;;###autoload
-(defun nvp-dev-c-lang-constants (&optional mode)
+(defun nvp-dev-c-lang-constants (mode)
   "Dump `c-lang-constants' for MODE."
-  (interactive (list (nvp-read-mode)))
+  (interactive (list (intern (nvp-read-mode))))
   (require 'cc-mode)
-  (setq mode (intern (string-remove-suffix "-mode" (or mode major-mode))))
-  (let ((print-escape-newlines t)
-        (print-circle t)
-        (inhibit-read-only t))
-    (nvp:with-results-buffer :title (format "c-lang-constants for %s" mode)
-      (obarray-map
-       (lambda (v)
-         (when (symbolp v)
-           (princ v)
-           (princ ": ")
-           (condition-case nil
-               (eval `(prin1 (c-lang-const ,v ,mode)))
-             (error (princ "<failed>")))
-           (terpri)))
-       c-lang-constants))))
+  (or mode (setq mode major-mode))
+  (nvp:with-help-setup (nvp-dev-c-lang-constants mode)
+    (nvp:with-help-window
+      :title (format "c-lang-constants for %S" mode)
+      (let ((mode (intern (string-remove-suffix "-mode" (symbol-name mode))))
+            (print-escape-newlines t)
+            (print-circle t))
+        (obarray-map
+         (lambda (v)
+           (when (symbolp v)
+             (insert (propertize (format "%S" v)
+                                 'font-lock-face 'font-lock-constant-face))
+             (princ ": ")
+             (condition-case nil
+                 (eval `(prin1 (c-lang-const ,v ,mode)))
+               (error (princ "<failed>")))
+             (terpri)))
+         c-lang-constants)))))
 
-;; https://www.emacswiki.org/emacs/EmacsOverlays
-(defun nvp-dev-list-overlays (&optional pos)
-  "Describe overlays at POS (default point)."
-  (interactive)
-  (setq pos (or pos (point)))
-  (let ((overlays (overlays-at pos))
-        (obuf (current-buffer))
-        (props '(priority window category face mouse-face display
-                          help-echo modification-hooks insert-in-front-hooks
-                          insert-behind-hooks invisible intangible
-                          isearch-open-invisible isearch-open-invisible-temporary
-                          before-string after-string evaporate local-map keymap
-                          field))
-        start end text)
-    (if (not overlays) (message "Nothing here :(")
-      (nvp:with-results-buffer
-        :title (format "Overlays at %d in %S" pos obuf)
-        (dolist (o overlays)
-          (setq start (overlay-start o)
-                end (overlay-end o)
-                text (with-current-buffer obuf
-                       (buffer-substring-no-properties start end)))
-          (when (> (- end start) 13)
-            (setq text (concat (substring text 0 10) "...")))
-          (insert (propertize (format "From %d to %d: \"%s\":\n" start end text)
-                              'face nil 'font-lock-face 'compilation-info))
-          (dolist (prop props)
-            (when (overlay-get o prop)
-              (insert (propertize (format " %15S:" prop) 'face nil
-                                  'font-lock-face font-lock-constant-face))
-              (insert (format " %S\n" (overlay-get o prop))))))
-        (font-lock-flush)
-        (font-lock-ensure)))))
+(defun nvp-dev-list-overlays (marker)
+  "Describe overlays at MARKER (default point)."
+  (interactive (list (point-marker)))
+  (unless (and (markerp marker)
+               (buffer-live-p (marker-buffer marker)))
+    (user-error "Bad marker: %S" marker))
+  ;; Note(10/08/24): Modified from
+  ;; https://www.emacswiki.org/emacs/EmacsOverlays
+  (with-current-buffer (marker-buffer marker)
+    (let* ((pos (marker-position marker))
+           (overlays (overlays-at pos))
+           (obuf (current-buffer))
+           (props '( priority window category face mouse-face display
+                     help-echo modification-hooks insert-in-front-hooks
+                     insert-behind-hooks invisible intangible
+                     isearch-open-invisible isearch-open-invisible-temporary
+                     before-string after-string evaporate local-map keymap
+                     field))
+           start end text)
+      (if (not overlays)
+          (message "Nothing here :(")
+        (nvp:with-help-setup (nvp-dev-list-overlays marker)
+          (nvp:with-help-window
+            :title "Overlays at <marker>"
+            :marker marker
+            (dolist (o overlays)
+              (setq start (overlay-start o)
+                    end (overlay-end o)
+                    text (with-current-buffer obuf
+                           (buffer-substring-no-properties start end)))
+              (when (> (- end start) 55)
+                (setq text (concat (substring text 0 10) "...")))
+              (insert (propertize (format "Overlay from %d to %d" start end)
+                                  'face nil 'font-lock-face
+                                  'font-lock-function-name-face)
+                      ": \"" text "\"\n")
+              (dolist (prop props)
+                (when (overlay-get o prop)
+                  (insert (propertize (format " %15S:" prop)
+                                      'face nil
+                                      'font-lock-face 'font-lock-constant-face))
+                  (insert (format " %S\n" (overlay-get o prop)))))
+              (insert "\n"))))))))
 
 
 ;;; Syntax
@@ -325,32 +340,23 @@ delimiter or an Escaped or Char-quoted character."
   (unless (and (markerp marker)
                (buffer-live-p (marker-buffer marker)))
     (user-error "Bad marker: %S" marker))
-  (let ((help-buffer-under-preparation t))
-    (help-setup-xref (list #'nvp-syntax-at-point marker)
-                     (called-interactively-p 'interactive))
+  (nvp:with-help-setup (nvp-syntax-at-point marker)
     (with-current-buffer (marker-buffer marker)
       (let ((ppss (syntax-ppss marker))
             (help-str (nvp:lazy-val nvp-syntax-at-point-help)))
-        (with-help-window (help-buffer)
-          (princ (nvp:centered-header "Syntax at <marker>"))
-          (princ (apply #'format help-str ppss))
-          (with-current-buffer standard-output
-            (let ((inhibit-read-only t)
-                  (comment-start "; ")
-                  (fill-column 85)
-                  (comment-column 30))
-              (goto-char (point-min))
-              (search-forward "<marker>")
-              (replace-match "")
-              (help-insert-xref-button (format "%S" marker) 'help-marker marker)
-              (forward-line 2)
-              (while (not (eobp))
-                (when (looking-at-p comment-start)
-                  (insert "|"))
-                (comment-indent)
-                (forward-line 1)))
-            (hl-line-mode)))))))
-
+        (nvp:with-help-window
+          :title "Syntax at <marker>"
+          :marker marker
+          (save-excursion (princ (apply #'format help-str ppss)))
+          (setq-local comment-start "; "
+                      fill-column 85
+                      comment-column 30)
+          (while (not (eobp))
+            (when (looking-at-p comment-start)
+              (insert "|"))
+            (comment-indent)
+            (forward-line 1))
+          (hl-line-mode))))))
 
 ;;; Keys
 

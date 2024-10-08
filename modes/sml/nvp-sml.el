@@ -10,9 +10,9 @@
 (with-eval-after-load 'nvp-repl
   (require 'nvp-sml-repl))
 
-(cl-defmethod nvp-newline-dwim-comment
-  (syntax arg &context (major-mode sml-mode))
-  (nvp-newline-dwim--comment syntax arg))
+(nvp:defmethod nvp-newline-dwim-comment (syntax arg)
+  :modes (sml-mode sml-ts-mode)
+  (nvp-newline-dwim--comment syntax arg " * "))
 
 (defvar nvp-sml-source-repo "https://smlnj-gforge.cs.uchicago.edu/svn")
 (defvar nvp-sml-source-dir (expand-file-name "sml" (getenv "DEVEL")))

@@ -41,7 +41,7 @@
       (group "@" (* alnum)) (* white)
       (or (seq "[" (group-n 3 (* (not "]"))) "]")
           (seq "<" (group-n 3 (* (not ">"))) ">")
-          (group-n 3 (+ (not space))))
+          (group-n 3 (+ (not (or white "\n")))))
       (* white)
       (group (* nonl)))
   "Regex to match bash doc comments.")

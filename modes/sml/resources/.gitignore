@@ -1,5 +1,0 @@
-*
-!.gitignore
-!provision.sh
-!build.sh
-!.dir-locals.el

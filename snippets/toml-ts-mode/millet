@@ -1,0 +1,22 @@
+# -*- mode: snippet -*-
+# name: millet
+# key: millet
+# --
+version = 1
+# Specify the standard SML mode.
+# Options are "basis1985", "basis1990", or "basis2002"
+# standard = "basis2002"
+
+[workspace]
+root = "${1:file.cm}"
+
+[sources]
+paths = ["${2:src/}**/*.sml"]
+
+[diagnostics]
+5011.severity = "warning"
+4015.severity = "error"
+5029.severity = "ignore"
+
+[language]
+fixity-across-files = true

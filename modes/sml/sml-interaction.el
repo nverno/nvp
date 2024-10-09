@@ -4,7 +4,7 @@
 ;; Show results from evaluating next paragraph in SML process as overlays in
 ;; current emacs buffer.  Like overlays in from `cider'.
 
-;; Install: 
+;; Install:
 
 ;; Just require this file or autoload `sml-interaction-eval'.  And bind to a key,
 
@@ -91,18 +91,20 @@
 
 ;;;###autoload
 (defun sml-interaction-eval ()
-  "Evaluate next paragraph as marked by `sml-mark-function', 
+  "Evaluate next paragraph as marked by `sml-mark-function',
 or region if currently active."
   (interactive)
   (let (start end)
     (if (not (region-active-p))
         (save-mark-and-excursion
-         (sml-mark-function)
-         (setq start (progn
-                       (goto-char (region-beginning))
-                       (comment-forward (point-max))
-                       (point))
-               end (region-end)))
+          (if (derived-mode-p 'sml-ts-mode)
+              (mark-defun)
+            (sml-mark-function))
+          (setq start (progn
+                        (goto-char (region-beginning))
+                        (comment-forward (point-max))
+                        (point))
+                end (region-end)))
       (setq start (region-beginning) end (region-end)))
     (sml-interaction--make-result-overlay
      (sml-interaction-send-region start end) start)))

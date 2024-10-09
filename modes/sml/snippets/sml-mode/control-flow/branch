@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Case branch
+# key: |
+# --
+| ${1:_} => $0

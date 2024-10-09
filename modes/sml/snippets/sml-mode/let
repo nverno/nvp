@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # name: let
-# key: let
+# key: l
 # --
 let $1
-in $2
-end$0
+in $0
+end

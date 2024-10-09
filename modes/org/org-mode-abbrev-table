@@ -1,11 +1,9 @@
 ;; -*- coding: utf-8; lexical-binding: t; -*-
 
 (define-abbrev-table 'org-mode-abbrev-table
-  '(
-    ("noi" "\\noindent" nil :system t)
+  '(("noi" "\\noindent" nil :system t)
     ("bigo" ["\\mathcal{O}()" 1 nil nil] expand-abbrev-hook :system t)
-    ("amssymb" "#+LATEX_HEADER: \\usepackage{amssymb}" nil :system t)
-    )
+    ("amssymb" "#+LATEX_HEADER: \\usepackage{amssymb}" nil :system t))
   "Org-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table))
 

@@ -2,7 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 
 (defun nvp-convert-csv-to-org-table (fname &optional sep)
   "Rough conversion from CSV to org-table.

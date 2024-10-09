@@ -185,20 +185,20 @@ With prefix sort in REVERSE."
     (with-syntax-table st
       (sp-wrap-with-pair "~"))))
 
-;; TODO(09/11/24): 1. Sp errors when no expression recognized.
-;;                 2. Should also work when sp isnt enabled
 ;;;###autoload
-(defun nvp-wrap-with-last-char (char)
+(defun nvp-wrap-with-last-char (&optional char prompt)
   "Wrap next sexp with CHAR (last key pressed in calling command).
 Override default `sp-pair-list' if CHAR isn't a leading member.
 With prefix, read CHAR to wrap with."
-  (interactive (list (if current-prefix-arg
-                         (char-to-string (read-char "Wrap with: "))
-                       (nvp:input 'lcs))))
-  (let ((sp-pair-list
-         (if (not (cl-member char sp-pair-list :test #'string= :key #'car))
-             `((,char . ,char))
-           sp-pair-list)))
+  (interactive (list (unless current-prefix-arg
+                       (nvp:input 'lcs))
+                     current-prefix-arg))
+  (when (or prompt (null char))
+    (setq char (char-to-string (read-char "Wrap with: ")))
+    (nvp:prefix-shift -1))
+  (let* ((pair (cons char char))
+         (sp-pair-list (if prompt (cons pair sp-pair-list)
+                         (append sp-pair-list (list pair)))))
     (with-demoted-errors "Error in nvp-wrap-with-last-char: %S"
       (sp-wrap-with-pair char))))
 

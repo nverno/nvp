@@ -16,15 +16,8 @@
 (require 'nvp-hippie-history)
 (require 'utop nil t)
 (require 'tuareg nil t)
-(nvp:decls :p (utop tuareg) :v (nvp-trace-group-alist nvp-ocaml--etc))
+(nvp:decls :p (utop tuareg) :v (nvp-ocaml--etc))
 
-;; debugging
-(with-eval-after-load 'nvp-trace
-  (cl-pushnew '(utop utop-process-output
-                     comint-redirect-cleanup
-                     nvp-utop-redirect-filter)
-              nvp-trace-group-alist
-              :test #'equal))
 
 ;;; REPL
 

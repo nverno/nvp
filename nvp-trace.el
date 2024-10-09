@@ -34,6 +34,16 @@
   (and (boundp 'trace-buffer)
        (buffer-live-p (get-buffer trace-buffer))))
 
+(defun nvp-trace-load-saved (&optional clobber)
+  (interactive "P")
+  (let ((group-alist nvp-trace-group-alist))
+    (load-file (expand-file-name "trace-data.el" nvp/data))
+    (unless clobber
+      (setq nvp-trace-group-alist
+            (seq-uniq (append group-alist nvp-trace-group-alist)
+                      #'equal)))
+    (message "Loaded %d groups" (length nvp-trace-group-alist))))
+
 ;;;###autoload(autoload 'nvp-trace-menu "nvp-trace" nil t)
 (transient-define-prefix nvp-trace-menu ()
   "Trace"
@@ -48,7 +58,9 @@
     ("g" "Group" nvp-trace-group)
     ("G" "Untrace group" nvp-untrace-group :if-non-nil tracing-minor-mode)
     ("l" "Library" nvp-trace-library)
-    ("h" "Hooks" nvp-trace-hooks)]
+    ("h" "Hooks" nvp-trace-hooks)
+    "--"
+    ("L" "Load saved" nvp-trace-load-saved)]
    ["Results" :if nvp-trace-active-p
     ("j" "Display" trace-mode-display-results)
     ("k" "Clear" trace-mode-clear)]
@@ -70,7 +82,7 @@
 (defun nvp-trace--read-groups (prompt &optional force-read untrace)
   "Load trace data and PROMPT for group to trace."
   (unless (bound-and-true-p nvp-trace-group-alist)
-    (load-file (expand-file-name "trace-data.el" nvp/data)))
+    (nvp-trace-load-saved))
   (or (and (null force-read)
            (--when-let (completing-read-multiple prompt nvp-trace-group-alist)
              (cl-loop for g in it

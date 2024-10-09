@@ -7,27 +7,28 @@
 (require 'treesit nil t)
 (nvp:decls :p (ts) :f (ts-error-toggle ts-debug-show-missing-indent))
 
+
+(defvar nvp-treesit--hash-bang-re
+  (concat "\\`\\(#!\\).*/\\([^ \t\n]+\\)"
+          "\\(?:[ \t]+\\(?:-\\w+[ \t]+\\)*\\([^ \t\n]+\\)\\)?"))
+
 ;;;###autoload
 (defun nvp-treesit-fontify-hash-bang (node override start end &rest _)
   (save-excursion
     (goto-char (treesit-node-start node))
-    (save-match-data
-      (when (looking-at
-             "\\`\\(#!\\).*/\\([^ \t\n]+\\)\\(?:[ \t]+\\(?:-\\w+[ \t]+\\)*\\([^ \t\n]+\\)\\)?")
-        (let ((m (if (and (string= "env" (buffer-substring-no-properties
-                                          (match-beginning 2) (match-end 2)))
-                          (match-beginning 3))
-                     3
-                   2)))
-          (treesit-fontify-with-override
-           (match-beginning 1) (match-end 1)
-           'font-lock-comment-delimiter-face override start end)
-          (treesit-fontify-with-override
-           (match-end 1) (match-beginning m)
-           'font-lock-comment-face override start end)
-          (treesit-fontify-with-override
-           (match-beginning m) (match-end m)
-           'nvp-interpreter-face override start end))))))
+    (when (looking-at nvp-treesit--hash-bang-re)
+      (let ((idx (if (and (match-beginning 3)
+                          (string= "env" (match-string-no-properties 2)))
+                     3 2)))
+        (treesit-fontify-with-override
+         (match-beginning 1) (match-end 1)
+         'font-lock-comment-delimiter-face override start end)
+        (treesit-fontify-with-override
+         (match-end 1) (match-beginning idx)
+         'font-lock-comment-face override start end)
+        (treesit-fontify-with-override
+         (match-beginning idx) (match-end idx)
+         'nvp-interpreter-face override start end)))))
 
 (eval-when-compile
   (defsubst nvp-treesit:add-sources ()
@@ -56,7 +57,8 @@ With prefix, add neovim sources first."
 ;;; Dev Minor Mode
 
 (defun nvp-treesit-validate (lang query)
-  (interactive (list (or (treesit-language-at (point)) (nvp-treesit:read))
+  (interactive (list (or (treesit-language-at (point))
+                         (nvp-treesit:read))
                      (read--expression "Query: ")))
   (treesit-query-validate lang query))
 
@@ -134,6 +136,8 @@ With prefix, add neovim sources first."
   treesit--font-lock-verbose
   treesit--indent-verbose)
 
+(autoload 'ts-sources-browse-repo "ts-sources")
+
 ;;;###autoload(autoload 'nvp-treesit-menu "nvp-treesit" nil t)
 (transient-define-prefix nvp-treesit-menu ()
   "Treesit"
@@ -151,12 +155,12 @@ With prefix, add neovim sources first."
      ("e" "Toggle errors" ts-error-toggle)]]
   [["Parsers"
     ("l" "List nodes" ts-parser-list-nodes)
-    ("L" "List sources" ts-util-list-sources)
+    ("L" "List sources" ts-sources)
     ("r" "Toggle ranges" ts-parser-toggle-ranges :transient t
      :if nvp-treesit-ready-p)
     ("a" "Add sources" ts-util-add-treesit-sources)
     ("I" "Install/update parsers" nvp-treesit-install)
-    ("b" "Browse repo" ts-util-browse-repo)]
+    ("b" "Browse repo" ts-sources-browse-repo)]
    ["Dev"
     ("m" "Global mode" nvp-treesit-mode)
     ("M" "Local mode" nvp-treesit-minor-mode)

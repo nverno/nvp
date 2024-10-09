@@ -26,15 +26,14 @@
                     (lsp--send-request)
                     (lsp:hover-contents))))
     (and contents (not (equal "" contents))
-         (cond
-          ((hash-table-p contents)
-           (not (or (hash-table-empty-p contents)
-                    (equal "" (gethash "value" contents)))))
-          ((vectorp contents)
-           (and (> (length contents) 0)
-                ;; json-ls returns [""]
-                (not (equal "" (aref contents 0)))))
-          (t t))
+         (cond ((hash-table-p contents)
+                (not (or (hash-table-empty-p contents)
+                         (equal "" (gethash "value" contents)))))
+               ((vectorp contents)
+                (and (> (length contents) 0)
+                     ;; json-ls returns [""]
+                     (not (equal "" (aref contents 0)))))
+               (t t))
          contents)))
 
 (cl-defgeneric nvp-hap-lsp-search-remote (_server-id &optional _arg)
@@ -45,14 +44,17 @@
 (defun nvp-hap-lsp (command &optional arg &rest _args)
   (cl-case command
     (thingatpt (nvp-hap-lsp-thingatpt))
-    (doc-string (string-trim-right (lsp--render-on-hover-content arg t)))
+    (doc-string (string-trim-right
+                 (lsp--render-on-hover-content arg t)))
     (doc-buffer
      (let ((display-buffer-overriding-action
             '(nil . ((inhibit-switch-frame . t)))))
        (nvp-with-hap-lsp-buffer nil
-         (insert (string-trim-right (lsp--render-on-hover-content arg t)))
+         (insert (string-trim-right
+                  (lsp--render-on-hover-content arg t)))
          (list (current-buffer) (point-min) nil))))
-    (search-remote (nvp-hap-lsp-search-remote (nvp-hap-lsp-server-id) arg))))
+    (search-remote (nvp-hap-lsp-search-remote
+                    (nvp-hap-lsp-server-id) arg))))
 
 (provide 'nvp-hap-lsp)
 ;; Local Variables:

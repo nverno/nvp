@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)                          ; `nvp-block-face'
 (require 'dockerfile-ts-mode nil t)
 (nvp:decls :p (dockerfile-ts treesit))
 

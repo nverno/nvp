@@ -431,7 +431,8 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
                      (info-lookup-guess-default 'symbol mode)))))
     (doc-buffer
      (save-window-excursion
-       (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t))))
+       (let ((display-buffer-overriding-action
+              '(nil . ((inhibit-switch-frame . t))))
              (info-lookup-other-window-flag nil))
          (ignore-errors
            (info-lookup-symbol arg)

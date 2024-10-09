@@ -6,4 +6,4 @@
 (insert
  (nvp-comment-string
   (concat (yas-choose-value '("TODO" "FIXME" "XXX" "Note")) "(" (nvp-today) "): ")
-  (if (memq major-mode '(org-mode)) 1 2)))
+  (if (memq major-mode '(org-mode)) 1 (if current-prefix-arg 2 1))))

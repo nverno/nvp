@@ -91,18 +91,18 @@
   "Mark current header region."
   (interactive)
   (condition-case nil
-      ;; mark successive header
+      ;; Mark successive header
       (if (use-region-p)
           (set-mark
            (save-excursion
              (goto-char (mark))
              (nvp-move-forward-heading)
              (point)))
-        ;; first marking
+        ;; First marking
         (forward-line 0)
         (or (looking-at (nvp-mode-header-regex))
             (nvp-move-previous-heading 'error))
-        ;; headers are known at this point
+        ;; Headers are known at this point
         (save-excursion
          (or (ignore-errors (nvp-move-forward-heading))
              (prog1 (goto-char (point-max))
@@ -120,10 +120,9 @@
 (defun nvp-insert-date ()
   "Insert date string, defaulting to current date."
   (interactive)
-  (insert
-   (if current-prefix-arg
-       (calendar-date-string (calendar-read-date))
-     (nvp-today))))
+  (insert (if current-prefix-arg
+              (calendar-date-string (calendar-read-date))
+            (nvp-today))))
 
 ;;;###autoload
 (defun nvp-comment-timestamped (date)
@@ -133,9 +132,10 @@
                        (nvp-today))))
   (call-interactively (pcase major-mode
                         (`org-mode #'org-comment-dwim)
-                        (_ (if (bound-and-true-p paredit-mode)
-                               #'paredit-comment-dwim
-                             #'comment-dwim))))
+                        ;; (if (bound-and-true-p paredit-mode)
+                        ;;     #'paredit-comment-dwim
+                        ;;   #'comment-dwim)
+                        (_ #'comment-dwim)))
   (if yas-minor-mode
       (yas-expand-snippet (concat "${1:XXX}(" date "): "))
     (insert "XXX(" date "): ")))

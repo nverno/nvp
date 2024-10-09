@@ -75,18 +75,21 @@ When part of `before-save-hook', won't add condition on initial save."
 If TEXT is non-nil use as `yas-selected-text'.
 DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
   (interactive
-   (let* ((mode-name (nvp:prefix 16 (nvp-read-mode)
+   (let* ((arg (prefix-numeric-value current-prefix-arg))
+          (mode-name (if (eq 16 arg) (nvp-read-mode)
                        (symbol-name (or nvp-mode-name major-mode))))
-          (snippet-dir (or nvp-mode-snippet-dir (expand-file-name mode-name nvp/snippet))))
+          (snippet-dir (or nvp-mode-snippet-dir
+                           (expand-file-name mode-name nvp/snippet))))
      (list mode-name
            snippet-dir
-           (nvp:prefix 4 'do-dired)
+           (and (eq 4 arg) 'do-dired)
            (or yas-selected-text
                (and (region-active-p)
                     (buffer-substring-no-properties
                      (region-beginning) (region-end)))))))
   (setq mode (nvp:as-string mode))
-  (nvp:defq default-new-snippet yas-new-snippet-default)
+  (or default-new-snippet
+      (setq default-new-snippet yas-new-snippet-default))
   (unless (file-exists-p snippet-dir)
     (make-directory snippet-dir))
   ;; With prefix dired the snippet directory
@@ -95,7 +98,8 @@ DEFAULT-NEW-SNIPPET is default snippet template to use if non-nil."
           (yas-selected-text text)
           (yas-indent-line 'fixed)
           (default-directory snippet-dir))
-      (switch-to-buffer-other-window (generate-new-buffer "*snippet*"))
+      (switch-to-buffer-other-window
+       (generate-new-buffer "*snippet*"))
       (if (fboundp 'snippet-ts-mode)
           (snippet-ts-mode)
         (snippet-mode))

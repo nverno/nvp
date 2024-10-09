@@ -145,7 +145,9 @@ should formatted as an alist like `imenu-generic-expression'."
               nvp-imenu-comment-headers-re-1 h1
               nvp-imenu-comment-headers-re-2 h2)))
     (setq imenu-generic-expression
-          (append imenu-generic-expression extra nvp-imenu-comment-headers-re-1))))
+          (append imenu-generic-expression extra
+                  nvp-imenu-comment-headers-re-1
+                  nvp-imenu-comment-headers-re-2))))
 
 (put 'nvp-imenu-setup 'lisp-indent-function 'defun)
 

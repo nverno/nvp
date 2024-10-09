@@ -228,7 +228,9 @@ With extra prefix, prompt for file name."
        shell-command-switch
        (concat
         (format "gawk -F'|' -v frecency=\"%s\" -v typ=\"%s\" -v q=\"%s\""
-                (or frecency 15000) (or type "frecency") (or directory ""))
+                (or frecency 1000)
+                (or type "frecency")
+                (or directory ""))
         " -f " bin " " data)))))
 
 ;;;###autoload
@@ -242,7 +244,8 @@ directories under current directory."
   (and in-dir (not (stringp in-dir))
        (setq in-dir default-directory))
   (nvp-with-display-actions action
-    (and interactive current-prefix-arg (setq in-dir default-directory))
+    (and interactive current-prefix-arg
+         (setq in-dir default-directory))
     (when-let ((dir (completing-read
                       (format "Frecent Dir%s:"
                               (if in-dir (concat "(" (nvp:fn in-dir) ")") ""))

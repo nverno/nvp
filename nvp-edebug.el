@@ -21,7 +21,7 @@
            :f (treesit-buffer-root-node smie-config-show-indent)
            :v (tramp-debug-on-error tramp-verbose))
 
-(autoload 'nvp-help-describe-keymap "nvp-help")
+(autoload 'nvp-describe-keymap "nvp-help")
 (autoload '-map "dash")
 
 ;;; Edebug
@@ -44,7 +44,7 @@
 
 (defun nvp-edebug-help ()
   (interactive)
-  (nvp-help-describe-keymap 'edebug-mode-map))
+  (nvp-describe-keymap 'edebug-mode-map))
 
 (defvar-local nvp-edebug--all-defs nil)
 

@@ -37,15 +37,13 @@
 (nvp:decls :v (info-lookup-other-window-flag) :f (nvp-hap-treesit-local-active-p))
 (nvp:auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
 
-;; local override function to get doc for quickhelp-toggle
 (declare-function company-quickhelp-manual-begin "company-quickhelp")
-(defvar nvp-quickhelp-toggle-function #'company-quickhelp-manual-begin)
+(defvar nvp-quickhelp-toggle-function #'company-quickhelp-manual-begin
+  "Local override function to get doc for quickhelp-toggle.")
 
 ;; Character pixel width
 ;; eg. (aref (aref (font-get-glyphs (font-at (point)) 65 66) 0) 4)
 (defvar nvp-char-width (frame-char-width))
-
-;;; Quickhelp
 
 ;;;###autoload
 (defun nvp-company-quickhelp-toggle ()
@@ -63,7 +61,7 @@
       :this-cmd 'company-quickhelp-manual-begin
       (x-hide-tip))))
 
-
+
 ;;; Help-at-point
 
 (defvar nvp-hap-verbose nil "Non-nil for verbose messaging.")
@@ -217,7 +215,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
       (user-error "unimplemented")))
 
 ;; -------------------------------------------------------------------
-;;; Popup 
+;;; Popup
 ;; popup looks for (1) doc-string then (2) doc-buffer
 
 (defsubst nvp-hap--skip-footers ()
@@ -373,14 +371,12 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
        (nvp-hap-treesit-init backends)))
 
 (defun nvp-hap-choose-backend ()
-  (--when-let
-      (completing-read
-       "Backend: "
-       (mapcar
-        (lambda (sym)
-          (replace-regexp-in-string
-           "nvp-hap-\\(.+\\)" "\\1" (symbol-name (nvp-hap--backend-sym sym))))
-        nvp-help-at-point-functions))
+  "Prompt for backend to use."
+  (--when-let (completing-read "Backend: "
+                (--map (replace-regexp-in-string
+                        "nvp-hap-\\(.+\\)" "\\1"
+                        (symbol-name (nvp-hap--backend-sym it)))
+                       nvp-help-at-point-functions))
     (intern (concat "nvp-hap-" it))))
 
 ;;;###autoload
@@ -403,23 +399,21 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
              (nvp-hap-message 1 "%s" (error-message-string err)))
       (quit (nvp-hap-cancel)))))
 
-
 ;;;###autoload
 (defun nvp-hap-company (command &optional arg &rest _args)
   (-when-let (company-backend nvp-hap-company-backend)
     (cl-case command
       (thingatpt (nvp-hap-thing-at-point arg nil "Company: "))
-      (doc-buffer
-       (when (company-call-backend 'candidates arg "")
-         (when-let (buf (company-call-backend 'doc-buffer arg))
-           (sit-for 0.1)
-           (list buf))
-         ;; (when (eq company-backend 'company-cmake)
-         ;;   ;; cmake needs to construct help arguments for candidate prior to call
-         ;;   ;; to cmake
-         ;;   (company-call-backend 'candidates arg))
-         ;; (list (company-call-backend 'doc-buffer arg))
-         )))))
+      (doc-buffer (when (company-call-backend 'candidates arg "")
+                    (nvp-with-no-window
+                      (when-let (buf (company-call-backend 'doc-buffer arg))
+                        (sit-for 0.1)
+                        (list buf))))))))
+;; (when (eq company-backend 'company-cmake)
+;;   ;; cmake needs to construct help arguments for candidate
+;;   ;; prior to call to cmake
+;;   (company-call-backend 'candidates arg))
+;; (list (company-call-backend 'doc-buffer arg))
 
 ;;;###autoload
 (defun nvp-hap-info (command &optional arg &rest _args)
@@ -429,32 +423,27 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
                    (save-excursion
                      (skip-syntax-forward "w_")
                      (info-lookup-guess-default 'symbol mode)))))
-    (doc-buffer
-     (save-window-excursion
-       (let ((display-buffer-overriding-action
-              '(nil . ((inhibit-switch-frame . t))))
-             (info-lookup-other-window-flag nil))
-         (ignore-errors
-           (info-lookup-symbol arg)
-           (list (current-buffer) (pos-bol) nil)))))))
+    (doc-buffer (save-window-excursion
+                  (nvp-with-no-window :actions (same-frame)
+                    (let ((info-lookup-other-window-flag nil))
+                      (info-lookup-symbol arg))
+                    (list (current-buffer) (pos-bol) nil))))))
 
 ;;;###autoload
 (defun nvp-hap-elisp (command &optional arg &rest _args)
   (cl-case command
-    (thingatpt (symbol-at-point))
-    ;; (doc-string (if (fboundp arg) (documentation arg)
-    ;;               (documentation-property arg 'variable-documentation)))
-    (doc-buffer
-     (save-window-excursion
-       (let ((display-buffer-overriding-action
-              '(nil . ((inhibit-switch-frame . t)))))
-         (when (or (fboundp arg) (boundp arg))
-           (with-current-buffer (help-buffer)
-             (cl-letf (((symbol-function #'message) (symbol-function #'ignore)))
-               (if (fboundp arg)
-                   (describe-function arg)
-                 (describe-variable arg)))
-             (list (current-buffer) (point-min) nil))))))))
+    (thingatpt (let ((sym (symbol-at-point)))
+                 (and (or (fboundp sym)
+                          (boundp sym))
+                      sym)))
+    (doc-buffer (with-current-buffer (help-buffer)
+                  (cl-letf (((symbol-function #'message)
+                             (symbol-function #'ignore)))
+                    (nvp-with-no-window
+                      (if (fboundp arg)
+                          (describe-function arg)
+                        (describe-variable arg))
+                      (list (current-buffer) (point-min) nil)))))))
 
 ;;;###autoload
 (defun nvp-hap-local (command &optional arg &rest _args)

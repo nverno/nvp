@@ -4,6 +4,18 @@
 ;;; Code:
 (require 'nvp-macs-common)
 
+
+(cl-defmacro nvp-with-no-window
+    (&rest body &key (actions '(no-window)) &allow-other-keys)
+  "Do BODY with overriding display ACTIONS to inhibit displaying windows."
+  (declare (indent defun) (debug t))
+  (nvp:skip-keywords body)
+  `(let (display-buffer-alist
+         (display-buffer-overriding-action
+          (apply #'nvp-display-buffer-action ',actions)))
+     ,@body))
+
+
 (cl-defmacro nvp-with-display-actions
     (prefix
      &rest body

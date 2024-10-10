@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: region bounds
+# key: rb
+# --
+(region-beginning) (region-end)

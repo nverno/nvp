@@ -62,13 +62,11 @@ Ignore buttons like `native-comp-function',`primitive-function'."
       (goto-char pos)
       (nvp-push-button 'same-window))))
 
-;; -------------------------------------------------------------------
+
 ;;; Words
 
-;; Define word at point, with single prefix prompt for word,
-;; with two prefix use lookup-word.
 ;;;###autoload
-(defun nvp-help-word-dwim (arg)
+(defun nvp-lookup-word-dwim (arg)
   "Lookup word in dictionary/thesaurus, dispatch on prefix:
 (nil)	 search for word
 \\[universal-argument]	 pattern search
@@ -89,11 +87,11 @@ Ignore buttons like `native-comp-function',`primitive-function'."
     (browse-url (format "http://en.wiktionary.org/wiki/%s"
                         (save-excursion (car (ispell-get-word nil)))))))
 
-;; -------------------------------------------------------------------
+
 ;;; Bindings
 
 ;;;###autoload
-(defun nvp-help-describe-bindings (prefix-string &optional buffer)
+(defun nvp-describe-bindings (prefix-string &optional buffer)
   "Describe bindings beginning with PREFIX-PREFIX in BUFFER."
   (interactive (list (read-string "Bindings prefix (kbd-style): ")
                      (and current-prefix-arg
@@ -111,11 +109,11 @@ Ignore buttons like `native-comp-function',`primitive-function'."
     (buffer-string)))
 
 ;;;###autoload
-(defun nvp-help-describe-keymap (keymap)
+(defun nvp-describe-keymap (keymap)
   "Describe KEYMAP readably."
   (interactive (list (nvp-read-keymap)))
   (setq keymap (or (ignore-errors (indirect-variable keymap)) keymap))
-  (help-setup-xref (list #'nvp-help-describe-keymap keymap)
+  (help-setup-xref (list #'nvp-describe-keymap keymap)
                    (called-interactively-p 'interactive))
   (let ((name (symbol-name keymap))
         (doc (documentation-property keymap 'variable-documentation)))
@@ -181,13 +179,14 @@ Ignore buttons like `native-comp-function',`primitive-function'."
     ("p" "Hyperpolyglot" hyperpolyglot)]]
   [["Words/Numbers"
     ("N" "Number" nvp-number-menu :transient transient--do-replace)
-    ("w" "Word dwim" nvp-help-word-dwim)
-    
+    ("w" "Word dwim" nvp-lookup-word-dwim)
+
     ("S" "Spellcheck" ispell)]
    ["Fonts/Faces/Charsets"
     ("F" "Font menu" nvp-font-menu :transient transient--do-replace)]
    ["Libs"
-    (":sp" "Smartparens Cheatsheet" sp-cheat-sheet :if-non-nil smartparens-mode)]])
+    (":sp" "Smartparens Cheatsheet" sp-cheat-sheet
+     :if-non-nil smartparens-mode)]])
 
 ;;; Optional Menus
 (when (fboundp 'dash-docs-activate-docset)

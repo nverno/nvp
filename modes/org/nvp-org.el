@@ -81,7 +81,8 @@ Elsewhere, or with prefix >= 4, prompt for DIRECTORY to search within."
     (save-excursion
       (org-back-to-heading t)
       (end-of-line)
-      (unless (looking-back "\\[[0-9]*/[0-9]*\\][ \t]*" (line-beginning-position))
+      (unless (looking-back "\\[[0-9]*/[0-9]*\\][ \t]*"
+                            (line-beginning-position))
         (delete-horizontal-space)
         (insert " [/]"))
       (org-update-checkbox-count))))

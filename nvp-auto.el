@@ -1,10 +1,5 @@
 ;;; nvp-auto.el --- some autoloads -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;
-;; Random autoloads
-;; - some movement functions
-;; - some other randoms
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
@@ -12,8 +7,12 @@
 (nvp:auto "calendar" calendar-read-date calendar-date-string)
 (nvp:auto "nvp-read" nvp-read-mode-config)
 
-;; -------------------------------------------------------------------
-;;; Install
+
+;;;###autoload
+(defun nvp-kill-emacs ()
+  (interactive)
+  (save-some-buffers 'no-ask)
+  (kill-emacs))
 
 ;;;###autoload
 (defun nvp-install-mode (mode &optional reinstall)
@@ -29,13 +28,11 @@
   "Install packages for list of MODES."
   (mapc #'nvp-install-mode modes))
 
-;; -------------------------------------------------------------------
-;;; Movement
-
 ;;;###autoload
 (defun nvp-move-next-matching-char (&optional char)
   "Jump to next matching CHAR."
-  (interactive (nvp:repeat-args (list (char-to-string (read-char "Char: " t)))))
+  (interactive
+   (nvp:repeat-args (list (char-to-string (read-char "Char: " t)))))
   (nvp:push-mark 'nvp-move-next-matching-char)
   (let ((case-fold-search t))
     (condition-case nil
@@ -70,9 +67,7 @@
   "n" #'nvp-move-forward-paragraph
   "p" #'nvp-move-backward-paragraph)
 
-
-;; -------------------------------------------------------------------
-;;; Assorted
+
 (nvp:decl thing-at-point-url-at-point web-mode)
 
 ;;;###autoload
@@ -81,7 +76,8 @@
   (interactive)
   (let* ((default (thing-at-point-url-at-point))
 	 (url (read-from-minibuffer "URL: " default)))
-    (switch-to-buffer (url-retrieve-synchronously url))
+    (switch-to-buffer
+     (url-retrieve-synchronously url))
     (rename-buffer url t)
     (cond ((search-forward "<?xml" nil t) (xml-mode))
 	  ((search-forward "<html" nil t) (web-mode)))))
@@ -111,16 +107,10 @@
     (error (user-error "Can't find header region to mark."))))
 
 ;;;###autoload
-(defun nvp-kill-emacs ()
-  (interactive)
-  (save-some-buffers 'no-ask)
-  (kill-emacs))
-
-;;;###autoload
-(defun nvp-insert-date ()
+(defun nvp-insert-date (&optional prompt)
   "Insert date string, defaulting to current date."
-  (interactive)
-  (insert (if current-prefix-arg
+  (interactive "P")
+  (insert (if prompt
               (calendar-date-string (calendar-read-date))
             (nvp-today))))
 
@@ -157,7 +147,7 @@
 ;;;###autoload
 (defun nvp-count-lines-or-region (arg)
   (interactive "P")
-  (if (or arg (region-active-p))
+  (if (or arg (use-region-p))
       (call-interactively #'count-words-region)
     (call-interactively #'count-lines-page)))
 

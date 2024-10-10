@@ -9,6 +9,7 @@
 (nvp:decls :p (sp paredit sort) :v (sort-fold-case) :f (paredit-kill))
 
 (autoload 'sp-wrap-with-pair "smartparens")
+(autoload 'help--symbol-completion-table "help-fns")
 
 
 ;;;###autoload
@@ -23,6 +24,47 @@ Defaults to `defun' at point."
        (?p "[p]aragraph" 'paragraph))
      :pulse t (list beg end)))
   (indent-region beg end))
+
+(defun nvp-read--tap (&optional prompt)
+  (completing-read
+    (or prompt "Thing: ") #'help--symbol-completion-table
+    (lambda (v)
+      (and (symbolp v)
+           (or (get v 'bounds-of-thing-at-point)
+               (get v 'thing-at-point))))))
+
+(defvar nvp-copy-dwim-things '(symbol sexp list defun paragraph)
+  "Default list of things to copy at point.")
+
+;;;###autoload
+(defun nvp-copy-dwim (&optional beg end prompt things)
+  "Copy region from BEG to END or first thing found to the `kill-ring'.
+Things are tried in order from THINGS or `nvp-copy-dwim-things'.
+With prefix, or when nothing found, PROMPT for thing.
+If prefix < 4, start from abs(prefix)'th index in dwim things."
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (let ((arg (and current-prefix-arg
+                     (prefix-numeric-value current-prefix-arg))))
+       (list nil nil (and arg (>= arg 4))
+             (if (and arg (< arg 4))
+                 (nthcdr (abs arg) nvp-copy-dwim-things)
+               nvp-copy-dwim-things)))))
+  (if (and beg end)
+      (copy-region-as-kill beg end)
+    (let ((bnds (--some (bounds-of-thing-at-point it)
+                        (if prompt
+                            (cons (intern (nvp-read--tap)) things)
+                          (or things nvp-copy-dwim-things)))))
+      (when bnds
+        (nvp-indicate-pulse-region-or-line
+         (car bnds) (cdr bnds)))
+      (if (or bnds
+              (null prompt))
+          (funcall 'nvp-copy-dwim (car bnds) (cdr bnds) (not bnds) things)
+        (user-error "Nothing found for '%S'" things)))))
+
 
 (defvar duplicate-line-final-position)
 
@@ -40,26 +82,26 @@ ARG of 0 is treated the same as -1, duplicating the previous line."
                             (nvp:line-empty-p))
                   (forward-line -1))
                 (move-to-column col))))
-   (cond ((<= (prefix-numeric-value arg) 0)
-          (let ((insert-pos (line-beginning-position))
-                (start (progn (goto-nonempty-line (if (zerop arg) -1 arg))
-                              (line-beginning-position 2)))
-                (duplicate-line-final-position -1))
-            (duplicate-dwim nil)
-            (let* ((col (current-column))
-                   (end (line-beginning-position 2))
-                   (text (buffer-substring start end)))
-              (delete-region start end)
-              (goto-char insert-pos)
-              (insert text)
-              (forward-line -1)
-              (move-to-column col))))
-         ((or (use-region-p)
-              (bound-and-true-p rectangle-mark-mode)
-              (not (nvp:line-empty-p)))
-          (duplicate-dwim arg))
-         (t (goto-nonempty-line)
-            (duplicate-dwim arg)))))
+    (cond ((<= (prefix-numeric-value arg) 0)
+           (let ((insert-pos (line-beginning-position))
+                 (start (progn (goto-nonempty-line (if (zerop arg) -1 arg))
+                               (line-beginning-position 2)))
+                 (duplicate-line-final-position -1))
+             (duplicate-dwim nil)
+             (let* ((col (current-column))
+                    (end (line-beginning-position 2))
+                    (text (buffer-substring start end)))
+               (delete-region start end)
+               (goto-char insert-pos)
+               (insert text)
+               (forward-line -1)
+               (move-to-column col))))
+          ((or (use-region-p)
+               (bound-and-true-p rectangle-mark-mode)
+               (not (nvp:line-empty-p)))
+           (duplicate-dwim arg))
+          (t (goto-nonempty-line)
+             (duplicate-dwim arg)))))
 
 
 ;;; Sorting

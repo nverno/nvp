@@ -13,14 +13,14 @@
 (autoload 'trace-tree-disable "trace-tree")
 (autoload 'tracing-update-mode-line "tracing")
 
+(defvar nvp-trace-group-alist nil
+  "Store trace groups.")
+
 ;;; Tracing Mode
 (declare-function tracing-update-mode-line "tracing")
 (defvar tracing--batch nil)
 (when (fboundp 'tracing-enable)
   (tracing-enable))
-
-
-;;; Menu
 
 ;;;###autoload
 (defun nvp-toggle-inhibit-trace (&optional on)
@@ -35,14 +35,16 @@
        (buffer-live-p (get-buffer trace-buffer))))
 
 (defun nvp-trace-load-saved (&optional clobber)
+  "Load group configurations.
+With prefix, CLOBBER current `nvp-trace-group-alist'."
   (interactive "P")
   (let ((group-alist nvp-trace-group-alist))
     (load-file (expand-file-name "trace-data.el" nvp/data))
+    (message "Loaded %d groups" (length nvp-trace-group-alist))
     (unless clobber
       (setq nvp-trace-group-alist
             (seq-uniq (append group-alist nvp-trace-group-alist)
-                      #'equal)))
-    (message "Loaded %d groups" (length nvp-trace-group-alist))))
+                      #'equal)))))
 
 ;;;###autoload(autoload 'nvp-trace-menu "nvp-trace" nil t)
 (transient-define-prefix nvp-trace-menu ()
@@ -77,8 +79,6 @@
     (defmacro cl-defmacro)
     (defsubst cl-defsubst)))
 
-(defvar nvp-trace-group-alist nil)
-
 (defun nvp-trace--read-groups (prompt &optional force-read untrace)
   "Load trace data and PROMPT for group to trace."
   (unless (bound-and-true-p nvp-trace-group-alist)
@@ -97,8 +97,9 @@
 ;;;###autoload
 (defun nvp-trace-group (groups &optional foreground)
   "Trace GROUPS of functions defined in `nvp-trace-group-alist'."
-  (interactive (list (nvp-trace--read-groups "Trace: " current-prefix-arg)
-                     current-prefix-arg))
+  (interactive
+   (list (nvp-trace--read-groups "Trace: " current-prefix-arg)
+         current-prefix-arg))
   (let ((funcs (if (listp (car groups))
                    (apply #'append (--map (cdr it) groups))
                  (cdr groups)))
@@ -114,9 +115,9 @@
   "Untrace functions in FUNCS."
   (interactive
    (list (apply #'append
-                (--map
-                 (cdr it)
-                 (nvp-trace--read-groups "Untrace: " current-prefix-arg t)))))
+                (--map (cdr it)
+                       (nvp-trace--read-groups
+                        "Untrace: " current-prefix-arg t)))))
   (let ((tracing--batch t))
     (dolist (fn funcs)
       (untrace-function fn))

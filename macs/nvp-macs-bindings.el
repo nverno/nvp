@@ -30,7 +30,7 @@
       ("C-l"   . recenter-top-bottom)
       ("SPC"   . forward-page)
       ("M-SPC" . backward-page)))
-  
+
   (defvar nvp--bindings-search
     '(("o" . occur)
       ;; XXX: don't override ???
@@ -217,7 +217,7 @@ If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
         (if use '(use-local-map lmap)
           `(set (make-local-variable ',keymap) lmap)))))
 
-;;; Create Keymaps 
+;;; Create Keymaps
 
 (defmacro nvp:create-keymaps (leader &rest maps)
   "Create submaps from LEADER map. Optionally give name of keymap for
@@ -310,11 +310,11 @@ Optional:
 
 Transient:
   REPEAT   A list of functions which will be advised to enter transient KEYMAP
-            after they are called. 
+            after they are called.
            If REPEAT is t or \\='all, all functions in bindings will repeat.
   INDICATE Make cursor change color when transient bindings are active.
            Only effective with REPEAT.
-  WRAP     A list of functions to create wrappers around. 
+  WRAP     A list of functions to create wrappers around.
            If t, create wrappers for all REPEAT commands,
            or, if \\='all, create wrappers for all commands.
            Note: only wrapped commands will be advised.
@@ -358,7 +358,7 @@ Buggy:
                           ',modemap ,(or feature `',(intern mapname))))))
          ,(when local           ; will change bindings for all mode buffers
             `(make-local-variable ',modemap))
-         ,(when buff-local      ; HACK: but how to modify 
+         ,(when buff-local      ; HACK: but how to modify
             `(with-no-warnings  ; something like `company-active-map'
                (make-variable-buffer-local ',modemap)))
 
@@ -389,7 +389,7 @@ Buggy:
                             collect
                             `(nvp:wrap-command ,fn ,wrap-pref))))))
          ,(when repeat
-            ;; 
+            ;;
             (when (memq repeat '(all t))
               (setq repeat (--map (cdr it) bindings)))
             (setq repeat (cl-remove-duplicates repeat))

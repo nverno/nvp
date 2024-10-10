@@ -17,7 +17,8 @@
 
 (defun nvp-mark-at-point (&optional point)
   (or point (setq point (point)))
-  (and (nvp:ppss 'cmt nil point)
+  (and (or (derived-mode-p 'text-mode)
+           (nvp:ppss 'cmt nil point))
        (get-text-property (point) 'file-place)))
 
 (defun nvp-mark--collect-marks ()
@@ -100,9 +101,9 @@
         (xref-find-definitions-other-window ident))
     (user-error "Not at mark.")))
 
-;; insert `point-marker' in kill-ring
 ;;;###autoload
 (defun nvp-mark-kill-point ()
+  "Insert `point-marker' in kill-ring."
   (interactive)
   (kill-new (format "%s" (point-marker))))
 

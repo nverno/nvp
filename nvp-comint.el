@@ -34,7 +34,8 @@ Applies `nvp-comint-history-output-filter' to history entries.
 Binds `comint-input-ring-separator' so local values have effect."
   (cond ((or (null comint-input-ring-file-name)
 	     (equal comint-input-ring-file-name "")
-	     (null comint-input-ring) (ring-empty-p comint-input-ring))
+	     (null comint-input-ring)
+             (ring-empty-p comint-input-ring))
 	 nil)
 	((not (file-writable-p comint-input-ring-file-name))
 	 (message "Cannot write history file %s" comint-input-ring-file-name))
@@ -42,7 +43,8 @@ Binds `comint-input-ring-separator' so local values have effect."
 	 (let* ((history-buf (get-buffer-create " *Temp Input History*"))
 		(ring comint-input-ring)
 		(ring-file comint-input-ring-file-name)
-                ;; Note(08/05/24): comint should bind this for use in history-buf
+                ;; Note(08/05/24): comint should bind this for use in
+                ;; history-buf
                 (ring-separator comint-input-ring-separator)
                 (filter nvp-comint-history-output-filter)
 		(index (ring-length ring)))
@@ -118,11 +120,10 @@ When add entries, duplicate entries are also removed."
   "Save history in `comint-input-ring'.
 With prefix, prompt for FILENAME.
 When RELOAD is non-nil, reload merged history."
-  (interactive
-   (list (null current-prefix-arg) nil
-         (and current-prefix-arg
-              (derived-mode-p 'comint-mode)
-              (nvp-comint--read-history-filename))))
+  (interactive (list (null current-prefix-arg) nil
+                     (and current-prefix-arg
+                          (derived-mode-p 'comint-mode)
+                          (nvp-comint--read-history-filename))))
   (let ((proc (get-buffer-process (current-buffer)))
         (comint-input-ring-file-name
          (or filename comint-input-ring-file-name)))

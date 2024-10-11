@@ -21,7 +21,9 @@
       ;; XXX: conditionally use `nvp-move-forward-defun' ??
       ;;      could check `beginning-of-defun-function', `defun-prompt-regexp'
       ;;      and if mode is a lisp derivative maybe
+      ("["     . nvp-move-forward-paragraph)
       ("M-N"   . nvp-move-forward-paragraph)
+      ("]"     . nvp-move-backward-paragraph)
       ("M-P"   . nvp-move-backward-paragraph)))
 
   (defvar nvp--bindings-fast-move

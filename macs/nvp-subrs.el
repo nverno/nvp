@@ -157,7 +157,7 @@ If INC, shift bits by INC instead of 1."
            collect (butlast (nthcdr i lst) (- (length lst) (+ n i)))))
 
 (defsubst nvp:flatten-to-alist (tree)
-  "Flatten tree, but leave cons cells. 
+  "Flatten tree, but leave cons cells.
 The result may also contain atoms that where head of subalists."
   (declare (pure t) (side-effect-free t))
   ;; if ELEM is a list and has a null cdr return its car, otherwise return it
@@ -294,21 +294,25 @@ or (\\='a #\\='b) => \\='(a b)."
    (directory-file-name
     (or (and path (expand-file-name path)) default-directory))))
 
-;; Locate first name in NAMES using `locate-dominating-file' starting from FILE.
+;;
 ;; I think projectile has a number of functions doing this type of stuff
-(defsubst nvp:locate-first-dominating (file names)
+(defsubst nvp:locate-first-dominating (file names &optional regexp)
+  "Return first filename matching name in NAMES using FILE as starting point.
+If the name is an absolute path, only check for an exact match.
+When REGEXP, match filenames by regexps instead of globs."
   (setq names (nvp:as-list names))
   (cl-loop for name in names
+           with res = nil
            if (and (file-name-absolute-p name)
                    (file-exists-p name))
            return name
-           as res = (locate-dominating-file
-                     file (lambda (d)
-                            (let ((default-directory d))
-                              (file-expand-wildcards name nil t))))
+           do (locate-dominating-file
+               file (lambda (d)
+                      (let ((default-directory d))
+                        (setq res (car (file-expand-wildcards
+                                        name t regexp))))))
            when res
-           return (let ((default-directory res))
-                    (car (file-expand-wildcards name t t)))))
+           return res))
 
 ;; this must exist somewhere I'm forgetting...
 (defsubst nvp:directories (&optional root fullname pattern)

@@ -11,13 +11,11 @@
 (autoload 'find-library-name "find-func")
 (autoload 'nvp-elisp-matching-forms "nvp-elisp" )
 (autoload 'trace-tree-disable "trace-tree")
-(autoload 'tracing-update-mode-line "tracing")
 
 (defvar nvp-trace-group-alist nil
   "Store trace groups.")
 
 ;;; Tracing Mode
-(declare-function tracing-update-mode-line "tracing")
 (defvar tracing--batch nil)
 (when (fboundp 'tracing-enable)
   (tracing-enable))
@@ -28,7 +26,7 @@
   (setq inhibit-trace (or on (not inhibit-trace)))
   (message "Tracing %s" (if inhibit-trace "inhibited" "enabled"))
   (and (bound-and-true-p tracing-minor-mode)
-       (tracing-update-mode-line)))
+       (force-mode-line-update t)))
 
 (defun nvp-trace-active-p ()
   (and (boundp 'trace-buffer)

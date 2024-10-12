@@ -30,7 +30,7 @@
 
 (defvar nvp-default-notes-files
   '("[Nn]otes.org" "[Tt][Oo][Dd][Oo].org" "[Rr][Ee][Aa][Dd][Mm][Ee].org"
-    "~/scratch/tmp.org")
+    "~/scratch/notes.org")
   "Default notes files.")
 
 (defvar nvp-default-org-file "gtd.org"

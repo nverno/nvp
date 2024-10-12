@@ -200,7 +200,9 @@ Optionally, search LISP-ONLY files (no C sources)."
   "Jump to nearest notes/todo file matching NAMES according to ACTION.
 With extra prefix, prompt for file name."
   (interactive "P")
-  (nvp-with-display-actions action
+  (nvp-with-display-actions action :action-order '(other same frame)
+    :other-action '((nvp-display-buffer-in-left-side-window)
+                    (dedicated . t))
     (and current-prefix-arg
          (setq names (read-file-name "Match notes name: " nil nil nil names)))
     (let* ((file (nvp:find-notes-file names))
@@ -279,7 +281,9 @@ directories under current directory."
 Use `nvp-local-notes-file' unless there is an extra prefix.
 Otherwise prompt, with default `nvp-default-org-file'."
   (interactive "P")
-  (nvp-with-display-actions action
+  (nvp-with-display-actions action :action-order '(other same frame)
+    :other-action '((nvp-display-buffer-in-left-side-window)
+                    (dedicated . t))
     (let* ((org-file (nvp-read--org-file nil org-file current-prefix-arg))
            (open-p (get-file-buffer org-file)))
       (or org-file (ignore-errors "Missing org file"))

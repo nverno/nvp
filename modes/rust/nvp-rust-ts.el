@@ -60,12 +60,17 @@
     '((field_expression
        value: (identifier) @font-lock-receiver-face)
       ;; XXX(08/14/24): patch for missing labels
-      (label
-       "'" @font-lock-operator-face
-       (identifier) @font-lock-constant-face)
+      (label "'" @font-lock-operator-face
+             (identifier) @font-lock-constant-face)
+      ;; XXX(10/12/24): fix Some(Reverse(idx)) - `rust-ts-mode--fontify-pattern'
+      ;; captures all (identifier) nodes, which include types in, eg.
+      ;; code: while let Some(&Reverse(x)) = ...
+      ;; node: (tuple_struct_pattern type: (identifier) ( (identifier) ))
+      (reference_pattern
+       (tuple_struct_pattern type: (identifier) @font-lock-type-face))
       ;; Type definitions
       (struct_item name: (type_identifier) @font-lock-type-def-face)))
-   
+
    ;; FIXME(4/26/24): messes up attributes
    (treesit-font-lock-rules
     :language 'rust

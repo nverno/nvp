@@ -9,9 +9,9 @@
 (require 'company-elisp) ; XXX(3/5/24): `company-elisp' removed from `company-mode'
 (nvp:decls)
 
+
 (with-eval-after-load 'nvp-repl
   (require 'nvp-ielm))
-
 
 ;; Modified from company-elisp to incorporate more things
 ;; used to determine abbrev expansion / toggling
@@ -44,19 +44,29 @@
 ;;; Things at point
 
 (defun nvp-elisp-bounds-of-symbol-at-point ()
-  "Skip over prefix '@'."
+  "In code, ignore \"@\" prefix from symbols.
+In strings, ignore doc comment prefixes/suffixes that confuse xref."
   (when-let ((bnds (bounds-of-thing-at-point 'symbol)))
-    (while (and (< (car bnds) (cdr bnds))
-                (memq (char-after (car bnds)) '(?@)))
-      (setf (car bnds) (1+ (car bnds))))
+    (let* ((str-p (nvp:ppss 'str))
+           (pre (if str-p '(?{ ?<) '(?@)))
+           (post (if str-p '(?} ?>))))
+      (while (and (< (car bnds) (cdr bnds))
+                  (memq (char-after (car bnds)) pre))
+        (setf (car bnds) (1+ (car bnds))))
+      (while (and post
+                  (< (car bnds) (cdr bnds))
+                  (memq (char-before (cdr bnds)) post))
+        (setf (cdr bnds) (1- (cdr bnds)))))
     bnds))
-(put 'elisp-symbol 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-symbol-at-point)
+(put 'elisp-symbol 'bounds-of-thing-at-point
+     'nvp-elisp-bounds-of-symbol-at-point)
 
 (defun nvp-elisp-symbol-at-point ()
   "For emacs-lisp `thing-at-point-provider-alist'."
   (thing-at-point 'elisp-symbol))
 
 (cl-defmethod xref-backend-identifier-at-point ((_backend (eql 'elisp)))
+  "Override default to use \\='elisp-symbol."
   (--when-let (bounds-of-thing-at-point 'elisp-symbol)
     (let ((ident (buffer-substring-no-properties (car it) (cdr it))))
       ;; Use a property to transport the location of the identifier.
@@ -220,7 +230,7 @@ Interactively, the prefix argument means:
 
    Prefix     ACTION
    ------     ------
-   `-1'       \\='replace   Replace sexp with untruncated results. 
+   `-1'       \\='replace   Replace sexp with untruncated results.
    `-', 4     \\='pp        Pretty print result in temp buffer.
     <-1, >=16 \\='insert    Insert result at point or after evaluated sexp.
     *         \\='eval      Eval and echo result with `eval-last-sexp'.
@@ -263,7 +273,7 @@ When ACTION is \\='insert, when:
            (if region-p
                (eval-region beg end (and insert-p (current-buffer)))
              ;; Note(09/16/24): in lisp interaction, could use
-             ;; (pp-to-string (eval expr lexical-binding)) 
+             ;; (pp-to-string (eval expr lexical-binding))
              (eval-last-sexp (or (and (null insert-p) '-)
                                  (and no-truncate 0) t)))
            (and insert-p newline (terpri))))

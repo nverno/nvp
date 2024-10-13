@@ -1,0 +1,21 @@
+# -*- mode: snippet -*-
+# name: Min heap
+# key: d_heap
+# --
+type ${1:IntHeap} []${2:int}
+
+func (h $1) Less(i, j int) bool          { return h[i] ${3:<} h[j] }
+func (h $1) Len() int                    { return len(h) }
+func (h $1) Swap(i, j int)               { h[i], h[j] = h[j], h[i] }
+func (h *$1) Push(x /*any*/ interface{}) { *h = append(*h, x.($2)) }
+func (h *$1) Top() $2                   { return (*h)[0] }
+func (h *$1) Pop() /*any*/ interface{} {
+	old := *h
+	n := len(old)
+	res := old[n-1]
+	*h = old[0 : n-1]
+	return res
+}
+
+${0:pq := &$1\{\}
+heap.Init(pq)}

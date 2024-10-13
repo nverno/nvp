@@ -165,8 +165,11 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
     (:filter-return (rules) "no-indent-strings")
   ;; XXX(5/27/24): send patch - '((parent-is "template_string") no-indent) isnt
   ;; enough, eg. const tst = ` abc\ def`
-  (push '((parent-is "string_fragment") no-indent) (cdar rules))
-  rules)
+  `((,(caar rules)
+     ((parent-is "string_fragment") no-indent)
+     ((parent-is "required_parameter")
+      parent-bol typescript-ts-mode-indent-offset)
+     ,@(cdar rules))))
 
 ;;; Add missing features once
 (nvp:treesit-add-rules typescript-ts-mode

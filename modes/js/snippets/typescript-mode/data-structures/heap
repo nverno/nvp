@@ -1,54 +1,54 @@
 # -*- mode: snippet -*-
-# name: heap
+# name: Heap (default min-heap)
 # key: d_heap
 # --
 class Heap<T> {
   private heap: T[];
+  /// CMP returns > 0 if B should come before A in heap
   private cmp: (a: T, b: T) => number;
-  // Default comparator for max-heap
-  constructor(comparator: (a: T, b: T) => number = (a, b) => a > b ? 1 : a < b ? -1 : 0) {
+  // Default is min-heap. Max-heap: (a, b) => b - a
+  constructor(comparator: (a: T, b: T) => number =
+    (a, b) => a > b ? 1 : a < b ? -1 : 0) {
     this.cmp = comparator;
     this.heap = [null];
   }
-  #_isRoot = (i: number): boolean => i == 1;
   #_getLeftIndex = (i: number): number => 2 * i;
   #_getRightIndex = (i: number): number => 2 * i + 1;
   #_getParentIndex = (i: number): number => Math.floor(i / 2);
-  #_getLeftNode = (i: number): T => this.heap[this.#_getLeftIndex(i)];
-  #_getRightNode = (i: number): T => this.heap[this.#_getRightIndex(i)];
-  #_getParentNode = (i: number): T => this.heap[this.#_getParentIndex(i)];
   #_swap = (i: number, j: number): void => {
     [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
   };
   #_heapifyUp = () => {
-    let i = this.heap.length - 1;
-    while (!this.#_isRoot(i) && this.cmp(this.#_getParentNode(i), this.heap[i]) < 0) {
-      this.#_swap(this.#_getParentIndex(i), i);
-      i = this.#_getParentIndex(i);
+    for (let i = this.size(), p = this.#_getParentIndex(i);
+      p !== 0 && this.cmp(this.heap[i], this.heap[p]) < 0;
+      i = p, p = this.#_getParentIndex(i)) {
+      this.#_swap(p, i);
     }
   };
   #_heapifyDown = () => {
     if (this.heap.length < 3) return;
-    let i = 1, left = this.#_getLeftNode(i), right = this.#_getRightNode(i);
-    let cmpr, cmpl;
-    while (
-      left !== undefined && (
-        (cmpl = this.cmp(this.heap[i], left)) < 0 ||
-        (cmpr = this.cmp(this.heap[i], right)) < 0)
+    let i = 1, l = this.#_getLeftIndex(i), r = l + 1,
+      left = this.heap[l], right = this.heap[r],
+      cmpl: number;
+    while (left !== undefined &&
+      ((cmpl = this.cmp(left, this.heap[i])) < 0) ||
+      (right !== undefined && this.cmp(right, this.heap[i])) < 0
     ) {
-      if (cmpl < 0 && (right === undefined || this.cmp(left, right) > 0)) {
-        this.#_swap(this.#_getLeftIndex(i), i);
-        i = this.#_getLeftIndex(i);
+      if (cmpl < 0 && (right === undefined || this.cmp(left, right) < 0)) {
+        this.#_swap(i, l);
+        i = l;
       } else {
-        this.#_swap(this.#_getRightIndex(i), i);
-        i = this.#_getRightIndex(i);
+        this.#_swap(i, r);
+        i = r;
       }
-      left = this.#_getLeftNode(i);
-      right = this.#_getRightNode(i);
+      l = this.#_getLeftIndex(i);
+      r = l + 1;
+      left = this.heap[l];
+      right = this.heap[r];
     }
   };
   size = (): number => this.heap.length - 1;
-  top = () => this.size() > 1 ? this.heap[1] : null;
+  top = () => this.size() > 0 ? this.heap[1] : null;
   isEmpty = (): boolean => this.size() <= 0;
   getData = (): T[] => this.heap.slice(1);
   push = (node: T): void => {

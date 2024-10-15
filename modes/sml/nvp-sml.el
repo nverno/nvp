@@ -14,8 +14,8 @@
   :modes (sml-mode sml-ts-mode)
   (nvp-newline-dwim--comment syntax arg " * "))
 
-(defvar nvp-sml-source-repo "https://smlnj-gforge.cs.uchicago.edu/svn")
-(defvar nvp-sml-source-dir (expand-file-name "sml" (getenv "DEVEL")))
+(defvar nvp-sml-source-repo "https://github.com/smlnj/smlnj")
+(defvar nvp-sml-source-dir (expand-file-name "smlnj" (getenv "DEVEL")))
 
 (defun nvp-sml-tag-source (source-repo source-dir &optional tag-file no-continue)
   "Clone and/or update source and tag it."

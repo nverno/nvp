@@ -32,9 +32,9 @@
   :send-region #'sml-prog-proc-send-region
   :send-buffer #'sml-prog-proc-send-buffer
   :send-file #'sml-prog-proc-load-file
-  :cd-cmd "OS.FileSys.chDir \"%s\""     ; #'sml-prog-proc-chdir
-  :load-cmd "use \"%s\""
-  :pwd-cmd nil)
+  :cd-cmd "OS.FileSys.chDir \"%s\";"     ; #'sml-prog-proc-chdir
+  :pwd-cmd "OS.FileSys.getDir();"
+  :load-cmd "use \"%s\";")
 
 (provide 'nvp-sml-repl)
 ;; Local Variables:

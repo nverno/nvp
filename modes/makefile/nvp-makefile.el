@@ -17,7 +17,6 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)                          ; `nvp-block-face'
 (require 'make-mode)
 (nvp:req 'nvp-makefile 'subrs)
 (nvp:auto "align" align-region)

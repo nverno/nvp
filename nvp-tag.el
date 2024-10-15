@@ -20,8 +20,11 @@
   (interactive)
   (let ((xref-backend-functions '(etags--xref-backend))
         (xref-prompt-for-identifier nil)
-        (thing (xref-backend-identifier-at-point 'etags)))
-    (xref-find-definitions thing)))
+        ;; (thing (xref-backend-identifier-at-point 'etags))
+        )
+    (call-interactively #'xref-find-definitions)
+    ;; (xref-find-definitions thing)
+    ))
 
 ;; -------------------------------------------------------------------
 ;;; Ctags

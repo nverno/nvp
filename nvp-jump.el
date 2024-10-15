@@ -278,13 +278,14 @@ directories under current directory."
 ;;;###autoload
 (defun nvp-jump-to-org (&optional action org-file)
   "Jump to org file.
-Use `nvp-local-notes-file' unless there is an extra prefix.
+Use `nvp-local-notes-file' with an extra prefix.
 Otherwise prompt, with default `nvp-default-org-file'."
   (interactive "P")
   (nvp-with-display-actions action :action-order '(other same frame)
     :other-action '((nvp-display-buffer-in-left-side-window)
                     (dedicated . t))
-    (let* ((org-file (nvp-read--org-file nil org-file current-prefix-arg))
+    (let* ((org-file (nvp-read--org-file
+                      nil org-file (not current-prefix-arg)))
            (open-p (get-file-buffer org-file)))
       (or org-file (ignore-errors "Missing org file"))
       (pop-to-buffer (find-file-noselect org-file))

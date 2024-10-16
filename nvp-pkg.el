@@ -74,7 +74,7 @@ With prefix arguments:
                     (cons
                      nvp/thirdparty
                      (cl-remove-if-not
-                      #'file-directory-p 
+                      #'file-directory-p
                       (append (directory-files nvp/site t "^[^.]")
                               (directory-files nvp/pkgs t "^[^.]")
                               (directory-files nvp/modes t "^[^.]"))))))
@@ -103,41 +103,49 @@ ARG and FORCE are passed to `byte-recompile-directory'."
   (nvp-pkg-subdir-compile pkg-dir arg force))
 
 ;;;###autoload
-(defun nvp-pkg-directory-dwim (dir &optional arg)
+(defun nvp-pkg-directory-dwim (dir &optional compile-all recompile-all prompt)
   "Guess the autoload target and whether to compile.
-R=recompile; F=force; P=if prefix;
 
+Default compile behaviour: (R=recompile; F=force recompile; P=prompt)
 1. `nvp/config'(R),                  -> nvp/auto
 2. `site-lisp'/*/*' (F)              -> nvp/auto-site
 3. './*[autoloads?|loaddefs].el' (P) -> first match
-5. default (P)                       -> prompt"
-  (interactive (list (read-directory-name "Directory: ") current-prefix-arg))
+5. default (P)                       -> prompt
+
+When with prefix 0 or \\=', or COMPILE-ALL, compile all \".el\" files.
+With prefix [+-]4, or if RECOMPILE-ALL, recompile all \".el\" files that have
+associated \".elc\".
+With prefix \\='-, <0, or >=16, prompt before compiling files.
+Otherwise, compile only \".el\" files with out-of-date \".elc\"."
+  (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))
+                      (arg (abs raw)))
+                 (list (read-directory-name "Directory: ")
+                       (= arg 0)
+                       (= arg 4)
+                       (or (eq '- current-prefix-arg)
+                           (< raw 0)
+                           (>= arg 16)))))
   (setq dir (expand-file-name dir))
   (let* ((autoload-file
-          (pcase dir
-            ((pred
-              (string-prefix-p
-               (rx-to-string `(or ,nvp/config ,nvp/lisp/src))
-               dir))
-             nvp/auto)
-            ((pred (and (string-match-p
-                         (rx-to-string
-                          `(seq bol (or (regexp ,nvp/site) (regexp ,nvp/thirdparty))))
-                         dir)
-                        t))
-             nvp/auto-site)
-            (_ (or (car-safe (directory-files dir t "autoloads?.el"))
-                   (car-safe (directory-files dir t "loaddefs?.el"))
-                   'none))))
-         (do-compile
-          (and (or (string= autoload-file nvp/auto-site) arg)
-               0)))
-
+          (cond ((--some (string-prefix-p it dir)
+                         (list nvp/config nvp/lisp/src))
+                 nvp/auto)
+                ((--some (string-prefix-p it dir)
+                         (list nvp/site nvp/thirdparty))
+                 nvp/auto-site)
+                (t (or (car-safe (directory-files dir t "autoloads?.el"))
+                       (car-safe (directory-files dir t "loaddefs?.el"))
+                       'none))))
+         (compile-all (and (or compile-all
+                               (equal autoload-file nvp/auto-site))
+                           0))
+         (arg (or compile-all prompt)))
     (pcase autoload-file
       (`none (nvp-pkg-update-dir
-              (read-from-minibuffer "Autoloads name: ") dir nil arg))
+              (read-from-minibuffer "Autoloads name: ")
+              dir arg recompile-all))
       (_ (loaddefs-generate dir autoload-file)
-         (nvp-pkg-subdir-compile dir do-compile nil)))))
+         (nvp-pkg-subdir-compile dir arg recompile-all)))))
 
 (provide 'nvp-pkg)
 ;; Local Variables:

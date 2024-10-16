@@ -347,20 +347,29 @@ well."
   "C-c C-k" #'nvp-repl-clear
   "C-c C-h" #'nvp-repl-keymap)
 
+(declare-function nvp-repl-source-keymap "")
+(defvar-keymap nvp-repl-source-keymap
+  :prefix 'nvp-repl-source-keymap
+  "b"   #'nvp-repl-send-buffer
+  "c"   #'nvp-repl-send-dwim
+  "C-k" #'nvp-repl-clear
+  "C-q" #'nvp-repl-interrupt-or-kill-process
+  "d"   #'nvp-repl-send-defun
+  "e"   #'nvp-repl-eval-sexp
+  "f"   #'nvp-repl-send-file
+  "h"   #'nvp-repl-help
+  "l"   #'nvp-repl-send-line
+  ":"   #'nvp-repl-eval-string
+  "r"   #'nvp-repl-send-region
+  "s"   #'nvp-repl-send-sexp
+  "x"   #'nvp-repl-send-defun-or-region)
+
 (defvar-keymap nvp-repl-source-minor-mode-map
   :doc "Keymap in repl source buffers."
-  "C-c C-c"   #'nvp-repl-send-dwim
-  "C-c C-s"   #'nvp-repl-send-sexp
-  "C-c C-b"   #'nvp-repl-send-buffer
-  "C-c C-l"   #'nvp-repl-send-line
-  "C-c C-r"   #'nvp-repl-send-region
-  "C-c C-f"   #'nvp-repl-send-file
-  "C-M-x"     #'nvp-repl-send-defun-or-region
-  "C-c C-e"   #'nvp-repl-send-sexp
+  "C-c C-h" #'nvp-repl-source-keymap
   "C-c C-x e" #'nvp-repl-eval-sexp
   "C-c C-x s" #'nvp-repl-eval-string
-  "C-c C-k"   #'nvp-repl-clear
-  "C-c C-q"   #'nvp-repl-interrupt-or-kill-process)
+  "C-c C-k"   #'nvp-repl-clear)
 
 ;;;###autoload
 (define-minor-mode nvp-repl-minor-mode
@@ -775,7 +784,8 @@ If INSERT, insert STR into REPL (adds to comint history)."
 (defun nvp-repl-interrupt-or-kill-process (kill)
   "Interrupt repl process or KILL with prefix."
   (interactive "P")
-  (when-let ((proc (ignore-errors (nvp-repl--process))))
+  (when-let* ((nvp-repl--current (nvp-repl-current))
+              (proc (ignore-errors (nvp-repl--process))))
     (if kill
         (kill-process proc)
       (interrupt-process proc))))

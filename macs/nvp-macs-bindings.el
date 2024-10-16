@@ -6,6 +6,13 @@
 
 ;;; Keys
 
+(defsubst nvp--move-defun-p ()
+  "Non-nil if should move by defun."
+  (or defun-prompt-regexp
+      beginning-of-defun-function
+      (and (derived-mode-p 'prog-mode)
+           open-paren-in-column-0-is-defun-start)))
+
 (eval-and-compile
   (defvar nvp--bindings-hjkl
     '(("j" . next-line) ;; `next-line' often advised, unlike `forward-line'
@@ -14,17 +21,24 @@
       ("l" . forward-char)))
 
   (defvar nvp--bindings-move
-    '(("M-n"   . nil) ;; use global defs.
+    `(("M-n"   . nil) ;; use global defs.
       ("M-p"   . nil)
       ("M-s-n" . nil)
       ("M-s-p" . nil)
-      ;; XXX: conditionally use `nvp-move-forward-defun' ??
-      ;;      could check `beginning-of-defun-function', `defun-prompt-regexp'
-      ;;      and if mode is a lisp derivative maybe
+      ("M-N" nvp-move-forward-defun :filter
+       ,(byte-compile
+         (lambda (&optional _)
+           (if (nvp--move-defun-p)
+               'nvp-move-forward-defun
+             'nvp-move-forward-paragraph))))
+      ("M-P" nvp-move-previous-defun :filter
+       ,(byte-compile
+         (lambda (&optional _)
+           (if (nvp--move-defun-p)
+               'nvp-move-previous-defun
+             'nvp-move-backward-paragraph))))
       ("["     . nvp-move-forward-paragraph)
-      ("M-N"   . nvp-move-forward-paragraph)
-      ("]"     . nvp-move-backward-paragraph)
-      ("M-P"   . nvp-move-backward-paragraph)))
+      ("]"     . nvp-move-backward-paragraph)))
 
   (defvar nvp--bindings-fast-move
     '(("n"     . scroll-up-command)
@@ -43,8 +57,10 @@
     (append
      nvp--bindings-hjkl
      nvp--bindings-move
-     '(("e"     . end-of-defun)
-       ("a"     . beginning-of-defun)
+     '(("e"     . end-of-line)
+       ("E"     . end-of-defun)
+       ("a"     . beginning-of-line)
+       ("A"     . beginning-of-defun)
        ("c"     . nvp-avy-goto-char-alt)
        ("/"     . isearch-forward)
        ("?"     . isearch-backward)

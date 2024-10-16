@@ -6,13 +6,6 @@
 
 ;;; Keys
 
-(defsubst nvp--move-defun-p ()
-  "Non-nil if should move by defun."
-  (or defun-prompt-regexp
-      beginning-of-defun-function
-      (and (derived-mode-p 'prog-mode)
-           open-paren-in-column-0-is-defun-start)))
-
 (eval-and-compile
   (defvar nvp--bindings-hjkl
     '(("j" . next-line) ;; `next-line' often advised, unlike `forward-line'
@@ -25,18 +18,8 @@
       ("M-p"   . nil)
       ("M-s-n" . nil)
       ("M-s-p" . nil)
-      ("M-N" nvp-move-forward-defun :filter
-       ,(byte-compile
-         (lambda (&optional _)
-           (if (nvp--move-defun-p)
-               'nvp-move-forward-defun
-             'nvp-move-forward-paragraph))))
-      ("M-P" nvp-move-previous-defun :filter
-       ,(byte-compile
-         (lambda (&optional _)
-           (if (nvp--move-defun-p)
-               'nvp-move-previous-defun
-             'nvp-move-backward-paragraph))))
+      ("M-N" nvp-move-forward-defun :filter nvp--move-forward-defun-or-para)
+      ("M-P" nvp-move-previous-defun :filter nvp--move-backward-defun-or-para)
       ("["     . nvp-move-forward-paragraph)
       ("]"     . nvp-move-backward-paragraph)))
 

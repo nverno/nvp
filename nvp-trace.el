@@ -95,14 +95,12 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
 ;;;###autoload
 (defun nvp-trace-group (groups &optional foreground)
   "Trace GROUPS of functions defined in `nvp-trace-group-alist'."
-  (interactive
-   (list (nvp-trace--read-groups "Trace: " current-prefix-arg)
-         current-prefix-arg))
+  (interactive (list (nvp-trace--read-groups "Trace: " current-prefix-arg)
+                     current-prefix-arg))
   (let ((funcs (if (listp (car groups))
                    (apply #'append (--map (cdr it) groups))
                  (cdr groups)))
-        (trace-fn (if foreground
-                      #'trace-function-foreground
+        (trace-fn (if foreground #'trace-function-foreground
                     #'trace-function-background))
         (tracing--batch t))
     (dolist (fn funcs)
@@ -119,7 +117,7 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
   (let ((tracing--batch t))
     (dolist (fn funcs)
       (untrace-function fn))
-    (tracing-add funcs nil t)))
+    (tracing-add funcs t)))
 
 ;;;###autoload
 (defun nvp-trace-library (library &optional macros filter)
@@ -127,21 +125,21 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
 With \\[universal-argument], trace macros and substs as well.
 With \\[universal-argument] \\[universal-argument] prompt for filter."
   (interactive (list (read-library-name) current-prefix-arg
-                     (nvp:prefix '>=16 (read-string "Filter: "))))
-  (require 'nvp-elisp)                  ;gather all defun-like forms
+                     (when (>= (prefix-numeric-value current-prefix-arg) 16)
+                       (read-string "Filter forms by: "))))
+  (require 'nvp-elisp)                  ; gather all defun-like forms
   (let* ((def-forms (if macros (flatten-tree nvp-trace-defun-forms)
                       (assoc 'defun nvp-trace-defun-forms)))
-         (forms
-          (with-temp-buffer
-            (insert-file-contents (find-library-name library))
-            (with-syntax-table emacs-lisp-mode-syntax-table
-              (nvp-elisp-matching-forms def-forms))))
+         (forms (with-temp-buffer
+                  (insert-file-contents (find-library-name library))
+                  (with-syntax-table emacs-lisp-mode-syntax-table
+                    (nvp-elisp-matching-forms def-forms))))
          (tracing--batch t))
     (when filter
       (setq forms (--filter (string-match-p filter (symbol-name it)) forms)))
     (dolist (fn forms)
       (trace-function-background fn))
-    (tracing-add forms 'library)
+    (tracing-add forms)
     (message "tracing %d funs from %s: %S" (length forms) library forms)))
 
 ;;;###autoload
@@ -162,7 +160,7 @@ With \\[universal-argument] \\[universal-argument] prompt for filter."
           (tracing--batch t))
       (dolist (fn forms)
         (trace-function-background fn))
-      (tracing-add forms 'hooks)
+      (tracing-add forms)
       (message "tracing hooks: %S" forms))))
 
 

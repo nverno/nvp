@@ -231,23 +231,24 @@ Interactively, the prefix argument means:
    Prefix     ACTION
    ------     ------
    `-1'       \\='replace   Replace sexp with untruncated results.
-   `-', 4     \\='pp        Pretty print result in temp buffer.
-    <-1, >=16 \\='insert    Insert result at point or after evaluated sexp.
+   `-',-4,4   \\='pp        Pretty print result in temp buffer.
+    <-4,>=16  \\='insert    Insert result at point or after evaluated sexp.
     *         \\='eval      Eval and echo result with `eval-last-sexp'.
 
-   `-', <1               No truncation of results.
+   `-',<=0                  No truncation of results.
 
 When ACTION is \\='insert, when:
   NEWLINE                 Insert newline before results.
   Interactive or AND-GO   Move point to end of evaluated sexp."
   (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))
                       (arg (abs raw))
-                      (action (cond ((eq -1 raw) 'replace)
-                                    ((>= arg 16) 'pp)
-                                    (t (if (memq raw '(- -4 4))
-                                           'insert
-                                         'eval))))
-                      (no-truncate (or (eq '- raw) (<= raw 0)))
+                      (action (cond ((or (eq '- current-prefix-arg)
+                                         (eq 4 arg))
+                                     'pp)
+                                    ((eq -1 raw) 'replace)
+                                    ((or (< raw -1) (>= arg 16)) 'insert)
+                                    (t 'eval)))
+                      (no-truncate (<= raw 0))
                       (and-go (eq 'insert action)))
                  (list no-truncate action nil and-go)))
   (let* ((print-level (unless no-truncate eval-expression-print-level))
@@ -271,7 +272,7 @@ When ACTION is \\='insert, when:
                 (standard-output (if insert-p (current-buffer) t)))
            (and insert-p newline (terpri))
            (if region-p
-               (eval-region beg end (and insert-p (current-buffer)))
+               (eval-region beg end (if insert-p (current-buffer) t))
              ;; Note(09/16/24): in lisp interaction, could use
              ;; (pp-to-string (eval expr lexical-binding))
              (eval-last-sexp (or (and (null insert-p) '-)

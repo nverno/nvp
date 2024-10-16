@@ -70,6 +70,7 @@
     (markdown-mode               . nvp-link-markdown)
     (dired-mode                  . nvp-link-dired)
     (completion-list-mode        . nvp-link-completion-list)
+    (recentf-dialog-mode         . nvp-link-widget)
     (noman-mode                  . nvp-link-noman))
   "Mapping of `major-mode' to ace-link actions.")
 
@@ -333,7 +334,7 @@ With \\[universal-argument] call in next visible window."
   :collector (--map (cdr it) (nvp-link--completion-collect))
   (and it (choose-completion it)))
 
-;;; Noman
+;;* Noman
 (nvp:define-link nvp-link-noman
   :address t
   :collector (nvp-link--overlay-collect 'action 'noman--follow-link)
@@ -341,10 +342,12 @@ With \\[universal-argument] call in next visible window."
     (goto-char (1+ it))
     (call-interactively #'push-button)))
 
-;;; Widgets
+;;* Widgets
 (nvp:decl widget-apply-action)
 (nvp:define-link nvp-link-widget
   :collector (nvp-link--widget-collect)
+  ;; Avoid overlays that might have super high priority
+  :style 'pre
   (when (number-or-marker-p it)
     (goto-char it)
     (--when-let (get-char-property it 'button)

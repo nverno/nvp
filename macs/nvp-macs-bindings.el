@@ -14,40 +14,77 @@
       ("l" . forward-char)))
 
   (defvar nvp--bindings-move
-    `(("M-n"   . nil) ;; use global defs.
+    `(("<"     . beginning-of-buffer)
+      (">"     . end-of-buffer)
+      ("["     . nvp-move-forward-paragraph)
+      ("]"     . nvp-move-backward-paragraph)
+      ("M-n"   . nil)                   ; use global defs.
+      ("M-N" nvp-move-forward-defun
+       :filter nvp--move-forward-defun-or-para)
       ("M-p"   . nil)
+      ("M-P" nvp-move-previous-defun
+       :filter nvp--move-backward-defun-or-para)
       ("M-s-n" . nil)
       ("M-s-p" . nil)
-      ("M-N" nvp-move-forward-defun :filter nvp--move-forward-defun-or-para)
-      ("M-P" nvp-move-previous-defun :filter nvp--move-backward-defun-or-para)
-      ("["     . nvp-move-forward-paragraph)
-      ("]"     . nvp-move-backward-paragraph)))
+      ("z"     . repeat)))
 
   (defvar nvp--bindings-fast-move
-    '(("n"     . scroll-up-command)
+    '(("C-l"   . recenter-top-bottom)
+      ("M-SPC" . backward-page)
+      ("n"     . scroll-up-command)
       ("p"     . scroll-down-command)
-      ("C-l"   . recenter-top-bottom)
-      ("SPC"   . forward-page)
-      ("M-SPC" . backward-page)))
+      ("SPC"   . forward-page)))
+
+  (defvar nvp--bindings-syntax
+    '(("a" beginning-of-line
+       :filter (lambda (_) (if (bolp) 'avy-goto-char-in-line 'beginning-of-line)))
+      ("A" . beginning-of-defun)
+      ("b" . backward-sexp)
+      ("d" . down-list)
+      ("e" . end-of-line)               ; `forward-sentence'
+      ("E" . end-of-defun)
+      ("f" . forward-sexp)
+      ("u" . backward-up-list)
+      ("(" . backward-list)
+      (")" . forward-list)))
 
   (defvar nvp--bindings-search
-    '(("o" . occur)
-      ;; XXX: don't override ???
+    ;; XXX: don't override ???))
+    '(("," . nvp-xref-go)
+      ("." . xref-find-definitions)
       ("/" . isearch-forward)
-      ("?" . isearch-backward)))
+      ("?" . isearch-backward)
+      ("c" . avy-goto-word-1)
+      ("C" . nvp-avy-goto-word-1)
+      ("g" . consult-imenu)
+      ("o" . occur)))
+
+  (defvar nvp--bindings-edit
+    '((";" . nvp-iedit-dwim)
+      ("_" . nvp-keyboard-quit-dwim)
+      ("`" . keyboard-quit)
+      ("m" . er/expand-region)
+      ("w" . nvp-copy-dwim)))
+
+  (defvar nvp--bindings-elisp
+    '((":" . nvp-eval-expression)
+      ;; "V" `nvp-view-elisp-eval-sexp'
+      ("v" nvp-elisp-eval-sexp-dwim :filter
+       (lambda (_)
+         (and (derived-mode-p 'emacs-lisp-mode)
+              (or (and (fboundp 'nvp-view-elisp-eval-sexp)
+                       'nvp-view-elisp-eval-sexp)
+                  'nvp-elisp-eval-sexp-dwim))))))
 
   (defvar nvp--bindings-view
     (append
      nvp--bindings-hjkl
      nvp--bindings-move
-     '(("e"     . end-of-line)
-       ("E"     . end-of-defun)
-       ("a"     . beginning-of-line)
-       ("A"     . beginning-of-defun)
-       ("c"     . nvp-avy-goto-char-alt)
-       ("/"     . isearch-forward)
-       ("?"     . isearch-backward)
-       ("SPC"   . scroll-up)
+     nvp--bindings-syntax
+     nvp--bindings-elisp
+     nvp--bindings-edit
+     nvp--bindings-search
+     '(("SPC"   . scroll-up)
        ("i"     . scroll-down)
        ("S-SPC" . scroll-down))))
 
@@ -211,7 +248,7 @@ If BUFFER is non-nil, use/set BINDINGS locally in BUFFER."
   `(let ((lmap (make-sparse-keymap)))
      (set-keymap-parent lmap ,(or keymap '(current-local-map)))
      ,@(cl-loop for (k . b) in bindings
-          collect `(nvp:bind lmap ,k ,b))
+                collect `(nvp:bind lmap ,k ,b))
      ,(if buffer `(with-current-buffer ,buffer
                     ,(if use '(use-local-map lmap)
                        `(set (make-local-variable ',keymap) lmap)))
@@ -226,12 +263,12 @@ menu entry."
   (declare (indent defun))
   `(progn
      ,@(cl-loop for (key . args) in maps
-          as map = (pop args)
-          as name = (and args (pop args))
-          collect `(progn
-                     (eval-when-compile (declare-function ,map "")) ;compiler
-                     (define-prefix-command ',map nil ,name)
-                     (nvp:bind ,leader ,key ',map)))))
+                as map = (pop args)
+                as name = (and args (pop args))
+                collect `(progn
+                           (eval-when-compile (declare-function ,map "")) ;compiler
+                           (define-prefix-command ',map nil ,name)
+                           (nvp:bind ,leader ,key ',map)))))
 
 
 ;; -------------------------------------------------------------------
@@ -329,10 +366,10 @@ Buggy:
   (if (listp keymap)
       (macroexp-progn
        (cl-loop for km in keymap
-          if (listp km)
-          collect `(nvp:bindings ,(car km) ',(cdr km) ,@bindings)
-          else
-          collect `(nvp:bindings ,km ,feature ,@bindings)))
+                if (listp km)
+                collect `(nvp:bindings ,(car km) ',(cdr km) ,@bindings)
+                else
+                collect `(nvp:bindings ,km ,feature ,@bindings)))
     (while (keywordp (car bindings))
       (setq bindings (cdr (cdr bindings))))
     (when with
@@ -425,7 +462,7 @@ Buggy:
                                     ))))
          ,(when parent
             `(,@(if (or create prefix (equal feature :now)) '(progn)
-                 `(with-eval-after-load ,(or feature `',(intern mapname))))
+                  `(with-eval-after-load ,(or feature `',(intern mapname))))
               (set-keymap-parent ,modemap ,parent)))))))
 
 (provide 'nvp-macs-bindings)

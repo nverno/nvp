@@ -374,7 +374,7 @@ well."
 ;;;###autoload
 (define-minor-mode nvp-repl-minor-mode
   "Minor mode active in Repl buffers."
-  :lighter " Ɍepl"
+  :lighter " #"
   ;; (when (derived-mode-p 'comint-mode)
   ;;   (add-hook 'comint-output-filter-functions
   ;;             #'comint-postoutput-scroll-to-bottom nil t))
@@ -391,7 +391,7 @@ well."
 ;;;###autoload
 (define-minor-mode nvp-repl-source-minor-mode
   "Minor mode active in source buffers associated with a Repl."
-  :lighter " Ɍepl")
+  :lighter " #")
 
 (defun nvp-repl--source-minor-mode-on ()
   (unless (or (memq major-mode

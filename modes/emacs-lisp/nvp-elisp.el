@@ -219,13 +219,18 @@ Forms are read from :file if present in ARGS, otherwise current buffer file."
            (user-error (error-message-string err)))))
 
 (defun nvp-elisp-eval-print-last-sexp (arg)
-  "Wrap `eval-print-last-sexp' so `C-u' ARG prints without truncation."
-  (interactive
-   (list (if (equal '(4) current-prefix-arg) 0 current-prefix-arg)))
-  (funcall-interactively #'eval-print-last-sexp arg))
+  "Call `eval-print-last-sexp'.
+Prefix \\[universal-argument] ARG also prints without truncation."
+  (interactive "P")
+  (funcall-interactively #'eval-print-last-sexp (if (equal '(4) arg) 0 arg)))
 
-(defun nvp-elisp-eval-sexp-dwim (&optional no-truncate action newline and-go)
-  "Eval active region, top-level sexp containing point, or the previous sexp.
+;;;###autoload
+(defun nvp-elisp-eval-sexp-dwim (&optional no-truncate action newline and-go
+                                           beg end)
+  "Eval either a region or sexp.
+
+When non-nil use the region from BEG to END. Otherwise, eval either the
+active region, the top-level sexp containing point, or the previous sexp.
 Interactively, the prefix argument means:
 
    Prefix     ACTION
@@ -255,15 +260,18 @@ When ACTION is \\='insert, when:
          (print-length (unless no-truncate eval-expression-print-length))
          (debug-on-error eval-expression-debug-on-error)
          (region-p (region-active-p))
-         (beg (if region-p (region-beginning)
-                ;; Beginning of outermost sexp
-                (car-safe (nth 9 (parse-partial-sexp (point-min) (point))))))
-         (end (and region-p (region-end))))
+         (beg (or beg (if region-p (region-beginning)
+                        ;; Beginning of outermost sexp
+                        (car-safe
+                         (nth 9 (parse-partial-sexp (point-min) (point)))))))
+         (end (or end (if region-p (region-end)
+                        (save-excursion
+                          (goto-char beg)
+                          (forward-sexp)
+                          (point))))))
     (save-excursion
-      (when (and beg (null region-p))
-        (goto-char beg)
-        (forward-sexp)
-        (setq end (point))
+      (when (and beg end (not region-p))
+        (goto-char end)
         (nvp-indicate-pulse-region-or-line beg end))
       (pcase-exhaustive action
         ('replace (funcall-interactively #'nvp-elisp-eval-and-replace beg end))
@@ -291,6 +299,42 @@ When ACTION is \\='insert, when:
       (setq end (point)))
     (when (and and-go end (not (eq 'replace action)))
       (goto-char end))))
+
+
+(defvar-local nvp-elisp-eval-thing 'sexp
+  "Default thing to eval with `nvp-elisp-eval-print-dwim'.
+This is symbol understood by `bounds-of-thing-at-point'.")
+
+;;;###autoload
+(defun nvp-elisp-eval-print-dwim (&optional thing no-truncate pp)
+  "Eval THING at point without debug enabled and print results.
+
+THING defaults to `nvp-elisp-eval-thing'.
+When NO-TRUNCATE, results aren't truncated at all.
+When PP, pretty print results in temp buffer.
+
+Prefix handling:
+  \\='- or <=0       NO-TRUNCATE
+  \\='-,-4,4         PP
+  \\='-,<=-16,>=16   Prompt for THING"
+  (interactive
+   (let* ((raw (prefix-numeric-value current-prefix-arg))
+          (arg (abs raw))
+          (dash-p (eq '- current-prefix-arg)))
+     (list (and (or dash-p (>= arg 16))
+                (nvp-read-thing-at-point
+                 nil nvp-elisp-eval-thing))
+           (or dash-p (<= raw 0))
+           (or dash-p (eq arg 4)))))
+  (or thing (setq thing nvp-elisp-eval-thing))
+  (let ((bnds (bounds-of-thing-at-point thing)))
+    (unless bnds
+      (user-error "No region for \"%S\"" thing))
+    (let ((eval-expression-debug-on-error nil))
+      (nvp-elisp-eval-sexp-dwim
+       no-truncate (if pp 'pp 'eval)
+       nil nil (car bnds) (cdr bnds)))))
+
 
 (defun nvp-lisp-interaction-eval-dwim (prefix)
   "Eval sexp dwim in `lisp-interaction-mode'.

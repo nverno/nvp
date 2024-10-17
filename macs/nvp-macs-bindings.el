@@ -75,14 +75,11 @@
 
   (defvar nvp--bindings-elisp
     '((":" . nvp-eval-expression)
-      ;; "V" `nvp-view-elisp-eval-sexp'
-      ("v" nvp-elisp-eval-sexp-dwim :filter
+      ;; "V" `nvp-elisp-eval-sexp-dwim'
+      ("v" nvp-elisp-eval-print-dwim :filter
        (lambda (_)
-         (when (derived-mode-p
-                'emacs-lisp-mode 'apropos-mode 'help-mode)
-           (or (and (fboundp 'nvp-view-elisp-eval-sexp)
-                    'nvp-view-elisp-eval-sexp)
-               'nvp-elisp-eval-sexp-dwim))))))
+         (and (derived-mode-p 'emacs-lisp-mode 'apropos-mode 'help-mode)
+              'nvp-elisp-eval-print-dwim)))))
 
   (defvar nvp--bindings-view
     (append

@@ -84,6 +84,13 @@
 ;; -------------------------------------------------------------------
 ;;; Strings
 
+(defsubst nvp:upcase-p (c)
+  "Return non-nil if C is uppercase."
+  (declare (pure t) (side-effect-free t))
+  (and (stringp c)
+       (setq c (aref c 0)))
+  (and (>= c ?A) (<= c ?Z)))
+
 (defsubst nvp:common-prefix (prefix candidates)
   (--> (try-completion prefix candidates)
        (or (and (eq t it) it) it)))

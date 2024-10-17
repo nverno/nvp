@@ -105,7 +105,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     ace-link-fallback-function
     align-to-tab-stop
     bug-reference-bug-regexp bug-reference-url-format
-    company-candidates company-selection
+    company-candidates company-selection company-backends
     compilation-error-face compilation-warning-face compilation-info-face
     compilation-error-regexp-alist compilation-error-regexp-alist-alist
     crm-separator

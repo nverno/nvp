@@ -239,8 +239,9 @@ With prefix, read CHAR to wrap with."
     (setq char (char-to-string (read-char "Wrap with: ")))
     (nvp:prefix-shift -1))
   (let* ((pair (cons char char))
-         (sp-pair-list (if prompt (cons pair sp-pair-list)
-                         (append sp-pair-list (list pair)))))
+         (sp-pair-list
+          (if prompt (cons pair sp-pair-list)
+            (append sp-pair-list (list pair)))))
     (with-demoted-errors "Error in nvp-wrap-with-last-char: %S"
       (sp-wrap-with-pair char))))
 
@@ -301,40 +302,54 @@ With prefix KEEP-FOCUS, keep hiding regardless."
 
 (defvar-keymap nvp-repeat-case-map
   :repeat t
-  "u" #'nvp-toggle-case-dwim)
+  ;; When repeating, "u"/"U" will switch between capitalizing or
+  ;; downcase/upcasing
+  "u" #'nvp-toggle-case-dwim
+  "U" #'nvp-toggle-case-dwim)
 
 ;;;###autoload
-(defun nvp-toggle-case-dwim (arg &optional capitalize beg end last-action)
+(defun nvp-toggle-case-dwim (arg &optional capitalize beg end last-action
+                                 _last-char)
   "Change case of ARG words at point.
-With prefix 0, CAPITILIZE them.
+With prefix 0, or when last input char was lowercase, CAPITILIZE them.
 When region is active or BEG and END are non-nil, operate on region.
 LAST-ACTION is used during repeats."
   (interactive
-   (nvp:repeat-args
-     (let ((arg (abs (prefix-numeric-value current-prefix-arg))))
-       `(,(max 1 arg)
-         ,(or (zerop arg) (eq last-command 'capitalize-dwim))
-         ,@(if (use-region-p) `(,(region-beginning) ,(region-end))
-             '(nil nil))
-         nil))))
-  (let* ((region-p (or (and beg end) (use-region-p)))
-         (action (cond ((and last-action region-p)
-                        (if (eq last-action 'downcase) 'upcase 'downcase))
-                       (last-action last-action)
-                       (capitalize 'capitalize)
-                       (t (save-mark-and-excursion
-                            (and region-p (goto-char beg))
-                            (skip-syntax-forward "<\" _'.\(")
-                            (let (case-fold-search)
-                              (if (looking-at-p "\\s-*[A-Z0-9_:./(){}-]+\\b")
-                                  'downcase
-                                'upcase))))))
+   (let ((c (nvp:input 'lcs)))
+     (nvp:repeat-args
+       :repeat-p (lambda () (eq c (nth 5 (get this-command 'repeat-args))))
+       (let ((arg (abs (prefix-numeric-value current-prefix-arg))))
+         `(,(max 1 arg)
+           ,(or (not (nvp:upcase-p c)))
+           ,@(if (use-region-p)
+                 (list (region-beginning) (region-end))
+               (list nil nil))
+           nil ,c)))))
+  (let* ((region-p (or (and beg end)
+                       (use-region-p)))
+         (action
+          (cond ((and last-action region-p)
+                 (if (eq last-action 'downcase) 'upcase 'downcase))
+                (last-action last-action)
+                (capitalize 'capitalize)
+                (t (save-mark-and-excursion
+                     (when region-p
+                       (goto-char beg))
+                     (skip-syntax-forward "<\" _'.\(")
+                     (let (case-fold-search)
+                       (if (looking-at-p "\\s-*[A-Z0-9_:./(){}-]+\\b")
+                           'downcase
+                         'upcase))))))
          (fn (intern (format "%S-%s" action (if region-p "region" "word"))))
          (this-args (get this-command 'repeat-args)))
-    (setf (nthcdr (1- (length this-args)) this-args) (list action))
-    (when (and beg end (not (region-active-p)))
+    (setf (nthcdr (1- (length this-args)) this-args)
+          (list action))
+    (when (and beg end
+               (not (region-active-p)))
       (nvp-indicate-pulse-region-or-line beg end))
-    (apply fn (if region-p (list beg end) (list arg)))))
+    (apply fn (if region-p
+                  (list beg end)
+                (list arg)))))
 
 (provide 'nvp-edit)
 ;; local Variables:

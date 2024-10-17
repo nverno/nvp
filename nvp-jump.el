@@ -1,10 +1,5 @@
 ;;; nvp-jump.el --- jumping places -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; Jump to locations prefix args:
-;; 0) Default jump to other window
-;; 1) With single prefix, jump same window
-;; 2) With double prefix, prompt or something else
-;; 3) Default action => dired location
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp:req 'nvp-read 'subrs)
@@ -20,7 +15,8 @@
 ;; to reading libraries/obarray
 ;; Might consider blacklisting `locate-library' -- although having the
 ;; ido-vertical support there is dope
-(nvp:maybe-enable 'ido-ubiquitous-mode 'ido-completing-read+)
+(when (bound-and-true-p nvp-enable-ido)
+  (nvp:maybe-enable 'ido-ubiquitous-mode 'ido-completing-read+))
 
 
 (defun nvp-display-init-template (template &optional mode start end &rest bindings)

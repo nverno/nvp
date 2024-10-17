@@ -1,22 +1,32 @@
 ;;; nvp-read.el --- Completing read for thangs -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;
-;; various completing read functions
-;;; TODO:
-;; - read w/ popup help: see `register-read-with-preview'
-;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
 (nvp:req 'nvp-read 'subrs)
 (nvp:decls :f (help--symbol-completion-table function-called-at-point)
            :v (ido-exit ido-fallback ido-text))
-(nvp:auto "eldoc" 'eldoc-minibuffer-message)
-(nvp:auto "s" 's-chop-suffixes)
+(autoload 'eldoc-minibuffer-message "eldoc")
+(autoload 's-chop-suffixes "s")
+(autoload 'help--symbol-completion-table "help-fns")
 
 ;; minibuffer histories
 (defvar nvp-read-config-history ())
 (defvar nvp-read-keymap-history ())
+(defvar nvp-read-thing-at-point-history ())
+
+;;;###autoload
+(defun nvp-read-thing-at-point (&optional prompt default)
+  "Read a symbol interpretable by `thing-at-point'."
+  (intern
+   (completing-read
+     (or prompt "Thing: ") #'help--symbol-completion-table
+     (lambda (v)
+       (and (symbolp v)
+            (--some (get v it)
+                    '( bounds-of-thing-at-point thing-at-point
+                       end-op beginning-op))))
+     t nil nvp-read-thing-at-point-history default)))
 
 ;; vertico needs metadata according to conventions in minibuffer.el,
 ;; .ie 'boundaries and 'category
@@ -75,7 +85,7 @@
 
 
 ;; -------------------------------------------------------------------
-;;; Elisp objects 
+;;; Elisp objects
 
 (defun nvp-read-keymap ()
   "Read keymap from `obarray'."
@@ -143,7 +153,7 @@ Filter by PREDICATE if non-nil."
 
 
 ;; -------------------------------------------------------------------
-;;; Modes 
+;;; Modes
 
 (defvar nvp-mode-cache)
 

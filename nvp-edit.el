@@ -9,7 +9,7 @@
 (nvp:decls :p (sp paredit sort) :v (sort-fold-case) :f (paredit-kill))
 
 (autoload 'sp-wrap-with-pair "smartparens")
-(autoload 'help--symbol-completion-table "help-fns")
+(autoload 'nvp-read-thing-at-point "nvp-read")
 
 
 ;;;###autoload
@@ -24,14 +24,6 @@ Defaults to `defun' at point."
        (?p "[p]aragraph" 'paragraph))
      :pulse t (list beg end)))
   (indent-region beg end))
-
-(defun nvp-read--tap (&optional prompt)
-  (completing-read
-    (or prompt "Thing: ") #'help--symbol-completion-table
-    (lambda (v)
-      (and (symbolp v)
-           (or (get v 'bounds-of-thing-at-point)
-               (get v 'thing-at-point))))))
 
 (defvar nvp-copy-dwim-things '(symbol sexp list defun paragraph)
   "Default list of things to copy at point.")
@@ -55,7 +47,7 @@ If prefix < 4, start from abs(prefix)'th index in dwim things."
       (copy-region-as-kill beg end)
     (let ((bnds (--some (bounds-of-thing-at-point it)
                         (if prompt
-                            (cons (intern (nvp-read--tap)) things)
+                            (cons (nvp-read-thing-at-point) things)
                           (or things nvp-copy-dwim-things)))))
       (when bnds
         (nvp-indicate-pulse-region-or-line

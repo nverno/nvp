@@ -36,28 +36,35 @@
       ("SPC"   . forward-page)))
 
   (defvar nvp--bindings-syntax
-    '(("a" beginning-of-line
-       :filter (lambda (_) (if (bolp) 'avy-goto-char-in-line 'beginning-of-line)))
-      ("A" . beginning-of-defun)
-      ("b" . backward-sexp)
+    '(("(" . backward-list)
+      (")" . forward-list)
+      ("a" beginning-of-defun)
+      ("A" . beginning-of-line)
+      ("b" . backward-word)
+      ("B" . backward-sexp)
       ("d" . down-list)
-      ("e" . end-of-line)               ; `forward-sentence'
-      ("E" . end-of-defun)
-      ("f" . forward-sexp)
-      ("u" . backward-up-list)
-      ("(" . backward-list)
-      (")" . forward-list)))
+      ("e" . end-of-defun)
+      ("E" . end-of-line)
+      ("f" . forward-word)
+      ("F" . forward-sexp)
+      ("u" . backward-up-list)))
 
   (defvar nvp--bindings-search
-    ;; XXX: don't override ???))
-    '(("," . nvp-xref-go)
-      ("." . xref-find-definitions)
-      ("/" . isearch-forward)
+    '(("/" . isearch-forward)
       ("?" . isearch-backward)
       ("c" . avy-goto-word-1)
       ("C" . nvp-avy-goto-word-1-alt)
-      ("g" . consult-imenu)
+      ("g" . avy-goto-line)
+      ("I" . consult-imenu)
+      ("L" . nvp-goto-link)
       ("o" . occur)))
+
+  (defvar nvp--bindings-mark
+    '(("," . pop-to-mark-command)
+      ("." . set-mark-command)
+      ("@" . point-to-register)
+      ("r" . register-to-point)
+      ("x" . exchange-point-and-mark)))
 
   (defvar nvp--bindings-edit
     '((";" . nvp-iedit-dwim)
@@ -71,10 +78,11 @@
       ;; "V" `nvp-view-elisp-eval-sexp'
       ("v" nvp-elisp-eval-sexp-dwim :filter
        (lambda (_)
-         (and (derived-mode-p 'emacs-lisp-mode)
-              (or (and (fboundp 'nvp-view-elisp-eval-sexp)
-                       'nvp-view-elisp-eval-sexp)
-                  'nvp-elisp-eval-sexp-dwim))))))
+         (when (derived-mode-p
+                'emacs-lisp-mode 'apropos-mode 'help-mode)
+           (or (and (fboundp 'nvp-view-elisp-eval-sexp)
+                    'nvp-view-elisp-eval-sexp)
+               'nvp-elisp-eval-sexp-dwim))))))
 
   (defvar nvp--bindings-view
     (append
@@ -84,6 +92,7 @@
      nvp--bindings-elisp
      nvp--bindings-edit
      nvp--bindings-search
+     nvp--bindings-mark
      '(("SPC"   . scroll-up)
        ("i"     . scroll-down)
        ("S-SPC" . scroll-down))))

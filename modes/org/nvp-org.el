@@ -54,7 +54,7 @@ Elsewhere, or with prefix >= 4, prompt for DIRECTORY to search within."
       (error (and pushed (pop-mark))
              (error (error-message-string err))))))
 
-(nvp:def-keymap nvp-repeat-org-move
+(defvar-keymap nvp-repeat-org-move
   :repeat (:enter (nvp-org-forward-element org-backward-element))
   "TAB" #'org-cycle
   "n"   #'nvp-org-forward-element

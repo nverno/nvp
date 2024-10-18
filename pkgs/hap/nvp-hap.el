@@ -34,44 +34,25 @@
 (require 'pos-tip)
 (require 'company)
 (require 'compile)                      ; compilation faces
-(nvp:decls :v (info-lookup-other-window-flag) :f (nvp-hap-treesit-local-active-p))
+(nvp:decls :v (info-lookup-other-window-flag)
+           :f (nvp-hap-treesit-local-active-p))
 (nvp:auto "info-look" 'info-lookup-select-mode 'info-lookup-guess-default)
 
-(declare-function company-quickhelp-manual-begin "company-quickhelp")
-(defvar nvp-quickhelp-toggle-function #'company-quickhelp-manual-begin
-  "Local override function to get doc for quickhelp-toggle.")
 
-;; Character pixel width
-;; eg. (aref (aref (font-get-glyphs (font-at (point)) 65 66) 0) 4)
-(defvar nvp-char-width (frame-char-width))
+(defvar nvp-hap-verbose nil
+  "Non-nil for verbose messaging.")
 
-;;;###autoload
-(defun nvp-company-quickhelp-toggle ()
-  "Toggle pos-tip help on/off."
-  (interactive)
-  (let ((x-gtk-use-system-tooltips nil))
-    ;; tell `company-quickhelp--manual-begin' to start the timer
-    ;; An alternative is calling `company-quickhelp--cancel-timer' instead, but
-    ;; I find it buggy when toggling quickly (the popup stops working until
-    ;; moving on to another candidate - I believe breaking the `while-no-input'
-    ;; cycle, but not really sure)
-    ;; #<marker at 8895 in company-quickhelp.el>
-    (nvp:toggled-if (funcall nvp-quickhelp-toggle-function)
-      ;; :this-cmd 'nvp-sh-quickhelp-toggle
-      :this-cmd 'company-quickhelp-manual-begin
-      (x-hide-tip))))
-
-
-;;; Help-at-point
-
-(defvar nvp-hap-verbose nil "Non-nil for verbose messaging.")
-(defvar-local nvp-hap-backend nil "Active backend.")
+(defvar-local nvp-hap-backend nil
+  "Active backend.")
 
 ;; see `company--group-lighter' for idea to display current backend in mode-line
-(defvar nvp-hap-popup-max-lines 25 "Max lines to display in popup.")
+(defvar nvp-hap-popup-max-lines 25
+  "Max lines to display in popup.")
+
 (defvar nvp-hap-popup-timeout 60)
 
 (defvar nvp-hap--saved-window-configuration ())
+
 (defvar nvp-hap--electric-commands
   '(scroll-other-window scroll-other-window-down mwheel-scroll))
 

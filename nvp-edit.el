@@ -118,7 +118,7 @@ region afterward."
 With prefix sort in REVERSE."
   (interactive `(,@(nvp:tap-or-region 'bdwim 'buffer :pulse t) ,current-prefix-arg))
   (nvp:sort-region start end
-    (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
+                   (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
 
 ;;;###autoload
 (defun nvp-sort-lines-first-symbol (beg end &optional reverse no-fold)
@@ -151,12 +151,12 @@ With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
-    (sort-regexp-fields
-     reverse (concat "\\(?:"
-                     "\\s\"\\S\"*\\s\"" ; quoted
-                     "\\|\\sw+\\|\\s_+" ; word/symbol
-                     "\\)")
-     "\\(\\sw\\|\\s_\\)+" start end)))
+                   (sort-regexp-fields
+                    reverse (concat "\\(?:"
+                                    "\\s\"\\S\"*\\s\"" ; quoted
+                                    "\\|\\sw+\\|\\s_+" ; word/symbol
+                                    "\\)")
+                    "\\(\\sw\\|\\s_\\)+" start end)))
 
 ;; Note: uses 'cons/'alist at point defined in nvp-elisp
 ;;;###autoload
@@ -165,11 +165,11 @@ With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'alist :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
-    (sort-regexp-fields
-     ;; Note(09/07/24): keep trailing⬎ comments
-     reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "[^\( \t\n]+"
-     (+ start (if (eq ?\' (char-after start)) 2 1)) ; skip over outer '('
-     (1- end))))                                    ; stop before final ')'
+                   (sort-regexp-fields
+                    ;; Note(09/07/24): keep trailing⬎ comments
+                    reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "[^\( \t\n]+"
+                    (+ start (if (eq ?\' (char-after start)) 2 1)) ; skip over outer '('
+                    (1- end))))                                    ; stop before final ')'
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)
@@ -177,7 +177,7 @@ With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
-    (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
+                   (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
 
 ;;;###autoload
 (defun nvp-sort-symbols (start end &optional reverse)
@@ -185,7 +185,7 @@ With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
-    (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
+                   (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
 
 ;;;###autoload(autoload 'nvp-sort-menu "nvp-edit" nil t)
 (transient-define-prefix nvp-sort-menu ()

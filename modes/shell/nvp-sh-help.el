@@ -253,7 +253,7 @@ command.."
                  arg (equal '(16) prefix) nil (equal '(16) prefix)))))
 
 ;; -------------------------------------------------------------------
-;;; Company 
+;;; Company
 
 (require 'company)
 (require 'company-quickhelp)
@@ -276,7 +276,10 @@ command.."
                    (shell-command-to-string (format "man %s" cmd)))))
     (and (not (or (member doc-str '(nil ""))
                   (string-prefix-p "No manual entry" doc-str)))
-         (company-doc-buffer doc-str))))
+         (let ((inhibit-read-only t))
+           (with-current-buffer (company-doc-buffer doc-str)
+             (view-mode)
+             (current-buffer))))))
 
 ;; FIXME: merge into `nvp-hap'
 ;; modified `company-quickhelp--doc'
@@ -295,21 +298,24 @@ command.."
               (concat doc "\n\n[...]")
             doc))))))
 
-;; local `nvp-quickhelp-toggle-function' override
+;; Local `nvp-quickhelp-toggle-function' override
 (defun nvp-sh-quickhelp-toggle ()
-  (cl-letf (((symbol-function 'company-quickhelp--doc) #'nvp-sh-quickhelp-doc))
-    ;; flickers the screen - cant use the timer, since it seems
-    ;; that lexical binding doesn't work in that case
-    ;; (company-quickhelp-manual-begin)
-    (company-quickhelp--show)))
+  ;; Without `run-at-time', causes a redisplay of company selection list,
+  ;; which flickers the screen
+  (run-at-time nil nil
+               (lambda ()
+                 (cl-letf (((symbol-function 'company-quickhelp--doc)
+                            #'nvp-sh-quickhelp-doc))
+                   (company-quickhelp--show)))))
 
-;; show help buffer in other window from company-active-map
 (defun nvp-sh-company-show-doc-buffer ()
+  "Show help buffer in other window from `company-active-map'."
   (interactive)
   (cl-letf (((symbol-function 'company-call-backend)
              #'(lambda (_type selected)
-                 (nvp-sh-doc-buffer selected) "*company-documentation*")))
-    (company-show-doc-buffer)))
+                 (nvp-sh-doc-buffer selected)
+                 "*company-documentation*")))
+        (company-show-doc-buffer)))
 
 (provide 'nvp-sh-help)
 ;; Local Variables:

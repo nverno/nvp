@@ -52,6 +52,7 @@ return its directory name."
                  (file-name-directory ,res))))))))
 
 (defmacro nvp:read-default (default &rest body)
+  (declare (indent 1))
   (macroexp-let2 nil def default
     `(if (eq ,def :none) nil
        (or ,def ,@body))))

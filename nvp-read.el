@@ -10,7 +10,7 @@
 (autoload 's-chop-suffixes "s")
 (autoload 'help--symbol-completion-table "help-fns")
 
-;; minibuffer histories
+;; Minibuffer history lists
 (defvar nvp-read-config-history ())
 (defvar nvp-read-keymap-history ())
 (defvar nvp-read-thing-at-point-history ())
@@ -20,13 +20,24 @@
   "Read a symbol interpretable by `thing-at-point'."
   (intern
    (completing-read
-     (or prompt "Thing: ") #'help--symbol-completion-table
-     (lambda (v)
-       (and (symbolp v)
-            (--some (get v it)
-                    '( bounds-of-thing-at-point thing-at-point
-                       end-op beginning-op))))
-     t nil nvp-read-thing-at-point-history default)))
+     (format-prompt (or prompt "Thing") default)
+     (completion-table-merge
+      (completion-table-dynamic
+       (lambda (_s)
+         (seq-uniq
+          (append (--map (car it) thing-at-point-provider-alist)
+                  (--map (car it) bounds-of-thing-at-point-provider-alist))))
+       t)
+      (apply-partially
+       #'completion-table-with-predicate
+       #'help--symbol-completion-table
+       (lambda (v)
+         (and (symbolp v)
+              (--some (get v it)
+                      '(bounds-of-thing-at-point
+                        thing-at-point end-op beginning-op))))
+       t))
+     nil t nil 'nvp-read-thing-at-point-history default)))
 
 ;; vertico needs metadata according to conventions in minibuffer.el,
 ;; .ie 'boundaries and 'category
@@ -114,28 +125,25 @@
                    (and default (if (symbolp default) (symbol-name default)
                                   default))))
 
-;; #<marker at 34938 in help-fns.el.gz>
 ;;;###autoload
 (defun nvp-read-elisp-symbol (prompt &optional predicate default hist)
   "Read symbol using `help--symbol-completion-table' using PROMPT with DEFAULT.
 Filter by PREDICATE if non-nil."
-  (require 'help-fns)
   (setq default (nvp:read-default default (nvp:tap 'tap)))
-  (let ((enable-recursive-minibuffers t) val)
-    (setq prompt (nvp:prompt-default prompt default))
-    (setq val (completing-read prompt #'help--symbol-completion-table
-                               predicate t nil hist
-                               (when default
-                                 (if (symbolp default) (symbol-name default)
-                                   default))))
+  (let* ((enable-recursive-minibuffers t)
+         (val (completing-read
+                (nvp:prompt-default prompt default)
+                #'help--symbol-completion-table predicate t nil hist
+                (and default (nvp:as-string default)))))
     (unless (equal val "")
       (intern val))))
 
 ;;;###autoload
 (defun nvp-read-elisp-variable (prompt &optional default hist)
   "Lookup elisp symbol using PROMPT and optional DEFAULT."
-  (setq default (nvp:read-default default (let ((var (variable-at-point)))
-                                             (and (symbolp var) var))))
+  (setq default (nvp:read-default default
+                  (let ((var (variable-at-point)))
+                    (and (symbolp var) var))))
   (let ((orig-buffer (current-buffer)))
     (nvp-read-elisp-symbol prompt
                            (lambda (vv)

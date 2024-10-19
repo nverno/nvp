@@ -2,6 +2,7 @@
 # name: next power of 2
 # key: pow2
 # --
-if ($1 > 0 && ($1 & ($1 - 1)) != 0) {
+bit_ceil(${1:(unsigned)x})${2:
+if (1 > 0 && ($1 & ($1 - 1)) != 0) {
    $1 = (1 << (32 - __builtin_clz($1)));
-}
+}}

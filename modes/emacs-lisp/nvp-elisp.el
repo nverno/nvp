@@ -46,24 +46,21 @@
 (defun nvp-elisp-bounds-of-symbol-at-point ()
   "In code, ignore \"@\" prefix from symbols.
 In strings, ignore doc comment prefixes/suffixes that confuse xref."
-  (when-let ((bnds (bounds-of-thing-at-point 'symbol)))
-    (let* ((str-p (nvp:ppss 'str))
-           (pre (if str-p '(?{ ?<) '(?@)))
-           (post (if str-p '(?} ?>))))
-      (while (and (< (car bnds) (cdr bnds))
-                  (memq (char-after (car bnds)) pre))
-        (setf (car bnds) (1+ (car bnds))))
-      (while (and post
-                  (< (car bnds) (cdr bnds))
-                  (memq (char-before (cdr bnds)) post))
-        (setf (cdr bnds) (1- (cdr bnds)))))
-    bnds))
+  (let (bounds-of-thing-at-point-provider-alist)
+    (when-let ((bnds (bounds-of-thing-at-point 'symbol)))
+      (let* ((str-p (nvp:ppss 'str))
+             (pre (if str-p '(?{ ?<) '(?@)))
+             (post (if str-p '(?} ?>))))
+        (while (and (< (car bnds) (cdr bnds))
+                    (memq (char-after (car bnds)) pre))
+          (setf (car bnds) (1+ (car bnds))))
+        (while (and post
+                    (< (car bnds) (cdr bnds))
+                    (memq (char-before (cdr bnds)) post))
+          (setf (cdr bnds) (1- (cdr bnds)))))
+      bnds)))
 (put 'elisp-symbol 'bounds-of-thing-at-point
      'nvp-elisp-bounds-of-symbol-at-point)
-
-(defun nvp-elisp-symbol-at-point ()
-  "For emacs-lisp `thing-at-point-provider-alist'."
-  (thing-at-point 'elisp-symbol))
 
 (cl-defmethod xref-backend-identifier-at-point ((_backend (eql 'elisp)))
   "Override default to use \\='elisp-symbol."

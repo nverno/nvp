@@ -118,7 +118,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     ielm-working-buffer ielm-dynamic-return
     imenu-generic-expression imenu--index-alist imenu-auto-rescan
     local-abbrev-table
-    lsp-auto-configure
+    lsp-auto-configure lsp-language-id-configuration
     nvp-abbrev-default-function
     nvp-abbrev-prefix-chars
     nvp-abbrevd-obarray nvp-local-abbrev-file nvp-local-abbrev-table

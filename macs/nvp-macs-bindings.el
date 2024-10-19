@@ -38,12 +38,14 @@
   (defvar nvp--bindings-syntax
     '(("(" . backward-list)
       (")" . forward-list)
-      ("a" beginning-of-defun)
+      ("a" nvp-move-forward-defun
+       :filter nvp--move-forward-defun-or-para)
       ("A" . beginning-of-line)
       ("b" . backward-word)
       ("B" . backward-sexp)
       ("d" . down-list)
-      ("e" . end-of-defun)
+      ("e" nvp-move-previous-defun
+       :filter nvp--move-backward-defun-or-para)
       ("E" . end-of-line)
       ("f" . forward-word)
       ("F" . forward-sexp)
@@ -62,7 +64,7 @@
   (defvar nvp--bindings-mark
     '(("," . pop-to-mark-command)
       ("." . set-mark-command)
-      ("@" . point-to-register)
+      ("@" . consult-register-store)
       ("r" . register-to-point)
       ("x" . exchange-point-and-mark)))
 

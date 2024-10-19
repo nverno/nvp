@@ -7,22 +7,18 @@
 (nvp:decls)
 
 ;;;###autoload
-(defun nvp-jump-to-scratch (mode action &optional hookless)
+(defun nvp-jump-to-scratch (mode prefix &optional hookless)
   "Jump to scratch buffer in MODE (default current `major-mode').
 With prefix, pop other window, with double prefix, prompt for MODE."
-  (interactive
-   (let* ((prompt-p (>= (prefix-numeric-value current-prefix-arg) 16))
-          (mode (if prompt-p (intern (nvp-read-mode)) major-mode))
-          (hookless (and prompt-p (y-or-n-p "Hookless? "))))
-     (list mode current-prefix-arg hookless)))
-  ;; (nvp-window-configuration-save)
-  (let ((buf (get-buffer-create "*scratch*")))
-    (with-current-buffer buf
+  (interactive (list major-mode current-prefix-arg nil))
+  (nvp-with-display-actions prefix :action-order '(other same frame)
+    (when current-prefix-arg
+      (setq mode (intern (nvp-read-mode))
+            hookless (y-or-n-p "Hookless? ")))
+    (with-current-buffer (get-buffer-create "*scratch*")
       (setq default-directory nvp/scratch)
       (nvp-scratch-switch-modes mode (null hookless) hookless)
-      (nvp-with-display-actions action
-        :action-order '(other same frame)
-        (pop-to-buffer buf)))))
+      (pop-to-buffer (current-buffer)))))
 
 (defvar-local nvp-scratch--hookless nil
   "Non-nil when previous switch was hookless.")
@@ -31,13 +27,13 @@ With prefix, pop other window, with double prefix, prompt for MODE."
   "Switch major modes in scratch buffer.
 With prefix, dont run modes hook."
   (interactive (list (intern (nvp-read-mode)) nil current-prefix-arg))
-  (cond ((provided-mode-derived-p mode 'emacs-lisp-mode)
-         (setq mode 'lisp-interaction-mode))
-        ((provided-mode-derived-p mode 'comint-mode)
-         (setq mode 'sh-mode))
-        (t (and activate                ; default when jumping to new scratch
-                (setq mode 'lisp-interaction-mode))))
-  (let ((start comment-start))
+  (let ((mode (cond ((provided-mode-derived-p mode 'emacs-lisp-mode)
+                     'lisp-interaction-mode)
+                    ((provided-mode-derived-p mode 'comint-mode) 'sh-mode)
+                    ;; Default when jumping to new scratch
+                    (activate 'lisp-interaction-mode)
+                    (t mode)))
+        (start comment-start))
     (if hookless
         (let ((hook (intern (concat (symbol-name mode) "-hook"))))
           (kill-all-local-variables)
@@ -57,14 +53,12 @@ With prefix, dont run modes hook."
        (point-min) (point-max)))
     (setq header-line-format
           (concat (if hookless "[hookless] " "") (symbol-name mode))))
-  (or (bound-and-true-p nvp-scratch-minor-mode)
-      (nvp-scratch-minor-mode)))
+  (nvp-scratch-minor-mode 1))
 
 (defun nvp-scratch-kill-buffer ()
   "Kill buffer ignoring `kill-buffer-query-functions'."
   (interactive)
-  (let ((kill-buffer-hook)              ; '(nvp-window-configuration-restore)
-        kill-buffer-query-functions)
+  (let (kill-buffer-hook kill-buffer-query-functions)
     (kill-buffer (current-buffer))))
 
 (eval-and-compile
@@ -77,7 +71,6 @@ With prefix, dont run modes hook."
   "Minor mode in scratch buffers."
   :lighter " 𝓢"
   (when nvp-scratch-minor-mode
-    (setq-local kill-buffer-hook nil)   ; '(nvp-window-configuration-restore)
     (nvp:msg "Press \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-kill-buffer] to kill \
 this buffer or \\<nvp-scratch-minor-mode-map>\\[nvp-scratch-switch-modes] \
 to switch major modes.")))

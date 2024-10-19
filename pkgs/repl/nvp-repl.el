@@ -111,7 +111,6 @@ buffers."
                      nvp-repl--split-below))))
   "Options for `nvp-repl-display-action'.")
 
-;; FIXME(09/16/24): maybe reuse a window below before splitting
 (defun nvp-repl--split-below (buf alist)
   "Split window and display repl below."
   (when-let ((height (cdr (assq 'window-height alist))))
@@ -125,7 +124,6 @@ buffers."
                  nvp-repl--display-actions))
     (category             . repl)
     (pop-up-windows       . t)
-    (reusable-frames      . visible)
     (window-height        . 0.4)
     (window-min-height    . 20)
     (inhibit-same-window  . t)
@@ -180,14 +178,15 @@ buffers."
 ;;;###autoload
 (defun nvp-repl-add (mmodes &rest args)
   "Create new mappings of major modes MMODES to repl created from ARGS."
-  (unless (listp mmodes) (setq mmodes (cons mmodes nil)))
+  (setq mmodes (ensure-list mmodes))
   (let* ((repl (if (nvp--repl-p (car args)) (car args)
                  (apply #'nvp-repl-make args)))
          (name (nvp--repl-name repl)))
     (or name (user-error "repl name is nil"))
     (puthash name repl nvp-repl--repl-cache)
     (--when-let (nvp--repl-modes repl)
-      (setq nvp-repl-modes (cl-remove-duplicates (append it nvp-repl-modes))))
+      (setq nvp-repl-modes (seq-uniq (append it nvp-repl-modes)))
+      (setq mmodes (append it mmodes)))
     (dolist (mode mmodes)
       (cl-pushnew name (gethash mode nvp-repl-cache)))))
 
@@ -371,13 +370,16 @@ well."
   "C-c C-x s" #'nvp-repl-eval-string
   "C-c C-k"   #'nvp-repl-clear)
 
+;;   🄪 ⎆
+(defun nvp-repl--mode-line-text ()
+  (format " ℝepl[%S]"
+          (or (car (gethash major-mode nvp-repl-cache))
+              "-")))
+
 ;;;###autoload
 (define-minor-mode nvp-repl-minor-mode
   "Minor mode active in Repl buffers."
-  :lighter " #"
-  ;; (when (derived-mode-p 'comint-mode)
-  ;;   (add-hook 'comint-output-filter-functions
-  ;;             #'comint-postoutput-scroll-to-bottom nil t))
+  :lighter (:eval (nvp-repl--mode-line-text))
   (when nvp-repl-minor-mode
     (when-let ((nvp-repl--current (nvp-repl-current)))
       (nvp-with-repl (name commands cmd-prefix pos-bol)
@@ -391,12 +393,12 @@ well."
 ;;;###autoload
 (define-minor-mode nvp-repl-source-minor-mode
   "Minor mode active in source buffers associated with a Repl."
-  :lighter " #")
+  :lighter (:eval (nvp-repl--mode-line-text)))
 
 (defun nvp-repl--source-minor-mode-on ()
-  (unless (or (memq major-mode
-                    (append nvp-repl-no-minor-modes nvp-repl-modes))
-              nvp-repl-source-minor-mode)
+  (unless (or nvp-repl-source-minor-mode
+              (memq major-mode
+                    (append nvp-repl-no-minor-modes nvp-repl-modes)))
     (nvp-repl-source-minor-mode 1)))
 
 

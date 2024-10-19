@@ -28,7 +28,7 @@ the next command according to PREFIX. The symbols \\='other-frame,
 \\='other-window, and \\='same-window are bound to the display action. If
 BODY is non-nil, do BODY. Otherwise, conditionally call interactively do
 ON-SAME, ON-OTHER, ON-FRAME or DEFAULT."
-  ;; (declare (indent defun))
+  (declare (indent defun))
   (nvp:skip-keywords body)
   (nvp:with-syms (pre)
     `(pcase-let ((`(,,pre ,same-window ,other-window ,other-frame)

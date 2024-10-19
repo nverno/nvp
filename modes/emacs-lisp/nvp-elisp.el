@@ -257,15 +257,25 @@ When ACTION is \\='insert, when:
          (print-length (unless no-truncate eval-expression-print-length))
          (debug-on-error eval-expression-debug-on-error)
          (region-p (region-active-p))
-         (beg (or beg (if region-p (region-beginning)
-                        ;; Beginning of outermost sexp
-                        (car-safe
-                         (nth 9 (parse-partial-sexp (point-min) (point)))))))
-         (end (or end (if region-p (region-end)
-                        (save-excursion
-                          (goto-char beg)
-                          (forward-sexp)
-                          (point))))))
+         (beg (cond (beg beg)
+                    (region-p (region-beginning))
+                    ;; Beginning of outermost sexp
+                    ((car-safe (nth 9 (parse-partial-sexp
+                                       (point-min) (point)))))
+                    ((eq ?\( (char-after)) (point))
+                    (t nil)))
+         (end (cond (end end)
+                    (region-p (region-end))
+                    ;; Eval previous sexp
+                    ((null beg) (prog1 (point)
+                                  (save-excursion
+                                    (backward-sexp)
+                                    (setq beg (point)))))
+                    ;; Eval top-level sexp containing point
+                    (t (save-excursion
+                         (goto-char beg)
+                         (forward-sexp)
+                         (point))))))
     (save-excursion
       (when (and beg end (not region-p))
         (goto-char end)
@@ -320,7 +330,7 @@ Prefix handling:
           (dash-p (eq '- current-prefix-arg)))
      (list (and (or dash-p (>= arg 16))
                 (nvp-read-thing-at-point
-                 nil nvp-elisp-eval-thing))
+                 nil (symbol-name nvp-elisp-eval-thing)))
            (or dash-p (<= raw 0))
            (or dash-p (eq arg 4)))))
   (or thing (setq thing nvp-elisp-eval-thing))

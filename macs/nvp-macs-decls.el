@@ -105,6 +105,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     ace-link-fallback-function
     align-to-tab-stop
     bug-reference-bug-regexp bug-reference-url-format
+    cl-print-readably
     company-candidates company-selection company-backends
     compilation-error-face compilation-warning-face compilation-info-face
     compilation-error-regexp-alist compilation-error-regexp-alist-alist
@@ -292,6 +293,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-setup-program nvp-setup-local
        nvp-shell
        nvp-shell-launch-terminal
+       nvp-sort-alist
        nvp-tag-find nvp-tag-find-etag
        nvp-tag-list-decls
        nvp-tag-list-tags nvp-tag-list-decls nvp-tag-repo

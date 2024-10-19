@@ -370,11 +370,8 @@ well."
   "C-c C-x s" #'nvp-repl-eval-string
   "C-c C-k"   #'nvp-repl-clear)
 
-;;   🄪 ⎆
 (defun nvp-repl--mode-line-text ()
-  (format " ℝepl[%S]"
-          (or (car (gethash major-mode nvp-repl-cache))
-              "-")))
+  (format " Ⱇ[%S]" (or (car (gethash major-mode nvp-repl-cache)) "-")))
 
 ;;;###autoload
 (define-minor-mode nvp-repl-minor-mode

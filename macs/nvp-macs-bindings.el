@@ -56,7 +56,7 @@
       ("?" . isearch-backward)
       ("c" . avy-goto-word-1)
       ("C" . nvp-avy-goto-word-1-alt)
-      ("g" . avy-goto-line)
+      ("G" . avy-goto-line)
       ("I" . consult-imenu)
       ("L" . nvp-goto-link)
       ("o" . occur)))

@@ -92,21 +92,17 @@ In strings, ignore doc comment prefixes/suffixes that confuse xref."
 (defun nvp-elisp-bounds-of-alist ()
   "Return bounds of alist at point.
 Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
-  (cl-block nil
-    (if (memq ?\' (list (char-before) (char-after)))
-        (and (nvp:goto 'fdl)
-             (bounds-of-thing-at-point 'list))
-      (save-excursion
-        (while (nvp:goto 'bul)         ;search backward up lists for a '(
-          (and (eq (char-before) ?\')
-               (nvp:goto 'fdl)
-               (cl-return (bounds-of-thing-at-point 'list)))))
-      ;; check if in cons-cell and back out of it
-      ;; eg. (macro (foo . bar) (goo . ber))
-      (save-excursion
-        (when-let ((bnds (nvp:tap 'btap 'cons)))
-          (goto-char (1- (car bnds)))
-          (bounds-of-thing-at-point 'list))))))
+  (save-excursion
+    (and (eq ?\' (char-after))
+         (forward-char 1))
+    (while (and (progn (skip-syntax-backward " ")
+                       (not (eq ?\' (char-before))))
+                (nvp:goto 'bul)))
+    (and (eq (char-before) ?\')
+         (when-let ((beg (progn (skip-syntax-forward " ")
+                                (point)))
+                    (end (nvp:goto 'fl)))
+           (cons beg end)))))
 (put 'alist 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-alist)
 
 

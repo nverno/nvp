@@ -218,31 +218,11 @@ If it doesn't exist insert starter template. Return buffer."
       (< la lb))))
 
 ;;;###autoload
-(defun nvp-abbrev-sort-table (&optional start end)
-  "Sort abbrev table between START and END or the table at point."
-  (interactive (nvp:with-region start end 'alist :pulse t :widen t
-                 (list start end)))
-  (save-excursion
-    (goto-char start)
-    (skip-chars-forward "'")
-    (replace-region-contents
-     (point) end
-     (lambda ()
-       (let ((abbrevs
-              (sort (read (current-buffer)) :lessp #'nvp-abbrev--sort)))
-         (with-temp-buffer
-           (let ((cl-print-readably t)
-                 (print-quoted t)
-                 (print-circle nil)
-                 (print-escape-newlines nil)
-                 ;; try to get one sexp per line
-                 (pp-max-width 65)
-                 (fill-column 65)
-                 (pp-default-function 'pp-29))
-             (cl-prin1 abbrevs (current-buffer))
-             (pp-buffer))
-           (buffer-string)))))
-    (indent-region start end)))
+(defun nvp-abbrev-sort-table (&optional start end &rest args)
+   "Sort abbrev table between START and END or the table at point."
+   (interactive (nvp:with-region start end 'alist :pulse t :widen t
+                  `(,start ,end :reverse ,current-prefix-arg)))
+   (apply #'nvp-sort-alist start end nil :lessp #'nvp-abbrev--sort args))
 
 ;;;###autoload
 (define-derived-mode abbrev-table-mode emacs-lisp-mode "Abbrev-Table"

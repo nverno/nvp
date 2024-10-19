@@ -112,7 +112,7 @@ Default compile behaviour: (R=recompile; F=force recompile; P=prompt)
 3. './*[autoloads?|loaddefs].el' (P) -> first match
 5. default (P)                       -> prompt
 
-When with prefix 0 or \\=', or COMPILE-ALL, compile all \".el\" files.
+When with prefix 0 or \\='-, or COMPILE-ALL, compile all \".el\" files.
 With prefix [+-]4, or if RECOMPILE-ALL, recompile all \".el\" files that have
 associated \".elc\".
 With prefix \\='-, <0, or >=16, prompt before compiling files.

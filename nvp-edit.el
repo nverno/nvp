@@ -118,7 +118,7 @@ region afterward."
 With prefix sort in REVERSE."
   (interactive `(,@(nvp:tap-or-region 'bdwim 'buffer :pulse t) ,current-prefix-arg))
   (nvp:sort-region start end
-                   (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
+    (sort-regexp-fields reverse "^.*$" "\\([[:alnum:]]+\\)" start end)))
 
 ;;;###autoload
 (defun nvp-sort-lines-first-symbol (beg end &optional reverse no-fold)
@@ -151,25 +151,82 @@ With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
-                   (sort-regexp-fields
-                    reverse (concat "\\(?:"
-                                    "\\s\"\\S\"*\\s\"" ; quoted
-                                    "\\|\\sw+\\|\\s_+" ; word/symbol
-                                    "\\)")
-                    "\\(\\sw\\|\\s_\\)+" start end)))
+    (sort-regexp-fields
+     reverse (concat "\\(?:"
+                     "\\s\"\\S\"*\\s\"" ; quoted
+                     "\\|\\sw+\\|\\s_+" ; word/symbol
+                     "\\)")
+     "\\(\\sw\\|\\s_\\)+" start end)))
+
+(defun nvp-sort--alist-regexp (start end &optional reverse)
+  (nvp:sort-region start end
+    (sort-regexp-fields
+     ;; Note(09/07/24): keep trailing⬎ comments
+     reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "[^\( \t\n]+"
+     (+ start (if (eq ?\' (char-after start)) 2 1)) ; skip over outer '('
+     (1- end))))
 
 ;; Note: uses 'cons/'alist at point defined in nvp-elisp
 ;;;###autoload
-(defun nvp-sort-alist (&optional start end reverse)
-  "Sort alist by car of each element in list at point or b/w START and END."
-  (interactive (nvp:with-region start end 'alist :pulse t :widen t
-                 (list start end current-prefix-arg)))
-  (nvp:sort-region start end
-                   (sort-regexp-fields
-                    ;; Note(09/07/24): keep trailing⬎ comments
-                    reverse "\\s-*([^\)]*)\\(?:[^\(]*$\\)?" "[^\( \t\n]+"
-                    (+ start (if (eq ?\' (char-after start)) 2 1)) ; skip over outer '('
-                    (1- end))))                                    ; stop before final ')'
+(defun nvp-sort-alist (&optional start end use-regexp &rest args)
+  "Sort alist (or improper list of conses) at point or from START to END.
+With \\[universal-argument], reverse ordering.
+
+With prefix \\='-, or USE-REGEXP, or the thing at point looks like bindings,
+sort with regexps instead of reading the sexp. This also preserves comments.
+NOTE: when not sorting by USE-REGEXP, comments are erased in the list!!
+
+ARGS are key-value pairs passed to `sort'."
+  (interactive
+   (let ((regexp-p (eq '- current-prefix-arg)))
+     `(,@(or (and (use-region-p) (list (region-beginning) (region-end)))
+             (save-restriction
+               (widen)
+               (let ((bnds
+                      (or (bounds-of-thing-at-point 'alist)
+                          (and-let* ((bnds (bounds-of-thing-at-point 'cons)))
+                            (setq regexp-p t)
+                            (goto-char (1- (car bnds)))
+                            (bounds-of-thing-at-point 'list)))))
+                 (when bnds
+                   (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))
+                   (list (car bnds) (cdr bnds))))))
+       ,regexp-p
+       :key car
+       :reverse ,current-prefix-arg)))
+  (if use-regexp
+      (nvp-sort--alist-regexp start end (plist-get args :reverse))
+    (replace-region-contents
+     start end
+     (lambda ()
+       (let ((alist (apply #'sort (read (current-buffer)) args)))
+         (with-temp-buffer
+           (let ((cl-print-readably t)
+                 (print-quoted t)
+                 (print-circle nil)
+                 (print-escape-newlines nil)
+                 (pp-max-width fill-column)
+                 (pp-default-function 'pp-29)
+                 (standard-output (current-buffer))
+                 cur)
+             (insert "(")
+             (while (setq cur (car alist))
+               (setq alist (cdr alist))
+               (cl-prin1 cur)
+               (and alist (terpri)))
+             (insert ")")
+             (pp-buffer))
+           (buffer-string))))
+     0 0)
+    (setq start (point))
+    (save-excursion
+      (goto-char (scan-lists (point) 1 0))
+      (setq end (point))
+      (unless (zerop (skip-chars-forward " \t\n"))
+        (delete-region end (point)))
+      (or (eq ?\) (char-after))
+          (insert "\n"))
+      (indent-region start (line-end-position)))))
 
 ;;;###autoload
 (defun nvp-sort-words (start end &optional reverse)
@@ -177,7 +234,7 @@ With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
-                   (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
+    (sort-regexp-fields reverse "[^ \t\n]+" "\\&" start end)))
 
 ;;;###autoload
 (defun nvp-sort-symbols (start end &optional reverse)
@@ -185,7 +242,7 @@ With prefix sort in REVERSE."
   (interactive (nvp:with-region start end 'list :pulse t :widen t
                  (list start end current-prefix-arg)))
   (nvp:sort-region start end
-                   (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
+    (sort-regexp-fields reverse "\\(\\sw\\|\\s_\\)+" "\\&" start end)))
 
 ;;;###autoload(autoload 'nvp-sort-menu "nvp-edit" nil t)
 (transient-define-prefix nvp-sort-menu ()
@@ -198,8 +255,9 @@ With prefix sort in REVERSE."
     ("s" "By first symbol" nvp-sort-lines-first-symbol)
     ("c" "Columns" sort-columns)
     ("R" "Reverse lines" reverse-region)]
-   ["List"
-    ("a" "Alist" nvp-sort-alist)
+   ["Lists"
+    ("a" "Alists/Bindings" nvp-sort-alist)
+    ("A" "Abbrevs" nvp-abbrev-sort-table)
     ("L" "List" nvp-sort-list)]
    ["Region"
     ("S" "Symbols" nvp-sort-symbols)

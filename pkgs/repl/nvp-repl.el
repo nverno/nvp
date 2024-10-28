@@ -113,7 +113,7 @@ buffers."
 
 (defun nvp-repl--split-below (buf alist)
   "Split window and display repl below."
-  (when-let ((height (cdr (assq 'window-height alist))))
+  (when-let* ((height (cdr (assq 'window-height alist))))
     (when (floatp height)
       (setq height (round (* height (frame-height)))))
     (setq height (- (max height window-min-height)))
@@ -171,7 +171,7 @@ buffers."
   (if nvp-repl--current (current-buffer) (nvp-repl--get-source-buffer)))
 
 (defun nvp-repl-buffer (&optional buffer)
-  (if-let ((nvp-repl--current (nvp-repl-current buffer)))
+  (if-let* ((nvp-repl--current (nvp-repl-current buffer)))
       (nvp-repl--repl-buffer)
     (user-error "No repl buffer")))
 
@@ -378,7 +378,7 @@ well."
   "Minor mode active in Repl buffers."
   :lighter (:eval (nvp-repl--mode-line-text))
   (when nvp-repl-minor-mode
-    (when-let ((nvp-repl--current (nvp-repl-current)))
+    (when-let* ((nvp-repl--current (nvp-repl-current)))
       (nvp-with-repl (name commands cmd-prefix pos-bol)
         (when commands
           (add-hook 'completion-at-point-functions
@@ -442,7 +442,7 @@ async repl init functions should call callback with repl-buf and repl-proc."
 (defun nvp-repl--init-repl-hook (src-buf buf->proc &optional and-go)
   "Associate repl with source from repl mode hook."
   `(lambda ()
-     (if-let ((repl-proc (funcall ',buf->proc (current-buffer))))
+     (if-let* ((repl-proc (funcall ',buf->proc (current-buffer))))
          (nvp-repl--init-setup ,src-buf repl-proc (current-buffer) ,and-go)
        (user-error "failed to initialize repl for %s" ,src-buf))))
 
@@ -501,7 +501,7 @@ Check BUF is live and possibly change source depending on PREFIX."
                      (and (equal '(16) prefix)
                           (nvp-repl-cd)))))
       (nvp-with-repl (process-p proc->buf buf->proc)
-        (when-let ((repl-proc (run-hook-with-args-until-success
+        (when-let* ((repl-proc (run-hook-with-args-until-success
                                'nvp-repl-find-functions))
                    (proc-buf (if (funcall process-p repl-proc)
                                  (funcall proc->buf repl-proc)

@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: tie(..) = ..
+# key: ..
+# --
+tie($1) = $0

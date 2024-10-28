@@ -15,7 +15,7 @@
 
 (eval-when-compile
   (defmacro nvp:with-current-repl (&rest body)
-    `(if-let ((nvp-repl--current (nvp-repl-current)))
+    `(if-let* ((nvp-repl--current (nvp-repl-current)))
          (progn ,@body)
        (user-error "No current repl.")))
 

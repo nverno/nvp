@@ -7,7 +7,8 @@
 
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-repl)
-(nvp:decls :p (ts add-node) :v (ts-repl-buffer nvp-typescript-modes) :f (ts-repl-run))
+(nvp:decls
+ :p (ts add-node) :v (ts-repl-buffer nvp-typescript-modes) :f (ts-repl-run))
 
 
 (defvar nvp-typescript--repl-commands
@@ -47,7 +48,7 @@
         (browse-url-browser-function #'browse-url-chrome))
     (and proc (comint-send-string proc cmd))
     (message "goto chrome://inspect")
-    ;; xxx: doesnt go there
+    ;; XXX(10/28/24): doesn't go there..
     (browse-url "chrome://inspect")))
 
 (provide 'nvp-typescript-repl)

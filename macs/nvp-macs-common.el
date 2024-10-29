@@ -315,8 +315,11 @@ are aliases to symbols prefixed by \"nvp-\"."
 ;; See ch. 14 of On Lisp
 
 (defmacro --mapcc (form list &optional sep)
+  "If form is `nil', use `identity'."
   (declare (important-return-value t))
-  `(mapconcat (lambda (it) (ignore it) ,form) ,list ,(or sep " ")))
+  `(mapconcat ,(if (null form) '#'identity
+                 `(lambda (it) (ignore it) ,form))
+              ,list ,(or sep " ")))
 
 (defmacro nvp:awhile (expr &rest body)
   "Anaphoric `while'."

@@ -12,13 +12,16 @@
 (autoload 'nvp-elisp-matching-forms "nvp-elisp" )
 (autoload 'trace-tree-disable "trace-tree")
 
+(defvar nvp-trace-default-background t
+  "If non-nil, trace everying in the background by default.")
+
 (defvar nvp-trace-group-alist nil
   "Store trace groups.")
 
 ;;; Tracing Mode
 (defvar tracing--batch nil)
 (when (fboundp 'tracing-enable)
-  (tracing-enable))
+  (tracing-enable t))
 
 ;;;###autoload
 (defun nvp-toggle-inhibit-trace (&optional on)
@@ -28,9 +31,11 @@
   (and (bound-and-true-p tracing-minor-mode)
        (force-mode-line-update t)))
 
-(defun nvp-trace-active-p ()
-  (and (boundp 'trace-buffer)
-       (buffer-live-p (get-buffer trace-buffer))))
+(defsubst nvp-trace-active-p ()
+  (or (and (fboundp 'tracing--active-p)
+           (tracing--active-p))
+      (and (boundp 'trace-buffer)
+           (buffer-live-p (get-buffer trace-buffer)))))
 
 (defun nvp-trace-load-saved (&optional clobber)
   "Load group configurations.
@@ -56,7 +61,8 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
     ("i" "Inhibit trace" nvp-toggle-inhibit-trace)]
    ["Groups"
     ("g" "Group" nvp-trace-group)
-    ("G" "Untrace group" nvp-untrace-group :if-non-nil tracing-minor-mode)
+    ("G" "Untrace group" nvp-untrace-group-or-funs)
+    ("r" "Regexp" nvp-trace-regexp)
     ("l" "Library" nvp-trace-library)
     ("h" "Hooks" nvp-trace-hooks)
     "--"
@@ -77,7 +83,26 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
     (defmacro cl-defmacro)
     (defsubst cl-defsubst)))
 
-(defun nvp-trace--read-groups (prompt &optional force-read untrace)
+(defsubst nvp--trace-matching-funs (regexp)
+  "Get functions matching REGEXP."
+  (let (res)
+    (mapatoms
+     (lambda (sym)
+       (when (and (fboundp sym)
+                  (string-match-p regexp (symbol-name sym)))
+         (push sym res)))
+     obarray)
+    res))
+
+(defsubst nvp--trace-library-forms (library &optional match-forms)
+  "Get forms from LIBRARY matching MATCH-FORMS."
+  (require 'nvp-elisp)                  ; gather all defun-like forms
+  (with-temp-buffer
+    (insert-file-contents (find-library-name library))
+    (with-syntax-table emacs-lisp-mode-syntax-table
+      (nvp-elisp-matching-forms match-forms))))
+
+(defun nvp--trace-read-group-or-funs (prompt &optional force-read untrace)
   "Load trace data and PROMPT for group to trace."
   (unless (bound-and-true-p nvp-trace-group-alist)
     (nvp-trace-load-saved))
@@ -92,76 +117,98 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
           (unless untrace
             (push funcs nvp-trace-group-alist))))))
 
-;;;###autoload
-(defun nvp-trace-group (groups &optional foreground)
-  "Trace GROUPS of functions defined in `nvp-trace-group-alist'."
-  (interactive (list (nvp-trace--read-groups "Trace: " current-prefix-arg)
-                     current-prefix-arg))
-  (let ((funcs (if (listp (car groups))
-                   (apply #'append (--map (cdr it) groups))
-                 (cdr groups)))
-        (trace-fn (if foreground #'trace-function-foreground
-                    #'trace-function-background))
-        (tracing--batch t))
-    (dolist (fn funcs)
-      (funcall trace-fn fn))
-    (tracing-add funcs)))
-
-(defun nvp-untrace-group (funcs)
-  "Untrace functions in FUNCS."
-  (interactive
-   (list (apply #'append
-                (--map (cdr it)
-                       (nvp-trace--read-groups
-                        "Untrace: " current-prefix-arg t)))))
-  (let ((tracing--batch t))
-    (dolist (fn funcs)
-      (untrace-function fn))
-    (tracing-add funcs t)))
-
-;;;###autoload
-(defun nvp-trace-library (library &optional macros filter)
-  "Trace all top-level defun-like forms in library.
-With \\[universal-argument], trace macros and substs as well.
-With \\[universal-argument] \\[universal-argument] prompt for filter."
-  (interactive (list (read-library-name) current-prefix-arg
-                     (when (>= (prefix-numeric-value current-prefix-arg) 16)
-                       (read-string "Filter forms by: "))))
-  (require 'nvp-elisp)                  ; gather all defun-like forms
-  (let* ((def-forms (if macros (flatten-tree nvp-trace-defun-forms)
-                      (assoc 'defun nvp-trace-defun-forms)))
-         (forms (with-temp-buffer
-                  (insert-file-contents (find-library-name library))
-                  (with-syntax-table emacs-lisp-mode-syntax-table
-                    (nvp-elisp-matching-forms def-forms))))
-         (tracing--batch t))
-    (when filter
-      (setq forms (--filter (string-match-p filter (symbol-name it)) forms)))
+(defsubst nvp--trace-do-batch (forms &optional untrace foreground msg)
+  "Trace or UNTRACE FORMS.
+Add MSG to the default message reported."
+  (let ((tracing--batch t)
+        (trace-func (cond (untrace #'untrace-function)
+                          (foreground #'trace-function-foreground)
+                          (t #'trace-function-background))))
     (dolist (fn forms)
-      (trace-function-background fn))
-    (tracing-add forms)
-    (message "tracing %d funs from %s: %S" (length forms) library forms)))
+      (funcall trace-func fn))
+    (and (fboundp 'tracing-add)
+         (tracing-add forms untrace))
+    (message "%sracing %s(n=%d): %S"
+             (if untrace "Unt" "T") msg (length forms) forms)))
 
 ;;;###autoload
-(defun nvp-trace-hooks (&optional library)
-  "Trace all hooks defined with `add-hook' in LIBRARY."
+(defun nvp-trace-group (groups &optional foreground untrace)
+  "Trace GROUPS of functions defined in `nvp-trace-group-alist'.
+With \\[universal-argument], trace in opposite of
+`nvp-trace-default-background'. With prefix `<=0', UNTRACE."
+  (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))
+                      (arg (abs raw)))
+                 (list (nvp--trace-read-group-or-funs "Trace: " (> arg 1))
+                       (if (> arg 1) nvp-trace-default-background
+                         (not nvp-trace-default-background))
+                       (<= raw 0))))
+  (let* ((names nil)
+         (groups (if (listp (car groups))
+                     (--mapcat (progn (push (car it) names) (cdr it)) groups)
+                   groups)))
+    (nvp--trace-do-batch
+     groups untrace foreground
+     (and names (--mapcc (symbol-name it) names ", ")))))
+
+;;;###autoload
+(defun nvp-untrace-group-or-funs (forms)
+  "Untrace FORMS.
+Interactively, prompt for groups or functions to untrace.
+With \\[universal-argument], prompt for list of functions."
+  (interactive (list (nvp--trace-read-group-or-funs
+                      "Untrace group(s): " current-prefix-arg t)))
+  (nvp-trace-group forms nil t))
+
+;;;###autoload
+(defun nvp-trace-regexp (regexp &optional foreground untrace)
+  "Trace or UNTRACE functions matching REGEXP.
+With prefix `<=0', UNTRACE."
+  (interactive (list (read-regexp "Regexp: ")
+                     (not nvp-trace-default-background)
+                     (<= (prefix-numeric-value current-prefix-arg) 0)))
+  (nvp--trace-do-batch
+   (nvp--trace-get-matching-forms regexp)
+   untrace foreground (format "\"%s\" matches" regexp)))
+
+;;;###autoload
+(defun nvp-trace-library (library &optional macros filter foreground untrace)
+  "Trace or UNTRACE top-level defun-like forms in library.
+With \\[universal-argument], trace macros and substs as well.
+With \\[universal-argument] \\[universal-argument] prompt for filter.
+With prefix `<=0', UNTRACE forms."
+  (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))
+                      (arg (abs raw)))
+                 (list (read-library-name) (> arg 1)
+                       (and (>= arg 16) (read-string "Filter forms by: "))
+                       (not nvp-trace-default-background)
+                       (<= raw 0))))
+  (let* ((unfiltered-forms (nvp--trace-library-forms
+                            library (if macros
+                                        (flatten-tree nvp-trace-defun-forms)
+                                      (assoc 'defun nvp-trace-defun-forms))))
+         (forms (if filter (--filter (string-match-p filter (symbol-name it))
+                                     unfiltered-forms)
+                  unfiltered-forms)))
+    (nvp--trace-do-batch
+     forms untrace foreground
+     (format "%s func%ss" library (if macros "/mac/subr" "")))))
+
+;;;###autoload
+(defun nvp-trace-hooks (&optional library foreground untrace)
+  "Trace or UNTRACE all hooks defined with `add-hook' in LIBRARY.
+With prefix `<=0', UNTRACE forms."
   (interactive
-   (list (if current-prefix-arg (read-library-name) "nvp-mode-hooks")))
-  (require 'nvp-elisp)
-  (unless library (setq library "nvp-mode-hooks"))
-  (cl-flet ((hook-p
-              (form)
-              (and (eq (car form) 'add-hook)
-                   (eval (nth 2 form)))))
-    (let ((forms (with-temp-buffer
-                   (insert-file-contents (find-library-name library))
-                   (with-syntax-table emacs-lisp-mode-syntax-table
-                     (nvp-elisp-matching-forms #'hook-p))))
-          (tracing--batch t))
-      (dolist (fn forms)
-        (trace-function-background fn))
-      (tracing-add forms)
-      (message "tracing hooks: %S" forms))))
+   (let ((arg (prefix-numeric-value current-prefix-arg)))
+     (list (if (> (abs arg) 1) (read-library-name) "nvp-mode-hooks")
+           (not nvp-trace-default-background)
+           (<= arg 0))))
+  (nvp--trace-do-batch
+   (nvp--trace-library-forms
+    (or library "nvp-mode-hooks")
+    (lambda (form)
+      (and (eq (car form) 'add-hook)
+           (eval (nth 2 form)))))
+   untrace foreground "hooks"))
 
 
 (provide 'nvp-trace)

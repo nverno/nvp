@@ -3,10 +3,13 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (nvp:decls)
 
-(defvar nvp-wasm-js-modes '(typescript-mode typescript-ts-mode js-mode js-ts-mode))
+(autoload 'f-filename "f")
+(autoload 'f-base "f")
+
+(defvar nvp-wasm-js-modes
+  '(typescript-mode typescript-ts-mode js-mode js-ts-mode))
 
 ;;;###autoload
 (defun nvp-wasm-compile (&optional save)
@@ -51,7 +54,8 @@ With prefix SAVE, dont cleanup wasm/wat files."
                                            &allow-other-keys)
     (declare (indent defun))
     (nvp:skip-keywords body)
-    `(when-let (it (treesit-parent-until ,node (lambda (n) (treesit-node-match-p n ,type))))
+    `(when-let* ((it (treesit-parent-until
+                      ,node (lambda (n) (treesit-node-match-p n ,type)))))
        (,@(if bounds `(let ((beg (treesit-node-start it))
                             (end (treesit-node-end it))))
             '(progn))

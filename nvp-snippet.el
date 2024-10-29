@@ -59,7 +59,7 @@ When part of `before-save-hook', won't add condition on initial save."
   "Add FIELD with VALUE unless FIELD is already defined."
   (save-mark-and-excursion
     (goto-char (point-min))
-    (when-let ((end (nvp-snippet-header-end)))
+    (when-let* ((end (nvp-snippet-header-end)))
       (if (re-search-forward (concat "^#\\s-*" field ":") end t)
           (message "%s already defined: %S" field
                    (buffer-substring (point) (line-end-position)))

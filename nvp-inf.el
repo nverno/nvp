@@ -11,7 +11,7 @@
   (let* ((current (nvp:buffer-process))
          (prompt (if current (format "Process (default %s): " current)
                    "Process: ")))
-   (when-let ((procs (mapcar #'(lambda (p) (cons (process-name p) p)) (process-list))))
+   (when-let* ((procs (mapcar #'(lambda (p) (cons (process-name p) p)) (process-list))))
      (cdr (assoc-string
            (nvp-completing-read
             prompt (mapcar #'car procs) nil nil nil nil current)

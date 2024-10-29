@@ -55,7 +55,7 @@
 ;;; Yas
 (nvp:decl yas-text nvp-yas-split-args)
 (defun nvp-go-params (&optional str types join)
-  (when-let (str (or str (yas-text)))
+  (when-let* ((str (or str (yas-text))))
     (let ((vals (mapcar
                  (lambda (s) (funcall (if types #'cadr #'car) (split-string s)))
                  (nvp-yas-split-args str))))

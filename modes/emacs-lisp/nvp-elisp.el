@@ -47,7 +47,7 @@
   "In code, ignore \"@\" prefix from symbols.
 In strings, ignore doc comment prefixes/suffixes that confuse xref."
   (let (bounds-of-thing-at-point-provider-alist)
-    (when-let ((bnds (bounds-of-thing-at-point 'symbol)))
+    (when-let* ((bnds (bounds-of-thing-at-point 'symbol)))
       (let* ((str-p (nvp:ppss 'str))
              (pre (if str-p '(?{ ?<) '(?@)))
              (post (if str-p '(?} ?>))))
@@ -99,7 +99,7 @@ Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
                        (not (eq ?\' (char-before))))
                 (nvp:goto 'bul)))
     (and (eq (char-before) ?\')
-         (when-let ((beg (progn (skip-syntax-forward " ")
+         (when-let* ((beg (progn (skip-syntax-forward " ")
                                 (point)))
                     (end (nvp:goto 'fl)))
            (cons beg end)))))

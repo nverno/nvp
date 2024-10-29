@@ -100,15 +100,13 @@ buffers."
   :type 'boolean)
 
 (defvar nvp-repl--display-actions
-  '((other-window . ((display-buffer--maybe-same-window
-                      display-buffer-reuse-window
-                      display-buffer-use-some-window
-                      display-buffer-pop-up-window)
-                     ;; Prefer the largest other window the most ⬎
-                     ;; (some-window          . t)
-                     ))
-    (split-below . ((display-buffer-reuse-window
-                     nvp-repl--split-below))))
+  '((other-window
+     . ((display-buffer--maybe-same-window
+         display-buffer-reuse-window
+         display-buffer-use-some-window
+         display-buffer-pop-up-window)))
+    (split-below
+     . ((display-buffer-reuse-window nvp-repl--split-below))))
   "Options for `nvp-repl-display-action'.")
 
 (defun nvp-repl--split-below (buf alist)
@@ -502,11 +500,11 @@ Check BUF is live and possibly change source depending on PREFIX."
                           (nvp-repl-cd)))))
       (nvp-with-repl (process-p proc->buf buf->proc)
         (when-let* ((repl-proc (run-hook-with-args-until-success
-                               'nvp-repl-find-functions))
-                   (proc-buf (if (funcall process-p repl-proc)
-                                 (funcall proc->buf repl-proc)
-                               (setq repl-proc (funcall buf->proc repl-proc)))))
-          (if (nvp-repl--live-p repl-proc)  ; found unregistered live one
+                                'nvp-repl-find-functions))
+                    (proc-buf (if (funcall process-p repl-proc)
+                                  (funcall proc->buf repl-proc)
+                                (setq repl-proc (funcall buf->proc repl-proc)))))
+          (if (nvp-repl--live-p repl-proc) ; found unregistered live one
               (nvp-repl--update-buffers repl-proc (current-buffer) proc-buf)
             (remhash (buffer-name proc-buf) nvp-repl--process-buffers))))
       (nvp-repl-start prefix)           ; initialize new Repl

@@ -203,7 +203,7 @@
 ;; If RECOMPILE-PACKAGE, recompile the package containing FILE
 (defun nvp-install-patch (file patch &optional recompile-package)
   (let* ((default-directory user-emacs-directory)
-         (pkg (when-let ((f (locate-library
+         (pkg (when-let* ((f (locate-library
                              (if (string-suffix-p ".el" file)
                                  file
                                (concat file ".el")))))

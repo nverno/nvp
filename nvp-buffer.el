@@ -28,7 +28,7 @@
     (kill-buffer (current-buffer))))
 
 ;;;###autoload
-(defun nvp-buffer-kill-other-buffers () 
+(defun nvp-buffer-kill-other-buffers ()
   "Kill all buffers other than the current one in this frame."
   (interactive)
   (mapc #'kill-buffer (cdr (buffer-list (current-buffer)))))
@@ -62,7 +62,7 @@ matching MODE. Prompt for MODE with prefix."
 (defun nvp-buffer-delete-file ()
   "Delete the current file, and kill the buffer."
   (interactive)
-  (if-let ((file (buffer-file-name)))
+  (if-let* ((file (buffer-file-name)))
       (when (y-or-n-p (format "Really delete %s? " (nvp:path 'bfs)))
         (delete-file file delete-by-moving-to-trash)
         (kill-this-buffer))

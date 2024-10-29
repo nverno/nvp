@@ -83,8 +83,9 @@ If INCREMENT is non-nil, increment restriction before update."
 (defun nvp-iedit-dwim (&optional arg)
   "With prefix ARG narrow to defun, with two prefix narrow to current line."
   (interactive "p")
-  (if iedit-mode (progn (setq nvp-iedit--idx 0)
-                        (iedit-done))
+  (if iedit-mode
+      (progn (setq nvp-iedit--idx 0)
+             (iedit-done))
     (iedit-mode)
     (setq nvp-iedit--idx (mod (nvp:lsb arg 2) nvp-iedit--n))
     (nvp-iedit--apply-restriction)

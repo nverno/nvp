@@ -21,7 +21,7 @@ has a file or directory local binding."
 
 (defun nvp-compile--make-available (&optional no-make no-cmake)
   "Return make type of current project or nil."
-  (when-let ((default-directory (nvp-project-root nil 'local)))
+  (when-let* ((default-directory (nvp-project-root nil 'local)))
     (list :make (unless no-make
                   (memq t (mapcar #'file-exists-p
                                   '("Makefile" "makefile" "GNUMakefile"))))
@@ -33,7 +33,7 @@ has a file or directory local binding."
 Return make type when found or nil."
   (cl-destructuring-bind (&key make cmake)
       (nvp-compile--make-available no-make no-cmake)
-    (when-let ((type (if (and make cmake)
+    (when-let* ((type (if (and make cmake)
                          (nvp:read-char-case "Run Make/CMake: " nil
                            (?m "[m]ake" 'make)
                            (?c "[c]make" 'cmake))
@@ -48,7 +48,7 @@ Return make type when found or nil."
 (defun nvp-compile-maybe-local (&optional _prefix)
   "Compile using file-local `compile-command' when non-nil and return t.
 Otherwise return nil."
-  (when-let ((compile-command
+  (when-let* ((compile-command
               (assoc-default 'compile-command file-local-variables-alist)))
     (prog1 t (call-interactively #'nvp-compile))))
 

@@ -86,7 +86,7 @@ With \\[universal-argument] prompt for LOC and PREFIX key."
                              (completing-read-multiple
                               "Transients: " nvp-transient--done-deved nil t))))
   (dolist (transient transients)
-    (when-let ((val (get transient 'transient--layout)))
+    (when-let* ((val (get transient 'transient--layout)))
       (put transient 'transient--layout
            (seq-remove (lambda (e) (equal nvp-transient--dev-description
                                      (plist-get (aref e 2) :description)))

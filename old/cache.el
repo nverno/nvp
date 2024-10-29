@@ -67,7 +67,7 @@
               (apply #'make-hash-table (list :test test
                                              :weakness weakness
                                              :size size))))))
-   (when-let ((fname (nvp-cache-filename cache)))
+   (when-let* ((fname (nvp-cache-filename cache)))
      (unless (file-name-absolute-p fname)
        (setf (nvp-cache-filename cache) (expand-file-name fname nvp/cache))))
    cache))
@@ -161,7 +161,7 @@ Grows ring when necessary."
 ;; wrappers for ring access - not need to check equality for all items in ring
 ;; if storing the current index
 (defun nvp-ring--next (cache &optional previous)
-  (when-let ((idx (nvp-ring--next-index cache previous)))
+  (when-let* ((idx (nvp-ring--next-index cache previous)))
     (setf (nvp-cache-ring-idx cache) idx)
     (nvp-cache-elt idx cache)))
 

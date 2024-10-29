@@ -244,7 +244,7 @@ directories under current directory."
   (nvp-with-display-actions action
     (and interactive current-prefix-arg
          (setq in-dir default-directory))
-    (when-let ((dir (completing-read
+    (when-let* ((dir (completing-read
                       (format "Frecent Dir%s:"
                               (if in-dir (concat "(" (nvp:fn in-dir) ")") ""))
                       (mapcar #'abbreviate-file-name
@@ -331,7 +331,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
 ;;;###autoload
 (defun nvp-jump-to-register (action)
   (interactive "P")
-  (when-let ((reg (register-read-with-preview "Jump to register: ")))
+  (when-let* ((reg (register-read-with-preview "Jump to register: ")))
     (nvp-with-display-actions action
       (funcall #'jump-to-register reg current-prefix-arg))))
 

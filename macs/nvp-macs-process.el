@@ -12,7 +12,7 @@
 (require 'nvp-macs-common)
 
 ;; -------------------------------------------------------------------
-;;; Buffers / Processes 
+;;; Buffers / Processes
 
 (defmacro nvp:buffer-process (&optional buffer)
   "Return BUFFER's process."
@@ -21,7 +21,7 @@
 (defmacro nvp:with-buffer-proc (proc &rest body)
   "Execute BODY with current buffer PROC if process is live."
   (declare (indent defun) (debug t))
-  `(if-let ((,proc (nvp:buffer-process)))
+  `(if-let* ((,proc (nvp:buffer-process)))
        (if (not (process-live-p ,proc))
            (user-error "Buffer process is not live.")
          ,@body)

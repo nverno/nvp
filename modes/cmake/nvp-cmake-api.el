@@ -44,21 +44,21 @@
                (it-api (expand-file-name ".cmake/api/v1/" it-build)))
          (if (or (f-directory-p it-api)
                  ,(when init-api
-                     `(and (f-directory-p it-build)
-                           (prog1 t (make-directory it-api 'parents)))))
+                    `(and (f-directory-p it-build)
+                          (prog1 t (make-directory it-api 'parents)))))
              (let ((default-directory it-api))
                ,@body)
            (user-error "Missing CMake api directory: %S" it-api))
        (user-error
         "Missing CMake build dir: project %S, builddir: %S" it-project it-build)))
-  
+
   (cl-defmacro nvp:with-reply (reply-glob &rest body &key root &allow-other-keys)
     "Do BODY with \\='reply bound to reply files matching REPLY-GLOB in project
 ROOT."
     (declare (indent 1))
     (nvp:skip-keywords body)
     `(nvp:with-api :root ,root :init-api t
-       (if-let ((reply (f-glob (concat "reply/" ,reply-glob))))
+       (if-let* ((reply (f-glob (concat "reply/" ,reply-glob))))
            (progn ,@body)
          (user-error "Missing cmake api reply: api-dir: %S" default-directory))))
 
@@ -130,7 +130,7 @@ ROOT."
             (when (cl-member (f-ext file) '("cmake" "txt") :test #'string=)
               (insert (format "include(\"%s\")\n" (expand-file-name file)))))
           (insert (f-read-text nvp-cmake--dump-vars)))
-        (prog1 
+        (prog1
             (with-current-buffer (get-buffer-create nvp-cmake--api-buffer)
               (erase-buffer)
               (call-process-shell-command
@@ -173,7 +173,7 @@ TYPE is entry from `nvp-cmake-queries'."
   (let* ((vals (nvp-cmake--query (or type 'target)))
          (choice
           (completing-read
-           (or prompt (concat (capitalize (symbol-name type)) ": ")) vals)))
+            (or prompt (concat (capitalize (symbol-name type)) ": ")) vals)))
     (assoc-string choice vals)))
 
 ;;;###autoload

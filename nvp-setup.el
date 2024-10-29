@@ -78,7 +78,7 @@
     (setq mode (if mode (nvp:as-symbol mode) major))
     ;; use the standard mode when remapped,
     ;; eg. use python-mode instead of python-ts-mode
-    (if-let ((remap (and mode (rassq mode major-mode-remap-alist))))
+    (if-let* ((remap (and mode (rassq mode major-mode-remap-alist))))
         (car remap)
       mode))
 

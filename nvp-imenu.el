@@ -236,7 +236,7 @@ should formatted as an alist like `imenu-generic-expression'."
 
 (defun nvp-imenu--candidates (&optional regex)
   "Get imenu candidates, filtering with REGEX when non-nil."
-  (if-let ((re (or regex nvp-imenu--filter-re)))
+  (if-let* ((re (or regex nvp-imenu--filter-re)))
       (--filter (string-match-p re (car it))
                 (imenu-anywhere-candidates))
     (imenu-anywhere-candidates)))

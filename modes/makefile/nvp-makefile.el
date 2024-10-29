@@ -102,7 +102,8 @@
   ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
   ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
   ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend))
-  ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" (3 'nvp-line-escape-face)))
+  ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" (3 'nvp-line-escape-face))
+  ("\\([$]\\)[$]" (1 'font-lock-preprocessor-face)))
 
 ;; `makefile-dependency-regex' => note this doesn't take into account quoting
 ;; `makefile-macroassign-regex' => doesn't handle #defines
@@ -179,7 +180,7 @@ using `compilation-read-command'."
 (defun nvp-makefile-run-target ()
   "Run target at point."
   (interactive)
-  (when-let ((target (nvp-makefile-target-name)))
+  (when-let* ((target (nvp-makefile-target-name)))
     (nvp-makefile-save-and-compile target)))
 
 

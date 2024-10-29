@@ -167,7 +167,7 @@ With prefix `<=0', UNTRACE."
                      (not nvp-trace-default-background)
                      (<= (prefix-numeric-value current-prefix-arg) 0)))
   (nvp--trace-do-batch
-   (nvp--trace-get-matching-forms regexp)
+   (nvp--trace-matching-funs regexp)
    untrace foreground (format "\"%s\" matches" regexp)))
 
 ;;;###autoload
@@ -182,13 +182,14 @@ With prefix `<=0', UNTRACE forms."
                        (and (>= arg 16) (read-string "Filter forms by: "))
                        (not nvp-trace-default-background)
                        (<= raw 0))))
-  (let* ((unfiltered-forms (nvp--trace-library-forms
-                            library (if macros
-                                        (flatten-tree nvp-trace-defun-forms)
-                                      (assoc 'defun nvp-trace-defun-forms))))
-         (forms (if filter (--filter (string-match-p filter (symbol-name it))
-                                     unfiltered-forms)
-                  unfiltered-forms)))
+  (let* ((unfiltered-forms
+          (nvp--trace-library-forms
+           library (if macros (flatten-tree nvp-trace-defun-forms)
+                     (assoc 'defun nvp-trace-defun-forms))))
+         (forms
+          (if filter (--filter (string-match-p filter (symbol-name it))
+                               unfiltered-forms)
+            unfiltered-forms)))
     (nvp--trace-do-batch
      forms untrace foreground
      (format "%s func%ss" library (if macros "/mac/subr" "")))))

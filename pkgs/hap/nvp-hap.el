@@ -387,7 +387,7 @@ with PROMPT (default \"Describe: \") using COMPLETIONS if non-nil."
       (thingatpt (nvp-hap-thing-at-point arg nil "Company: "))
       (doc-buffer (when (company-call-backend 'candidates arg "")
                     (nvp-with-no-window
-                      (when-let (buf (company-call-backend 'doc-buffer arg))
+                      (when-let* ((buf (company-call-backend 'doc-buffer arg)))
                         (sit-for 0.1)
                         (list buf))))))))
 ;; (when (eq company-backend 'company-cmake)

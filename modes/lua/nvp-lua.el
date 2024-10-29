@@ -144,7 +144,7 @@ replace it with in abbrevs. For example, \\='(cons \"M\" \"filetype\")
 means replace \"M.some_fun\" \"filetype.some_fun\" in abbrevs.
 
 By default, methods and functions prefixed with \"_\" are ignored."
-  (when-let ((cands (nvp-parse-functions mode args)))
+  (when-let* ((cands (nvp-parse-functions mode args)))
     (let (table rep)
       (when replace-table
         (setq table (concat (car replace-table) ".")

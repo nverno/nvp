@@ -136,7 +136,7 @@
 (defun nvp-ace-link ()
   "Call the ace link function for the current `major-mode'"
   (interactive)
-  (if-let ((action (nvp-ace-link-action (current-buffer))))
+  (if-let* ((action (nvp-ace-link-action (current-buffer))))
       (funcall action)
     (unless (and ace-link-fallback-function
                  (funcall ace-link-fallback-function))

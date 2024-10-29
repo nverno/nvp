@@ -146,7 +146,7 @@
 (defun nvp@leet-setup (orig-fn problem problem-info)
   (let ((problem-id (leetcode-problem-id problem-info)))
     (funcall orig-fn problem problem-info)
-    (when-let ((buf (leetcode-code-buffer problem-id)))
+    (when-let* ((buf (leetcode-code-buffer problem-id)))
       (with-current-buffer buf
         (save-restriction
           (widen)

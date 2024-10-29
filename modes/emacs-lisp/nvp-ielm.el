@@ -50,7 +50,7 @@
   (or buffer (and directory (setq buffer (current-buffer))))
   (or directory buffer
       (user-error "no directory or buffer to change"))
-  (when-let (repl-buf (nvp-repl-buffer))
+  (when-let* ((repl-buf (nvp-repl-buffer)))
     (when directory
       (unless (file-exists-p directory)
         (user-error "Bad directory \"%S\"" directory))
@@ -65,7 +65,7 @@
   "Print working buffer and directory in the ielm repl.
 When VERBOSE, print working buffer in echo area."
   (interactive (list t))
-  (when-let (repl-buf (nvp-repl-buffer))
+  (when-let* ((repl-buf (nvp-repl-buffer)))
     (with-current-buffer repl-buf
       (let ((str (format
                   "ielm-working-buffer: %s\\ndefault-directory: %s"

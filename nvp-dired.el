@@ -263,8 +263,8 @@ With prefix SILENT, save files without prompting."
   (interactive)
   (let ((files (dired-get-marked-files)))
     (dolist (file files)
-      (when-let*
-          ((prog (assoc (file-name-extension file) nvp-dired-external-program)))
+      (when-let* ((prog (assoc (file-name-extension file)
+                               nvp-dired-external-program)))
         (let ((cmd (cdr (assoc 'cmd prog))))
           (nvp:with-gnu/w32
               (start-process cmd nil cmd file)

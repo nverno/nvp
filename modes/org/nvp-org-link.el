@@ -127,7 +127,7 @@ Return cons of \\='(name                           . raw-link)."
 
 (defun nvp-org-nvp-store-link (arg &optional _interactive?)
   "Store org \\='nvp link."
-  (when-let ((lib (and (eq major-mode 'emacs-lisp-mode)
+  (when-let* ((lib (and (eq major-mode 'emacs-lisp-mode)
                        (file-name-base (buffer-file-name)))))
     (let* ((prompt (> (prefix-numeric-value arg) 1))
            (symt (cond ((nvp:ppss 'cmt) (cons 's nil))

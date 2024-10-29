@@ -4,7 +4,7 @@
 (declare-function yas-text "yasnippet")
 
 (defun nvp--make-defvar (&optional num)
-  (when-let (txt (yas-text))
+  (when-let* ((txt (yas-text)))
     (upcase
      (s-replace
       "-" "_"

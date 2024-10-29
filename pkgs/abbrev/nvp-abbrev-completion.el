@@ -88,7 +88,7 @@
 
 ;; return beginning position of prefix for hippie
 (defsubst nvp-abbrev-completion-prefix-beg ()
-  (when-let ((abbrev (nvp-abbrev-completion--prefix)))
+  (when-let* ((abbrev (nvp-abbrev-completion--prefix)))
     (cadr abbrev)))
 
 ;; return prefix, either matching a table's predicates or defaulting to the

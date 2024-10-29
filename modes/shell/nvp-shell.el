@@ -66,29 +66,29 @@
   "Run input on current line in external shell (gnome)"
   (interactive)
   (nvp:with-buffer-proc proc
-    (-when-let (cmd (nvp-shell--get-input 'add))
+    (when-let* ((cmd (nvp-shell--get-input 'add)))
       ;; FIXME: inherit environment?
       ;; this doesn't work -- how to pass env from gnome-shell => bash
       ;; (process-environment
       ;;  (cons (format "PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"'" cmd)
       ;;        process-environment))
       (comint-send-string
-       proc
-       (format
-        (concat "gnome-terminal --tab -- bash -c '"
-                ;; "export PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"';"
-                "%s; bash'\n")
-        cmd)))))
+       proc (format (concat
+                     "gnome-terminal --tab -- bash -c '"
+                     ;; "export PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"';"
+                     "%s; bash'\n")
+                    cmd)))))
 
 (defvar compilation-scroll-output)
 
 (defun nvp-shell-compile (&optional arg)
   "Run current input in compilation buffer.
-With prefix ARG, display in current buffer.
-With `C-u'`C-u' read command."
+With prefix \\[universal-argument] ARG, display in current buffer.
+With \\[universal-argument] \\[universal-argument], read command."
   (interactive "P")
-  (let ((display-buffer-overriding-action (and arg '((display-buffer-same-window)))))
-    (-when-let (compile-command (nvp-shell--get-input 'add))
+  (let ((display-buffer-overriding-action
+         (and arg (nvp-display-buffer-action 'same-window))))
+    (when-let* ((compile-command (nvp-shell--get-input 'add)))
       (nvp:with-global-vars
           ((compilation-read-command (>= (prefix-numeric-value arg) 16))
            (compilation-scroll-output nil))
@@ -150,8 +150,8 @@ If none found, return list of all terminal buffers."
 (defun nvp-shell-in-project-maybe (buffers)
   "Return buffer in current project if there is one in BUFFERS."
   (if (not (listp buffers)) buffers
-    (or (-when-let (root (and (bound-and-true-p projectile-mode)
-                              (projectile-project-root)))
+    (or (when-let* ((root (and (bound-and-true-p projectile-mode)
+                               (projectile-project-root))))
           (cl-some (lambda (buf)
                      (--> (projectile-project-root
                            (buffer-local-value 'default-directory buf))
@@ -160,7 +160,7 @@ If none found, return list of all terminal buffers."
         (car buffers))))
 
 (defsubst nvp-display-buffer--height (alist &optional key)
-  (when-let ((height (cdr (assq (or key 'window-height) alist))))
+  (when-let* ((height (cdr (assq (or key 'window-height) alist))))
     (if (floatp height)
         (round (* height (frame-height)))
       height)))

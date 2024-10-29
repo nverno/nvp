@@ -329,7 +329,7 @@ multiple repeat maps."
               (defvar-keymap ,name ,@(append kwargs defs))))))
 
 ;; option to check for override?
-;; do (when-let ((curr (lookup-key (current-global-map) `(nvp:kbd ,k)))))
+;; do (when-let* ((curr (lookup-key (current-global-map) `(nvp:kbd ,k)))))
 ;; (cl-assert t 'show-args (format "%k is assigned %S globally" k curr))
 (cl-defmacro nvp:bindings (keymap &optional feature &rest bindings
                                   &key

@@ -33,7 +33,7 @@
 
 ;; set local values, eg. in .dir-locals.el
 (defun nvp-js-local-config (&optional dir)
-  (when-let ((default-directory
+  (when-let* ((default-directory
               (nvp-project-root
                (or dir buffer-file-name default-directory))))
     (nvp-async-shell-command-to-string

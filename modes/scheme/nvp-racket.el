@@ -124,7 +124,7 @@ Otherwise expand the list containing point."
 (cl-defmethod nvp-parse-functions ((_mode (eql racket-mode)) &rest args)
   "Return list of functions defined in buffer."
   (require 'nvp-parse)
-  (when-let ((defs (ignore-errors (cl-call-next-method nil args))))
+  (when-let* ((defs (ignore-errors (cl-call-next-method nil args))))
     (--filter
      (not (string-match-p
            (rx (or

@@ -188,7 +188,7 @@ With prefix, add to GLOBAL sources."
             res srcs)
         (if (null recurse) (funcall getter dbfile)
           (cl-labels ((build-res (srcfile)
-                        (when-let ((db (gethash srcfile sh-comp-db)))
+                        (when-let* ((db (gethash srcfile sh-comp-db)))
                           (setq res (append res (funcall getter db)))
                           (dolist (s (sh-comp-dbfile-sources db))
                             (unless (member s srcs)

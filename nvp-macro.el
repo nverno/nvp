@@ -344,7 +344,7 @@ are both specified."
                         `((not ,(if (functionp test) `(funcall ,test) `,test))))
                     ,(if append
                          `(message
-                           (if-let ((cur (current-message)))
+                           (if-let* ((cur (current-message)))
                                ,(if clobber
                                     `(if (string-prefix-p ,clobber cur)
                                          ,message
@@ -869,14 +869,14 @@ to it is returned.  This function does not modify the point or the mark."
          (skip-syntax-forward " ")
          (if (looking-at-p comment-start-skip)
              (and (comment-forward) (point))
-           (when-let ((beg (comment-beginning)))
+           (when-let* ((beg (comment-beginning)))
              (goto-char beg)
              (and (comment-forward) (point))))))
 
      ((eq position 'cel)                ;end of comment on line
       `(nvp:point--cse ,point
          (beginning-of-line)
-         (when-let ((beg (comment-search-forward (line-end-position) t)))
+         (when-let* ((beg (comment-search-forward (line-end-position) t)))
            (goto-char beg)
            (save-restriction
              (narrow-to-region (point) (line-end-position))
@@ -1159,7 +1159,7 @@ Trailing \"i\" indicates to prompt for input if nothing is found.
 (cl-defmacro nvp:tap-or-region (type &optional tap &key pulse hist)
   "Return list of (beg end) of either active region or bounds of TAP."
   (declare (indent defun))
-  `(when-let ((bnds (nvp:tap ,type ,tap nil nil :pulse ,pulse :hist ,hist)))
+  `(when-let* ((bnds (nvp:tap ,type ,tap nil nil :pulse ,pulse :hist ,hist)))
      (list (car bnds) (cdr bnds))))
 
 (cl-defmacro nvp:with-region (beg end &optional thing &rest body

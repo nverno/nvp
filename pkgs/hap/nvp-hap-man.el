@@ -22,7 +22,7 @@
 (nvp:defmethod nvp-hap-man-thing-at-point ()
   :modes (c++-mode c++-ts-mode)
   "Append std:: to lookup c++ man docs (stdman stdlib man pages)."
-  (when-let ((sym (thing-at-point 'symbol)))
+  (when-let* ((sym (thing-at-point 'symbol)))
     (unless (string-prefix-p "std::" sym)
       (concat "std::" sym))))
 

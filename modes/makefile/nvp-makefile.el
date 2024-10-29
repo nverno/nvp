@@ -94,7 +94,7 @@
 (defface makefile-shell
   '((t (:inherit (nvp-block-face) :extend t)))
   "Shell face."
-  :group 'makefile)
+  :group 'font-lock-highlighting-faces)
 
 ;; TODO: remove string fontification in #define blocks where it is incorrect.
 ;; better to fontify using `forward-sexp' to allow for closing parens in command
@@ -103,7 +103,8 @@
   ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
   ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend))
   ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" (3 'nvp-line-escape-face))
-  ("\\([$]\\)[$]" (1 'font-lock-preprocessor-face)))
+  ("\\([$]\\)[$]" (1 'font-lock-escape-face))
+  ("\\(?:^\\|[^$]\\)\\([$]\\)(" (1 'font-lock-preprocessor-face)))
 
 ;; `makefile-dependency-regex' => note this doesn't take into account quoting
 ;; `makefile-macroassign-regex' => doesn't handle #defines

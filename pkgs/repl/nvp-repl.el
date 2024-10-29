@@ -369,7 +369,7 @@ well."
   "C-c C-k"   #'nvp-repl-clear)
 
 (defun nvp-repl--mode-line-text ()
-  (format " Ⱇ[%S]" (or (car (gethash major-mode nvp-repl-cache)) "-")))
+  (format " Ⱇ[%s]" (or (car (gethash major-mode nvp-repl-cache)) "-")))
 
 ;;;###autoload
 (define-minor-mode nvp-repl-minor-mode

@@ -11,7 +11,7 @@
 ;; first letter of each component, so 'r-r' or 'r.r' or 'r:r' are all converted
 ;; to "\\br\\w*-r[[:alnum:]:-]*\\b", allowing 'r-r' to expand to
 ;; `replace-regexp-in-string' or `read-regexp', for example.
-;; 
+;;
 ;; Candidates are chosen in the buffer by the `nvp-he-weight-function', and only
 ;; those with a minimum length of `nvp-he-min-length' are considered.
 ;; Additionally, the search will timeout after `nvp-he-time-limit'. Conversion
@@ -200,7 +200,7 @@ See `completion-table-dynamic' for NO-SWITCH."
     new-fun))
 
 ;; -------------------------------------------------------------------
-;;; Regexp Matches 
+;;; Regexp Matches
 
 (eval-when-compile
   ;; modified `company-dabbrev--time-limit-while'
@@ -222,7 +222,7 @@ doesn't exceed LIMIT."
                     (> (float-time (time-since ,start-time)) ,limit)
                     (throw 'done 'nvp-he-timeout)))))))))
 
-;; collect matches for REGEXP in current buffer into RESULT
+;; Collect matches for REGEXP in current buffer into RESULT
 ;; When IGNORE-WEIGHTS is non-nil, NVP-HE-WEIGHT-FUNCTION is used to weight
 ;; matches by their position and START-POS
 ;; START-TIME and LIMIT, when non-nil, specify max time before timeout
@@ -241,7 +241,7 @@ doesn't exceed LIMIT."
         (let ((match (match-string-no-properties 0)))
           (when (>= (length match) nvp-he-min-length)
             (if ignore-weights
-                (push match result)  
+                (push match result)
               (push (cons match
                           (funcall nvp-he-weight-function
                                    start-pos
@@ -267,7 +267,7 @@ doesn't exceed LIMIT."
      :test #'equal
      :from-end t)))
 
-;; refs: `aw-window-list', `he--all-buffers', `next-window'
+;; Refs: `aw-window-list', `he--all-buffers', `next-window'
 (defun nvp-he-interesting-buffers ()
   "Return list of interesting buffers. This respects `hippie-expand-only-buffers',
 `hippie-expand-ignore-buffers' and `nvp-he-window-scope'."
@@ -288,7 +288,7 @@ doesn't exceed LIMIT."
 ;;; Flex
 
 ;; (add-function :before-until (local 'nvp-he-flex-completion-table) #'...)
-;; only recompute `nvp-he-buffer-matches' when prefix has changed
+;; Only recompute `nvp-he-buffer-matches' when prefix has changed
 (defvar-local nvp-he--flex-completion-table nil)
 
 (defun nvp-he-flex-completion-table (arg)
@@ -398,7 +398,8 @@ flexible, and dabbrev closest otherwise."
 matching."
   (unless old
     (he-init-string (funcall nvp-he-flex-symbol-beg) (point))
-    (setq he-search-bufs (cl-remove (current-buffer) (nvp-he-interesting-buffers))
+    (setq he-search-bufs (cl-remove (current-buffer)
+                                    (nvp-he-interesting-buffers))
           he-searched-n-bufs 0
           he-expand-list nil))
   (unless he-expand-list
@@ -421,7 +422,7 @@ matching."
 
 ;;;###autoload
 (defun nvp-try-expand-tags (_old)
-  "Placeholder for tag expansion function.  
+  "Placeholder for tag expansion function.
 If active tags are found, it replaces itself in
 `hippie-expand-try-functions-list' with the active backend, otherwise it
 removes itself."
@@ -621,7 +622,7 @@ string).  It returns t if a new completion is found, nil otherwise."
 ;;;###autoload
 (defun nvp-hippie-expand-lines ()
   (interactive)
-  (let ((hippie-expand-try-functions-list 
+  (let ((hippie-expand-try-functions-list
 	 '(nvp-try-expand-line-closest-first
 	   try-expand-line-all-buffers)))
     ;; (end-of-line)
@@ -656,4 +657,3 @@ string).  It returns t if a new completion is found, nil otherwise."
 ;; indent-tabs-mode: nil
 ;; End:
 ;;; nvp-hippie.el ends here
-

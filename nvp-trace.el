@@ -102,10 +102,11 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
     (with-syntax-table emacs-lisp-mode-syntax-table
       (nvp-elisp-matching-forms match-forms))))
 
-(defun nvp--trace-read-group-or-funs (prompt &optional force-read untrace)
+(defun nvp--trace-read-group-or-funs (&optional prompt force-read untrace)
   "Load trace data and PROMPT for group to trace."
-  (unless (bound-and-true-p nvp-trace-group-alist)
-    (nvp-trace-load-saved))
+  (or prompt (setq prompt (format "%srace: " (if untrace "Un" "T"))))
+  (or (bound-and-true-p nvp-trace-group-alist)
+      (nvp-trace-load-saved))
   (or (and (null force-read)
            (--when-let (completing-read-multiple prompt nvp-trace-group-alist)
              (cl-loop for g in it
@@ -137,15 +138,17 @@ Add MSG to the default message reported."
 With \\[universal-argument], trace in opposite of
 `nvp-trace-default-background'. With prefix `<=0', UNTRACE."
   (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))
-                      (arg (abs raw)))
-                 (list (nvp--trace-read-group-or-funs "Trace: " (> arg 1))
+                      (arg (abs raw))
+                      (untrace (<= raw 0)))
+                 (list (nvp--trace-read-group-or-funs nil (> arg 1) untrace)
                        (if (> arg 1) nvp-trace-default-background
                          (not nvp-trace-default-background))
-                       (<= raw 0))))
-  (let* ((names nil)
-         (groups (if (listp (car groups))
-                     (--mapcat (progn (push (car it) names) (cdr it)) groups)
-                   groups)))
+                       untrace)))
+  (let* ((names)
+         (groups (if (not (listp (car groups))) groups
+                   (--mapcat (progn (push (car it) names)
+                                    (cdr it))
+                             groups))))
     (nvp--trace-do-batch
      groups untrace foreground
      (and names (--mapcc (symbol-name it) names ", ")))))
@@ -155,8 +158,7 @@ With \\[universal-argument], trace in opposite of
   "Untrace FORMS.
 Interactively, prompt for groups or functions to untrace.
 With \\[universal-argument], prompt for list of functions."
-  (interactive (list (nvp--trace-read-group-or-funs
-                      "Untrace group(s): " current-prefix-arg t)))
+  (interactive (list (nvp--trace-read-group-or-funs nil current-prefix-arg t)))
   (nvp-trace-group forms nil t))
 
 ;;;###autoload

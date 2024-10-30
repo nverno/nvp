@@ -83,16 +83,14 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
     (defmacro cl-defmacro)
     (defsubst cl-defsubst)))
 
-(defsubst nvp--trace-matching-funs (regexp)
-  "Get functions matching REGEXP."
-  (let (res)
-    (mapatoms
-     (lambda (sym)
-       (when (and (fboundp sym)
-                  (string-match-p regexp (symbol-name sym)))
-         (push sym res)))
-     obarray)
-    res))
+(defsubst nvp--trace-matching-funs (regexp &optional untrace)
+  "Get functions matching REGEXP.
+When UNTRACE, only return matches that are currently traced."
+  (cl-loop for sym being the symbols
+           when (and (fboundp sym)
+                     (or (null untrace) (trace-is-traced sym))
+                     (string-match-p regexp (symbol-name sym)))
+           collect sym))
 
 (defsubst nvp--trace-library-forms (library &optional match-forms)
   "Get forms from LIBRARY matching MATCH-FORMS."
@@ -165,9 +163,11 @@ With \\[universal-argument], prompt for list of functions."
 (defun nvp-trace-regexp (regexp &optional foreground untrace)
   "Trace or UNTRACE functions matching REGEXP.
 With prefix `<=0', UNTRACE."
-  (interactive (list (read-regexp "Regexp: ")
-                     (not nvp-trace-default-background)
-                     (<= (prefix-numeric-value current-prefix-arg) 0)))
+  (interactive (let ((raw (prefix-numeric-value current-prefix-arg)))
+                 (list (read-regexp
+                        (format "%srace Regexp: " (if raw "Un" "T")))
+                       (not nvp-trace-default-background)
+                       (<= raw 0))))
   (nvp--trace-do-batch
    (nvp--trace-matching-funs regexp)
    untrace foreground (format "\"%s\" matches" regexp)))

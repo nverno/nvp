@@ -177,17 +177,16 @@ If PREVIOUS is non-nil, move to the previous nvp-mark."
     (font-lock-flush)
     (font-lock-ensure)))
 
-(defvar nvp-mark-mode-map
-  (let ((km (make-sparse-keymap)))
-    (define-key km (kbd "M-s-p") #'nvp-mark-previous)
-    (define-key km (kbd "M-s-n") #'nvp-mark-next)
-    (define-key km [mouse-1] #'xref-find-definitions)
-    (easy-menu-define nil km nil
-      '("NMark"
-        ["Previous" nvp-mark-previous t]
-        ["Next" nvp-mark-next t]))
-    km)
-  "Keymap used in `nvp-mark-minor-mode'.")
+(defvar-keymap nvp-mark-mode-map
+  "M-s-p"     #'nvp-mark-previous
+  "M-s-n"     #'nvp-mark-next
+  "<mouse-1>" #'xref-find-definitions)
+
+(easy-menu-define nvp-mark-mode-menu nvp-mark-mode-map
+  "Mark menu."
+  '("NMark"
+    ["Previous" nvp-mark-previous t]
+    ["Next" nvp-mark-next t]))
 
 ;;;###autoload
 (define-minor-mode nvp-mark-minor-mode "NvpMark"

@@ -329,10 +329,16 @@ Prefix handling:
                  nil (symbol-name nvp-elisp-eval-thing)))
            (or dash-p (<= raw 0))
            (or dash-p (eq arg 4)))))
-  (or thing (setq thing nvp-elisp-eval-thing))
+  (or thing (setq thing (if (nvp:ppss 'soc)
+                            'symbol
+                          nvp-elisp-eval-thing)))
   (let ((bnds (bounds-of-thing-at-point thing)))
     (unless bnds
       (user-error "No region for \"%S\"" thing))
+    (when (eq ?\( (char-before (car bnds)))
+      (save-excursion
+        (goto-char (car bnds))
+        (setq bnds (bounds-of-thing-at-point 'list))))
     (let ((eval-expression-debug-on-error nil))
       (nvp-elisp-eval-sexp-dwim
        no-truncate (if pp 'pp 'eval)

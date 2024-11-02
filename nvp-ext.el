@@ -1,14 +1,10 @@
 ;;; nvp-ext.el --- External programs -*- lexical-binding: t; -*-
-;;
 ;;; Commentary:
-;; - https://github.com/syohex/better-shell/blob/master/better-shell.el
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp-proc)
 (nvp:decls :v (epg-gpg-home-directory))
 
-;; -------------------------------------------------------------------
-;;; Vagrant
 
 ;;;###autoload
 (defun nvp-ext-vagrant-halt (&optional arg)
@@ -21,9 +17,6 @@ in buffer *vagrant-status*."
     :proc-args ((expand-file-name "vms/vagrant-shizzle" nvp/bin) "-l" nvp/vms "-K"))
   (when (not arg)
     (message "Running vagrant-halt...")))
-
-;; -------------------------------------------------------------------
-;;; GPG
 
 ;;;###autoload
 (defun nvp-ext-gpg-export (dir &optional name prog)
@@ -39,9 +32,9 @@ in buffer *vagrant-status*."
       :buffer-fn get-buffer-create
       :proc-args ("--armor" "--output" "public_key.asc" "--export" name))))
 
-;; copy gpg files to directory for backup/export
 ;;;###autoload
 (defun nvp-ext-gpg-backup (dir)
+  "Copy gpg files to directory for backup/export."
   (interactive "DExport gpg files to directory: ")
   (unless (file-exists-p (nvp:program "gpg"))
     (user-error "gpg program not set."))
@@ -50,8 +43,6 @@ in buffer *vagrant-status*."
             (copy-file f dir t))
           '("pubring.gpg" "secring.gpg" "trustdb.gpg"))))
 
-;; -------------------------------------------------------------------
-;;; Other
 
 (defun nvp-ext-start-process (cmd)
   (start-process

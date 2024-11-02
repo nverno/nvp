@@ -4,6 +4,7 @@
   '(("!" "not" nil :system t)
     ("!=" "<>" nil :system t)
     ("&&" "andalso" nil :system t)
+    ("==" "=" nil :system t)
     ("aa" "andalso" nil :system t)
     ("dt" "datatype" nil :system t)
     ("oe" "orelse" nil :system t)
@@ -16,7 +17,12 @@
   "Sml-Mode Abbrevs."
   :parents (list prog-mode-abbrev-table)
   :enable-function #'nvp-abbrev-expand-p
-  :regexp "\\(&&\\|||\\|!=?\\|\\<[_:\\.A-Za-z0-9]+\\)\\W*")
+  :regexp "\\(==\\|&&\\|||\\|!=?\\|\\<[_:\\.A-Za-z0-9]+\\)\\W*")
+
+;; (define-abbrev-table 'sml-ts-mode-abbrev-table
+;;   '()
+;;   "Sml-Ts-Mode Abbrevs."
+;;   :parents (list sml-mode-abbrev-table))
 
 (define-abbrev-table 'inferior-sml-mode-abbrev-table
   '()

@@ -57,7 +57,9 @@
   "Make repl command matcher for HANDLERS."
   (when handlers
     (cl-flet ((join (cmds &optional after-re)
-                (concat (mapconcat (lambda (c) (format "\\(?:%s\\)" c)) cmds "\\|")
+                (concat (mapconcat
+                         (lambda (c) (format "\\(?:%s\\)" (regexp-quote c)))
+                         cmds "\\|")
                         after-re)))
       (let (words syms other)
         (dolist (cmd (mapcar #'car handlers))

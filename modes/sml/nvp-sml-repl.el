@@ -34,7 +34,9 @@
   :send-file #'sml-prog-proc-load-file
   :cd-cmd "OS.FileSys.chDir \"%s\";"     ; #'sml-prog-proc-chdir
   :pwd-cmd "OS.FileSys.getDir();"
-  :load-cmd "use \"%s\";")
+  :load-cmd "use \"%s\";"
+  :help-cmd '(:no-arg "CM.make(\"$/basis.cm\");" :with-arg "open %s;")
+  :cmd-handlers '(("?" . "open %s;")))
 
 (provide 'nvp-sml-repl)
 ;; Local Variables:

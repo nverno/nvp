@@ -22,6 +22,14 @@
   (interactive (list nvp-sml-source-repo nvp-sml-source-dir "TAGS"))
   (nvp-tag-repo source-repo source-dir tag-file no-continue))
 
+(defun nvp-sml-lookup-basis (kind)
+  "Lookup KIND in Standard ML Basis Library online documentation."
+  (interactive
+   (list
+    (completing-read "Type: "
+      '("value" "type" "structure" "signature" "functor" "exception"))))
+  (call-interactively (intern (format "sml-basis-lookup-%s" kind))))
+
 (provide 'nvp-sml)
 ;; Local Variables:
 ;; coding: utf-8

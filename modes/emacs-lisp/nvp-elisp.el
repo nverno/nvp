@@ -253,6 +253,7 @@ When ACTION is \\='insert, when:
          (print-length (unless no-truncate eval-expression-print-length))
          (debug-on-error eval-expression-debug-on-error)
          (region-p (region-active-p))
+         (bounds-p (and (not region-p) beg end))
          (beg (cond (beg beg)
                     (region-p (region-beginning))
                     ;; Beginning of outermost sexp
@@ -282,7 +283,8 @@ When ACTION is \\='insert, when:
          (let* ((insert-p (eq 'insert action))
                 (standard-output (if insert-p (current-buffer) t)))
            (and insert-p newline (terpri))
-           (if region-p
+           ;; When BEG and END are passed explicitly, dont use `eval-last-sexp'
+           (if (or bounds-p region-p)
                (eval-region beg end (if insert-p (current-buffer) t))
              ;; Note(09/16/24): in lisp interaction, could use
              ;; (pp-to-string (eval expr lexical-binding))
@@ -312,7 +314,8 @@ This is symbol understood by `bounds-of-thing-at-point'.")
 (defun nvp-elisp-eval-print-dwim (&optional thing no-truncate pp)
   "Eval THING at point without debug enabled and print results.
 
-THING defaults to `nvp-elisp-eval-thing'.
+THING defaults to `nvp-elisp-eval-thing'. If THING is preceded by \"(\", eval
+the containing list. If THING is prefixed by \"'\", eval the unquoted symbol.
 When NO-TRUNCATE, results aren't truncated at all.
 When PP, pretty print results in temp buffer.
 
@@ -325,8 +328,7 @@ Prefix handling:
           (arg (abs raw))
           (dash-p (eq '- current-prefix-arg)))
      (list (and (or dash-p (>= arg 16))
-                (nvp-read-thing-at-point
-                 nil (symbol-name nvp-elisp-eval-thing)))
+                (nvp-read-thing-at-point nil nvp-elisp-eval-thing))
            (or dash-p (<= raw 0))
            (or dash-p (eq arg 4)))))
   (or thing (setq thing (if (nvp:ppss 'soc)
@@ -335,10 +337,12 @@ Prefix handling:
   (let ((bnds (bounds-of-thing-at-point thing)))
     (unless bnds
       (user-error "No region for \"%S\"" thing))
-    (when (eq ?\( (char-before (car bnds)))
-      (save-excursion
-        (goto-char (car bnds))
-        (setq bnds (bounds-of-thing-at-point 'list))))
+    (cond ((eq ?\( (char-before (car bnds)))
+           (save-excursion
+             (goto-char (car bnds))
+             (setq bnds (bounds-of-thing-at-point 'list))))
+          ((eq ?' (char-after (car bnds)))
+           (setf (car bnds) (1+ (car bnds)))))
     (let ((eval-expression-debug-on-error nil))
       (nvp-elisp-eval-sexp-dwim
        no-truncate (if pp 'pp 'eval)

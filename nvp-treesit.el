@@ -151,7 +151,7 @@ With prefix, add neovim sources first."
      ("v" "Validate" nvp-treesit-validate)]
     ["Inspect"
      ("j" "Jump to Explorer" nvp-treesit-explorer-jump)
-     ("?" "Inspect node" treesit-inspect-node-at-point :transient t)
+     ("n" "Inspect node" treesit-inspect-node-at-point :transient t)
      ("e" "Toggle errors" ts-error-toggle)]]
   [["Parsers"
     ("l" "List nodes" ts-parser-list-nodes)

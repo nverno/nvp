@@ -18,6 +18,7 @@
 ;;;###autoload
 (defun nvp-read-thing-at-point (&optional prompt default)
   "Read a symbol interpretable by `thing-at-point'."
+  (and (symbolp default) (setq default (symbol-name default)))
   (intern
    (completing-read
      (format-prompt (or prompt "Thing") default)

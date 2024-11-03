@@ -29,8 +29,9 @@
 ;; instead of any useful type information
 (cl-defmethod lsp-clients-extract-signature-on-hover
   (contents (_server-id (eql rust-analyzer)))
-  (let ((lines (string-lines (string-trim-left (lsp--render-element contents)))))
-    (while (and lines (string-match-p "^\\s-*/" (car lines)))
+  (let ((lines (string-lines
+                (string-trim-left (lsp--render-element contents)))))
+    (while (and lines (string-match-p "^\\s-*\\(/\\|$\\)" (car lines)))
       (setq lines (cdr lines)))
     (car lines)))
 

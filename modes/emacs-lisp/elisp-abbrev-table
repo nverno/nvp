@@ -126,7 +126,8 @@
     ("fi" "funcall-interactively" nil :system t)
     ("fl" "forward-line" nil :system t)
     ("fm" "format-message" nil :system t)
-    ("fp" ["featurep '" 0 nil nil]
+    ("fp"
+     ["featurep '" 0 nil nil]
      nvp-abbrev-expand-in-paren-hook :system t)
     ("fr" "fill-region" nil :system t)
     ("fs" "forward-sexp" nil :system t)
@@ -403,7 +404,6 @@
     ("sympl" "symbol-plist" nil :system t)
     ("wottb" "with-output-to-temp-buffer" nil :system t)
     ("dbulrw" "display-buffer-use-least-recent-window" nil :system t))
-
   "Emacs lisp function abbrevs."
   :enable-function #'nvp-elisp-abbrev-expand-fn-p
   :regexp nvp-lisp-abbrev-re

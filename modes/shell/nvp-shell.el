@@ -156,94 +156,74 @@ If none found, return list of all terminal buffers."
                    buffers))
         (car buffers))))
 
-(defsubst nvp-display-buffer--height (alist &optional key)
-  (when-let* ((height (cdr (assq (or key 'window-height) alist))))
-    (if (floatp height)
-        (round (* height (frame-height)))
-      height)))
 
-;; modified `display-buffer-split-below-and-attach'
-(defun nvp-display-buffer-split-below (buf alist)
-  "Split current window and return bottom split."
-  (let ((height (nvp-display-buffer--height alist)))
-    (when height (setq height (- (max height window-min-height))))
-    (window--display-buffer buf (split-window-below height) 'window alist)))
+(defun nvp-shell--display-maybe-other-window (buf alist)
+  (when (window-full-width-p)
+    (display-buffer-pop-up-window buf alist)))
 
-(defun nvp-display-buffer-below (buf alist)
-  (let ((height (nvp-display-buffer--height alist 'window-min-height))
-        (win (window-right (selected-window))))
-    (while (and win (< (window-height win) height))
-      (setq win (window-right win)))
-    (when win
-      (window--display-buffer buf win 'window alist))))
-
-(defvar nvp-shell-display-buffer-default-action
-  '((display-buffer-reuse-window nvp-display-buffer-split-below)
-    (inhibit-same-window         . t)
-    (window-height               . 0.5)
-    (display-buffer-in-direction . left)
-    (category                    . repl)))
-
-;; 1. Reuse window already displaying buffer
-;; 2. Split horizontally below if window large enough
-;; 3. Try to use window below, if one is large enough
-;; 4. Use current window
-(defun nvp-shell--display-action (buffer)
-  (let ((win (selected-window)))
-    (cond ((eq (current-buffer) buffer)
-           '(display-buffer-reuse-window))
-          ((and (> (window-height win)
-                   split-height-threshold)
-                (window-splittable-p (selected-window)))
-           nvp-shell-display-buffer-default-action)
-          (t `((display-buffer-reuse-window
-                nvp-display-buffer-below
-                display-buffer-same-window)
-               (reusable-frames   . visible)
-               (window-min-height . ,(round (* 0.3 (frame-height))))
-               (category          . repl))))))
-
-(defsubst nvp-shell--display-buffer (buffer)
-  (let ((display-buffer-overriding-action
-         (nvp-shell--display-action buffer)))
-    (shell buffer)))
+(defvar nvp-shell-display-buffer-action
+  `((display-buffer-reuse-window
+     display-buffer-reuse-mode-window
+     nvp-shell--display-maybe-other-window
+     display-buffer-below-selected
+     display-buffer-in-direction
+     display-buffer-same-window)
+    (mode shell-mode)
+    (category          . repl)
+    (direction         . below)
+    (window-min-height . 0.35)
+    (window-height     . 0.5)
+    (preserve-size . (t . t)))
+  "Display action for `nvp-shell'.")
 
 ;;;###autoload
 (defun nvp-shell (arg &optional buffer shell proc-name)
   "Launch a shell using SHELL, envvar \"SHELL\", or \"/bin/bash\" when remote.
-Use BUFFER if specified or create a unique remote name. If ARG, find or start
-shell in current directory using PROC-NAME or default shell. When ARG isn't
-specified, prefer shell in current directory if available."
+
+Use BUFFER if specified or create a unique remote name. New shells are
+created with PROC-NAME or the default shell.
+
+ARG determines when and where shells are created:
+
+  \\[universal-argument]     Get or create shell in current directory or project.
+  \\[universal-argument]\\[universal-argument]  Definetly create new shell in
+  current directory.
+
+With no ARG, prefer shells in current directory or project when available."
   (interactive "P")
   (let* ((remote (file-remote-p default-directory))
          (default-name (if buffer (buffer-name buffer) "*shell*"))
          ;; `explicit-shell-file-name'
-         (shell-file-name (if remote "/bin/bash" (or shell (getenv "SHELL"))))
+         (shell-file-name (if remote "/bin/bash"
+                            (or shell (getenv "SHELL"))))
          (switch-to-buffer-obey-display-actions t)
          (split-height-threshold 60)
-         (comint-terminfo-terminal "xterm-256color"))
-    (cond (buffer (shell buffer))
-          (remote (shell (format "*shell:%s*" (nth 2 (tramp-dissect-file-name
-                                                      default-directory)))))
-          ;; Want a terminal in the current directory or project
-          (t  (let ((terms (nvp-shell-in-dir-maybe nil proc-name)))
+         (comint-terminfo-terminal "xterm-256color")
+         (force-new (eq 16 (prefix-numeric-value current-prefix-arg)))
+         (bufname
+          (cond
+           (buffer buffer)
+           (remote (format "*shell:%s*" (nth 2 (tramp-dissect-file-name
+                                                default-directory))))
+           (t (let ((terms (nvp-shell-in-dir-maybe nil proc-name)))
                 (if arg
-                    (let ((buffname
-                           (or (and terms (not (listp terms))
-                                    (buffer-name terms))
-                               ;; Didn't find one -- create unique name
-                               (generate-new-buffer-name default-name))))
+                    (let ((name (or (and terms (not (listp terms))
+                                         (buffer-name terms))
+                                    ;; Didn't find one -- create unique name
+                                    (generate-new-buffer-name default-name))))
                       ;; With double prefix, force new shell in current
                       ;; directory
-                      (if (eq (prefix-numeric-value current-prefix-arg) 16)
-                          (if (buffer-live-p (get-buffer buffname))
-                              (shell (generate-new-buffer-name default-name))
-                            (nvp-shell--display-buffer buffname))
-                        (nvp-shell--display-buffer buffname)))
+                      (if (and force-new
+                               (buffer-live-p (get-buffer name)))
+                          (generate-new-buffer-name default-name)
+                        name))
                   ;; Otherwise, any terminal will do, but prefer current
                   ;; directory or project
-                  (nvp-shell--display-buffer
-                   (nvp-shell-in-project-maybe terms))))))))
+                  (nvp-shell-in-project-maybe terms)))))))
+    (pop-to-buffer
+     (or (and bufname (get-buffer bufname))
+         (shell bufname))
+     nvp-shell-display-buffer-action)))
 
 ;;;###autoload
 (defun nvp-shell-launch-terminal ()

@@ -69,60 +69,73 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp/abbrevs
     nvp/auto
     nvp/auto-site
-    nvp/devel
-    nvp/history
-    nvp/site
-    nvp/modes
-    nvp/emacs
-    nvp/build
-    nvp/project
-    nvp/info
+    nvp/backup
     nvp/bin
     nvp/binw
-    nvp/msys
-    nvp/cygwin
-    nvp/vms
-    nvp/git
-    nvp/test
-    nvp/lisp
-    nvp/lisp/src
+    nvp/bookmark
+    nvp/books
+    nvp/build
+    nvp/cache
+    nvp/class
     nvp/config
     nvp/custom
+    nvp/cygwin
     nvp/data
-    nvp/template
-    nvp/snippet
-    nvp/scratch
-    nvp/class
-    nvp/work
-    nvp/bookmark
-    nvp/cache
-    nvp/backup
-    nvp/org
-    nvp/books
+    nvp/devel
+    nvp/emacs
+    nvp/git
+    nvp/history
+    nvp/info
     nvp/install
+    nvp/lisp
+    nvp/lisp/src
+    nvp/modes
+    nvp/msys
+    nvp/org
     nvp/private
+    nvp/project
+    nvp/scratch
+    nvp/site
+    nvp/snippet
+    nvp/template
+    nvp/test
+    nvp/vms
+    nvp/work
 
     ace-link-fallback-function
     align-to-tab-stop
-    bug-reference-bug-regexp bug-reference-url-format
+    bug-reference-bug-regexp
+    bug-reference-url-format
     cl-print-readably
-    company-candidates company-selection company-backends
-    compilation-error-face compilation-warning-face compilation-info-face
-    compilation-error-regexp-alist compilation-error-regexp-alist-alist
+    company-backends
+    company-candidates
+    company-selection
+    compilation-error-face
+    compilation-error-regexp-alist
+    compilation-error-regexp-alist-alist
+    compilation-info-face
+    compilation-warning-face
     crm-separator
     dash-docs-docsets
     devdocs-current-docs
     explicit-shell-file-name
-    he-search-string he-tried-table he-expand-list
-    hippie-expand-try-functions-list hippie-expand-only-buffers
-    ido-default-buffer-method ido-default-file-method
-    ielm-working-buffer ielm-dynamic-return
-    imenu-generic-expression imenu--index-alist imenu-auto-rescan
+    he-expand-list
+    he-search-string
+    he-tried-table
+    hippie-expand-only-buffers
+    hippie-expand-try-functions-list
+    ido-default-buffer-method
+    ido-default-file-method
+    ielm-dynamic-return ielm-working-buffer
+    imenu--index-alist
+    imenu-auto-rescan
+    imenu-generic-expression
     local-abbrev-table
-    lsp-auto-configure lsp-language-id-configuration
+    lsp-auto-configure
+    lsp-language-id-configuration
     nvp-abbrev-default-function
     nvp-abbrev-prefix-chars
-    nvp-abbrevd-obarray nvp-local-abbrev-file nvp-local-abbrev-table
+    nvp-abbrevd-obarray
     nvp-check-buffer-default-function
     nvp-compile-default-function
     nvp-compile-default-function
@@ -132,18 +145,25 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-default-log-function
     nvp-default-org-file
     nvp-disassemble-default-function
-    nvp-display-buffer-other-frame-action nvp-display-buffer-same-frame-action
-    nvp-display-buffer-other-window-action nvp-display-buffer-same-window-action
+    nvp-display-buffer-other-frame-action
+    nvp-display-buffer-other-window-action
+    nvp-display-buffer-same-frame-action
+    nvp-display-buffer-same-window-action
     nvp-display-fallback-function
     nvp-display-prefix-p
     nvp-exit
     nvp-fallback-function
     nvp-fallback-minibuffer-function
     nvp-format-buffer-default-function
-    nvp-he-flex-matcher nvp-he-flex-prefix-to-re nvp-he-flex-prefix-from-re
-    nvp-he-flex-symbol-beg nvp-he-case-fold-search
+    nvp-he-case-fold-search
+    nvp-he-flex-matcher
+    nvp-he-flex-prefix-from-re
+    nvp-he-flex-prefix-to-re
+    nvp-he-flex-symbol-beg
     nvp-help-at-point-functions
     nvp-install-default-function
+    nvp-local-abbrev-file
+    nvp-local-abbrev-table
     nvp-local-bookmark-file
     nvp-local-books-directories
     nvp-local-compile-function
@@ -171,7 +191,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     nvp-test-default-function
     nvp-toggle-default-function
     nvp-window-configuration-stack
-    org-babel-do-load-languages org-src-lang-modes
+    org-babel-do-load-languages
+    org-src-lang-modes
     package-user-dir
     projectile-tags-command
     projectile-tags-exclude-patterns
@@ -181,9 +202,13 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
     treesit-font-lock-feature-list
     treesit-font-lock-settings
     url-http-end-of-headers
-    url-request-method url-request-extra-headers url-request-data
+    url-request-data
+    url-request-extra-headers
+    url-request-method
     vertico--input
-    yas-text yas-selected-text yas-wrap-around-region
+    yas-selected-text
+    yas-text
+    yas-wrap-around-region
     zeal-at-point-docset))
 
 (cl-defmacro nvp:decls (&key v f p)
@@ -224,14 +249,25 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-display-buffer-other-window
        nvp-display-fallback-function
        nvp-display-window-get-arguments
+       nvp-display-window-get-arguments
        nvp-env-add
        nvp-env-path-add
        nvp-ert-run-tests
-       nvp-eval-expression nvp-eval--display-expression
+       nvp-etags-find-definitions
+       nvp-eval--display-expression
+       nvp-eval-expression
        nvp-fallback-dired
        nvp-find-file-in-dir
        nvp-grab-symbol
-       nvp-hap-company nvp-hap-semantic nvp-hap-treesit nvp-hap-local nvp-hap-word
+       nvp-hap-company
+       nvp-hap-elisp
+       nvp-hap-info
+       nvp-hap-local
+       nvp-hap-lsp
+       nvp-hap-man
+       nvp-hap-semantic
+       nvp-hap-treesit
+       nvp-hap-word
        nvp-he-chained-symbol-beg
        nvp-he-elisp-setup
        nvp-he-flex-camel/snake
@@ -239,23 +275,28 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-he-flex-lisp-setup
        nvp-he-history-remove-trailing-paren
        nvp-he-history-setup
-       nvp-help-at-point nvp-hap-elisp nvp-hap-info nvp-hap-man nvp-hap-lsp
+       nvp-help-at-point
        nvp-imenu
        nvp-imenu-setup
        nvp-imenu-wrapper
-       nvp-indicate-abort nvp-indicate-cursor-pre nvp-indicate-cursor-post
+       nvp-indicate-abort
+       nvp-indicate-cursor-post
+       nvp-indicate-cursor-pre
        nvp-indicate-modeline
        nvp-indicate-pulse-region-or-line
        nvp-inf-read-process
-       nvp-install-mode nvp-install-modes
+       nvp-install-mode
+       nvp-install-modes
        nvp-list-wrap
        nvp-log
        nvp-log-default
        nvp-log-mode
        nvp-lookup-password
-       nvp-mark-defun nvp-mark-expand-to-previous-comments
+       nvp-mark-defun
+       nvp-mark-expand-to-previous-comments
        nvp-mode-header-regex
-       nvp-move-previous-heading nvp-move-forward-heading
+       nvp-move-forward-heading
+       nvp-move-previous-heading
        nvp-narrow-dwim
        nvp-newline-dwim--comment
        nvp-org-links
@@ -263,13 +304,16 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-pkg-directory-dwim
        nvp-proc-default-filter
        nvp-proc-default-sentinel
-       nvp-project-root nvp-project-parent nvp-project-locate-root
+       nvp-project-locate-root
+       nvp-project-parent
+       nvp-project-root
        nvp-read-elisp-function
        nvp-read-elisp-symbol
        nvp-read-elisp-variable
        nvp-read-mode
        nvp-regex-map-across-matches
-       nvp-repeat-set-cursor nvp-repeat-abort
+       nvp-repeat-abort
+       nvp-repeat-set-cursor
        nvp-repl-add
        nvp-repl-cd
        nvp-repl-config
@@ -291,13 +335,17 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-repl-show-result
        nvp-results-title
        nvp-scratch-minor-mode
-       nvp-setup-program nvp-setup-local
+       nvp-setup-local
+       nvp-setup-program
        nvp-shell
        nvp-shell-launch-terminal
        nvp-sort-alist
-       nvp-tag-find nvp-tag-find-etag
+       nvp-tag-find
+       nvp-tag-find-etag
        nvp-tag-list-decls
-       nvp-tag-list-tags nvp-tag-list-decls nvp-tag-repo
+       nvp-tag-list-decls
+       nvp-tag-list-tags
+       nvp-tag-repo
        nvp-theme-switch
        nvp-toggle-local-variable
        nvp-try-expand-dabbrev-closest-first
@@ -305,39 +353,65 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-try-expand-history
        nvp-try-expand-local-abbrevs
        nvp-window-configuration-restore
-       nvp-window-configuration-save
-       nvp-xref-go nvp-etags-find-definitions)
+       nvp-window-configuration-save nvp-xref-go)
 
      (nvp:decl                          ; builtins
        ert-run-tests-interactively
        find-function-other-window
-       he-substitute-string he-reset-string he-string-member he-init-string
-       hs-already-hidden-p hs-show-all hs-show-block hs-hide-all hs-hide-block
-       ielm ielm-return
-       imenu--make-index-alist imenu-default-create-index-function
+       he-init-string
+       he-reset-string
+       he-string-member
+       he-substitute-string
+       hs-already-hidden-p
+       hs-hide-all
+       hs-hide-block
+       hs-show-all
+       hs-show-block
+       ielm
+       ielm-return
+       imenu--make-index-alist
+       imenu-default-create-index-function
        minibuffer-keyboard-quit
        org-comment-dwim
        treesit-font-lock-recompute-features
        treesit-font-lock-rules
        w32-shell-execute
-       xref-pop-marker-stack xref-push-marker-stack)
+       xref-pop-marker-stack
+       xref-push-marker-stack)
 
      (nvp:decl                          ; external packages
-       ace-link ace-link-help ace-link-info
-       consult-yank-replace consult-recent-file
+       ace-link
+       ace-link-help
+       ace-link-info
+       consult-recent-file
+       consult-recent-file
+       consult-yank-replace
        diminish
        do-smooth-scroll
        edit-indirect
-       lsp lsp-deferred lsp-mode
-       paredit-mode paredit-comment-dwim
-       pos-tip-show pos-tip-tooltip-width pos-tip-show-no-propertize
-       projectile-acquire-root projectile-project-name
-       projectile-run-project projectile-install-project projectile-configure-project
+       lsp
+       lsp-deferred
+       lsp-mode
+       paredit-comment-dwim
+       paredit-mode
+       pos-tip-show
+       pos-tip-show-no-propertize
+       pos-tip-tooltip-width
+       projectile-acquire-root
+       projectile-configure-project
+       projectile-install-project
+       projectile-project-name
+       projectile-run-project
        smartparens-mode
        transient-get-value
        vertico--exhibit
-       yas-expand-snippet yas-lookup-snippet yas-hippie-try-expand
-       yas-minor-mode yas-text yas-activate-extra-mode yas-deactivate-extra-mode)))
+       yas-activate-extra-mode
+       yas-deactivate-extra-mode
+       yas-expand-snippet
+       yas-hippie-try-expand
+       yas-lookup-snippet
+       yas-minor-mode
+       yas-text)))
 
 (provide 'nvp-macs-decls)
 ;; Local Variables:

@@ -4,16 +4,11 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
-(nvp:decls :f ( tramp-dissect-file-name nvp-comint-redirect-to-string
-                shell-directory-tracker)
-           :p ("shell"))
+(nvp:decls :p (shell tramp) :f (nvp-comint-redirect-to-string))
 
 (autoload 'f-same-p "f")
 
 
-;;; Processes
-
-;; return some available shells
 (nvp:define-cache-runonce nvp-shell-shells ()
   "List of possible shells."
   (nvp:with-gnu/w32 '("sh" "bash" "fish" "zsh" "csh")
@@ -28,12 +23,14 @@
     (unless (string-blank-p cmd)
       (and add-history (comint-add-to-input-history cmd))
       (comint-delete-input)
-      ;; update current spot in history ring
+      ;; Update current spot in history ring
       (setq comint-save-input-ring-index comint-input-ring-index)
       (setq comint-input-ring-index nil)
       cmd)))
 
+
 ;;; Z directory tracking
+
 (defun nvp-shell-resync-dirs (&optional dirtrack)
   "Replacement for `shell-resync-dirs' to handle multiline prompt."
   (interactive (list t))

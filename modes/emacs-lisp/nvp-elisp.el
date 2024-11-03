@@ -331,13 +331,16 @@ Prefix handling:
                 (nvp-read-thing-at-point nil nvp-elisp-eval-thing))
            (or dash-p (<= raw 0))
            (or dash-p (eq arg 4)))))
-  (or thing (setq thing (if (nvp:ppss 'soc)
-                            'symbol
-                          nvp-elisp-eval-thing)))
-  (let ((bnds (bounds-of-thing-at-point thing)))
+  (let* ((region-p (region-active-p))
+         (thing (or thing region-p
+                    (setq thing (if (nvp:ppss 'soc) 'symbol
+                                  nvp-elisp-eval-thing))))
+         (bnds (if region-p (car (region-bounds))
+                 (bounds-of-thing-at-point thing))))
     (unless bnds
       (user-error "No region for \"%S\"" thing))
-    (cond ((eq ?\( (char-before (car bnds)))
+    (cond (region-p)
+          ((eq ?\( (char-before (car bnds)))
            (save-excursion
              (goto-char (car bnds))
              (setq bnds (bounds-of-thing-at-point 'list))))

@@ -2,9 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:req 'nvp-read 'subrs)
 (require 'nvp-read)
-(nvp:decls :v (ido-default-buffer-method))
+(nvp:decls)
 
 (autoload 'lm-header "lisp-mnt")
 (autoload 'find-function-library "find-func")
@@ -124,7 +123,7 @@ Optionally, search LISP-ONLY files (no C sources)."
         (unless (file-exists-p buffer-file-name)
           (nvp-display-init-template
            'mode-config 'emacs-lisp-mode nil nil
-           `(modename ,(nvp:read-mode-name mode))))))))
+           `(modename ,(nvp:mode-name mode))))))))
 
 ;;;###autoload
 (defun nvp-jump-to-mode-test (test action)
@@ -142,7 +141,7 @@ Optionally, search LISP-ONLY files (no C sources)."
                      (intern (nvp-read-mode "Jump to mode hook: "))
                    (nvp:mode t)))
            (str-mode-hook (format "%s-hook" mode))
-           (hook-fn-name (format "nvp-%s-hook" (nvp:read-mode-name mode)))
+           (hook-fn-name (format "nvp-%s-hook" (nvp:mode-name mode)))
            (hook-fn (intern-soft hook-fn-name)))
       (if hook-fn                       ; probably in its own config file
           (find-function-do-it hook-fn nil #'pop-to-buffer)

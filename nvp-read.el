@@ -3,9 +3,8 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)
-(nvp:req 'nvp-read 'subrs)
-(nvp:decls :f (help--symbol-completion-table function-called-at-point)
-           :v (ido-exit ido-fallback ido-text))
+(nvp:decls :f (function-called-at-point))
+
 (autoload 'eldoc-minibuffer-message "eldoc")
 (autoload 's-chop-suffixes "s")
 (autoload 'help--symbol-completion-table "help-fns")
@@ -40,15 +39,50 @@
        t))
      nil t nil 'nvp-read-thing-at-point-history default)))
 
-;; vertico needs metadata according to conventions in minibuffer.el,
+(defsubst nvp-read--relative-files (&optional root regexp)
+  "List filenames relative to ROOT matching REGEXP."
+  (let ((default-directory (or root default-directory)))
+    (mapcar (lambda (f) (file-relative-name f))
+            (directory-files-recursively
+             root (or regexp "") nil
+             (lambda (dir)
+               (not (string-match-p
+                     (rx "/"
+                         (or ".git" ".hg" ".svn"
+                             "node_modules" "target" "build"
+                             ".ccls-cache" ".clangd"
+                             ".mypy" ".vscode"  ".cache"))
+                     dir)))))))
+
+;; Vertico needs metadata according to conventions in minibuffer.el,
 ;; .ie 'boundaries and 'category
 (defun nvp-read--recursive-file-completion-table (&optional root regexp)
-  (let ((files (nvp:read-relative-files root regexp)))
+  (let ((files (nvp-read--relative-files root regexp)))
     (lambda (string pred action)
       (cond ((eq action 'metadata) '(metadata (category . file)))
             ((eq (car-safe action) 'boundaries)
              `(boundaries 0 . ,(length (cdr action))))
             (t (complete-with-action action files string pred))))))
+
+(eval-when-compile
+  (defmacro nvp:read-file-with-fallback (&optional root &rest body)
+    "Do BODY but catch \\='nvp-fallback. If result doesn't exist, then
+return its directory name."
+    (declare (indent 1))
+    (let (handler)
+      (nvp:skip-keywords body (handler))
+      (nvp:with-syms (res)
+        `(progn
+           (let* ((nvp-exit nil)
+                  (,res
+                   ,(if root
+                        `(expand-file-name
+                          (catch 'nvp-fallback ,@body) ,root)
+                      `(catch 'nvp-fallback ,@body))))
+             ,(if handler
+                  `(funcall ,handler ,res)
+                `(if (or (not ,root) (file-exists-p ,res)) ,res
+                   (file-name-directory ,res)))))))))
 
 ;;;###autoload
 (defun nvp-read-relative-recursively (root &optional regexp prompt default)
@@ -126,6 +160,13 @@
                    (and default (if (symbolp default) (symbol-name default)
                                   default))))
 
+(eval-when-compile
+  (defmacro nvp:read-default (default &rest body)
+    (declare (indent 1))
+    (macroexp-let2 nil def default
+      `(if (eq ,def :none) nil
+         (or ,def ,@body)))))
+
 ;;;###autoload
 (defun nvp-read-elisp-symbol (prompt &optional predicate default hist)
   "Read symbol using `help--symbol-completion-table' using PROMPT with DEFAULT.
@@ -199,14 +240,14 @@ Filter by PREDICATE if non-nil."
        #'(lambda (x) ;; ignore preceding 'nvp-' and ending '-config.el'
            (replace-regexp-in-string "\\(nvp-\\|\\(?:-config\\)?\\.el\\)" "" x))
        (directory-files nvp/config nil "^[^\\.].*\\.el$"))
-      nil nil nil 'nvp-read-config-history (nvp:read-mode-name default))))
+      nil nil nil 'nvp-read-config-history (nvp:mode-name default))))
 
 (defun nvp-read--mode-test (&optional prompt default)
   (let* ((ext (ignore-errors (nvp:path 'ext)))
          (default-directory nvp/test)
          (completion-ignored-extensions
           (cons "target" completion-ignored-extensions))
-         (files (nvp:read-relative-files nvp/test "^[^.][^.]")))
+         (files (nvp-read--relative-files nvp/test "^[^.][^.]")))
     (nvp:defq default (and ext (cl-find-if (lambda (f) (string-suffix-p ext f)) files)))
     (nvp:read-file-with-fallback nil
       :handler (lambda (f) (expand-file-name f nvp/test))

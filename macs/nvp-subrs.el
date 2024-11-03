@@ -366,6 +366,11 @@ When REGEXP, match filenames by regexps instead of globs."
 ;; -------------------------------------------------------------------
 ;;; I/O
 
+(defsubst nvp:mode-name (&optional mode)
+  "MODE's name minus the \"-mode\"."
+  (setq mode (nvp:as-string (or mode major-mode)))
+  (string-remove-suffix "-mode" mode))
+
 (defsubst nvp:prompt-default (prompt &optional default)
   (format-prompt
    (substring prompt 0 (string-match "[ :]+\\'" prompt)) default))

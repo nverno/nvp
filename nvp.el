@@ -8,10 +8,12 @@
 (require 'nvp-local)
 (require 'nvp-faces)
 (require 'company)
-(nvp:decls :p (projectile winner isearch consult lsp)
+(nvp:decls :p (projectile winner isearch consult lsp vertico)
            :f (lsp-format-buffer projectile-regenerate-tags))
-(nvp:auto "projectile" 'projectile-project-root)
-(nvp:auto "pos-tip" 'pos-tip-show-no-propertize 'pos-tip-tooltip-width)
+(autoload 'projectile-project-root "projectile")
+(autoload 'pos-tip-show-no-propertize "pos-tip")
+(autoload 'pos-tip-tooltip-width "pos-tip")
+
 (nvp:package-define-root)
 
 ;;; Aliases
@@ -109,36 +111,42 @@ called from minibuffer, or nil.")
        disassemble abbrev toggle run profile configure docs jump edit insert))
 
   (defconst nvp-mode-function-hooks
-    (mapcar (lambda (type) (intern (concat "nvp-" (symbol-name type) "-functions")))
+    (mapcar (lambda (type)
+              (intern (concat "nvp-" (symbol-name type) "-functions")))
             nvp-mode-hooks))
 
   (defconst nvp-mode-default-functions
-    (mapcar (lambda (el) (intern (format "nvp-%s-default-function" (symbol-name el))))
+    (mapcar (lambda (el)
+              (intern (format "nvp-%s-default-function" (symbol-name el))))
             nvp-mode-hooks)))
 
 (eval-when-compile
   (defmacro nvp:define-function-hooks ()
     (macroexp-progn
-     `(,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-function-hooks)
-       ,@(mapcar (lambda (el) `(defvar-local ,el nil)) nvp-mode-default-functions)))))
+     `(,@(mapcar (lambda (el) `(defvar-local ,el nil))
+                 nvp-mode-function-hooks)
+       ,@(mapcar (lambda (el) `(defvar-local ,el nil))
+                 nvp-mode-default-functions)))))
 (nvp:define-function-hooks)
-(setq-default nvp-compile-default-function         #'nvp-compile-default)
+
+(setq-default nvp-compile-default-function #'nvp-compile-default)
 (setq-default nvp-format-buffer-default-function
               (nvp:def nvp-format-buffer-default ()
                 (interactive)
-                (funcall (if (bound-and-true-p lsp-mode) #'lsp-format-buffer
+                (funcall (if (bound-and-true-p lsp-mode)
+                             #'lsp-format-buffer
                            #'delete-trailing-whitespace))))
-(setq-default nvp-tag-default-function             #'projectile-regenerate-tags)
-(setq-default nvp-install-default-function         #'projectile-install-project)
-(setq-default nvp-check-buffer-default-function    #'flycheck-list-errors)
-(setq-default nvp-test-default-function            #'projectile-test-project)
-(setq-default nvp-configure-default-function       #'projectile-configure-project)
-(setq-default nvp-run-default-function             #'projectile-run-project)
-(setq-default nvp-abbrev-default-function          #'nvp-abbrevd)
-(and (fboundp 'edit-indirect-region)
-     (setq-default nvp-edit-default-function       #'edit-indirect-region))
-(and (fboundp 'devdocs-lookup)
-     (setq-default nvp-docs-default-function       #'devdocs-lookup))
+(setq-default nvp-tag-default-function #'projectile-regenerate-tags)
+(setq-default nvp-install-default-function #'projectile-install-project)
+(setq-default nvp-check-buffer-default-function #'flycheck-list-errors)
+(setq-default nvp-test-default-function #'projectile-test-project)
+(setq-default nvp-configure-default-function #'projectile-configure-project)
+(setq-default nvp-run-default-function #'projectile-run-project)
+(setq-default nvp-abbrev-default-function #'nvp-abbrevd)
+(when (fboundp 'edit-indirect-region)
+  (setq-default nvp-edit-default-function #'edit-indirect-region))
+(when (fboundp 'devdocs-lookup)
+  (setq-default nvp-docs-default-function #'devdocs-lookup))
 
 (defsubst nvp-today () (format-time-string "%0m/%0e/%y"))
 
@@ -149,19 +157,20 @@ called from minibuffer, or nil.")
 (defvar-local nvp-newline-comment-continue t
   "Use comment continuations in applicable modes.")
 
-;; add additional newline when between syntactic open/closer
 (defun nvp-newline-dwim--parens (&optional arg)
+  "Add additional newline when between syntactic open/closer."
   (save-excursion
     (when (nvp:between-empty-parens-p)
       (newline-and-indent)))
   (newline arg 'interactive))
 
-;; decide if newlines should add comment continuations in the
-;; current comment block
 (defun nvp-newline--comment-continue-p (syntax &optional cmt-cont)
+  "Decide if newlines should add comment continuations in the current comment
+block."
   (nvp:defq cmt-cont comment-continue)
   (when cmt-cont
-    (let ((cmt-beg-re (concat "\\s-*" (string-trim (regexp-quote cmt-cont)))))
+    (let ((cmt-beg-re (concat "\\s-*" (string-trim
+                                       (regexp-quote cmt-cont)))))
       (save-excursion
         (beginning-of-line)
         (let ((start (<= (point) (nth 8 syntax))))
@@ -170,18 +179,18 @@ called from minibuffer, or nil.")
                             'font-lock-comment-face)))
               (looking-at-p cmt-beg-re)))))))
 
-;; add a comment continuation string when in nestable doc comments
 (defun nvp-newline-dwim--comment (syntax &optional arg cmt-cont)
+  "Add a comment continuation string when in nestable doc comments."
   (if (not (and nvp-newline-comment-continue
-                (or (integerp (nth 4 syntax))         ; nestable comments, eg. ocaml
-                    (not (integerp (nth 7 syntax))))  ; /* */ style comments
+                (or (integerp (nth 4 syntax)) ; nestable comments, eg. ocaml
+                    (not (integerp (nth 7 syntax)))) ; /* */ style comments
                 (nvp-newline--comment-continue-p syntax cmt-cont)))
       (newline-and-indent arg)
     (dotimes (_ (or arg 1))
       (insert ?\n (or cmt-cont comment-continue " "))
       (indent-according-to-mode))))
 
-;; generics with defaults - lisp modes don't do anything special
+;; Generics with defaults - lisp modes don't do anything special
 (cl-defgeneric nvp-newline-dwim-prefix (&optional arg)
   "Generic function to handle newline dwim in special contexts with prefix ARG."
   (newline arg 'interactive))
@@ -218,17 +227,17 @@ Dispatches to generic handlers with ARG."
 ;; -------------------------------------------------------------------
 ;;; Completion
 
-(nvp:decl vertico-directory-tidy vertico-insert vertico-exit vertico--metadata-get)
-
-(defsubst nvp-vertico-completing-file-p ()
+(declare-function vertico--metadata-get "vertico")
+(defsubst nvp-vertico--completing-file-p ()
   (eq 'file (vertico--metadata-get 'category)))
 
 (defun nvp-vertico-directory-up (&optional _)
-  "Like `vertico-directory-up' except works when completing against relative paths."
+  "Like `vertico-directory-up' except works when completing against relative
+paths."
   (interactive)
   (when (and (> (point) (minibuffer-prompt-end))
              (eq (char-before) ?/)
-             (nvp-vertico-completing-file-p))
+             (nvp-vertico--completing-file-p))
     (let* ((path (buffer-substring (minibuffer-prompt-end) (point)))
            (parent (file-name-directory (directory-file-name path))))
       (delete-minibuffer-contents)
@@ -241,7 +250,7 @@ Otherwise just call `vertico-insert'. If this was previous command, call
 `vertico-insert'. If there is only one match call `vertico-exit'."
   (interactive)
   (--if-let (and (not (eq this-command last-command))
-                 (nvp-vertico-completing-file-p)
+                 (nvp-vertico--completing-file-p)
                  (buffer-substring
                   (minibuffer-prompt-end)
                   (max (point) (minibuffer-prompt-end))))
@@ -253,9 +262,9 @@ Otherwise just call `vertico-insert'. If this was previous command, call
               (t
                (pcase-let* ((`(,str . ,pt) comp)
                             (pos (+ pt (minibuffer-prompt-end))))
-                 (cond ((string= it str)    ; no change
+                 (cond ((string= it str) ; no change
                         (goto-char pos))
-                       (t                   ; replace with longest common prefix
+                       (t               ; replace with longest common prefix
                         (delete-minibuffer-contents)
                         (insert str)
                         (goto-char pos)))))))
@@ -296,34 +305,33 @@ Otherwise just call `vertico-insert'. If this was previous command, call
 ;; -------------------------------------------------------------------
 ;;; Advices
 
-;; add smooth-scrolling
+;; Add smooth-scrolling
 (nvp:advise-commands #'do-smooth-scroll
   :after '(nvp-move-next5 nvp-move-prev5))
 
-;; don't run my `shell-mode-hook' during `shell-command' calls
+;; Don't run `shell-mode-hook' during `shell-command' calls
 (defvar shell-mode-hook)
 (defun nvp@shell-command-no-hook (orig-fn &rest args)
   (let ((shell-mode-hook
          (delq 'nvp-shell-mode-hook (bound-and-true-p shell-mode-hook))))
     (apply orig-fn args)))
 
-;; when running in batch mode `shell-mode-hook' is undefined
+;; When running in batch mode `shell-mode-hook' is undefined
 (unless noninteractive
   (dolist (cmd '(shell-command async-shell-command))
     (advice-add cmd :around #'nvp@shell-command-no-hook)))
 
-;; dont move point
 (defun nvp@save-excurison (orig-fn &rest args)
   (save-excursion (apply orig-fn args)))
 
-;; ensure spaces when aligning / commenting
 (defun nvp@no-tabs (old-fn &rest args)
+  "Ensure spaces when aligning / commenting."
   (let (indent-tabs-mode)
     (apply old-fn args)))
 (nvp:advise-commands #'nvp@no-tabs :around '(comment-dwim align align-regexp))
 
-;; apply function in calling buffer when currently in minibuffer
 (defun nvp@do-switch-buffer (old-fn &rest args)
+  "Apply function in calling buffer when currently in minibuffer."
   (with-current-buffer (let ((win (minibuffer-selected-window)))
                          (if (window-live-p win) (window-buffer win)
                            (current-buffer)))
@@ -368,10 +376,10 @@ Otherwise just call `vertico-insert'. If this was previous command, call
       (error (and pushed (pop-mark))
              (error (error-message-string err))))))
 
+
 ;; -------------------------------------------------------------------
 ;;; Windows / Buffers
 
-;; save / restore window configurations
 (defun nvp-window-configuration-save ()
   (push (current-window-configuration) nvp-window-configuration-stack))
 

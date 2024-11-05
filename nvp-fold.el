@@ -8,7 +8,7 @@
 (require 'nvp)
 (nvp:decls)
 
-(nvp:transient-toggle nvp-hideshow-menu hs-allow-nesting)
+(nvp:transient-define-vars nvp--menu (hs-allow-nesting . t))
 
 (defun nvp-hideshow-menu--quit ()
   (interactive)
@@ -27,7 +27,7 @@
     ("s" "All" hs-show-all)
     ("b" "Block" hs-show-block)]
    ["Settings"
-    (":n" "Remember nested" nvp-hideshow-menu--toggle-hs-allow-nesting)]]
+    (":n" "Remember nested" nvp--menu-hs-allow-nesting)]]
   (interactive)
   (hs-minor-mode 1)
   (transient-setup 'nvp-hideshow-menu))

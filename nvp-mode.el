@@ -122,7 +122,7 @@
 ;; -------------------------------------------------------------------
 ;;; Menu
 
-(nvp:transient-toggle nvp-mode-menu nvp-mode-verbose)
+(nvp:transient-define-vars nvp--menu (nvp-mode-verbose . t))
 
 (defun nvp-mode-clear-cache (&optional all)
   (interactive "P")
@@ -159,7 +159,7 @@
     ("s" "Search docs" nvp-docs :if-non-nil nvp-docs-functions)
     ("M-?" "Describe mode" nvp-dev-describe-mode :transient nil)]
    ["Settings"
-    (":v" "Toggle verbose" nvp-mode-menu--toggle-nvp-mode-verbose)
+    (":v" "Toggle verbose" nvp--menu-mode-verbose)
     (":r" "Clear config" nvp-mode-clear-cache)]])
 
 (provide 'nvp-mode)

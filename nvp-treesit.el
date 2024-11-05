@@ -132,9 +132,9 @@ With prefix, add neovim sources first."
 (defsubst nvp-treesit-ready-p ()
   (ignore-errors (treesit-buffer-root-node)))
 
-(nvp:transient-toggle nvp-treesit-menu
-  treesit--font-lock-verbose
-  treesit--indent-verbose)
+(nvp:transient-define-vars nvp--menu
+  (treesit--font-lock-verbose . t)
+  (treesit--indent-verbose . t))
 
 (autoload 'ts-sources-browse-repo "ts-sources")
 
@@ -169,10 +169,8 @@ With prefix, add neovim sources first."
    ["Debug"
     ("si" "Toggle missing indent hl" ts-debug-show-missing-indent
      :if nvp-treesit-ready-p)
-    (":i" "Indent verbose"
-     nvp-treesit-menu--toggle-treesit--indent-verbose)
-    (":f" "Font debug"
-     nvp-treesit-menu--toggle-treesit--font-lock-verbose)]]
+    (":i" "Indent verbose" nvp--menu-treesit--indent-verbose)
+    (":f" "Font debug" nvp--menu-treesit--font-lock-verbose)]]
   (interactive)
   (require 'ts-util nil t)
   (transient-setup 'nvp-treesit-menu))

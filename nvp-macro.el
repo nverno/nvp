@@ -122,6 +122,24 @@ If `nvp-exit' is set to \\='fallback during BODY, call either FALLBACK or
                  :variable ',var
                  :reader (lambda (&rest _) (not ,var)))))))
 
+(defmacro nvp:transient-define-vars (prefix &rest vars)
+  "Define transient infix commands to set lisp VARS."
+  (declare (indent defun))
+  (macroexp-progn
+   (cl-loop for var in vars
+            for sym = (if (listp var) (car var) var)
+            for args = (and (listp var) (cdr var))
+            for name = (format "%s-%s" prefix
+                               (string-remove-prefix
+                                "nvp-" (symbol-name sym)))
+            collect `(transient-define-infix ,(intern name) ()
+                       :class 'transient-lisp-variable
+                       :variable ',sym
+                       ,@(if (eq t args)
+                             `(:reader (lambda (&rest _) (not ,sym)))
+                           args)))))
+
+
 ;; -------------------------------------------------------------------
 ;;; Repeat
 

@@ -84,14 +84,14 @@ In strings, ignore doc comment prefixes/suffixes that confuse xref."
         (dolist (pos parens)
           (goto-char (1+ pos))
           (forward-sexp)
-          (skip-chars-forward "^.)")
+          (skip-chars-forward " \t\n")
           (and (eq ?. (char-after))
                (cl-return (bounds-of-thing-at-point 'list))))))))
 (put 'cons 'bounds-of-thing-at-point 'nvp-elisp-bounds-of-cons)
 
 (defun nvp-elisp-bounds-of-alist ()
   "Return bounds of alist at point.
-Also returns bounds of type (some-macro (&rest args) (a . b) (c . d) ...)."
+Also returns bounds of type (some-macro ...args (a . b) (c . d) ...)."
   (save-excursion
     (and (eq ?\' (char-after))
          (forward-char 1))

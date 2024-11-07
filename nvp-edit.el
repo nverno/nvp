@@ -181,21 +181,36 @@ NOTE: when not sorting by USE-REGEXP, comments are erased in the list!!
 ARGS are key-value pairs passed to `sort'."
   (interactive
    (let ((regexp-p (eq '- current-prefix-arg)))
-     `(,@(or (and (use-region-p) (list (region-beginning) (region-end)))
+     `(,@(or (and (use-region-p)
+                  (list (region-beginning) (region-end)))
              (save-restriction
                (widen)
                (let ((bnds
                       (or (bounds-of-thing-at-point 'alist)
-                          (and-let* ((bnds (bounds-of-thing-at-point 'cons)))
-                            (setq regexp-p t)
-                            (goto-char (1- (car bnds)))
-                            (bounds-of-thing-at-point 'list)))))
-                 (when bnds
+                          (save-excursion
+                            (and-let* ((bnds (bounds-of-thing-at-point 'cons)))
+                              (goto-char (1- (car bnds))))
+                            (and-let* ((bnds (bounds-of-thing-at-point 'list)))
+                              (goto-char (1+ (car bnds)))
+                              (while (and (< (point) (cdr bnds))
+                                          (not (eq ?\( (char-after))))
+                                (forward-sexp)
+                                (skip-chars-forward " \t\n"))
+                              (when (and (eq ?\( (char-after))
+                                         (save-excursion
+                                           (forward-char)
+                                           (thing-at-point 'cons)))
+                                (setq regexp-p t)
+                                (cons (1- (point)) (cdr bnds))))))))
+                 (if (null bnds)
+                     (list nil nil)
                    (nvp-indicate-pulse-region-or-line (car bnds) (cdr bnds))
                    (list (car bnds) (cdr bnds))))))
        ,regexp-p
        :key car
        :reverse ,current-prefix-arg)))
+  (unless (and start end)
+    (user-error "No alist at point."))
   (if use-regexp
       (nvp-sort--alist-regexp start end (plist-get args :reverse))
     (replace-region-contents
@@ -291,6 +306,8 @@ With prefix, read CHAR to wrap with."
     (setq char (char-to-string (read-char "Wrap with: ")))
     (nvp:prefix-shift -1))
   (let* ((pair (cons char char))
+         ;; (sp-wrap-from-point t)
+         ;; (sp-wrap-entire-symbol t)
          (sp-pair-list
           (if prompt (cons pair sp-pair-list)
             (append sp-pair-list (list pair)))))

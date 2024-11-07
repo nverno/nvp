@@ -101,6 +101,7 @@
   (interactive)
   (let ((session (tabulated-list-get-id)))
     (when (and session (y-or-n-p "Load session? "))
+      (kill-buffer (current-buffer))
       (nvp-session-load (file-name-directory session)
                         (file-name-nondirectory session)))))
 

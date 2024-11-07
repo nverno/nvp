@@ -95,24 +95,25 @@
 ;; -------------------------------------------------------------------
 ;;; Menu
 
-(defun nvp-window-menu--split-vertical ()
+(defun nvp--menu-split-window-vertical ()
   (interactive)
   (split-window-right)
   (windmove-right))
 
-(defun nvp-window-menu--split-horiz ()
+(defun nvp--menu-split-window-horiz ()
   (interactive)
   (split-window-below)
   (windmove-down))
 
-(defun nvp-window-menu--ace-swap ()
+(defun nvp--menu-ace-swap-windows ()
   (interactive)
   (ace-window 4))
 
-(defun nvp-window-menu--ace-delete ()
+(defun nvp--menu-ace-delete-window ()
   (interactive)
   (ace-window 16))
 
+;; TODO(11/07/24): remove
 (defun nvp-window-tst ()
   (interactive)
   (message "frame root: %S" (frame-root-window (selected-window)))
@@ -128,15 +129,16 @@
     ("k" "↑" windmove-up :transient t)
     ("l" "→" windmove-right :transient t)
     " -----"
-    ("m" "Swap" nvp-window-menu--ace-swap :transient t)
+    ("m" "Swap" nvp--menu-ace-swap-windows :transient t)
     ("M" "Swap states" window-swap-states :transient t)]
    ["Toggle"
     ("i" "Side windows" window-toggle-side-windows :transient t)
     ("D" "Dedicated" toggle-window-dedicated :transient t)]
    ["Split"
-    ("v" "Vertical" nvp-window-menu--split-vertical :transient t)
-    ("c" "Horizontal" nvp-window-menu--split-horiz :transient t)
+    ("v" "Vertical" nvp--menu-split-window-vertical :transient t)
+    ("c" "Horizontal" nvp--menu-split-window-horiz :transient t)
     ("sb" "Root below" split-root-window-below :transient t)
+    ;; TODO(11/07/24): wrong root from transient menu
     ("sr" "Root right" nvp-window-tst;; split-root-window-right
      :transient t)
     " -----"
@@ -144,7 +146,7 @@
     ("y" "Redo" winner-redo :transient t)]
    ["Delete"
     ("dd" "Delete" delete-window :transient t)
-    ("da" "Ace delete" nvp-window-menu--ace-delete :transient t)
+    ("da" "Ace delete" nvp--menu-ace-delete-window :transient t)
     ("dv" "Delete vertically" delete-other-windows-vertically :transient t)
     ("do" "Delete all other" delete-other-windows :transient t)]
    ["Resize"
@@ -165,16 +167,6 @@
 
 
 ;;; Resizing Windows
-
-;;;###autoload(autoload 'nvp-window-resize-menu "nvp-window" nil t)
-(transient-define-prefix nvp-window-resize-menu ()
-  ["Resize Window"
-   ("h" "←" nvp-window-move-splitter-left :transient t)
-   ("j" "↓" nvp-window-move-splitter-down :transient t)
-   ("k" "↑" nvp-window-move-splitter-up :transient t)
-   ("l" "→" nvp-window-move-splitter-right :transient t)]
-  ["Actions"
-   ("q" "Back to window menu" nvp-window-menu :transient transient--do-replace)])
 
 (defun nvp-window-move-splitter-left (arg)
   "Move window splitter left."
@@ -207,6 +199,16 @@
         (windmove-find-other-window 'up))
       (shrink-window arg)
     (enlarge-window arg)))
+
+;;;###autoload(autoload 'nvp-window-resize-menu "nvp-window" nil t)
+(transient-define-prefix nvp-window-resize-menu ()
+  ["Resize Window"
+   ("h" "←" nvp-window-move-splitter-left :transient t)
+   ("j" "↓" nvp-window-move-splitter-down :transient t)
+   ("k" "↑" nvp-window-move-splitter-up :transient t)
+   ("l" "→" nvp-window-move-splitter-right :transient t)]
+  ["Actions"
+   ("q" "Back to window menu" nvp-window-menu :transient transient--do-replace)])
 
 (provide 'nvp-window)
 ;; Local Variables:

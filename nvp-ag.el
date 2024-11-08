@@ -36,10 +36,9 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (nvp:req 'nvp-find 'subrs)
-(require 'ag)
-(require 'nvp)
+(require 'ag nil t)
 (require 'nvp-find)
-(nvp:decls)
+(nvp:decls :p (ag))
 
 (defconst nvp-ag-file-prefix "File: "
   "Prefix added by `ag-filter' to grouped matches.")
@@ -126,7 +125,7 @@ Ignore elpa directory by default, but with any prefix, prompt to include."
 (0) `ag-project-dired-regexp'
 (1) `ag-project-dired'
 (2) `ag-dired-regexp'
-(3) `ag-dired'" 
+(3) `ag-dired'"
   (interactive (list (prefix-numeric-value current-prefix-arg)))
   (call-interactively
    (pcase arg

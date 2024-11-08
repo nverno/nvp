@@ -256,15 +256,16 @@ should formatted as an alist like `imenu-generic-expression'."
 ;;; Mode Line
 (defvar-local nvp-imenu--active-mode nil "Non-nil during completion.")
 
-(defvar nvp-imenu-mode-line
+(defvar-local nvp-imenu-mode-line
   `(" Imenu:"
-    (:eval (format
-            (propertize "%s" 'face 'font-lock-warning-face)
-            (substring (symbol-name (nvp-imenu--visibility)) 0 3)))))
+    (:propertize
+     (format "%s" (substring (symbol-name (nvp-imenu--visibility)) 0 3))
+     face font-lock-warning-face)))
+(put 'nvp-imenu-mode-line 'risky-local-variable-p t)
 
 (or (assq 'nvp-imenu--active-mode minor-mode-alist)
     (nconc minor-mode-alist
-           (list `(nvp-imenu--active-mode ,nvp-imenu-mode-line))))
+           `((nvp-imenu--active-mode ,nvp-imenu-mode-line))))
 
 (defun nvp-imenu--active-mode (&optional arg idx)
   (or idx (setq idx nvp-imenu--idx))

@@ -2,4 +2,4 @@
 # name: autoload-autoload
 # key: #aa
 # --
-;;;###autoload(autoload '$1 "${2:`(nvp-yas-bfn-no-ext)`}")
+;;;###autoload(autoload '${1:`(nvp-parse-current-function)`} "${2:`(nvp-yas-bfn-no-ext)`}"${3: nil t})

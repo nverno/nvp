@@ -270,6 +270,11 @@ Otherwise just call `vertico-insert'. If this was previous command, call
                         (goto-char pos)))))))
     (vertico-insert)))
 
+;; FIXME(09/27/24):
+(advice-add 'vertico-directory-up :override #'nvp-vertico-directory-up)
+(add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy)
+
+;;; Fallback
 (defun nvp-fallback-minibuffer-default (&rest _)
   "Throw \\='nvp-fallback with input."
   (interactive)
@@ -297,10 +302,6 @@ Otherwise just call `vertico-insert'. If this was previous command, call
   (and (minibufferp)
        (bound-and-true-p nvp-fallback-minibuffer-function)
        (funcall-interactively nvp-fallback-minibuffer-function args)))
-
-;;; FIXME(09/27/24):
-(advice-add 'vertico-directory-up :override #'nvp-vertico-directory-up)
-(add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy)
 
 ;; -------------------------------------------------------------------
 ;;; Advices

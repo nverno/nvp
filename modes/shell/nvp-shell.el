@@ -173,7 +173,7 @@ If none found, return list of all terminal buffers."
     (direction         . below)
     (window-min-height . 0.35)
     (window-height     . 0.5)
-    (preserve-size . (t . t)))
+    (preserve-size . (t . nil)))
   "Display action for `nvp-shell'.")
 
 ;;;###autoload

@@ -122,7 +122,7 @@
           (push pos res))
         (nreverse res)))))
 
-(defun nvp-link-maybe-imenu ()
+(defun nvp-link--maybe-imenu ()
   (and nvp-link-default-imenu
        (or (bound-and-true-p imenu--index-alist)
            (and (fboundp 'imenu--make-index-alist)
@@ -140,33 +140,53 @@
       (funcall action)
     (unless (and ace-link-fallback-function
                  (funcall ace-link-fallback-function))
-      (if (nvp-link-maybe-imenu)
+      (if (nvp-link--maybe-imenu)
           (nvp-link-imenu)
         (error "%S isn't supported" major-mode)))))
 
 ;;;###autoload
-(defun nvp-goto-link (&optional arg)
-  "Jump to link in current window if mode is recognized.
-Otherwise, try jumping to links in visible buffers instead.
-With \\[universal-argument] call in next visible window."
-  (interactive "P")
-  (let ((win (if arg (next-window (selected-window) nil nil)
-               (selected-window))))
+(defun nvp-goto-link (&optional win-or-buf all-frames)
+  "Jump to link in current buffer or WIN-OR-BUF if mode is recognized.
+
+Otherwise, try jumping to links in other buffers instead.
+Prefixes:
+
+  0	Call in current other-window scrolling buffer.
+  \\[universal-argument]   Try other buffer immediately.
+  \\[universal-argument]\\[universal-argument]   Try visible windows on\
+ ALL-FRAMES."
+  (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))
+                      (arg (abs raw)))
+                 (list (cond ((memq arg '(- 0))
+                              (and-let* ((win
+                                          (nvp-other-window-scroll-default)))
+                                (display-buffer (window-buffer win))
+                                win))
+                             ((= 4 arg) (next-window
+                                         (selected-window) nil nil))
+                             (t (selected-window)))
+                       (and (> arg 4)
+                            'visible))))
+  (let ((win (cond ((windowp win-or-buf) win-or-buf)
+                   ((bufferp win-or-buf)
+                    (get-buffer-window win-or-buf all-frames))
+                   (t (selected-window)))))
     (with-selected-window win
-      (let ((cur-buf (current-buffer)))
-        (let ((ace-link-fallback-function
-               (lambda ()
-                 (--when-let
-                     (nvp:visible-windows
-                       :test-fn
-                       (lambda (buf)
-                         (and (not (eq buf cur-buf))
-                              (assoc (buffer-local-value 'major-mode buf)
-                                     nvp-ace-link-major-mode-actions))))
-                   (with-selected-window (car (nvp-sort-window-list it))
-                     (prog1 t
-                       (call-interactively #'nvp-ace-link)))))))
-          (call-interactively #'nvp-ace-link))))))
+      (let* ((cur-buf (current-buffer))
+             (ace-link-fallback-function
+              (lambda ()
+                (--when-let
+                    (nvp:visible-windows
+                      :test-fn (lambda (buf)
+                                 (and (not (eq buf cur-buf))
+                                      (assoc
+                                       (buffer-local-value 'major-mode buf)
+                                       nvp-ace-link-major-mode-actions)))
+                      :all-frames nil)
+                  (with-selected-window (car (nvp-sort-window-list it))
+                    (prog1 t
+                      (call-interactively #'nvp-ace-link)))))))
+        (call-interactively #'nvp-ace-link)))))
 
 ;; -------------------------------------------------------------------
 ;;; Link Extensions
@@ -176,7 +196,7 @@ With \\[universal-argument] call in next visible window."
   (defmacro nvp:link--action (pos &rest body)
     "If POS is an address go there, otherwise handle with BODY."
     (declare (indent 1) (debug t))
-    `(if (and goto-address-mode
+    `(if (and (bound-and-true-p goto-address-mode)
               (number-or-marker-p ,pos)
               (cl-some (lambda (ov) (overlay-get ov 'goto-address))
                        (overlays-at ,pos)))
@@ -197,7 +217,7 @@ With \\[universal-argument] call in next visible window."
                     ,(if (null address)
                          collector
                        (macroexp-let2 nil collector collector
-                         `(if goto-address-mode
+                         `(if (bound-and-true-p goto-address-mode)
                               (sort (append (ace-link--addr-collect) ,collector))
                             ,collector)))
                     (avy--style-fn ,(or style 'avy-style))))))

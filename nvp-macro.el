@@ -471,7 +471,7 @@ as STRING."
 ;; others:
 ;; - `consult--local-let' :: buffer local let bind dynamic variables
 
-(cl-defmacro nvp:visible-windows (&key mode derived test-fn)
+(cl-defmacro nvp:visible-windows (&key mode derived test-fn (all-frames 'visible))
   "List buffers visible in current frame.
 If MODE is non-nil, only return buffers with matching (or DERIVED)
 \\='major-mode. Otherwise, if TEST-FN is non-nil only list buffers where
@@ -501,7 +501,7 @@ If MODE is non-nil, only return buffers with matching (or DERIVED)
                           `(funcall ,test-fn buff))
                        (push w res)))
              `(push w res)))
-        nil 'visible)
+        nil ',all-frames)
        res)))
 
 (defmacro nvp:buff--1 (path no-def)

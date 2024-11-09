@@ -40,7 +40,7 @@
                  ,@nvp-fixme-todo-keywords ,@nvp-fixme-warning-keywords)
          eow (? "(" (* (not (or ")" "\n"))) ")") (* white) ":")))
 
-;; collect occurences of fixme keywords in buffer
+;; Collect occurences of fixme keywords in buffer
 (nvp:define-cache nvp-fixme-collect-occurences ()
   :local t
   :predicate (not (buffer-modified-p))
@@ -48,13 +48,13 @@
     (goto-char (point-min))
     (let (case-fold-search res)
       (while (re-search-forward nvp-fixme-re nil 'move)
-        ;; only store locations inside of comments
+        ;; Only store locations inside of comments
         (and (nth 4 (syntax-ppss))
              (push (line-number-at-pos) res)))
       res)))
 
 ;; -------------------------------------------------------------------
-;;; Commands 
+;;; Commands
 
 (defun nvp-fixme-search (&optional back)
   (let ((case-fold-search t)
@@ -81,7 +81,7 @@
   (occur nvp-fixme-re))
 
 ;; -------------------------------------------------------------------
-;;; Mode 
+;;; Mode
 
 (defvar-keymap nvp-fixme-mode-map
   :doc "Fixme keymap"

@@ -391,11 +391,6 @@ Otherwise just call `vertico-insert'. If this was previous command, call
         (delete-window)
       (bury-buffer))))
 
-(defun nvp-kill-this-buffer ()
-  "Just kill the current buffer."
-  (interactive)
-  (kill-buffer (current-buffer)))
-
 (provide 'nvp)
 ;; Local Variables:
 ;; coding: utf-8

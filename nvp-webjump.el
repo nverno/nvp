@@ -33,8 +33,9 @@
     (cons (cadr urls) (mapconcat 'identity (cddr urls) " "))))
 
 (defun nvp-get-local-uris ()
-  "Find local jump uris. Use `nvp-local-uris' or if a local notes file is found,
-try to find links there."
+  "Find local jump uris.
+Use `nvp-local-uris' or if a local notes file is found, try to find links
+there."
   (or (bound-and-true-p nvp-local-uris)
       (--when-let (nvp:find-notes-file)
         (unless nvp-webjump-cache
@@ -45,7 +46,8 @@ try to find links there."
 ;;;###autoload
 (defun nvp-browse-webjump (&optional prompt use-defaults choices no-browse)
   "Jump to website."
-  (interactive (list (nvp:prefix 4) (nvp:prefix 16)))
+  (interactive (let ((raw (prefix-numeric-value current-prefix-arg)))
+                 (list (= raw 4) (>= raw 16))))
   (-let* ((extra-args nil)
           (type nil)
           (completion-ignore-case t)

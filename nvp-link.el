@@ -3,7 +3,6 @@
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'avy)
 (nvp:decls :p (ace) :v (org-link-any-re goto-address-mode) :f (ace-link-org))
 

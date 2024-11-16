@@ -56,7 +56,7 @@ in buffer *vagrant-status*."
   (interactive)
   (with-current-buffer (get-buffer-create "*xev*")
     (pop-to-buffer (current-buffer))
-    (local-set-key (kbd "C-c C-c") 'kill-this-buffer)
+    (local-set-key (kbd "C-c C-c") 'kill-current-buffer)
     (nvp:with-process "xev"
       :buffer-fn get-buffer-create
       :proc-filter nil

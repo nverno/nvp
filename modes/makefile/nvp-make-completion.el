@@ -23,29 +23,40 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(nvp:req 'nvp-makefile 'subrs)
 (require 'xref)
-(require 'nvp)
-(nvp:auto "info-look" 'info-lookup->completions)
-(nvp:auto "s" 's-lowercase-p)
 (nvp:decls :f (xref-make xref-location) :v (info-lookup-other-window-flag))
+(autoload 'info-lookup->completions "info-look")
+(autoload 's-lowercase-p "s")
 
-(defconst nvp-makefile--dir
-  (file-name-directory
-   (cond (load-in-progress load-file-name)
-         ((and (boundp 'byte-compile-current-file)
-               byte-compile-current-file))
-         (t (buffer-file-name)))))
+
+(nvp:package-define-root :name "nvp-makefile")
 
 (defconst nvp-makecomp-program
   (expand-file-name "bin/makevars.awk" nvp-makefile--dir))
 
 (defvar nvp-makecomp-program-switches "-prns")
 
-(eval-when-compile
-  (defvar nvp-makecomp--annotation
-    '((variable " <v>") (rule " <r>") (function " <f>") (environment " <e>")))
+;; Preceded by '[^$]$[{(]'
+(defsubst nvp--makefile-variable-or-function-p (pos)
+  (and (memq (char-before pos) '(?{ ?\())
+       (cl-decf pos))
+  (and (eq (char-before pos) ?$)
+       (not (eq (char-before (1- pos )) ?$))))
 
+(defsubst nvp--makefile-rule-line-p (&optional pos)
+  (save-excursion
+    (and pos (goto-char pos))
+    (beginning-of-line)
+    (looking-at-p "^[^ \t\n]*:")))
+
+(eval-and-compile
+  (defconst nvp-makecomp--annotation
+    '((variable " <v>")
+      (rule " <r>")
+      (function " <f>")
+      (environment " <e>"))))
+
+(eval-when-compile
   (defmacro nvp-makecomp:annotation (symbol)
     `(eval-when-compile (cadr (assoc ',symbol nvp-makecomp--annotation))))
 
@@ -58,7 +69,7 @@
 (cl-defstruct (nvp-makecomp-file
                (:constructor nvp-makecomp-make-file)
                (:copier nil))
-  variables                             ;variables from included files as well
+  variables                             ; variables from included files as well
   rules
   modtime)
 
@@ -124,7 +135,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
         ((table
           (cond
            ;; $(... or ${...
-           ((nvp:makefile-variable-or-function-p beg)
+           ((nvp--makefile-variable-or-function-p beg)
             (list
              (completion-table-merge
               (completion-table-with-cache
@@ -146,7 +157,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
              :company-location (apply-partially #'nvp-makecomp--location 'variables)
              :company-doc-buffer #'nvp-makecomp--doc-buffer))
            ;; rules => after <rulename>: ...
-           ((nvp:makefile-rule-line-p)
+           ((nvp--makefile-rule-line-p)
             (list
              (completion-table-with-cache
               (lambda (_string) (nvp-makecomp-candidates 'rules)))
@@ -173,7 +184,7 @@ TYPE is one of \\='all, \\='variables or \\='rules."
                            (>= (point) lim))
                   (forward-char 1)
                   (and (setq bnds (bounds-of-thing-at-point 'symbol))
-                       (nvp:makefile-variable-or-function-p (car bnds))
+                       (nvp--makefile-variable-or-function-p (car bnds))
                        (list 'fun-or-var (car bnds) (cdr bnds)))))
               (progn
                 (goto-char lim)

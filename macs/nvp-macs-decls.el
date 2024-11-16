@@ -222,6 +222,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
      ,(when p
         `(nvp:decl-prefixes ,@(nvp:as-list p)))
      (nvp:decl
+       nvp-other-window-scroll-default
        nvp-abbrev-expand-after-symbols-hook
        nvp-abbrev-expand-not-after-punct-p
        nvp-abbrev-expand-p

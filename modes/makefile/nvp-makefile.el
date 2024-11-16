@@ -18,14 +18,15 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'make-mode)
-(nvp:req 'nvp-makefile 'subrs)
-(nvp:auto "align" align-region)
-
 (nvp:decls :p (helm crm compilation)
            :f (nvp-makefile-indent compilation-read-command)
            :v (align-rules-list align-exclude-rules-list))
+(autoload 'align-region "align")
 
-(nvp:package-define-root :name "nvp-makefile")
+
+(defsubst nvp--makefile-p ()
+  (or (derived-mode-p 'makefile-mode)
+      (memq major-mode '(makefile-ts-mode))))
 
 (defun nvp-makefile-target-name ()
   (save-excursion
@@ -46,7 +47,19 @@
       (list openers closers))))
 
 (defconst nvp-makefile-defun-regexp
-  (nvp:concat (car nvp-makefile-open/close) "\\|" "^[^# \t\n]+:"))
+  (concat (car nvp-makefile-open/close) "\\|" "^[^# \t\n]+:"))
+
+(defsubst nvp--makefile-skip-escapes (search-fn)
+    (if (eq search-fn 're-search-backward)
+        (eq (line-beginning-position)
+            (nvp:goto 'boll))
+      (eq (line-end-position)
+          (nvp:goto 'eoll))))
+
+(defsubst nvp--makefile-defun-line-p ()
+  (save-excursion
+    (beginning-of-line 1)
+    (looking-at-p nvp-makefile-defun-regexp)))
 
 (defun nvp-makefile--match-opener (search-fn)
   (beginning-of-line)
@@ -59,11 +72,11 @@
   (let ((search-fn (if (> arg 0) #'re-search-backward #'re-search-forward))
         (pos (point-marker)))
     (and (< arg 0)                   ;searching forward -- skip initial beg .
-         (nvp:makefile--defun-line-p)
+         (nvp--makefile-defun-line-p)
          (end-of-line))
     (while (and (funcall search-fn nvp-makefile-defun-regexp nil 'move)
-                (not (nvp:makefile--skip-escapes search-fn))))
-    (if (nvp:makefile--defun-line-p)
+                (not (nvp--makefile-skip-escapes search-fn))))
+    (if (nvp--makefile-defun-line-p)
         (or (nvp:point 'boll) (point))  ;found beg
       (and (goto-char pos) nil))))     ;failed
 
@@ -102,7 +115,7 @@
   ("\\$(\\s-*info\\s-*\\([^)]*\\)" (1 'nvp-info-face prepend))
   ("\\$(\\s-*warning\\s-*\\([^)]*\\)" (1 'nvp-warning-face prepend))
   ("\\$(\\s-*error\\s-*\\([^)]*\\)" (1 'nvp-error-face prepend))
-  ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" (3 'nvp-line-escape-face))
+  ("\\(^\\|[^\\]\\)\\(\\\\\\\\\\)*\\(\\\\\\)$" (3 'nvp-line-escape-face prepend))
   ("\\([$]\\)[$]" (1 'font-lock-escape-face))
   ("\\(?:^\\|[^$]\\)\\([$]\\)(" (1 'font-lock-preprocessor-face)))
 
@@ -162,6 +175,15 @@ MAKEFILE should be a Makefile buffer or filename."
        (when (file-exists-p makefile)
          (nvp-makefile-targets--make makefile))))))
 
+(defsubst nvp--makefile-read-targets ()
+  (mapconcat 'identity (nvp-makefile-completing-read (buffer-file-name)) " "))
+
+(defmacro nvp-makefile-with-compilation-vars (&rest body)
+  `(let ((compilation-error-regexp-alist '(makefile))
+         (compilation-error-regexp-alist-alist
+          '(makefile "\\([^:]+\\):\\([0-9]+\\)" 1 2)))
+     ,@body))
+
 (defun nvp-makefile-save-and-compile (targets &optional arg)
   "Save and compile.
 With prefix ARG, run `helm-make' if bound or allow editing command to run
@@ -169,14 +191,14 @@ using `compilation-read-command'."
   (interactive
    (progn (save-buffer)
           (list (and (not (and current-prefix-arg (fboundp 'helm-make)))
-                     (nvp:makefile-read-targets))
+                     (nvp--makefile-read-targets))
                 current-prefix-arg)))
-  (if (and arg (fboundp 'helm-make)) (call-interactively #'helm-make)
+  (if (and arg (fboundp 'helm-make))
+      (call-interactively #'helm-make)
     (let ((command (concat "make -f " (buffer-file-name) " " targets)))
-      (nvp:makefile-with-compilation-vars
-       (compilation-start (if current-prefix-arg
-                              (compilation-read-command command)
-                            command))))))
+      (nvp-makefile-with-compilation-vars
+       (compilation-start
+        (if arg (compilation-read-command command) command))))))
 
 (defun nvp-makefile-run-target ()
   "Run target at point."

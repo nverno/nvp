@@ -60,7 +60,7 @@ found file.  File is determined by:
                              '(current-buffer))))))
                (with-current-buffer ,buff
                  (prog1 (progn ,@body)
-                   (and ,opened-p (kill-this-buffer)))))
+                   (and ,opened-p (kill-current-buffer)))))
           `(-let* (((&plist :buffer ,buff :file file) ,args)
                    (file (if (and file (file-exists-p file)) file
                            (or (and ,buff (setq ,buff (get-buffer ,buff))

@@ -1,7 +1,9 @@
 ;;; nvp-perl.el --- Perl -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-parse))
 (require 'cperl-mode)
 (nvp:decls)
 
@@ -38,7 +40,7 @@
       (let (res imports)
         (while (re-search-forward
                 (nvp:concat
-                 ;; Module 
+                 ;; Module
                  "\\<use\\>[ \t]*\\([.0-9A-Za-z:]+\\);?[ \t]*"
                  ;; Imports
                  "\\(?:qw(\\(?2:[^\)]+\\))\\|\\(?2:[^ \t]\\)\\)")
@@ -64,7 +66,7 @@
 ;; non-nil if point is in hash definition
 (defsubst nvp-perl-hash-p ()
   (save-excursion
-    (ignore-errors 
+    (ignore-errors
       (backward-up-list)
       (beginning-of-line)
       (looking-at-p ".*%.*="))))

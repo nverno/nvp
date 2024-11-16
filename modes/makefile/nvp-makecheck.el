@@ -4,8 +4,9 @@
 ;; - https://github.com/mrtazz/checkmake
 ;; - make --warn-undefined-variables
 ;;; Code:
-(eval-when-compile (require 'nvp-macro))
-(nvp:req 'nvp-makefile 'subrs)
+(eval-when-compile
+  (require 'nvp-macro)
+  (require 'nvp-makefile))
 (require 'compile)
 
 
@@ -23,8 +24,8 @@
 (defun nvp-makefile-check (&optional targets)
   "Dry run makefile TARGETS to report undefined variables in compilation
  buffer."
-  (interactive (list (nvp:makefile-read-targets)))
-  (nvp:makefile-with-compilation-vars
+  (interactive (list (nvp--makefile-read-targets)))
+  (nvp-makefile-with-compilation-vars
    (compilation-start
     (concat "make -n --warn-undefined-variables -f "
             (buffer-file-name) " " targets))))
@@ -37,7 +38,7 @@
 (defun nvp-makefile-checkmake (file &optional args)
   "Run checkmake on makefile."
   (interactive (list (if (or (> (prefix-numeric-value current-prefix-arg) 4)
-                             (not (nvp:makefile-p)))
+                             (not (nvp--makefile-p)))
                          (read-file-name "Makefile: ")
                        (buffer-file-name))
                      (or (and current-prefix-arg
@@ -52,8 +53,8 @@
 ;;;###autoload
 (defun nvp-makefile-debug (&optional targets)
   "Run makefile TARGETS with shell debugging output."
-  (interactive (list (nvp:makefile-read-targets)))
-  (nvp:makefile-with-compilation-vars
+  (interactive (list (nvp--makefile-read-targets)))
+  (nvp-makefile-with-compilation-vars
    (compilation-start
     (concat
      "cat <<TARGET | make -f - run-debug
@@ -73,7 +74,7 @@ Default to dry-run trace."
                        '("--trace" "-n"))))
   (and (listp args)
        (setq args (mapconcat 'identity args " ")))
-  (nvp:makefile-with-compilation-vars
+  (nvp-makefile-with-compilation-vars
    (compilation-start
     (concat "remake " args)
     (not (null (string-match-p (rx (seq symbol-start (or "-X" "--debugger")))

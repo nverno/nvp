@@ -33,7 +33,7 @@
                                        (pop-to-buffer (process-buffer p)))
                               (with-current-buffer (process-buffer p)
                                 (prog1 (nvp-ocaml--parse-sigs)
-                                  (kill-this-buffer))))))))
+                                  (kill-current-buffer))))))))
     (process-send-string
      proc (format "module type S = module type of %s;;\n" module))))
 

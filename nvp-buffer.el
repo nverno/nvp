@@ -65,7 +65,7 @@ matching MODE. Prompt for MODE with prefix."
   (if-let* ((file (buffer-file-name)))
       (when (y-or-n-p (format "Really delete %s? " (nvp:path 'bfs)))
         (delete-file file delete-by-moving-to-trash)
-        (kill-this-buffer))
+        (kill-current-buffer))
     (user-error "No file is currently being edited")))
 
 ;;;###autoload

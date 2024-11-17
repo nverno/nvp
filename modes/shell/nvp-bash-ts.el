@@ -41,9 +41,8 @@
       (group "@" (* alnum)) (* white)
       (or (seq "[" (group-n 3 (* (not "]"))) "]")
           (seq "<" (group-n 3 (* (not ">"))) ">")
-          (group-n 3 (+ (not (or white "\n")))))
-      (* white)
-      (group (* nonl)))
+          (group-n 3 (* (not (or white "\n")))))
+      (? (+ white) (group (* nonl))))
   "Regex to match bash doc comments.")
 
 (defun bash-ts--fontify-doc-comment (node override start end &rest _)
@@ -63,9 +62,10 @@
              'link
            'font-lock-variable-name-face)
          override start end)
-        (treesit-fontify-with-override
-         (match-beginning 4) (match-end 4)
-         'font-lock-comment-face override start end)))))
+        (when (match-beginning 4)
+          (treesit-fontify-with-override
+           (match-beginning 4) (match-end 4)
+           'font-lock-comment-face override start end))))))
 
 (defun bash-ts--fontify-shellcheck-comment (node override start end &rest _)
   (save-excursion

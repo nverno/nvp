@@ -46,25 +46,33 @@
 (defun nvp-elisp-bounds-of-symbol-at-point ()
   "In code, ignore \"@\" prefix from symbols.
 In strings, ignore doc comment prefixes/suffixes that confuse xref."
-  (let (bounds-of-thing-at-point-provider-alist)
-    (when-let* ((bnds (bounds-of-thing-at-point 'symbol)))
-      (let* ((str-p (nvp:ppss 'str))
-             (pre (if str-p '(?{ ?<) '(?@)))
-             (post (if str-p '(?} ?>))))
-        (while (and (< (car bnds) (cdr bnds))
-                    (memq (char-after (car bnds)) pre))
-          (setf (car bnds) (1+ (car bnds))))
-        (while (and post
-                    (< (car bnds) (cdr bnds))
-                    (memq (char-before (cdr bnds)) post))
-          (setf (cdr bnds) (1- (cdr bnds)))))
-      bnds)))
+  (when-let* ((bnds (ignore-errors
+                      (save-excursion
+                        (let* ((orig (point))
+                               (beg (progn (funcall (get 'symbol 'beginning-op))
+                                           (point)))
+                               (end (when (<= beg orig)
+                                      (progn (forward-thing 'symbol 1)
+                                             (point)))))
+                          (when (and (<= beg orig) (<= orig end) (< beg end))
+                            (cons beg end)))))))
+    (let* ((str-p (nvp:ppss 'str))
+           (pre (if str-p '(?{ ?<) '(?@)))
+           (post (if str-p '(?} ?>))))
+      (while (and (< (car bnds) (cdr bnds))
+                  (memq (char-after (car bnds)) pre))
+        (setf (car bnds) (1+ (car bnds))))
+      (while (and post
+                  (< (car bnds) (cdr bnds))
+                  (memq (char-before (cdr bnds)) post))
+        (setf (cdr bnds) (1- (cdr bnds)))))
+    bnds))
 (put 'elisp-symbol 'bounds-of-thing-at-point
      'nvp-elisp-bounds-of-symbol-at-point)
 
 (cl-defmethod xref-backend-identifier-at-point ((_backend (eql 'elisp)))
   "Override default to use \\='elisp-symbol."
-  (--when-let (bounds-of-thing-at-point 'elisp-symbol)
+  (--when-let (nvp-elisp-bounds-of-symbol-at-point)
     (let ((ident (buffer-substring-no-properties (car it) (cdr it))))
       ;; Use a property to transport the location of the identifier.
       (propertize ident 'pos (car it)))))

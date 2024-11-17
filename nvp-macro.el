@@ -1474,14 +1474,17 @@ and set `this-command' to nil so opposite happens next time."
 ;;; Mark
 (defmacro nvp:push-mark (cmd)
   "Push mark on first invocation of CMD."
-  (setq cmd (nvp:unquote cmd))
-  `(or repeat-in-progress
-       (not ,(if (listp cmd) `(memq this-command ',cmd)
-               `(eq this-command ',cmd)))
-       ,(if (listp cmd) `(memq last-command ',cmd)
-          `(eq last-command ',cmd))
-       (and transient-mark-mode mark-active)
-       (push-mark nil t)))
+  (cl-labels ((cmds-p (el) (and (listp el)
+                                (not (eq 'quote (car el))))))
+    `(or repeat-in-progress
+         (not ,(if (cmds-p cmd)
+                   `(memq this-command ',cmd)
+                 `(eq this-command ,cmd)))
+         ,(if (cmds-p cmd)
+              `(memq last-command ',cmd)
+            `(eq last-command ,cmd))
+         (and transient-mark-mode mark-active)
+         (push-mark nil t))))
 
 (defmacro nvp:@push-mark (sym)
   `(define-advice ,sym (:before (&rest _) "push-mark")

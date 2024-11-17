@@ -137,10 +137,12 @@ If none found, return list of all terminal buffers."
   (setq proc-name (or proc-name "shell"))
   (setq directory (file-name-directory (or directory default-directory)))
   (cl-loop for proc in (process-list)
-           as pbuff = (process-buffer proc)
-           when (and (string-prefix-p proc-name (process-name proc))
-                     (process-live-p proc))
-           if (f-same-p directory (buffer-local-value 'default-directory pbuff))
+           for pbuff = (process-buffer proc)
+           when (and (process-live-p proc)
+                     (buffer-live-p pbuff)
+                     (string-prefix-p proc-name (process-name proc)))
+           if (f-same-p directory
+                        (buffer-local-value 'default-directory pbuff))
            return pbuff
            else collect pbuff))
 

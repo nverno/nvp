@@ -49,8 +49,8 @@
   "With ARG \\='- or 0, move by page."
   (interactive "^P")
   (nvp:push-mark
-   '( nvp-move-forward-paragraph nvp-move-backward-paragraph forward-page
-      backward-page scroll-down-command scroll-up-command recenter-top-bottom))
+   ( nvp-move-forward-paragraph nvp-move-backward-paragraph forward-page
+     backward-page scroll-down-command scroll-up-command recenter-top-bottom))
   (let ((cnt (prefix-numeric-value arg)))
     (and (zerop cnt) (setq cnt 1))
     (when (and backward (not (< cnt 0)))

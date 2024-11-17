@@ -66,20 +66,20 @@
   (declare (indent defun))
   (let ((buffer (make-symbol "temp-buffer")))
     `(let ((,buffer (generate-new-buffer " *sh-help*")))
-       ,(if sync
-            `(with-current-buffer ,buffer
-               (unwind-protect
-                   (progn
-                     (nvp-sh-man-help ,cmd 'sync (current-buffer))
-                     ,@body)
-                 (and (buffer-name ,buffer) (kill-buffer ,buffer))))
+       ,(if sync `(unwind-protect
+                      (with-current-buffer ,buffer
+                        (nvp-sh-man-help ,cmd 'sync (current-buffer))
+                        ,@body)
+                    (and (buffer-live-p ,buffer)
+                         (kill-buffer ,buffer)))
           `(set-process-sentinel
-            (nvp-sh-man-help ,cmd nil ,buffer)
+             (nvp-sh-man-help ,cmd nil ,buffer)
             #'(lambda (p _m)
-                (when (zerop (process-exit-status p))
-                  (with-current-buffer ,buffer
-                    (unwind-protect (progn ,@body)
-                      (and (buffer-name ,buffer) (kill-buffer ,buffer)))))))))))
+                (unwind-protect
+                    (when (zerop (process-exit-status p))
+                      (with-current-buffer ,buffer ,@body))
+                  (and (buffer-live-p ,buffer)
+                       (kill-buffer ,buffer)))))))))
 
 ;; if bash builtin do BASH else MAN
 (defmacro nvp-sh:with-bash/man (cmd bash &rest man)
@@ -96,25 +96,25 @@
     (nvp:with-syms (buffer cmd)
       `(let ((,buffer (generate-new-buffer " *sh-help*"))
              (,cmd ,command))
-         (if ,sync
-             (with-current-buffer ,buffer
-               (unwind-protect
-                   (progn
-                     (apply (nvp-sh:with-bash/man ,cmd
-                                #'nvp-sh-bash-builtin-help
-                              #'nvp-sh-man-help)
-                            ,cmd 'sync (list ,buffer))
-                     ,@body)
-                 (and (buffer-name ,buffer) (kill-buffer ,buffer))))
+         (if ,sync (unwind-protect
+                       (with-current-buffer ,buffer
+                         (apply (nvp-sh:with-bash/man ,cmd
+                                    #'nvp-sh-bash-builtin-help
+                                  #'nvp-sh-man-help)
+                                ,cmd 'sync (list ,buffer))
+                         ,@body)
+                     (and (buffer-live-p ,buffer)
+                          (kill-buffer ,buffer)))
            (set-process-sentinel
             (apply (nvp-sh:with-bash/man
                        ,cmd #'nvp-sh-bash-builtin-help #'nvp-sh-man-help)
                    ,cmd nil (list ,buffer))
             #'(lambda (p _m)
-                (when (zerop (process-exit-status p))
-                  (with-current-buffer ,buffer
-                    (unwind-protect (progn ,@body)
-                      (and (buffer-name ,buffer) (kill-buffer ,buffer))))))))))))
+                (unwind-protect
+                    (when (zerop (process-exit-status p))
+                     (with-current-buffer ,buffer ,@body))
+                  (and (buffer-live-p ,buffer)
+                       (kill-buffer ,buffer))))))))))
 
 
 ;;; Parse output

@@ -27,14 +27,15 @@
 
 ;;; Sources
 ;; sources determined by source file paths
+;; "http://en.cppreference.com/mwiki/index.php?title=Special:Search&search=%s"
 (defvar semantic-c-dependency-system-include-path)
-(defvar nvp-c-semantic-online-sources
-  (let ((uri
-         "https://pubs.opengroup.org/onlinepubs/9699919799/functions/%s.html"
-         ;; "http://en.cppreference.com/mwiki/index.php?title=Special:Search&search=%s"
-         ))
-    (cl-loop for p in semantic-c-dependency-system-include-path
-       collect (cons p uri))))
+(defvar nvp-c-semantic-online-sources)
+(with-eval-after-load 'semantic/bovine/c
+  (setq nvp-c-semantic-online-sources
+        (let ((uri "https://\
+pubs.opengroup.org/onlinepubs/9699919799/functions/%s.html"))
+          (cl-loop for p in semantic-c-dependency-system-include-path
+                   collect (cons p uri)))))
 
 ;; if filename prefix is member of car, apply cadr to (format cddr)
 ;; use man 2 for system call type stuff, otherwise man 3

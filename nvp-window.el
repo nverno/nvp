@@ -12,20 +12,20 @@
 (defvar nvp-window--interactive-stack ())
 
 (nvp:def-keymap nvp-repeat-window-conf-map
-  :wrap (ace-swap-window ace-window)
   :repeat (:enter (nvp-window-configuration-pop))
+  :wrap (ace-swap-window ace-window)
   "," #'nvp-window-configuration-pop
   "d" #'toggle-window-dedicated
-  "s" #'nvp-repeat-window-conf/ace-swap-window
-  "j" #'nvp-repeat-window-conf/ace-window)
+  "s" #'ace-swap-window
+  "j" #'ace-window)
 
 (nvp:def-keymap nvp-repeat-window-swap-map
-  :wrap (ace-swap-window)
   :repeat t
+  :wrap (ace-swap-window)
   "t" #'nvp-window-transpose
   "r" #'nvp-window-rotate
   "|" #'nvp-window-swap
-  "s" #'nvp-repeat-window-swap/ace-swap-window)
+  "s" #'ace-swap-window)
 (put 'nvp-repeat-window-swap/ace-swap-window 'repeat-check-key 'no)
 
 ;;;###autoload

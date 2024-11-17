@@ -283,31 +283,60 @@ repetition that may get called by other unwanted routines."
             `(funcall ',def)
           `(call-interactively ',def)))))
 
+(defsubst nvp:-replace-wrapped (wrapped &optional kwargs)
+  "Replace bindings in KWARGS with their matching WRAPPED replacement."
+  (cl-loop for (k b) on kwargs by #'cddr
+           nconc (list k (cond
+                          ((keywordp k) b)
+                          ((and-let* ((wrap (assoc b wrapped)))
+                             (list 'function (cdr wrap))))
+                          (t b)))))
+
 (defmacro nvp:def-keymap (name &rest defs)
-  "Wrap `defvar-keymap' with additional keywords \\=':wrap and \\=':wrap-pref.
-These specify commands to be wrapped to allow for commands to be part of
-multiple repeat maps."
+  "Wrap `defvar-keymap' with additional keywords.
+
+Keywords \\=':wrap, \\=':wrap-pref specify commands to be wrapped (to bind
+in multiple repeat maps). Wrapped commands are replaced in DEFS by their
+wrapper (no need to write the wrapper name in bindings).
+
+Also, handles \\=':with, same as `nvp:bindings', except the included
+bindings can be wrapped as well."
   (declare (indent defun) (debug t))
-  (let (wrap wrap-pref kwargs)
+  (let (wrap wrap-pref kwargs with-bindings)
     (while (keywordp (car defs))
       (cond ((eq ':wrap (car defs)) (setq wrap (cadr defs)))
             ((eq ':wrap-pref (car defs)) (setq wrap-pref (cadr defs)))
+            ((eq ':with (car defs))
+             (setq with-bindings
+                   (cl-loop for (k . b) in (nvp:-compose-bindings (cadr defs))
+                            nconc (list k (if (symbolp b) `(function ,b) b)))))
             (t (push (cadr defs) kwargs)
                (push (car defs) kwargs)))
       (setq defs (cddr defs)))
-    (let (wrapped)
+    (when with-bindings
+      (setq defs (nconc (cl-loop for (k b) on with-bindings by #'cddr
+                                 unless (member k defs)
+                                 nconc (list k b))
+                        defs)))
+    (let (wrapped wrapped-binds)
       (when wrap
         (let ((prefix (or wrap-pref (nvp:wrap--prefix (symbol-name name)))))
           (when (eq t wrap)
             (setq wrap
-                  (cl-loop for (_k b) on defs by #'cddr
-                           for name = (symbol-name (nvp:unquote b))
-                           collect (intern (string-remove-prefix
-                                            (concat prefix "/") name)))))
+                  (seq-uniq
+                   (cl-loop for (_k b) on defs by #'cddr
+                            for name = (symbol-name (nvp:unquote b))
+                            collect (intern (string-remove-prefix
+                                             (concat prefix "/") name))))))
           (dolist (fn wrap)
+            (push (cons `(function ,fn) (nvp:wrap--make-name fn prefix))
+                  wrapped-binds)
             (push `(nvp:wrap-command ,fn ,prefix 'no-this-command) wrapped))))
       `(progn ,@wrapped
-              (defvar-keymap ,name ,@(append kwargs defs))))))
+              (defvar-keymap ,name
+                ,@(append kwargs (if wrapped-binds
+                                     (nvp:-replace-wrapped wrapped-binds defs)
+                                   defs)))))))
 
 ;; option to check for override?
 ;; do (when-let* ((curr (lookup-key (current-global-map) `(nvp:kbd ,k)))))

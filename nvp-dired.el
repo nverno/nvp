@@ -123,14 +123,14 @@
   "p" #'dired-prev-dirline)
 
 (nvp:def-keymap nvp-repeat-dired-move-map
-  :wrap (dired-next-dirline dired-prev-dirline) :wrap-pref "nvp"
   :repeat (nvp-dired-next5 nvp-dired-prev5)
+  :wrap (dired-next-dirline dired-prev-dirline) :wrap-pref "nvp"
   "n" #'nvp-dired-next5
   "p" #'nvp-dired-prev5
   "i" #'nvp-dired-scroll-down
   "k" #'nvp-dired-scroll-up
-  "l" #'nvp/dired-prev-dirline
-  "j" #'nvp/dired-next-dirline)
+  "l" #'dired-prev-dirline
+  "j" #'dired-next-dirline)
 
 
 ;; -------------------------------------------------------------------

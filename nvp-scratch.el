@@ -7,16 +7,22 @@
 (nvp:decls)
 
 ;;;###autoload
-(defun nvp-jump-to-scratch (mode prefix &optional hookless)
+(defun nvp-jump-to-scratch (mode action &optional dir hookless)
   "Jump to scratch buffer in MODE (default current `major-mode').
-With prefix, pop other window, with double prefix, prompt for MODE."
-  (interactive (list major-mode current-prefix-arg nil))
-  (nvp-with-display-actions prefix :action-order '(other same frame)
+
+With single extra prefix, keep current `default-directory' (default
+\"~/scratch\" directory) or set to DIR.
+With more extra prefixes, prompt for mode and optionally enable mode without
+running its hook."
+  (interactive (list major-mode current-prefix-arg))
+  (nvp-with-display-actions action :action-order '(other same frame)
     (when current-prefix-arg
-      (setq mode (intern (nvp-read-mode))
-            hookless (y-or-n-p "Hookless? ")))
+      (if (> (prefix-numeric-value current-prefix-arg) 4)
+          (setq mode (intern (nvp-read-mode))
+                hookless (y-or-n-p "Hookless? "))
+        (setq dir (or dir default-directory))))
     (with-current-buffer (get-buffer-create "*scratch*")
-      (setq default-directory nvp/scratch)
+      (setq default-directory (or dir nvp/scratch))
       (nvp-scratch-switch-modes mode (null hookless) hookless)
       (pop-to-buffer (current-buffer)))))
 
@@ -52,7 +58,12 @@ With prefix, dont run modes hook."
        (comment-padright comment-start (comment-add nil))
        (point-min) (point-max)))
     (setq header-line-format
-          (concat (if hookless "[hookless] " "") (symbol-name mode))))
+          `("• "
+            (:eval (propertize (abbreviate-file-name default-directory)
+                               'face 'font-lock-variable-name-face))
+            ,(concat " (" (propertize (symbol-name mode) 'face 'italic) ")")
+            ,(when hookless
+               (propertize " [hookless]" 'face 'font-lock-keyword-face)))))
   (nvp-scratch-minor-mode 1))
 
 (defun nvp-scratch-kill-buffer ()

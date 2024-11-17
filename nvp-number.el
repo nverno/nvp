@@ -34,7 +34,7 @@
 
 ;;;###autoload
 (defun nvp-number-increment (arg &optional bnds inc)
-  "In/Decrement numbers in region BNDS by INC. 
+  "In/Decrement numbers in region BNDS by INC.
 Decrement with prefix ARG."
   (interactive "P")
   (or bnds (setq bnds (nvp:tap 'bdwim 'symbol))
@@ -49,13 +49,6 @@ Decrement with prefix ARG."
 ;;; Conversion
 
 (defvar nvp-number--base '(2 8 10 16))
-
-(defun nvp-number--to-binary (n)
-  (let (v)
-    (while (> n 0)
-      (push (number-to-string (logand n 1)) v)
-      (setq n (ash n -1)))
-    (mapconcat #'identity v "")))
 
 (defvar-keymap nvp-repeat-number-base-map
   :repeat t
@@ -95,13 +88,13 @@ decimal => hex, hex => decimal, octal => decimal."
                          (pcase to
                            (2 (setq offset 2)
                               (cl-assert (= from 16))
-                              (concat "0b" (nvp-number--to-binary
+                              (concat "0b" (nvp:to-binary
                                             (string-to-number str from))))
                            (8 (setq offset 0) "%#o")
                            (10 (setq offset 0) "%d")
                            (16 (setq offset 2) "%#x"))
                          (string-to-number str from)))))))))))
-   
+
 ;;;###autoload
 (defun nvp-number-hex-string-to-integer (&optional hex)
   (interactive (list (thing-at-point 'number)))

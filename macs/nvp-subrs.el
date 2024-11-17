@@ -69,6 +69,36 @@
             (null (buffer-file-name buf)))))
 
 ;; -------------------------------------------------------------------
+;;; Bits
+
+(defsubst nvp:to-binary (num)
+  "Binary string for N."
+  (let (v)
+    (while (> num 0)
+      (push (number-to-string (logand num 1)) v)
+      (setq num (ash num -1)))
+    (mapconcat #'identity v "")))
+
+(defsubst nvp:lsb (num &optional inc)
+  "Least significant bit in NUM.
+If INC, shift bits by INC instead of 1."
+  (or (and inc (not (zerop inc))) (setq inc 1))
+  (unless (zerop num)
+    (let ((res 0))
+      (while (zerop (logand num 1))
+        (setq num (ash num (- inc)))
+        (cl-incf res))
+      res)))
+
+(defsubst nvp:msb (num)
+  "Most significant bit in NUM."
+  (if (<= num 0) 0
+    (let ((n 0))
+      (while (not (zerop (setq num (ash num -1))))
+        (cl-incf n))
+      (ash 1 n))))
+
+;; -------------------------------------------------------------------
 ;;; Hash
 
 (defsubst nvp:case-fold-string= (a b)
@@ -139,20 +169,6 @@ Underline header with CHAR."
                                         (and (>= c ?A) (<= c ?Z)))
                                     (concat "[" (upcase ss) (downcase ss) "]")
                                   ss)))))
-
-;; -------------------------------------------------------------------
-;;; Bits
-
-(defsubst nvp:lsb (num &optional inc)
-  "Least significant bit in NUM.
-If INC, shift bits by INC instead of 1."
-  (or (and inc (not (zerop inc))) (setq inc 1))
-  (unless (zerop num)
-    (let ((res 0))
-      (while (zerop (logand num 1))
-        (setq num (ash num (- inc)))
-        (cl-incf res))
-      res)))
 
 ;; -------------------------------------------------------------------
 ;;; Lists
@@ -381,15 +397,24 @@ When REGEXP, match filenames by regexps instead of globs."
       (let ((message-log-max nil))
         (apply #'message fmt args))))
 
-;; push input back onto command stack
 (defsubst nvp:unread (input)
+  "Unread INPUT."
   (cl-loop for c across (reverse input)
            do (push c unread-command-events)))
 
-;; shift `current-prefix-arg', -1 => decrement one prefix
-(defsubst nvp:prefix-shift (cnt)
-  (let ((num (ash (prefix-numeric-value current-prefix-arg) (* cnt 2))))
-    (setq current-prefix-arg (if (<= num 1) nil (list num)))))
+(defsubst nvp:prefix-shift (cnt &optional prefix)
+  "Shift `current-prefix-arg' or PREFIX by CNT.
+If the PREFIX is a list or `current-prefix-arg', shift by equivalent of CNT
+\\[universal-argument] arguments, eg. a CNT of -1 converts \\='(64) to \\='(16).
+Otherwise, shift the absolute value of PREFIX by CNT and return the
+most-significant bit, keeping the original sign.
+For example, CNT of -1 with PREFIX 7 => 2, and PREFIX -7 => -2."
+  (let* ((raw (or prefix current-prefix-arg))
+         (arg (prefix-numeric-value raw))
+         (sign (if (>= arg 0) 1 (prog1 -1 (setq arg (abs arg)))))
+         (num (ash arg (if (or (null prefix) (listp raw)) (* cnt 2) cnt))))
+    (if prefix (if (zerop num) nil (* sign (nvp:msb num)))
+      (setq current-prefix-arg (if (<= num 1) nil (list num))))))
 
 ;; -------------------------------------------------------------------
 ;;; Syntax

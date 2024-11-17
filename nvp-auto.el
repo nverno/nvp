@@ -43,30 +43,30 @@
                    (goto-char pt))))))
   (nvp:repeat-this-command char))
 
-;; see `paragraph-start' and `paragraph-separate' to extend
+;; See `paragraph-start' and `paragraph-separate' to extend
 ;;;###autoload
-(defun nvp-move-forward-paragraph (&optional arg)
-  (interactive "^p")
-  (nvp:push-mark 'nvp-move-forward-paragraph)
-  (or arg (setq arg 1))
-  (if (bolp)
-      (progn (and (< arg 1) (forward-line -1))
-             (forward-paragraph arg)
-             (forward-line 1))
-    (line-move arg)))
+(defun nvp-move-forward-paragraph (&optional arg backward)
+  "With ARG \\='- or 0, move by page."
+  (interactive "^P")
+  (nvp:push-mark
+   '( nvp-move-forward-paragraph nvp-move-backward-paragraph forward-page
+      backward-page scroll-down-command scroll-up-command recenter-top-bottom))
+  (let ((cnt (prefix-numeric-value arg)))
+    (and (zerop cnt) (setq cnt 1))
+    (when (and backward (not (< cnt 0)))
+      (setq cnt (- cnt)))
+    (if (memq arg '(- 0))
+        (forward-page cnt))
+    (when (< cnt 1)
+      (forward-line -1))
+    (forward-paragraph cnt)
+    (forward-line 1)))
 
 ;;;###autoload
 (defun nvp-move-backward-paragraph (&optional arg)
-  (interactive "^p")
-  (nvp:push-mark 'nvp-move-backward-paragraph)
-  (or arg (setq arg 1))
-  (nvp-move-forward-paragraph (- arg)))
-
-(defvar-keymap nvp-repeat-move-paragraph-map
-  :repeat t
-  "n" #'nvp-move-forward-paragraph
-  "p" #'nvp-move-backward-paragraph)
-
+  "With ARG \\='- or 0, move by page."
+  (interactive "^P")
+  (nvp-move-forward-paragraph arg t))
 
 (nvp:decl thing-at-point-url-at-point web-mode)
 

@@ -199,8 +199,8 @@ buffers."
   :name 'shell
   ;; XXX(08/26/24): (comint-terminfo-terminal "xterm-256color")
   :init #'nvp-sh-get-process
-  :procname "shell"
-  :bufname "*shell"
+  :procname "shell\\b"
+  :bufname "*shell\\b"
   :pwd-cmd "pwd"
   :help-cmd '(:no-arg "help" :with-arg "help %s")
   :load-cmd "source \"%s\""

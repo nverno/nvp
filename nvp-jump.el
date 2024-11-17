@@ -311,7 +311,7 @@ With prefix jump this window, otherwise `find-file-other-window'."
 
 ;;;###autoload
 (defun nvp-jump-to-nvp-keymap (action keymap)
-  "Jump to one of my defined keymaps."
+  "Jump to a KEYMAP definition."
   (interactive (list current-prefix-arg (nvp-read-nvp-keymap)))
   (and (symbolp keymap)
        (setq keymap (symbol-name keymap)))
@@ -332,6 +332,9 @@ With prefix jump this window, otherwise `find-file-other-window'."
   (interactive "P")
   (when-let* ((reg (register-read-with-preview "Jump to register: ")))
     (nvp-with-display-actions action
+      :same-action (nvp-display-buffer-action
+                    (unless current-prefix-arg 'reuse-window)
+                    'same-window)
       (funcall #'jump-to-register reg current-prefix-arg))))
 
 ;;;###autoload

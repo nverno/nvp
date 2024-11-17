@@ -30,10 +30,14 @@
 
   (defvar nvp--bindings-fast-move
     '(("C-l"   . recenter-top-bottom)
-      ("M-SPC" . backward-page)
-      ("n"     . scroll-up-command)
-      ("p"     . scroll-down-command)
-      ("SPC"   . forward-page)))
+      ("i"     . scroll-down-command)
+      ("k"     . scroll-up-command)
+      ("["     . nvp-move-forward-paragraph)
+      ("]"     . nvp-move-backward-paragraph)
+      ("}"     . backward-page)
+      ("{"     . forward-page)
+      ("SPC"   . forward-page)
+      ("S-SPC" . backward-page)))
 
   (defvar nvp--bindings-syntax
     '(("(" . backward-list)

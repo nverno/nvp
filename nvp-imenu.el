@@ -14,7 +14,6 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'imenu-anywhere)
 (require 'imenu)
 (require 'vertico)
@@ -153,58 +152,59 @@ should formatted as an alist like `imenu-generic-expression'."
 
 
 ;; -------------------------------------------------------------------
-;;; Anywhere
+;;; Visibility, Scope of searched buffers
 
-;;-- visibility
-(defvar nvp-imenu-restrictions '(current visibile all)
-  "Restrict matches to buffers: \\='current, \\='visible, \\='all.")
+(defvar nvp-imenu-scopes '(current visibile all)
+  "Scopes to limit buffers searched by imenu.")
 
-(defvar-local nvp-imenu--idx 0)
+(defvar-local nvp--imenu-idx 0)
 
-(defsubst nvp-imenu--visibility ()
-  (nth nvp-imenu--idx nvp-imenu-restrictions))
+(defsubst nvp--imenu-scope ()
+  (nth nvp--imenu-idx nvp-imenu-scopes))
 
-(defsubst nvp-imenu--next ()
-  (setq nvp-imenu--idx (mod (1+ nvp-imenu--idx) 3))
-  (nvp-imenu--visibility))
+(defsubst nvp--imenu-next ()
+  (setq nvp--imenu-idx (mod (1+ nvp--imenu-idx) 3))
+  (nvp--imenu-scope))
 
-(defsubst nvp-imenu--active-buffer ()
-  (if (minibufferp) minibuffer--original-buffer (current-buffer)))
+(defsubst nvp--imenu-active-buffer ()
+  (if (minibufferp)
+      minibuffer--original-buffer
+    (current-buffer)))
 
-(defsubst nvp-imenu--buffer-name (buff)
+(defsubst nvp--imenu-buffer-name (buff)
   (concat (buffer-name buff) nvp-imenu-buffer-delimiter))
 
-(defun nvp-imenu--good-buffer-p (buff)
+(defun nvp--imenu-good-buffer-p (buff)
   "Return non-nil if BUFF should be considered by imenu."
   (and (not (string-prefix-p " " (buffer-name buff)))
        (let ((major-mode (buffer-local-value 'major-mode buff)))
          (and (not (derived-mode-p nvp-imenu-ignored-modes))
               (buffer-local-value 'imenu-generic-expression buff)))))
 
-;;; Buffer Lists
-;; Candidate for `imenu-anywhere-buffer-list-function'
+;;* Buffer Lists
+;; For `imenu-anywhere-buffer-list-function'
 (defun nvp-imenu-visible-buffer-list ()
   "Buffer list restricted to visible buffers in current frame."
   (seq-uniq
-   (cons (nvp-imenu--active-buffer)
+   (cons (nvp--imenu-active-buffer)
          (--map (window-buffer it)
-                (nvp:visible-windows :test-fn #'nvp-imenu--good-buffer-p)))))
+                (nvp:visible-windows :test-fn #'nvp--imenu-good-buffer-p)))))
 
 (defun nvp-imenu-buffer-list (&optional restrict)
   "List of potential buffers to check for imenu candidates."
-  (pcase (or restrict (nvp-imenu--visibility))
-    (`current (list (nvp-imenu--active-buffer)))
+  (pcase (or restrict (nvp--imenu-scope))
+    (`current (list (nvp--imenu-active-buffer)))
     (`visible (nvp-imenu-visible-buffer-list))
-    (`all (--filter (nvp-imenu--good-buffer-p it) (buffer-list)))
+    (`all (--filter (nvp--imenu-good-buffer-p it) (buffer-list)))
     (_ (nvp-imenu-visible-buffer-list))))
 
-;;; Preprocess completion candidates
+;;* Preprocess completion candidates
 ;; Note: doesnt prefix candidates in the current buffer
 (defun nvp-imenu-preprocess-entry (entry entry-name)
   "Function for `imenu-anywhere-preprocess-entry-function', which see."
   (when entry
     (let ((bname (if (markerp (cdr entry))
-                     (nvp-imenu--buffer-name (marker-buffer (cdr entry)))
+                     (nvp--imenu-buffer-name (marker-buffer (cdr entry)))
                    "")))
       (setcar entry (concat bname entry-name
                             (and entry-name imenu-anywhere-delimiter)
@@ -213,7 +213,7 @@ should formatted as an alist like `imenu-generic-expression'."
 
 ;; Bulk preprocessing - modifies in-place
 ;; (defun nvp-imenu-preprocess-candidates (candidates)
-;;   (let* ((cur (buffer-name (nvp-imenu--active-buffer)))
+;;   (let* ((cur (buffer-name (nvp--imenu-active-buffer)))
 ;;          (pre (concat cur nvp-imenu-buffer-delimiter "\\s-*")))
 ;;     (cl-loop for (cand . marker) in candidates
 ;;              when (string-match pre cand)
@@ -253,26 +253,41 @@ should formatted as an alist like `imenu-generic-expression'."
         (funcall orig-fn s))
     (funcall orig-fn str)))
 
-;;; Mode Line
-(defvar-local nvp-imenu--active-mode nil "Non-nil during completion.")
-
-(defvar-local nvp-imenu-mode-line
-  `(" Imenu:"
-    (:propertize
-     (format "%s" (substring (symbol-name (nvp-imenu--visibility)) 0 3))
-     face font-lock-warning-face)))
-(put 'nvp-imenu-mode-line 'risky-local-variable-p t)
-
-(or (assq 'nvp-imenu--active-mode minor-mode-alist)
-    (nconc minor-mode-alist
-           `((nvp-imenu--active-mode ,nvp-imenu-mode-line))))
+;; Todo(11/18/24): Remove
+(defvar-local nvp-imenu--active-mode nil
+  "Non-nil during completion.")
 
 (defun nvp-imenu--active-mode (&optional arg idx)
-  (or idx (setq idx nvp-imenu--idx))
-  (with-current-buffer (window-buffer (minibuffer-selected-window))
-    (setq nvp-imenu--active-mode (or arg (not nvp-imenu--active-mode)))
-    (setq nvp-imenu--idx idx)
-    (force-mode-line-update)))
+  (or idx (setq idx nvp--imenu-idx))
+  (with-current-buffer (window-buffer
+                        (minibuffer-selected-window))
+    (setq nvp--imenu-idx idx)
+    (setq nvp-imenu--active-mode
+          (or arg (not nvp-imenu--active-mode)))))
+
+;;* Scope Indicators
+(defsubst nvp--imenu-scope-text ()
+  (substring (symbol-name (nvp--imenu-scope)) 0 3))
+
+(defvar-local nvp-imenu-scope-overlay nil
+  "Minibuffer overlay to show current scope during completion.")
+
+(defun nvp-imenu-update-scope-overlay (&optional scope)
+  "Update search scope in minibuffer prompt overlay."
+  (interactive)
+  (with-current-buffer (window-buffer (active-minibuffer-window))
+    (or nvp-imenu-scope-overlay
+        (let ((pos (point-min)))
+          (setq nvp-imenu-scope-overlay (make-overlay pos (1+ pos)))
+          (overlay-put nvp-imenu-scope-overlay 'evaporate t)))
+    (unless scope
+      (setq scope (with-current-buffer (nvp--imenu-active-buffer)
+                    (nvp--imenu-scope-text))))
+    (overlay-put nvp-imenu-scope-overlay 'before-string
+                 (concat (propertize
+                          (format "[%s]" scope)
+                          'face 'font-lock-keyword-face)
+                         " "))))
 
 (defun nvp-imenu-cycle-restriction ()
   "Cycle current buffer restriction during completion."
@@ -282,7 +297,7 @@ should formatted as an alist like `imenu-generic-expression'."
     ;; `imenu-anywhere-buffer-filter-functions' use mode/project, etc.
     (with-minibuffer-selected-window
       (let ((imenu-anywhere-buffer-list-function
-             (apply-partially #'nvp-imenu-buffer-list (nvp-imenu--next))))
+             (apply-partially #'nvp-imenu-buffer-list (nvp--imenu-next))))
         (nvp-imenu--active-mode t)
         (nvp-imenu--candidates))))
   ;; Let-bind around completing-read - minibuffer-completion-table
@@ -299,27 +314,26 @@ should formatted as an alist like `imenu-generic-expression'."
 ;; TODO: ':' should restrict to buffer, '/' restrict to sublist
 (defvar-keymap nvp-imenu-completion-mode-map
   :doc "Keymap active during imenu completion."
-  "C-o" #'nvp-imenu-cycle-restriction)
+  "C-o" #'nvp-imenu-cycle-restriction
+  ;; TODO(11/18/24): Properly update scope after cycling and remove
+  "C-S-O" #'nvp-imenu-update-scope-overlay)
 
 (define-minor-mode nvp-imenu-completion-mode
   "Minor mode active in minibuffer during imenu completion."
   :keymap nvp-imenu-completion-mode-map
   :lighter nil
   :interactive nil
-  (if (null nvp-imenu-completion-mode)
+  (if (not nvp-imenu-completion-mode)
       (advice-remove 'vertico--display-string #'nvp@imenu-hide-active)
     (advice-add 'vertico--display-string :around #'nvp@imenu-hide-active)
     (add-hook 'minibuffer-exit-hook #'nvp-imenu-completion-exit)
+    (nvp-imenu-update-scope-overlay)
     (nvp-imenu--active-mode t)))
-
-(defun nvp-imenu--prompt ()
-  ;; XXX(10/03/24): Display restriction as overlay after prompt
-  (format "Imenu: ")) ;; (nvp-imenu--visibility)
 
 (defun nvp-imenu-complete (&optional restrict headers-only)
   "Completing read for imenu candidate with `nvp-imenu-completion-mode' active.
 Calls `imenu' to jump to location with selection."
-  (and restrict (setq nvp-imenu--idx restrict))
+  (and restrict (setq nvp--imenu-idx restrict))
   (let* ((imenu-default-goto-function 'imenu-anywhere-goto)
          (nvp-imenu--filter-re (and headers-only "Headers"))
          (index-alist (nvp-imenu--candidates)))
@@ -332,9 +346,9 @@ Calls `imenu' to jump to location with selection."
         (minibuffer-with-setup-hook (lambda () (nvp-imenu-completion-mode))
           (let* ((nvp-imenu--completion-table)
                  (nvp-imenu--active-buffer-re
-                  (concat (regexp-quote (buffer-name (nvp-imenu--active-buffer)))
+                  (concat (regexp-quote (buffer-name (nvp--imenu-active-buffer)))
                           nvp-imenu-buffer-delimiter))
-                 (name (nvp-completing-read (nvp-imenu--prompt)
+                 (name (completing-read "Imenu: "
                          index-alist nil t nil 'imenu--history-list default))
                  (selection (or (assoc name index-alist)
                                 ;; if restriction widened during completing-read

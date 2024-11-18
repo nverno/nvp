@@ -63,7 +63,14 @@
 ;;;###autoload
 (defun nvp-dev-advice-remove-all (sym)
   "Remove all advice from SYM."
-  (interactive "aFunction: ")
+  (interactive
+   ;; Completing read for advices copied from `advice-remove'
+   (let* ((pred (lambda (sym) (advice--p (advice--symbol-function sym))))
+          (default (when-let* ((f (function-called-at-point))
+                               ((funcall pred f)))
+                     (symbol-name f)))
+          (prompt (format-prompt "Remove advices from function" default)))
+     (list (intern (completing-read prompt obarray pred t nil nil default)))))
   (advice-mapc (lambda (advice _props) (advice-remove sym advice)) sym))
 
 

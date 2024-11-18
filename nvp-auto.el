@@ -126,7 +126,7 @@
                         ;;     #'paredit-comment-dwim
                         ;;   #'comment-dwim)
                         (_ #'comment-dwim)))
-  (if yas-minor-mode
+  (if (bound-and-true-p yas-minor-mode)
       (yas-expand-snippet (concat "${1:XXX}(" date "): "))
     (insert "XXX(" date "): ")))
 

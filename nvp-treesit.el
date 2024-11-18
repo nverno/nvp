@@ -116,7 +116,8 @@ With prefix, add neovim sources first."
 
 (defun nvp-treesit-minor-mode-on ()
   (interactive)
-  (when (and (not (or noninteractive (eq (aref (buffer-name) 0) ?\s)))
+  (when (and (not (or noninteractive
+                      (eq (aref (buffer-name) 0) ?\s)))
              (treesit-language-at (point)))
     (nvp-treesit-minor-mode 1)))
 

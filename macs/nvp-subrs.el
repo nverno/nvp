@@ -510,11 +510,12 @@ For example, CNT of -1 with PREFIX 7 => 2, and PREFIX -7 => -2."
 
 
 ;;; Transient
+(defvar transient-current-command)
+(declare-function transient-args "transient")
 
 (defsubst nvp:transient-arg (arg &optional match)
   "Check transient args for ARG or regex with MATCH."
-  (and-let* ((args (ignore-errors
-                     (transient-args transient-current-command))))
+  (and-let* ((args (ignore-errors (transient-args transient-current-command))))
     (cl-find arg args :test (if match #'string-match-p #'equal))))
 
 

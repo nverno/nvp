@@ -337,13 +337,13 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-results-title
        nvp-scratch-minor-mode
        nvp-setup-local
+       nvp-setup-mode
        nvp-setup-program
        nvp-shell
        nvp-shell-launch-terminal
        nvp-sort-alist
        nvp-tag-find
        nvp-tag-find-etag
-       nvp-tag-list-decls
        nvp-tag-list-decls
        nvp-tag-list-tags
        nvp-tag-repo
@@ -354,7 +354,8 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-try-expand-history
        nvp-try-expand-local-abbrevs
        nvp-window-configuration-restore
-       nvp-window-configuration-save nvp-xref-go)
+       nvp-window-configuration-save
+       nvp-xref-go)
 
      (nvp:decl                          ; builtins
        ert-run-tests-interactively

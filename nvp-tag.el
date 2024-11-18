@@ -1,8 +1,6 @@
 ;;; nvp-tag.el --- tagging utilities -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Code:
-
 (eval-when-compile (require 'nvp-macro))
 (require 'nvp)                          ; `nvp-tags-ctags-program'
 (require 'transient)

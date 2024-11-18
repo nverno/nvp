@@ -13,7 +13,6 @@
 ;;
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
-(require 'nvp)
 (require 'elisp-mode)
 (require 'edebug)
 (require 'transient)
@@ -201,8 +200,8 @@
     ("I" "Install" edebug-install-read-eval-functions)
     ("U" "Uninstall" edebug-uninstall-read-eval-functions)]
    ["Edebug config"
-    (":e" "Debug on error" nvp--menu-edebug-on-error)
-    (":q" "Debug on quit" nvp--menu-edebug-on-quit)
+    (":e" "EDebug on error" nvp--menu-edebug-on-error)
+    (":q" "EDebug on quit" nvp--menu-edebug-on-quit)
     (":u" "Unwrap results" nvp--menu-edebug-unwrap-results)
     (":t" "Trace" nvp--menu-edebug-trace)
     (":p" "Pause on break" nvp--menu-edebug-sit-on-break)

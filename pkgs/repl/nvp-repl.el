@@ -126,6 +126,7 @@ buffers."
     (window-min-height    . 20)
     (inhibit-same-window  . t)
     (inhibit-switch-frame . t)
+    (preserve-size        . (t . t))
     (dedicated            . ,nvp-repl-dedicated-window)))
 
 ;;; Caches
@@ -547,7 +548,7 @@ When called from a repl buffer with PREFIX:
       (pop-to-buffer
        ;; FIXME(09/23/24): when repl is split below, try to pop to source above
        ;; when it's buried somewhere
-       repl-buf (nvp-repl--display-action (and repl-p 'other-window))))))
+       repl-buf (or repl-p (nvp-repl--display-action))))))
 
 (defun nvp-repl-remove (mode)
   "Remove any repl associations with MODE."

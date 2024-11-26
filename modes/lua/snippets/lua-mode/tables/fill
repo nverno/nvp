@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: fill table
+# key: fill
+# --
+for i = 1, ${1:n} do
+  ${2:tab}[i] = ${3:0}
+end

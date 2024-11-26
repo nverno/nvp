@@ -53,12 +53,10 @@ Optionally, search LISP-ONLY files (no C sources)."
     lib))
 
 (defun nvp-jump--git-url ()
-  (let ((str (shell-command-to-string "git remote get-url origin")))
-    (--when-let (and (string-match
-                      "\\(?:git@github.com:\\|https://github.com/\\)\\([^ ]+\\)"
-                      str)
-                     (string-trim-right (match-string 1 str)))
-      (concat "https://github.com/" it))))
+  (string-trim-right
+   (replace-regexp-in-string
+    "^git@\\([^:]+\\):" "https://\\1/"
+    (shell-command-to-string "git remote get-url origin"))))
 
 ;;;###autoload
 (defun nvp-jump-to-library-url (&optional choose)

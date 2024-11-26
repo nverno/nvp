@@ -475,7 +475,8 @@ If in `declare-function', convert to autoload."
                    (rx bol (* white) "("
                        (or "defvar-keymap"
                            (seq (regexp "nvp[:]")
-                                (or "bindings" "defvar" "define")
+                                (or "bindings" "defvar" "define"
+                                    "def-keymap" "create-keymap")
                                 (regexp "[^ \t\n]*")))
                        (+ white)
                        (group (+ (or (syntax word) (syntax symbol)

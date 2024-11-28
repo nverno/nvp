@@ -111,9 +111,7 @@
       ("w"       . wgrep-change-to-wgrep-mode)))
 
   (defvar nvp--bindings-comint
-    '(("C-c C-n" . comint-next-prompt)
-      ("M-N"     . comint-next-prompt)
-      ("C-c C-p" . comint-previous-prompt)
+    '(("M-N"     . comint-next-prompt)
       ("M-P"     . comint-previous-prompt)
       ("C-c C-k" . comint-clear-buffer)
       ("M-s-p"   . comint-previous-matching-input-from-input)

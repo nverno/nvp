@@ -18,7 +18,7 @@
   "Store trace groups.")
 
 ;;; Tracing Mode
-(defvar tracing--batch nil)
+(defvar tracing--batch)
 (when (fboundp 'tracing-enable)
   (tracing-enable t))
 

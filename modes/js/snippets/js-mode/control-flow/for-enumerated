@@ -2,6 +2,6 @@
 # name: for i,x in array
 # key: forix
 # --
-for (let [${1:i}, ${2:x}] of ${3:arr}.entries()) {
+for (${1:const} [${2:i}, ${3:x}] of ${4:arr}.entries()) {
   $0
 }

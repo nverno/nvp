@@ -1,3 +1,3 @@
 ((snippet-mode
-  (indent-tabs-mode . t)
+  (eval . (indent-tabs-mode +1))
   (tab-width . 2)))

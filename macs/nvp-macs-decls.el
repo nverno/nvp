@@ -256,6 +256,7 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-ert-run-tests
        nvp-etags-find-definitions
        nvp-eval--display-expression
+       nvp-pp-form
        nvp-eval-expression
        nvp-fallback-dired
        nvp-find-file-in-dir

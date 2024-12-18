@@ -29,8 +29,8 @@
             "until" "wait" "while")
         eos)))
 
-;; get conditional switch
 (defun nvp-sh--conditional-switch ()
+  "Get conitional switch."
   (save-excursion
     (skip-chars-backward "^\[" (line-beginning-position))
     (and (not (bolp))
@@ -66,20 +66,21 @@
   (declare (indent defun))
   (let ((buffer (make-symbol "temp-buffer")))
     `(let ((,buffer (generate-new-buffer " *sh-help*")))
-       ,(if sync `(unwind-protect
-                      (with-current-buffer ,buffer
-                        (nvp-sh-man-help ,cmd 'sync (current-buffer))
-                        ,@body)
-                    (and (buffer-live-p ,buffer)
-                         (kill-buffer ,buffer)))
+       ,(if sync `(with-current-buffer ,buffer
+                    (unwind-protect
+                        (progn (nvp-sh-man-help ,cmd 'sync (current-buffer))
+                               ,@body)
+                      (and (buffer-name ,buffer)
+                           (kill-buffer ,buffer))))
           `(set-process-sentinel
-             (nvp-sh-man-help ,cmd nil ,buffer)
-            #'(lambda (p _m)
+            (nvp-sh-man-help ,cmd nil ,buffer)
+            (lambda (p _m)
+              (let ((buffer (process-buffer p)))
                 (unwind-protect
                     (when (zerop (process-exit-status p))
-                      (with-current-buffer ,buffer ,@body))
-                  (and (buffer-live-p ,buffer)
-                       (kill-buffer ,buffer)))))))))
+                      (with-current-buffer buffer ,@body))
+                  (and (buffer-live-p buffer)
+                       (kill-buffer buffer))))))))))
 
 ;; if bash builtin do BASH else MAN
 (defmacro nvp-sh:with-bash/man (cmd bash &rest man)
@@ -96,25 +97,26 @@
     (nvp:with-syms (buffer cmd)
       `(let ((,buffer (generate-new-buffer " *sh-help*"))
              (,cmd ,command))
-         (if ,sync (unwind-protect
-                       (with-current-buffer ,buffer
-                         (apply (nvp-sh:with-bash/man ,cmd
-                                    #'nvp-sh-bash-builtin-help
-                                  #'nvp-sh-man-help)
-                                ,cmd 'sync (list ,buffer))
-                         ,@body)
-                     (and (buffer-live-p ,buffer)
-                          (kill-buffer ,buffer)))
+         (if ,sync
+             (with-current-buffer ,buffer
+               (unwind-protect
+                   (apply (nvp-sh:with-bash/man ,cmd
+                              #'nvp-sh-bash-builtin-help
+                            #'nvp-sh-man-help)
+                          ,cmd 'sync (list ,buffer))
+                 ,@body))
+           (and (buffer-live-p ,buffer)
+                (kill-buffer ,buffer))
            (set-process-sentinel
             (apply (nvp-sh:with-bash/man
                        ,cmd #'nvp-sh-bash-builtin-help #'nvp-sh-man-help)
                    ,cmd nil (list ,buffer))
-            #'(lambda (p _m)
-                (unwind-protect
-                    (when (zerop (process-exit-status p))
-                     (with-current-buffer ,buffer ,@body))
-                  (and (buffer-live-p ,buffer)
-                       (kill-buffer ,buffer))))))))))
+            (lambda (p _m)
+              (when (zerop (process-exit-status p))
+                (with-current-buffer ,buffer
+                  (unwind-protect (progn ,@body)
+                    (and (buffer-live-p ,buffer)
+                         (kill-buffer ,buffer))))))))))))
 
 
 ;;; Parse output
@@ -170,9 +172,10 @@
           ;; man
           (puthash (car entry) (cdr entry) nvp-sh--conditional-cache)))
       ;; make one big entry for everything
-      (puthash "all" (mapconcat #'(lambda (entry) (concat (car entry) "\n" (cdr entry)))
-                                entries
-                                "\n")
+      (puthash "all" (mapconcat
+                      (lambda (entry) (concat (car entry) "\n" (cdr entry)))
+                      entries
+                      "\n")
                nvp-sh--conditional-cache))))
 
 ;;; Man sections for completing read. Not optimal, currently calls
@@ -222,18 +225,17 @@
 ;; if PROMPT is non-nil, offer completing read for switches or man section,
 ;; depending on the CMD
 (defun nvp-sh--command-docstring (cmd &optional prompt section recache)
-  (let ((message-log-max nil) (inhibit-message t))
-    (cond
-     ((member cmd '("[[" "["))
-      (nvp-sh--conditional-string
-       (if prompt (completing-read "Switch: " nvp-sh--conditional-cache)
-         (nvp-sh--conditional-switch))))
-     (t
-      (nvp-sh--function-string
-       cmd (if prompt
-               (completing-read "Man Section: " (nvp-sh--man-sections cmd) nil t)
-             section)
-       recache)))))
+  (let ((message-log-max nil)
+        (inhibit-message t))
+    (cond ((member cmd '("[[" "["))
+           (nvp-sh--conditional-string (if prompt (completing-read "Switch: "
+                                                    nvp-sh--conditional-cache)
+                                         (nvp-sh--conditional-switch))))
+          (t (nvp-sh--function-string
+              cmd (if prompt (completing-read "Man Section: "
+                               (nvp-sh--man-sections cmd) nil t)
+                    section)
+              recache)))))
 
 ;;;###autoload
 (defun nvp-hap-bash (command &optional arg prefix &rest _args)
@@ -312,10 +314,10 @@ command.."
   "Show help buffer in other window from `company-active-map'."
   (interactive)
   (cl-letf (((symbol-function 'company-call-backend)
-             #'(lambda (_type selected)
-                 (nvp-sh-doc-buffer selected)
-                 "*company-documentation*")))
-        (company-show-doc-buffer)))
+             (lambda (_type selected)
+               (nvp-sh-doc-buffer selected)
+               "*company-documentation*")))
+    (company-show-doc-buffer)))
 
 (provide 'nvp-sh-help)
 ;; Local Variables:

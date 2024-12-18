@@ -3,5 +3,5 @@
 # key: ifer
 # --
 if err := $1; err != ${2:nil} {
-  $0
+	$0
 }

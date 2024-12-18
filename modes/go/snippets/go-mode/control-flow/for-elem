@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: for _, elem in range ...
+# key: fori
+# --
+for _, ${1:val} := range ${2:collection} {
+	$0
+}

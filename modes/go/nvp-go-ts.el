@@ -13,8 +13,8 @@
    "literal"                            ; literal_value / composite_literal
    (treesit-node-type
     (treesit-node-parent
-     (treesit-node-at (if marker (marker-position marker)
-                        (point)))))))
+     (treesit-node-at
+      (if marker (marker-position marker) (point)))))))
 
 
 ;;; Indentation

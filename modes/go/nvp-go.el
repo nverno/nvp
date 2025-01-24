@@ -28,7 +28,11 @@
   (interactive (list (point-marker)))
   (let* ((ppss (syntax-ppss marker))
          (pos (nth 1 ppss)))
-    (cond ((or (nth 4 ppss) (nth 3 ppss)) (insert ":"))
+    (cond ((or (nth 4 ppss) (nth 3 ppss) ; string/comment
+               (save-excursion           ; case/default ":"
+                 (goto-char (line-beginning-position))
+                 (looking-at-p (rx (* white) bow (or "case" "default") eow))))
+           (insert ":"))
           ;; Inside [ .. ] or literal (eg. Foo{ .. })
           ((or (memq (char-after pos) '(?\[))
                (nvp-go-in-literal-p marker ppss))

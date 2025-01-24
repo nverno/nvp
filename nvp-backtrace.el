@@ -24,12 +24,12 @@
 
 ;; Override interactive spec of `debugger-eval-expression' to use
 ;; `nvp@backtrace-eval' instead
-(defun nvp@backtrace-eval (orig-fn exp &optional nframes)
+(defun nvp@backtrace-eval (orig-fn &rest args) ; exp &optional nframes
   (interactive
    (let ((elisp--local-variables-completion-table
           nvp-backtrace-locals-completion-table))
      (list (read--expression "[nvp] Eval in stack frame: "))))
-  (apply orig-fn (list exp nframes)))
+  (apply orig-fn args))
 
 (advice-add 'debugger-eval-expression :around #'nvp@backtrace-eval)
 

@@ -17,7 +17,8 @@
     :send-file #'gorepl-load-file
     :history-file ".gore_history"
     :help-cmd '(:no-arg ":help" :with-arg ":doc %s")
-    :cmd-handlers '(("?" . ":doc %s"))))
+    :cmd-handlers '(("?" . ":type %s")
+                    ("??" . ":doc %s"))))
 
 (provide 'nvp-go-repl)
 ;; Local Variables:

@@ -107,7 +107,7 @@ With \\[universal-argument] \\[universal-argument], read command."
 ;; - use tramp in remote directory
 ;; - filter to update default-directory when ssh in shell
 
-;; update default-directory on remote login
+;; Update default-directory on remote login
 (defvar nvp-shell-ssh-regexp (nvp:rx-syms "ssh" "hssh"))
 
 ;; (defun nvp-shell-remote-filter (string)
@@ -118,7 +118,6 @@ With \\[universal-argument] \\[universal-argument], read command."
 ;;                 (fullname (expand-file-name (concat "/ssh:" loc ":~/"))))
 ;;       (setq default-directory fullname
 ;;             list-buffers-directory fullname))))
-
 ;; (eval-when-compile
 ;;   (defsubst nvp-shell-tramp-name (&optional directory)
 ;;     (or directory (setq directory default-directory))))
@@ -159,6 +158,8 @@ If none found, return list of all terminal buffers."
         (car buffers))))
 
 
+;;; Display
+
 (defun nvp-shell--display-maybe-other-window (buf alist)
   (when (window-full-width-p)
     (display-buffer-pop-up-window buf alist)))
@@ -177,6 +178,7 @@ If none found, return list of all terminal buffers."
     (window-height     . 0.5)
     (preserve-size . (t . nil)))
   "Display action for `nvp-shell'.")
+
 
 ;;;###autoload
 (defun nvp-shell (arg &optional buffer shell proc-name)

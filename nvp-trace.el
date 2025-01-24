@@ -50,8 +50,8 @@ With prefix, CLOBBER current `nvp-trace-group-alist'."
     ("q" "Untrace all" untrace-all)
     "--"
     ("i" "Inhibit trace" trace-mode-toggle-inhibit)]
-   ["Groups"
-    ("g" "Group" nvp-trace-group)
+   ["By group"
+    ("g" "Saved group" nvp-trace-group)
     ("G" "Untrace group" nvp-untrace-group-or-funs)
     ("r" "Regexp" nvp-trace-regexp)
     ("l" "Library" nvp-trace-library)

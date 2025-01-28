@@ -63,6 +63,7 @@
 (defvar projectile-verbose)
 (defvar file-notify-debug)
 (defvar nvp-hap-verbose)
+(defvar server-log)
 
 (nvp:transient-define-vars nvp--menu
   (byte-compile-generate-call-tree :choices '(nil t prompt))
@@ -81,6 +82,7 @@
   (file-notify-debug . t)
   (nvp-hap-verbose . t)
   (projectile-verbose . t)
+  (server-log . t)
   (url-debug
    :reader (lambda (prompt &rest args)
              (if (null current-prefix-arg) (not url-debug)
@@ -224,7 +226,8 @@
     ("/c" "Native comp" nvp-native-comp-menu :transient transient--do-replace)
     ("/s" "Smie" nvp-edebug-smie :transient transient--do-replace
      :if (lambda () (eq 'smie-indent-line indent-line-function)))]
-   ["Toggle Verbosity"
+   ["Toggle Debug"
+    (",s" "Server" nvp--menu-server-log)
     (",h" "Hap" nvp--menu-hap-verbose
      :if (lambda () (boundp 'nvp-hap-verbose)))
     (",p" "Projectile" nvp--menu-projectile-verbose

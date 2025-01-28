@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: for i,j in ranges
+# key: forij
+# --
+(for*/${1:fold} ([${2:res 0}])
+       ([i (in-range ${3:m})]
+        [j (in-range ${4:n})])
+       $0)

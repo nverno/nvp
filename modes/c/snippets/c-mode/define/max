@@ -1,8 +1,15 @@
 # -*- mode: snippet -*-
 # name: max
 # key: d_max
+# expand-env: ((yas-indent-line 'fixed))
 # --
-${1:#define MAX(a, b) ((a) > (b) ? (a) : (b))}${1:$($s? ""
-"int max(int a, int b) {
-    return (a > b) ? a : b;
-}")}
+#define MAX(a, b)                                                              \
+  (\{                                                                           \
+    __typeof__(a) _a = (a);                                                    \
+    __typeof__(b) _b = (b);                                                    \
+    _a > _b ? _a : _b;                                                         \
+  \})${1:
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+static inline int max(int a, int b) \{
+    return a > b ? a : b;
+\}}

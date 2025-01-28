@@ -22,14 +22,11 @@
         (or (get-buffer-window ielm-buf)
             (pop-to-buffer ielm-buf))))))
 
-;; `ielm-return' always wants to eval when smartparens close sexps
 (defun nvp-ielm-nl (&optional arg)
   "Insert nl and indent unless point is at end-of-line."
   (interactive "P")
-  (if (eolp)
-      (ielm-return arg)
-    (let (ielm-dynamic-return)
-      (newline-and-indent))))
+  (let ((ielm-dynamic-return t))
+    (ielm-return arg)))
 
 ;; Works as both command for `nvp-repl-help' and handler for "," in repl
 (defun nvp-ielm-help (&optional arg _proc)

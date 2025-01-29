@@ -99,6 +99,8 @@ buffers."
   "When non-nil, set repl buffer windows as dedicated."
   :type 'boolean)
 
+;; TODO(01/30/25): use `previous-window' alist entry with
+;; `display-buffer-in-previous-window'
 (defvar nvp-repl--display-actions
   '((other-window
      . ((display-buffer--maybe-same-window
@@ -126,7 +128,7 @@ buffers."
     (window-min-height    . 20)
     (inhibit-same-window  . t)
     (inhibit-switch-frame . t)
-    (preserve-size        . (t . t))
+    ;; (preserve-size        . (t . t))
     (dedicated            . ,nvp-repl-dedicated-window)))
 
 ;;; Caches

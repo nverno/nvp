@@ -151,7 +151,7 @@ Otherwise, try jumping to links in other buffers instead.
 Prefixes:
 
   0	Call in current other-window scrolling buffer.
-  \\[universal-argument]   Try other buffer immediately.
+  \\[universal-argument]   Try `other-window' immediately.
   \\[universal-argument]\\[universal-argument]   Try visible windows on\
  ALL-FRAMES."
   (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))

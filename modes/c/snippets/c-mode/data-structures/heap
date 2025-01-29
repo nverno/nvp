@@ -1,0 +1,92 @@
+# -*- mode: snippet -*-
+# name: heap
+# key: d_heap
+# --
+typedef ${1:int} heapT;
+typedef int (*Comparator)(heapT, heapT);
+
+typedef struct {
+  int size, cap;
+  Comparator cmp;
+  heapT *heap;
+} Heap;
+
+int heap_cmp_default(heapT x, heapT y) { return x ${2:>} y; }
+
+Heap *heap_new(int capacity, Comparator cmp) {
+  Heap *hp = (Heap *)malloc(sizeof(Heap));
+  hp->cap = capacity;
+  hp->size = 0;
+  hp->heap = (heapT *)malloc(capacity * sizeof(heapT));
+  hp->cmp = cmp == NULL ? heap_cmp_default : cmp;
+  return hp;
+}
+
+void swap(heapT *a, heapT *b) {
+  heapT temp = *a;
+  *a = *b;
+  *b = temp;
+}
+
+void heapify_up(Heap *hp, int index) {
+  int parent = (index - 1) / 2;
+  heapT *heap = hp->heap;
+  if (index > 0 && hp->cmp(heap[index], heap[parent])) {
+    swap(&heap[index], &heap[parent]);
+    heapify_up(hp, parent);
+  }
+}
+
+void heapify_down(Heap *hp, int index) {
+  int largest = index;
+  int left = 2 * index + 1;
+  int right = 2 * index + 2;
+  heapT *heap = hp->heap;
+
+  if (left < hp->size && hp->cmp(heap[left], heap[largest])) {
+    largest = left;
+  }
+  if (right < hp->size && hp->cmp(heap[right], heap[largest])) {
+    largest = right;
+  }
+  if (largest != index) {
+    swap(&heap[index], &heap[largest]);
+    heapify_down(hp, largest);
+  }
+}
+
+void heap_push(Heap *hp, heapT value) {
+  if (hp->size >= hp->cap) {
+    hp->cap = 2 * hp->cap;
+    if (realloc(hp->heap, sizeof(int) * hp->cap) != NULL) {
+      perror("realloc");
+    };
+  }
+  hp->heap[hp->size] = value;
+  heapify_up(hp, hp->size);
+  hp->size++;
+}
+
+int heap_size(Heap *hp) { return hp->size; }
+
+heapT heap_pop(Heap *hp) {
+  heapT res = hp->heap[0];
+  hp->heap[0] = hp->heap[hp->size - 1];
+  hp->size--;
+  heapify_down(hp, 0);
+  return res;
+}
+
+heapT heap_top(Heap *hp) { return hp->heap[0]; }
+
+void heap_free(Heap *hp) {
+  free(hp->heap);
+  free(hp);
+}
+
+void heap_print(Heap *hp) {
+  for (int i = 0; i < hp->size; i++) {
+    printf("%d ", hp->heap[i]);
+  }
+  printf("\n");
+}

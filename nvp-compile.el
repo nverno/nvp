@@ -1,12 +1,10 @@
 ;;; nvp-compile.el --- compile autoloads -*- lexical-binding: t; -*-
 ;;; Commentary:
-;; XXX: integrate with projectile
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'compile)
-(nvp:decls :p (comint xterm) :f (nvp-read-switch nvp-buffer-local-set-key))
-(nvp:auto "ansi-color" 'ansi-color-apply-on-region)
-(nvp:auto "projectile" 'projectile-project-root)
+(nvp:decls :p (comint xterm projectile))
+(autoload 'ansi-color-apply-on-region "ansi-color")
 
 
 (defmacro nvp-with-compile-command (cmd &optional arg &rest body)
@@ -19,7 +17,7 @@ has a file or directory local binding."
               ,cmd)))
      ,@body))
 
-(defun nvp-compile--make-available (&optional no-make no-cmake)
+(defsubst nvp-compile--make-available (&optional no-make no-cmake)
   "Return make type of current project or nil."
   (when-let* ((default-directory (nvp-project-root nil 'local)))
     (list :make (unless no-make
@@ -110,10 +108,10 @@ ARGS are passed to `nvp-compile'."
   (let* ((orig-funcs compilation-finish-functions)
          (lmap (make-sparse-keymap))
          (setup-func
-          #'(lambda (&rest _ignored)
-              (set-keymap-parent lmap (current-local-map))
-              (use-local-map lmap)
-              (setq compilation-finish-functions orig-funcs))))
+          (lambda (&rest _)
+            (set-keymap-parent lmap (current-local-map))
+            (use-local-map lmap)
+            (setq compilation-finish-functions orig-funcs))))
     (pcase-dolist (`(,k . ,b) bindings)
       (define-key lmap (if (vectorp k) k (kbd k)) b))
     (setq compilation-finish-functions setup-func)
@@ -127,16 +125,7 @@ Optionally run in ROOT, eg. `(c++-mode . (eval . (nvp-compile-local CMD t)))'."
               (concat (if root (concat "cd " (projectile-project-root) " && ")) cmd))
   (nvp-buffer-local-set-key (kbd (or key "C-c C-c")) #'compile))
 
-;; -------------------------------------------------------------------
-;;; Related commands
 
-;; TODO: display compiler info
-;;;###autoload
-(defun nvp-compile-help ()
-  (interactive))
-
-
-;; -------------------------------------------------------------------
 ;;; Compilation
 
 ;;;###autoload

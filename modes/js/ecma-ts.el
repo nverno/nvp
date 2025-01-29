@@ -136,7 +136,8 @@
       [(true) (false) (statement_identifier)]
       @font-lock-constant-face
       ;; FIXME: move types or other feature
-      [(undefined) (null)] @font-lock-type-face)
+      (null) @nvp-nil-face
+      (undefined) @font-lock-type-face)
 
     :language lang
     :feature 'expression

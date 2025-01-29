@@ -58,12 +58,10 @@
 ;;;###autoload
 (defun nvp-window-rotate ()
   (interactive)
-  (let ((windows-and-buffers
-         (--map (cons it (window-buffer (next-window it))) (window-list))))
-    (dolist (window-and-buffer windows-and-buffers)
-      (-let (((wnd . buf) window-and-buffer))
-        (select-window wnd)
-        (switch-to-buffer buf)))))
+  (let ((win-bufs (--map (cons it (window-buffer (next-window it))) (window-list))))
+    (pcase-dolist (`(,wnd . ,buf) win-bufs)
+      (select-window wnd)
+      (switch-to-buffer buf))))
 
 ;;;###autoload
 (defun nvp-window-swap ()

@@ -33,7 +33,12 @@
       `((interpolation ["#{" "}"] @font-lock-operator-face)
         ((identifier) @font-lock-preprocessor-face
          (:match ,(rx-to-string `(or ,@nvp-ruby-ts--preprocs))
-                 @font-lock-preprocessor-face))))
+                 @font-lock-preprocessor-face))
+        (call receiver: (constant) @font-lock-constant-face)
+        (call receiver: (_) @font-lock-receiver-face)
+        (assignment left: (instance_variable) @font-lock-variable-name-face)
+        (alias name: (_) @font-lock-function-name-face)
+        (nil) @nvp-nil-face))
 
      (treesit-font-lock-rules
       :language 'ruby

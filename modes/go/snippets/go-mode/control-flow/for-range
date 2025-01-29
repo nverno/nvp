@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
-# name: for in range
+# name: for i, x in range
 # key: forix
 # --
-for ${1:_}${2:$($s? ", ")}${2:val} := range ${3:collection} {
+for ${1:i}${2:$($s? ", ")}${2:val} := range ${3:collection} {
 	$0
 }

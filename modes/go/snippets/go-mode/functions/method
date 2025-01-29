@@ -2,6 +2,6 @@
 # name: method
 # key: meth
 # --
-func (${2:$$(yas-auto-next (nvp--go-type-var (yas-field-value 1)))} *${1:Struct}) ${3:MethodName}(${4:arguments}) ${5:ReturnType}${5:$($s? " ")}{
+func (${2:${1:$(nvp--go-type-var yas-text)}} *${1:Struct}) ${3:MethodName}(${4:arguments}) ${5:ReturnType}${5:$($s? " ")}{
 	$0
 }

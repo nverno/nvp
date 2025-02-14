@@ -118,8 +118,9 @@
 
     :language lang
     :feature 'operator
-    `([,@ecma-ts-operators] @font-lock-operator-face
-      (ternary_expression ["?" ":"] @font-lock-operator-face))
+    `((type_parameters ["<" ">"] @font-lock-bracket-face)
+      [,@ecma-ts-operators] @font-lock-operator-face
+      (ternary_expression ["?" ":"] @nvp-ternary-operator-face))
 
     :language lang
     :feature 'delimiter

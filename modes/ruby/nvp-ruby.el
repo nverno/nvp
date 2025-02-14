@@ -56,8 +56,34 @@
               (cdr nvp-ruby-ts-font-settings))
     (apply orig-fn lang args)))
 
+
 (nvp:treesit-add-rules ruby-ts-mode
   :extra-features '(nvp nvp-pre))
+
+
+;;; Indentation
+
+;; TODO(02/14/25): patch
+;; Indent multi-line comment delims to column 0
+;; =begin
+;;   ...
+;; =end
+(defun nvp-ruby-ts--multi-line-comment-delim (_n _p bol &rest _)
+  (and (eq (char-after bol) ?=)
+       (save-excursion
+         (goto-char bol)
+         (looking-at (rx "=" (or "begin" "end"))))))
+
+(defvar nvp-ruby-ts-indent-rules
+  `(((and (or (node-is "comment")
+              (parent-is "comment"))
+          nvp-ruby-ts--multi-line-comment-delim)
+     column-0 0)))
+
+(define-advice ruby-ts--indent-rules (:around (orig-fn) "extra-rules")
+  `((ruby ,@(append nvp-ruby-ts-indent-rules
+                    (assoc-default 'ruby (funcall orig-fn))))))
+
 
 ;;; Snippets
 ;; create arg initializtion from yas-text

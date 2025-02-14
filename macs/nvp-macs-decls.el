@@ -337,9 +337,6 @@ If IGNORE is non-nil, exclude those matching regexp IGNORE."
        nvp-repl-show-result
        nvp-results-title
        nvp-scratch-minor-mode
-       nvp-setup-local
-       nvp-setup-mode
-       nvp-setup-program
        nvp-shell
        nvp-shell-launch-terminal
        nvp-sort-alist

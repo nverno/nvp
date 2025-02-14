@@ -91,6 +91,7 @@ Read command with 1 or 3 or more \\[universal-argument]."
                                      (eval compile-command))
                          comint))
 
+(declare-function nvp-read-switch "nvp-switch-capf")
 ;;;###autoload
 (defun nvp-compile-with-switches (set-p &optional cmd &rest args)
   "Read compilation command with switch completion for CMD ARGS.

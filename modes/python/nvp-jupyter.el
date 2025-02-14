@@ -8,7 +8,8 @@
 ;; -------------------------------------------------------------------
 ;;; Commands
 
-;; switch between python/julia/js and load those tools
+(declare-function nvp-setup-local "nvp-setup")
+;; Switch between python/julia/js and load those tools
 (defun nvp-jupyter-switch-mode (mode)
   (interactive
    (list (completing-read "Set local variables for: " '("python" "julia" "js"))))
@@ -53,7 +54,7 @@
 ;; (advice-add 'ein:notebook-save-notebook-success :around #'nvp@jupyter-sync)
 
 ;; -------------------------------------------------------------------
-;;; Setup 
+;;; Setup
 
 (defun nvp-jupyter-start-notebook ()
   ;; start inotebook so can load .ipynb instead of json file

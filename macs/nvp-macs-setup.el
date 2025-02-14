@@ -263,15 +263,16 @@ PROPS defaults to setting :verbosity to 1."
   `(progn
      (eval-when-compile (require 'smartparens))
      (declare-function sp-local-pair "smartparens")
-     ,(cond
-       (modes
-        `(sp-with-modes ,modes
-           ,@pairs))
-       ((equal 'quote (caar pairs)) `(sp-local-pair ,@pairs))
-       (t
-        (macroexp-progn
-         (cl-loop for pair in pairs
-                  collect `(sp-local-pair ,@pair)))))))
+     (with-eval-after-load 'smartparens
+       ,(cond
+         (modes
+          `(sp-with-modes ,modes
+             ,@pairs))
+         ((equal 'quote (caar pairs)) `(sp-local-pair ,@pairs))
+         (t
+          (macroexp-progn
+           (cl-loop for pair in pairs
+                    collect `(sp-local-pair ,@pair))))))))
 
 (defmacro nvp:diminish (&rest modes)
   "Diminish MODES in modeline.

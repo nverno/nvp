@@ -12,8 +12,8 @@
 (require 'help-mode)
 (nvp:decls :p (advice) :v (c-lang-constants pp-default-function))
 
-(nvp:auto "nvp-util" 'nvp-s-wrap)
-(nvp:auto "cl-extra" 'cl-prettyprint)
+(autoload 'nvp-s-wrap "nvp-util")
+(autoload 'cl-prettyprint "cl-extra")
 
 (define-button-type 'help-marker
   :supertype 'help-xref
@@ -76,6 +76,7 @@
 
 ;;; Pretty Printing datastructures
 
+(declare-function cl--print-table "cl-extra")
 (defun nvp-pp-struct (struct &optional level)
   "Pretty print STRUCT entry."
   (let* ((type (type-of struct))

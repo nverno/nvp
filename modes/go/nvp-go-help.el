@@ -30,7 +30,7 @@
   (with-syntax-table nvp-go-help-symbol-syntax
     (bounds-of-thing-at-point 'symbol)))
 
-;; call godoc synchronously for popups
+;; Call godoc synchronously for popups
 (defun nvp-go-godoc (query command)
   (interactive (list (godoc--read-query) godoc-command))
   (let ((buf (with-current-buffer (get-buffer-create "*go-help*")

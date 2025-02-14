@@ -2,4 +2,4 @@
 # name: char to index
 # key: cidx
 # --
-let cidx = |c: char| -> usize { (c as u8 - b'a') as usize };
+let cidx = |c: char| -> usize { (c as u8 - b'${1:a}') as usize };

@@ -43,6 +43,9 @@
 
      ;; method calls
      (attribute
+      object: ((identifier) @font-lock-instance-ref-face
+               (:match ,(rx bos "self" eos) @font-lock-instance-ref-face)))
+     (attribute
       object: (identifier) @font-lock-receiver-face)
      (call
       function: (attribute attribute: (identifier) @font-lock-method-call-face))

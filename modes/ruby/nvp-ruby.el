@@ -12,17 +12,22 @@
 
 ;;; Tree-sitter
 (defvar nvp-ruby-ts--preprocs '("require" "require_relative"))
+
 (setq ruby-ts--delimiters (seq-uniq (append '(":" "::") ruby-ts--delimiters)))
+
 ;;; FIXME(6/26/24): patch for missing operator =~
 (setq ruby-ts--operators
-      (seq-uniq
-       (cons "=~" (--filter (not (member it '(":" "::"))) ruby-ts--operators))))
+      (seq-uniq (cons "=~" (--filter (not (member it '(":" "::")))
+                                     ruby-ts--operators))))
+
 ;;; FIXME(6/26/24): patch
 (setq ruby-builtin-methods-no-reqs
       (seq-uniq (append '("instance_variables") ruby-builtin-methods-no-reqs)))
-(setq ruby-ts--builtin-methods
-      (format "\\`%s\\'" (regexp-opt (append ruby-builtin-methods-no-reqs
-                                             ruby-builtin-methods-with-reqs))))
+
+(setq ruby-ts--builtin-methods (rx-to-string
+                                `(seq bos (or ,@ruby-builtin-methods-no-reqs
+                                              ,@ruby-builtin-methods-with-reqs)
+                                      bos)))
 
 (defvar nvp-ruby-ts-font-settings
   (when (treesit-available-p)
@@ -34,8 +39,6 @@
         ((identifier) @font-lock-preprocessor-face
          (:match ,(rx-to-string `(or ,@nvp-ruby-ts--preprocs))
                  @font-lock-preprocessor-face))
-        (call receiver: (constant) @font-lock-constant-face)
-        (call receiver: (_) @font-lock-receiver-face)
         (assignment left: (instance_variable) @font-lock-variable-name-face)
         (alias name: (_) @font-lock-function-name-face)
         (nil) @nvp-nil-face))
@@ -46,7 +49,13 @@
       '((assignment
          left: (element_reference
                 object: (identifier) @font-lock-variable-name-face))
-        (identifier) @font-lock-variable-use-face)))))
+        (identifier) @font-lock-variable-use-face)
+      :language 'ruby
+      :feature 'receiver
+      :override 'append
+      '((call receiver: (call receiver: (_) @italic))
+        (call receiver: (identifier) @italic method: (_)))))))
+
 
 (define-advice ruby-ts--font-lock-settings
     (:around (orig-fn lang &rest args) "add-fonts")
@@ -58,7 +67,7 @@
 
 
 (nvp:treesit-add-rules ruby-ts-mode
-  :extra-features '(nvp nvp-pre))
+  :extra-features '(nvp nvp-pre receiver))
 
 
 ;;; Indentation

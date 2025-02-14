@@ -73,7 +73,16 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
                 tsx-ts-mode--assignment-lhs-query))
   (let ((v (intern (format "nvp-%s-ts-font-lock-rules" language))))
     (or (and nil nvp-typescript-ts-font-lock-rules)
-        (let ((new-rules
+        (let ((pre-rules
+               (treesit-font-lock-rules
+                :language language
+                :feature 'nvp-pre
+                '((type_parameters ["<" ">"] @font-lock-bracket-face)
+                  ;; this.*
+                  (member_expression
+                   object: (this) @font-lock-instance-ref-face))))
+
+              (new-rules
                (treesit-font-lock-rules
                 :language language
                 :feature 'nvp
@@ -149,8 +158,9 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
                           [(identifier) (property_identifier)]
                           @font-lock-function-name-face)))))
               (old-rules (funcall rules-fn language)))
+
           (set v (ecma-ts-merge-rules
-                  language (append old-rules new-rules)
+                  language (append old-rules new-rules) pre-rules
                   ;; XXX(08/25/24): enable jsdoc parser in typescript?
                   (eq 'typescript language)))))))
 
@@ -173,7 +183,7 @@ For OVERRIDE, START, END, see `treesit-font-lock-rules'."
 
 ;;; Add missing features once
 (nvp:treesit-add-rules typescript-ts-mode
-  :extra-features '(variable builtin namespace assignment preproc nvp))
+  :extra-features '(variable builtin namespace assignment preproc nvp nvp-pre))
 
 (nvp:treesit-add-rules tsx-ts-mode
   :extra-features '(operator variable builtin namespace assignment preproc))

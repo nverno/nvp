@@ -40,6 +40,8 @@
                "console.table(util.inspect.defaultOptions)"))
     (shell-command "npx ts-node --showConfig")))
 
+(declare-function browse-url-chrome "browse-url")
+
 (defun nvp-typescript-repl-inspect ()
   "Attach chrome debugger to repl."
   (interactive)

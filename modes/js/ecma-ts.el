@@ -118,8 +118,7 @@
 
     :language lang
     :feature 'operator
-    `((type_parameters ["<" ">"] @font-lock-bracket-face)
-      [,@ecma-ts-operators] @font-lock-operator-face
+    `([,@ecma-ts-operators] @font-lock-operator-face
       (ternary_expression ["?" ":"] @nvp-ternary-operator-face))
 
     :language lang
@@ -196,11 +195,11 @@
       (property_identifier) @font-lock-property-use-face))))
 
 ;;;###autoload
-(defun ecma-ts-merge-rules (language rules &optional jsdoc)
+(defun ecma-ts-merge-rules (language rules &optional pre-rules jsdoc)
   (pcase-let* ((`(,hd . ,tl) (ecma-ts-font-lock-rules language))
                (features (--map (nth 2 it) (append hd tl)))
                (rules (--filter (not (memq (nth 2 it) features)) rules)))
-    (append hd rules tl
+    (append pre-rules hd rules tl
             ;; `jsdoc' settings that have same feature name as added rules get
             ;; ignored in merge above -- `language' isn't available to match
             ;; against in compiled queries

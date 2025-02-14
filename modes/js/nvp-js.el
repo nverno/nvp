@@ -11,7 +11,7 @@
 (require 'js)
 (nvp:req 'nvp-js 'subrs)
 (nvp:decls :p (js2 ecma) :f (nvp-js-jsx-hook js2-minor-mode))
-           
+
 
 (nvp:defmethod nvp-newline-dwim-comment (syntax arg)
   ;; Other modes, js-jsx, js2-jsx, rjsx inherit from js/js2
@@ -76,7 +76,7 @@
 (nvp:decl ecma-ts-merge-rules)
 (setq js--treesit-font-lock-settings
       (ecma-ts-merge-rules
-       'javascript js--treesit-font-lock-settings 'jsdoc))
+       'javascript js--treesit-font-lock-settings nil 'jsdoc))
 
 (nvp:treesit-add-rules js-ts-mode
   :extra-features '(variable builtin namespace preproc expression))

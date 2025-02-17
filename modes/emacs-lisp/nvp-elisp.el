@@ -265,8 +265,11 @@ When ACTION is \\='insert, when:
          (beg (cond (beg beg)
                     (region-p (region-beginning))
                     ;; Beginning of outermost sexp
-                    ((car-safe (nth 9 (parse-partial-sexp
-                                       (point-min) (point)))))
+                    ((and-let* ((beg (car-safe (nth 9 (parse-partial-sexp
+                                                       (point-min) (point))))))
+                       (while (memq (char-after beg) '(?' ?, ?@))
+                         (cl-incf beg))
+                       beg))
                     ((eq ?\( (char-after)) (point))
                     (t nil)))
          (end (cond (end end)
@@ -352,8 +355,8 @@ Prefix handling:
            (save-excursion
              (goto-char (car bnds))
              (setq bnds (bounds-of-thing-at-point 'list))))
-          ((eq ?' (char-after (car bnds)))
-           (setf (car bnds) (1+ (car bnds)))))
+          ((while (memq (char-after (car bnds)) '(?' ?, ?@))
+             (setf (car bnds) (1+ (car bnds))))))
     (let ((eval-expression-debug-on-error nil))
       (nvp-elisp-eval-sexp-dwim
        no-truncate (if pp 'pp 'eval)

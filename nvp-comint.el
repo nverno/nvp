@@ -75,14 +75,19 @@ When add entries, duplicate entries are also removed."
             (comint-input-ring-file-name
              (make-temp-file comint-input-ring-file-name)))
         (nvp-comint--write-input-ring)
-        (call-process-shell-command
-         (format
-          ;; FIXME(08/02/24): don't dedupe history separator lines
-          ;; eg. dont clobber separators in `sql-stop'
-          (concat "cat \"%s\" >> \"%s\";"
-                  "awk '!seen[$0]++' \"%s\" > \"%s\"; rm \"%s\"")
-          histfile comint-input-ring-file-name
-          comint-input-ring-file-name histfile comint-input-ring-file-name))))))
+        ;; XXX(02/18/25): avoid error if comint's directory has been deleted
+        (let ((default-directory (if (file-exists-p default-directory)
+                                     default-directory
+                                   nvp/history)))
+          (call-process-shell-command
+           (format
+            ;; FIXME(08/02/24): don't dedupe history separator lines
+            ;; eg. dont clobber separators in `sql-stop'
+            (concat "cat \"%s\" >> \"%s\";"
+                    "awk '!seen[$0]++' \"%s\" > \"%s\"; rm \"%s\"")
+            histfile comint-input-ring-file-name
+            comint-input-ring-file-name histfile
+            comint-input-ring-file-name)))))))
 
 (advice-add 'comint-write-input-ring :override #'nvp-comint-write-input-ring)
 

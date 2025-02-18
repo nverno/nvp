@@ -101,17 +101,28 @@ buffers."
 
 ;; TODO(01/30/25): use `previous-window' alist entry with
 ;; `display-buffer-in-previous-window'
-(defvar nvp-repl--display-actions
+(defvar nvp-repl-display-actions
   '((other-window
      . ((display-buffer--maybe-same-window
          display-buffer-reuse-window
          display-buffer-use-some-window
          display-buffer-pop-up-window)))
     (split-below
-     . ((display-buffer-reuse-window nvp-repl--split-below))))
+     . ((display-buffer-reuse-window
+         nvp-repl-display-buffer-split-below)
+        (window-height . 0.4)
+        (preserve-size . (t . nil)))))
   "Options for `nvp-repl-display-action'.")
 
-(defun nvp-repl--split-below (buf alist)
+(defvar nvp-repl-display-params
+  '((category             . repl)
+    (pop-up-windows       . t)
+    (window-min-height    . 20)
+    (inhibit-same-window  . t)
+    (inhibit-switch-frame . t))
+  "Default display action parameters when displaying repl.")
+
+(defun nvp-repl-display-buffer-split-below (buf alist)
   "Split window and display repl below."
   (when-let* ((height (cdr (assq 'window-height alist))))
     (when (floatp height)
@@ -121,15 +132,9 @@ buffers."
 
 (defun nvp-repl--display-action (&optional action)
   `(,@(cdr (assq (or action nvp-repl-display-action)
-                 nvp-repl--display-actions))
-    (category             . repl)
-    (pop-up-windows       . t)
-    (window-height        . 0.4)
-    (window-min-height    . 20)
-    (inhibit-same-window  . t)
-    (inhibit-switch-frame . t)
-    ;; (preserve-size        . (t . t))
-    (dedicated            . ,nvp-repl-dedicated-window)))
+                 nvp-repl-display-actions))
+    ,@nvp-repl-display-params
+    (dedicated . ,nvp-repl-dedicated-window)))
 
 ;;; Caches
 ;; Cache defined repls

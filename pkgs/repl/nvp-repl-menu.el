@@ -14,14 +14,15 @@
 
 (transient-define-infix nvp-repl--set-display ()
   "Set display action."
-  :description "Set display action"
+  :description "Display action"
   :class 'transient-lisp-variable
   :variable 'nvp-repl-display-action
   :reader
   (lambda (prompt initial-input history)
     (intern
      (completing-read
-      prompt (mapcar #'car nvp-repl--display-actions) nil t initial-input history))))
+       prompt (mapcar #'car nvp-repl--display-actions)
+       nil t initial-input history))))
 
 (autoload 'nvp-dev-describe-variable "nvp-dev")
 
@@ -41,7 +42,7 @@
   [[ :if-non-nil nvp-repl--current
      "Send"
      ("s" "Last sexp" nvp-repl-send-sexp)
-     ("S" "Statement or sentence" nvp-repl-send-stmt-or-sentence)
+     ("S" "Stmt or sentence" nvp-repl-send-stmt-or-sentence)
      ("l" "Line or region" nvp-repl-send-line)
      ("r" "Region" nvp-repl-send-region)
      ("f" "Defun" nvp-repl-send-defun)
@@ -57,19 +58,19 @@
      ("k" "Clear" nvp-repl-clear :transient t)
      ("h" "Help" nvp-repl-help)
      ("c" "Config" nvp-repl-config)
-     ("w" "Show working directory/buffer" nvp-repl-pwd :transient t)
-     ("W" "Change Working directory/buffer" nvp-repl-cd)]]
-  [["Repl"
+     ("w" "Show wd" nvp-repl-pwd :transient t)
+     ("W" "Change wd" nvp-repl-cd)]
+   ["Repl"
     ("j" "Jump" nvp-repl-jump)
-    ("q" "Interrupt/kill process" nvp-repl-interrupt-or-kill-process
+    ("q" "Int/kill proc" nvp-repl-interrupt-or-kill-process
      :if nvp-repl-current)
-    ("C" "Comint menu" nvp-comint-menu :if-derived comint-mode)]
-   ["Manage Repls"
+    ("C" "Comint menu" nvp-comint-menu :if-derived comint-mode)
     ("M-?" "Describe repl" nvp-repl-describe-repl :if nvp-repl-current)
     (":r" "Remove repl" nvp-repl-remove)]
    ["Settings"
     (":s" nvp-repl--set-display)
-    (":d" nvp-repl-config-menu--toggle-nvp-repl-dedicated-window)
+    (":d" "Dedicated window"
+     nvp-repl-config-menu--toggle-nvp-repl-dedicated-window)
     (":l" "Load startup file"
      nvp-repl-config-menu--toggle-nvp-repl-load-startup-file)]])
 

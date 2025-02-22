@@ -21,7 +21,7 @@
   (lambda (prompt initial-input history)
     (intern
      (completing-read
-       prompt (mapcar #'car nvp-repl--display-actions)
+       prompt (mapcar #'car nvp-repl-display-actions)
        nil t initial-input history))))
 
 (autoload 'nvp-dev-describe-variable "nvp-dev")

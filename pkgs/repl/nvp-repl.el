@@ -109,9 +109,11 @@ buffers."
          display-buffer-pop-up-window)))
     (split-below
      . ((display-buffer-reuse-window
-         nvp-repl-display-buffer-split-below)
-        (window-height . 0.4)
-        (preserve-size . (t . nil)))))
+         display-buffer-below-selected
+         display-buffer-in-direction)
+        ;; (preserve-size . (t . nil))
+        ;; (window-height . 0.4)
+        (direction . below))))
   "Options for `nvp-repl-display-action'.")
 
 (defvar nvp-repl-display-params
@@ -122,13 +124,13 @@ buffers."
     (inhibit-switch-frame . t))
   "Default display action parameters when displaying repl.")
 
-(defun nvp-repl-display-buffer-split-below (buf alist)
-  "Split window and display repl below."
-  (when-let* ((height (cdr (assq 'window-height alist))))
-    (when (floatp height)
-      (setq height (round (* height (frame-height)))))
-    (setq height (- (max height window-min-height)))
-    (window--display-buffer buf (split-window-below height) 'window alist)))
+;; (defun nvp-repl-display-buffer-split-below (buf alist)
+;;   "Split window and display repl below."
+;;   (when-let* ((height (cdr (assq 'window-height alist))))
+;;     (when (floatp height)
+;;       (setq height (round (* height (frame-height)))))
+;;     (setq height (- (max height window-min-height)))
+;;     (window--display-buffer buf (split-window-below height) 'window alist)))
 
 (defun nvp-repl--display-action (&optional action)
   `(,@(cdr (assq (or action nvp-repl-display-action)

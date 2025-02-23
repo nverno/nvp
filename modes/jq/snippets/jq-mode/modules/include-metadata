@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: Snippet for include metadata
+# name: include metadata
 # key: incm
 # --
 include "${1:name}" {${2:metadata}};

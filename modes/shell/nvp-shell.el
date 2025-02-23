@@ -63,7 +63,7 @@
   "Run input on current line in external shell (gnome)"
   (interactive)
   (nvp:with-buffer-proc proc
-    (when-let* ((cmd (nvp-shell--get-input 'add)))
+    (when-let* ((cmd (string-trim-right (nvp-shell--get-input 'add))))
       ;; FIXME: inherit environment?
       ;; this doesn't work -- how to pass env from gnome-shell => bash
       ;; (process-environment
@@ -71,10 +71,13 @@
       ;;        process-environment))
       (comint-send-string
        proc (format (concat
-                     "gnome-terminal --tab -- bash -c '"
                      ;; "export PROMPT_COMMAND='echo -ne \"\\033]0;%s\\077\"';"
+                     ;; Note(02/22/25): -i so bash interprets aliases
+                     "gnome-terminal --tab -- bash -i -c '"
+                     ". \"$HOME/.bash_aliases\" || true;"
+                     "echo Command: \"%s\"; "
                      "%s; bash'\n")
-                    cmd)))))
+                    cmd cmd)))))
 
 (defvar compilation-scroll-output)
 

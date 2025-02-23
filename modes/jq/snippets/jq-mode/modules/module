@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: Snippet for include
+# name: module
 # key: mod
 # --
 module {${3:metadata}};

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: Snippet for try catch
+# name: try catch
 # key: try
 # --
 try ${1:.exp} catch ${2:.}

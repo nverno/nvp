@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: Snippet for def
+# name: function def
 # key: def
 # --
 def ${1:name}${2:(${3:args;...})}: ${4:expr};

@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: Snippet for include
+# name: include path
 # key: inc
 # --
 include "${1:path}";

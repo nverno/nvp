@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: Snippet for exp as $var
+# name: exp as $var
 # key: as
 # --
 ${1:exp} as \$${2:var}

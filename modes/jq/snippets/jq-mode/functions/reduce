@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: Snippet for reduce .[] as $item (0; . + $item)
+# name: reduce .[] as $item (0; . + $item)
 # key: re
 # --
 reduce ${1:.} as \$${2:i} (${3:null}; \$${2:i})

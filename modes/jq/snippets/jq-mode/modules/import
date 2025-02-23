@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: Snippet for import
+# name: import
 # key: imp
 # --
 import "${1:path}" as ${2:name};

@@ -26,7 +26,7 @@
       ("C" "Check" rustic-cargo-check)
       ("f" "Format" rustic-cargo-fmt)
       ("l" "Clippy" rustic-cargo-clippy)
-      ("L" "Clippy fix" rustic-cargo-clippy-fix)]
+      ("F" "Clippy fix" rustic-cargo-clippy-fix)]
      ["Manage Crates"
       ("a" "Add" rustic-cargo-add)
       ("R" "Remove" rustic-cargo-rm)

@@ -2,4 +2,4 @@
 # name: x, err := ...
 # key: e
 # --
-$1, err :=
+${1:x}, err := $0

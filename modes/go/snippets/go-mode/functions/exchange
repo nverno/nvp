@@ -4,7 +4,7 @@
 # --
 var exchange func(*int, int) int
 exchange = func(v *int, x int) (res int) {
-  res = *v
-  *v = x
-  return res
+	res = *v
+	*v = x
+	return res
 }

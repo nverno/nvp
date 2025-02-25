@@ -4,8 +4,8 @@
 # --
 var min func(int, int) int
 min = func(a, b int) int {
-  if a < b {
-    return a
-  }
-  return b
+	if a < b {
+		return a
+	}
+	return b
 }

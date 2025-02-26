@@ -150,22 +150,25 @@
 Otherwise, try jumping to links in other buffers instead.
 Prefixes:
 
-  0	Call in current other-window scrolling buffer.
+  0, \\='-	Call in current other-window scrolling buffer.
   \\[universal-argument]   Try `other-window' immediately.
-  \\[universal-argument]\\[universal-argument]   Try visible windows on\
- ALL-FRAMES."
+  Number	Use window numbered by `winum'."
   (interactive (let* ((raw (prefix-numeric-value current-prefix-arg))
                       (arg (abs raw)))
-                 (list (cond ((memq arg '(- 0))
+                 (list (cond ((or (eq '- current-prefix-arg)
+                                  (eq arg 0))
                               (and-let* ((win
                                           (nvp-other-window-scroll-default)))
                                 (display-buffer (window-buffer win))
                                 win))
-                             ((= 4 arg) (next-window
-                                         (selected-window) nil nil))
+                             ((equal '(4) current-prefix-arg)
+                              (next-window (selected-window) nil nil))
+                             ((and (numberp current-prefix-arg)
+                                   (fboundp 'winum-get-window-by-number))
+                              (winum-get-window-by-number arg))
                              (t (selected-window)))
-                       (and (> arg 4)
-                            'visible))))
+                       ;; (and (> arg 4) 'visible)
+                       'visible)))
   (let ((win (cond ((windowp win-or-buf) win-or-buf)
                    ((bufferp win-or-buf)
                     (get-buffer-window win-or-buf all-frames))

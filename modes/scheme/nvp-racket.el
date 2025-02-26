@@ -104,11 +104,13 @@ Otherwise expand the list containing point."
   (cl-case command
     (init (require 'racket-mode nil t))
     (thingatpt (nvp-hap-thing-at-point
-                arg nil "Racket: " ;; (racket--describe-terms)
-                ))
+                arg nil "Racket: " racket--xp-completion-table-all))
     (doc-buffer                         ; args has prefix
      (or (--when-let (funcall (racket--xp-make-company-doc-buffer-proc) arg)
-           (list it (point-min)))
+           (list (with-current-buffer it
+                   (view-mode)
+                   (current-buffer))
+                 (point-min)))
          (nvp-hap--racket-describe arg args)))
     (search-remote (format "https://docs.racket-lang.org/search/index.html?q=%s"
                            (url-hexify-string arg)))

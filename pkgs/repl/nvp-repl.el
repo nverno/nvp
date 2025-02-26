@@ -105,14 +105,16 @@ buffers."
   '((other-window
      . ((display-buffer--maybe-same-window
          display-buffer-reuse-window
+         display-buffer-in-previous-window
          display-buffer-use-some-window
          display-buffer-pop-up-window)))
     (split-below
      . ((display-buffer-reuse-window
+         display-buffer-in-previous-window
          display-buffer-below-selected
          display-buffer-in-direction)
         ;; (preserve-size . (t . nil))
-        ;; (window-height . 0.4)
+        (window-height . 0.4)
         (direction . below))))
   "Options for `nvp-repl-display-action'.")
 

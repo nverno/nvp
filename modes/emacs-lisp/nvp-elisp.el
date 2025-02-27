@@ -322,13 +322,14 @@ When ACTION is \\='insert, when:
 This is symbol understood by `bounds-of-thing-at-point'.")
 
 ;;;###autoload
-(defun nvp-elisp-eval-print-dwim (&optional thing no-truncate pp)
+(defun nvp-elisp-eval-print-dwim (&optional thing no-truncate pp strict-bounds)
   "Eval THING at point without debug enabled and print results.
 
 THING defaults to `nvp-elisp-eval-thing'. If THING is preceded by \"(\", eval
 the containing list. If THING is prefixed by \"'\", eval the unquoted symbol.
 When NO-TRUNCATE, results aren't truncated at all.
 When PP, pretty print results in temp buffer.
+When STRICT-BOUNDS, don't modify the bounds of the thing-at-point at all.
 
 Prefix handling:
   \\='- or <=0       NO-TRUNCATE
@@ -337,11 +338,13 @@ Prefix handling:
   (interactive
    (let* ((raw (prefix-numeric-value current-prefix-arg))
           (arg (abs raw))
-          (dash-p (eq '- current-prefix-arg)))
-     (list (and (or dash-p (>= arg 16))
+          (dash-p (eq '- current-prefix-arg))
+          (read-thing-p (or dash-p (>= arg 16))))
+     (list (and read-thing-p
                 (nvp-read-thing-at-point nil nvp-elisp-eval-thing))
            (or dash-p (<= raw 0))
-           (or dash-p (eq arg 4)))))
+           (or dash-p (eq arg 4))
+           read-thing-p)))
   (let* ((region-p (region-active-p))
          (thing (or thing region-p
                     (setq thing (if (nvp:ppss 'soc) 'symbol
@@ -352,9 +355,10 @@ Prefix handling:
       (user-error "No region for \"%S\"" thing))
     (cond (region-p)
           ((eq ?\( (char-before (car bnds)))
-           (save-excursion
-             (goto-char (car bnds))
-             (setq bnds (bounds-of-thing-at-point 'list))))
+           (unless strict-bounds
+             (save-excursion
+               (goto-char (car bnds))
+               (setq bnds (bounds-of-thing-at-point 'list)))))
           ((while (memq (char-after (car bnds)) '(?' ?, ?@))
              (setf (car bnds) (1+ (car bnds))))))
     (let ((eval-expression-debug-on-error nil))

@@ -34,7 +34,9 @@ EXTRA will be appended as -I.
 LANG should have known system includes, eg. c/c++.
 CLANG if non-nil use clang system includes."
   (let* ((lang (or (and lang (symbol-name lang)) "c++"))
-         (var (intern-soft (format "nvp-%s%s-include-dirs" (if clang "clang-" "") lang)))
+         (var (intern-soft (format "nvp-%s%s-include-dirs"
+                                   (if clang "clang-" "")
+                                   lang)))
          (sysincludes (cl-remove-if (lambda (s) (string-prefix-p "." s))
                                     (symbol-value var))))
     (if (null sysincludes)
@@ -49,10 +51,13 @@ CLANG if non-nil use clang system includes."
 Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
   (let ((prog (or prog "clang-format")))
     (if (and (executable-find prog) (executable-find "yq"))
-        (let* ((conf (shell-command-to-string
-                      (format "%s -dump-config | yq '.IndentWidth,.UseTab,.BasedOnStyle'"
-                              (or prog "clang-format")))))
-          (cl-destructuring-bind (indent tabs style &rest args) (split-string conf "\n")
+        (let* ((conf
+                (shell-command-to-string
+                 (format
+                  "%s -dump-config | yq '.IndentWidth,.UseTab,.BasedOnStyle'"
+                  (or prog "clang-format")))))
+          (cl-destructuring-bind (indent tabs style &rest args)
+              (split-string conf "\n")
             (message "%S %S %S" indent tabs style)
             (let ((indent (string-to-number indent))
                   (tabs (not (or (string-empty-p tabs)
@@ -83,7 +88,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 (defsubst nvp-c-header-file-p ()
   (string-match-p "h[xp]*" (nvp:ext)))
 
-;; split string STR on commas, but only when not between <..>
+;; Split string STR on commas, but only when not between <..>
 ;; eg., "std::vector<std::pair<int,int>> i, int j" =>
 ;;      ("std::vector<std::pair<int,int>> i" "int j")
 (defun nvp-c-split-string (str &optional delim)
@@ -183,7 +188,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
   (let* ((txt (treesit-node-text node))
          (b (treesit-node-start node))
          (e (treesit-node-end node))
-         (multiline-p (and (string-prefix-p "/*" txt) (string-suffix-p "*/" txt)))
+         (multiline-p (and (string-prefix-p "/*" txt)
+                           (string-suffix-p "*/" txt)))
          (doc-p (and multiline-p (string-prefix-p "/**" txt))))
     (treesit-fontify-with-override
      b e (if doc-p 'font-lock-doc-face 'font-lock-comment-face)
@@ -192,7 +198,8 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
         (treesit-fontify-with-override
          b (+ 2 b) 'font-lock-comment-delimiter-face 'append start end)
       (treesit-fontify-with-override
-       b (+ (if doc-p 3 2) b) 'font-lock-comment-delimiter-face 'append start end)
+       b (+ (if doc-p 3 2) b) 'font-lock-comment-delimiter-face
+       'append start end)
       (treesit-fontify-with-override
        (- e 2) e 'font-lock-comment-delimiter-face 'append start end))))
 
@@ -227,13 +234,18 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
 ;; c++.
 (defvar c-ts-mode--operators)
 (defun nvp-c-ts-font-lock-settings (language)
-  (let* ((delims (append ["," ":" ";" "."] (and (eq 'cpp language) '("::"))))
-         (ops (append c-ts-mode--operators (and (eq 'cpp language) '("<=>" "..."))))
+  (let* ((delims (append ["," ":" ";" "."]
+                         (and (eq 'cpp language)
+                              '("::"))))
+         (ops (append c-ts-mode--operators
+                      (and (eq 'cpp language)
+                           '("<=>" "..."))))
          (rules (list
                  :language language
                  :feature 'delimiter
                  `([,@delims] @font-lock-delimiter-face
-                   (conditional_expression ["?" ":"] @nvp-ternary-operator-face))
+                   (conditional_expression
+                    ["?" ":"] @nvp-ternary-operator-face))
                  :language language
                  :feature 'operator
                  `([,@ops] @font-lock-operator-face
@@ -266,7 +278,7 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                       (:match "[A-Z_][A-Z0-9_]*$"
                               @font-lock-preprocessor-face)))
           (null) @nvp-nil-face))
-       
+
       (if (eq language 'cpp)
           (list
            :language language
@@ -338,12 +350,14 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
     ((parent-is ,(rx bos "declaration")) parent-bol c-ts-mode-indent-offset)))
 
 
-(define-advice c-ts-mode--font-lock-settings (:around (orig-fn language) "nvp")
+(define-advice c-ts-mode--font-lock-settings
+    (:around (orig-fn language) "nvp")
   (append (nvp-c-ts-font-lock-settings language) (funcall orig-fn language)))
 
-(define-advice c-ts-mode--indent-styles (:around (orig-fn mode &rest args) "nvp")
-  (let ((indents
-         (assoc-default c-ts-mode-indent-style (apply orig-fn mode args))))
+(define-advice c-ts-mode--indent-styles
+    (:around (orig-fn mode &rest args) "nvp")
+  (let ((indents (assoc-default c-ts-mode-indent-style
+                                (apply orig-fn mode args))))
     (list (cons c-ts-mode-indent-style
                 (append (nvp-c-ts--indent-rules mode) indents)))))
 

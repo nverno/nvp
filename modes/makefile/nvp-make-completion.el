@@ -195,25 +195,26 @@ TYPE is one of \\='all, \\='variables or \\='rules."
 
 (defun nvp-makecomp-info-sig (thing &optional type)
   (or (gethash thing nvp-makecomp--eldoc-cache)
-      (save-window-excursion
-        (let ((display-buffer-overriding-action '(nil . ((inhibit-switch-frame . t))))
-              (info-lookup-other-window-flag nil))
-          (ignore-errors (info-lookup-symbol thing))
-          (save-excursion
-            (--> (pcase type
-                   ('autovar
-                    (forward-line 1)
-                    (skip-syntax-forward " ")
-                    (--when-let (bounds-of-thing-at-point 'sentence)
-                      (buffer-substring-no-properties (point) (cdr it))))
-                   ('target
-                    (and-let* ((target (thing-at-point 'sentence t)))
-                      (replace-regexp-in-string "[\n\r\t ]+" " " target)))
-                   (_
-                    (goto-char (point-min))
-                    (when (re-search-forward (concat "\\([$](" thing ".*)\\)") nil t)
-                      (match-string 1))))
-                 (puthash thing it nvp-makecomp--eldoc-cache)))))))
+      (nvp-with-no-window
+        (save-window-excursion
+          (let ((info-lookup-other-window-flag t))
+            (ignore-errors (info-lookup-symbol thing))))
+        (save-excursion
+          (--> (pcase type
+                 ('autovar
+                  (forward-line 1)
+                  (skip-syntax-forward " ")
+                  (--when-let (bounds-of-thing-at-point 'sentence)
+                    (buffer-substring-no-properties (point) (cdr it))))
+                 ('target
+                  (and-let* ((target (thing-at-point 'sentence t)))
+                    (replace-regexp-in-string "[\n\r\t ]+" " " target)))
+                 (_
+                  (goto-char (point-min))
+                  (when (re-search-forward (concat "\\([$](" thing ".*)\\)")
+                                           nil t)
+                    (match-string 1))))
+               (puthash thing it nvp-makecomp--eldoc-cache))))))
 
 ;;;###autoload
 (defun nvp-makecomp-eldoc-function (callback &rest _ignored)

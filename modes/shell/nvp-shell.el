@@ -167,19 +167,24 @@ If none found, return list of all terminal buffers."
   (when (window-full-width-p)
     (display-buffer-pop-up-window buf alist)))
 
+(defun nvp-shell--display-maybe-below (buf alist)
+  (when (window-full-height-p)
+    (display-buffer-below-selected
+     buf `(,@alist
+           (dedicated . t)
+           (window-height . 0.4)
+           (window-min-height . 0.4)))))
+
 (defvar nvp-shell-display-buffer-action
   `((display-buffer-reuse-window
      display-buffer-reuse-mode-window
      nvp-shell--display-maybe-other-window
-     display-buffer-below-selected
-     display-buffer-in-direction
+     nvp-shell--display-maybe-below
      display-buffer-same-window)
     (mode shell-mode)
-    (category          . repl)
-    (direction         . below)
-    (window-min-height . 0.35)
-    (window-height     . 0.5)
-    (preserve-size . (t . nil)))
+    (category . repl)
+    ;; (preserve-size . (nil . t))
+    (window-min-height . 20))
   "Display action for `nvp-shell'.")
 
 
@@ -227,10 +232,13 @@ With no ARG, prefer shells in current directory or project when available."
                   ;; Otherwise, any terminal will do, but prefer current
                   ;; directory or project
                   (nvp-shell-in-project-maybe terms)))))))
-    (pop-to-buffer
-     (or (and bufname (get-buffer bufname))
-         (shell bufname))
-     nvp-shell-display-buffer-action)))
+    (or (and-let* ((buf (and bufname (get-buffer bufname))))
+          (pop-to-buffer buf nvp-shell-display-buffer-action))
+        (let ((display-buffer-alist
+               `(((category . comint)
+                  ,@(if arg '((display-buffer-same-window))
+                      nvp-shell-display-buffer-action)))))
+          (shell bufname)))))
 
 ;;;###autoload
 (defun nvp-shell-launch-terminal ()

@@ -42,7 +42,7 @@
   :send-defun #'ess-eval-function
   :send-buffer #'ess-eval-buffer
   :send-line #'ess-eval-line
-  :send-input #'inferior-ess-input-sender
+  :send-input #'inferior-ess-send-input
   ;; :send-sexp
   ;; :send-statement
   ;; :eval-sexp #'ess-eval-paragraph

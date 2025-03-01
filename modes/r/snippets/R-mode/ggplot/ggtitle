@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
-# name: ggtitle
+# name: ggtitle + theme
 # key: ggtitle
 # --
 ggtitle("$1") +
-theme( plot.title = element_text(hjust = 0.5) )
+theme(plot.title = element_text(hjust = 0.5))

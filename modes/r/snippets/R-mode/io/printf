@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: printf
+# name: cat(sprintf(...))
 # key: prf
 # --
 cat(sprintf("${1:%s}\\n"${1:$($s~ "%" ", " "\)\)")}$2${1:$($s~ "%" "\)\)")}

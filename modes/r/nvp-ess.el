@@ -68,8 +68,10 @@
     (doc-buffer
      (condition-case-unless-debug err
          (save-window-excursion
-           (ess-display-help-on-object (symbol-name arg))
-           (list (current-buffer) nil))
+           (nvp-with-no-window
+             (let ((ess-help-pop-to-buffer t))
+               (ess-display-help-on-object (symbol-name arg)))
+             (list (current-buffer) nil)))
        (error (message "%s" (error-message-string err))
               nil)))
     ;; TODO: search-remote - call RSiteSearch("%s") in repl?

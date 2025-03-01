@@ -19,20 +19,20 @@
 (put 'org-link-set-parameters 'lisp-indent-function 1)
 
 ;;;###autoload
-(defun nvp-org-tags-view (&optional directory)
+(defun nvp-org-tags-view (&optional directories)
   "Display org tags with `org-tags-view'.
 When call from an `org-mode' buffer with \\[universal-argument], limit tags
-to those in current buffer.
-Elsewhere, or with prefix >= 4, prompt for DIRECTORY to search within."
+to those in current buffer. Elsewhere, with any prefix arg, prompt for
+DIRECTORY to search within."
   (interactive
-   (list (let ((raw (prefix-numeric-value current-prefix-arg)))
-           (cond ((and (= raw 4)
-                       (derived-mode-p 'org-mode))
-                  (buffer-file-name))
-                 ((>= raw 4) (completing-read-multiple
-                              "Directory: " #'completion-file-name-table))
-                 (t nil)))))
-  (let ((org-agenda-files (if directory (nvp:as-list directory)
+   (list (cond ((and (equal '(4) current-prefix-arg)
+                     (derived-mode-p 'org-mode))
+                (buffer-file-name))
+               (current-prefix-arg
+                (completing-read-multiple
+                 "Directories: " #'completion-file-name-table))
+               (t nil))))
+  (let ((org-agenda-files (if directories (nvp:as-list directories)
                             org-agenda-files)))
     (nvp:prefix-shift -1)
     (call-interactively #'org-tags-view)))

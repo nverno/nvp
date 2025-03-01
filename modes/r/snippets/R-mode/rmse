@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: rmse
+# name: root mean sq. error
 # key: rmse
 # --
 sqrt(mean(resid($1)^2))

@@ -1,22 +1,11 @@
 ;;; nvp-shell.el --- shell helpers -*- lexical-binding: t; -*-
-
 ;;; Commentary:
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'comint)
-(nvp:decls :p (shell tramp) :f (nvp-comint-redirect-to-string))
-
+(nvp:decls :p (shell) :f (nvp-comint-redirect-to-string))
 (autoload 'f-same-p "f")
 
-
-(nvp:define-cache-runonce nvp-shell-shells ()
-  "List of possible shells."
-  (nvp:with-gnu/w32 '("sh" "bash" "fish" "zsh" "csh")
-    (cl-loop
-     for var in `(,(expand-file-name "usr/bin" (getenv "MSYS_HOME"))
-                  ,(expand-file-name "bin" (getenv "CYGWIN_HOME")))
-     nconc (mapcar (lambda (x) (expand-file-name x var))
-                   '("sh.exe" "bash.exe" "fish.exe" "zsh.exe")))))
 
 (defun nvp-shell--get-input (&optional add-history)
   (let ((cmd (funcall comint-get-old-input)))
@@ -172,8 +161,8 @@ If none found, return list of all terminal buffers."
     (display-buffer-below-selected
      buf `(,@alist
            (dedicated . t)
-           (window-height . 0.4)
-           (window-min-height . 0.4)))))
+           (window-height . 0.5)
+           (window-min-height . 0.45)))))
 
 (defvar nvp-shell-display-buffer-action
   `((display-buffer-reuse-window

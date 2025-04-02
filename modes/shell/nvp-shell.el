@@ -77,7 +77,10 @@ With \\[universal-argument] \\[universal-argument], read command."
   (interactive "P")
   (let ((display-buffer-overriding-action
          (and arg (nvp-display-buffer-action 'same-window))))
-    (when-let* ((compile-command (nvp-shell--get-input 'add)))
+    (when-let* ((cmd (nvp-shell--get-input 'add))
+                (compile-command
+                 (concat "bash -i -c '. \"$HOME/.bash_aliases\" || true; "
+                         cmd "'\n")))
       (nvp:with-global-vars
           ((compilation-read-command (>= (prefix-numeric-value arg) 16))
            (compilation-scroll-output nil))

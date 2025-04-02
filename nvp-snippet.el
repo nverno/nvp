@@ -41,18 +41,22 @@
   "Add conditions based on directory names.
 When part of `before-save-hook', won't add condition on initial save."
   (unless buffer-file-name
-    (let ((before-save-hook ()))
+    (let (before-save-hook)
       (save-buffer)))
   (cl-flet ((add-condition
               (pred)
               (remove-hook 'before-save-hook #'nvp-snippet-save-hook t)
               (nvp-snippet-add-field "condition" pred)))
-    (let ((dir (ignore-errors (or (nvp:path 'ds) (nvp:path 'dn)))))
+    (let ((dir (ignore-errors
+                 (and-let* ((file (or (file-name-directory
+                                       (file-truename buffer-file-name))
+                                      (file-truename default-directory))))
+                   (or (file-name-nondirectory file)
+                       (directory-file-name file))))))
       (hack-local-variables)
-      (when-let*
-          ((test (or (bound-and-true-p nvp-local-snippet-conditions)
-                     (-some-> (assoc-string dir nvp-snippet-default-conditions)
-                       (cadr)))))
+      (when-let* ((test (or (bound-and-true-p nvp-local-snippet-conditions)
+                            (cadr (assoc-string
+                                   dir nvp-snippet-default-conditions)))))
         (add-condition test)))))
 
 (defun nvp-snippet-add-field (field value)

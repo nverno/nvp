@@ -269,7 +269,8 @@ Separate ouput fields with OUT-SEP."
   (or fmt (setq fmt "$%d"))
   (or len (setq len 0))
   (if (zerop len) ""
-    (concat join (--mapcc (format fmt it) (number-sequence beg (+ beg (1- len)))
+    (concat join (--mapcc (format fmt it)
+                          (number-sequence beg (+ beg (1- len)))
                           join))))
 
 

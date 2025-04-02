@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: length
+# key: len
+# --
+$1.length

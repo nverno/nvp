@@ -9,7 +9,6 @@
 ;;; Code:
 (eval-when-compile (require 'nvp-macro))
 (require 'js)
-(nvp:req 'nvp-js 'subrs)
 (nvp:decls :p (js2 ecma) :f (nvp-js-jsx-hook js2-minor-mode))
 
 
@@ -25,28 +24,26 @@
 
 ;;; Toggle b/w JsX <=> JS
 ;; JsX options (3/7/20): rjsx (better), or js-jsx-mode w/ js2-minor-mode
-(defsubst nvp-js--switch-mode (new-mode)
-  (kill-all-local-variables)
-  (funcall-interactively new-mode))
-
 (defun nvp-js-toggle-jsx (&optional old-mode)
   "Toggle b/w js and jsx modes."
   (interactive)
-  (with-demoted-errors "Toggle modes: %S"
-    (pcase (or old-mode major-mode)
-      ;; => js-jsx-mode w/ js2-minor-mode
-      ('rjsx-mode (nvp-js--switch-mode 'js-mode)
-                  (nvp-js-jsx-hook))
-      ('js2-mode (unless (fboundp 'rjsx-mode)
-                   (user-error "rjsx-mode not installed..."))
-                 (nvp-js--switch-mode 'rjsx-mode))
-      ((or 'js-mode 'js-ts-mode 'js-jsx-mode)
-       (unless (fboundp 'rjsx-mode)
-         (user-error "rjsx-mode not installed..."))
-       (when (bound-and-true-p js2-minor-mode)
-         (js2-minor-mode -1))
-       (nvp-js--switch-mode 'rjsx-mode))
-      (_ (user-error "%S not matched against any JsX modes" major-mode)))))
+  (cl-labels ((switch-mode (new-mode)
+                (kill-all-local-variables)
+                (funcall-interactively new-mode)))
+    (with-demoted-errors "Toggle modes: %S"
+      (pcase (or old-mode major-mode)
+        ('rjsx-mode (switch-mode 'js-ts-mode))
+        ('js-ts-mode (switch-mode 'js-jsx-mode))
+        ('js2-mode (unless (fboundp 'rjsx-mode)
+                     (user-error "rjsx-mode not installed..."))
+                   (switch-mode 'rjsx-mode))
+        ((or 'js-mode 'js-ts-mode 'js-jsx-mode)
+         (unless (fboundp 'rjsx-mode)
+           (user-error "rjsx-mode not installed..."))
+         (when (bound-and-true-p js2-minor-mode)
+           (js2-minor-mode -1))
+         (switch-mode 'rjsx-mode))
+        (_ (user-error "%S not matched against any JsX modes" major-mode))))))
 
 (defun nvp-js-jsx-file-p ()
   "Enable rsjx mode using `magic-mode-alist'."

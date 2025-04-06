@@ -116,7 +116,7 @@ The default uses props defined in TABLES."
 Its symbol is created from PREFIX and its function value is HOOK.
 PROPS are passed to `make-abbrev-table'."
   (plist-put props :nvp-abbrevd t)
-  (let ((sym (obarray-put nvp-abbrevd-obarray (symbol-name (cl-gensym prefix))))
+  (let ((sym (obarray-put nvp-abbrevd-obarray (symbol-name (gensym prefix))))
         (table (make-abbrev-table props)))
     (set sym table)
     (fset sym hook)

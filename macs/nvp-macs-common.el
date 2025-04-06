@@ -188,8 +188,8 @@ be used. Modification of `use-package-normalize-plist'."
   (declare (indent 1))
   `(let ,(mapcar (lambda (s)
                    ;; see helm-lib's `helm-with-gensym' for explanation
-                   ;; of using `cl-gensym' as opposed to `make-symbol'
-                   `(,s (cl-gensym (symbol-name ',s))))
+                   ;; of using `gensym' as opposed to `make-symbol'
+                   `(,s (gensym (symbol-name ',s))))
                  syms)
      ,@body))
 
@@ -296,12 +296,12 @@ are aliases to symbols prefixed by \"nvp-\"."
       (nvp:-build-call (car expr) (cdr expr)))))
 
 (defun nvp:-build-call (op fns)
-  (let ((g (cl-gensym)))
+  (let ((g (gensym)))
     `(lambda (,g)
        (,op ,@(mapcar #'(lambda (f) `(,(nvp:-rbuild f) ,g)) fns)))))
 
 (defun nvp:-build-compose (fns)
-  (let ((g (cl-gensym)))
+  (let ((g (gensym)))
     `(lambda (,g)
        ,(cl-labels ((rec (fns)
                       (if fns
@@ -337,7 +337,7 @@ are aliases to symbols prefixed by \"nvp-\"."
   (declare (debug cond))
   (unless (null clauses)
     (let ((cl1 (car clauses))
-          (sym (cl-gensym)))
+          (sym (gensym)))
       `(let ((,sym ,(car cl1)))
          (if ,sym
              (let ((it ,sym)) ,@(cdr cl1))

@@ -457,7 +457,7 @@ data, starting with 1 and incrementing by 1 for each symbol.  If
 the last match was against a string, then that has to be provided
 as STRING."
   (declare (indent 2) (debug (listp form body)))
-  (let ((s (cl-gensym "string"))
+  (let ((s (gensym "string"))
         (i 0))
     `(let ((,s ,string))
        (let ,(save-match-data
@@ -1651,7 +1651,7 @@ symbols is evaluated. See `define-advice'."
   (declare (indent 2) (doc-string 3) (debug (sexp sexp def-body)))
   (let* ((where         (nth 0 args))
          (lambda-list   (nth 1 args))
-         (name          (or (nth 2 args) (cl-gensym "nvp")))
+         (name          (or (nth 2 args) (gensym "nvp")))
          (depth         (nth 3 args))
          (props         (and depth `((depth . ,depth))))
          (symbols (nvp:as-list symbol))

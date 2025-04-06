@@ -15,7 +15,7 @@
 
 (defvar nvp-webjump-cache nil "Cache local uris from files.")
 
-(defvar nvp-webjump-sites)              ;nvp-vars
+(defvar nvp-webjump-sites)              ; nvp-vars
 
 (defun nvp-webjump-wikipedia (_site)
   (let ((thing (thing-at-point 'symbol 'noprops)))
@@ -44,19 +44,23 @@ there."
           (nvp-org-links nvp-webjump-org-links-re it)))))
 
 ;;;###autoload
-(defun nvp-browse-webjump (&optional prompt use-defaults choices no-browse)
-  "Jump to website."
+(defun nvp-browse-webjump (&optional prompt-uri defaults-only choices no-browse)
+  "Jump to websites.
+
+Prefix handling:
+   \\='(4)       Prompt for uri.
+   >=16       Use default sites, ignoring any local links."
   (interactive (let ((raw (prefix-numeric-value current-prefix-arg)))
                  (list (= raw 4) (>= raw 16))))
   (-let* ((extra-args nil)
           (type nil)
           (completion-ignore-case t)
-          (locals (and (not (or choices use-defaults))
-                       (or (and prompt (read-from-minibuffer "URI: "))
+          (locals (and (not (or choices defaults-only))
+                       (or (and prompt-uri (read-from-minibuffer "URI: "))
                            (nvp-get-local-uris))))
           (sites (or choices locals (append nvp-webjump-sites webjump-sites)))
           ((name . expr)
-           (or (and prompt (cons nil locals))
+           (or (and prompt-uri (cons nil locals))
                (assoc-string
                 (completing-read "WebJump to site: " sites nil t)
                 sites 'case-fold)))

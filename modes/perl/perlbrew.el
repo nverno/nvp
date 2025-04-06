@@ -20,9 +20,9 @@
 
   ;; call perlbrew shell command on ARGS, return string or list of strings
   (defmacro perlbrew--call (args &optional lines)
-    "Call perlbrew with ARGS and return response as string, optionally as 
+    "Call perlbrew with ARGS and return response as string, optionally as
 list of strings (`process-lines')."
-    (let ((args_ (cl-gensym)))
+    (let ((args_ (gensym)))
       `(let ((,args_ ,(perlbrew--listify args)))
          ,(if lines
               `(mapcar 'string-trim (apply 'process-lines ,perlbrew-exe ,args_))
@@ -33,7 +33,7 @@ list of strings (`process-lines')."
   (defmacro perlbrew--execute (args &optional async &rest body)
     "Call perlbrew with ARGS, optionally do asynchronously and do BODY when
 process finishes successfully."
-    (let ((args_ (cl-gensym)))
+    (let ((args_ (gensym)))
       `(let ((,args_ ,(perlbrew--listify args)))
          ,(if async
               `(set-process-sentinel

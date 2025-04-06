@@ -118,7 +118,7 @@ With prefix, add neovim sources first."
   (interactive)
   (when (and (not (or noninteractive
                       (eq (aref (buffer-name) 0) ?\s)))
-             (treesit-language-at (point)))
+             (ignore-errors (treesit-language-at (point))))
     (nvp-treesit-minor-mode 1)))
 
 ;;;###autoload

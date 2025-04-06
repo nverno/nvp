@@ -6,9 +6,9 @@
   (require 'nvp-macro)
   (require 'nvp-parse))
 (require 'pp)
-(require 'company-elisp) ; XXX(3/5/24): `company-elisp' removed from `company-mode'
+;; XXX(3/5/24): `company-elisp' removed from `company-mode'
+(require 'company-elisp)
 (nvp:decls)
-
 
 (with-eval-after-load 'nvp-repl
   (require 'nvp-ielm))
@@ -16,15 +16,18 @@
 ;; Modified from company-elisp to incorporate more things
 ;; used to determine abbrev expansion / toggling
 (let-when-compile
-    ((el-defs '("defun" "defmacro" "defsubst" "defmethod" "defclass" "defgeneric"
-                "define-advice" "defadvice" "add-advice" "add-function"))
+    ((el-defs '("defun" "defmacro" "defsubst" "defmethod" "defclass"
+                "defgeneric" "define-advice" "defadvice" "add-advice"
+                "add-function"))
      (el-vdefs '("let" "cond" "lexical-let" "if-let" "when-let" "lambda"
                  "labels" "flet"
                  "pcase-dolist" "pcase-lambda" "pcase-exhaustive" "pcase-let")))
   (let ((vars-re (eval-when-compile
-                   (apply #'company-elisp--fns-regexp (append el-defs el-vdefs))))
+                   (apply #'company-elisp--fns-regexp
+                          (append el-defs el-vdefs))))
         (defs-re (eval-when-compile
-                   (concat "([ \t\n]*" (apply #'company-elisp--fns-regexp el-defs)))))
+                   (concat "([ \t\n]*"
+                           (apply #'company-elisp--fns-regexp el-defs)))))
     ;; Include generics
     (defvar nvp-elisp-defuns-regexp defs-re)
     ;; Additional let macros, pcase, cond, etc.
@@ -46,27 +49,31 @@
 (defun nvp-elisp-bounds-of-symbol-at-point ()
   "In code, ignore \"@\" prefix from symbols.
 In strings, ignore doc comment prefixes/suffixes that confuse xref."
-  (when-let* ((bnds (ignore-errors
-                      (save-excursion
-                        (let* ((orig (point))
-                               (beg (progn (funcall (get 'symbol 'beginning-op))
-                                           (point)))
-                               (end (when (<= beg orig)
-                                      (progn (forward-thing 'symbol 1)
-                                             (point)))))
-                          (when (and (<= beg orig) (<= orig end) (< beg end))
-                            (cons beg end)))))))
-    (let* ((str-p (nvp:ppss 'str))
-           (pre (if str-p '(?{ ?<) '(?@)))
-           (post (if str-p '(?} ?>))))
-      (while (and (< (car bnds) (cdr bnds))
-                  (memq (char-after (car bnds)) pre))
-        (setf (car bnds) (1+ (car bnds))))
-      (while (and post
-                  (< (car bnds) (cdr bnds))
-                  (memq (char-before (cdr bnds)) post))
-        (setf (cdr bnds) (1- (cdr bnds)))))
-    bnds))
+  (let ((orig (point)))
+   (when-let* ((bnds (ignore-errors
+                       (save-excursion
+                         (forward-thing 'symbol 1)
+                         (let* ((beg (progn
+                                       (funcall (get 'symbol 'beginning-op))
+                                       (point)))
+                                (end (when (<= beg orig)
+                                       (progn (forward-thing 'symbol 1)
+                                              (point)))))
+                           (when (and (<= beg orig)
+                                      (<= orig end)
+                                      (< beg end))
+                             (cons beg end)))))))
+     (let* ((str-p (nvp:ppss 'str))
+            (pre (if str-p '(?{ ?<) '(?@)))
+            (post (if str-p '(?} ?>))))
+       (while (and (< (car bnds) (cdr bnds))
+                   (memq (char-after (car bnds)) pre))
+         (setf (car bnds) (1+ (car bnds))))
+       (while (and post
+                   (< (car bnds) (cdr bnds))
+                   (memq (char-before (cdr bnds)) post))
+         (setf (cdr bnds) (1- (cdr bnds)))))
+     bnds)))
 (put 'elisp-symbol 'bounds-of-thing-at-point
      'nvp-elisp-bounds-of-symbol-at-point)
 

@@ -2,4 +2,4 @@
 # name: shebang
 # key: !
 # --
-#!/usr/bin/env Rscript
+#!/usr/bin/env -S Rscript${1: --no-init-file}

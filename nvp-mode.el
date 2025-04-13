@@ -146,7 +146,7 @@
     ("q" "Toggle" nvp-toggle :if-non-nil nvp-toggle-functions)
     ("f" "Format buffer" nvp-format-buffer)]
    ["Debug"
-    ("l" "Lint buffer" nvp-check-buffer)
+    ("l" "Check/Lint" nvp-check-buffer)
     ("p" "Profile" nvp-profile :if-non-nil nvp-profile-functions)
     ("d" "Debug" nvp-debug :if-non-nil nvp-debug-functions)
     ("D" "Disassemble" nvp-disassemble :if-non-nil nvp-disassemble-functions)]]

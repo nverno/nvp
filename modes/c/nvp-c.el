@@ -246,20 +246,26 @@ Return list like \\='((indent-tabs-mode . t) (c-basic-offset . 2) ...)."
                  `([,@delims] @font-lock-delimiter-face
                    (conditional_expression
                     ["?" ":"] @nvp-ternary-operator-face))
+
                  :language language
                  :feature 'operator
-                 `([,@ops] @font-lock-operator-face
-                   "!" @font-lock-negation-char-face)
+                 `((reference_declarator "&" @italic)
+                   (pointer_expression operator: "*" @bold)
+                   "!" @font-lock-negation-char-face
+                   [,@ops] @font-lock-operator-face)
+
                  :language language
                  :feature 'comment
                  :override t
                  '((comment) @nvp-c-ts--fontify-comment)
+
                  :language language
                  :feature 'constant
                  '([(true) (false) (null)] @font-lock-constant-face
-                   ((identifier) @font-lock-constant-face
+                   ((identifier) @font-lock-preprocessor-face
                     (:match "\\`[_A-Z][_A-Za-z0-9]*\\'"
-                            @font-lock-constant-face)))
+                            @font-lock-preprocessor-face)))
+
                  :language language
                  :feature 'function
                  `((call_expression

@@ -17,8 +17,9 @@
       (type_parameters ["<" ">"] @font-lock-bracket-face)
       (type_arguments ["<" ">"] @font-lock-bracket-face)
 
-      (constrained_type_parameter
-       left: (type_identifier) @font-lock-variable-name-face)
+      ;; FIXME(07/08/25): bad node: constrained_type_parameter
+      ;; (constrained_type_parameter
+      ;;  left: (type_identifier) @font-lock-variable-name-face)
 
       ;; lifetimes
       (lifetime "'" @font-lock-operator-face)

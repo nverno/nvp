@@ -57,6 +57,7 @@ With prefix, add neovim sources first."
 ;;; Dev Minor Mode
 
 (defun nvp-treesit-validate (lang query)
+  "Validate QUERY for LANG."
   (interactive (list (or (treesit-language-at (point))
                          (nvp-treesit:read))
                      (read--expression "Query: ")))

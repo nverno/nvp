@@ -1,7 +1,9 @@
 ;; -*- coding: utf-8; mode: emacs-lisp; no-byte-compile: t; lexical-binding: t; -*-
 
 (define-abbrev-table 'R-mode-abbrev-table
-  '(("fn" ["function()" 1 nil nil] nvp-abbrev-expand-in-paren-hook :system t)
+  '(("T" "TRUE" nil :system t)
+    ("F" "FALSE" nil :system t)
+    ("fn" ["function()" 1 nil nil] nvp-abbrev-expand-in-paren-hook :system t)
     ("fp" "file.path" nil :system t)
     ("fun" ["function()" 1 nil nil] nvp-abbrev-expand-in-paren-hook :system t)
     ("lib" ["library()" 1 nil nil] expand-abbrev-hook :system t)

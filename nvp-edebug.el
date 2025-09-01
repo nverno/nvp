@@ -60,10 +60,10 @@
 
 
 ;;; Menu Toggles: projectile, filenotify, hap, debug, edebug settings
-(defvar projectile-verbose)
-(defvar file-notify-debug)
-(defvar nvp-hap-verbose)
-(defvar server-log)
+(defvar projectile-verbose nil)
+(defvar file-notify-debug nil)
+(defvar nvp-hap-verbose nil)
+(defvar server-log nil)
 
 (nvp:transient-define-vars nvp--menu
   (byte-compile-generate-call-tree :choices '(nil t prompt))

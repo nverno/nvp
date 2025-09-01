@@ -115,19 +115,17 @@ Assumes the list is flattened and only elements with markers remain."
   (if (eq headers ':none)
       (list :none nil nil)
     (or headers
-        (setq headers
-              `((nil ,(concat
-                       "^" (regexp-quote (nvp-comment-start 3)) "\\{1,2\\}"
-                       "\\s-+\\(.*\\)\\s-*$")
-                     1))))
+        (setq headers `(("Headers"
+                         ,(concat
+                           "^" (regexp-quote (nvp-comment-start 3)) "\\{1,2\\}"
+                           "\\s-+\\(.*\\)\\s-*$")
+                         1))))
     (or headers-1 (setq headers-1 `(("Headers" ,(cadr (car headers)) 1))))
-    (or headers-2
-        (setq headers-2
-              `(("Sub-Headers"
-                 ,(concat
-                   "^" (nvp-comment-start 2)
-                   "[-*]\\{1,2\\}\\s-+\\(.*\\)[ *-]*$")
-                 1))))
+    (or headers-2 (setq headers-2 `(("Sub-Headers"
+                                     ,(concat
+                                       "^" (nvp-comment-start 2)
+                                       "[-*]\\{1,2\\}\\s-+\\(.*\\)[ *-]*$")
+                                     1))))
     (list headers headers-1 headers-2)))
 
 ;;;###autoload
@@ -368,21 +366,32 @@ Calls `imenu' to jump to location with selection."
 (defun nvp-imenu (arg)
   "Call `imenu-anywhere' with fallback restricting to visible buffers only."
   (interactive "p")
-  (let ((default-p (eq imenu-create-index-function
-                       #'imenu-default-create-index-function)))
+  (let ((default-p (memq imenu-create-index-function
+                         '(treesit-simple-imenu
+                           imenu-default-create-index-function))))
     (when (and default-p (null nvp-imenu-comment-headers-re) comment-start)
       (nvp-imenu-setup))
     (with-demoted-errors "Error in nvp-imenu: %S"
-      (if (or (< arg 4)
-              (equal ':none nvp-imenu-comment-headers-re)
-              (not (or default-p imenu-generic-expression)))
-          (nvp-imenu-complete)
-        (let ((imenu-generic-expression
-               (if (< arg 16) nvp-imenu-comment-headers-re
-                 (append nvp-imenu-comment-headers-re
-                         nvp-imenu-comment-headers-re-2)))
-              (imenu-create-index-function #'imenu-default-create-index-function))
-          (nvp-imenu-complete 0 'headers))))))
+      (cond ((or (and (> arg 0) (< arg 4))
+                 (equal ':none nvp-imenu-comment-headers-re)
+                 (not (or default-p imenu-generic-expression)))
+             (nvp-imenu-complete))
+            (t (let* ((use-cache-p (eq imenu-create-index-function
+	                               'imenu-default-create-index-function))
+                      (imenu-create-index-function
+                       'imenu-default-create-index-function)
+                      (imenu-anywhere--cached-tick
+                       (and use-cache-p imenu-anywhere--cached-tick))
+                      (imenu-anywhere--cached-candidates
+                       (and use-cache-p imenu-anywhere--cached-candidates)))
+                 (if (<= arg 0)
+                     (nvp-imenu-complete)
+                   (let ((imenu-generic-expression
+                          (if (< arg 16)
+                              nvp-imenu-comment-headers-re
+                            (append nvp-imenu-comment-headers-re
+                                    nvp-imenu-comment-headers-re-2))))
+                     (nvp-imenu-complete 0 'headers)))))))))
 
 (provide 'nvp-imenu)
 ;; Local Variables:

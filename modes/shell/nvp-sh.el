@@ -40,7 +40,7 @@
      "\\)")))
 
 ;; Imenu header comment regexp
-(defconst nvp-sh-comment-headers-re '((nil "^###\\s-*\\(.+\\)\\s-*$" 1)))
+(defconst nvp-sh-comment-headers-re '(("Headers" "^###\\s-*\\(.+\\)\\s-*$" 1)))
 
 ;; Additional imenu regexps
 (defconst nvp-sh-imenu-extra-regexps

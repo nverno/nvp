@@ -349,7 +349,8 @@ Otherwise just call `vertico-insert'. If this was previous command, call
                                      (intern (subr-name orig-fn)))))
                        (or (not (eq this-command sym))
                            (eq last-command sym)))
-                     (xref--push-markers (current-buffer) (point)))))))
+                     (xref--push-markers (current-buffer) (point)
+                                         (selected-window)))))))
     (condition-case err
         (apply orig-fn args)
       (user-error (and pushed (xref-go-back))
